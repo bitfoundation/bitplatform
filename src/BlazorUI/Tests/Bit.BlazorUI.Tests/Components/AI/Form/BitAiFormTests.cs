@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using AngleSharp.Dom;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.AI.Form;
@@ -363,6 +364,120 @@ public class BitAiFormTests : BitAiTestBase
     }
 
     [TestMethod]
+    public void AFieldWhoseBoundsStreamInLaterKeepsWhatWasTyped()
+    {
+        // The schema streams "title" first and "minimum" / "maximum" after it, so the field the user is already typing
+        // into is handed over again with its bounds - the same control, with the same prefill.
+        var form = RenderComponent<BitAiForm>(p => p.Add(c => c.Definition, new BitAiFormDefinition
+        {
+            Fields = [new BitAiFormField("guests") { Type = BitAiFieldType.Number }],
+        }));
+        InputOf(form, "Guests").Change("7");
+
+        form.Render(p => p.Add(c => c.Definition, new BitAiFormDefinition
+        {
+            Fields = [new BitAiFormField("guests") { Type = BitAiFieldType.Number, Minimum = 1, Maximum = 12, Required = true, JsonType = "integer" }],
+        }));
+
+        Assert.AreEqual("7", form.Instance.Values["guests"]);
+        Assert.AreEqual("7", InputOf(form, "Guests").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void APrefillStreamingInAfterTheUserTypedKeepsWhatWasTyped()
+    {
+        // "default": 2 streams in after the "title" of the field, by when the user may already have typed into it.
+        var form = RenderComponent<BitAiForm>(p => p.Add(c => c.Definition, new BitAiFormDefinition
+        {
+            Fields = [new BitAiFormField("guests") { Type = BitAiFieldType.Number }, new BitAiFormField("city") { Value = "Os" }],
+        }));
+        InputOf(form, "Guests").Change("7");
+        InputOf(form, "City").Input("Bergen");
+
+        form.Render(p => p.Add(c => c.Definition, new BitAiFormDefinition
+        {
+            Fields = [new BitAiFormField("guests") { Type = BitAiFieldType.Number, Value = "2" }, new BitAiFormField("city") { Value = "Oslo" }],
+        }));
+
+        Assert.AreEqual("7", form.Instance.Values["guests"]);
+        Assert.AreEqual("7", InputOf(form, "Guests").GetAttribute("value"));
+        Assert.AreEqual("Bergen", form.Instance.Values["city"]);
+    }
+
+    [TestMethod]
+    public void AnUntouchedFieldFollowsItsPrefillAsItStreamsIn()
+    {
+        var form = RenderComponent<BitAiForm>(p => p.Add(c => c.Definition, new BitAiFormDefinition
+        {
+            Fields = [new BitAiFormField("guests") { Type = BitAiFieldType.Number }, new BitAiFormField("city") { Value = "Os" }],
+        }));
+
+        form.Render(p => p.Add(c => c.Definition, new BitAiFormDefinition
+        {
+            Fields = [new BitAiFormField("guests") { Type = BitAiFieldType.Number, Value = "2" }, new BitAiFormField("city") { Value = "Oslo" }],
+        }));
+
+        Assert.AreEqual("2", form.Instance.Values["guests"]);
+        Assert.AreEqual("2", InputOf(form, "Guests").GetAttribute("value"));
+        Assert.AreEqual("Oslo", form.Instance.Values["city"]);
+        Assert.AreEqual("Oslo", InputOf(form, "City").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void AFieldStreamingIntoAGroupKeepsWhatWasTypedInTheOthers()
+    {
+        var form = RenderComponent<BitAiForm>(p => p.Add(c => c.Definition, new BitAiFormDefinition
+        {
+            Fields = [new BitAiFormField("venue") { Type = BitAiFieldType.Object, Fields = [new BitAiFormField("city")] }],
+        }));
+        InputOf(form, "City").Input("Oslo");
+
+        form.Render(p => p.Add(c => c.Definition, new BitAiFormDefinition
+        {
+            Fields = [new BitAiFormField("venue") { Type = BitAiFieldType.Object, Fields = [new BitAiFormField("city") { Required = true }, new BitAiFormField("zip") { Value = "0150" }] }],
+        }));
+
+        Assert.AreEqual("Oslo", form.Instance.Values["venue.city"]);
+        Assert.AreEqual("0150", form.Instance.Values["venue.zip"]);
+    }
+
+    [TestMethod]
+    public void AChoiceTheOptionsStillOfferIsKeptAsMoreOfThemStreamIn()
+    {
+        static BitAiFormDefinition Seating(params string[] options) => new()
+        {
+            Fields = [new BitAiFormField("seating") { Type = BitAiFieldType.Select, Options = options }],
+        };
+
+        var form = RenderComponent<BitAiForm>(p => p.Add(c => c.Definition, Seating("inside", "ter")));
+        form.Find(".bit-drp-wrp").Click();
+        form.FindAll(".bit-drp-itm").First(i => i.TextContent.Trim() == "inside").Click();
+
+        form.Render(p => p.Add(c => c.Definition, Seating("inside", "terrace", "garden")));
+
+        Assert.AreEqual("inside", form.Instance.Values["seating"]);
+    }
+
+    [TestMethod]
+    public void AChoiceTheOptionsNoLongerOfferGoesBackToThePrefill()
+    {
+        static BitAiFormDefinition Seating(params string[] options) => new()
+        {
+            Fields = [new BitAiFormField("seating") { Type = BitAiFieldType.Select, Options = options }],
+        };
+
+        // "ter" was an option only while "terrace" was still streaming.
+        var form = RenderComponent<BitAiForm>(p => p.Add(c => c.Definition, Seating("inside", "ter")));
+        form.Find(".bit-drp-wrp").Click();
+        form.FindAll(".bit-drp-itm").First(i => i.TextContent.Trim() == "ter").Click();
+        Assert.AreEqual("ter", form.Instance.Values["seating"]);
+
+        form.Render(p => p.Add(c => c.Definition, Seating("inside", "terrace")));
+
+        Assert.IsNull(form.Instance.Values["seating"]);
+    }
+
+    [TestMethod]
     public void TheControlsFollowTheTypesOfTheFields()
     {
         var definition = new BitAiFormDefinition
@@ -409,6 +524,54 @@ public class BitAiFormTests : BitAiTestBase
         Submit(form).Click();
 
         Assert.AreEqual("true", submitted!["vip"]);
+    }
+
+    [TestMethod]
+    public void AnUntouchedCheckboxIsSubmittedAsTheFalseItShows()
+    {
+        IReadOnlyDictionary<string, string?>? submitted = null;
+        JsonElement? json = null;
+        var definition = new BitAiFormDefinition
+        {
+            Fields =
+            [
+                new BitAiFormField("vip") { Type = BitAiFieldType.Boolean, Required = true },
+                new BitAiFormField("flags") { Type = BitAiFieldType.Array, Items = new BitAiFormField("flag") { Type = BitAiFieldType.Boolean } },
+            ],
+        };
+        var form = RenderComponent<BitAiForm>(p => p
+            .Add(c => c.Definition, definition)
+            .Add(c => c.OnSubmit, values => submitted = values)
+            .Add(c => c.OnSubmitJson, j => json = j));
+
+        form.Find("button.bit-aifrm-add").Click();
+        Submit(form).Click();
+
+        Assert.AreEqual("false", submitted!["vip"]);
+        Assert.AreEqual("false", submitted["flags[0]"]);
+        Assert.AreEqual(JsonValueKind.False, json!.Value.GetProperty("vip").ValueKind);
+        Assert.AreEqual(JsonValueKind.False, json.Value.GetProperty("flags")[0].ValueKind);
+    }
+
+    [TestMethod,
+        DataRow("https://example.com/a?b=c", true),
+        DataRow("http://example.com", true),
+        DataRow("javascript:alert(1)", false),
+        DataRow("foo:bar", false),
+        DataRow("c:/windows", false),
+        DataRow("mailto:ada@example.com", false),
+        DataRow("example.com", false)]
+    public void AUrlFieldTakesWebAddressesOnly(string value, bool valid)
+    {
+        var form = RenderComponent<BitAiForm>(p => p.Add(c => c.Definition, new BitAiFormDefinition
+        {
+            Fields = [new BitAiFormField("site") { Type = BitAiFieldType.Url }],
+        }));
+
+        InputOf(form, "Site").Input(value);
+        Submit(form).Click();
+
+        Assert.AreEqual(valid, form.Markup.Contains("Site must be a web address.") is false);
     }
 
     [TestMethod]
@@ -512,6 +675,96 @@ public class BitAiFormTests : BitAiTestBase
     }
 
     [TestMethod]
+    public void TheItemBoundsAreWordedInTheSingularForOne()
+    {
+        Assert.AreEqual("Speakers needs at least 1 item.", BitAiStrings.Default.FieldTooFewItems("Speakers", 1));
+        Assert.AreEqual("Speakers needs at least 2 items.", BitAiStrings.Default.FieldTooFewItems("Speakers", 2));
+        Assert.AreEqual("Speakers can have at most 1 item.", BitAiStrings.Default.FieldTooManyItems("Speakers", 1));
+        Assert.AreEqual("Speakers can have at most 3 items.", BitAiStrings.Default.FieldTooManyItems("Speakers", 3));
+    }
+
+    [TestMethod]
+    public void EachEntryOfAListOfObjectsIsAGroupNamedAfterTheListAndItsPlace()
+    {
+        var definition = new BitAiFormDefinition
+        {
+            Fields =
+            [
+                new BitAiFormField("speakers")
+                {
+                    Type = BitAiFieldType.Array,
+                    Items = new BitAiFormField("item") { Type = BitAiFieldType.Object, Fields = [new BitAiFormField("name")] },
+                    Value = """[{"name":"Ada"},{"name":"Grace"}]""",
+                },
+                new BitAiFormField("tags") { Type = BitAiFieldType.Array, Value = """["a"]""" },
+            ],
+        };
+        var form = RenderComponent<BitAiForm>(p => p.Add(c => c.Definition, definition));
+
+        var entries = form.FindAll(".bit-aifrm-iob");
+        Assert.AreEqual(2, entries.Count);
+        Assert.IsTrue(entries.All(e => e.GetAttribute("role") == "group"));
+        CollectionAssert.AreEqual(new[] { "Speakers 1", "Speakers 2" }, entries.Select(e => e.GetAttribute("aria-label")).ToArray());
+
+        // An entry of values is its one input, named through its own aria-label rather than a group around it.
+        var tag = form.FindAll(".bit-aifrm-itm").Single(i => i.ClassList.Contains("bit-aifrm-iob") is false);
+        Assert.IsNull(tag.GetAttribute("role"));
+        Assert.AreEqual(1, tag.QuerySelectorAll("input[aria-label='Tags 1']").Length);
+    }
+
+    [TestMethod]
+    public void AtItsMostEntriesAListTurnsItsAddButtonOffAndAddsNothing()
+    {
+        var definition = new BitAiFormDefinition
+        {
+            Fields = [new BitAiFormField("tags") { Type = BitAiFieldType.Array, MaxItems = 2, Value = """["a"]""" }],
+        };
+        var form = RenderComponent<BitAiForm>(p => p.Add(c => c.Definition, definition));
+
+        Assert.IsNull(form.Find("button.bit-aifrm-add").GetAttribute("aria-disabled"));
+
+        form.Find("button.bit-aifrm-add").Click();
+
+        // Turned off, never taken away, so a focus it holds stays on it.
+        var add = form.Find("button.bit-aifrm-add");
+        Assert.AreEqual("true", add.GetAttribute("aria-disabled"));
+        Assert.IsFalse(add.HasAttribute("disabled"));
+
+        add.Click();
+
+        Assert.AreEqual(2, form.FindAll(".bit-aifrm-itm").Count);
+        Assert.IsFalse(form.Instance.Values.ContainsKey("tags[2]"));
+    }
+
+    [TestMethod]
+    public void RemovingAnEntryHandsTheFocusToTheRemoveButtonInItsPlaceAndAnEmptiedListToItsAddButton()
+    {
+        var definition = new BitAiFormDefinition
+        {
+            Fields = [new BitAiFormField("tags") { Type = BitAiFieldType.Array, Value = """["a","b","c"]""" }],
+        };
+        var form = RenderComponent<BitAiForm>(p => p.Add(c => c.Definition, definition));
+
+        string FocusedId() => ((ElementReference)Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Last().Arguments[0]!).Id;
+        List<IRenderedComponent<BitButton>> RemoveButtons() =>
+            form.FindComponents<BitButton>().Where(b => b.Instance.Class?.Contains("bit-aifrm-rmv") is true).ToList();
+
+        // The last entry goes, and its button with it: the focus moves to the remove button of the new last one.
+        form.FindAll("button.bit-aifrm-rmv")[2].Click();
+        Assert.HasCount(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+        Assert.AreEqual(RemoveButtons()[1].Instance.RootElement.Id, FocusedId());
+
+        // The first entry goes: the next one moves into its slot, and its remove button takes the focus there.
+        form.FindAll("button.bit-aifrm-rmv")[0].Click();
+        Assert.AreEqual(RemoveButtons()[0].Instance.RootElement.Id, FocusedId());
+
+        // The list is emptied: the focus goes to the button that adds an entry again.
+        form.FindAll("button.bit-aifrm-rmv")[0].Click();
+        var add = form.FindComponents<BitButton>().Single(b => b.Instance.Class?.Contains("bit-aifrm-add") is true);
+        Assert.AreEqual(add.Instance.RootElement.Id, FocusedId());
+    }
+
+    [TestMethod]
     public void AReadOnlyListOffersNoAddOrRemove()
     {
         var definition = new BitAiFormDefinition
@@ -574,7 +827,9 @@ public class BitAiFormTests : BitAiTestBase
     [TestMethod]
     public void AFormWithoutLabelsUsesTheDefaultEnglishOnes()
     {
-        var form = RenderComponent<BitAiForm>(p => p.Add(c => c.Definition, new BitAiFormDefinition()));
+        var form = RenderComponent<BitAiForm>(p => p
+            .Add(c => c.Definition, new BitAiFormDefinition())
+            .Add(c => c.OnCancel, () => { }));
 
         Assert.AreEqual("Submit", Submit(form).TextContent.Trim());
         Assert.AreEqual("Cancel", form.Find("button.bit-aifrm-cnl").TextContent.Trim());
@@ -583,9 +838,20 @@ public class BitAiFormTests : BitAiTestBase
     [TestMethod]
     public void AnEmptyCancelLabelHidesTheCancelButton()
     {
-        var form = RenderComponent<BitAiForm>(p => p.Add(c => c.Definition, new BitAiFormDefinition { CancelLabel = "" }));
+        var form = RenderComponent<BitAiForm>(p => p
+            .Add(c => c.Definition, new BitAiFormDefinition { CancelLabel = "" })
+            .Add(c => c.OnCancel, () => { }));
 
         Assert.AreEqual(0, form.FindAll("button.bit-aifrm-cnl").Count);
+    }
+
+    [TestMethod]
+    public void AFormNothingListensToTheCancelOfOffersNoCancelButton()
+    {
+        var form = RenderComponent<BitAiForm>(p => p.Add(c => c.Definition, Definition));
+
+        Assert.AreEqual(0, form.FindAll("button.bit-aifrm-cnl").Count);
+        Assert.AreEqual(1, form.FindAll("button.bit-aifrm-sbt").Count);
     }
 
     [TestMethod]

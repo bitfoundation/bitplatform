@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -80,6 +81,70 @@ public class BitAiPromptInputRaceTests : BitAiTestBase
 
         Assert.AreEqual("/export ", value);
         Assert.IsEmpty(submissions);
+    }
+
+    // Typing on sends a newer read of the caret with every keystroke and discards the older ones, so a menu that waited
+    // for one to answer would never open while the typing goes on, and an Enter right after "/cl" would send it as text.
+    [TestMethod]
+    public void ACommandTypedAndEnteredBeforeAnyCaretIsReadBackIsStillTaken()
+    {
+        Context.JSInterop.Setup<int?>(GetCaret, _ => true);
+        var cleared = 0;
+        var submissions = new List<BitAiPromptSubmission>();
+
+        var composer = RenderComponent<BitAiPromptInput>(p => p
+            .Add(c => c.Commands, [new BitAiSlashCommand("clear") { Handler = () => { cleared++; return Task.CompletedTask; } }])
+            .Add(c => c.OnSubmit, s => submissions.Add(s)));
+
+        composer.Find("textarea").Input("/");
+        composer.Find("textarea").Input("/cl");
+        composer.Find("textarea").KeyDown(Key("Enter"));
+
+        Assert.AreEqual(1, cleared);
+        Assert.IsEmpty(submissions);
+    }
+
+    [TestMethod]
+    public void AMenuOpenedFromTheEditIsPlacedAfterWhatTheEditPutIn()
+    {
+        Context.JSInterop.Setup<int?>(GetCaret, _ => true);
+        var value = string.Empty;
+
+        var composer = RenderComponent<BitAiPromptInput>(p => p
+            .Add(c => c.Value, "hi  there")
+            .Add(c => c.Mentions, [new BitAiMentionItem("u1", "John")])
+            .Add(c => c.ValueChanged, v => value = v));
+
+        // "@Jo" typed into the middle of the text: the token is the one before the caret the edit leaves, not the end.
+        composer.Find("textarea").Input("hi @Jo there");
+
+        StringAssert.Contains(Assert.ContainsSingle(composer.FindAll("[role=option]")).TextContent, "John");
+
+        composer.Find("textarea").KeyDown(Key("Enter"));
+
+        Assert.AreEqual("hi @John there", value);
+    }
+
+    [TestMethod]
+    public void TheOptionReachedBeforeTheCaretIsReadBackStaysTheOneReached()
+    {
+        var caret = Context.JSInterop.Setup<int?>(GetCaret, _ => true);
+        var value = string.Empty;
+
+        var composer = RenderComponent<BitAiPromptInput>(p => p
+            .Add(c => c.Commands, Commands)
+            .Add(c => c.ValueChanged, v => value = v));
+
+        composer.Find("textarea").Input("/e");
+        composer.Find("textarea").KeyDown(Key("ArrowDown"));
+
+        var renders = composer.RenderCount;
+        caret.SetResult("/e".Length);
+        composer.WaitForState(() => composer.RenderCount > renders);
+
+        composer.Find("textarea").KeyDown(Key("Enter"));
+
+        Assert.AreEqual("/export ", value);
     }
 
     [TestMethod]

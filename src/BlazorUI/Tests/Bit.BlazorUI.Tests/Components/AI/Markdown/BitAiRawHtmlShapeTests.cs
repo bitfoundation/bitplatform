@@ -19,14 +19,51 @@ public class BitAiRawHtmlShapeTests
         Assert.IsEmpty(BitAiInlineParser.Parse(source, Html).OfType<BitAiRawHtmlInline>());
 
     [TestMethod]
-    [DataRow("<b>x</b>", 2)]
+    [DataRow("<b>x</b>", 1)]
     [DataRow("<br/>", 1)]
-    [DataRow("<span class=\"x\">y</span>", 2)]
+    [DataRow("<span class=\"x\">y</span>", 1)]
     [DataRow("<!-- note -->", 1)]
     [DataRow("<?php ?>", 1)]
     [DataRow("<my-element>", 1)]
+    [DataRow("<b>x", 1)]
+    [DataRow("x</b>", 1)]
     public void TagsCommentsAndDeclarationsAreHtml(string source, int count) =>
         Assert.AreEqual(count, BitAiInlineParser.Parse(source, Html).OfType<BitAiRawHtmlInline>().Count());
+
+    // A view writes each inline of raw HTML as markup of its own, which the browser parses on its own: an opening tag
+    // alone would be closed on the spot, and the text meant to be inside the element would follow it.
+    [TestMethod]
+    public void AnElementClosedInTheSameTextIsOneInlineWithItsContent()
+    {
+        var inlines = BitAiInlineParser.Parse("Press <kbd>Ctrl</kbd> + <KBD>K</kbd> to search.", Html);
+
+        CollectionAssert.AreEqual(
+            new[] { "<kbd>Ctrl</kbd>", "<KBD>K</kbd>" },
+            inlines.OfType<BitAiRawHtmlInline>().Select(h => h.Html).ToArray());
+        Assert.AreEqual("Press  +  to search.", string.Concat(inlines.OfType<BitAiTextInline>().Select(t => t.Text)));
+    }
+
+    [TestMethod]
+    public void AnElementKeepsTheElementsOfItsNameNestedInIt()
+    {
+        var html = Assert.ContainsSingle(BitAiInlineParser.Parse("<span>a <span>b</span> c</span> after", Html).OfType<BitAiRawHtmlInline>());
+
+        Assert.AreEqual("<span>a <span>b</span> c</span>", html.Html);
+    }
+
+    [TestMethod]
+    public void ATagTheTextDoesNotCloseStaysATagOfItsOwn()
+    {
+        // A void element, a self-closing tag and an element whose closing tag has not arrived (yet) close nothing.
+        CollectionAssert.AreEqual(
+            new[] { "<br>", "<img src=\"x\"/>", "<kbd>" },
+            BitAiInlineParser.Parse("a<br>b <img src=\"x\"/> <kbd>Ct", Html).OfType<BitAiRawHtmlInline>().Select(h => h.Html).ToArray());
+
+        // An escaped one is text, and does not take the closing tag from the element around it.
+        CollectionAssert.AreEqual(
+            new[] { "<b>x \\<b> y</b>" },
+            BitAiInlineParser.Parse("<b>x \\<b> y</b>", Html).OfType<BitAiRawHtmlInline>().Select(h => h.Html).ToArray());
+    }
 
     [TestMethod]
     [DataRow("<div>\nx\n</div>")]

@@ -84,6 +84,13 @@
     padding: var(--bit-AiArtifactView-content-padding, #{spacing(1.5) spacing(2)});
 }
 
+// A table written as a JSON array is a BitAiDataTable, whose own frame would sit inside the panel's as a second one: the
+// panel frames it, as it does a CSV or TSV table.
+.bit-aiatv-bdy > .bit-aidtb {
+    border: none;
+    border-radius: 0;
+}
+
 .bit-aiatv-img {
     height: auto;
     display: block;

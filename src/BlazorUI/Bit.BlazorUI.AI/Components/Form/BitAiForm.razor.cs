@@ -24,6 +24,12 @@ public partial class BitAiForm : BitAiComponentBase
     private readonly Dictionary<string, BitAiFormField> _seeded = new(StringComparer.Ordinal);
     private readonly ConditionalWeakTable<BitAiFormField, List<BitDropdownItem<string>>> _dropdownItems = new();
 
+    // The buttons of the lists, by the path of the entry (remove) or of the list (add), for the focus to be handed to
+    // once a remove button went away with its entry (see FocusAfterRemoveAsync).
+    private readonly Dictionary<string, BitButton> _removeButtons = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, BitButton> _addButtons = new(StringComparer.Ordinal);
+    private (string Path, int Index)? _focusAfterRemove;
+
 
 
     /// <summary>
@@ -58,7 +64,8 @@ public partial class BitAiForm : BitAiComponentBase
     [Parameter, EditorRequired] public BitAiFormDefinition Definition { get; set; } = default!;
 
     /// <summary>
-    /// The callback raised when the user cancels.
+    /// The callback raised when the user cancels. The cancel button is shown only while it is set (and the
+    /// <see cref="BitAiFormDefinition.CancelLabel"/> is not an empty string).
     /// </summary>
     [Parameter] public EventCallback OnCancel { get; set; }
 
@@ -113,8 +120,8 @@ public partial class BitAiForm : BitAiComponentBase
         CascadingParameters?.UpdateParameters(this);
 
         // Seed each field once, so a field streaming in later never overwrites something the user has already typed.
-        // A field whose definition changed shape (a different schema reusing the name, or a new prefill) is seeded
-        // again, and fields that vanished take their values along.
+        // A field whose definition changed (a bound, a choice, a prefill or a nested field streaming in) is followed
+        // rather than seeded again, and fields that vanished take their values along.
         var names = new HashSet<string>(StringComparer.Ordinal);
         foreach (var field in Definition?.Fields ?? [])
         {
@@ -122,7 +129,10 @@ public partial class BitAiForm : BitAiComponentBase
             if (_seeded.TryGetValue(field.Name, out var previous))
             {
                 if (BitAiFormField.SameShape(previous, field)) continue;
-                Prune(field.Name);
+
+                _seeded[field.Name] = field;
+                Reseed(previous, field, field.Name);
+                continue;
             }
 
             _seeded[field.Name] = field;
@@ -136,6 +146,19 @@ public partial class BitAiForm : BitAiComponentBase
         }
 
         base.OnParametersSet();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        // The focus moves once the entries have been laid out without the removed one (see RemoveItem).
+        if (_focusAfterRemove is { } removed)
+        {
+            _focusAfterRemove = null;
+
+            await FocusAfterRemoveAsync(removed.Path, removed.Index);
+        }
     }
 
 
@@ -189,8 +212,89 @@ public partial class BitAiForm : BitAiComponentBase
                 break;
 
             default:
-                _values[path] = field.Value;
+                _values[path] = SeedValue(field, field.Value);
                 break;
+        }
+    }
+
+    // A checkbox shows unchecked while it has no value, so that is the value it starts with: an untouched one is then
+    // submitted as the false it shows rather than left out (or written as null when it is required).
+    private static string? SeedValue(BitAiFormField field, string? value) =>
+        field.Type is BitAiFieldType.Boolean && string.IsNullOrWhiteSpace(value) ? "false" : value;
+
+    /// <summary>
+    /// Follows a field whose definition changed since it was seeded. Only a different control seeds it again: a schema
+    /// streaming in hands the same field over with its bounds, its choices, its labels, its nested fields and its
+    /// prefill arriving one at a time, and none of those may take away what the user has typed meanwhile.
+    /// </summary>
+    private void Reseed(BitAiFormField previous, BitAiFormField field, string path)
+    {
+        // A prefill of an object or a list is a whole set of entries, which nothing typed into one of them could be
+        // weighed against, so a new one still seeds them again.
+        if (previous.Type != field.Type
+            || (previous.Value != field.Value && field.Type is BitAiFieldType.Object or BitAiFieldType.Array))
+        {
+            Prune(path);
+            Seed(field, path);
+            return;
+        }
+
+        // A prefill streams in after the field it belongs to ("default" comes after "title" in a schema), often while
+        // the user is already typing into it. It is followed only while the field still holds the prefill it had, so
+        // an untouched field fills in as the model writes and what the user typed wins over what arrives later.
+        if (previous.Value != field.Value && _values.GetValueOrDefault(path) == SeedValue(previous, previous.Value))
+        {
+            _values[path] = SeedValue(field, field.Value);
+            _errors.Remove(path);
+        }
+
+        switch (field.Type)
+        {
+            case BitAiFieldType.Object:
+                ReseedFields(previous.Fields ?? [], field.Fields ?? [], path);
+                break;
+
+            case BitAiFieldType.Array:
+                var before = previous.Items ?? new BitAiFormField("item");
+                var after = field.Items ?? new BitAiFormField("item");
+                if (BitAiFormField.SameShape(before, after)) break;
+
+                for (var i = BitAiFormDefinition.CountItems(_values, path) - 1; i >= 0; i--)
+                {
+                    var itemPath = BitAiFormDefinition.IndexPath(path, i);
+                    Reseed(before, after, itemPath);
+
+                    // An entry seeded again must still leave a trace in the values, or it would stop being counted.
+                    if (_values.Keys.Any(k => IsWithin(k, itemPath)) is false) _values[itemPath] = null;
+                }
+                break;
+
+            // A choice the options no longer offer - one picked while its text was still streaming - goes back to the
+            // prefill; any other value stays as the user left it.
+            case BitAiFieldType.Select:
+                if (_values.GetValueOrDefault(path) is { } chosen && field.Options is { } options && options.Contains(chosen, StringComparer.Ordinal) is false)
+                {
+                    _values[path] = SeedValue(field, field.Value);
+                    _errors.Remove(path);
+                }
+                break;
+        }
+    }
+
+    private void ReseedFields(IReadOnlyList<BitAiFormField> previous, IReadOnlyList<BitAiFormField> fields, string path)
+    {
+        foreach (var field in fields)
+        {
+            var childPath = BitAiFormDefinition.Path(path, field.Name);
+            var before = previous.FirstOrDefault(f => f.Name == field.Name);
+
+            if (before is null) Seed(field, childPath);
+            else if (BitAiFormField.SameShape(before, field) is false) Reseed(before, field, childPath);
+        }
+
+        foreach (var gone in previous.Where(p => fields.Any(f => f.Name == p.Name) is false))
+        {
+            Prune(BitAiFormDefinition.Path(path, gone.Name));
         }
     }
 
@@ -224,12 +328,12 @@ public partial class BitAiForm : BitAiComponentBase
                 break;
 
             default:
-                _values[path] = element.ValueKind switch
+                _values[path] = SeedValue(field, element.ValueKind switch
                 {
                     JsonValueKind.Null or JsonValueKind.Undefined => null,
                     JsonValueKind.String => element.GetString(),
                     _ => element.GetRawText(),
-                };
+                });
                 break;
         }
     }
@@ -268,9 +372,12 @@ public partial class BitAiForm : BitAiComponentBase
 
     private void AddItem(BitAiFormField field, string path)
     {
-        if (Disabled) return;
-
         var index = BitAiFormDefinition.CountItems(_values, path);
+
+        // The add button stays where it is at the most entries a list takes, turned off rather than taken away (which
+        // would drop the focus it holds), so a press that still reaches it - a screen reader's click - adds nothing.
+        if (Disabled || field.ReadOnly || (field.MaxItems is { } max && index >= max)) return;
+
         var template = field.Items ?? new BitAiFormField("item");
         var itemPath = BitAiFormDefinition.IndexPath(path, index);
 
@@ -283,7 +390,7 @@ public partial class BitAiForm : BitAiComponentBase
         }
         else
         {
-            _values[itemPath] = template.Value;
+            _values[itemPath] = SeedValue(template, template.Value);
         }
 
         _errors.Remove(path);
@@ -295,6 +402,11 @@ public partial class BitAiForm : BitAiComponentBase
 
         var count = BitAiFormDefinition.CountItems(_values, path);
         Prune(BitAiFormDefinition.IndexPath(path, index));
+
+        // The last slot is the one that goes away (the entries after the removed one move down a slot), and the remove
+        // button rendered in it with it.
+        _removeButtons.Remove(BitAiFormDefinition.IndexPath(path, count - 1));
+        _focusAfterRemove = (path, index);
 
         // Everything after the removed entry moves down one slot, so the entries stay contiguous.
         for (var i = index + 1; i < count; i++)
@@ -315,6 +427,29 @@ public partial class BitAiForm : BitAiComponentBase
         }
 
         _errors.Remove(path);
+    }
+
+    // The remove button that was pressed went away - with its entry when it was the last one, or the entry kept its
+    // slot and took the next one's values - so the focus is put where the keyboard can carry on from: on the remove
+    // button now in that slot, on the one of the new last entry, or on the add button of a list left empty. A press
+    // does not focus a button in every engine (WebKit's), so it is moved there in any case rather than left behind.
+    private async Task FocusAfterRemoveAsync(string path, int index)
+    {
+        var count = BitAiFormDefinition.CountItems(_values, path);
+        var target = count > 0
+            ? _removeButtons.GetValueOrDefault(BitAiFormDefinition.IndexPath(path, Math.Min(index, count - 1)))
+            : _addButtons.GetValueOrDefault(path);
+
+        if (target is null || IsDisposing) return;
+
+        try
+        {
+            await target.FocusAsync();
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, and the page with it
+        catch (OperationCanceledException) { }
+        catch (JSException) { } // a button taken off the page in the meantime has nothing to focus
+        catch (InvalidOperationException) { } // a button not rendered yet has no element to focus
     }
 
     private async Task HandleOnSubmitClick()
@@ -385,7 +520,7 @@ public partial class BitAiForm : BitAiComponentBase
                     }
                     else
                     {
-                        ValidateScalar(template with { Label = $"{field.DisplayLabel} {i + 1}", Required = true }, itemPath);
+                        ValidateScalar(template with { Label = Strings.ListItem(field.DisplayLabel, i + 1), Required = true }, itemPath);
                     }
                 }
                 break;
@@ -411,7 +546,7 @@ public partial class BitAiForm : BitAiComponentBase
         {
             BitAiFieldType.Number => ValidateNumber(field, value),
             BitAiFieldType.Email when IsEmail(value) is false => Strings.FieldNotAnEmail(label),
-            BitAiFieldType.Url when Uri.TryCreate(value.Trim(), UriKind.Absolute, out _) is false => Strings.FieldNotAUrl(label),
+            BitAiFieldType.Url when IsWebAddress(value) is false => Strings.FieldNotAUrl(label),
             BitAiFieldType.Date or BitAiFieldType.DateTime or BitAiFieldType.Time when IsDateOrTime(field.Type, value) is false => Strings.FieldNotADate(label),
             BitAiFieldType.Select when field.Options is { } options && options.Contains(value, StringComparer.Ordinal) is false => Strings.FieldInvalidFormat(label),
             _ => null,
@@ -462,6 +597,13 @@ public partial class BitAiForm : BitAiComponentBase
         var at = value.IndexOf('@');
         return at > 0 && at < value.Length - 1 && value.IndexOf('@', at + 1) < 0 && value.Any(char.IsWhiteSpace) is false;
     }
+
+    // A web address, as the message says: an absolute http or https URL with a host. Any other absolute URI parses
+    // too - javascript:alert(1), mailto:, foo:bar, a Windows path read as file:///c:/ - and none of them is one.
+    private static bool IsWebAddress(string value) =>
+        Uri.TryCreate(value.Trim(), UriKind.Absolute, out var uri)
+        && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
+        && uri.Host.Length > 0;
 
     private static bool IsDateOrTime(BitAiFieldType type, string value) => type switch
     {

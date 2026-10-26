@@ -175,6 +175,26 @@ public class BitAiModelSelectorTests : BitAiTestBase
         Assert.AreEqual(1, selections);
     }
 
+    // A parent that takes the fallback up and later clears its value again is told the fallback again, so the bound value
+    // never stays null while the picker shows a model.
+    [TestMethod]
+    public void ABoundValueClearedAgainIsFilledInAgain()
+    {
+        var changes = new List<string>();
+        var picker = RenderComponent<BitAiModelSelector>(p => p
+            .Add(c => c.Models, [Alpha, Beta])
+            .Add(c => c.ModelIdChanged, id => changes.Add(id)));
+
+        picker.WaitForAssertion(() => Assert.HasCount(1, changes));
+
+        // The parent takes the value up, as a binding does, and clears it later.
+        picker.Render(p => p.Add(c => c.ModelId, "alpha"));
+        picker.Render(p => p.Add(c => c.ModelId, (string?)null));
+
+        picker.WaitForAssertion(() => Assert.HasCount(2, changes));
+        Assert.AreEqual("alpha", changes[1]);
+    }
+
     [TestMethod]
     public void ChoosingAnOptionRaisesBothEvents()
     {

@@ -12,12 +12,16 @@
 // the other to the same value.
 
 // The root is the scroll container: it takes whatever height its parent leaves it (a BitAiChat's column) and scrolls
-// its content in that, without handing the end of a scroll on to the page around it.
+// its content in that, without handing the end of a scroll on to the page around it. Its script keeps the view in
+// place itself - at the newest message while it follows it, on the message being read otherwise, as older messages
+// come in above it - the same way in every engine, so the browser's own scroll anchoring, which not every engine has
+// and which would correct the same change a second time, is turned off.
 .bit-aimsl {
     flex: 1 1 auto;
     min-height: 0;
     overflow-x: hidden;
     overflow-y: auto;
+    overflow-anchor: none;
     box-sizing: border-box;
     overscroll-behavior: contain;
     scrollbar-width: thin;

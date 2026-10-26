@@ -12,6 +12,7 @@ namespace Bit.BlazorUI;
 public partial class BitAiAttachmentChip : BitAiComponentBase
 {
     private EventCallback<MouseEventArgs> _onDismiss;
+    private BitTag? _tag;
 
 
 
@@ -75,6 +76,18 @@ public partial class BitAiAttachmentChip : BitAiComponentBase
 
         base.OnParametersSet();
     }
+
+
+
+    /// <summary>
+    /// Gives the keyboard focus to the remove button of the chip.
+    /// </summary>
+    /// <remarks>
+    /// This is what a row of chips moves the focus on with after removing one of them: the remove button that was pressed
+    /// goes with its chip, and a focus left on it falls back to the page. A chip with no <see cref="OnRemove"/> has no
+    /// button, and nothing to focus.
+    /// </remarks>
+    public ValueTask FocusAsync() => _tag is null || OnRemove.HasDelegate is false ? ValueTask.CompletedTask : _tag.FocusAsync();
 
 
 

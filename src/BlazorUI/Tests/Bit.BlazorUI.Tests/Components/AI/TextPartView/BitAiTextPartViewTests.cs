@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Bunit;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.AI.TextPartView;
@@ -100,6 +103,58 @@ public class BitAiTextPartViewTests : BitAiTestBase
         Assert.IsFalse(component.Find(".bit-aimdv-par").TextContent.Contains("[1]"));
     }
 
+    // The markers of one offset are each inserted in front of the one before it, so they are woven from the highest number
+    // down, and read in their order.
+    [TestMethod]
+    public void AnchoredCitationsEndingAtOneOffsetAreWovenInTheirOrder()
+    {
+        var message = new BitAiMessage(BitAiRole.Assistant);
+        var part = message.AddPart(new BitAiTextPart("The sky is blue. Grass is green."));
+        message.AddCitation(new BitAiCitation("c1", new BitAiCitationSource("s1", "Sky")) { PartId = part.PartId, StartIndex = 0, EndIndex = 16 });
+        message.AddCitation(new BitAiCitation("c2", new BitAiCitationSource("s2", "Weather")) { PartId = part.PartId, StartIndex = 4, EndIndex = 16 });
+
+        var component = RenderComponent<BitAiTextPartView>(p => p.Add(c => c.Part, part).Add(c => c.Message, message));
+
+        var markers = component.FindComponents<BitAiCitationMarker>();
+        CollectionAssert.AreEqual(new int?[] { 1, 2 }, markers.Select(m => m.Instance.Citation.Number).ToArray());
+        CollectionAssert.AreEqual(new[] { "Sky", "Weather" }, markers.Select(m => m.Instance.Citation.Source.Title).ToArray());
+    }
+
+    // The text is woven once per change of the part or its citations, compared by version; a view handed another part, or
+    // another message, weaves that one's even when its version is the same number - and so it does when the inline
+    // citations are turned off or on.
+    [TestMethod]
+    public void AnotherPartOrMessageOrTheInlineCitationsOptionWeavesTheTextAgain()
+    {
+        var first = new BitAiTextPart("The first answer.");
+        var second = new BitAiTextPart("The second answer.");
+        var message = new BitAiMessage(BitAiRole.Assistant);
+        message.AddPart(first);
+        message.AddPart(second);
+        message.AddCitation(new BitAiCitation("c1", new BitAiCitationSource("s1", "Docs")) { PartId = second.PartId, StartIndex = 0, EndIndex = 18 });
+        Assert.AreEqual(first.Version, second.Version);
+
+        var component = RenderComponent<WovenTextHost>(p => p.Add(c => c.Part, first).Add(c => c.Message, message));
+        Assert.AreEqual("The first answer.", component.Find(".bit-aimdv-par").TextContent);
+
+        component.Render(p => p.Add(c => c.Part, second).Add(c => c.Message, message));
+        StringAssert.StartsWith(component.Find(".bit-aimdv-par").TextContent, "The second answer.");
+        Assert.HasCount(1, component.FindComponents<BitAiCitationMarker>());
+
+        // Off, the marker the text was woven with goes: left in, it would be drawn as the literal "[1]".
+        component.Render(p => p
+            .Add(c => c.Part, second)
+            .Add(c => c.Message, message)
+            .Add(c => c.Options, BitAiUiOptions.Default with { InlineCitations = false }));
+        Assert.AreEqual("The second answer.", component.Find(".bit-aimdv-par").TextContent);
+        Assert.IsEmpty(component.FindComponents<BitAiCitationMarker>());
+
+        var otherPart = new BitAiTextPart("Another message.");
+        var other = Assistant(otherPart);
+        component.Render(p => p.Add(c => c.Part, otherPart).Add(c => c.Message, other));
+        Assert.AreEqual("Another message.", component.Find(".bit-aimdv-par").TextContent);
+    }
+
     [TestMethod]
     public void ACitationEndingInsideACodeSpanIsLeftToTheSourceList()
     {
@@ -134,5 +189,31 @@ public class BitAiTextPartViewTests : BitAiTestBase
 
         Assert.AreEqual("Hello world", component.Find(".bit-aimdv-par").TextContent);
         Assert.IsEmpty(component.FindAll(".bit-aimdv-crt"));
+    }
+
+
+
+    // A text part view under options cascaded the way a BitAiOptionsProvider cascades them, so a test can change them.
+    private sealed class WovenTextHost : ComponentBase
+    {
+        [Parameter] public BitAiUiOptions Options { get; set; } = BitAiUiOptions.Default;
+
+        [Parameter] public BitAiTextPart Part { get; set; } = default!;
+
+        [Parameter] public BitAiMessage Message { get; set; } = default!;
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<CascadingValue<BitAiUiOptions>>(0);
+            builder.AddComponentParameter(1, "Value", Options);
+            builder.AddComponentParameter(2, "ChildContent", (RenderFragment)(child =>
+            {
+                child.OpenComponent<BitAiTextPartView>(0);
+                child.AddComponentParameter(1, nameof(BitAiTextPartView.Part), Part);
+                child.AddComponentParameter(2, nameof(BitAiTextPartView.Message), Message);
+                child.CloseComponent();
+            }));
+            builder.CloseComponent();
+        }
     }
 }

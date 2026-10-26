@@ -376,7 +376,7 @@ private readonly BitAiCodeBlockViewParams[] codeBlockParams = [new() { ShowHeade
     }
 
     .custom-label {
-        color: rebeccapurple;
+        color: #8b5cf6;
         font-weight: bold;
     }
 

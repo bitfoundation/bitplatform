@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.AI.ToolCallView;
@@ -84,6 +85,71 @@ public class BitAiToolCallViewTests : BitAiTestBase
         StringAssert.Contains(component.Markup, "Always allow");
         StringAssert.Contains(component.Markup, "Decline");
         Assert.IsTrue(component.Find(".bit-aitcv").ClassList.Contains("bit-aitcv-apr"));
+    }
+
+    // The prompt under the header asks the question, so the header does not ask it a second time.
+    [TestMethod]
+    public void TheHeaderOfACallAwaitingApprovalSaysWhatItWaitsForAndThePromptAsks()
+    {
+        var call = CompletedArguments("delete_everything");
+        call.SetStatus(BitAiToolCallStatus.AwaitingApproval);
+
+        var component = RenderComponent<BitAiToolCallView>(p => p.Add(c => c.Call, call));
+
+        Assert.AreEqual("delete_everything is waiting for your approval", component.Find(".bit-aitcv-ttl").TextContent);
+        Assert.AreEqual("Allow delete_everything to run?", component.Find(".bit-aitap-txt").TextContent.Trim());
+    }
+
+    // The decision takes the prompt away with the button that had the focus, which would otherwise fall to the page.
+    [TestMethod,
+        DataRow(0, BitAiToolCallStatus.Rejected),
+        DataRow(2, BitAiToolCallStatus.Pending)]
+    public void ADecisionHandsTheFocusToTheHeader(int answer, BitAiToolCallStatus expected)
+    {
+        var call = CompletedArguments("delete_everything");
+        call.SetStatus(BitAiToolCallStatus.AwaitingApproval);
+
+        var component = RenderComponent<BitAiToolCallView>(p => p.Add(c => c.Call, call));
+
+        // Read before the click: a re-render leaves the reference off the markup of an element it keeps.
+        var header = component.Find(".bit-aitcv-hdr").GetAttribute("blazor:elementReference");
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+
+        component.FindAll(".bit-aitcv-apv button")[answer].Click();
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(expected, call.Status);
+            Assert.IsEmpty(component.FindAll(".bit-aitcv-apv"));
+            var focus = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
+            Assert.HasCount(1, focus);
+            Assert.AreEqual(header, ((ElementReference)focus[0].Arguments[0]!).Id);
+        }, TimeSpan.FromSeconds(2));
+    }
+
+    [TestMethod]
+    public void ACallWithoutADefinitionIsNamedAndDrawnByTheOneRegisteredForItsTool()
+    {
+        Services.GetRequiredService<IBitAiToolRegistry>().Register(BitAiTool.Create(
+            new BitAiToolDefinition("get_weather") { Title = "Weather", Icon = "Cloud" },
+            (_, _) => ValueTask.FromResult(BitAiToolOutcome.FromText("12 degrees"))));
+
+        var call = new BitAiToolCallPart("c1", "get_weather");
+        var unknown = new BitAiToolCallPart("c2", "not_registered");
+
+        var component = RenderComponent<BitAiToolCallView>(p => p.Add(c => c.Call, call));
+        var unknownCard = RenderComponent<BitAiToolCallView>(p => p.Add(c => c.Call, unknown));
+
+        Assert.AreEqual("Calling Weather", component.Find(".bit-aitcv-ttl").TextContent);
+        Assert.IsTrue(component.Find("i.bit-aitcv-ico").ClassList.Contains("bit-icon--Cloud"));
+        Assert.AreEqual("Calling not_registered", unknownCard.Find(".bit-aitcv-ttl").TextContent);
+        Assert.IsTrue(unknownCard.Find("i.bit-aitcv-ico").ClassList.Contains("bit-icon-ai--Repair"));
+
+        // The definition a session puts on the call wins over the registered one.
+        call.Definition = new BitAiToolDefinition("get_weather") { Title = "Forecast" };
+        component.Render(p => p.Add(c => c.Call, call));
+
+        Assert.AreEqual("Calling Forecast", component.Find(".bit-aitcv-ttl").TextContent);
     }
 
     [TestMethod]

@@ -33,6 +33,12 @@
             paged - reach for BitDataGrid of Bit.BlazorUI.Extras for that. The live demo of streaming rows is the
             <BitLink Href="/ai/scenarios/structured">Structured output</BitLink> scenario's too.
         </BitText>
+        <br />
+        <BitText>
+            The box a wide table scrolls in sideways is a group in the tab order, so the keyboard can reach it and scroll it
+            in every engine (WebKit makes no scroller focusable on its own), named by its <b>AriaLabel</b> or the Table
+            string. It is a group rather than a region, so the tables of a page or a chat do not make a run of landmarks.
+        </BitText>
     </NotesTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">

@@ -1,14 +1,16 @@
 ﻿@import '../../Styles/abstracts/_docs.scss';
 
 // The card the custom tool UI scenario draws for search_docs instead of the default tool card: an accent edge so it
-// reads as the app's own, and the theme tokens for everything else.
+// reads as the app's own, and the theme tokens for everything else. The edge comes after the surface, whose border
+// shorthand would otherwise reset it.
 .search-card {
     overflow: hidden;
     margin-block: $doc-space-2xs;
     color: $bit-color-foreground-primary;
-    border-inline-start: rem2(3px) solid $bit-color-primary;
 
     @include doc-surface;
+
+    border-inline-start: rem2(3px) solid $bit-color-primary;
 }
 
 .search-card-head {

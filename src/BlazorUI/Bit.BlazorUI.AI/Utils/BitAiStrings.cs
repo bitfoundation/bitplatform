@@ -54,13 +54,15 @@ public class BitAiStrings
     /// <param name="label">The field label.</param>
     /// <param name="minimum">The fewest accepted entries.</param>
     /// <returns>The message.</returns>
-    public virtual string FieldTooFewItems(string label, int minimum) => $"{label} needs at least {minimum} items.";
+    public virtual string FieldTooFewItems(string label, int minimum) =>
+        minimum == 1 ? $"{label} needs at least 1 item." : $"{label} needs at least {minimum} items.";
 
     /// <summary>Validation message for a list with more entries than the field allows.</summary>
     /// <param name="label">The field label.</param>
     /// <param name="maximum">The most accepted entries.</param>
     /// <returns>The message.</returns>
-    public virtual string FieldTooManyItems(string label, int maximum) => $"{label} can have at most {maximum} items.";
+    public virtual string FieldTooManyItems(string label, int maximum) =>
+        maximum == 1 ? $"{label} can have at most 1 item." : $"{label} can have at most {maximum} items.";
 
     /// <summary>Validation message for a URL field that does not hold a web address.</summary>
     /// <param name="label">The field label.</param>
@@ -80,6 +82,15 @@ public class BitAiStrings
     /// <param name="index">The one-based position of the entry.</param>
     /// <returns>The label.</returns>
     public virtual string RemoveItem(string label, int index) => $"Remove {label} {index}";
+
+    /// <summary>
+    /// Accessible name of one entry of a list field: the group of fields of an entry of objects, the input of an entry
+    /// of values, and the label its validation messages name.
+    /// </summary>
+    /// <param name="label">The field label.</param>
+    /// <param name="index">The one-based position of the entry.</param>
+    /// <returns>The name.</returns>
+    public virtual string ListItem(string label, int index) => $"{label} {index}";
 
     /// <summary>Placeholder of the free-text answer box under a waiting agent run.</summary>
     public virtual string AnswerPlaceholder => "Type your answer...";
@@ -141,7 +152,7 @@ public class BitAiStrings
     /// <summary>Shown while the model is working but has produced nothing yet.</summary>
     public virtual string Thinking => "Thinking";
 
-    /// <summary>Title of the collapsed reasoning panel.</summary>
+    /// <summary>Title of the collapsed reasoning panel, and the accessible name of the box its text scrolls in.</summary>
     public virtual string Reasoning => "Reasoning";
 
     /// <summary>Title of the reasoning panel once finished.</summary>
@@ -203,6 +214,14 @@ public class BitAiStrings
     /// <returns>The question.</returns>
     public virtual string ApproveTool(string tool) => $"Allow {tool} to run?";
 
+    /// <summary>
+    /// Heading of a tool call card whose call waits for approval. The prompt under it asks the question
+    /// (<see cref="ApproveTool"/>), so the heading only says what the call is waiting for.
+    /// </summary>
+    /// <param name="tool">The tool name.</param>
+    /// <returns>The heading.</returns>
+    public virtual string ToolAwaitingApproval(string tool) => $"{tool} is waiting for your approval";
+
     /// <summary>Label for approving a tool call once.</summary>
     public virtual string Approve => "Allow";
 
@@ -260,6 +279,9 @@ public class BitAiStrings
     /// <summary>Label for showing error detail.</summary>
     public virtual string ShowDetails => "Show details";
 
+    /// <summary>Label for hiding error detail that is shown.</summary>
+    public virtual string HideDetails => "Hide details";
+
     /// <summary>Label for the token usage readout.</summary>
     public virtual string Tokens => "tokens";
 
@@ -276,6 +298,12 @@ public class BitAiStrings
     /// <param name="rate">Tokens per second.</param>
     /// <returns>The readout.</returns>
     public virtual string TokensPerSecond(double rate) => $"{rate:0.#} tok/s";
+
+    /// <summary>
+    /// Name of the time to the first token in the token usage readout, read to assistive technologies before the duration
+    /// the readout shows bare.
+    /// </summary>
+    public virtual string TimeToFirstToken => "Time to first token";
 
     /// <summary>Label for prompt tokens in the usage breakdown.</summary>
     public virtual string InputTokens => "Input";
@@ -300,6 +328,26 @@ public class BitAiStrings
 
     /// <summary>Accessible name of the conversation list.</summary>
     public virtual string Conversations => "Conversations";
+
+    /// <summary>
+    /// Accessible name of the box a table scrolls in sideways (a data table given none of its own, a Markdown table).
+    /// </summary>
+    public virtual string Table => "Table";
+
+    /// <summary>Accessible name of the box the code of a code block scrolls in.</summary>
+    /// <param name="fileName">The file name the block was given, if any.</param>
+    /// <param name="language">The language of the code, if known.</param>
+    /// <returns>The name: the file name, else the language, else just Code.</returns>
+    public virtual string CodeBlock(string? fileName, string? language) =>
+        fileName is { Length: > 0 } ? fileName : language is { Length: > 0 } ? $"{language} code" : "Code";
+
+    /// <summary>Accessible name of the toggle of the outermost object or array of a JSON tree, which has no key.</summary>
+    public virtual string JsonRoot => "Root";
+
+    /// <summary>Accessible name of the toggle of an object or array that is an entry of an array of a JSON tree.</summary>
+    /// <param name="index">The zero-based position of the entry, as JSON counts it.</param>
+    /// <returns>The name.</returns>
+    public virtual string JsonArrayItem(int index) => $"[{index}]";
 
     /// <summary>Group heading for conversations updated today.</summary>
     public virtual string Today => "Today";
@@ -330,6 +378,17 @@ public class BitAiStrings
     /// <returns>The accessible name.</returns>
     public virtual string BackToReference(int number) => $"Back to reference {number}";
 
+    /// <summary>
+    /// Accessible name of one of the links at the end of a footnote that lead back to where it is referenced: a note
+    /// referenced more than once has a link per reference, and every one after the first is told apart by its ordinal
+    /// ("Back to reference 1-2"), as GitHub names them.
+    /// </summary>
+    /// <param name="number">The footnote number.</param>
+    /// <param name="ordinal">Which of the footnote's references the link leads to, from one.</param>
+    /// <returns>The accessible name.</returns>
+    public virtual string BackToReference(int number, int ordinal) =>
+        ordinal <= 1 ? BackToReference(number) : $"{BackToReference(number)}-{ordinal}";
+
     /// <summary>Label of one entry in the artifact version selector.</summary>
     /// <param name="version">The version number.</param>
     /// <returns>The label.</returns>
@@ -352,6 +411,27 @@ public class BitAiStrings
 
     /// <summary>Status of an agent run the user stopped.</summary>
     public virtual string AgentCancelled => "Stopped";
+
+    /// <summary>The count of the steps of an agent run that have finished successfully, beside its progress bar.</summary>
+    /// <param name="done">How many steps have finished successfully.</param>
+    /// <param name="total">How many steps the plan has.</param>
+    /// <returns>The count.</returns>
+    public virtual string StepsCompleted(int done, int total) => $"{done} / {total}";
+
+    /// <summary>
+    /// Where a step of an agent run stands, said to assistive technologies: the marker of the step only draws it.
+    /// </summary>
+    /// <param name="status">The status of the step.</param>
+    /// <returns>The words.</returns>
+    public virtual string AgentStepStatus(BitAiAgentStepStatus status) => status switch
+    {
+        BitAiAgentStepStatus.Running => "In progress",
+        BitAiAgentStepStatus.Blocked => "Waiting for you",
+        BitAiAgentStepStatus.Completed => "Done",
+        BitAiAgentStepStatus.Failed => "Failed",
+        BitAiAgentStepStatus.Skipped => "Skipped",
+        _ => "Not started",
+    };
 
     /// <summary>Default label on a form's submit button.</summary>
     public virtual string Submit => "Submit";
@@ -446,7 +526,7 @@ public class BitAiStrings
     /// <returns>The message.</returns>
     public virtual string ComponentFailed(string component) => $"'{component}' could not be rendered";
 
-    /// <summary>Tooltip on a generated component the application has not registered.</summary>
+    /// <summary>Tooltip and accessible name of a generated component the application has not registered.</summary>
     /// <param name="component">The component name the model asked for.</param>
     /// <returns>The tooltip.</returns>
     public virtual string ComponentNotRegistered(string component) => $"No component named '{component}' is registered.";
@@ -480,7 +560,8 @@ public class BitAiStrings
     public virtual string FormatDuration(TimeSpan duration) => duration.TotalSeconds switch
     {
         < 1 => $"{duration.TotalMilliseconds:F0}ms",
-        < 60 => $"{duration.TotalSeconds:F1}s",
+        // A whole number of seconds is written without a fraction ("30s", not "30.0s").
+        < 60 => $"{duration.TotalSeconds:0.#}s",
         _ => $"{(int)duration.TotalMinutes}m {duration.Seconds}s",
     };
 
@@ -501,8 +582,8 @@ public class BitAiStrings
     public virtual string FormatTokens(long tokens) => tokens switch
     {
         < 1000 => tokens.ToString("N0"),
-        < 1_000_000 => $"{tokens / 1000.0:F1}k",
-        _ => $"{tokens / 1_000_000.0:F1}M",
+        < 1_000_000 => $"{tokens / 1000.0:0.#}k",
+        _ => $"{tokens / 1_000_000.0:0.#}M",
     };
 
     /// <summary>The character counter under the composer when a length limit is set.</summary>

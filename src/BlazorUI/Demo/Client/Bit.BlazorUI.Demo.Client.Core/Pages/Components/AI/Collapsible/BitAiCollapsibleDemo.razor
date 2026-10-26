@@ -59,11 +59,13 @@
                 Compare the two render modes, then give a number for each.
             </BitAiCollapsible>
             <br />
-            <div>The panel is <b>@(isOpen ? "open" : "closed")</b>, toggled @toggleCount time(s) by the user.</div>
+            <div>The panel is <b>@(isOpen ? "open" : "closed")</b>.</div>
             <br />
             <BitAiCollapsible Title="Toggle me" OpenChanged="(bool open) => toggleCount++">
                 Each toggle of the header is counted by OpenChanged.
             </BitAiCollapsible>
+            <br />
+            <div>Toggled <b>@toggleCount</b> @(toggleCount == 1 ? "time" : "times") by the user.</div>
         </DemoExample>
 
         <DemoExample Title="Templates" RazorCode="@example3RazorCode" Id="example3">

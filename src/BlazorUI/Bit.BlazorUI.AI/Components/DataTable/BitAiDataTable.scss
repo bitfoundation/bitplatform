@@ -20,6 +20,11 @@
     border: $shp-border-width $shp-border-style var(--bit-AiDataTable-border-color, #{$clr-brd-pri});
     border-radius: var(--bit-AiDataTable-radius, #{$shp-radius-surface});
     background-color: var(--bit-AiDataTable-background, transparent);
+
+    // The box is in the tab order for the keyboard to scroll it (see the markup), so it shows when it has the focus.
+    &:focus-visible {
+        @include focus-ring;
+    }
 }
 
 .bit-aidtb-tbl {

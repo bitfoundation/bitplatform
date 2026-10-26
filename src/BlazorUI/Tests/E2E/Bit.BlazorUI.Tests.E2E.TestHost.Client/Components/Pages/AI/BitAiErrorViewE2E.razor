@@ -15,6 +15,7 @@
         <BitAiErrorView Id="erv-retry" Error="_rateLimit" OnRetry="() => _retries++" />
         <BitAiErrorView Id="erv-plain" Error="_plain" OnRetry="() => _retries++" />
         <BitAiErrorView Id="erv-compact" Compact Error="_rateLimit" OnRetry="() => _retries++" />
+        <BitAiErrorView Id="erv-wait" Error="_shortWait" />
     </div>
 </E2ESection>
 
@@ -87,8 +88,16 @@
         Code = "rate_limit",
         Kind = BitAiErrorKind.RateLimit,
         IsRetryable = true,
-        RetryAfter = TimeSpan.FromSeconds(3),
-        Detail = "HTTP 429\nretry-after: 3",
+        RetryAfter = TimeSpan.FromSeconds(30),
+        Detail = "HTTP 429\nretry-after: 30",
+    };
+
+    // A wait short enough to be over while a test looks: the line saying it goes away.
+    private static readonly BitAiError _shortWait = new("The model is rate limited right now.")
+    {
+        Kind = BitAiErrorKind.RateLimit,
+        IsRetryable = true,
+        RetryAfter = TimeSpan.FromSeconds(1),
     };
 
     private static readonly BitAiError _plain = new("The request was refused.") { Kind = BitAiErrorKind.Unknown };

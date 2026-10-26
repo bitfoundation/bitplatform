@@ -371,7 +371,7 @@ private readonly BitAiToolCallViewParams[] toolCallViewParams =
     }
 
     .custom-tool-header {
-        color: #0b7a75;
+        color: color-mix(in srgb, #0b7a75 65%, var(--bit-clr-fg-pri));
         letter-spacing: 0.05em;
         text-transform: uppercase;
     }
@@ -387,17 +387,18 @@ private readonly BitAiToolCallViewParams[] toolCallViewParams =
 
 <BitAiToolCallView Call="weatherCall"
                    Styles="@(new() { Header = "padding: 0.75rem 1rem",
-                                     Icon = "color: #0b7a75",
+                                     Icon = "color: color-mix(in srgb, #0b7a75 65%, var(--bit-clr-fg-pri))",
                                      Title = "font-style: italic",
-                                     Status = "color: #0b7a75; font-weight: bold" })" />
+                                     Status = "color: color-mix(in srgb, #0b7a75 65%, var(--bit-clr-fg-pri)); font-weight: bold" })" />
 
 <BitAiToolCallView Call="weatherCall"
                    Classes="@(new() { Root = "custom-tool-root",
                                       Header = "custom-tool-header",
                                       Title = "custom-tool-title" })" />
 
-<div style="--bit-AiToolCallView-background: #f5f3ff; --bit-AiToolCallView-border-color: #a78bfa; --bit-AiToolCallView-failed-border-color: #be185d; --bit-AiToolCallView-header-color: #5b21b6; --bit-AiToolCallView-radius: 1rem;">
+<div style="--bit-AiToolCallView-background: #8b5cf61a; --bit-AiToolCallView-border-color: #a78bfa; --bit-AiToolCallView-failed-border-color: #be185d; --bit-AiToolCallView-header-color: color-mix(in srgb, #8b5cf6, var(--bit-clr-fg-pri)); --bit-AiToolCallView-radius: 1rem;">
     <BitAiToolCallView Call="weatherCall" />
+    <br />
     <BitAiToolCallView Call="failedCall" />
 </div>
 """;
@@ -440,6 +441,7 @@ private sealed class PersianAiStrings : BitAiStrings
     public override string ToolCancelled(string tool) => $"{tool} لغو شد";
     public override string ToolRejected(string tool) => $"{tool} رد شد";
     public override string ApproveTool(string tool) => $"اجازه‌ی اجرای {tool} داده شود؟";
+    public override string ToolAwaitingApproval(string tool) => $"{tool} منتظر اجازه‌ی شماست";
     public override string Approve => "اجازه";
     public override string ApproveAlways => "همیشه اجازه";
     public override string Reject => "رد";

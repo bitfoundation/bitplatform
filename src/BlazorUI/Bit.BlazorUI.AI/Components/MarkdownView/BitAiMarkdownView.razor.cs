@@ -31,6 +31,18 @@ public partial class BitAiMarkdownView : BitAiComponentBase
     // The images the user asked to load under a policy that asks first.
     private readonly HashSet<string> _loadedImages = new(StringComparer.Ordinal);
 
+    // The source the user just loaded, whose image takes the focus once it has replaced the button that loaded it (see
+    // LoadImage), and that image - the first of the source, since a view can show one several times.
+    private string? _focusImageSource;
+    private ElementReference _imageToFocus;
+
+    // Where the streaming caret is drawn in the render under way (see CaretHost): a paragraph, a heading or a list item
+    // of the document, the document itself for after its blocks, or null for nowhere.
+    private BitAiMarkdownNode? _caretHost;
+
+    // The task-list items drawn so far in the render under way, which numbers the ids their checkboxes are named by.
+    private int _taskItemCount;
+
     private BitAiIconClassesCache<BitActionButtonClassStyles> _imagePlaceholderClasses;
 
 
@@ -84,11 +96,16 @@ public partial class BitAiMarkdownView : BitAiComponentBase
     [Parameter] public EventCallback<BitAiCitation> OnCitationClick { get; set; }
 
     /// <summary>
-    /// Draws a caret after the last paragraph while it is still open, the sign that more text is on its way.
+    /// Draws a caret at the end of the text while the document is still being written (parsed with more source
+    /// expected), the sign that more text is on its way.
     /// <br />
     /// The default value is <strong>false</strong>.
     /// </summary>
     /// <remarks>
+    /// The caret follows the paragraph or the heading the source ends inside, or sits in a list item just started; after
+    /// anything else - a code block, a table, a blank line - it is drawn after the blocks, where the next one will start.
+    /// A document with no block yet draws none: that a reply has nothing to show yet is its host's to say (a chat message
+    /// shows a <see cref="BitAiThinkingIndicator"/>).
     /// <see cref="BitAiUiOptions.ShowStreamingCaret"/> turns the caret off for every view at once.
     /// </remarks>
     [Parameter] public bool ShowCaret { get; set; }
@@ -120,6 +137,19 @@ public partial class BitAiMarkdownView : BitAiComponentBase
         base.OnParametersSet();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        // An image the user loaded takes the focus once it has replaced the button that loaded it (see LoadImage).
+        if (_focusImageSource is not null)
+        {
+            _focusImageSource = null;
+
+            await FocusImageAsync();
+        }
+    }
+
 
 
     // A footnote and its references are named after the view, so several messages of one transcript that each have a
@@ -140,6 +170,81 @@ public partial class BitAiMarkdownView : BitAiComponentBase
     private async Task FollowAsync(string targetId) => await _js.BitAiMarkdownViewFollow(targetId);
 
     private static string Join(string ownClass, string? classes) => classes.HasValue() ? $"{ownClass} {classes}" : ownClass;
+
+    /// <summary>
+    /// Where the streaming caret of an open document is drawn: at the end of the text the source ends inside, so it
+    /// follows the words as they are written.
+    /// </summary>
+    /// <remarks>
+    /// The last block is followed down through the lists (their last item) and the quotes holding it, as long as each is
+    /// still open: an open paragraph or heading there takes the caret after its text, and a list item just started, with
+    /// nothing in it yet, takes it in its place. Anything else - a code block or a table being written, a blank line, a
+    /// block the text has moved on from - leaves it to the document, which draws it after its blocks, where the next one
+    /// will start.
+    /// </remarks>
+    private static BitAiMarkdownNode CaretHost(BitAiMarkdownDocument document)
+    {
+        var blocks = document.Blocks;
+
+        while (blocks.Count > 0)
+        {
+            switch (blocks[^1])
+            {
+                case BitAiParagraphBlock { IsOpen: true } paragraph:
+                    return paragraph;
+
+                case BitAiHeadingBlock { IsOpen: true } heading:
+                    return heading;
+
+                case BitAiQuoteBlock { IsOpen: true } quote:
+                    blocks = quote.Blocks;
+                    break;
+
+                case BitAiListBlock { IsOpen: true, Items.Count: > 0 } list:
+                    var item = list.Items[^1];
+                    if (item.Blocks.Count == 0) return item;
+                    blocks = item.Blocks;
+                    break;
+
+                default:
+                    return document;
+            }
+        }
+
+        return document;
+    }
+
+    // The button that loaded the image is gone once the image is shown, and the focus it held with it - to the body of the
+    // document, from where the keyboard and a screen reader start over at the top of the page. So the image takes it,
+    // programmatically focusable for that (tabindex="-1") and named by its alternative text.
+    private void LoadImage(string source)
+    {
+        _loadedImages.Add(source);
+        _focusImageSource = source;
+        _imageToFocus = default;
+    }
+
+    private void CaptureLoadedImage(string source, ElementReference image)
+    {
+        if (source == _focusImageSource && string.IsNullOrEmpty(_imageToFocus.Id))
+        {
+            _imageToFocus = image;
+        }
+    }
+
+    private async Task FocusImageAsync()
+    {
+        // No image was rendered for the source loaded - the document was replaced in the meantime.
+        if (string.IsNullOrEmpty(_imageToFocus.Id) || IsDisposing) return;
+
+        try
+        {
+            await _imageToFocus.FocusAsync();
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, and the page with it
+        catch (OperationCanceledException) { }
+        catch (JSException) { } // an image taken off the page in the meantime has nothing to focus
+    }
 
     // The classes handed to the image placeholder: the app's own for that part with the glyph's added - it ships with
     // this package's own icon subset rather than with the icon font of the core library (see BitAiIconClasses) - built

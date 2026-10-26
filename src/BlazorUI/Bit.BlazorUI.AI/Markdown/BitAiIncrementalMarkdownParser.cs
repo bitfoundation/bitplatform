@@ -72,7 +72,7 @@ public sealed class BitAiIncrementalMarkdownParser
 
         ScanForCandidates();
 
-        var document = new BitAiMarkdownDocument();
+        var document = new BitAiMarkdownDocument { IsOpen = !isComplete };
         if (_stableLength < source.Length)
         {
             _blockStarts.Clear();

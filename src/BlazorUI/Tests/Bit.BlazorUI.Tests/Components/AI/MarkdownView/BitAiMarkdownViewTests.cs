@@ -168,6 +168,27 @@ public class BitAiMarkdownViewTests : BitAiTestBase
     }
 
     [TestMethod]
+    public void EachTaskCheckboxIsNamedByTheTextOfItsItem()
+    {
+        var tasks = RenderMarkdown("- [x] done\n- [ ] todo\n\nthen\n\n- [ ] later");
+
+        var boxes = tasks.FindAll("input.bit-aimdv-chk");
+        Assert.HasCount(3, boxes);
+
+        var ids = boxes.Select(b => b.GetAttribute("aria-labelledby")).ToList();
+        Assert.IsTrue(ids.All(id => string.IsNullOrEmpty(id) is false));
+        Assert.HasCount(3, ids.Distinct());
+
+        Assert.AreEqual("done", tasks.Find($"[id='{ids[0]}']").TextContent);
+        Assert.AreEqual("todo", tasks.Find($"[id='{ids[1]}']").TextContent);
+        Assert.AreEqual("later", tasks.Find($"[id='{ids[2]}']").TextContent);
+
+        // The ids belong to the view, so two views on one page never name each other's boxes.
+        var other = RenderMarkdown("- [x] done");
+        Assert.AreNotEqual(ids[0], other.Find("input.bit-aimdv-chk").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
     public void ALooseListIsMarkedSo()
     {
         Assert.IsTrue(RenderMarkdown("- a\n\n- b").Find(".bit-aimdv-lst").ClassList.Contains("bit-aimdv-lse"));
@@ -188,6 +209,14 @@ public class BitAiMarkdownViewTests : BitAiTestBase
         Assert.IsTrue(headers[1].ClassList.Contains("bit-aimdv-alr"));
         Assert.IsTrue(headers[2].ClassList.Contains("bit-aimdv-alc"));
         Assert.HasCount(3, table.QuerySelectorAll("tbody > tr.bit-aimdv-row > td.bit-aimdv-tdc"));
+
+        // The container takes the focus while the table is too wide for it (the page script BitAiScrollStops.ts reads the
+        // mark), so a keyboard can scroll it in an engine that leaves a scrolling box out of the tab order - as a named
+        // group, since a tab stop is announced by its name.
+        Assert.IsTrue(component.Find(".bit-aimdv-tbw").HasAttribute("data-bit-ai-scroll"));
+        Assert.IsNull(component.Find(".bit-aimdv-tbw").GetAttribute("tabindex"));
+        Assert.AreEqual("group", component.Find(".bit-aimdv-tbw").GetAttribute("role"));
+        Assert.AreEqual("Table", component.Find(".bit-aimdv-tbw").GetAttribute("aria-label"));
     }
 
     [TestMethod]
@@ -200,13 +229,20 @@ public class BitAiMarkdownViewTests : BitAiTestBase
         Assert.AreEqual("_blank", link.GetAttribute("target"));
     }
 
+    // An href of "#" would still be followed - to the home page of the app, in a new tab - so a link whose address was
+    // neutralised keeps its text and no address at all.
     [TestMethod]
     public void ScriptUrlsInLinksAreNeutralised()
     {
         var component = RenderMarkdown("[click](javascript:alert(1))");
 
         Assert.IsFalse(component.Markup.Contains("javascript:", System.StringComparison.OrdinalIgnoreCase));
-        Assert.AreEqual("#", component.Find("a.bit-aimdv-lnk").GetAttribute("href"));
+
+        var link = component.Find("a.bit-aimdv-lnk");
+        Assert.AreEqual("click", link.TextContent);
+        Assert.IsFalse(link.HasAttribute("href"));
+        Assert.IsFalse(link.HasAttribute("target"));
+        Assert.IsFalse(link.HasAttribute("rel"));
     }
 
     [TestMethod]
@@ -260,6 +296,62 @@ public class BitAiMarkdownViewTests : BitAiTestBase
             .Add(p => p.ShowCaret, true));
 
         Assert.IsEmpty(finished.FindAll(".bit-aimdv-crt"));
+    }
+
+    // The caret trails the text while the document is being written, whatever the source ends in: inside the line of text
+    // being written, or after the blocks where the next one will start.
+    [TestMethod]
+    public void TheCaretFollowsAHeadingBeingWrittenAndAListItemJustStarted()
+    {
+        var heading = RenderComponent<BitAiMarkdownView>(parameters => parameters
+            .Add(p => p.Document, BitAiMarkdownParser.Parse("## Render mo", isComplete: false))
+            .Add(p => p.ShowCaret, true));
+
+        Assert.HasCount(1, heading.FindAll(".bit-aimdv-crt"));
+        Assert.IsNotNull(heading.Find("h3.bit-aimdv-hdg > .bit-aimdv-crt"));
+
+        var item = RenderComponent<BitAiMarkdownView>(parameters => parameters
+            .Add(p => p.Document, BitAiMarkdownParser.Parse("- one\n- ", isComplete: false))
+            .Add(p => p.ShowCaret, true));
+
+        var items = item.FindAll("li.bit-aimdv-itm");
+        Assert.HasCount(1, item.FindAll(".bit-aimdv-crt"));
+        Assert.HasCount(2, items);
+        Assert.IsNull(items[0].QuerySelector(".bit-aimdv-crt"));
+        Assert.AreEqual("LI", item.Find(".bit-aimdv-crt").ParentElement!.TagName);
+    }
+
+    [TestMethod,
+        DataRow("```csharp\nvar total = items.Sum("),
+        DataRow("| Mode | Runs |\n| --- | --- |\n| Server | The ser"),
+        DataRow("Done.\n\n"),
+        DataRow("> Quoted.\n\n")]
+    public void AfterAnythingElseTheCaretFollowsTheBlocks(string source)
+    {
+        var component = RenderComponent<BitAiMarkdownView>(parameters => parameters
+            .Add(p => p.Document, BitAiMarkdownParser.Parse(source, isComplete: false))
+            .Add(p => p.ShowCaret, true));
+
+        Assert.HasCount(1, component.FindAll(".bit-aimdv-crt"));
+        Assert.IsTrue(component.Find(".bit-aimdv-crt").ParentElement!.ClassList.Contains("bit-aimdv"));
+
+        var finished = RenderComponent<BitAiMarkdownView>(parameters => parameters
+            .Add(p => p.Document, BitAiMarkdownParser.Parse(source))
+            .Add(p => p.ShowCaret, true));
+
+        Assert.IsEmpty(finished.FindAll(".bit-aimdv-crt"));
+    }
+
+    // That a reply has nothing to show yet is its host's to say (a chat message shows a thinking indicator), so a lone
+    // caret is not drawn beside it.
+    [TestMethod]
+    public void ADocumentWithNoBlockYetDrawsNoCaret()
+    {
+        var component = RenderComponent<BitAiMarkdownView>(parameters => parameters
+            .Add(p => p.Document, BitAiMarkdownParser.Parse(string.Empty, isComplete: false))
+            .Add(p => p.ShowCaret, true));
+
+        Assert.IsEmpty(component.FindAll(".bit-aimdv-crt"));
     }
 
     [TestMethod]

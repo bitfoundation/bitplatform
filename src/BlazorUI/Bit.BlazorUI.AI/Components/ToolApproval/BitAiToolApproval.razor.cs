@@ -13,6 +13,9 @@ namespace Bit.BlazorUI;
 /// <see cref="BitAiToolRisk.Destructive"/> tool is drawn in the error role and the prompt is washed with it, so the
 /// answer that runs it never looks like the safe one. The decision goes to the <see cref="Session"/> when there is
 /// one, and onto the <see cref="Call"/> itself otherwise.
+/// <br />
+/// A call is decided once: as a session refuses a decision on a call that is no longer waiting for one, so does the
+/// prompt without a session, rather than moving a call that was declined back to pending.
 /// </remarks>
 public partial class BitAiToolApproval : BitAiComponentBase
 {
@@ -47,7 +50,8 @@ public partial class BitAiToolApproval : BitAiComponentBase
     public BitAiToolApprovalClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Raised after a decision, whether or not a session was supplied.
+    /// Raised after a decision, whether or not a session was supplied. A decision on a call that is no longer awaiting
+    /// one - which the session refuses, and the prompt without a session ignores - raises nothing.
     /// </summary>
     [Parameter] public EventCallback<BitAiApprovalDecision> OnDecision { get; set; }
 
@@ -115,11 +119,16 @@ public partial class BitAiToolApproval : BitAiComponentBase
 
         if (Session is null)
         {
+            // A call that has been decided (or has run, or was cancelled) is not decided again - the session refuses
+            // the same (BitAiChatSession.Approve) - so a second answer never moves a declined call back to pending.
+            if (Call.Status is not BitAiToolCallStatus.AwaitingApproval) return;
+
             Call.SetApproval(decision);
         }
-        else
+        else if (Session.Approve(Call.ToolCallId, decision) is false)
         {
-            Session.Approve(Call.ToolCallId, decision);
+            // The session refused it: the call is no longer waiting for a decision, so there is none to report.
+            return;
         }
 
         await OnDecision.InvokeAsync(decision);

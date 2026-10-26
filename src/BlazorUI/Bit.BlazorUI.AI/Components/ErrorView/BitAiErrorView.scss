@@ -20,16 +20,18 @@
     overflow-wrap: anywhere;
 }
 
-// The technical detail is read as it was written - a stack trace keeps its lines - and scrolls past a few of them
-// rather than pushing the conversation down.
+// The technical detail is read as it was written - a response body keeps its lines - and scrolls past a few of them
+// rather than pushing the conversation down. It takes a line of its own under the buttons of the actions row it is
+// disclosed in.
 .bit-aierv-dtl {
+    min-width: 0;
+    flex: 1 1 100%;
     overflow: auto;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
     box-sizing: border-box;
     font-size: $tg-fs-xs;
     font-family: $tg-font-family-mono;
-    margin-block-start: spacing(1);
     color: var(--bit-AiErrorView-detail-color, #{$clr-fg-sec});
     max-height: var(--bit-AiErrorView-detail-max-height, #{spacing(24)});
 
@@ -38,10 +40,13 @@
     }
 }
 
-// The message lays its actions out in a row but leaves the room between them to what it is given.
+// The message lays its actions out in a row, at its end, but leaves the room between them to what it is given. The row
+// takes the whole width, so the detail disclosed under its buttons does too, and the buttons stay at the end.
 .bit-aierv-act {
     display: flex;
+    flex: 1 1 auto;
     flex-wrap: wrap;
     gap: spacing(1);
     align-items: center;
+    justify-content: flex-end;
 }

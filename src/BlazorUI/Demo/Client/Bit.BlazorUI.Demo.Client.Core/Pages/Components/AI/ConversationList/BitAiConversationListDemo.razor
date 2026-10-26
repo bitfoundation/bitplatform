@@ -37,7 +37,9 @@
         <BitText>
             The list is a <b>nav</b> named by its <b>AriaLabel</b> or the Conversations string, each group is a list named by its
             heading, the open conversation is marked with <b>aria-current</b> (and set apart by more than its color), and each
-            delete button is named after its conversation. A conversation's preview is its tooltip. The words - the new button,
+            delete button is named after its conversation; once the app has taken a deleted conversation out of the list, the
+            focus goes to the conversation now in its place, or to the new button when none is left. A conversation's preview
+            is its tooltip. The words - the new button,
             the group headings, "Untitled" - come from the string table of the
             <BitLink Href="/components/ai/optionsprovider">BitAiUiOptions</BitLink> in force.
         </BitText>
@@ -82,7 +84,7 @@
                 message arrives, titled after it. Send something, press New, and switch between them.
             </div>
             <br />
-            <div style="display:grid;grid-template-columns:minmax(9rem, 14rem) minmax(0, 1fr);gap:1rem;height:440px">
+            <div class="chat-with-list">
                 <BitAiConversationList Conversations="chatSummaries"
                                        SelectedId="@chatSession?.Conversation.ConversationId"
                                        OnSelect="SelectChat"

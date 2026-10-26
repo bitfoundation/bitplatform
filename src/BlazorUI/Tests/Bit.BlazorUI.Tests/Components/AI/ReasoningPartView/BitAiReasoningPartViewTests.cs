@@ -119,6 +119,23 @@ public class BitAiReasoningPartViewTests : BitAiTestBase
         StringAssert.Contains(component.Find(".bit-airpv-bdy .bit-aimdv-par").InnerHtml, "<strong>one</strong>");
     }
 
+    // Long reasoning scrolls inside the panel, and a scrolling box of text holds nothing that takes the focus: the body
+    // takes it, so a keyboard can scroll it where the engine leaves a scrolling box out of the tab order (WebKit) - marked
+    // for the page script (BitAiScrollStops.ts) that puts it in the tab order while it has something to scroll.
+    [TestMethod]
+    public void TheBodyTakesTheFocusSoAKeyboardCanScrollIt()
+    {
+        var component = RenderComponent<BitAiReasoningPartView>(p => p.Add(x => x.Part, new BitAiReasoningPart("Step one")));
+        component.Find("[aria-expanded]").Click();
+
+        Assert.IsTrue(component.Find(".bit-airpv-bdy").HasAttribute("data-bit-ai-scroll"));
+        Assert.IsNull(component.Find(".bit-airpv-bdy").GetAttribute("tabindex"));
+
+        // A tab stop is announced by its name, so the body is a group named for what it holds.
+        Assert.AreEqual("group", component.Find(".bit-airpv-bdy").GetAttribute("role"));
+        Assert.AreEqual("Reasoning", component.Find(".bit-airpv-bdy").GetAttribute("aria-label"));
+    }
+
     [TestMethod]
     public void TheReasoningFollowsThePartWhileItStreams()
     {

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -191,22 +192,22 @@ public class BitAiArtifactViewTests : BitAiTestBase
 
         var root = view.Find(".bit-aiatv");
         Assert.IsFalse(root.ClassList.Contains("bit-aiatv-exp"));
-        Assert.IsFalse(root.HasAttribute("data-bit-esc"));
+        Assert.IsFalse(view.Find(".bit-aiatv-pnl").HasAttribute("data-bit-esc"));
         Assert.AreEqual("false", view.Find("button[aria-label='Expand']").GetAttribute("aria-pressed"));
 
         view.Find("button[aria-label='Expand']").Click();
 
         root = view.Find(".bit-aiatv");
         Assert.IsTrue(root.ClassList.Contains("bit-aiatv-exp"));
-        Assert.AreEqual("claim", root.GetAttribute("data-bit-esc"));
+        Assert.AreEqual("claim", view.Find(".bit-aiatv-pnl").GetAttribute("data-bit-esc"));
         Assert.IsNotNull(view.Find(".bit-aiatv > .bit-aiatv-ovl"));
         Assert.AreEqual("true", view.Find("button[aria-label='Collapse']").GetAttribute("aria-pressed"));
 
-        view.Find(".bit-aiatv").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        view.Find(".bit-aiatv-pnl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         root = view.Find(".bit-aiatv");
         Assert.IsFalse(root.ClassList.Contains("bit-aiatv-exp"));
-        Assert.IsFalse(root.HasAttribute("data-bit-esc"));
+        Assert.IsFalse(view.Find(".bit-aiatv-pnl").HasAttribute("data-bit-esc"));
         Assert.IsEmpty(view.FindAll(".bit-aiatv-ovl"));
     }
 
@@ -216,7 +217,7 @@ public class BitAiArtifactViewTests : BitAiTestBase
         var view = RenderArtifact(Completed(BitAiArtifactKind.Code, "Program", "x"));
 
         view.Find("button[aria-label='Expand']").Click();
-        view.Find(".bit-aiatv").KeyDown(new KeyboardEventArgs { Key = "Escape", ShiftKey = true });
+        view.Find(".bit-aiatv-pnl").KeyDown(new KeyboardEventArgs { Key = "Escape", ShiftKey = true });
 
         Assert.IsTrue(view.Find(".bit-aiatv").ClassList.Contains("bit-aiatv-exp"));
     }
@@ -229,12 +230,12 @@ public class BitAiArtifactViewTests : BitAiTestBase
         view.Find("button[aria-label='Expand']").Click();
 
         view.InvokeAsync(() => view.Instance._OnEscapeVerdict(true));
-        view.Find(".bit-aiatv").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        view.Find(".bit-aiatv-pnl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.IsTrue(view.Find(".bit-aiatv").ClassList.Contains("bit-aiatv-exp"));
 
         // The verdict is read once: the next press is the panel's own again.
-        view.Find(".bit-aiatv").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        view.Find(".bit-aiatv-pnl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.IsFalse(view.Find(".bit-aiatv").ClassList.Contains("bit-aiatv-exp"));
     }
@@ -262,6 +263,133 @@ public class BitAiArtifactViewTests : BitAiTestBase
         Assert.IsFalse(view.Find(".bit-aiatv").ClassList.Contains("bit-aiatv-exp"));
     }
 
+    // Laid over the page, the panel is a modal dialog: the Tab that would walk on into the page behind its overlay is kept
+    // inside it, and a screen reader keeps to it as well.
+    [TestMethod]
+    public void TheFullScreenPanelIsAModalDialogThatHoldsTheKeyboard()
+    {
+        var view = RenderComponent<BitAiArtifactView>(p => p
+            .Add(c => c.Artifact, Completed(BitAiArtifactKind.Code, "Program", "x"))
+            .Add(c => c.Id, "v1"));
+
+        var panel = view.Find(".bit-aiatv > section.bit-aiatv-pnl");
+        Assert.AreEqual("v1-pnl", panel.Id);
+        Assert.IsFalse(panel.HasAttribute("role"));
+        Assert.IsFalse(panel.HasAttribute("aria-modal"));
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.AiArtifactView.expand"]);
+
+        view.Find("button[aria-label='Expand']").Click();
+
+        panel = view.Find(".bit-aiatv > section.bit-aiatv-pnl");
+        Assert.AreEqual("dialog", panel.GetAttribute("role"));
+        Assert.AreEqual("true", panel.GetAttribute("aria-modal"));
+        Assert.AreEqual("Program", panel.GetAttribute("aria-label"));
+
+        var expand = Context.JSInterop.VerifyInvoke("BitBlazorUI.AiArtifactView.expand");
+        Assert.AreEqual("v1-pnl", expand.Arguments[0]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.AiArtifactView.collapse"]);
+
+        view.Find(".bit-aiatv-pnl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        panel = view.Find(".bit-aiatv > section.bit-aiatv-pnl");
+        Assert.IsFalse(panel.HasAttribute("role"));
+        Assert.IsFalse(panel.HasAttribute("aria-modal"));
+
+        var collapse = Context.JSInterop.VerifyInvoke("BitBlazorUI.AiArtifactView.collapse");
+        Assert.AreEqual("v1-pnl", collapse.Arguments[0]);
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.AiArtifactView.expand"]);
+    }
+
+    [TestMethod]
+    public async Task APanelTakenOffThePageWhileFullScreenLetsTheKeyboardGo()
+    {
+        var view = RenderArtifact(Completed(BitAiArtifactKind.Code, "Program", "x"));
+
+        view.Find("button[aria-label='Expand']").Click();
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.AiArtifactView.expand");
+
+        await Context.DisposeComponentsAsync();
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.AiArtifactView.collapse");
+    }
+
+    // The keys pressed inside the page of an HTML artifact are its own document's, so the page reports the Escape it left
+    // alone, and the full-screen panel collapses on it as on any other.
+    [TestMethod]
+    public void AnEscapeThePageInTheFrameReportsCollapsesTheFullScreenPanel()
+    {
+        var view = RenderArtifact(Completed(BitAiArtifactKind.Html, "Page", "<p>hi</p>"));
+        var toggle = view.FindComponents<BitButton>().Single(b => b.Instance.Class?.Contains("bit-aiatv-exb") is true);
+
+        // Inline, the panel has nothing to collapse.
+        view.InvokeAsync(() => view.Instance._OnFrameEscape());
+
+        Assert.IsFalse(view.Find(".bit-aiatv").ClassList.Contains("bit-aiatv-exp"));
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+
+        view.Find("button[aria-label='Expand']").Click();
+        view.InvokeAsync(() => view.Instance._OnFrameEscape());
+
+        view.WaitForAssertion(() => Assert.IsFalse(view.Find(".bit-aiatv").ClassList.Contains("bit-aiatv-exp")));
+        Assert.IsEmpty(view.FindAll(".bit-aiatv-ovl"));
+
+        // The focus goes back to the toggle, as it does from any other Escape.
+        view.WaitForAssertion(() => AssertFocusedLast(toggle, 2));
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.AiArtifactView.collapse");
+    }
+
+    [TestMethod]
+    public void ThePageInTheFrameIsHandedTheScriptThatReportsItsEscapeAfterIt()
+    {
+        const string page = "<!doctype html><html><body><p>hi</p></body></html>";
+
+        var view = RenderArtifact(Completed(BitAiArtifactKind.Html, "Page", page));
+
+        // After the page, never ahead of its doctype, which would put it in quirks mode.
+        var document = view.Find("iframe.bit-aiatv-frm").GetAttribute("srcdoc")!;
+        StringAssert.StartsWith(document, page);
+        StringAssert.Contains(document, "parent.postMessage({bitAiArtifactView:'escape'},'*')");
+        StringAssert.Contains(document, "!e.defaultPrevented&&!e.isComposing");
+        Assert.IsEmpty(view.FindAll(".bit-aiatv-bdy script"));
+
+        // Copy and download act on the page itself.
+        Assert.AreEqual(page, view.FindComponent<BitAiCopyButton>().Instance.Content);
+
+        view.Find("button[aria-label='Download']").Click();
+
+        Assert.AreEqual(page, Context.JSInterop.VerifyInvoke("BitBlazorUI.AiArtifactView.downloadText").Arguments[1]);
+    }
+
+    // A table written as a JSON array is drawn by a BitAiDataTable, which the panel frames as it does a CSV table.
+    [TestMethod]
+    public void AJsonTableSitsRightInTheBodyThePanelFrames()
+    {
+        var view = RenderArtifact(Completed(BitAiArtifactKind.Table, "People", """[{"name":"Ada"}]"""));
+
+        Assert.IsNotNull(view.Find(".bit-aiatv-bdy > .bit-aidtb"));
+    }
+
+    // The button pressed is gone once the image is shown, and the focus would drop to the body of the document with it.
+    [TestMethod]
+    public void AnImageArtifactTheUserLoadedTakesTheFocusOffThePlaceholder()
+    {
+        var view = RenderImageArtifact(ImageAt("https://img.x.dev/chart.png", "Chart"), BitAiImagePolicy.ClickToLoad);
+
+        view.Find(".bit-aiatv-imh button.bit-acb").Click();
+
+        Assert.AreEqual("-1", view.Find("img.bit-aiatv-img").GetAttribute("tabindex"));
+
+        var focus = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
+        Assert.HasCount(1, focus);
+        Assert.AreNotEqual(view.Instance.RootElement.Id, ((ElementReference)focus[0].Arguments[0]!).Id);
+
+        // One the policy shows at once was never a button, and takes no focus.
+        var shown = RenderImageArtifact(ImageAt("https://img.x.dev/chart.png", "Chart"), BitAiImagePolicy.Allow);
+
+        Assert.IsFalse(shown.Find("img.bit-aiatv-img").HasAttribute("tabindex"));
+        Assert.HasCount(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+    }
+
     // A click does not focus a button in WebKit, so without this the focus stays outside the full-screen panel and the
     // next Escape closes the dialog or panel around the artifact instead. The toggle is the one control there both ways.
     [TestMethod]
@@ -276,7 +404,7 @@ public class BitAiArtifactViewTests : BitAiTestBase
 
         AssertFocusedLast(toggle, 1);
 
-        view.Find(".bit-aiatv").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        view.Find(".bit-aiatv-pnl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         AssertFocusedLast(toggle, 2);
 
@@ -297,10 +425,10 @@ public class BitAiArtifactViewTests : BitAiTestBase
     {
         var view = RenderArtifact(Completed(BitAiArtifactKind.Code, "Program", "x"));
 
-        view.Find(".bit-aiatv").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        view.Find(".bit-aiatv-pnl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         view.Find("button[aria-label='Expand']").Click();
-        view.Find(".bit-aiatv").KeyDown(new KeyboardEventArgs { Key = "Escape", ShiftKey = true });
+        view.Find(".bit-aiatv-pnl").KeyDown(new KeyboardEventArgs { Key = "Escape", ShiftKey = true });
 
         Assert.HasCount(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
         Assert.IsTrue(view.Find(".bit-aiatv").ClassList.Contains("bit-aiatv-exp"));
@@ -566,7 +694,10 @@ public class BitAiArtifactViewTests : BitAiTestBase
         DataRow("code", "csharp", "Program", "program.cs", "text/plain"),
         DataRow("html", null, "Landing page!", "landing-page.html", "text/html"),
         DataRow("table", null, "Prices", "prices.csv", "text/csv"),
-        DataRow("svg", null, "Logo", "logo.svg", "image/svg+xml")]
+        DataRow("svg", null, "Logo", "logo.svg", "image/svg+xml"),
+        DataRow("document", null, "یادداشت انتشار", "یادداشت-انتشار.md", "text/markdown"),
+        DataRow("code", "python", "नमस्ते दुनिया", "नमस्ते-दुनिया.py", "text/plain"),
+        DataRow("code", "python", "???", "artifact.py", "text/plain")]
     public void DownloadsGetASensibleFileNameAndMimeType(string kind, string? language, string title, string fileName, string mimeType)
     {
         var view = RenderArtifact(Completed(new BitAiArtifactKind(kind), title, "a,b", language));
@@ -632,10 +763,11 @@ public class BitAiArtifactViewTests : BitAiTestBase
                 Table = "c-table",
                 HeaderCell = "c-th",
                 Cell = "c-td",
+                CopyButton = new() { Root = "c-copy" },
                 DownloadButton = new() { Root = "c-download" },
                 ExpandButton = new() { Root = "c-expand" },
             })
-            .Add(c => c.Styles, new() { Title = "color:red" }));
+            .Add(c => c.Styles, new() { Title = "color:red", CopyButton = new() { Root = "margin:2px" } }));
 
         var root = view.Find(".bit-aiatv");
 
@@ -655,6 +787,8 @@ public class BitAiArtifactViewTests : BitAiTestBase
         Assert.IsTrue(view.Find(".bit-aiatv-tbw").ClassList.Contains("c-table"));
         Assert.IsTrue(view.Find(".bit-aiatv-thc").ClassList.Contains("c-th"));
         Assert.IsTrue(view.Find(".bit-aiatv-tdc").ClassList.Contains("c-td"));
+        Assert.IsTrue(view.Find(".bit-aiatv-hdr .bit-aicpb").ClassList.Contains("c-copy"));
+        StringAssert.Contains(view.Find(".bit-aiatv-hdr .bit-aicpb").GetAttribute("style"), "margin:2px");
         Assert.IsTrue(view.Find(".bit-aiatv-dlb").ClassList.Contains("c-download"));
         Assert.IsTrue(view.Find(".bit-aiatv-exb").ClassList.Contains("c-expand"));
     }

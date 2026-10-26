@@ -2,10 +2,10 @@
 
 <PageOutlet Url="components/ai/toolresultview"
             Title="AiToolResultView"
-            Description="BitAiToolResultView shows the result of a tool that arrived without a matching tool call - as text, as a JSON tree, or as a compact error." />
+            Description="BitAiToolResultView shows a tool result carried as a message part of its own - as text, as a JSON tree, or as a compact error." />
 
 <DemoPage Name="AiToolResultView"
-          Description="BitAiToolResultView shows a tool result that arrived without a matching call, which happens with providers that emit tool output as a message of its own: a card headed by the tool's name, with the result as it was written, as a JSON tree when it is structured, or as a compact error when it failed. A result that does belong to a call is shown by the BitAiToolCallView of that call instead."
+          Description="BitAiToolResultView shows a tool result carried on its own (a BitAiToolResultPart) rather than on the call it answers - a conversation imported from a store that keeps each result as a message of its own: a card headed by the tool's name, with the result as it was written, as a JSON tree when it is structured, or as a compact error when it failed. A result streamed in by a transport always goes to its call and is shown by the BitAiToolCallView of that call."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           CssVariables="componentCssVariables"
@@ -104,7 +104,7 @@
                                      Classes="@(new() { Header = "custom-result-header",
                                                         Body = "custom-result-body" })" />
 
-                <div style="--bit-AiToolResultView-background: #ecfdf5; --bit-AiToolResultView-border-color: #34d399; --bit-AiToolResultView-header-color: #065f46; --bit-AiToolResultView-body-background: #f0fdfa; --bit-AiToolResultView-radius: 1rem;">
+                <div style="--bit-AiToolResultView-background: var(--bit-clr-suc-tint); --bit-AiToolResultView-border-color: var(--bit-clr-suc); --bit-AiToolResultView-header-color: var(--bit-clr-suc-fg); --bit-AiToolResultView-body-background: transparent; --bit-AiToolResultView-radius: 1rem;">
                     <BitAiToolResultView Part="jsonResult" />
                 </div>
             </div>

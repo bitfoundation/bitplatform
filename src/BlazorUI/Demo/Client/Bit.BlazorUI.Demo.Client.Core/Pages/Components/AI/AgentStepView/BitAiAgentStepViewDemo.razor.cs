@@ -70,6 +70,16 @@ public partial class BitAiAgentStepViewDemo
                     Href = "/components/tag#tag-class-styles",
                 },
                 new() { Name = "Error", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the error message of the BitAiAgentStepView." },
+                new()
+                {
+                    Name = "ErrorDetailButton",
+                    Type = "BitButtonClassStyles?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the button (a BitButton) disclosing the detail of the error of a failed BitAiAgentStepView.",
+                    LinkType = LinkType.Link,
+                    Href = "/components/button#button-class-styles",
+                },
+                new() { Name = "ErrorDetail", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the detail of the error of a failed BitAiAgentStepView, shown behind the disclosure." },
             ]
         },
         new()
@@ -97,7 +107,7 @@ public partial class BitAiAgentStepViewDemo
                     Name = "Error",
                     Type = "BitAiError?",
                     DefaultValue = "null",
-                    Description = "The failure, when the step failed: its Message is shown under the step.",
+                    Description = "The failure, when the step failed: its Message is shown under the step, and its Detail behind a Show details disclosure.",
                     LinkType = LinkType.Link,
                     Href = "/components/ai/errorview#error",
                 },
@@ -134,10 +144,10 @@ public partial class BitAiAgentStepViewDemo
             [
                 new() { Name = "Pending", Description = "Planned but not started. Its marker is an empty ring and its title is dimmed.", Value = "0" },
                 new() { Name = "Running", Description = "Currently executing. Its marker pulses, and the time it has been running shows beside the title.", Value = "1" },
-                new() { Name = "Blocked", Description = "Paused pending human input or approval. Its marker is drawn in the warning color.", Value = "2" },
+                new() { Name = "Blocked", Description = "Paused pending human input or approval: a question of its run (BitAiAgentRun.RequestInput) blocks the steps running with it until it is answered. Its marker is drawn in the warning color.", Value = "2" },
                 new() { Name = "Completed", Description = "Finished successfully. Its marker carries a check mark, and the time it took shows beside the title.", Value = "3" },
-                new() { Name = "Failed", Description = "Finished unsuccessfully. Its marker is drawn in the error color, and the message of its error shows under it.", Value = "4" },
-                new() { Name = "Skipped", Description = "Abandoned because the run ended or the plan changed. Drawn like a pending step.", Value = "5" },
+                new() { Name = "Failed", Description = "Finished unsuccessfully. Its marker is drawn in the error color, and the message of its error shows under it, with the detail of the error behind a disclosure.", Value = "4" },
+                new() { Name = "Skipped", Description = "Abandoned because the run ended or the plan changed: a run that fails or is cancelled skips every step it did not finish. Drawn like a pending step.", Value = "5" },
             ]
         },
     ];
@@ -154,7 +164,7 @@ public partial class BitAiAgentStepViewDemo
         new() { Name = "--bit-AiAgentStepView-blocked-color", DefaultValue = "var(--bit-clr-wrn)", Description = "Marker of a step waiting on the user." },
         new() { Name = "--bit-AiAgentStepView-line-color", DefaultValue = "var(--bit-clr-brd-sec)", Description = "Line joining a step to the next one." },
         new() { Name = "--bit-AiAgentStepView-title-font-size", DefaultValue = "var(--bit-tpg-fs-sm)", Description = "Size of the title (the rest of the step is sized from it)." },
-        new() { Name = "--bit-AiAgentStepView-text-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "The detail, the summary and the duration." },
+        new() { Name = "--bit-AiAgentStepView-text-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "The detail, the summary and the duration, and the detail of the error of a failed step." },
         new() { Name = "--bit-AiAgentStepView-error-color", DefaultValue = "var(--bit-clr-err-fg)", Description = "The error message of a failed step." },
     ];
 
@@ -198,7 +208,10 @@ public partial class BitAiAgentStepViewDemo
         completed.Complete(summary: "11 results, 3 look primary");
 
         var failed = new BitAiAgentStep("failed", "Failed: finished unsuccessfully");
-        failed.Complete(BitAiAgentStepStatus.Failed, error: new BitAiError("3 of 812 tests failed."));
+        failed.Complete(BitAiAgentStepStatus.Failed, error: new BitAiError("3 of 812 tests failed.")
+        {
+            Detail = "Checkout.AppliesDiscount\nCheckout.RoundsTax\nCheckout.HandlesRefund",
+        });
 
         var skipped = new BitAiAgentStep("skipped", "Skipped: abandoned when the run ended");
         skipped.Complete(BitAiAgentStepStatus.Skipped);

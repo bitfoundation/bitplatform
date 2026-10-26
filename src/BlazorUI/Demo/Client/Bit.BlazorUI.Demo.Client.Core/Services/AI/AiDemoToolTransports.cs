@@ -11,20 +11,24 @@ public static class AiDemoToolTransports
     /// <param name="toolName">The tool to call.</param>
     /// <param name="arguments">The arguments to send, as JSON.</param>
     /// <param name="answer">The answer to give once the tool has returned.</param>
+    /// <param name="declinedAnswer">
+    /// The answer to give when the call did not run - the user declined it, or it failed - in place of a generic one.
+    /// </param>
     /// <returns>The transport.</returns>
     /// <remarks>
     /// The transport does not execute the tool. It asks for one, and on the next round trip it can read the result off
     /// the message it is given. That split is what lets an application decide where tools run without the transport
-    /// knowing.
+    /// knowing - and the result is read, not just noticed: a call the user declined comes back as a failure, which the
+    /// answer explains rather than reporting what the tool would have done.
     /// </remarks>
-    public static IBitAiTransport CallsTool(string toolName, string arguments, string answer) =>
+    public static IBitAiTransport CallsTool(string toolName, string arguments, string answer, string? declinedAnswer = null) =>
         new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
         {
-            var alreadyCalled = AiScript.HasToolResultThisTurn(request);
+            var outcome = AiScript.ToolOutcomeThisTurn(request);
 
             await yielder(new BitAiMessageStartedEvent());
 
-            if (alreadyCalled is false)
+            if (outcome is null)
             {
                 await yielder(new BitAiStatusEvent("Deciding what to look up"));
                 await AiScript.Pause(500, token);
@@ -43,8 +47,10 @@ public static class AiDemoToolTransports
                 return;
             }
 
-            await foreach (var evt in AiScript.Write(answer, 4, 12, token)) await yielder(evt);
-            await yielder(AiScript.Usage(request, answer));
+            var reply = outcome.IsSuccess ? answer : declinedAnswer ?? $"I did not run {toolName}, so nothing was changed.";
+
+            await foreach (var evt in AiScript.Write(reply, 4, 12, token)) await yielder(evt);
+            await yielder(AiScript.Usage(request, reply));
             await yielder(new BitAiMessageCompletedEvent());
         }));
 

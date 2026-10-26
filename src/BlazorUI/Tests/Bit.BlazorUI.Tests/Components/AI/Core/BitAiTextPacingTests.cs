@@ -63,6 +63,27 @@ public class BitAiTextPacingTests
     }
 
     [TestMethod]
+    public async Task ABurstDrainsWithinOneDrainWindowRatherThanTricklingOutItsTail()
+    {
+        // Nine ticks to drain: a 68 character burst goes out in nine chunks of eight at most, and the event queued
+        // behind it right after them - not a tail released a character a tick as the buffer shrinks.
+        var source = new BitAiEvent[] { new BitAiTextDeltaEvent(new string('x', 68)), new BitAiMessageCompletedEvent() };
+        var options = new BitAiTextPacingOptions
+        {
+            Interval = TimeSpan.FromMilliseconds(1),
+            TargetDrain = TimeSpan.FromMilliseconds(9),
+        };
+
+        var received = new List<BitAiEvent>();
+        await foreach (var evt in Replay(source).Paced(options)) received.Add(evt);
+
+        var deltas = received.OfType<BitAiTextDeltaEvent>().ToList();
+        Assert.AreEqual(68, deltas.Sum(d => d.Delta.Length));
+        Assert.IsLessThanOrEqualTo(9, deltas.Count, $"The burst took {deltas.Count} ticks to drain.");
+        Assert.IsExactInstanceOfType<BitAiMessageCompletedEvent>(received[^1]);
+    }
+
+    [TestMethod]
     public async Task PacingNeverSplitsASurrogatePair()
     {
         var source = new BitAiEvent[] { new BitAiTextDeltaEvent(string.Concat(Enumerable.Repeat("a\U0001F600", 20))) };

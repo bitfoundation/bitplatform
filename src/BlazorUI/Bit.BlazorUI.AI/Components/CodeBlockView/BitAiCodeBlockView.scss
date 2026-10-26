@@ -15,13 +15,15 @@
 //
 // The syntax colors. Each token kind is painted with a role color of the theme - the "-fg" one, which is the role
 // shaded towards the text color so it is legible on the page in the light and in the dark scheme alike, and follows
-// every preset - or with one of the neutral text colors. Set any of them to restyle that kind of token alone:
+// every preset - or with one of the neutral text colors. The quietest of them (the comments, the function names, the
+// diff headers) have a little of the text color mixed in, since the tint of the block takes them just under the 4.5:1
+// text needs in the light scheme. Set any of them to restyle that kind of token alone:
 //   --bit-AiCodeBlockView-keyword-color         keywords                                  (default: $clr-pri-fg)
 //   --bit-AiCodeBlockView-type-color            type names                                (default: $clr-suc-fg)
 //   --bit-AiCodeBlockView-string-color          string and character literals             (default: $clr-swr-fg)
 //   --bit-AiCodeBlockView-number-color          numeric literals                          (default: $clr-sec-fg)
-//   --bit-AiCodeBlockView-comment-color         comments, set in italics                  (default: $clr-fg-ter)
-//   --bit-AiCodeBlockView-function-color        function and command names                (default: $clr-wrn-fg)
+//   --bit-AiCodeBlockView-comment-color         comments, set in italics                  (default: $clr-fg-ter with 15% of $clr-fg-pri)
+//   --bit-AiCodeBlockView-function-color        function and command names                (default: $clr-wrn-fg with 15% of $clr-fg-pri)
 //   --bit-AiCodeBlockView-operator-color        operators                                 (default: $clr-fg-sec)
 //   --bit-AiCodeBlockView-punctuation-color     punctuation                               (default: $clr-fg-sec)
 //   --bit-AiCodeBlockView-property-color        keys and properties (JSON, YAML, CSS)     (default: $clr-pri-fg)
@@ -30,7 +32,7 @@
 //   --bit-AiCodeBlockView-constant-color        true, false, null and other constants     (default: $clr-sec-fg)
 //   --bit-AiCodeBlockView-inserted-color        lines a diff adds                         (default: $clr-suc-fg)
 //   --bit-AiCodeBlockView-deleted-color         lines a diff removes                      (default: $clr-err-fg)
-//   --bit-AiCodeBlockView-meta-color            diff headers, preprocessor lines          (default: $clr-fg-ter)
+//   --bit-AiCodeBlockView-meta-color            diff headers, preprocessor lines          (default: $clr-fg-ter with 15% of $clr-fg-pri)
 //   --bit-AiCodeBlockView-label-color           lifetimes and loop labels, in italics     (default: the type color)
 //   --bit-AiCodeBlockView-variable-color        variables written with a sigil ($name)    (default: the property color)
 
@@ -64,8 +66,14 @@
     font-family: var(--bit-AiCodeBlockView-font-family, #{$tg-font-family-mono});
 }
 
+// The body takes the focus so a keyboard can scroll a long line into view. The root clips its overflow to its corners, so
+// the ring is drawn inside the body rather than around it.
 .bit-aicbv-bdy {
     overflow-x: auto;
+
+    &:focus-visible {
+        @include focus-ring-inset($clr-pri-focus);
+    }
 }
 
 // Code is written left to right whatever the page around it reads, so the lines are laid out that way and isolated
@@ -122,13 +130,16 @@
     color: var(--bit-AiCodeBlockView-number-color, #{$clr-sec-fg});
 }
 
+// The tertiary text and the warning shade are made for the page, and the tint of the block takes them just under the
+// 4.5:1 text needs in the light scheme (4.2:1 and 4.46:1 under Fluent): a little of the text color mixed in keeps them
+// legible on it, and in the dark scheme only lifts them a shade further from the background.
 .bit-aicbv-cmt {
     font-style: italic;
-    color: var(--bit-AiCodeBlockView-comment-color, #{$clr-fg-ter});
+    color: var(--bit-AiCodeBlockView-comment-color, color-mix(in srgb, #{$clr-fg-ter}, #{$clr-fg-pri} 15%));
 }
 
 .bit-aicbv-fnc {
-    color: var(--bit-AiCodeBlockView-function-color, #{$clr-wrn-fg});
+    color: var(--bit-AiCodeBlockView-function-color, color-mix(in srgb, #{$clr-wrn-fg}, #{$clr-fg-pri} 15%));
 }
 
 .bit-aicbv-opr {
@@ -164,7 +175,7 @@
 }
 
 .bit-aicbv-met {
-    color: var(--bit-AiCodeBlockView-meta-color, #{$clr-fg-ter});
+    color: var(--bit-AiCodeBlockView-meta-color, color-mix(in srgb, #{$clr-fg-ter}, #{$clr-fg-pri} 15%));
 }
 
 .bit-aicbv-lab {

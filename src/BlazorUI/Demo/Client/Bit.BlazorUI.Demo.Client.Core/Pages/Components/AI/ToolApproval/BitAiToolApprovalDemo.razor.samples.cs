@@ -5,20 +5,40 @@ public partial class BitAiToolApprovalDemo
     private readonly string example1RazorCode = """
 @if (basicCall.Status is BitAiToolCallStatus.AwaitingApproval)
 {
-    <BitAiToolApproval Call="basicCall" OnDecision="d => basicDecision = d" />
+    <BitAiToolApproval Call="basicCall" OnDecision="HandleBasicDecision" />
 }
 else
 {
-    <div>
-        Decision: <b>@basicDecision</b>, status of the call: <b>@basicCall.Status</b>
-        <br /><br />
-        <BitButton Variant="BitVariant.Outline" OnClick="ResetBasic">Ask again</BitButton>
-    </div>
+    <div>Decision: <b>@basicDecision</b>, status of the call: <b>@basicCall.Status</b></div>
 }
+
+<BitButton @ref="askAgainButton"
+           Variant="BitVariant.Outline"
+           Disabled="@(basicCall.Status is BitAiToolCallStatus.AwaitingApproval)"
+           OnClick="ResetBasic">Ask again</BitButton>
 """;
     private readonly string example1CsharpCode = """
 private BitAiToolCallPart basicCall = AwaitingApproval("archive_thread", "Archive the thread", BitAiToolRisk.Write);
 private BitAiApprovalDecision basicDecision;
+private BitButton askAgainButton = default!;
+private bool focusAskAgain;
+
+private void HandleBasicDecision(BitAiApprovalDecision decision)
+{
+    basicDecision = decision;
+
+    // The decision takes the prompt away with the button it was made with; Ask again, which stays, takes the focus.
+    focusAskAgain = true;
+}
+
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    if (focusAskAgain)
+    {
+        focusAskAgain = false;
+        await askAgainButton.FocusAsync();
+    }
+}
 
 private void ResetBasic()
 {
@@ -72,13 +92,25 @@ private static BitAiToolCallPart AwaitingApproval(string toolName, string title,
 <BitAiToolApproval Call="destructiveCall" OnDecision="@(d => riskDecision = $"{d} (Delete records)")" />
 
 <div>Last decision: <b>@riskDecision</b></div>
+
+<BitButton Variant="BitVariant.Outline" OnClick="ResetRisk">Ask again</BitButton>
 """;
     private readonly string example3CsharpCode = """
-private readonly BitAiToolCallPart readOnlyCall = AwaitingApproval("read_logs", "Read the logs", BitAiToolRisk.ReadOnly);
-private readonly BitAiToolCallPart writeCall = AwaitingApproval("send_email", "Send email", BitAiToolRisk.Write);
-private readonly BitAiToolCallPart destructiveCall = AwaitingApproval("delete_records", "Delete records", BitAiToolRisk.Destructive,
+private BitAiToolCallPart readOnlyCall = AwaitingApproval("read_logs", "Read the logs", BitAiToolRisk.ReadOnly);
+private BitAiToolCallPart writeCall = AwaitingApproval("send_email", "Send email", BitAiToolRisk.Write);
+private BitAiToolCallPart destructiveCall = AwaitingApproval("delete_records", "Delete records", BitAiToolRisk.Destructive,
     "Permanently delete the 128 archived records? This cannot be undone.");
 private string riskDecision = "none yet";
+
+// A call is decided once, so asking again means asking about fresh calls.
+private void ResetRisk()
+{
+    readOnlyCall = AwaitingApproval("read_logs", "Read the logs", BitAiToolRisk.ReadOnly);
+    writeCall = AwaitingApproval("send_email", "Send email", BitAiToolRisk.Write);
+    destructiveCall = AwaitingApproval("delete_records", "Delete records", BitAiToolRisk.Destructive,
+        "Permanently delete the 128 archived records? This cannot be undone.");
+    riskDecision = "none yet";
+}
 
 private static BitAiToolCallPart AwaitingApproval(string toolName, string title, BitAiToolRisk risk, string? reason = null)
 {
@@ -98,13 +130,13 @@ private static BitAiToolCallPart AwaitingApproval(string toolName, string title,
     private readonly string example4RazorCode = """
 @implements IAsyncDisposable
 
-<BitButton OnClick="AskToDeleteAsync" Disabled="session.IsGenerating">Delete the archived records</BitButton>
+<BitButton @ref="deleteButton" OnClick="AskToDeleteAsync" Disabled="session.IsGenerating">Delete the archived records</BitButton>
 
 @if (SessionCall is { } call)
 {
     @if (call.Status is BitAiToolCallStatus.AwaitingApproval)
     {
-        <BitAiToolApproval Call="call" Session="session" />
+        <BitAiToolApproval Call="call" Session="session" OnDecision="HandleSessionDecision" />
     }
 
     <div>
@@ -121,6 +153,8 @@ private static BitAiToolCallPart AwaitingApproval(string toolName, string title,
 
 private BitAiRenderScheduler sessionRenders = default!;
 private BitAiChatSession session = default!;
+private BitButton deleteButton = default!;
+private bool focusDeleteButton;
 
 // The call of the latest turn, whatever it is waiting for.
 private BitAiToolCallPart? SessionCall => session.Conversation.Messages
@@ -147,6 +181,18 @@ protected override void OnInitialized()
 }
 
 private Task AskToDeleteAsync() => session.SubmitAsync("Delete the archived records");
+
+// The answer takes the prompt away with the button it was given with; the button that asked takes the focus back.
+private void HandleSessionDecision() => focusDeleteButton = true;
+
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    if (focusDeleteButton)
+    {
+        focusDeleteButton = false;
+        await deleteButton.FocusAsync();
+    }
+}
 
 public async ValueTask DisposeAsync()
 {
@@ -176,8 +222,8 @@ private readonly BitAiToolApprovalParams[] approvalParams =
     private readonly string example7RazorCode = """
 <style>
     .custom-approval {
-        border: 2px dashed #b45309;
-        background-color: #fffbeb;
+        border: 2px dashed var(--bit-clr-wrn);
+        background-color: transparent;
     }
 
     .custom-approval-root {
@@ -202,8 +248,9 @@ private readonly BitAiToolApprovalParams[] approvalParams =
                    Classes="@(new() { Root = "custom-approval-root",
                                       Actions = "custom-approval-actions" })" />
 
-<div style="--bit-AiToolApproval-background: #ecfeff; --bit-AiToolApproval-destructive-background: #fff1f2; --bit-AiToolApproval-radius: 0; --bit-AiToolApproval-padding: 1rem 1.5rem; --bit-AiToolApproval-gap: 1rem;">
+<div style="--bit-AiToolApproval-background: var(--bit-clr-inf-tint); --bit-AiToolApproval-destructive-background: var(--bit-clr-swr-tint); --bit-AiToolApproval-radius: 0; --bit-AiToolApproval-padding: 1rem 1.5rem; --bit-AiToolApproval-gap: 1rem;">
     <BitAiToolApproval Call="writeCall" />
+    <br />
     <BitAiToolApproval Call="destructiveCall" />
 </div>
 """;

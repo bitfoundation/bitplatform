@@ -30,7 +30,9 @@ public static IBitAiTransport Reasoning() => new AiScriptedTransport((request, t
         "The user is asking about the cost of a round trip. I should separate the fixed cost of " +
         "the connection from the per-token cost, and give a number rather than an adjective.";
 
-    await foreach (var evt in AiScript.Think(thinking, 12, token)) await yielder(evt);
+    // A word every 70 ms: about two seconds of thinking, long enough to watch the panel stream open before it
+    // collapses into "Thought for ...".
+    await foreach (var evt in AiScript.Think(thinking, 70, token)) await yielder(evt);
     await AiScript.Pause(250, token);
 
     // Then the answer, as ordinary text deltas.

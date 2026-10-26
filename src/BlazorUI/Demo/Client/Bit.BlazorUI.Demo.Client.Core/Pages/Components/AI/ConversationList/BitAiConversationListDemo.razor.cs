@@ -18,7 +18,7 @@ public partial class BitAiConversationListDemo
             Name = "Conversations",
             Type = "IReadOnlyList<BitAiConversationSummary>?",
             DefaultValue = "null",
-            Description = "The conversations to list, in any order: they are sorted by UpdatedAt, newest first, and grouped into today, yesterday, the previous seven days, the previous thirty days, then by month (in the local time of the browser).",
+            Description = "The conversations to list, in any order: they are sorted by UpdatedAt, newest first, and grouped into today, yesterday, the previous seven days, the previous thirty days, then by month - counted in the TimeZone, else in the TimeZone of the BitAiUiOptions in force, else in the browser's zone.",
             LinkType = LinkType.Link,
             Href = "#conversation-summary",
         },
@@ -69,6 +69,13 @@ public partial class BitAiConversationListDemo
             Description = "Custom CSS styles for different parts of the conversation list.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
+        },
+        new()
+        {
+            Name = "TimeZone",
+            Type = "TimeZoneInfo?",
+            DefaultValue = "null",
+            Description = "The time zone the conversations are grouped by day in - what counts as today, yesterday, the previous seven and thirty days, and the month of an older one. While it is null, the TimeZone of the BitAiUiOptions in force, else the browser's: under Blazor Server the list is drawn in the zone of the server until the browser has said which zone it runs in.",
         },
     ];
 

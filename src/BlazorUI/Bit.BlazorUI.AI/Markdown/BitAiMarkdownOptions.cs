@@ -56,6 +56,10 @@ public sealed record BitAiMarkdownOptions
     /// <remarks>
     /// Without this, a response containing bold text flashes a literal asterisk before the closing
     /// one arrives. With it, the delimiter stays invisible until it either closes or the stream ends.
+    /// A heading still being written hides them as a paragraph does, and with <see cref="Tables"/>
+    /// on, the lines starting with a pipe that end the text so far - the header row of a table whose
+    /// delimiter row has not arrived yet - are held back the same way, rather than shown as text and
+    /// then taken back into the table.
     /// </remarks>
     public bool HideDanglingDelimiters { get; init; } = true;
 

@@ -18,11 +18,13 @@ public partial class BitAiCollapsibleDemo
     Compare the two render modes, then give a number for each.
 </BitAiCollapsible>
 
-<div>The panel is <b>@(isOpen ? ""open"" : ""closed"")</b>, toggled @toggleCount time(s) by the user.</div>
+<div>The panel is <b>@(isOpen ? ""open"" : ""closed"")</b>.</div>
 
 <BitAiCollapsible Title=""Toggle me"" OpenChanged=""(bool open) => toggleCount++"">
     Each toggle of the header is counted by OpenChanged.
-</BitAiCollapsible>";
+</BitAiCollapsible>
+
+<div>Toggled <b>@toggleCount</b> @(toggleCount == 1 ? ""time"" : ""times"") by the user.</div>";
     private readonly string example2CsharpCode = @"
 private bool isOpen;
 private int toggleCount;";

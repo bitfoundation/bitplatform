@@ -28,7 +28,7 @@ public partial class BitAiFormDemo
             Name = "Definition",
             Type = "BitAiFormDefinition",
             DefaultValue = "null",
-            Description = "The form to render (required): its title, description, fields and button labels. Each field is seeded once with its Value; a definition handed in again - rebuilt as a schema streams in - keeps what the user typed in every field whose shape did not change, seeds the new ones, and drops the values of fields that are gone.",
+            Description = "The form to render (required): its title, description, fields and button labels. Each field is seeded once with its Value; a definition handed in again - rebuilt as a schema streams in - keeps what the user typed in every field whose control did not change (a bound, a choice or a nested field streaming in changes nothing typed, and a prefill streaming in fills a scalar field only while it still holds the previous prefill, so what the user typed wins; an object or a list is seeded again with a new prefill), seeds the new ones, and drops the values of fields that are gone.",
             LinkType = LinkType.Link,
             Href = "#form-definition",
         },
@@ -37,7 +37,7 @@ public partial class BitAiFormDemo
             Name = "OnCancel",
             Type = "EventCallback",
             DefaultValue = "",
-            Description = "The callback raised when the user presses Cancel. The button is shown unless the CancelLabel of the definition is an empty string.",
+            Description = "The callback raised when the user presses Cancel. The button is shown only while it is set, and unless the CancelLabel of the definition is an empty string.",
         },
         new()
         {
@@ -254,7 +254,7 @@ public partial class BitAiFormDemo
                     Name = "CancelLabel",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "The text of the cancel button; the Cancel text of the string table while it is null, and no cancel button at all when it is an empty string."
+                    Description = "The text of the cancel button; the Cancel text of the string table while it is null, and no cancel button at all when it is an empty string. The button is shown only on a form with an OnCancel."
                 },
                 new()
                 {
@@ -291,7 +291,7 @@ public partial class BitAiFormDemo
                 new() { Name = "Type", Type = "BitAiFieldType", DefaultValue = "BitAiFieldType.Text", Description = "The control the field renders as.", LinkType = LinkType.Link, Href = "#field-type-enum" },
                 new() { Name = "Description", Type = "string?", DefaultValue = "null", Description = "Help text under the control (under the legend of a group)." },
                 new() { Name = "Placeholder", Type = "string?", DefaultValue = "null", Description = "Placeholder text inside the control." },
-                new() { Name = "Value", Type = "string?", DefaultValue = "null", Description = "The initial value, which a model may prefill, as invariant text. For an Array field, the JSON text of the initial array." },
+                new() { Name = "Value", Type = "string?", DefaultValue = "null", Description = "The initial value, which a model may prefill, as invariant text. For an Array field, the JSON text of the initial array. A Boolean field without one starts, and is submitted, as false - the unchecked box it shows." },
                 new() { Name = "Required", Type = "bool", DefaultValue = "false", Description = "Whether the field must be filled in (an Array field: hold at least one entry). A checkbox is never required to be checked." },
                 new() { Name = "ReadOnly", Type = "bool", DefaultValue = "false", Description = "Whether the field is shown but cannot be edited, as for a schema const or readOnly. A read-only list can be neither added to nor removed from." },
                 new() { Name = "Options", Type = "IReadOnlyList<string>?", DefaultValue = "null", Description = "The choices of a Select field, as the values that are submitted. A value outside them fails validation." },
@@ -301,7 +301,7 @@ public partial class BitAiFormDemo
                 new() { Name = "MultipleOf", Type = "double?", DefaultValue = "null", Description = "A step a number must be a multiple of, which is also the step of its spin buttons." },
                 new() { Name = "Integer", Type = "bool", DefaultValue = "false", Description = "Whether a number accepts whole numbers only." },
                 new() { Name = "MinLength / MaxLength", Type = "int?", DefaultValue = "null", Description = "The fewest and the most characters a text value may have." },
-                new() { Name = "MinItems / MaxItems", Type = "int?", DefaultValue = "null", Description = "The fewest and the most entries an Array field may hold; the add button goes away at the most." },
+                new() { Name = "MinItems / MaxItems", Type = "int?", DefaultValue = "null", Description = "The fewest and the most entries an Array field may hold; the add button turns off at the most." },
                 new() { Name = "Pattern", Type = "string?", DefaultValue = "null", Description = "A regular expression the value must match, run under a timeout: one that takes too long fails the field." },
                 new() { Name = "Fields", Type = "IReadOnlyList<BitAiFormField>?", DefaultValue = "null", Description = "The nested fields of an Object field." },
                 new() { Name = "Items", Type = "BitAiFormField?", DefaultValue = "null", Description = "The template of each entry of an Array field: a scalar field for a list of inputs, an Object field for repeatable groups." },

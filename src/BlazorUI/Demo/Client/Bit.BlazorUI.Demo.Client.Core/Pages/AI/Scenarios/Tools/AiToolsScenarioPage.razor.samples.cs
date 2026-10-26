@@ -68,13 +68,16 @@ public partial class AiDemoJsonContext : JsonSerializerContext
 """;
 
     private const string example1TransportCode = """
-public static IBitAiTransport CallsTool(string toolName, string arguments, string answer) =>
+public static IBitAiTransport CallsTool(string toolName, string arguments, string answer, string? declinedAnswer = null) =>
     new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
     {
+        // The outcome of the tool this turn ran, if it ran one.
+        var outcome = AiScript.ToolOutcomeThisTurn(request);
+
         await yielder(new BitAiMessageStartedEvent());
 
         // First round trip: ask for the tool, streaming its arguments, and stop.
-        if (AiScript.HasToolResultThisTurn(request) is false)
+        if (outcome is null)
         {
             var callId = BitAiId.NewToolCallId();
             await yielder(new BitAiToolCallStartedEvent(callId, toolName));
@@ -90,8 +93,11 @@ public static IBitAiTransport CallsTool(string toolName, string arguments, strin
             return;
         }
 
-        // Second round trip: the session ran the tool, and its result is on the request.
-        await foreach (var evt in AiScript.Write(answer, 4, 12, token)) await yielder(evt);
+        // Second round trip: the session ran the tool - or the user declined it, which comes back as a failure - and its
+        // result is on the request.
+        var reply = outcome.IsSuccess ? answer : declinedAnswer ?? $"I did not run {toolName}, so nothing was changed.";
+
+        await foreach (var evt in AiScript.Write(reply, 4, 12, token)) await yielder(evt);
         await yielder(new BitAiMessageCompletedEvent());
     }));
 """;

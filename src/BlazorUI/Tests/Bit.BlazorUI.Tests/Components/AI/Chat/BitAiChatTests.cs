@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Bit.BlazorUI.Tests.Components.AI.Core;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
@@ -100,10 +101,35 @@ public class BitAiChatTests : BitAiTestBase
 
         component.Find(".bit-aiems-sgs > button").Click();
 
-        CollectionAssert.AreEqual(new[] { "Plan a trip" }, submitted);
+        component.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "Plan a trip" }, submitted));
         Assert.IsEmpty(session.Conversation.Messages);
 
         await session.DisposeAsync();
+    }
+
+    // The suggestion goes with the empty state as soon as its message is in, and the focus would go with it to the page:
+    // the composer takes it before the turn, which this transport never ends, is submitted.
+    [TestMethod]
+    public async Task ASuggestionHandsTheFocusToTheComposerBeforeItIsSubmitted()
+    {
+        Interactive();
+        await using var session = new BitAiChatSession(new BitAiHangingTransport(), options: new BitAiChatSessionOptions { Pacing = null });
+
+        var component = RenderComponent<BitAiChat>(p => p
+            .Add(c => c.Session, session)
+            .Add(c => c.Suggestions, ["Plan a trip"]));
+
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.AiPromptInput.focus"]);
+
+        component.Find(".bit-aiems-sgs > button").Click();
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.AiPromptInput.focus"]);
+            Assert.IsTrue(session.IsGenerating);
+        });
+
+        session.Stop();
     }
 
     [TestMethod]
@@ -159,10 +185,50 @@ public class BitAiChatTests : BitAiTestBase
 
         component.WaitForAssertion(() => Assert.IsNotNull(component.Find(".bit-aicht-ftr > .bit-aistl")));
 
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.AiPromptInput.focus"]);
+
         component.Find(".bit-aistl button").Click();
 
         component.WaitForAssertion(() => Assert.IsEmpty(component.FindAll(".bit-aistl")));
         Assert.IsTrue(list.Instance.IsPinned);
+
+        // The button is gone, and the focus with it: the composer takes it rather than the page.
+        component.WaitForAssertion(() => Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.AiPromptInput.focus"]));
+
+        await session.DisposeAsync();
+    }
+
+    [TestMethod]
+    public async Task TheChatRendersAsATurnStartsAndEndsRatherThanOnEveryEventOfTheSession()
+    {
+        Interactive();
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var session = new BitAiChatSession(new GatedTransport(gate), options: new BitAiChatSessionOptions { Pacing = null });
+
+        var component = RenderComponent<BitAiChat>(p => p.Add(c => c.Session, session));
+
+        // A change of the session that leaves the turn where it was draws nothing again: a render of the chat would
+        // re-render the transcript and every message in it, and a stream raises one per token.
+        var renders = component.RenderCount;
+        session.Stop();
+        session.Stop();
+        session.Stop();
+        await Task.Delay(250);
+        Assert.AreEqual(renders, component.RenderCount);
+
+        // A turn starting and ending does: the composer offers Stop while it is in flight, and Send again after it.
+        var turn = session.SubmitAsync("go");
+
+        component.WaitForAssertion(() => Assert.IsNotNull(component.Find(".bit-aicht-ftc button[title='Stop']")));
+
+        gate.SetResult();
+        await turn;
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.IsEmpty(component.FindAll(".bit-aicht-ftc button[title='Stop']"));
+            Assert.IsNotNull(component.Find(".bit-aicht-ftc button[title='Send']"));
+        });
 
         await session.DisposeAsync();
     }
@@ -197,6 +263,29 @@ public class BitAiChatTests : BitAiTestBase
 
         Assert.IsNotNull(component.Instance.ActiveSession);
         Assert.IsNotNull(component.Find(".bit-aicht"));
+    }
+
+    [TestMethod]
+    public void BitAiChatShouldCreateAnUnpacedSessionWhereSmoothStreamingIsOff()
+    {
+        Services.AddSingleton<IBitAiTransport>(new SilentTransport());
+        Services.AddSingleton(new BitAiUiOptions { SmoothStreaming = false });
+        Interactive();
+
+        var component = RenderComponent<BitAiChat>();
+
+        Assert.IsNull(component.Instance.ActiveSession.Options.Pacing);
+    }
+
+    [TestMethod]
+    public void BitAiChatShouldCreateAPacedSessionByDefault()
+    {
+        Services.AddSingleton<IBitAiTransport>(new SilentTransport());
+        Interactive();
+
+        var component = RenderComponent<BitAiChat>();
+
+        Assert.IsNotNull(component.Instance.ActiveSession.Options.Pacing);
     }
 
     [TestMethod]
@@ -324,6 +413,18 @@ public class BitAiChatTests : BitAiTestBase
             yield return new BitAiMessageStartedEvent();
             yield return new BitAiMessageCompletedEvent();
             await Task.CompletedTask;
+        }
+    }
+
+    /// <summary>Starts a reply, then holds the turn in flight until the gate opens.</summary>
+    private sealed class GatedTransport(TaskCompletionSource gate) : IBitAiTransport
+    {
+        public async IAsyncEnumerable<BitAiEvent> StreamAsync(BitAiRequest request, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            yield return new BitAiMessageStartedEvent();
+            await gate.Task.WaitAsync(cancellationToken);
+            yield return new BitAiTextDeltaEvent("answer");
+            yield return new BitAiMessageCompletedEvent();
         }
     }
 }

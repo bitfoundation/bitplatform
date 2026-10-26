@@ -58,6 +58,9 @@ public partial class BitAiPromptInput : BitAiComponentBase
     private string? _resizedValue;
     private int? _resizedRows;
     private int? _pendingCaret;
+    private bool _focusText;
+    private bool? _acceptedShow;
+    private string? _acceptedTypes;
     private bool _dragging;
     private string? _interim;
     private int _menuIndex;
@@ -94,7 +97,8 @@ public partial class BitAiPromptInput : BitAiComponentBase
     /// <remarks>
     /// Applied to the file picker and also checked for pasted and dropped files, which the browser does not filter. When
     /// unset, the accepted types follow the capabilities of the model if a <see cref="Model"/> or
-    /// <see cref="Capabilities"/> is given, and every type is accepted otherwise.
+    /// <see cref="Capabilities"/> is given, and every type is accepted otherwise. A file already staged that the accepted
+    /// types no longer take - another model was picked - is taken off with the same notice as a file turned away.
     /// </remarks>
     [Parameter] public string? Accept { get; set; }
 
@@ -405,11 +409,46 @@ public partial class BitAiPromptInput : BitAiComponentBase
         base.OnParametersSet();
     }
 
+    protected override async Task OnParametersSetAsync()
+    {
+        // A file staged for one model can be one the next cannot take: switching to a model without vision leaves the
+        // images staged for the one before with nowhere to go, and submitting them anyway would hand the new model what it
+        // cannot read. So when what the composer accepts moves, the files it no longer would are taken off and named in
+        // the notice, as a file turned away at the door is.
+        var show = ShowAttachments;
+        var accept = EffectiveAccept;
+
+        if (_acceptedShow != show || string.Equals(_acceptedTypes, accept, StringComparison.Ordinal) is false)
+        {
+            _acceptedShow = show;
+            _acceptedTypes = accept;
+
+            await DropUnacceptedAttachmentsAsync();
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
 
         if (IsDisposing) return;
+
+        // The remove button of a staged file goes with its chip, which would leave the focus on the body of the page; the
+        // text is where the user carries on from.
+        if (_focusText)
+        {
+            _focusText = false;
+
+            try
+            {
+                await _textarea.FocusAsync();
+            }
+            catch (JSDisconnectedException) { } // the circuit is gone, and the page with it
+            catch (OperationCanceledException) { }
+            catch (JSException) { } // a composer taken off the page in the meantime has nothing to focus
+        }
 
         // Registered again whenever the limit changes, because the browser checks it before reading a file, and whenever
         // the composer is disabled or enabled: a disabled one refuses a file pasted or dropped onto it in the browser, with
@@ -488,6 +527,14 @@ public partial class BitAiPromptInput : BitAiComponentBase
 
     private bool MenuOpen => _menuItems.Count > 0;
 
+    // The text is a combobox only where it has a menu to offer: without commands or mentions it is a plain text box, and
+    // announcing a popup that never opens would only mislead.
+    private bool HasMenu => Commands is { Count: > 0 } || Mentions is { Count: > 0 };
+
+    // Whether there is anything to offer and the text holds a trigger for it at all, so ordinary typing reads no caret
+    // and opens nothing.
+    private bool MenuCanOpen => Value.Length > 0 && HasMenu && Value.AsSpan().IndexOfAny('/', '@') >= 0;
+
     private bool ShowAttachments => AllowAttachments
                                     && (EffectiveCapabilities is not { } capabilities
                                         || (capabilities & (BitAiModelCapabilities.Vision | BitAiModelCapabilities.Documents | BitAiModelCapabilities.Audio)) != 0);
@@ -536,12 +583,22 @@ public partial class BitAiPromptInput : BitAiComponentBase
     {
         if (Disabled) return;
 
+        var previous = Value;
         Value = value ?? string.Empty;
 
         // The menu follows the new text at once, before anything below waits: an Enter or a Tab arriving meanwhile then
-        // picks from the options of what was typed, and replaces what was typed. UpdateMenuAsync refines it once the
-        // caret is known.
-        RefreshStaleMenu();
+        // picks from the options of what was typed, and replaces what was typed. A menu not open yet opens at once as
+        // well, at the caret the edit implies, rather than only once the caret has been read back: every keystroke sends
+        // a newer read and discards the older ones, so while the typing goes on none of them would open it, and a
+        // "/clear" sent with Enter straight away would go out as text. UpdateMenuAsync refines it once the caret is known.
+        if (MenuOpen)
+        {
+            RefreshStaleMenu();
+        }
+        else if (MenuCanOpen)
+        {
+            UpdateMenu(CaretAfterEdit(previous, Value));
+        }
 
         await ValueChanged.InvokeAsync(Value);
         await SaveDraftAsync();
@@ -567,7 +624,9 @@ public partial class BitAiPromptInput : BitAiComponentBase
                 case "ArrowUp":
                     _menuIndex = (_menuIndex - 1 + _menuItems.Count) % _menuItems.Count;
                     return;
-                case "Enter" or "Tab":
+                // Only a plain Enter or Tab takes the option: with a modifier each keeps its own meaning - Shift+Enter
+                // breaks the line, Ctrl or Cmd with Enter sends, Shift+Tab moves the focus back - as the script lets it.
+                case "Enter" or "Tab" when e.ShiftKey is false && e.CtrlKey is false && e.AltKey is false && e.MetaKey is false:
                     await AcceptMenuItemAsync(_menuIndex);
                     return;
             }
@@ -609,6 +668,17 @@ public partial class BitAiPromptInput : BitAiComponentBase
         return e.Key is "ArrowLeft" or "ArrowRight" or "Home" or "End"
                ? UpdateMenuAsync()
                : Task.CompletedTask;
+    }
+
+    // The menu is driven from the text, so it closes once the focus has left it - a click elsewhere, a Tab out - rather
+    // than staying open with nothing to drive it and the text still saying it is expanded. A press on an option keeps the
+    // focus in the text (see the razor), so taking one with the pointer still works.
+    private void HandleOnBlur()
+    {
+        if (MenuOpen)
+        {
+            DismissMenu();
+        }
     }
 
     // The keydown of a key an IME takes is what the guard of the script reads off the browser event; .NET 8 has no
@@ -756,10 +826,32 @@ public partial class BitAiPromptInput : BitAiComponentBase
     private async Task RemoveAttachmentAsync(BitAiAttachment attachment)
     {
         _attachments.Remove(attachment);
+        _focusText = true;
 
         if (_staged.Remove(attachment.AttachmentId, out var staged))
         {
             await ReleaseAsync(staged);
+        }
+    }
+
+    // Takes off the staged files the composer would not take any more, after what it accepts has moved under them.
+    private async Task DropUnacceptedAttachmentsAsync()
+    {
+        if (_attachments.Count == 0) return;
+
+        foreach (var attachment in _attachments.ToArray())
+        {
+            var contentType = attachment.ContentType ?? string.Empty;
+            if (ShowAttachments && IsAccepted(attachment.Name, contentType)) continue;
+
+            _attachments.Remove(attachment);
+
+            if (_staged.Remove(attachment.AttachmentId, out var staged))
+            {
+                await ReleaseAsync(staged);
+            }
+
+            await RejectAsync(attachment.Name, contentType, attachment.Size ?? 0, BitAiAttachmentRejectionReason.TypeNotAllowed);
         }
     }
 
@@ -925,9 +1017,7 @@ public partial class BitAiPromptInput : BitAiComponentBase
     {
         var version = ++_menuVersion;
 
-        if (Value.Length == 0
-            || (Commands is not { Count: > 0 } && Mentions is not { Count: > 0 })
-            || Value.AsSpan().IndexOfAny('/', '@') < 0)
+        if (MenuCanOpen is false)
         {
             CloseMenu();
             return;
@@ -939,7 +1029,37 @@ public partial class BitAiPromptInput : BitAiComponentBase
 
         if (IsDisposing || version != _menuVersion) return;
 
+        // The option the arrow keys reached in the menu the edit opened, while the caret was being read, stays the one
+        // reached when the menu worked out from the caret still offers it.
+        var highlighted = MenuOpen ? _menuItems[_menuIndex] : null;
+
         UpdateMenu(Math.Clamp(caret, 0, Value.Length));
+
+        if (highlighted is { } reached)
+        {
+            var index = _menuItems.FindIndex(e => ReferenceEquals(e.Command, reached.Command) && ReferenceEquals(e.Mention, reached.Mention));
+            if (index >= 0)
+            {
+                _menuIndex = index;
+            }
+        }
+    }
+
+    // Where the caret is once an edit has turned one text into the other: right after what the edit put in, which is the
+    // end of the part the two texts do not share - typing, a paste or a cut changes the text at the caret and leaves
+    // what is around it alone.
+    private static int CaretAfterEdit(string before, string after)
+    {
+        var prefix = before.AsSpan().CommonPrefixLength(after.AsSpan());
+        var max = Math.Min(before.Length, after.Length) - prefix;
+
+        var suffix = 0;
+        while (suffix < max && before[before.Length - 1 - suffix] == after[after.Length - 1 - suffix])
+        {
+            suffix++;
+        }
+
+        return after.Length - suffix;
     }
 
     /// <remarks>

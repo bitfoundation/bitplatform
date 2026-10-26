@@ -147,7 +147,7 @@ private readonly BitAiArtifact jsonTableArtifact = Completed(BitAiArtifactKind.T
     private readonly string example5CsharpCode = CompletedSampleCode + """"
 
 private readonly BitAiArtifact imageArtifact = Completed(BitAiArtifactKind.Image, "Mountain lake", null,
-                                                          url: "/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg");
+                                                          url: "/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg");
 
 private readonly BitAiArtifact svgArtifact = Completed(BitAiArtifactKind.Svg, "Badge", """
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80" width="240" height="80">
@@ -217,13 +217,20 @@ public static IBitAiTransport Artifacts() =>
     new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
     {
         const string artifactId = "art-readme";
-        var isRevision = request.Messages.Count(m => m.Role.IsUser) > 1;
+
+        // Every turn after the first is a revision, numbered in the body, so no version comes out the same as the one
+        // before it.
+        var revision = request.Messages.Count(m => m.Role.IsUser) - 1;
+        var isRevision = revision > 0;
 
         await yielder(new BitAiMessageStartedEvent());
 
-        var intro = isRevision
-            ? "Revised. I tightened the opening and added the install step."
-            : "Here is a first draft. Tell me what to change, and I will revise it.";
+        var intro = revision switch
+        {
+            0 => "Here is a first draft. Tell me what to change, and I will revise it.",
+            1 => "Revised. I tightened the opening and added the install step.",
+            _ => $"Revised again, into revision {revision}.",
+        };
 
         await foreach (var evt in AiScript.Write(intro, 4, 12, token)) await yielder(evt);
 
@@ -234,7 +241,7 @@ public static IBitAiTransport Artifacts() =>
         });
 
         var body = isRevision
-            ? """
+            ? $"""
               # Bit.BlazorUI.AI
 
               The AI UI layer of bit BlazorUI: conversations, streaming, tools, agents, and artifacts.
@@ -249,6 +256,8 @@ public static IBitAiTransport Artifacts() =>
 
               Chat is the easy part. What takes the time is everything around it: partial JSON,
               tool approval, citation anchoring, and not re-rendering the world on every token.
+
+              _Revision {revision}._
               """
             : """
               # Bit.BlazorUI.AI
@@ -260,15 +269,20 @@ public static IBitAiTransport Artifacts() =>
               Chat is the easy part. Everything around it is what takes the time.
               """;
 
-        foreach (var slice in AiScript.Slice(body, 24))
+        foreach (var slice in AiScript.Slice(body, 12))
         {
-            await AiScript.Pause(45, token);
+            await AiScript.Pause(60, token);
             await yielder(new BitAiArtifactDeltaEvent(artifactId, slice));
         }
 
         await yielder(new BitAiArtifactCompletedEvent(artifactId)
         {
-            Summary = isRevision ? "Tightened the opening, added install" : "First draft",
+            Summary = revision switch
+            {
+                0 => "First draft",
+                1 => "Tightened the opening, added install",
+                _ => $"Revision {revision}",
+            },
         });
 
         await yielder(new BitAiMessageCompletedEvent());
@@ -316,12 +330,13 @@ private void RestoreFirstVersion() => pricingArtifact.Restore(1);
     .custom-header {
         color: white;
         background-color: #8a2be2;
+        --bit-Button-color: white;
     }
 </style>
 
 <BitAiArtifactView Artifact="programArtifact"
                    Style="max-width: 32rem"
-                   Styles="@(new() { Header = "background-color: #1e1e2e; color: #cdd6f4", Icon = "color: #89b4fa", Title = "font-family: monospace" })" />
+                   Styles="@(new() { Header = "background-color: #1e1e2e; color: #cdd6f4; --bit-Button-color: #cdd6f4", Icon = "color: #89b4fa", Title = "font-family: monospace" })" />
 
 <BitAiArtifactView Artifact="documentArtifact" Classes="@(new() { Panel = "custom-panel", Header = "custom-header" })" />
 

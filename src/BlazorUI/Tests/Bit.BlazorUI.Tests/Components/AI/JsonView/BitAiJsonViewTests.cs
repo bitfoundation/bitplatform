@@ -87,6 +87,39 @@ public class BitAiJsonViewTests : BitAiTestBase
         StringAssert.Contains(toggles[1].TextContent, "\"user\"");
         // The chevron is a picture of the state aria-expanded already gives.
         Assert.AreEqual("true", toggles[1].QuerySelector("i")!.GetAttribute("aria-hidden"));
+        // A keyed container is named by its own head, as it reads.
+        Assert.IsNull(toggles[1].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitAiJsonViewShouldNameAToggleWithNoKeyAfterWhereItIs()
+    {
+        var view = RenderComponent<BitAiJsonView>(p => p
+            .Add(c => c.Value, Json("""{"items":[{"a":1,"b":2,"c":3,"d":4},{"a":5,"b":6,"c":7,"d":8}]}"""))
+            .Add(c => c.DefaultExpandDepth, 2));
+
+        var toggles = view.FindAll("button.bit-aijsv-tgl");
+
+        // Named by their braces alone, the root would be "{" and both entries "{ 4 }": the place goes ahead of them.
+        Assert.AreEqual("Root {", toggles[0].GetAttribute("aria-label"));
+        Assert.IsNull(toggles[1].GetAttribute("aria-label"));
+        Assert.AreEqual("[0] { 4 }", toggles[2].GetAttribute("aria-label"));
+        Assert.AreEqual("[1] { 4 }", toggles[3].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitAiJsonViewShouldEscapeWhatAKeyOrAStringHoldsTheWayJsonWritesIt()
+    {
+        var view = RenderComponent<BitAiJsonView>(p => p
+            .Add(c => c.Value, Json("""{"say \"hi\"":"Lucca \"Uno\" \\ Bar\nline two\ttab\u0001","name":"Café 東京"}""")));
+
+        var keys = view.FindAll(".bit-aijsv-key").Select(k => k.TextContent).ToArray();
+        var strings = view.FindAll(".bit-aijsv-str").Select(s => s.TextContent).ToArray();
+
+        Assert.AreEqual("\"say \\\"hi\\\"\"", keys[0]);
+        Assert.AreEqual("\"Lucca \\\"Uno\\\" \\\\ Bar\\nline two\\ttab\\u0001\"", strings[0]);
+        // Letters of any script are drawn as themselves, not as \u escapes.
+        Assert.AreEqual("\"Café 東京\"", strings[1]);
     }
 
     [TestMethod]

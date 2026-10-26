@@ -211,7 +211,11 @@ public sealed class BitAiChatSession : IAsyncDisposable
     /// </summary>
     /// <param name="toolCallId">The call being decided.</param>
     /// <param name="decision">The decision.</param>
-    public void Approve(string toolCallId, BitAiApprovalDecision decision)
+    /// <returns>
+    /// <see langword="true"/> when the decision was recorded; <see langword="false"/> when no call of that id was waiting
+    /// for one - it has run, been decided or been cancelled, or is not known - and nothing changed.
+    /// </returns>
+    public bool Approve(string toolCallId, BitAiApprovalDecision decision)
     {
         ArgumentNullException.ThrowIfNull(toolCallId);
 
@@ -225,7 +229,7 @@ public sealed class BitAiChatSession : IAsyncDisposable
 
         // Without a waiter only a call a server-side policy is holding can be decided. Anything else
         // has already run, been rejected, or been cancelled, and must not move back to pending.
-        if (waiter is null && call is not { Status: BitAiToolCallStatus.AwaitingApproval }) return;
+        if (waiter is null && call is not { Status: BitAiToolCallStatus.AwaitingApproval }) return false;
 
         if (decision is BitAiApprovalDecision.ApprovedAlways
             && _approvalPolicy is BitAiDefaultToolApprovalPolicy policy
@@ -237,6 +241,8 @@ public sealed class BitAiChatSession : IAsyncDisposable
         call?.SetApproval(decision);
         waiter?.TrySetResult(decision);
         RaiseStateChanged();
+
+        return true;
     }
 
     /// <summary>
@@ -360,7 +366,6 @@ public sealed class BitAiChatSession : IAsyncDisposable
             {
                 // Stop may have arrived before the first request, or while tools ran.
                 token.ThrowIfCancellationRequested();
-                if (round > 0) assistant.SetStatus(BitAiMessageStatus.Streaming);
 
                 var ready = new List<BitAiToolCallPart>();
                 void OnReady(BitAiToolCallPart part) => ready.Add(part);
@@ -389,6 +394,12 @@ public sealed class BitAiChatSession : IAsyncDisposable
                     }));
                     break;
                 }
+
+                // The reply goes on once its tools have run, so it is still being generated while they run or wait for
+                // the user's decision - whatever the transport said as it stopped for them (the processor leaves a reply
+                // that stopped for its tool calls as it was): it stays busy from the first request to the last, and a
+                // reader is never offered the actions of a finished reply in between.
+                assistant.SetStatus(BitAiMessageStatus.Streaming);
 
                 await ExecuteToolsAsync(ready, token).ConfigureAwait(false);
             }
@@ -446,9 +457,19 @@ public sealed class BitAiChatSession : IAsyncDisposable
         await foreach (var evt in stream.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             Processor.Apply(evt);
+            if (evt is BitAiToolCallStartedEvent started) DescribeToolCall(started.ToolCallId);
             if (evt is BitAiErrorEvent { IsTerminal: true } error) LastError = error.Error;
             RaiseStateChanged();
         }
+    }
+
+    // A call is described by its tool's definition - the display name and the risk its card shows - from its first
+    // render rather than from when it runs, and by the session's own registry, which is the one that knows the tool.
+    private void DescribeToolCall(string toolCallId)
+    {
+        if (_tools is null || FindToolCall(toolCallId) is not { Definition: null } call) return;
+
+        call.Definition = _tools.Find(call.ToolName)?.Definition;
     }
 
     private BitAiRequest BuildRequest(BitAiMessage assistant)
@@ -531,6 +552,13 @@ public sealed class BitAiChatSession : IAsyncDisposable
             var started = DateTimeOffset.UtcNow;
             var outcome = await tool.InvokeAsync(invocation, cancellationToken).ConfigureAwait(false);
             call.SetResult(outcome with { Duration = outcome.Duration ?? DateTimeOffset.UtcNow - started });
+
+            // The sources a tool consulted are the reply's to list, as they are for a result the transport reports (which
+            // the processor merges).
+            if (call.Message is { } message && outcome.Citations is { Count: > 0 } citations)
+            {
+                foreach (var citation in citations) message.AddCitation(citation);
+            }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

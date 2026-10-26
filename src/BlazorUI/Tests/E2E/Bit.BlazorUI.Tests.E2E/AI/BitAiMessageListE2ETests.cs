@@ -7,7 +7,8 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// container, its messages as articles in order, the system messages it hides unless asked, regeneration offered on the
 /// newest reply only, the scroll script (starting at the newest message, OnPinnedChange reported once per transition,
 /// following a stream while pinned and staying put once the reader scrolls up, ScrollToLatestAsync with and without the
-/// smooth scroll, reduced motion, AutoScroll off), virtualization past the threshold and the bounded tail it prerenders,
+/// smooth scroll, reduced motion, AutoScroll off), the newest messages it draws past the threshold (and prerenders) with
+/// the older ones drawn a page at a time as the reader scrolls up,
 /// the templates (an empty one, a header and a footer, a message template keyed without a wrapper), Disabled, every
 /// --bit-AiMessageList-* variable, Styles/Classes, RTL and print.
 /// </summary>
@@ -305,7 +306,7 @@ public class BitAiMessageListE2ETests : E2ETestBase
     // ---------- virtualize ----------
 
     [TestMethod]
-    public async Task Virtualize_PastTheThreshold_RendersOnlyTheMessagesNearTheView()
+    public async Task Virtualize_PastTheThreshold_DrawsTheNewestMessagesAndTheOlderOnesAsTheReaderScrollsUp()
     {
         await OpenAsync(Route);
 
@@ -313,18 +314,32 @@ public class BitAiMessageListE2ETests : E2ETestBase
         await Expect(list.Locator("article[data-message-id='v200']")).ToBeVisibleAsync();
         await list.WaitForScrolledToBottomAsync(5);
 
-        var rendered = await Articles("msl-virtual").CountAsync();
-        Assert.IsTrue(rendered is > 0 and < 60, $"Only the messages around the view are in the page: {rendered} of 200.");
-        await Expect(list.Locator("article[data-message-id='v1']")).ToHaveCountAsync(0);
+        // The newest twenty - the threshold - are drawn, and the list says how many older ones it left out.
+        await Expect(Articles("msl-virtual")).ToHaveCountAsync(20);
+        await Expect(list).ToHaveAttributeAsync("data-bit-aimsl-old", "180");
+        await Expect(list.Locator("article[data-message-id='v180']")).ToHaveCountAsync(0);
 
-        // Scrolled to the start, the first messages are rendered and the last ones are let go.
+        // At the start of what is drawn, the next page comes in above it, and the message in view stays where it was.
+        const string offsetOfV181 = "e => e.querySelector(\"article[data-message-id='v181']\").getBoundingClientRect().top - e.getBoundingClientRect().top";
+        var before = await list.EvaluateAsync<double>($"e => {{ e.scrollTop = 0; return ({offsetOfV181})(e); }}");
+        await Expect(list.Locator("article[data-message-id='v171']")).ToHaveCountAsync(1);
+        await NextFramesAsync();
+        Assert.AreEqual(before, await list.EvaluateAsync<double>(offsetOfV181), 2, "The message in view stays put as older ones come in above it.");
+
+        // All the way up, every message is drawn - the newest still among them, nothing blank on the way.
         await AiE2EHelpers.PollAsync(async () =>
         {
             await list.EvaluateAsync("e => e.scrollTop = 0");
             return await list.Locator("article[data-message-id='v1']").CountAsync() == 1;
-        }, "The first message is rendered once the view is at the start.");
-        await Expect(list.Locator("article[data-message-id='v200']")).ToHaveCountAsync(0);
-        Assert.IsTrue(await Articles("msl-virtual").CountAsync() < 60);
+        }, "The first message is drawn once the view reaches the start.");
+        Assert.IsFalse(await list.EvaluateAsync<bool>("e => e.hasAttribute('data-bit-aimsl-old')"));
+        await Expect(list.Locator("article[data-message-id='v200']")).ToHaveCountAsync(1);
+
+        // Back at the newest message, the pages above it are let go of again.
+        await list.EvaluateAsync("e => e.scrollTop = e.scrollHeight");
+        await Expect(Articles("msl-virtual")).ToHaveCountAsync(20);
+        await list.WaitForScrolledToBottomAsync(5);
+        await Expect(list).ToHaveAttributeAsync("data-bit-aimsl-old", "180");
     }
 
     [TestMethod]

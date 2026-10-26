@@ -36,6 +36,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     private string? _calloutSizeClass;
     private string? _calloutColorClass;
     private string? _registeredShortcut;
+    private bool? _registeredSelectOnFocus;
     private string? _pendingAutoFillTerm;
     private string _inputId = string.Empty;
     private string _labelId = string.Empty;
@@ -878,6 +879,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
+        await RegisterSelectOnFocus();
+
         if (firstRender is false) return;
 
         try
@@ -1036,6 +1039,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
         catch (ObjectDisposedException) { } // we can ignore this exception here
+        catch (OperationCanceledException) { } // a call into JS cancelled as the circuit goes away right after typing
         catch (Exception ex)
         {
             // Every other caller awaits SearchItems, so a throwing user callback (an
@@ -1081,10 +1085,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         ClassBuilder.Reset();
         StyleBuilder.Reset();
 
-        if (SelectTextOnFocus && HasValue)
-        {
-            await SelectInputText();
-        }
+        // SelectTextOnFocus selects the term in the browser as the focus comes in (see RegisterSelectOnFocus).
 
         await OnFocusIn.InvokeAsync(e);
 
@@ -1474,13 +1475,20 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
-    private async Task SelectInputText()
+    // SelectTextOnFocus is done by the browser at the focus event itself: a select() sent from here in answer to the
+    // focus would arrive a round trip late, when the first keys typed are already in the input (selected, and replaced
+    // by the next key) or the user has moved on - and select() focuses the input again in Chromium and WebKit. The
+    // listener is registered once, and again only when SelectTextOnFocus changes; a field that never selects on focus
+    // never asks for it. An empty field has nothing to select, which the listener checks as the focus comes in.
+    private async Task RegisterSelectOnFocus()
     {
         if (IsDisposed) return;
+        if (_registeredSelectOnFocus == SelectTextOnFocus || (_registeredSelectOnFocus is null && SelectTextOnFocus is false)) return;
 
         try
         {
-            await _js.BitUtilsSelectText(InputElement);
+            await _js.BitUtilsRegisterSelectOnFocus(InputElement, SelectTextOnFocus);
+            _registeredSelectOnFocus = SelectTextOnFocus;
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }

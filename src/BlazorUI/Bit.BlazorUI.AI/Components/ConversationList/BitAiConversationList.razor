@@ -10,7 +10,8 @@
      aria-label="@(ResolveAriaLabel() ?? Strings.Conversations)">
     @if (ShowNewButton)
     {
-        <BitActionButton IconName="Add"
+        <BitActionButton @ref="_newButton"
+                         IconName="Add"
                          OnClick="HandleOnNew"
                          Disabled="Disabled"
                          Styles="@Styles?.NewButton"
@@ -21,6 +22,7 @@
 
     @{
         var groupIndex = 0;
+        var displayIndex = 0;
     }
 
     @foreach (var group in Grouped())
@@ -28,12 +30,14 @@
         var headerId = $"{_Id}-grp{groupIndex++}";
 
         @* Each group is a list named by its heading, so a screen reader announces how many conversations a day holds
-           and which day it is reading. *@
+           and which day it is reading. The role is written out because WebKit takes it away from a list drawn without
+           its markers, and VoiceOver then reads the conversations as loose buttons. *@
         <div id="@headerId" style="@Styles?.GroupHeader" class="bit-aicvl-grp @Classes?.GroupHeader">@group.Key</div>
 
-        <ul aria-labelledby="@headerId" style="@Styles?.List" class="bit-aicvl-lst @Classes?.List">
+        <ul role="list" aria-labelledby="@headerId" style="@Styles?.List" class="bit-aicvl-lst @Classes?.List">
             @foreach (var summary in group)
             {
+                var position = displayIndex++;
                 var selected = summary.ConversationId == SelectedId;
                 var title = summary.Title ?? Strings.Untitled;
                 var itemButtonStyle = selected ? JoinStyles(Styles?.ItemButton, Styles?.SelectedItemButton) : Styles?.ItemButton;
@@ -41,7 +45,8 @@
                                                : $"bit-aicvl-ibt {Classes?.ItemButton}";
 
                 <li @key="summary.ConversationId" style="@Styles?.Item" class="bit-aicvl-itm @Classes?.Item">
-                    <button type="button"
+                    <button @ref="_itemButtons[summary.ConversationId]"
+                            type="button"
                             @onclick="() => HandleOnSelect(summary)"
                             style="@itemButtonStyle"
                             class="@itemButtonClass"
@@ -55,7 +60,7 @@
                     @if (OnDelete.HasDelegate)
                     {
                         <BitButton IconName="Delete"
-                                   OnClick="() => HandleOnDelete(summary)"
+                                   OnClick="() => HandleOnDelete(summary, position)"
                                    Disabled="Disabled"
                                    Title="@Strings.Delete"
                                    AriaLabel="@($"{Strings.Delete} {title}")"

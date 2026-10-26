@@ -29,8 +29,10 @@
             BitAiJsonView needs nothing but its <b>Value</b>: no session and no transport. It is a plain view of a
             <b>JsonElement</b>, so it works the same over a value a tool returned, a payload a model streamed (see the
             <BitLink Href="/ai/scenarios/structured">Structured output</BitLink> scenario) or anything an app parsed itself.
-            Each container's head is a native button carrying <b>aria-expanded</b>, named by its key, so the tree is read and
-            driven from the keyboard like any disclosure.
+            Each container's head is a native button carrying <b>aria-expanded</b>, named by its key - or, with no key, by
+            where it is: the root, or its index in an array (the <b>JsonRoot</b> and <b>JsonArrayItem</b> strings) - so the
+            tree is read and driven from the keyboard like any disclosure. Keys and strings are drawn the way JSON writes
+            them, a quote, a backslash or a line break in them escaped.
         </BitText>
     </NotesTemplate>
     <Examples>
@@ -100,12 +102,12 @@
             @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
             <div>
                 <BitAiJsonView Value="order"
-                               Style="padding: 0.75rem; border-radius: 0.5rem; background-color: #1e1e2e"
-                               Styles="@(new() { Key = "color: #89b4fa", String = "color: #a6e3a1", Number = "color: #fab387", Toggle = "color: #cdd6f4" })" />
+                               Style="padding: 0.75rem; border-radius: 0.5rem; background-color: #1e1e2e; color: #cdd6f4"
+                               Styles="@(new() { Key = "color: #89b4fa", String = "color: #a6e3a1", Number = "color: #fab387", Boolean = "color: #cba6f7", Null = "color: #9399b2", Toggle = "color: #cdd6f4" })" />
                 <br />
                 <BitAiJsonView Value="order" Classes="@(new() { Root = "custom-json", Key = "custom-json-key" })" />
                 <br />
-                <div style="--bit-AiJsonView-key-color: #8a2be2; --bit-AiJsonView-string-color: #d2691e; --bit-AiJsonView-indent: 2rem; --bit-AiJsonView-font-size: 0.75rem">
+                <div style="--bit-AiJsonView-key-color: light-dark(#7b2cbf, #c77dff); --bit-AiJsonView-string-color: light-dark(#a0522d, #f4a460);--bit-AiJsonView-indent: 2rem; --bit-AiJsonView-font-size: 0.75rem">
                     <BitAiJsonView Value="order" />
                 </div>
             </div>

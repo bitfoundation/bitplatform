@@ -9,11 +9,15 @@
 // The button floats centered above the nearest positioned ancestor - the footer of a BitAiChat - so it sits just above
 // the composer whatever height the composer has. It is centered with physical properties, since a shape centered on a
 // line is the same shape whichever way the page is written, and through translate rather than transform, so the
-// entrance below does not knock it off center.
+// entrance below does not knock it off center. Placed at the middle, an absolutely positioned box would only grow to
+// the half of its container on that side, wrapping a longer label on a phone, so it takes the width of its label, up to
+// the whole container.
 .bit-aistl {
     left: 50%;
     position: absolute;
     translate: -50% 0;
+    width: max-content;
+    max-width: 100%;
     box-sizing: border-box;
     border-radius: $shp-radius-full;
     bottom: calc(100% + var(--bit-AiScrollToLatest-offset, #{spacing(1)}));

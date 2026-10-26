@@ -15,7 +15,7 @@ public partial class AiGenerativeScenarioPage
     private readonly string example1CsharpCode = """
 private readonly BitAiChatSession session = new(AiDemoInteractiveTransports.GenerativeUi());
 
-private readonly string[] suggestions = ["What is the week like in Oslo, Lisbon and Auckland?"];
+private readonly string[] suggestions = ["What is the weather like in Oslo, Lisbon and Auckland?"];
 
 public ValueTask DisposeAsync() => session.DisposeAsync();
 """;
@@ -72,7 +72,7 @@ static void RegisterGenerativeComponents(BitAiGenerativeUiRegistry registry)
 public static IBitAiTransport GenerativeUi() => new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
 {
     await yielder(new BitAiMessageStartedEvent());
-    await foreach (var evt in AiScript.Write("Here is the week ahead for the three cities you asked about.\n\n", 4, 12, token))
+    await foreach (var evt in AiScript.Write("Here is the weather right now in the three cities you asked about.\n\n", 4, 12, token))
         await yielder(evt);
 
     // A component, named as it was registered, and the properties to bind onto it.

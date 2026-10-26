@@ -172,7 +172,7 @@ private JsonElement? eventJson;
 
 @if (ProposedForm is { } proposed)
 {
-    <BitAiForm Definition="proposed" Submitted="proposalSubmitted" OnSubmit="values => proposalSubmitted = true" />
+    <BitAiForm Definition="proposed" Busy="proposalSession.IsGenerating" Submitted="proposalSubmitted" OnSubmit="values => proposalSubmitted = true" />
 }
 """;
     private readonly string example6CsharpCode = """
@@ -217,15 +217,20 @@ public static IBitAiTransport ProposesForm() =>
         const string intro = "I can book that. Check the details first, since I inferred two of them.\n\n";
         await foreach (var evt in AiScript.Write(intro, 4, 12, token)) await yielder(evt);
 
-        const string schema = """
+        // The two details the model inferred go in as the defaults the form starts from: two guests, and the coming Friday.
+        var today = DateTime.Today;
+        var friday = today.AddDays(((int)DayOfWeek.Friday - (int)today.DayOfWeek + 7) % 7);
+        var date = friday.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        var schema = $$"""
             {
               "title": "Book a table",
               "type": "object",
               "required": ["restaurant", "guests", "date"],
               "properties": {
                 "restaurant": { "type": "string", "title": "Restaurant" },
-                "guests": { "type": "integer", "title": "Guests", "minimum": 1, "maximum": 12 },
-                "date": { "type": "string", "format": "date", "title": "Date" },
+                "guests": { "type": "integer", "title": "Guests", "minimum": 1, "maximum": 12, "default": 2 },
+                "date": { "type": "string", "format": "date", "title": "Date", "default": "{{date}}" },
                 "seating": { "type": "string", "enum": ["Inside", "Terrace", "No preference"] },
                 "notes": { "type": "string", "format": "textarea", "title": "Notes for the restaurant" }
               }

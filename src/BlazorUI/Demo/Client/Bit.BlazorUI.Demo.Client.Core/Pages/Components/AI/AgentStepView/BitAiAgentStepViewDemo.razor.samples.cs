@@ -52,7 +52,10 @@ private static BitAiAgentStep[] CreateStatusSteps()
     completed.Complete(summary: "11 results, 3 look primary");
 
     var failed = new BitAiAgentStep("failed", "Failed: finished unsuccessfully");
-    failed.Complete(BitAiAgentStepStatus.Failed, error: new BitAiError("3 of 812 tests failed."));
+    failed.Complete(BitAiAgentStepStatus.Failed, error: new BitAiError("3 of 812 tests failed.")
+    {
+        Detail = "Checkout.AppliesDiscount\nCheckout.RoundsTax\nCheckout.HandlesRefund",
+    });
 
     var skipped = new BitAiAgentStep("skipped", "Skipped: abandoned when the run ended");
     skipped.Complete(BitAiAgentStepStatus.Skipped);
@@ -177,7 +180,7 @@ private static BitAiAgentStep[] CreateCascadingSteps()
 <BitAiAgentStepView Step="styleSteps[1]"
                     Class="custom-class"
                     Classes="@(new() { Title = "custom-title", Summary = "custom-summary" })"
-                    Styles="@(new() { Duration = "color: #0ea5e9" })" />
+                    Styles="@(new() { Duration = "color: color-mix(in srgb, #0ea5e9 60%, var(--bit-clr-fg-pri))" })" />
 
 <div style="--bit-AiAgentStepView-marker-size: 1.25rem;
             --bit-AiAgentStepView-completed-color: #7c3aed;

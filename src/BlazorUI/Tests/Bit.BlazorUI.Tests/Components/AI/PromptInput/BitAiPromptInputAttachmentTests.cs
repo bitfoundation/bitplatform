@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -119,6 +120,64 @@ public class BitAiPromptInputAttachmentTests : BitAiTestBase
         Assert.IsEmpty(composer.Instance.Attachments);
         Assert.IsTrue(content.Disposed);
         Assert.AreEqual("blob:preview", Context.JSInterop.VerifyInvoke("BitBlazorUI.AiPromptInput.revokePreview").Arguments[0]);
+    }
+
+    // The remove button goes with its chip, which would leave the focus on the body of the page.
+    [TestMethod]
+    public async Task RemovingAStagedFileHandsTheFocusToTheText()
+    {
+        var composer = RenderComponent<BitAiPromptInput>();
+
+        await composer.InvokeAsync(() => composer.Instance._OnDroppedFile(File("one.bin", "application/octet-stream", [1])));
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+
+        composer.Find(".bit-aiach button[aria-label='Remove one.bin']").Click();
+
+        composer.WaitForAssertion(() =>
+        {
+            var focus = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
+
+            Assert.IsNotEmpty(focus);
+            var textarea = (ElementReference)typeof(BitAiPromptInput).GetField("_textarea", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.GetValue(composer.Instance)!;
+            Assert.AreEqual(textarea.Id, ((ElementReference)focus[^1].Arguments[0]!).Id);
+        });
+    }
+
+    // Files staged for one model that the next cannot take are taken off, released and named in the notice, rather than
+    // left on the composer to be submitted to a model that cannot read them.
+    [TestMethod]
+    public async Task StagedFilesTheModelCanNoLongerTakeAreTakenOffAndSaidSo()
+    {
+        var rejections = new List<BitAiAttachmentRejection>();
+        var image = new FakeStreamReference([1, 2, 3, 4]);
+        var composer = RenderComponent<BitAiPromptInput>(p => p
+            .Add(c => c.MaxInlineSize, 2)
+            .Add(c => c.Capabilities, BitAiModelCapabilities.Vision | BitAiModelCapabilities.Documents)
+            .Add(c => c.OnAttachmentRejected, r => rejections.Add(r)));
+
+        await composer.InvokeAsync(() => composer.Instance._OnDroppedFile(
+            new BitAiComposerFile("shot.png", "image/png", 4) { Content = image, PreviewUrl = "blob:shot" }));
+        await composer.InvokeAsync(() => composer.Instance._OnDroppedFile(File("notes.pdf", "application/pdf", [1])));
+        Assert.HasCount(2, composer.Instance.Attachments);
+        Assert.IsEmpty(rejections);
+
+        // A model that reads documents but not images.
+        composer.Render(p => p.Add(c => c.Capabilities, BitAiModelCapabilities.Documents));
+
+        composer.WaitForAssertion(() => Assert.AreEqual("notes.pdf", Assert.ContainsSingle(composer.Instance.Attachments).Name));
+        var rejection = Assert.ContainsSingle(rejections);
+        Assert.AreEqual("shot.png", rejection.FileName);
+        Assert.AreEqual(BitAiAttachmentRejectionReason.TypeNotAllowed, rejection.Reason);
+        StringAssert.Contains(composer.Find(".bit-aipri-ntc").TextContent, "shot.png is not a supported file type.");
+        Assert.IsTrue(image.Disposed);
+        Assert.AreEqual("blob:shot", Context.JSInterop.VerifyInvoke("BitBlazorUI.AiPromptInput.revokePreview").Arguments[0]);
+
+        // A model that takes no file at all takes the rest off as well.
+        composer.Render(p => p.Add(c => c.Capabilities, BitAiModelCapabilities.Streaming));
+
+        composer.WaitForAssertion(() => Assert.IsEmpty(composer.Instance.Attachments));
+        Assert.HasCount(2, rejections);
+        Assert.AreEqual("notes.pdf", rejections[1].FileName);
     }
 
     [TestMethod]

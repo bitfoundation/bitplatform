@@ -10,7 +10,8 @@
        it failed. The dismiss button of the tag is the remove button, there only while something listens for it. The chip is
        a neutral one (the host-default tertiary role, which an app's --bit-Tag-* variables still restyle); a failed upload
        takes the error color, which is the state of the file rather than a look of the chip. *@
-    <BitTag Text="@Attachment.Name"
+    <BitTag @ref="_tag"
+            Text="@Attachment.Name"
             SecondaryText="@Details"
             Title="@Attachment.Name"
             NoWrap

@@ -20,6 +20,10 @@ public abstract class BitAiMarkdownBlock : BitAiMarkdownNode
 public abstract class BitAiMarkdownInline : BitAiMarkdownNode;
 
 /// <summary>A parsed document: an ordered list of blocks.</summary>
+/// <remarks>
+/// A document is open (<see cref="BitAiMarkdownBlock.IsOpen"/>) when it was parsed while more source was expected, whatever
+/// its last block is - a blank line or a closed code fence may end the text so far, and more of it still follow.
+/// </remarks>
 public sealed class BitAiMarkdownDocument : BitAiMarkdownBlock
 {
     /// <summary>The blocks, in order.</summary>

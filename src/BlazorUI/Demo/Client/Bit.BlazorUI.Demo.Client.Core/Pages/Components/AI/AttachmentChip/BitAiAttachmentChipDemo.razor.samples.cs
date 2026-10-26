@@ -76,15 +76,17 @@ private async Task UploadAsync()
 <div style=""display:flex;flex-wrap:wrap;gap:0.5rem"">
     @foreach (var attachment in staged)
     {
-        <BitAiAttachmentChip @key=""attachment.AttachmentId"" Attachment=""attachment"" OnRemove=""Remove"" />
+        <BitAiAttachmentChip @key=""attachment.AttachmentId"" @ref=""stagedChips[attachment.AttachmentId]"" Attachment=""attachment"" OnRemove=""Remove"" />
     }
 </div>
 
-<BitButton Variant=""BitVariant.Outline"" OnClick=""ResetStaged"">Bring them back</BitButton>";
+<BitButton @ref=""resetButton"" Variant=""BitVariant.Outline"" OnClick=""ResetStaged"">Bring them back</BitButton>";
     private readonly string example4CsharpCode = @"
 private const string PhotoUrl = ""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg"";
 
 private List<BitAiAttachment> staged = CreateStaged();
+private readonly Dictionary<string, BitAiAttachmentChip> stagedChips = [];
+private BitButton resetButton = default!;
 
 private static List<BitAiAttachment> CreateStaged() =>
 [
@@ -93,9 +95,23 @@ private static List<BitAiAttachment> CreateStaged() =>
     new(""att-staged-3"", ""budget.xlsx"") { Size = 48_640 },
 ];
 
-private void Remove(BitAiAttachment attachment)
+private async Task Remove(BitAiAttachment attachment)
 {
+    var index = staged.IndexOf(attachment);
+
     staged.Remove(attachment);
+    stagedChips.Remove(attachment.AttachmentId);
+
+    // The remove button goes with its chip: the focus moves to the chip that took its place, or the last one, or the
+    // button that brings them back once none is left.
+    if (staged.Count > 0)
+    {
+        await stagedChips[staged[Math.Min(index, staged.Count - 1)].AttachmentId].FocusAsync();
+    }
+    else
+    {
+        await resetButton.FocusAsync();
+    }
 }
 
 private void ResetStaged()

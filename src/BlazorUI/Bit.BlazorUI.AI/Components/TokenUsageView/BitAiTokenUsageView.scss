@@ -7,6 +7,8 @@
 //   --bit-AiTokenUsageView-gap          room between two figures             (default: spacing(1.5))
 
 .bit-aituv {
+    // The containing block of the visually hidden text inside it.
+    position: relative;
     display: inline-flex;
     flex-wrap: wrap;
     align-items: center;
@@ -22,9 +24,18 @@
     }
 }
 
+// Each figure is a phrase of its own words, laid out in the direction they are written in rather than in the row's: in
+// a right-to-left row the bidi algorithm would otherwise turn "138 tokens" into "tokens 138", while figures put into a
+// right-to-left language still read right to left.
 .bit-aituv-tok,
 .bit-aituv-cst,
 .bit-aituv-spd,
 .bit-aituv-ltc {
     white-space: nowrap;
+    unicode-bidi: plaintext;
+}
+
+// The breakdown of the tokens and the name of the latency, for those the tooltip and the layout do not reach.
+.bit-aituv-vhd {
+    @include visually-hidden;
 }

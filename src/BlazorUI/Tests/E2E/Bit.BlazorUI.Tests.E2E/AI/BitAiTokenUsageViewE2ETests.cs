@@ -44,7 +44,7 @@ public class BitAiTokenUsageViewE2ETests : E2ETestBase
         await Expect(Cost("tuv-cost-default")).ToHaveTextAsync("$0.50");
         await Expect(Cost("tuv-cost-eur")).ToHaveTextAsync("€0.25");
         await Expect(Cost("tuv-cost-gbp")).ToHaveTextAsync("£2.00");
-        await Expect(Cost("tuv-cost-other")).ToHaveTextAsync("JPY 120.00");
+        await Expect(Cost("tuv-cost-other")).ToHaveTextAsync("JPY 120");
         await Expect(Cost("tuv-cost-fraction")).ToHaveTextAsync("$0.0042");
         await Expect(Cost("tuv-cost-cent")).ToHaveTextAsync("$0.01");
 
@@ -59,7 +59,7 @@ public class BitAiTokenUsageViewE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         await Expect(Tokens("tuv-small")).ToHaveTextAsync("999 tokens");
-        await Expect(Tokens("tuv-thousand")).ToHaveTextAsync("1.0k tokens");
+        await Expect(Tokens("tuv-thousand")).ToHaveTextAsync("1k tokens");
         await Expect(Tokens("tuv-million")).ToHaveTextAsync("1.2M tokens");
         await Expect(Tokens("tuv-output-only")).ToHaveTextAsync("42 tokens");
         await Expect(View("tuv-output-only")).ToHaveAttributeAsync("title", "Output: 42");
@@ -80,20 +80,27 @@ public class BitAiTokenUsageViewE2ETests : E2ETestBase
         await Expect(Speed("tuv-speed")).ToHaveTextAsync("42.5 tok/s");
         await Expect(Latency("tuv-speed")).ToHaveCountAsync(0);
 
+        // The latency is named for assistive technologies by hidden text before the bare duration it shows.
         await Expect(Speed("tuv-latency")).ToHaveTextAsync("42.5 tok/s");
-        await Expect(Latency("tuv-latency")).ToHaveTextAsync("500ms");
+        await Expect(Latency("tuv-latency")).ToHaveTextAsync("Time to first token 500ms");
+        var label = await Latency("tuv-latency").Locator(".bit-aituv-vhd").BoundingBoxAsync();
+        Assert.IsTrue(label is null || label.Width <= 1, "The name of the latency is visually hidden.");
 
         await Expect(Speed("tuv-no-speed")).ToHaveCountAsync(0);
-        await Expect(Latency("tuv-no-speed")).ToHaveTextAsync("500ms");
+        await Expect(Latency("tuv-no-speed")).ToHaveTextAsync("Time to first token 500ms");
 
         await Expect(Speed("tuv-latency-seconds")).ToHaveTextAsync("85 tok/s");
-        await Expect(Latency("tuv-latency-seconds")).ToHaveTextAsync("1.5s");
+        await Expect(Latency("tuv-latency-seconds")).ToHaveTextAsync("Time to first token 1.5s");
+
+        // The breakdown of the tokens is hidden text of the readout too, which the title alone is not to a keyboard or a
+        // screen reader.
+        await Expect(View("tuv-latency").Locator("> .bit-aituv-vhd")).ToHaveCountAsync(1);
 
         await Expect(Speed("tuv-no-metadata")).ToHaveCountAsync(0);
         await Expect(Latency("tuv-no-metadata")).ToHaveCountAsync(0);
 
-        // The figures follow each other in a fixed order: tokens, cost, speed, latency.
-        Assert.AreEqual("bit-aituv-tok,bit-aituv-cst,bit-aituv-spd,bit-aituv-ltc",
+        // The figures follow each other in a fixed order: tokens (and its hidden breakdown), cost, speed, latency.
+        Assert.AreEqual("bit-aituv-tok,bit-aituv-vhd,bit-aituv-cst,bit-aituv-spd,bit-aituv-ltc",
             await View("tuv-latency").EvaluateAsync<string>("e => [...e.children].map(c => c.classList[0]).join(',')"));
     }
 

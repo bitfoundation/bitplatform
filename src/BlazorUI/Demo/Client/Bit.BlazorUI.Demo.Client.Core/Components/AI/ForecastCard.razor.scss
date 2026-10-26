@@ -1,14 +1,15 @@
 ﻿@import '../../Styles/abstracts/_docs.scss';
 
 // A small weather tile the generative UI scenario lets the model render, styled from the theme tokens so it follows
-// the site's scheme, accent and preset like the AI components around it.
+// the site's scheme, accent and preset like the AI components around it. A block of its own: every generative part is
+// drawn in a block of its own, so tiles meant to sit in a row would stack anyway - a column of them that is narrow on
+// purpose reads as intended.
 .forecast-card {
     gap: $doc-space-3xs;
-    display: inline-flex;
-    min-width: rem2(160px);
+    display: flex;
     flex-direction: column;
+    max-width: rem2(240px);
     margin-block: $doc-space-3xs;
-    margin-inline-end: $doc-space-2xs;
     padding: $doc-space-xs $doc-space-sm;
     color: $bit-color-foreground-primary;
 

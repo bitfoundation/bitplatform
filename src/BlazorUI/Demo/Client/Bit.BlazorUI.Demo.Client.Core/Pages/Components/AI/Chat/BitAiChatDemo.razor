@@ -149,12 +149,14 @@
 
         <DemoExample Title="Composer" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
-                <b>Placeholder</b> words the composer. <b>ComposerPrefixTemplate</b> goes before its text (a model picker, here),
-                <b>ComposerSuffixTemplate</b> beside the send button and <b>ComposerHintTemplate</b> under it.
+                <b>Placeholder</b> words the composer. <b>ComposerPrefixTemplate</b> goes before its text (a model picker, here -
+                an app hands the picked model to its session through the <b>RequestOptions</b> of its options; the scripted
+                replies of this page do not read it), <b>ComposerSuffixTemplate</b> beside the send button and
+                <b>ComposerHintTemplate</b> under it.
             </div>
             <br />
             <div style="height:420px">
-                <BitAiChat @ref="composerChat" Placeholder="Ask the selected model...">
+                <BitAiChat @ref="composerChat" Placeholder="Ask anything...">
                     <ComposerPrefixTemplate>
                         <BitAiModelSelector @bind-ModelId="modelId" />
                     </ComposerPrefixTemplate>
@@ -166,7 +168,7 @@
                                    OnClick="ClearComposerChat" />
                     </ComposerSuffixTemplate>
                     <ComposerHintTemplate>
-                        Talking to <b>@modelId</b>. Enter sends, Shift+Enter starts a new line.
+                        Picked: <b>@modelId</b>. Enter sends, Shift+Enter starts a new line.
                     </ComposerHintTemplate>
                 </BitAiChat>
             </div>

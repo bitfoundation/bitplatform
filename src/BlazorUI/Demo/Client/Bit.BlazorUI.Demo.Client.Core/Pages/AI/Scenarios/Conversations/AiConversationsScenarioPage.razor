@@ -56,7 +56,9 @@
                 their own threads rather than everyone's.
             </p>
             <p>
-                A new thread is saved when its first message arrives, and New reuses a thread nobody has written in yet, so
+                A new thread is saved when its first message arrives, and again as each reply completes
+                (<code>BitAiChatSession.TurnCompleted</code>), since a store over a database keeps the reply as it was
+                handed - empty, had it been saved only as it arrived. New reuses a thread nobody has written in yet, so
                 pressing it twice does not leave an empty conversation in the list.
             </p>
         </DocSection>

@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI.Tests.E2E.AI;
+﻿using System.Text.RegularExpressions;
+
+namespace Bit.BlazorUI.Tests.E2E.AI;
 
 /// <summary>
 /// Drives BitAiCodeBlockView at /e2e/aicodeblockview in a real browser: the header naming the language or the file, the
@@ -22,14 +24,14 @@ public class BitAiCodeBlockViewE2ETests : E2ETestBase
         ("bit-aicbv-typ", "--bit-clr-suc-fg", "cbv-cs"),
         ("bit-aicbv-str", "--bit-clr-swr-fg", "cbv-cs"),
         ("bit-aicbv-num", "--bit-clr-sec-fg", "cbv-cs"),
-        ("bit-aicbv-cmt", "--bit-clr-fg-ter", "cbv-cs"),
-        ("bit-aicbv-fnc", "--bit-clr-wrn-fg", "cbv-cs"),
+        ("bit-aicbv-cmt", "color-mix(in srgb, var(--bit-clr-fg-ter), var(--bit-clr-fg-pri) 15%)", "cbv-cs"),
+        ("bit-aicbv-fnc", "color-mix(in srgb, var(--bit-clr-wrn-fg), var(--bit-clr-fg-pri) 15%)", "cbv-cs"),
         ("bit-aicbv-pnc", "--bit-clr-fg-sec", "cbv-cs"),
         ("bit-aicbv-prp", "--bit-clr-pri-fg", "cbv-yaml"),
         ("bit-aicbv-cst", "--bit-clr-sec-fg", "cbv-file"),
         ("bit-aicbv-ins", "--bit-clr-suc-fg", "cbv-diff"),
         ("bit-aicbv-del", "--bit-clr-err-fg", "cbv-diff"),
-        ("bit-aicbv-met", "--bit-clr-fg-ter", "cbv-diff"),
+        ("bit-aicbv-met", "color-mix(in srgb, var(--bit-clr-fg-ter), var(--bit-clr-fg-pri) 15%)", "cbv-diff"),
         ("bit-aicbv-tag", "--bit-clr-err-fg", "cbv-html"),
         ("bit-aicbv-atr", "--bit-clr-sec-fg", "cbv-html"),
         ("bit-aicbv-lab", "--bit-clr-suc-fg", "cbv-rust"),
@@ -141,7 +143,7 @@ public class BitAiCodeBlockViewE2ETests : E2ETestBase
         {
             foreach (var (cls, token, block) in TokenColors)
             {
-                await Expect(Page.Locator($"#{block} .{cls}").First).ToHaveCSSAsync("color", await Page.ResolveColorAsync($"var({token})"));
+                await Expect(Page.Locator($"#{block} .{cls}").First).ToHaveCSSAsync("color", await Page.ResolveColorAsync(token.StartsWith("--") ? $"var({token})" : token));
             }
 
             await Expect(Page.Locator("#cbv-cs .bit-aicbv-hdr")).ToHaveCSSAsync("color", await Page.ResolveColorAsync("var(--bit-clr-fg-sec)"));
@@ -332,6 +334,11 @@ public class BitAiCodeBlockViewE2ETests : E2ETestBase
 
         var sizes = await body.EvaluateAsync<double[]>("e => [e.scrollWidth, e.clientWidth]");
         Assert.IsTrue(sizes[0] > sizes[1], "The long line overflows the body, which scrolls it.");
+
+        // A body with something to scroll is a stop of the keyboard, which is what lets WebKit scroll it with one; a body
+        // its code fits in is not.
+        await Expect(body).ToHaveAttributeAsync("tabindex", "0");
+        await Expect(Page.Locator("#cbv-plain .bit-aicbv-bdy")).Not.ToHaveAttributeAsync("tabindex", new Regex(".*"));
 
         await body.EvaluateAsync("e => e.scrollLeft = e.scrollWidth");
         Assert.IsTrue(await body.EvaluateAsync<double>("e => e.scrollLeft") > 0);

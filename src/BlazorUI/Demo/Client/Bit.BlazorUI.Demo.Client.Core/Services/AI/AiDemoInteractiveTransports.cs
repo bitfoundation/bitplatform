@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Services.AI;
 
@@ -17,7 +18,7 @@ public static partial class AiDemoInteractiveTransports
         {
             await yielder(new BitAiMessageStartedEvent());
 
-            const string intro = "Here is the week ahead for the three cities you asked about.\n\n";
+            const string intro = "Here is the weather right now in the three cities you asked about.\n\n";
             await foreach (var evt in AiScript.Write(intro, 4, 12, token)) await yielder(evt);
 
             string[] cities =
@@ -51,15 +52,22 @@ public static partial class AiDemoInteractiveTransports
                 "I can book that. Check the details first, since I inferred two of them.\n\n";
             await foreach (var evt in AiScript.Write(intro, 4, 12, token)) await yielder(evt);
 
-            const string schema = """
+            // The two details the model inferred go in as the defaults the form starts from: two guests, and the coming
+            // Friday the suggestion asks for. The date is written in the invariant culture, the way JSON Schema's
+            // "date" format reads, whatever the culture of the page.
+            var today = DateTime.Today;
+            var friday = today.AddDays(((int)DayOfWeek.Friday - (int)today.DayOfWeek + 7) % 7);
+            var date = friday.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            var schema = $$"""
                 {
                   "title": "Book a table",
                   "type": "object",
                   "required": ["restaurant", "guests", "date"],
                   "properties": {
                     "restaurant": { "type": "string", "title": "Restaurant" },
-                    "guests": { "type": "integer", "title": "Guests", "minimum": 1, "maximum": 12 },
-                    "date": { "type": "string", "format": "date", "title": "Date" },
+                    "guests": { "type": "integer", "title": "Guests", "minimum": 1, "maximum": 12, "default": 2 },
+                    "date": { "type": "string", "format": "date", "title": "Date", "default": "{{date}}" },
                     "seating": { "type": "string", "enum": ["Inside", "Terrace", "No preference"] },
                     "notes": { "type": "string", "format": "textarea", "title": "Notes for the restaurant" }
                   }
@@ -87,7 +95,9 @@ public static partial class AiDemoInteractiveTransports
         {
             await yielder(new BitAiMessageStartedEvent());
 
-            if (Interlocked.Increment(ref attempts) == 1)
+            var attempt = Interlocked.Increment(ref attempts);
+
+            if (attempt == 1)
             {
                 await foreach (var evt in AiScript.Write("Looking that up", 4, 25, token)) await yielder(evt);
                 await AiScript.Pause(400, token);
@@ -104,9 +114,11 @@ public static partial class AiDemoInteractiveTransports
                 return;
             }
 
-            const string answer =
-                "That worked on the second attempt. The first request was rate limited, which the " +
-                "session surfaced as a retryable error rather than an exception.";
+            // Only the retry right after the failure talks about it; every later turn is an ordinary one.
+            var answer = attempt == 2
+                ? "That worked on the second attempt. The first request was rate limited, which the " +
+                  "session surfaced as a retryable error rather than an exception."
+                : $"You said: {AiScript.LastUserText(request)}";
 
             await foreach (var evt in AiScript.Write(answer, 4, 12, token)) await yielder(evt);
             await yielder(new BitAiMessageCompletedEvent());
@@ -171,11 +183,14 @@ public static partial class AiDemoInteractiveTransports
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
 
+            var fromYou = request.Messages.Count(m => m.Role.IsUser);
+            var fromMe = request.Messages.Count(m => m.Role.IsAssistant);
+
             var answer = text.StartsWith("Summarize", StringComparison.OrdinalIgnoreCase)
                 ? $"""
                   So far:
 
-                  - {request.Messages.Count(m => m.Role.IsUser)} messages from you, {request.Messages.Count(m => m.Role.IsAssistant)} from me.
+                  - {fromYou} {(fromYou == 1 ? "message" : "messages")} from you, {fromMe} from me.
                   - Nothing has been decided yet.
                   - The next step is yours.
                   """

@@ -29,7 +29,7 @@ public sealed record BitAiFormDefinition
 
     /// <summary>
     /// The label on the cancel button. Defaults to <see cref="BitAiStrings.Cancel"/>; set it to an empty
-    /// string to hide the button.
+    /// string to hide the button. The button is shown only on a form with an <see cref="BitAiForm.OnCancel"/>.
     /// </summary>
     /// <remarks>
     /// The defaults are left unset here rather than written in English, so that a form a model

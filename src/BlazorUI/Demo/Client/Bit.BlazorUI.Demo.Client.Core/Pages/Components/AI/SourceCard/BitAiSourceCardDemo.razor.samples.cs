@@ -127,7 +127,7 @@ private readonly BitAiSourceCardParams[] cardParams =
     }
 
     .custom-title {
-        color: #0369a1;
+        color: light-dark(#0369a1, #7dd3fc);
         text-decoration: underline;
     }
 </style>

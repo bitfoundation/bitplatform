@@ -87,8 +87,7 @@ private async Task StartFailingRun()
     await Task.Delay(1500);
     test.Complete(BitAiAgentStepStatus.Failed, error: new BitAiError("3 of 812 tests failed."));
 
-    run.Steps[2].Complete(BitAiAgentStepStatus.Skipped);
-
+    // Ending the run as failed completes the steps it will no longer reach (Deploy) as Skipped.
     run.SetError(new BitAiError("The run stopped before deploying.")
     {
         Detail = "Checkout.AppliesDiscount\nCheckout.RoundsTax\nCheckout.HandlesRefund",
@@ -308,7 +307,7 @@ private async Task StartCascadingRun()
 
     .custom-goal {
         font-size: 1rem;
-        color: #0c4a6e;
+        color: var(--bit-clr-pri-fg);
     }
 
     .custom-question {
@@ -338,6 +337,9 @@ private async Task StartCascadingRun()
                           --bit-AiAgentRunView-text-color: #94a3b8;
                           --bit-AiAgentRunView-prompt-background: #3b2f0b;
                           --bit-AiAgentRunView-radius: 1rem;
+                          --bit-AiAgentStepView-text-color: #94a3b8;
+                          --bit-Button-outline-color: #f1f5f9;
+                          --bit-Button-outline-border-color: #64748b;
                           color: #f1f5f9" />
 """;
     private readonly string example7CsharpCode = """
@@ -361,11 +363,20 @@ private static BitAiAgentRun CreateStyledRun()
     return run;
 }
 
-private void RespondToStyledRun(string answer)
+private async Task RespondToStyledRun(string answer)
 {
-    styledRun.ResolveInput();
-    styledRun.Steps[0].Complete(summary: answer);
-    styledRun.Steps[1].Start();
+    // The run answered, which Ask again may replace while it goes on.
+    var run = styledRun;
+
+    run.ResolveInput();
+    run.Steps[0].Complete(summary: answer);
+
+    var venue = run.Steps[1];
+    venue.Start();
+    await Task.Delay(1200);
+    venue.Complete(summary: "The lakeside hall, for 40");
+
+    run.SetStatus(BitAiAgentRunStatus.Completed);
 }
 
 private void ResetStyledRun() => styledRun = CreateStyledRun();
@@ -374,9 +385,12 @@ private void ResetStyledRun() => styledRun = CreateStyledRun();
     private readonly string example8RazorCode = """
 <BitButton Variant="BitVariant.Outline" OnClick="ResetRtlRun">دوباره بپرس</BitButton>
 
-<BitAiAgentRunView Dir="BitDir.Rtl" Run="rtlRun" OnRespond="RespondToRtlRun" />
+<BitAiOptionsProvider UiOptions="persianOptions">
+    <BitAiAgentRunView Dir="BitDir.Rtl" Run="rtlRun" OnRespond="RespondToRtlRun" />
+</BitAiOptionsProvider>
 """;
     private readonly string example8CsharpCode = """
+private readonly BitAiUiOptions persianOptions = BitAiUiOptions.Default with { Strings = new PersianAiStrings() };
 private BitAiAgentRun rtlRun = CreateRtlRun();
 
 private static BitAiAgentRun CreateRtlRun()
@@ -397,13 +411,47 @@ private static BitAiAgentRun CreateRtlRun()
     return run;
 }
 
-private void RespondToRtlRun(string answer)
+private async Task RespondToRtlRun(string answer)
 {
-    rtlRun.ResolveInput();
-    rtlRun.Steps[0].Complete(summary: answer);
-    rtlRun.Steps[1].Start();
+    var run = rtlRun;
+
+    run.ResolveInput();
+    run.Steps[0].Complete(summary: answer);
+
+    var venue = run.Steps[1];
+    venue.Start();
+    await Task.Delay(1200);
+    venue.Complete(summary: "سالن کنار دریاچه، برای ۴۰ نفر");
+
+    run.SetStatus(BitAiAgentRunStatus.Completed);
 }
 
 private void ResetRtlRun() => rtlRun = CreateRtlRun();
+
+// The words of the view, in Persian.
+private sealed class PersianAiStrings : BitAiStrings
+{
+    public override string Plan => "برنامه";
+    public override string AgentRunning => "در حال اجرا";
+    public override string WaitingForYou => "منتظر پاسخ شما";
+    public override string AgentCompleted => "انجام شد";
+    public override string AnswerPlaceholder => "پاسخ خود را بنویسید...";
+    public override string Answer => "پاسخ";
+    public override string Elapsed => "زمان سپری‌شده";
+    public override string ToolCalls => "فراخوانی ابزارها";
+    public override string StepsCompleted(int done, int total) => $"{done} از {total}";
+    public override string AgentStepStatus(BitAiAgentStepStatus status) => status switch
+    {
+        BitAiAgentStepStatus.Running => "در حال انجام",
+        BitAiAgentStepStatus.Blocked => "منتظر شما",
+        BitAiAgentStepStatus.Completed => "انجام شد",
+        BitAiAgentStepStatus.Failed => "ناموفق",
+        BitAiAgentStepStatus.Skipped => "کنار گذاشته شد",
+        _ => "شروع نشده",
+    };
+    public override string FormatDuration(TimeSpan duration) => duration.TotalSeconds < 1
+        ? $"{duration.TotalMilliseconds:F0} میلی‌ثانیه"
+        : $"{duration.TotalSeconds:0} ثانیه";
+}
 """;
 }

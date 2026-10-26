@@ -7,4 +7,7 @@
 declare namespace BitBlazorUI.Utils {
     function isComposingKey(e: KeyboardEvent | InputEvent): boolean;
     function scrollElementIntoView(targetElementId: string, focus?: boolean): void;
+    function setupFocusTrap(elementId: string, anchorId?: string | null): void;
+    function disposeFocusTrap(elementId: string): void;
+    function firstFocusable(container: ParentNode, skip?: (el: HTMLElement) => boolean): HTMLElement | null;
 }

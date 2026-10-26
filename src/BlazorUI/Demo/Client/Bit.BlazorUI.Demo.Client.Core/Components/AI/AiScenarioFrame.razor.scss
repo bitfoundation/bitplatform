@@ -56,21 +56,22 @@
 }
 
 // What a scenario puts in the panel is its own markup, written in its page, so the panel styles it through ::deep from
-// the one element of this file it is drawn in.
-.ai-scenario-aside ::deep h4 {
+// the one element of this file it is drawn in. Every rule stops at the panel's own children: the panel can also hold a
+// component (the conversations' BitAiConversationList) whose headings and lists are its own to style.
+.ai-scenario-aside > ::deep h4 {
     margin: 0 0 $doc-space-2xs;
     color: $bit-color-foreground-primary;
 }
 
-.ai-scenario-aside ::deep p {
+.ai-scenario-aside > ::deep p {
     margin: 0 0 $doc-space-2xs;
 }
 
-.ai-scenario-aside ::deep ul {
+.ai-scenario-aside > ::deep ul {
     margin: 0 0 $doc-space-xs;
     padding-inline-start: rem2(18px);
-}
 
-.ai-scenario-aside ::deep li + li {
-    margin-top: $doc-space-3xs;
+    > li + li {
+        margin-top: $doc-space-3xs;
+    }
 }

@@ -6,7 +6,7 @@
             Description="BitAiTokenUsageView is a compact readout of what an AI generation cost: its tokens, its money, its throughput and its latency, with the breakdown of the tokens as its tooltip." />
 
 <DemoPage Name="AiTokenUsageView"
-          Description="BitAiTokenUsageView is a compact readout of what a generation cost: its tokens, its money and its speed - the throughput in tokens per second and, on request, the time to the first token. Every figure is optional, because providers report different subsets of them and a row of blanks is worse than a short row: a figure the usage or the metadata does not carry is left out rather than shown empty. The breakdown of the tokens (input, output, cached and reasoning) is the native tooltip of the readout. A message shows one under itself and a run view in its header when BitAiUiOptions.ShowUsage is on."
+          Description="BitAiTokenUsageView is a compact readout of what a generation cost: its tokens, its money and its speed - the throughput in tokens per second and, on request, the time to the first token. Every figure is optional, because providers report different subsets of them and a row of blanks is worse than a short row: a figure the usage or the metadata does not carry is left out rather than shown empty. The breakdown of the tokens (input, output, cached and reasoning) is the native tooltip of the readout, and visually hidden text of it for the keyboard and screen readers. A message shows one under itself and a run view in its header when BitAiUiOptions.ShowUsage is on."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -31,8 +31,12 @@
             <b>TotalUsage</b> of a conversation, or the <b>Usage</b> of an agent run - and, for the speed and the latency, the
             <b>BitAiGenerationMetadata</b> itself. A transport reports them as <b>BitAiUsageUpdatedEvent</b>s and
             <b>BitAiMetadataEvent</b>s; the session times the generation. Its words and number formats come from the string table
-            (<b>BitAiStrings.Tokens</b>, <b>FormatTokens</b>, <b>TokensPerSecond</b>, <b>FormatDuration</b>, <b>UsageLine</b>),
-            in the culture of the page. A cost of less than a cent shows four decimals. See it under every message of the
+            (<b>BitAiStrings.Tokens</b>, <b>FormatTokens</b>, <b>TokensPerSecond</b>, <b>FormatDuration</b>, <b>UsageLine</b>,
+            <b>TimeToFirstToken</b>), in the culture of the page, and each figure reads in the direction its own words are written
+            in, a right-to-left row included. A cost is written to the minor unit of its currency, and a cost of less than that
+            unit - less than a cent - with two decimals more. Accessibility: the breakdown of the
+            tokens is visually hidden text of the readout as well as its tooltip, which the keyboard, a touch screen and a screen
+            reader never reach, and the latency is named (TimeToFirstToken) for a screen reader. See it under every message of the
             <BitLink Href="/ai/scenarios/usage">Models and usage</BitLink> scenario.
         </BitText>
     </NotesTemplate>
@@ -49,8 +53,9 @@
         <DemoExample Title="Cost" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>
                 A usage with a <b>Cost</b> shows it in its <b>Currency</b> (USD when there is none): $, &euro; and &pound; by
-                their symbols, any other ISO 4217 code by its code. A fraction of a cent - what most single requests cost - keeps
-                four decimals rather than reading as nothing.
+                their symbols, any other ISO 4217 code by its code. It is written to the minor unit of its currency - two
+                decimals for the dollar, none for the yen - and a fraction of that unit, what most single requests cost, keeps
+                two decimals more rather than reading as nothing.
             </div>
             <br />
             <div class="example-stack">
@@ -78,7 +83,8 @@
         <DemoExample Title="Breakdown" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
                 The tooltip has a line for every kind of token the provider reported: input, output, cached input and hidden
-                reasoning. A <b>title</b> splatted onto the readout replaces it.
+                reasoning - and so has the visually hidden text a screen reader reads after the total. A <b>title</b> splatted
+                onto the readout replaces the tooltip.
             </div>
             <br />
             <div class="example-stack">

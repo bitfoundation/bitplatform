@@ -195,6 +195,10 @@ public partial class BitAiContextMeter : BitAiComponentBase
 
     private double _Fraction => _window is { } window && window > 0 ? (double)_used / window : 0;
 
+    // The share of the window used, cut to a whole percent. Worked out in whole numbers rather than off the fraction,
+    // whose binary rounding would cut 29 of 100 tokens to 28%.
+    private long _Percent => _window is { } window && window > 0 ? Math.Max(0, _used) * 100 / window : 0;
+
     private BitColor? _MeterColor => _severity switch
     {
         Severity.Critical => BitColor.Error,

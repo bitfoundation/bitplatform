@@ -24,6 +24,10 @@ public partial class BitAiCodeBlockView : BitAiComponentBase
     private string? _tokenizedLanguage;
     private readonly RenderFragment _renderCode;
 
+    // The code with every line ending a "\n" (see NormalizeLineEndings), and the Code it was made from.
+    private string _code = string.Empty;
+    private string? _codeFor;
+
 
 
     public BitAiCodeBlockView()
@@ -107,12 +111,24 @@ public partial class BitAiCodeBlockView : BitAiComponentBase
     {
         CascadingParameters?.UpdateParameters(this);
 
+        NormalizeLineEndings();
         Tokenize();
 
         base.OnParametersSet();
     }
 
 
+
+    // A line ending of "\r\n" written into the block keeps its "\r" as a character of the text, and an engine that copies
+    // a selection of it turns that and the "\n" into a break each (Firefox), doubling every line. So the code is drawn and
+    // highlighted with "\n" alone - once per Code, not per render. The copy button copies the Code as it was given.
+    private void NormalizeLineEndings()
+    {
+        if (ReferenceEquals(_codeFor, Code)) return;
+
+        _codeFor = Code;
+        _code = (Code ?? string.Empty).ReplaceLineEndings("\n");
+    }
 
     private void Tokenize()
     {
@@ -123,16 +139,16 @@ public partial class BitAiCodeBlockView : BitAiComponentBase
             return;
         }
 
-        if (ReferenceEquals(_tokenizedFor, Code) && _tokenizedLanguage == Language) return;
+        if (ReferenceEquals(_tokenizedFor, _code) && _tokenizedLanguage == Language) return;
 
-        _tokens = BitAiSyntaxHighlighter.Highlight(Code, Language);
-        _tokenizedFor = Code;
+        _tokens = BitAiSyntaxHighlighter.Highlight(_code, Language);
+        _tokenizedFor = _code;
         _tokenizedLanguage = Language;
     }
 
     private void BuildCode(RenderTreeBuilder builder)
     {
-        var code = Code ?? string.Empty;
+        var code = _code;
         var tokenIndex = 0;
 
         if (Options.ShowLineNumbers is false)

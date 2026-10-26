@@ -1,5 +1,8 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
+using Bit.BlazorUI.Tests.Components.AI.Core;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -59,6 +62,51 @@ public class BitAiToolApprovalTests : BitAiTestBase
 
         Assert.AreEqual(BitAiApprovalDecision.ApprovedAlways, call.Approval);
         Assert.AreEqual(BitAiApprovalDecision.ApprovedAlways, raised);
+    }
+
+    // As a session refuses a decision on a call no longer waiting for one, so does the prompt without a session: a
+    // declined call never moves back to pending.
+    [TestMethod]
+    public void ACallIsDecidedOnce()
+    {
+        var call = AwaitingApproval();
+        var raised = new List<BitAiApprovalDecision>();
+
+        var component = RenderComponent<BitAiToolApproval>(p => p
+            .Add(c => c.Call, call)
+            .Add(c => c.OnDecision, decision => raised.Add(decision)));
+
+        component.FindAll("button").First().Click();
+        component.FindAll("button").Last().Click();
+        component.FindAll("button")[1].Click();
+
+        Assert.AreEqual(BitAiApprovalDecision.Rejected, call.Approval);
+        Assert.AreEqual(BitAiToolCallStatus.Rejected, call.Status);
+        CollectionAssert.AreEqual(new[] { BitAiApprovalDecision.Rejected }, raised);
+    }
+
+    // With a session the decision is its to take, and one it refuses - the call is no longer waiting - is not reported.
+    [TestMethod]
+    public async Task ADecisionTheSessionRefusesIsNotReported()
+    {
+        await using var session = new BitAiChatSession(new BitAiFakeTransport(new BitAiMessageCompletedEvent()));
+        var call = AwaitingApproval();
+        var message = new BitAiMessage(BitAiRole.Assistant);
+        message.AddPart(call);
+        session.Conversation.AddMessage(message);
+
+        var raised = new List<BitAiApprovalDecision>();
+
+        var component = RenderComponent<BitAiToolApproval>(p => p
+            .Add(c => c.Call, call)
+            .Add(c => c.Session, session)
+            .Add(c => c.OnDecision, decision => raised.Add(decision)));
+
+        component.FindAll("button").First().Click();
+        component.FindAll("button").Last().Click();
+
+        Assert.AreEqual(BitAiToolCallStatus.Rejected, call.Status);
+        CollectionAssert.AreEqual(new[] { BitAiApprovalDecision.Rejected }, raised);
     }
 
     [TestMethod]

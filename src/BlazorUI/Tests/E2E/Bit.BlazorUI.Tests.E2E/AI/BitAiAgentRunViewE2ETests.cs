@@ -94,7 +94,7 @@ public class BitAiAgentRunViewE2ETests : E2ETestBase
         await Page.Locator("#btn-session-start").ClickAsync();
 
         var timer = Timer("arv-session");
-        await Expect(timer).ToHaveTextAsync(new Regex(@"^\d+(ms|\.\ds)$"));
+        await Expect(timer).ToHaveTextAsync(new Regex(@"^\d+(ms|(\.\d)?s)$"));
         var first = await timer.TextContentAsync();
         await Expect(timer).Not.ToHaveTextAsync(first!);
 
@@ -115,7 +115,9 @@ public class BitAiAgentRunViewE2ETests : E2ETestBase
         await Expect(run.Locator(".bit-aiarv-qst")).ToHaveTextAsync("When should I take the downtime?");
         await Expect(Badge("arv-input-pick")).ToHaveTextAsync("Waiting for your answer");
         await Expect(Badge("arv-input-pick").Locator(".bit-tag")).ToHaveClassAsync(HasClass("bit-tag-wrn"));
-        await ExpectStepStatesAsync("arv-input-pick", "cmp", "run", "pnd");
+
+        // The step the question was asked in waits for the answer with the run, rather than being drawn as running.
+        await ExpectStepStatesAsync("arv-input-pick", "cmp", "blk", "pnd");
         await Expect(Page.Locator("#input-pick-reply")).ToHaveTextAsync("I need one answer before I go on.");
         await Expect(Page.Locator("#input-pick-generating")).ToHaveTextAsync("False");
 
@@ -276,8 +278,14 @@ public class BitAiAgentRunViewE2ETests : E2ETestBase
         var run = Run("arv-fail");
         await Expect(Badge("arv-fail")).ToHaveTextAsync("Failed");
         await Expect(Badge("arv-fail").Locator(".bit-tag")).ToHaveClassAsync(HasClass("bit-tag-err"));
-        await ExpectStepStatesAsync("arv-fail", "cmp", "fld", "pnd");
+        // The step the failed run never reached is abandoned, not left pending under a run that has ended.
+        await ExpectStepStatesAsync("arv-fail", "cmp", "fld", "skp");
         await Expect(Steps("arv-fail").Nth(1).Locator(".bit-aiasv-err")).ToHaveTextAsync("3 of 812 tests failed.");
+
+        // The detail of the step's error - the failing tests - is behind a disclosure under the message.
+        await Steps("arv-fail").Nth(1).GetByRole(AriaRole.Button, new() { Name = "Show details", Exact = true }).ClickAsync();
+        await Expect(Steps("arv-fail").Nth(1).Locator(".bit-aiasv-edt")).ToContainTextAsync("Checkout.RoundsTax");
+        await Expect(Steps("arv-fail").Nth(1).GetByRole(AriaRole.Button, new() { Name = "Hide details", Exact = true })).ToHaveAttributeAsync("aria-expanded", "true");
         await Expect(run.Locator(".bit-aiarv-cnt")).ToHaveTextAsync("1 / 3");
         await Expect(Page.Locator("#fail-reply")).ToHaveTextAsync("I stopped before deploying: three checkout tests fail.");
 
@@ -384,7 +392,7 @@ public class BitAiAgentRunViewE2ETests : E2ETestBase
         await Expect(usage.Locator(".bit-aituv-cst")).ToHaveTextAsync("$0.0081");
 
         await Page.Locator("#btn-usage-add").ClickAsync();
-        await Expect(usage.Locator(".bit-aituv-tok")).ToHaveTextAsync("3.0k tokens");
+        await Expect(usage.Locator(".bit-aituv-tok")).ToHaveTextAsync("3k tokens");
         await Expect(usage.Locator(".bit-aituv-cst")).ToHaveTextAsync("$0.02");
 
         // Without ShowUsage the same run shows none.

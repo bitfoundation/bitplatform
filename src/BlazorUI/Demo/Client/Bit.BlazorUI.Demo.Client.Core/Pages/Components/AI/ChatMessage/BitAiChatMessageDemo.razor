@@ -36,8 +36,9 @@
         </BitText>
         <br />
         <BitText>
-            The message is an <b>article</b>, <b>aria-busy</b> while it is generated so a screen reader waits for it to settle,
-            and carries <b>data-message-id</b> and <b>data-role</b> for an app to find one message or style a role of its own.
+            The message is an <b>article</b>, <b>aria-busy</b> while it is generated so a screen reader waits for it to settle -
+            but for a reply waiting on the user's decision on a tool call, whose question a busy message would keep from being
+            announced - and carries <b>data-message-id</b> and <b>data-role</b> for an app to find one message or style a role of its own.
             A user's text is shown as it was typed - never parsed as Markdown or HTML. The entrance (<b>Animate</b>) follows the
             motion tokens, so it is skipped under reduced motion; use the ForceAnimation toggle at the top of this page to see it.
         </BitText>
@@ -49,7 +50,7 @@
                 prose with its actions (revealed on hover) and the model and usage under it, a system message as a centered note.
             </div>
             <br />
-            <div style="display:flex;flex-direction:column;gap:1.5rem">
+            <div class="message-surface" style="display:flex;flex-direction:column;gap:1.5rem">
                 <BitAiChatMessage Message="userMessage" />
                 <BitAiChatMessage Message="assistantMessage" />
                 <BitAiChatMessage Message="systemMessage" />
@@ -63,7 +64,7 @@
                 part refers to.
             </div>
             <br />
-            <div style="display:flex;flex-direction:column;gap:2rem">
+            <div class="message-surface" style="display:flex;flex-direction:column;gap:2rem">
                 @foreach (var message in partsConversation.Messages.Where(m => m.Role.IsAssistant))
                 {
                     <BitAiChatMessage @key="message.MessageId" Message="message" Conversation="partsConversation" />
@@ -75,12 +76,13 @@
             <div>
                 With a <b>Session</b>, a user message can be edited (hover it) and the reply marked <b>IsLatest</b> regenerated
                 - only the newest, since regenerating an older one discards everything after it. This transport fails its first
-                answer: the error shows its <b>Retry</b>, which the session runs again.
+                answer: the error offers to try again, which the session runs as a retry (<b>RetryAsync</b>). An edit starts a
+                turn of its own, so it waits while a reply is being generated; Escape cancels it.
             </div>
             <br />
             <BitButton OnClick="AskSession" Disabled="session.IsGenerating">Ask a question</BitButton>
             <br /><br />
-            <div style="display:flex;flex-direction:column;gap:1.5rem">
+            <div class="message-surface" style="display:flex;flex-direction:column;gap:1.5rem">
                 @foreach (var message in session.Conversation.Messages)
                 {
                     <BitAiChatMessage @key="message.MessageId"
@@ -100,7 +102,7 @@
             <br />
             <BitButton OnClick="AddAnimatedMessage">Add a message</BitButton>
             <br /><br />
-            <div style="display:flex;flex-direction:column;gap:1.5rem">
+            <div class="message-surface" style="display:flex;flex-direction:column;gap:1.5rem">
                 @foreach (var message in animatedMessages)
                 {
                     <BitAiChatMessage @key="message.MessageId" Message="message" Animate />
@@ -114,11 +116,13 @@
                 action of the app's own, here.
             </div>
             <br />
-            <BitAiChatMessage Message="childContentMessage">
-                <div>
-                    <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Package" OnClick="TrackOrder">Track order #4521</BitButton>
-                </div>
-            </BitAiChatMessage>
+            <div class="message-surface">
+                <BitAiChatMessage Message="childContentMessage">
+                    <div>
+                        <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Package" OnClick="TrackOrder">Track order #4521</BitButton>
+                    </div>
+                </BitAiChatMessage>
+            </div>
             <br />
             <div>@(trackingStatus ?? "The order has not been opened yet.")</div>
         </DemoExample>
@@ -129,10 +133,12 @@
                 a thumbs up or down - pressing the chosen one again withdraws it, reported as <b>None</b>.
             </div>
             <br />
-            <BitAiChatMessage Message="citedMessage"
-                              OnCitationClick="HandleCitationClick"
-                              OnSourceClick="HandleSourceClick"
-                              OnFeedback="HandleFeedback" />
+            <div class="message-surface">
+                <BitAiChatMessage Message="citedMessage"
+                                  OnCitationClick="HandleCitationClick"
+                                  OnSourceClick="HandleSourceClick"
+                                  OnFeedback="HandleFeedback" />
+            </div>
             <br />
             <div>Last event: <b>@(lastEvent ?? "-")</b></div>
         </DemoExample>
@@ -143,7 +149,7 @@
             </div>
             <br />
             <BitToggle @bind-Value="isDisabled" Text="Disabled" />
-            <div style="display:flex;flex-direction:column;gap:1.5rem">
+            <div class="message-surface" style="display:flex;flex-direction:column;gap:1.5rem">
                 @foreach (var message in disabledSession.Conversation.Messages)
                 {
                     <BitAiChatMessage @key="message.MessageId"
@@ -162,7 +168,7 @@
                 re-skin the messages from <b>:root</b>, an ancestor or <b>Style</b>.
             </div>
             <br />
-            <div style="display:flex;flex-direction:column;gap:1.5rem">
+            <div class="message-surface" style="display:flex;flex-direction:column;gap:1.5rem">
                 <BitAiChatMessage Message="styleUserMessage"
                                   Styles="@(new() { Bubble = "background:linear-gradient(135deg, #7c3aed, #2563eb);color:#fff" })" />
                 <BitAiChatMessage Message="styleAssistantMessage"
@@ -179,7 +185,7 @@
         <DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>Use BitAiChatMessage in right-to-left (RTL).</div>
             <br />
-            <div style="display:flex;flex-direction:column;gap:1.5rem">
+            <div class="message-surface" style="display:flex;flex-direction:column;gap:1.5rem">
                 <BitAiChatMessage Dir="BitDir.Rtl" Message="rtlUserMessage" />
                 <BitAiChatMessage Dir="BitDir.Rtl" Message="rtlAssistantMessage" />
             </div>

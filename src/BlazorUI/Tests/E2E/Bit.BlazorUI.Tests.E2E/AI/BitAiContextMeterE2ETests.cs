@@ -163,7 +163,9 @@ public class BitAiContextMeterE2ETests : E2ETestBase
         var bar = Bar("ctm-conversation");
         await Expect(bar).ToHaveAttributeAsync("aria-valuetext", "1,500 / 200,000 tokens");
         await Expect(bar).ToHaveAttributeAsync("aria-valuenow", "0");
-        await Expect(Percent("ctm-conversation")).ToHaveTextAsync("1%");
+
+        // The readout is the value of the meter, cut to a whole percent like it: 0.75% is 0%.
+        await Expect(Percent("ctm-conversation")).ToHaveTextAsync("0%");
         await Expect(Meter("ctm-conversation")).ToHaveAttributeAsync("title", "1,500 / 200,000 tokens");
         await AssertNoServerErrorsAsync();
     }
@@ -197,6 +199,17 @@ public class BitAiContextMeterE2ETests : E2ETestBase
         await Expect(Meter("ctm-vars")).ToHaveCSSAsync("font-size", "19px");
         await Expect(Meter("ctm-vars")).ToHaveCSSAsync("column-gap", "23px");
         await Expect(Meter("ctm-vars").Locator("> .bit-aictm-mtr")).ToHaveCSSAsync("max-width", "77px");
+        await Expect(Meter("ctm-vars").Locator("> .bit-aictm-mtr .bit-prb-trc")).ToHaveCSSAsync("background-color", "rgb(10, 11, 12)");
+    }
+
+    [TestMethod]
+    public async Task Track_ByDefault_IsDrawnInTheSecondaryBorderColorSoItStandsOffTheSurface()
+    {
+        await OpenAsync(Route);
+
+        // A BitProgress draws its track in the secondary background, the very surface a meter sits on.
+        await Expect(Meter("ctm-basic").Locator("> .bit-aictm-mtr .bit-prb-trc"))
+            .ToHaveCSSAsync("background-color", await Page.ResolveColorAsync("var(--bit-clr-brd-sec)"));
     }
 
     [TestMethod]

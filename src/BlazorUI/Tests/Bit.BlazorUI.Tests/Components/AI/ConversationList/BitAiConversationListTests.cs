@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Bunit;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.AI.ConversationList;
@@ -96,6 +98,114 @@ public class BitAiConversationListTests : BitAiTestBase
         buttons[0].Click();
 
         Assert.AreEqual("new", deleted?.ConversationId);
+    }
+
+    // An app that takes a deleted conversation out of the list in its handler, the way a list over a store does.
+    private sealed class DeletingHost : ComponentBase
+    {
+        private List<BitAiConversationSummary> _conversations = [];
+
+        [Parameter] public IReadOnlyList<BitAiConversationSummary> Initial { get; set; } = [];
+
+        protected override void OnInitialized() => _conversations = [.. Initial];
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<BitAiConversationList>(0);
+            builder.AddComponentParameter(1, nameof(BitAiConversationList.Conversations), _conversations);
+            builder.AddComponentParameter(2, nameof(BitAiConversationList.OnDelete), EventCallback.Factory.Create<BitAiConversationSummary>(this, Delete));
+            builder.CloseComponent();
+        }
+
+        private void Delete(BitAiConversationSummary summary) =>
+            _conversations = _conversations.Where(c => c.ConversationId != summary.ConversationId).ToList();
+    }
+
+    [TestMethod]
+    public void DeletingAConversationHandsTheFocusToTheOneInItsPlaceAndAnEmptiedListToTheNewButton()
+    {
+        var component = RenderComponent<DeletingHost>(p => p.Add(c => c.Initial, Conversations()));
+
+        string FocusedId() => ((ElementReference)Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Last().Arguments[0]!).Id;
+        // The reference the list holds to the button of a conversation.
+        string ItemButtonId(string conversationId)
+        {
+            var list = component.FindComponent<BitAiConversationList>().Instance;
+            var field = typeof(BitAiConversationList).GetField("_itemButtons", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+
+            return ((Dictionary<string, ElementReference>)field.GetValue(list)!)[conversationId].Id;
+        }
+
+        // "New trip" is first: "Untitled", next in the list, takes its place and the focus.
+        component.FindAll("button[title='Delete']")[0].Click();
+        Assert.AreEqual("Untitled", component.FindAll(".bit-aicvl-ibt")[0].TextContent.Trim());
+        Assert.AreEqual(ItemButtonId("untitled"), FocusedId());
+
+        // The last one goes: the focus goes to the one now last.
+        component.FindAll("button[title='Delete']")[1].Click();
+        Assert.AreEqual(ItemButtonId("untitled"), FocusedId());
+
+        // None is left: the focus goes to the new-conversation button.
+        component.FindAll("button[title='Delete']")[0].Click();
+        Assert.IsEmpty(component.FindAll(".bit-aicvl-ibt"));
+        Assert.AreEqual(component.FindComponent<BitActionButton>().Instance.RootElement.Id, FocusedId());
+    }
+
+    [TestMethod]
+    public void AConversationTheAppKeepsKeepsTheFocusWhereItIs()
+    {
+        var component = RenderComponent<BitAiConversationList>(p => p
+            .Add(c => c.Conversations, Conversations())
+            .Add(c => c.OnDelete, _ => { }));
+
+        component.FindAll("button[title='Delete']")[0].Click();
+        component.Render(p => p.Add(c => c.SelectedId, "old"));
+
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+    }
+
+    [TestMethod]
+    public void TheDaysAreCountedInTheTimeZoneGiven()
+    {
+        // As far ahead of UTC as any zone is, so its days start at a time no test machine's local zone starts them.
+        var zone = TimeZoneInfo.CreateCustomTimeZone("bit-test+14", TimeSpan.FromHours(14), "UTC+14", "UTC+14");
+        var startOfToday = new DateTimeOffset(TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, zone).Date, TimeSpan.FromHours(14));
+
+        var component = RenderComponent<BitAiConversationList>(p => p
+            .Add(c => c.TimeZone, zone)
+            .Add(c => c.Conversations, new List<BitAiConversationSummary>
+            {
+                new("today", "Just after midnight", startOfToday),
+                new("yesterday", "Just before midnight", startOfToday.AddMinutes(-1)),
+            }));
+
+        CollectionAssert.AreEqual(new[] { "Today", "Yesterday" }, component.FindAll(".bit-aicvl-grp").Select(h => h.TextContent).ToArray());
+    }
+
+    // A list with no zone of its own counts its days in the zone the options in force show the times of the messages in.
+    [TestMethod]
+    public void TheDaysAreCountedInTheTimeZoneOfTheOptionsWhenTheListHasNone()
+    {
+        var zone = TimeZoneInfo.CreateCustomTimeZone("bit-test+14", TimeSpan.FromHours(14), "UTC+14", "UTC+14");
+        var startOfToday = new DateTimeOffset(TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, zone).Date, TimeSpan.FromHours(14));
+
+        var component = RenderComponent<BitAiConversationList>(p => p
+            .AddCascadingValue(BitAiUiOptions.Default with { TimeZone = zone })
+            .Add(c => c.Conversations, new List<BitAiConversationSummary>
+            {
+                new("today", "Just after midnight", startOfToday),
+                new("yesterday", "Just before midnight", startOfToday.AddMinutes(-1)),
+            }));
+
+        CollectionAssert.AreEqual(new[] { "Today", "Yesterday" }, component.FindAll(".bit-aicvl-grp").Select(h => h.TextContent).ToArray());
+    }
+
+    [TestMethod]
+    public void EachGroupSaysItIsAListWhateverItsMarkersLookLike()
+    {
+        var component = RenderComponent<BitAiConversationList>(p => p.Add(c => c.Conversations, Conversations()));
+
+        Assert.IsTrue(component.FindAll("ul.bit-aicvl-lst").All(l => l.GetAttribute("role") == "list"));
     }
 
     [TestMethod]

@@ -125,6 +125,7 @@ protected override void OnInitialized()
         border-radius: 1rem;
         background-color: #ecfeff;
         color: #164e63;
+        --bit-AiMarkdownView-link-color: #0e7490;
     }
 
     .custom-root {

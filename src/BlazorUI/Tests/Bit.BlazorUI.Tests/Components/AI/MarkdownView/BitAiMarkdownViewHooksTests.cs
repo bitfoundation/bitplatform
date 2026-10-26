@@ -276,7 +276,10 @@ public class BitAiMarkdownViewHooksTests : BitAiTestBase
         var backLinks = section.QuerySelectorAll("a.bit-aimdv-fnb");
         Assert.HasCount(2, backLinks);
         Assert.AreEqual("doc-backlink", backLinks[0].GetAttribute("role"));
+
+        // A note cited twice has a back-link per citation, each named apart from the other.
         Assert.AreEqual("Back to reference 1", backLinks[0].GetAttribute("aria-label"));
+        Assert.AreEqual("Back to reference 1-2", backLinks[1].GetAttribute("aria-label"));
 
         // Each reference links to the note, and each back-link to its reference.
         var noteId = section.QuerySelector("li.bit-aimdv-fni")!.Id;
@@ -482,6 +485,41 @@ public class BitAiMarkdownViewHooksTests : BitAiTestBase
 
         Assert.AreEqual("https://img.x.dev/cat.png", component.Find("img.bit-aimdv-img").GetAttribute("src"));
         Assert.IsEmpty(component.FindAll("button.bit-acb"));
+    }
+
+    // The button pressed is gone once the image is shown, and the focus would drop to the body of the document with it.
+    [TestMethod]
+    public void TheImageTheUserLoadedTakesTheFocusOffThePlaceholder()
+    {
+        var ui = BitAiUiOptions.Default with { Images = BitAiImagePolicy.ClickToLoad };
+        var component = RenderMarkdown("![a cat](https://img.x.dev/cat.png) and ![a dog](https://img.x.dev/dog.png)", ui: ui);
+
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+
+        component.FindAll("button.bit-acb")[1].Click();
+
+        // The image of the button pressed - the other one is still a button - takes the focus, and can hold it.
+        var dog = component.Find("img.bit-aimdv-img");
+        Assert.AreEqual("https://img.x.dev/dog.png", dog.GetAttribute("src"));
+        Assert.AreEqual("-1", dog.GetAttribute("tabindex"));
+
+        var focus = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
+        Assert.HasCount(1, focus);
+        Assert.AreEqual(dog.GetAttribute("blazor:elementreference"), ((ElementReference)focus[0].Arguments[0]!).Id);
+
+        // Rendered again, the image keeps the focus where it is.
+        component.Render();
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+    }
+
+    [TestMethod]
+    public void AnImageThePolicyShowsAtOnceTakesNoFocus()
+    {
+        var image = RenderMarkdown("![a cat](https://img.x.dev/cat.png)").Find("img.bit-aimdv-img");
+
+        Assert.IsFalse(image.HasAttribute("tabindex"));
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]

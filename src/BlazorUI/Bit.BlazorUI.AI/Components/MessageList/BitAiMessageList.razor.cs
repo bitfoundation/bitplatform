@@ -8,12 +8,15 @@ namespace Bit.BlazorUI;
 /// </summary>
 /// <remarks>
 /// Two behaviours make or break this component. Auto-scroll follows new content only while the user is already at the
-/// bottom, so scrolling up to re-read is never yanked away. Virtualization turns on only past a threshold
-/// (<see cref="BitAiUiOptions.VirtualizeThreshold"/>), because below it the variable heights of chat messages make a
-/// virtualized scrollbar jumpier than simply rendering everything.
+/// bottom, so scrolling up to re-read is never yanked away. And a long transcript is not drawn whole: past
+/// <see cref="BitAiUiOptions.VirtualizeThreshold"/> messages only that many of the newest are, and the older ones a page
+/// at a time as the reader scrolls up to them, with what they are reading kept in place as each page comes in above it.
+/// Nothing is estimated - every message drawn is drawn at its own height - so the scrollbar never jumps and the view
+/// never goes blank, and once the reader is back at the newest message the pages above it are let go of again.
 /// <br />
 /// The list subscribes to the conversation for the messages added to and removed from it, which arrive from whatever
-/// thread the stream is on, and re-renders at most once per <see cref="BitAiUiOptions.RenderInterval"/>.
+/// thread the stream is on, and re-renders at most once per <see cref="BitAiUiOptions.RenderInterval"/>. What a reply
+/// streams into it is drawn by the view of that message's part, so a token re-renders that part, never the transcript.
 /// </remarks>
 public partial class BitAiMessageList : BitAiComponentBase
 {
@@ -27,13 +30,13 @@ public partial class BitAiMessageList : BitAiComponentBase
     private DotNetObjectReference<BitAiMessageList>? _dotnetObj;
     private BitAiConversation? _subscribed;
     private bool? _appliedHideSystemMessages;
-    private bool _virtualize;
     private bool _prerendering;
     private bool _pinned = true;
     private bool _initialised;
     private bool _observing;
     private bool _observedAutoScroll;
-    private int _renderedCount;
+    // The index in the list of the first message drawn: every message from it on is, and the ones before it are not.
+    private int _windowStart;
 
 
 
@@ -78,6 +81,10 @@ public partial class BitAiMessageList : BitAiComponentBase
     /// <summary>
     /// The content rendered above the first message, inside the scroll area.
     /// </summary>
+    /// <remarks>
+    /// Past <see cref="BitAiUiOptions.VirtualizeThreshold"/> messages it is drawn once the reader has scrolled up to the
+    /// first message, along with it.
+    /// </remarks>
     [Parameter] public RenderFragment? HeaderTemplate { get; set; }
 
     /// <summary>
@@ -92,7 +99,8 @@ public partial class BitAiMessageList : BitAiComponentBase
     /// </summary>
     /// <remarks>
     /// The template is keyed by the message, so removing one message never recreates the ones after it, and it adds no
-    /// element of its own around what it renders.
+    /// element of its own around what it renders. The list draws it again as the newest message changes, so a template
+    /// showing the text of a reply follows it as it streams.
     /// </remarks>
     [Parameter] public RenderFragment<BitAiMessage>? MessageTemplate { get; set; }
 
@@ -142,14 +150,19 @@ public partial class BitAiMessageList : BitAiComponentBase
     /// <param name="smooth">Animates the scroll, unless the reader asked for reduced motion.</param>
     public async Task ScrollToLatestAsync(bool smooth = true)
     {
+        var changed = _pinned is false;
+
         _pinned = true;
 
         if (IsRendered && IsDisposed is false)
         {
-            await _js.BitAiMessageListScrollToBottom(RootElement, smooth);
+            await _js.BitAiMessageListScrollToBottom(UniqueId, RootElement, smooth);
         }
 
-        await OnPinnedChange.InvokeAsync(true);
+        if (changed)
+        {
+            await OnPinnedChange.InvokeAsync(true);
+        }
     }
 
     /// <summary>
@@ -166,6 +179,27 @@ public partial class BitAiMessageList : BitAiComponentBase
         _pinned = pinned;
 
         await OnPinnedChange.InvokeAsync(pinned);
+
+        // Back at the newest message, the reader has left the older pages they scrolled up through behind them: drawn
+        // above the view, they would cost every render of the list.
+        if (pinned && IsDisposing is false && TrimWindow())
+        {
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    /// <summary>
+    /// Called by the scroll script of the message list when the user nears the first message it draws while older ones
+    /// are left out (past <see cref="BitAiUiOptions.VirtualizeThreshold"/> messages), to draw the next page of them.
+    /// <br />
+    /// <strong>This method is not intended to be called from application code.</strong>
+    /// </summary>
+    [JSInvokable("OnStartReached")]
+    public async Task _OnStartReached()
+    {
+        if (IsDisposing || _windowStart == 0) return;
+
+        _windowStart = Math.Max(0, _windowStart - PageSize);
 
         await InvokeAsync(StateHasChanged);
     }
@@ -191,6 +225,8 @@ public partial class BitAiMessageList : BitAiComponentBase
 
         base.OnParametersSet();
 
+        _prerendering = IsStaticRender();
+
         if (ReferenceEquals(_subscribed, Conversation) is false)
         {
             Detach();
@@ -213,7 +249,11 @@ public partial class BitAiMessageList : BitAiComponentBase
         if (_appliedHideSystemMessages != HideSystemMessages)
         {
             Rebuild();
+            return;
         }
+
+        // Options with a higher threshold draw more of the newest messages at once.
+        ClampWindow();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -222,18 +262,25 @@ public partial class BitAiMessageList : BitAiComponentBase
 
         if (IsDisposed) return;
 
-        var opening = _initialised is false;
-
-        if (opening)
+        if (_initialised is false)
         {
             // The first render, or the first after switching conversations: start at the newest message without
-            // animating, then follow from here.
+            // animating, then follow from here. The script takes the list as pinned with this call; an app told the
+            // reader had left the newest message of the conversation before is told they are at the newest one again.
             _initialised = true;
-            _renderedCount = _messages.Count;
 
-            await _js.BitAiMessageListScrollToBottom(RootElement, false);
+            await _js.BitAiMessageListScrollToBottom(UniqueId, RootElement, false);
 
             if (IsDisposed) return;
+
+            if (_pinned is false)
+            {
+                _pinned = true;
+
+                await OnPinnedChange.InvokeAsync(true);
+
+                if (IsDisposed) return;
+            }
         }
 
         if (firstRender)
@@ -255,21 +302,23 @@ public partial class BitAiMessageList : BitAiComponentBase
             await _js.BitAiMessageListSetAutoScroll(UniqueId, _observedAutoScroll);
         }
 
-        if (opening) return;
-
-        if (Options.AutoScroll is false || _pinned is false) return;
-        if (_renderedCount == _messages.Count && IsGenerating is false) return;
-
-        _renderedCount = _messages.Count;
-
-        await _js.BitAiMessageListScrollToBottom(RootElement, false);
+        // Nothing is scrolled from here after a render: the script follows every change of the content the moment the
+        // browser makes it, and knows - as this side, a round trip behind, cannot - whether the reader has just left.
     }
 
 
 
-    private bool IsGenerating => _messages.Count > 0 && _messages[^1].IsBusy;
-
     private bool IsLatestMessage(BitAiMessage message) => _messages.Count > 0 && ReferenceEquals(message, _messages[^1]);
+
+    // How many of the newest messages are drawn once the list holds more (BitAiUiOptions.VirtualizeThreshold), and how many
+    // older ones each step up towards the start adds.
+    private int TailSize => Math.Max(1, Options.VirtualizeThreshold);
+
+    private int PageSize => Math.Max(1, TailSize / 2);
+
+    // The number of older messages left out, written on the root for the script (data-bit-aimsl-old): it asks for the
+    // next page of them as the reader nears the start of what is drawn, and reads the number changing as that page drawn.
+    private int? OlderCount => _windowStart > 0 ? _windowStart : null;
 
     private void Rebuild()
     {
@@ -283,8 +332,35 @@ public partial class BitAiMessageList : BitAiComponentBase
             _messages.Add(message);
         }
 
+        // A conversation opens on its newest messages, interactive or prerendered alike: a static render has no reader
+        // to scroll up, so the bounded tail is all it ever draws, and the interactive render that follows it starts on
+        // the same messages rather than flashing the whole transcript.
+        _windowStart = Math.Max(0, _messages.Count - TailSize);
+
         UpdateLatest();
-        UpdateVirtualization();
+    }
+
+    // At least the tail is drawn, so a message removed from it brings an older one in rather than leaving the view short.
+    private void ClampWindow() => _windowStart = Math.Clamp(_windowStart, 0, Math.Max(0, _messages.Count - TailSize));
+
+    // Draws the tail alone again once more than a page of older messages is drawn above it. The page of slack keeps a
+    // tail too short to fill the view - which the script then extends at once - from being let go of and drawn again
+    // with every message.
+    private bool TrimWindow()
+    {
+        var start = Math.Max(0, _messages.Count - TailSize);
+
+        if (start - _windowStart <= PageSize) return false;
+
+        // Drawn again later, they are history: they come back without the entrance.
+        for (var i = _windowStart; i < start; i++)
+        {
+            _entering.Remove(_messages[i]);
+        }
+
+        _windowStart = start;
+
+        return true;
     }
 
     private void UpdateLatest() => Volatile.Write(ref _latest, _messages.Count > 0 ? _messages[^1] : null);
@@ -300,46 +376,43 @@ public partial class BitAiMessageList : BitAiComponentBase
         _messages.Add(message);
         if (_initialised && _prerendering is false) _entering.Add(message);
         UpdateLatest();
-        UpdateVirtualization();
+
+        // A reader at the newest message sees the new one with the tail above it; one scrolled up keeps every page
+        // they have scrolled through.
+        if (_pinned) TrimWindow();
+
         RequestRender();
     });
 
     private void OnMessageRemoved(BitAiConversation conversation, BitAiMessage message) => _ = InvokeAsync(() =>
     {
         if (ReferenceEquals(conversation, _subscribed) is false) return;
-        if (_messages.Remove(message) is false) return;
 
+        var index = _messages.IndexOf(message);
+        if (index < 0) return;
+
+        _messages.RemoveAt(index);
         _entering.Remove(message);
 
+        // The first message drawn stays the one it was when an older one goes.
+        if (index < _windowStart) _windowStart--;
+
+        ClampWindow();
         UpdateLatest();
-        UpdateVirtualization();
         RequestRender();
     });
 
-    // Runs on the thread of the stream, on every token: it reads nothing of the list (mutated on the dispatcher), only
-    // the newest message kept beside it, and asks for a render, which is safe from any thread.
+    // Runs on the thread of the stream, on every token. A message the list draws as a BitAiChatMessage follows its own
+    // changes, part by part, so nothing here re-renders the transcript for it. A MessageTemplate is markup of the app's
+    // that only the list draws, so the newest message - the one a stream changes - is drawn through it again. It reads
+    // nothing of the list (mutated on the dispatcher), only the newest message kept beside it, and asks for a render,
+    // which is safe from any thread.
     private void OnMessageUpdated(BitAiConversation conversation, BitAiMessage message)
     {
-        // Only the last message can change the scroll height enough to matter while streaming; everything else is
-        // handled by the part components re-rendering themselves.
+        if (MessageTemplate is null) return;
+
         if (ReferenceEquals(message, Volatile.Read(ref _latest))) RequestRender();
     }
-
-    /// <summary>
-    /// Virtualization needs a measured viewport, which only exists once the component is interactive. During static
-    /// rendering a bounded tail is drawn instead, so a prerendered transcript shows its most recent messages rather than
-    /// an empty box.
-    /// </summary>
-    private void UpdateVirtualization()
-    {
-        _prerendering = IsStaticRender();
-        _virtualize = _prerendering is false && _messages.Count >= Options.VirtualizeThreshold;
-    }
-
-    private IEnumerable<BitAiMessage> Rendered() =>
-        _prerendering && _messages.Count > Options.VirtualizeThreshold
-            ? _messages.Skip(_messages.Count - Options.VirtualizeThreshold)
-            : _messages;
 
     /// <summary>
     /// Whether this render is a static one (a prerender, or a page rendered by static SSR) rather than an interactive one.

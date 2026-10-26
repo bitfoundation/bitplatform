@@ -1,6 +1,10 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitAiComponentBase
 
+@{
+    var breakdown = _Breakdown;
+}
+
 @* The breakdown of the tokens rides on the native title of the root, which the page splatted one of its own onto only
    when it wants that one instead. *@
 <span @ref="RootElement" @attributes="HtmlAttributes"
@@ -8,10 +12,22 @@
       style="@StyleBuilder.Value"
       class="@ClassBuilder.Value"
       dir="@Dir?.ToString().ToLower()"
-      title="@(GetSplattedAttribute("title") ?? _Breakdown)">
+      title="@(GetSplattedAttribute("title") ?? string.Join('\n', breakdown))">
     @if (Usage.TotalTokens is { } total)
     {
         <span style="@Styles?.Tokens" class="bit-aituv-tok @Classes?.Tokens">@Strings.FormatTokens(total) @Strings.Tokens</span>
+    }
+
+    @* A title reaches the pointer alone: the keyboard, a touch screen and a screen reader never see it. So the breakdown is
+       also text of the readout, read right after the total it breaks down and kept out of sight, a line to each kind. *@
+    @if (breakdown.Count > 0)
+    {
+        <span class="bit-aituv-vhd">
+            @foreach (var line in breakdown)
+            {
+                <span>@($"{line} ")</span>
+            }
+        </span>
     }
 
     @if (Usage.Cost is { } cost)
@@ -24,8 +40,9 @@
         <span style="@Styles?.Speed" class="bit-aituv-spd @Classes?.Speed">@Strings.TokensPerSecond(rate)</span>
     }
 
+    @* A bare duration says nothing of what took that long, so a screen reader is told it before the figure. *@
     @if (ShowLatency && Metadata?.TimeToFirstToken is { } latency)
     {
-        <span style="@Styles?.Latency" class="bit-aituv-ltc @Classes?.Latency">@Strings.FormatDuration(latency)</span>
+        <span style="@Styles?.Latency" class="bit-aituv-ltc @Classes?.Latency"><span class="bit-aituv-vhd">@($"{Strings.TimeToFirstToken} ")</span>@Strings.FormatDuration(latency)</span>
     }
 </span>

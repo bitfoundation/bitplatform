@@ -44,6 +44,20 @@ public static class AiDemoAgentTransports
                 var stepId = $"s{i + 1}";
                 await AiScript.Pause(500, token);
                 await yielder(new BitAiAgentStepStartedEvent(runId, stepId));
+
+                // The search runs on the provider's side, as a web search tool does: the transport reports the call and
+                // its result itself, so the session shows it - and the step names it - without running anything.
+                if (i == 0)
+                {
+                    var callId = BitAiId.NewToolCallId();
+                    await yielder(new BitAiToolCallStartedEvent(callId, "web_search")
+                    {
+                        Arguments = AiScript.Json("""{"query":"primary sources on the disputed effect"}"""),
+                    });
+                    await AiScript.Pause(700, token);
+                    await yielder(new BitAiToolResultEvent(callId, BitAiToolOutcome.FromText("11 results, 3 of them primary studies.")));
+                }
+
                 await AiScript.Pause(700 + i * 200, token);
                 await yielder(new BitAiAgentStepCompletedEvent(runId, stepId) { Summary = summaries[i] });
             }
@@ -73,12 +87,23 @@ public static class AiDemoAgentTransports
     public static IBitAiTransport AsksForInput() =>
         new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
         {
-            const string runId = "run-migration";
-            var answered = request.Messages.Count(m => m.Role.IsUser) > 1;
+            // The first message asks, the answer to it continues the run, and whatever is said after that is talk: a
+            // later message never replays the run. The run is named after the message that started it, so the answer
+            // resumes that run and no other.
+            var users = request.Messages.Where(m => m.Role.IsUser).ToArray();
+            var runId = $"run-migration-{users.FirstOrDefault()?.MessageId}";
 
             await yielder(new BitAiMessageStartedEvent());
 
-            if (answered is false)
+            if (users.Length > 2)
+            {
+                const string followUp = "That migration run is over - what it did is in its steps above.";
+                await foreach (var evt in AiScript.Write(followUp, 4, 12, token)) await yielder(evt);
+                await yielder(new BitAiMessageCompletedEvent());
+                return;
+            }
+
+            if (users.Length < 2)
             {
                 await yielder(new BitAiAgentRunStartedEvent(runId)
                 {
@@ -103,24 +128,42 @@ public static class AiDemoAgentTransports
                 await yielder(new BitAiAgentInputRequestedEvent(runId,
                     "Two tables need a rewrite, which needs downtime. When should I take it?")
                 {
-                    Suggestions = ["Tonight after 22:00", "Saturday morning", "Ask me again later"],
+                    Suggestions = ["Tonight after 22:00", "Saturday morning", AskAgainLater],
                 });
 
                 await yielder(new BitAiMessageCompletedEvent(BitAiFinishReason.Stop));
                 return;
             }
 
-            await yielder(new BitAiAgentStepCompletedEvent(runId, "s2") { Summary = "Window agreed" });
+            var window = users[1].GetText().Trim();
+
+            // No window after all: the agent stops rather than booking one nobody chose, and the steps it will not take
+            // are skipped with the run.
+            if (string.Equals(window, AskAgainLater, StringComparison.OrdinalIgnoreCase))
+            {
+                await yielder(new BitAiAgentStepCompletedEvent(runId, "s2", BitAiAgentStepStatus.Skipped) { Summary = "Postponed" });
+                await yielder(new BitAiAgentRunCompletedEvent(runId, BitAiAgentRunStatus.Cancelled));
+
+                const string postponed = "Understood - I will leave the database as it is.";
+                await foreach (var evt in AiScript.Write(postponed, 4, 12, token)) await yielder(evt);
+                await yielder(new BitAiMessageCompletedEvent());
+                return;
+            }
+
+            await yielder(new BitAiAgentStepCompletedEvent(runId, "s2") { Summary = $"Window: {window}" });
             await AiScript.Pause(400, token);
             await yielder(new BitAiAgentStepStartedEvent(runId, "s3"));
             await AiScript.Pause(900, token);
             await yielder(new BitAiAgentStepCompletedEvent(runId, "s3") { Summary = "14 tables migrated" });
             await yielder(new BitAiAgentRunCompletedEvent(runId));
 
-            const string answer = "Booked. I will run the migration in that window and report back.";
+            var answer = $"Booked for {window}. I will run the migration then and report back.";
             await foreach (var evt in AiScript.Write(answer, 4, 12, token)) await yielder(evt);
             await yielder(new BitAiMessageCompletedEvent());
         }));
+
+    // The suggested answer that answers nothing.
+    private const string AskAgainLater = "Ask me again later";
 
     /// <summary>
     /// An agent whose second step fails, so the failure has to be legible.
@@ -129,7 +172,8 @@ public static class AiDemoAgentTransports
     public static IBitAiTransport Fails() =>
         new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
         {
-            const string runId = "run-deploy";
+            // A run of its own for every turn, so asking again starts a new run rather than rewriting the one above.
+            var runId = BitAiId.NewRunId();
 
             await yielder(new BitAiMessageStartedEvent());
             await yielder(new BitAiAgentRunStartedEvent(runId) { AgentName = "Deploy agent", Goal = "Ship the release" });

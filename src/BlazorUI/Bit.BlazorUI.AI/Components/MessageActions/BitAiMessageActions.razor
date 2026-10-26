@@ -61,7 +61,7 @@
         </div>
     }
 
-    @if (Options.ShowModelName && Message.Metadata?.ModelId is { Length: > 0 } model)
+    @if (Options.ShowModelName && _ModelName is { } model)
     {
         <span style="@Styles?.Model" class="bit-aimac-mdl @Classes?.Model">@model</span>
     }
@@ -73,6 +73,8 @@
 
     @if (Options.ShowTimestamps)
     {
-        <time style="@Styles?.Time" class="bit-aimac-tim @Classes?.Time" datetime="@Message.CreatedAt.ToString("O")">@Message.CreatedAt.ToLocalTime().ToString("t")</time>
+        @* The time a reader reads is in the zone of the options in force; the one written for machines is the instant
+           itself, in UTC. *@
+        <time style="@Styles?.Time" class="bit-aimac-tim @Classes?.Time" datetime="@_Instant">@_Time</time>
     }
 </div>

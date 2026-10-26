@@ -57,7 +57,7 @@ private async Task StreamForecastAsync()
     private readonly string example3RazorCode = """
 @implements IAsyncDisposable
 
-<BitButton OnClick="AskForForecastsAsync" Disabled="forecastSession.IsGenerating">The week ahead in three cities</BitButton>
+<BitButton OnClick="AskForForecastsAsync" Disabled="forecastSession.IsGenerating">The weather in three cities</BitButton>
 
 @if (ForecastAnswer is { } answer)
 {
@@ -81,7 +81,7 @@ protected override void OnInitialized()
 
 private BitAiMessage? ForecastAnswer => forecastSession.Conversation.LastMessage is { Role.IsAssistant: true } last ? last : null;
 
-private Task AskForForecastsAsync() => forecastSession.SubmitAsync("The week ahead in Oslo, Lisbon and Auckland");
+private Task AskForForecastsAsync() => forecastSession.SubmitAsync("The weather in Oslo, Lisbon and Auckland");
 
 public async ValueTask DisposeAsync()
 {
@@ -96,7 +96,7 @@ public static IBitAiTransport GenerativeUi() =>
     {
         await yielder(new BitAiMessageStartedEvent());
 
-        const string intro = "Here is the week ahead for the three cities you asked about.\n\n";
+        const string intro = "Here is the weather right now in the three cities you asked about.\n\n";
         await foreach (var evt in AiScript.Write(intro, 4, 12, token)) await yielder(evt);
 
         string[] cities =

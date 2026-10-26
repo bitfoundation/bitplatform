@@ -1,4 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
+using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json.Serialization.Metadata;
 
 namespace Bit.BlazorUI;
@@ -97,6 +100,11 @@ public sealed record BitAiToolOutcome
     /// The text to display for this outcome, falling back to the JSON of <see cref="Value"/>.
     /// </summary>
     /// <returns>Display text, or <see langword="null"/> when there is nothing to show.</returns>
+    /// <remarks>
+    /// The JSON of a value is written with only what JSON itself requires escaped, so an apostrophe, an ampersand or a
+    /// word of a non-Latin script reads as it was written rather than as <c>'</c>. It is text to render as text -
+    /// which a Razor expression does, encoding it - and never markup to write into a page as it is.
+    /// </remarks>
     public string? GetDisplayText()
     {
         if (Text is not null) return Text;
@@ -105,7 +113,22 @@ public sealed record BitAiToolOutcome
         {
             null or JsonValueKind.Undefined or JsonValueKind.Null => null,
             JsonValueKind.String => Value.Value.GetString(),
-            _ => Value.Value.ToString(),
+            _ => ToDisplayJson(Value.Value),
         };
+    }
+
+    // The raw text of a value serialized with the default encoder (SerializeToElement) has every character that is
+    // sensitive in HTML, and everything outside ASCII, escaped. Written again with the relaxed encoder, a string keeps
+    // only the escapes JSON needs (a quote, a backslash, a control character). No reflection is involved.
+    private static string ToDisplayJson(JsonElement value)
+    {
+        var buffer = new ArrayBufferWriter<byte>();
+
+        using (var writer = new Utf8JsonWriter(buffer, new JsonWriterOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping }))
+        {
+            value.WriteTo(writer);
+        }
+
+        return Encoding.UTF8.GetString(buffer.WrittenSpan);
     }
 }

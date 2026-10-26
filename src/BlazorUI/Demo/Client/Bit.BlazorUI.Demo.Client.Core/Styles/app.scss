@@ -193,6 +193,10 @@ html, body, .site-content, pre, .table-view, .side-rail {
     min-width: 0;
     flex: 1 1 auto;
     padding: $doc-space-xl $doc-space-lg $doc-space-3xl;
+    // The heading or footnote an in-page link of an AI Markdown view lands on clears the sticky chrome
+    // as the page's own anchors do. Set on the column rather than on :root, so it is resolved against
+    // the clearance the column has - which a multi-API page raises (below) - and every view in it inherits it.
+    --bit-AiMarkdownView-scroll-margin: var(--demo-section-scroll-margin);
 
     @include lt-lg {
         padding: $doc-space-lg $doc-space-md $doc-space-2xl;

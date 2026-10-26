@@ -12,14 +12,16 @@ namespace Bit.BlazorUI;
 /// provide one, so ask for it in the prompt or supply a fallback.
 /// <br />
 /// The image follows the <see cref="BitAiUiOptions.Images"/> policy, as the images of Markdown do: one the policy loads
-/// only on request is a button that loads it, and one it blocks is replaced by its alternative text. A source of a
-/// scheme that can run script is never loaded.
+/// only on request is a button that loads it - and hands the focus on to the image it loads - and one it blocks is
+/// replaced by its alternative text. A source of a scheme that can run script is never loaded.
 /// </remarks>
 public partial class BitAiImagePartView : BitAiComponentBase
 {
     // The source the user asked to load under a policy that asks first.
     private string? _loaded;
 
+    private bool _focusImage;
+    private ElementReference _image;
     private BitAiIconClassesCache<BitActionButtonClassStyles> _imagePlaceholderClasses;
 
 
@@ -75,7 +77,43 @@ public partial class BitAiImagePartView : BitAiComponentBase
         base.OnParametersSet();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
 
+        // An image the user loaded takes the focus once it has replaced the button that loaded it (see LoadImage).
+        if (_focusImage)
+        {
+            _focusImage = false;
+
+            await FocusImageAsync();
+        }
+    }
+
+
+
+    // The button that loaded the image is gone once the image is shown, and the focus it held with it - to the body of
+    // the document, from where the keyboard and a screen reader start over at the top of the page. So the image takes it,
+    // programmatically focusable for that (tabindex="-1") and named by its alternative text.
+    private void LoadImage(string source)
+    {
+        _loaded = source;
+        _focusImage = true;
+    }
+
+    private async Task FocusImageAsync()
+    {
+        // No image was rendered for the source loaded - the part was handed another one in the meantime.
+        if (string.IsNullOrEmpty(_image.Id) || IsDisposing) return;
+
+        try
+        {
+            await _image.FocusAsync();
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, and the page with it
+        catch (OperationCanceledException) { }
+        catch (JSException) { } // an image taken off the page in the meantime has nothing to focus
+    }
 
     // The classes handed to the image placeholder: the app's own for that part with the glyph's added - it ships with
     // this package's own icon subset rather than with the icon font of the core library (see BitAiIconClasses) - built

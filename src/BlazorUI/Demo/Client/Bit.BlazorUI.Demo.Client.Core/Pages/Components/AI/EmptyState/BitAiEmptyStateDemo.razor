@@ -60,7 +60,9 @@
                 to a session, as a BitAiChat does.
             </div>
             <br />
-            <BitAiEmptyState Title="What can I help with?" Suggestions="suggestions" OnSuggestion="HandleSuggestion" />
+            <div class="example-surface">
+                <BitAiEmptyState Title="What can I help with?" Suggestions="suggestions" OnSuggestion="HandleSuggestion" />
+            </div>
             <br />
             <div>Chosen: <b>@(chosenSuggestion ?? "-")</b></div>
         </DemoExample>
@@ -85,7 +87,9 @@
                 A disabled empty state disables its suggestions - while the chat around it cannot take a message, for instance.
             </div>
             <br />
-            <BitAiEmptyState Disabled Title="The assistant is offline" Suggestions="suggestions" />
+            <div class="example-surface">
+                <BitAiEmptyState Disabled Title="The assistant is offline" Suggestions="suggestions" />
+            </div>
         </DemoExample>
 
         <DemoExample Title="Cascading parameters" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
@@ -124,28 +128,34 @@
             </div>
             <br />
             <div>
-                <BitAiEmptyState Title="Styled"
-                                 Suggestions="suggestions"
-                                 Style="border-radius:1rem;background:linear-gradient(180deg, var(--bit-clr-pri-tint), transparent)"
-                                 Styles="@(new() { Title = "font-style:italic", Suggestion = new() { Root = "border-radius:0.25rem" } })" />
+                <div class="example-surface">
+                    <BitAiEmptyState Title="Styled"
+                                     Suggestions="suggestions"
+                                     Style="border-radius:1rem;background:linear-gradient(180deg, var(--bit-clr-pri-tint), transparent)"
+                                     Styles="@(new() { Title = "font-style:italic", Suggestion = new() { Root = "border-radius:0.25rem" } })" />
+                </div>
                 <br />
                 <BitAiEmptyState Title="Classy"
                                  Class="custom-empty"
                                  Classes="@(new() { Icon = "custom-empty-icon", Title = "custom-empty-title" })" />
                 <br />
-                <BitAiEmptyState Title="CSS variables"
-                                 Suggestions="suggestions"
-                                 Style="--bit-AiEmptyState-gap:0.5rem;--bit-AiEmptyState-padding:1.5rem;--bit-AiEmptyState-color:var(--bit-clr-fg-pri);--bit-AiEmptyState-icon-color:var(--bit-clr-suc);--bit-AiEmptyState-icon-size:4rem;--bit-AiEmptyState-title-color:var(--bit-clr-suc);--bit-AiEmptyState-title-font-size:2rem;--bit-AiEmptyState-title-font-weight:300;--bit-AiEmptyState-suggestions-gap:1rem" />
+                <div class="example-surface">
+                    <BitAiEmptyState Title="CSS variables"
+                                     Suggestions="suggestions"
+                                     Style="--bit-AiEmptyState-gap:0.5rem;--bit-AiEmptyState-padding:1.5rem;--bit-AiEmptyState-color:var(--bit-clr-fg-pri);--bit-AiEmptyState-icon-color:var(--bit-clr-suc);--bit-AiEmptyState-icon-size:4rem;--bit-AiEmptyState-title-color:var(--bit-clr-suc);--bit-AiEmptyState-title-font-size:2rem;--bit-AiEmptyState-title-font-weight:300;--bit-AiEmptyState-suggestions-gap:1rem" />
+                </div>
             </div>
         </DemoExample>
 
         <DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>Use BitAiEmptyState in right-to-left (RTL).</div>
             <br />
-            <BitAiEmptyState Dir="BitDir.Rtl"
-                             Title="چطور می‌توانم کمک کنم؟"
-                             Body="پیامی بنویسید یا یکی از پیشنهادها را انتخاب کنید."
-                             Suggestions="rtlSuggestions" />
+            <div class="example-surface">
+                <BitAiEmptyState Dir="BitDir.Rtl"
+                                 Title="چطور می‌توانم کمک کنم؟"
+                                 Body="پیامی بنویسید یا یکی از پیشنهادها را انتخاب کنید."
+                                 Suggestions="rtlSuggestions" />
+            </div>
         </DemoExample>
     </Examples>
 </DemoPage>

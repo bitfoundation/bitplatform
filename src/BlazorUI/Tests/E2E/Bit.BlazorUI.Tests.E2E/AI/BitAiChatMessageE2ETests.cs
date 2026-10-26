@@ -301,7 +301,9 @@ public class BitAiChatMessageE2ETests : E2ETestBase
 
         var duration = AiE2EHelpers.ParseSeconds(await ComputedStyleAsync("#cms-animated", "animation-duration"));
         Assert.IsTrue(duration > 0.05, $"The entrance plays: {duration}s.");
-        await Expect(Message("cms-animated")).ToHaveCSSAsync("animation-fill-mode", "both");
+        // Backwards only: a transform animation still in effect after it has run would keep the message a containing
+        // block for what is fixed inside it (a full-screen artifact).
+        await Expect(Message("cms-animated")).ToHaveCSSAsync("animation-fill-mode", "backwards");
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
         await Page.Locator("#cms-replay").ClickAsync();

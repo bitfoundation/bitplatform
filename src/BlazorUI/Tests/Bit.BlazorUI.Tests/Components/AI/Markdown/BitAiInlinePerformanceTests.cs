@@ -70,6 +70,28 @@ public class BitAiInlinePerformanceTests
             $"'{pattern}': {smallTime.TotalMilliseconds:F1}ms for 6,250 repetitions but {largeTime.TotalMilliseconds:F1}ms for 100,000.");
     }
 
+    // With raw HTML on, an opening tag takes its whole element when the text closes it. Looked for from every opening tag
+    // in turn, the closing tag would make a line of tags that never close quadratic; the tags are paired in one pass.
+    [TestMethod]
+    [DataRow("<b>a ")]
+    [DataRow("<span x>")]
+    [DataRow("<b><i>")]
+    public void UnclosedTagsParseInLinearTimeWithRawHtml(string pattern)
+    {
+        var options = new BitAiMarkdownOptions { AllowRawHtml = true };
+        var small = Repeat(pattern, 6_250) + "</b></span>";
+        var large = Repeat(pattern, 100_000) + "</b></span>";
+
+        var smallTime = BestOf(3, () => BitAiInlineParser.Parse(small, options), withoutCollections: true);
+        var largeTime = BestOf(3, () => BitAiInlineParser.Parse(large, options), withoutCollections: true);
+
+        // As in ParsingTimeGrowsLinearlyWithTheInput: sixteen times the input, sixteen times the cost when linear.
+        var limit = smallTime * 80 + TimeSpan.FromMilliseconds(20);
+        Assert.IsTrue(
+            largeTime < limit,
+            $"'{pattern}': {smallTime.TotalMilliseconds:F1}ms for 6,250 repetitions but {largeTime.TotalMilliseconds:F1}ms for 100,000.");
+    }
+
     [TestMethod]
     public void DeeplyNestedEmphasisStaysShallowAndFast()
     {

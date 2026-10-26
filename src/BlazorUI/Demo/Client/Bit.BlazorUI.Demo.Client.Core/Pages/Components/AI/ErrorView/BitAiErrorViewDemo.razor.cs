@@ -170,14 +170,14 @@ public partial class BitAiErrorViewDemo
                     Name = "RetryAfter",
                     Type = "TimeSpan?",
                     DefaultValue = "null",
-                    Description = "How long to wait before retrying, when the provider says so. The view shows it under the message.",
+                    Description = "How long to wait before retrying, when the provider says so. The view shows it under the message from when it is handed the error until the wait is over, then takes the line away (it is not counted down: the message is an alert, which would announce every second).",
                 },
                 new()
                 {
                     Name = "Detail",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Additional technical detail, shown behind a disclosure rather than inline.",
+                    Description = "Additional technical detail, shown behind a disclosure rather than inline - to the user, so never a stack trace or anything else they must not read.",
                 },
                 new()
                 {
@@ -191,7 +191,7 @@ public partial class BitAiErrorViewDemo
                     Name = "FromException(exception)",
                     Type = "BitAiError",
                     DefaultValue = "",
-                    Description = "Translates an exception: an OperationCanceledException into a Cancelled error (code cancelled, not retryable), a TimeoutException into a retryable Timeout one (code timeout), anything else into a retryable Unknown one carrying the exception's message, with its full text as the Detail.",
+                    Description = "Translates an exception: an OperationCanceledException into a Cancelled error (code cancelled, not retryable), a TimeoutException into a retryable Timeout one (code timeout), anything else into a retryable Unknown one carrying the exception's message - which is shown, so a transport whose exceptions say what users must not read translates them itself. The stack trace is never put in the Detail, which is shown too; the exception stays on Exception, for the app's logs.",
                 },
             ],
         },
@@ -333,6 +333,7 @@ public partial class BitAiErrorViewDemo
         public override string SomethingWentWrong => "مشکلی پیش آمد";
         public override string Retry => "تلاش دوباره";
         public override string ShowDetails => "نمایش جزئیات";
+        public override string HideDetails => "پنهان کردن جزئیات";
         public override string RetryIn(TimeSpan wait) => $"{wait.TotalSeconds:F0} ثانیه‌ی دیگر دوباره تلاش کنید.";
     }
 

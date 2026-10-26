@@ -3,6 +3,9 @@
 
 @if (Document is { } document)
 {
+    _caretHost = ShowCaret && document.IsOpen && document.Blocks.Count > 0 && Options.ShowStreamingCaret ? CaretHost(document) : null;
+    _taskItemCount = 0;
+
     <div @ref="RootElement"
          @attributes="HtmlAttributes"
          id="@_Id"
@@ -12,6 +15,12 @@
         @foreach (var block in document.Blocks)
         {
             @RenderBlock(block)
+        }
+
+        @* Where the next block will start, when the text so far does not end in a line of text the caret can follow. *@
+        @if (ReferenceEquals(_caretHost, document))
+        {
+            @RenderCaret()
         }
 
         @if (document.Footnotes.Count > 0)
@@ -30,12 +39,14 @@
                                 var referenceId = FootnoteReferenceId(footnote.Number, i);
 
                                 @* A link into the view is followed by the view (FollowAsync), never by the browser, which
-                                   resolves "#..." against the base address of the app rather than the page. *@
+                                   resolves "#..." against the base address of the app rather than the page. A note cited
+                                   more than once has a back-link per citation, each named after the one it leads to, so a
+                                   screen reader's list of links tells them apart. *@
                                 <a href="#@referenceId"
                                    @onclick="() => FollowAsync(referenceId)"
                                    @onclick:preventDefault
                                    role="doc-backlink"
-                                   aria-label="@Strings.BackToReference(footnote.Number)"
+                                   aria-label="@Strings.BackToReference(footnote.Number, i)"
                                    class="bit-aimdv-fnb">&#8617;</a>
                             }
                         </li>
@@ -56,9 +67,9 @@
             case BitAiParagraphBlock paragraph:
                 <p style="@Styles?.Paragraph" class="bit-aimdv-par @Classes?.Paragraph">
                     @RenderInlines(paragraph.Inlines)
-                    @if (ShowCaret && paragraph.IsOpen && Options.ShowStreamingCaret)
+                    @if (ReferenceEquals(_caretHost, paragraph))
                     {
-                        <span aria-hidden="true" style="@Styles?.Caret" class="bit-aimdv-crt @Classes?.Caret"></span>
+                        @RenderCaret()
                     }
                 </p>
                 break;
@@ -140,6 +151,10 @@
         __builder.AddAttribute(2, "style", Styles?.Heading);
         __builder.AddAttribute(3, "class", Join("bit-aimdv-hdg", Classes?.Heading));
         __builder.AddContent(4, RenderInlines(heading.Inlines));
+        if (ReferenceEquals(_caretHost, heading))
+        {
+            __builder.AddContent(5, RenderCaret());
+        }
         __builder.CloseElement();
     };
 
@@ -171,7 +186,10 @@
 
             if (item.IsChecked is { } isChecked)
             {
-                // The box only shows the state the model wrote; nothing of the page can change it.
+                // The box only shows the state the model wrote; nothing of the page can change it. It is named by the
+                // text of its item, which sits beside it rather than in a label around it.
+                var textId = $"{_Id}-tk-{_taskItemCount++}";
+
                 __builder.AddAttribute(6, "class", Join("bit-aimdv-itm bit-aimdv-tki", Classes?.ListItem));
                 __builder.OpenElement(7, "input");
                 __builder.AddAttribute(8, "type", "checkbox");
@@ -179,12 +197,18 @@
                 __builder.AddAttribute(10, "checked", isChecked);
                 __builder.AddAttribute(11, "disabled", true);
                 __builder.AddAttribute(12, "aria-disabled", "true");
+                __builder.AddAttribute(20, "aria-labelledby", textId);
                 __builder.CloseElement();
                 __builder.OpenElement(13, "div");
+                __builder.AddAttribute(21, "id", textId);
                 __builder.AddAttribute(14, "class", "bit-aimdv-tkb");
                 foreach (var child in item.Blocks)
                 {
                     __builder.AddContent(15, RenderBlock(child));
+                }
+                if (ReferenceEquals(_caretHost, item))
+                {
+                    __builder.AddContent(18, RenderCaret());
                 }
                 __builder.CloseElement();
             }
@@ -195,6 +219,10 @@
                 {
                     __builder.AddContent(17, RenderBlock(child));
                 }
+                if (ReferenceEquals(_caretHost, item))
+                {
+                    __builder.AddContent(19, RenderCaret());
+                }
             }
 
             __builder.CloseElement();
@@ -204,10 +232,17 @@
     };
 
     // The table scrolls inside its container rather than by becoming a block itself, so it keeps the row and column
-    // semantics assistive technologies read it with.
+    // semantics assistive technologies read it with. The container takes the focus itself while the table is too wide for
+    // it (data-bit-ai-scroll, see BitAiScrollStops.ts), so a keyboard can scroll it in an engine that does not make a
+    // scrolling box focusable on its own (WebKit), and a tab stop is announced by its name, so it is a named group (never a
+    // region, a landmark every table would repeat).
     private RenderFragment RenderTable(BitAiTableBlock table) => __builder =>
     {
-        <div style="@Styles?.TableContainer" class="bit-aimdv-tbw @Classes?.TableContainer">
+        <div data-bit-ai-scroll
+             role="group"
+             aria-label="@Strings.Table"
+             style="@Styles?.TableContainer"
+             class="bit-aimdv-tbw @Classes?.TableContainer">
             <table style="@Styles?.Table" class="bit-aimdv-tbl @Classes?.Table">
                 <thead>
                     <tr class="bit-aimdv-hrw">
@@ -265,10 +300,16 @@
                 break;
 
             case BitAiLinkInline link:
-                <a href="@BitAiSafeUrls.Link(link.Url)"
+                var linkUrl = BitAiSafeUrls.Link(link.Url);
+                var linkLeadsNowhere = linkUrl == "#";
+
+                @* An address of a scheme that can run script (javascript:) is replaced by "#", which leads nowhere: written
+                   as the href, it would open the home page of the app in a new tab. So such a link keeps its text and its
+                   styles but no address - an anchor without one is no link at all. *@
+                <a href="@(linkLeadsNowhere ? null : linkUrl)"
                    title="@link.Title"
-                   target="_blank"
-                   rel="noopener noreferrer nofollow"
+                   target="@(linkLeadsNowhere ? null : "_blank")"
+                   rel="@(linkLeadsNowhere ? null : "noopener noreferrer nofollow")"
                    style="@Styles?.Link"
                    class="bit-aimdv-lnk @Classes?.Link">@RenderInlines(link.Inlines)</a>
                 break;
@@ -324,19 +365,18 @@
     private RenderFragment RenderImage(BitAiImageInline image) => __builder =>
     {
         var source = BitAiSafeUrls.Image(image.Url);
+        var loaded = _loadedImages.Contains(source);
 
-        switch (DecideImage(source, _loadedImages.Contains(source)))
+        switch (DecideImage(source, loaded))
         {
             case BitAiImageDecision.Show:
-                @* Blazor sets the attributes in the order they are written, and an engine that sees the source before the
-                   loading attribute starts the fetch then (WebKit), so the lazy loading is written first. *@
-                <img loading="lazy" src="@source" alt="@image.Alt" title="@image.Title" style="@Styles?.Image" class="bit-aimdv-img @Classes?.Image" />
+                @RenderShownImage(image, source, loaded)
                 break;
 
             case BitAiImageDecision.AskFirst:
                 <BitActionButton IconName="Photo2"
                                  Title="@source"
-                                 OnClick="() => _loadedImages.Add(source)"
+                                 OnClick="() => LoadImage(source)"
                                  Classes="@ImagePlaceholderClasses"
                                  Styles="@Styles?.ImagePlaceholder">
                     @Strings.LoadImage(string.IsNullOrWhiteSpace(image.Alt) ? ImageHostOf(source) : image.Alt)
@@ -350,6 +390,32 @@
                 }
                 break;
         }
+    };
+
+    // Blazor sets the attributes in the order they are written, and an engine that sees the source before the loading
+    // attribute starts the fetch then (WebKit), so the lazy loading is written first. An image the user loaded takes the
+    // focus off the button it replaces (see LoadImage), so it can hold it; one the policy shows at once is no stop of the
+    // keyboard's.
+    private RenderFragment RenderShownImage(BitAiImageInline image, string source, bool loaded) => __builder =>
+    {
+        __builder.OpenElement(0, "img");
+        __builder.AddAttribute(1, "loading", "lazy");
+        __builder.AddAttribute(2, "src", source);
+        __builder.AddAttribute(3, "alt", image.Alt);
+        __builder.AddAttribute(4, "title", image.Title);
+        __builder.AddAttribute(5, "tabindex", loaded ? "-1" : null);
+        __builder.AddAttribute(6, "style", Styles?.Image);
+        __builder.AddAttribute(7, "class", Join("bit-aimdv-img", Classes?.Image));
+        if (loaded)
+        {
+            __builder.AddElementReferenceCapture(8, element => CaptureLoadedImage(source, element));
+        }
+        __builder.CloseElement();
+    };
+
+    private RenderFragment RenderCaret() => __builder =>
+    {
+        <span aria-hidden="true" style="@Styles?.Caret" class="bit-aimdv-crt @Classes?.Caret"></span>
     };
 
     // A marker resolves to a chip only when its source is known and inline citations are on; otherwise it stays the

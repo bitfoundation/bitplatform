@@ -16,9 +16,9 @@ internal static class BitAiMessageListJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.AiMessageList.setAutoScroll", id, autoScroll);
     }
 
-    internal static ValueTask BitAiMessageListScrollToBottom(this IJSRuntime jsRuntime, ElementReference element, bool smooth)
+    internal static ValueTask BitAiMessageListScrollToBottom(this IJSRuntime jsRuntime, string id, ElementReference element, bool smooth)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.AiMessageList.scrollToBottom", element, smooth);
+        return jsRuntime.InvokeVoid("BitBlazorUI.AiMessageList.scrollToBottom", id, element, smooth);
     }
 
     internal static ValueTask BitAiMessageListDispose(this IJSRuntime jsRuntime, string id)

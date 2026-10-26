@@ -1,9 +1,19 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitAiComponentBase
 
+@{
+    _awaitingDecision = IsAwaitingDecision();
+    _generating = Session is { IsGenerating: true };
+
+    var busy = Message.IsBusy && _awaitingDecision is false;
+    var editDisabled = Disabled || _generating;
+    var saveDisabled = editDisabled || (string.IsNullOrWhiteSpace(_draft) && Message.Attachments.Count == 0);
+}
+
 @* The message is the article a reader moves between, and it is busy for as long as it is being generated, so a screen
-   reader waits for it to settle rather than reading every token. Its identifier and its role are written as data, so
-   an app can find one message, or style the messages of a role of its own. *@
+   reader waits for it to settle rather than reading every token - but for a reply waiting on its reader's decision on a
+   tool call, whose question a busy message would keep from being announced (_awaitingDecision). Its identifier and its
+   role are written as data, so an app can find one message, or style the messages of a role of its own. *@
 <article @ref="RootElement"
          @attributes="HtmlAttributes"
          id="@_Id"
@@ -12,7 +22,7 @@
          dir="@Dir?.ToString().ToLower()"
          data-message-id="@Message.MessageId"
          data-role="@Message.Role.Value"
-         aria-busy="@(Message.IsBusy ? "true" : "false")">
+         aria-busy="@(busy ? "true" : "false")">
 
     @if (Message.Role.IsSystem)
     {
@@ -20,6 +30,8 @@
     }
     else if (Message.Role.IsUser)
     {
+        var text = Message.GetText();
+
         @if (Message.Attachments.Count > 0)
         {
             <div style="@Styles?.Attachments" class="bit-aicms-att @Classes?.Attachments">
@@ -32,11 +44,19 @@
 
         @if (_editing)
         {
-            <div style="@Styles?.Editor" class="bit-aicms-edt @Classes?.Editor">
+            @* The field takes the focus as the editor opens, and a plain Escape anywhere in the editor cancels the edit,
+               which data-bit-esc claims so a dialog or a panel around the message stays open (_EditorEscapeClaim). An
+               edit starts a turn of its own, so Save waits for the session to be free, and for words to send - or the
+               attachments, which may go on alone. *@
+            <div style="@Styles?.Editor"
+                 class="bit-aicms-edt @Classes?.Editor"
+                 data-bit-esc="@_EditorEscapeClaim"
+                 @onkeydown="HandleOnEditorKeyDown">
                 <BitTextField @bind-Value="_draft"
                               Multiline="true"
                               Rows="3"
                               Immediate="true"
+                              AutoFocus="true"
                               AriaLabel="@Strings.Edit"
                               Disabled="Disabled" />
 
@@ -50,7 +70,7 @@
                         @Strings.Cancel
                     </BitButton>
                     <BitButton OnClick="SaveEditAsync"
-                               Disabled="Disabled"
+                               Disabled="saveDisabled"
                                Styles="@Styles?.SaveButton"
                                Classes="@Classes?.SaveButton">
                         @Strings.Save
@@ -60,15 +80,26 @@
         }
         else
         {
-            <div style="@Styles?.Bubble" class="bit-aicms-bbl @Classes?.Bubble">@Message.GetText()</div>
+            @* Attachments sent on their own have no words to put in a bubble, or to copy. *@
+            @if (text.Length > 0)
+            {
+                <div style="@Styles?.Bubble" class="bit-aicms-bbl @Classes?.Bubble">@text</div>
+            }
 
             @if (Options.ShowMessageActions && Session is not null)
             {
+                @* Edit stays where it is while a reply is being generated, unavailable but focusable (BitButton keeps a
+                   disabled button in the tab order), since the session takes the turn an edit starts only once it is
+                   free; it is also where the focus goes back to as the editor closes. *@
                 <div style="@Styles?.Actions" class="bit-aicms-act @Classes?.Actions">
-                    <BitAiCopyButton Content="@Message.GetText()" Disabled="Disabled" />
-                    <BitButton IconName="Edit"
+                    @if (text.Length > 0)
+                    {
+                        <BitAiCopyButton Content="@text" Disabled="Disabled" />
+                    }
+                    <BitButton @ref="_editButton"
+                               IconName="Edit"
                                OnClick="StartEdit"
-                               Disabled="Disabled"
+                               Disabled="editDisabled"
                                Title="@Strings.Edit"
                                AriaLabel="@Strings.Edit"
                                Variant="BitVariant.Text"

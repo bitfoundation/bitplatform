@@ -46,7 +46,7 @@ public partial class BitAiMarkdownViewDemo
             Name = "ShowCaret",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Draws a caret after the last paragraph while it is still open (a document parsed with isComplete false), the sign that more text is on its way. BitAiUiOptions.ShowStreamingCaret turns the caret off for every view at once.",
+            Description = "Draws a caret at the end of the text while the document is still being written (parsed with isComplete false), the sign that more text is on its way: after the paragraph or the heading being written, in a list item just started, and after the blocks - where the next one will start - when the text so far ends in a code block, a table or a blank line. BitAiUiOptions.ShowStreamingCaret turns the caret off for every view at once.",
         },
         new()
         {
@@ -138,7 +138,7 @@ public partial class BitAiMarkdownViewDemo
                 new() { Name = "CitationMarkers", Type = "bool", DefaultValue = "true", Description = "Turn bracketed digit runs such as [3] into citation markers, which the Citations of the view resolve." },
                 new() { Name = "AllowRawHtml", Type = "bool", DefaultValue = "false", Description = "Keep raw HTML as markup instead of escaping it. The view renders it only when the options in force (BitAiUiOptions.Markdown) allow it too. Leave it off unless the Markdown comes from a source you trust as much as your own code: a model can be talked into emitting a script tag." },
                 new() { Name = "HeadingIds", Type = "bool", DefaultValue = "true", Description = "Give headings anchor ids derived from their text (bit-ai-h-<slug>, numbered -2, -3, ... when a text repeats), which the view renders after its own id." },
-                new() { Name = "HideDanglingDelimiters", Type = "bool", DefaultValue = "true", Description = "Hide a trailing unmatched emphasis or code delimiter while the text is still streaming, so a bold run does not flash a literal asterisk before its closing one arrives." },
+                new() { Name = "HideDanglingDelimiters", Type = "bool", DefaultValue = "true", Description = "Hide a trailing unmatched emphasis or code delimiter while the text is still streaming, so a bold run does not flash a literal asterisk before its closing one arrives - in a paragraph and in a heading being written alike. With Tables on, the header row of a table whose delimiter row has not arrived yet is held back the same way, rather than shown as a line of pipes." },
                 new() { Name = "MaxNestingDepth", Type = "int", DefaultValue = "32", Description = "How deeply blocks and inline spans may nest before further markers are read as literal text - a bound on the parser's recursion and on the tree the view walks, so a line of ten thousand > cannot take the process down." },
                 new() { Name = "SoftBreaksAsHardBreaks", Type = "bool", DefaultValue = "false", Description = "Treat a single newline inside a paragraph as a line break, as chat clients often do (CommonMark renders it as a space)." },
                 new() { Name = "Footnotes", Type = "bool", DefaultValue = "true", Description = "Parse footnotes: [^1] in the text with a matching [^1]: note definition." },
@@ -267,6 +267,7 @@ public partial class BitAiMarkdownViewDemo
         new() { Name = "--bit-AiMarkdownView-image-radius", DefaultValue = "var(--bit-shp-radius-surface)", Description = "Corner radius of the images." },
         new() { Name = "--bit-AiMarkdownView-muted-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "The footnotes, and the alternative text of a blocked image." },
         new() { Name = "--bit-AiMarkdownView-caret-color", DefaultValue = "var(--bit-clr-pri)", Description = "The caret after streaming text." },
+        new() { Name = "--bit-AiMarkdownView-scroll-margin", DefaultValue = "spacing(3)", Description = "Room kept above a heading, a footnote or a footnote reference an in-page link scrolls to - the height of a sticky app bar, so what the link leads to is not left under it." },
     ];
 
 
@@ -618,7 +619,7 @@ public partial class BitAiMarkdownViewDemo
     }
 
     private const string paramsMarkdown = """
-        > Every link of a view inside the BitParams, such as [this one](https://bitplatform.dev), is bold.
+        > A link of a view inside the BitParams, such as [this one](https://bitplatform.dev), is bold - unless its view sets Styles of its own.
         """;
 
     private readonly BitAiMarkdownDocument paramsDocument = BitAiMarkdownParser.Parse(paramsMarkdown);

@@ -334,6 +334,10 @@ $tag-private-properties:
 
 // A tag that has a width of its own to protect keeps its content on one line and ends it with an ellipsis.
 // Every box between the root and the text has to be allowed to shrink for the ellipsis to ever appear.
+//
+// The clip that ellipsis needs is the box of the line, which a line-height of 1 makes no taller than the type: the
+// descenders of a g or a p hang below it and would be cut off. The padding gives the clip room for them above and below,
+// and the negative margin takes that room back out of the layout, so the label is exactly as tall as it was.
 .bit-tag-nwr {
     .bit-tag-cnt {
         white-space: nowrap;
@@ -344,6 +348,8 @@ $tag-private-properties:
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
+        padding-block: 0.2em;
+        margin-block: -0.2em;
     }
 }
 

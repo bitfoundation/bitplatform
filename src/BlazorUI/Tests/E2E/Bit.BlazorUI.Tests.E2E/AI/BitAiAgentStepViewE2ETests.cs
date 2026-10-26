@@ -76,7 +76,15 @@ public class BitAiAgentStepViewE2ETests : E2ETestBase
         // A completed step says how long it took, a running one how long it has been running.
         await Expect(Step("asv-completed").Locator(".bit-aiasv-dur")).ToHaveTextAsync(new Regex(@"^\d+ms$"));
         await Expect(Step("asv-completed").Locator(".bit-aiasv-smr")).ToHaveTextAsync("3 sources found");
-        await Expect(Step("asv-running").Locator(".bit-aiasv-dur")).ToHaveTextAsync(new Regex(@"^(\d+ms|\d+\.\ds)$"));
+        await Expect(Step("asv-running").Locator(".bit-aiasv-dur")).ToHaveTextAsync(new Regex(@"^(\d+ms|\d+(\.\d)?s)$"));
+
+        // Drawn on its own, a running step's time still moves on: its clock re-renders it.
+        var running = await Step("asv-running").Locator(".bit-aiasv-dur").TextContentAsync();
+        await Expect(Step("asv-running").Locator(".bit-aiasv-dur")).Not.ToHaveTextAsync(running!);
+
+        // The status the marker draws is said in words to assistive technologies, out of sight.
+        await Expect(Step("asv-failed").Locator(".bit-aiasv-sts")).ToHaveTextAsync("Failed");
+        await Expect(Step("asv-failed").Locator(".bit-aiasv-sts")).ToHaveCSSAsync("position", "absolute");
 
         await Expect(Step("asv-failed").Locator(".bit-aiasv-err")).ToHaveTextAsync("The service timed out");
         await Expect(Step("asv-failed").Locator(".bit-aiasv-err")).ToHaveCSSAsync("color", await Page.ResolveColorAsync("var(--bit-clr-err-fg)"));

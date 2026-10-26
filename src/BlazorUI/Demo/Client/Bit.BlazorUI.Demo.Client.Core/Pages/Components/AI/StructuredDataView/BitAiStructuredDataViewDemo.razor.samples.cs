@@ -156,7 +156,12 @@ builder.Services.AddBitBlazorUIAIServices(ai =>
 });
 """;
     private const string example4FormCode = """
-<BitAiForm Definition="definition" Submitted="submitted" OnSubmit="OnSubmitAsync" />
+@* Not submitted before the whole schema has arrived, and not edited after it was. *@
+<BitAiForm Definition="definition"
+           Busy="Part.IsStreaming"
+           Disabled="submitted"
+           Submitted="submitted"
+           OnSubmit="OnSubmitAsync" />
 
 @code {
     private BitAiFormDefinition definition = new();
@@ -187,15 +192,20 @@ public static IBitAiTransport ProposesForm() =>
         const string intro = "I can book that. Check the details first, since I inferred two of them.\n\n";
         await foreach (var evt in AiScript.Write(intro, 4, 12, token)) await yielder(evt);
 
-        const string schema = """
+        // The two details the model inferred go in as the defaults the form starts from: two guests, and the coming Friday.
+        var today = DateTime.Today;
+        var friday = today.AddDays(((int)DayOfWeek.Friday - (int)today.DayOfWeek + 7) % 7);
+        var date = friday.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        var schema = $$"""
             {
               "title": "Book a table",
               "type": "object",
               "required": ["restaurant", "guests", "date"],
               "properties": {
                 "restaurant": { "type": "string", "title": "Restaurant" },
-                "guests": { "type": "integer", "title": "Guests", "minimum": 1, "maximum": 12 },
-                "date": { "type": "string", "format": "date", "title": "Date" },
+                "guests": { "type": "integer", "title": "Guests", "minimum": 1, "maximum": 12, "default": 2 },
+                "date": { "type": "string", "format": "date", "title": "Date", "default": "{{date}}" },
                 "seating": { "type": "string", "enum": ["Inside", "Terrace", "No preference"] },
                 "notes": { "type": "string", "format": "textarea", "title": "Notes for the restaurant" }
               }
@@ -230,6 +240,7 @@ public static IBitAiTransport ProposesForm() =>
 
     .custom-entry {
         flex-direction: row;
+        align-items: baseline;
         gap: 0.5rem;
     }
 

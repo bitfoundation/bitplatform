@@ -16,7 +16,8 @@ public partial class AiUsageScenarioPage
                                 Disabled="@(session?.IsGenerating ?? false)" />
         </ComposerPrefixTemplate>
         <ComposerHintTemplate>
-            <BitAiContextMeter Conversation="session?.Conversation" Model="model" />
+            @* The window of the model picked now, rather than of the one the last reply ran on. *@
+            <BitAiContextMeter Conversation="session?.Conversation" Window="model?.ContextWindow" />
         </ComposerHintTemplate>
     </BitAiChat>
 </div>

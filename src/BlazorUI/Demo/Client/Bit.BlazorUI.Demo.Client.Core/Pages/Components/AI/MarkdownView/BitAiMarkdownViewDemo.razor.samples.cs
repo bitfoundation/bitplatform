@@ -436,7 +436,7 @@ private void Reparse()
 </BitParams>";
     private readonly string example12CsharpCode = @"
 private const string paramsMarkdown = """"""
-    > Every link of a view inside the BitParams, such as [this one](https://bitplatform.dev), is bold.
+    > A link of a view inside the BitParams, such as [this one](https://bitplatform.dev), is bold - unless its view sets Styles of its own.
     """""";
 
 private readonly BitAiMarkdownDocument paramsDocument = BitAiMarkdownParser.Parse(paramsMarkdown);
@@ -453,6 +453,8 @@ private readonly BitAiMarkdownViewParams[] markdownParams =
         border-radius: 1rem;
         background-color: #1e293b;
         color: #e2e8f0;
+        --bit-AiMarkdownView-link-color: #93c5fd;
+        --bit-AiMarkdownView-quote-color: #cbd5e1;
     }
 
     .custom-root {
@@ -480,7 +482,7 @@ private readonly BitAiMarkdownViewParams[] markdownParams =
 <BitAiMarkdownView Document=""styleDocument""
                    Classes=""@(new() { Root = ""custom-root"", Link = ""custom-link"", ListItem = ""custom-item"" })"" />
 
-<div style=""--bit-AiMarkdownView-heading-color: rebeccapurple; --bit-AiMarkdownView-link-color: rebeccapurple; --bit-AiMarkdownView-quote-border-color: rebeccapurple; --bit-AiMarkdownView-code-background: #ede9fe; --bit-AiMarkdownView-block-spacing: 0.5rem;"">
+<div style=""--bit-AiMarkdownView-heading-color: light-dark(#6d28d9, #a78bfa); --bit-AiMarkdownView-link-color: light-dark(#6d28d9, #a78bfa); --bit-AiMarkdownView-quote-border-color: #8b5cf6; --bit-AiMarkdownView-code-color: #4c1d95; --bit-AiMarkdownView-code-background: #ede9fe; --bit-AiMarkdownView-block-spacing: 0.5rem;"">
     <BitAiMarkdownView Document=""styleDocument"" />
 </div>";
     private readonly string example13CsharpCode = @"

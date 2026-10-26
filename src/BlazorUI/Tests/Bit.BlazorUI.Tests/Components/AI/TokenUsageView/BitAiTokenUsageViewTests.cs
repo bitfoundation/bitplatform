@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -58,12 +59,57 @@ public class BitAiTokenUsageViewTests : BitAiTestBase
         Assert.IsEmpty(component.FindAll(".bit-aituv-ltc"));
     }
 
+    // A title reaches the pointer alone, so the breakdown is also hidden text of the readout, a line to each kind, right
+    // after the total it breaks down.
+    [TestMethod]
+    public void TheBreakdownIsAlsoTextForThoseTheTooltipNeverReaches()
+    {
+        var component = RenderComponent<BitAiTokenUsageView>(p => p.Add(c => c.Usage, Usage with { Cost = 1 }));
+
+        var hidden = component.Find(".bit-aituv > .bit-aituv-vhd");
+        var lines = hidden.Children.Select(l => l.TextContent.Trim()).ToArray();
+
+        CollectionAssert.AreEqual(new[] { "Input: 1,200", "Output: 300" }, lines);
+        Assert.IsTrue(hidden.PreviousElementSibling!.ClassList.Contains("bit-aituv-tok"));
+        Assert.IsTrue(hidden.NextElementSibling!.ClassList.Contains("bit-aituv-cst"));
+    }
+
+    [TestMethod]
+    public void TheLatencyIsNamedForAssistiveTechnologies()
+    {
+        var component = RenderComponent<BitAiTokenUsageView>(p => p
+            .Add(c => c.Usage, Usage)
+            .Add(c => c.Metadata, Metadata())
+            .Add(c => c.ShowLatency, true));
+
+        var latency = component.Find(".bit-aituv-ltc");
+
+        Assert.AreEqual("Time to first token", latency.QuerySelector(".bit-aituv-vhd")!.TextContent.Trim());
+        Assert.AreEqual("Time to first token 500ms", latency.TextContent);
+    }
+
+    [TestMethod,
+        DataRow(999L, "999"),
+        DataRow(1_000L, "1k"),
+        DataRow(1_550L, "1.6k"),
+        DataRow(311_000L, "311k"),
+        DataRow(311_040L, "311k"),
+        DataRow(2_000_000L, "2M"),
+        DataRow(2_400_000L, "2.4M")]
+    public void ATokenCountDropsADecimalThatIsZero(long tokens, string expected)
+    {
+        Assert.AreEqual(expected, new BitAiStrings().FormatTokens(tokens));
+    }
+
     [TestMethod,
         DataRow(null, "0.5", "$0.50"),
         DataRow("USD", "0.004", "$0.0040"),
         DataRow("EUR", "1.25", "€1.25"),
         DataRow("GBP", "2", "£2.00"),
-        DataRow("JPY", "3", "JPY 3.00")]
+        DataRow("JPY", "3", "JPY 3"),
+        DataRow("JPY", "0.4", "JPY 0.40"),
+        DataRow("KWD", "1.5", "KWD 1.500"),
+        DataRow("USD", "0", "$0.00")]
     public void TheCostIsWrittenInItsCurrency(string? currency, string cost, string expected)
     {
         var usage = Usage with { Cost = decimal.Parse(cost, System.Globalization.CultureInfo.InvariantCulture), Currency = currency };
@@ -90,7 +136,7 @@ public class BitAiTokenUsageViewTests : BitAiTestBase
 
         Assert.AreEqual("150 tok/s", byDefault.Find(".bit-aituv-spd").TextContent);
         Assert.IsEmpty(byDefault.FindAll(".bit-aituv-ltc"));
-        Assert.AreEqual("500ms", everything.Find(".bit-aituv-ltc").TextContent);
+        Assert.AreEqual("Time to first token 500ms", everything.Find(".bit-aituv-ltc").TextContent);
         Assert.IsEmpty(nothing.FindAll(".bit-aituv-spd"));
     }
 

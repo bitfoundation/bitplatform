@@ -29,7 +29,7 @@ public partial class BitAiToolApprovalDemo
             Name = "OnDecision",
             Type = "EventCallback<BitAiApprovalDecision>",
             DefaultValue = "",
-            Description = "Raised after a decision - Approved, ApprovedAlways or Rejected - once it has been handed to the session, or recorded on the call when there is none. Nothing is raised while the prompt is disabled.",
+            Description = "Raised after a decision - Approved, ApprovedAlways or Rejected - once it has been handed to the session, or recorded on the call when there is none. Nothing is raised while the prompt is disabled, nor for a call that is no longer awaiting a decision - which the session refuses (BitAiChatSession.Approve returns false), and the prompt without one ignores: a call is decided once.",
             LinkType = LinkType.Link,
             Href = "#approval-decision-enum",
         },
@@ -174,7 +174,7 @@ public partial class BitAiToolApprovalDemo
                     Name = "Icon",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "An icon name for the host's own tool UI (a custom renderer); the built-in card draws its own tool glyph.",
+                    Description = "The name of the icon drawn on the header of the tool-call card (BitAiToolCallView) in place of the default wrench - a Fabric MDL2 name (BitIconName.*); a name outside the core glyphs needs the Bit.BlazorUI.Icons package.",
                 },
                 new()
                 {
@@ -276,6 +276,16 @@ public partial class BitAiToolApprovalDemo
 
     private BitAiToolCallPart basicCall = AwaitingApproval("archive_thread", "Archive the thread", BitAiToolRisk.Write);
     private BitAiApprovalDecision basicDecision;
+    private BitButton askAgainButton = default!;
+    private bool focusAskAgain;
+
+    private void HandleBasicDecision(BitAiApprovalDecision decision)
+    {
+        basicDecision = decision;
+
+        // The decision takes the prompt away with the button it was made with; Ask again, which stays, takes the focus.
+        focusAskAgain = true;
+    }
 
     private void ResetBasic()
     {
@@ -290,11 +300,21 @@ public partial class BitAiToolApprovalDemo
 
 
 
-    private readonly BitAiToolCallPart readOnlyCall = AwaitingApproval("read_logs", "Read the logs", BitAiToolRisk.ReadOnly);
-    private readonly BitAiToolCallPart writeCall = AwaitingApproval("send_email", "Send email", BitAiToolRisk.Write);
-    private readonly BitAiToolCallPart destructiveCall = AwaitingApproval("delete_records", "Delete records", BitAiToolRisk.Destructive,
+    private BitAiToolCallPart readOnlyCall = AwaitingApproval("read_logs", "Read the logs", BitAiToolRisk.ReadOnly);
+    private BitAiToolCallPart writeCall = AwaitingApproval("send_email", "Send email", BitAiToolRisk.Write);
+    private BitAiToolCallPart destructiveCall = AwaitingApproval("delete_records", "Delete records", BitAiToolRisk.Destructive,
         "Permanently delete the 128 archived records? This cannot be undone.");
     private string riskDecision = "none yet";
+
+    // A call is decided once, so asking again means asking about fresh calls.
+    private void ResetRisk()
+    {
+        readOnlyCall = AwaitingApproval("read_logs", "Read the logs", BitAiToolRisk.ReadOnly);
+        writeCall = AwaitingApproval("send_email", "Send email", BitAiToolRisk.Write);
+        destructiveCall = AwaitingApproval("delete_records", "Delete records", BitAiToolRisk.Destructive,
+            "Permanently delete the 128 archived records? This cannot be undone.");
+        riskDecision = "none yet";
+    }
 
 
 
@@ -302,6 +322,28 @@ public partial class BitAiToolApprovalDemo
 
     private BitAiRenderScheduler sessionRenders = default!;
     private BitAiChatSession session = default!;
+    private BitButton deleteButton = default!;
+    private bool focusDeleteButton;
+
+    // The answer takes the prompt away with the button it was given with; the button that asked takes the focus back.
+    private void HandleSessionDecision() => focusDeleteButton = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (focusAskAgain)
+        {
+            focusAskAgain = false;
+            await askAgainButton.FocusAsync();
+        }
+
+        if (focusDeleteButton)
+        {
+            focusDeleteButton = false;
+            await deleteButton.FocusAsync();
+        }
+    }
 
     // The call of the latest turn, whatever it is waiting for.
     private BitAiToolCallPart? SessionCall => session.Conversation.Messages

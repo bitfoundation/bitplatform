@@ -632,6 +632,10 @@ public partial class BitAiChatMessageDemo
         session.Conversation.MessageRemoved += OnSessionMessagesChanged;
         session.TurnCompleted += OnSessionTurnCompleted;
 
+        // The Disabled section draws its thread with a loop of its own too, which a regenerate or an edit rewinds.
+        disabledSession.Conversation.MessageAdded += OnSessionMessagesChanged;
+        disabledSession.Conversation.MessageRemoved += OnSessionMessagesChanged;
+
         return base.OnInitAsync();
     }
 
@@ -640,6 +644,9 @@ public partial class BitAiChatMessageDemo
         session.Conversation.MessageAdded -= OnSessionMessagesChanged;
         session.Conversation.MessageRemoved -= OnSessionMessagesChanged;
         session.TurnCompleted -= OnSessionTurnCompleted;
+
+        disabledSession.Conversation.MessageAdded -= OnSessionMessagesChanged;
+        disabledSession.Conversation.MessageRemoved -= OnSessionMessagesChanged;
 
         await session.DisposeAsync();
         await disabledSession.DisposeAsync();

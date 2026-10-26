@@ -40,7 +40,9 @@
         <BitText>
             <b>Security</b>: an HTML artifact is generated markup, so it is previewed in an <b>iframe</b> with
             <b>sandbox="allow-scripts allow-forms allow-popups"</b> - its scripts run, but it is denied same-origin access to the
-            page, its storage and its cookies - and only once it has finished streaming. An SVG is shown through an <b>img</b>,
+            page, its storage and its cookies - and only once it has finished streaming. The frame is handed the page with one
+            small script of the panel's own after it, which only posts the panel an Escape the page left alone; copy and
+            download act on the page as it was written. An SVG is shown through an <b>img</b>,
             which never runs a script inside it. An image or an SVG follows the image policy of the options
             (<b>BitAiUiOptions.Images</b>, a <BitLink Href="/components/ai/markdownview#image-policy">BitAiImagePolicy</BitLink>),
             as the images of a message do: one the policy loads only on request is a button that loads it, one it blocks is
@@ -49,8 +51,12 @@
         <br />
         <BitText>
             <b>Accessibility</b>: the panel is a <b>section</b> named after the artifact, its body says <b>aria-busy</b> while it
-            streams, the full-screen toggle says <b>aria-pressed</b>, and Escape collapses the full-screen panel - claimed, so
-            a dialog the panel sits in does not close on the same press.
+            streams, and the full-screen toggle says <b>aria-pressed</b>. The full-screen panel is a modal dialog
+            (<b>role="dialog"</b>, <b>aria-modal</b>) that holds the keyboard: Tab and Shift+Tab cycle through its controls and
+            the page in its frame, and the Tab out of the end of that page comes back to the panel's first control rather than
+            the page behind the overlay. Escape collapses it - pressed in the page in its frame too - claimed, so a dialog the
+            panel sits in does not close on the same press. The button standing in for an image the image policy holds back
+            hands the focus on to the image it loads.
         </BitText>
     </NotesTemplate>
     <Examples>
@@ -171,7 +177,8 @@
                 an older version, and takes the extension and type of its kind and language: .md, .html, .json, .csv, .tsv, .svg,
                 or one of some twenty languages (.cs, .ts, .py, ...) for code. The full-screen toggle lays the same panel over the
                 page - a running page in its frame is never restarted by it - and Escape or a click on the overlay brings it back.
-                A <b>Disabled</b> panel keeps copy and turns the version selector, the download and the full-screen toggle off.
+                A <b>Disabled</b> panel turns its copy and download buttons, the version selector and the full-screen toggle off;
+                its content stays readable.
             </div>
             <br />
             <BitAiArtifactView Artifact="pageArtifact" />
@@ -182,16 +189,18 @@
         <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> each part (the version selector,
-                the buttons and the loading dots take the class-styles of BitDropdown, BitButton and BitLoading). The public
-                <b>--bit-AiArtifactView-*</b> variables (see the CSS variables table) inherit, so set on <b>:root</b>, a container
-                or a panel's <b>Style</b> they re-skin every panel below - a panel a registered renderer nests inside it too.
+                the copy button, the other buttons and the loading dots take the class-styles of BitDropdown, BitAiCopyButton,
+                BitButton and BitLoading). The public <b>--bit-AiArtifactView-*</b> variables (see the CSS variables table)
+                inherit, so set on <b>:root</b>, a container or a panel's <b>Style</b> they re-skin every panel below - a panel a
+                registered renderer nests inside it too. The buttons color themselves through the <b>--bit-Button-*</b>
+                variables rather than the color of the header, so a header given a color of its own sets them as well.
             </div>
             <br />
             @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
             <div>
                 <BitAiArtifactView Artifact="programArtifact"
                                    Style="max-width: 32rem"
-                                   Styles="@(new() { Header = "background-color: #1e1e2e; color: #cdd6f4", Icon = "color: #89b4fa", Title = "font-family: monospace" })" />
+                                   Styles="@(new() { Header = "background-color: #1e1e2e; color: #cdd6f4; --bit-Button-color: #cdd6f4", Icon = "color: #89b4fa", Title = "font-family: monospace" })" />
                 <br />
                 <BitAiArtifactView Artifact="documentArtifact" Classes="@(new() { Panel = "custom-panel", Header = "custom-header" })" />
                 <br />

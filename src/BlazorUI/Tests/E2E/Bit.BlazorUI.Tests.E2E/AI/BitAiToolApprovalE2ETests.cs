@@ -97,7 +97,7 @@ public class BitAiToolApprovalE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task Keyboard_TheAnswersAreTheNextThreeStops_AndEnterOrSpaceGivesOne()
+    public async Task Keyboard_TheAnswersAreTheNextThreeStops_EnterGivesOne_AndADecidedCallTakesNoOther()
     {
         await OpenAsync(Route);
 
@@ -116,9 +116,11 @@ public class BitAiToolApprovalE2ETests : E2ETestBase
         await Page.Keyboard.PressAsync("Enter");
         await Expect(Page.Locator("#tap-log")).ToHaveTextAsync("call-e2e-keyboard:Approved:Pending");
 
+        // A call is decided once: a second answer is refused, raises nothing, and leaves the call where the first moved it.
         await Answer("tap-kb", "Decline").FocusAsync();
         await Page.Keyboard.PressAsync("Space");
-        await Expect(Page.Locator("#tap-log")).ToHaveTextAsync("call-e2e-keyboard:Approved:Pending,call-e2e-keyboard:Rejected:Rejected");
+        await Page.WaitForTimeoutAsync(300);
+        await Expect(Page.Locator("#tap-log")).ToHaveTextAsync("call-e2e-keyboard:Approved:Pending");
     }
 
     // ---------- session ----------

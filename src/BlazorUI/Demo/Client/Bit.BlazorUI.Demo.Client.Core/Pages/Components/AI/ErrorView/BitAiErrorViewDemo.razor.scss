@@ -17,7 +17,7 @@
     .custom-error {
         padding: 0.5rem;
         border-radius: 0.75rem;
-        background: repeating-linear-gradient(45deg, #fee2e2, #fee2e2 0.5rem, #fecaca 0.5rem, #fecaca 1rem);
+        background: repeating-linear-gradient(45deg, var(--bit-clr-err-tint), var(--bit-clr-err-tint) 0.5rem, transparent 0.5rem, transparent 1rem);
     }
 
     .custom-error-message {

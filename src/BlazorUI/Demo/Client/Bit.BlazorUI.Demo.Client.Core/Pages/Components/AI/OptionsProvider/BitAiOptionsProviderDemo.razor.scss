@@ -22,6 +22,11 @@
     border-radius: 0.5rem;
 }
 
+// The badge and the sources keep their own width, but a meter shrunk to its content would be a stub of a bar.
+.example-region ::deep .bit-aictm {
+    align-self: stretch;
+}
+
 .example-dark {
     color: var(--bit-clr-fg-pri);
     background-color: var(--bit-clr-bg-pri);

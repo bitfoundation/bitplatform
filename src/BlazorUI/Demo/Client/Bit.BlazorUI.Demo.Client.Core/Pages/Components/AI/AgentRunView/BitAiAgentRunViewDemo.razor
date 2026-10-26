@@ -61,9 +61,9 @@
 
         <DemoExample Title="Failure" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>
-                A step that fails is completed as <b>Failed</b> with the <b>BitAiError</b> it failed with, the steps the run
-                will no longer reach as <b>Skipped</b>, and <b>SetError</b> ends the run as failed and shows the error under the
-                steps, with its detail one click away.
+                A step that fails is completed as <b>Failed</b> with the <b>BitAiError</b> it failed with, and <b>SetError</b>
+                ends the run as failed and shows the error under the steps, with its detail one click away. The steps the run
+                will no longer reach are completed as <b>Skipped</b> as it ends.
             </div>
             <br />
             <BitButton OnClick="StartFailingRun" Disabled="isFailingRunning">Deploy the release</BitButton>
@@ -76,9 +76,10 @@
 
         <DemoExample Title="Asking the user" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>
-                <b>RequestInput</b> blocks the run on a question, with optional suggested answers. The view shows them as
-                one-tap buttons beside a field for an answer of the user's own, and hands the answer to <b>OnRespond</b>; the
-                page then <b>ResolveInput</b>s the run and carries on from the step it stopped at.
+                <b>RequestInput</b> blocks the run on a question, with optional suggested answers, and the step running with it.
+                The view shows them as one-tap buttons beside a field for an answer of the user's own, and hands the answer to
+                <b>OnRespond</b>; the page then <b>ResolveInput</b>s the run and carries on from the step it stopped at. The
+                question goes with the answer, and the steps take the focus it had.
             </div>
             <br />
             <BitButton OnClick="StartAskingRun" Disabled="isAskingRunning">Start the migration</BitButton>
@@ -94,7 +95,8 @@
                 A <b>BitAiChatSession</b> builds the run from the agent events of its transport - here the scripted agents of
                 this site. Without an <b>OnRespond</b>, an answer goes to the <b>Session</b> (<b>RespondToAgentAsync</b>), which
                 appends it as a user message and continues the turn, so the transport picks the run up where it stopped. The
-                <b>Session</b> also lets each step show the tool calls it made by name.
+                <b>Session</b> also lets each step show the tool calls it made by name - the first step of <b>Research</b>
+                searches the web.
             </div>
             <br />
             <div class="example-buttons">
@@ -179,6 +181,9 @@
                                           --bit-AiAgentRunView-text-color: #94a3b8;
                                           --bit-AiAgentRunView-prompt-background: #3b2f0b;
                                           --bit-AiAgentRunView-radius: 1rem;
+                                          --bit-AiAgentStepView-text-color: #94a3b8;
+                                          --bit-Button-outline-color: #f1f5f9;
+                                          --bit-Button-outline-border-color: #64748b;
                                           color: #f1f5f9" />
             </div>
         </DemoExample>
@@ -186,12 +191,15 @@
         <DemoExample Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>
                 In right-to-left text the header, the timeline, the progress row and the question are mirrored - whether the
-                direction comes from <b>Dir</b> or from a <b>dir</b> attribute around the view.
+                direction comes from <b>Dir</b> or from a <b>dir</b> attribute around the view. The words of the view are the
+                <b>BitAiStrings</b> of the options in force - here a subclass of them, cascaded by a <b>BitAiOptionsProvider</b>.
             </div>
             <br />
             <BitButton Variant="BitVariant.Outline" OnClick="ResetRtlRun">دوباره بپرس</BitButton>
             <br /><br />
-            <BitAiAgentRunView Dir="BitDir.Rtl" Run="rtlRun" OnRespond="RespondToRtlRun" />
+            <BitAiOptionsProvider UiOptions="persianOptions">
+                <BitAiAgentRunView Dir="BitDir.Rtl" Run="rtlRun" OnRespond="RespondToRtlRun" />
+            </BitAiOptionsProvider>
         </DemoExample>
     </Examples>
 </DemoPage>

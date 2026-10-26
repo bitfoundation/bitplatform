@@ -2,8 +2,16 @@
    BitAiStructuredDataView, which would otherwise show the raw schema, with a BitAiForm built from that schema.
 
    Submissions go to whatever page cascaded a BookingSubmitted callback, so the renderer stays reusable and the page
-   decides what a booking means. *@
-<BitAiForm Definition="_definition" Submitted="_submitted" OnSubmit="OnSubmitAsync" />
+   decides what a booking means.
+
+   The actions wait for the schema to finish streaming (Busy), so a form is never submitted short of a field that has
+   not arrived yet, and a submitted form is disabled, since what is typed into it afterwards would go nowhere. No
+   OnCancel is wired, so the form offers no Cancel: declining is simply not submitting. *@
+<BitAiForm Definition="_definition"
+           Busy="Part.IsStreaming"
+           Disabled="_submitted"
+           Submitted="_submitted"
+           OnSubmit="OnSubmitAsync" />
 
 @code {
     private BitAiFormDefinition _definition = new();

@@ -14,6 +14,7 @@ namespace Bit.BlazorUI;
 public partial class BitAiModelSelector : BitAiComponentBase
 {
     private string? _announcedId;
+    private string? _receivedId;
     private BitAiModel? _selected;
     private List<BitAiModel> _models = [];
     private List<BitDropdownItem<string>> _items = [];
@@ -119,6 +120,16 @@ public partial class BitAiModelSelector : BitAiComponentBase
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
+
+        // A bound value the parent has moved since - back to null, say, after the picker had filled it in - is announced
+        // again when the picker has to fall back once more, or the picker would show a model the bound value does not
+        // name. One that stays where it was is not, so a parent that never takes the value up is not sent the same
+        // fallback after every render of its own.
+        if (string.Equals(_receivedId, ModelId, StringComparison.Ordinal) is false)
+        {
+            _receivedId = ModelId;
+            _announcedId = null;
+        }
 
         var catalog = Catalog ?? _services.GetService(typeof(IBitAiModelCatalog)) as IBitAiModelCatalog;
         var source = Models ?? catalog?.Models ?? [];

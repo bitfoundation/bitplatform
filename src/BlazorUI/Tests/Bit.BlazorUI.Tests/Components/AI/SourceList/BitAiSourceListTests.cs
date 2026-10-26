@@ -52,6 +52,30 @@ public class BitAiSourceListTests : BitAiTestBase
 
         Assert.IsEmpty(component.FindAll(".bit-aisrl-hdr"));
         Assert.HasCount(1, component.FindAll(".bit-aisrc"));
+
+        // With no heading to point at, the list is named by the words the heading would say.
+        var list = component.Find(".bit-aisrl-lst");
+        Assert.AreEqual("Sources", list.GetAttribute("aria-label"));
+        Assert.IsFalse(list.HasAttribute("aria-labelledby"));
+    }
+
+    // A screen reader announces a list with its count, and steps through it by item.
+    [TestMethod]
+    public void TheCardsAreTheItemsOfAListNamedByTheHeading()
+    {
+        var component = RenderComponent<BitAiSourceList>(p => p.Add(c => c.Citations, [Cite("a", "First", 1), Cite("b", "Second", 2)]));
+
+        var heading = component.Find(".bit-aisrl-hdr");
+        var list = component.Find(".bit-aisrl-lst");
+
+        Assert.AreEqual("list", list.GetAttribute("role"));
+        Assert.AreEqual(heading.Id, list.GetAttribute("aria-labelledby"));
+        Assert.AreEqual($"{component.Instance.UniqueId}-hdr", heading.Id);
+        Assert.IsFalse(list.HasAttribute("aria-label"));
+
+        var cards = component.FindAll(".bit-aisrl-lst > .bit-aisrc");
+        Assert.HasCount(2, cards);
+        Assert.IsTrue(cards.All(c => c.GetAttribute("role") == "listitem"));
     }
 
     [TestMethod]

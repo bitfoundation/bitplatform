@@ -18,7 +18,7 @@
 
     <ChildContent>
         <DocSection Id="demo" Title="Live demo"
-                    Description="Ask it to book something: check the form it proposes, correct it, and submit. The values that would execute appear beside the chat.">
+                    Description="Ask it to book something: check the form it proposes, correct it, and submit. The values that would execute appear beside the chat, under the schema's property names.">
             <DemoExample Title="A booking to confirm" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
                 <AiScenarioFrame AsideLabel="Submitted values">
                     <Aside>
@@ -28,7 +28,7 @@
                             <ul>
                                 @foreach (var (key, value) in values)
                                 {
-                                    <li><strong>@key</strong>: @value</li>
+                                    <li><code>@key</code>: @value</li>
                                 }
                             </ul>
                         }
@@ -61,7 +61,10 @@
                 what a booking means.
             </p>
             <p>
-                Fields appear as the schema streams in, and anything already typed survives a new field arriving.
+                Fields appear as the schema streams in, and anything already typed survives a new field arriving. What the
+                model inferred arrives as the schema's <code>default</code>s, which the form starts from; it cannot be
+                submitted until the whole schema is in (<code>Busy</code>), and takes no more edits once it has been
+                (<code>Disabled</code>).
             </p>
         </DocSection>
 

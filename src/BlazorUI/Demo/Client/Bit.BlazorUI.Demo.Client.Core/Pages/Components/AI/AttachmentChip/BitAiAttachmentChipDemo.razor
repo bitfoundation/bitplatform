@@ -8,6 +8,7 @@
           SecondaryNames="@(["FileChip"])"
           Description="BitAiAttachmentChip shows one BitAiAttachment as a chip - a BitTag: a thumbnail for an image and the glyph of its kind for anything else, its name, and under it its size, the progress of an upload still arriving, or why the upload failed. Its dismiss button removes the attachment, there only while OnRemove is set. The composer stages files as these chips, and a message shows its files with them."
           Parameters="componentParameters"
+          PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
           CssVariables="componentCssVariables"
@@ -80,17 +81,18 @@
         <DemoExample Title="OnRemove" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
                 <b>OnRemove</b> adds the dismiss button of the tag, named after the file, and hands over the attachment it removes;
-                without it the chip has no button at all.
+                without it the chip has no button at all. The button goes with its chip, so the focus is handed on with
+                <b>FocusAsync</b>: to the chip that took its place, or the last one, or the button that brings them back.
             </div>
             <br />
             <div style="display:flex;flex-wrap:wrap;gap:0.5rem">
                 @foreach (var attachment in staged)
                 {
-                    <BitAiAttachmentChip @key="attachment.AttachmentId" Attachment="attachment" OnRemove="Remove" />
+                    <BitAiAttachmentChip @key="attachment.AttachmentId" @ref="stagedChips[attachment.AttachmentId]" Attachment="attachment" OnRemove="Remove" />
                 }
             </div>
             <br />
-            <BitButton Variant="BitVariant.Outline" OnClick="ResetStaged">Bring them back</BitButton>
+            <BitButton @ref="resetButton" Variant="BitVariant.Outline" OnClick="ResetStaged">Bring them back</BitButton>
         </DemoExample>
 
         <DemoExample Title="Disabled" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">

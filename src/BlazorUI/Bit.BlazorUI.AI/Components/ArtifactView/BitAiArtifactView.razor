@@ -1,25 +1,34 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitAiComponentBase
 
-@* Escape collapses the full-screen panel. data-bit-esc claims that press while the panel is expanded (see
-   Utils.claimEscape), so a surface the artifact sits in (a BitModal, a BitPanel) does not close on it too - and leaves
-   it to that surface while the panel is inline, where the press does nothing here. *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()"
-     data-bit-esc="@_EscapeClaim"
-     @onkeydown="HandleOnKeyDown">
+     dir="@Dir?.ToString().ToLower()">
     @if (_expanded)
     {
         <div style="@Styles?.Overlay" class="bit-aiatv-ovl @Classes?.Overlay" aria-hidden="true" @onclick="ToggleExpanded"></div>
     }
 
-    <section style="@Styles?.Panel"
+    @* Laid over the page, the panel is a modal dialog: it holds the keyboard (see HoldKeyboardAsync) and a screen reader
+       keeps to it, which is what the overlay hiding the page behind it says to the eye. Inline it is a region of the
+       page.
+       Escape collapses the full-screen panel. data-bit-esc claims that press while the panel is expanded (see
+       Utils.claimEscape), so a surface the artifact sits in (a BitModal, a BitPanel) does not close on it too - and
+       leaves it to that surface while the panel is inline, where the press does nothing here. The claim and the handler
+       are on the dialog itself: a dialog is a surface of its own, where the walk that looks for a claim stops, so a claim
+       on an element around it would never be found. *@
+    <section @ref="_panel"
+             id="@_PanelId"
+             style="@Styles?.Panel"
              class="bit-aiatv-pnl @Classes?.Panel"
+             role="@(_expanded ? "dialog" : null)"
+             aria-modal="@(_expanded ? "true" : null)"
              aria-label="@(AriaLabel ?? Artifact.Title)"
-             data-artifact-id="@Artifact.ArtifactId">
+             data-artifact-id="@Artifact.ArtifactId"
+             data-bit-esc="@_EscapeClaim"
+             @onkeydown="HandleOnKeyDown">
         <div style="@Styles?.Header" class="bit-aiatv-hdr @Classes?.Header">
             <i aria-hidden="true" style="@Styles?.Icon" class="bit-aiatv-ico @_KindIcon @Classes?.Icon"></i>
 
@@ -52,7 +61,10 @@
 
             @* Copy and download act on text there is: an image shown from its address has none, and both buttons are
                then off rather than copying nothing or saving an empty file. *@
-            <BitAiCopyButton Content="@_SavableContent" Disabled="Disabled" />
+            <BitAiCopyButton Content="@_SavableContent"
+                             Disabled="Disabled"
+                             Classes="@Classes?.CopyButton"
+                             Styles="@Styles?.CopyButton" />
 
             <BitButton IconName="Download"
                        Variant="BitVariant.Text"
@@ -131,9 +143,10 @@
         else if (kind == BitAiArtifactKind.Html && IsStreaming is false)
         {
             @* The page may run its scripts, submit its forms and open popups, but it is denied same-origin access - the
-               only way to show generated markup without handing it the host page. *@
+               only way to show generated markup without handing it the host page. It is handed with the panel's own
+               script after it (FrameDocument), which copy and download never see. *@
             <iframe sandbox="allow-scripts allow-forms allow-popups"
-                    srcdoc="@content"
+                    srcdoc="@FrameDocument(content)"
                     title="@Artifact.Title"
                     style="@Styles?.Frame"
                     class="bit-aiatv-frm @Classes?.Frame"></iframe>
@@ -148,6 +161,7 @@
         {
             if (rows.ValueKind is JsonValueKind.Array)
             {
+                @* Framed by the panel, as a CSV or TSV table is, rather than by a frame of its own (see the stylesheet). *@
                 <BitAiDataTable Rows="rows" />
             }
             else
@@ -207,17 +221,25 @@
     private RenderFragment RenderImage(string source) => __builder =>
     {
         @* The source asked for is the one shown once the user loaded it, so another version or artifact asks again. *@
-        switch (DecideImage(source, _loadedImage == source))
+        var loaded = _loadedImage == source;
+
+        switch (DecideImage(source, loaded))
         {
             case BitAiImageDecision.Show:
-                <img src="@source" alt="@Artifact.Title" style="@Styles?.Image" class="bit-aiatv-img @Classes?.Image" />
+                @* An image the user loaded takes the focus off the button it replaces (see LoadImage), so it can hold it. *@
+                <img @ref="_image"
+                     src="@source"
+                     alt="@Artifact.Title"
+                     tabindex="@(loaded ? "-1" : null)"
+                     style="@Styles?.Image"
+                     class="bit-aiatv-img @Classes?.Image" />
                 break;
 
             case BitAiImageDecision.AskFirst:
                 <div class="bit-aiatv-imh">
                     <BitActionButton IconName="Photo2"
                                      Title="@source"
-                                     OnClick="() => _loadedImage = source"
+                                     OnClick="() => LoadImage(source)"
                                      Classes="@_ImagePlaceholderClasses"
                                      Styles="@Styles?.ImagePlaceholder">
                         @Strings.LoadImage(string.IsNullOrWhiteSpace(Artifact.Title) ? ImageHostOf(source) : Artifact.Title)

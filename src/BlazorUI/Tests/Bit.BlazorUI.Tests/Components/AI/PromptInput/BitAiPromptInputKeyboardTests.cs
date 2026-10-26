@@ -160,6 +160,67 @@ public class BitAiPromptInputKeyboardTests : BitAiTestBase
         Assert.AreEqual("Mentions", composer.Find("[role=listbox]").GetAttribute("aria-label"));
     }
 
+    // A popup that can never open is nothing to announce, so a composer with no commands and no mentions is a text box.
+    [TestMethod]
+    public void AComposerWithNothingToOfferIsAPlainTextBox()
+    {
+        var composer = RenderComponent<BitAiPromptInput>();
+
+        var textarea = composer.Find("textarea");
+        Assert.IsFalse(textarea.HasAttribute("role"));
+        Assert.IsFalse(textarea.HasAttribute("aria-haspopup"));
+        Assert.IsFalse(textarea.HasAttribute("aria-autocomplete"));
+        Assert.IsFalse(textarea.HasAttribute("aria-expanded"));
+
+        composer.Render(p => p.Add(c => c.Mentions, [new BitAiMentionItem("u1", "John")]));
+
+        Assert.AreEqual("combobox", composer.Find("textarea").GetAttribute("role"));
+        Assert.AreEqual("false", composer.Find("textarea").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void TheMenuClosesAsTheFocusLeavesTheText()
+    {
+        var composer = RenderComponent<BitAiPromptInput>(p => p
+            .Add(c => c.Commands, [new BitAiSlashCommand("summarize")]));
+
+        composer.Find("textarea").Input("/");
+        Assert.IsNotEmpty(composer.FindAll("[role=option]"));
+
+        composer.Find("textarea").Blur();
+
+        Assert.IsEmpty(composer.FindAll("[role=option]"));
+        Assert.AreEqual("false", composer.Find("textarea").GetAttribute("aria-expanded"));
+        Assert.IsFalse(composer.Find("textarea").HasAttribute("data-bit-aipri-mnu"));
+    }
+
+    // With a modifier Enter and Tab keep their own meaning while the menu is open: Shift+Enter breaks the line, Shift+Tab
+    // moves the focus back, and Ctrl or Cmd with Enter sends.
+    [TestMethod]
+    public void OnlyAPlainEnterOrTabTakesTheOption()
+    {
+        var value = string.Empty;
+        var submissions = new List<BitAiPromptSubmission>();
+        var composer = RenderComponent<BitAiPromptInput>(p => p
+            .Add(c => c.Mentions, [new BitAiMentionItem("u1", "John")])
+            .Add(c => c.ValueChanged, v => value = v)
+            .Add(c => c.OnSubmit, s => submissions.Add(s)));
+
+        composer.Find("textarea").Input("hi @Jo");
+
+        composer.Find("textarea").KeyDown(Key("Enter", shift: true));
+        composer.Find("textarea").KeyDown(Key("Tab", shift: true));
+
+        Assert.AreEqual("hi @Jo", value);
+        Assert.IsEmpty(submissions);
+        Assert.IsNotEmpty(composer.FindAll("[role=option]"));
+
+        composer.Find("textarea").KeyDown(Key("Enter", ctrl: true));
+
+        Assert.AreEqual("hi @Jo", Assert.ContainsSingle(submissions).Text);
+        Assert.IsEmpty(composer.FindAll("[role=option]"));
+    }
+
     [TestMethod]
     public void TheSlashMenuIsExposedToAssistiveTechnologyAndToTheKeyGuard()
     {

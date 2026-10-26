@@ -11,7 +11,14 @@ public static class AiDemoTransports
     /// <returns>The transport.</returns>
     public static IBitAiTransport Echo() => new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
     {
-        var reply = $"You said: {AiScript.LastUserText(request)}";
+        var said = AiScript.LastUserMessage(request);
+        var text = said?.GetText() ?? string.Empty;
+        var files = said?.Attachments.Count ?? 0;
+
+        // A message can carry files and no text at all, and an echo of nothing would read as no answer.
+        var reply = text.Length > 0 ? $"You said: {text}"
+                  : files == 1 ? "You sent 1 file."
+                  : $"You sent {files} files.";
 
         await yielder(new BitAiMessageStartedEvent());
         await foreach (var evt in AiScript.Write(reply, 3, 12, token)) await yielder(evt);
@@ -76,7 +83,9 @@ public static class AiDemoTransports
             "The user is asking about the cost of a round trip. I should separate the fixed cost of " +
             "the connection from the per-token cost, and give a number rather than an adjective.";
 
-        await foreach (var evt in AiScript.Think(thinking, 12, token)) await yielder(evt);
+        // A word every 70 ms: about two seconds of thinking, long enough to watch the panel stream open before it
+        // collapses into "Thought for ...".
+        await foreach (var evt in AiScript.Think(thinking, 70, token)) await yielder(evt);
         await AiScript.Pause(250, token);
 
         const string answer = """

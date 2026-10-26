@@ -23,13 +23,13 @@
 
 <E2ESection Id="states" Title="Submitted, Busy and no Cancel">
     <BitAiForm Id="frm-submitted" Definition="_small" Submitted />
-    <BitAiForm Id="frm-busy" Definition="_small" Busy OnSubmit="v => _busyCount++" />
-    <BitAiForm Id="frm-nocancel" Definition="_noCancel" />
+    <BitAiForm Id="frm-busy" Definition="_small" Busy OnSubmit="v => _busyCount++" OnCancel="() => _busyCount++" />
+    <BitAiForm Id="frm-nocancel" Definition="_noCancel" OnCancel="() => _cancelCount++" />
     <p>Busy submissions: <span id="frm-busy-count">@_busyCount</span></p>
 </E2ESection>
 
 <E2ESection Id="disabled" Title="Disabled">
-    <BitAiForm Id="frm-dis" Definition="_small" Disabled OnSubmit="v => _disabledCount++" />
+    <BitAiForm Id="frm-dis" Definition="_small" Disabled OnSubmit="v => _disabledCount++" OnCancel="() => _disabledCount++" />
     <p>Disabled submissions: <span id="frm-dis-count">@_disabledCount</span></p>
 </E2ESection>
 
@@ -48,7 +48,7 @@
 
 <E2ESection Id="rtl" Title="RTL">
     <div style="width:480px">
-        <BitAiForm Id="frm-rtl" Dir="BitDir.Rtl" Definition="_small" />
+        <BitAiForm Id="frm-rtl" Dir="BitDir.Rtl" Definition="_small" OnCancel="() => { }" />
     </div>
 </E2ESection>
 

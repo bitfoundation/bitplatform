@@ -227,7 +227,7 @@ public sealed class BitAiConversationStreamProcessor
             case BitAiPartCompletedEvent part: OnPartCompleted(part); break;
             case BitAiStatusEvent status: Target(evt)?.SetStatusText(status.Status); break;
             case BitAiImageEvent image: OnImage(image); break;
-            case BitAiFileEvent file: Target(evt)?.AddPart(new BitAiFilePart(file.Attachment, file.PartId)); break;
+            case BitAiFileEvent file: OnFile(file); break;
             case BitAiCitationEvent citation: Target(evt)?.AddCitation(citation.Citation); break;
             case BitAiToolCallStartedEvent tool: OnToolCallStarted(tool); break;
             case BitAiToolCallDeltaEvent tool: FindToolCall(tool.ToolCallId)?.AppendArguments(tool.ArgumentsDelta); break;
@@ -331,6 +331,28 @@ public sealed class BitAiConversationStreamProcessor
         return message;
     }
 
+    // As EnsureStreaming, for a piece of the answer itself: anything but reasoning.
+    private BitAiMessage? EnsureAnswering(BitAiEvent evt)
+    {
+        if (EnsureStreaming(evt) is not { } message) return null;
+
+        EndReasoning(message);
+        return message;
+    }
+
+    // The answer begins where the reasoning ends. A model thinks, then writes, and a transport seldom says when the
+    // thinking stopped, so the reasoning still streaming is completed as soon as another part opens after it: its panel
+    // folds away as the answer starts, and the time it shows is the time the model thought for rather than the whole
+    // reply's. Indexed rather than enumerated, since it runs for every token of the answer.
+    private static void EndReasoning(BitAiMessage message)
+    {
+        var parts = message.Parts;
+        for (var i = 0; i < parts.Count; i++)
+        {
+            if (parts[i] is BitAiReasoningPart { IsStreaming: true } reasoning) reasoning.Complete();
+        }
+    }
+
     private BitAiToolCallPart? FindToolCall(string toolCallId)
     {
         if (Current?.FindToolCall(toolCallId) is { } fromCurrent) return fromCurrent;
@@ -362,7 +384,7 @@ public sealed class BitAiConversationStreamProcessor
 
     private void OnTextDelta(BitAiTextDeltaEvent evt)
     {
-        if (EnsureStreaming(evt) is not { } message) return;
+        if (EnsureAnswering(evt) is not { } message) return;
         var part = evt.PartId is { } id
             ? message.FindPart<BitAiTextPart>(id) ?? message.AddPart(new BitAiTextPart(null, id))
             : message.GetOrCreateOpenPart(BitAiMessagePartKinds.Text, () => new BitAiTextPart());
@@ -395,6 +417,7 @@ public sealed class BitAiConversationStreamProcessor
         };
 
         if (part is BitAiCodePart code) code.FileName = Attribute(evt, "fileName");
+        if (part is not BitAiReasoningPart) EndReasoning(message);
         message.AddPart(part);
     }
 
@@ -416,7 +439,7 @@ public sealed class BitAiConversationStreamProcessor
 
     private void OnImage(BitAiImageEvent evt)
     {
-        if (EnsureStreaming(evt) is not { } message) return;
+        if (EnsureAnswering(evt) is not { } message) return;
         message.AddPart(new BitAiImagePart(evt.Url, evt.PartId)
         {
             Alt = evt.Alt,
@@ -425,9 +448,16 @@ public sealed class BitAiConversationStreamProcessor
         });
     }
 
+    private void OnFile(BitAiFileEvent evt)
+    {
+        if (Target(evt) is not { } message) return;
+        EndReasoning(message);
+        message.AddPart(new BitAiFilePart(evt.Attachment, evt.PartId));
+    }
+
     private void OnToolCallStarted(BitAiToolCallStartedEvent evt)
     {
-        if (EnsureStreaming(evt) is not { } message) return;
+        if (EnsureAnswering(evt) is not { } message) return;
         if (FindToolCall(evt.ToolCallId) is not null) return;
 
         var part = message.AddPart(new BitAiToolCallPart(evt.ToolCallId, evt.ToolName));
@@ -647,7 +677,11 @@ public sealed class BitAiConversationStreamProcessor
             artifact.Complete();
         }
 
-        if (Target(evt) is { } message && !message.PartsOf<BitAiArtifactPart>().Any(p => p.ArtifactId == evt.ArtifactId))
+        if (Target(evt) is not { } message) return;
+
+        EndReasoning(message);
+
+        if (!message.PartsOf<BitAiArtifactPart>().Any(p => p.ArtifactId == evt.ArtifactId))
         {
             message.AddPart(new BitAiArtifactPart(evt.ArtifactId) { ArtifactVersion = artifact.Version });
         }
@@ -655,7 +689,7 @@ public sealed class BitAiConversationStreamProcessor
 
     private void OnStructuredDelta(BitAiStructuredDataDeltaEvent evt)
     {
-        if (EnsureStreaming(evt) is not { } message) return;
+        if (EnsureAnswering(evt) is not { } message) return;
         var part = evt.PartId is { } id
             ? message.FindPart<BitAiStructuredDataPart>(id) ?? message.AddPart(new BitAiStructuredDataPart(evt.SchemaName, id))
             : message.GetOrCreateOpenPart(BitAiMessagePartKinds.StructuredData, () => new BitAiStructuredDataPart(evt.SchemaName));
@@ -665,13 +699,13 @@ public sealed class BitAiConversationStreamProcessor
 
     private void OnStructured(BitAiStructuredDataEvent evt)
     {
-        if (EnsureStreaming(evt) is not { } message) return;
+        if (EnsureAnswering(evt) is not { } message) return;
         message.AddPart(new BitAiStructuredDataPart(evt.Value, evt.SchemaName, evt.PartId));
     }
 
     private void OnGenerativeUi(BitAiGenerativeUiEvent evt)
     {
-        if (EnsureStreaming(evt) is not { } message) return;
+        if (EnsureAnswering(evt) is not { } message) return;
         var part = evt.PartId is { } id
             ? message.FindPart<BitAiGenerativeUiPart>(id) ?? message.AddPart(new BitAiGenerativeUiPart(evt.ComponentName, id))
             : message.AddPart(new BitAiGenerativeUiPart(evt.ComponentName));
@@ -681,7 +715,7 @@ public sealed class BitAiConversationStreamProcessor
 
     private void OnGenerativeUiDelta(BitAiGenerativeUiDeltaEvent evt)
     {
-        if (EnsureStreaming(evt) is not { } message) return;
+        if (EnsureAnswering(evt) is not { } message) return;
         var part = evt.PartId is { } id
             ? message.FindPart<BitAiGenerativeUiPart>(id) ?? message.AddPart(new BitAiGenerativeUiPart(evt.ComponentName, id))
             : message.GetOrCreateOpenPart(BitAiMessagePartKinds.GenerativeUi, () => new BitAiGenerativeUiPart(evt.ComponentName));
@@ -775,6 +809,13 @@ public sealed class BitAiConversationStreamProcessor
         if (Target(evt) is not { } message) return;
         message.CompleteOpenParts();
         message.MergeMetadata(new BitAiGenerationMetadata { FinishReason = evt.FinishReason });
+
+        // A reply that stopped for its tool calls goes on once they have run - in the next request of the session, or
+        // further down the same stream when the server runs them - so it is not finished yet: a reader would otherwise be
+        // offered the actions of a finished reply while its tools run or wait for a decision, and see it busy again after.
+        // The end of the generation completes it.
+        if (evt.FinishReason is BitAiFinishReason.ToolCalls) return;
+
         if (message.Status is BitAiMessageStatus.Pending or BitAiMessageStatus.Streaming)
         {
             message.SetStatus(BitAiMessageStatus.Complete);

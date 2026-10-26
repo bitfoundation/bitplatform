@@ -122,7 +122,8 @@ public partial class BitAiContextMeterDemo
         new() { Name = "--bit-AiContextMeter-critical-color", DefaultValue = "var(--bit-clr-err-fg)", Description = "The label and the percentage past the Critical mark, where the bar is drawn in the error role." },
         new() { Name = "--bit-AiContextMeter-font-size", DefaultValue = "var(--bit-tpg-fs-xs)", Description = "Size of the label and the percentage." },
         new() { Name = "--bit-AiContextMeter-gap", DefaultValue = "spacing(1.5)", Description = "Room between the label, the bar and the percentage." },
-        new() { Name = "--bit-AiContextMeter-meter-max-width", DefaultValue = "spacing(24)", Description = "Width the bar stops growing at." },
+        new() { Name = "--bit-AiContextMeter-meter-max-width", DefaultValue = "spacing(24)", Description = "Width the bar grows to where there is room, and asks for where the meter is sized to its content (in a flex row, say)." },
+        new() { Name = "--bit-AiContextMeter-track-color", DefaultValue = "var(--bit-Progress-track-color, var(--bit-clr-brd-sec))", Description = "The empty part of the bar. The secondary border color by default rather than the background a BitProgress draws its track in, so it stands off the surface the meter sits on." },
     ];
 
 

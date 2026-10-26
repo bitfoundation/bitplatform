@@ -143,6 +143,41 @@ public class BitAiMessageActionsTests : BitAiTestBase
         Assert.AreEqual("gpt-test", component.Find(".bit-aimac-mdl").TextContent);
     }
 
+    // A reader knows a model by the name the picker shows, the one the registered catalog gives it, not by its id.
+    [TestMethod]
+    public void TheModelIsNamedByTheCatalog()
+    {
+        Services.AddSingleton(BitAiUiOptions.Default with { ShowModelName = true });
+        Services.AddSingleton<IBitAiModelCatalog>(new BitAiModelCatalog([new BitAiModel("gpt-test", "GPT Test")]));
+
+        var listed = Assistant(new BitAiTextPart("answer"));
+        listed.MergeMetadata(new BitAiGenerationMetadata { ModelId = "gpt-test" });
+
+        var unlisted = Assistant(new BitAiTextPart("answer"));
+        unlisted.MergeMetadata(new BitAiGenerationMetadata { ModelId = "gpt-other" });
+
+        Assert.AreEqual("GPT Test", RenderComponent<BitAiMessageActions>(p => p.Add(c => c.Message, listed)).Find(".bit-aimac-mdl").TextContent);
+        Assert.AreEqual("gpt-other", RenderComponent<BitAiMessageActions>(p => p.Add(c => c.Message, unlisted)).Find(".bit-aimac-mdl").TextContent);
+    }
+
+    // Under Blazor Server the local zone is the server's: the options name the reader's, and the time is shown in it,
+    // while the instant written for machines stays in UTC.
+    [TestMethod]
+    public void TheTimeIsShownInTheTimeZoneOfTheOptions()
+    {
+        var zone = TimeZoneInfo.CreateCustomTimeZone("bit-test+03:30", new TimeSpan(3, 30, 0), "UTC+03:30", "UTC+03:30");
+        Services.AddSingleton(BitAiUiOptions.Default with { ShowTimestamps = true, TimeZone = zone });
+
+        var message = new BitAiMessage(BitAiRole.Assistant) { CreatedAt = new DateTimeOffset(2026, 1, 2, 9, 0, 0, TimeSpan.Zero) };
+        message.AddPart(new BitAiTextPart("answer"));
+
+        var component = RenderComponent<BitAiMessageActions>(p => p.Add(c => c.Message, message));
+
+        var time = component.Find("time.bit-aimac-tim");
+        Assert.AreEqual(new DateTimeOffset(2026, 1, 2, 12, 30, 0, new TimeSpan(3, 30, 0)).ToString("t"), time.TextContent);
+        Assert.AreEqual("2026-01-02T09:00:00Z", time.GetAttribute("datetime"));
+    }
+
     [TestMethod]
     public void BitAiMessageActionsShouldRespectClassesAndStyles()
     {

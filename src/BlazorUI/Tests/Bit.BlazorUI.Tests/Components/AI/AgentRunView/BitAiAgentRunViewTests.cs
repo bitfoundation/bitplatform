@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -172,6 +173,92 @@ public class BitAiAgentRunViewTests : BitAiTestBase
         CollectionAssert.AreEqual(new[] { "eu-west" }, answers);
         // The field is emptied for the next question.
         Assert.AreEqual(string.Empty, component.Find(".bit-aiarv-ans input").GetAttribute("value") ?? string.Empty);
+    }
+
+    // The answer takes the question away with the button or the field that had the focus, which would fall to the page;
+    // the steps, where the run goes on, take it instead.
+    [TestMethod]
+    public void AnAnswerTheRunTakesHandsTheFocusToTheSteps()
+    {
+        var run = AskingRun("eu-west");
+
+        var component = RenderComponent<BitAiAgentRunView>(p => p
+            .Add(c => c.Run, run)
+            .Add(c => c.OnRespond, _ =>
+            {
+                run.ResolveInput();
+                run.Steps[0].Complete(summary: "eu-west");
+            }));
+
+        // Read before the click: a re-render leaves the reference off the markup of an element it keeps.
+        var steps = component.Find(".bit-aiarv-stl");
+        Assert.AreEqual("-1", steps.GetAttribute("tabindex"));
+        var reference = steps.GetAttribute("blazor:elementReference");
+
+        component.Find(".bit-aiarv-prm > .bit-btn").Click();
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.IsEmpty(component.FindAll(".bit-aiarv-prm"));
+            var focus = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
+            Assert.HasCount(1, focus);
+            Assert.AreEqual(reference, ((ElementReference)focus[0].Arguments[0]!).Id);
+        }, TimeSpan.FromSeconds(2));
+    }
+
+    [TestMethod]
+    public void AnAnswerTheRunDoesNotTakeLeavesTheFocusWhereItIs()
+    {
+        var run = AskingRun("eu-west");
+
+        var component = RenderComponent<BitAiAgentRunView>(p => p
+            .Add(c => c.Run, run)
+            .Add(c => c.OnRespond, _ => { }));
+
+        component.Find(".bit-aiarv-prm > .bit-btn").Click();
+        component.Render();
+
+        Assert.HasCount(1, component.FindAll(".bit-aiarv-prm"));
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+
+        // Nor does the run moving on later, after the answer was turned away, take the focus away from the page.
+        run.ResolveInput();
+
+        component.WaitForAssertion(() => Assert.IsEmpty(component.FindAll(".bit-aiarv-prm")), TimeSpan.FromSeconds(2));
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+    }
+
+    [TestMethod]
+    public void TheCountOfTheStepsComesFromTheStringTable()
+    {
+        var run = RunningRun();
+        run.Steps[0].Complete();
+
+        var component = RenderComponent<BitAiAgentRunView>(p => p
+            .Add(c => c.Run, run)
+            .Add(c => c.CascadedOptions, BitAiUiOptions.Default with { Strings = new CountStrings() }));
+
+        Assert.AreEqual("1 of 2", component.Find(".bit-aiarv-cnt").TextContent);
+        Assert.AreEqual("1 of 2", component.Find(".bit-aiarv-prg [role=progressbar]").GetAttribute("aria-valuetext"));
+    }
+
+    // A pace changed while the run is under way takes effect at once, not with the next run.
+    [TestMethod]
+    public void AClockIntervalChangedWhileTheRunGoesOnTakesEffect()
+    {
+        var run = RunningRun();
+        var component = RenderComponent<BitAiAgentRunView>(p => p
+            .Add(c => c.Run, run)
+            .Add(c => c.ClockInterval, TimeSpan.FromMinutes(5)));
+
+        component.Render(p => p.Add(c => c.Run, run).Add(c => c.ClockInterval, TimeSpan.FromMilliseconds(20)));
+        var afterTheChange = component.Find(".bit-aiarv-elp").TextContent;
+
+        // Nothing but the clock renders the view from here on, and a clock left at five minutes would not.
+        component.WaitForAssertion(() => Assert.AreNotEqual(afterTheChange, component.Find(".bit-aiarv-elp").TextContent), TimeSpan.FromSeconds(3));
+        Assert.AreEqual(TimeSpan.FromMilliseconds(20), typeof(BitAiAgentRunView)
+            .GetField("_clockInterval", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .GetValue(component.Instance));
     }
 
     [TestMethod]
@@ -506,6 +593,11 @@ public class BitAiAgentRunViewTests : BitAiTestBase
 
             yield return new BitAiMessageCompletedEvent();
         }
+    }
+
+    private sealed class CountStrings : BitAiStrings
+    {
+        public override string StepsCompleted(int done, int total) => $"{done} of {total}";
     }
 
     private sealed class SilentTransport : IBitAiTransport

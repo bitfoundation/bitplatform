@@ -93,6 +93,28 @@ public static class BitAiInlineParser
         return i == inner.Length || inner[i] is ' ' or '\t' or '\n' or '/';
     }
 
+    // The elements HTML gives no content and no closing tag.
+    private static readonly HashSet<string> VoidElements = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr",
+    };
+
+    /// <summary>
+    /// The name of a tag <see cref="LooksLikeTag"/> accepted, and whether it is a closing one; <see langword="null"/>
+    /// for a comment, a declaration, or a processing instruction, which neither open nor close an element.
+    /// </summary>
+    private static string? TagName(ReadOnlySpan<char> inner, out bool closing)
+    {
+        closing = inner[0] == '/';
+        if (inner[0] is '!' or '?') return null;
+
+        var start = closing ? 1 : 0;
+        var end = start;
+        while (end < inner.Length && (char.IsAsciiLetterOrDigit(inner[end]) || inner[end] == '-')) end++;
+
+        return inner[start..end].ToString();
+    }
+
     private static int RunLength(string text, int start, char c)
     {
         var i = start;
@@ -213,6 +235,7 @@ public static class BitAiInlineParser
         // Memoised forward scans. Each records what a scan found so a later scan from further on
         // can reuse the answer rather than walk the same text again.
         private int _nextAngle = -1;
+        private Dictionary<int, int>? _elementEnds;
         private int _mathFrom = -1;
         private int _mathCloser;
         private Dictionary<int, int>? _lastTickRun;
@@ -1221,14 +1244,81 @@ public static class BitAiInlineParser
         }
 
         // Only something shaped like a tag, comment, or declaration is HTML; "a < b > c" is text.
+        // An opening tag takes its whole element, up to the closing tag that matches it in the same
+        // text. A renderer writes each inline of raw HTML as markup of its own, which the browser
+        // parses on its own, so a tag left alone would be closed on the spot ("<kbd></kbd>Ctrl") and
+        // its closing tag dropped. What lies between the two is part of the HTML, as it is in a block.
         private bool TryRawHtml(int start, out int end)
         {
             end = start;
             var close = NextAngleClose(start + 1);
             if (close < 0 || !LooksLikeTag(text.AsSpan(start + 1, close - start - 1))) return false;
 
-            end = close + 1;
+            var elementEnd = ElementEnd(start);
+            end = elementEnd > 0 ? elementEnd : close + 1;
             return true;
+        }
+
+        // Where the element an opening tag starts ends, past its closing tag, or -1 when the text
+        // does not close it.
+        private int ElementEnd(int start)
+        {
+            if (_elementEnds is null) PairTags();
+            return _elementEnds!.TryGetValue(start, out var end) ? end : -1;
+        }
+
+        /// <summary>
+        /// Pairs the opening and closing tags of the text in one pass, the first time a tag is met:
+        /// a closing tag closes the nearest opening tag of its name still open, as the browser pairs
+        /// them, so a nested element of the same name is kept whole inside the outer one.
+        /// </summary>
+        /// <remarks>
+        /// A scan from each opening tag to its closing one would be quadratic on a line of opening
+        /// tags that never close. This one visits every <c>&lt;</c> once and remembers the next
+        /// <c>&gt;</c>, as <c>NextAngleClose</c> does, and steps over a whole tag the way the
+        /// main scan does, so it reads the same tags.
+        /// </remarks>
+        private void PairTags()
+        {
+            _elementEnds = new();
+            Dictionary<string, Stack<int>>? open = null;
+            var close = -1;
+
+            for (var i = text.IndexOf('<'); i >= 0; i = text.IndexOf('<', i + 1))
+            {
+                // "\<" is the character, not a tag, as the main scan reads it.
+                if (IsEscaped(i)) continue;
+
+                if (close <= i) close = text.IndexOf('>', i + 1);
+                if (close < 0) break;
+
+                var inner = text.AsSpan(i + 1, close - i - 1);
+                if (!LooksLikeTag(inner)) continue;
+
+                if (TagName(inner, out var closing) is { } name)
+                {
+                    if (closing)
+                    {
+                        if (open is not null && open.TryGetValue(name, out var opened) && opened.Count > 0) _elementEnds[opened.Pop()] = close + 1;
+                    }
+                    else if (inner[^1] != '/' && !VoidElements.Contains(name))
+                    {
+                        open ??= new(StringComparer.OrdinalIgnoreCase);
+                        if (!open.TryGetValue(name, out var stack)) open[name] = stack = new();
+                        stack.Push(i);
+                    }
+                }
+
+                i = close;
+            }
+        }
+
+        // Whether an odd run of backslashes precedes the position, which makes its character literal.
+        private bool IsEscaped(int position)
+        {
+            var backslashes = 0;
+            for (var i = position - 1; i >= 0 && text[i] == '\\'; i--) backslashes++;
+            return backslashes % 2 == 1;
         }
 
         private bool TryBareUrl(int start, out int end, out string url)

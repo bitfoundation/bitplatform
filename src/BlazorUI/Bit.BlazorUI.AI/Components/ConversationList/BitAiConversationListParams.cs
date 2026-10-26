@@ -5,7 +5,7 @@
 /// </summary>
 /// <remarks>
 /// What belongs here is what the conversation lists of an application agree on: whether they offer a new conversation,
-/// and their classes and styles. The conversations, the one that is open and the callbacks are left out on purpose:
+/// the time zone they count the days of their groups in, and their classes and styles. The conversations, the one that is open and the callbacks are left out on purpose:
 /// they are what makes one list the one it is.
 /// </remarks>
 public class BitAiConversationListParams : BitComponentBaseParams, IBitComponentParams
@@ -41,6 +41,11 @@ public class BitAiConversationListParams : BitComponentBaseParams, IBitComponent
     /// </summary>
     public BitAiConversationListClassStyles? Styles { get; set; }
 
+    /// <summary>
+    /// The time zone the days of the recency groups are counted in.
+    /// </summary>
+    public TimeZoneInfo? TimeZone { get; set; }
+
 
 
     /// <summary>
@@ -73,6 +78,11 @@ public class BitAiConversationListParams : BitComponentBaseParams, IBitComponent
         if (Styles is not null)
         {
             bitAiConversationList.TakeFromCascade(nameof(Styles), Styles, static c => c.Styles, static (c, v) => c.Styles = v);
+        }
+
+        if (TimeZone is not null)
+        {
+            bitAiConversationList.TakeFromCascade(nameof(TimeZone), TimeZone, static c => c.TimeZone, static (c, v) => c.TimeZone = v);
         }
     }
 }

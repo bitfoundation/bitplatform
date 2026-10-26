@@ -617,6 +617,105 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitNumberFieldShouldSelectItsTextAsTheFocusComesInRatherThanARoundTripLater()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 5);
+        });
+
+        // The select-all is registered with the input once and made by the browser at the focus event itself: a
+        // select() sent from .NET in answer to the focus would land after the first keys typed (selecting them, for
+        // the next key to replace) or after the user moved on (taking the focus back in Chromium and WebKit).
+        var registrations = Context.JSInterop.Invocations["BitBlazorUI.Utils.registerSelectOnFocus"];
+        Assert.AreEqual(1, registrations.Count);
+        Assert.AreEqual(true, registrations[0].Arguments[1]);
+
+        component.Find("input").Focus();
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"].Count);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerSelectOnFocus"].Count);
+
+        // Turned off, the listener is told so in place.
+        component.Render(parameters => parameters.Add(p => p.NoSelectOnFocus, true));
+
+        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerSelectOnFocus"].Count);
+        Assert.AreEqual(false, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerSelectOnFocus"][1].Arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldLeaveTheSwapToThePlainNumberOfANumberFormatToTheBrowserAtTheFocus()
+    {
+        var component = RenderComponent<BitNumberField<double>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 1234.5);
+            parameters.Add(p => p.NumberFormat, "N2");
+        });
+
+        var input = component.Find("input");
+
+        // The browser swaps the plain number in as the focus comes in, before it selects the text.
+        Assert.AreEqual("1234.5", input.GetAttribute("data-bit-focus-value"));
+
+        input.Focus();
+
+        // The render the focus causes lands a round trip later, when the first keys may already be typed: it keeps the
+        // text it rendered before, so it writes nothing over them, and it selects nothing either.
+        Assert.AreEqual("1,234.50", component.Find("input").GetAttribute("value"));
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"].Count);
+
+        // A value changed while focused is rendered as the plain number the input shows.
+        component.Find("input").KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+
+        Assert.AreEqual(1235.5, component.Instance.Value);
+        Assert.AreEqual("1235.5", component.Find("input").GetAttribute("value"));
+
+        component.Find("input").FocusOut();
+
+        Assert.AreEqual("1,235.50", component.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldRenderWhatIsTypedIntoAFormattedFieldAsThePlainNumberWhileFocused()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 1234);
+            parameters.Add(p => p.NumberFormat, "C0");
+            parameters.Add(p => p.Culture, new System.Globalization.CultureInfo("en-US"));
+            parameters.Add(p => p.Immediate, true);
+        });
+
+        component.Find("input").Focus();
+        component.Find("input").Input(new ChangeEventArgs { Value = "987" });
+
+        Assert.AreEqual(987, component.Instance.Value);
+        Assert.AreEqual("987", component.Find("input").GetAttribute("value"));
+
+        component.Find("input").FocusOut();
+
+        Assert.AreEqual("$987", component.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldSwapInThePlainNumberOfANumberFormatItselfWhenTheBrowserCannot()
+    {
+        // Strict JS interop: the select-on-focus listener cannot be registered, so nothing in the browser swaps the
+        // text and the render the focus causes does it, as it did before the listener.
+        Context.JSInterop.Mode = JSRuntimeMode.Strict;
+
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 1234567);
+            parameters.Add(p => p.NumberFormat, "N0");
+        });
+
+        component.Find("input").Focus();
+
+        Assert.AreEqual("1234567", component.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
     public void BitNumberFieldShouldChangeValueOnShiftMouseWheel()
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
@@ -1167,10 +1266,13 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
         // Not focused: the formatted rendering is what the field is for.
         Assert.AreEqual("1,234,567", component.Find("input").GetAttribute("value"));
 
+        // Focused: the plain number, so it can be edited without fighting the grouping separators. The browser swaps
+        // it in as the focus comes in, and the render that focus causes keeps the text it rendered before.
+        Assert.AreEqual("1234567", component.Find("input").GetAttribute("data-bit-focus-value"));
+
         component.Find("input").Focus();
 
-        // Focused: the plain number, so it can be edited without fighting the grouping separators.
-        Assert.AreEqual("1234567", component.Find("input").GetAttribute("value"));
+        Assert.AreEqual("1,234,567", component.Find("input").GetAttribute("value"));
 
         component.Find("input").FocusOut();
 
@@ -1187,6 +1289,8 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
             parameters.Add(p => p.NoSelectOnFocus, true);
             parameters.Add(p => p.DefaultValue, 1234567);
         });
+
+        Assert.IsFalse(component.Find("input").HasAttribute("data-bit-focus-value"));
 
         component.Find("input").Focus();
 

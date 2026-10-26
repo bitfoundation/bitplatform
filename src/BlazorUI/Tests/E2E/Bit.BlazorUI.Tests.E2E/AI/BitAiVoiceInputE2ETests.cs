@@ -69,9 +69,10 @@ public class BitAiVoiceInputE2ETests : E2ETestBase
     {
         await OpenWithRecognizerAsync();
 
+        // The name says what a press does next and is the one thing announced, with no pressed state on top of it.
         var button = Button("vi-basic");
-        await Expect(button).ToHaveAttributeAsync("aria-pressed", "false");
         await Expect(button).ToHaveAttributeAsync("aria-label", "Dictate");
+        await Expect(button).Not.ToHaveAttributeAsync("aria-pressed", new System.Text.RegularExpressions.Regex(".*"));
         await Expect(button).ToHaveAttributeAsync("title", "Dictate");
         await Expect(Status("vi-basic")).ToHaveAttributeAsync("role", "status");
         await Expect(Status("vi-basic")).ToHaveAttributeAsync("aria-live", "polite");
@@ -79,8 +80,8 @@ public class BitAiVoiceInputE2ETests : E2ETestBase
 
         await button.ClickAsync();
 
-        await Expect(button).ToHaveAttributeAsync("aria-pressed", "true");
         await Expect(button).ToHaveAttributeAsync("aria-label", "Stop dictation");
+        await Expect(button).Not.ToHaveAttributeAsync("aria-pressed", new System.Text.RegularExpressions.Regex(".*"));
         await Expect(Status("vi-basic")).ToHaveTextAsync("Listening");
         await Expect(Text("vi-listening")).ToHaveTextAsync("True");
 
@@ -124,11 +125,10 @@ public class BitAiVoiceInputE2ETests : E2ETestBase
 
         var button = Button("vi-basic");
         await button.ClickAsync();
-        await Expect(button).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(button).ToHaveAttributeAsync("aria-label", "Stop dictation");
 
         await button.ClickAsync();
 
-        await Expect(button).ToHaveAttributeAsync("aria-pressed", "false");
         await Expect(button).ToHaveAttributeAsync("aria-label", "Dictate");
         await Expect(Status("vi-basic")).ToHaveTextAsync("Dictation stopped");
         await Expect(Text("vi-listening")).ToHaveTextAsync("True,False");
@@ -136,10 +136,41 @@ public class BitAiVoiceInputE2ETests : E2ETestBase
 
         // A press after it starts a new recognizer.
         await button.ClickAsync();
-        await Expect(button).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(button).ToHaveAttributeAsync("aria-label", "Stop dictation");
         await Expect(Text("vi-listening")).ToHaveTextAsync("True,False,True");
         Assert.AreEqual(2, await Page.EvaluateAsync<int>("() => window.__e2eSpeech.instances.length"));
         Assert.IsFalse(await Page.EvaluateAsync<bool>("() => window.__e2eSpeech.current.stopped"));
+    }
+
+    [TestMethod]
+    public async Task Stopping_KeepsThePhraseBeingSpoken_AndClearsTheProvisionalText()
+    {
+        await OpenWithRecognizerAsync();
+
+        var button = Button("vi-basic");
+        await button.ClickAsync();
+        await Expect(Status("vi-basic")).ToHaveTextAsync("Listening");
+
+        // A real recognizer finishes the phrase it is hearing after stop(), and ends only then.
+        await Page.EvaluateAsync("() => { window.__e2eSpeech.current.stop = function () { this.stopped = true; }; }");
+        await Page.EvaluateAsync("() => window.__e2eSpeech.result(null, 'the last wor')");
+        await Expect(Text("vi-interim")).ToHaveTextAsync("the last wor");
+
+        await button.ClickAsync();
+
+        // The provisional text goes as the dictation stops...
+        await Expect(Status("vi-basic")).ToHaveTextAsync("Dictation stopped");
+        await Expect(Text("vi-interim")).ToHaveTextAsync("-");
+        await Page.WaitForFunctionAsync("() => window.__e2eSpeech.current.stopped === true");
+
+        // ...and the phrase the stopped recognizer then commits to is still raised, with nothing provisional beside it.
+        await Page.EvaluateAsync("() => window.__e2eSpeech.result('the last words', 'more')");
+        await Expect(Text("vi-transcripts")).ToHaveTextAsync("the last words");
+        await Expect(Text("vi-interim")).ToHaveTextAsync("-");
+        await Expect(button).ToHaveAttributeAsync("aria-label", "Dictate");
+
+        await Page.EvaluateAsync("() => window.__e2eSpeech.end()");
+        await Expect(Text("vi-listening")).ToHaveTextAsync("True,False");
     }
 
     [TestMethod]
@@ -148,13 +179,12 @@ public class BitAiVoiceInputE2ETests : E2ETestBase
         await OpenWithRecognizerAsync();
 
         await Button("vi-basic").ClickAsync();
-        await Expect(Button("vi-basic")).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(Button("vi-basic")).ToHaveAttributeAsync("aria-label", "Stop dictation");
 
         // One recognizer runs at a time: the second start ends the first one's dictation, and tells it so.
         await Button("vi-lang").ClickAsync();
 
-        await Expect(Button("vi-lang")).ToHaveAttributeAsync("aria-pressed", "true");
-        await Expect(Button("vi-basic")).ToHaveAttributeAsync("aria-pressed", "false");
+        await Expect(Button("vi-lang")).ToHaveAttributeAsync("aria-label", "Stop dictation");
         await Expect(Button("vi-basic")).ToHaveAttributeAsync("aria-label", "Dictate");
         await Expect(Status("vi-basic")).ToHaveTextAsync("Dictation stopped");
         await Expect(Text("vi-listening")).ToHaveTextAsync("True,False");
@@ -167,8 +197,8 @@ public class BitAiVoiceInputE2ETests : E2ETestBase
 
         // And the first one starts again over it.
         await Button("vi-basic").ClickAsync();
-        await Expect(Button("vi-basic")).ToHaveAttributeAsync("aria-pressed", "true");
-        await Expect(Button("vi-lang")).ToHaveAttributeAsync("aria-pressed", "false");
+        await Expect(Button("vi-basic")).ToHaveAttributeAsync("aria-label", "Stop dictation");
+        await Expect(Button("vi-lang")).ToHaveAttributeAsync("aria-label", "Dictate");
         await Page.EvaluateAsync("() => window.__e2eSpeech.result('for the first', null)");
         await Expect(Text("vi-transcripts")).ToHaveTextAsync("for the first");
     }
@@ -180,13 +210,13 @@ public class BitAiVoiceInputE2ETests : E2ETestBase
 
         var button = Button("vi-basic");
         await button.ClickAsync();
-        await Expect(button).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(button).ToHaveAttributeAsync("aria-label", "Stop dictation");
 
         await Page.EvaluateAsync("() => window.__e2eSpeech.error('not-allowed')");
 
         await Expect(Text("vi-errors")).ToHaveTextAsync("not-allowed");
         await Expect(Status("vi-basic")).ToHaveTextAsync("Dictation failed: not-allowed");
-        await Expect(button).ToHaveAttributeAsync("aria-pressed", "false");
+        await Expect(button).ToHaveAttributeAsync("aria-label", "Dictate");
         await Expect(Text("vi-listening")).ToHaveTextAsync("True,False");
     }
 
@@ -197,17 +227,17 @@ public class BitAiVoiceInputE2ETests : E2ETestBase
 
         var button = Button("vi-basic");
         await button.ClickAsync();
-        await Expect(button).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(button).ToHaveAttributeAsync("aria-label", "Stop dictation");
 
         await Page.EvaluateAsync("() => window.__e2eSpeech.end()");
 
-        await Expect(button).ToHaveAttributeAsync("aria-pressed", "false");
+        await Expect(button).ToHaveAttributeAsync("aria-label", "Dictate");
         await Expect(Status("vi-basic")).ToHaveTextAsync("Dictation stopped");
         await Expect(Text("vi-listening")).ToHaveTextAsync("True,False");
 
         // The next press starts again rather than stopping a recognizer that is gone.
         await button.ClickAsync();
-        await Expect(button).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(button).ToHaveAttributeAsync("aria-label", "Stop dictation");
         Assert.AreEqual(2, await Page.EvaluateAsync<int>("() => window.__e2eSpeech.instances.length"));
     }
 
@@ -217,7 +247,7 @@ public class BitAiVoiceInputE2ETests : E2ETestBase
         await OpenWithRecognizerAsync();
 
         await Button("vi-lang").ClickAsync();
-        await Expect(Button("vi-lang")).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(Button("vi-lang")).ToHaveAttributeAsync("aria-label", "Stop dictation");
 
         Assert.AreEqual("fa-IR", await Page.EvaluateAsync<string>("() => window.__e2eSpeech.current.lang"));
     }
@@ -229,7 +259,7 @@ public class BitAiVoiceInputE2ETests : E2ETestBase
 
         var button = Button("vi-dis");
         await button.ClickAsync();
-        await Expect(button).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(button).ToHaveAttributeAsync("aria-label", "Stop dictation");
         await Expect(Text("vi-dis-listening")).ToHaveTextAsync("True");
 
         await Page.Locator("#vi-dis-toggle").ClickAsync();
@@ -238,7 +268,7 @@ public class BitAiVoiceInputE2ETests : E2ETestBase
         await Expect(Root("vi-dis")).ToHaveClassAsync(HasClass("bit-dis"));
         await Expect(button).ToBeDisabledAsync();
         await Expect(button).ToHaveAttributeAsync("aria-disabled", "true");
-        await Expect(button).ToHaveAttributeAsync("aria-pressed", "false");
+        await Expect(button).ToHaveAttributeAsync("aria-label", "Dictate");
         await Expect(Text("vi-dis-listening")).ToHaveTextAsync("True,False");
         Assert.IsTrue(await Page.EvaluateAsync<bool>("() => window.__e2eSpeech.current.stopped"), "Disabling it stopped the recognizer.");
 
@@ -256,7 +286,7 @@ public class BitAiVoiceInputE2ETests : E2ETestBase
         await OpenWithRecognizerAsync();
 
         await Button("vi-mounted").ClickAsync();
-        await Expect(Button("vi-mounted")).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(Button("vi-mounted")).ToHaveAttributeAsync("aria-label", "Stop dictation");
 
         await Page.Locator("#vi-unmount").ClickAsync();
 

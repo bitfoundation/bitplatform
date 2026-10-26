@@ -155,6 +155,30 @@ public class BitAiContextMeterTests : BitAiTestBase
         Assert.AreEqual("150%", component.Find(".bit-aictm-pct").TextContent);
     }
 
+    // The readout is cut to a whole number as the value of the meter is, so it never shows a mark the reading has not
+    // reached: rounded, 6,392 of 8,000 would read 80% with no warning beside it.
+    [TestMethod,
+        DataRow(6_392L, "79%", false),
+        DataRow(6_400L, "80%", true)]
+    public void TheReadoutNeverReachesAMarkTheReadingHasNot(long used, string percent, bool warned)
+    {
+        var component = RenderComponent<BitAiContextMeter>(p => p.Add(c => c.Used, used).Add(c => c.Window, 8_000));
+
+        Assert.AreEqual(percent, component.Find(".bit-aictm-pct").TextContent);
+        Assert.AreEqual(percent.TrimEnd('%'), component.Find("[role=meter]").GetAttribute("aria-valuenow"));
+        Assert.AreEqual(warned, component.Find(".bit-aictm").ClassList.Contains("bit-aictm-wrn"));
+    }
+
+    // Cut in whole numbers: 0.29 * 100 is 28.999... in binary floating point.
+    [TestMethod]
+    public void AWholePercentIsNotCutShortByFloatingPoint()
+    {
+        var component = RenderComponent<BitAiContextMeter>(p => p.Add(c => c.Used, 29).Add(c => c.Window, 100));
+
+        Assert.AreEqual("29%", component.Find(".bit-aictm-pct").TextContent);
+        Assert.AreEqual("29", component.Find("[role=meter]").GetAttribute("aria-valuenow"));
+    }
+
     [TestMethod]
     public void NothingIsRenderedWithoutAWindow()
     {

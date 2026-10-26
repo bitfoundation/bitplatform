@@ -6,7 +6,7 @@ public partial class AiGenerativeScenarioPage
 {
     private readonly BitAiChatSession _session = new(AiDemoInteractiveTransports.GenerativeUi());
 
-    private readonly string[] _suggestions = ["What is the week like in Oslo, Lisbon and Auckland?"];
+    private readonly string[] _suggestions = ["What is the weather like in Oslo, Lisbon and Auckland?"];
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {

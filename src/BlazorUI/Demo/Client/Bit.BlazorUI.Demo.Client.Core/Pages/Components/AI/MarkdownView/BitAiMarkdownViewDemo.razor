@@ -64,9 +64,10 @@
 
         <DemoExample Title="Streaming caret" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>
-                <b>ShowCaret</b> draws a caret after the last paragraph while it is still open - a document parsed with
-                <b>isComplete</b> false, the sign that more text is on its way. <b>BitAiUiOptions.ShowStreamingCaret</b> turns it off
-                for every view at once.
+                <b>ShowCaret</b> draws a caret at the end of the text while the document is still being written - one parsed with
+                <b>isComplete</b> false, the sign that more text is on its way. It follows the paragraph or the heading being
+                written, and after a code block, a table or a blank line it waits where the next block will start.
+                <b>BitAiUiOptions.ShowStreamingCaret</b> turns it off for every view at once.
             </div>
             <br />
             <BitAiMarkdownView Document="openDocument" ShowCaret />
@@ -167,8 +168,8 @@
 
         <DemoExample Title="Untrusted content" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
-                Model output is untrusted. A <b>javascript:</b> link is neutralised to <b>#</b>, and raw HTML - inline or a block - is
-                shown as the text it is. Rendering it takes <b>AllowRawHtml</b> in both the options the document is parsed with and
+                Model output is untrusted. A <b>javascript:</b> link keeps its text but loses its address, so there is nothing to
+                follow, and raw HTML - inline or a block - is shown as the text it is. Rendering it takes <b>AllowRawHtml</b> in both the options the document is parsed with and
                 the options in force (<b>BitAiUiOptions.Markdown</b>): turn it on only for Markdown you trust as much as your own code,
                 since a model can be talked into writing a script tag.
             </div>
@@ -202,7 +203,9 @@
         <DemoExample Title="Cascading parameters" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
                 <b>BitParams</b> with a <b>BitAiMarkdownViewParams</b> sets the defaults of every Markdown view inside it - here the
-                styles of its links and quotes - and a parameter of the view itself still wins.
+                styles of its links and quotes, bold and italic. A parameter of the view itself still wins, and wins whole: the
+                second view sets <b>Styles</b> of its own, which take the place of the cascaded ones, so its link is green but not
+                bold, and its quote is not italic.
             </div>
             <br />
             <BitParams Parameters="markdownParams">
@@ -232,7 +235,7 @@
                 <BitAiMarkdownView Document="styleDocument"
                                    Classes="@(new() { Root = "custom-root", Link = "custom-link", ListItem = "custom-item" })" />
                 <br />
-                <div style="--bit-AiMarkdownView-heading-color: rebeccapurple; --bit-AiMarkdownView-link-color: rebeccapurple; --bit-AiMarkdownView-quote-border-color: rebeccapurple; --bit-AiMarkdownView-code-background: #ede9fe; --bit-AiMarkdownView-block-spacing: 0.5rem;">
+                <div style="--bit-AiMarkdownView-heading-color: light-dark(#6d28d9, #a78bfa); --bit-AiMarkdownView-link-color: light-dark(#6d28d9, #a78bfa); --bit-AiMarkdownView-quote-border-color: #8b5cf6; --bit-AiMarkdownView-code-color: #4c1d95; --bit-AiMarkdownView-code-background: #ede9fe; --bit-AiMarkdownView-block-spacing: 0.5rem;">
                     <BitAiMarkdownView Document="styleDocument" />
                 </div>
             </div>

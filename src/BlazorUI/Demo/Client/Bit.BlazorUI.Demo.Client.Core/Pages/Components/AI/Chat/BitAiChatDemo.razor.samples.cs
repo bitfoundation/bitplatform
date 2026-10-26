@@ -124,7 +124,7 @@ private async Task AskAboutRefunds()
 
     private readonly string example6RazorCode = @"
 <div style=""height:420px"">
-    <BitAiChat @ref=""composerChat"" Placeholder=""Ask the selected model..."">
+    <BitAiChat @ref=""composerChat"" Placeholder=""Ask anything..."">
         <ComposerPrefixTemplate>
             <BitAiModelSelector @bind-ModelId=""modelId"" />
         </ComposerPrefixTemplate>
@@ -136,14 +136,15 @@ private async Task AskAboutRefunds()
                        OnClick=""ClearComposerChat"" />
         </ComposerSuffixTemplate>
         <ComposerHintTemplate>
-            Talking to <b>@modelId</b>. Enter sends, Shift+Enter starts a new line.
+            Picked: <b>@modelId</b>. Enter sends, Shift+Enter starts a new line.
         </ComposerHintTemplate>
     </BitAiChat>
 </div>";
     private readonly string example6CsharpCode = @"
 private BitAiChat? composerChat;
 
-// The models come from the catalog registered with ai.AddModels(...).
+// The models come from the catalog registered with ai.AddModels(...). A session of your own takes the picked one
+// through its options: new BitAiChatSessionOptions { RequestOptions = new() { ModelId = modelId } }.
 private string? modelId = ""demo-model-1"";
 
 private void ClearComposerChat()
@@ -370,11 +371,13 @@ private static BitAiConversation CreateHistory()
 
     private readonly string example14RazorCode = @"
 <BitParams Parameters=""chatParams"">
-    <div style=""height:320px"">
-        <BitAiChat />
-    </div>
-    <div style=""height:320px"">
-        <BitAiChat Placeholder=""Its own placeholder wins..."" />
+    <div style=""display:grid;gap:1rem;grid-template-columns:repeat(auto-fit, minmax(16rem, 1fr))"">
+        <div style=""height:320px"">
+            <BitAiChat />
+        </div>
+        <div style=""height:320px"">
+            <BitAiChat Placeholder=""Its own placeholder wins..."" />
+        </div>
     </div>
 </BitParams>";
     private readonly string example14CsharpCode = @"

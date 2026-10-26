@@ -12,10 +12,11 @@
 //   --bit-AiAgentStepView-blocked-color       marker of a step waiting on the user              (default: $clr-wrn)
 //   --bit-AiAgentStepView-line-color          line joining a step to the next one               (default: $clr-brd-sec)
 //   --bit-AiAgentStepView-title-font-size     size of the title                                 (default: $tg-fs-sm)
-//   --bit-AiAgentStepView-text-color          detail, summary and duration                      (default: $clr-fg-sec)
+//   --bit-AiAgentStepView-text-color          detail, summary, duration, detail of an error     (default: $clr-fg-sec)
 //   --bit-AiAgentStepView-error-color         error message                                     (default: $clr-err-fg)
 //
-// The tool calls are BitTags, which the --bit-Tag-* variables restyle.
+// The tool calls are BitTags, which the --bit-Tag-* variables restyle; the button disclosing the detail of an error is a
+// BitButton, which the --bit-Button-* variables restyle.
 
 // Where the marker sits below the top of the step: level with the first line of the title next to it.
 $aiasv-mrk-top: 0.28em;
@@ -171,7 +172,35 @@ li:last-child > .bit-aiasv::before {
     color: var(--bit-AiAgentStepView-error-color, #{$clr-err-fg});
 }
 
-.bit-aiasv.bit-dis :is(.bit-aiasv-dur, .bit-aiasv-dtl, .bit-aiasv-smr, .bit-aiasv-err),
+// The detail of an error is read as it was written - a list of failing tests keeps its lines - and scrolls past a few
+// of them rather than pushing the timeline down.
+.bit-aiasv-edt {
+    overflow: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    box-sizing: border-box;
+    font-size: $tg-fs-xs;
+    font-family: $tg-font-family-mono;
+    max-height: spacing(24);
+    color: var(--bit-AiAgentStepView-text-color, #{$clr-fg-sec});
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+}
+
+// The disclosure of the detail lines up with the error above it, which a text button's own padding would set its label in
+// from.
+.bit-aiasv-edb {
+    margin-inline-start: calc(-1 * #{$siz-ctrl-pad-x-sm});
+}
+
+// The status in words is for assistive technologies alone: the marker shows it. The root is its containing block.
+.bit-aiasv-sts {
+    @include visually-hidden;
+}
+
+.bit-aiasv.bit-dis :is(.bit-aiasv-dur, .bit-aiasv-dtl, .bit-aiasv-smr, .bit-aiasv-err, .bit-aiasv-edt),
 .bit-aiasv.bit-dis > .bit-aiasv-bdy > .bit-aiasv-ttl {
     color: inherit;
 }

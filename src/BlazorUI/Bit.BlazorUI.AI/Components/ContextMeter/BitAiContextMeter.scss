@@ -7,7 +7,11 @@
 //   --bit-AiContextMeter-critical-color    label and readout past the Critical mark (default: $clr-err-fg)
 //   --bit-AiContextMeter-font-size         size of the label and the readout        (default: $tg-fs-xs)
 //   --bit-AiContextMeter-gap               room between the label, bar and readout  (default: spacing(1.5))
-//   --bit-AiContextMeter-meter-max-width   width the bar stops growing at           (default: spacing(24))
+//   --bit-AiContextMeter-meter-max-width   width the bar grows to where there is
+//                                          room, and asks for where the meter is
+//                                          sized to its content (a flex row)        (default: spacing(24))
+//   --bit-AiContextMeter-track-color       the empty part of the bar                (default: --bit-Progress-track-color,
+//                                                                                    else $clr-brd-sec)
 //
 // The bar itself is a BitProgress, which the --bit-Progress-* variables restyle; past each mark it is drawn in the
 // warning or the error role, which a state of the reading says rather than a choice of the app's.
@@ -39,10 +43,21 @@
 }
 
 // Two classes, so the width wins over the root rule of the BitProgress whichever of the two bundles is linked first.
+// A bar has no width of its own to bring, so a meter sized to its content - in a flex row, say - would leave it the
+// smallest it may be; the width is what it asks for there. It still grows from nothing rather than from that width, so
+// in a narrow row the bar shrinks, as it always has, rather than wrapping onto a line of its own.
 .bit-aictm > .bit-aictm-mtr {
-    flex: 1 1 auto;
+    flex: 1 1 0;
     min-width: spacing(6);
+    width: var(--bit-AiContextMeter-meter-max-width, #{spacing(24)});
     max-width: var(--bit-AiContextMeter-meter-max-width, #{spacing(24)});
+}
+
+// The empty part of the bar is what the reading is read against, and a meter sits on the surfaces - a composer, a side
+// panel, a page - whose background is the one a BitProgress draws its track in by default, where it vanished. It takes the
+// secondary border color instead, which stands off every surface and still leaves the fill standing off it.
+.bit-aictm > .bit-aictm-mtr .bit-prb-trc {
+    background-color: var(--bit-AiContextMeter-track-color, var(--bit-Progress-track-color, #{$clr-brd-sec}));
 }
 
 .bit-aictm-ttl,

@@ -20,6 +20,11 @@ public partial class BitAiChat : BitAiComponentBase
     private BitAiChatSession? _owned;
     private BitAiChatSession? _attached;
     private bool _pinned = true;
+    // Whether a turn was in flight when the chat last asked to render for its session, and for which session: read and
+    // written under the lock, since the session raises its changes from the threads of the turn and its tools at once.
+    private readonly object _sessionStateGate = new();
+    private BitAiChatSession? _renderedSession;
+    private bool _renderedGenerating;
 
 
 
@@ -275,6 +280,13 @@ public partial class BitAiChat : BitAiComponentBase
 
         _attached = session;
         _attached.StateChanged += OnSessionStateChanged;
+
+        // The render this attaches it for draws the session as it is now.
+        lock (_sessionStateGate)
+        {
+            _renderedSession = session;
+            _renderedGenerating = session.IsGenerating;
+        }
     }
 
 
@@ -283,12 +295,12 @@ public partial class BitAiChat : BitAiComponentBase
     {
         if (_services.GetService(typeof(BitAiChatSessionFactory)) is BitAiChatSessionFactory factory)
         {
-            return factory.Create(Conversation, WithStrings(SessionOptions ?? factory.Defaults));
+            return factory.Create(Conversation, WithUiOptions(SessionOptions ?? factory.Defaults));
         }
 
         if (_services.GetService(typeof(IBitAiTransport)) is IBitAiTransport transport)
         {
-            return new BitAiChatSession(transport, Conversation, WithStrings(SessionOptions ?? new BitAiChatSessionOptions()));
+            return new BitAiChatSession(transport, Conversation, WithUiOptions(SessionOptions ?? new BitAiChatSessionOptions()));
         }
 
         throw new InvalidOperationException(
@@ -296,12 +308,39 @@ public partial class BitAiChat : BitAiComponentBase
             "during startup, or pass a Session parameter.");
     }
 
-    // The errors a session of this chat's own writes read in the words of the UI options in force here, which is what
-    // the transcript renders them with, unless the session options name their own.
-    private BitAiChatSessionOptions WithStrings(BitAiChatSessionOptions options) =>
-        options.Strings is null ? options with { Strings = Strings } : options;
+    // A session of this chat's own follows the UI options in force here: the errors it writes read in their words, which
+    // is what the transcript renders them with, unless the session options name their own; and its text arrives as the
+    // transport sends it, unpaced, where they turn SmoothStreaming off.
+    private BitAiChatSessionOptions WithUiOptions(BitAiChatSessionOptions options)
+    {
+        if (options.Strings is null) options = options with { Strings = Strings };
 
-    private void OnSessionStateChanged() => RequestRender();
+        if (Options.SmoothStreaming is false && options.Pacing is not null) options = options with { Pacing = null };
+
+        return options;
+    }
+
+    // The session raises this on every event of a stream. What a stream changes is drawn by the views of the messages and
+    // their parts, each following its own changes; what the chat itself hands down from the session is whether a turn is
+    // in flight (the composer's Stop, the actions of the messages), so it re-renders when that flips rather than per
+    // token - a render of the chat re-renders the transcript and every message in it.
+    private void OnSessionStateChanged()
+    {
+        var session = _attached;
+        if (session is null) return;
+
+        lock (_sessionStateGate)
+        {
+            var generating = session.IsGenerating;
+
+            if (ReferenceEquals(session, _renderedSession) && generating == _renderedGenerating) return;
+
+            _renderedSession = session;
+            _renderedGenerating = generating;
+        }
+
+        RequestRender();
+    }
 
     private void HandleOnPinnedChange(bool pinned)
     {
@@ -310,7 +349,14 @@ public partial class BitAiChat : BitAiComponentBase
         RequestRender();
     }
 
-    private Task ScrollToLatestAsync() => _list?.ScrollToLatestAsync() ?? Task.CompletedTask;
+    // The button goes as the transcript reaches the newest message, and the focus would go with it to the page: the
+    // composer takes it, where a reader who asked for the newest message goes on from.
+    private async Task ScrollToLatestAsync()
+    {
+        if (_list is not null) await _list.ScrollToLatestAsync();
+
+        await FocusComposerSafelyAsync();
+    }
 
     private async Task OnComposerSubmitAsync(BitAiPromptSubmission submission)
     {
@@ -323,7 +369,28 @@ public partial class BitAiChat : BitAiComponentBase
         await ActiveSession.SubmitAsync(submission.Text, submission.Attachments);
     }
 
-    private Task SubmitTextAsync(string text) => OnComposerSubmitAsync(new BitAiPromptSubmission(text, []));
+    // A suggestion goes with the empty state as soon as its message is in, and the focus would go with it to the page:
+    // the composer takes it first, since the submission is over only once the whole turn is.
+    private async Task SubmitTextAsync(string text)
+    {
+        await FocusComposerSafelyAsync();
+
+        await OnComposerSubmitAsync(new BitAiPromptSubmission(text, []));
+    }
+
+    // Moving the focus on the chat's own behalf, after a control the user pressed has gone, never fails what it follows.
+    private async Task FocusComposerSafelyAsync()
+    {
+        if (IsDisposing) return;
+
+        try
+        {
+            await FocusComposerAsync();
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, and the page with it
+        catch (OperationCanceledException) { }
+        catch (JSException) { } // a composer taken off the page in the meantime has nothing to focus
+    }
 
 
 

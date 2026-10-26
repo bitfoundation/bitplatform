@@ -3,7 +3,8 @@
 
 @* The root is the scroll container and the transcript's log region at once: new messages are announced politely, as
    additions, so a listener is never interrupted mid-sentence by the next one. The name comes from the AriaLabel, an
-   aria-label written on the list, or the string table, in that order. *@
+   aria-label written on the list, or the string table, in that order. data-bit-aimsl-old is the number of older
+   messages a long transcript leaves out, which the scroll script reads to ask for the next page of them. *@
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
      id="@_Id"
@@ -13,9 +14,12 @@
      role="log"
      aria-label="@(ResolveAriaLabel() ?? Strings.Transcript)"
      aria-live="polite"
-     aria-relevant="additions">
+     aria-relevant="additions"
+     data-bit-aimsl-old="@OlderCount">
     <div style="@Styles?.Content" class="bit-aimsl-con @Classes?.Content">
-        @if (HeaderTemplate is not null)
+        @* Above the first message, so not before the first message is drawn: above the first one drawn, it would stand
+           over the middle of the conversation, and push the page of older messages that comes in under it out of place. *@
+        @if (HeaderTemplate is not null && _windowStart == 0)
         {
             @HeaderTemplate
         }
@@ -23,12 +27,6 @@
         @if (_messages.Count == 0 && EmptyTemplate is not null)
         {
             @EmptyTemplate
-        }
-        else if (_virtualize)
-        {
-            <Virtualize Items="_messages" Context="message" ItemSize="220" OverscanCount="4" TItem="BitAiMessage">
-                @RenderMessage(message)
-            </Virtualize>
         }
         else
         {
@@ -44,15 +42,19 @@
 
 @code {
     /// <remarks>
-    /// Every message is emitted from this one fragment so that their keys are siblings. A key only competes with keys
-    /// in the same region, so keying inside a per-message fragment would let removing one message recreate every
-    /// message after it. An application template is keyed through <see cref="BitAiKeyedRegion"/>, which adds no
-    /// element, so the template's own markup still sits directly in the list's flex layout.
+    /// Every message drawn is emitted from this one fragment so that their keys are siblings. A key only competes with
+    /// keys in the same region, so keying inside a per-message fragment would let removing one message recreate every
+    /// message after it - and a long transcript, whose drawn messages change as the reader scrolls up and back, recreate
+    /// every message on every turn, an open editor and its draft with them. An application template is keyed through
+    /// <see cref="BitAiKeyedRegion"/>, which adds no element, so the template's own markup still sits directly in the
+    /// list's flex layout.
     /// </remarks>
     private RenderFragment RenderTranscript() => __builder =>
     {
-        foreach (var message in Rendered())
+        for (var i = _windowStart; i < _messages.Count; i++)
         {
+            var message = _messages[i];
+
             if (MessageTemplate is not null)
             {
                 __builder.OpenComponent<BitAiKeyedRegion>(0);
@@ -73,25 +75,5 @@
                               OnFeedback="OnFeedback"
                               @key="message.MessageId" />
         }
-    };
-
-    // A virtualized message is one scrolled back into view, never a new one, so it is drawn without the entrance.
-    private RenderFragment RenderMessage(BitAiMessage message) => __builder =>
-    {
-        if (MessageTemplate is not null)
-        {
-            __builder.AddContent(0, MessageTemplate(message));
-            return;
-        }
-
-        <BitAiChatMessage Message="message"
-                          Conversation="Conversation"
-                          Session="Session"
-                          Disabled="Disabled"
-                          IsLatest="@IsLatestMessage(message)"
-                          OnCitationClick="OnCitationClick"
-                          OnSourceClick="OnSourceClick"
-                          OnFeedback="OnFeedback"
-                          @key="message.MessageId" />
     };
 }

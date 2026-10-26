@@ -97,6 +97,61 @@ public class BitAiConversationStreamProcessorTests
         Assert.AreEqual("The answer is 4.", message.GetText());
     }
 
+    // A transport seldom says when the thinking stopped: the answer starting is what ends it, so the reasoning folds away
+    // then, and its time is the time the model thought for rather than the whole reply's.
+    [TestMethod,
+        DataRow("text"),
+        DataRow("part"),
+        DataRow("image"),
+        DataRow("file"),
+        DataRow("tool"),
+        DataRow("structured"),
+        DataRow("generative"),
+        DataRow("artifact")]
+    public void EveryPieceOfTheAnswerEndsTheReasoningBeforeIt(string piece)
+    {
+        var (conversation, processor) = Create();
+        processor.BeginGeneration();
+        processor.Apply(new BitAiReasoningDeltaEvent("weighing options"));
+
+        var reasoning = Assert.IsExactInstanceOfType<BitAiReasoningPart>(Assert.ContainsSingle(conversation.Messages[0].Parts));
+        Assert.IsTrue(reasoning.IsStreaming);
+        Assert.IsNull(reasoning.CompletedAt);
+
+        processor.Apply(piece switch
+        {
+            "text" => new BitAiTextDeltaEvent("The answer"),
+            "part" => new BitAiPartStartedEvent(BitAiMessagePartKinds.Code),
+            "image" => new BitAiImageEvent("https://img/1.png"),
+            "file" => new BitAiFileEvent(new BitAiAttachment("a1", "report.pdf")),
+            "tool" => new BitAiToolCallStartedEvent("c1", "search"),
+            "structured" => new BitAiStructuredDataDeltaEvent("{\"a\":"),
+            "generative" => new BitAiGenerativeUiEvent("card", JsonDocument.Parse("{}").RootElement),
+            _ => new BitAiArtifactCreatedEvent("art1", BitAiArtifactKind.Document, "Notes"),
+        });
+
+        Assert.IsFalse(reasoning.IsStreaming);
+        Assert.IsNotNull(reasoning.CompletedAt);
+        Assert.HasCount(2, conversation.Messages[0].Parts);
+        Assert.AreEqual(BitAiMessageStatus.Streaming, conversation.Messages[0].Status);
+    }
+
+    [TestMethod]
+    public void MoreReasoningKeepsTheReasoningOpen()
+    {
+        var (conversation, processor) = Create();
+        processor.BeginGeneration();
+
+        processor.Apply(new BitAiReasoningDeltaEvent("weighing "));
+        processor.Apply(new BitAiStatusEvent("Thinking it over"));
+        processor.Apply(new BitAiPartStartedEvent(BitAiMessagePartKinds.Reasoning) { PartId = "r2" });
+        processor.Apply(new BitAiReasoningDeltaEvent("options"));
+
+        var reasoning = Assert.IsExactInstanceOfType<BitAiReasoningPart>(conversation.Messages[0].Parts[0]);
+        Assert.IsTrue(reasoning.IsStreaming);
+        Assert.IsTrue(conversation.Messages[0].FindPart<BitAiReasoningPart>("r2")!.IsStreaming);
+    }
+
     [TestMethod]
     public void ToolCallArgumentsStreamAndParseOnCompletion()
     {
@@ -395,6 +450,44 @@ public class BitAiConversationStreamProcessorTests
 
         processor.Apply(new BitAiMessageCompletedEvent());
         Assert.IsNull(conversation.Messages[0].StatusText);
+    }
+
+    // A reply that stops for its tool calls goes on once they have run, so it is not finished then: the end of the
+    // generation is what completes it.
+    [TestMethod]
+    public void AReplyThatStopsForItsToolCallsIsNotFinishedYet()
+    {
+        var (conversation, processor) = Create();
+        processor.BeginGeneration();
+
+        processor.Apply(new BitAiTextDeltaEvent("Let me check."));
+        processor.Apply(new BitAiToolCallStartedEvent("c1", "search") { Arguments = JsonDocument.Parse("{}").RootElement });
+        processor.Apply(new BitAiMessageCompletedEvent(BitAiFinishReason.ToolCalls));
+
+        var message = conversation.Messages[0];
+        Assert.AreEqual(BitAiMessageStatus.Streaming, message.Status);
+        Assert.IsTrue(message.IsBusy);
+        Assert.AreEqual(BitAiFinishReason.ToolCalls, message.Metadata!.FinishReason);
+        Assert.IsFalse(Assert.IsExactInstanceOfType<BitAiTextPart>(message.Parts[0]).IsStreaming);
+
+        processor.Apply(new BitAiTextDeltaEvent("Found it."));
+        processor.Apply(new BitAiMessageCompletedEvent());
+
+        Assert.AreEqual(BitAiMessageStatus.Complete, message.Status);
+        Assert.AreEqual(BitAiFinishReason.Stop, message.Metadata!.FinishReason);
+    }
+
+    [TestMethod]
+    public void TheEndOfTheGenerationCompletesAReplyThatStoppedForItsToolCalls()
+    {
+        var (conversation, processor) = Create();
+        processor.BeginGeneration();
+
+        processor.Apply(new BitAiToolCallStartedEvent("c1", "search") { Arguments = JsonDocument.Parse("{}").RootElement });
+        processor.Apply(new BitAiMessageCompletedEvent(BitAiFinishReason.ToolCalls));
+        processor.EndGeneration();
+
+        Assert.AreEqual(BitAiMessageStatus.Complete, conversation.Messages[0].Status);
     }
 
     [TestMethod]

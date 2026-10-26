@@ -35,7 +35,10 @@
 }
 
 // The entrance of a message that has just arrived. The duration is a motion token, so it collapses under a
-// reduced-motion preference and comes back under ForceAnimation with nothing written here for either.
+// reduced-motion preference and comes back under ForceAnimation with nothing written here for either. It fills
+// backwards only: an animation of the transform still in effect once it has run (forwards, or both) keeps the message
+// a containing block for what is fixed inside it, so a full-screen artifact panel would cover the message alone rather
+// than the page. Its last keyframe is what the message looks like anyway.
 @keyframes bit-aicms-ent {
     from {
         opacity: 0;
@@ -51,7 +54,7 @@
 .bit-aicms-ent {
     animation-name: bit-aicms-ent;
     animation-duration: $mot-duration-long;
-    animation-fill-mode: both;
+    animation-fill-mode: backwards;
     animation-timing-function: $mot-easing-decelerate;
 }
 

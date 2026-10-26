@@ -5,6 +5,7 @@
 @{
     var placeholder = Placeholder ?? Strings.PromptPlaceholder;
     var menuOpen = MenuOpen;
+    var hasMenu = HasMenu;
     var sendDisabled = IsGenerating is false && CanSubmit is false;
 }
 
@@ -35,8 +36,10 @@
 
     @if (_rejections.Count > 0)
     {
-        @* A file is never turned away silently: the notice says which one was and why, as an alert. *@
+        @* A file is never turned away silently: the notice says which one was and why, as an alert. It wraps, a line per
+           file, since a single-line message would clip the very limit a narrow composer is telling the user about. *@
         <BitMessage Color="BitColor.Error"
+                    Multiline
                     Dismissible
                     OnDismiss="DismissRejections"
                     DismissAriaLabel="@Strings.Dismiss"
@@ -53,8 +56,10 @@
     @if (menuOpen)
     {
         @* The options are reached with the arrow keys while the focus stays in the text (aria-activedescendant), so they
-           stay out of the tab order, and a press on one keeps the focus where it is rather than moving it to the option. *@
-        <div role="listbox"
+           stay out of the tab order, and a press anywhere on the menu - an option, the room between two, its scrollbar -
+           keeps the focus where it is rather than moving it away, which would close the menu (see HandleOnBlur). *@
+        <div @onmousedown:preventDefault="true"
+             role="listbox"
              id="@MenuId"
              aria-label="@(_menuTrigger == '/' ? Strings.Commands : Strings.Mentions)"
              style="@Styles?.Menu"
@@ -94,10 +99,12 @@
             <div style="@Styles?.Prefix" class="bit-aipri-pre @Classes?.Prefix">@PrefixTemplate</div>
         }
 
-        @* A combobox rather than a plain textbox: the slash and mention menu is a listbox popup the arrow keys drive, and
-           aria-activedescendant tells assistive technologies which option those keys have reached while the focus stays
-           in the text. data-bit-aipri-mnu tells the submit-key guard of the script that the menu has the keys, and
-           data-bit-esc claims the Escape the handler acts on - closing the menu, or else stopping the turn. The text is a
+        @* A combobox rather than a plain textbox wherever there are commands or mentions to offer: the slash and mention
+           menu is a listbox popup the arrow keys drive, and aria-activedescendant tells assistive technologies which option
+           those keys have reached while the focus stays in the text; with nothing to offer it stays a plain text box, as
+           a popup that never opens is nothing to announce. The menu closes as the focus leaves the text. data-bit-aipri-mnu
+           tells the submit-key guard of the script that the menu has the keys, and data-bit-esc claims the Escape the
+           handler acts on - closing the menu, or else stopping the turn. The text is a
            binding rather than a value and an oninput handler: a binding is what has Blazor take what the textarea held
            when each keystroke was sent as what it last rendered, so a render that arrives while later keystrokes are on
            their way (a Blazor Server circuit, a slow ValueChanged) never writes an older text back over them. *@
@@ -107,6 +114,7 @@
                   @bind:event="oninput"
                   @onkeydown="HandleOnKeyDown"
                   @onkeyup="HandleOnKeyUp"
+                  @onblur="HandleOnBlur"
                   rows="1"
                   tabindex="@TabIndex"
                   maxlength="@MaxLength"
@@ -114,10 +122,10 @@
                   disabled="@Disabled"
                   aria-disabled="@(Disabled ? "true" : null)"
                   aria-label="@(AriaLabel ?? placeholder)"
-                  role="combobox"
-                  aria-haspopup="listbox"
-                  aria-autocomplete="list"
-                  aria-expanded="@(menuOpen ? "true" : "false")"
+                  role="@(hasMenu ? "combobox" : null)"
+                  aria-haspopup="@(hasMenu ? "listbox" : null)"
+                  aria-autocomplete="@(hasMenu ? "list" : null)"
+                  aria-expanded="@(hasMenu ? (menuOpen ? "true" : "false") : null)"
                   aria-controls="@(menuOpen ? MenuId : null)"
                   aria-activedescendant="@(menuOpen ? OptionId(_menuIndex) : null)"
                   aria-describedby="@(MaxLength is not null ? CounterId : null)"

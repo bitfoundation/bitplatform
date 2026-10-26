@@ -30,7 +30,9 @@ public static IBitAiTransport FailsThenRecovers()
     {
         await yielder(new BitAiMessageStartedEvent());
 
-        if (Interlocked.Increment(ref attempts) == 1)
+        var attempt = Interlocked.Increment(ref attempts);
+
+        if (attempt == 1)
         {
             // Some of the answer streams, then the request fails - and what streamed is kept.
             await foreach (var evt in AiScript.Write("Looking that up", 4, 25, token)) await yielder(evt);
@@ -47,7 +49,10 @@ public static IBitAiTransport FailsThenRecovers()
             return;
         }
 
-        await foreach (var evt in AiScript.Write("That worked on the second attempt.", 4, 12, token)) await yielder(evt);
+        // Only the retry right after the failure talks about it; every later turn is an ordinary one.
+        var answer = attempt == 2 ? "That worked on the second attempt." : $"You said: {AiScript.LastUserText(request)}";
+
+        await foreach (var evt in AiScript.Write(answer, 4, 12, token)) await yielder(evt);
         await yielder(new BitAiMessageCompletedEvent());
     }));
 }

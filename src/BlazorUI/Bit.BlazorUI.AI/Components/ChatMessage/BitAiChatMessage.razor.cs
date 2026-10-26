@@ -13,9 +13,14 @@ namespace Bit.BlazorUI;
 public partial class BitAiChatMessage : BitAiComponentBase
 {
     private bool _editing;
+    private bool _generating;
+    private bool _focusEditButton;
     private bool _awaitingContent;
+    private bool _awaitingDecision;
     private string? _draft = string.Empty;
+    private BitButton? _editButton;
     private BitAiMessage? _subscribed;
+    private BitAiChatSession? _subscribedSession;
     private BitAiIconClassesCache<BitButtonClassStyles> _editButtonClasses;
 
 
@@ -120,6 +125,18 @@ public partial class BitAiChatMessage : BitAiComponentBase
 
         base.OnParametersSet();
 
+        // A user message offers its edit only while the session is free, so it hears the session start and end its turns.
+        var session = Message.Role.IsUser ? Session : null;
+
+        if (ReferenceEquals(_subscribedSession, session) is false)
+        {
+            UnsubscribeSession();
+
+            _subscribedSession = session;
+
+            if (_subscribedSession is not null) _subscribedSession.StateChanged += OnSessionStateChanged;
+        }
+
         if (ReferenceEquals(_subscribed, Message)) return;
 
         Unsubscribe();
@@ -127,6 +144,18 @@ public partial class BitAiChatMessage : BitAiComponentBase
         _subscribed = Message;
         _subscribed.Changed += OnMessageChanged;
         _subscribed.PartChanged += OnPartChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (_focusEditButton)
+        {
+            _focusEditButton = false;
+
+            await FocusEditButtonAsync();
+        }
     }
 
 
@@ -141,14 +170,33 @@ public partial class BitAiChatMessage : BitAiComponentBase
     private BitButtonClassStyles _EditButtonClasses =>
         _editButtonClasses.Get("bit-icon-ai bit-icon-ai--Edit", Classes?.EditButton, BitAiIconClasses.With);
 
+    // The editor acts on a plain Escape - it cancels the edit - unless the message is disabled; written onto the editor for
+    // Utils.claimEscape, so the key is claimed exactly when the press cancels (see HandleOnEditorKeyDown).
+    private string? _EditorEscapeClaim => Disabled ? null : "claim";
+
     private void OnMessageChanged(BitAiMessage message) => RequestRender();
 
-    // The parts render their own growth, so the only change of one that matters here is the first text reaching a reply
-    // drawn as thinking: a part a transport opens before its first delta is added empty, and filling it in changes no
-    // structure of the message. Every other delta costs a field read.
+    // The parts render their own growth, so the only changes of one that matter here are the first text reaching a reply
+    // drawn as thinking - a part a transport opens before its first delta is added empty, and filling it in changes no
+    // structure of the message - and a tool call coming to wait for the user's decision, or leaving it. Every other
+    // delta costs a field read.
     private void OnPartChanged(BitAiMessage message, BitAiMessagePart part)
     {
-        if (_awaitingContent && IsAwaitingContent() is false) RequestRender();
+        if (_awaitingContent && IsAwaitingContent() is false)
+        {
+            RequestRender();
+        }
+        else if (part is BitAiToolCallPart && IsAwaitingDecision() != _awaitingDecision)
+        {
+            RequestRender();
+        }
+    }
+
+    // The session reports every change of a turn; the one that matters to a user message is a turn starting or ending,
+    // which takes its edit away or gives it back. Every other report costs a field read.
+    private void OnSessionStateChanged()
+    {
+        if (_subscribedSession is { } session && session.IsGenerating != _generating) RequestRender();
     }
 
     // Whether the reply is being generated and has nothing to show yet: no part, or only prose no text has reached. A
@@ -166,6 +214,21 @@ public partial class BitAiChatMessage : BitAiComponentBase
         return true;
     }
 
+    // Whether a tool call of the reply waits for the user's decision. The reply is still being generated then, but it
+    // waits on its reader rather than on the model, so it is not drawn busy: a screen reader holding back the content of
+    // a busy message would never announce the question it asks.
+    private bool IsAwaitingDecision()
+    {
+        if (Message.IsBusy is false) return false;
+
+        foreach (var part in Message.Parts)
+        {
+            if (part is BitAiToolCallPart { Status: BitAiToolCallStatus.AwaitingApproval }) return true;
+        }
+
+        return false;
+    }
+
     private void Unsubscribe()
     {
         if (_subscribed is null) return;
@@ -174,12 +237,19 @@ public partial class BitAiChatMessage : BitAiComponentBase
         _subscribed.PartChanged -= OnPartChanged;
     }
 
+    private void UnsubscribeSession()
+    {
+        if (_subscribedSession is null) return;
+
+        _subscribedSession.StateChanged -= OnSessionStateChanged;
+    }
+
     private Task OnFeedbackRecorded(BitAiFeedbackKind feedback) =>
         OnFeedback.HasDelegate ? OnFeedback.InvokeAsync(new BitAiMessageFeedback(Message, feedback)) : Task.CompletedTask;
 
     private void StartEdit()
     {
-        if (Disabled) return;
+        if (Disabled || Session is { IsGenerating: true }) return;
 
         _draft = Message.GetText();
         _editing = true;
@@ -188,15 +258,46 @@ public partial class BitAiChatMessage : BitAiComponentBase
     private void CancelEdit()
     {
         _editing = false;
+        _focusEditButton = true;
     }
 
+    private void HandleOnEditorKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key is not "Escape" || e.AltKey || e.CtrlKey || e.MetaKey || e.ShiftKey || Disabled) return;
+
+        CancelEdit();
+    }
+
+    // An edit starts a turn of its own, which the session takes only while it is free: the editor stays open, with its
+    // draft, until it is. A draft of nothing but spaces sends nothing either, unless the attachments go on alone. The
+    // text goes as the composer sends it, trimmed.
     private async Task SaveEditAsync()
     {
-        if (Disabled) return;
+        var text = _draft?.Trim() ?? string.Empty;
+
+        if (Disabled || Session is not { IsGenerating: false } session) return;
+        if (text.Length == 0 && Message.Attachments.Count == 0) return;
 
         _editing = false;
+        _focusEditButton = true;
 
-        if (Session is not null) await Session.EditAsync(Message.MessageId, _draft ?? string.Empty);
+        await session.EditAsync(Message.MessageId, text);
+    }
+
+    // The editor goes as the edit is saved or cancelled, and the focus would go with it to the page: it is handed back to
+    // the Edit button the edit was started from, which is still there - unavailable while the turn a save started runs,
+    // but focusable.
+    private async Task FocusEditButtonAsync()
+    {
+        if (_editButton is null || IsDisposing) return;
+
+        try
+        {
+            await _editButton.FocusAsync();
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, and the page with it
+        catch (OperationCanceledException) { }
+        catch (JSException) { } // a message taken off the page in the meantime has nothing to focus
     }
 
     private async Task RetryAsync()
@@ -213,8 +314,10 @@ public partial class BitAiChatMessage : BitAiComponentBase
         if (IsDisposed || disposing is false) return;
 
         Unsubscribe();
+        UnsubscribeSession();
 
         _subscribed = null;
+        _subscribedSession = null;
 
         await base.DisposeAsync(disposing);
     }

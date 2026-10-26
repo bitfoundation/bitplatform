@@ -68,6 +68,7 @@ private readonly BitAiUiOptions blockOptions = BitAiUiOptions.Default with { Ima
         padding: 0.5rem;
         border-radius: 1rem;
         background-color: #1e293b;
+        --bit-AiImagePartView-caption-color: #cbd5e1;
     }
 
     .custom-root {
@@ -109,7 +110,11 @@ private readonly BitAiImagePart styledImage = new(""_content/Bit.BlazorUI.Demo.C
 };";
 
     private readonly string example7RazorCode = @"
-<BitAiImagePartView Dir=""BitDir.Rtl"" Part=""rtlImage"" />";
+<BitAiImagePartView Dir=""BitDir.Rtl"" Part=""rtlImage"" />
+
+<div dir=""rtl"">
+    <BitAiImagePartView Part=""rtlImage"" />
+</div>";
     private readonly string example7CsharpCode = @"
 private readonly BitAiImagePart rtlImage = new(""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg"")
 {

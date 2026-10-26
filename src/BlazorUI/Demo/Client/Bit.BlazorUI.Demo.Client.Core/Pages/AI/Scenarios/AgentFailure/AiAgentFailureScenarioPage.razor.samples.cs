@@ -23,7 +23,8 @@ public ValueTask DisposeAsync() => session.DisposeAsync();
     private const string example1TransportCode = """
 public static IBitAiTransport Fails() => new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
 {
-    const string runId = "run-deploy";
+    // A run of its own for every turn, so asking again starts a new run rather than rewriting the one above.
+    var runId = BitAiId.NewRunId();
 
     await yielder(new BitAiMessageStartedEvent());
     await yielder(new BitAiAgentRunStartedEvent(runId) { AgentName = "Deploy agent", Goal = "Ship the release" });

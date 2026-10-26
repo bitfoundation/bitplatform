@@ -77,7 +77,8 @@
         <DemoExample Title="Content" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
                 <b>Content</b> is read when the button is pressed, so it can follow what changes - here what is typed. While it is
-                null the button is disabled; an empty text is still copied.
+                null the button is disabled: here until something is typed, and again once the field is cleared, which sets the
+                bound value back to null. An empty text that is given as such (<b>Content=""</b>) is still copied.
             </div>
             <br />
             <div style="display:flex;align-items:center;gap:0.5rem">

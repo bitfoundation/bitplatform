@@ -25,7 +25,9 @@
     @if (Submitted is false)
     {
         <div style="@Styles?.Actions" class="bit-aifrm-act @Classes?.Actions">
-            @if ((Definition.CancelLabel ?? Strings.Cancel) is { Length: > 0 } cancel)
+            @* Cancel is offered only where something listens for it: a button that does nothing when pressed is one the
+               user has to find out about by pressing it. *@
+            @if (OnCancel.HasDelegate && (Definition.CancelLabel ?? Strings.Cancel) is { Length: > 0 } cancel)
             {
                 @* The neutral action of the pair: an outlined button in the host-default tertiary role, which an app's
                    --bit-Button-* variables still restyle. *@
@@ -100,7 +102,10 @@
     {
         var template = field.Items ?? new BitAiFormField("item");
         var count = BitAiFormDefinition.CountItems(_values, path);
-        var canAdd = field.ReadOnly is false && (field.MaxItems is not { } max || count < max);
+        var isObjectList = template.Type is BitAiFieldType.Object;
+        // At the most entries the list takes, the add button is turned off rather than taken away, so a focus it holds
+        // stays where it is.
+        var addDisabled = Disabled || (field.MaxItems is { } max && count >= max);
 
         <fieldset id="@id" @key="path"
                   style="@Styles?.Group"
@@ -124,12 +129,19 @@
                 var index = i;
                 var itemPath = BitAiFormDefinition.IndexPath(path, index);
                 var itemError = _errors.GetValueOrDefault(itemPath);
-                var itemLabel = $"{field.DisplayLabel} {index + 1}";
+                var itemLabel = Strings.ListItem(field.DisplayLabel, index + 1);
                 var removeLabel = Strings.RemoveItem(field.DisplayLabel, index + 1);
 
-                <div @key="itemPath" style="@Styles?.Item" class="bit-aifrm-itm @Classes?.Item">
+                @* An entry of objects is a group named after the list and its place in it, so its fields - labelled alike in
+                   every entry - are told apart by the entry they are read in; an entry of values is one input, named the
+                   same way through its aria-label. *@
+                <div @key="itemPath"
+                     style="@Styles?.Item"
+                     class="bit-aifrm-itm @(isObjectList ? "bit-aifrm-iob" : null) @Classes?.Item"
+                     role="@(isObjectList ? "group" : null)"
+                     aria-label="@(isObjectList ? itemLabel : null)">
                     <div style="@Styles?.ItemBody" class="bit-aifrm-ibd @Classes?.ItemBody">
-                        @if (template.Type is BitAiFieldType.Object)
+                        @if (isObjectList)
                         {
                             @RenderFields(template.Fields ?? [], itemPath)
                         }
@@ -140,7 +152,8 @@
                     </div>
                     @if (field.ReadOnly is false)
                     {
-                        <BitButton IconName="Cancel"
+                        <BitButton @ref="_removeButtons[itemPath]"
+                                   IconName="Cancel"
                                    Variant="BitVariant.Text"
                                    Class="bit-btn-dft-ter bit-aifrm-rmv"
                                    Title="@removeLabel"
@@ -153,12 +166,13 @@
                 </div>
             }
 
-            @if (canAdd)
+            @if (field.ReadOnly is false)
             {
-                <BitButton IconName="Add"
+                <BitButton @ref="_addButtons[path]"
+                           IconName="Add"
                            Variant="BitVariant.Outline"
                            Class="bit-btn-dft-ter bit-aifrm-add"
-                           Disabled="Disabled"
+                           Disabled="addDisabled"
                            OnClick="() => AddItem(field, path)"
                            Classes="@Classes?.AddButton"
                            Styles="@Styles?.AddButton">

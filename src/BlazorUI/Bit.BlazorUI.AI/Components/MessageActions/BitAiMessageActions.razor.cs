@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -9,13 +10,21 @@ namespace Bit.BlazorUI;
 /// <remarks>
 /// The actions are revealed when the message they belong to is hovered or holds the focus, on a device that can hover;
 /// on a touch screen, under a preference for more contrast, and when <see cref="Pinned"/> is set, they are always shown.
-/// The metadata is always shown.
+/// The metadata is always shown: the model by the name the registered <see cref="IBitAiModelCatalog"/> gives it, and
+/// the time in the <see cref="BitAiUiOptions.TimeZone"/> in force, else in the browser's.
 /// </remarks>
 public partial class BitAiMessageActions : BitAiComponentBase
 {
     private BitAiIconClassesCache<BitButtonClassStyles> _regenerateButtonClasses;
     private BitAiIconClassesCache<BitButtonClassStyles> _positiveButtonClasses;
     private BitAiIconClassesCache<BitButtonClassStyles> _negativeButtonClasses;
+    private TimeZoneInfo? _browserTimeZone;
+    private bool _browserTimeZoneAsked;
+
+
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+    [Inject] private IServiceProvider _services { get; set; } = default!;
 
 
 
@@ -108,6 +117,24 @@ public partial class BitAiMessageActions : BitAiComponentBase
         base.OnParametersSet();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        // The time is first drawn in the zone of the process, and in the browser's once it has answered - which only a
+        // rendered component can ask, and only one that shows the time with no zone of the options to show it in needs to.
+        if (_browserTimeZoneAsked || Options.ShowTimestamps is false || Options.TimeZone is not null) return;
+
+        _browserTimeZoneAsked = true;
+
+        _browserTimeZone = await BitAiBrowserTimeZone.GetAsync(_js);
+
+        if (_browserTimeZone is not null && IsDisposed is false)
+        {
+            StateHasChanged();
+        }
+    }
+
 
 
     // None of the glyphs is one of the core font's, so they are drawn from this package's own subset (see
@@ -124,6 +151,27 @@ public partial class BitAiMessageActions : BitAiComponentBase
         _negativeButtonClasses.Get(Message.Feedback is BitAiFeedbackKind.Negative ? "bit-icon-ai bit-icon-ai--DislikeSolid" : "bit-icon-ai bit-icon-ai--Dislike",
                                    Classes?.FeedbackButton,
                                    BitAiIconClasses.With);
+
+    // A reply names its model by the id the provider knows it by; a reader knows it by the name the model picker shows,
+    // the one the registered catalog gives it. A model the catalog does not list, or an app with none, shows its id.
+    private string? _ModelName
+    {
+        get
+        {
+            if (Message.Metadata?.ModelId is not { Length: > 0 } id) return null;
+
+            var catalog = _services.GetService(typeof(IBitAiModelCatalog)) as IBitAiModelCatalog;
+
+            return catalog?.FindModel(id)?.Name is { Length: > 0 } name ? name : id;
+        }
+    }
+
+    // The time the message was written, in the zone of the options in force - else the browser's (BitAiBrowserTimeZone),
+    // and the local zone of the process until the browser has said which that is.
+    private string _Time => ((Options.TimeZone ?? _browserTimeZone) is { } zone ? TimeZoneInfo.ConvertTime(Message.CreatedAt, zone) : Message.CreatedAt.ToLocalTime()).ToString("t");
+
+    // The same moment for machines: a valid global date and time, in UTC, whatever zone it is shown in.
+    private string _Instant => Message.CreatedAt.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture);
 
     private async Task RegenerateAsync()
     {

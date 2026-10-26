@@ -18,7 +18,7 @@ public partial class BitAiAgentRunViewDemo
             Name = "ClockInterval",
             Type = "TimeSpan",
             DefaultValue = "TimeSpan.FromSeconds(1)",
-            Description = "How often the elapsed time is refreshed while the run is active. The clock starts with the run and stops the moment it ends (completed, failed or cancelled), so a finished run costs nothing to keep on screen. Each tick is one coalesced render of the view.",
+            Description = "How often the elapsed time is refreshed while the run is active. The clock starts with the run and stops the moment it ends (completed, failed or cancelled), so a finished run costs nothing to keep on screen; a new interval takes effect at once, also while the run goes on. Each tick is one coalesced render of the view.",
         },
         new()
         {
@@ -100,7 +100,7 @@ public partial class BitAiAgentRunViewDemo
                     Href = "/components/progress#progressBar-class-styles",
                 },
                 new() { Name = "Elapsed", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the elapsed time of the BitAiAgentRunView." },
-                new() { Name = "Steps", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the list of the steps of the BitAiAgentRunView." },
+                new() { Name = "Steps", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the list of the steps of the BitAiAgentRunView, which takes the focus once an answer has taken the question away." },
                 new() { Name = "StepItem", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for each item of the list of the steps of the BitAiAgentRunView." },
                 new()
                 {
@@ -218,9 +218,9 @@ public partial class BitAiAgentRunViewDemo
                     Href = "#agent-plan-step",
                 },
                 new() { Name = "GetOrAddStep", Type = "BitAiAgentStep", DefaultValue = "", Description = "GetOrAddStep(string stepId, string? title = null): finds a step, creating it at the end when the agent starts one that was never planned. A title given renames the step." },
-                new() { Name = "SetStatus", Type = "void", DefaultValue = "", Description = "SetStatus(BitAiAgentRunStatus status): moves the run to a new status. Completed, Failed and Cancelled end it: CompletedAt is set and any pending question is cleared." },
-                new() { Name = "RequestInput", Type = "void", DefaultValue = "", Description = "RequestInput(string prompt, IReadOnlyList<string>? suggestions = null): blocks the run on the user until they answer; the run moves to WaitingForInput." },
-                new() { Name = "ResolveInput", Type = "void", DefaultValue = "", Description = "ResolveInput(): clears the pending question and moves a waiting run back to Running." },
+                new() { Name = "SetStatus", Type = "void", DefaultValue = "", Description = "SetStatus(BitAiAgentRunStatus status): moves the run to a new status. Completed, Failed and Cancelled end it: CompletedAt is set and any pending question is cleared. Failed and Cancelled also complete every step the run did not finish (pending, running or blocked) as Skipped." },
+                new() { Name = "RequestInput", Type = "void", DefaultValue = "", Description = "RequestInput(string prompt, IReadOnlyList<string>? suggestions = null): blocks the run on the user until they answer; the run moves to WaitingForInput, and the steps running with it to Blocked." },
+                new() { Name = "ResolveInput", Type = "void", DefaultValue = "", Description = "ResolveInput(): clears the pending question, moves a waiting run back to Running, and starts the blocked steps again (keeping when they first started)." },
                 new() { Name = "AddUsage", Type = "void", DefaultValue = "", Description = "AddUsage(BitAiTokenUsage usage): adds the final token usage of one request to the run total." },
                 new() { Name = "SetError", Type = "void", DefaultValue = "", Description = "SetError(BitAiError error): records the failure that ended the run, and ends it as Failed - or Cancelled, for an error whose Kind is Cancelled." },
             ]
@@ -324,8 +324,7 @@ public partial class BitAiAgentRunViewDemo
         await Task.Delay(1500);
         test.Complete(BitAiAgentStepStatus.Failed, error: new BitAiError("3 of 812 tests failed."));
 
-        run.Steps[2].Complete(BitAiAgentStepStatus.Skipped);
-
+        // Ending the run as failed completes the steps it will no longer reach (Deploy) as Skipped.
         run.SetError(new BitAiError("The run stopped before deploying.")
         {
             Detail = "Checkout.AppliesDiscount\nCheckout.RoundsTax\nCheckout.HandlesRefund",
@@ -508,11 +507,20 @@ public partial class BitAiAgentRunViewDemo
         return run;
     }
 
-    private void RespondToStyledRun(string answer)
+    private async Task RespondToStyledRun(string answer)
     {
-        styledRun.ResolveInput();
-        styledRun.Steps[0].Complete(summary: answer);
-        styledRun.Steps[1].Start();
+        // The run answered, which Ask again may replace while it goes on.
+        var run = styledRun;
+
+        run.ResolveInput();
+        run.Steps[0].Complete(summary: answer);
+
+        var venue = run.Steps[1];
+        venue.Start();
+        await Task.Delay(1200);
+        venue.Complete(summary: "The lakeside hall, for 40");
+
+        run.SetStatus(BitAiAgentRunStatus.Completed);
     }
 
     private void ResetStyledRun() => styledRun = CreateStyledRun();
@@ -540,14 +548,50 @@ public partial class BitAiAgentRunViewDemo
         return run;
     }
 
-    private void RespondToRtlRun(string answer)
+    private async Task RespondToRtlRun(string answer)
     {
-        rtlRun.ResolveInput();
-        rtlRun.Steps[0].Complete(summary: answer);
-        rtlRun.Steps[1].Start();
+        var run = rtlRun;
+
+        run.ResolveInput();
+        run.Steps[0].Complete(summary: answer);
+
+        var venue = run.Steps[1];
+        venue.Start();
+        await Task.Delay(1200);
+        venue.Complete(summary: "سالن کنار دریاچه، برای ۴۰ نفر");
+
+        run.SetStatus(BitAiAgentRunStatus.Completed);
     }
 
     private void ResetRtlRun() => rtlRun = CreateRtlRun();
+
+    private readonly BitAiUiOptions persianOptions = BitAiUiOptions.Default with { Strings = new PersianAiStrings() };
+
+    // The words of the view, in Persian.
+    private sealed class PersianAiStrings : BitAiStrings
+    {
+        public override string Plan => "برنامه";
+        public override string AgentRunning => "در حال اجرا";
+        public override string WaitingForYou => "منتظر پاسخ شما";
+        public override string AgentCompleted => "انجام شد";
+        public override string AnswerPlaceholder => "پاسخ خود را بنویسید...";
+        public override string Answer => "پاسخ";
+        public override string Elapsed => "زمان سپری‌شده";
+        public override string ToolCalls => "فراخوانی ابزارها";
+        public override string StepsCompleted(int done, int total) => $"{done} از {total}";
+        public override string AgentStepStatus(BitAiAgentStepStatus status) => status switch
+        {
+            BitAiAgentStepStatus.Running => "در حال انجام",
+            BitAiAgentStepStatus.Blocked => "منتظر شما",
+            BitAiAgentStepStatus.Completed => "انجام شد",
+            BitAiAgentStepStatus.Failed => "ناموفق",
+            BitAiAgentStepStatus.Skipped => "کنار گذاشته شد",
+            _ => "شروع نشده",
+        };
+        public override string FormatDuration(TimeSpan duration) => duration.TotalSeconds < 1
+            ? $"{duration.TotalMilliseconds:F0} میلی‌ثانیه"
+            : $"{duration.TotalSeconds:0} ثانیه";
+    }
 
 
 

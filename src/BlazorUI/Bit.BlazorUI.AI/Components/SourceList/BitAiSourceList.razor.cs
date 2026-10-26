@@ -87,4 +87,9 @@ public partial class BitAiSourceList : BitAiComponentBase
 
         base.OnParametersSet();
     }
+
+
+
+    // The heading names the list of cards under it (aria-labelledby), so it is named after the list's own id.
+    private string HeaderId => $"{_Id}-hdr";
 }

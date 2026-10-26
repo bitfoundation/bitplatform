@@ -36,8 +36,17 @@
                            aria-controls="@(_showDetail ? _DetailId : null)"
                            Styles="@Styles?.DetailButton"
                            Classes="@Classes?.DetailButton">
-                    @Strings.ShowDetails
+                    @(_showDetail ? Strings.HideDetails : Strings.ShowDetails)
                 </BitButton>
+
+                @* The detail follows the button that discloses it, on a line of its own: next in the order the focus moves
+                   in, and outside the alert the message is, so showing it announces nothing. It scrolls once it is long,
+                   and a scrolling block holds nothing that can take the focus - so it takes the focus itself then
+                   (data-bit-ai-scroll, see BitAiScrollStops.ts), which is what keeps it readable with a keyboard. *@
+                @if (_showDetail)
+                {
+                    <div id="@_DetailId" data-bit-ai-scroll style="@Styles?.Detail" class="bit-aierv-dtl @Classes?.Detail">@detail</div>
+                }
             }
         </div>;
 }
@@ -63,16 +72,10 @@
             <div style="@Styles?.Text" class="bit-aierv-txt @Classes?.Text">@Error.Message</div>
         }
 
-        @if (Error.RetryAfter is { } wait)
+        @* The wait is shown until it is over (see SyncWait). *@
+        @if (Error.RetryAfter is { } wait && _waitOver is false)
         {
             <div style="@Styles?.RetryAfter" class="bit-aierv-rta @Classes?.RetryAfter">@Strings.RetryIn(wait)</div>
-        }
-
-        @if (_showDetail && hasDetail)
-        {
-            @* The detail scrolls once it is long, and a scrolling block holds nothing that can take the focus - so it
-               takes the focus itself, which is what keeps it readable with a keyboard. *@
-            <div id="@_DetailId" tabindex="0" style="@Styles?.Detail" class="bit-aierv-dtl @Classes?.Detail">@detail</div>
         }
     </BitMessage>
 </div>

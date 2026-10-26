@@ -216,19 +216,22 @@ public class BitAiFormE2ETests : E2ETestBase
         // An entry of a list of text has no label of its own: it is named after the list and its place in it.
         await Expect(Tags.GetByRole(AriaRole.Textbox, new() { Name = "Tags 2", Exact = true })).ToHaveValueAsync("two");
 
-        // Three is the most it takes, so the add button goes away.
+        // Three is the most it takes, so the add button turns off - it stays, so a focus it holds stays on it.
         await Expect(TagInputs).ToHaveCountAsync(3);
-        await Expect(add).ToHaveCountAsync(0);
+        await Expect(add).ToHaveAttributeAsync("aria-disabled", "true");
+        await add.ClickAsync(new() { Force = true });
+        await Expect(TagInputs).ToHaveCountAsync(3);
 
         var removeSecond = Tags.GetByRole(AriaRole.Button, new() { Name = "Remove Tags 2", Exact = true });
         await Expect(removeSecond).ToHaveAttributeAsync("title", "Remove Tags 2");
         await removeSecond.ClickAsync();
 
-        // The entries after it move down a slot.
+        // The entries after it move down a slot, and the focus stays on the remove button of that slot.
         await Expect(TagInputs).ToHaveCountAsync(2);
         await Expect(TagInputs.Nth(0)).ToHaveValueAsync("one");
         await Expect(TagInputs.Nth(1)).ToHaveValueAsync("three");
-        await Expect(Tags.Locator(".bit-aifrm-add")).ToHaveCountAsync(1);
+        await Expect(Tags.GetByRole(AriaRole.Button, new() { Name = "Remove Tags 2", Exact = true })).ToBeFocusedAsync();
+        await Expect(Tags.Locator(".bit-aifrm-add")).Not.ToHaveAttributeAsync("aria-disabled", "true");
 
         // An entry left empty is required once it is there.
         await Tags.Locator(".bit-aifrm-add").ClickAsync();
@@ -275,6 +278,10 @@ public class BitAiFormE2ETests : E2ETestBase
 
         await Expect(Cancel("frm-nocancel")).ToHaveCountAsync(0);
         await Expect(Submit("frm-nocancel")).ToHaveTextAsync("Rename");
+
+        // A form nothing listens to the Cancel of offers none.
+        await Expect(Cancel("frm-prefill")).ToHaveCountAsync(0);
+        await Expect(Submit("frm-prefill")).ToHaveCountAsync(1);
     }
 
     [TestMethod]

@@ -27,6 +27,7 @@ public partial class AiAttachmentsScenarioPage
     {
         BitAiAttachmentRejectionReason.TooLarge => $"{rejection.Size / 1024.0 / 1024.0:0.0} MB is over the limit",
         BitAiAttachmentRejectionReason.TypeNotAllowed => "that type is not accepted",
+        BitAiAttachmentRejectionReason.TooMany => "more files than can be attached at once",
         _ => "it could not be read",
     };
 

@@ -49,6 +49,31 @@ public class BitAiDataTableTests : BitAiTestBase
     }
 
     [TestMethod]
+    public void BitAiDataTableShouldBeANamedGroupTheKeyboardCanScroll()
+    {
+        var table = RenderComponent<BitAiDataTable>(p => p.Add(c => c.Rows, Json("""[{"a":1}]""")));
+
+        // WebKit does not make a scroller focusable on its own, so the box the table scrolls in sideways is put in the
+        // tab order itself while the table overflows it (the page script BitAiScrollStops.ts reads the mark), and named
+        // for what is reached there - as a group, never a region: the tables of a chat would otherwise be a run of
+        // landmarks of one name.
+        var root = table.Find(".bit-aidtb");
+        Assert.AreEqual("group", root.GetAttribute("role"));
+        Assert.IsTrue(root.HasAttribute("data-bit-ai-scroll"));
+        Assert.IsNull(root.GetAttribute("tabindex"));
+        Assert.AreEqual("Table", root.GetAttribute("aria-label"));
+
+        table.Render(p => p.Add(c => c.AriaLabel, "Flights"));
+        Assert.AreEqual("Flights", table.Find(".bit-aidtb").GetAttribute("aria-label"));
+
+        var splatted = RenderComponent<BitAiDataTable>(p => p
+            .Add(c => c.Rows, Json("""[{"a":1}]"""))
+            .Add(c => c.HtmlAttributes, new Dictionary<string, object> { ["aria-label"] = "Results", ["tabindex"] = "-1" }));
+        Assert.AreEqual("Results", splatted.Find(".bit-aidtb").GetAttribute("aria-label"));
+        Assert.AreEqual("-1", splatted.Find(".bit-aidtb").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
     public void BitAiDataTableShouldFollowItsRowsAsTheyChange()
     {
         var table = RenderComponent<BitAiDataTable>(p => p.Add(c => c.Rows, Json("""[{"a":1}]""")));

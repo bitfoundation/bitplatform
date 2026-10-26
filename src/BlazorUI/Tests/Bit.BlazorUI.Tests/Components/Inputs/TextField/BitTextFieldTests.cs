@@ -3243,6 +3243,65 @@ public class BitTextFieldTests : BunitTestContext
         Assert.IsNull(component.Instance.Value);
     }
 
+    [TestMethod,
+        DataRow(false),
+        DataRow(true),
+    ]
+    public void BitTextFieldRendersTheTypedTextUntilTheValueHoldsIt(bool multiline)
+    {
+        // Whatever renders the field in between - the page drawing itself again, a clock ticking - writes the value
+        // attribute into the element, so it has to carry the text typed into it rather than the older value, or the
+        // keys typed since would be thrown away.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.Value, "a");
+            parameters.Add(p => p.ValueChanged, (string? _) => { });
+        });
+
+        component.Find(".bit-tfl-inp").Input("abc");
+        component.Render();
+
+        Assert.AreEqual("a", component.Instance.Value);
+        Assert.AreEqual("abc", component.Find(".bit-tfl-inp").GetAttribute("value"));
+
+        component.Find(".bit-tfl-inp").Change("abc");
+
+        Assert.AreEqual("abc", component.Instance.Value);
+        Assert.AreEqual("abc", component.Find(".bit-tfl-inp").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldShowsAValueThePageSetsOverTheTypedText()
+    {
+        // The page emptying the field after a send, say: what it set is what the field shows, whatever was typed.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Value, "a");
+            parameters.Add(p => p.ValueChanged, (string? _) => { });
+        });
+
+        component.Find(".bit-tfl-inp").Input("abc");
+        component.Render(parameters => parameters.Add(p => p.Value, "zzz"));
+
+        Assert.AreEqual("zzz", component.Find(".bit-tfl-inp").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldRendersTheTypedTextWhileADebounceHoldsItBack()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.DebounceTime, 10_000);
+        });
+
+        component.Find(".bit-tfl-inp").Input("ab");
+
+        Assert.IsNull(component.Instance.Value);
+        Assert.AreEqual("ab", component.Find(".bit-tfl-inp").GetAttribute("value"));
+    }
+
     [TestMethod]
     public void BitTextFieldOnInputIsNotRaisedWhenTheFieldCannotBeEdited()
     {

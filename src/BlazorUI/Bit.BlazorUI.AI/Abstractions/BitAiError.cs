@@ -45,6 +45,12 @@ public sealed record BitAiError
     /// </summary>
     /// <param name="exception">The exception to translate.</param>
     /// <returns>The translated error.</returns>
+    /// <remarks>
+    /// Any other exception becomes a retryable <see cref="BitAiErrorKind.Unknown"/> error carrying its message, which is
+    /// shown to the user - so a transport whose exceptions say what users must not read translates them itself. Its stack
+    /// trace is never put in <see cref="Detail"/>: the detail is shown too, behind a disclosure, and a trace hands the user
+    /// the internals of the server and its paths. The exception stays on <see cref="Exception"/>, for the app's logs.
+    /// </remarks>
     public static BitAiError FromException(Exception exception)
     {
         ArgumentNullException.ThrowIfNull(exception);
@@ -67,7 +73,6 @@ public sealed record BitAiError
             {
                 Kind = BitAiErrorKind.Unknown,
                 IsRetryable = true,
-                Detail = exception.ToString(),
                 Exception = exception,
             },
         };

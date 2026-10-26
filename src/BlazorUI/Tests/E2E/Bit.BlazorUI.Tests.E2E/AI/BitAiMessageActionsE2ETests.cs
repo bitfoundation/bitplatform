@@ -187,10 +187,10 @@ public class BitAiMessageActionsE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         var row = Row("mac-meta");
-        await Expect(row.Locator(".bit-aimac-mdl")).ToHaveTextAsync("e2e-large");
+        await Expect(row.Locator(".bit-aimac-mdl")).ToHaveTextAsync("E2E Large");
         await Expect(row.Locator(".bit-aituv")).ToBeVisibleAsync();
         var time = row.Locator("time.bit-aimac-tim");
-        await Expect(time).ToHaveAttributeAsync("datetime", new Regex(@"^2026-03-04T09:30:00\.0000000\+00:00$"));
+        await Expect(time).ToHaveAttributeAsync("datetime", new Regex(@"^2026-03-04T09:30:00Z$"));
         await Expect(time).ToHaveCSSAsync("font-variant-numeric", "tabular-nums");
         await Expect(time).Not.ToHaveTextAsync("");
 
@@ -206,7 +206,7 @@ public class BitAiMessageActionsE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         await Expect(Row("mac-noactions").Locator(".bit-aimac-act")).ToHaveCountAsync(0);
-        await Expect(Row("mac-noactions").Locator(".bit-aimac-mdl")).ToHaveTextAsync("e2e-large");
+        await Expect(Row("mac-noactions").Locator(".bit-aimac-mdl")).ToHaveTextAsync("E2E Large");
 
         // With the default options none of the metadata is shown.
         await Expect(Row("mac-basic").Locator(".bit-aimac-mdl")).ToHaveCountAsync(0);

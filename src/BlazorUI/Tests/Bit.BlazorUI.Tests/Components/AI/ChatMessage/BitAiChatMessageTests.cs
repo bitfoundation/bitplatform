@@ -4,7 +4,10 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Bit.BlazorUI.Tests.Components.AI.Core;
 using Bunit;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.AI.ChatMessage;
@@ -185,6 +188,29 @@ public class BitAiChatMessageTests : BitAiTestBase
 
             Assert.IsEmpty(component.FindComponents<BitAiThinkingIndicator>());
         }
+    }
+
+    // Still being generated - so no actions of a finished reply - but waiting on its reader rather than on the model: a
+    // busy message would keep a screen reader from announcing the question it asks.
+    [TestMethod]
+    public void AReplyWaitingForADecisionOnItsToolIsNotBusy()
+    {
+        var message = Assistant(new BitAiTextPart("Let me clean up."));
+        var call = message.AddPart(new BitAiToolCallPart("c1", "delete_all"));
+        message.SetStatus(BitAiMessageStatus.Streaming);
+
+        var component = RenderComponent<BitAiChatMessage>(p => p.Add(c => c.Message, message));
+
+        Assert.AreEqual("true", component.Find("article").GetAttribute("aria-busy"));
+
+        call.SetStatus(BitAiToolCallStatus.AwaitingApproval);
+
+        component.WaitForAssertion(() => Assert.AreEqual("false", component.Find("article").GetAttribute("aria-busy")), TimeSpan.FromSeconds(2));
+        Assert.IsEmpty(component.FindComponents<BitAiMessageActions>());
+
+        call.SetStatus(BitAiToolCallStatus.Running);
+
+        component.WaitForAssertion(() => Assert.AreEqual("true", component.Find("article").GetAttribute("aria-busy")), TimeSpan.FromSeconds(2));
     }
 
     [TestMethod]
@@ -392,6 +418,155 @@ public class BitAiChatMessageTests : BitAiTestBase
         Assert.IsEmpty(component.FindAll(".bit-aicms-edt"));
         Assert.AreEqual("hello", component.Find(".bit-aicms-bbl").TextContent);
         Assert.AreEqual("hello", message.GetText());
+    }
+
+    // The field takes the focus as the editor opens, and the Edit button the edit was started from takes it back as the
+    // editor goes, rather than leaving it to drop to the page.
+    [TestMethod]
+    public void TheEditorTakesTheFocusAndHandsItBackToEdit()
+    {
+        var session = new BitAiChatSession(new SilentTransport());
+        var message = session.Conversation.AddMessage(BitAiRole.User, "hello");
+
+        var component = RenderComponent<BitAiChatMessage>(p => p
+            .Add(c => c.Message, message)
+            .Add(c => c.Session, session));
+
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+
+        component.Find("button[title='Edit']").Click();
+
+        component.WaitForAssertion(() => Assert.HasCount(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]));
+
+        component.FindAll(".bit-aicms-eda button")[0].Click();
+
+        component.WaitForAssertion(() => Assert.HasCount(2, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]));
+
+        var edit = component.FindComponents<BitButton>().Single(b => b.Instance.IconName == "Edit");
+        var focused = (ElementReference)Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"][1].Arguments[0]!;
+        Assert.AreEqual(edit.Instance.RootElement.Id, focused.Id);
+    }
+
+    // A plain Escape in the editor cancels the edit, and is claimed while it does, so a dialog around the message stays
+    // open; a modified one, or one in a disabled message, is left to what is around it.
+    [TestMethod]
+    public void EscapeCancelsTheEditAndIsClaimedWhileItDoes()
+    {
+        var session = new BitAiChatSession(new SilentTransport());
+        var message = session.Conversation.AddMessage(BitAiRole.User, "hello");
+
+        var component = RenderComponent<BitAiChatMessage>(p => p
+            .Add(c => c.Message, message)
+            .Add(c => c.Session, session));
+
+        component.Find("button[title='Edit']").Click();
+        component.Find(".bit-aicms-edt textarea").Input("changed");
+
+        Assert.AreEqual("claim", component.Find(".bit-aicms-edt").GetAttribute("data-bit-esc"));
+
+        component.Find(".bit-aicms-edt").KeyDown(new KeyboardEventArgs { Key = "Escape", ShiftKey = true });
+
+        Assert.HasCount(1, component.FindAll(".bit-aicms-edt"));
+
+        component.Render(p => p.Add(c => c.Disabled, true));
+
+        Assert.IsFalse(component.Find(".bit-aicms-edt").HasAttribute("data-bit-esc"));
+
+        component.Find(".bit-aicms-edt").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.HasCount(1, component.FindAll(".bit-aicms-edt"));
+
+        component.Render(p => p.Add(c => c.Disabled, false));
+        component.Find(".bit-aicms-edt").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsEmpty(component.FindAll(".bit-aicms-edt"));
+        Assert.AreEqual("hello", component.Find(".bit-aicms-bbl").TextContent);
+        Assert.AreEqual("hello", message.GetText());
+    }
+
+    // An edit starts a turn of its own, which the session takes only while it is free: Edit is unavailable while a reply
+    // is being generated, and an editor already open keeps its draft and saves nothing until the turn is over.
+    [TestMethod]
+    public async Task AQuestionIsEditedOnlyWhileTheSessionIsFree()
+    {
+        await using var session = new BitAiChatSession(new BitAiHangingTransport(), options: new BitAiChatSessionOptions { Pacing = null });
+        var question = session.Conversation.AddMessage(BitAiRole.User, "hello");
+        var other = session.Conversation.AddMessage(BitAiRole.User, "and another thing");
+
+        var component = RenderComponent<BitAiChatMessage>(p => p
+            .Add(c => c.Message, question)
+            .Add(c => c.Session, session));
+        var idle = RenderComponent<BitAiChatMessage>(p => p
+            .Add(c => c.Message, other)
+            .Add(c => c.Session, session));
+
+        component.Find("button[title='Edit']").Click();
+        component.Find(".bit-aicms-edt textarea").Input("hello again");
+
+        var turn = session.SubmitAsync("one more question");
+
+        component.WaitForAssertion(() => Assert.AreEqual("true", component.FindAll(".bit-aicms-eda button")[1].GetAttribute("aria-disabled")), TimeSpan.FromSeconds(2));
+        idle.WaitForAssertion(() => Assert.AreEqual("true", idle.Find("button[title='Edit']").GetAttribute("aria-disabled")), TimeSpan.FromSeconds(2));
+
+        component.FindAll(".bit-aicms-eda button")[1].Click();
+        idle.Find("button[title='Edit']").Click();
+
+        var editor = component.Find(".bit-aicms-edt textarea");
+        Assert.AreEqual("hello again", editor.GetAttribute("value") ?? editor.TextContent);
+        Assert.AreEqual("hello", question.GetText());
+        Assert.IsEmpty(idle.FindAll(".bit-aicms-edt"));
+
+        session.Stop();
+        await turn;
+
+        component.WaitForAssertion(() => Assert.IsNull(component.FindAll(".bit-aicms-eda button")[1].GetAttribute("aria-disabled")), TimeSpan.FromSeconds(2));
+        idle.WaitForAssertion(() => Assert.IsNull(idle.Find("button[title='Edit']").GetAttribute("aria-disabled")), TimeSpan.FromSeconds(2));
+    }
+
+    // A draft of nothing but spaces would send an empty question and get a reply to nothing.
+    [TestMethod]
+    public void ABlankEditIsNotSent()
+    {
+        var session = new BitAiChatSession(new SilentTransport(), options: new BitAiChatSessionOptions { Pacing = null });
+        var message = session.Conversation.AddMessage(BitAiRole.User, "hello");
+
+        var component = RenderComponent<BitAiChatMessage>(p => p
+            .Add(c => c.Message, message)
+            .Add(c => c.Session, session));
+
+        component.Find("button[title='Edit']").Click();
+        component.Find(".bit-aicms-edt textarea").Input("   ");
+
+        var save = component.FindAll(".bit-aicms-eda button")[1];
+        Assert.AreEqual("true", save.GetAttribute("aria-disabled"));
+
+        save.Click();
+
+        Assert.HasCount(1, component.FindAll(".bit-aicms-edt"));
+        Assert.AreEqual("hello", message.GetText());
+        Assert.ContainsSingle(session.Conversation.Messages);
+    }
+
+    // Attachments sent on their own have no words to put in a bubble, or to copy; they can still be edited, to add some.
+    [TestMethod]
+    public void AttachmentsSentOnTheirOwnHaveNoBubbleAndNothingToCopy()
+    {
+        var session = new BitAiChatSession(new SilentTransport());
+        var message = new BitAiMessage(BitAiRole.User);
+        message.AddAttachment(new BitAiAttachment("a1", "report.pdf"));
+
+        var component = RenderComponent<BitAiChatMessage>(p => p
+            .Add(c => c.Message, message)
+            .Add(c => c.Session, session));
+
+        Assert.HasCount(1, component.FindComponents<BitAiAttachmentChip>());
+        Assert.IsEmpty(component.FindAll(".bit-aicms-bbl"));
+        Assert.IsEmpty(component.FindComponents<BitAiCopyButton>());
+
+        // With nothing typed, the attachments may still go on alone.
+        component.Find("button[title='Edit']").Click();
+
+        Assert.IsNull(component.FindAll(".bit-aicms-eda button")[1].GetAttribute("aria-disabled"));
     }
 
     [TestMethod]

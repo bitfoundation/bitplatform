@@ -38,6 +38,10 @@
             }
         </div>
 
+        @* What the marker draws, said in words to assistive technologies - and out of sight, since the marker already
+           shows it - right after the title it belongs to. *@
+        <span class="bit-aiasv-sts">@Strings.AgentStepStatus(status)</span>
+
         @if (Step.Detail is { Length: > 0 } detail)
         {
             <div style="@Styles?.Detail" class="bit-aiasv-dtl @Classes?.Detail">@detail</div>
@@ -77,6 +81,31 @@
         @if (Step.Error is { } error)
         {
             <div style="@Styles?.Error" class="bit-aiasv-err @Classes?.Error">@error.Message</div>
+
+            @* The technical detail of the failure is kept behind a disclosure, as a BitAiErrorView keeps it: there for whoever
+               wants it, out of the way of the timeline. It follows its button, next in the order the focus moves in, and
+               takes the focus itself once it is long enough to scroll (data-bit-ai-scroll, see BitAiScrollStops.ts), so it
+               can be scrolled with a keyboard. *@
+            @if (error.Detail is { Length: > 0 } errorDetail)
+            {
+                <BitButton ButtonType="BitButtonType.Button"
+                           Variant="BitVariant.Text"
+                           Size="BitSize.Small"
+                           Class="bit-btn-dft-ter bit-aiasv-edb"
+                           Disabled="Disabled"
+                           OnClick="ToggleErrorDetail"
+                           aria-expanded="@(_showErrorDetail ? "true" : "false")"
+                           aria-controls="@(_showErrorDetail ? _ErrorDetailId : null)"
+                           Styles="@Styles?.ErrorDetailButton"
+                           Classes="@Classes?.ErrorDetailButton">
+                    @(_showErrorDetail ? Strings.HideDetails : Strings.ShowDetails)
+                </BitButton>
+
+                @if (_showErrorDetail)
+                {
+                    <div id="@_ErrorDetailId" data-bit-ai-scroll style="@Styles?.ErrorDetail" class="bit-aiasv-edt @Classes?.ErrorDetail">@errorDetail</div>
+                }
+            }
         }
     </div>
 </div>

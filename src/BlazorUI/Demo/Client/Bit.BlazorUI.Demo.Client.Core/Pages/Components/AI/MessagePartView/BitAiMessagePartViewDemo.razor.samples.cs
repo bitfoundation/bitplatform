@@ -356,7 +356,7 @@ private static BitAiMessage CreateBrokenMessage()
     }
 </style>
 
-<BitAiMessagePartView Part="styleMessage.Parts[0]" Message="styleMessage" Style="padding: 0.75rem 1rem; border-radius: 0.5rem; background-color: #f5f3ff" />
+<BitAiMessagePartView Part="styleMessage.Parts[0]" Message="styleMessage" Style="padding: 0.75rem 1rem; border-radius: 0.5rem; color: #1e1b4b; background-color: #f5f3ff" />
 
 <BitAiMessagePartView Part="styleMessage.Parts[0]" Message="styleMessage" Class="custom-part" />
 

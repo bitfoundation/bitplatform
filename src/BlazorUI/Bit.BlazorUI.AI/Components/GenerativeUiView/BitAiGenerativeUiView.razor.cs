@@ -139,11 +139,15 @@ public partial class BitAiGenerativeUiView : BitAiComponentBase
     // The registered type is the only component the payload can open, and only with the parameters the binder made of
     // it. Every parameter is written at the one sequence number: they are the attributes of the one component frame,
     // which the diff matches by name, the way the attributes Razor writes in a loop are.
+    // The frame is keyed by the part it was bound from, so another part gets an instance of its own: handed to the one
+    // the previous part bound, a part still streaming would pass only the parameters it has so far, and the instance
+    // would go on showing the previous part's values of all the others.
     private void RenderComponent(RenderTreeBuilder builder)
     {
         if (_component is null || _binding is null) return;
 
         builder.OpenComponent(0, _component.ComponentType);
+        builder.SetKey(_boundPart);
 
         foreach (var (name, value) in _binding.Parameters)
         {

@@ -109,6 +109,38 @@ public class BitAiImagePartViewTests : BitAiTestBase
         Assert.IsEmpty(component.FindAll("button.bit-acb"));
     }
 
+    // The button pressed is gone once the image is shown, and the focus would drop to the body of the document with it.
+    [TestMethod]
+    public void TheImageTheUserLoadedTakesTheFocusOffThePlaceholder()
+    {
+        Services.AddSingleton(BitAiUiOptions.Default with { Images = BitAiImagePolicy.ClickToLoad });
+        var component = RenderComponent<BitAiImagePartView>(p => p.Add(c => c.Part, new BitAiImagePart("https://img.x.dev/cat.png") { Alt = "A cat" }));
+
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+
+        component.Find("button.bit-acb").Click();
+
+        Assert.AreEqual("-1", component.Find("img.bit-aiipv-img").GetAttribute("tabindex"));
+
+        var focus = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
+        Assert.HasCount(1, focus);
+        Assert.AreNotEqual(component.Instance.RootElement.Id, ((Microsoft.AspNetCore.Components.ElementReference)focus[0].Arguments[0]!).Id);
+
+        // Rendered again, the image keeps the focus where it is.
+        component.Render(p => p.Add(c => c.Class, "again"));
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+    }
+
+    [TestMethod]
+    public void AnImageThePolicyShowsAtOnceTakesNoFocus()
+    {
+        var component = RenderImage(new BitAiImagePart("https://img.x.dev/cat.png") { Alt = "A cat" }, BitAiImagePolicy.Allow);
+
+        Assert.IsFalse(component.Find("img.bit-aiipv-img").HasAttribute("tabindex"));
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+    }
+
     [TestMethod]
     public void APlaceholderWithoutAlternativeTextIsNamedAfterTheHostTheImageComesFrom()
     {

@@ -9,12 +9,21 @@ namespace Bit.BlazorUI;
 /// <remarks>
 /// The error is drawn as an Error <see cref="BitMessage"/>, which is what announces it to a screen reader as an
 /// alert, and restyled through the <c>--bit-Message-*</c> variables (or <see cref="BitAiErrorViewClassStyles.Message"/>).
-/// The retry is offered only when the error says retrying could help and a handler is there to do it.
+/// The retry is offered only when the error says retrying could help and a handler is there to do it, and the wait the
+/// error asks for (<see cref="BitAiError.RetryAfter"/>) is shown until it is over. The detail is disclosed under the
+/// actions, after the button that shows it.
 /// </remarks>
 public partial class BitAiErrorView : BitAiComponentBase
 {
     private bool _showDetail;
     private BitAiIconClassesCache<BitButtonClassStyles> _retryButtonClasses;
+
+    // The wait before a retry (see SyncWait): the error it was timed for, the one-shot timer ending it, and whether it is
+    // over - set on the timer's thread, read as the view renders.
+    private readonly object _gate = new();
+    private BitAiError? _waitError;
+    private System.Threading.Timer? _waitTimer;
+    private volatile bool _waitOver;
 
 
 
@@ -82,12 +91,72 @@ public partial class BitAiErrorView : BitAiComponentBase
     {
         CascadingParameters?.UpdateParameters(this);
 
+        SyncWait();
+
         base.OnParametersSet();
+    }
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        lock (_gate)
+        {
+            _waitTimer?.Dispose();
+            _waitTimer = null;
+        }
+
+        await base.DisposeAsync(disposing);
     }
 
 
 
     private string _DetailId => $"{_Id}-dtl";
+
+    /// <summary>
+    /// Times the wait the error asks for before a retry, from when the view is handed the error, and takes the line saying
+    /// it away once it is over: "Try again in 30s" left on screen a minute later says nothing true. It is not counted
+    /// down, since the line is part of the alert the message is, which would announce every second of it.
+    /// </summary>
+    private void SyncWait()
+    {
+        // An error equal to the one being timed is the same error handed over again (a record built anew on a render of
+        // the parent), so its wait goes on rather than starting over.
+        if (Equals(_waitError, Error)) return;
+
+        lock (_gate)
+        {
+            _waitTimer?.Dispose();
+            _waitTimer = null;
+
+            var error = Error;
+            var wait = error?.RetryAfter ?? TimeSpan.Zero;
+            _waitError = error;
+            _waitOver = wait <= TimeSpan.Zero;
+
+            // A wait longer than a timer can be set for (about 49 days) is left on screen as it is.
+            if (_waitOver is false && wait.TotalMilliseconds < uint.MaxValue - 1 && IsDisposing is false)
+            {
+                _waitTimer = new System.Threading.Timer(_ => EndWait(error!), null, wait, Timeout.InfiniteTimeSpan);
+            }
+        }
+    }
+
+    // Raised on the timer's thread, so it only asks for a render. A wait timed for an error the view has since been
+    // handed another one in place of ends nothing.
+    private void EndWait(BitAiError error)
+    {
+        lock (_gate)
+        {
+            if (ReferenceEquals(error, _waitError) is false) return;
+
+            _waitOver = true;
+            _waitTimer?.Dispose();
+            _waitTimer = null;
+        }
+
+        RequestRender();
+    }
 
     private async Task HandleOnRetry()
     {

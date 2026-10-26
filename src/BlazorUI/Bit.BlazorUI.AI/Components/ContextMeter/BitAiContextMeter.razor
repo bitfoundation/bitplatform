@@ -4,7 +4,7 @@
 @if (_window is { } window && window > 0)
 {
     var usage = Strings.ContextUsage(_used, window);
-    var fraction = _Fraction;
+    var percent = _Percent;
 
     @* The bar is a meter rather than a progress bar: how full the context is is a reading that moves either way, never
        a task that finishes. It is named after the readout beside it and told the count of tokens as its value text, so
@@ -19,7 +19,7 @@
         <span style="@Styles?.Label" class="bit-aictm-ttl @Classes?.Label">@Strings.Context</span>
 
         <BitProgress Meter="true"
-                     Percent="@Math.Floor(Math.Min(1, fraction) * 100)"
+                     Percent="@Math.Min(100, percent)"
                      AriaLabel="@Strings.Context"
                      AriaValueText="@usage"
                      Color="@_MeterColor"
@@ -28,7 +28,9 @@
                      Styles="@Styles?.Meter"
                      Classes="@Classes?.Meter" />
 
-        <span style="@Styles?.Percent" class="bit-aictm-pct @Classes?.Percent">@($"{fraction * 100:0}%")</span>
+        @* The same whole number as the value of the meter rather than a rounded one, so the readout never reaches a mark
+           the reading has not: 6,392 of 8,000 tokens is 79%, short of the 80% warning, not an 80% shown without one. *@
+        <span style="@Styles?.Percent" class="bit-aictm-pct @Classes?.Percent">@($"{percent}%")</span>
 
         @* A live region only announces what changes inside one the screen reader is already watching, so it is here from
            the first render and empty until the window is filling up. *@

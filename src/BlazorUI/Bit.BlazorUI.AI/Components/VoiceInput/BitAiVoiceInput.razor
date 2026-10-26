@@ -8,14 +8,15 @@
           style="@StyleBuilder.Value"
           class="@ClassBuilder.Value"
           dir="@Dir?.ToString().ToLower()">
-        @* The name says what a press does next and the pressed state says whether the microphone is on - both of them,
-           the way the composer has always announced it. *@
+        @* The name says what a press does next - Dictate, or Stop dictation - and that is the one thing announced: a
+           pressed state on top of a name that changes with it would say the same twice and read ambiguously ("Stop
+           dictation, pressed"), so the toggle button leaves aria-pressed out, as it does by default for a name that
+           changes. The live region beside it says that the microphone is on. *@
         <BitToggleButton IconName="Microphone"
                          IsChecked="@_listening"
                          OnClick="ToggleAsync"
                          Disabled="Disabled"
                          Variant="BitVariant.Text"
-                         AriaMode="BitToggleButtonAriaMode.Pressed"
                          OnAriaLabel="@Strings.StopDictation"
                          OffAriaLabel="@Strings.StartDictation"
                          OnTitle="@Strings.StopDictation"
@@ -24,7 +25,7 @@
                          Styles="@Styles?.Button"
                          Classes="_ButtonClasses" />
 
-        @* The pressed state alone does not say that the microphone is live; this does, politely. *@
+        @* The name of the button does not say that the microphone is live; this does, politely. *@
         <span role="status"
               aria-live="polite"
               style="@Styles?.LiveRegion"

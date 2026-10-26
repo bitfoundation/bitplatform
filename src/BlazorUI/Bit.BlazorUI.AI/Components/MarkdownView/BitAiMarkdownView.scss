@@ -27,6 +27,9 @@
 //   --bit-AiMarkdownView-image-radius              corner radius of the images                   (default: $shp-radius-surface)
 //   --bit-AiMarkdownView-muted-color               the footnotes, the text of a blocked image    (default: $clr-fg-sec)
 //   --bit-AiMarkdownView-caret-color               the caret after streaming text                (default: $clr-pri)
+//   --bit-AiMarkdownView-scroll-margin             room kept above a heading, a footnote or a footnote reference an
+//                                                  in-page link scrolls to - the height of a sticky app bar
+//                                                                                                (default: spacing(3))
 //
 // The washes behind the code spans and the table header are translucent mixes of the text color rather than a
 // background token, so they read on whatever the message sits on - the page, a bubble, a card, a panel.
@@ -47,14 +50,21 @@
     margin: 0;
 }
 
-// A heading is set off from the block above it by more room than two paragraphs are (see the block rhythm below),
-// and an in-page link that scrolls to it stops a little above it.
+// A heading is set off from the block above it by more room than two paragraphs are (see the block rhythm below).
 .bit-aimdv-hdg {
     margin: 0;
     line-height: 1.35;
-    scroll-margin-block-start: spacing(3);
     color: var(--bit-AiMarkdownView-heading-color, inherit);
     font-weight: var(--bit-AiMarkdownView-heading-font-weight, #{$tg-fw-semibold});
+}
+
+// What an in-page link scrolls to - a heading, a footnote from its reference, a reference back from its footnote - stops
+// a little below the top of the viewport, or as far below it as a page with a sticky app bar asks, so it is not left
+// under the bar.
+.bit-aimdv-hdg,
+.bit-aimdv-fnr,
+.bit-aimdv-fni {
+    scroll-margin-block-start: var(--bit-AiMarkdownView-scroll-margin, #{spacing(3)});
 }
 
 // The headings are rendered one level below the Markdown's own (a "#" is an h2), so the steps of the ramp follow
@@ -96,17 +106,31 @@
     align-items: flex-start;
 }
 
+// The box is sized and set in the type of the item, not in the browser's own smaller type of a form control, so the room
+// it is dropped by - half of what the first line of the item leaves over it, which centers it on that line rather than
+// setting it at its top - is measured in the item's terms. An engine without the lh unit keeps the room of the default
+// line height.
 .bit-aimdv-chk {
     flex: none;
     margin: 0;
-    // Dropped onto the middle of the first line of the item rather than its top.
+    width: 1em;
+    height: 1em;
+    font-size: inherit;
+    line-height: inherit;
     margin-block-start: 0.3em;
+    margin-block-start: calc((1lh - 1em) / 2);
     accent-color: $clr-pri;
 }
 
 .bit-aimdv-tkb {
     min-width: 0;
     flex: 1 1 auto;
+}
+
+// The text of a task sits beside its box, on the same first line, so it takes none of the room the block rhythm (below)
+// gives the second child of an item.
+.bit-aimdv-tki > .bit-aimdv-tkb {
+    margin-block-start: 0;
 }
 
 .bit-aimdv-quo {
@@ -174,16 +198,24 @@
     color: var(--bit-AiMarkdownView-muted-color, #{$clr-fg-sec});
 }
 
-// The table scrolls inside its container, which also draws its frame.
+// The table scrolls inside its container, which also draws its frame. The container takes the focus so a keyboard can
+// scroll it, and shows it with a ring drawn inside the frame, which nothing around the view can clip.
 .bit-aimdv-tbw {
     overflow-x: auto;
     border-radius: var(--bit-AiMarkdownView-table-radius, #{$shp-radius-surface});
     border: $shp-border-width $shp-border-style var(--bit-AiMarkdownView-table-border-color, #{$clr-brd-sec});
+
+    &:focus-visible {
+        @include focus-ring-inset($clr-pri-focus);
+    }
 }
 
+// The prose breaks a word anywhere rather than overflow the message (see the root), but a cell that did so would only
+// ever get narrower: a table too wide for the view breaks its words where they end and scrolls instead.
 .bit-aimdv-tbl {
     width: 100%;
     border-collapse: collapse;
+    overflow-wrap: break-word;
     font-size: var(--bit-AiMarkdownView-table-font-size, #{$tg-fs-sm});
 }
 

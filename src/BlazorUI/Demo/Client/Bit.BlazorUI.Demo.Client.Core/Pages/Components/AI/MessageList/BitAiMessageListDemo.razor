@@ -7,7 +7,7 @@
 
 <DemoPage Name="AiMessageList"
           SecondaryNames="@(["Transcript"])"
-          Description="BitAiMessageList is the scrolling transcript of a BitAiConversation: every message of it, laid out by role through BitAiChatMessage, with auto-scroll that follows new content only while the reader is at the newest message - scrolling up to re-read is never yanked away - and virtualization that turns on past a threshold for long threads. It is the transcript BitAiChat renders, public for a chat assembled by hand."
+          Description="BitAiMessageList is the scrolling transcript of a BitAiConversation: every message of it, laid out by role through BitAiChatMessage, with auto-scroll that follows new content only while the reader is at the newest message - scrolling up to re-read is never yanked away - and, for long threads, only the newest messages drawn past a threshold, the older ones a page at a time as the reader scrolls up to them. It is the transcript BitAiChat renders, public for a chat assembled by hand."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           PublicMembers="componentPublicMembers"
@@ -38,9 +38,10 @@
         <BitText>
             The list is a polite live region (<b>role="log"</b>, <b>aria-relevant="additions"</b>), named by its
             <b>AriaLabel</b> or the Transcript string ("Conversation"), so a new message is announced as it arrives without
-            interrupting the one being read. Virtualization starts at <b>BitAiUiOptions.VirtualizeThreshold</b> (60) messages:
-            below it, the varying heights of messages make a virtualized scrollbar jumpier than rendering everything. A
-            prerendered list draws its newest messages rather than an empty box. See the
+            interrupting the one being read. Past <b>BitAiUiOptions.VirtualizeThreshold</b> (60) messages the list draws
+            only that many of the newest - as a prerender does, rather than an empty box - and the older ones half that
+            many at a time as the reader scrolls up to them, keeping what is being read in place as each page comes in
+            above it. Nothing is estimated: every message drawn has its own height, so the scrollbar never jumps. See the
             <BitLink Href="/ai/scenarios/performance">performance</BitLink> scenario.
         </BitText>
     </NotesTemplate>
@@ -149,8 +150,9 @@
         <DemoExample Title="Virtualization" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 Four hundred messages of prose, code, tables, tool calls and citations: past
-                <b>BitAiUiOptions.VirtualizeThreshold</b> (60 by default) only the messages in view are rendered, and the rest
-                as the reader scrolls to them.
+                <b>BitAiUiOptions.VirtualizeThreshold</b> (60 by default) only the newest that many are drawn. Scroll up and
+                the older ones come in thirty at a time above what you are reading, which stays where it is; scroll back
+                down to the newest message and the list lets them go again.
             </div>
             <br />
             <div style="height:440px;display:flex;flex-direction:column">

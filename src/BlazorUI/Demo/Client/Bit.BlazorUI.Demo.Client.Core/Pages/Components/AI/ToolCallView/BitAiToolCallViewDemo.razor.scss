@@ -19,7 +19,7 @@
     }
 
     .custom-tool-header {
-        color: #0b7a75;
+        color: color-mix(in srgb, #0b7a75 65%, var(--bit-clr-fg-pri));
         letter-spacing: 0.05em;
         text-transform: uppercase;
     }

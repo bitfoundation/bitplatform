@@ -76,7 +76,20 @@ public ValueTask DisposeAsync() => templatesSession.DisposeAsync();";
     </BitAiMessageList>
 </div>";
     private readonly string example4CsharpCode = @"
-private readonly BitAiConversation templateConversation = CreateConversation();";
+// The template prints the text of a message as it is, so its conversation is written without Markdown.
+private readonly BitAiConversation templateConversation = CreateTemplateConversation();
+
+private static BitAiConversation CreateTemplateConversation()
+{
+    var conversation = new BitAiConversation();
+
+    conversation.AddMessage(BitAiRole.User, ""What is BitAiMessageList for?"");
+    conversation.AddMessage(BitAiRole.Assistant, ""It renders the transcript of a conversation: every message, laid out by role, in a column that scrolls."");
+    conversation.AddMessage(BitAiRole.User, ""Can I draw the messages myself?"");
+    conversation.AddMessage(BitAiRole.Assistant, ""Yes: a MessageTemplate replaces how every message is drawn, like this compact log."");
+
+    return conversation;
+}";
 
     private readonly string example5RazorCode = @"
 <BitToggle @bind-Value=""hideSystemMessages"" Text=""HideSystemMessages"" />

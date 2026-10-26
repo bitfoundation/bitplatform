@@ -110,7 +110,12 @@ private readonly BitAiUiOptions openReasoningOptions = BitAiUiOptions.Default wi
     }
 
     .custom-header {
+        color: #4c1d95;
         background-color: #ede9fe;
+    }
+
+    .custom-icon {
+        color: #6d28d9;
     }
 </style>
 
@@ -124,9 +129,9 @@ private readonly BitAiUiOptions openReasoningOptions = BitAiUiOptions.Default wi
                                           Body = ""padding: 0.5rem; border-radius: 0.5rem; background-color: #fef3c7; color: #78350f;"" })"" />
 
 <BitAiReasoningPartView Part=""finishedReasoning""
-                        Classes=""@(new() { Root = ""custom-root"", Title = ""custom-title"", Collapsible = new() { Accordion = new() { Header = ""custom-header"" } } })"" />
+                        Classes=""@(new() { Root = ""custom-root"", Icon = ""custom-icon"", Title = ""custom-title"", Collapsible = new() { Accordion = new() { Header = ""custom-header"" } } })"" />
 
-<div style=""--bit-AiReasoningPartView-color: rebeccapurple; --bit-AiReasoningPartView-font-size: 1rem; --bit-AiReasoningPartView-max-height: 4rem;"">
+<div style=""--bit-AiReasoningPartView-color: #8b5cf6; --bit-AiReasoningPartView-font-size: 1rem; --bit-AiReasoningPartView-max-height: 4rem;"">
     <BitAiReasoningPartView Part=""finishedReasoning"" />
 </div>";
 

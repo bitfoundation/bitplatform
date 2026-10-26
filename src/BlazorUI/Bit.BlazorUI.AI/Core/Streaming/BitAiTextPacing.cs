@@ -152,6 +152,11 @@ public static class BitAiEventStreamExtensions
         var completed = false;
         var ticksToDrain = Math.Max(1, (int)(settings.TargetDrain.Ticks / Math.Max(1, settings.Interval.Ticks)));
 
+        // The chunk size is kept at the rate the largest backlog since the buffer last ran dry called for. Recomputed
+        // from what is left on every tick instead, it would shrink with the buffer, and the tail of a burst would
+        // trickle out a character a tick - holding every event queued behind it far longer than one drain window.
+        var rate = 0;
+
         try
         {
             while (true)
@@ -177,6 +182,7 @@ public static class BitAiEventStreamExtensions
                     if (evt is BitAiErrorEvent { IsTerminal: true })
                     {
                         while (pending.Length > 0) yield return Take(pending, pending.Length, pendingPartId, pendingMessageId);
+                        rate = 0;
                         while (deferred.TryDequeue(out var queued)) yield return queued;
                         yield return evt;
                         continue;
@@ -187,15 +193,16 @@ public static class BitAiEventStreamExtensions
 
                 if (pending.Length > 0)
                 {
-                    var size = Math.Clamp(
-                        (pending.Length + ticksToDrain - 1) / ticksToDrain,
-                        settings.MinCharsPerTick,
-                        settings.MaxCharsPerTick);
+                    rate = Math.Max(rate, (pending.Length + ticksToDrain - 1) / ticksToDrain);
+
+                    var size = Math.Clamp(rate, settings.MinCharsPerTick, settings.MaxCharsPerTick);
 
                     yield return Take(pending, size, pendingPartId, pendingMessageId);
 
                     if (pending.Length == 0)
                     {
+                        rate = 0;
+
                         // Drained: release what queued behind the text, then look for more input
                         // straight away so a following part starts pacing without a gap.
                         while (deferred.TryDequeue(out var queued)) yield return queued;

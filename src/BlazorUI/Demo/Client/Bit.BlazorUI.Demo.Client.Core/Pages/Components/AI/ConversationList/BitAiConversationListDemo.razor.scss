@@ -1,4 +1,19 @@
-﻿// The classes handed to the list land on its own elements, reached from the plain wrapper of the section.
+﻿// The sidebar beside the chat, and above it where there is no room for both side by side (a phone): a chat squeezed
+// into what is left beside the list is too narrow to read. A plain element of this page, so no ::deep is needed.
+.chat-with-list {
+    gap: 1rem;
+    height: 440px;
+    display: grid;
+    grid-template-columns: minmax(9rem, 14rem) minmax(0, 1fr);
+
+    @media (max-width: 40rem) {
+        height: auto;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto 440px;
+    }
+}
+
+// The classes handed to the list land on its own elements, reached from the plain wrapper of the section.
 ::deep {
     .custom-threads {
         border-radius: 1rem;

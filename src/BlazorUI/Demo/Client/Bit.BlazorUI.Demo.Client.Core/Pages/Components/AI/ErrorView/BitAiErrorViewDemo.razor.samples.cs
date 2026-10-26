@@ -168,7 +168,7 @@ private readonly BitAiErrorViewParams[] errorViewParams =
     .custom-error {
         padding: 0.5rem;
         border-radius: 0.75rem;
-        background: repeating-linear-gradient(45deg, #fee2e2, #fee2e2 0.5rem, #fecaca 0.5rem, #fecaca 1rem);
+        background: repeating-linear-gradient(45deg, var(--bit-clr-err-tint), var(--bit-clr-err-tint) 0.5rem, transparent 0.5rem, transparent 1rem);
     }
 
     .custom-error-message {
@@ -197,7 +197,7 @@ private readonly BitAiErrorViewParams[] errorViewParams =
                 Classes="@(new() { Message = new() { Root = "custom-error-message" },
                                    Actions = "custom-error-actions" })" />
 
-<div style="--bit-AiErrorView-detail-color: #7f1d1d; --bit-AiErrorView-detail-max-height: 4rem;">
+<div style="--bit-AiErrorView-detail-color: var(--bit-clr-err-fg); --bit-AiErrorView-detail-max-height: 4rem;">
     <BitAiErrorView Error="detailError" />
 </div>
 """;
@@ -225,6 +225,7 @@ private sealed class PersianAiStrings : BitAiStrings
     public override string SomethingWentWrong => "مشکلی پیش آمد";
     public override string Retry => "تلاش دوباره";
     public override string ShowDetails => "نمایش جزئیات";
+    public override string HideDetails => "پنهان کردن جزئیات";
     public override string RetryIn(TimeSpan wait) => $"{wait.TotalSeconds:F0} ثانیه‌ی دیگر دوباره تلاش کنید.";
 }
 """;

@@ -136,21 +136,23 @@
             <div>
                 A model streams its schema as partial JSON. Rebuilt from the part on every delta, the definition grows field by
                 field, and the form seeds each field once: a field that streams in later never overwrites what the user already
-                typed. The scripted transport here proposes a booking form - start typing in it while it is still arriving.
+                typed. The scripted transport here proposes a booking form - start typing in it while it is still arriving. <b>Busy</b>
+                holds the submit back until the whole schema is in, so a field that has not arrived yet cannot be skipped.
             </div>
             <br />
             <BitButton OnClick="ProposeBookingAsync" Disabled="proposalSession.IsGenerating">Book a table for Friday</BitButton>
             <br /><br />
             @if (ProposedForm is { } proposed)
             {
-                <BitAiForm Definition="proposed" Submitted="proposalSubmitted" OnSubmit="values => proposalSubmitted = true" />
+                <BitAiForm Definition="proposed" Busy="proposalSession.IsGenerating" Submitted="proposalSubmitted" OnSubmit="values => proposalSubmitted = true" />
             }
         </DemoExample>
 
         <DemoExample Title="Actions & state" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
-                <b>SubmitLabel</b> and <b>CancelLabel</b> of the definition name the buttons (an empty <b>CancelLabel</b> hides
-                Cancel), and <b>OnCancel</b> is raised by Cancel. <b>Busy</b> turns the actions off while the submission is in
+                <b>SubmitLabel</b> and <b>CancelLabel</b> of the definition name the buttons. Cancel is shown on a form with an
+                <b>OnCancel</b>, which it raises (an empty <b>CancelLabel</b> hides it all the same); the other forms of this
+                page have none, and so no Cancel. <b>Busy</b> turns the actions off while the submission is in
                 flight; <b>Submitted</b> replaces them with a confirmation once it is done. <b>Values</b> reads what the user has
                 typed so far, without submitting. A <b>Disabled</b> form turns every input and action off.
             </div>

@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -98,6 +100,25 @@ public class BitAiAttachmentChipTests : BitAiTestBase
         button.Click();
 
         Assert.AreSame(attachment, Assert.ContainsSingle(removed));
+    }
+
+    // The remove button that was pressed goes with its chip, so a row of chips hands the focus on to the next one with it.
+    [TestMethod]
+    public void FocusAsyncFocusesTheRemoveButtonOfAChipThatHasOne()
+    {
+        var removable = RenderComponent<BitAiAttachmentChip>(p => p
+            .Add(c => c.Attachment, Attachment())
+            .Add(c => c.OnRemove, _ => { }));
+
+        removable.InvokeAsync(() => removable.Instance.FocusAsync().AsTask()).Wait();
+
+        Context.JSInterop.VerifyFocusAsyncInvoke();
+
+        var plain = RenderComponent<BitAiAttachmentChip>(p => p.Add(c => c.Attachment, Attachment()));
+
+        plain.InvokeAsync(() => plain.Instance.FocusAsync().AsTask()).Wait();
+
+        Assert.HasCount(1, Context.JSInterop.Invocations.Where(i => i.Identifier.EndsWith(".focus", StringComparison.Ordinal)));
     }
 
     [TestMethod]

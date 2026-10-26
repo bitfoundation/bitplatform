@@ -34,8 +34,10 @@
         </BitText>
         <br />
         <BitText>
-            The button says what a press does next (Dictate, then Stop dictation) and is a pressed toggle while the microphone is
-            on, and a polite live region announces when the dictation starts, stops or fails. A
+            The button says what a press does next (Dictate, then Stop dictation) - its name alone, with no pressed state on top
+            of it to read ambiguously - and is drawn pressed while the microphone is on, and a polite live region announces when
+            the dictation starts, stops or fails. A phrase still being spoken when the button stops the dictation is kept: it
+            arrives through <b>OnTranscript</b> once the recognizer has committed to it. A
             <BitLink Href="/components/ai/promptinput">BitAiPromptInput</BitLink> with <b>AllowDictation</b> already carries one;
             see the <BitLink Href="/ai/scenarios/attachments">attachments scenario</BitLink> for it in a chat.
         </BitText>

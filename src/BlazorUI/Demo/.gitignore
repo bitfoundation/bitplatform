@@ -41,6 +41,8 @@ dlldata.c
 # DNX
 project.lock.json
 artifacts/
+# ...but not the Artifacts scenario page of the AI demo, which the rule above would take on a case-insensitive file system.
+!Client/Bit.BlazorUI.Demo.Client.Core/Pages/AI/Scenarios/Artifacts/
 
 *_i.c
 *_p.c

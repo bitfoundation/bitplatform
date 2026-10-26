@@ -75,6 +75,115 @@ public class BitAiAgentStepViewTests : BitAiTestBase
         }
     }
 
+    // The marker is hidden from assistive technologies, so the status it draws is said in words, out of sight.
+    [TestMethod,
+        DataRow(BitAiAgentStepStatus.Pending, "Not started"),
+        DataRow(BitAiAgentStepStatus.Running, "In progress"),
+        DataRow(BitAiAgentStepStatus.Blocked, "Waiting for you"),
+        DataRow(BitAiAgentStepStatus.Completed, "Done"),
+        DataRow(BitAiAgentStepStatus.Failed, "Failed"),
+        DataRow(BitAiAgentStepStatus.Skipped, "Skipped")]
+    public void TheStatusIsSaidInWords(BitAiAgentStepStatus status, string words)
+    {
+        var step = new BitAiAgentStep("search", "Search");
+        switch (status)
+        {
+            case BitAiAgentStepStatus.Running: step.Start(); break;
+            case BitAiAgentStepStatus.Blocked: step.Start(); step.Block(); break;
+            case BitAiAgentStepStatus.Pending: break;
+            default: step.Complete(status); break;
+        }
+
+        var component = RenderComponent<BitAiAgentStepView>(p => p.Add(c => c.Step, step));
+
+        Assert.AreEqual(words, component.Find(".bit-aiasv-sts").TextContent);
+        Assert.IsNull(component.Find(".bit-aiasv-sts").GetAttribute("aria-hidden"));
+        // The title row keeps its own words: the status follows it rather than joining it.
+        Assert.IsNull(component.Find(".bit-aiasv-ttl").QuerySelector(".bit-aiasv-sts"));
+        Assert.AreEqual("Search", component.Find(".bit-aiasv-ttl > span").TextContent);
+    }
+
+    // Nothing else re-renders a step drawn on its own, so a clock moves the time of a running one on.
+    [TestMethod]
+    public void TheTimeOfARunningStepMovesOnByItself()
+    {
+        var step = new BitAiAgentStep("search", "Search");
+        step.Start();
+
+        var component = RenderComponent<BitAiAgentStepView>(p => p.Add(c => c.Step, step));
+        var first = component.Find(".bit-aiasv-dur").TextContent;
+
+        component.WaitForAssertion(() => Assert.AreNotEqual(first, component.Find(".bit-aiasv-dur").TextContent), TimeSpan.FromSeconds(4));
+
+        // The clock stops with the step.
+        step.Complete();
+
+        component.WaitForAssertion(() => Assert.IsNull(typeof(BitAiAgentStepView)
+            .GetField("_clock", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .GetValue(component.Instance)), TimeSpan.FromSeconds(2));
+    }
+
+    [TestMethod]
+    public void TheDetailOfTheErrorOfAFailedStepIsBehindADisclosure()
+    {
+        var step = new BitAiAgentStep("test", "Run the tests");
+        step.Start();
+        step.Complete(BitAiAgentStepStatus.Failed, error: new BitAiError("3 of 812 tests failed.") { Detail = "Checkout.RoundsTax" });
+
+        var component = RenderComponent<BitAiAgentStepView>(p => p.Add(c => c.Step, step));
+
+        Assert.AreEqual("3 of 812 tests failed.", component.Find(".bit-aiasv-err").TextContent);
+        var toggle = component.Find(".bit-aiasv-edb");
+        Assert.AreEqual("Show details", toggle.TextContent.Trim());
+        Assert.AreEqual("false", toggle.GetAttribute("aria-expanded"));
+        Assert.AreEqual("button", toggle.GetAttribute("type"));
+        Assert.IsEmpty(component.FindAll(".bit-aiasv-edt"));
+
+        toggle.Click();
+
+        var detail = component.Find(".bit-aiasv-edt");
+        Assert.AreEqual("Checkout.RoundsTax", detail.TextContent);
+        // Marked for the page script that puts it in the tab order while it is long enough to scroll.
+        Assert.IsTrue(detail.HasAttribute("data-bit-ai-scroll"));
+        Assert.IsNull(detail.GetAttribute("tabindex"));
+        toggle = component.Find(".bit-aiasv-edb");
+        Assert.AreEqual("Hide details", toggle.TextContent.Trim());
+        Assert.AreEqual("true", toggle.GetAttribute("aria-expanded"));
+        Assert.AreEqual(detail.Id, toggle.GetAttribute("aria-controls"));
+
+        toggle.Click();
+
+        Assert.IsEmpty(component.FindAll(".bit-aiasv-edt"));
+    }
+
+    [TestMethod]
+    public void AnErrorWithoutADetailHasNoDisclosure()
+    {
+        var step = new BitAiAgentStep("test", "Run the tests");
+        step.Complete(BitAiAgentStepStatus.Failed, error: new BitAiError("No access"));
+
+        var component = RenderComponent<BitAiAgentStepView>(p => p.Add(c => c.Step, step));
+
+        Assert.IsEmpty(component.FindAll(".bit-aiasv-edb"));
+        Assert.IsEmpty(component.FindAll("button"));
+    }
+
+    [TestMethod]
+    public void ADisabledStepDisclosesNothing()
+    {
+        var step = new BitAiAgentStep("test", "Run the tests");
+        step.Complete(BitAiAgentStepStatus.Failed, error: new BitAiError("3 of 812 tests failed.") { Detail = "Checkout.RoundsTax" });
+
+        var component = RenderComponent<BitAiAgentStepView>(p => p.Add(c => c.Step, step).Add(c => c.Disabled, true));
+
+        var toggle = component.Find(".bit-aiasv-edb");
+        Assert.AreEqual("true", toggle.GetAttribute("aria-disabled"));
+
+        toggle.Click();
+
+        Assert.IsEmpty(component.FindAll(".bit-aiasv-edt"));
+    }
+
     [TestMethod]
     public void ABlockedStepIsMarkedAsBlocked()
     {

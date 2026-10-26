@@ -81,6 +81,7 @@ public partial class AiConversationsScenarioPage
             session = _sessionFactory.Create(conversation);
             conversation.MessageAdded += OnMessageAdded;
             conversation.Changed += OnChanged;
+            session.TurnCompleted += OnTurnCompleted;
             _sessions[conversation.ConversationId] = session;
         }
 
@@ -91,15 +92,31 @@ public partial class AiConversationsScenarioPage
     {
         session.Conversation.MessageAdded -= OnMessageAdded;
         session.Conversation.Changed -= OnChanged;
+        session.TurnCompleted -= OnTurnCompleted;
     }
 
+    // A thread is saved when a message arrives, so an untouched one never reaches the list.
     private void OnMessageAdded(BitAiConversation conversation, BitAiMessage message) =>
+        _ = InvokeAsync(() => SaveAsync(conversation));
+
+    // The reply is still empty when it arrives, so the thread is saved again once its turn ends: a store over a database
+    // keeps what it was handed, not the live conversation, and the list's preview and order come from what it keeps.
+    private void OnTurnCompleted(BitAiMessage reply) =>
         _ = InvokeAsync(async () =>
         {
-            await _store.SaveAsync(conversation);
-            _summaries = await _store.ListAsync();
-            StateHasChanged();
+            // The thread is looked up among the live ones: it need not be the open one, and a deleted one is not saved again.
+            var session = _sessions.Values.FirstOrDefault(s => s.Conversation.FindMessage(reply.MessageId) is not null);
+            if (session is null) return;
+
+            await SaveAsync(session.Conversation);
         });
+
+    private async Task SaveAsync(BitAiConversation conversation)
+    {
+        await _store.SaveAsync(conversation);
+        _summaries = await _store.ListAsync();
+        StateHasChanged();
+    }
 
     private void OnChanged(BitAiConversation conversation) =>
         _ = InvokeAsync(async () =>

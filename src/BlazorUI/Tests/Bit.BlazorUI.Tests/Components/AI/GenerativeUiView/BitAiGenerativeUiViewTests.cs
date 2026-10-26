@@ -191,6 +191,37 @@ public class BitAiGenerativeUiViewTests : BitAiTestBase
     }
 
     [TestMethod]
+    public void AnUnregisteredComponentSaysWhyToAScreenReaderAsWellAsInItsTooltip()
+    {
+        var view = RenderComponent<BitAiGenerativeUiView>(p => p
+            .Add(c => c.Part, CompletedPart("stock_ticker", "{}")));
+
+        var placeholder = view.Find(".bit-aiguv-unr");
+        const string reason = "No component named 'stock_ticker' is registered.";
+
+        Assert.AreEqual(reason, placeholder.GetAttribute("title"));
+        // A static tag is named through text no one can see, which takes the place of the name it shows.
+        Assert.AreEqual(reason, placeholder.QuerySelector(".bit-tag-vhd")!.TextContent);
+        Assert.AreEqual("true", placeholder.QuerySelector(".bit-tag-lbl")!.GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void AnotherPartGetsAComponentOfItsOwnRatherThanThePreviousPartsValues()
+    {
+        Generative.Register<ForecastCard>("forecast_card");
+
+        var view = RenderComponent<BitAiGenerativeUiView>(p => p.Add(c => c.Part, CompletedPart("forecast_card", """{"city":"Lisbon","degrees":17}""")));
+        Assert.AreEqual("Lisbon: 17", view.Find(".forecast").TextContent);
+
+        // The next forecast is still streaming: only its city has arrived, so its degrees are not passed yet.
+        var next = new BitAiGenerativeUiPart("forecast_card");
+        next.AppendProps("""{"city":"Lisb""");
+        view.Render(p => p.Add(c => c.Part, next));
+
+        Assert.AreEqual("Lisb: 0", view.Find(".forecast").TextContent);
+    }
+
+    [TestMethod]
     public void AnUnregisteredComponentNameSaysNothingWhileItsPropsStillStream()
     {
         var part = new BitAiGenerativeUiPart("not_yet");

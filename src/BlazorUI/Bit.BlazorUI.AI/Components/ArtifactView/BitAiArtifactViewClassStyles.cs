@@ -43,6 +43,11 @@ public class BitAiArtifactViewClassStyles
     public BitDropdownClassStyles? VersionDropdown { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the copy button (a BitAiCopyButton) of the BitAiArtifactView.
+    /// </summary>
+    public BitAiCopyButtonClassStyles? CopyButton { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the download BitButton of the BitAiArtifactView.
     /// </summary>
     public BitButtonClassStyles? DownloadButton { get; set; }

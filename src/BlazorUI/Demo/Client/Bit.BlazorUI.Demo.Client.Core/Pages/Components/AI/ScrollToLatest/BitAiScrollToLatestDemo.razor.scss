@@ -1,5 +1,11 @@
 ﻿// The classes handed to the button land on its own elements, reached from the plain wrapper of the section.
 ::deep {
+    // The transcript of the message-list example is transparent and its user bubbles take the secondary background,
+    // which is this page's own: on the primary background, as in a chat, they show.
+    .bit-aimsl {
+        background-color: var(--bit-clr-bg-pri);
+    }
+
     .custom-scroll {
         box-shadow: none;
     }

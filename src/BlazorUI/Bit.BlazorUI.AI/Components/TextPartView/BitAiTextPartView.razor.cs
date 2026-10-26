@@ -14,8 +14,11 @@ namespace Bit.BlazorUI;
 public partial class BitAiTextPartView : BitAiComponentBase
 {
     private string? _source;
+    private BitAiTextPart? _sourcePart;
+    private BitAiMessage? _sourceMessage;
     private int _sourceVersion = -1;
     private int _citationCount = -1;
+    private bool _sourceWoven;
 
 
 
@@ -78,12 +81,22 @@ public partial class BitAiTextPartView : BitAiComponentBase
         CascadingParameters?.UpdateParameters(this);
 
         // The text is woven again only when the part or the citations of its message changed: comparing two versions is
-        // what keeps a re-render of the message from rebuilding every text part in it.
-        if (_sourceVersion != Part.Version || _citationCount != Message.Citations.Count)
+        // what keeps a re-render of the message from rebuilding every text part in it. A part or a message of its own
+        // (the view reused for another one, whose version may well be the same number) and the inline citations turned on
+        // or off change it too.
+        var weave = Options.InlineCitations;
+        if (ReferenceEquals(_sourcePart, Part) is false
+            || ReferenceEquals(_sourceMessage, Message) is false
+            || _sourceVersion != Part.Version
+            || _citationCount != Message.Citations.Count
+            || _sourceWoven != weave)
         {
+            _sourcePart = Part;
+            _sourceMessage = Message;
             _sourceVersion = Part.Version;
             _citationCount = Message.Citations.Count;
-            _source = Options.InlineCitations ? WithCitationMarkers(Part, Message) : Part.Text;
+            _sourceWoven = weave;
+            _source = weave ? WithCitationMarkers(Part, Message) : Part.Text;
         }
 
         base.OnParametersSet();
@@ -106,8 +119,11 @@ public partial class BitAiTextPartView : BitAiComponentBase
             .Where(c => c.IsAnchored && (c.PartId is null || c.PartId == part.PartId))
             .Where(c => c.EndIndex is { } end && end <= text.Length)
             .Where(c => IsInsideCode(text, c.EndIndex!.Value) is false)
+            // From the end of the text back, so an insertion never moves an offset still to come; and the markers of one
+            // offset from the highest number down, since each is inserted in front of the one before it, which leaves
+            // them reading "[1][2]".
             .OrderByDescending(c => c.EndIndex)
-            .ThenBy(c => c.Number)
+            .ThenByDescending(c => c.Number)
             .ToArray();
 
         if (anchored.Length == 0) return text;

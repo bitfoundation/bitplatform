@@ -508,7 +508,7 @@ public class BitAiArtifactViewE2ETests : E2ETestBase
         await expand.FocusAsync();
 
         // Inline, the panel does nothing on Escape and leaves it to whatever is around it.
-        await Expect(root).Not.ToHaveAttributeAsync("data-bit-esc", new Regex(".*"));
+        await Expect(Panel("atv-full")).Not.ToHaveAttributeAsync("data-bit-esc", new Regex(".*"));
         await Page.Keyboard.PressAsync("Escape");
         await WaitForEscapesAsync(1);
         Assert.IsFalse((await EscapesAsync())[0], "An inline panel leaves the Escape unclaimed.");
@@ -517,14 +517,14 @@ public class BitAiArtifactViewE2ETests : E2ETestBase
         // The keyboard expands it...
         await Page.Keyboard.PressAsync("Enter");
         await Expect(root).ToHaveClassAsync(Expanded);
-        await Expect(root).ToHaveAttributeAsync("data-bit-esc", "claim");
+        await Expect(Panel("atv-full")).ToHaveAttributeAsync("data-bit-esc", "claim");
 
         // ...and the next Escape is claimed and collapses it.
         await Page.Keyboard.PressAsync("Escape");
         await Expect(root).Not.ToHaveClassAsync(Expanded);
         await WaitForEscapesAsync(2);
         Assert.IsTrue((await EscapesAsync())[1], "The expanded panel claims its Escape.");
-        await Expect(root).Not.ToHaveAttributeAsync("data-bit-esc", new Regex(".*"));
+        await Expect(Panel("atv-full")).Not.ToHaveAttributeAsync("data-bit-esc", new Regex(".*"));
         await Expect(expand).ToBeFocusedAsync();
     }
 

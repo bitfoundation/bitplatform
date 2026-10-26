@@ -88,7 +88,7 @@ builder.Services.AddBitBlazorUIAIServices(ai =>
                     <li>
                         <span>@(hit.TryGetProperty("title", out var title) ? title.GetString() : null)</span>
                         <BitTag Size="BitSize.Small" Variant="BitVariant.Text" Color="BitColor.Info"
-                                Text="@(hit.TryGetProperty("score", out var score) && score.TryGetDouble(out var value) ? value.ToString("P0", CultureInfo.InvariantCulture) : null)" />
+                                Text="@(hit.TryGetProperty("score", out var score) && score.TryGetDouble(out var value) ? value.ToString("0%", CultureInfo.InvariantCulture) : null)" />
                     </li>
                 }
             </ul>

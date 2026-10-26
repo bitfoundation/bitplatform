@@ -101,4 +101,17 @@ public class BitAiToolTests
         Assert.AreEqual("boom", BitAiToolOutcome.Failure("boom").GetDisplayText());
         Assert.AreEqual("""{"a":1}""", BitAiToolOutcome.Success(new { a = 1 }).GetDisplayText());
     }
+
+    // The default encoder of SerializeToElement escapes an apostrophe, the characters HTML is sensitive to and
+    // everything outside ASCII; the text shown for a value keeps only the escapes JSON itself needs.
+    [TestMethod]
+    public void OutcomeDisplayTextShowsTheJsonOfAValueAsItWasWritten()
+    {
+        var value = JsonDocument.Parse("""
+            {"filter":"status = \u0027archived\u0027 \u003Ca\u0026b\u002Bc\u003E","city":"\u062A\u0647\u0631\u0627\u0646","path":"C:\\logs","count":3}
+            """).RootElement;
+
+        Assert.AreEqual("""{"filter":"status = 'archived' <a&b+c>","city":"تهران","path":"C:\\logs","count":3}""",
+                        BitAiToolOutcome.Success(value).GetDisplayText());
+    }
 }

@@ -51,6 +51,17 @@ public partial class BitAiAttachmentChipDemo
         new() { Name = "--bit-AiAttachmentChip-thumbnail-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Color of the glyph shown in place of a picture." },
     ];
 
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask",
+            DefaultValue = "",
+            Description = "Gives the keyboard focus to the remove button of the chip - what a row of chips hands the focus on with after removing one, since the button that was pressed goes with its chip. A chip without OnRemove has no button and nothing to focus.",
+        },
+    ];
+
     private readonly List<ComponentSubClass> componentSubClasses =
     [
         new()
@@ -302,6 +313,8 @@ public partial class BitAiAttachmentChipDemo
     };
 
     private List<BitAiAttachment> staged = CreateStaged();
+    private readonly Dictionary<string, BitAiAttachmentChip> stagedChips = [];
+    private BitButton resetButton = default!;
 
     private readonly BitAiAttachment persianReport = new("att-fa-report", "گزارش-فصلی.pdf")
     {
@@ -341,9 +354,23 @@ public partial class BitAiAttachmentChipDemo
         new("att-staged-3", "budget.xlsx") { Size = 48_640 },
     ];
 
-    private void Remove(BitAiAttachment attachment)
+    private async Task Remove(BitAiAttachment attachment)
     {
+        var index = staged.IndexOf(attachment);
+
         staged.Remove(attachment);
+        stagedChips.Remove(attachment.AttachmentId);
+
+        // The remove button goes with its chip: the focus moves to the chip that took its place, or the last one, or the
+        // button that brings them back once none is left.
+        if (staged.Count > 0)
+        {
+            await stagedChips[staged[Math.Min(index, staged.Count - 1)].AttachmentId].FocusAsync();
+        }
+        else
+        {
+            await resetButton.FocusAsync();
+        }
     }
 
     private void ResetStaged()

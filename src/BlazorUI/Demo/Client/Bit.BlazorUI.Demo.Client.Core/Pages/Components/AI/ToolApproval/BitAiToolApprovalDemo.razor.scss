@@ -8,8 +8,8 @@
 
 ::deep {
     .custom-approval {
-        border: 2px dashed #b45309;
-        background-color: #fffbeb;
+        border: 2px dashed var(--bit-clr-wrn);
+        background-color: transparent;
     }
 
     .custom-approval-root {

@@ -38,8 +38,10 @@
                 transport knowing.
             </p>
             <p>
-                Arguments stream in as raw JSON and are parsed leniently on every delta, which is why the card shows
-                <code>city: "Osl"</code> before the closing brace arrives.
+                Arguments stream in as raw JSON and are parsed leniently on every delta, so an open card fills in key by key
+                before the closing brace arrives rather than waiting for valid JSON. The cards here start collapsed
+                (<code>BitAiUiOptions.CollapseToolCalls</code>) and these arguments arrive in a fifth of a second; it shows
+                with a model writing a long argument, such as the content of a file.
             </p>
             <p>
                 The tools are declared with <code>BitAiTool.Create</code> where they are registered. The overloads that take

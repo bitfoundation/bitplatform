@@ -69,8 +69,11 @@ public class BitAiGenerativeUiViewE2ETests : E2ETestBase
         var tag = Placeholder(view);
         await Expect(tag).ToBeVisibleAsync();
         await Expect(tag).ToHaveClassAsync(HasClass("bit-tag"));
-        await Expect(tag).ToHaveTextAsync("not_registered");
+        await Expect(tag.Locator(".bit-tag-tex")).ToHaveTextAsync("not_registered");
         await Expect(tag).ToHaveAttributeAsync("title", "No component named 'not_registered' is registered.");
+        // A tooltip is not read out, so the reason is the name of the tag too: text no one sees, in place of the name shown.
+        await Expect(tag.Locator(".bit-tag-vhd")).ToHaveTextAsync("No component named 'not_registered' is registered.");
+        await Expect(tag.Locator(".bit-tag-lbl")).ToHaveAttributeAsync("aria-hidden", "true");
         await Expect(tag).ToHaveClassAsync(HasClass("bit-tag-wrn"));
 
         // Nothing of the payload is rendered, and the page goes on working.
@@ -86,7 +89,7 @@ public class BitAiGenerativeUiViewE2ETests : E2ETestBase
     {
         await OpenAsync(Route);
 
-        await Expect(Placeholder(Root(id))).ToHaveTextAsync(name);
+        await Expect(Placeholder(Root(id)).Locator(".bit-tag-tex")).ToHaveTextAsync(name);
         await Expect(Root(id).Locator(".e2e-ai-card")).ToHaveCountAsync(0);
     }
 
@@ -130,7 +133,7 @@ public class BitAiGenerativeUiViewE2ETests : E2ETestBase
         await Expect(root).ToHaveTextAsync("");
 
         await Page.Locator("#btn-guv-unknown-complete").ClickAsync();
-        await Expect(Placeholder(root)).ToHaveTextAsync("not_registered");
+        await Expect(Placeholder(root).Locator(".bit-tag-tex")).ToHaveTextAsync("not_registered");
     }
 
     [TestMethod]
@@ -199,7 +202,7 @@ public class BitAiGenerativeUiViewE2ETests : E2ETestBase
         var tag = Placeholder(Root("guv-rtl-unknown"));
         await Expect(tag).ToHaveCSSAsync("direction", "rtl");
         var icon = await tag.Locator("i").First.RectAsync();
-        var text = await tag.GetByText("not_registered").RectAsync();
+        var text = await tag.Locator(".bit-tag-tex").RectAsync();
         Assert.IsTrue(icon.Left >= text.Right - 1, "The warning glyph is to the right of the name.");
     }
 }

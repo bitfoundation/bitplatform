@@ -157,22 +157,30 @@ public class BitAiPromptInputE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task TheText_IsANamedCombobox_AndTheSendButtonIsNamedForWhatItDoes()
+    public async Task TheText_IsANamedTextBox_OrComboboxWithAMenu_AndTheSendButtonIsNamedForWhatItDoes()
     {
         await OpenAsync(Route);
 
+        // With no commands and no mentions there is no popup to announce: a plain, named text box.
         var input = Input("pi-basic");
-        await Expect(input).ToHaveAttributeAsync("role", "combobox");
+        await Expect(input).Not.ToHaveAttributeAsync("role", new Regex(".*"));
         await Expect(input).ToHaveAttributeAsync("aria-label", "Send a message...");
         await Expect(input).ToHaveAttributeAsync("placeholder", "Send a message...");
-        await Expect(input).ToHaveAttributeAsync("aria-haspopup", "listbox");
-        await Expect(input).ToHaveAttributeAsync("aria-autocomplete", "list");
-        await Expect(input).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(input).Not.ToHaveAttributeAsync("aria-haspopup", new Regex(".*"));
+        await Expect(input).Not.ToHaveAttributeAsync("aria-autocomplete", new Regex(".*"));
+        await Expect(input).Not.ToHaveAttributeAsync("aria-expanded", new Regex(".*"));
         await Expect(input).Not.ToHaveAttributeAsync("aria-controls", new Regex(".*"));
         await Expect(input).Not.ToHaveAttributeAsync("data-bit-esc", new Regex(".*"));
 
-        await Expect(Page.GetByRole(AriaRole.Combobox, new() { Name = "Ask anything about your account..." })).ToHaveCountAsync(1);
-        await Expect(Page.GetByRole(AriaRole.Combobox, new() { Name = "Message the assistant" })).ToHaveCountAsync(1);
+        // With them, a combobox whose listbox is closed.
+        var menu = Input("pi-menu");
+        await Expect(menu).ToHaveAttributeAsync("role", "combobox");
+        await Expect(menu).ToHaveAttributeAsync("aria-haspopup", "listbox");
+        await Expect(menu).ToHaveAttributeAsync("aria-autocomplete", "list");
+        await Expect(menu).ToHaveAttributeAsync("aria-expanded", "false");
+
+        await Expect(Page.GetByRole(AriaRole.Textbox, new() { Name = "Ask anything about your account..." })).ToHaveCountAsync(1);
+        await Expect(Page.GetByRole(AriaRole.Textbox, new() { Name = "Message the assistant" })).ToHaveCountAsync(1);
         await Expect(Input("pi-aria")).ToHaveAttributeAsync("placeholder", "Shown placeholder");
 
         await Expect(Send("pi-basic")).ToHaveAttributeAsync("aria-label", "Send");
@@ -458,12 +466,61 @@ public class BitAiPromptInputE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Menu_ACommandTypedAndEnteredStraightAway_IsTaken_NotSent()
+    {
+        await OpenAsync(Route);
+
+        // No wait for the menu between the typing and the Enter.
+        var input = Input("pi-menu");
+        await input.PressSequentiallyAsync("/cl");
+        await input.PressAsync("Enter");
+
+        await Expect(Text("pi-menu-cleared")).ToHaveTextAsync("1");
+        await Expect(Text("pi-menu-value")).ToHaveTextAsync(Exactly(""));
+        await Expect(Text("pi-menu-count")).ToHaveTextAsync("0");
+    }
+
+    [TestMethod]
+    public async Task Menu_AModifiedEnterOrTabKeepsItsOwnMeaning_AndTheMenuClosesAsTheFocusLeaves()
+    {
+        await OpenAsync(Route);
+
+        // Shift+Enter breaks the line rather than taking the option.
+        var input = Input("pi-menu");
+        await input.FillAsync("@b");
+        await Expect(Options("pi-menu")).ToHaveCountAsync(1);
+        await input.PressAsync("Shift+Enter");
+        await Expect(Text("pi-menu-value")).ToHaveTextAsync(Exactly("@b\\n"));
+        await Expect(Menu("pi-menu")).ToHaveCountAsync(0);
+
+        // Shift+Tab moves the focus back rather than taking the option, and the menu goes with the focus.
+        await input.FillAsync("@b");
+        await Expect(Options("pi-menu")).ToHaveCountAsync(1);
+        await input.PressAsync("Shift+Tab");
+        await Expect(input).Not.ToBeFocusedAsync();
+        await Expect(Menu("pi-menu")).ToHaveCountAsync(0);
+        await Expect(input).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(Text("pi-menu-value")).ToHaveTextAsync(Exactly("@b"));
+
+        // So does a click elsewhere on the page.
+        await input.FillAsync("@bo");
+        await Expect(Options("pi-menu")).ToHaveCountAsync(1);
+        await Page.Locator("h1").First.ClickAsync();
+        await Expect(Menu("pi-menu")).ToHaveCountAsync(0);
+        await Expect(Text("pi-menu-count")).ToHaveTextAsync("0");
+    }
+
+    [TestMethod]
     public async Task Escape_ClosesTheMenuFirst_AndTheDialogAroundTheComposerOnTheNextPress()
     {
         await OpenAsync(Route);
 
         await Page.Locator("#pi-open-dialog").ClickAsync();
         await Expect(Page.Locator(".bit-dlg-ctn")).ToBeVisibleAsync();
+
+        // The dialog puts the focus on its first control a round trip after it opens; typed into before that, the
+        // composer would lose the focus to it - and its menu with the focus - in the middle of the test.
+        await Expect(Page.Locator(".bit-dlg-ctn :focus")).ToHaveCountAsync(1);
 
         var input = Input("pi-esc");
         await input.FillAsync("/");
@@ -1050,7 +1107,7 @@ public class BitAiPromptInputE2ETests : E2ETestBase
         await Expect(mic).ToBeVisibleAsync();
         await mic.Locator("i.bit-tgb-ico").AssertAiGlyphAsync("Microphone");
         await mic.ClickAsync();
-        await Expect(mic).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(mic).ToHaveAttributeAsync("aria-label", "Stop dictation");
         Assert.AreEqual("en-GB", await Page.EvaluateAsync<string>("() => window.__e2eSpeech.current.lang"));
 
         await Page.EvaluateAsync("() => window.__e2eSpeech.result('hello world', null)");
@@ -1068,7 +1125,7 @@ public class BitAiPromptInputE2ETests : E2ETestBase
         await Expect(interim).ToHaveCountAsync(0);
 
         await mic.ClickAsync();
-        await Expect(mic).ToHaveAttributeAsync("aria-pressed", "false");
+        await Expect(mic).ToHaveAttributeAsync("aria-label", "Dictate");
         Assert.IsTrue(await Page.EvaluateAsync<bool>("() => window.__e2eSpeech.current.stopped"));
     }
 

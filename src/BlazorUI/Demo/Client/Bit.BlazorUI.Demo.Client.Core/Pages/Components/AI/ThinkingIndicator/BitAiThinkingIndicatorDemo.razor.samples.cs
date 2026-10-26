@@ -54,9 +54,10 @@ protected override void OnInitialized()
 
 private Task AskAsync() => session.SubmitAsync("What is the weather like in Lisbon?");
 
-// What the wait is about: the tool being run, else the status the model reported, else the default text.
+// What the wait is about: the tool being called - from its first argument streaming in until it has run - else the
+// status the model reported, else the default text.
 private static string? WaitLabel(BitAiMessage reply) =>
-    reply.PartsOf<BitAiToolCallPart>().LastOrDefault() is { Status: BitAiToolCallStatus.Pending or BitAiToolCallStatus.Running } call
+    reply.PartsOf<BitAiToolCallPart>().LastOrDefault() is { Status: BitAiToolCallStatus.Streaming or BitAiToolCallStatus.Pending or BitAiToolCallStatus.Running } call
         ? $"Calling the {call.Definition?.DisplayName ?? call.ToolName} tool"
         : reply.StatusText;
 
@@ -88,7 +89,7 @@ public async ValueTask DisposeAsync()
     }
 </style>
 
-<BitAiThinkingIndicator Style="padding: 0.5rem 1rem; border-radius: 1rem; background-color: #ede9fe" />
+<BitAiThinkingIndicator Style="padding: 0.5rem 1rem; border-radius: 1rem; background-color: var(--bit-clr-pri-tint)" />
 
 <BitAiThinkingIndicator Class="custom-thinking" />
 

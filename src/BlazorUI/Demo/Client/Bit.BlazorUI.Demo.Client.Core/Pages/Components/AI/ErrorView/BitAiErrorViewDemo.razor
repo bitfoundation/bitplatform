@@ -49,7 +49,7 @@
         <DemoExample Title="Retry" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>
                 The retry button is offered when the error says retrying could help (<b>IsRetryable</b>) and <b>OnRetry</b> is there to do it.
-                <b>RetryAfter</b> says how long to wait first. Here the scripted model is rate limited on the first try and answers on the
+                <b>RetryAfter</b> says how long to wait first; the line saying it goes away once the wait is over. Here the scripted model is rate limited on the first try and answers on the
                 second: the session reports the failure as its <b>LastError</b>, and <b>RetryAsync</b> runs the turn again. <b>Start over</b>
                 brings back a model that fails once.
             </div>
@@ -73,8 +73,9 @@
 
         <DemoExample Title="Detail" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>
-                The <b>Detail</b> of an error - a status line, a response body, a stack trace - is kept behind the <b>Show details</b> disclosure,
-                as it was written. A long one scrolls past a few lines; it then takes the focus itself, so it can be scrolled with a keyboard.
+                The <b>Detail</b> of an error - a status line, a response body - is kept behind the <b>Show details</b> disclosure, as it was
+                written, and shown under it, next in the order the focus moves in. A long one scrolls past a few lines; it takes the focus
+                itself, so it can be scrolled with a keyboard.
             </div>
             <br />
             <div class="example-stack">
@@ -103,7 +104,8 @@
             <div>
                 <b>BitAiError.FromException</b> translates an exception for a transport or a tool of your own: a cancellation becomes a
                 <b>Cancelled</b> error that retrying would not fix, a timeout a retryable <b>Timeout</b>, and anything else a retryable
-                <b>Unknown</b> one carrying the exception's message and its full text as the detail.
+                <b>Unknown</b> one carrying the exception's message. Never its stack trace, which would show the user the internals of the
+                server: the exception stays on the error's <b>Exception</b>, for the app's logs, and is never shown.
             </div>
             <br />
             <div class="example-stack">
@@ -162,7 +164,7 @@
                                 Classes="@(new() { Message = new() { Root = "custom-error-message" },
                                                    Actions = "custom-error-actions" })" />
 
-                <div style="--bit-AiErrorView-detail-color: #7f1d1d; --bit-AiErrorView-detail-max-height: 4rem;">
+                <div style="--bit-AiErrorView-detail-color: var(--bit-clr-err-fg); --bit-AiErrorView-detail-max-height: 4rem;">
                     <BitAiErrorView Error="detailError" />
                 </div>
             </div>

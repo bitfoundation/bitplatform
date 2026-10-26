@@ -65,8 +65,10 @@ public class BitAiToolResultViewE2ETests : E2ETestBase
         await Expect(error.Locator("[role=alert]")).ToContainTextAsync("The search provider timed out.");
         await Expect(error).Not.ToContainTextAsync("Something went wrong");
 
-        var toggle = error.GetByRole(AriaRole.Button, new() { Name = "Show details", Exact = true });
-        await toggle.ClickAsync();
+        await error.GetByRole(AriaRole.Button, new() { Name = "Show details", Exact = true }).ClickAsync();
+
+        // Once open, the disclosure says what pressing it again does.
+        var toggle = error.GetByRole(AriaRole.Button, new() { Name = "Hide details", Exact = true });
         await Expect(toggle).ToHaveAttributeAsync("aria-expanded", "true");
         await Expect(error.Locator(".bit-aierv-dtl")).ToHaveTextAsync("timeout after 30s");
     }

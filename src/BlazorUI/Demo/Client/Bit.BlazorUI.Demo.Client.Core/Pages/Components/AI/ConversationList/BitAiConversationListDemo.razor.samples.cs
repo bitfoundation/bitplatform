@@ -71,7 +71,24 @@ private void HandleDelete(BitAiConversationSummary summary)
     private readonly string example3RazorCode = @"
 @implements IAsyncDisposable
 
-<div style=""display:grid;grid-template-columns:minmax(9rem, 14rem) minmax(0, 1fr);gap:1rem;height:440px"">
+<style>
+    .chat-with-list {
+        gap: 1rem;
+        height: 440px;
+        display: grid;
+        grid-template-columns: minmax(9rem, 14rem) minmax(0, 1fr);
+    }
+
+    @@media (max-width: 40rem) {
+        .chat-with-list {
+            height: auto;
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: auto 440px;
+        }
+    }
+</style>
+
+<div class=""chat-with-list"">
     <BitAiConversationList Conversations=""chatSummaries""
                            SelectedId=""@chatSession?.Conversation.ConversationId""
                            OnSelect=""SelectChat""

@@ -18,13 +18,21 @@ namespace Bit.BlazorUI;
 /// <br />
 /// The panel follows the artifact as it streams, re-rendering at most once per render interval of the AI options. The
 /// full-screen panel is the same element laid over the page, so the body - a running page in its frame above all - is
-/// never re-created by the toggle; Escape and a click on the overlay collapse it again.
+/// never re-created by the toggle; Escape and a click on the overlay collapse it again. Laid over the page it is a
+/// modal dialog that holds the keyboard - the focus moves through its own controls and the page in its frame, and an
+/// Escape pressed inside that page collapses it too.
 /// </remarks>
 public partial class BitAiArtifactView : BitAiComponentBase
 {
     private bool _expanded;
     private bool _focusToggle;
+    private bool _focusImage;
+    private bool _holdsKeyboard;
+    private ElementReference _image;
+    private ElementReference _panel;
     private BitButton? _expandButton;
+    private DotNetObjectReference<BitAiArtifactView>? _dotnetObj;
+    private (string Page, string Document)? _frameDocument;
     private int? _selectedVersion;
     private BitAiArtifact? _subscribed;
     private bool _watchingEscape;
@@ -99,6 +107,23 @@ public partial class BitAiArtifactView : BitAiComponentBase
         _escapeWatch?.SetVerdict(foreign);
     }
 
+    /// <summary>
+    /// Sent by the browser when an Escape is pressed inside the page an HTML artifact runs in its frame while the panel is
+    /// full screen - a key the page's own document hears, and no listener of the page around it - and the page left it
+    /// alone. The panel collapses on it, as it does on an Escape pressed anywhere else in it.
+    /// <br />
+    /// <strong>This method is intended for internal use and should not be called directly.</strong>
+    /// </summary>
+    [JSInvokable("OnFrameEscape")]
+    public async Task _OnFrameEscape()
+    {
+        if (IsDisposing || _expanded is false) return;
+
+        Collapse();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
 
 
     protected override string RootElementClass => "bit-aiatv";
@@ -143,7 +168,14 @@ public partial class BitAiArtifactView : BitAiComponentBase
         {
             _watchingEscape = true;
             _escapeWatch ??= new(_js, this);
-            await _escapeWatch.WatchAsync(RootElement);
+            await _escapeWatch.WatchAsync(_panel);
+        }
+
+        // The full-screen panel holds the keyboard once it is laid over the page, and hands it back once it is in place
+        // again.
+        if (_expanded != _holdsKeyboard)
+        {
+            await HoldKeyboardAsync(_expanded);
         }
 
         // The toggle takes the focus once the panel has been laid out the new way (see ToggleExpanded).
@@ -152,6 +184,14 @@ public partial class BitAiArtifactView : BitAiComponentBase
             _focusToggle = false;
 
             await FocusToggleAsync();
+        }
+
+        // An image the user loaded takes the focus once it has replaced the button that loaded it (see LoadImage).
+        if (_focusImage)
+        {
+            _focusImage = false;
+
+            await FocusImageAsync();
         }
     }
 
@@ -169,6 +209,15 @@ public partial class BitAiArtifactView : BitAiComponentBase
         {
             await _escapeWatch.DisposeAsync();
         }
+
+        // A panel taken off the page while full screen leaves no trap or listener behind it.
+        if (_holdsKeyboard)
+        {
+            await HoldKeyboardAsync(false);
+        }
+
+        _dotnetObj?.Dispose();
+        _dotnetObj = null;
 
         await base.DisposeAsync(disposing);
     }
@@ -207,6 +256,30 @@ public partial class BitAiArtifactView : BitAiComponentBase
     // The Escape that collapses the full-screen panel, claimed on the root (see Utils.claimEscape) so a surface the
     // artifact sits in does not close on the same press. Inline, the panel does nothing on Escape and leaves it alone.
     private string? _EscapeClaim => _expanded ? "claim" : null;
+
+    // The panel - the header and the body, without the overlay - which the full-screen panel keeps the keyboard in.
+    private string _PanelId => $"{_Id}-pnl";
+
+    // What the frame of an HTML page is handed: the page, then a script of the panel's own that reports an Escape the page
+    // leaves alone - not prevented by it, not part of an input method's composition (as Utils.isComposingKey reads it),
+    // and with no modifier - to the panel (BitAiArtifactView.ts). A key pressed inside the page is its own document's,
+    // which no listener of the page around it hears, so the full-screen panel would otherwise keep the screen once the
+    // focus is in the page. Written after the page rather than ahead of it, where it would come before the doctype and
+    // put the page in quirks mode (a page ending inside an unclosed comment or script swallows it, and goes without it).
+    // Kept for the page it was built for, so a panel rendered again does not build it again.
+    private string FrameDocument(string page)
+    {
+        if (_frameDocument is { } built && ReferenceEquals(built.Page, page)) return built.Document;
+
+        var document = page + FrameEscapeScript;
+        _frameDocument = (page, document);
+
+        return document;
+    }
+
+    private const string FrameEscapeScript =
+        "<script>addEventListener('keydown',function(e){if(e.key==='Escape'&&!e.defaultPrevented&&!e.isComposing&&e.keyCode!==229" +
+        "&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey)parent.postMessage({bitAiArtifactView:'escape'},'*')})</script>";
 
     // The glyph beside the title, by the kind of the artifact, from this package's own icon font (none of them is in the
     // core's). Whole class names, which are what keeps each glyph in a trimmed icon stylesheet.
@@ -265,10 +338,64 @@ public partial class BitAiArtifactView : BitAiComponentBase
 
         if (_expanded is false) return;
 
+        Collapse();
+    }
+
+    private void Collapse()
+    {
         _expanded = false;
         _focusToggle = true;
 
         ClassBuilder.Reset();
+    }
+
+    // The full-screen panel keeps the keyboard inside itself as a modal dialog does: Tab and Shift+Tab cycle through its
+    // controls, the focus a Tab out of the page in its frame hands to the page behind it is brought back, and an Escape
+    // pressed inside that page is reported (OnFrameEscape) - see BitAiArtifactView.ts. Released as the panel collapses.
+    private async Task HoldKeyboardAsync(bool hold)
+    {
+        if (hold && IsDisposing) return;
+
+        _holdsKeyboard = hold;
+
+        try
+        {
+            if (hold)
+            {
+                _dotnetObj ??= DotNetObjectReference.Create(this);
+
+                await _js.BitAiArtifactViewExpand(_PanelId, _dotnetObj);
+            }
+            else
+            {
+                await _js.BitAiArtifactViewCollapse(_PanelId);
+            }
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, and the page with it
+        catch (OperationCanceledException) { }
+        catch (JSException) { } // without it the panel still collapses on its own Escape and its overlay
+    }
+
+    // The button that loaded an image is gone once the image is shown, and the focus it held with it - to the body of the
+    // document, from where the keyboard and a screen reader start over at the top of the page. So the image takes it.
+    private void LoadImage(string source)
+    {
+        _loadedImage = source;
+        _focusImage = true;
+    }
+
+    private async Task FocusImageAsync()
+    {
+        // No image was rendered for the source loaded - another artifact or version took its place in the meantime.
+        if (string.IsNullOrEmpty(_image.Id) || IsDisposing) return;
+
+        try
+        {
+            await _image.FocusAsync();
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, and the page with it
+        catch (OperationCanceledException) { }
+        catch (JSException) { } // an image taken off the page in the meantime has nothing to focus
     }
 
     // The toggle is the one control of the panel that is there both ways, so it is where the focus goes each time the
@@ -498,13 +625,16 @@ public partial class BitAiArtifactView : BitAiComponentBase
         _ => "txt",
     };
 
+    // The file name a title makes: its words, lower-cased and joined by hyphens. The letters and digits of every script are
+    // words - a Persian or a Chinese title names its file as an English one does, rather than leaving it "artifact" - with
+    // the marks that complete a letter where a script writes its vowels as marks (Devanagari's, Arabic's harakat).
     private static string Slug(string title)
     {
         var builder = new StringBuilder(title.Length);
 
         foreach (var c in title.Trim().ToLowerInvariant())
         {
-            if (char.IsAsciiLetterOrDigit(c)) builder.Append(c);
+            if (IsWordChar(c)) builder.Append(c);
             else if (builder.Length > 0 && builder[^1] != '-') builder.Append('-');
         }
 
@@ -512,4 +642,8 @@ public partial class BitAiArtifactView : BitAiComponentBase
 
         return slug.Length == 0 ? "artifact" : slug;
     }
+
+    private static bool IsWordChar(char c) =>
+        char.IsLetterOrDigit(c) ||
+        CharUnicodeInfo.GetUnicodeCategory(c) is UnicodeCategory.NonSpacingMark or UnicodeCategory.SpacingCombiningMark;
 }

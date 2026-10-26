@@ -36,7 +36,7 @@ public static class BitAiMarkdownParser
     /// <returns>The document.</returns>
     public static BitAiMarkdownDocument Parse(string? markdown, BitAiMarkdownOptions? options = null, bool isComplete = true)
     {
-        if (string.IsNullOrEmpty(markdown)) return new BitAiMarkdownDocument();
+        if (string.IsNullOrEmpty(markdown)) return new BitAiMarkdownDocument { IsOpen = !isComplete };
         return Parse(markdown, options ?? BitAiMarkdownOptions.Default, isComplete, null, null, out _);
     }
 
@@ -68,7 +68,7 @@ public static class BitAiMarkdownParser
         IEnumerable<string>? usedHeadingIds,
         out bool sawDefinitions)
     {
-        var document = new BitAiMarkdownDocument();
+        var document = new BitAiMarkdownDocument { IsOpen = !isComplete };
         sawDefinitions = false;
         if (markdown.Length == 0) return document;
 
@@ -90,7 +90,7 @@ public static class BitAiMarkdownParser
             };
             if (usedHeadingIds is not null) resolving.HeadingIds.UnionWith(usedHeadingIds);
 
-            document = new BitAiMarkdownDocument();
+            document = new BitAiMarkdownDocument { IsOpen = !isComplete };
             blockStarts?.Clear();
             ParseBlocks(lines, 0, lines.Count, document.Blocks, resolving, isComplete, 0, blockStarts);
             ResolveFootnotes(document, resolving);
@@ -178,7 +178,7 @@ public static class BitAiMarkdownParser
         if (IndentOf(line) >= 4 && TryIndentedCode(lines, ref index, end, output, isComplete)) return;
         if (TryFencedCode(lines, ref index, end, output, isComplete)) return;
         if (TryThematicBreak(line, ref index, output)) return;
-        if (TryHeading(line, ref index, output, context)) return;
+        if (TryHeading(line, ref index, end, output, context, isComplete)) return;
         if (options.Math && TryMathBlock(lines, ref index, end, output, isComplete)) return;
         if (depth < options.MaxNestingDepth && TryQuote(lines, ref index, end, output, context, isComplete, depth)) return;
         if (depth < options.MaxNestingDepth && TryList(lines, ref index, end, output, context, isComplete, depth)) return;
@@ -244,7 +244,13 @@ public static class BitAiMarkdownParser
         return count >= 3;
     }
 
-    private static bool TryHeading(string line, ref int index, List<BitAiMarkdownBlock> output, BitAiParseContext context)
+    private static bool TryHeading(
+        string line,
+        ref int index,
+        int end,
+        List<BitAiMarkdownBlock> output,
+        BitAiParseContext context,
+        bool isComplete)
     {
         var trimmed = line.TrimStart();
         if (trimmed.Length == 0 || trimmed[0] != '#') return false;
@@ -254,17 +260,21 @@ public static class BitAiMarkdownParser
         if (level > 6) return false;
         if (level < trimmed.Length && trimmed[level] is not (' ' or '\t')) return false;
 
+        // A heading is one line, so it is still being written only while the source ends on that line.
         var text = StripClosingSequence(trimmed[level..].Trim());
-        output.Add(CreateHeading(level, text, context));
+        output.Add(CreateHeading(level, text, context, isOpen: !isComplete && index == end - 1));
         index++;
         return true;
     }
 
-    private static BitAiHeadingBlock CreateHeading(int level, string text, BitAiParseContext context)
+    // A heading still being written hides a dangling delimiter as an open paragraph does, or "## A **bold" would show
+    // its asterisks until the run closes.
+    private static BitAiHeadingBlock CreateHeading(int level, string text, BitAiParseContext context, bool isOpen = false)
     {
-        var heading = new BitAiHeadingBlock(level);
-        heading.Inlines.AddRange(BitAiInlineParser.Parse(text, context.Options, isComplete: true, context));
-        if (context.Options.HeadingIds) heading.Id = context.ClaimHeadingId(text);
+        var options = context.Options;
+        var heading = new BitAiHeadingBlock(level) { IsOpen = isOpen };
+        heading.Inlines.AddRange(BitAiInlineParser.Parse(text, options, !isOpen || !options.HideDanglingDelimiters, context));
+        if (options.HeadingIds) heading.Id = context.ClaimHeadingId(text);
         return heading;
     }
 
@@ -690,7 +700,7 @@ public static class BitAiMarkdownParser
     {
         if (index + 1 >= end) return false;
         if (!lines[index].Contains('|')) return false;
-        if (ParseAlignments(lines[index + 1]) is not { } alignments) return false;
+        if (ParseAlignments(lines[index + 1], isBeingWritten: !isComplete && index + 2 == end) is not { } alignments) return false;
 
         var header = SplitRow(lines[index]);
         if (header.Count == 0) return false;
@@ -719,15 +729,32 @@ public static class BitAiMarkdownParser
         return true;
     }
 
-    private static List<BitAiColumnAlignment>? ParseAlignments(string line)
+    /// <summary>
+    /// Reads the delimiter row of a table, or returns null when the line is not one.
+    /// </summary>
+    /// <param name="line">The line under the header row.</param>
+    /// <param name="isBeingWritten">
+    /// Whether the line is the last one of a source still being written. Its last cell may then stop on the colon a
+    /// left or centered column starts with (":---" or ":---:" on their way), which is read as the alignment it has
+    /// said so far: refused, the row would turn the table back into a header row in waiting, held back as text is,
+    /// so the table would blink out for that one delta.
+    /// </param>
+    private static List<BitAiColumnAlignment>? ParseAlignments(string line, bool isBeingWritten = false)
     {
         if (!line.Contains('-') || !line.Contains('|')) return null;
 
         var alignments = new List<BitAiColumnAlignment>();
-        foreach (var raw in SplitRow(line))
+        var cells = SplitRow(line);
+        for (var i = 0; i < cells.Count; i++)
         {
-            var cell = raw.Trim();
+            var cell = cells[i].Trim();
             if (cell.Length == 0) return null;
+
+            if (isBeingWritten && i == cells.Count - 1 && cell == ":" && line.TrimEnd().EndsWith(':'))
+            {
+                alignments.Add(BitAiColumnAlignment.Left);
+                continue;
+            }
 
             var left = cell[0] == ':';
             var right = cell[^1] == ':';
@@ -1011,6 +1038,9 @@ public static class BitAiMarkdownParser
         var cursor = index;
         var level = 0;
 
+        // Where the lines starting with a pipe that end the text so far start in the builder, or -1.
+        var pipeLines = -1;
+
         while (cursor < end)
         {
             var line = lines[cursor];
@@ -1021,14 +1051,28 @@ public static class BitAiMarkdownParser
                 var setext = line.Trim();
                 if (setext.Length > 0 && setext.All(c => c == '=')) { level = 1; cursor++; break; }
                 if (setext.Length > 0 && setext.All(c => c == '-')) { level = 2; cursor++; break; }
-                if (StartsNewBlock(lines, cursor, end, context)) break;
+                if (StartsNewBlock(lines, cursor, end, context, isComplete)) break;
             }
 
             // A line's leading indentation is not content, as CommonMark reads paragraphs; its
             // trailing spaces are, since two of them make a hard break.
+            var content = line.AsSpan().TrimStart(" \t");
+            if (content.Length > 0 && content[0] == '|') { if (pipeLines < 0) pipeLines = builder.Length; }
+            else pipeLines = -1;
+
             if (builder.Length > 0) builder.Append('\n');
-            builder.Append(line.AsSpan().TrimStart(" \t"));
+            builder.Append(content);
             cursor++;
+        }
+
+        // The header row of a table is a paragraph line until the delimiter row under it arrives, so while the source
+        // may still be writing that row - it ends on the paragraph, or on the line right after it - the lines starting
+        // with a pipe that end the paragraph are held back, as a dangling delimiter is, rather than shown as text for a
+        // moment and then taken back into the table.
+        if (pipeLines >= 0 && level == 0 && !isComplete && options.Tables && options.HideDanglingDelimiters
+            && (cursor >= end || (cursor == end - 1 && IsBlank(lines[cursor]))))
+        {
+            builder.Length = pipeLines;
         }
 
         var text = builder.ToString();
@@ -1048,7 +1092,9 @@ public static class BitAiMarkdownParser
         output.Add(paragraph);
     }
 
-    private static bool StartsNewBlock(List<string> lines, int index, int end, BitAiParseContext context)
+    // isComplete is the paragraph's, whose next line may be the header row of a table whose delimiter row the source
+    // is still writing (see ParseAlignments); the other blocks asking only ever look at what is there.
+    private static bool StartsNewBlock(List<string> lines, int index, int end, BitAiParseContext context, bool isComplete = true)
     {
         var options = context.Options;
         var line = lines[index];
@@ -1060,7 +1106,7 @@ public static class BitAiMarkdownParser
         if (TryReadListMarker(line) is not null) return true;
         if (IsThematicBreak(line)) return true;
         if (options.Math && IsDisplayMathLine(trimmed)) return true;
-        if (options.Tables && index + 1 < end && line.Contains('|') && ParseAlignments(lines[index + 1]) is not null) return true;
+        if (options.Tables && index + 1 < end && line.Contains('|') && ParseAlignments(lines[index + 1], isBeingWritten: !isComplete && index + 2 == end) is not null) return true;
         if (options.AllowRawHtml && IsHtmlBlockStart(trimmed, interruptingParagraph: true)) return true;
         return false;
     }

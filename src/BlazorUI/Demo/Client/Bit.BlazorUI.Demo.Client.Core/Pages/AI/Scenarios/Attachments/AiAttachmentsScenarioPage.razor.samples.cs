@@ -15,16 +15,22 @@ public partial class AiAttachmentsScenarioPage
                EmptyBody="Drag a file onto the composer, paste a screenshot, or use the paperclip. Files over 2 MB are turned away." />
 </div>
 
-@if (rejections.Count > 0)
-{
+<aside aria-label="Turned away">
     <h4>Turned away</h4>
-    <ul>
-        @foreach (var rejection in rejections)
-        {
-            <li><strong>@rejection.FileName</strong>: @Describe(rejection)</li>
-        }
-    </ul>
-}
+    @if (rejections.Count == 0)
+    {
+        <p>Nothing yet. Try a file over 2 MB.</p>
+    }
+    else
+    {
+        <ul>
+            @foreach (var rejection in rejections)
+            {
+                <li><strong>@rejection.FileName</strong>: @Describe(rejection)</li>
+            }
+        </ul>
+    }
+</aside>
 """;
 
     private readonly string example1CsharpCode = """
@@ -48,6 +54,7 @@ private static string Describe(BitAiAttachmentRejection rejection) => rejection.
 {
     BitAiAttachmentRejectionReason.TooLarge => $"{rejection.Size / 1024.0 / 1024.0:0.0} MB is over the limit",
     BitAiAttachmentRejectionReason.TypeNotAllowed => "that type is not accepted",
+    BitAiAttachmentRejectionReason.TooMany => "more files than can be attached at once",
     _ => "it could not be read",
 };
 

@@ -41,6 +41,15 @@ public sealed record BitAiUiOptions
     /// <summary>Show a timestamp under each message.</summary>
     public bool ShowTimestamps { get; init; }
 
+    /// <summary>The time zone the times of the messages are shown in (<see cref="ShowTimestamps"/>).</summary>
+    /// <remarks>
+    /// While it is null, the zone of the browser. Under Blazor Server that is read from the browser once the components
+    /// have rendered, so a prerendered page shows the times in the zone of the server until it is interactive. A
+    /// <see cref="BitAiConversationList"/> with no <see cref="BitAiConversationList.TimeZone"/> of its own counts its days
+    /// in this one too.
+    /// </remarks>
+    public TimeZoneInfo? TimeZone { get; init; }
+
     /// <summary>Show token usage under assistant messages.</summary>
     public bool ShowUsage { get; init; }
 
@@ -68,16 +77,24 @@ public sealed record BitAiUiOptions
     public bool AutoScroll { get; init; } = true;
 
     /// <summary>
-    /// Switch the message list to virtualized rendering once it holds this many messages.
+    /// How many of the newest messages the message list draws once it holds more: the older ones are drawn as the reader
+    /// scrolls up to them.
     /// </summary>
     /// <remarks>
-    /// Virtualization costs correctness in small lists, where variable message heights make the
-    /// scrollbar jump. Below the threshold every message is rendered, which is both simpler and
-    /// faster; above it, only what fits on screen is.
+    /// Up to the threshold every message is rendered, which is both simpler and faster. Past it the list draws the
+    /// newest this many - what a prerender draws too - and the older ones half that many at a time as the reader scrolls
+    /// up to them, keeping what they are reading in place as each page comes in above it; back at the newest message,
+    /// the pages above are let go of again. Every message drawn is drawn whole, at its own height, so nothing is
+    /// estimated and the content never jumps.
     /// </remarks>
     public int VirtualizeThreshold { get; init; } = 60;
 
     /// <summary>Even out bursty text so it renders at a steady rate.</summary>
+    /// <remarks>
+    /// Read by a <see cref="BitAiChat"/> as it creates its own session: turned off, the session is created without
+    /// <see cref="BitAiChatSessionOptions.Pacing"/>, so text renders as the transport sends it. A session handed to the chat
+    /// keeps the pacing of its own options.
+    /// </remarks>
     public bool SmoothStreaming { get; init; } = true;
 
     /// <summary>Show the caret that blinks at the end of streaming text.</summary>

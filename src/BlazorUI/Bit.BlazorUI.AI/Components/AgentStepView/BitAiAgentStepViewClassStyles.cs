@@ -61,4 +61,14 @@ public class BitAiAgentStepViewClassStyles
     /// Custom CSS classes/styles for the error message of the BitAiAgentStepView.
     /// </summary>
     public string? Error { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the button disclosing the detail of the error of a failed BitAiAgentStepView.
+    /// </summary>
+    public BitButtonClassStyles? ErrorDetailButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the detail of the error of a failed BitAiAgentStepView.
+    /// </summary>
+    public string? ErrorDetail { get; set; }
 }

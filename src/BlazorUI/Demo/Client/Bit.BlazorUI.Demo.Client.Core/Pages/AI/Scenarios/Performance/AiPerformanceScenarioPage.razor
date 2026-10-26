@@ -28,16 +28,24 @@
 
         <DocSection Id="how-it-works" Title="How it works">
             <p>
-                Below a threshold every message is rendered, because variable heights make a virtualized scrollbar jumpier
-                than simply drawing everything. Above it (<code>BitAiUiOptions.VirtualizeThreshold</code>, sixty messages
-                here), only what fits on screen is rendered. The conversation is deliberately varied - a thousand identical
-                paragraphs would virtualize beautifully and prove nothing; the hard case is mixed content with wildly
-                different heights.
+                Up to a threshold every message is rendered, which is both simpler and faster. Past it
+                (<code>BitAiUiOptions.VirtualizeThreshold</code>, sixty messages here) only the newest sixty are: scroll up
+                and the older ones come in thirty at a time above what you are reading, which stays where it is, and once you
+                are back at the newest message they are let go of again. Nothing is estimated - every message drawn is drawn
+                at its own height - so nothing is estimated, the content never jumps and the view never goes blank. The conversation is
+                deliberately varied - a thousand identical paragraphs would prove nothing; the hard case is mixed content
+                with wildly different heights.
             </p>
             <p>Where the render budget goes:</p>
             <ul>
-                <li>A part subscribes to itself, so a token re-renders one paragraph, not the transcript.</li>
-                <li>Renders are coalesced to one per @(_options.RenderInterval.TotalMilliseconds)&nbsp;ms.</li>
+                <li>
+                    A part subscribes to itself, so a token re-renders the part it went into - not its message, nor the
+                    transcript. The chat around it renders as a turn starts and as it ends.
+                </li>
+                <li>
+                    Each of those views renders at most once per @(_options.RenderInterval.TotalMilliseconds)&nbsp;ms,
+                    however many tokens arrive in that time.
+                </li>
                 <li>Text accumulates in a builder, so appending stays linear.</li>
                 <li>Markdown before the last block boundary is parsed once and reused.</li>
             </ul>
@@ -45,7 +53,7 @@
 
         <DocSection Id="components" Title="Components used">
             <ul>
-                <li><BitLink Href="/components/ai/messagelist"><code>BitAiMessageList</code></BitLink> - the transcript, virtualized past the threshold, with auto-scroll that follows only a reader at the newest message.</li>
+                <li><BitLink Href="/components/ai/messagelist"><code>BitAiMessageList</code></BitLink> - the transcript, drawing only its newest messages past the threshold, with auto-scroll that follows only a reader at the newest message.</li>
                 <li><BitLink Href="/components/ai/scrolltolatest"><code>BitAiScrollToLatest</code></BitLink> - the way back down once the reader has scrolled away.</li>
                 <li><BitLink Href="/components/ai/messagepartview"><code>BitAiMessagePartView</code></BitLink> - one part, re-rendered only when it changes.</li>
             </ul>

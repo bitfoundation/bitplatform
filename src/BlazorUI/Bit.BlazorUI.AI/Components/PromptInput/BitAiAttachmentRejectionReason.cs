@@ -8,7 +8,10 @@ public enum BitAiAttachmentRejectionReason
     /// <summary>The file is larger than <see cref="BitAiPromptInput.MaxAttachmentSize"/>.</summary>
     TooLarge = 0,
 
-    /// <summary>The file does not match <see cref="BitAiPromptInput.Accept"/>.</summary>
+    /// <summary>
+    /// The file does not match <see cref="BitAiPromptInput.Accept"/> - or a staged file no longer does, once the accepted
+    /// types moved under it (another model was picked).
+    /// </summary>
     TypeNotAllowed = 1,
 
     /// <summary>The browser could not deliver the content, or the transfer was interrupted.</summary>

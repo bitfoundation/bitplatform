@@ -125,7 +125,7 @@ private readonly BitAiSourceListParams[] listParams =
     }
 
     .custom-title {
-        color: #155e75;
+        color: light-dark(#155e75, #67e8f9);
     }
 </style>
 
@@ -139,9 +139,9 @@ private readonly BitAiSourceListParams[] listParams =
 <BitAiSourceList Citations="citations"
                  Style="--bit-AiSourceList-column-min-width: 100%;
                         --bit-AiSourceList-gap: 0.25rem;
-                        --bit-AiSourceList-header-color: #7c3aed;
+                        --bit-AiSourceList-header-color: light-dark(#6d28d9, #a78bfa);
                         --bit-AiSourceList-header-font-size: 0.875rem;
-                        --bit-AiSourceCard-index-color: #7c3aed" />
+                        --bit-AiSourceCard-index-color: light-dark(#6d28d9, #a78bfa)" />
 """;
 
     private readonly string example8RazorCode = """

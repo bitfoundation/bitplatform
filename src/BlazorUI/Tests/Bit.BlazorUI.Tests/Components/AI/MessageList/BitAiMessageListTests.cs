@@ -225,22 +225,185 @@ public class BitAiMessageListTests : BitAiTestBase
     }
 
     // The options are cascaded rather than registered: the services are already read by the time a test runs.
-    private IRenderedComponent<CascadingValue<BitAiUiOptions>> RenderWithThreshold(BitAiConversation conversation, int threshold)
+    private IRenderedComponent<CascadingValue<BitAiUiOptions>> RenderWithThreshold(
+        BitAiConversation conversation,
+        int threshold,
+        Action<ComponentParameterCollectionBuilder<BitAiMessageList>>? parameters = null)
     {
         return RenderComponent<CascadingValue<BitAiUiOptions>>(p => p
             .Add(c => c.Value, BitAiUiOptions.Default with { VirtualizeThreshold = threshold })
-            .AddChildContent<BitAiMessageList>(list => list.Add(c => c.Conversation, conversation)));
+            .AddChildContent<BitAiMessageList>(list =>
+            {
+                list.Add(c => c.Conversation, conversation);
+                parameters?.Invoke(list);
+            }));
     }
 
+    private static List<BitAiMessage> AddMessages(BitAiConversation conversation, int count) =>
+        Enumerable.Range(0, count).Select(i => conversation.AddMessage(BitAiRole.User, $"message {i}")).ToList();
+
+    private static string[] Drawn(IRenderedComponent<IComponent> component) =>
+        component.FindAll("article.bit-aicms").Select(a => a.GetAttribute("data-message-id")!).ToArray();
+
+    private static string[] IdsFrom(List<BitAiMessage> messages, int first) =>
+        messages.Skip(first).Select(m => m.MessageId).ToArray();
+
+    private static BitAiChatMessage ComponentOf(IRenderedComponent<IComponent> component, BitAiMessage message) =>
+        component.FindComponents<BitAiChatMessage>().Single(c => c.Instance.Message == message).Instance;
+
     [TestMethod]
-    public void BitAiMessageListShouldVirtualizePastTheThreshold()
+    public void BitAiMessageListShouldDrawOnlyItsNewestMessagesPastTheThreshold()
     {
         var conversation = new BitAiConversation();
-        for (var i = 0; i < 5; i++) conversation.AddMessage(BitAiRole.User, $"message {i}");
+        var messages = AddMessages(conversation, 5);
 
         var component = RenderWithThreshold(conversation, 3);
 
-        Assert.HasCount(1, component.FindComponents<Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<BitAiMessage>>());
+        CollectionAssert.AreEqual(IdsFrom(messages, 2), Drawn(component));
+
+        // The script reads how many older messages are left out, to ask for them as the reader scrolls up.
+        Assert.AreEqual("2", component.Find(".bit-aimsl").GetAttribute("data-bit-aimsl-old"));
+    }
+
+    [TestMethod]
+    public void BitAiMessageListShouldDrawEveryMessageUpToTheThreshold()
+    {
+        var conversation = new BitAiConversation();
+        var messages = AddMessages(conversation, 3);
+
+        var component = RenderWithThreshold(conversation, 3);
+
+        CollectionAssert.AreEqual(IdsFrom(messages, 0), Drawn(component));
+        Assert.IsFalse(component.Find(".bit-aimsl").HasAttribute("data-bit-aimsl-old"));
+    }
+
+    [TestMethod]
+    public async Task TheReaderReachingTheStartDrawsTheOlderMessagesAPageAtATime()
+    {
+        var conversation = new BitAiConversation();
+        var messages = AddMessages(conversation, 9);
+
+        // A tail of four, drawn two older messages at a time.
+        var component = RenderWithThreshold(conversation, 4, p => p
+            .Add(c => c.HeaderTemplate, b => b.AddMarkupContent(0, "<div class=\"head\"></div>")));
+        var list = component.FindComponent<BitAiMessageList>();
+        var root = () => component.Find(".bit-aimsl");
+
+        CollectionAssert.AreEqual(IdsFrom(messages, 5), Drawn(component));
+        Assert.AreEqual("5", root().GetAttribute("data-bit-aimsl-old"));
+
+        // The header is above the first message, so it waits for that one to be drawn.
+        Assert.IsEmpty(component.FindAll(".head"));
+
+        await list.InvokeAsync(() => list.Instance._OnStartReached());
+
+        CollectionAssert.AreEqual(IdsFrom(messages, 3), Drawn(component));
+        Assert.AreEqual("3", root().GetAttribute("data-bit-aimsl-old"));
+
+        await list.InvokeAsync(() => list.Instance._OnStartReached());
+        await list.InvokeAsync(() => list.Instance._OnStartReached());
+
+        CollectionAssert.AreEqual(IdsFrom(messages, 0), Drawn(component));
+        Assert.IsFalse(root().HasAttribute("data-bit-aimsl-old"));
+        Assert.IsTrue(component.Find(".bit-aimsl-con").Children.First().ClassList.Contains("head"));
+
+        // At the start there is nothing more to draw.
+        await list.InvokeAsync(() => list.Instance._OnStartReached());
+
+        CollectionAssert.AreEqual(IdsFrom(messages, 0), Drawn(component));
+    }
+
+    [TestMethod]
+    public async Task TheOlderPagesAreLetGoOfOnceTheReaderIsBackAtTheNewestMessage()
+    {
+        var conversation = new BitAiConversation();
+        var messages = AddMessages(conversation, 9);
+
+        var component = RenderWithThreshold(conversation, 4);
+        var list = component.FindComponent<BitAiMessageList>();
+
+        await list.InvokeAsync(() => list.Instance._OnPinnedChange(false));
+        await list.InvokeAsync(() => list.Instance._OnStartReached());
+        await list.InvokeAsync(() => list.Instance._OnStartReached());
+
+        CollectionAssert.AreEqual(IdsFrom(messages, 1), Drawn(component));
+
+        // A message arriving while the reader is up there keeps every page they scrolled through.
+        messages.Add(conversation.AddMessage(BitAiRole.User, "message 9"));
+
+        component.WaitForAssertion(() => CollectionAssert.AreEqual(IdsFrom(messages, 1), Drawn(component)));
+
+        await list.InvokeAsync(() => list.Instance._OnPinnedChange(true));
+
+        CollectionAssert.AreEqual(IdsFrom(messages, 6), Drawn(component));
+        Assert.AreEqual("6", component.Find(".bit-aimsl").GetAttribute("data-bit-aimsl-old"));
+    }
+
+    [TestMethod]
+    public void AtTheNewestMessageTheListDrawsItsTailWithAPageOfSlack()
+    {
+        var conversation = new BitAiConversation();
+        var messages = AddMessages(conversation, 6);
+
+        // A tail of four, and a page of two.
+        var component = RenderWithThreshold(conversation, 4);
+
+        CollectionAssert.AreEqual(IdsFrom(messages, 2), Drawn(component));
+
+        // The messages drawn above the tail are let go of only once more than a page of them is: a tail too short to
+        // fill the view, which the script extends at once, is not let go of and drawn again with every message.
+        messages.Add(conversation.AddMessage(BitAiRole.User, "message 6"));
+        component.WaitForAssertion(() => CollectionAssert.AreEqual(IdsFrom(messages, 2), Drawn(component)));
+
+        messages.Add(conversation.AddMessage(BitAiRole.User, "message 7"));
+        component.WaitForAssertion(() => CollectionAssert.AreEqual(IdsFrom(messages, 2), Drawn(component)));
+
+        messages.Add(conversation.AddMessage(BitAiRole.User, "message 8"));
+        component.WaitForAssertion(() => CollectionAssert.AreEqual(IdsFrom(messages, 5), Drawn(component)));
+    }
+
+    [TestMethod]
+    public async Task TheWindowKeepsTheComponentsOfTheMessagesItKeeps()
+    {
+        var conversation = new BitAiConversation();
+        var messages = AddMessages(conversation, 5);
+
+        var component = RenderWithThreshold(conversation, 3);
+        var list = component.FindComponent<BitAiMessageList>();
+        var newest = ComponentOf(component, messages[4]);
+        var before = ComponentOf(component, messages[3]);
+
+        // A turn adds a message under them, and the reader scrolling up draws older ones above them: neither recreates
+        // them, which would close an editor left open on one, with its draft.
+        messages.Add(conversation.AddMessage(BitAiRole.User, "message 5"));
+        component.WaitForAssertion(() => Assert.HasCount(4, component.FindAll("article.bit-aicms")));
+
+        await list.InvokeAsync(() => list.Instance._OnStartReached());
+
+        CollectionAssert.AreEqual(IdsFrom(messages, 1), Drawn(component));
+        Assert.AreSame(newest, ComponentOf(component, messages[4]));
+        Assert.AreSame(before, ComponentOf(component, messages[3]));
+    }
+
+    [TestMethod]
+    public void RemovingAMessageKeepsTheDrawnOnesAndTheTailFull()
+    {
+        var conversation = new BitAiConversation();
+        var messages = AddMessages(conversation, 5);
+
+        var component = RenderWithThreshold(conversation, 3);
+
+        // An older message going leaves the ones drawn as they were.
+        conversation.RemoveMessage(messages[0].MessageId);
+
+        component.WaitForAssertion(() => Assert.AreEqual("1", component.Find(".bit-aimsl").GetAttribute("data-bit-aimsl-old")));
+        CollectionAssert.AreEqual(IdsFrom(messages, 2), Drawn(component));
+
+        // One of the tail going brings an older one in, so the tail stays as long as it is.
+        conversation.RemoveMessage(messages[4].MessageId);
+
+        component.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { messages[1].MessageId, messages[2].MessageId, messages[3].MessageId }, Drawn(component)));
+        Assert.IsFalse(component.Find(".bit-aimsl").HasAttribute("data-bit-aimsl-old"));
     }
 
 #if NET9_0_OR_GREATER
@@ -258,8 +421,8 @@ public class BitAiMessageListTests : BitAiTestBase
         var articles = component.FindAll("article.bit-aicms");
 
         Assert.HasCount(3, articles);
+        StringAssert.Contains(articles[0].TextContent, "message 2");
         StringAssert.Contains(articles[^1].TextContent, "message 4");
-        Assert.IsEmpty(component.FindComponents<Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<BitAiMessage>>());
     }
 #endif
 
@@ -271,7 +434,11 @@ public class BitAiMessageListTests : BitAiTestBase
         var observe = Context.JSInterop.VerifyInvoke("BitBlazorUI.AiMessageList.observe");
 
         Assert.AreEqual(component.Instance.UniqueId, observe.Arguments[0]);
-        Context.JSInterop.VerifyInvoke("BitBlazorUI.AiMessageList.scrollToBottom");
+
+        // Named by the id the script keeps the list's observer by, so a later scroll takes the observer back to pinned too.
+        var scroll = Context.JSInterop.VerifyInvoke("BitBlazorUI.AiMessageList.scrollToBottom");
+        Assert.AreEqual(component.Instance.UniqueId, scroll.Arguments[0]);
+        Assert.AreEqual(false, scroll.Arguments[2]);
     }
 
     [TestMethod]
@@ -394,6 +561,99 @@ public class BitAiMessageListTests : BitAiTestBase
 
         Assert.IsTrue(component.Instance.IsPinned);
         CollectionAssert.AreEqual(new[] { false, true }, reported);
+    }
+
+    [TestMethod]
+    public async Task ScrollingToTheLatestFromThereScrollsAndReportsNothing()
+    {
+        var reported = new List<bool>();
+
+        var component = RenderComponent<BitAiMessageList>(p => p
+            .Add(c => c.Conversation, new BitAiConversation())
+            .Add(c => c.OnPinnedChange, pinned => reported.Add(pinned)));
+
+        await component.InvokeAsync(() => component.Instance.ScrollToLatestAsync(smooth: false));
+
+        var scroll = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.AiMessageList.scrollToBottom");
+        Assert.AreEqual(component.Instance.UniqueId, scroll.Arguments[0]);
+        Assert.AreEqual(false, scroll.Arguments[2]);
+        Assert.IsEmpty(reported);
+    }
+
+    [TestMethod]
+    public async Task OpeningAnotherConversationStartsAtItsNewestMessageAndFollowsIt()
+    {
+        var reported = new List<bool>();
+
+        var component = RenderComponent<BitAiMessageList>(p => p
+            .Add(c => c.Conversation, new BitAiConversation())
+            .Add(c => c.OnPinnedChange, pinned => reported.Add(pinned)));
+
+        await component.InvokeAsync(() => component.Instance._OnPinnedChange(false));
+
+        var next = new BitAiConversation();
+        next.AddMessage(BitAiRole.User, "a new chat");
+
+        component.Render(p => p.Add(c => c.Conversation, next));
+
+        // The reader was away from the newest message of the old conversation: the new one opens at its newest message,
+        // so a scroll-to-latest button shown for the old one goes (a cleared or a new chat).
+        component.WaitForAssertion(() => Assert.IsTrue(component.Instance.IsPinned));
+        CollectionAssert.AreEqual(new[] { false, true }, reported);
+
+        var scrolls = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.AiMessageList.scrollToBottom").ToList();
+        Assert.HasCount(2, scrolls);
+        Assert.AreEqual(component.Instance.UniqueId, scrolls[^1].Arguments[0]);
+    }
+
+    [TestMethod]
+    public async Task AStreamedTokenReRendersNeitherTheListNorItsOtherMessages()
+    {
+        var conversation = new BitAiConversation();
+        var question = conversation.AddMessage(BitAiRole.User, "question");
+        var reply = new BitAiMessage(BitAiRole.Assistant);
+        var text = reply.AddPart(new BitAiTextPart("Once"));
+        conversation.AddMessage(reply);
+
+        var component = RenderComponent<BitAiMessageList>(p => p.Add(c => c.Conversation, conversation));
+        var questionView = component.FindComponents<BitAiChatMessage>().Single(c => c.Instance.Message == question);
+        var questionRenders = questionView.RenderCount;
+
+        for (var i = 0; i < 5; i++) text.Append(" more");
+
+        // The part the text goes into draws it...
+        component.WaitForAssertion(() => StringAssert.Contains(component.Find($"article[data-message-id='{reply.MessageId}']").TextContent, "Once more more more more more"));
+
+        // ...and nothing else is drawn again for it, once every render the tokens asked for has run. The list's own render
+        // count takes in every render below it - the part's included - so the other message says it instead: a render of the
+        // list hands every message view its message again, which re-renders it.
+        await Task.Delay(250);
+
+        Assert.AreEqual(questionRenders, questionView.RenderCount);
+    }
+
+    [TestMethod]
+    public void AMessageTemplateFollowsTheNewestMessageAsItStreams()
+    {
+        var conversation = new BitAiConversation();
+        var reply = new BitAiMessage(BitAiRole.Assistant);
+        var text = reply.AddPart(new BitAiTextPart("Once"));
+        conversation.AddMessage(reply);
+
+        var component = RenderComponent<BitAiMessageList>(p => p
+            .Add(c => c.Conversation, conversation)
+            .Add(c => c.MessageTemplate, message => builder =>
+            {
+                builder.OpenElement(0, "p");
+                builder.AddAttribute(1, "class", "templated");
+                builder.AddContent(2, message.GetText());
+                builder.CloseElement();
+            }));
+
+        text.Append(" more");
+
+        // The template is the app's markup, which only the list draws: it is drawn again as the reply streams.
+        component.WaitForAssertion(() => Assert.AreEqual("Once more", component.Find(".templated").TextContent));
     }
 
     [TestMethod]

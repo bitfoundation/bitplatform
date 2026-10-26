@@ -10,12 +10,20 @@
          dir="@Dir?.ToString().ToLower()">
         @if (ShowHeading)
         {
-            <div style="@Styles?.Header" class="bit-aisrl-hdr @Classes?.Header">@Strings.Sources</div>
+            <div id="@HeaderId" style="@Styles?.Header" class="bit-aisrl-hdr @Classes?.Header">@Strings.Sources</div>
         }
-        <div style="@Styles?.List" class="bit-aisrl-lst @Classes?.List">
+        @* A list a screen reader announces with its count and lets its user step through by item, named by the heading over
+           it - or, with the heading left out, by the words the heading would say. *@
+        <div role="list"
+             aria-labelledby="@(ShowHeading ? HeaderId : null)"
+             aria-label="@(ShowHeading ? null : Strings.Sources)"
+             style="@Styles?.List"
+             class="bit-aisrl-lst @Classes?.List">
             @foreach (var (number, source) in _sources)
             {
+                @* Every card is an item of the list on its own root, which keeps the card the grid cell it stretches over. *@
                 <BitAiSourceCard @key="source.SourceId"
+                                 role="listitem"
                                  Source="source"
                                  Number="number"
                                  OnActivate="OnSourceClick"

@@ -163,6 +163,11 @@ public sealed class BitAiAgentRun
 
     /// <summary>Moves the run to a new status.</summary>
     /// <param name="status">The new status.</param>
+    /// <remarks>
+    /// A run that fails or is cancelled reaches none of the steps it has not finished, so they are completed as
+    /// <see cref="BitAiAgentStepStatus.Skipped"/> - abandoned, rather than left pending, or running with a clock that keeps
+    /// going (a turn stopped mid-step), under a run that has ended.
+    /// </remarks>
     public void SetStatus(BitAiAgentRunStatus status)
     {
         if (Status == status) return;
@@ -174,26 +179,58 @@ public sealed class BitAiAgentRun
             PendingSuggestions = null;
         }
 
+        if (status is BitAiAgentRunStatus.Failed or BitAiAgentRunStatus.Cancelled)
+        {
+            foreach (var step in _steps)
+            {
+                if (step.Status is BitAiAgentStepStatus.Pending or BitAiAgentStepStatus.Running or BitAiAgentStepStatus.Blocked)
+                {
+                    step.Complete(BitAiAgentStepStatus.Skipped);
+                }
+            }
+        }
+
         Touch();
     }
 
     /// <summary>Blocks the run until the user answers.</summary>
     /// <param name="prompt">What the agent needs.</param>
     /// <param name="suggestions">Suggested answers, rendered as one-tap choices.</param>
+    /// <remarks>
+    /// The steps running as the question is asked wait for the answer with the run: they are
+    /// <see cref="BitAiAgentStepStatus.Blocked"/> until <see cref="ResolveInput"/>, rather than drawn as running, with a
+    /// clock that keeps going, under a run that says it waits for the user.
+    /// </remarks>
     public void RequestInput(string prompt, IReadOnlyList<string>? suggestions = null)
     {
         PendingPrompt = prompt;
         PendingSuggestions = suggestions;
         Status = BitAiAgentRunStatus.WaitingForInput;
+
+        foreach (var step in _steps)
+        {
+            if (step.Status is BitAiAgentStepStatus.Running) step.Block();
+        }
+
         Touch();
     }
 
     /// <summary>Clears a pending input request and resumes running.</summary>
+    /// <remarks>
+    /// The steps blocked on the answer run again, from when they first started (<see cref="BitAiAgentStep.StartedAt"/> is
+    /// kept).
+    /// </remarks>
     public void ResolveInput()
     {
         PendingPrompt = null;
         PendingSuggestions = null;
         if (Status is BitAiAgentRunStatus.WaitingForInput) Status = BitAiAgentRunStatus.Running;
+
+        foreach (var step in _steps)
+        {
+            if (step.Status is BitAiAgentStepStatus.Blocked) step.Start();
+        }
+
         Touch();
     }
 

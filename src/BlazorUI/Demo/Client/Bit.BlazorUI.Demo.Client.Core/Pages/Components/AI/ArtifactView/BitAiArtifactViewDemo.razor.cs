@@ -112,6 +112,15 @@ public partial class BitAiArtifactViewDemo
                 },
                 new()
                 {
+                    Name = "CopyButton",
+                    Type = "BitAiCopyButtonClassStyles?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the copy button (a BitAiCopyButton) of the BitAiArtifactView.",
+                    LinkType = LinkType.Link,
+                    Href = "/components/ai/copybutton/#class-styles"
+                },
+                new()
+                {
                     Name = "DownloadButton",
                     Type = "BitButtonClassStyles?",
                     DefaultValue = "null",
@@ -541,7 +550,7 @@ public partial class BitAiArtifactViewDemo
         """);
 
     private readonly BitAiArtifact imageArtifact = Completed(BitAiArtifactKind.Image, "Mountain lake", null,
-                                                              url: "/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg");
+                                                              url: "/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg");
 
     private readonly BitAiArtifact svgArtifact = Completed(BitAiArtifactKind.Svg, "Badge", """
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80" width="240" height="80">

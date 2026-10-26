@@ -43,7 +43,7 @@ public partial class BitAiMessageListDemo
             Name = "HeaderTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content rendered above the first message, inside the scroll area.",
+            Description = "The content rendered above the first message, inside the scroll area. Past BitAiUiOptions.VirtualizeThreshold messages it is drawn once the reader has scrolled up to the first message, along with it.",
         },
         new()
         {
@@ -57,7 +57,7 @@ public partial class BitAiMessageListDemo
             Name = "MessageTemplate",
             Type = "RenderFragment<BitAiMessage>?",
             DefaultValue = "null",
-            Description = "The template that replaces the built-in rendering of a message (a BitAiChatMessage). It is keyed by the message, so removing one message never recreates the ones after it, and it adds no element of its own around what it renders.",
+            Description = "The template that replaces the built-in rendering of a message (a BitAiChatMessage). It is keyed by the message, so removing one message never recreates the ones after it, and it adds no element of its own around what it renders. The list draws it again as the newest message changes, so a template showing the text of a reply follows it as it streams.",
             LinkType = LinkType.Link,
             Href = "/components/ai/chatmessage#message",
         },
@@ -129,7 +129,7 @@ public partial class BitAiMessageListDemo
             Name = "ScrollToLatestAsync",
             Type = "Task",
             DefaultValue = "",
-            Description = "Scrolls to the newest message and resumes following new content (raising OnPinnedChange with true). Its smooth argument (true by default) animates the scroll, unless the reader asked for reduced motion.",
+            Description = "Scrolls to the newest message and resumes following new content (raising OnPinnedChange with true, when the view was not following it). Its smooth argument (true by default) animates the scroll, unless the reader asked for reduced motion.",
         },
     ];
 
@@ -345,7 +345,20 @@ public partial class BitAiMessageListDemo
     }
 
 
-    private readonly BitAiConversation templateConversation = CreateConversation();
+    // The template prints the text of a message as it is, so its conversation is written without Markdown.
+    private readonly BitAiConversation templateConversation = CreateTemplateConversation();
+
+    private static BitAiConversation CreateTemplateConversation()
+    {
+        var conversation = new BitAiConversation();
+
+        conversation.AddMessage(BitAiRole.User, "What is BitAiMessageList for?");
+        conversation.AddMessage(BitAiRole.Assistant, "It renders the transcript of a conversation: every message, laid out by role, in a column that scrolls.");
+        conversation.AddMessage(BitAiRole.User, "Can I draw the messages myself?");
+        conversation.AddMessage(BitAiRole.Assistant, "Yes: a MessageTemplate replaces how every message is drawn, like this compact log.");
+
+        return conversation;
+    }
 
 
     private bool hideSystemMessages = true;

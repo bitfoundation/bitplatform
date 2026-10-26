@@ -101,7 +101,7 @@ private static BitAiMessage CreateResultMessage()
                      Classes="@(new() { Header = "custom-result-header",
                                         Body = "custom-result-body" })" />
 
-<div style="--bit-AiToolResultView-background: #ecfdf5; --bit-AiToolResultView-border-color: #34d399; --bit-AiToolResultView-header-color: #065f46; --bit-AiToolResultView-body-background: #f0fdfa; --bit-AiToolResultView-radius: 1rem;">
+<div style="--bit-AiToolResultView-background: var(--bit-clr-suc-tint); --bit-AiToolResultView-border-color: var(--bit-clr-suc); --bit-AiToolResultView-header-color: var(--bit-clr-suc-fg); --bit-AiToolResultView-body-background: transparent; --bit-AiToolResultView-radius: 1rem;">
     <BitAiToolResultView Part="jsonResult" />
 </div>
 """;

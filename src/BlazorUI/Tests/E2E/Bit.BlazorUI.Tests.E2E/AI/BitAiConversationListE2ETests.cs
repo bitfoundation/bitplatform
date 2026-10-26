@@ -182,6 +182,9 @@ public class BitAiConversationListE2ETests : E2ETestBase
         await Expect(Page.Locator("#cvl-log")).ToHaveTextAsync("delete:c4");
         await Expect(Item("cvl-basic", "Budget review")).ToHaveCountAsync(0);
         await Expect(Page.Locator("#cvl-selected")).ToHaveTextAsync("c1");
+
+        // The button pressed went away with its conversation: the focus is on the one that took its place, not the page.
+        await Expect(Item("cvl-basic", "Old project")).ToBeFocusedAsync();
     }
 
     [TestMethod]

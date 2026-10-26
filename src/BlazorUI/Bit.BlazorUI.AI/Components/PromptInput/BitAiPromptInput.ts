@@ -25,11 +25,20 @@
             const padding = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
             const border = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
 
+            // The box around the text keeps its height while the text is measured at its natural height: collapsed for that
+            // moment, the composer would hand its room back to what sits above it - a transcript, which the browser then
+            // clamps the scroll position of and leaves short of its end once the composer is back.
+            const holder = textarea.parentElement;
+            const held = holder?.style.minHeight ?? '';
+            if (holder) holder.style.minHeight = `${holder.offsetHeight}px`;
+
             textarea.style.height = 'auto';
             const max = lineHeight * Math.max(1, maxRows || 1) + padding + border;
             const height = Math.min(textarea.scrollHeight + border, max);
             textarea.style.height = `${height}px`;
             textarea.style.overflowY = textarea.scrollHeight + border > max ? 'auto' : 'hidden';
+
+            if (holder) holder.style.minHeight = held;
 
             return height;
         }
@@ -248,7 +257,9 @@
         // keystroke, so it is decided here, where the event is. Enter alone submits when submitOnEnter is set, Ctrl or Cmd
         // with Enter submits either way, and Shift or Alt with Enter is left to the browser, which breaks the line. A key
         // of an IME composition is the composition's own, never a submit. The menu marks the textarea with
-        // data-bit-aipri-mnu while it is open.
+        // data-bit-aipri-mnu while it is open. Enter, Tab and Escape drive the menu only when pressed alone, which is all
+        // .NET acts on: with a modifier each keeps its own meaning - Shift+Enter breaks the line, Ctrl or Cmd with Enter
+        // sends, Shift+Tab moves the focus back, and a modified Escape is left to the surface around the composer.
         public static registerSubmitKey(id: string, element: HTMLElement | null, submitOnEnter: boolean) {
             AiPromptInput.unregisterSubmitKey(id);
             if (!element) return;
@@ -257,8 +268,13 @@
                 if (Utils.isComposingKey(e)) return;
 
                 if (element.hasAttribute('data-bit-aipri-mnu') && AiPromptInput.MENU_KEYS.indexOf(e.key) >= 0) {
-                    e.preventDefault();
-                    return;
+                    const modified = e.shiftKey || e.ctrlKey || e.altKey || e.metaKey;
+                    const arrow = e.key === 'ArrowDown' || e.key === 'ArrowUp';
+
+                    if (arrow || !modified) {
+                        e.preventDefault();
+                        return;
+                    }
                 }
 
                 if (e.key !== 'Enter' || e.shiftKey || e.altKey) return;

@@ -42,9 +42,11 @@
                 partner comes.
             </p>
             <p>
-                Renders are coalesced to one per 50&nbsp;ms (<code>BitAiUiOptions.RenderInterval</code>). Streaming faster
-                than that changes nothing a reader can see, and on Blazor Server every render is a diff sent down the
-                circuit, so it costs real bandwidth.
+                Only the part the text goes into re-renders as it streams, and at most once per 50&nbsp;ms
+                (<code>BitAiUiOptions.RenderInterval</code>) however many deltas arrive in between; the rest of the
+                transcript is not drawn again for them, and the chat around it renders as the turn starts and ends.
+                Streaming faster than that changes nothing a reader can see, and on Blazor Server every render is a diff
+                sent down the circuit, so it costs real bandwidth.
             </p>
         </DocSection>
 

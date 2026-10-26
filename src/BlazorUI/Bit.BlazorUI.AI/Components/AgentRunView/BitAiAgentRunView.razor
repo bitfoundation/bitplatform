@@ -4,6 +4,10 @@
 @{
     var answerDisabled = _answering || Disabled;
     var submitDisabled = answerDisabled || string.IsNullOrWhiteSpace(_draft);
+
+    @* Whether this render shows the question, which is what OnAfterRenderAsync moves the focus by. *@
+    var prompt = Run.Status is BitAiAgentRunStatus.WaitingForInput ? Run.PendingPrompt : null;
+    _promptRendered = prompt is not null;
 }
 
 <div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
@@ -38,14 +42,16 @@
 
         @if (Run.Progress is not null && Run.Steps.Count > 0)
         {
+            var stepsCompleted = Strings.StepsCompleted(Run.CompletedStepCount, Run.Steps.Count);
+
             @* The clock keeps moving while the run does, so a stalled run looks stalled. It is a timer, which is a live
                region that stays quiet: a screen reader reads it when asked rather than every second. *@
             <div style="@Styles?.Progress" class="bit-aiarv-prg @Classes?.Progress">
-                <span style="@Styles?.Count" class="bit-aiarv-cnt @Classes?.Count">@Run.CompletedStepCount / @Run.Steps.Count</span>
+                <span style="@Styles?.Count" class="bit-aiarv-cnt @Classes?.Count">@stepsCompleted</span>
                 <BitProgress Value="Run.CompletedStepCount"
                              Max="Run.Steps.Count"
                              AriaLabel="@Strings.Plan"
-                             AriaValueText="@($"{Run.CompletedStepCount} / {Run.Steps.Count}")"
+                             AriaValueText="@stepsCompleted"
                              Disabled="Disabled"
                              Class="bit-aiarv-bar"
                              Styles="@Styles?.ProgressBar"
@@ -57,7 +63,9 @@
             </div>
         }
 
-        <ol style="@Styles?.Steps" class="bit-aiarv-stl @Classes?.Steps">
+        @* The list takes the focus once an answer has taken the question away with the control the focus was on (see
+           OnAfterRenderAsync): it is where the run goes on. It is never a stop of the tab order. *@
+        <ol @ref="_steps" tabindex="-1" style="@Styles?.Steps" class="bit-aiarv-stl @Classes?.Steps">
             @foreach (var step in Run.Steps)
             {
                 <li @key="step.StepId" style="@Styles?.StepItem" class="bit-aiarv-sti @Classes?.StepItem">
@@ -70,7 +78,7 @@
             }
         </ol>
 
-        @if (Run.Status is BitAiAgentRunStatus.WaitingForInput && Run.PendingPrompt is { } prompt)
+        @if (prompt is not null)
         {
             <div style="@Styles?.Prompt" class="bit-aiarv-prm @Classes?.Prompt">
                 <div id="@_promptId" style="@Styles?.Question" class="bit-aiarv-qst @Classes?.Question">@prompt</div>

@@ -11,7 +11,9 @@ namespace Bit.BlazorUI;
 /// the reader does not need, and it expands by itself when something needs attention: a call that failed, or one that
 /// waits for an approval. Its header says what the call is doing or how it ended (running, used, failed,
 /// declined, cancelled - the tool-call texts of <see cref="BitAiStrings"/>), with the icon the definition of the tool
-/// names (<see cref="BitAiToolDefinition.Icon"/>) or, when it names none, a wrench. The arguments are shown as they
+/// names (<see cref="BitAiToolDefinition.Icon"/>) or, when it names none, a wrench. The definition is the call's, or -
+/// until a session puts it on the call as it runs it - the one registered for the tool (<see cref="IBitAiToolRegistry"/>).
+/// The arguments are shown as they
 /// stream in, parsed leniently, and the result as text or as a
 /// <see cref="BitAiJsonView"/>; a running call shows its progress as a <see cref="BitProgress"/>, and one awaiting a
 /// decision a <see cref="BitAiToolApproval"/>.
@@ -21,8 +23,8 @@ namespace Bit.BlazorUI;
 /// with <see cref="BitAiRendererRegistry.RegisterTool(string, BitAiToolCallRenderer)"/> replaces the built-in card,
 /// inside a <see cref="BitAiRendererBoundary"/>.
 /// <br />
-/// <see cref="BitComponentBase.Disabled"/> turns the expander and the approval buttons off; the arguments and the
-/// result stay readable.
+/// <see cref="BitComponentBase.Disabled"/> turns the expander and the approval buttons off, and leaves the card as it is:
+/// the arguments and the result of an open card stay readable, and a collapsed card stays collapsed.
 /// </remarks>
 public partial class BitAiToolCallView : BitAiComponentBase
 {
@@ -35,8 +37,15 @@ public partial class BitAiToolCallView : BitAiComponentBase
     private string? _iconName;
     private string? _iconClasses;
 
+    // The definition the app registered for the tool, looked up again only when the tool of the call changes (see
+    // _Definition).
+    private string? _registeredFor;
+    private BitAiToolDefinition? _registeredDefinition;
+
     private bool _open;
     private bool _initialized;
+    private bool _focusHeader;
+    private ElementReference _header;
     private string? _stateClasses;
     private RenderFragment? _custom;
     private BitAiToolCallPart? _subscribed;
@@ -44,6 +53,7 @@ public partial class BitAiToolCallView : BitAiComponentBase
 
 
 
+    [Inject] private IServiceProvider _services { get; set; } = default!;
 
 
     /// <summary>
@@ -133,6 +143,23 @@ public partial class BitAiToolCallView : BitAiComponentBase
         base.OnParametersSet();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        // The header takes the focus once the decision has taken the prompt away (see HandleOnDecision). A call still
+        // waiting keeps its prompt, and the focus where it is.
+        if (_focusHeader)
+        {
+            _focusHeader = false;
+
+            if (_custom is null && Call.Status is not BitAiToolCallStatus.AwaitingApproval)
+            {
+                await FocusHeaderAsync();
+            }
+        }
+    }
+
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
@@ -150,13 +177,34 @@ public partial class BitAiToolCallView : BitAiComponentBase
 
     private string _BodyId => $"{_Id}-bdy";
 
-    private string _DisplayName => Call.Definition?.DisplayName ?? Call.ToolName;
+    private string _DisplayName => _Definition?.DisplayName ?? Call.ToolName;
+
+    // The definition of the call, else the one the app registered for its tool. A session puts the definition on a call
+    // only as it runs it, so the card would otherwise be headed by the raw name the model wrote - under the wrench - while
+    // the call streams and waits, and for good on a call the session never runs (one a server ran). The registry is
+    // looked up rather than injected: an app that cascades its renderers may register no services at all.
+    private BitAiToolDefinition? _Definition
+    {
+        get
+        {
+            if (Call.Definition is { } definition) return definition;
+
+            if (string.Equals(_registeredFor, Call.ToolName, StringComparison.Ordinal) is false)
+            {
+                _registeredFor = Call.ToolName;
+                _registeredDefinition = (_services.GetService(typeof(IBitAiToolRegistry)) as IBitAiToolRegistry)?.Find(Call.ToolName)?.Definition;
+            }
+
+            return _registeredDefinition;
+        }
+    }
 
     private string _Heading => Call.Status switch
     {
         BitAiToolCallStatus.Failed => Strings.ToolFailed(_DisplayName),
         BitAiToolCallStatus.Completed => Strings.CalledTool(_DisplayName),
-        BitAiToolCallStatus.AwaitingApproval => Strings.ApproveTool(_DisplayName),
+        // The prompt under the header asks the question, so the header only says what the call is waiting for.
+        BitAiToolCallStatus.AwaitingApproval => Strings.ToolAwaitingApproval(_DisplayName),
         BitAiToolCallStatus.Rejected => Strings.ToolRejected(_DisplayName),
         BitAiToolCallStatus.Cancelled => Strings.ToolCancelled(_DisplayName),
         _ => Strings.CallingTool(_DisplayName),
@@ -168,7 +216,7 @@ public partial class BitAiToolCallView : BitAiComponentBase
     {
         get
         {
-            var name = Call.Definition?.Icon;
+            var name = _Definition?.Icon;
 
             if (name.HasNoValue()) return _DefaultToolIcon;
 
@@ -191,6 +239,23 @@ public partial class BitAiToolCallView : BitAiComponentBase
         if (Disabled) return;
 
         _open = _open is false;
+    }
+
+    // A decision moves the call on from AwaitingApproval, so the render it leads to takes the prompt away together with
+    // the button that had the focus, which would fall to the page. The header, which stays, takes it instead.
+    private void HandleOnDecision() => _focusHeader = true;
+
+    private async Task FocusHeaderAsync()
+    {
+        if (IsDisposing) return;
+
+        try
+        {
+            await _header.FocusAsync();
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, and the page with it
+        catch (OperationCanceledException) { }
+        catch (JSException) { } // a header taken off the page in the meantime has nothing to focus
     }
 
     /// <summary>

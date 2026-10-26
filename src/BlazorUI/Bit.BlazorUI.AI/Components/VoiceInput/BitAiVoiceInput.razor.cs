@@ -21,6 +21,7 @@ public partial class BitAiVoiceInput : BitAiComponentBase
     private BitAiIconClassesCache<BitToggleButtonClassStyles> _buttonClasses;
     private int _handle;
     private bool _listening;
+    private bool _hasInterim;
     private bool _supported;
     private string? _status;
     private DotNetObjectReference<BitAiVoiceInput>? _dotnetObj;
@@ -110,6 +111,7 @@ public partial class BitAiVoiceInput : BitAiComponentBase
         }
 
         // An empty interim clears the provisional text the previous one showed.
+        _hasInterim = string.IsNullOrEmpty(interim) is false;
         await OnInterim.InvokeAsync(interim ?? string.Empty);
 
         await InvokeAsync(StateHasChanged);
@@ -245,6 +247,15 @@ public partial class BitAiVoiceInput : BitAiComponentBase
 
         _listening = listening;
         _status = status;
+
+        // Provisional text still showing when the dictation stops, fails or is taken over will never be made final by this
+        // recognizer, so it is cleared - with the empty interim OnInterim promises once the text is final or gone. A phrase
+        // the recognizer was still hearing as it stopped arrives through OnTranscript all the same.
+        if (listening is false && _hasInterim)
+        {
+            _hasInterim = false;
+            await OnInterim.InvokeAsync(string.Empty);
+        }
 
         if (changed)
         {

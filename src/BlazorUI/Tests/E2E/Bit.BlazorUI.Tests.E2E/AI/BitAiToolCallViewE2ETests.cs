@@ -177,8 +177,9 @@ public class BitAiToolCallViewE2ETests : E2ETestBase
 
         await Page.Locator("#ss-ask").ClickAsync();
 
-        // The model writes the call first: its tool is named as the model calls it until the session resolves it.
-        await Expect(Title("tcv-ssx-call-1-1")).ToHaveTextAsync("Calling get_weather");
+        // The model writes the call first: its tool is named by the title the app registered it with from the start, not
+        // only once the session runs it.
+        await Expect(Title("tcv-ssx-call-1-1")).ToHaveTextAsync("Calling Weather");
         await Expect(Card("tcv-ssx-call-1-1")).ToHaveClassAsync(HasClass("bit-aitcv-run"));
         await Expect(Body("tcv-ssx-call-1-1")).ToContainTextAsync("Oslo");
 
@@ -190,7 +191,7 @@ public class BitAiToolCallViewE2ETests : E2ETestBase
         await Expect(Page.Locator("#ss-state")).ToHaveTextAsync("Idle");
         await Expect(Card("tcv-ss-call-1-1")).Not.ToHaveClassAsync(HasClass("bit-aitcv-run"));
         await Expect(Header("tcv-ss-call-1-1")).ToHaveAttributeAsync("aria-expanded", "false");
-        await Expect(Page.Locator("#tcv-ss-call-1-1 .bit-aitcv-sts")).ToHaveTextAsync(new Regex(@"^\d+ms$|^\d+[.,]\ds$"));
+        await Expect(Page.Locator("#tcv-ss-call-1-1 .bit-aitcv-sts")).ToHaveTextAsync(new Regex(@"^\d+ms$|^\d+([.,]\d)?s$"));
 
         await AssertNoServerErrorsAsync();
     }
@@ -203,7 +204,8 @@ public class BitAiToolCallViewE2ETests : E2ETestBase
         await Page.Locator("#apv-ask").ClickAsync();
 
         var card = Card("tcv-apv-call-1-1");
-        await Expect(Title("tcv-apv-call-1-1")).ToHaveTextAsync("Allow Delete records to run?");
+        // The prompt asks the question; the heading only says what the call is waiting for.
+        await Expect(Title("tcv-apv-call-1-1")).ToHaveTextAsync("Delete records is waiting for your approval");
         await Expect(card).ToHaveClassAsync(HasClass("bit-aitcv-apr"));
         await Expect(Header("tcv-apv-call-1-1")).ToHaveAttributeAsync("aria-expanded", "true");
         await Expect(card).ToHaveCSSAsync("border-top-color", await Page.ResolveColorAsync("var(--bit-clr-wrn)"));
@@ -226,6 +228,9 @@ public class BitAiToolCallViewE2ETests : E2ETestBase
         await Expect(Title("tcv-apv-call-1-1")).ToHaveTextAsync("Used Delete records");
         await Expect(card.Locator(".bit-aitcv-apv")).ToHaveCountAsync(0);
         await Expect(card).Not.ToHaveClassAsync(HasClass("bit-aitcv-apr"));
+
+        // The answer took the prompt away with the button it was given with, so the header has the focus, not the page.
+        await Expect(Header("tcv-apv-call-1-1")).ToBeFocusedAsync();
         await Expect(Page.Locator("#apv-answer")).ToHaveTextAsync("Deleted 3 records matching \"inactive users\".");
         await Expect(Page.Locator("#apv-state")).ToHaveTextAsync("Idle");
         await Expect(Page.Locator("#apv-submits")).ToHaveTextAsync("0");

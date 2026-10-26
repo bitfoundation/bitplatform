@@ -358,7 +358,7 @@ public partial class BitAiGenerativeUiViewDemo
 
     private BitAiMessage? ForecastAnswer => forecastSession.Conversation.LastMessage is { Role.IsAssistant: true } last ? last : null;
 
-    private Task AskForForecastsAsync() => forecastSession.SubmitAsync("The week ahead in Oslo, Lisbon and Auckland");
+    private Task AskForForecastsAsync() => forecastSession.SubmitAsync("The weather in Oslo, Lisbon and Auckland");
 
     public async ValueTask DisposeAsync()
     {

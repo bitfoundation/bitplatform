@@ -10,11 +10,15 @@
     {
         @* A name nothing is registered under is a quiet placeholder rather than an exception: a component the model
            made up should not take down the response around it. While the props still stream, the name may yet be
-           one the part is not done spelling, so nothing is said until it completes. *@
+           one the part is not done spelling, so nothing is said until it completes. The reason is its tooltip and,
+           since a tooltip is not read out, its accessible name as well. *@
         @if (Part.IsStreaming is false)
         {
+            var reason = Strings.ComponentNotRegistered(Part.ComponentName);
+
             <BitTag Text="@Part.ComponentName"
-                    Title="@Strings.ComponentNotRegistered(Part.ComponentName)"
+                    Title="@reason"
+                    AriaLabel="@reason"
                     IconName="Warning"
                     Color="BitColor.Warning"
                     Variant="BitVariant.Outline"

@@ -11,6 +11,10 @@
         private static _owner: DotNetObject | null = null;
         private static _ownerId: string | null = null;
 
+        // The recognizers stopped but not ended yet. stop() asks a recognizer to finish the phrase it is hearing, which it
+        // delivers as a final result before its end, so until then that result is still its component's to receive.
+        private static _finishing = new Set<any>();
+
         // Whether this browser offers a speech API to transcribe with.
         public static isDictationSupported() {
             const w = window as any;
@@ -48,7 +52,8 @@
             current.interimResults = true;
 
             current.onresult = (e: any) => {
-                if (AiVoiceInput._recognition !== current) return;
+                const finishing = AiVoiceInput._finishing.has(current);
+                if (AiVoiceInput._recognition !== current && !finishing) return;
 
                 let final = '';
                 let interim = '';
@@ -59,6 +64,14 @@
                     } else {
                         interim += result[0].transcript;
                     }
+                }
+
+                // A stopped recognizer only finishes its last phrase: what it commits to is kept, and nothing provisional
+                // is shown any more, since the dictation is over.
+                if (finishing) {
+                    if (!final) return;
+
+                    interim = '';
                 }
 
                 dotnetObj.invokeMethodAsync('OnTranscriptReceived', final, interim).catch(() => { });
@@ -73,6 +86,8 @@
             // A recognizer that was stopped or replaced reports its end late; only the live one may tell .NET that the
             // dictation is over, or a quick stop and restart would show the button as off.
             current.onend = () => {
+                AiVoiceInput._finishing.delete(current);
+
                 if (AiVoiceInput._recognition !== current) return;
 
                 AiVoiceInput.clear();
@@ -89,18 +104,21 @@
             return handle;
         }
 
-        // Stops the dictation; with a handle, only the recognizer that handle stands for.
+        // Stops the dictation; with a handle, only the recognizer that handle stands for. It is no longer the live one from
+        // here on, but the phrase it was hearing still reaches its component (see _finishing) until it ends.
         public static stopDictation(handle: number) {
             const current = AiVoiceInput._recognition;
             if (!current) return;
             if (handle && handle !== AiVoiceInput._handle) return;
 
             AiVoiceInput.clear();
+            AiVoiceInput._finishing.add(current);
 
             try {
                 current.stop();
             } catch {
-                // already stopped
+                // already stopped, so no result and no end is coming
+                AiVoiceInput._finishing.delete(current);
             }
         }
 

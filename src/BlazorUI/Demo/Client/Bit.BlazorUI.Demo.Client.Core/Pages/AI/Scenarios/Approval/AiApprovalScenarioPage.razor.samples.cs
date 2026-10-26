@@ -25,7 +25,9 @@ protected override void OnInitialized() => session = new BitAiChatSession(
     AiDemoToolTransports.CallsTool(
         "delete_records",
         """{"filter":"status = 'archived' AND updated < '2024-01-01'"}""",
-        "Deleted 128 archived records. Nothing else was touched."),
+        "Deleted 128 archived records. Nothing else was touched.",
+        // What the model says when the user declines: the call comes back to it as a failure.
+        declinedAnswer: "Understood - I did not delete anything; the archived records are still there."),
     tools: Tools,
     approvalPolicy: Policy);
 

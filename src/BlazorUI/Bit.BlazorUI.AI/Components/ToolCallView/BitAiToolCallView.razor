@@ -22,7 +22,8 @@
     {
         var isRunning = Call.Status is BitAiToolCallStatus.Running or BitAiToolCallStatus.Streaming;
 
-        <button type="button"
+        <button @ref="_header"
+                type="button"
                 style="@Styles?.Header"
                 class="bit-aitcv-hdr @Classes?.Header"
                 disabled="@Disabled"
@@ -104,8 +105,10 @@
 
         @if (Call.Status is BitAiToolCallStatus.AwaitingApproval)
         {
+            @* The decision takes the prompt away, and the button it was made with along with it (see HandleOnDecision). *@
             <BitAiToolApproval Call="Call"
                                Session="Session"
+                               OnDecision="HandleOnDecision"
                                Disabled="Disabled"
                                Class="bit-aitcv-apv"
                                Styles="@Styles?.Approval"

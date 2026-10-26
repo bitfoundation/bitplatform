@@ -15,7 +15,8 @@
 //                                       group of fields                                      (default: $clr-fg-sec)
 //   --bit-AiForm-description-font-size  size of the description and of the help text         (default: $tg-fs-xs)
 //   --bit-AiForm-group-border-color     border color of a group of fields (a nested object,
-//                                       a list)                                              (default: $clr-brd-pri)
+//                                       a list), and of the rule between the entries of a
+//                                       list of objects                                      (default: $clr-brd-pri)
 //   --bit-AiForm-group-radius           corner radius of a group of fields                   (default: $shp-radius-control)
 //   --bit-AiForm-group-padding          inset of a group of fields                           (default: spacing(1.5))
 //   --bit-AiForm-legend-color           color of the legend of a group of fields             (default: $clr-fg-pri)
@@ -92,6 +93,13 @@
     display: flex;
     align-items: flex-start;
     gap: spacing(1);
+}
+
+// The entries of a list of objects are groups of fields alike, so each one after the first is set off from the one
+// before it by a rule in the color of the group around them.
+.bit-aifrm-iob + .bit-aifrm-iob {
+    padding-block-start: var(--bit-AiForm-gap, #{spacing(1.5)});
+    border-block-start: $shp-border-width $shp-border-style var(--bit-AiForm-group-border-color, #{$clr-brd-pri});
 }
 
 .bit-aifrm-ibd {

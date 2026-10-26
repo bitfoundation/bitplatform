@@ -46,7 +46,9 @@
                                                     Disabled="@(_session?.IsGenerating ?? false)" />
                             </ComposerPrefixTemplate>
                             <ComposerHintTemplate>
-                                <BitAiContextMeter Conversation="_session?.Conversation" Model="_model" />
+                                @* The window of the model picked now, rather than of the one the last reply ran on, which
+                                   the conversation reports - a Model is only the fallback for a conversation that does not. *@
+                                <BitAiContextMeter Conversation="_session?.Conversation" Window="_model?.ContextWindow" />
                             </ComposerHintTemplate>
                         </BitAiChat>
                     </ChildContent>

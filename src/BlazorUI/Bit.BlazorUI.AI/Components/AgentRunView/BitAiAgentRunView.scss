@@ -94,6 +94,16 @@ $aiarv-brd: var(--bit-AiAgentRunView-border-width, #{$shp-border-width}) $shp-bo
     margin: 0;
     padding: 0;
     list-style: none;
+
+    // The list takes the focus from script alone, once an answer has taken the question away: it shows the ring a
+    // keyboard user follows, drawn inside it, and nothing to a pointer.
+    &:focus {
+        outline: none;
+    }
+
+    &:focus-visible {
+        @include focus-ring-inset($clr-pri-focus);
+    }
 }
 
 .bit-aiarv-prm {
@@ -107,9 +117,10 @@ $aiarv-brd: var(--bit-AiAgentRunView-border-width, #{$shp-border-width}) $shp-bo
     background-color: var(--bit-AiAgentRunView-prompt-background, #{$clr-wrn-tint});
 }
 
+// The question is read in the color of the panel (the root sets it), so a panel an app recolors through its Style or
+// Class recolors the question with it.
 .bit-aiarv-qst {
     flex: 1 1 spacing(24);
-    color: $clr-fg-pri;
 }
 
 .bit-aiarv-ans {
@@ -129,7 +140,7 @@ $aiarv-brd: var(--bit-AiAgentRunView-border-width, #{$shp-border-width}) $shp-bo
     margin-block-start: spacing(1.5);
 }
 
-.bit-aiarv.bit-dis :is(.bit-aiarv-hdr, .bit-aiarv-gol, .bit-aiarv-prg, .bit-aiarv-qst) {
+.bit-aiarv.bit-dis :is(.bit-aiarv-hdr, .bit-aiarv-gol, .bit-aiarv-prg) {
     color: inherit;
 }
 

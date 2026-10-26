@@ -30,7 +30,10 @@
             Copy and feedback work on the <b>Message</b> alone; regenerate needs the <b>Session</b> that drives it. What the row
             shows follows the <BitLink Href="/components/ai/optionsprovider">BitAiUiOptions</BitLink> in force:
             <b>ShowMessageActions</b> for the buttons, <b>ShowModelName</b>, <b>ShowUsage</b> and <b>ShowTimestamps</b> for the
-            metadata (this site turns the model and the usage on).
+            metadata (this site turns the model and the usage on). The model is shown by the name the registered model catalog
+            (<b>ai.AddModels</b>) gives it, its id otherwise; the time in the <b>TimeZone</b> of the options, else in the
+            reader's own zone, which the browser is asked for once the row has rendered. The <b>datetime</b> of the time
+            element is the instant itself, in UTC.
         </BitText>
         <br />
         <BitText>

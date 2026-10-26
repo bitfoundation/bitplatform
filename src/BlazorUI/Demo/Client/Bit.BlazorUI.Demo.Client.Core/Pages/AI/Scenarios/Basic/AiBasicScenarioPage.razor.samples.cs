@@ -8,7 +8,7 @@ public partial class AiBasicScenarioPage
 <div style="height: 560px">
     <BitAiChat Session="session"
                EmptyTitle="Ask me anything"
-               EmptyBody="This demo echoes what you send, one character at a time."
+               EmptyBody="This demo echoes what you send, a few characters at a time."
                Suggestions="suggestions" />
 </div>
 """;
@@ -43,7 +43,14 @@ builder.Services.AddBitBlazorUIAIServices(ai =>
 // turns its stream into the same events.
 public static IBitAiTransport Echo() => new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
 {
-    var reply = $"You said: {AiScript.LastUserText(request)}";
+    var said = AiScript.LastUserMessage(request);
+    var text = said?.GetText() ?? string.Empty;
+    var files = said?.Attachments.Count ?? 0;
+
+    // A message can carry files and no text at all, and an echo of nothing would read as no answer.
+    var reply = text.Length > 0 ? $"You said: {text}"
+              : files == 1 ? "You sent 1 file."
+              : $"You sent {files} files.";
 
     await yielder(new BitAiMessageStartedEvent());
     await foreach (var evt in AiScript.Write(reply, 3, 12, token)) await yielder(evt);

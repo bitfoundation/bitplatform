@@ -11,7 +11,8 @@ namespace Bit.BlazorUI;
 /// is visible (a <see cref="BitAiAgentStepView"/> each), with its own state and timing, and the clock keeps moving while
 /// the run does, so a stalled run looks stalled. When the run asks the user something it shows the question with the
 /// suggested answers and a field for an answer of the user's own, and hands the answer to <see cref="OnRespond"/> - or,
-/// without one, to the <see cref="Session"/>.
+/// without one, to the <see cref="Session"/>. Once the run takes the answer the question goes, and the list of the steps
+/// takes the focus the question had.
 /// </remarks>
 public partial class BitAiAgentRunView : BitAiComponentBase
 {
@@ -19,9 +20,16 @@ public partial class BitAiAgentRunView : BitAiComponentBase
     private readonly Dictionary<string, object> _answerInputAttributes;
     private BitAiAgentRun? _subscribed;
     private System.Threading.Timer? _clock;
+    private TimeSpan _clockInterval;
     private bool _answering;
     private string? _draft;
     private string _promptId = string.Empty;
+
+    // The answer takes the question away with the control the focus was on, so the steps take the focus once the render
+    // that drops the question is on the page (see RespondAsync and OnAfterRenderAsync).
+    private bool _focusSteps;
+    private bool _promptRendered;
+    private ElementReference _steps;
 
 
 
@@ -54,7 +62,7 @@ public partial class BitAiAgentRunView : BitAiComponentBase
     public BitAiAgentRunViewClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// How often the elapsed time is refreshed while the run is active.
+    /// How often the elapsed time is refreshed while the run is active. A new interval takes effect at once.
     /// <br />
     /// The default value is <strong>one second</strong>.
     /// </summary>
@@ -124,6 +132,20 @@ public partial class BitAiAgentRunView : BitAiComponentBase
         base.OnParametersSet();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        // The question an answer was given to is off the page now, and the button or the field that had the focus with
+        // it, which would leave the focus to the page: the steps, where the run goes on, take it instead.
+        if (_focusSteps && _promptRendered is false)
+        {
+            _focusSteps = false;
+
+            await FocusStepsAsync();
+        }
+    }
+
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         if (IsDisposed || disposing is false) return;
@@ -161,7 +183,14 @@ public partial class BitAiAgentRunView : BitAiComponentBase
         {
             if (active && _clock is null && IsDisposing is false)
             {
-                _clock = new System.Threading.Timer(_ => RequestRender(), null, ClockInterval, ClockInterval);
+                _clockInterval = ClockInterval;
+                _clock = new System.Threading.Timer(_ => RequestRender(), null, _clockInterval, _clockInterval);
+            }
+            else if (active && _clock is not null && _clockInterval != ClockInterval)
+            {
+                // A pace changed while the run is under way takes effect at once, not with the next run.
+                _clockInterval = ClockInterval;
+                _clock.Change(_clockInterval, _clockInterval);
             }
             else if (active is false && _clock is not null)
             {
@@ -169,6 +198,20 @@ public partial class BitAiAgentRunView : BitAiComponentBase
                 _clock = null;
             }
         }
+    }
+
+    private async Task FocusStepsAsync()
+    {
+        if (IsDisposing) return;
+
+        try
+        {
+            // The list stays where it is on the page, right above where the question was, so focusing it scrolls nothing.
+            await _steps.FocusAsync(preventScroll: true);
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, and the page with it
+        catch (OperationCanceledException) { }
+        catch (JSException) { } // a list taken off the page in the meantime has nothing to focus
     }
 
     private Task HandleOnAnswerEnter(KeyboardEventArgs e) =>
@@ -179,6 +222,10 @@ public partial class BitAiAgentRunView : BitAiComponentBase
         if (Disabled || _answering || string.IsNullOrWhiteSpace(answer)) return;
 
         _answering = true;
+
+        // Set before the answer is handed on: the run may take it, and drop the question, in a render while the session
+        // is still streaming the turn it continues (see OnAfterRenderAsync).
+        _focusSteps = true;
 
         try
         {
@@ -200,6 +247,9 @@ public partial class BitAiAgentRunView : BitAiComponentBase
         finally
         {
             _answering = false;
+
+            // An answer the run did not take leaves the question - and the focus - where they were.
+            if (_subscribed?.Status is BitAiAgentRunStatus.WaitingForInput) _focusSteps = false;
         }
     }
 }

@@ -67,18 +67,23 @@ public static class AiScript
     public static Task Pause(int milliseconds, CancellationToken cancellationToken) =>
         Task.Delay(milliseconds, cancellationToken);
 
-    /// <summary>The text of the most recent user message.</summary>
+    /// <summary>The most recent user message.</summary>
     /// <param name="request">The request to read.</param>
-    /// <returns>The user text, or an empty string.</returns>
-    public static string LastUserText(BitAiRequest request)
+    /// <returns>The message, or <see langword="null"/> when the user has not written yet.</returns>
+    public static IBitAiMessage? LastUserMessage(BitAiRequest request)
     {
         for (var i = request.Messages.Count - 1; i >= 0; i--)
         {
-            if (request.Messages[i].Role.IsUser) return request.Messages[i].GetText();
+            if (request.Messages[i].Role.IsUser) return request.Messages[i];
         }
 
-        return string.Empty;
+        return null;
     }
+
+    /// <summary>The text of the most recent user message.</summary>
+    /// <param name="request">The request to read.</param>
+    /// <returns>The user text, or an empty string.</returns>
+    public static string LastUserText(BitAiRequest request) => LastUserMessage(request)?.GetText() ?? string.Empty;
 
     /// <summary>Whether a tool has already returned a result since the most recent user message.</summary>
     /// <param name="request">The request to read.</param>
@@ -97,6 +102,25 @@ public static class AiScript
         }
 
         return false;
+    }
+
+    /// <summary>The outcome of the latest tool call that returned since the most recent user message.</summary>
+    /// <param name="request">The request to read.</param>
+    /// <returns>The outcome, or <see langword="null"/> when no tool has returned this turn.</returns>
+    /// <remarks>
+    /// What a model reads before it answers: a call the user declined comes back as a failure, and the answer has to
+    /// say that nothing was done rather than report what the tool would have done.
+    /// </remarks>
+    public static BitAiToolOutcome? ToolOutcomeThisTurn(BitAiRequest request)
+    {
+        for (var i = request.Messages.Count - 1; i >= 0; i--)
+        {
+            var message = request.Messages[i];
+            if (message.Role.IsUser) return null;
+            if (message.Parts.OfType<BitAiToolCallPart>().LastOrDefault(c => c.Result is not null) is { } call) return call.Result;
+        }
+
+        return null;
     }
 
     /// <summary>Reports plausible token usage for a generated response.</summary>

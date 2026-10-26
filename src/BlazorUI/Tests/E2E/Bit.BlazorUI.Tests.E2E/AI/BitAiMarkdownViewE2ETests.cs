@@ -198,6 +198,7 @@ public class BitAiMarkdownViewE2ETests : E2ETestBase
         await Expect(backLinks.Nth(0)).ToHaveAttributeAsync("href", "#mdv-fn-fnref-1-1");
         await Expect(backLinks.Nth(1)).ToHaveAttributeAsync("href", "#mdv-fn-fnref-1-2");
         await Expect(backLinks.Nth(0)).ToHaveAccessibleNameAsync("Back to reference 1");
+        await Expect(backLinks.Nth(1)).ToHaveAccessibleNameAsync("Back to reference 1-2");
 
         // The notes are quieter than the text they annotate.
         await Expect(view.Locator(".bit-aimdv-fns")).ToHaveCSSAsync("color", await Page.ResolveColorAsync("var(--bit-clr-fg-sec)"));
@@ -274,11 +275,16 @@ public class BitAiMarkdownViewE2ETests : E2ETestBase
 
         var view = Page.Locator("#mdv-unsafe");
 
-        // Every scheme that can run script, however it is cased, is neutralised to "#". (The entity-encoded ones are
-        // kept as written, which the browser reads as a harmless relative address: the protocol check below covers them.)
+        // Every scheme that can run script, however it is cased, is taken off its link, which keeps its text and no address
+        // at all - "#" would still open the home page of the app in a new tab - and so is no link. (The entity-encoded ones
+        // are kept as written, which the browser reads as a harmless relative address: the protocol check below covers them.)
         foreach (var name in new[] { "a script link", "an upper-case one", "a vbscript one", "a data one" })
         {
-            await Expect(view.GetByRole(AriaRole.Link, new() { Name = name, Exact = true })).ToHaveAttributeAsync("href", "#");
+            var neutralised = view.Locator("a.bit-aimdv-lnk", new() { HasText = name });
+            await Expect(neutralised).ToHaveCountAsync(1);
+            Assert.IsNull(await neutralised.GetAttributeAsync("href"), $"'{name}' has no address.");
+            Assert.IsNull(await neutralised.GetAttributeAsync("target"), $"'{name}' opens no new tab.");
+            await Expect(view.GetByRole(AriaRole.Link, new() { Name = name, Exact = true })).ToHaveCountAsync(0);
         }
 
         await Expect(view.GetByRole(AriaRole.Link, new() { Name = "a safe one" })).ToHaveAttributeAsync("href", "https://bitplatform.dev/");
@@ -286,8 +292,8 @@ public class BitAiMarkdownViewE2ETests : E2ETestBase
         await Expect(view.GetByRole(AriaRole.Link, new() { Name = "a relative one" })).ToHaveAttributeAsync("href", "/e2e/aimarkdownview");
 
         // What the browser itself parsed out of every href of the view: never a scheme that runs anything.
-        var protocols = await view.Locator("a").EvaluateAllAsync<string[]>("links => links.map(a => a.protocol)");
-        Assert.AreEqual(9, protocols.Length);
+        var protocols = await view.Locator("a[href]").EvaluateAllAsync<string[]>("links => links.map(a => a.protocol)");
+        Assert.AreEqual(5, protocols.Length);
         foreach (var protocol in protocols)
         {
             Assert.IsTrue(protocol is "http:" or "https:" or "mailto:", $"A link of the view has the protocol {protocol}.");
@@ -347,6 +353,9 @@ public class BitAiMarkdownViewE2ETests : E2ETestBase
         await Page.Keyboard.PressAsync("Enter");
         await Expect(view.Locator("img[src='https://other.e2e.test/ask/photo.svg']")).ToHaveAttributeAsync("alt", "");
         await Expect(photo).ToHaveCountAsync(0);
+
+        // The button pressed is gone, and the image it loaded holds the focus it had rather than the body of the page.
+        await Expect(view.Locator("img[src='https://other.e2e.test/ask/photo.svg']")).ToBeFocusedAsync();
     }
 
     [TestMethod]

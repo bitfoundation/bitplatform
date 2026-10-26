@@ -199,7 +199,7 @@ public partial class BitAiToolCallViewDemo
                     Name = "Definition",
                     Type = "BitAiToolDefinition?",
                     DefaultValue = "null",
-                    Description = "The definition of the tool, resolved from the tool registry when the session starts running the call. The card is headed by its DisplayName, and its Risk decides how the approval prompt looks. Null for a tool the host does not know, which is shown by its raw name.",
+                    Description = "The definition of the tool, resolved from the tool registry when the session starts running the call. The card is headed by its DisplayName and draws its Icon, and its Risk decides how the approval prompt looks. Until it is set, the card reads the definition registered for the tool with AddBitBlazorUIAIServices (IBitAiToolRegistry); a tool the host does not know is shown by its raw name.",
                     LinkType = LinkType.Link,
                     Href = "/components/ai/toolapproval#tool-definition",
                 },
@@ -792,6 +792,7 @@ public partial class BitAiToolCallViewDemo
         public override string ToolCancelled(string tool) => $"{tool} لغو شد";
         public override string ToolRejected(string tool) => $"{tool} رد شد";
         public override string ApproveTool(string tool) => $"اجازه‌ی اجرای {tool} داده شود؟";
+        public override string ToolAwaitingApproval(string tool) => $"{tool} منتظر اجازه‌ی شماست";
         public override string Approve => "اجازه";
         public override string ApproveAlways => "همیشه اجازه";
         public override string Reject => "رد";

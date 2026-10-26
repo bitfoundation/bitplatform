@@ -248,7 +248,8 @@ public class BitAiChatSessionControlTests
         session.Stop();
         await turn;
 
-        session.Approve("c1", BitAiApprovalDecision.Approved);
+        // Refused, and said so: a caller (the approval prompt) reports no decision for it.
+        Assert.IsFalse(session.Approve("c1", BitAiApprovalDecision.Approved));
 
         Assert.AreEqual(BitAiToolCallStatus.Cancelled, awaiting!.Status);
         Assert.AreEqual(BitAiApprovalDecision.Undecided, awaiting.Approval);

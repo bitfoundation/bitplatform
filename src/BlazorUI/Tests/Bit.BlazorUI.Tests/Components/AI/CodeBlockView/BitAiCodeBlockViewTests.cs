@@ -136,6 +136,51 @@ public class BitAiCodeBlockViewTests : BitAiTestBase
         Assert.AreEqual("a\nb", component.Find(".bit-aicbv-cod").TextContent);
     }
 
+    // A "\r" left in the text is a character of its own, which an engine copying a selection turns into a second break
+    // (Firefox), doubling every line of the code.
+    [TestMethod]
+    public void TheCodeIsDrawnWithLineFeedsAloneWhateverItsLineEndings()
+    {
+        const string code = "int a = 1;\r\nint b = 2;\r\n";
+
+        var component = RenderComponent<BitAiCodeBlockView>(p => p
+            .Add(c => c.Code, code)
+            .Add(c => c.Language, "csharp")
+            .Add(c => c.CascadedOptions, BitAiUiOptions.Default with { ShowLineNumbers = true }));
+
+        Assert.HasCount(2, component.FindAll(".bit-aicbv-cod > span.bit-aicbv-lin"));
+        Assert.AreEqual("int a = 1;\nint b = 2;\n", component.Find(".bit-aicbv-cod").TextContent);
+        var drawn = component.Find(".bit-aicbv-cod").OuterHtml;
+        Assert.IsFalse(drawn.Contains('\r') || drawn.Contains("&#xD;", System.StringComparison.OrdinalIgnoreCase));
+        Assert.HasCount(2, component.FindAll(".bit-aicbv-typ"));
+        Assert.AreEqual("2", component.FindAll(".bit-aicbv-lin")[1].QuerySelector(".bit-aicbv-num")!.TextContent);
+
+        // What the copy button copies is the code as it was given.
+        Assert.AreEqual(code, component.FindComponent<BitAiCopyButton>().Instance.Content);
+    }
+
+    // A scrolling box holds nothing that takes the focus, and WebKit leaves it out of the tab order: the body is marked for
+    // the page script (BitAiScrollStops.ts) that puts it in the tab order while it has something to scroll.
+    [TestMethod]
+    public void TheBodyTakesTheFocusSoAKeyboardCanScrollIt()
+    {
+        var component = RenderComponent<BitAiCodeBlockView>(p => p.Add(c => c.Code, "x"));
+
+        Assert.IsTrue(component.Find(".bit-aicbv-bdy").HasAttribute("data-bit-ai-scroll"));
+        Assert.IsNull(component.Find(".bit-aicbv-bdy").GetAttribute("tabindex"));
+
+        // A tab stop is announced by its name, so the body is a group named for the code it holds: its file, else its
+        // language, else just code.
+        Assert.AreEqual("group", component.Find(".bit-aicbv-bdy").GetAttribute("role"));
+        Assert.AreEqual("Code", component.Find(".bit-aicbv-bdy").GetAttribute("aria-label"));
+
+        component.Render(p => p.Add(c => c.Language, "csharp"));
+        Assert.AreEqual("csharp code", component.Find(".bit-aicbv-bdy").GetAttribute("aria-label"));
+
+        component.Render(p => p.Add(c => c.FileName, "Program.cs"));
+        Assert.AreEqual("Program.cs", component.Find(".bit-aicbv-bdy").GetAttribute("aria-label"));
+    }
+
     [TestMethod]
     public void WithoutLineNumbersNoLineIsWrapped()
     {

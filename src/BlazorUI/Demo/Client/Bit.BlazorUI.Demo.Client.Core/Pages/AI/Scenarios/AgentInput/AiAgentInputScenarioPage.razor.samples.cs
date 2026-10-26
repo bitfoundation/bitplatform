@@ -23,13 +23,23 @@ public ValueTask DisposeAsync() => session.DisposeAsync();
     private const string example1TransportCode = """
 public static IBitAiTransport AsksForInput() => new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
 {
-    // One id for the run across both turns, so the second turn resumes it.
-    const string runId = "run-migration";
-    var answered = request.Messages.Count(m => m.Role.IsUser) > 1;
+    // The first message asks, the answer to it continues the run, and whatever is said after that is talk. The run is
+    // named after the message that started it, so the answer - the second user message - resumes that run and no other.
+    var users = request.Messages.Where(m => m.Role.IsUser).ToArray();
+    var runId = $"run-migration-{users[0].MessageId}";
 
     await yielder(new BitAiMessageStartedEvent());
 
-    if (answered is false)
+    if (users.Length > 2)
+    {
+        await foreach (var evt in AiScript.Write("That migration run is over - what it did is in its steps above.", 4, 12, token))
+            await yielder(evt);
+
+        await yielder(new BitAiMessageCompletedEvent());
+        return;
+    }
+
+    if (users.Length == 1)
     {
         await yielder(new BitAiAgentRunStartedEvent(runId) { AgentName = "Migration agent", Goal = "Move the database to the new schema" });
         await yielder(new BitAiAgentPlanEvent(runId,
@@ -54,13 +64,28 @@ public static IBitAiTransport AsksForInput() => new AiScriptedTransport((request
         return;
     }
 
-    // The answer arrived as a user message: carry on from step two.
-    await yielder(new BitAiAgentStepCompletedEvent(runId, "s2") { Summary = "Window agreed" });
+    // The answer arrived as a user message. No window after all stops the run, which skips the steps it will not take.
+    var window = users[1].GetText().Trim();
+
+    if (window == "Ask me again later")
+    {
+        await yielder(new BitAiAgentStepCompletedEvent(runId, "s2", BitAiAgentStepStatus.Skipped) { Summary = "Postponed" });
+        await yielder(new BitAiAgentRunCompletedEvent(runId, BitAiAgentRunStatus.Cancelled));
+
+        await foreach (var evt in AiScript.Write("Understood - I will leave the database as it is.", 4, 12, token))
+            await yielder(evt);
+
+        await yielder(new BitAiMessageCompletedEvent());
+        return;
+    }
+
+    // Otherwise carry on from step two.
+    await yielder(new BitAiAgentStepCompletedEvent(runId, "s2") { Summary = $"Window: {window}" });
     await yielder(new BitAiAgentStepStartedEvent(runId, "s3"));
     await yielder(new BitAiAgentStepCompletedEvent(runId, "s3") { Summary = "14 tables migrated" });
     await yielder(new BitAiAgentRunCompletedEvent(runId));
 
-    await foreach (var evt in AiScript.Write("Booked. I will run the migration in that window and report back.", 4, 12, token))
+    await foreach (var evt in AiScript.Write($"Booked for {window}. I will run the migration then and report back.", 4, 12, token))
         await yielder(evt);
 
     await yielder(new BitAiMessageCompletedEvent());

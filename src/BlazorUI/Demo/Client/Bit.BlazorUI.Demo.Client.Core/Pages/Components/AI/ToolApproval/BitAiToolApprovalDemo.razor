@@ -42,22 +42,24 @@
                 Hand it the <b>Call</b> waiting for a decision. Without a <b>Session</b> the decision is recorded on the call itself
                 (<b>Approval</b>, and its <b>Status</b> moves to <b>Pending</b> or <b>Rejected</b>), which is what a layout running its own tool
                 loop reads; <b>OnDecision</b> reports it either way. The question names the tool by the <b>Title</b> of its definition, else its name.
+                The decision takes the prompt away with the button it was made with, so the page hands the focus to <b>Ask again</b>.
             </div>
             <br />
             <div class="example-stack">
                 @if (basicCall.Status is BitAiToolCallStatus.AwaitingApproval)
                 {
-                    <BitAiToolApproval Call="basicCall" OnDecision="d => basicDecision = d" />
+                    <BitAiToolApproval Call="basicCall" OnDecision="HandleBasicDecision" />
                 }
                 else
                 {
-                    <div>
-                        Decision: <b>@basicDecision</b>, status of the call: <b>@basicCall.Status</b>
-                        <br /><br />
-                        <BitButton Variant="BitVariant.Outline" OnClick="ResetBasic">Ask again</BitButton>
-                    </div>
+                    <div>Decision: <b>@basicDecision</b>, status of the call: <b>@basicCall.Status</b></div>
                 }
             </div>
+            <br />
+            <BitButton @ref="askAgainButton"
+                       Variant="BitVariant.Outline"
+                       Disabled="@(basicCall.Status is BitAiToolCallStatus.AwaitingApproval)"
+                       OnClick="ResetBasic">Ask again</BitButton>
         </DemoExample>
 
         <DemoExample Title="Reason" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
@@ -77,7 +79,8 @@
                 The prompt follows the <b>Risk</b> of the tool's <b>BitAiToolDefinition</b> (see the tables below). A <b>ReadOnly</b> or
                 <b>Write</b> tool is asked about on the warning tint, with the allow button in the primary role; a <b>Destructive</b> one - irreversible
                 or visible outside the app - on the error tint, with the allow button in the error role. The decline button is the first in the
-                order the focus moves in.
+                order the focus moves in. A call is decided once: a prompt whose call has been decided takes no second answer (as a session
+                refuses one), so <b>Ask again</b> starts over with fresh calls.
             </div>
             <br />
             <div class="example-stack">
@@ -87,22 +90,25 @@
             </div>
             <br />
             <div>Last decision: <b>@riskDecision</b></div>
+            <br />
+            <BitButton Variant="BitVariant.Outline" OnClick="ResetRisk">Ask again</BitButton>
         </DemoExample>
 
         <DemoExample Title="Session" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
                 With the <b>Session</b> that asked, the decision goes to it (<b>BitAiChatSession.Approve</b>): the paused turn resumes - the tool
                 runs, or is reported to the model as declined. <b>Always allow</b> is remembered by the approval policy, so the next call of the same tool in this session runs without asking.
+                The prompt goes once it is answered, so the page hands the focus back to the button that asked.
             </div>
             <br />
-            <BitButton OnClick="AskToDeleteAsync" Disabled="session.IsGenerating">Delete the archived records</BitButton>
+            <BitButton @ref="deleteButton" OnClick="AskToDeleteAsync" Disabled="session.IsGenerating">Delete the archived records</BitButton>
             <br /><br />
             <div class="example-stack">
                 @if (SessionCall is { } call)
                 {
                     @if (call.Status is BitAiToolCallStatus.AwaitingApproval)
                     {
-                        <BitAiToolApproval Call="call" Session="session" />
+                        <BitAiToolApproval Call="call" Session="session" OnDecision="HandleSessionDecision" />
                     }
 
                     <div>
@@ -161,7 +167,7 @@
                                    Classes="@(new() { Root = "custom-approval-root",
                                                       Actions = "custom-approval-actions" })" />
 
-                <div style="--bit-AiToolApproval-background: #ecfeff; --bit-AiToolApproval-destructive-background: #fff1f2; --bit-AiToolApproval-radius: 0; --bit-AiToolApproval-padding: 1rem 1.5rem; --bit-AiToolApproval-gap: 1rem;">
+                <div style="--bit-AiToolApproval-background: var(--bit-clr-inf-tint); --bit-AiToolApproval-destructive-background: var(--bit-clr-swr-tint); --bit-AiToolApproval-radius: 0; --bit-AiToolApproval-padding: 1rem 1.5rem; --bit-AiToolApproval-gap: 1rem;">
                     <BitAiToolApproval Call="writeCall" />
                     <br />
                     <BitAiToolApproval Call="destructiveCall" />

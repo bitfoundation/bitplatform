@@ -66,7 +66,26 @@ public class BitAiErrorViewTests : BitAiTestBase
         var component = RenderComponent<BitAiErrorView>(p => p
             .Add(c => c.Error, new BitAiError("slow down") { RetryAfter = TimeSpan.FromSeconds(30) }));
 
-        Assert.IsFalse(string.IsNullOrWhiteSpace(component.Find(".bit-aierv-rta").TextContent));
+        // A whole number of seconds is written without a fraction.
+        Assert.AreEqual("Try again in 30s.", component.Find(".bit-aierv-rta").TextContent);
+    }
+
+    // "Try again in 2s" left on screen once the two seconds are over says nothing true, so the line goes away then.
+    [TestMethod]
+    public void TheWaitBeforeARetryGoesAwayOnceItIsOver()
+    {
+        var component = RenderComponent<BitAiErrorView>(p => p
+            .Add(c => c.Error, new BitAiError("slow down") { RetryAfter = TimeSpan.FromMilliseconds(150) }));
+
+        Assert.HasCount(1, component.FindAll(".bit-aierv-rta"));
+
+        component.WaitForAssertion(() => Assert.IsEmpty(component.FindAll(".bit-aierv-rta")), TimeSpan.FromSeconds(3));
+        Assert.AreEqual("slow down", component.Find(".bit-aierv-txt").TextContent);
+
+        // Another error asks for a wait of its own.
+        component.Render(p => p.Add(c => c.Error, new BitAiError("slow down again") { RetryAfter = TimeSpan.FromSeconds(30) }));
+
+        Assert.HasCount(1, component.FindAll(".bit-aierv-rta"));
     }
 
     [TestMethod]
@@ -77,20 +96,59 @@ public class BitAiErrorViewTests : BitAiTestBase
 
         var toggle = component.Find(".bit-aierv-act button");
         Assert.AreEqual("false", toggle.GetAttribute("aria-expanded"));
+        Assert.AreEqual("Show details", toggle.TextContent.Trim());
         Assert.IsEmpty(component.FindAll(".bit-aierv-dtl"));
 
         toggle.Click();
 
         var detail = component.Find(".bit-aierv-dtl");
         Assert.AreEqual("at Foo.Bar()", detail.TextContent);
-        Assert.AreEqual("0", detail.GetAttribute("tabindex"));
+        // Marked for the page script that puts it in the tab order while it is long enough to scroll.
+        Assert.IsTrue(detail.HasAttribute("data-bit-ai-scroll"));
+        Assert.IsNull(detail.GetAttribute("tabindex"));
         toggle = component.Find(".bit-aierv-act button");
         Assert.AreEqual("true", toggle.GetAttribute("aria-expanded"));
         Assert.AreEqual(detail.Id, toggle.GetAttribute("aria-controls"));
+        Assert.AreEqual("Hide details", toggle.TextContent.Trim());
+
+        // The detail follows the button that shows it - next in the order the focus moves in - and is no part of the alert,
+        // so showing it announces nothing.
+        Assert.IsNotNull(component.Find(".bit-aierv-act").QuerySelector("button ~ .bit-aierv-dtl"));
+        Assert.IsNull(component.Find("[role=alert]").QuerySelector(".bit-aierv-dtl"));
 
         toggle.Click();
 
         Assert.IsEmpty(component.FindAll(".bit-aierv-dtl"));
+        Assert.AreEqual("Show details", component.Find(".bit-aierv-act button").TextContent.Trim());
+    }
+
+    // The detail is shown to the user too, so an exception's stack trace - the internals of the server and its paths -
+    // is never put there; the exception stays on the error for the app's logs.
+    [TestMethod]
+    public void AnErrorMadeFromAnExceptionKeepsItsStackTraceOutOfSight()
+    {
+        Exception thrown;
+        try
+        {
+            throw new InvalidOperationException("The search index is out of date.");
+        }
+        catch (Exception exception)
+        {
+            thrown = exception;
+        }
+
+        var error = BitAiError.FromException(thrown);
+
+        Assert.AreEqual("The search index is out of date.", error.Message);
+        Assert.AreEqual(BitAiErrorKind.Unknown, error.Kind);
+        Assert.IsTrue(error.IsRetryable);
+        Assert.IsNull(error.Detail);
+        Assert.AreSame(thrown, error.Exception);
+
+        var component = RenderComponent<BitAiErrorView>(p => p.Add(c => c.Error, error));
+
+        Assert.IsEmpty(component.FindAll(".bit-aierv-act"));
+        Assert.IsFalse(component.Markup.Contains(nameof(InvalidOperationException)));
     }
 
     [TestMethod]

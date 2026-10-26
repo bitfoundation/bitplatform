@@ -206,7 +206,22 @@ private static BitAiConversation CreateDisabledConversation()
     return conversation;
 }
 
-public ValueTask DisposeAsync() => disabledSession.DisposeAsync();";
+protected override void OnInitialized()
+{
+    disabledSession.Conversation.MessageAdded += OnSessionMessagesChanged;
+    disabledSession.Conversation.MessageRemoved += OnSessionMessagesChanged;
+}
+
+// The messages a regenerate or an edit rewinds and adds (once the toggle is off) are drawn by this loop.
+private void OnSessionMessagesChanged(BitAiConversation conversation, BitAiMessage message) => _ = InvokeAsync(StateHasChanged);
+
+public async ValueTask DisposeAsync()
+{
+    disabledSession.Conversation.MessageAdded -= OnSessionMessagesChanged;
+    disabledSession.Conversation.MessageRemoved -= OnSessionMessagesChanged;
+
+    await disabledSession.DisposeAsync();
+}";
 
     private readonly string example8RazorCode = @"
 <style>

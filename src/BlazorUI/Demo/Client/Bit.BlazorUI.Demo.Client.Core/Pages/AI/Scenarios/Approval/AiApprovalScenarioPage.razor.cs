@@ -17,7 +17,8 @@ public partial class AiApprovalScenarioPage
             AiDemoToolTransports.CallsTool(
                 "delete_records",
                 """{"filter":"status = 'archived' AND updated < '2024-01-01'"}""",
-                "Deleted 128 archived records. Nothing else was touched."),
+                "Deleted 128 archived records. Nothing else was touched.",
+                declinedAnswer: "Understood - I did not delete anything; the archived records are still there."),
             tools: _tools,
             approvalPolicy: _policy);
 

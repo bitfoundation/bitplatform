@@ -103,12 +103,12 @@ private async Task StreamResultAsync()
 </style>
 
 <BitAiJsonView Value="order"
-               Style="padding: 0.75rem; border-radius: 0.5rem; background-color: #1e1e2e"
-               Styles="@(new() { Key = "color: #89b4fa", String = "color: #a6e3a1", Number = "color: #fab387", Toggle = "color: #cdd6f4" })" />
+               Style="padding: 0.75rem; border-radius: 0.5rem; background-color: #1e1e2e; color: #cdd6f4"
+               Styles="@(new() { Key = "color: #89b4fa", String = "color: #a6e3a1", Number = "color: #fab387", Boolean = "color: #cba6f7", Null = "color: #9399b2", Toggle = "color: #cdd6f4" })" />
 
 <BitAiJsonView Value="order" Classes="@(new() { Root = "custom-json", Key = "custom-json-key" })" />
 
-<div style="--bit-AiJsonView-key-color: #8a2be2; --bit-AiJsonView-string-color: #d2691e; --bit-AiJsonView-indent: 2rem; --bit-AiJsonView-font-size: 0.75rem">
+<div style="--bit-AiJsonView-key-color: light-dark(#7b2cbf, #c77dff); --bit-AiJsonView-string-color: light-dark(#a0522d, #f4a460);--bit-AiJsonView-indent: 2rem; --bit-AiJsonView-font-size: 0.75rem">
     <BitAiJsonView Value="order" />
 </div>
 """;

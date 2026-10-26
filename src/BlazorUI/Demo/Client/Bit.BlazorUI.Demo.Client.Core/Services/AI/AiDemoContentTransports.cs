@@ -65,20 +65,27 @@ public static class AiDemoContentTransports
         }));
 
     /// <summary>
-    /// Writes a document artifact, then revises it on the next turn.
+    /// Writes a document artifact, then revises it on every later turn.
     /// </summary>
     /// <returns>The transport.</returns>
     public static IBitAiTransport Artifacts() =>
         new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
         {
             const string artifactId = "art-readme";
-            var isRevision = request.Messages.Count(m => m.Role.IsUser) > 1;
+
+            // Every turn after the first is a revision, numbered in the body, so no version comes out the same as the one
+            // before it.
+            var revision = request.Messages.Count(m => m.Role.IsUser) - 1;
+            var isRevision = revision > 0;
 
             await yielder(new BitAiMessageStartedEvent());
 
-            var intro = isRevision
-                ? "Revised. I tightened the opening and added the install step."
-                : "Here is a first draft. Tell me what to change, and I will revise it.";
+            var intro = revision switch
+            {
+                0 => "Here is a first draft. Tell me what to change, and I will revise it.",
+                1 => "Revised. I tightened the opening and added the install step.",
+                _ => $"Revised again, into revision {revision}.",
+            };
 
             await foreach (var evt in AiScript.Write(intro, 4, 12, token)) await yielder(evt);
 
@@ -88,7 +95,7 @@ public static class AiDemoContentTransports
             });
 
             var body = isRevision
-                ? """
+                ? $"""
                   # Bit.BlazorUI.AI
 
                   The AI UI layer of bit BlazorUI: conversations, streaming, tools, agents, and artifacts.
@@ -103,6 +110,8 @@ public static class AiDemoContentTransports
 
                   Chat is the easy part. What takes the time is everything around it: partial JSON,
                   tool approval, citation anchoring, and not re-rendering the world on every token.
+
+                  _Revision {revision}._
                   """
                 : """
                   # Bit.BlazorUI.AI
@@ -114,15 +123,20 @@ public static class AiDemoContentTransports
                   Chat is the easy part. Everything around it is what takes the time.
                   """;
 
-            foreach (var slice in AiScript.Slice(body, 24))
+            foreach (var slice in AiScript.Slice(body, 12))
             {
-                await AiScript.Pause(45, token);
+                await AiScript.Pause(60, token);
                 await yielder(new BitAiArtifactDeltaEvent(artifactId, slice));
             }
 
             await yielder(new BitAiArtifactCompletedEvent(artifactId)
             {
-                Summary = isRevision ? "Tightened the opening, added install" : "First draft",
+                Summary = revision switch
+                {
+                    0 => "First draft",
+                    1 => "Tightened the opening, added install",
+                    _ => $"Revision {revision}",
+                },
             });
 
             await yielder(new BitAiMessageCompletedEvent());

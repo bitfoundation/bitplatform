@@ -38,11 +38,13 @@
         </BitText>
         <br />
         <BitText>
-            The text is a combobox: the menu of commands and mentions is driven by the arrow keys while the focus stays in the
-            text, Enter or Tab accepts an option, and Escape closes the menu - or, with no menu open, stops the turn in flight -
-            claiming the key, so a dialog around the composer stays open. The send button is named for what it does next (Send,
-            then Stop), a file turned away is named in an alert, and the character count is announced politely once the limit
-            is close.
+            With commands or mentions to offer the text is a combobox (a plain text box otherwise): the menu is driven by the
+            arrow keys while the focus stays in the text, a plain Enter or Tab accepts an option (with a modifier each keeps its
+            own meaning: Shift+Enter breaks the line, Ctrl+Enter sends, Shift+Tab moves back), the menu closes as the focus
+            leaves the text, and Escape closes the menu - or, with no menu open, stops the turn in flight - claiming the key, so
+            a dialog around the composer stays open. The send button is named for what it does next (Send, then Stop), a file
+            turned away is named in an alert, the focus goes back to the text when a staged file is removed, and the character
+            count is announced politely once the limit is close.
         </BitText>
         <br />
         <BitText>
@@ -189,7 +191,8 @@
                 documents or audio, dictation only for one that takes audio, and the file types of the picker from what it takes.
                 <b>Capabilities</b> stands in for a model record, or overrides its capabilities. Pick a model in the
                 <BitLink Href="/components/ai/modelselector">BitAiModelSelector</BitLink>: Demo Large takes images, the other two
-                take no files at all.
+                take no files at all - stage an image, then switch: the files the new model cannot take are taken off and named
+                in the notice, rather than sent to a model that cannot read them.
             </div>
             <br />
             <BitAiModelSelector @bind-ModelId="capabilityModelId" />
@@ -207,7 +210,7 @@
         <DemoExample Title="Slash commands & mentions" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>
                 A forward slash at the start of the text opens the <b>Commands</b>, an at sign anywhere the <b>Mentions</b>; typing
-                on filters them, the arrow keys move through them, Enter or Tab accepts and Escape closes the menu. A
+                on filters them, the arrow keys move through them, a plain Enter or Tab accepts and Escape closes the menu. A
                 <b>BitAiSlashCommand</b> with a <b>Template</b> inserts it as text, one with a <b>Handler</b> runs app code instead
                 (/clear empties the list above, without reaching the model). A <b>BitAiMentionItem</b> inserts its label, which your
                 app resolves by its <b>Id</b>.

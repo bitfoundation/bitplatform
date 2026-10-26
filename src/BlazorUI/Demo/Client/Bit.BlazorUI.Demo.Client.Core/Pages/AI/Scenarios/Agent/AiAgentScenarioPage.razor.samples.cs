@@ -20,7 +20,7 @@ private readonly string[] suggestions = ["Do the sources agree on the mechanism?
 public ValueTask DisposeAsync() => session.DisposeAsync();
 """;
 
-    private const string example1TransportCode = """
+    private const string example1TransportCode = """"
 public static IBitAiTransport Research() => new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
 {
     var runId = BitAiId.NewRunId();
@@ -54,6 +54,16 @@ public static IBitAiTransport Research() => new AiScriptedTransport((request, to
     {
         var stepId = $"s{i + 1}";
         await yielder(new BitAiAgentStepStartedEvent(runId, stepId));
+
+        // The search runs on the provider's side: the transport reports the call and its result itself, so the
+        // session shows it - and the step names it - without running anything.
+        if (i == 0)
+        {
+            var callId = BitAiId.NewToolCallId();
+            await yielder(new BitAiToolCallStartedEvent(callId, "web_search") { Arguments = AiScript.Json("""{"query":"primary sources on the disputed effect"}""") });
+            await yielder(new BitAiToolResultEvent(callId, BitAiToolOutcome.FromText("11 results, 3 of them primary studies.")));
+        }
+
         await AiScript.Pause(700 + i * 200, token);
         await yielder(new BitAiAgentStepCompletedEvent(runId, stepId) { Summary = summaries[i] });
     }
@@ -66,7 +76,7 @@ public static IBitAiTransport Research() => new AiScriptedTransport((request, to
 
     await yielder(new BitAiMessageCompletedEvent());
 }));
-""";
+"""";
 
     private readonly DemoCodeFile[] example1CodeFiles =
     [

@@ -124,6 +124,11 @@ public sealed class BitAiFootnoteReferenceInline(string label) : BitAiMarkdownIn
 
 /// <summary>Raw inline HTML found in the source.</summary>
 /// <param name="html">The raw markup.</param>
+/// <remarks>
+/// An element closed later in the same text is one inline from its opening tag to its closing one, content included
+/// (<c>&lt;kbd&gt;Ctrl&lt;/kbd&gt;</c>), so the markup of each inline stands on its own; a tag the text does not close, a
+/// closing tag nothing opened, a comment and a declaration are one each.
+/// </remarks>
 public sealed class BitAiRawHtmlInline(string html) : BitAiMarkdownInline
 {
     /// <summary>The raw markup.</summary>
