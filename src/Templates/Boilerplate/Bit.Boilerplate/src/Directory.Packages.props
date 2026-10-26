@@ -168,44 +168,44 @@
         <PackageVersion Include="Microsoft.Extensions.Localization" Version="11.0.0-rc.2.26504.105" />
     </ItemGroup>
     <ItemGroup Condition=" '$(framework)' == 'net10.0' ">
-        <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.Extensions.Logging.EventLog" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.Extensions.Logging.EventSource" Version="10.0.13" />
-        <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.13" />
+        <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.EventLog" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.EventSource" Version="10.0.14" />
+        <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.14" />
         <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.120" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView" Version="10.0.13" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView" Version="10.0.14" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.120" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="10.0.120" />
-        <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.13" />
-        <PackageVersion Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.13" />
+        <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.14" />
+        <PackageVersion Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.14" />
         <PackageVersion Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
-        <PackageVersion Condition=" ('$(redis)' == 'true' OR '$(redis)' == '') AND ('$(signalR)' == 'true' OR '$(signalR)' == '')" Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.AspNetCore.Authentication.Facebook" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="10.0.13" />
-        <PackageVersion Include="Microsoft.Extensions.Localization" Version="10.0.13" />
+        <PackageVersion Condition=" ('$(redis)' == 'true' OR '$(redis)' == '') AND ('$(signalR)' == 'true' OR '$(signalR)' == '')" Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.AspNetCore.Authentication.Facebook" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="10.0.14" />
+        <PackageVersion Include="Microsoft.Extensions.Localization" Version="10.0.14" />
     </ItemGroup>
     <!--/-:msbuild-conditional:noEmit -->
 </Project>
