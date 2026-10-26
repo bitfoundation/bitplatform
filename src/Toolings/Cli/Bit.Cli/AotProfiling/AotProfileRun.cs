@@ -27,32 +27,28 @@ public sealed class AotProfileRun(CliServices cli)
 
         if (FindProject(request.Project, current) is not { } project)
         {
-            cli.Console.Fail(request.Project is null
+            return cli.UsageError("project-missing", request.Project is null
                 ? "No project here. Run bit aot-profile in the folder of the Blazor WebAssembly app's project, or pass its .csproj."
                 : $"No project at {request.Project}. Pass a .csproj, or a folder with one .csproj.");
-            return CliApp.ExitUsage;
         }
 
         Uri? origin = null;
         if (request.Origin is not null && (Uri.TryCreate(request.Origin, UriKind.Absolute, out origin) is false || origin.Scheme is not ("http" or "https")))
         {
-            cli.Console.Fail($"--origin {request.Origin} isn't an http or https URL.");
-            return CliApp.ExitUsage;
+            return cli.UsageError("origin-invalid", $"--origin {request.Origin} isn't an http or https URL.");
         }
 
         if (request.Steps.FirstOrDefault(s => ProfileCollector.IsValidStep(s) is false) is { } invalid)
         {
-            cli.Console.Fail($"--step {invalid} isn't a step. Use a path like /settings, click:<css selector>, key:<key> or wait:<milliseconds>.");
-            return CliApp.ExitUsage;
+            return cli.UsageError("step-invalid", $"--step {invalid} isn't a step. Use a path like /settings, click:<css selector>, key:<key> or wait:<milliseconds>.");
         }
 
         var browser = request.Browser ?? Chromium.Find(cli.Environment, cli.Runner.FindExecutable);
         if (browser is null || File.Exists(browser) is false)
         {
-            cli.Console.Fail(request.Browser is null
+            return cli.UsageError("browser-missing", request.Browser is null
                 ? "No Chromium, Chrome or Edge found. bit setup installs Playwright's Chromium for a bit Boilerplate project's UI tests, or pass --browser <path>."
                 : $"No browser at {request.Browser}.");
-            return CliApp.ExitUsage;
         }
 
         var output = Path.GetFullPath(request.Output ?? $"{Path.GetFileNameWithoutExtension(project)}.aotprofile", current);
@@ -147,8 +143,7 @@ public sealed class AotProfileRun(CliServices cli)
             {
                 if (assemblies.FirstOrDefault(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase)) is not { Path: { } path })
                 {
-                    cli.Console.Fail($"--include {name}: the app has no assembly by that name.");
-                    return CliApp.ExitUsage;
+                    return cli.UsageError("include-unknown", $"--include {name}: the app has no assembly by that name.");
                 }
 
                 included += profile.AddRange(AssemblyMethods.Read(path, unmanagedCallersOnly: false));

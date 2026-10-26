@@ -10,6 +10,7 @@ public static class FolderHolders
 {
     private const int ProcessQueryInformation = 0x0400;
     private const int ProcessVmRead = 0x0010;
+    private const int ProcessQueryLimitedInformation = 0x1000;
     private const int ProcessParametersOffset = 0x20;
     private const int CurrentDirectoryOffset = 0x38;
 
@@ -35,6 +36,25 @@ public static class FolderHolders
         }
 
         return ids;
+    }
+
+    public static int? ParentOf(int id)
+    {
+        var handle = OpenProcess(ProcessQueryLimitedInformation, false, id);
+
+        if (handle == 0)
+            return null;
+
+        try
+        {
+            var info = new ProcessBasicInformation();
+
+            return NtQueryInformationProcess(handle, 0, ref info, Marshal.SizeOf<ProcessBasicInformation>(), out _) == 0 ? (int)info.InheritedFromUniqueProcessId : null;
+        }
+        finally
+        {
+            CloseHandle(handle);
+        }
     }
 
     private static string? CurrentDirectoryOf(int id)

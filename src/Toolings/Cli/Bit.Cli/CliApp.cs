@@ -33,7 +33,8 @@ public static class CliApp
             AotProfileCommand.Create(services),
             TelemetryCommand.Create(services),
             UpdateCommand.Create(services),
-            AboutCommand.Create(services)
+            AboutCommand.Create(services),
+            AdminHelperCommand.Create(services)
         };
 
         return root;
@@ -63,7 +64,7 @@ public static class CliApp
         services = new CliServices(environment, console, log: log);
         log.Write($"bit {BuildInfo.Version} ({BuildInfo.Commit ?? "local build"}) on {environment.Os} {environment.Architecture}: {string.Join(' ', args.Select(ProcessSpec.Quote))}");
 
-        var isMeta = parseResult.Errors.Count > 0 || command == root || args.Any(a => a is "--help" or "-h" or "-?" or "/?" or "--version");
+        var isMeta = parseResult.Errors.Count > 0 || command == root || commandName is Tools.AdministratorSession.CommandName || args.Any(a => a is "--help" or "-h" or "-?" or "/?" or "--version");
         var decision = TelemetryDecision.Resolve(environment, services.Settings, BuildInfo.TelemetryConnectionString);
 
         if (isMeta is false && commandName is not "telemetry" && TelemetryNotice.ShouldShow(decision, services.Settings))
@@ -79,6 +80,9 @@ public static class CliApp
         {
             services.Settings.Save();
         }
+
+        using var title = new ConsoleTitle(isMeta is false && console.IsInteractive && Console.IsOutputRedirected is false && environment.IsCI is false, console.Unicode, $"bit {commandName}");
+        console.Title = title;
 
         var exitCode = ExitFailed;
 

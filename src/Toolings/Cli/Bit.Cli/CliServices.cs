@@ -36,6 +36,10 @@ public sealed class CliServices : IDisposable
 
     public SelfUpdate SelfUpdate { get; set; }
 
+    public Tools.AdministratorSession? Administrator { get; set; }
+
+    public bool AdministratorDeclined { get; set; }
+
     public bool NonInteractive { get; private set; }
 
     public bool IsInteractive => NonInteractive is false && HasTerminal;
@@ -47,6 +51,13 @@ public sealed class CliServices : IDisposable
     {
         NonInteractive = true;
         Prompter = new NonInteractivePrompter();
+    }
+
+    public int UsageError(string code, string message)
+    {
+        Telemetry.SetTag(TelemetryFields.UsageError, code);
+        Console.Fail(message);
+        return CliApp.ExitUsage;
     }
 
     public void Dispose()

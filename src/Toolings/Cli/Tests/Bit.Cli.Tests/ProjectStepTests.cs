@@ -786,6 +786,32 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public async Task TheAndroidSdk_Should_AskForAnElevatedTerminal_WhenItsFolderNeedsAdministratorRights()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        host.Runner.On("dotnet", "build", 1, @"error : Failure to move Android component to its destination path. System.UnauthorizedAccessException: Access to the path 'C:\Program Files (x86)\Android\android-sdk\build-tools\36.0.0' is denied.");
+
+        var result = await new ProjectSteps(host.Services, CreateFakeProject(host, "Contoso")).AndroidDependenciesAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status);
+        Assert.AreEqual("The Android SDK and Java need administrator rights", result.Title);
+        Assert.AreEqual("run it in an elevated terminal", result.Detail);
+        StringAssert.Contains(result.FollowUp, "-t:InstallAndroidDependencies");
+    }
+
+    [TestMethod]
+    public async Task TheAndroidSdk_Should_ReportAFailureThatIsNotAboutAccess()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        host.Runner.On("dotnet", "build", 1, "error XA5300: The Java SDK directory could not be found.");
+
+        var result = await new ProjectSteps(host.Services, CreateFakeProject(host, "Contoso")).AndroidDependenciesAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Failed, result.Status);
+        Assert.AreEqual("Couldn't install the Android SDK and Java", result.Title);
+    }
+
+    [TestMethod]
     public async Task BuildProperties_Should_ReachTheRestoreAndTheBuildButNotTheBrowsers()
     {
         using var host = new TestHost(HostOs.Linux);

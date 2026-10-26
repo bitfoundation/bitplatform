@@ -97,9 +97,11 @@ public static partial class ToolCatalog
         }
     }
 
-    public static string? DotnetRoot(ToolContext context)
+    public static string? DotnetRoot(ToolContext context) => DotnetRoot(context.Runner);
+
+    public static string? DotnetRoot(IProcessRunner runner)
     {
-        if (context.Runner.FindExecutable("dotnet") is not { } muxer)
+        if (runner.FindExecutable("dotnet") is not { } muxer)
             return null;
 
         try

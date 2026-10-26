@@ -24,8 +24,7 @@ public sealed class TranslationRun(CliServices cli, Func<ResxTranslatorSettings,
 
         if (configPath is null || File.Exists(configPath) is false)
         {
-            cli.Console.Fail($"No {ResxTranslatorSettings.FileName} in this folder or above it. Run bit translate in a bit Boilerplate project, or pass --config <file>.");
-            return CliApp.ExitUsage;
+            return cli.UsageError("config-missing", $"No {ResxTranslatorSettings.FileName} in this folder or above it. Run bit translate in a bit Boilerplate project, or pass --config <file>.");
         }
 
         var settings = ResxTranslatorSettings.Load(configPath, cli.Environment.Variables);
@@ -43,6 +42,7 @@ public sealed class TranslationRun(CliServices cli, Func<ResxTranslatorSettings,
                 cli.Console.Fail($"{configPath}: {problem}");
             }
 
+            cli.Telemetry.SetTag(TelemetryFields.UsageError, "config-invalid");
             return CliApp.ExitUsage;
         }
 

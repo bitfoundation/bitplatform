@@ -199,7 +199,9 @@ public class RemoveTests
     }
 
     [TestMethod]
-    public async Task Remove_Should_StopOnlyTheBuildProcessThatHoldsAFile()
+    [DataRow("dotnet")]
+    [DataRow("XamlCompiler")]
+    public async Task Remove_Should_StopOnlyTheBuildProcessThatHoldsAFile(string name)
     {
         if (OperatingSystem.IsWindows() is false)
             return;
@@ -207,7 +209,7 @@ public class RemoveTests
         using var host = new TestHost(HostOs.Windows);
         var folder = CreateProject(host);
         host.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
-        var buildProcess = Path.Combine(Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "sdk")).FullName, "dotnet.exe");
+        var buildProcess = Path.Combine(Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "sdk")).FullName, $"{name}.exe");
         File.Copy(Path.Combine(Environment.SystemDirectory, "cmd.exe"), buildProcess);
 
         using var holder = HoldFile(buildProcess, Path.Combine(folder, "src", "Client", "Contoso.Client.Core", "obj", "held.txt"));
@@ -218,11 +220,39 @@ public class RemoveTests
 
             Assert.IsFalse(Directory.Exists(folder));
             Assert.IsTrue(holder.WaitForExit(TimeSpan.FromSeconds(10)));
-            StringAssert.Contains(host.FlatOutput, $"after stopping dotnet ({holder.Id})");
+            StringAssert.Contains(host.FlatOutput, $"after stopping {name} ({holder.Id})");
         }
         finally
         {
             Stop(holder);
+        }
+    }
+
+    [TestMethod]
+    public async Task Remove_Should_StopWhatABuildStartedWhenItHoldsAFile()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost(HostOs.Windows);
+        var folder = CreateProject(host);
+        host.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
+        var buildProcess = Path.Combine(Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "sdk")).FullName, "dotnet.exe");
+        File.Copy(Path.Combine(Environment.SystemDirectory, "cmd.exe"), buildProcess);
+
+        using var build = HoldFile(buildProcess, Path.Combine(folder, "src", "Client", "Contoso.Client.Core", "bin", "Contoso.Client.Core.dll"), byAChild: true);
+
+        try
+        {
+            Assert.AreEqual(0, await host.RunAsync("remove", folder, "--yes"), host.Output);
+
+            Assert.IsFalse(Directory.Exists(folder));
+            Assert.IsTrue(build.WaitForExit(TimeSpan.FromSeconds(10)));
+            StringAssert.Contains(host.FlatOutput, "after stopping cmd (");
+        }
+        finally
+        {
+            Stop(build);
         }
     }
 
@@ -253,10 +283,11 @@ public class RemoveTests
         }
     }
 
-    private static Process HoldFile(string shell, string file)
+    private static Process HoldFile(string shell, string file, bool byAChild = false)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(file)!);
-        var process = Process.Start(new ProcessStartInfo(shell, $"/c pause > \"{file}\"") { UseShellExecute = false, RedirectStandardInput = true, RedirectStandardOutput = true, CreateNoWindow = true })!;
+        var arguments = byAChild ? $"/c cmd /c pause ^> \"{file}\"" : $"/c pause > \"{file}\"";
+        var process = Process.Start(new ProcessStartInfo(shell, arguments) { UseShellExecute = false, RedirectStandardInput = true, RedirectStandardOutput = true, CreateNoWindow = true })!;
 
         for (var i = 0; i < 50 && File.Exists(file) is false; i++)
         {

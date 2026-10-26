@@ -37,8 +37,7 @@ public static class SetupCommand
 
             if (name is null)
             {
-                cli.Console.Fail($"{directory} isn't a bit Boilerplate project folder (no *.Web.slnf or *.slnx). Run bit setup in the project's folder.");
-                return CliApp.ExitUsage;
+                return cli.UsageError("not-a-project", $"{directory} isn't a bit Boilerplate project folder (no *.Web.slnf or *.slnx). Run bit setup in the project's folder.");
             }
 
             var (platforms, error) = SharedOptions.ParsePlatforms(parseResult.GetValue(shared.Platforms), cli.Environment.Os);
@@ -46,8 +45,7 @@ public static class SetupCommand
 
             if ((error ?? propertyError) is { } usageError)
             {
-                cli.Console.Fail(usageError);
-                return CliApp.ExitUsage;
+                return cli.UsageError(error is null ? "properties-invalid" : "platforms-invalid", usageError);
             }
 
             NewWorkflow.WriteHeader(cli);
@@ -72,18 +70,31 @@ public static class SetupCommand
             }
 
             cli.Telemetry.SetTag(Telemetry.TelemetryFields.Platforms, string.Join(',', platforms.Order().Select(Platforms.Name)));
+
+            var administrator = await AdministratorNeeds.FindAsync(cli, tools, needs, parseResult.GetValue(shared.NoWorkloads) is false, cancellationToken);
+            NewWorkflow.WriteAdministratorNote(cli, tools, administrator);
             cli.Console.Out.WriteLine();
 
             var stopwatch = Stopwatch.StartNew();
             var steps = new StepRunner(cli);
-
-            if (tools.Count > 0)
-            {
-                await new ToolInstaller(cli, steps).InstallAsync(tools, NewWorkflow.CreateToolContext(cli, needs), cancellationToken);
-            }
-
             var projectSteps = new ProjectSteps(cli, context);
-            var sdkReady = await NewWorkflow.RunSetupStepsAsync(cli, steps, context, projectSteps, parseResult.GetValue(shared.NoWorkloads), parseResult.GetValue(shared.NoRestore), parseResult.GetValue(shared.NoBuild), parseResult.GetValue(shared.NoBrowsers), cancellationToken);
+            bool sdkReady;
+
+            await AdministratorNeeds.StartAsync(cli, administrator, cancellationToken);
+
+            try
+            {
+                if (tools.Count > 0)
+                {
+                    await new ToolInstaller(cli, steps).InstallAsync(tools, NewWorkflow.CreateToolContext(cli, needs), cancellationToken);
+                }
+
+                sdkReady = await NewWorkflow.RunSetupStepsAsync(cli, steps, context, projectSteps, parseResult.GetValue(shared.NoWorkloads), parseResult.GetValue(shared.NoRestore), parseResult.GetValue(shared.NoBuild), parseResult.GetValue(shared.NoBrowsers), cancellationToken);
+            }
+            finally
+            {
+                await AdministratorNeeds.EndAsync(cli);
+            }
 
             if (cli.Environment.IsCI is false && IdeLocator.FindVsCode(cli.Environment, cli.Runner) is not null)
             {

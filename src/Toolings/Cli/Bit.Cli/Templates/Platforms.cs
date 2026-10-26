@@ -61,6 +61,13 @@ public static class Platforms
         return workloads;
     }
 
+    public static string BuildSupport(IEnumerable<Platform> platforms)
+    {
+        string[] names = ["WebAssembly", .. platforms.Where(p => p is not Platform.Web).Order().Select(Title)];
+
+        return $"{(names.Length == 1 ? names[0] : $"{string.Join(", ", names[..^1])} and {names[^1]}")} build support";
+    }
+
     public static bool BuildsSolution(IEnumerable<Platform> platforms) => platforms.Any(p => p is not Platform.Web);
 
     public static string BuildPath(string projectName, IEnumerable<Platform> platforms) => BuildsSolution(platforms) ? $"{projectName}.slnx" : $"{projectName}.Web.slnf";
