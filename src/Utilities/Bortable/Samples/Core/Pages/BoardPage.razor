@@ -1,0 +1,111 @@
+﻿@page "/board"
+
+<PageTitle>Board - Bortable samples</PageTitle>
+
+<h1>Board</h1>
+
+<p>
+    A board with a workflow. Every rule below is C# the list asks while the card is dragged or once it is dropped, so it
+    runs where the page runs: in the browser, on the server, or in the app. A card released outside the board goes back
+    where it was. While a card is dragged, the columns that take it are outlined, and the one under the pointer turns
+    red when it refuses the position.
+</p>
+
+<ul class="features">
+    <li><strong>In progress</strong> holds three cards at most (<code>MaxItems</code>).</li>
+    <li><strong>Done</strong> takes cards from In progress only (<code>CanDrop</code>), and asks a stand-in server about every drop (<code>ConfirmDrop</code>).</li>
+    <li>The arrow on a card moves it to the next column without a drag (<code>MoveToAsync</code>), under the same rules.</li>
+</ul>
+
+<div class="toolbar">
+    <label>
+        <input type="checkbox" @bind="_approve" /> The server approves drops into Done
+    </label>
+</div>
+
+<div class="columns board">
+    <div class="column">
+        <h3>To do</h3>
+        <Bortable @ref="_todoList" @bind-Items="_todo" TItem="Card" Group="board" Id="board-todo" AriaLabel="To do"
+                  ItemLabel="c => c.Title" RevertOnSpill="true" OnEnd="OnEnd"
+                  Class="list" ItemClass="item card">
+            <ItemTemplate Context="card">
+                <span>@card.Title</span>
+                <button type="button" class="icon" aria-label="@($"Move {card.Title} to In progress")"
+                        @onclick='() => MoveAsync(_todoList, card, "board-doing", _doing.Count)'>→</button>
+            </ItemTemplate>
+        </Bortable>
+    </div>
+    <div class="column">
+        <h3>In progress (@_doing.Count of 3)</h3>
+        <Bortable @ref="_doingList" @bind-Items="_doing" TItem="Card" Group="board" Id="board-doing" AriaLabel="In progress"
+                  ItemLabel="c => c.Title" RevertOnSpill="true" MaxItems="3" OnEnd="OnEnd"
+                  Class="list" ItemClass="item card">
+            <ItemTemplate Context="card">
+                <span>@card.Title</span>
+                <button type="button" class="icon" aria-label="@($"Move {card.Title} to Done")"
+                        @onclick='() => MoveAsync(_doingList, card, "board-done", _done.Count)'>→</button>
+            </ItemTemplate>
+        </Bortable>
+    </div>
+    <div class="column">
+        <h3>Done</h3>
+        <Bortable @bind-Items="_done" TItem="Card" Group="board" Id="board-done" AriaLabel="Done"
+                  ItemLabel="c => c.Title" RevertOnSpill="true" OnEnd="OnEnd"
+                  CanDrop='e => e.FromId is "board-doing" or "board-done"' ConfirmDrop="ConfirmAsync"
+                  Class="list" ItemClass="item card tinted">
+            <ItemTemplate Context="card"><span>@card.Title</span></ItemTemplate>
+        </Bortable>
+    </div>
+</div>
+
+<dl class="facts">
+    <dt>Server</dt>
+    <dd>@_server</dd>
+    <dt>Last move</dt>
+    <dd>@_last</dd>
+</dl>
+
+@code {
+    // A record with an id, not a string: two cards may share a title, and every item of a list must be distinct.
+    private sealed record Card(int Id, string Title);
+
+    private Bortable<Card> _todoList = default!;
+    private Bortable<Card> _doingList = default!;
+
+    private IList<Card> _todo = new List<Card> { new(1, "Write the spec"), new(2, "Draw the icons"), new(3, "Plan the launch") };
+    private IList<Card> _doing = new List<Card> { new(4, "Build the API"), new(5, "Review the PR") };
+    private IList<Card> _done = new List<Card> { new(6, "Set up CI") };
+
+    private bool _approve = true;
+    private string _server = "idle";
+    private string _last = "nothing yet";
+
+    // Stands in for a call to a server that may refuse the move. The drop shows at once; a refusal puts every list the
+    // drag changed back, and OnEnd then reports Canceled.
+    private async Task<bool> ConfirmAsync(BortableEventArgs<Card> e)
+    {
+        _server = $"asked about {e.Item.Title}...";
+        StateHasChanged();
+
+        await Task.Delay(400);
+
+        _server = _approve ? $"saved {e.Item.Title}" : $"refused {e.Item.Title}";
+        return _approve;
+    }
+
+    // The same rules decide a move made from code as a drag: Done refuses cards that do not come from In progress, a
+    // full In progress refuses more, and ConfirmDrop is asked. OnEnd follows with Input set to Api.
+    private async Task MoveAsync(Bortable<Card> list, Card card, string toId, int index)
+    {
+        if (await list.MoveToAsync(card, toId, index) is false)
+        {
+            _last = $"{card.Title}: refused";
+        }
+    }
+
+    private void OnEnd(BortableEventArgs<Card> e)
+        => _last = e.Canceled ? $"{e.Item.Title}: cancelled, everything put back"
+            : e.CrossedLists ? $"{e.Item.Title}: {e.FromId} to {e.ToId} ({e.Input.ToString().ToLowerInvariant()})"
+            : $"{e.Item.Title}: #{e.OldIndex} to #{e.NewIndex} ({e.Input.ToString().ToLowerInvariant()})";
+}

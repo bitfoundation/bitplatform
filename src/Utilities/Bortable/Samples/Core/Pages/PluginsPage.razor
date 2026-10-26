@@ -1,0 +1,95 @@
+﻿@page "/plugins"
+
+<PageTitle>Plugins - Bortable samples</PageTitle>
+
+<h1>Plugins</h1>
+
+<p>
+    The two SortableJS plugins, built into the list: multi-drag, which moves a selection as one, and swap mode, which
+    trades two items instead of shifting the ones between them.
+</p>
+
+<section>
+    <h2>Multi-drag</h2>
+    <p>
+        A click selects or deselects an item, Shift+click selects a range, and from the keyboard Shift+Space toggles the
+        focused item. Dragging a selected item moves the whole selection, which lands as one block in its original
+        order - in its own list or in the other one. Dragging an unselected item clears the selection and moves just
+        that item.
+    </p>
+
+    <div class="columns">
+        <div class="column">
+            <h3>Inbox</h3>
+            <Bortable @bind-Items="_inbox" @bind-SelectedItems="_inboxSelected" TItem="string" Group="mail"
+                      MultiDrag="true" AriaLabel="Inbox" OnEnd="OnMultiEnd"
+                      Class="list" ItemClass="item">
+                <ItemTemplate Context="mail">@mail</ItemTemplate>
+            </Bortable>
+        </div>
+        <div class="column">
+            <h3>Archive</h3>
+            <Bortable @bind-Items="_archive" @bind-SelectedItems="_archiveSelected" TItem="string" Group="mail"
+                      MultiDrag="true" AriaLabel="Archive" OnEnd="OnMultiEnd"
+                      Class="list" ItemClass="item tinted">
+                <ItemTemplate Context="mail">@mail</ItemTemplate>
+                <ChildContent>
+                    @if (_archive.Count == 0)
+                    {
+                        <div class="empty" role="listitem">Drop mail to archive it.</div>
+                    }
+                </ChildContent>
+            </Bortable>
+        </div>
+    </div>
+
+    <div class="toolbar">
+        <button type="button" disabled="@(_inboxSelected.Count + _archiveSelected.Count == 0)" @onclick="ClearSelection">Clear the selection</button>
+        <span class="muted">Selected: @Selection</span>
+    </div>
+
+    <p class="muted">Last drag: @_lastMulti</p>
+</section>
+
+<section>
+    <h2>Swap mode</h2>
+    <p>
+        Drop an item on another and the two trade places; nothing else moves, and the item under the pointer is
+        highlighted while you drag.
+    </p>
+
+    <Bortable @bind-Items="_lineup" TItem="string" Swap="true" AriaLabel="Line-up"
+              Class="list row" ItemClass="item tile">
+        <ItemTemplate Context="player">@player</ItemTemplate>
+    </Bortable>
+
+    <p class="muted">Line-up: @string.Join(", ", _lineup)</p>
+</section>
+
+@code {
+    private IList<string> _inbox = new List<string> { "Invoice #1042", "Team lunch", "Build failed", "Quarterly report", "Password reset", "Welcome aboard" };
+    private IList<string> _archive = new List<string>();
+
+    // The selection of each list, read and set from the page through @bind-SelectedItems.
+    private IReadOnlyCollection<string> _inboxSelected = [];
+    private IReadOnlyCollection<string> _archiveSelected = [];
+
+    private IList<string> _lineup = new List<string> { "Goalkeeper", "Defender", "Midfielder", "Winger", "Striker" };
+
+    private string _lastMulti = "nothing yet";
+
+    private string Selection => _inboxSelected.Count + _archiveSelected.Count == 0
+        ? "nothing"
+        : string.Join(", ", _inboxSelected.Concat(_archiveSelected));
+
+    private void ClearSelection()
+    {
+        _inboxSelected = [];
+        _archiveSelected = [];
+    }
+
+    // Items lists every item the drag moved: the whole selection, or just Item.
+    private void OnMultiEnd(BortableEventArgs<string> e)
+        => _lastMulti = e.Canceled ? "cancelled"
+            : $"{e.Items.Count} item(s) to #{e.NewIndex}{(e.CrossedLists ? " of the other list" : "")}: {string.Join(", ", e.Items)}";
+}

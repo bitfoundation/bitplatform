@@ -402,6 +402,23 @@
     <Project Path="Utilities/Bortable/Demo/Client/Bit.Bortable.Demo.Client.csproj" />
     <Project Path="Utilities/Bortable/Demo/Server/Bit.Bortable.Demo.Server.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Bortable/Samples/">
+    <Project Path="Utilities/Bortable/Samples/Core/Bit.Bortable.Samples.Core.csproj" />
+    <Project Path="Utilities/Bortable/Samples/Maui/Bit.Bortable.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Utilities/Bortable/Samples/Auto/">
+    <Project Path="Utilities/Bortable/Samples/Auto/Bit.Bortable.Samples.Auto/Bit.Bortable.Samples.Auto.csproj" />
+    <Project Path="Utilities/Bortable/Samples/Auto/Bit.Bortable.Samples.Auto.Client/Bit.Bortable.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bortable/Samples/Server/">
+    <Project Path="Utilities/Bortable/Samples/Server/Bit.Bortable.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bortable/Samples/Wasm/">
+    <Project Path="Utilities/Bortable/Samples/Wasm/Bit.Bortable.Samples.Wasm/Bit.Bortable.Samples.Wasm.csproj" />
+    <Project Path="Utilities/Bortable/Samples/Wasm/Bit.Bortable.Samples.Wasm.Client/Bit.Bortable.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Bortable/Tests/">
     <Project Path="Utilities/Bortable/Tests/Bit.Bortable.Tests/Bit.Bortable.Tests.csproj" />
     <Project Path="Utilities/Bortable/Tests/Bit.Bortable.Tests.Mcp/Bit.Bortable.Tests.Mcp.csproj" />

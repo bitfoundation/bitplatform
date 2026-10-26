@@ -1,0 +1,117 @@
+﻿@page "/builder"
+
+<PageTitle>Builder - Bortable samples</PageTitle>
+
+<h1>Builder</h1>
+
+<p>
+    A form builder. Drag a field type from the palette into the form: the palette is a plain array, which a list only
+    ever clones from, so it keeps every type however many times it is used. In the form a field drags by its grip only
+    (<code>Handle</code>), so its label can be selected and edited and its button clicked; the grip drags at once on a
+    touch screen too, without the usual long press. The email field is locked (<code>Filter</code>): it cannot be
+    picked up, though the others can be dragged past it.
+</p>
+
+<div class="columns">
+    <div class="column">
+        <h3>Palette</h3>
+        <Bortable Items="_palette" TItem="Field" Group="builder" AriaLabel="Palette" ItemLabel="f => f.Label"
+                  Pull="BortablePull.Clone" Clone="f => new Field(f.Kind, f.Label)"
+                  Class="list" ItemClass="item">
+            <ItemTemplate Context="field">@field.Label</ItemTemplate>
+        </Bortable>
+    </div>
+    <div class="column">
+        <h3>Form</h3>
+        <Bortable @bind-Items="_form" TItem="Field" Group="builder" AriaLabel="Form" ItemLabel="f => f.Label"
+                  Handle=".grip" TouchDelay="0" Filter="f => f.Locked" OnAdd="OnAdd"
+                  Class="list" ItemClass="item field tinted">
+            <ItemTemplate Context="field">
+                @if (field.Locked)
+                {
+                    <span class="lock" aria-hidden="true">🔒</span>
+                }
+                else
+                {
+                    <button type="button" class="grip" aria-label="@($"Drag {field.Label}")">⠿</button>
+                }
+                <input aria-label="Label" @bind="field.Label" @bind:event="oninput" />
+                <span class="muted">@field.Kind</span>
+                @if (field.Locked is false)
+                {
+                    <button type="button" class="icon" aria-label="@($"Remove {field.Label}")" @onclick="() => _form.Remove(field)">✕</button>
+                }
+            </ItemTemplate>
+            <ChildContent>
+                @if (_form.Count == 0)
+                {
+                    <div class="empty" role="listitem">Drag fields from the palette.</div>
+                }
+            </ChildContent>
+        </Bortable>
+    </div>
+</div>
+
+<p class="muted">Last added: @_lastAdded</p>
+
+<section>
+    <h2>The form</h2>
+    <form class="preview" @onsubmit:preventDefault>
+        @foreach (var field in _form)
+        {
+            <label>
+                <span>@field.Label</span>
+                @switch (field.Kind)
+                {
+                    case "checkbox":
+                        <input type="checkbox" />
+                        break;
+                    case "date":
+                        <input type="date" />
+                        break;
+                    case "choice":
+                        <select><option>One</option><option>Two</option></select>
+                        break;
+                    default:
+                        <input type="@field.Kind" />
+                        break;
+                }
+            </label>
+        }
+    </form>
+</section>
+
+@code {
+    // A read-only list: it can be cloned from, but it is never sorted, pulled from or dropped into.
+    private readonly Field[] _palette =
+    [
+        new("text", "Text"),
+        new("email", "Email"),
+        new("date", "Date"),
+        new("checkbox", "Checkbox"),
+        new("choice", "Choice"),
+    ];
+
+    private IList<Field> _form = new List<Field>
+    {
+        new("email", "Your email") { Locked = true },
+        new("text", "Your name"),
+        new("checkbox", "Send me the newsletter"),
+    };
+
+    private string _lastAdded = "nothing yet";
+
+    // Raised on the form for an item dropped in from another list: here, always a copy made by the palette's Clone.
+    private void OnAdd(BortableEventArgs<Field> e)
+        => _lastAdded = $"{e.Item.Label} at #{e.NewIndex}{(e.IsClone ? " (a copy)" : "")}";
+
+    // A class, not a record: two copies of the same field type must not be equal, or the form would refuse the second.
+    private sealed class Field(string kind, string label)
+    {
+        public string Kind { get; } = kind;
+
+        public string Label { get; set; } = label;
+
+        public bool Locked { get; init; }
+    }
+}
