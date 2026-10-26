@@ -181,6 +181,21 @@
     <Project Path="Utilities/Blow/Bit.Blow/Bit.Blow.csproj" />
     <Project Path="Utilities/Blow/Tests/Bit.Blow.Tests/Bit.Blow.Tests.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Blow/Samples/" />
+  <Folder Name="/Utilities/Blow/Samples/Auto/">
+    <Project Path="Utilities/Blow/Samples/Auto/Bit.Blow.Samples.Auto/Bit.Blow.Samples.Auto.csproj" />
+    <Project Path="Utilities/Blow/Samples/Auto/Bit.Blow.Samples.Auto.Client/Bit.Blow.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Blow/Samples/Core/">
+    <Project Path="Utilities/Blow/Samples/Core/Bit.Blow.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Blow/Samples/Server/">
+    <Project Path="Utilities/Blow/Samples/Server/Bit.Blow.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Blow/Samples/Wasm/">
+    <Project Path="Utilities/Blow/Samples/Wasm/Bit.Blow.Samples.Wasm/Bit.Blow.Samples.Wasm.csproj" />
+    <Project Path="Utilities/Blow/Samples/Wasm/Bit.Blow.Samples.Wasm.Client/Bit.Blow.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Borm/">
     <File Path="Utilities/Borm/README.md" />
     <Project Path="Utilities/Borm/Demo/Client/Bit.Borm.Demo.Client.csproj" />
