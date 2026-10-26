@@ -229,7 +229,9 @@ public class RemoveTests
     }
 
     [TestMethod]
-    public async Task Remove_Should_StopWhatABuildStartedWhenItHoldsAFile()
+    [DataRow(1)]
+    [DataRow(2)]
+    public async Task Remove_Should_StopWhatABuildStartedWhenItHoldsAFile(int depth)
     {
         if (OperatingSystem.IsWindows() is false)
             return;
@@ -240,7 +242,7 @@ public class RemoveTests
         var buildProcess = Path.Combine(Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "sdk")).FullName, "dotnet.exe");
         File.Copy(Path.Combine(Environment.SystemDirectory, "cmd.exe"), buildProcess);
 
-        using var build = HoldFile(buildProcess, Path.Combine(folder, "src", "Client", "Contoso.Client.Core", "bin", "Contoso.Client.Core.dll"), byAChild: true);
+        using var build = HoldFile(buildProcess, Path.Combine(folder, "src", "Client", "Contoso.Client.Core", "bin", "Contoso.Client.Core.dll"), depth);
 
         try
         {
@@ -334,10 +336,10 @@ public class RemoveTests
         Assert.IsFalse(Directory.Exists(folder));
     }
 
-    private static Process HoldFile(string shell, string file, bool byAChild = false)
+    private static Process HoldFile(string shell, string file, int depth = 0)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(file)!);
-        var arguments = byAChild ? $"/c cmd /c pause ^> \"{file}\"" : $"/c pause > \"{file}\"";
+        var arguments = $"/c {string.Concat(Enumerable.Repeat("cmd /c ", depth))}pause {new string('^', (1 << depth) - 1)}> \"{file}\"";
         var process = Process.Start(new ProcessStartInfo(shell, arguments) { UseShellExecute = false, RedirectStandardInput = true, RedirectStandardOutput = true, CreateNoWindow = true })!;
 
         for (var i = 0; i < 50 && File.Exists(file) is false; i++)

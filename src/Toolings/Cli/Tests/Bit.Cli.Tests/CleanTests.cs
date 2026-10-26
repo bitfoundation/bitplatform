@@ -106,6 +106,22 @@ public class CleanTests
         Assert.IsFalse(ProjectProcesses.Mentions("dotnet build-server shutdown", ""));
     }
 
+    [TestMethod]
+    public void Mentions_Should_ResolveRelativePathsAndKeepQuotedPathsWhole()
+    {
+        var projects = Path.Combine(Path.GetTempPath(), "Projects");
+        var shop = Path.Combine(projects, "Shop");
+
+        Assert.IsTrue(ProjectProcesses.Mentions($"dotnet watch --project {Path.Combine("Shop", "src", "Shop.Server.AppHost.csproj")}", shop, projects));
+        Assert.IsTrue(ProjectProcesses.Mentions($"dotnet build {Path.Combine("..", "Shop", "Shop.slnx")}", shop, Path.Combine(projects, "Other")));
+        Assert.IsTrue(ProjectProcesses.Mentions($"dotnet build -p:OutDir=\"{Path.Combine(shop, "bin")}\"", shop, projects));
+        Assert.IsTrue(ProjectProcesses.Mentions("dotnet build Shop", shop, projects));
+
+        Assert.IsFalse(ProjectProcesses.Mentions($"dotnet watch --project \"{Path.Combine(projects, "Shop New", "src", "Shop.Server.AppHost.csproj")}\"", shop, projects));
+        Assert.IsFalse(ProjectProcesses.Mentions($"dotnet watch --project {Path.Combine("Shop", "src", "Shop.Server.AppHost.csproj")}", shop, Path.Combine(projects, "Other")));
+        Assert.IsFalse(ProjectProcesses.Mentions("aspire ps --follow --format json", shop, projects));
+    }
+
     private static void AssertRanOnlyTheScript(TestHost host, string folder, string fileName, string arguments)
     {
         var call = host.Runner.Calls.Single();

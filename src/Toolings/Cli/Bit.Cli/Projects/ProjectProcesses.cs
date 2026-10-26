@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using System.Text;
 using Bit.Cli.Infrastructure;
 
 namespace Bit.Cli.Projects;
@@ -74,7 +75,7 @@ public static class ProjectProcesses
 
             if (TryGetName(process) is { } name)
             {
-                found.Add((process, name, id, stopBuildProcesses && (buildProcesses.Contains(name) || IsStartedByABuild(id, stoppedBuilds))));
+                found.Add((process, name, id, stopBuildProcesses && (buildProcesses.Contains(name) || IsStartedByABuild(id, stoppedBuilds, ancestors))));
             }
             else
             {
@@ -101,21 +102,28 @@ public static class ProjectProcesses
         return new(stopped, holders);
     }
 
-    private static bool IsStartedByABuild(int id, IReadOnlySet<int>? stoppedBuilds)
+    private static bool IsStartedByABuild(int id, IReadOnlySet<int>? stoppedBuilds, HashSet<int> ancestors)
     {
-        if (!OperatingSystem.IsWindows() || FolderHolders.ParentOf(id) is not { } parentId)
-            return false;
+        var seen = new HashSet<int>();
 
-        if (stoppedBuilds?.Contains(parentId) is true)
-            return true;
-
-        if (TryGetProcess(parentId) is not { } parent)
-            return false;
-
-        using (parent)
+        while (OperatingSystem.IsWindows() && FolderHolders.ParentOf(id) is { } parentId && parentId != Environment.ProcessId && ancestors.Contains(parentId) is false && seen.Add(parentId))
         {
-            return TryGetName(parent) is { } name && buildProcesses.Contains(name);
+            if (stoppedBuilds?.Contains(parentId) is true)
+                return true;
+
+            if (TryGetProcess(parentId) is not { } parent)
+                return false;
+
+            using (parent)
+            {
+                if (TryGetName(parent) is { } name && buildProcesses.Contains(name))
+                    return true;
+            }
+
+            id = parentId;
         }
+
+        return false;
     }
 
     private static HashSet<int> Ancestors()
@@ -141,19 +149,57 @@ public static class ProjectProcesses
             && path[root.Length] is '\\' or '/';
     }
 
-    public static bool Mentions(string commandLine, string folder)
+    public static bool Mentions(string commandLine, string folder, string? workingDirectory = null)
     {
         var root = folder.TrimEnd('\\', '/');
 
-        for (var at = commandLine.IndexOf(root, StringComparison.OrdinalIgnoreCase); root.Length > 0 && at >= 0; at = commandLine.IndexOf(root, at + 1, StringComparison.OrdinalIgnoreCase))
-        {
-            var end = at + root.Length;
+        return root.Length > 0 && Arguments(commandLine).Any(argument => Names(argument, root, workingDirectory)
+            || (argument.IndexOf('=') is var equals and >= 0 && Names(argument[(equals + 1)..], root, workingDirectory)));
+    }
 
-            if (end == commandLine.Length || commandLine[end] is '\\' or '/' or '"' or ' ')
-                return true;
+    private static bool Names(string argument, string root, string? workingDirectory)
+    {
+        if (argument.Length == 0)
+            return false;
+
+        string path;
+
+        try
+        {
+            path = Path.IsPathFullyQualified(argument) ? Path.GetFullPath(argument) : workingDirectory is null ? argument : Path.GetFullPath(argument, workingDirectory);
+        }
+        catch (Exception exp) when (exp is ArgumentException or NotSupportedException)
+        {
+            return false;
         }
 
-        return false;
+        return string.Equals(path.TrimEnd('\\', '/'), root, StringComparison.OrdinalIgnoreCase) || IsUnder(path, root);
+    }
+
+    private static IEnumerable<string> Arguments(string commandLine)
+    {
+        var argument = new StringBuilder();
+        var quoted = false;
+
+        foreach (var c in commandLine.Append(' '))
+        {
+            if (c is '"')
+            {
+                quoted = !quoted;
+            }
+            else if (char.IsWhiteSpace(c) && quoted is false)
+            {
+                if (argument.Length > 0)
+                {
+                    yield return argument.ToString();
+                    argument.Clear();
+                }
+            }
+            else
+            {
+                argument.Append(c);
+            }
+        }
     }
 
     private static List<(Process Process, string Name, int Id)> Find(string folder)

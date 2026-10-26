@@ -63,7 +63,9 @@ public static class FolderRemover
 
     private static void Delete(FileSystemInfo entry)
     {
-        var path = OperatingSystem.IsWindows() && entry.FullName.StartsWith(@"\\", StringComparison.Ordinal) is false ? $@"\\?\{entry.FullName}" : entry.FullName;
+        var path = OperatingSystem.IsWindows() is false || entry.FullName.StartsWith(@"\\?\", StringComparison.Ordinal) || entry.FullName.StartsWith(@"\\.\", StringComparison.Ordinal) ? entry.FullName
+            : entry.FullName.StartsWith(@"\\", StringComparison.Ordinal) ? $@"\\?\UNC\{entry.FullName[2..]}"
+            : $@"\\?\{entry.FullName}";
 
         if (entry is DirectoryInfo)
         {

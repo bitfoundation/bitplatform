@@ -43,14 +43,19 @@ public static class FolderHolders
             return false;
 
         var root = Path.TrimEndingDirectorySeparator(folder);
+        var current = Read(id, CurrentDirectoryOffset);
 
-        return IsIn(id, root) || (Read(id, CommandLineOffset) is { } commandLine && ProjectProcesses.Mentions(commandLine, root));
+        return (current is not null && IsAt(current, root)) || (Read(id, CommandLineOffset) is { } commandLine && ProjectProcesses.Mentions(commandLine, root, current));
     }
 
     private static bool IsIn(int id, string root)
     {
-        return Read(id, CurrentDirectoryOffset) is { } current
-            && (string.Equals(Path.TrimEndingDirectorySeparator(current), root, StringComparison.OrdinalIgnoreCase) || ProjectProcesses.IsUnder(current, root));
+        return Read(id, CurrentDirectoryOffset) is { } current && IsAt(current, root);
+    }
+
+    private static bool IsAt(string current, string root)
+    {
+        return string.Equals(Path.TrimEndingDirectorySeparator(current), root, StringComparison.OrdinalIgnoreCase) || ProjectProcesses.IsUnder(current, root);
     }
 
     public static int? ParentOf(int id)
