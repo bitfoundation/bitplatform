@@ -310,7 +310,7 @@ This is the **core deployment workflow** that handles building and deploying all
 
 6. **Migrations Bundle**
    ```bash
-   dnx dotnet-ef@10.0.13 -- migrations bundle --self-contained --target-runtime linux-x64 --output efbundle
+   dnx dotnet-ef@10.0.14 -- migrations bundle --self-contained --target-runtime linux-x64 --output efbundle
    ```
    - Packs the EF Core migrations into one executable, uploaded as the `migrations-bundle` artifact for Job 2
 <!--#endif-->

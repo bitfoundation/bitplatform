@@ -9,7 +9,7 @@
     "watch": "vitest"
   },
   "devDependencies": {
-    "happy-dom": "20.14.4",
+    "happy-dom": "21.0.4",
     "vitest": "^3.2.4"
   }
 }
