@@ -38,7 +38,10 @@
         <code>InputFile</code> - and returns every symbol in it instead of raising <code>OnScan</code>. Off WebAssembly
         it throws <code>NotSupported</code> before reading the stream, so a file is not uploaded just to be refused.
     </p>
-    <InputFile accept="image/*" OnChange="ScanFileAsync" />
+    <div class="toolbar">
+        <label for="image-to-scan">Image to scan</label>
+        <InputFile id="image-to-scan" accept="image/*" OnChange="ScanFileAsync" />
+    </div>
 </section>
 
 <section>

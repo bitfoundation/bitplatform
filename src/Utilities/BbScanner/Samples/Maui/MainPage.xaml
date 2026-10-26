@@ -6,7 +6,7 @@
     xmlns:core="clr-namespace:Bit.BbScanner.Samples.Core;assembly=Bit.BbScanner.Samples.Core"
     BackgroundColor="White">
 
-    <BlazorWebView x:Name="blazorWebView" HostPage="wwwroot/index.html">
+    <BlazorWebView x:Name="blazorWebView" HostPage="wwwroot/index.html" BlazorWebViewInitialized="OnBlazorWebViewInitialized">
         <BlazorWebView.RootComponents>
             <RootComponent ComponentType="{x:Type core:Routes}" Selector="#app" />
         </BlazorWebView.RootComponents>

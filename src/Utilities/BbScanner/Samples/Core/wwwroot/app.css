@@ -41,10 +41,11 @@ main {
     padding: 1rem 1.5rem 4rem;
 }
 
-/* <FocusOnNavigate> moves focus to the heading after each navigation so screen readers announce the page; the heading
-   is not a control, so it gets no focus ring. */
-h1:focus {
-    outline: none;
+/* <FocusOnNavigate> moves focus to the heading after each navigation so screen readers announce the page. The ring
+   shows only where the browser judges focus should be seen - after a keyboard navigation, not a click. */
+h1:focus-visible {
+    outline: 2px solid #1276c6;
+    outline-offset: 2px;
 }
 
 section {
