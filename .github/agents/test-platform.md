@@ -13,12 +13,14 @@ runner (`D:\Runner`) is what the CD workflows deploy through, and the Android em
 the test suite all live on it. How the machine is put together, and how to rebuild it, is in
 `G:\My Drive\Bit Demo Assets\Infrastructure\README.md`.
 
-Three rules for working on it:
+Four rules for working on it:
 
 - **Redis is the `Garnet` Windows service.** TodoApi needs a Redis on port 6379 and dies at startup without one
   ("No redis server available"), which shows up as a 502 at todo-api.bitplatform.dev. The service starts at boot
   with nobody signed in; when TodoApi fails, check that it runs and listens on 6379 before anything else. Docker
-  Desktop no longer serves the demos, only steps 5 and 6: start it when it is off.
+  Desktop no longer serves the demos, only steps 5 and 6: start it when it is off. When `docker info` hasn't
+  answered within a minute, quit Docker Desktop and start it again instead of waiting on it: after days of uptime
+  its engine has hung here, with its backend holding several GB.
 - **Memory is short.** The emulator alone takes over 3 GB. Run one heavy thing at a time - the emulator, an Aspire
   app, the dev container - and stop whatever you started once it isn't needed: the emulator if it was off, and any
   local app or `dotnet watch`. Never run `dotnet build-server shutdown`: other sessions build on this machine too.
@@ -30,6 +32,10 @@ Three rules for working on it:
   elevated), the deployed `appsettings.json` under `C:\inetpub\<site>`, a tool's version. PlatformWebsite's app pool,
   for one, runs as the machine owner's account, not as ApplicationPoolIdentity, and a fix that assumed the default
   made things worse.
+- **Every wait has a budget.** Give a local run a hard time limit, or a watchdog on its CPU and output, and a
+  remote run a watcher that stops at its first failed job. Look into a failure as soon as it shows rather than when
+  its run ends, and meanwhile do what doesn't depend on it. A process near 0% CPU that has printed nothing for
+  minutes is hung, not slow.
 
 ## Inputs
 
@@ -41,8 +47,10 @@ its jobs (`/job/<id>`); the run id is the number after `/runs/`.
 
 ```bash
 gh run view <run-id> -R bitfoundation/bitplatform --json workflowName,headBranch,headSha,attempt,conclusion,createdAt
-gh variable list -R bitfoundation/bitplatform   # APP_VERSION, and when it last changed
+gh variable list -R bitfoundation/bitplatform --json name,value,updatedAt --jq '.[] | select(.name == "APP_VERSION")'
 ```
+
+The other variables include the Microsoft Store's product ids: never print the whole list into a report or a chat.
 
 Without a CD link, step 2 only verifies: the suite tests whatever is deployed. When the user asks for a new CD run
 instead, step 2 says how to start one.
@@ -83,7 +91,10 @@ until the report. Then go in this order:
    (`gh run watch <run-id> -R bitfoundation/bitplatform --exit-status`) before anything that takes its packages.
 2. `APP_VERSION`, then All CI and All CD together, both with the chosen `prerelease_packages`. All CI's inputs name
    its jobs and default to on, except `e2e` (the E2E suites), which is off; `-f <job>=false` leaves one out and
-   `-f e2e=true` adds the E2E suites.
+   `-f e2e=true` adds the E2E suites. After a prerelease run that published a new version, start them only once
+   nuget.org lists that version for every `Bit.*` package the template takes, which can be half an hour later: the
+   library demos and their jobs take `Bit.Minifier` and `Bit.BlazorES2019` from nuget.org even with
+   `prerelease_packages`, and fail with NU1102 until then.
 3. While they run: step 1 as CI jobs fail.
 4. Once CD is done: step 2, then steps 3 and 4, with step 6 in the background next to the web stages of step 3.
    Step 7 needs no CD and is light: do it while CI and CD run. Step 8 needs no CD either: start it in the background
@@ -204,6 +215,9 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    - A library's E2E failure on another branch than develop: run that library's E2E workflow on develop too
      (`gh workflow run bit.ci.<Library>.e2e.yml --ref develop`) before calling it the branch's own. New tests of a
      library sometimes reach develop without ever passing in CI.
+   - A failure only one branch has can come from its runner image rather than its code: compare the jobs' `runs-on`.
+     A newer Ubuntu ships a newer ICU, whose culture data changes formatting, such as the calendar a culture uses
+     by default and whether a date shows its era.
    - A WebAssembly demo or sample started from its build output answers its `_framework` files with empty 200s
      outside Development, since its static web assets come from the build's development manifest. A probe of
      your own starts it with `ASPNETCORE_ENVIRONMENT=Development`, as the suites do.
@@ -218,7 +232,8 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    on the branch under test: only a fix to that branch's own changes goes on it. Push to a branch of your own without
    asking, for the user to review with the report; ask before pushing to anyone else's. A CI run on the pushed branch
    is the final proof: `gh workflow run all.ci.yml -R bitfoundation/bitplatform --ref <branch>`. Re-running a failed
-   job (`gh run rerun <run-id> --failed`) tells flaky from broken, and proves nothing about a fix.
+   job (`gh run rerun <run-id> --failed`) tells flaky from broken, and proves nothing about a fix. A push to a branch
+   with an open PR also starts that PR's CI workflows; cancel the ones All CI runs anyway, so the runners go to it.
 
    A fix in a bit library - any `Bit.*` project other than the Boilerplate template, its tests, demos and samples
    included - gets an issue and a PR of its own instead, so its owners review it. Fixes to the Boilerplate, to the
@@ -270,6 +285,11 @@ counts once its executable is at `APP_VERSION`.
 
 Then `versions -Sha <CD head sha> -CdRun <run>`. Anything still behind is a failed rollout: find the CD job that did not deliver -
 its log, the feed's `releases.win.json`, the Play upload - before testing anything.
+
+A job that fails to download an artifact with "Egress is over the account limit" ran into GitHub's transfer quota for
+the account's runners, not a broken build: re-run the failed jobs later. When a demo's job keeps failing on it and
+nuget.org already has the same build of the Bit packages, that demo's own CD workflow without `prerelease_packages`
+delivers it instead.
 
 **Bit packages.** All CD has a `prerelease_packages` option. With it, the Boilerplate demos and the platform website
 are built with the Bit packages of the latest Prerelease nuget packages run (`prerelease.nuget.org.yml`) instead of
@@ -409,7 +429,7 @@ does not serve silently gets the newest one it does.
 1. **What it should serve.** The plain `v-X.Y.Z` tags of
    `git ls-remote --tags https://github.com/bitfoundation/bitplatform.git 'v-*'`. Check that the newest
    `feat(release): v-X.Y.Z` commit on `develop` has its tag: an untagged release is answered by the previous one,
-   without a word.
+   without a word. The site reads the tags again every few hours, so a tag pushed during the run isn't served yet.
 2. **What it does serve.** `mcp -McpVersion X.Y.Z -AllLibraries` for each, and once without `-AllLibraries`, whose
    library tools must be BlazorUI's and Butil's alone. The library tools (`Search*`, `Get*` and `Inspect*` of BlazorUI,
    Butil, Brouter, Bswup, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite and Belemetry) and the source tools (`FindBitPlatformSymbols`, `GetBitPlatformSymbolSource`,
@@ -592,6 +612,9 @@ scenario as it is while fixing, so the two runs compare.
 
 ## 9. Report
 
+The report is one self-contained HTML file saved on this machine, in the Downloads folder, and opened in its browser.
+It is never uploaded or published anywhere; the chat gets the verdict in a few lines and the file's path.
+
 Lead with the verdict, then:
 
 1. **Deployment**: the `versions` table, where the Bit packages came from, and whatever had to be rolled out.
@@ -614,3 +637,11 @@ Lead with the verdict, then:
 
 Anything that looks like a defect in a bit platform library or in the `bit-bp` template itself: say so, and offer to
 report it - an issue on bitfoundation/bitplatform, or `SendBitPlatformFeedback`.
+
+Last, bring this machine's own global bit up to what was tested: `dotnet tool update -g Bit.Cli --version <version>`
+with the version the run tested or published. When fixes to bit or the
+template landed after that publish, install a bit packed from the branch's head instead, from a local NuGet source
+that also holds the template and the Bit packages that bit asks for at its version. Give that pack a version above the
+published one that keeps the `-pre-NN` form, such as `-pre-1401` after `-pre-14`: Release builds turn `-pre-` into a
+dot for the assembly version and fail on anything else, and a version already installed once comes back from the
+NuGet cache. `bit --version` then names the commit it was built from.
