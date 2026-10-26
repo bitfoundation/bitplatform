@@ -1,0 +1,61 @@
+﻿@inherits LayoutComponentBase
+@inject IBonboardingService BonboardingService
+
+<nav class="topbar">
+    <NavLink href="" Match="NavLinkMatch.All">Bonboarding samples</NavLink>
+    <NavLink href="workspace" data-bonboarding-anchor="nav-workspace">Workspace</NavLink>
+    <NavLink href="guidance" data-bonboarding-anchor="nav-guidance">Guidance</NavLink>
+    <NavLink href="progress" data-bonboarding-anchor="nav-progress">Progress</NavLink>
+</nav>
+
+<main>
+    @Body
+</main>
+
+@* The welcome tour points at the navigation above, which every page has, so it starts - and replays - wherever the
+   user is. Declared in the layout, it stays registered for as long as the app runs, so the guidance page's tour list
+   and checklist can start it by id. AutoStart Once starts it after the first render (never while prerendering) for a
+   user who has neither completed nor dismissed it. *@
+<BonboardingTour Id="@SampleTours.WelcomeId"
+                 Title="Welcome tour"
+                 Description="The samples' navigation, one page at a time."
+                 AutoStart="BonboardingAutoStart.Once">
+
+    <BonboardingStep Id="intro"
+                     Title="Welcome to the Bonboarding samples"
+                     Description="The same pages run in every Blazor hosting model. Press Escape at any point to leave." />
+
+    <BonboardingStep Id="workspace"
+                     Anchor="nav-workspace"
+                     Title="A tour across pages"
+                     Description="Its steps belong to two routes, and the tour navigates between them by itself."
+                     Placement="BonboardingPlacement.Bottom" />
+
+    <BonboardingStep Id="guidance"
+                     Anchor="nav-guidance"
+                     Title="Guidance that stays on the page"
+                     Description="A beacon with a hint, a checklist that ticks itself off, and a list of tours to replay."
+                     Placement="BonboardingPlacement.Bottom" />
+
+    <BonboardingStep Id="progress"
+                     Anchor="nav-progress"
+                     Title="What was stored"
+                     Description="Every tour's saved progress and the live event stream, and a button to forget it all."
+                     Placement="BonboardingPlacement.Bottom" />
+
+    <BonboardingStep Id="done"
+                     Title="That is it"
+                     Description="Replay this tour from the home page or from the guidance page's tour list."
+                     DoneLabel="Finish" />
+
+</BonboardingTour>
+
+@* The one host that renders every tour the app starts. It sits in the layout, which outlives every navigation between
+   the pages, so a tour that moves to another route keeps its host. *@
+<BonboardingRoot />
+
+@code {
+    // Registered rather than declared, so a tour list and a checklist can start it from any page, not only from the
+    // workspace pages that run it.
+    protected override void OnInitialized() => BonboardingService.Register(SampleTours.CreateWorkspace());
+}

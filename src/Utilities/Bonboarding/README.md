@@ -90,6 +90,26 @@ an interaction or an application signal, conditional and branching flows, drivin
 and validating tours, beacons, checklists and tour lists, a tour spanning two routes, theming, RTL and
 localisation, headless rendering, and a live event log with the stored record beside it.
 
+[`Samples`](Samples/) is the hosting-model harness rather than the docs: one shared [Core](Samples/Core/) project of
+pages - a welcome tour that starts once by itself, a tour across two routes with a step that waits for a signal, a
+beacon, a checklist and a tour list, and the stored progress beside the live event stream - hosted unchanged under
+[Server](Samples/Server/), [WASM](Samples/Wasm/) and [Auto](Samples/Auto/), and under [MAUI](Samples/Maui/)
+(Android, iOS, Mac Catalyst and Windows), where a `BlazorWebView` runs them as a Blazor Hybrid app. Their
+`Program.cs` (and the MAUI sample's `MauiProgram.cs`) is the registration to copy.
+
+```bash
+dotnet run --project src/Utilities/Bonboarding/Samples/Server
+dotnet run --project src/Utilities/Bonboarding/Samples/Wasm/Bit.Bonboarding.Samples.Wasm
+dotnet run --project src/Utilities/Bonboarding/Samples/Auto/Bit.Bonboarding.Samples.Auto
+dotnet build -t:Run -f net10.0-android src/Utilities/Bonboarding/Samples/Maui
+```
+
+`Bit.Bonboarding.slnx` includes the MAUI sample, whose Android, iOS and Mac Catalyst (and, on Windows, Windows)
+targets need the `maui-*` workloads (`dotnet workload restore Samples/Maui/Bit.Bonboarding.Samples.Maui.csproj`
+from this folder); without them the solution build fails with `NETSDK1147`. `Bit.Bonboarding.Web.slnf` is every
+other project and needs nothing but the SDK: it is what CI builds, and what to build and test from the command line
+(`dotnet build Bit.Bonboarding.Web.slnf`, `dotnet test --solution Bit.Bonboarding.Web.slnf -f net10.0`).
+
 ## How it fits together
 
 ```
@@ -148,6 +168,8 @@ agent through the common jobs in the right order. Every tool is also a plain `GE
 ```
 Bit.Bonboarding                 The library
 Demo                            Demo application (Blazor Web App: Server + Client) and the MCP server
+Samples/Core                    The samples' shared pages
+Samples/{Server,Wasm,Auto,Maui} The same pages in each hosting model
 Tests/Bit.Bonboarding.Tests     Engine, layout and component tests
 Tests/Bit.Bonboarding.Tests.Mcp The MCP server, exercised over the protocol
 Tests/Bit.Bonboarding.Tests.E2E The demo in Chromium, Firefox and WebKit, with axe-core (see its README)

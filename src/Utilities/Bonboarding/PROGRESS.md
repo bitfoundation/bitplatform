@@ -13,6 +13,9 @@ maintainers, not user documentation: the README is the user guide.
   50 MCP tests). The net8.0 and net9.0 test runs cannot start on this machine because only the .NET 10 runtime is
   installed. That is an environment limit, not a code failure: CI (`bit.ci.Bonboarding.yml`) runs all three.
 - No browser-level tests exist. `bit-bonboarding.ts` never executes in any automated check.
+- Since `Samples` were added, `Bit.Bonboarding.slnx` also holds the MAUI sample, which needs the `maui-*` workloads
+  and cannot be built with `-f net10.0`. The solution-level commands in this file are run against
+  `Bit.Bonboarding.Web.slnf` (every project but the MAUI sample), as CI does.
 - Library: ~6.4k lines (C# engine, three components, 1.0k lines of TypeScript, 0.6k lines of CSS), net8/9/10,
   trimmable, no runtime dependency beyond `Microsoft.AspNetCore.Components.Web`.
 
@@ -235,7 +238,8 @@ P3 specialised. "E2E" means the Playwright suite (Chromium, Firefox, WebKit).
 
 1. Run the new `bit.ci.Bonboarding.e2e.yml` workflow once on GitHub (it has only run locally) and the unit tests on
    net8.0/net9.0 there.
-2. Verify on MAUI Blazor Hybrid (WebView) on a device; nothing browser-only is used beyond `localStorage`.
+2. Verify on MAUI Blazor Hybrid (WebView) on a device - `Samples/Maui` builds for Android and Windows and is the app
+   to run; nothing browser-only is used beyond `localStorage`.
 3. A persisted global throttle for automatic tours, if users ask for one (deliberately not built; see round 2-3).
 4. A screen-reader pass by hand (NVDA, VoiceOver) over a tour, a hint and the checklist; automated rules cover only a
    part of it.

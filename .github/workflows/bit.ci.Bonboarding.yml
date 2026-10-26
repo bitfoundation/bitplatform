@@ -45,11 +45,12 @@ jobs:
       with:
         node-version: 24
 
-    - name: dotnet workload restore
-      run:  cd src/Utilities/Bonboarding && dotnet workload restore
-
+    # Bit.Bonboarding.Web.slnf is every project of Bit.Bonboarding.slnx but the MAUI sample, the one project that needs
+    # a workload (maui-android here). Installing it and building an Android app would add minutes to every library
+    # change. Nothing in the filter needs a workload, so there is no `dotnet workload restore` step (which does not read
+    # a solution filter, and would restore the MAUI workloads from Bit.Bonboarding.slnx).
     - name: dotnet build
-      run: dotnet build src/Utilities/Bonboarding/Bit.Bonboarding.slnx
+      run: dotnet build src/Utilities/Bonboarding/Bit.Bonboarding.Web.slnf
 
     - name: dotnet test
       # Run from inside src so src/global.json's "test" runner setting applies
