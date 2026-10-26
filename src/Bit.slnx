@@ -192,6 +192,25 @@
     <Project Path="Utilities/Balette/Demo/Client/Bit.Balette.Demo.Client.csproj" />
     <Project Path="Utilities/Balette/Demo/Server/Bit.Balette.Demo.Server.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Balette/Samples/">
+    <Project Path="Utilities/Balette/Samples/Maui/Bit.Balette.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Utilities/Balette/Samples/Auto/">
+    <Project Path="Utilities/Balette/Samples/Auto/Bit.Balette.Samples.Auto/Bit.Balette.Samples.Auto.csproj" />
+    <Project Path="Utilities/Balette/Samples/Auto/Bit.Balette.Samples.Auto.Client/Bit.Balette.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Balette/Samples/Core/">
+    <Project Path="Utilities/Balette/Samples/Core/Bit.Balette.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Balette/Samples/Server/">
+    <Project Path="Utilities/Balette/Samples/Server/Bit.Balette.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Balette/Samples/Wasm/">
+    <Project Path="Utilities/Balette/Samples/Wasm/Bit.Balette.Samples.Wasm/Bit.Balette.Samples.Wasm.csproj" />
+    <Project Path="Utilities/Balette/Samples/Wasm/Bit.Balette.Samples.Wasm.Client/Bit.Balette.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Balette/Tests/">
     <Project Path="Utilities/Balette/Tests/Bit.Balette.Tests/Bit.Balette.Tests.csproj" />
     <Project Path="Utilities/Balette/Tests/Bit.Balette.Tests.Mcp/Bit.Balette.Tests.Mcp.csproj" />

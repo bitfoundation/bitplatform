@@ -105,6 +105,21 @@
     <Project Path="Utilities/Balette/Bit.Balette/Bit.Balette.csproj" />
     <Project Path="Utilities/Balette/Tests/Bit.Balette.Tests/Bit.Balette.Tests.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Balette/Samples/" />
+  <Folder Name="/Utilities/Balette/Samples/Auto/">
+    <Project Path="Utilities/Balette/Samples/Auto/Bit.Balette.Samples.Auto/Bit.Balette.Samples.Auto.csproj" />
+    <Project Path="Utilities/Balette/Samples/Auto/Bit.Balette.Samples.Auto.Client/Bit.Balette.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Balette/Samples/Core/">
+    <Project Path="Utilities/Balette/Samples/Core/Bit.Balette.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Balette/Samples/Server/">
+    <Project Path="Utilities/Balette/Samples/Server/Bit.Balette.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Balette/Samples/Wasm/">
+    <Project Path="Utilities/Balette/Samples/Wasm/Bit.Balette.Samples.Wasm/Bit.Balette.Samples.Wasm.csproj" />
+    <Project Path="Utilities/Balette/Samples/Wasm/Bit.Balette.Samples.Wasm.Client/Bit.Balette.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/BbScanner/">
     <File Path="Utilities/BbScanner/README.md" />
     <Project Path="Utilities/BbScanner/Demo/Client/Bit.BbScanner.Demo.Client.csproj" />

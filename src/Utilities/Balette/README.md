@@ -113,6 +113,17 @@ keyboard, theming with every template and an unstyled palette running, localizat
 options reference with the site's live values, and a large-registry page that times a search over thousands of
 commands in your browser.
 
+[`Samples`](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Balette/Samples/) is the render-mode
+harness rather than the docs: one shared [Core](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Balette/Samples/Core/)
+project of pages (page-scoped commands and global shortcuts, nested pages and multi-step flows, modes and async sources
+registered at runtime, and an inline palette), hosted unchanged under
+[Server](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Balette/Samples/Server/),
+[Wasm](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Balette/Samples/Wasm/) and
+[Auto](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Balette/Samples/Auto/) so the same palette
+runs, prerendered first, in each render mode, and under [Maui](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Balette/Samples/Maui/),
+a Blazor Hybrid app for Android, iOS, macOS and Windows. Each host is also a minimal example of the wiring that
+platform needs.
+
 ## How it fits together
 
 ```text

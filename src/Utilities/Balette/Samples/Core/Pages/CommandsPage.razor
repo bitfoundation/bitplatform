@@ -1,0 +1,97 @@
+﻿@page "/commands"
+@implements IDisposable
+@inject IBaletteService Palette
+@inject SampleState State
+
+<PageTitle>Commands · Balette samples</PageTitle>
+
+<h1>Commands</h1>
+
+<p>
+    This page registers the Counter commands with <code>&lt;BaletteCommands&gt;</code>: they are in the palette while the
+    page is open and leave with it. Each change hands the component a new list, so the toggle's switch and the count in
+    the subtitle are never stale.
+</p>
+
+@* Page-scoped: registered while this component is rendered, unregistered when it is disposed. *@
+<BaletteCommands Commands="_commands" />
+
+<div class="card">
+    <dl>
+        <dt>Count</dt>
+        <dd id="count">@State.Count</dd>
+        <dt>Details</dt>
+        <dd id="details">@(State.ShowDetails ? "shown" : "hidden")</dd>
+        <dt>Last executed</dt>
+        <dd id="last-executed">@(_lastExecuted ?? "nothing yet")</dd>
+    </dl>
+    @if (State.ShowDetails)
+    {
+        <p id="details-text">The "Show details" toggle is on. Run it again from the palette to hide this.</p>
+    }
+</div>
+
+<div class="row">
+    <button type="button" class="btn" @onclick="() => Palette.OpenAsync()">Open the palette</button>
+    <button type="button" class="btn" @onclick='() => Palette.OpenAsync(">")'>Open in Commands mode</button>
+    <button type="button" class="btn" @onclick='() => Palette.ExecuteAsync("counter.increment")'>Run Increment without opening it</button>
+</div>
+
+<h2>Try</h2>
+<ul>
+    <li>Press <kbd>I</kbd> to increment: a global single-key shortcut, which is ignored while a text box has the focus.</li>
+    <li>Decrement (<kbd>D</kbd>) is listed - and its shortcut answers - only while the count is above zero.</li>
+    <li>Reset counter is destructive: the first <kbd>Enter</kbd> asks, the second runs it.</li>
+    <li>Export as PDF is listed but disabled: <kbd>Enter</kbd> says why.</li>
+    <li>Type <code>&gt;</code> to see only the commands the Commands mode lets through.</li>
+</ul>
+
+@code {
+    private IReadOnlyList<BaletteCommand> _commands = [];
+    private string? _lastExecuted;
+
+    protected override void OnInitialized()
+    {
+        _commands = BuildCommands();
+        State.Changed += OnStateChanged;
+        Palette.CommandExecuted += OnCommandExecuted;
+    }
+
+    private BaletteCommand[] BuildCommands() =>
+    [
+        BaletteCmd.Action("Increment", () => State.Increment()).Id("counter.increment").Group("Counter")
+            .Subtitle($"The count is {State.Count}").Shortcut("I"),
+        BaletteCmd.Action("Decrement", () => State.Decrement()).Id("counter.decrement").Group("Counter")
+            .Shortcut("D").VisibleWhen(() => State.Count > 0),
+        BaletteCmd.Action("Reset counter", () => State.ResetCount()).Id("counter.reset").Group("Counter")
+            .Destructive("The count goes back to zero. Press Enter again to reset."),
+        BaletteCmd.New("Show details").Id("counter.details").Group("Counter")
+            .Checked(State.ShowDetails)
+            .Handler(_ =>
+            {
+                State.ToggleDetails();
+                return Task.FromResult(BaletteCommandResult.KeepOpen);
+            }),
+        BaletteCmd.New("Export as PDF").Id("counter.export").Group("Counter").Badge("Pro")
+            .Disabled(true, "Exporting is not part of the samples"),
+    ];
+
+    private void OnStateChanged()
+    {
+        _commands = BuildCommands();
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    // Raised for every command the palette runs - this page's, the layout's and the declarative ones alike.
+    private void OnCommandExecuted(object? sender, BaletteCommandExecutedEventArgs e)
+    {
+        _lastExecuted = $"{e.Command.Title} ({e.Duration.TotalMilliseconds:F0} ms)";
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        State.Changed -= OnStateChanged;
+        Palette.CommandExecuted -= OnCommandExecuted;
+    }
+}
