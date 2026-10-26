@@ -135,7 +135,7 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBsqliteStorageProviders), Title = "Storage backends and their capabilities", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets the four first-party storage backends - opfs, indexeddb, cache-storage, in-memory - read out of their provider types: each one's package and namespace, the engine build it needs, whether it persists, the rest of its declared capabilities with what each means, its VFS module, and which statements the library's guards refuse on it (WAL, ATTACH, PRAGMA page_size). Omit the provider for the table of all four. Use it to pick backends and their order; PlanBsqliteStorageSelection then predicts which one a database lands on.")]
+    [Description("Gets the five first-party storage backends - opfs, indexeddb, cache-storage and in-memory in the browser, and file-system, the device files a Blazor Hybrid app gets automatically - read out of their provider types: each one's package and namespace, the engine build it needs, whether it persists, the rest of its declared capabilities with what each means, its VFS module, and which statements the library's guards refuse on it (WAL, ATTACH, PRAGMA page_size). Omit the provider for the table of all five. Use it to pick backends and their order; PlanBsqliteStorageSelection then predicts which one a database lands on.")]
     public string GetBsqliteStorageProviders(
         [Description("The backend's name, e.g. 'opfs' or 'indexeddb' (its provider type, e.g. 'BsqliteOpfsStorageProvider', also works). Omit it for the table of every backend.")] string? provider = null)
     {

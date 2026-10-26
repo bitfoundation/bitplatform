@@ -35,7 +35,7 @@ write is stored when its transaction commits rather than by copying the whole fi
 | `dbContextInitializer: (sp, db) => db.Database.MigrateAsync()` | The default: `options.Schema = BsqliteSchemaStrategy.Migrate` |
 | Anything else the initializer did | `options.OnFirstUse = (db, ct) => ...` |
 | The factory lazy loading `System.Private.Xml.wasm` | `sqlite.BeforeFirstOpen((sp, ct) => sp.GetRequiredService<LazyAssemblyLoader>().LoadAssembliesAsync(["System.Private.Xml.wasm"]))` |
-| `lifetime: ServiceLifetime.Singleton` / `Scoped` | Always scoped - one scope is the whole app on WebAssembly and in Blazor Hybrid |
+| `lifetime: ServiceLifetime.Singleton` / `Scoped` | Always scoped - one scope is the whole app on WebAssembly, and one per web view in Blazor Hybrid |
 | `IDbContextFactory<TContext>` | Unchanged; `IBsqliteDbContextFactory<TContext>` is the same instance |
 | `IBitBesqlStorage.Persist` / `Load` | Gone: every committed transaction is stored |
 | `PauseAutomaticPersistent()` / `ResumeAutomaticPersistent()` | A transaction - one commit stores the lot |

@@ -168,9 +168,11 @@ public static class BsqliteStorageCatalog
 
         builder.AppendLine().AppendLine("## Modules").AppendLine();
 
-        builder.AppendLine(provider.VfsModule is null
-            ? "- VFS: none - the storage is the engine's own memory, so there is no JavaScript to load."
-            : $"- VFS module: `{provider.VfsModule}`{(provider.VfsName is null ? null : $" (registers the `{provider.VfsName}` VFS)")}");
+        builder.AppendLine(provider.VfsModule is not null
+            ? $"- VFS module: `{provider.VfsModule}`{(provider.VfsName is null ? null : $" (registers the `{provider.VfsName}` VFS)")}"
+            : provider.Name == BsqliteFileSystemStorageProvider.ProviderName
+                ? "- VFS: none - the database is a file on the device, opened in-process by the native SQLite engine, so it persists and there is no JavaScript to load."
+                : "- VFS: none - the storage is the engine's own memory, so there is no JavaScript to load.");
 
         if (provider.AdminModule is not null) builder.AppendLine($"- Probe and admin module, imported on the main thread: `{provider.AdminModule}`");
 

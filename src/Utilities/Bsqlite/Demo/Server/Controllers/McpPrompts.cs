@@ -41,6 +41,9 @@ public static class McpPrompts
             3. Call `GetBsqliteStorageProviders` and pick the backends: OPFS first and IndexedDB as its fallback is the
                default answer; in-memory only with `AllowNonPersistentFallback()`. Then call `PlanBsqliteStorageSelection`
                with that preference order - once as is and once with 'opfs' unavailable - and check where the database lands.
+               For 'hybrid', do not plan the native app: the host registers and selects the `file-system` backend itself, so
+               its databases are files on the device whatever the browser preference says, and `PlanBsqliteStorageSelection`
+               models the browser only. Plan only a WebAssembly client the same registration also serves.
             4. In a Blazor Web App, register the services in BOTH the client and the server project (one shared extension
                method), and open the database only once `RendererInfo.IsInteractive` is true. Missing either is the most
                common mistake: it fails during prerendering, not at compile time.
