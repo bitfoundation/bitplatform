@@ -68,11 +68,14 @@ public sealed class BitBhToastItem
 /// </summary>
 public sealed class BitBhToaster
 {
-    private readonly List<BitBhToastItem> _toasts = new();
+    // Show is often called off the dispatcher (a timer, a hub message) while a viewport is
+    // enumerating Toasts, so every change swaps in a new array and Toasts is a snapshot.
+    private readonly object _lock = new();
+    private BitBhToastItem[] _toasts = [];
     private long _seq;
 
     /// <summary>The toasts currently shown, oldest first.</summary>
-    public IReadOnlyList<BitBhToastItem> Toasts => _toasts;
+    public IReadOnlyList<BitBhToastItem> Toasts => Volatile.Read(ref _toasts);
 
     /// <summary>Maximum number of toasts kept; older ones are dropped. Default: 5.</summary>
     public int Limit { get; set; } = 5;
@@ -84,8 +87,10 @@ public sealed class BitBhToaster
     public string Show(BitBhToastOptions options)
     {
         var item = new BitBhToastItem($"bit-bh-toast-{Interlocked.Increment(ref _seq)}", options);
-        _toasts.Add(item);
-        while (_toasts.Count > Limit) _toasts.RemoveAt(0);
+        lock (_lock)
+        {
+            Volatile.Write(ref _toasts, [.. _toasts.Append(item).TakeLast(Math.Max(0, Limit))]);
+        }
         Changed?.Invoke();
         return item.Id;
     }
@@ -97,14 +102,22 @@ public sealed class BitBhToaster
     /// <summary>Dismisses a toast.</summary>
     public void Dismiss(string id)
     {
-        if (_toasts.RemoveAll(t => t.Id == id) > 0) Changed?.Invoke();
+        lock (_lock)
+        {
+            if (Array.FindIndex(_toasts, t => t.Id == id) < 0) return;
+            Volatile.Write(ref _toasts, Array.FindAll(_toasts, t => t.Id != id));
+        }
+        Changed?.Invoke();
     }
 
     /// <summary>Dismisses every toast.</summary>
     public void Clear()
     {
-        if (_toasts.Count == 0) return;
-        _toasts.Clear();
+        lock (_lock)
+        {
+            if (_toasts.Length == 0) return;
+            Volatile.Write(ref _toasts, []);
+        }
         Changed?.Invoke();
     }
 }

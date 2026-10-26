@@ -23,6 +23,7 @@ namespace Bit.BlazorHeadlessUI;
 public class BitBhFocusScope : BitBhComponentBase, IAsyncDisposable
 {
     private int _handle;
+    private (bool Trap, bool Loop) _sent;
     private bool _syncing;
     private bool _disposed;
 
@@ -64,7 +65,8 @@ public class BitBhFocusScope : BitBhComponentBase, IAsyncDisposable
 
     // Enabled can flip while a create is in flight. One loop applies the changes in order, so a scope
     // created after Enabled went false, or after the component was disposed, is destroyed again rather
-    // than left on top of the stack, trapping focus.
+    // than left on top of the stack, trapping focus. Trapped / Loop changes while enabled update the live
+    // scope in place (no second auto-focus).
     private async Task SyncAsync()
     {
         if (_syncing) return;
@@ -75,6 +77,7 @@ public class BitBhFocusScope : BitBhComponentBase, IAsyncDisposable
             {
                 if (Enabled && _handle == 0)
                 {
+                    _sent = (Trapped, Loop);
                     _handle = await Interop.CreateFocusScopeAsync(ComponentId, new BitBhFocusScopeOptions
                     {
                         Trap = Trapped,
@@ -92,6 +95,12 @@ public class BitBhFocusScope : BitBhComponentBase, IAsyncDisposable
                 if (Enabled is false && _handle > 0)
                 {
                     await DestroyAsync();
+                    continue;
+                }
+                if (Enabled && _handle > 0 && _sent != (Trapped, Loop))
+                {
+                    _sent = (Trapped, Loop);
+                    await Interop.UpdateFocusScopeAsync(_handle, Trapped, Loop);
                     continue;
                 }
                 break;

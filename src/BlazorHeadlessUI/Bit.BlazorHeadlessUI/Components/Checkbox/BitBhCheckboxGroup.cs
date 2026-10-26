@@ -21,8 +21,9 @@ namespace Bit.BlazorHeadlessUI;
 /// </summary>
 public class BitBhCheckboxGroup : BitBhComponentBase, IDisposable
 {
-    // The checkboxes rendered now, with the value each offers to "select all" (null: none, e.g. the select-all box).
-    private readonly List<(BitBhCheckbox Box, string? Value)> _boxes = new();
+    // The checkboxes rendered now, with the value each offers to "select all" (null: none, e.g. the select-all box)
+    // and whether it is disabled ("select all" leaves a disabled box as it is).
+    private readonly List<(BitBhCheckbox Box, string? Value, bool Disabled)> _boxes = new();
     private List<string> _values = new();
     private BitBhFieldBinding? _binding;
 
@@ -117,7 +118,8 @@ public class BitBhCheckboxGroup : BitBhComponentBase, IDisposable
     {
         var all = AllValues?.ToArray() ?? _boxes.Where(b => b.Value is not null).Select(b => b.Value!).Distinct(StringComparer.Ordinal).ToArray();
         var current = CurrentValues;
-        var context = new BitBhCheckboxGroupContext(this, current, all, IsDisabled);
+        var locked = _boxes.Where(b => b.Value is not null && b.Disabled).Select(b => b.Value!).ToHashSet(StringComparer.Ordinal);
+        var context = new BitBhCheckboxGroupContext(this, current, all, locked, IsDisabled);
 
         builder.OpenElement(0, Tag);
         builder.AddAttribute(10, "id", ComponentId);
@@ -140,12 +142,12 @@ public class BitBhCheckboxGroup : BitBhComponentBase, IDisposable
         return attrs;
     }
 
-    internal void Register(BitBhCheckbox box, string? value)
+    internal void Register(BitBhCheckbox box, string? value, bool disabled)
     {
         var index = _boxes.FindIndex(b => ReferenceEquals(b.Box, box));
-        if (index >= 0 && _boxes[index].Value == value) return;
-        if (index >= 0) _boxes[index] = (box, value);
-        else _boxes.Add((box, value));
+        if (index >= 0 && _boxes[index].Value == value && _boxes[index].Disabled == disabled) return;
+        if (index >= 0) _boxes[index] = (box, value, disabled);
+        else _boxes.Add((box, value, disabled));
         if (value is not null) StateHasChanged();
     }
 
@@ -180,10 +182,16 @@ public class BitBhCheckboxGroup : BitBhComponentBase, IDisposable
 public sealed class BitBhCheckboxGroupContext
 {
     private readonly BitBhCheckboxGroup _group;
+    private readonly HashSet<string> _locked;
+    private readonly string[] _selectable;
 
-    internal BitBhCheckboxGroupContext(BitBhCheckboxGroup group, IReadOnlyCollection<string> values, IReadOnlyCollection<string> all, bool disabled)
+    internal BitBhCheckboxGroupContext(BitBhCheckboxGroup group, IReadOnlyCollection<string> values, IReadOnlyCollection<string> all, HashSet<string> locked, bool disabled)
     {
         _group = group;
+        _locked = locked;
+        // "Select all" judges by the values it can change; with every box disabled, by all of them.
+        _selectable = all.Where(v => !locked.Contains(v)).ToArray();
+        if (_selectable.Length == 0) _selectable = all.ToArray();
         Values = values;
         All = all;
         Disabled = disabled;
@@ -198,8 +206,8 @@ public sealed class BitBhCheckboxGroupContext
     /// <summary>Whether the group is disabled.</summary>
     public bool Disabled { get; }
 
-    /// <summary>Whether every value is checked.</summary>
-    public bool AllChecked => All.Count > 0 && All.All(Values.Contains);
+    /// <summary>Whether every value of an enabled checkbox is checked (every value, when no checkbox is enabled).</summary>
+    public bool AllChecked => _selectable.Length > 0 && _selectable.All(Values.Contains);
 
     /// <summary>Whether some, but not all, values are checked (for a "select all" checkbox's mixed state).</summary>
     public bool SomeChecked => Values.Count > 0 && !AllChecked;
@@ -216,10 +224,15 @@ public sealed class BitBhCheckboxGroupContext
         return _group.SetValuesAsync(next);
     }
 
-    internal void Register(BitBhCheckbox box, string? value) => _group.Register(box, value);
+    internal void Register(BitBhCheckbox box, string? value, bool disabled) => _group.Register(box, value, disabled);
 
     internal void Unregister(BitBhCheckbox box) => _group.Unregister(box);
 
-    /// <summary>Checks or unchecks every value (bind to a "select all" checkbox's <c>OnCheckedChange</c>).</summary>
-    public Task SetAll(bool isChecked) => _group.SetValuesAsync(isChecked ? All.ToArray() : []);
+    /// <summary>
+    /// Checks or unchecks every value (bind to a "select all" checkbox's <c>OnCheckedChange</c>). The values of
+    /// disabled checkboxes keep their state.
+    /// </summary>
+    public Task SetAll(bool isChecked) => _group.SetValuesAsync(isChecked
+        ? All.Where(v => !_locked.Contains(v) || Values.Contains(v)).ToArray()
+        : Values.Where(_locked.Contains).ToArray());
 }

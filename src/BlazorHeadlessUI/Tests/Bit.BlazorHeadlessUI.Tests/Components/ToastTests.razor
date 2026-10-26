@@ -91,4 +91,59 @@
         });
         Assert.AreSequenceEqual(new[] { "2", "3" }, toaster.Toasts.Select(t => t.Title));
     }
+
+    [TestMethod]
+    public async Task The_pointer_leaving_keeps_a_focused_toast_paused()
+    {
+        var toaster = new BitBhToaster();
+        var cut = Render(Viewport(toaster));
+        await cut.InvokeAsync(() => toaster.Show(new BitBhToastOptions { Title = "Deleted", Duration = 60_000 }));
+
+        cut.Find("li").FocusIn();
+        cut.Find("li").PointerEnter();
+        cut.Find("li").PointerLeave();
+        Assert.IsTrue(cut.Find("li").HasAttribute("data-paused"));
+
+        cut.Find("li").FocusOut();
+        Assert.IsFalse(cut.Find("li").HasAttribute("data-paused"));
+    }
+
+    [TestMethod]
+    public async Task Dismissing_waits_for_the_closed_state_to_render_before_looking_for_an_exit_animation()
+    {
+        var module = JSInterop.SetupModule("./_content/Bit.BlazorHeadlessUI/bit-blazorheadlessui.js");
+        module.Mode = JSRuntimeMode.Loose;
+        var toaster = new BitBhToaster();
+        var cut = Render(Viewport(toaster));
+        await cut.InvokeAsync(() => toaster.Show("Saved"));
+
+        string? stateAtExit = null;
+        var exit = module.SetupVoid("presence.waitForExit", _ =>
+        {
+            stateAtExit = cut.Find("li").GetAttribute("data-state");
+            return true;
+        });
+        cut.Find("li").Press("Escape");
+
+        // Asked before data-state="closed" reached the page, the runtime finds no exit animation running.
+        cut.WaitForAssertion(() => Assert.AreEqual("closed", stateAtExit));
+        Assert.ContainsSingle(cut.FindAll("li"));
+        exit.SetVoidResult();
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("li")));
+    }
+
+    [TestMethod]
+    public void Toasts_is_a_snapshot_that_later_changes_leave_alone()
+    {
+        var toaster = new BitBhToaster();
+        toaster.Show("1");
+        var shown = toaster.Toasts;
+
+        // A viewport enumerating the toasts while Show runs elsewhere (a timer, a hub message) must not fail.
+        foreach (var _ in shown) toaster.Show("2");
+        toaster.Clear();
+
+        Assert.ContainsSingle(shown);
+        Assert.IsEmpty(toaster.Toasts);
+    }
 }

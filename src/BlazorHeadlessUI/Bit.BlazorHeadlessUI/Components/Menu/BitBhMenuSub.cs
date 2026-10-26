@@ -27,8 +27,8 @@ public class BitBhMenuSub : ComponentBase, IDisposable
 {
     private bool _open;
     private BitBhMenuFocus _focusIntent;
-    private CancellationTokenSource? _openTimer;
-    private CancellationTokenSource? _closeTimer;
+    private BitBhDelayedAction? _openTimer;
+    private BitBhDelayedAction? _closeTimer;
     private readonly string _baseId = BitBhId.New("bit-bh-sub");
 
     [CascadingParameter]
@@ -129,18 +129,16 @@ public class BitBhMenuSub : ComponentBase, IDisposable
     {
         _closeTimer?.Cancel();
         if (_open) return;
-        _openTimer?.Cancel();
-        var cts = _openTimer = new CancellationTokenSource();
-        _ = RunLaterAsync(OpenDelay, cts.Token, () => OpenAsync(BitBhMenuFocus.None));
+        _openTimer ??= new BitBhDelayedAction(a => InvokeAsync(a));
+        _openTimer.Schedule(OpenDelay, () => OpenAsync(BitBhMenuFocus.None));
     }
 
     internal void ScheduleClose()
     {
         _openTimer?.Cancel();
         if (!_open) return;
-        _closeTimer?.Cancel();
-        var cts = _closeTimer = new CancellationTokenSource();
-        _ = RunLaterAsync(CloseDelay, cts.Token, () => CloseAsync(focusParent: false));
+        _closeTimer ??= new BitBhDelayedAction(a => InvokeAsync(a));
+        _closeTimer.Schedule(CloseDelay, () => CloseAsync(focusParent: false));
     }
 
     internal void CancelClose() => _closeTimer?.Cancel();
@@ -148,20 +146,6 @@ public class BitBhMenuSub : ComponentBase, IDisposable
     internal void CancelOpen() => _openTimer?.Cancel();
 
     internal BitBhMenuSubContent? Content { get; set; }
-
-    private async Task RunLaterAsync(int delay, CancellationToken token, Func<Task> action)
-    {
-        try
-        {
-            // Wait off the dispatcher: a cancelled timer must not queue work on the renderer.
-            if (delay > 0) await Task.Delay(delay, token).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
-            if (token.IsCancellationRequested) return;
-            await InvokeAsync(() => token.IsCancellationRequested ? Task.CompletedTask : action());
-        }
-        catch (OperationCanceledException)
-        {
-        }
-    }
 
     private void Refresh()
     {
@@ -177,7 +161,8 @@ public class BitBhMenuSub : ComponentBase, IDisposable
 
     public void Dispose()
     {
-        CancelTimers();
+        _openTimer?.Dispose();
+        _closeTimer?.Dispose();
         if (ParentLevel?.OpenSub == this) ParentLevel.OpenSub = null;
     }
 }

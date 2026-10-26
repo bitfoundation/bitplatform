@@ -14,6 +14,7 @@ namespace Bit.BlazorHeadlessUI;
 public class BitBhCommandItem : BitBhComponentBase, IBitBhCollectionItem, IDisposable
 {
     private bool _wasVisible = true;
+    private bool _forceMount;
 
     [CascadingParameter]
     private BitBhCommandContext? CommandContext { get; set; }
@@ -72,6 +73,14 @@ public class BitBhCommandItem : BitBhComponentBase, IBitBhCollectionItem, IDispo
     private bool IsVisible => CommandContext?.IsVisible(this) ?? true;
 
     protected override void OnInitialized() => CommandContext?.Items.Register(this);
+
+    protected override void OnParametersSet()
+    {
+        // A filtered-out item shows when force-mounted: the context's cached display order has it or not.
+        if (ForceMount == _forceMount) return;
+        _forceMount = ForceMount;
+        CommandContext?.InvalidateOrder();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

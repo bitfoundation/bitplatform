@@ -470,4 +470,26 @@
         Assert.Contains("Name is taken.", cut.Find("[role=radiogroup]").AccessibleDescription());
         Assert.AreEqual(2, cut.FindAll("[data-invalid]").Count(e => e.TagName == "DIV" && e.QuerySelector("label") is not null));
     }
+
+    [TestMethod]
+    public void Select_all_leaves_disabled_checkboxes_as_they_are()
+    {
+        IReadOnlyCollection<string>? values = null;
+        var cut = Render(
+            @<BitBhCheckboxGroup DefaultValues="@(new[] { "c" })" OnValuesChange="v => values = v" aria-label="Letters">
+                <BitBhCheckbox SelectAll="true">All</BitBhCheckbox>
+                <BitBhCheckbox Value="a">A</BitBhCheckbox>
+                <BitBhCheckbox Value="b">B</BitBhCheckbox>
+                <BitBhCheckbox Value="c" Disabled="true">C</BitBhCheckbox>
+                <BitBhCheckbox Value="d" Disabled="true">D</BitBhCheckbox>
+            </BitBhCheckboxGroup>);
+
+        cut.FindAll("[role=checkbox]")[0].Click();
+        Assert.AreSequenceEqual(new[] { "a", "b", "c" }, values!.OrderBy(v => v));
+        // Every box select-all can change is checked.
+        Assert.AreEqual("true", cut.FindAll("[role=checkbox]")[0].GetAttribute("aria-checked"));
+
+        cut.FindAll("[role=checkbox]")[0].Click();
+        Assert.AreSequenceEqual(new[] { "c" }, values!);
+    }
 }

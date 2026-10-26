@@ -36,7 +36,11 @@ internal sealed class BitBhDelayedAction : IDisposable
         {
             // Re-checked on the dispatcher: Cancel() may have run while this was queued.
             if (cts.IsCancellationRequested) return Task.CompletedTask;
-            if (ReferenceEquals(_cts, cts)) _cts = null;
+            if (ReferenceEquals(_cts, cts))
+            {
+                _cts = null;
+                cts.Dispose();
+            }
             return action();
         });
     }

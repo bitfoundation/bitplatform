@@ -157,6 +157,7 @@ public sealed class BitBhFloatingController : IAsyncDisposable
     private bool _syncing;
     private bool _disposed;
     private Func<bool>? _isOpen;
+    private string? _sentAnchor;
 
     /// <summary>Creates a controller.</summary>
     /// <param name="interop">The JS runtime wrapper.</param>
@@ -198,6 +199,7 @@ public sealed class BitBhFloatingController : IAsyncDisposable
     /// <summary>
     /// Reconciles the JS surface with <paramref name="isOpen"/>. Safe to call on
     /// every render; transitions are serialized and re-evaluated after each await.
+    /// Anchor options that changed while open (placement, gap, arrow …) are re-applied.
     /// </summary>
     public async Task SyncAsync(Func<bool> isOpen, Func<BitBhFloatingRequest> request)
     {
@@ -214,6 +216,7 @@ public sealed class BitBhFloatingController : IAsyncDisposable
                     _phase = Phase.Opening;
                     var req = request();
                     _selfRef ??= DotNetObjectReference.Create(this);
+                    _sentAnchor = AnchorKey(req);
                     var handle = await _interop.FloatingOpenAsync(_selfRef, req.ContentId, req.ToJs());
                     if (_disposed)
                     {
@@ -239,6 +242,20 @@ public sealed class BitBhFloatingController : IAsyncDisposable
                     continue;
                 }
 
+                if (open && _phase == Phase.Open)
+                {
+                    // The runtime keeps the options it was opened with: a placement changed while open (a
+                    // panel's Anchor, a tooltip's side) is sent along.
+                    var req = request();
+                    var anchor = AnchorKey(req);
+                    if (req.Anchor is not null && anchor != _sentAnchor)
+                    {
+                        _sentAnchor = anchor;
+                        await UpdateAsync(req.Anchor, req.ArrowId);
+                        continue;
+                    }
+                }
+
                 break;
             }
         }
@@ -247,6 +264,9 @@ public sealed class BitBhFloatingController : IAsyncDisposable
             _syncing = false;
         }
     }
+
+    private static string? AnchorKey(BitBhFloatingRequest request)
+        => request.Anchor is null ? null : string.Join('|', request.Anchor.ToJs(request.ArrowId).Values);
 
     /// <summary>Re-applies positioning (e.g. after the anchor options changed).</summary>
     public ValueTask UpdateAsync(BitBhAnchorOptions? anchor = null, string? arrowId = null)

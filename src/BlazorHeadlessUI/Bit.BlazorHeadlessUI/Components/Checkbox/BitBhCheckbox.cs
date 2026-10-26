@@ -75,9 +75,9 @@ public class BitBhCheckbox : BitBhCheckableBase
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
-        // The group offers the values of the checkboxes it has now ("select all"), and focuses the first one
-        // when its field label is clicked.
-        Group?.Register(this, InGroup ? Value : null);
+        // The group offers the values of the checkboxes it has now ("select all", which leaves individually
+        // disabled ones as they are), and focuses the first one when its field label is clicked.
+        Group?.Register(this, InGroup ? Value : null, Disabled);
     }
 
     protected override bool NextChecked() => EffectiveIndeterminate || !IsCheckedEffective;

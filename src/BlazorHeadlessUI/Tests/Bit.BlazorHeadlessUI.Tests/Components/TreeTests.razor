@@ -422,4 +422,31 @@
         Item(cut, "readme.md").Press(" ", repeat: true);
         Assert.AreEqual("true", Item(cut, "readme.md").GetAttribute("aria-selected"));
     }
+
+    [TestMethod]
+    public void A_branch_with_a_disabled_unchecked_leaf_toggles_its_enabled_leaves()
+    {
+        IReadOnlyCollection<string>? selected = null;
+        var cut = Render(
+            @<BitBhTree TValue="string" aria-label="Files" Checkboxes="true" DefaultExpandedValues="@(new[] { "src" })"
+                     SelectedValuesChanged="v => selected = v">
+                <BitBhTreeItem TValue="string" Value="@("src")" Label="src">
+                    <span>src</span>
+                    <BitBhTreeGroup TValue="string">
+                        <BitBhTreeItem TValue="string" Value="@("app")" Label="app.cs">app.cs</BitBhTreeItem>
+                        <BitBhTreeItem TValue="string" Value="@("lib")" Label="lib.cs" Disabled="true">lib.cs</BitBhTreeItem>
+                    </BitBhTreeGroup>
+                </BitBhTreeItem>
+            </BitBhTree>);
+
+        Item(cut, "src").Press(" ");
+        Assert.AreSequenceEqual(new[] { "app" }, selected!);
+        Assert.AreEqual("mixed", Item(cut, "src").GetAttribute("aria-checked"));
+
+        // The disabled leaf keeps the branch mixed: the next press clears what the branch can change.
+        Item(cut, "src").Press(" ");
+        Assert.IsEmpty(selected!);
+        Assert.AreEqual("false", Item(cut, "src").GetAttribute("aria-checked"));
+        Assert.AreEqual("false", Item(cut, "app.cs").GetAttribute("aria-checked"));
+    }
 }

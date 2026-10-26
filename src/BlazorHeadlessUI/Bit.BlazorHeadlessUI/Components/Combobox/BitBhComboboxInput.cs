@@ -45,7 +45,9 @@ public class BitBhComboboxInput<TValue> : BitBhComponentBase, IDisposable
         builder.SetUpdatesAttributeName("value");
         builder.AddAttribute(32, "onkeydown",
             On<KeyboardEventArgs>("onkeydown", HandleKeyDown));
-        builder.AddEventStopPropagationAttribute(33, "onkeydown", IsOpen);
+        // Also while an Escape would clear the closed input: an enclosing dialog or popover would
+        // otherwise close on the same press.
+        builder.AddEventStopPropagationAttribute(33, "onkeydown", IsOpen || (ComboboxContext?.Combobox.ClearsOnEscape ?? false));
         builder.AddAttribute(34, "onfocus",
             On<FocusEventArgs>("onfocus", HandleFocus));
         builder.AddElementReferenceCapture(40, CaptureElement);

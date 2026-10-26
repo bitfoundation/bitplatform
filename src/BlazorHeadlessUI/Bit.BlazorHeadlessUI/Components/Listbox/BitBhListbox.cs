@@ -428,7 +428,7 @@ public class BitBhListbox<TValue> : BitBhComponentBase, IDisposable
             case "ArrowUp":
                 if (e.AltKey)
                 {
-                    if (State.TryGetActiveValue(out var v) && !Multiple) await SelectAsync(v);
+                    if (State.TryGetActiveValue(out var v) && !Multiple && !State.DisabledAt(State.ActiveIndex)) await SelectAsync(v);
                     else await CloseAsync();
                     break;
                 }

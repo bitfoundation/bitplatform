@@ -996,6 +996,14 @@ function createRuntime() {
             return id;
         },
 
+        /** Changes whether a live scope traps / loops focus, without re-running auto-focus. */
+        updateScope(handle: number, trap: boolean, loop: boolean) {
+            const scope = scopeStack.find((s) => s.id === handle);
+            if (!scope) return;
+            scope.trap = !!trap;
+            scope.loop = !!loop;
+        },
+
         /** Destroys a scope and (optionally) restores focus to where it was before. */
         destroyScope(handle: number, restore?: boolean) {
             const index = scopeStack.findIndex((s) => s.id === handle);
@@ -1313,9 +1321,20 @@ function createRuntime() {
         });
     }
 
+    /**
+     * Applies attribute changes the observer has queued but not yet delivered. A render
+     * batch and an interop call can land in the same task (WebAssembly), so the exit a
+     * just-rendered `hidden` should start may not have started yet.
+     */
+    function flushPresence() {
+        const pending = presenceObserver?.takeRecords();
+        if (pending?.length) onPresenceMutations(pending);
+    }
+
     /** Resolves when the element's presence exit (if any) has finished. */
     function presenceDone(el: HTMLElement | null) {
         if (!el) return Promise.resolve();
+        flushPresence();
         const exit = presenceExits.get(el);
         if (exit) return exit.promise;
         return el.hasAttribute('hidden') ? Promise.resolve() : waitForMotion(el);
@@ -1477,8 +1496,10 @@ function createRuntime() {
             const allowInInputs = !!options?.allowInInputs;
             const handler = (e: KeyboardEvent) => {
                 if (isComposing(e)) return;
-                if (!allowInInputs && isEditable(e.target) && !parsed.some((h) => h.mods.has('ctrl') || h.mods.has('meta'))) return;
-                if (parsed.some((h) => hotkeyMatches(e, h))) {
+                // While typing, only combos with Ctrl/Meta fire: each combo is judged on its
+                // own, so a bare "/" next to "mod+k" never swallows a typed character.
+                const typing = !allowInInputs && isEditable(e.target);
+                if (parsed.some((h) => (!typing || h.mods.has('ctrl') || h.mods.has('meta')) && hotkeyMatches(e, h))) {
                     e.preventDefault();
                     dotnet.invokeMethodAsync('OnHotkey').catch(() => { });
                 }
@@ -1820,7 +1841,7 @@ function createRuntime() {
         dotnet: DotNetRef;
         rootId: string;
         trackId: string | null;
-        options: { orientation?: string; inverted?: boolean };
+        options: { orientation?: string; inverted?: boolean; rtl?: boolean };
         pending: number | null;
         busy: boolean;
         onPointerDown?: (e: PointerEvent) => void;
@@ -1835,13 +1856,14 @@ function createRuntime() {
         const r = track.getBoundingClientRect();
         const vertical = state.options.orientation === 'vertical';
         let f = vertical ? (r.bottom - e.clientY) / r.height : (e.clientX - r.left) / r.width;
-        if (!vertical && isRtl(track)) f = 1 - f;
+        // .NET draws the thumbs by its own direction (Dir / DirectionProvider), so mirror by that one.
+        if (!vertical && state.options.rtl) f = 1 - f;
         if (state.options.inverted) f = 1 - f;
         return Math.max(0, Math.min(1, f));
     }
 
     const slider = {
-        /** options: { orientation, inverted }. Calls OnSliderPointer(phase, fraction) on .NET. */
+        /** options: { orientation, inverted, rtl }. Calls OnSliderPointer(phase, fraction) on .NET. */
         attach(dotnet: DotNetRef, rootId: string, trackId: string | null, options: SliderState['options']) {
             const root = byId(rootId);
             if (!root) return 0;

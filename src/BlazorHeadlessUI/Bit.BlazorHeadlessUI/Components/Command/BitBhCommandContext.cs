@@ -12,6 +12,13 @@ public sealed class BitBhCommandContext
     private readonly List<BitBhCommandGroup> _groups = new();
     private readonly List<Action> _listeners = new();
 
+    // Every item asks for its rank while rendering and a search re-renders them all: sorted per call, a
+    // keystroke cost O(n^3). The order only changes with the items, the scores (Refilter), the groups, an
+    // item's ForceMount or the options, so it is built once per change.
+    private BitBhCommandItem[]? _sorted;
+    private Dictionary<BitBhCommandItem, int>? _ranks;
+    private (int Version, string Search, bool Sort, bool Filter) _sortedFor;
+
     internal BitBhCommandContext(BitBhCommand command, BitBhInterop interop, string baseId)
     {
         _command = command;
@@ -94,7 +101,9 @@ public sealed class BitBhCommandContext
         if (!Sort || string.IsNullOrWhiteSpace(Search)) return Items.IndexOf(item);
         // Ranked among every visible item, disabled ones included: ranked among the enabled ones
         // only, a disabled match would get -1 and be drawn above the best match.
-        return SortedVisible().ToList().IndexOf(item);
+        var sorted = SortedVisible();
+        _ranks ??= sorted.Select((i, index) => (i, index)).ToDictionary(x => x.i, x => x.index);
+        return _ranks.TryGetValue(item, out var rank) ? rank : -1;
     }
 
     /// <summary>Whether <paramref name="group"/> has visible items.</summary>
@@ -107,10 +116,22 @@ public sealed class BitBhCommandContext
 
     internal void RegisterGroup(BitBhCommandGroup group)
     {
-        if (!_groups.Contains(group)) _groups.Add(group);
+        if (_groups.Contains(group)) return;
+        _groups.Add(group);
+        InvalidateOrder();
     }
 
-    internal void UnregisterGroup(BitBhCommandGroup group) => _groups.Remove(group);
+    internal void UnregisterGroup(BitBhCommandGroup group)
+    {
+        if (_groups.Remove(group)) InvalidateOrder();
+    }
+
+    /// <summary>Drops the cached display order (something it depends on changed).</summary>
+    internal void InvalidateOrder()
+    {
+        _sorted = null;
+        _ranks = null;
+    }
 
     internal void Subscribe(Action listener) => _listeners.Add(listener);
 
@@ -120,20 +141,39 @@ public sealed class BitBhCommandContext
     internal IEnumerable<BitBhCommandItem> NavigationOrder() => SortedVisible().Where(i => !i.IsItemDisabled);
 
     /// <summary>Visible items (disabled ones included) in display order.</summary>
-    private IEnumerable<BitBhCommandItem> SortedVisible()
+    private BitBhCommandItem[] SortedVisible()
     {
-        var visible = Items.Items.Where(IsVisible);
-        if (!Sort || string.IsNullOrWhiteSpace(Search)) return visible;
-        return visible
-            .OrderByDescending(i => i.Group is null ? Score(i) : GroupScore(i.Group))
-            .ThenBy(i => i.Group is null ? -1 : _groups.IndexOf(i.Group))
-            .ThenByDescending(Score);
+        var key = (Items.Version, Search, Sort, ShouldFilter);
+        if (_sorted is not null && _sortedFor == key) return _sorted;
+
+        var visible = Items.Items.Where(IsVisible).ToArray();
+        if (Sort && !string.IsNullOrWhiteSpace(Search))
+        {
+            // Group scores once per sort, not once per sort key.
+            var groupScores = new Dictionary<BitBhCommandGroup, double>();
+            foreach (var item in visible)
+            {
+                if (item.Group is not { } group) continue;
+                var score = Score(item);
+                if (!groupScores.TryGetValue(group, out var best) || score > best) groupScores[group] = score;
+            }
+            visible = visible
+                .OrderByDescending(i => i.Group is null ? Score(i) : groupScores[i.Group])
+                .ThenBy(i => i.Group is null ? -1 : _groups.IndexOf(i.Group))
+                .ThenByDescending(Score)
+                .ToArray();
+        }
+
+        _sortedFor = key;
+        _ranks = null;
+        return _sorted = visible;
     }
 
     /// <summary>Re-scores every item for the current search and refreshes what changed.</summary>
     internal void Refilter()
     {
         _scores.Clear();
+        InvalidateOrder();
         if (ShouldFilter && !string.IsNullOrWhiteSpace(Search))
         {
             foreach (var item in Items.Items)

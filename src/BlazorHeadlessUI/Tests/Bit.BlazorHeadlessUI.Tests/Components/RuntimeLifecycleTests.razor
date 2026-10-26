@@ -234,4 +234,40 @@
         Assert.IsTrue(element.HasAttribute("data-disabled"));
         Assert.IsNull(element.GetAttribute("aria-disabled"));
     }
+
+    [TestMethod]
+    public async Task A_focus_scope_applies_Trapped_and_Loop_changes_to_the_live_scope()
+    {
+        Module.Setup<int>("focus.createScope", _ => true).SetResult(4);
+        var cut = Render(
+            @<Stateful T="bool" Initial="true" Context="s">
+                <BitBhFocusScope Trapped="s.Value" Loop="!s.Value"><button>OK</button></BitBhFocusScope>
+            </Stateful>);
+
+        await cut.InvokeAsync(() => cut.FindComponent<Stateful<bool>>().Instance.Set(false));
+
+        await WaitForInvocationAsync("focus.updateScope", 4);
+        var update = JSInterop.Invocations["focus.updateScope"].Single();
+        Assert.AreSequenceEqual(new object?[] { 4, false, true }, update.Arguments.ToArray());
+        Assert.HasCount(1, JSInterop.Invocations["focus.createScope"]);
+    }
+
+    [TestMethod]
+    public async Task An_anchor_changed_while_open_reaches_the_runtime()
+    {
+        Module.Setup<int>("floating.open", _ => true).SetResult(6);
+        var cut = Render(
+            @<Stateful T="string" Initial="@("bottom")" Context="s">
+                <BitBhPopover DefaultOpen="true">
+                    <BitBhPopoverButton>Share</BitBhPopoverButton>
+                    <BitBhPopoverPanel aria-label="Share options" Anchor="@(s.Value!)">…</BitBhPopoverPanel>
+                </BitBhPopover>
+            </Stateful>);
+
+        await cut.InvokeAsync(() => cut.FindComponent<Stateful<string>>().Instance.Set("top start"));
+
+        await WaitForInvocationAsync("floating.update", 6);
+        var options = (IDictionary<string, object?>)JSInterop.Invocations["floating.update"].Last().Arguments[1]!;
+        Assert.AreEqual("top start", ((IDictionary<string, object?>)options["anchor"]!)["to"]);
+    }
 }

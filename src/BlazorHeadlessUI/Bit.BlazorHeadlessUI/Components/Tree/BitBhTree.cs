@@ -283,16 +283,22 @@ public class BitBhTree<TValue> : BitBhComponentBase
 
         if (Checkboxes)
         {
-            var check = Context.CheckedState(item) != true;
-            foreach (var v in Context.DescendantsOf(item).Where(d => !d.IsItemDisabled).Select(d => d.Value).Append(item.Value))
+            // A click flips the leaves it can change; disabled ones keep their state. Judged by every leaf, a
+            // branch with a disabled unchecked leaf would never be fully checked, so every click would check.
+            var leaves = Leaves(item).ToList();
+            List<BitBhTreeItem<TValue>> targets = leaves.Count == 0 ? [item] : leaves.Where(l => !l.IsItemDisabled).ToList();
+            if (targets.Count == 0) return;
+            var check = !targets.All(t => selection.Contains(t.Value));
+            foreach (var target in targets)
             {
-                if (check) selection.Add(v); else selection.Remove(v);
+                if (check) selection.Add(target.Value); else selection.Remove(target.Value);
             }
-            // Keep ancestors consistent with their descendants.
-            for (var parent = item.ParentItem; parent is not null; parent = parent.ParentItem)
+            // A branch is checked when all its leaves are: the item's own branches (a disabled leaf can leave
+            // them mixed) and its ancestors.
+            var branches = Context.DescendantsOf(item).Prepend(item).Concat(Ancestors(item)).Where(b => Context.ChildrenOf(b).Any());
+            foreach (var branch in branches.ToArray())
             {
-                var all = Context.DescendantsOf(parent).Where(d => !Context.ChildrenOf(d).Any()).All(l => selection.Contains(l.Value));
-                if (all) selection.Add(parent.Value); else selection.Remove(parent.Value);
+                if (Leaves(branch).All(l => selection.Contains(l.Value))) selection.Add(branch.Value); else selection.Remove(branch.Value);
             }
         }
         else if (!IsMulti)
@@ -324,6 +330,14 @@ public class BitBhTree<TValue> : BitBhComponentBase
         }
 
         await CommitSelectionAsync(selection);
+    }
+
+    private IEnumerable<BitBhTreeItem<TValue>> Leaves(BitBhTreeItem<TValue> item)
+        => Context.DescendantsOf(item).Where(d => !Context.ChildrenOf(d).Any());
+
+    private static IEnumerable<BitBhTreeItem<TValue>> Ancestors(BitBhTreeItem<TValue> item)
+    {
+        for (var parent = item.ParentItem; parent is not null; parent = parent.ParentItem) yield return parent;
     }
 
     private async Task SelectAllAsync()

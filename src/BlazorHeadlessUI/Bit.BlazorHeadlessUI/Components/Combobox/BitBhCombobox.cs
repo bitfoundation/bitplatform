@@ -206,6 +206,9 @@ public class BitBhCombobox<TValue> : BitBhComponentBase, IDisposable
     private TValue? CurrentValue => IsProvided(nameof(Value)) ? Value : _value;
     private bool HasSingleValue => IsProvided(nameof(Value)) ? Value is not null : _hasValue;
 
+    /// <summary>Whether Escape with the list closed clears the input (the APG second Escape).</summary>
+    internal bool ClearsOnEscape => !IsDisabled && !Multiple && (HasSingleValue || _query.Length > 0);
+
     private IReadOnlyCollection<TValue> CurrentValues => IsProvided(nameof(Values))
         ? Values as IReadOnlyCollection<TValue> ?? Values?.ToArray() ?? []
         : _values;
@@ -489,7 +492,7 @@ public class BitBhCombobox<TValue> : BitBhComponentBase, IDisposable
                 {
                     await CloseAsync();
                 }
-                else if (!Multiple && (HasSingleValue || _query.Length > 0))
+                else if (ClearsOnEscape)
                 {
                     // Second Escape clears the input (APG).
                     if (Nullable) await SetSingleAsync(default, hasValue: false);

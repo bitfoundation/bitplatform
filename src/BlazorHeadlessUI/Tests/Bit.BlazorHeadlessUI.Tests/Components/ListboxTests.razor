@@ -292,4 +292,28 @@
         Assert.AreEqual("cy", cut.FindComponent<Stateful<string>>().Instance.Value);
         Assert.AreEqual("false", cut.Find("[role=combobox]").GetAttribute("aria-expanded"));
     }
+
+    [TestMethod]
+    public async Task Alt_ArrowUp_does_not_choose_a_highlighted_option_that_became_disabled()
+    {
+        var chosen = new List<string?>();
+        var cut = Render(
+            @<Stateful T="bool" Context="s">
+                <BitBhListbox TValue="string" ValueChanged="v => chosen.Add(v)">
+                    <BitBhListboxButton TValue="string" aria-label="Person">Person</BitBhListboxButton>
+                    <BitBhListboxOptions TValue="string">
+                        <BitBhListboxOption TValue="string" Value="@("ada")" Disabled="s.Value">Ada</BitBhListboxOption>
+                        <BitBhListboxOption TValue="string" Value="@("cy")">Cy</BitBhListboxOption>
+                    </BitBhListboxOptions>
+                </BitBhListbox>
+            </Stateful>);
+
+        cut.Find("[role=combobox]").Press("ArrowDown");
+        Assert.AreEqual("Ada", Text(ActiveOf(cut.Find("[role=combobox]"))));
+        await cut.InvokeAsync(() => cut.FindComponent<Stateful<bool>>().Instance.Set(true));
+
+        cut.Find("[role=combobox]").Press("ArrowUp", alt: true);
+        Assert.IsEmpty(chosen);
+        Assert.AreEqual("false", cut.Find("[role=combobox]").GetAttribute("aria-expanded"));
+    }
 }

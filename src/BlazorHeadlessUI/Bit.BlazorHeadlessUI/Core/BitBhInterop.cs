@@ -178,6 +178,10 @@ public sealed class BitBhInterop : IAsyncDisposable, IDisposable
     public ValueTask<int> CreateFocusScopeAsync(string containerId, BitBhFocusScopeOptions options)
         => InvokeAsync<int>("focus.createScope", containerId, options.ToJs());
 
+    /// <summary>Changes whether an existing focus scope traps and / or loops focus.</summary>
+    public ValueTask UpdateFocusScopeAsync(int handle, bool trap, bool loop)
+        => handle <= 0 ? ValueTask.CompletedTask : InvokeVoidAsync("focus.updateScope", handle, trap, loop);
+
     /// <summary>Destroys a focus scope and optionally restores focus.</summary>
     public ValueTask DestroyFocusScopeAsync(int handle, bool restoreFocus = true)
         => handle <= 0 ? ValueTask.CompletedTask : InvokeVoidAsync("focus.destroyScope", handle, restoreFocus);

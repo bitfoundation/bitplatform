@@ -226,4 +226,27 @@
         cut.WaitForAssertion(() =>
             Assert.ContainsSingle(JSInterop.Invocations.Where(i => i.Identifier == "slider.detach" && Equals(i.Arguments[0], 7))));
     }
+
+    [TestMethod]
+    public void A_step_that_is_not_positive_falls_back_to_1()
+    {
+        var cut = Render(@<BitBhSlider DefaultValue="50" Step="0"><BitBhSliderThumb aria-label="Level" /></BitBhSlider>);
+        cut.Find("[role=slider]").Press("ArrowRight");
+        Assert.AreEqual("51", cut.Find("[role=slider]").GetAttribute("aria-valuenow"));
+    }
+
+    [TestMethod]
+    public void The_runtime_mirrors_pointer_input_by_the_slider_direction()
+    {
+        var module = JSInterop.SetupModule("./_content/Bit.BlazorHeadlessUI/bit-blazorheadlessui.js");
+        var attach = module.Setup<int>("slider.attach", _ => true);
+        Render(
+            @<BitBhDirectionProvider Dir="BitBhDirection.Rtl">
+                <BitBhSlider DefaultValue="5"><BitBhSliderThumb aria-label="Level" /></BitBhSlider>
+            </BitBhDirectionProvider>);
+
+        // The thumbs are drawn from the provider, which sets no dir attribute the runtime could read.
+        var options = (IDictionary<string, object?>)attach.Invocations.Single().Arguments[3]!;
+        Assert.AreEqual(true, options["rtl"]);
+    }
 }

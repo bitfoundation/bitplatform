@@ -94,7 +94,7 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
     [Parameter]
     public double Max { get; set; } = 100;
 
-    /// <summary>The step. Default: 1.</summary>
+    /// <summary>The step. Default: 1 (also used when the step is not a positive number).</summary>
     [Parameter]
     public double Step { get; set; } = 1;
 
@@ -149,7 +149,9 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
     private bool IsRequired => Required || (FieldContext?.Required ?? false);
     private BitBhDirection EffectiveDir => Dir ?? CascadedDir;
     private bool IsRange => IsProvided(nameof(Values)) || DefaultValues is not null;
-    private double EffectiveLargeStep => LargeStep ?? Math.Max(Step, (Max - Min) / 10);
+    // Snap divides by the step: a 0 / negative / NaN one (a bound setting momentarily 0) would turn every value into NaN.
+    private double EffectiveStep => Step > 0 && double.IsFinite(Step) ? Step : 1;
+    private double EffectiveLargeStep => LargeStep ?? Math.Max(EffectiveStep, (Max - Min) / 10);
 
     /// <summary>The current values (one per thumb).</summary>
     public IReadOnlyList<double> CurrentValues
@@ -203,7 +205,7 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
         {
             while (_disposed is false)
             {
-                var options = $"{Orientation}|{Inverted}";
+                var options = $"{Orientation}|{Inverted}|{EffectiveDir}";
                 if (_handle == 0)
                 {
                     // One attempt, as before: a 0 handle (no runtime, no element) isn't retried on every render.
@@ -230,6 +232,9 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
     {
         ["orientation"] = Orientation.ToAttribute(),
         ["inverted"] = Inverted,
+        // The thumbs are drawn from the Dir parameter / cascade, so the pointer math mirrors by it too,
+        // not by the CSS direction (a DirectionProvider without dir="rtl", or dir="rtl" without a provider).
+        ["rtl"] = EffectiveDir == BitBhDirection.Rtl,
     };
 
     private async Task DetachAsync()
@@ -341,8 +346,9 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
 
     private double Snap(double value)
     {
-        var snapped = Math.Round((value - Min) / Step) * Step + Min;
-        var decimals = Math.Max(0, (int)Math.Ceiling(-Math.Log10(Step)) + 1);
+        var step = EffectiveStep;
+        var snapped = Math.Round((value - Min) / step) * step + Min;
+        var decimals = Math.Max(0, (int)Math.Ceiling(-Math.Log10(step)) + 1);
         return Math.Clamp(Math.Round(snapped, Math.Min(decimals, 10)), Min, Max);
     }
 
@@ -356,7 +362,7 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
         if (IsDisabled || index < 0 || index >= values.Length) return (values, false);
 
         var next = Snap(value);
-        var gap = MinStepsBetweenThumbs * Step;
+        var gap = MinStepsBetweenThumbs * EffectiveStep;
         if (index > 0) next = Math.Max(next, values[index - 1] + gap);
         if (index < values.Length - 1) next = Math.Min(next, values[index + 1] - gap);
         next = Math.Clamp(next, Min, Max);
@@ -378,7 +384,7 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
         var index = _thumbs.IndexOf(thumb);
         if (index < 0 || IsDisabled) return;
         var current = ValueAt(index);
-        var step = e.ShiftKey ? EffectiveLargeStep : Step;
+        var step = e.ShiftKey ? EffectiveLargeStep : EffectiveStep;
         var rtl = EffectiveDir == BitBhDirection.Rtl && Orientation == BitBhOrientation.Horizontal;
 
         // Up and Right increase whichever way the track is drawn (APG); Inverted only moves the thumb the
