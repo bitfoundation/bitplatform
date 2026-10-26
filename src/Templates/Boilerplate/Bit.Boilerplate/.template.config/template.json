@@ -884,7 +884,6 @@
                         "src/Tests/Features/TemplateConfig/ThemeColorLiteralTests.cs",
                         "src/Tests/Features/TemplateConfig/HeadContentUsageTests.cs",
                         "src/Tests/Features/TemplateConfig/PlatformDirectiveTests.cs",
-                        "src/Tests/Features/Culture/CultureCookieParsingTests.cs",
                         "src/Tests/Features/Culture/CultureUrlRedirectionTests.cs",
                         "src/Tests/Features/Culture/ResxParityTests.cs",
                         "src/Tests/Features/Culture/SupportedCultureContractTests.cs",
