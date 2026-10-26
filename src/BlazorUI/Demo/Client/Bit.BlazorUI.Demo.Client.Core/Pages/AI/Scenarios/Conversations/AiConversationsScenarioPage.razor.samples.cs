@@ -173,4 +173,126 @@ builder.Services.AddBitBlazorUIAIServices(ai =>
     [
         new("Program.cs", example1ProgramCode),
     ];
+
+    private readonly string example2RazorCode = """
+@implements IAsyncDisposable
+
+<div style="height: 560px">
+    @if (session is not null)
+    {
+        @* Keyed by the session: the restored thread keeps its conversation id, and is still a new chat. *@
+        <BitAiChat @key="session"
+                   Session="session"
+                   EmptyTitle="Write something to save"
+                   EmptyBody="Then press Save, keep writing, and press Restore."
+                   Suggestions="suggestions" />
+    }
+</div>
+
+<aside aria-label="Saved JSON">
+    <h4>Saved JSON</h4>
+    <BitStack Horizontal Gap="0.5rem">
+        <BitButton Size="BitSize.Small" OnClick="Save">Save</BitButton>
+        <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" Disabled="@(json is null)" OnClick="RestoreAsync">Restore</BitButton>
+    </BitStack>
+    @if (json is null)
+    {
+        <p>Nothing saved yet.</p>
+    }
+    else
+    {
+        <p>@savedCount messages, @json.Length characters:</p>
+        <BitAiCodeBlockView Code="@json" Language="json" FileName="conversation.json" />
+    }
+</aside>
+""";
+
+    private readonly string example2CsharpCode = """
+private BitAiChatSession? session;
+private string? json;
+private int savedCount;
+
+private readonly string[] suggestions = ["Plan a weekend in Lisbon"];
+
+[Inject] private BitAiChatSessionFactory SessionFactory { get; set; } = default!;
+
+protected override void OnInitialized() => session = SessionFactory.Create();
+
+// The whole thread - messages, parts, tool calls, artifacts, agent runs - as the JSON a store would keep.
+private void Save()
+{
+    if (session is null) return;
+
+    json = BitAiConversationSerializer.ToJson(session.Conversation);
+    savedCount = session.Conversation.Messages.Count;
+}
+
+// The JSON read back into a live conversation, and a new session to drive it; the old one only has to stop.
+private async Task RestoreAsync()
+{
+    if (json is null) return;
+
+    var previous = session;
+    session = SessionFactory.Create(BitAiConversationSerializer.FromJson(json));
+
+    if (previous is not null) await previous.DisposeAsync();
+}
+
+public ValueTask DisposeAsync() => session?.DisposeAsync() ?? ValueTask.CompletedTask;
+""";
+
+    private const string example2StoreCode = """
+// A conversation store over a folder of JSON files: the serializer writes a conversation out and reads it back.
+// Registered in place of the in-memory one with ai.UseConversationStore<FileConversationStore>().
+public sealed class FileConversationStore : IBitAiConversationStore
+{
+    private readonly string folder = Path.Combine(AppContext.BaseDirectory, "conversations");
+
+    public async ValueTask<IReadOnlyList<BitAiConversationSummary>> ListAsync(CancellationToken cancellationToken = default)
+    {
+        if (Directory.Exists(folder) is false) return [];
+
+        var summaries = new List<BitAiConversationSummary>();
+        foreach (var file in Directory.EnumerateFiles(folder, "*.json"))
+        {
+            // A snapshot is plain data: enough for the list, without building the live conversation.
+            var snapshot = BitAiConversationSerializer.SnapshotFromJson(await File.ReadAllTextAsync(file, cancellationToken));
+            summaries.Add(new BitAiConversationSummary(snapshot.ConversationId, snapshot.Title, snapshot.UpdatedAt,
+                MessageCount: snapshot.Messages.Count));
+        }
+
+        return [.. summaries.OrderByDescending(s => s.UpdatedAt)];
+    }
+
+    public async ValueTask<IBitAiConversation?> LoadAsync(string conversationId, CancellationToken cancellationToken = default)
+    {
+        var path = PathOf(conversationId);
+        if (File.Exists(path) is false) return null;
+
+        return BitAiConversationSerializer.FromJson(await File.ReadAllTextAsync(path, cancellationToken));
+    }
+
+    public async ValueTask SaveAsync(IBitAiConversation conversation, CancellationToken cancellationToken = default)
+    {
+        Directory.CreateDirectory(folder);
+
+        var snapshot = BitAiConversationSerializer.ToSnapshot(conversation);
+        await File.WriteAllTextAsync(PathOf(conversation.ConversationId), BitAiConversationSerializer.ToJson(snapshot), cancellationToken);
+    }
+
+    public ValueTask DeleteAsync(string conversationId, CancellationToken cancellationToken = default)
+    {
+        File.Delete(PathOf(conversationId));
+        return ValueTask.CompletedTask;
+    }
+
+    // The ids the package generates (conv_...) are letters, digits and an underscore, safe as file names.
+    private string PathOf(string conversationId) => Path.Combine(folder, $"{conversationId}.json");
+}
+""";
+
+    private readonly DemoCodeFile[] example2CodeFiles =
+    [
+        new("FileConversationStore.cs", example2StoreCode),
+    ];
 }

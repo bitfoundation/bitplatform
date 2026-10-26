@@ -96,20 +96,33 @@ public async ValueTask DisposeAsync()
 """;
 
     private readonly string example6RazorCode = """
+<BitAiSourceList Citations="citations" Disabled />
+
+<BitAiSourceList Citations="citations" OnSourceClick="s => disabledClicked = s" Disabled />
+
+<div>Clicked: <b>@(disabledClicked?.Title ?? "-")</b></div>
+""";
+    private readonly string example6CsharpCode = """
+// citations is the list of the Basic example.
+private BitAiCitationSource? disabledClicked;
+""";
+
+    private readonly string example7RazorCode = """
 <BitParams Parameters="listParams">
     <BitAiSourceList Citations="citations" />
 
     <BitAiSourceList Citations="citations" ShowHeading="true" />
 </BitParams>
 """;
-    private readonly string example6CsharpCode = """
+    private readonly string example7CsharpCode = """
+// citations is the list of the Basic example.
 private readonly BitAiSourceListParams[] listParams =
 [
     new() { ShowHeading = false, Styles = new() { SourceCard = new() { Title = "font-weight: 600" } } }
 ];
 """;
 
-    private readonly string example7RazorCode = """
+    private readonly string example8RazorCode = """
 <style>
     .custom-class {
         padding: 0.75rem;
@@ -144,10 +157,10 @@ private readonly BitAiSourceListParams[] listParams =
                         --bit-AiSourceCard-index-color: light-dark(#6d28d9, #a78bfa)" />
 """;
 
-    private readonly string example8RazorCode = """
+    private readonly string example9RazorCode = """
 <BitAiSourceList Dir="BitDir.Rtl" Citations="rtlCitations" />
 """;
-    private readonly string example8CsharpCode = """
+    private readonly string example9CsharpCode = """
 private static readonly BitAiCitation[] rtlCitations =
 [
     new("c1", new BitAiCitationSource("render-modes", "حالت‌های رندر بلیزر")

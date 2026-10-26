@@ -269,8 +269,8 @@ public sealed record BitAiErrorEvent : BitAiEvent
 /// An application-defined event, for transports carrying information the framework has no concept for.
 /// </summary>
 /// <remarks>
-/// Handle it by subscribing to the session event stream, or by registering a reducer that maps it
-/// onto a custom message part.
+/// The reducer applies nothing for it: handle it through <see cref="BitAiConversationStreamProcessor.EventApplied"/>
+/// (a session's <see cref="BitAiChatSession.Processor"/>), which is raised for every event, this one included.
 /// </remarks>
 public sealed record BitAiCustomEvent : BitAiEvent
 {

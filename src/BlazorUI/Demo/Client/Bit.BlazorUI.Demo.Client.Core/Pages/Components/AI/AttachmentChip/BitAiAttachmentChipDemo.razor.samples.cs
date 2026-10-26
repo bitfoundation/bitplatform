@@ -40,13 +40,35 @@ private readonly IReadOnlyList<BitAiAttachment> kinds =
 ];";
 
     private readonly string example3RazorCode = @"
+<div style=""display:flex;flex-wrap:wrap;gap:0.5rem"">
+    <BitAiAttachmentChip Attachment=""photo"" />
+    <BitAiOptionsProvider UiOptions=""blockImagesOptions"">
+        <BitAiAttachmentChip Attachment=""photo"" />
+    </BitAiOptionsProvider>
+</div>";
+    private readonly string example3CsharpCode = @"
+private const string PhotoUrl = ""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg"";
+
+private readonly BitAiAttachment photo = new(""att-photo"", ""aurora.jpg"")
+{
+    ContentType = ""image/jpeg"",
+    Size = 1_843_200,
+    Kind = BitAiAttachmentKind.Image,
+    ThumbnailUrl = PhotoUrl,
+};
+
+// An app sets the policy once, for every view (AddBitBlazorUIAIServices(ai => ai.ConfigureUi(...)) or a provider
+// around the whole chat); here a provider sets it for the second chip alone.
+private readonly BitAiUiOptions blockImagesOptions = BitAiUiOptions.Default with { Images = BitAiImagePolicy.Block };";
+
+    private readonly string example4RazorCode = @"
 <BitButton OnClick=""UploadAsync"" Disabled=""isUploading"">Upload a file</BitButton>
 
 <div style=""display:flex;flex-wrap:wrap;gap:0.5rem"">
     <BitAiAttachmentChip Attachment=""upload"" />
     <BitAiAttachmentChip Attachment=""failed"" />
 </div>";
-    private readonly string example3CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 private bool isUploading;
 private BitAiAttachment upload = new(""att-upload"", ""site-survey.zip"") { Size = 3_145_728, Status = BitAiAttachmentStatus.Pending };
 private readonly BitAiAttachment failed = new(""att-failed"", ""backup.tar"")
@@ -72,7 +94,7 @@ private async Task UploadAsync()
     isUploading = false;
 }";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <div style=""display:flex;flex-wrap:wrap;gap:0.5rem"">
     @foreach (var attachment in staged)
     {
@@ -81,7 +103,7 @@ private async Task UploadAsync()
 </div>
 
 <BitButton @ref=""resetButton"" Variant=""BitVariant.Outline"" OnClick=""ResetStaged"">Bring them back</BitButton>";
-    private readonly string example4CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private const string PhotoUrl = ""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg"";
 
 private List<BitAiAttachment> staged = CreateStaged();
@@ -119,9 +141,9 @@ private void ResetStaged()
     staged = CreateStaged();
 }";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitAiAttachmentChip Disabled Attachment=""report"" OnRemove=""RemoveDisabled"" />";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private readonly BitAiAttachment report = new(""att-report"", ""quarterly-report.pdf"")
 {
     ContentType = ""application/pdf"",
@@ -132,7 +154,44 @@ private readonly BitAiAttachment report = new(""att-report"", ""quarterly-report
 // Never called: the remove button of a disabled chip cannot be pressed.
 private void RemoveDisabled(BitAiAttachment attachment) { }";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
+<BitParams Parameters=""attachmentChipParams"">
+    <div style=""display:flex;flex-wrap:wrap;gap:0.5rem"">
+        <BitAiAttachmentChip Attachment=""report"" />
+        <BitAiAttachmentChip Attachment=""photo"" />
+        <BitAiAttachmentChip Attachment=""longName"" Styles=""@(new() { Thumbnail = ""border-radius:0"" })"" />
+    </div>
+</BitParams>";
+    private readonly string example7CsharpCode = @"
+private const string PhotoUrl = ""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg"";
+
+private readonly BitAiAttachmentChipParams[] attachmentChipParams =
+[
+    new() { Styles = new() { Tag = new() { Root = ""border-radius:1rem"" }, Thumbnail = ""border-radius:50%"" } }
+];
+
+private readonly BitAiAttachment report = new(""att-report"", ""quarterly-report.pdf"")
+{
+    ContentType = ""application/pdf"",
+    Size = 482_133,
+    Kind = BitAiAttachmentKind.Document,
+};
+
+private readonly BitAiAttachment photo = new(""att-photo"", ""aurora.jpg"")
+{
+    ContentType = ""image/jpeg"",
+    Size = 1_843_200,
+    Kind = BitAiAttachmentKind.Image,
+    ThumbnailUrl = PhotoUrl,
+};
+
+private readonly BitAiAttachment longName = new(""att-long"", ""minutes-of-the-planning-meeting-with-the-whole-team.docx"")
+{
+    Size = 23_552,
+    Kind = BitAiAttachmentKind.Document,
+};";
+
+    private readonly string example8RazorCode = @"
 <style>
     .custom-class {
         padding: 0.25rem;
@@ -166,7 +225,7 @@ private void RemoveDisabled(BitAiAttachment attachment) { }";
         <BitAiAttachmentChip Attachment=""longName"" />
     </div>
 </div>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private const string PhotoUrl = ""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg"";
 
 private const string cssVariablesStyle = ""--bit-AiAttachmentChip-max-width:12rem;"" +
@@ -197,7 +256,7 @@ private readonly BitAiAttachment photo = new(""att-photo"", ""aurora.jpg"")
     ThumbnailUrl = PhotoUrl,
 };";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitAiAttachmentChip Dir=""BitDir.Rtl"" Attachment=""persianReport"" OnRemove=""RemoveRtl"" />
 
 <div dir=""rtl"">
@@ -205,7 +264,7 @@ private readonly BitAiAttachment photo = new(""att-photo"", ""aurora.jpg"")
 </div>
 
 <div>Removed: <b>@rtlRemoved</b></div>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private const string PhotoUrl = ""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg"";
 
 private readonly BitAiAttachment persianReport = new(""att-fa-report"", ""گزارش-فصلی.pdf"")

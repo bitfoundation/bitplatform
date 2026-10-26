@@ -102,19 +102,48 @@ public async ValueTask DisposeAsync()
 """;
 
     private readonly string example6RazorCode = """
+<BitAiTokenUsageView Disabled Usage="metadata.Usage" Metadata="metadata" ShowLatency />
+""";
+    private readonly string example6CsharpCode = """
+private static readonly DateTimeOffset requestedAt = new(2026, 1, 1, 9, 0, 0, TimeSpan.Zero);
+
+private readonly BitAiGenerationMetadata metadata = new()
+{
+    ModelId = "demo-model-1",
+    Usage = new() { InputTokens = 1_240, OutputTokens = 386, Cost = 0.0095m, Currency = "USD" },
+    StartedAt = requestedAt,
+    TimeToFirstToken = TimeSpan.FromMilliseconds(400),
+    CompletedAt = requestedAt.AddSeconds(5.2),
+    FinishReason = BitAiFinishReason.Stop,
+};
+""";
+
+    private readonly string example7RazorCode = """
 <BitParams Parameters="usageViewParams">
     <BitAiTokenUsageView Usage="metadata.Usage" Metadata="metadata" />
     <BitAiTokenUsageView Usage="metadata.Usage" Metadata="metadata" ShowSpeed="true" />
 </BitParams>
 """;
-    private readonly string example6CsharpCode = """
+    private readonly string example7CsharpCode = """
 private readonly BitAiTokenUsageViewParams[] usageViewParams =
 [
     new() { ShowLatency = true, ShowSpeed = false, Styles = new() { Cost = "font-weight: bold" } }
 ];
+
+private static readonly DateTimeOffset requestedAt = new(2026, 1, 1, 9, 0, 0, TimeSpan.Zero);
+
+private readonly BitAiGenerationMetadata metadata = new()
+{
+    ModelId = "demo-model-1",
+    Usage = new() { InputTokens = 1_240, OutputTokens = 386, Cost = 0.0095m, Currency = "USD" },
+    StartedAt = requestedAt,
+    TimeToFirstToken = TimeSpan.FromMilliseconds(400),
+    CompletedAt = requestedAt.AddSeconds(5.2),
+    FinishReason = BitAiFinishReason.Stop,
+};
 """;
 
-    private readonly string example7RazorCode = """
+    private readonly string example8RazorCode = """
 <style>
     .custom-class {
         padding: 0.25rem 0.5rem;
@@ -140,12 +169,38 @@ private readonly BitAiTokenUsageViewParams[] usageViewParams =
                      Metadata="metadata"
                      Style="--bit-AiTokenUsageView-color: #7c3aed; --bit-AiTokenUsageView-font-size: 0.875rem; --bit-AiTokenUsageView-gap: 0.25rem" />
 """;
+    private readonly string example8CsharpCode = """
+private static readonly DateTimeOffset requestedAt = new(2026, 1, 1, 9, 0, 0, TimeSpan.Zero);
 
-    private readonly string example8RazorCode = """
+private readonly BitAiGenerationMetadata metadata = new()
+{
+    ModelId = "demo-model-1",
+    Usage = new() { InputTokens = 1_240, OutputTokens = 386, Cost = 0.0095m, Currency = "USD" },
+    StartedAt = requestedAt,
+    TimeToFirstToken = TimeSpan.FromMilliseconds(400),
+    CompletedAt = requestedAt.AddSeconds(5.2),
+    FinishReason = BitAiFinishReason.Stop,
+};
+""";
+
+    private readonly string example9RazorCode = """
 <BitAiTokenUsageView Dir="BitDir.Rtl" Usage="metadata.Usage" Metadata="metadata" ShowLatency />
 
 <div dir="rtl">
     <BitAiTokenUsageView Usage="metadata.Usage" Metadata="metadata" ShowLatency />
 </div>
+""";
+    private readonly string example9CsharpCode = """
+private static readonly DateTimeOffset requestedAt = new(2026, 1, 1, 9, 0, 0, TimeSpan.Zero);
+
+private readonly BitAiGenerationMetadata metadata = new()
+{
+    ModelId = "demo-model-1",
+    Usage = new() { InputTokens = 1_240, OutputTokens = 386, Cost = 0.0095m, Currency = "USD" },
+    StartedAt = requestedAt,
+    TimeToFirstToken = TimeSpan.FromMilliseconds(400),
+    CompletedAt = requestedAt.AddSeconds(5.2),
+    FinishReason = BitAiFinishReason.Stop,
+};
 """;
 }

@@ -106,4 +106,20 @@ public partial class BitAiThinkingIndicatorDemo
 
         await base.DisposeAsync(disposing);
     }
+
+
+
+    private readonly BitAiThinkingIndicatorParams[] thinkingParams =
+    [
+        new() { Styles = new() { Root = "color: var(--bit-clr-pri)", Loading = new() { Label = "font-style: italic" } } },
+    ];
+
+
+
+    private readonly BitAiUiOptions persianOptions = BitAiUiOptions.Default with { Strings = new PersianAiStrings() };
+
+    private sealed class PersianAiStrings : BitAiStrings
+    {
+        public override string Thinking => "در حال فکر کردن";
+    }
 }

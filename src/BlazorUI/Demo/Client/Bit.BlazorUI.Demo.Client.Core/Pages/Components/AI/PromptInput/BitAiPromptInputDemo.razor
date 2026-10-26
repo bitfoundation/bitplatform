@@ -51,6 +51,18 @@
             The type, size and count of a file are checked in the browser before a byte of it is read, which keeps an oversized
             paste from costing anything - but it is the browser's word: check what reaches your server again there.
         </BitText>
+        <br />
+        <BitText>
+            Two of the <BitLink Href="/components/ai/optionsprovider#ui-options">BitAiUiOptions</BitLink> in force shape the
+            composer: <b>SubmitOnEnter</b> (true by default; false leaves Ctrl or Cmd with Enter to send) and
+            <b>MaxComposerRows</b> (12), the most rows the text grows to before it scrolls. Its words come from the strings in
+            force, which a <BitLink Href="/components/ai/optionsprovider">BitAiOptionsProvider</BitLink> localizes: the
+            placeholder (<b>PromptPlaceholder</b>), the names of the buttons (<b>Send</b>, <b>Stop</b>, <b>AttachFile</b>), the
+            overlay of a drag (<b>DropFiles</b>), the names of the menu (<b>Commands</b>, <b>Mentions</b>), the counter
+            (<b>CharacterCount</b>, <b>CharactersRemaining</b>) and the alert of the files turned away
+            (<b>AttachmentTooLarge</b>, <b>AttachmentTooMany</b>, <b>AttachmentTypeNotAllowed</b>, <b>AttachmentReadFailed</b>,
+            <b>Dismiss</b>).
+        </BitText>
     </NotesTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
@@ -121,19 +133,26 @@
                 paste attaches what the clipboard holds - which is how a screenshot arrives. Each staged file is a
                 <BitLink Href="/components/ai/attachmentchip">BitAiAttachmentChip</BitLink> with a remove button, an image with a
                 thumbnail made in the browser. The submission carries them in <b>Attachments</b> and owns them from then on.
-                <b>AllowAttachments="false"</b> turns all three ways off.
+                <b>MaxInlineSize</b> (256 KB by default, 64 KB here) is the largest file whose bytes are held in memory: a file within
+                it carries them (<b>Data</b>, and a data URL as its <b>Url</b>), while a larger one stays in the browser and is read
+                through its <b>ContentFactory</b> when something opens it (<b>OpenReadAsync</b>), so a Blazor Server circuit never
+                holds megabytes per attachment - send a small and a large file to see both. <b>AllowAttachments="false"</b> turns
+                all three ways off.
             </div>
             <br />
-            <BitAiPromptInput OnSubmit="HandleAttachmentsSubmit" />
+            <BitAiPromptInput MaxInlineSize="InlineSize" OnSubmit="HandleAttachmentsSubmit" />
             <br />
             <BitAiPromptInput AllowAttachments="false" Placeholder="No attachments here" OnSubmit="HandleAttachmentsSubmit" />
             <br />
             <div>Sent: <b>@attachmentsSubmission</b></div>
             <br />
-            <div style="display:flex;flex-wrap:wrap;gap:0.5rem">
+            <div style="display:flex;flex-direction:column;align-items:flex-start;gap:0.5rem">
                 @foreach (var attachment in sentAttachments)
                 {
-                    <BitAiAttachmentChip @key="attachment.AttachmentId" Attachment="attachment" />
+                    <div @key="attachment.AttachmentId" style="display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem">
+                        <BitAiAttachmentChip Attachment="attachment" />
+                        <span>@(attachment.HasInlineData ? "held in memory (Data)" : "kept in the browser, read on demand (ContentFactory)")</span>
+                    </div>
                 }
             </div>
         </DemoExample>
@@ -288,8 +307,9 @@
 
         <DemoExample Title="Disabled" RazorCode="@example13RazorCode" Id="example13">
             <div>
-                A disabled composer takes no text and offers no commands or mentions, and its attach, dictation and send buttons are
-                disabled with it.
+                A disabled composer takes no text and offers no commands or mentions, refuses a file pasted or dropped onto it (with
+                no overlay and nothing read), and its attach, dictation and send buttons are disabled with it. Disabling it while
+                the microphone is on stops the dictation.
             </div>
             <br />
             <BitAiPromptInput Disabled Value="A disabled composer keeps its text" />

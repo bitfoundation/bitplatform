@@ -27,6 +27,7 @@ private static BitAiMessage CreateReply(string text)
 <div>@pinnedMessage.GetText()</div>
 <BitAiMessageActions Pinned Message=""pinnedMessage"" />";
     private readonly string example2CsharpCode = @"
+// CreateReply is the helper of the Basic example.
 private readonly BitAiMessage pinnedMessage = CreateReply(""A reply whose actions are always shown."");";
 
     private readonly string example3RazorCode = @"
@@ -38,6 +39,7 @@ private readonly BitAiMessage pinnedMessage = CreateReply(""A reply whose action
 <div>@noFeedbackMessage.GetText()</div>
 <BitAiMessageActions Pinned ShowFeedback=""false"" Message=""noFeedbackMessage"" />";
     private readonly string example3CsharpCode = @"
+// CreateReply is the helper of the Basic example.
 private BitAiFeedbackKind lastFeedback;
 private readonly BitAiMessage feedbackMessage = CreateReply(""Was this answer helpful?"");
 private readonly BitAiMessage noFeedbackMessage = CreateReply(""A reply that does not ask for feedback."");
@@ -68,6 +70,7 @@ private void HandleFeedback(BitAiFeedbackKind feedback)
     }
 }";
     private readonly string example4CsharpCode = @"
+// CreateReply is the helper of the Basic example.
 private bool canRegenerate = true;
 
 // A transport that echoes the prompt, over a conversation that already has a reply.
@@ -115,6 +118,7 @@ public async ValueTask DisposeAsync()
     </ExtraActionsTemplate>
 </BitAiMessageActions>";
     private readonly string example5CsharpCode = @"
+// CreateReply is the helper of the Basic example.
 private bool isBookmarked;
 private readonly BitAiMessage extraMessage = CreateReply(""A reply with a bookmark button of the app's own."");
 
@@ -134,6 +138,7 @@ private void ToggleBookmark()
     <BitAiMessageActions Message=""metadataOnlyMessage"" />
 </BitAiOptionsProvider>";
     private readonly string example6CsharpCode = @"
+// CreateReply is the helper of the Basic example.
 private readonly BitAiUiOptions allMetadataOptions = new() { ShowModelName = true, ShowUsage = true, ShowTimestamps = true };
 private readonly BitAiUiOptions metadataOnlyOptions = new() { ShowModelName = true, ShowUsage = true, ShowMessageActions = false };
 private readonly BitAiMessage optionsMessage = CreateReply(""The model, the usage and the time."");
@@ -145,6 +150,7 @@ private readonly BitAiMessage metadataOnlyMessage = CreateReply(""The metadata a
 <div>@disabledMessage.GetText()</div>
 <BitAiMessageActions Pinned Disabled=""isDisabled"" Message=""disabledMessage"" />";
     private readonly string example7CsharpCode = @"
+// CreateReply is the helper of the Basic example.
 private bool isDisabled = true;
 private readonly BitAiMessage disabledMessage = CreateReply(""A reply whose actions are disabled."");";
 
@@ -157,6 +163,7 @@ private readonly BitAiMessage disabledMessage = CreateReply(""A reply whose acti
     <BitAiMessageActions ShowFeedback Message=""cascadeOwnMessage"" />
 </BitParams>";
     private readonly string example8CsharpCode = @"
+// CreateReply is the helper of the Basic example.
 private readonly BitAiMessageActionsParams[] actionsParams = [new() { Pinned = true, ShowFeedback = false }];
 private readonly BitAiMessage cascadeMessage = CreateReply(""Pinned, without feedback, from the BitParams around it."");
 private readonly BitAiMessage cascadeOwnMessage = CreateReply(""Pinned from the BitParams, with its own ShowFeedback."");";
@@ -194,6 +201,7 @@ private readonly BitAiMessage cascadeOwnMessage = CreateReply(""Pinned from the 
                      Message=""variablesMessage""
                      Style=""--bit-AiMessageActions-gap:2rem;--bit-AiMessageActions-actions-gap:0.5rem;--bit-AiMessageActions-color:var(--bit-clr-pri);--bit-AiMessageActions-font-size:0.875rem"" />";
     private readonly string example9CsharpCode = @"
+// CreateReply is the helper of the Basic example.
 private readonly BitAiMessage styleMessage = CreateReply(""Styled."");
 private readonly BitAiMessage classMessage = CreateReply(""Classy."");
 private readonly BitAiMessage variablesMessage = CreateReply(""Restyled by its variables."");";
@@ -202,5 +210,6 @@ private readonly BitAiMessage variablesMessage = CreateReply(""Restyled by its v
 <div dir=""rtl"">@rtlMessage.GetText()</div>
 <BitAiMessageActions Pinned Dir=""BitDir.Rtl"" Message=""rtlMessage"" />";
     private readonly string example10CsharpCode = @"
+// CreateReply is the helper of the Basic example.
 private readonly BitAiMessage rtlMessage = CreateReply(""پاسخی که دکمه‌هایش همیشه نمایش داده می‌شوند."");";
 }

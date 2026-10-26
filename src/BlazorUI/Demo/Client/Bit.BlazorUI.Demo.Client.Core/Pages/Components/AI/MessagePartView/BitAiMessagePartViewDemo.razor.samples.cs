@@ -163,12 +163,91 @@ private static BitAiMessage CreateCitedMessage()
 """;
 
     private readonly string example5RazorCode = """
+@implements IAsyncDisposable
+
+<BitButton OnClick="AskToDeleteAsync" Disabled="planSession.IsGenerating">Delete the archived records</BitButton>
+
+@foreach (var message in planSession.Conversation.Messages)
+{
+    <div @key="message.MessageId">
+        <b>@(message.Role.IsUser ? "You" : "Assistant")</b>
+        @foreach (var part in message.Parts)
+        {
+            <BitAiMessagePartView @key="part.PartId"
+                                  Part="part"
+                                  Message="message"
+                                  Conversation="planSession.Conversation"
+                                  Session="planSession" />
+        }
+    </div>
+}
+""";
+    private readonly string example5CsharpCode = """"
+[Inject] private IBitAiToolRegistry ToolRegistry { get; set; } = default!;
+
+private BitAiRenderScheduler sessionRenders = default!;
+private BitAiChatSession planSession = default!;
+
+protected override void OnInitialized()
+{
+    // The session raises StateChanged on every event it applies; the scheduler turns those into at most one render
+    // of the page per frame interval.
+    sessionRenders = new BitAiRenderScheduler(() => InvokeAsync(StateHasChanged));
+
+    // A scripted model that asks for delete_records, then answers once the tool has returned. The tool itself is the
+    // one registered with AddBitBlazorUIAIServices, declared Destructive, so the default approval policy asks before it
+    // runs. The session continues a conversation of its own.
+    planSession = new BitAiChatSession(
+        AiDemoToolTransports.CallsTool(
+            "delete_records",
+            """{"filter":"status = 'archived'"}""",
+            "Deleted 128 archived records."),
+        conversation: CreatePlanConversation(),
+        tools: ToolRegistry,
+        approvalPolicy: new BitAiDefaultToolApprovalPolicy());
+    planSession.StateChanged += sessionRenders.Request;
+}
+
+// A conversation whose first answer wrote an artifact, the way a session leaves it: the artifact belongs to the
+// conversation, and the part of the answer only names it.
+private static BitAiConversation CreatePlanConversation()
+{
+    var conversation = new BitAiConversation();
+
+    var plan = conversation.GetOrAddArtifact("art-cleanup", BitAiArtifactKind.Document, "Clean-up plan");
+    plan.SetContent("""
+        ## Clean-up plan
+
+        1. Archive the records nobody opened this year.
+        2. Delete the archived records.
+        """);
+    plan.Complete("First draft");
+
+    conversation.AddMessage(BitAiRole.User, "Plan the clean-up of the old records.");
+
+    var answer = conversation.AddMessage(new BitAiMessage(BitAiRole.Assistant));
+    answer.AddPart(new BitAiTextPart("Here is the plan:"));
+    answer.AddPart(new BitAiArtifactPart("art-cleanup"));
+
+    return conversation;
+}
+
+private Task AskToDeleteAsync() => planSession.SubmitAsync("Delete the archived records");
+
+public async ValueTask DisposeAsync()
+{
+    await planSession.DisposeAsync();
+    await sessionRenders.DisposeAsync();
+}
+"""";
+
+    private readonly string example6RazorCode = """
 @foreach (var part in invoiceMessage.Parts)
 {
     <BitAiMessagePartView @key="part.PartId" Part="part" Message="invoiceMessage" />
 }
 """;
-    private readonly string example5CsharpCode = """"
+    private readonly string example6CsharpCode = """"
 [Inject] private BitAiRendererRegistry Renderers { get; set; } = default!;
 
 protected override void OnInitialized()
@@ -198,7 +277,7 @@ private static BitAiMessage CreateInvoiceMessage()
     return message;
 }
 """";
-    private const string example5ProgramCode = """
+    private const string example6ProgramCode = """
 builder.Services.AddBitBlazorUIAIServices(ai =>
 {
     ai.UseTransport<MyTransport>();
@@ -215,7 +294,7 @@ builder.Services.AddBitBlazorUIAIServices(ai =>
     // });
 });
 """;
-    private const string example5CardCode = """
+    private const string example6CardCode = """
 @using System.Globalization
 @using System.Text.Json
 
@@ -263,7 +342,7 @@ builder.Services.AddBitBlazorUIAIServices(ai =>
     private string Format(decimal amount) => $"{amount.ToString("N2", CultureInfo.InvariantCulture)} {currency}";
 }
 """;
-    private const string example5CardStyleCode = """
+    private const string example6CardStyleCode = """
 .invoice-card {
     gap: 0.5rem;
     display: flex;
@@ -304,20 +383,20 @@ builder.Services.AddBitBlazorUIAIServices(ai =>
     border-block-start: 1px solid var(--bit-clr-brd-sec);
 }
 """;
-    private readonly DemoCodeFile[] example5CodeFiles =
+    private readonly DemoCodeFile[] example6CodeFiles =
     [
-        new("Program.cs", example5ProgramCode),
-        new("InvoiceCard.razor", example5CardCode),
-        new("InvoiceCard.razor.scss", example5CardStyleCode),
+        new("Program.cs", example6ProgramCode),
+        new("InvoiceCard.razor", example6CardCode),
+        new("InvoiceCard.razor.scss", example6CardStyleCode),
     ];
 
-    private readonly string example6RazorCode = """
+    private readonly string example7RazorCode = """
 @foreach (var part in brokenMessage.Parts)
 {
     <BitAiMessagePartView @key="part.PartId" Part="part" Message="brokenMessage" />
 }
 """;
-    private readonly string example6CsharpCode = """"
+    private readonly string example7CsharpCode = """"
 // The model left the lines out of the second invoice, which the card was not written for.
 private const string novemberInvoice = """{"number":"INV-1043","currency":"EUR","total":1290}""";
 
@@ -337,7 +416,96 @@ private static BitAiMessage CreateBrokenMessage()
 }
 """";
 
-    private readonly string example7RazorCode = """
+    private readonly string example8RazorCode = """
+@foreach (var part in pollMessage.Parts)
+{
+    <BitAiMessagePartView @key="part.PartId" Part="part" Message="pollMessage" />
+}
+
+<CascadingValue Value="regionRenderers" IsFixed="true">
+    @foreach (var part in pollMessage.Parts)
+    {
+        <BitAiMessagePartView @key="part.PartId" Part="part" Message="pollMessage" />
+    }
+</CascadingValue>
+""";
+    private readonly string example8CsharpCode = """
+private readonly BitAiMessage pollMessage = CreatePollMessage();
+
+private static BitAiMessage CreatePollMessage()
+{
+    var message = new BitAiMessage(BitAiRole.Assistant);
+
+    message.AddPart(new BitAiTextPart("Let us find a day for the review."));
+    message.AddPart(new BitAiCustomPart<string[]>("demo:poll", ["Tuesday", "Thursday"]) { Text = "Poll: which day suits you, Tuesday or Thursday?" });
+
+    return message;
+}
+
+// A registry of this region's own: the AI components inside the CascadingValue use it in place of the registered one,
+// so it holds every renderer the region needs - here only the poll.
+private readonly BitAiRendererRegistry regionRenderers = CreateRegionRenderers();
+
+private static BitAiRendererRegistry CreateRegionRenderers()
+{
+    var registry = new BitAiRendererRegistry();
+
+    registry.RegisterPart("demo:poll", RenderPoll);
+
+    return registry;
+}
+
+// A BitAiMessagePartRenderer: handed the part and its surroundings (context.Message, context.Conversation and
+// context.Session as well), it returns the markup drawn in place of the built-in view. The choices are model output,
+// so they are only ever written as text.
+private static RenderFragment RenderPoll(BitAiMessagePartContext context) => builder =>
+{
+    if (context.Part is not BitAiCustomPart<string[]> poll) return;
+
+    builder.OpenElement(0, "fieldset");
+    builder.AddAttribute(1, "style", "margin: 0; padding: 0.75rem 1rem; display: flex; gap: 0.5rem; flex-direction: column; border: 1px solid var(--bit-clr-brd-sec); border-radius: 0.5rem;");
+    builder.OpenElement(2, "legend");
+    builder.AddAttribute(3, "style", "padding-inline: 0.25rem; font-weight: 600;");
+    builder.AddContent(4, "Which day suits you?");
+    builder.CloseElement();
+
+    foreach (var choice in poll.Data)
+    {
+        builder.OpenElement(5, "label");
+        builder.AddAttribute(6, "style", "display: flex; gap: 0.5rem; align-items: center;");
+        builder.OpenElement(7, "input");
+        builder.AddAttribute(8, "type", "radio");
+        builder.AddAttribute(9, "name", poll.PartId);
+        builder.AddAttribute(10, "value", choice);
+        builder.CloseElement();
+        builder.AddContent(11, choice);
+        builder.CloseElement();
+    }
+
+    builder.CloseElement();
+};
+""";
+
+    private readonly string example9RazorCode = """
+<BitParams Parameters="partViewParams">
+    <BitAiMessagePartView Part="citedMessage.Parts[0]" Message="citedMessage" />
+    <BitAiMessagePartView Part="citedMessage.Parts[1]" Message="citedMessage" />
+    <BitAiMessagePartView Part="citedMessage.Parts[1]" Message="citedMessage" Styles="@(new() { CitationQuote = "font-style: normal;" })" />
+</BitParams>
+""";
+    private readonly string example9CsharpCode = """
+// citedMessage is the one of the Citations example.
+private readonly BitAiMessagePartViewParams[] partViewParams =
+[
+    new()
+    {
+        Style = "padding-inline-start: 0.75rem; border-inline-start: 3px solid var(--bit-clr-pri);",
+        Styles = new() { CitationQuote = "color: var(--bit-clr-pri);", CitationLocator = "font-weight: bold;" },
+    },
+];
+""";
+
+    private readonly string example10RazorCode = """
 <style>
     .custom-part {
         padding-inline-start: 1rem;
@@ -370,7 +538,7 @@ private static BitAiMessage CreateBrokenMessage()
     <BitAiMessagePartView Part="styleMessage.Parts[2]" Message="styleMessage" />
 </div>
 """;
-    private readonly string example7CsharpCode = """
+    private readonly string example10CsharpCode = """
 private readonly BitAiMessage styleMessage = CreateStyleMessage();
 
 private static BitAiMessage CreateStyleMessage()
@@ -394,13 +562,13 @@ private static BitAiMessage CreateStyleMessage()
 }
 """;
 
-    private readonly string example8RazorCode = """
+    private readonly string example11RazorCode = """
 @foreach (var part in rtlMessage.Parts)
 {
     <BitAiMessagePartView @key="part.PartId" Dir="BitDir.Rtl" Part="part" Message="rtlMessage" />
 }
 """;
-    private readonly string example8CsharpCode = """
+    private readonly string example11CsharpCode = """
 private readonly BitAiMessage rtlMessage = CreateRtlMessage();
 
 private static BitAiMessage CreateRtlMessage()

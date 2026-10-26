@@ -34,6 +34,42 @@ private static BitAiToolCallPart CreateWeatherCall()
 """";
 
     private readonly string example2RazorCode = """
+<BitAiToolCallView Call="unknownToolCall" />
+
+<BitAiToolCallView Call="iconToolCall" />
+
+<BitAiToolCallView Call="registeredToolCall" />
+""";
+    private readonly string example2CsharpCode = """"
+private static JsonElement Json(string json) => JsonDocument.Parse(json).RootElement;
+
+// A tool nobody defined: the card shows its raw name, under the wrench.
+private readonly BitAiToolCallPart unknownToolCall = CreateCompletedCall("get_stock_price", null,
+    """{"symbol":"MSFT"}""", "MSFT: 431.20 USD");
+
+// A definition of the call's own, which names an icon.
+private readonly BitAiToolCallPart iconToolCall = CreateCompletedCall("book_meeting",
+    new BitAiToolDefinition("book_meeting") { Title = "Book a meeting", Icon = BitIconName.Calendar },
+    """{"with":"Ana","on":"Tuesday 10:00"}""", "Booked with Ana for Tuesday at 10:00.");
+
+// No definition on the call: the card reads the one registered for get_weather in Program.cs -
+// ai.AddTool(BitAiTool.Create("get_weather", ..., definition => definition with { Title = "Weather", Icon = BitIconName.Globe }))
+private readonly BitAiToolCallPart registeredToolCall = CreateCompletedCall("get_weather", null,
+    """{"city":"Lisbon"}""", "Lisbon: 17 degrees, clear");
+
+private static BitAiToolCallPart CreateCompletedCall(string toolName, BitAiToolDefinition? definition, string arguments, string result)
+{
+    var call = new BitAiToolCallPart(BitAiId.NewToolCallId(), toolName) { Definition = definition };
+
+    call.CompleteArguments(Json(arguments));
+    call.SetStatus(BitAiToolCallStatus.Running);
+    call.SetResult(BitAiToolOutcome.FromText(result) with { Duration = TimeSpan.FromMilliseconds(400) });
+
+    return call;
+}
+"""";
+
+    private readonly string example3RazorCode = """
 <BitButton OnClick="RunIndexAsync" Disabled="isIndexing">Run the tool</BitButton>
 
 <BitAiOptionsProvider UiOptions="expandedOptions">
@@ -43,7 +79,7 @@ private static BitAiToolCallPart CreateWeatherCall()
     }
 </BitAiOptionsProvider>
 """;
-    private readonly string example2CsharpCode = """"
+    private readonly string example3CsharpCode = """"
 private BitAiToolCallPart? indexCall;
 private bool isIndexing;
 private readonly BitAiUiOptions expandedOptions = BitAiUiOptions.Default with { CollapseToolCalls = false };
@@ -83,12 +119,14 @@ private async Task RunIndexAsync()
 }
 """";
 
-    private readonly string example3RazorCode = """
+    private readonly string example4RazorCode = """
 <BitAiToolCallView Call="failedCall" />
 
 <BitAiToolCallView Call="declinedCall" />
+
+<BitAiToolCallView Call="cancelledCall" />
 """;
-    private readonly string example3CsharpCode = """"
+    private readonly string example4CsharpCode = """"
 private static JsonElement Json(string json) => JsonDocument.Parse(json).RootElement;
 
 private readonly BitAiToolCallPart failedCall = CreateFailedCall();
@@ -135,9 +173,26 @@ private static BitAiToolCallPart CreateDeclinedCall()
 
     return call;
 }
+
+// What a session records for a call that was running when the user stopped the turn.
+private readonly BitAiToolCallPart cancelledCall = CreateCancelledCall();
+
+private static BitAiToolCallPart CreateCancelledCall()
+{
+    var call = new BitAiToolCallPart("call_export", "export_report")
+    {
+        Definition = new BitAiToolDefinition("export_report") { Title = "Export the report" },
+    };
+
+    call.CompleteArguments(Json("""{"format":"pdf","pages":"all"}"""));
+    call.SetStatus(BitAiToolCallStatus.Running);
+    call.SetStatus(BitAiToolCallStatus.Cancelled);
+
+    return call;
+}
 """";
 
-    private readonly string example4RazorCode = """
+    private readonly string example5RazorCode = """
 @implements IAsyncDisposable
 
 <BitButton OnClick="AskToDeleteAsync" Disabled="approvalSession.IsGenerating">Delete the archived records</BitButton>
@@ -150,7 +205,7 @@ private static BitAiToolCallPart CreateDeclinedCall()
     }
 }
 """;
-    private readonly string example4CsharpCode = """"
+    private readonly string example5CsharpCode = """"
 [Inject] private IBitAiToolRegistry ToolRegistry { get; set; } = default!;
 
 private BitAiRenderScheduler sessionRenders = default!;
@@ -184,7 +239,7 @@ public async ValueTask DisposeAsync()
 }
 """";
 
-    private readonly string example5RazorCode = """
+    private readonly string example6RazorCode = """
 @implements IAsyncDisposable
 
 <BitButton OnClick="SearchDocsAsync" Disabled="searchSession.IsGenerating">Search the docs</BitButton>
@@ -197,7 +252,7 @@ public async ValueTask DisposeAsync()
     }
 }
 """;
-    private readonly string example5CsharpCode = """"
+    private readonly string example6CsharpCode = """"
 [Inject] private IBitAiToolRegistry ToolRegistry { get; set; } = default!;
 
 private BitAiRenderScheduler sessionRenders = default!;
@@ -224,7 +279,7 @@ public async ValueTask DisposeAsync()
     await sessionRenders.DisposeAsync();
 }
 """";
-    private const string example5ProgramCode = """
+    private const string example6ProgramCode = """
 builder.Services.AddBitBlazorUIAIServices(ai =>
 {
     ai.UseTransport(AiDemoTransports.Echo());
@@ -253,7 +308,7 @@ builder.Services.AddBitBlazorUIAIServices(ai =>
     ai.ConfigureRenderers(renderers => renderers.RegisterTool<SearchResultCard>("search_docs"));
 });
 """;
-    private const string example5CardCode = """
+    private const string example6CardCode = """
 @using System.Globalization
 @using System.Text.Json
 
@@ -314,16 +369,16 @@ builder.Services.AddBitBlazorUIAIServices(ai =>
             : null;
 }
 """;
-    private readonly DemoCodeFile[] example5CodeFiles =
+    private readonly DemoCodeFile[] example6CodeFiles =
     [
-        new("Program.cs", example5ProgramCode),
-        new("SearchResultCard.razor", example5CardCode),
+        new("Program.cs", example6ProgramCode),
+        new("SearchResultCard.razor", example6CardCode),
     ];
 
-    private readonly string example6RazorCode = """
+    private readonly string example7RazorCode = """
 <BitAiToolCallView Disabled Call="awaitingCall" />
 """;
-    private readonly string example6CsharpCode = """"
+    private readonly string example7CsharpCode = """"
 private static JsonElement Json(string json) => JsonDocument.Parse(json).RootElement;
 
 private readonly BitAiToolCallPart awaitingCall = CreateAwaitingCall();
@@ -343,21 +398,64 @@ private static BitAiToolCallPart CreateAwaitingCall()
 }
 """";
 
-    private readonly string example7RazorCode = """
+    private readonly string example8RazorCode = """
 <BitParams Parameters="toolCallViewParams">
     <BitAiToolCallView Call="weatherCall" />
     <BitAiToolCallView Call="failedCall" />
     <BitAiToolCallView Call="weatherCall" Disabled="false" />
 </BitParams>
 """;
-    private readonly string example7CsharpCode = """
+    private readonly string example8CsharpCode = """"
 private readonly BitAiToolCallViewParams[] toolCallViewParams =
 [
     new() { Disabled = true, Styles = new() { Root = "border-style: dashed", Title = "font-style: italic" } },
 ];
-""";
 
-    private readonly string example8RazorCode = """
+private static JsonElement Json(string json) => JsonDocument.Parse(json).RootElement;
+
+private readonly BitAiToolCallPart weatherCall = CreateWeatherCall();
+private readonly BitAiToolCallPart failedCall = CreateFailedCall();
+
+private static BitAiToolCallPart CreateWeatherCall()
+{
+    var call = new BitAiToolCallPart("call_weather", "get_weather")
+    {
+        Definition = new BitAiToolDefinition("get_weather") { Title = "Weather" },
+    };
+
+    call.CompleteArguments(Json("""{"city":"Oslo"}"""));
+    call.SetStatus(BitAiToolCallStatus.Running);
+    call.SetResult(BitAiToolOutcome.Success(Json("""{"city":"Oslo","degrees":-3,"condition":"Snow","humidity":81}""")) with
+    {
+        Duration = TimeSpan.FromMilliseconds(700),
+    });
+
+    return call;
+}
+
+private static BitAiToolCallPart CreateFailedCall()
+{
+    var call = new BitAiToolCallPart("call_atlantis", "get_weather")
+    {
+        Definition = new BitAiToolDefinition("get_weather") { Title = "Weather" },
+    };
+
+    call.CompleteArguments(Json("""{"city":"Atlantis"}"""));
+    call.SetStatus(BitAiToolCallStatus.Running);
+    call.SetResult(BitAiToolOutcome.Failure(new BitAiError("No weather station reports for Atlantis.")
+    {
+        Code = "unknown_city",
+        Kind = BitAiErrorKind.Tool,
+    }) with
+    {
+        Duration = TimeSpan.FromMilliseconds(1200),
+    });
+
+    return call;
+}
+"""";
+
+    private readonly string example9RazorCode = """
 <style>
     .custom-tool {
         border-width: 2px;
@@ -402,14 +500,58 @@ private readonly BitAiToolCallViewParams[] toolCallViewParams =
     <BitAiToolCallView Call="failedCall" />
 </div>
 """;
+    private readonly string example9CsharpCode = """"
+private static JsonElement Json(string json) => JsonDocument.Parse(json).RootElement;
 
-    private readonly string example9RazorCode = """
+private readonly BitAiToolCallPart weatherCall = CreateWeatherCall();
+private readonly BitAiToolCallPart failedCall = CreateFailedCall();
+
+private static BitAiToolCallPart CreateWeatherCall()
+{
+    var call = new BitAiToolCallPart("call_weather", "get_weather")
+    {
+        Definition = new BitAiToolDefinition("get_weather") { Title = "Weather" },
+    };
+
+    call.CompleteArguments(Json("""{"city":"Oslo"}"""));
+    call.SetStatus(BitAiToolCallStatus.Running);
+    call.SetResult(BitAiToolOutcome.Success(Json("""{"city":"Oslo","degrees":-3,"condition":"Snow","humidity":81}""")) with
+    {
+        Duration = TimeSpan.FromMilliseconds(700),
+    });
+
+    return call;
+}
+
+private static BitAiToolCallPart CreateFailedCall()
+{
+    var call = new BitAiToolCallPart("call_atlantis", "get_weather")
+    {
+        Definition = new BitAiToolDefinition("get_weather") { Title = "Weather" },
+    };
+
+    call.CompleteArguments(Json("""{"city":"Atlantis"}"""));
+    call.SetStatus(BitAiToolCallStatus.Running);
+    call.SetResult(BitAiToolOutcome.Failure(new BitAiError("No weather station reports for Atlantis.")
+    {
+        Code = "unknown_city",
+        Kind = BitAiErrorKind.Tool,
+    }) with
+    {
+        Duration = TimeSpan.FromMilliseconds(1200),
+    });
+
+    return call;
+}
+"""";
+
+    private readonly string example10RazorCode = """
 <BitAiOptionsProvider UiOptions="persianOptions">
     <BitAiToolCallView Dir="BitDir.Rtl" Call="rtlCall" />
     <BitAiToolCallView Dir="BitDir.Rtl" Call="rtlFailedCall" />
 </BitAiOptionsProvider>
 """;
-    private readonly string example9CsharpCode = """"
+    private readonly string example10CsharpCode = """"
 private static JsonElement Json(string json) => JsonDocument.Parse(json).RootElement;
 
 private readonly BitAiUiOptions persianOptions = BitAiUiOptions.Default with { Strings = new PersianAiStrings() };

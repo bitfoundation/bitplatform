@@ -21,6 +21,7 @@ public ValueTask DisposeAsync() => session.DisposeAsync();
 """;
 
     private const string example1TransportCode = """
+// AiScriptedTransport and AiScript are the demo's helpers - see the Basic chat scenario.
 public static IBitAiTransport AsksForInput() => new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
 {
     // The first message asks, the answer to it continues the run, and whatever is said after that is talk. The run is

@@ -89,6 +89,21 @@ private async Task StreamResultAsync()
     private readonly string example5CsharpCode = OrderSampleCode;
 
     private readonly string example6RazorCode = """
+<BitParams Parameters="jsonViewParams">
+    <BitAiJsonView Value="order" />
+
+    <BitAiJsonView Value="order" DefaultExpandDepth="2" />
+</BitParams>
+""";
+    private readonly string example6CsharpCode = OrderSampleCode + """
+
+private readonly BitAiJsonViewParams[] jsonViewParams =
+[
+    new() { DefaultExpandDepth = 1, Styles = new() { Key = "font-weight: bold" } },
+];
+""";
+
+    private readonly string example7RazorCode = """
 <style>
     .custom-json {
         padding: 0.75rem;
@@ -112,16 +127,16 @@ private async Task StreamResultAsync()
     <BitAiJsonView Value="order" />
 </div>
 """;
-    private readonly string example6CsharpCode = OrderSampleCode;
+    private readonly string example7CsharpCode = OrderSampleCode;
 
-    private readonly string example7RazorCode = """
+    private readonly string example8RazorCode = """
 <BitAiJsonView Dir="BitDir.Rtl" Value="persianOrder" />
 
 <div dir="rtl">
     <BitAiJsonView Value="persianOrder" DefaultExpandDepth="1" />
 </div>
 """;
-    private readonly string example7CsharpCode = """"
+    private readonly string example8CsharpCode = """"
 private readonly JsonElement persianOrder = JsonDocument.Parse("""
     {
       "شناسه": "ord_4821",

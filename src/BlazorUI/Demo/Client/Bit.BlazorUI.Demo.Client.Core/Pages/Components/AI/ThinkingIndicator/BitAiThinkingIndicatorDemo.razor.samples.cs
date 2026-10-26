@@ -69,6 +69,24 @@ public async ValueTask DisposeAsync()
 """";
 
     private readonly string example4RazorCode = """
+<BitAiThinkingIndicator Disabled Label="Paused until you reconnect" />
+""";
+
+    private readonly string example5RazorCode = """
+<BitParams Parameters="thinkingParams">
+    <BitAiThinkingIndicator />
+    <BitAiThinkingIndicator Label="Searching the documentation" />
+    <BitAiThinkingIndicator Label="Reading 3 attachments" Styles="@(new() { Loading = new() { Label = "font-weight: bold" } })" />
+</BitParams>
+""";
+    private readonly string example5CsharpCode = """
+private readonly BitAiThinkingIndicatorParams[] thinkingParams =
+[
+    new() { Styles = new() { Root = "color: var(--bit-clr-pri)", Loading = new() { Label = "font-style: italic" } } },
+];
+""";
+
+    private readonly string example6RazorCode = """
 <style>
     .custom-thinking {
         color: #fff;
@@ -102,9 +120,22 @@ public async ValueTask DisposeAsync()
 </div>
 """;
 
-    private readonly string example5RazorCode = """
-<div dir="rtl">
-    <BitAiThinkingIndicator Dir="BitDir.Rtl" Label="در حال فکر کردن" />
-</div>
+    private readonly string example7RazorCode = """
+<BitAiThinkingIndicator Dir="BitDir.Rtl" Label="در حال جستجوی مستندات" />
+
+<BitAiOptionsProvider UiOptions="persianOptions">
+    <div dir="rtl">
+        <BitAiThinkingIndicator />
+    </div>
+</BitAiOptionsProvider>
+""";
+    private readonly string example7CsharpCode = """
+private readonly BitAiUiOptions persianOptions = BitAiUiOptions.Default with { Strings = new PersianAiStrings() };
+
+// The default label, in Persian.
+private sealed class PersianAiStrings : BitAiStrings
+{
+    public override string Thinking => "در حال فکر کردن";
+}
 """;
 }

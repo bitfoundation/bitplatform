@@ -12,6 +12,16 @@ private readonly JsonElement models = JsonDocument.Parse("""
     """).RootElement;
 """";
 
+    private const string BenchmarksSampleCode = """"
+private readonly JsonElement benchmarks = JsonDocument.Parse("""
+    [
+      { "model": "Demo Large", "contextWindow": 200000, "maxOutput": 32000, "inputPrice": 15, "outputPrice": 75, "latencyMs": 820, "tokensPerSecond": 64, "vision": true, "tools": true, "jsonMode": true, "region": "eu-west", "released": "2026-03-01" },
+      { "model": "Demo Fast", "contextWindow": 128000, "maxOutput": 16000, "inputPrice": 1.5, "outputPrice": 6, "latencyMs": 240, "tokensPerSecond": 180, "vision": true, "tools": true, "jsonMode": true, "region": "us-east", "released": "2026-06-15" },
+      { "model": "Local Small", "contextWindow": 32000, "maxOutput": 4000, "inputPrice": 0, "outputPrice": 0, "latencyMs": 120, "tokensPerSecond": 95, "vision": false, "tools": false, "jsonMode": true, "region": "on-device", "released": "2025-11-30" }
+    ]
+    """).RootElement;
+"""";
+
     private readonly string example1RazorCode = """
 <BitAiDataTable Rows="models" />
 """;
@@ -99,6 +109,26 @@ public static IBitAiTransport Structured() =>
     ];
 
     private readonly string example4RazorCode = """
+<BitAiDataTable Rows="benchmarks" AriaLabel="Benchmark results" />
+""";
+    private readonly string example4CsharpCode = BenchmarksSampleCode;
+
+    private readonly string example5RazorCode = """
+<BitParams Parameters="dataTableParams">
+    <BitAiDataTable Rows="models" />
+
+    <BitAiDataTable Rows="models" Styles="@(new() { Cell = "font-style: italic" })" />
+</BitParams>
+""";
+    private readonly string example5CsharpCode = ModelsSampleCode + """
+
+private readonly BitAiDataTableParams[] dataTableParams =
+[
+    new() { Styles = new() { HeaderCell = "text-transform: uppercase", Row = "font-variant-numeric: tabular-nums" } },
+];
+""";
+
+    private readonly string example6RazorCode = """
 <style>
     .custom-table {
         border: none;
@@ -121,16 +151,16 @@ public static IBitAiTransport Structured() =>
     <BitAiDataTable Rows="models" />
 </div>
 """;
-    private readonly string example4CsharpCode = ModelsSampleCode;
+    private readonly string example6CsharpCode = ModelsSampleCode;
 
-    private readonly string example5RazorCode = """
+    private readonly string example7RazorCode = """
 <BitAiDataTable Dir="BitDir.Rtl" Rows="persianModels" />
 
 <div dir="rtl">
     <BitAiDataTable Rows="persianModels" />
 </div>
 """;
-    private readonly string example5CsharpCode = """"
+    private readonly string example7CsharpCode = """"
 private readonly JsonElement persianModels = JsonDocument.Parse("""
     [
       { "مدل": "دمو بزرگ", "پنجره زمینه": 200000, "قیمت": 15 },

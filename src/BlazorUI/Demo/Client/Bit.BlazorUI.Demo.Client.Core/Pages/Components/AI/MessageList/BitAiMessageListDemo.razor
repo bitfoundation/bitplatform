@@ -32,7 +32,9 @@
             stream is on, re-rendering at most once per <b>BitAiUiOptions.RenderInterval</b>. A <b>Session</b> (see
             <BitLink Href="/components/ai/chat">BitAiChat</BitLink>) is what enables the actions of a message - edit, regenerate,
             retry, approval. It is the scroll container itself, so give it a box with a height to take: it grows to fill a flex
-            column.
+            column. Whether it follows new content at all is the <b>AutoScroll</b> of the
+            <BitLink Href="/components/ai/optionsprovider">BitAiUiOptions</BitLink> in force (on by default), and how many
+            messages it draws at once their <b>VirtualizeThreshold</b>.
         </BitText>
         <br />
         <BitText>
@@ -49,7 +51,7 @@
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <div>
                 Give it a <b>Conversation</b>: user turns are bubbles at the end of the line, replies full-width prose with
-                their actions. Without a session, a reply offers copy and feedback only.
+                their actions. Without a session, a reply offers copy and feedback only, and a user message no action at all.
             </div>
             <br />
             <div style="height:360px;display:flex;flex-direction:column">
@@ -133,15 +135,25 @@
                 takes the reader back and follows again. Send something, then scroll up while it answers.
             </div>
             <br />
+            <div>
+                Following is the <b>AutoScroll</b> of the <b>BitAiUiOptions</b> in force, set here through a
+                <BitLink Href="/components/ai/optionsprovider">BitAiOptionsProvider</BitLink>. Turn it off and the list never
+                follows on its own: a reply grows out of view while the reader stays where they are, and <b>OnPinnedChange</b>
+                reports false as soon as the newest message leaves the view.
+            </div>
+            <br />
+            <BitToggle @bind-Value="autoScroll" Text="AutoScroll" />
             <div style="height:440px;display:flex;flex-direction:column">
-                <BitAiMessageList @ref="followList"
-                                  Conversation="followSession.Conversation"
-                                  Session="followSession"
-                                  OnPinnedChange="HandlePinnedChange" />
-                <div style="position:relative">
-                    <BitAiScrollToLatest Visible="@(isPinned is false)" OnClick="ScrollToLatest" />
-                    <BitAiPromptInput Session="followSession" />
-                </div>
+                <BitAiOptionsProvider UiOptions="@(autoScroll ? null : manualScrollOptions)">
+                    <BitAiMessageList @ref="followList"
+                                      Conversation="followSession.Conversation"
+                                      Session="followSession"
+                                      OnPinnedChange="HandlePinnedChange" />
+                    <div style="position:relative">
+                        <BitAiScrollToLatest Visible="@(isPinned is false)" OnClick="ScrollToLatest" />
+                        <BitAiPromptInput Session="followSession" />
+                    </div>
+                </BitAiOptionsProvider>
             </div>
             <br />
             <div>Following the newest message: <b>@isPinned</b></div>
@@ -188,7 +200,26 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <DemoExample Title="Cascading parameters" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                <b>BitParams</b> with a <b>BitAiMessageListParams</b> sets whether the lists inside it show the system messages,
+                and their classes and styles; a list's own value wins (the second keeps hiding them). A BitAiChat sets these on
+                its transcript itself - from its own <b>HideSystemMessages</b> and <b>Styles</b> / <b>Classes</b> - so a chat
+                takes them from a <BitLink Href="/components/ai/chat">BitAiChatParams</BitLink> instead.
+            </div>
+            <br />
+            <BitParams Parameters="listParams">
+                <div style="height:260px;display:flex;flex-direction:column">
+                    <BitAiMessageList Conversation="cascadeConversation" />
+                </div>
+                <br />
+                <div style="height:260px;display:flex;flex-direction:column">
+                    <BitAiMessageList Conversation="cascadeOwnConversation" HideSystemMessages />
+                </div>
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div>
                 <b>Style</b> / <b>Class</b> reach the root, which is the scroll container, and <b>Styles</b> / <b>Classes</b>
                 its <b>Content</b> column. The public <b>--bit-AiMessageList-*</b> variables (see the CSS variables table)
@@ -213,7 +244,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <DemoExample Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>Use BitAiMessageList in right-to-left (RTL).</div>
             <br />
             <div style="height:300px;display:flex;flex-direction:column">

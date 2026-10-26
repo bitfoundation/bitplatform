@@ -28,8 +28,11 @@
             BitAiArtifactPartView renders a <BitLink Href="/components/ai/artifactview">BitAiArtifactView</BitLink>, so it needs
             what that needs: <b>AddBitBlazorUIAIServices</b> at startup. Inside a
             <BitLink Href="/components/ai/chat">BitAiChat</BitLink> it is rendered for every artifact part of a message on its
-            own, handed the session's conversation; a session adds the part to the message whose transport sent the
-            <b>BitAiArtifactCreatedEvent</b>, stamped with the version it opened. See the
+            own, by the <BitLink Href="/components/ai/messagepartview">BitAiMessagePartView</BitLink> of the part, which hands it
+            the session's conversation as its <b>Conversation</b>; a session adds the part to the message whose transport sent
+            the <b>BitAiArtifactCreatedEvent</b>, stamped with the version it opened. The body of the panel is drawn by the
+            artifact view, so a renderer registered for an artifact kind (<b>BitAiRendererRegistry.RegisterArtifact</b>, see
+            <BitLink Href="/components/ai/artifactview#artifact-context">AiArtifactView</BitLink>) draws it here too. See the
             <BitLink Href="/ai/scenarios/artifacts">Artifacts</BitLink> scenario for the whole chat.
         </BitText>
     </NotesTemplate>
@@ -76,7 +79,24 @@
             <BitAiArtifactPartView Part="notesPart" />
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <DemoExample Title="Cascading parameters" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                <b>BitParams</b> with a <b>BitAiArtifactPartViewParams</b> sets the look of every artifact part view inside it - inside a
+                chat, the artifacts of every message - here the header of the panel and the placeholder tag. The part and the
+                conversation are not among them: they are what makes one view the one it is. It is a default, not an override: a view
+                keeps what it sets itself (the last one sets <b>Styles</b> of its own, which replace the cascaded ones).
+            </div>
+            <br />
+            <BitParams Parameters="artifactPartViewParams">
+                <BitAiArtifactPartView Part="notesPart" Conversation="conversation" />
+                <br />
+                <BitAiArtifactPartView Part="missingPart" Conversation="conversation" />
+                <br /><br />
+                <BitAiArtifactPartView Part="notesPart" Conversation="conversation" Styles="@(new() { ArtifactView = new() { Title = "font-style: italic;" } })" />
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root; <b>Styles</b> and <b>Classes</b> hand <b>ArtifactView</b> the
                 class-styles of the panel and <b>Placeholder</b> those of the tag. The part has no variables of its own: the
@@ -100,7 +120,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <DemoExample Title="RTL" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
                 In right-to-left text the panel and the placeholder read from the right, whether the direction comes from
                 <b>Dir</b> or from a <b>dir</b> attribute around the view.

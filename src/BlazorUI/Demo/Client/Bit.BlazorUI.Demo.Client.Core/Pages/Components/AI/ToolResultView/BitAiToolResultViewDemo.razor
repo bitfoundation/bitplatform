@@ -37,8 +37,9 @@
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <div>
-                Hand it the <b>Part</b> (a <b>BitAiToolResultPart</b>). The card is headed by the <b>ToolName</b> of the part, and a result that
-                carries <b>Text</b> is shown as it was written - its line breaks kept, a long token wrapped.
+                Hand it the <b>Part</b> (a <b>BitAiToolResultPart</b>). The card is headed by the <b>ToolName</b> of the part, as it is written
+                (no tool definition is read for it), under the wrench of a tool; a result that carries <b>Text</b> is shown as it was written - its
+                line breaks kept, a long token wrapped. <b>Text</b> wins over a <b>Value</b> the outcome carries as well.
             </div>
             <br />
             <div class="example-stack">
@@ -83,7 +84,23 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
+        <DemoExample Title="Cascading parameters" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>BitParams</b> with a <b>BitAiToolResultViewParams</b> sets the defaults of every result view inside it - here a dashed outline
+                and an italic title - the ones a <b>BitAiMessagePartView</b> renders included. It is a default, not an override: a view keeps what
+                it sets itself (the last one brings its own <b>Styles</b>). The part itself is never cascaded.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitParams Parameters="resultViewParams">
+                    <BitAiToolResultView Part="textResult" />
+                    <BitAiToolResultView Part="failedResult" />
+                    <BitAiToolResultView Part="jsonResult" Styles="@(new() { Root = "border-style: solid", Title = "font-weight: bold" })" />
+                </BitParams>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
                 <b>Style</b> and <b>Class</b> land on the root, <b>Styles</b> and <b>Classes</b> on the header, its icon and title, the body and
                 a textual result. The public <b>--bit-AiToolResultView-*</b> variables (see the CSS variables table) inherit, so a container
@@ -110,11 +127,21 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-            <div>Use BitAiToolResultView in right-to-left (RTL).</div>
+        <DemoExample Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                In right-to-left text the card is laid out from the right - the icon leads the title on the right, and the result reads from it -
+                whether the direction comes from <b>Dir</b> or from a <b>dir</b> attribute around the card. The heading of a result with no
+                <b>ToolName</b> is the <b>Result</b> text of the <b>BitAiStrings</b> in force - here a subclass of them, cascaded by a
+                <b>BitAiOptionsProvider</b>.
+            </div>
             <br />
             <div class="example-stack">
                 <BitAiToolResultView Dir="BitDir.Rtl" Part="rtlResult" />
+                <BitAiOptionsProvider UiOptions="persianOptions">
+                    <div dir="rtl">
+                        <BitAiToolResultView Part="rtlUnnamedResult" />
+                    </div>
+                </BitAiOptionsProvider>
             </div>
         </DemoExample>
     </Examples>

@@ -34,6 +34,7 @@ public ValueTask DisposeAsync() => session.DisposeAsync();
 """;
 
     private const string example1TransportCode = """
+// AiScriptedTransport and AiScript are the demo's helpers - see the Basic chat scenario.
 public static IBitAiTransport Cited() => new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
 {
     var source = new BitAiCitationSource("s1", "Blazor render modes")

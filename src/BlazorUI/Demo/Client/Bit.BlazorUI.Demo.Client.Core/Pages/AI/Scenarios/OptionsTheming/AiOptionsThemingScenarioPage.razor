@@ -79,6 +79,12 @@
                 The other two places options come from: <code>ai.ConfigureUi(...)</code> sets the defaults of the whole app,
                 and the <code>UiOptions</code> of one <code>BitAiChat</code> configures that chat alone.
             </p>
+            <p>
+                The chat opens on a six-message conversation built in code, so there is something to restyle; what you send
+                goes to the transport registered for the site, which echoes it. Each option toggle (strings and the Show ones) builds a new
+                <code>BitAiUiOptions</code> record (<code>BitAiUiOptions.Default with { ... }</code>): the options are
+                immutable, and a new instance is what tells the provider to hand the change down.
+            </p>
         </DocSection>
 
         <DocSection Id="theming" Title="Theming">

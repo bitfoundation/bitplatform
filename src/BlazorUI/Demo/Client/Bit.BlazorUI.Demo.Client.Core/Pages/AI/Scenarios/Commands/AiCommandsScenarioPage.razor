@@ -19,7 +19,7 @@
     <ChildContent>
         <DocSection Id="demo" Title="Live demo"
                     Description="Start a message with / to pick a command, or type @@ anywhere to reference something.">
-            <DemoExample Title="A composer with commands and mentions" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <DemoExample Title="A composer with commands and mentions" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
                 <AiScenarioFrame>
                     <BitAiChat Session="_session"
                                Commands="_commands"
@@ -39,9 +39,18 @@
                 <code>/regenerate</code> never reach the model at all.
             </p>
             <p>
-                Mentions are offered from a list the application supplies (<code>BitAiMentionItem</code>). The composer
-                inserts the label; resolving it to content is the application's job, done by identifier rather than by
-                asking the model to guess which file or person was meant.
+                The handlers here are the session's own methods: <code>/regenerate</code> calls
+                <code>BitAiChatSession.RegenerateAsync()</code>, which discards the last answer and asks again, and
+                <code>/clear</code> stops any reply in flight (<code>Stop()</code>) and empties the conversation
+                (<code>Conversation.Clear()</code>).
+            </p>
+            <p>
+                Mentions are offered from a list the application supplies (<code>BitAiMentionItem</code>: an id, the label
+                inserted, a description and an icon). The composer inserts the label, so the transport receives plain text -
+                <code>@@roadmap.md</code> - in the user message. Resolving it to content is the application's job, done by
+                identifier rather than by asking the model to guess which file or person was meant; this transport only reads
+                the mentions back out of the text and names them, and summarizes when the message starts with
+                "Summarize", which is what the <code>/summarize</code> template writes.
             </p>
             <p>
                 Arrow keys move through the menu, Enter or Tab accepts, and Escape closes it - claiming the key, so a dialog

@@ -37,8 +37,31 @@
                 with ordinary parameters; nothing about it knows it is generative.
             </p>
             <p>
+                The transport writes its introduction as text, then sends one <code>BitAiGenerativeUiEvent</code> per card -
+                the registered name, <code>forecast_card</code>, and the properties as JSON - and ends with more text. Each
+                event becomes a <code>BitAiGenerativeUiPart</code> in the reply, between the text parts. Properties a model
+                writes as it goes can stream as well: the same event with <code>IsPartial</code> set, sent again as more
+                arrives, or <code>BitAiGenerativeUiDeltaEvent</code>s carrying the raw JSON a piece at a time; the card is
+                bound again as far as its properties have arrived.
+            </p>
+            <p>
                 <code>registry.DescribeAll()</code> produces the JSON Schema to put in the prompt, or to use as the schema of a
-                render tool. Give the model the schema and it stops guessing component names.
+                render tool. Give the model the schema and it stops guessing component names. <code>City</code> is required
+                here (the last argument of <code>Register</code>, or a <code>[Required]</code> on the parameter), and the
+                descriptions of the parameters go into the schema.
+            </p>
+            <p>
+                Binding is <code>BitAiGenerativePropsBinder.Bind(component, props)</code>, which the view runs on every
+                change. Its <code>BitAiGenerativeBindResult</code> holds the <code>Parameters</code> the card renders with,
+                and what did not bind: each <code>Failures</code> entry is a <code>BitAiGenerativeBindError</code> - its
+                <code>Kind</code> (<code>BitAiGenerativeBindErrorKind.Missing</code>, a required property left out, or
+                <code>Unreadable</code>, a value of the wrong shape, with the serializer's <code>Detail</code> and the
+                <code>ExpectedType</code>), its <code>PropertyName</code> and <code>ComponentName</code> - and
+                <code>IgnoredProperties</code> lists the names the component does not declare, which never reach it.
+                <code>IsComplete</code> says whether anything failed. None of it is fatal: the card renders with what did
+                bind. <code>ShowBindingErrors</code> of the view lists the failures under the card; an app runs the binder
+                itself to check a payload - to log what a model got wrong while a prompt is developed, as the
+                <b>Binding a payload</b> tab does.
             </p>
             <p>
                 Registering reads the component's parameters by reflection, so <code>Register</code> is marked as unsafe to
@@ -51,7 +74,7 @@
 
         <DocSection Id="components" Title="Components used">
             <ul>
-                <li><BitLink Href="/components/ai/generativeuiview"><code>BitAiGenerativeUiView</code></BitLink> - renders the component the model named, with the properties it supplied.</li>
+                <li><BitLink Href="/components/ai/generativeuiview"><code>BitAiGenerativeUiView</code></BitLink> - renders the component the model named, with the properties it supplied, and lists what did not bind (<code>ShowBindingErrors</code>).</li>
                 <li><BitLink Href="/components/ai/rendererboundary"><code>BitAiRendererBoundary</code></BitLink> - keeps a component that throws on what the model gave it to itself.</li>
             </ul>
         </DocSection>

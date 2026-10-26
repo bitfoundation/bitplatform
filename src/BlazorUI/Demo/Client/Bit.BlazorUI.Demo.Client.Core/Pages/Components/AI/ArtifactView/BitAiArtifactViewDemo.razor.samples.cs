@@ -143,8 +143,19 @@ private readonly BitAiArtifact jsonTableArtifact = Completed(BitAiArtifactKind.T
 <BitAiArtifactView Artifact="imageArtifact" />
 
 <BitAiArtifactView Artifact="svgArtifact" />
+
+<BitAiOptionsProvider UiOptions="clickToLoadOptions">
+    <BitAiArtifactView Artifact="imageArtifact" />
+</BitAiOptionsProvider>
+
+<BitAiOptionsProvider UiOptions="blockOptions">
+    <BitAiArtifactView Artifact="svgArtifact" />
+</BitAiOptionsProvider>
 """;
     private readonly string example5CsharpCode = CompletedSampleCode + """"
+
+private readonly BitAiUiOptions clickToLoadOptions = BitAiUiOptions.Default with { Images = BitAiImagePolicy.ClickToLoad };
+private readonly BitAiUiOptions blockOptions = BitAiUiOptions.Default with { Images = BitAiImagePolicy.Block };
 
 private readonly BitAiArtifact imageArtifact = Completed(BitAiArtifactKind.Image, "Mountain lake", null,
                                                           url: "/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg");
@@ -179,6 +190,76 @@ private readonly BitAiArtifact mermaidArtifact = Completed(new BitAiArtifactKind
 """";
 
     private readonly string example7RazorCode = """
+<CascadingValue Value="artifactRenderers" IsFixed="true">
+    <BitAiArtifactView Artifact="chartArtifact" />
+
+    <BitAiArtifactView Artifact="brokenChartArtifact" />
+</CascadingValue>
+""";
+    private readonly string example7CsharpCode = CompletedSampleCode + """"
+
+private readonly BitAiArtifact chartArtifact = Completed(BitAiArtifactKind.Chart, "Monthly sales", """
+    { "type": "bar", "labels": ["Jan", "Feb", "Mar"], "data": [120, 180, 150] }
+    """, "json");
+
+private readonly BitAiArtifact brokenChartArtifact = Completed(BitAiArtifactKind.Chart, "Quarterly sales", """
+    { "type": "bar", "labels": ["Q1", "Q2"] }
+    """, "json");
+
+// An app registers its renderers once, at startup:
+//   AddBitBlazorUIAIServices(ai => ai.ConfigureRenderers(renderers => renderers.RegisterArtifact(BitAiArtifactKind.Chart, RenderChart)));
+// That registry is one instance for the whole app, so a page that wants renderers of its own cascades a registry of its own.
+private readonly BitAiRendererRegistry artifactRenderers = CreateArtifactRenderers();
+
+private static BitAiRendererRegistry CreateArtifactRenderers()
+{
+    var renderers = new BitAiRendererRegistry();
+    renderers.RegisterArtifact(BitAiArtifactKind.Chart, RenderChart);
+    return renderers;
+}
+
+// Draws a { "labels": [...], "data": [...] } spec as bars, taller in the full-screen panel. A half-written spec is
+// waited for, and the labels are model output, so they are only ever written as text. (using System.Text.Json;)
+private static RenderFragment RenderChart(BitAiArtifactContext context) => builder =>
+{
+    if (context.IsLatest && context.Artifact.IsStreaming)
+    {
+        builder.AddContent(0, "Drawing the chart...");
+        return;
+    }
+
+    using var spec = JsonDocument.Parse(context.Content ?? "{}");
+    var labels = spec.RootElement.GetProperty("labels").EnumerateArray().Select(l => l.GetString()).ToArray();
+    var values = spec.RootElement.GetProperty("data").EnumerateArray().Select(v => v.GetDouble()).ToArray();
+    var max = Math.Max(1, values.Max());
+    var height = context.IsExpanded ? 24 : 8;
+
+    builder.OpenElement(1, "div");
+    builder.AddAttribute(2, "role", "img");
+    builder.AddAttribute(3, "aria-label", string.Join(", ", labels.Zip(values, (label, value) => $"{label} {value}")));
+    builder.AddAttribute(4, "style", "display: flex; align-items: flex-end; gap: 1rem; padding: 1rem;");
+
+    for (var i = 0; i < values.Length; i++)
+    {
+        builder.OpenElement(5, "div");
+        builder.AddAttribute(6, "style", "flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.25rem;");
+
+        builder.OpenElement(7, "div");
+        builder.AddAttribute(8, "style", $"width: 100%; height: {Math.Round(values[i] / max * height * 16)}px; border-radius: 0.25rem; background-color: var(--bit-clr-pri);");
+        builder.CloseElement();
+
+        builder.OpenElement(9, "span");
+        builder.AddContent(10, i < labels.Length ? labels[i] : null);
+        builder.CloseElement();
+
+        builder.CloseElement();
+    }
+
+    builder.CloseElement();
+};
+"""";
+
+    private readonly string example8RazorCode = """
 @implements IAsyncDisposable
 
 <BitButton OnClick="WriteReadmeAsync" Disabled="readmeSession.IsGenerating">@(ReadmeArtifact is null ? "Write a README" : "Revise it")</BitButton>
@@ -188,7 +269,7 @@ private readonly BitAiArtifact mermaidArtifact = Completed(new BitAiArtifactKind
     <BitAiArtifactView Artifact="readme" />
 }
 """;
-    private readonly string example7CsharpCode = """
+    private readonly string example8CsharpCode = """
 // A scripted transport that writes a README into the artifact art-readme, and revises it on the next turn (see the next tab).
 private readonly BitAiChatSession readmeSession = new(AiDemoContentTransports.Artifacts());
 private BitAiRenderScheduler? renderScheduler;
@@ -212,7 +293,7 @@ public async ValueTask DisposeAsync()
     await readmeSession.DisposeAsync();
 }
 """;
-    private const string example7TransportCode = """"
+    private const string example8TransportCode = """"
 public static IBitAiTransport Artifacts() =>
     new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
     {
@@ -288,12 +369,12 @@ public static IBitAiTransport Artifacts() =>
         await yielder(new BitAiMessageCompletedEvent());
     }));
 """";
-    private readonly DemoCodeFile[] example7CodeFiles =
+    private readonly DemoCodeFile[] example8CodeFiles =
     [
-        new("AiDemoContentTransports.cs", example7TransportCode),
+        new("AiDemoContentTransports.cs", example8TransportCode),
     ];
 
-    private readonly string example8RazorCode = """
+    private readonly string example9RazorCode = """
 <BitButton OnClick="RestoreFirstVersion">Restore version 1</BitButton>
 
 <BitAiArtifactView Artifact="pricingArtifact" />
@@ -307,19 +388,38 @@ public static IBitAiTransport Artifacts() =>
     }
 </ul>
 """;
-    private readonly string example8CsharpCode = PricingSampleCode + """
+    private readonly string example9CsharpCode = PricingSampleCode + """
 
 private void RestoreFirstVersion() => pricingArtifact.Restore(1);
 """;
 
-    private readonly string example9RazorCode = """
+    private readonly string example10RazorCode = """
 <BitAiArtifactView Artifact="pageArtifact" />
 
 <BitAiArtifactView Artifact="pricingArtifact" Disabled />
 """;
-    private readonly string example9CsharpCode = CompletedSampleCode + "\n" + PageSampleCode + "\n" + PricingSampleCode;
+    private readonly string example10CsharpCode = CompletedSampleCode + "\n" + PageSampleCode + "\n" + PricingSampleCode;
 
-    private readonly string example10RazorCode = """
+    private readonly string example11RazorCode = """
+<BitParams Parameters="artifactViewParams">
+    <BitAiArtifactView Artifact="programArtifact" />
+
+    <BitAiArtifactView Artifact="jsonArtifact" Styles="@(new() { Title = "font-style: italic" })" />
+</BitParams>
+""";
+    private readonly string example11CsharpCode = CompletedSampleCode + "\n" + ProgramSampleCode + """"
+
+private readonly BitAiArtifact jsonArtifact = Completed(BitAiArtifactKind.Json, "Settings", """
+    { "theme": "dark", "fontSize": 14, "autosave": true, "recent": ["README.md", "Program.cs"], "proxy": null }
+    """);
+
+private readonly BitAiArtifactViewParams[] artifactViewParams =
+[
+    new() { Styles = new() { Panel = "border-radius: 1rem", Header = "background-color: var(--bit-clr-pri-light)", Title = "color: var(--bit-clr-pri)" } },
+];
+"""";
+
+    private readonly string example12RazorCode = """
 <style>
     .custom-panel {
         border-width: 0.125rem;
@@ -344,16 +444,16 @@ private void RestoreFirstVersion() => pricingArtifact.Restore(1);
     <BitAiArtifactView Artifact="documentArtifact" />
 </div>
 """;
-    private readonly string example10CsharpCode = CompletedSampleCode + "\n" + ProgramSampleCode + "\n" + DocumentSampleCode;
+    private readonly string example12CsharpCode = CompletedSampleCode + "\n" + ProgramSampleCode + "\n" + DocumentSampleCode;
 
-    private readonly string example11RazorCode = """
+    private readonly string example13RazorCode = """
 <BitAiArtifactView Dir="BitDir.Rtl" Artifact="persianArtifact" />
 
 <div dir="rtl">
     <BitAiArtifactView Artifact="persianArtifact" />
 </div>
 """;
-    private readonly string example11CsharpCode = CompletedSampleCode + """"
+    private readonly string example13CsharpCode = CompletedSampleCode + """"
 
 private readonly BitAiArtifact persianArtifact = Completed(BitAiArtifactKind.Document, "یادداشت انتشار", """
     # یادداشت انتشار

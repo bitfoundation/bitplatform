@@ -33,9 +33,11 @@
             <b>ContextWindow</b> of the <b>BitAiGenerationMetadata</b> a transport reports (see
             <BitLink Href="/components/ai/tokenusageview">AiTokenUsageView</BitLink>). Accessibility: the bar is a meter
             (<b>role="meter"</b>, a reading that moves either way rather than a task that finishes), named "Context" and read
-            out as the count of tokens ("1,500 / 10,000 tokens"), and the warnings (<b>BitAiStrings.ContextWarning</b>,
-            <b>ContextCritical</b>) are announced once each. See it beside the model picker in the
-            <BitLink Href="/ai/scenarios/usage">Models and usage</BitLink> scenario.
+            out as the count of tokens ("1,500 / 10,000 tokens"), which is also its tooltip unless a <b>title</b> attribute is
+            given, and the warnings (<b>BitAiStrings.ContextWarning</b>, <b>ContextCritical</b>) are announced once each. These
+            texts, the label and the count (<b>Context</b>, <b>ContextUsage</b>) included, come from the strings in force, which a
+            <BitLink Href="/components/ai/optionsprovider">BitAiOptionsProvider</BitLink> localizes. See it beside the model
+            picker in the <BitLink Href="/ai/scenarios/usage">Models and usage</BitLink> scenario.
         </BitText>
     </NotesTemplate>
     <Examples>
@@ -111,10 +113,24 @@
             <div>Messages: <b>@tinySession.Conversation.Messages.Count</b></div>
         </DemoExample>
 
-        <DemoExample Title="Cascading parameters" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <DemoExample Title="Disabled" RazorCode="@example6RazorCode" Id="example6">
             <div>
-                <b>BitParams</b> with a <b>BitAiContextMeterParams</b> sets the marks and the look of every meter inside it, and a
-                meter's own value still wins (the last keeps the default Critical mark).
+                A disabled meter steps back - for a composer that cannot send right now: its label and percentage take the
+                disabled color, past the marks too, and its bar is dimmed. It still reads the tokens, names them in its tooltip and
+                announces the marks it crosses.
+            </div>
+            <br />
+            <BitAiContextMeter Disabled Used="42_000" Window="128_000" />
+            <br />
+            <BitAiContextMeter Disabled Used="124_000" Window="128_000" />
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <b>BitParams</b> with a <b>BitAiContextMeterParams</b> sets the marks (<b>Warn</b>, <b>Critical</b>) and the look of
+                every meter inside it; the figures - the conversation, the model and the counts - stay each meter's own. A meter's
+                own value still wins: under the cascaded marks of 0.5 and 0.6, 50% is a warning and 70% critical, while the last
+                meter sets its own <b>Critical</b> of 0.95 and is only warned at the same 70%.
             </div>
             <br />
             <BitParams Parameters="meterParams">
@@ -126,7 +142,7 @@
             </BitParams>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
+        <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> the label, the meter (a
                 <b>BitProgressClassStyles</b>), the percentage and the hidden live region. The public
@@ -153,7 +169,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example8RazorCode" Id="example8">
+        <DemoExample Title="RTL" RazorCode="@example9RazorCode" Id="example9">
             <div>
                 In right-to-left text the label, the meter and the percentage are laid out from right to left, and the bar fills
                 from the right - whether the direction comes from <b>Dir</b> or from a <b>dir</b> attribute around the meter.

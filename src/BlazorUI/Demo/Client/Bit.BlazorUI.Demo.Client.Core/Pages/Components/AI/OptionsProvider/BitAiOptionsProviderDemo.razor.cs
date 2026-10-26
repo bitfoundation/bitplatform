@@ -168,7 +168,10 @@ public partial class BitAiOptionsProviderDemo
                 new() { Name = "IgnoredProperty", Type = "string", DefaultValue = "$\"Ignored: {name}\"", Description = "IgnoredProperty(string name): Shown for a generated property the component does not declare, so it was not passed." },
                 new() { Name = "IgnoredPropertyHint", Type = "string", DefaultValue = "\"The component does not declare this property, so it was not passed.\"", Description = "Tooltip explaining an ignored generated property." },
                 new() { Name = "InputTokens", Type = "string", DefaultValue = "\"Input\"", Description = "Label for prompt tokens in the usage breakdown." },
+                new() { Name = "JsonArrayItem", Type = "string", DefaultValue = "$\"[{index}]\"", Description = "JsonArrayItem(int index): Accessible name of the toggle of an object or array that is an entry of an array of a JSON tree, by its zero-based position as JSON counts it." },
+                new() { Name = "JsonRoot", Type = "string", DefaultValue = "\"Root\"", Description = "Accessible name of the toggle of the outermost object or array of a JSON tree, which has no key." },
                 new() { Name = "Listening", Type = "string", DefaultValue = "\"Listening\"", Description = "Announced while dictation is running." },
+                new() { Name = "ListItem", Type = "string", DefaultValue = "$\"{label} {index}\"", Description = "ListItem(string label, int index): Accessible name of one entry of a list field - the group of fields of an entry of objects, the input of an entry of values - and the label its validation messages name; index is one-based." },
                 new() { Name = "LoadImage", Type = "string", DefaultValue = "$\"Load image: {description}\"", Description = "LoadImage(string description): Label of the click-to-load placeholder shown for an image the image policy did not load automatically." },
                 new() { Name = "Mentions", Type = "string", DefaultValue = "\"Mentions\"", Description = "Accessible name of the mention menu." },
                 new() { Name = "MissingProperty", Type = "string", DefaultValue = "$\"'{name}' is required by '{component}'\"", Description = "MissingProperty(string name, string component): Shown for a property a generated component requires that the model did not supply." },
@@ -207,6 +210,7 @@ public partial class BitAiOptionsProviderDemo
                 new() { Name = "StopDictation", Type = "string", DefaultValue = "\"Stop dictation\"", Description = "Label shown while dictation is active." },
                 new() { Name = "Submit", Type = "string", DefaultValue = "\"Submit\"", Description = "Default label on a form's submit button." },
                 new() { Name = "Submitted", Type = "string", DefaultValue = "\"Submitted\"", Description = "Shown in place of a form's actions once it has been submitted." },
+                new() { Name = "Table", Type = "string", DefaultValue = "\"Table\"", Description = "Accessible name of the box a table scrolls in sideways: a data table given no name of its own, and a table of Markdown." },
                 new() { Name = "Thinking", Type = "string", DefaultValue = "\"Thinking\"", Description = "Shown while the model is working but has produced nothing yet." },
                 new() { Name = "TimeToFirstToken", Type = "string", DefaultValue = "\"Time to first token\"", Description = "Name of the time to the first token in the token usage readout, read to assistive technologies before the duration the readout shows bare." },
                 new() { Name = "Today", Type = "string", DefaultValue = "\"Today\"", Description = "Group heading for conversations updated today." },
@@ -229,6 +233,49 @@ public partial class BitAiOptionsProviderDemo
                 new() { Name = "WaitingForYou", Type = "string", DefaultValue = "\"Waiting for your answer\"", Description = "Shown when an agent is waiting for the user." },
                 new() { Name = "Yesterday", Type = "string", DefaultValue = "\"Yesterday\"", Description = "Group heading for conversations updated yesterday." },
             ]
+        },
+        new()
+        {
+            Id = "component-base",
+            Title = "BitAiComponentBase",
+            Description = "The base class of every AI component: a BitComponentBase that also knows the options in force, their strings, and the renderers to use, each read from a cascading value. The options are the cascaded BitAiUiOptions (what a BitAiOptionsProvider cascades), else the ones registered with AddBitBlazorUIAIServices (ConfigureUi), else BitAiUiOptions.Default; the strings are the Strings of those options. The renderers are the cascaded BitAiRendererRegistry (a CascadingValue of one - see the Renderers of a region example of AiMessagePartView), else the one AddBitBlazorUIAIServices registers (ConfigureRenderers). A component that follows a stream re-renders through a BitAiRenderScheduler, at most once per RenderInterval of its options rather than once per token.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "CascadedOptions",
+                    Type = "BitAiUiOptions?",
+                    DefaultValue = "null",
+                    Description = "[CascadingParameter] The options cascaded by the nearest BitAiOptionsProvider, or by any CascadingValue of a BitAiUiOptions. While it is null, the registered options are used.",
+                    LinkType = LinkType.Link,
+                    Href = "#ui-options",
+                },
+                new()
+                {
+                    Name = "CascadedRenderers",
+                    Type = "BitAiRendererRegistry?",
+                    DefaultValue = "null",
+                    Description = "[CascadingParameter] The renderer registry cascaded to the component with a CascadingValue. While it is null, the registry registered with AddBitBlazorUIAIServices (ConfigureRenderers) is used. The registered one is app-wide - one instance for every user of a server-side app - so a page or a test with renderers of its own cascades a registry of its own rather than changing the registered one; it replaces the registered one for everything inside it.",
+                    LinkType = LinkType.Link,
+                    Href = "/components/ai/messagepartview#renderer-registry",
+                },
+            ],
+        },
+        new()
+        {
+            Id = "render-scheduler",
+            Title = "BitAiRenderScheduler",
+            Description = "Coalesces change notifications that arrive far faster than a browser can paint - a fast model streams hundreds of deltas a second - into at most one render per interval, which is what RenderInterval sets for the AI components. A page that follows a stream of its own uses one the same way: new BitAiRenderScheduler(() => InvokeAsync(StateHasChanged)), Request() on every change, FlushAsync() when the stream ends, and DisposeAsync() with the page. While a render is in flight, more requests only mark it dirty, so a slow renderer falls behind in renders, never in memory.",
+            Parameters =
+            [
+                new() { Name = "new(flush, interval?)", Type = "constructor", DefaultValue = "", Description = "flush (Func<Task>) is run when a render is due - InvokeAsync(StateHasChanged) for a component; interval (TimeSpan?) is the least time between two renders, DefaultInterval when it is null." },
+                new() { Name = "DefaultInterval", Type = "TimeSpan", DefaultValue = "TimeSpan.FromMilliseconds(50)", Description = "Static: one render every 50 milliseconds, twenty a second - continuous to the eye, and comfortable over a Blazor Server circuit on a poor connection. The default of BitAiUiOptions.RenderInterval." },
+                new() { Name = "Request()", Type = "void", DefaultValue = "", Description = "Asks for a render. Cheap and safe to call from any thread, on every token: the requests of one interval become one render." },
+                new() { Name = "FlushAsync()", Type = "Task", DefaultValue = "", Description = "Renders now, bypassing the interval. Call it when a stream ends, so its final state is not left waiting behind a timer." },
+                new() { Name = "RenderCount", Type = "int", DefaultValue = "0", Description = "How many renders the scheduler has run, for tests and diagnostics." },
+                new() { Name = "CoalescedCount", Type = "int", DefaultValue = "0", Description = "How many requests were folded into another render, for tests and diagnostics." },
+                new() { Name = "DisposeAsync()", Type = "ValueTask", DefaultValue = "", Description = "Stops the scheduler: a render still waiting for its interval is dropped, and a request after it does nothing." },
+            ],
         },
     ];
 

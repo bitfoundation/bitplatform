@@ -79,7 +79,32 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example4RazorCode" Id="example4">
+        <DemoExample Title="Disabled" RazorCode="@example4RazorCode" Id="example4">
+            <div>
+                A <b>Disabled</b> indicator is drawn dimmed, its dots held still at the frame they had reached - for a wait the app has
+                paused. It is still the live region that announces its label.
+            </div>
+            <br />
+            <BitAiThinkingIndicator Disabled Label="Paused until you reconnect" />
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>BitParams</b> with a <b>BitAiThinkingIndicatorParams</b> sets the look of every indicator inside it - the ones a chat
+                message renders included - and an indicator's own value still wins (the last one brings its own <b>Styles</b>). The
+                <b>Label</b> is never cascaded: it says what one wait is about.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitParams Parameters="thinkingParams">
+                    <BitAiThinkingIndicator />
+                    <BitAiThinkingIndicator Label="Searching the documentation" />
+                    <BitAiThinkingIndicator Label="Reading 3 attachments" Styles="@(new() { Loading = new() { Label = "font-weight: bold" } })" />
+                </BitParams>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
             <div>
                 <b>Style</b> and <b>Class</b> land on the root, <b>Styles.Loading</b> and <b>Classes.Loading</b> on the parts of the
                 <b>BitBouncingDotsLoading</b> it draws (its dots and its label). The public <b>--bit-AiThinkingIndicator-*</b> variables set the
@@ -101,11 +126,20 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example5RazorCode" Id="example5">
-            <div>Use BitAiThinkingIndicator in right-to-left (RTL).</div>
+        <DemoExample Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                In right-to-left text the dots lead from the right and the label follows them - whether the direction comes from
+                <b>Dir</b> or from a <b>dir</b> attribute around the indicator. The default label is the <b>Thinking</b> text of the
+                <b>BitAiStrings</b> in force - here a subclass of them, cascaded by a <b>BitAiOptionsProvider</b>.
+            </div>
             <br />
-            <div dir="rtl">
-                <BitAiThinkingIndicator Dir="BitDir.Rtl" Label="در حال فکر کردن" />
+            <div class="example-stack">
+                <BitAiThinkingIndicator Dir="BitDir.Rtl" Label="در حال جستجوی مستندات" />
+                <BitAiOptionsProvider UiOptions="persianOptions">
+                    <div dir="rtl">
+                        <BitAiThinkingIndicator />
+                    </div>
+                </BitAiOptionsProvider>
             </div>
         </DemoExample>
     </Examples>

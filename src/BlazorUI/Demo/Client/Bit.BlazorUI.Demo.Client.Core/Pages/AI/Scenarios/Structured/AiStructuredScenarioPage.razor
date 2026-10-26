@@ -45,6 +45,48 @@
             <CodeBox Language="csharp">// {"items":[{"name":"Ac  ->  {"items":[{"name":"Ac"}]}
 var value = BitAiPartialJson.TryParse(part.RawJson);
 var options = part.As(MyJsonContext.Default.ListOption);</CodeBox>
+            <p>
+                The <code>SchemaName</code> of the deltas (<code>options</code> here) names the shape, which is what picks a
+                renderer registered for it (<code>renderers.RegisterStructured(name, ...)</code>, as the
+                <BitLink Href="/ai/scenarios/forms">Forms</BitLink> scenario does). A transport whose provider returns the
+                whole value at once sends one <code>BitAiStructuredDataEvent(value)</code> instead.
+            </p>
+        </DocSection>
+
+        <DocSection Id="response-format" Title="Asking for a shape"
+                    Description="Ask for a comparison, then turn the response format off and ask again: the same transport answers with data matching the requested schema, or with text.">
+            <DemoExample Title="A response format in the request" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" CodeFiles="@example2CodeFiles" Id="example2">
+                <AiScenarioFrame AsideLabel="Request options">
+                    <Aside>
+                        <BitText Element="h4" Typography="BitTypography.Subtitle2">Request options</BitText>
+                        <BitToggle Label="Ask for JSON matching the schema" @bind-Value="_askForJson" @bind-Value:after="ApplyResponseFormat" />
+                        <BitText Element="p" Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+                            ResponseFormat: <code>@(_askForJson ? "FromSchema(schema, \"options\")" : "null")</code>
+                        </BitText>
+                    </Aside>
+                    <ChildContent>
+                        <BitAiChat Session="_formatSession"
+                                   EmptyTitle="Ask for a comparison"
+                                   Suggestions="_suggestions" />
+                    </ChildContent>
+                </AiScenarioFrame>
+            </DemoExample>
+            <p>
+                The model is constrained by the request, not by the UI. A session's <code>RequestOptions</code> (a
+                <code>BitAiRequestOptions</code>, sent with every request) carry a <code>ResponseFormat</code>:
+                <code>BitAiResponseFormat.Text</code> (free text, the default), <code>BitAiResponseFormat.Json</code> (any
+                JSON), or <code>BitAiResponseFormat.FromSchema(schema, name)</code> (JSON matching a JSON Schema, the name
+                some providers require) - its <code>Kind</code>, a <code>BitAiResponseFormatKind</code>, says which. The
+                transport hands the format to its provider; this one, which plays the provider, answers with structured
+                data named after the requested schema, and with a Markdown table when no format is asked for.
+            </p>
+            <p>
+                The toggle replaces the session's options (<code>session.Options = session.Options with { ... }</code>):
+                they are an immutable record the session reads at the start of every request, so the next question goes
+                out with the new format. The schema here is written by hand; on .NET 9 or later
+                <code>BitAiTool.CreateSchema(MyJsonContext.Default.ListOption)</code> derives one from the app's own type,
+                the same one the value is read back into.
+            </p>
         </DocSection>
 
         <DocSection Id="components" Title="Components used">
@@ -52,6 +94,7 @@ var options = part.As(MyJsonContext.Default.ListOption);</CodeBox>
                 <li><BitLink Href="/components/ai/structureddataview"><code>BitAiStructuredDataView</code></BitLink> - the structured part: a registered renderer, else a default that reads the shape.</li>
                 <li><BitLink Href="/components/ai/datatable"><code>BitAiDataTable</code></BitLink> - an array of objects as a table.</li>
                 <li><BitLink Href="/components/ai/jsonview"><code>BitAiJsonView</code></BitLink> - any other value, as a collapsible tree.</li>
+                <li><BitLink Href="/components/ai/markdownview"><code>BitAiMarkdownView</code></BitLink> - the table the second demo writes as text when no format is asked for.</li>
             </ul>
         </DocSection>
     </ChildContent>

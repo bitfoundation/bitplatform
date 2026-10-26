@@ -1,7 +1,8 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Services.AI;
 
 /// <summary>
-/// The scripted responses behind the tool scenarios: a model that asks for one tool, and one that asks for two at once.
+/// The scripted responses behind the tool scenarios: a model that asks for one tool, one that also asks the user's
+/// approval for it, and one that asks for two at once.
 /// </summary>
 public static class AiDemoToolTransports
 {
@@ -48,6 +49,45 @@ public static class AiDemoToolTransports
             }
 
             var reply = outcome.IsSuccess ? answer : declinedAnswer ?? $"I did not run {toolName}, so nothing was changed.";
+
+            await foreach (var evt in AiScript.Write(reply, 4, 12, token)) await yielder(evt);
+            await yielder(AiScript.Usage(request, reply));
+            await yielder(new BitAiMessageCompletedEvent());
+        }));
+
+    /// <summary>
+    /// Calls a tool and asks for the user's decision on it itself, the way a provider whose own policy requires consent
+    /// does - whatever the application's approval policy would have decided - then answers using the outcome.
+    /// </summary>
+    /// <param name="toolName">The tool to call.</param>
+    /// <param name="arguments">The arguments to send, as JSON.</param>
+    /// <param name="reason">Why the decision is asked for, shown in the approval prompt.</param>
+    /// <param name="answer">The answer to give once the tool has returned.</param>
+    /// <param name="declinedAnswer">The answer to give when the call did not run.</param>
+    /// <returns>The transport.</returns>
+    /// <remarks>
+    /// The <see cref="BitAiToolApprovalRequestedEvent"/> puts the call in <see cref="BitAiToolCallStatus.AwaitingApproval"/>
+    /// with its reason, and the session that runs it waits for the user as it would for its own policy.
+    /// </remarks>
+    public static IBitAiTransport CallsToolAskingApproval(string toolName, string arguments, string reason, string answer, string declinedAnswer) =>
+        new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
+        {
+            var outcome = AiScript.ToolOutcomeThisTurn(request);
+
+            await yielder(new BitAiMessageStartedEvent());
+
+            if (outcome is null)
+            {
+                await AiScript.Pause(400, token);
+
+                var callId = BitAiId.NewToolCallId();
+                await yielder(new BitAiToolCallStartedEvent(callId, toolName) { Arguments = AiScript.Json(arguments) });
+                await yielder(new BitAiToolApprovalRequestedEvent(callId) { Reason = reason });
+                await yielder(new BitAiMessageCompletedEvent(BitAiFinishReason.ToolCalls));
+                return;
+            }
+
+            var reply = outcome.IsSuccess ? answer : declinedAnswer;
 
             await foreach (var evt in AiScript.Write(reply, 4, 12, token)) await yielder(evt);
             await yielder(AiScript.Usage(request, reply));

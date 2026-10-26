@@ -10,6 +10,7 @@
           Description="BitAiGenerativeUiView renders a component the model chose, with the properties it produced. The model names a component and the view looks the name up in the generative UI registry - never a type name in the payload - so a model can only ever instantiate a component the app deliberately registered, and only set the parameters listed on it. Properties that are still streaming bind as far as they have arrived, so a card fills in as the model writes it; a name nothing is registered under renders a quiet placeholder, and the component runs inside an error boundary, so neither takes the answer around it down."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
           CssVariables="componentCssVariables"
           GitHubAIUrl="GenerativeUiView/BitAiGenerativeUiView.razor"
           GitHubDemoUrl="AI/GenerativeUiView/BitAiGenerativeUiViewDemo.razor">
@@ -125,15 +126,54 @@
             <div>
                 A value of the wrong shape is skipped rather than thrown, and a property the component does not declare is
                 ignored rather than passed - the card renders with what did bind. <b>ShowBindingErrors</b> lists both under the
-                component once the part is complete: the errors (a value that did not bind, a required property left out) and
-                the ignored names, kept apart since only the first means the card is missing something. Useful while writing
-                the prompt, noise in production.
+                component once the part is complete: the errors - here an <b>Unreadable</b> value (<b>degrees</b> is no number;
+                hover its tag for what the serializer said) and a <b>Missing</b> one (<b>City</b>, which the registration
+                requires) - and the ignored names (<b>wind</b>), kept apart since only the first mean the card is missing
+                something. Their texts are the strings of the options in force (see the tables below). Useful while writing the
+                prompt, noise in production; the next example reads the same outcome in code.
             </div>
             <br />
             <BitAiGenerativeUiView Part="faultyPart" ShowBindingErrors />
         </DemoExample>
 
-        <DemoExample Title="Cascading parameters" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <DemoExample Title="Binding in code" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                The view binds through <b>BitAiGenerativePropsBinder.Bind(component, props)</b>, which an app can call itself - to
+                log what a model got wrong, or to check a payload before it is shown. It returns a <b>BitAiGenerativeBindResult</b>:
+                the <b>Parameters</b> that bound, keyed by the name the component declares; the <b>Failures</b>, each a
+                <b>BitAiGenerativeBindError</b> whose <b>Kind</b> is <b>Unreadable</b> (a value that cannot be read as the
+                declared type, with that <b>ExpectedType</b> and what the serializer said, its <b>Detail</b>) or <b>Missing</b> (a
+                required property left out), written in English in <b>Errors</b> for a log; the <b>IgnoredProperties</b>, names
+                the component does not offer; and <b>IsComplete</b>, true when nothing failed.
+            </div>
+            <br />
+            <div>
+                The TicketCard here is a component of this page, registered in a registry of its own rather than the app's. Its
+                schema (<b>BitAiGenerativeComponent.Schema</b>, below) shows what a registration leaves out: <b>TenantId</b> is
+                marked <b>[BitAiGenerativeIgnore]</b> and <b>OnBuy</b> is a callback, so neither is offered to the model, and the
+                payload's values for them are ignored like the made-up <b>color</b>.
+            </div>
+            <br />
+            <BitAiJsonView Value="ticketCard.Schema" />
+            <br />
+            <div>IsComplete: <b>@ticketBinding.IsComplete</b></div>
+            <ul>
+                @foreach (var (name, value) in ticketBinding.Parameters)
+                {
+                    <li>Bound: <b>@name</b> = @value</li>
+                }
+                @foreach (var failure in ticketBinding.Failures)
+                {
+                    <li>@failure.Kind: <b>@failure.PropertyName</b> - @failure</li>
+                }
+                @foreach (var name in ticketBinding.IgnoredProperties)
+                {
+                    <li>Ignored: <b>@name</b></li>
+                }
+            </ul>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>
                 <b>BitParams</b> with a <b>BitAiGenerativeUiViewParams</b> sets the defaults of every view inside it - one place
                 to turn <b>ShowBindingErrors</b> on for a whole conversation while a prompt is being developed. A view's own
@@ -147,7 +187,7 @@
             </BitParams>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> each part: the container of the
                 component, the placeholder tag, the diagnostics and their tags. The component itself is the app's, styled as the
@@ -169,7 +209,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <DemoExample Title="RTL" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
                 In right-to-left text the container, the placeholder and the diagnostics start on the right, whether the
                 direction comes from <b>Dir</b> or from a <b>dir</b> attribute around the view; the component inherits the

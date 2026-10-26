@@ -32,6 +32,15 @@
             page with its own options and theme in the <BitLink Href="/ai/scenarios/options-theming">Options & theming</BitLink>
             scenario.
         </BitText>
+        <br />
+        <BitText>
+            The AI components read the options through the base class they share, <b>BitAiComponentBase</b> (see the tables below):
+            a cascading <b>BitAiUiOptions</b>, which is all the provider hands down - any <b>CascadingValue</b> of one works the same
+            way. They find their custom renderers the same way, in a cascaded <b>BitAiRendererRegistry</b> before the registered one,
+            which is how a region gets renderers of its own (see the Renderers of a region example of
+            <BitLink Href="/components/ai/messagepartview">AiMessagePartView</BitLink>). For one chat alone,
+            <BitLink Href="/components/ai/chat">BitAiChat</BitLink> takes a <b>UiOptions</b> parameter of its own.
+        </BitText>
     </NotesTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
@@ -73,8 +82,9 @@
         <DemoExample Title="Nested providers" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>
                 An inner provider overrides the outer one for its own content. It replaces the options rather than merging into
-                them, so build it from the outer ones to change one setting: below, the inner region keeps the German strings and
-                turns the inline citations off. A provider with no <b>UiOptions</b> hands on the outer ones.
+                them, so build it from the outer ones to change one setting: below, the first inner region keeps the German strings
+                and turns the inline citations off. A provider with no <b>UiOptions</b> hands on the outer ones: the second inner
+                region is German, with its citations on.
             </div>
             <br />
             <BitAiOptionsProvider UiOptions="germanOptions">
@@ -83,6 +93,13 @@
                 <br />
                 <div class="example-region">
                     <BitAiOptionsProvider UiOptions="innerOptions">
+                        <BitAiStreamingMarkdown Text="@answer" Citations="citations" />
+                        <BitAiSourceList Citations="citations" />
+                    </BitAiOptionsProvider>
+                </div>
+                <br />
+                <div class="example-region">
+                    <BitAiOptionsProvider>
                         <BitAiStreamingMarkdown Text="@answer" Citations="citations" />
                         <BitAiSourceList Citations="citations" />
                     </BitAiOptionsProvider>
@@ -109,7 +126,8 @@
                 <b>RenderInterval</b> is the least time between two renders of a component following a stream (50ms by default):
                 every change in between is folded into the next render. It is the single most important performance dial -
                 raising it saves circuit traffic on Blazor Server. Both views below follow one run whose usage changes every 50ms;
-                the second, under a provider with a one-second interval, renders once a second.
+                the second, under a provider with a one-second interval, renders once a second. The components render through a
+                <b>BitAiRenderScheduler</b> (see the tables below), which a page following a stream of its own can use too.
             </div>
             <br />
             <BitButton OnClick="StartStreamingRun" Disabled="isStreaming">Start the run</BitButton>

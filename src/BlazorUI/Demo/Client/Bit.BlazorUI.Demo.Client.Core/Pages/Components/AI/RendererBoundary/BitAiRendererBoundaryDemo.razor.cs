@@ -75,6 +75,17 @@ public partial class BitAiRendererBoundaryDemo
 
 
 
+    private readonly BitAiRendererBoundaryParams[] rendererBoundaryParams =
+    [
+        new()
+        {
+            Style = "padding: 0.5rem; border-radius: 0.5rem; background-color: var(--bit-clr-bg-sec);",
+            Styles = new() { Notice = new() { Root = "border-style: dashed;", Text = "font-style: italic;" } },
+        },
+    ];
+
+
+
     private const string aucklandForecast = """{"city":"Auckland","degrees":22,"condition":"Showers"}""";
     private string streamed = "";
     private bool isStreaming;

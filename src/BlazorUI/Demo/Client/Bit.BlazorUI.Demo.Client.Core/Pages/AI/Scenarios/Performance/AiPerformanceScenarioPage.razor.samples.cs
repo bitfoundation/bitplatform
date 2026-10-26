@@ -33,6 +33,13 @@ public static BitAiConversation Long(int messageCount)
     var conversation = new BitAiConversation();
     conversation.SetTitle($"{messageCount} message conversation");
 
+    var source = new BitAiCitationSource("s1", "Performance notes")
+    {
+        Kind = BitAiSourceKind.Document,
+        SiteName = "Internal wiki",
+        Url = "https://example.com/perf",
+    };
+
     for (var i = 0; i < messageCount; i += 2)
     {
         conversation.AddMessage(BitAiRole.User, $"Question {i / 2 + 1}: what happens at scale here?");
@@ -54,6 +61,14 @@ public static BitAiConversation Long(int messageCount)
                 assistant.AddCitation(new BitAiCitation(BitAiId.New("cit"), source));
                 break;
         }
+
+        // What a transport would have reported: the model, and the tokens the answer took.
+        assistant.MergeMetadata(new BitAiGenerationMetadata
+        {
+            ModelId = AiDemoCatalog.DefaultModelId,
+            ContextWindow = 200_000,
+            Usage = new BitAiTokenUsage { InputTokens = 120 + i, OutputTokens = 60 + (i % 90) },
+        });
 
         conversation.AddMessage(assistant);
     }

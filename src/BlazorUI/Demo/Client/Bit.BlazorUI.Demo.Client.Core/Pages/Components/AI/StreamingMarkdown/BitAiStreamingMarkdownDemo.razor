@@ -25,10 +25,14 @@
         </BitText>
         <br />
         <BitText>
-            It needs no chat session: hand it the text received so far. Inside a chat, BitAiTextPartView renders every text part
-            with it. Re-render it at a steady pace rather than on every token - a <b>BitAiRenderScheduler</b> (or the render
-            interval of the AI components) collapses any number of deltas into one render per 50 ms, which on Blazor Server is
-            what keeps the circuit quiet. The parser is built from the Markdown options in force
+            It needs no chat session: hand it the text received so far. Inside a chat,
+            <BitLink Href="/components/ai/textpartview">AiTextPartView</BitLink> renders every text part with it, and the
+            <BitLink Href="/components/ai/reasoningpartview">reasoning</BitLink> of a message and a document
+            <BitLink Href="/components/ai/artifactview">artifact</BitLink> use it too. Re-render it at a steady
+            pace rather than on every token - a <b>BitAiRenderScheduler</b> (see below; the AI components use
+            <b>BitAiUiOptions.RenderInterval</b>) collapses any number of deltas into one render per 50 ms, which on Blazor Server
+            is what keeps the circuit quiet. Its <b>BitAiIncrementalMarkdownParser</b> (see below) is public too, for a view of
+            your own that renders streamed Markdown with a BitAiMarkdownView. The parser is built from the Markdown options in force
             (<b>BitAiUiOptions.Markdown</b>, see <BitLink Href="/components/ai/markdownview">AiMarkdownView</BitLink>) and the
             output is untrusted: raw HTML is escaped and script URLs are neutralised. See it at work in the
             <BitLink Href="/ai/scenarios/streaming">Streaming</BitLink> scenario.
@@ -87,19 +91,40 @@
 
         <DemoExample Title="Markdown options" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
-                The parser follows <b>BitAiUiOptions.Markdown</b>, and is built again when a different options instance is
-                cascaded, so the parser and the renderer always agree. Chat-tuned models often write one line per sentence and mean
-                the line breaks: <b>SoftBreaksAsHardBreaks</b> keeps them. Keep each options instance in a field - a new one on every
-                render would rebuild the parser every time.
+                The parser follows <b>BitAiUiOptions.Markdown</b> (a <BitLink Href="/components/ai/markdownview#markdown-options">BitAiMarkdownOptions</BitLink>),
+                and is built again when a different options instance is cascaded, so the parser and the renderer always agree.
+                Chat-tuned models often write one line per sentence and mean the line breaks: <b>SoftBreaksAsHardBreaks</b> keeps
+                them (the first text). <b>HideDanglingDelimiters</b>, on by default, keeps the opening <b>**</b> of a bold run that
+                has not closed yet out of sight while the text streams (the second text, frozen mid-word with <b>IsStreaming</b>);
+                turned off, the asterisks flash on the way in. Make a new options instance only when a choice changes and keep it
+                in a field - a new one on every render would rebuild the parser every time.
             </div>
             <br />
-            <BitToggle @bind-Value="keepLineBreaks" Text="SoftBreaksAsHardBreaks" />
-            <BitAiOptionsProvider UiOptions="@(keepLineBreaks ? hardBreakOptions : softBreakOptions)">
+            <BitToggle @bind-Value="keepLineBreaks" @bind-Value:after="UpdateMarkdownOptions" Text="SoftBreaksAsHardBreaks" />
+            <BitToggle @bind-Value="hideDanglingDelimiters" @bind-Value:after="UpdateMarkdownOptions" Text="HideDanglingDelimiters" />
+            <BitAiOptionsProvider UiOptions="markdownOptions">
                 <BitAiStreamingMarkdown Text="@lineBreakMarkdown" />
+                <br />
+                <BitAiStreamingMarkdown Text="@danglingMarkdown" IsStreaming />
             </BitAiOptionsProvider>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <DemoExample Title="Cascading parameters" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>BitParams</b> with a <b>BitAiStreamingMarkdownParams</b> sets the look of every streaming Markdown inside it - the
+                text parts of a chat included - here the headings of its <b>Markdown</b> view in the primary color. A parameter of
+                the component itself still wins, and wins whole: the second sets <b>Styles</b> of its own, which take the place of
+                the cascaded ones.
+            </div>
+            <br />
+            <BitParams Parameters="streamingParams">
+                <BitAiStreamingMarkdown Text="@styleMarkdown" />
+                <br />
+                <BitAiStreamingMarkdown Text="@styleMarkdown" Styles="@(new() { Markdown = new() { ListItem = "font-style: italic;" } })" />
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> its parts: <b>Markdown</b> takes the
                 classes and styles of every part of the Markdown view the text is drawn with. The streaming Markdown publishes no CSS
@@ -124,7 +149,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <DemoExample Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 In right-to-left text the Markdown reads from the right and the caret trails the text at its left end, whether the
                 direction comes from <b>Dir</b> or from a <b>dir</b> attribute around it.

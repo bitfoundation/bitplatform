@@ -63,6 +63,24 @@
                 moves the conversation onto a new session for that model; the old session only has to stop.
             </p>
             <p>
+                The choice reaches the transport in the session's <code>RequestOptions</code>, a
+                <code>BitAiRequestOptions</code> sent with every request (<code>BitAiRequest.Options</code>): here its
+                <code>ModelId</code> and <code>Temperature</code>. It also carries <code>ProviderId</code>,
+                <code>TopP</code>, <code>MaxOutputTokens</code>, <code>StopSequences</code>, <code>Seed</code>,
+                <code>SystemPrompt</code>, the <code>ToolChoice</code> (<BitLink Href="/ai/scenarios/tools">Tool calling</BitLink>),
+                the <code>ResponseFormat</code> (<BitLink Href="/ai/scenarios/structured">Structured output</BitLink>) and an
+                <code>Extra</code> dictionary for provider settings with no field of their own. Every one is optional, and a
+                transport ignores what its provider cannot express. A session's <code>Options</code> can also be replaced
+                between turns, when the transport itself stays the same.
+            </p>
+            <p>
+                The transport reports back what it used: a <code>BitAiMetadataEvent</code> with the model, the provider, the
+                context window and the temperature, merged into the reply's metadata, and a
+                <code>BitAiUsageUpdatedEvent</code> with the input, output and cached tokens and the cost. Usage is cumulative
+                within one stream - a later report replaces an earlier one, so a provider's running totals can be forwarded
+                as they come - and the streams of one turn add up, one per tool round trip.
+            </p>
+            <p>
                 Every field of the accounting is optional, because providers report different subsets of it. The components do
                 the arithmetic they can: throughput from the output tokens over the streaming window, cost from the rates in
                 the model catalog (<code>BitAiModel.EstimateCost</code>), and the share of the context window the conversation

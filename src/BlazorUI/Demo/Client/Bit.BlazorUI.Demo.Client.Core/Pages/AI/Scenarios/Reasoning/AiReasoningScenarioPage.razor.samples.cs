@@ -21,6 +21,7 @@ public ValueTask DisposeAsync() => session.DisposeAsync();
 """;
 
     private const string example1TransportCode = """"
+// AiScriptedTransport and AiScript are the demo's helpers - see the Basic chat scenario.
 public static IBitAiTransport Reasoning() => new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
 {
     await yielder(new BitAiMessageStartedEvent());

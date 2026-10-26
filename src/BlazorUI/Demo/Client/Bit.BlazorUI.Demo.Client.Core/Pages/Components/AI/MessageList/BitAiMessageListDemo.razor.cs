@@ -29,7 +29,7 @@ public partial class BitAiMessageListDemo
             Name = "EmptyTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content rendered instead of an empty list, while the conversation has no message to show.",
+            Description = "The content rendered instead of an empty list, while the conversation has no message to show - the system messages the list hides do not count.",
         },
         new()
         {
@@ -84,7 +84,7 @@ public partial class BitAiMessageListDemo
             Name = "OnPinnedChange",
             Type = "EventCallback<bool>",
             DefaultValue = "",
-            Description = "The callback for when the view stops or starts following the newest message: false when the user scrolls away from it, true when they scroll back to it or ScrollToLatestAsync brings them there. It is reported once per change, not on every scroll.",
+            Description = "The callback for when the view stops or starts following the newest message: false when the user scrolls away from it (or, with BitAiUiOptions.AutoScroll off, when the newest message grows out of view), true when they scroll back to it or ScrollToLatestAsync brings them there. It is reported once per change, not on every scroll.",
         },
         new()
         {
@@ -122,7 +122,7 @@ public partial class BitAiMessageListDemo
             Name = "IsPinned",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the view is following new content, that is the reader is at the newest message.",
+            Description = "Whether the reader is at the newest message, where the view follows new content (unless BitAiUiOptions.AutoScroll is off).",
         },
         new()
         {
@@ -223,14 +223,14 @@ public partial class BitAiMessageListDemo
                     DefaultValue = "",
                     Description = "The token usage summed across every assistant message.",
                     LinkType = LinkType.Link,
-                    Href = "/components/ai/tokenusageview"
+                    Href = "/components/ai/tokenusageview#token-usage"
                 },
                 new()
                 {
                     Name = "Artifacts / Runs",
                     Type = "IReadOnlyDictionary<string, BitAiArtifact> / IReadOnlyDictionary<string, BitAiAgentRun>",
                     DefaultValue = "",
-                    Description = "The artifacts produced and the agent runs made in this conversation, keyed by their identifiers."
+                    Description = "The artifacts produced and the agent runs made in this conversation, keyed by their identifiers. They belong to the thread rather than to a message, so a revision in a later turn updates the one artifact."
                 },
                 new()
                 {
@@ -238,6 +238,13 @@ public partial class BitAiMessageListDemo
                     Type = "Dictionary<string, object?>",
                     DefaultValue = "[]",
                     Description = "Application-defined values attached to the conversation."
+                },
+                new()
+                {
+                    Name = "Version",
+                    Type = "int",
+                    DefaultValue = "0",
+                    Description = "A number that goes up on every change of the conversation, for a cheap check of whether anything changed since it was last read."
                 },
                 new()
                 {
@@ -280,6 +287,24 @@ public partial class BitAiMessageListDemo
                     Type = "void",
                     DefaultValue = "",
                     Description = "Sets the title of the conversation."
+                },
+                new()
+                {
+                    Name = "GetOrAddArtifact(artifactId, kind, title) / FindArtifact(artifactId)",
+                    Type = "BitAiArtifact / BitAiArtifact?",
+                    DefaultValue = "",
+                    Description = "Finds an artifact of the conversation, creating it with that kind and title when it does not exist yet - or only finds it, null when there is none.",
+                    LinkType = LinkType.Link,
+                    Href = "/components/ai/artifactview#artifact"
+                },
+                new()
+                {
+                    Name = "GetOrAddRun(runId) / FindRun(runId)",
+                    Type = "BitAiAgentRun / BitAiAgentRun?",
+                    DefaultValue = "",
+                    Description = "Finds an agent run of the conversation, creating it when it does not exist yet - or only finds it, null when there is none.",
+                    LinkType = LinkType.Link,
+                    Href = "/components/ai/agentrunview#agent-run"
                 },
                 new()
                 {
@@ -378,6 +403,8 @@ public partial class BitAiMessageListDemo
 
     private BitAiMessageList? followList;
     private bool isPinned = true;
+    private bool autoScroll = true;
+    private readonly BitAiUiOptions manualScrollOptions = new() { AutoScroll = false };
     private readonly BitAiChatSession followSession = new(AiDemoTransports.Markdown(), AiDemoConversations.Long(12));
 
     private void HandlePinnedChange(bool pinned)
@@ -452,6 +479,18 @@ public partial class BitAiMessageListDemo
 
     private bool isDisabled = true;
     private readonly BitAiChatSession disabledSession = new(AiDemoTransports.Echo(), CreateConversation());
+
+
+    private readonly BitAiMessageListParams[] listParams =
+    [
+        new()
+        {
+            HideSystemMessages = false,
+            Styles = new() { Root = "border:1px dashed var(--bit-clr-brd-pri);border-radius:0.5rem" },
+        }
+    ];
+    private readonly BitAiConversation cascadeConversation = CreateSystemConversation();
+    private readonly BitAiConversation cascadeOwnConversation = CreateSystemConversation();
 
 
     private readonly BitAiConversation styleConversation = CreateConversation();

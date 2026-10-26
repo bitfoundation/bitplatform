@@ -63,7 +63,7 @@ public sealed record BitAiModel
     /// <summary>Identifier of the provider that serves this model.</summary>
     public string? ProviderId { get; init; }
 
-    /// <summary>A short description shown under the name in the picker.</summary>
+    /// <summary>A short description, shown as the tooltip of the model in the picker.</summary>
     public string? Description { get; init; }
 
     /// <summary>A family or tier label used to group models in the picker.</summary>

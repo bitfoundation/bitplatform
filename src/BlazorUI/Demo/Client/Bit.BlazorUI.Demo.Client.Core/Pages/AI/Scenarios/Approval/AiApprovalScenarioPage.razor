@@ -4,11 +4,11 @@
 <PageOutlet Url="ai/scenarios/approval"
             Title="AI tool approval"
             Keywords="human in the loop, tool approval UI, destructive tool confirmation, BitAiToolApproval, approval policy, agent safety"
-            Description="A destructive tool that stops and waits for a human in a bit BlazorUI AI chat: allow once, allow always, or decline, with the turn genuinely paused while it waits." />
+            Description="A destructive tool that stops and waits for a human in a bit BlazorUI AI chat: allow once, allow always, or decline, with the turn genuinely paused while it waits - whether the app's approval policy or the provider asks for the decision." />
 
 <DocsArticle Eyebrow="AI scenarios"
              Title="Tool approval"
-             Lead="A destructive tool stops and waits for a human. Allow once, allow always, or decline."
+             Lead="A destructive tool stops and waits for a human. Allow once, allow always, or decline - and a provider can ask for the same decision itself."
              GitHubUrl="AI/Scenarios/Approval/AiApprovalScenarioPage.razor">
 
     <Badges>
@@ -29,7 +29,29 @@
             </DemoExample>
         </DocSection>
 
+        <DocSection Id="transport-approval" Title="Approval the transport asks for"
+                    Description="Ask about the weather: get_weather is read-only, so this app's policy would run it unattended - but this transport asks for the user's consent itself, and says why.">
+            <DemoExample Title="A decision the transport asks for" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" CodeFiles="@example2CodeFiles" Id="example2">
+                <AiScenarioFrame>
+                    <BitAiChat Session="_transportSession"
+                               EmptyTitle="Ask about the weather"
+                               EmptyBody="The transport asks for consent before get_weather runs, whatever the app's policy says."
+                               Suggestions="_transportSuggestions" />
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
         <DocSection Id="how-it-works" Title="How it works">
+            <p>
+                The transport asks for the tool as any tool call is asked for (<code>BitAiToolCallStartedEvent</code>, the
+                arguments streamed as <code>BitAiToolCallDeltaEvent</code>s, <code>BitAiToolCallCompletedEvent</code>) and
+                ends the reply with <code>BitAiFinishReason.ToolCalls</code>. Before the session runs the call, it asks the
+                approval policy (<code>IBitAiToolApprovalPolicy.RequiresApprovalAsync(definition, invocation)</code>). When a
+                decision is needed it moves the call to <code>AwaitingApproval</code> and raises
+                <code>BitAiChatSession.ApprovalRequested</code>, and the call's card shows the prompt, whose buttons record
+                the decision with <code>BitAiChatSession.Approve(toolCallId, decision)</code> - <code>Approved</code>,
+                <code>ApprovedAlways</code> or <code>Rejected</code>.
+            </p>
             <p>
                 Allowing once and allowing always are different decisions. Collapsing them into a single button forces the
                 user either to re-approve constantly or to grant more than they meant to, so both are offered, beside a
@@ -40,11 +62,21 @@
                 tool whose <code>Risk</code> is <code>Destructive</code> (or that says <code>RequiresApproval</code>) and
                 remembers the tools a user allowed always - which is why it is scoped on Blazor Server, where a singleton
                 would carry one user's "always" over to every other user. <code>ai.UseApprovalPolicy&lt;T&gt;()</code>
-                replaces it.
+                replaces it, for a decision that depends on the arguments or on the user.
             </p>
             <p>
                 While a call waits, the turn is genuinely paused: the tool has not run, the model has not been asked again,
-                and stopping the turn cancels the wait. A declined call is sent back to the model as a failure it can explain.
+                and stopping the turn cancels the wait. A declined call is marked <code>Rejected</code> and given a failed
+                result, which the transport reads off the call on the next request, so the model can explain that nothing
+                was done.
+            </p>
+            <p>
+                A provider whose own policy wants consent asks for it with a <code>BitAiToolApprovalRequestedEvent</code>,
+                as the second demo's transport does right after starting the call. It puts the call in
+                <code>AwaitingApproval</code> with its <code>Reason</code>, which the prompt shows as the question, and the
+                session waits for the user just as it would for its own policy - even for a tool that policy runs
+                unattended, and whatever the user allowed always before: the request is the provider's, not the policy's
+                to overrule. The session still runs the tool once it is allowed, so the tool is registered as usual.
             </p>
         </DocSection>
 

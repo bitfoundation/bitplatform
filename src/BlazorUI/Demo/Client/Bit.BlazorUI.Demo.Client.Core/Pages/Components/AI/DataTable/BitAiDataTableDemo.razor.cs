@@ -146,6 +146,19 @@ public partial class BitAiDataTableDemo
         await optionsSession.DisposeAsync();
     }
 
+    private readonly JsonElement benchmarks = Parse("""
+        [
+          { "model": "Demo Large", "contextWindow": 200000, "maxOutput": 32000, "inputPrice": 15, "outputPrice": 75, "latencyMs": 820, "tokensPerSecond": 64, "vision": true, "tools": true, "jsonMode": true, "region": "eu-west", "released": "2026-03-01" },
+          { "model": "Demo Fast", "contextWindow": 128000, "maxOutput": 16000, "inputPrice": 1.5, "outputPrice": 6, "latencyMs": 240, "tokensPerSecond": 180, "vision": true, "tools": true, "jsonMode": true, "region": "us-east", "released": "2026-06-15" },
+          { "model": "Local Small", "contextWindow": 32000, "maxOutput": 4000, "inputPrice": 0, "outputPrice": 0, "latencyMs": 120, "tokensPerSecond": 95, "vision": false, "tools": false, "jsonMode": true, "region": "on-device", "released": "2025-11-30" }
+        ]
+        """);
+
+    private readonly BitAiDataTableParams[] dataTableParams =
+    [
+        new() { Styles = new() { HeaderCell = "text-transform: uppercase", Row = "font-variant-numeric: tabular-nums" } },
+    ];
+
     private readonly JsonElement persianModels = Parse("""
         [
           { "مدل": "دمو بزرگ", "پنجره زمینه": 200000, "قیمت": 15 },

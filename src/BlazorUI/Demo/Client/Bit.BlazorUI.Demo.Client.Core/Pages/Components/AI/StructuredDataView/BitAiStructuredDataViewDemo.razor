@@ -82,12 +82,17 @@
 
         <DemoExample Title="Registered renderers" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" CodeFiles="@example4CodeFiles" Id="example4">
             <div>
-                A part whose <b>SchemaName</b> has a renderer registered with <b>RegisterStructured</b> is drawn by it instead.
-                This site registers one for <b>booking_form</b> that turns the JSON Schema a model streams into a
+                A part whose <b>SchemaName</b> has a renderer registered with <b>BitAiRendererRegistry.RegisterStructured</b>
+                (see the tables below) is drawn by it instead. The renderer is a <b>BitAiStructuredDataRenderer</b>, handed a
+                <b>BitAiStructuredDataContext</b>: the <b>Part</b>, which may still be streaming, and the <b>Message</b> it belongs
+                to. This site registers one at startup (<b>ConfigureRenderers</b> of <b>AddBitBlazorUIAIServices</b>, the
+                Program.cs tab) for <b>booking_form</b>, which turns the JSON Schema a model streams into a
                 <BitLink Href="/components/ai/form">BitAiForm</BitLink> for the user to check - so the transport proposing a
                 booking below gets a form rather than raw JSON. The renderer runs inside a
                 <BitLink Href="/components/ai/rendererboundary">BitAiRendererBoundary</BitLink>: one that throws is replaced
-                by a notice, and the answer around it stays.
+                by a notice, and the answer around it stays. A region that wants renderers of its own cascades a registry of its
+                own; the whole registry is described on the
+                <BitLink Href="/components/ai/messagepartview#renderer-registry">AiMessagePartView</BitLink> page.
             </div>
             <br />
             <BitButton OnClick="ProposeBookingAsync" Disabled="bookingSession.IsGenerating">Book a table for Friday</BitButton>
@@ -101,7 +106,22 @@
             }
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <DemoExample Title="Cascading parameters" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>BitParams</b> with a <b>BitAiStructuredDataViewParams</b> sets the <b>Classes</b> and <b>Styles</b> of the parts
+                - and the parameters every component shares, such as <b>Dir</b> - of every view inside it, rather than the part and
+                the message a single view shows. A view keeps what it sets itself: the second one gives <b>Styles</b> of its own,
+                so the cascaded ones do not reach it.
+            </div>
+            <br />
+            <BitParams Parameters="structuredDataViewParams">
+                <BitAiStructuredDataView Part="flightPart" />
+                <br />
+                <BitAiStructuredDataView Part="flightPart" Styles="@(new() { Label = "font-style: italic" })" />
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> each part of the list of labelled
                 values. The public <b>--bit-AiStructuredDataView-*</b> variables (see the CSS variables table) inherit, so set on
@@ -123,7 +143,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <DemoExample Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 In right-to-left text the list of labelled values reads from the right - its labels and its values start
                 there - whether the direction comes from <b>Dir</b> or from a <b>dir</b> attribute around the view. A table

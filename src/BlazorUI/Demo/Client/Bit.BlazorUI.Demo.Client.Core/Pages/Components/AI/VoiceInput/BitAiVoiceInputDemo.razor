@@ -30,14 +30,18 @@
             browser once it is on the page, so it is never part of a prerendered page either. Where nothing shows in the examples
             below, try a Chromium browser or Safari. The browser asks for the microphone the first time it is pressed, and does
             the recognition itself - some (Chrome, for one) in their vendor's cloud service, so do not offer it for speech that
-            must not leave the device. One dictation runs at a time on a page.
+            must not leave the device. One dictation runs at a time on a page: starting one in a second voice input stops the
+            first, which raises its <b>OnListeningChanged</b> as if it had stopped on its own.
         </BitText>
         <br />
         <BitText>
             The button says what a press does next (Dictate, then Stop dictation) - its name alone, with no pressed state on top
             of it to read ambiguously - and is drawn pressed while the microphone is on, and a polite live region announces when
-            the dictation starts, stops or fails. A phrase still being spoken when the button stops the dictation is kept: it
-            arrives through <b>OnTranscript</b> once the recognizer has committed to it. A
+            the dictation starts, stops or fails (Listening, Dictation stopped, Dictation failed: not-allowed). These texts come
+            from the strings in force (<b>StartDictation</b>, <b>StopDictation</b>, <b>Listening</b>, <b>DictationStopped</b>,
+            <b>DictationFailed</b>), which a <BitLink Href="/components/ai/optionsprovider">BitAiOptionsProvider</BitLink>
+            localizes. A phrase still being spoken when the button stops the dictation is kept: it arrives through
+            <b>OnTranscript</b> once the recognizer has committed to it. A
             <BitLink Href="/components/ai/promptinput">BitAiPromptInput</BitLink> with <b>AllowDictation</b> already carries one;
             see the <BitLink Href="/ai/scenarios/attachments">attachments scenario</BitLink> for it in a chat.
         </BitText>
@@ -58,14 +62,16 @@
             <div>
                 <b>OnInterim</b> carries the provisional text as the user speaks - it changes with every syllable - and an empty one
                 once that text is final or gone. <b>OnListeningChanged</b> is raised when the dictation starts or stops, however that
-                happens (the button, a silence the browser ends it on, an error); <b>IsListening</b> says the same at any time.
+                happens (the button, a silence the browser ends it on, an error, or another voice input of the page starting its own
+                dictation - one runs at a time, so try any other button of this page); <b>IsListening</b> says the same at any time.
             </div>
             <br />
-            <BitAiVoiceInput OnTranscript="HandleListeningTranscript"
+            <BitAiVoiceInput @ref="listeningInput"
+                             OnTranscript="HandleListeningTranscript"
                              OnInterim="HandleInterim"
                              OnListeningChanged="HandleListeningChanged" />
             <br />
-            <div>Listening: <b>@isListening</b></div>
+            <div>Listening: <b>@isListening</b> (IsListening: <b>@(listeningInput?.IsListening)</b>)</div>
             <div>Provisional: <i>@interim</i></div>
             <div>Final: <b>@listeningTranscript</b></div>
         </DemoExample>

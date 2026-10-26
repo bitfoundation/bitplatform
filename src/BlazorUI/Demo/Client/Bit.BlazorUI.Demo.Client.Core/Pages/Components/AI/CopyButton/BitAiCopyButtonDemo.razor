@@ -87,10 +87,23 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Cascading parameters" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <DemoExample Title="Disabled" RazorCode="@example5RazorCode" Id="example5">
+            <div>
+                A <b>Disabled</b> copy button copies nothing, whoever presses it - the click a screen reader or a script still
+                delivers to a disabled button included - and raises no <b>OnCopied</b>. A button with no <b>Content</b> is disabled
+                the same way.
+            </div>
+            <br />
+            <div style="display:flex;align-items:center;gap:1rem">
+                <BitAiCopyButton Disabled Content="Nothing to see here" />
+                <BitAiCopyButton Disabled Content="Nothing to see here" ShowLabel />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
                 <b>BitParams</b> with a <b>BitAiCopyButtonParams</b> sets <b>ShowLabel</b>, <b>ConfirmationDuration</b> and the look of
-                every copy button inside it; a parameter of the button itself still wins.
+                every copy button inside it; a parameter of the button itself still wins (the third hides its label).
             </div>
             <br />
             <BitParams Parameters="copyButtonParams">
@@ -100,17 +113,6 @@
                     <BitAiCopyButton Content="Third snippet" ShowLabel="false" />
                 </div>
             </BitParams>
-        </DemoExample>
-
-        <DemoExample Title="Disabled" RazorCode="@example6RazorCode" Id="example6">
-            <div>
-                A disabled copy button copies nothing, whoever presses it.
-            </div>
-            <br />
-            <div style="display:flex;align-items:center;gap:1rem">
-                <BitAiCopyButton Disabled Content="Nothing to see here" />
-                <BitAiCopyButton Disabled Content="Nothing to see here" ShowLabel />
-            </div>
         </DemoExample>
 
         <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">

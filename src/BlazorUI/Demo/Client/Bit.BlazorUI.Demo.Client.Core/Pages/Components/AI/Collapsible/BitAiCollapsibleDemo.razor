@@ -27,8 +27,11 @@
             BitAiCollapsible needs no chat session: it is a plain panel the other AI components are built from. Its header is a
             button inside a heading that carries <b>aria-expanded</b> and <b>aria-controls</b>, so a screen reader announces
             whether it is open and Enter or Space toggles it. The <b>SuffixTemplate</b> sits beside the heading rather than in
-            the button, so a status chip is not read as part of the name of the toggle. See it at work around the
-            reasoning of a model in the <BitLink Href="/ai/scenarios/reasoning">Reasoning</BitLink> scenario.
+            the button, so a status chip is not read as part of the name of the toggle. The panel is drawn by a
+            <BitLink Href="/components/accordion">BitAccordion</BitLink>, whose parts and <b>--bit-Accordion-*</b> variables
+            restyle it. See it at work around the reasoning of a model in the
+            <BitLink Href="/components/ai/reasoningpartview">AiReasoningPartView</BitLink> and the
+            <BitLink Href="/ai/scenarios/reasoning">Reasoning</BitLink> scenario.
         </BitText>
     </NotesTemplate>
     <Examples>
@@ -114,7 +117,29 @@
             </BitAiCollapsible>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
+        <DemoExample Title="Cascading parameters" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>BitParams</b> with a <b>BitAiCollapsibleParams</b> sets the look of every panel inside it - the reasoning panels a
+                chat draws included - here a title in the primary color. A panel's own value still wins, and wins whole: the last
+                one sets <b>Styles</b> of its own, which take the place of the cascaded ones.
+            </div>
+            <br />
+            <BitParams Parameters="collapsibleParams">
+                <BitAiCollapsible Title="Searched the documentation">
+                    Three pages matched.
+                </BitAiCollapsible>
+                <br />
+                <BitAiCollapsible Title="Planned the answer">
+                    Compare the two render modes.
+                </BitAiCollapsible>
+                <br />
+                <BitAiCollapsible Title="Styled on its own" Styles="@(new() { Accordion = new() { Title = "font-style: italic;" } })">
+                    Italic, and not in the primary color.
+                </BitAiCollapsible>
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> its parts: <b>Accordion</b> takes the
                 classes and styles of every part of the BitAccordion that draws the panel. The collapsible publishes no CSS variables
@@ -150,7 +175,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example6RazorCode" Id="example6">
+        <DemoExample Title="RTL" RazorCode="@example7RazorCode" Id="example7">
             <div>
                 In right-to-left text the chevron leads from the right, whether the direction comes from <b>Dir</b> or from a
                 <b>dir</b> attribute around the panel.

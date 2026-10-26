@@ -9,7 +9,7 @@ public partial class BitAiAttachmentChipDemo
             Name = "Attachment",
             Type = "BitAiAttachment",
             DefaultValue = "",
-            Description = "The attachment to render. Required.",
+            Description = "The attachment to show: its Name, its Kind (the thumbnail or glyph before the name) and, under the name, its Size, its upload Progress or its Error, as its Status says. Required.",
             LinkType = LinkType.Link,
             Href = "#attachment",
         },
@@ -240,11 +240,11 @@ public partial class BitAiAttachmentChipDemo
             Description = "The broad category of an attachment, which decides its default preview.",
             Items =
             [
-                new() { Name = "File", Description = "Anything without a more specific category.", Value = "0" },
-                new() { Name = "Image", Description = "A raster or vector image, previewed as a thumbnail.", Value = "1" },
-                new() { Name = "Audio", Description = "An audio clip, previewed with a player.", Value = "2" },
-                new() { Name = "Video", Description = "A video clip, previewed with a player.", Value = "3" },
-                new() { Name = "Document", Description = "A PDF or other paginated document.", Value = "4" },
+                new() { Name = "File", Description = "Anything without a more specific category. The chip shows the glyph of a page.", Value = "0" },
+                new() { Name = "Image", Description = "A raster or vector image. The chip shows its ThumbnailUrl, else its Url, where the image policy shows it outright, and the glyph of a picture otherwise.", Value = "1" },
+                new() { Name = "Audio", Description = "An audio clip. The chip shows the glyph of a microphone.", Value = "2" },
+                new() { Name = "Video", Description = "A video clip. The chip shows the glyph of a video camera.", Value = "3" },
+                new() { Name = "Document", Description = "A PDF or other paginated document. The chip shows the glyph of a page, as for any other file.", Value = "4" },
             ]
         },
         new()
@@ -254,10 +254,10 @@ public partial class BitAiAttachmentChipDemo
             Description = "Where the upload of an attachment is, so the chip can show its progress or its failure.",
             Items =
             [
-                new() { Name = "Pending", Description = "Selected locally and not yet uploaded.", Value = "0" },
-                new() { Name = "Uploading", Description = "Upload in progress; see Progress.", Value = "1" },
-                new() { Name = "Ready", Description = "Available to the model.", Value = "2" },
-                new() { Name = "Failed", Description = "The upload failed; see Error.", Value = "3" },
+                new() { Name = "Pending", Description = "Selected locally and not yet uploaded. The chip shows the size, as it does once the file is ready.", Value = "0" },
+                new() { Name = "Uploading", Description = "Upload in progress. The chip shows the Progress as a percentage (0% while it is null).", Value = "1" },
+                new() { Name = "Ready", Description = "Available to the model. The chip shows the size, when it is known.", Value = "2" },
+                new() { Name = "Failed", Description = "The upload failed. The chip shows the Error (the UploadFailed text of the strings in force when it is null) in the error color.", Value = "3" },
             ]
         },
     ];
@@ -330,6 +330,13 @@ public partial class BitAiAttachmentChipDemo
     };
 
     private string rtlRemoved = "nothing yet";
+
+    private readonly BitAiUiOptions blockImagesOptions = BitAiUiOptions.Default with { Images = BitAiImagePolicy.Block };
+
+    private readonly BitAiAttachmentChipParams[] attachmentChipParams =
+    [
+        new() { Styles = new() { Tag = new() { Root = "border-radius:1rem" }, Thumbnail = "border-radius:50%" } }
+    ];
 
     private async Task UploadAsync()
     {

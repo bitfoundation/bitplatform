@@ -39,15 +39,17 @@
         <BitText>
             The buttons are named for a screen reader and a pressed feedback button says so through <b>aria-pressed</b>, its glyph
             drawn solid and in the primary color, so the choice is never carried by the color alone. The hidden actions are
-            only faded out: they stay reachable with the keyboard, and they are always shown on a touch screen, under a
-            preference for more contrast, and when <b>Pinned</b>.
+            only faded out: they stay reachable with the keyboard, and they are always shown on a touch screen, on a phone-wide
+            screen, under a preference for more contrast, and when <b>Pinned</b>. A printout keeps the metadata and leaves the
+            buttons out.
         </BitText>
     </NotesTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <div>
-                Give it the <b>Message</b> it belongs to: hover the row to reveal copy and feedback. The model and the token
-                usage beside them are always shown.
+                Give it the <b>Message</b> it belongs to: hover the row, or tab to it, to reveal copy and feedback. The metadata
+                beside them is never hidden: the model and the token usage here, which this site's options turn on
+                (<b>ShowModelName</b> and <b>ShowUsage</b> are off by default; see the Options example).
             </div>
             <br />
             <div>@message.GetText()</div>
@@ -67,8 +69,10 @@
         <DemoExample Title="Feedback" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>
                 <b>OnFeedback</b> reports the sentiment the user picked - and <b>None</b> when they press the chosen one again
-                to withdraw it. The message's <b>Feedback</b> is already updated, so a host only has to persist it.
-                <b>ShowFeedback</b> takes the thumbs away.
+                to withdraw it. The message's <b>Feedback</b> is already updated, so a host only has to persist it. Under a
+                BitAiChatMessage, a BitAiMessageList or a BitAiChat, the same choice reaches their own <b>OnFeedback</b> as a
+                <BitLink Href="/components/ai/chatmessage#message-feedback">BitAiMessageFeedback</BitLink>, paired with its
+                message. <b>ShowFeedback</b> takes the thumbs away.
             </div>
             <br />
             <div>@feedbackMessage.GetText()</div>
@@ -155,8 +159,10 @@
         <DemoExample Title="Cascading parameters" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>
                 <b>BitParams</b> with a <b>BitAiMessageActionsParams</b> sets what the rows of an app agree on - whether they
-                are pinned, whether they offer feedback, their classes and styles - for every row inside it, the rows the
-                BitAiChatMessage of a chat renders included; a row's own value wins (the second keeps its feedback).
+                are pinned, whether they offer feedback, their classes and styles - for every row inside it; a row's own value
+                wins (the second keeps its feedback). <b>Pinned</b> and <b>ShowFeedback</b> reach the rows a BitAiChatMessage
+                renders under its replies too, while their classes and styles come from the message's own
+                <b>Styles</b> / <b>Classes</b> (its <b>MessageActions</b> member).
             </div>
             <br />
             <BitParams Parameters="actionsParams">

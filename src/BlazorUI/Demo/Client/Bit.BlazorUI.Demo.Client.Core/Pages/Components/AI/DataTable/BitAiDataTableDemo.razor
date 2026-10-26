@@ -77,7 +77,33 @@
             }
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <DemoExample Title="Wide tables" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                A table wider than the room it has scrolls sideways in its own box rather than widening the page or the
+                conversation around it. While it overflows, the box is a group in the tab order - Tab to it and scroll it with the
+                arrow keys - named by the <b>AriaLabel</b> of the table, or the Table text of the strings in force when it has none.
+                A <b>tabindex</b> written on the table (an attribute, passed through) decides that for it instead.
+            </div>
+            <br />
+            <BitAiDataTable Rows="benchmarks" AriaLabel="Benchmark results" />
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>BitParams</b> with a <b>BitAiDataTableParams</b> sets the <b>Classes</b> and <b>Styles</b> of the parts - and the
+                parameters every component shares, such as <b>Dir</b> or <b>AriaLabel</b> - of every table inside it, rather than
+                the rows a single table shows. A table keeps what it sets itself: the second one gives <b>Styles</b> of its own,
+                so the cascaded ones do not reach it.
+            </div>
+            <br />
+            <BitParams Parameters="dataTableParams">
+                <BitAiDataTable Rows="models" />
+                <br />
+                <BitAiDataTable Rows="models" Styles="@(new() { Cell = "font-style: italic" })" />
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root - the box the table scrolls in - and <b>Styles</b> and
                 <b>Classes</b> each part. The public <b>--bit-AiDataTable-*</b> variables (see the CSS variables table)
@@ -98,7 +124,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <DemoExample Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 In right-to-left text the columns run from the right and every cell starts on its right edge, whether the
                 direction comes from <b>Dir</b> or from a <b>dir</b> attribute around the table.

@@ -39,9 +39,60 @@
                 provider's SDK, and nothing on the UI side changes.
             </p>
             <p>
+                Sending a message is one turn. The session appends the user message (<code>BitAiChatSession.SubmitAsync</code>),
+                opens an empty assistant message, and calls the transport's one method,
+                <code>StreamAsync(BitAiRequest, CancellationToken)</code>. The <code>BitAiRequest</code> carries the
+                conversation so far (<code>Messages</code>, oldest first, each an <code>IBitAiMessage</code> with its parts and
+                attachments), its <code>ConversationId</code>, the session's generation settings (<code>Options</code>), the
+                definitions of the tools the model may call (<code>Tools</code>) and the scoped <code>Services</code>. The
+                transport answers with a stream of <code>BitAiEvent</code>s, which the session applies to the assistant
+                message as they arrive. This echo sends the smallest useful sequence:
+            </p>
+            <ol>
+                <li><code>BitAiMessageStartedEvent</code> - the reply has begun, so the thinking indicator can show at once.</li>
+                <li><code>BitAiTextDeltaEvent</code>, three characters at a time - each one appended to the reply's text part.</li>
+                <li><code>BitAiUsageUpdatedEvent</code> - the tokens it used, shown under the reply (the site turns <code>ShowUsage</code> on).</li>
+                <li><code>BitAiMessageCompletedEvent</code> - the reply is finished, and the message actions appear under it.</li>
+            </ol>
+            <p>
+                Only the text deltas are required: the session opens the message itself on the first one, and closes it when
+                the stream ends. The stop button cancels the token the transport was handed, so a transport that honours it
+                promptly stops at once and keeps what it had written; one that fails reports it with a
+                <code>BitAiErrorEvent</code> rather than throwing (see <BitLink Href="/ai/scenarios/errors">Errors and retry</BitLink>).
+                The <b>AiScriptedTransport.cs</b> tab holds the helpers every scenario's script is written with
+                (<code>AiScriptedTransport</code>, <code>AiScript</code>); the <b>EchoTransport.cs</b> tab is the same echo
+                as a class of its own, without them - the shape of the class an app writes.
+            </p>
+            <p>
                 Press Enter to send, Shift and Enter for a newline. The composer grows as you type and stops at twelve
                 rows; while a reply streams, its send button becomes a stop button. The chat takes the height of its
                 container, so give that container one.
+            </p>
+        </DocSection>
+
+        <DocSection Id="registration" Title="Registration">
+            <p>
+                <code>AddBitBlazorUIAIServices</code> registers the package (and the core services it builds on, so it
+                replaces the <code>AddBitBlazorUIServices</code> line), then hands its callback a <code>BitAiBuilder</code>,
+                which configures everything else in one statement:
+            </p>
+            <ul>
+                <li><code>UseTransport&lt;TTransport&gt;()</code>, <code>UseTransport(transport)</code> or <code>UseTransport(services =&gt; ...)</code> - the transport the factory's sessions stream from: a scoped type, one shared instance, or one built from services.</li>
+                <li><code>AddTool(tool)</code> and <code>AddTool&lt;TTool&gt;()</code> - the tools the model may call (<BitLink Href="/ai/scenarios/tools">Tool calling</BitLink>).</li>
+                <li><code>UseApprovalPolicy&lt;TPolicy&gt;()</code> - which calls wait for a human decision (<BitLink Href="/ai/scenarios/approval">Tool approval</BitLink>).</li>
+                <li><code>AddModels(models, providers, defaultModelId)</code> - the models the user can pick between (<BitLink Href="/ai/scenarios/usage">Models and usage</BitLink>).</li>
+                <li><code>UseConversationStore&lt;TStore&gt;()</code> - where conversations are kept (<BitLink Href="/ai/scenarios/conversations">Conversations</BitLink>).</li>
+                <li><code>ConfigureSessions(options =&gt; options with { ... })</code> - the <code>BitAiChatSessionOptions</code> every session of the factory starts with: the tool loop limit, text pacing, the timeout, the request options (<BitLink Href="/ai/scenarios/streaming">Streaming</BitLink>, <BitLink Href="/ai/scenarios/parallel-tools">Parallel tools</BitLink>).</li>
+                <li><code>ConfigureUi(options =&gt; options with { ... })</code> - the presentation defaults of the components (<BitLink Href="/ai/scenarios/options-theming">Options &amp; theming</BitLink>).</li>
+                <li><code>ConfigureRenderers(renderers =&gt; ...)</code> - the app's own views for a tool, a structured schema, an artifact kind or a part kind (<BitLink Href="/ai/scenarios/custom-tool">Custom tool UI</BitLink>, <BitLink Href="/ai/scenarios/forms">Forms</BitLink>).</li>
+                <li><code>ConfigureGenerativeUi(registry =&gt; ...)</code> - the components model output may render (<BitLink Href="/ai/scenarios/generative">Generative UI</BitLink>).</li>
+                <li><code>Services</code> - the service collection itself, for anything else the transport or the tools need.</li>
+            </ul>
+            <p>
+                Calling <code>AddBitBlazorUIAIServices</code> again with another callback adds to what an earlier call set
+                up - a module of the app can register its own tools - since nothing is registered twice. Its
+                <code>trySingleton</code> flag is for WebAssembly and Hybrid only: on Blazor Server the default approval
+                policy remembers one user's "allow always", and a singleton would share it with every other user.
             </p>
         </DocSection>
 
@@ -51,6 +102,9 @@
                 <li><BitLink Href="/components/ai/messagelist"><code>BitAiMessageList</code></BitLink> and <BitLink Href="/components/ai/chatmessage"><code>BitAiChatMessage</code></BitLink> - the transcript it renders.</li>
                 <li><BitLink Href="/components/ai/promptinput"><code>BitAiPromptInput</code></BitLink> - the composer under it.</li>
                 <li><BitLink Href="/components/ai/emptystate"><code>BitAiEmptyState</code></BitLink> - the title, the line under it and the starter prompts of an empty conversation.</li>
+                <li><BitLink Href="/components/ai/thinkingindicator"><code>BitAiThinkingIndicator</code></BitLink> - what shows between sending and the first character of the reply.</li>
+                <li><BitLink Href="/components/ai/messageactions"><code>BitAiMessageActions</code></BitLink> - the row under a finished reply: copy, regenerate, feedback and its usage.</li>
+                <li><BitLink Href="/components/ai/scrolltolatest"><code>BitAiScrollToLatest</code></BitLink> - the way back to the newest message after scrolling up.</li>
             </ul>
         </DocSection>
     </ChildContent>

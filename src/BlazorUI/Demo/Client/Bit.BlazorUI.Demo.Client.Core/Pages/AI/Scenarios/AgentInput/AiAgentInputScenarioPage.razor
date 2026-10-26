@@ -30,9 +30,19 @@
 
         <DocSection Id="how-it-works" Title="How it works">
             <p>
-                Blocked, not finished. On <code>BitAiAgentInputRequestedEvent</code> the run moves to
-                <code>WaitingForInput</code> and carries the question plus optional one-tap answers. Choosing one - or typing
-                one - submits it as a user message, and the agent continues from the step it stopped at.
+                Blocked, not finished. The transport plans three steps, completes the first, starts the second, and sends
+                <code>BitAiAgentInputRequestedEvent(runId, prompt)</code> with its <code>Suggestions</code> before ending the
+                reply. The run moves to <code>WaitingForInput</code> and carries the question (<code>PendingPrompt</code>)
+                and the one-tap answers (<code>PendingSuggestions</code>); the step it was on is <code>Blocked</code> until
+                the answer comes, rather than drawn as running with a clock that keeps going.
+            </p>
+            <p>
+                Choosing an answer - or typing one into the run's own box - calls
+                <code>BitAiChatSession.RespondToAgentAsync(runId, answer)</code>, which resumes the run, appends the answer as
+                a user message and starts the next turn. The transport finds the answer in the request and continues the
+                same run from the step it stopped at, addressing it by the run id it used before. "Ask me again later"
+                answers nothing: the agent skips the step and ends the run <code>Cancelled</code> instead of booking a
+                window nobody chose.
             </p>
             <p>
                 This is the difference between an agent that asks and an agent that guesses. The state is explicit, so the UI

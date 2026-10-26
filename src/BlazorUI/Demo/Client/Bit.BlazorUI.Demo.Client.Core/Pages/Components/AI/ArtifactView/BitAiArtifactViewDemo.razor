@@ -58,6 +58,13 @@
             panel sits in does not close on the same press. The button standing in for an image the image policy holds back
             hands the focus on to the image it loads.
         </BitText>
+        <br />
+        <BitText>
+            Its texts - Download, Expand, Collapse, the Version label and its "Version N" items, "Load image: ..." and the
+            notice of a renderer that failed - come from the strings in force (<b>BitAiStrings</b>), which a
+            <BitLink Href="/components/ai/optionsprovider">BitAiOptionsProvider</BitLink> localizes; the copy button is a
+            <BitLink Href="/components/ai/copybutton">BitAiCopyButton</BitLink>.
+        </BitText>
     </NotesTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
@@ -107,24 +114,34 @@
 
         <DemoExample Title="Images" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
-                An <b>Image</b> is shown from its <b>Url</b> (or a data URL as its content), named by its title. An <b>Svg</b>
-                written as markup is shown as an image too, so a script inside it never runs, and downloads as an .svg file. Both
-                follow the image policy of the options, as the images of a message do: under <b>ClickToLoad</b> the body is a button,
-                named after the artifact, that loads the image, and under <b>Block</b> it is the title alone.
+                An <b>Image</b> is shown from its <b>Url</b> (or a data URL as its content), named by its title; shown from an
+                address it has no text to copy or download, so those two buttons are off. An <b>Svg</b> written as markup is shown
+                as an image too, so a script inside it never runs (the badge below carries one), and downloads as an .svg file.
+                Both follow the image policy of the options in force (<b>BitAiUiOptions.Images</b>, set here for a panel through a
+                <BitLink Href="/components/ai/optionsprovider">BitAiOptionsProvider</BitLink>), as the images of a message do:
+                under <b>ClickToLoad</b> (the third panel) the body is a button, named after the artifact, that loads the image
+                - press it - and under <b>Block</b> (the last) it is the title alone, even for an SVG that is fetched from nowhere.
             </div>
             <br />
             <BitAiArtifactView Artifact="imageArtifact" />
             <br />
             <BitAiArtifactView Artifact="svgArtifact" />
+            <br />
+            <BitAiOptionsProvider UiOptions="clickToLoadOptions">
+                <BitAiArtifactView Artifact="imageArtifact" />
+            </BitAiOptionsProvider>
+            <br />
+            <BitAiOptionsProvider UiOptions="blockOptions">
+                <BitAiArtifactView Artifact="svgArtifact" />
+            </BitAiOptionsProvider>
         </DemoExample>
 
         <DemoExample Title="Other kinds" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
                 <b>BitAiArtifactKind</b> is a string-backed value rather than an enum, so a transport may send kinds the package
                 does not know. A <b>Chart</b>, a <b>Diagram</b> or a kind of the app's own (<b>new BitAiArtifactKind("mermaid")</b>)
-                has no built-in rendering and is shown as its code, until the app registers a renderer for it with
-                <b>RegisterArtifact</b> - which then draws the body, inside an error boundary, with a <b>BitAiArtifactContext</b>
-                that also says whether the panel is full screen.
+                has no built-in rendering and is shown as its code - highlighted in its <b>Language</b> when it names one - until
+                the app registers a renderer for it (next example). The glyph beside the title follows the kind too.
             </div>
             <br />
             <BitAiArtifactView Artifact="chartArtifact" />
@@ -132,7 +149,31 @@
             <BitAiArtifactView Artifact="mermaidArtifact" />
         </DemoExample>
 
-        <DemoExample Title="Streaming" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" CodeFiles="@example7CodeFiles" Id="example7">
+        <DemoExample Title="Custom renderers" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                A renderer registered for a kind (<b>BitAiRendererRegistry.RegisterArtifact</b>, see the tables below) draws the body
+                of every panel of that kind - a built-in kind or one of the app's own - in place of the built-in body, under the
+                same header with its copy, download and full screen. It is a <b>BitAiArtifactRenderer</b>, handed a
+                <b>BitAiArtifactContext</b>: the <b>Artifact</b>; the <b>Version</b> on screen and its <b>Content</b>, which follow the
+                version selector (draw the context's <b>Content</b>, never the artifact's, which is always the latest version's);
+                and <b>IsExpanded</b>, whether the panel is full screen - expand
+                the first panel and the chart grows. It runs inside a
+                <BitLink Href="/components/ai/rendererboundary">BitAiRendererBoundary</BitLink>, so a renderer that throws on a
+                spec it did not expect - the second chart has no data - is replaced by a notice rather than taking the page down.
+                An app registers its renderers once, at startup (<b>ConfigureRenderers</b> of <b>AddBitBlazorUIAIServices</b>);
+                that registry is app-wide, so this example cascades a registry of its own (a <b>CascadingValue</b> of a
+                <b>BitAiRendererRegistry</b>), which the panels inside it use in place of the registered one. The whole registry
+                is described on the <BitLink Href="/components/ai/messagepartview#renderer-registry">AiMessagePartView</BitLink> page.
+            </div>
+            <br />
+            <CascadingValue Value="artifactRenderers" IsFixed="true">
+                <BitAiArtifactView Artifact="chartArtifact" />
+                <br />
+                <BitAiArtifactView Artifact="brokenChartArtifact" />
+            </CascadingValue>
+        </DemoExample>
+
+        <DemoExample Title="Streaming" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" CodeFiles="@example8CodeFiles" Id="example8">
             <div>
                 The panel follows the artifact as it streams - re-rendering at most once per render interval of the AI options,
                 with loading dots in its header and its body marked busy. The scripted transport here writes a README into an
@@ -148,7 +189,7 @@
             }
         </DemoExample>
 
-        <DemoExample Title="Versions" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <DemoExample Title="Versions" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>
                 <b>BeginRevision</b> starts a new version and keeps the last one in <b>Versions</b>, a history of
                 <b>BitAiArtifactVersion</b>s with an optional summary of what changed; <b>Complete</b> commits it. The selector
@@ -171,7 +212,7 @@
             </ul>
         </DemoExample>
 
-        <DemoExample Title="Copy, download & full screen" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <DemoExample Title="Copy, download & full screen" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
                 Copy and download act on the version on screen. The file is named after the title, with <b>-v1</b> and so on for
                 an older version, and takes the extension and type of its kind and language: .md, .html, .json, .csv, .tsv, .svg,
@@ -186,7 +227,22 @@
             <BitAiArtifactView Artifact="pricingArtifact" Disabled />
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <DemoExample Title="Cascading parameters" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>
+                <b>BitParams</b> with a <b>BitAiArtifactViewParams</b> sets the <b>Classes</b> and <b>Styles</b> of the parts - and
+                the parameters every component shares, such as <b>Disabled</b> or <b>Dir</b> - of every artifact panel inside it,
+                rather than the artifact and the version a single panel shows. A panel keeps what it sets itself: the second one
+                gives <b>Styles</b> of its own, so the cascaded ones do not reach it.
+            </div>
+            <br />
+            <BitParams Parameters="artifactViewParams">
+                <BitAiArtifactView Artifact="programArtifact" />
+                <br />
+                <BitAiArtifactView Artifact="jsonArtifact" Styles="@(new() { Title = "font-style: italic" })" />
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> each part (the version selector,
                 the copy button, the other buttons and the loading dots take the class-styles of BitDropdown, BitAiCopyButton,
@@ -210,7 +266,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <DemoExample Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
                 In right-to-left text the header and the body read from the right, whether the direction comes from <b>Dir</b>
                 or from a <b>dir</b> attribute around the panel.

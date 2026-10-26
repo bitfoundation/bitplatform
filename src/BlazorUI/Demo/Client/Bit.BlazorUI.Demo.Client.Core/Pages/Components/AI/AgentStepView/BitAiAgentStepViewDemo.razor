@@ -89,7 +89,16 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Cascading parameters" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <DemoExample Title="Disabled" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                A <b>Disabled</b> step is drawn dimmed - its marker, its title and every line under it - turns off the disclosure of
+                the detail of its error (<b>Show details</b> does nothing) and draws its tool tags disabled.
+            </div>
+            <br />
+            <BitAiAgentStepView Disabled Step="disabled.Step" Conversation="disabled.Conversation" />
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
                 <b>BitParams</b> with a <b>BitAiAgentStepViewParams</b> sets the look of every step view inside it - the ones a
                 <b>BitAiAgentRunView</b> renders included - and a step's own value still wins (the last keeps its own
@@ -103,7 +112,7 @@
             </BitParams>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> every part - the marker and its
                 check mark, the title, the duration, the detail, the summary, the tool calls (their tags as a
@@ -133,7 +142,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <DemoExample Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>
                 In right-to-left text the marker and the line of the timeline move to the right - whether the direction comes from
                 <b>Dir</b> or from a <b>dir</b> attribute around the steps.

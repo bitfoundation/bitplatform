@@ -95,6 +95,7 @@ private readonly BitAiError detailError = new("The report service did not answer
     private readonly string example4RazorCode = """
 <BitCard>
     <BitText Typography="BitTypography.Subtitle2">Monthly report</BitText>
+    <br />
     <BitAiErrorView Compact Error="detailError" />
 </BitCard>
 """;
@@ -149,6 +150,28 @@ private static BitAiError FromThrownException()
     private readonly string example6RazorCode = """
 <BitAiErrorView Disabled Error="detailError" OnRetry="() => detailRetries++" />
 """;
+    private readonly string example6CsharpCode = """"
+private int detailRetries;
+private readonly BitAiError detailError = new("The report service did not answer.")
+{
+    Code = "upstream_unavailable",
+    Kind = BitAiErrorKind.Provider,
+    IsRetryable = true,
+    RetryAfter = TimeSpan.FromSeconds(30),
+    Detail = """
+        HTTP 503 Service Unavailable
+        x-request-id: 7f3c2a91-4e0b-4f6e-9b1d-2c8a5e0d3b44
+        retry-after: 30
+
+        {
+          "error": {
+            "type": "overloaded",
+            "message": "The report service is overloaded. Try again later."
+          }
+        }
+        """,
+};
+"""";
 
     private readonly string example7RazorCode = """
 <BitParams Parameters="errorViewParams">
@@ -156,12 +179,34 @@ private static BitAiError FromThrownException()
     <BitAiErrorView Error="timeoutError" OnRetry="() => detailRetries++" Disabled />
 </BitParams>
 """;
-    private readonly string example7CsharpCode = """
+    private readonly string example7CsharpCode = """"
 private readonly BitAiErrorViewParams[] errorViewParams =
 [
     new() { Styles = new() { RetryButton = new() { Root = "border-radius: 1rem" }, Detail = "font-size: 0.875rem" } },
 ];
-""";
+
+private int detailRetries;
+private readonly BitAiError timeoutError = BitAiError.FromException(new TimeoutException());
+private readonly BitAiError detailError = new("The report service did not answer.")
+{
+    Code = "upstream_unavailable",
+    Kind = BitAiErrorKind.Provider,
+    IsRetryable = true,
+    RetryAfter = TimeSpan.FromSeconds(30),
+    Detail = """
+        HTTP 503 Service Unavailable
+        x-request-id: 7f3c2a91-4e0b-4f6e-9b1d-2c8a5e0d3b44
+        retry-after: 30
+
+        {
+          "error": {
+            "type": "overloaded",
+            "message": "The report service is overloaded. Try again later."
+          }
+        }
+        """,
+};
+"""";
 
     private readonly string example8RazorCode = """
 <style>
@@ -201,6 +246,34 @@ private readonly BitAiErrorViewParams[] errorViewParams =
     <BitAiErrorView Error="detailError" />
 </div>
 """;
+    private readonly string example8CsharpCode = """"
+private readonly BitAiError filterError = new("This request was blocked by the content filter of the provider.")
+{
+    Code = "content_filter",
+    Kind = BitAiErrorKind.ContentFilter,
+};
+
+private int detailRetries;
+private readonly BitAiError detailError = new("The report service did not answer.")
+{
+    Code = "upstream_unavailable",
+    Kind = BitAiErrorKind.Provider,
+    IsRetryable = true,
+    RetryAfter = TimeSpan.FromSeconds(30),
+    Detail = """
+        HTTP 503 Service Unavailable
+        x-request-id: 7f3c2a91-4e0b-4f6e-9b1d-2c8a5e0d3b44
+        retry-after: 30
+
+        {
+          "error": {
+            "type": "overloaded",
+            "message": "The report service is overloaded. Try again later."
+          }
+        }
+        """,
+};
+"""";
 
     private readonly string example9RazorCode = """
 <BitAiOptionsProvider UiOptions="persianOptions">

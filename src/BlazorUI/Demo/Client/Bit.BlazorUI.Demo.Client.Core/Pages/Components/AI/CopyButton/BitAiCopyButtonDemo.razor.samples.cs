@@ -40,21 +40,21 @@ private void HandleCopied()
 private string? draft;";
 
     private readonly string example5RazorCode = @"
+<BitAiCopyButton Disabled Content=""Nothing to see here"" />
+
+<BitAiCopyButton Disabled Content=""Nothing to see here"" ShowLabel />";
+
+    private readonly string example6RazorCode = @"
 <BitParams Parameters=""copyButtonParams"">
     <BitAiCopyButton Content=""First snippet"" />
     <BitAiCopyButton Content=""Second snippet"" />
     <BitAiCopyButton Content=""Third snippet"" ShowLabel=""false"" />
 </BitParams>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private readonly BitAiCopyButtonParams[] copyButtonParams =
 [
     new() { ShowLabel = true, ConfirmationDuration = TimeSpan.FromSeconds(4) }
 ];";
-
-    private readonly string example6RazorCode = @"
-<BitAiCopyButton Disabled Content=""Nothing to see here"" />
-
-<BitAiCopyButton Disabled Content=""Nothing to see here"" ShowLabel />";
 
     private readonly string example7RazorCode = @"
 <style>

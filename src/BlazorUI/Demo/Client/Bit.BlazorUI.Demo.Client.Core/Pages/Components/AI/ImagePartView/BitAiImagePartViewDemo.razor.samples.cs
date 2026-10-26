@@ -62,6 +62,23 @@ private readonly BitAiUiOptions clickToLoadOptions = BitAiUiOptions.Default with
 private readonly BitAiUiOptions blockOptions = BitAiUiOptions.Default with { Images = BitAiImagePolicy.Block };";
 
     private readonly string example6RazorCode = @"
+<BitParams Parameters=""imagePartViewParams"">
+    <BitAiImagePartView Part=""mountainImage"" />
+
+    <BitAiImagePartView Part=""chartImage"" Styles=""@(new() { Caption = ""font-weight: bold;"" })"" />
+</BitParams>";
+    private readonly string example6CsharpCode = @"
+// mountainImage and chartImage are the ones of the Caption and Data URL examples.
+private readonly BitAiImagePartViewParams[] imagePartViewParams =
+[
+    new()
+    {
+        Style = ""max-width: 24rem;"",
+        Styles = new() { Image = ""border: 2px solid var(--bit-clr-pri);"", Caption = ""font-style: italic;"" },
+    },
+];";
+
+    private readonly string example7RazorCode = @"
 <style>
     .custom-class {
         max-width: 18rem;
@@ -99,23 +116,36 @@ private readonly BitAiUiOptions blockOptions = BitAiUiOptions.Default with { Ima
 
 <div style=""max-width: 18rem; --bit-AiImagePartView-radius: 2rem; --bit-AiImagePartView-caption-color: mediumseagreen; --bit-AiImagePartView-caption-font-size: 1rem;"">
     <BitAiImagePartView Part=""styledImage"" />
-</div>";
-    private readonly string example6CsharpCode = @"
+</div>
+
+<BitAiOptionsProvider UiOptions=""clickToLoadOptions"">
+    <BitAiImagePartView Part=""styledImage""
+                        Styles=""@(new() { ImagePlaceholder = new() { Root = ""border: 1px dashed dodgerblue; border-radius: 1rem;"" } })"" />
+</BitAiOptionsProvider>
+
+<BitAiOptionsProvider UiOptions=""blockOptions"">
+    <div style=""max-width: 18rem; --bit-AiImagePartView-muted-color: tomato;"">
+        <BitAiImagePartView Part=""styledImage"" Styles=""@(new() { BlockedImage = ""font-style: normal;"" })"" />
+    </div>
+</BitAiOptionsProvider>";
+    private readonly string example7CsharpCode = @"
 private readonly BitAiImagePart styledImage = new(""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg"")
 {
     Alt = ""A winding road above a lake between hills, snowy mountains behind"",
     Caption = ""A caption"",
     Width = 1000,
     Height = 350,
-};";
+};
 
-    private readonly string example7RazorCode = @"
+// clickToLoadOptions and blockOptions are the ones of the Image policy example.";
+
+    private readonly string example8RazorCode = @"
 <BitAiImagePartView Dir=""BitDir.Rtl"" Part=""rtlImage"" />
 
 <div dir=""rtl"">
     <BitAiImagePartView Part=""rtlImage"" />
 </div>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private readonly BitAiImagePart rtlImage = new(""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg"")
 {
     Alt = ""شفق قطبی سبز بر فراز تپه‌ای برفی در شب"",

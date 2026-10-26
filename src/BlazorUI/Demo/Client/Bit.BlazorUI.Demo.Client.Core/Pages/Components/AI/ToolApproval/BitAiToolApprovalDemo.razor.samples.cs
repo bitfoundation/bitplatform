@@ -204,6 +204,24 @@ public async ValueTask DisposeAsync()
     private readonly string example5RazorCode = """
 <BitAiToolApproval Disabled Call="destructiveCall" />
 """;
+    private readonly string example5CsharpCode = """
+private BitAiToolCallPart destructiveCall = AwaitingApproval("delete_records", "Delete records", BitAiToolRisk.Destructive,
+    "Permanently delete the 128 archived records? This cannot be undone.");
+
+private static BitAiToolCallPart AwaitingApproval(string toolName, string title, BitAiToolRisk risk, string? reason = null)
+{
+    var call = new BitAiToolCallPart(BitAiId.NewToolCallId(), toolName)
+    {
+        Definition = new BitAiToolDefinition(toolName) { Title = title, Risk = risk, RequiresApproval = true },
+        ApprovalReason = reason,
+    };
+
+    call.CompleteArguments();
+    call.SetStatus(BitAiToolCallStatus.AwaitingApproval);
+
+    return call;
+}
+""";
 
     private readonly string example6RazorCode = """
 <BitParams Parameters="approvalParams">
@@ -217,6 +235,25 @@ private readonly BitAiToolApprovalParams[] approvalParams =
 [
     new() { Styles = new() { ApproveButton = new() { Root = "border-radius: 1rem" }, Text = "font-style: italic" } },
 ];
+
+private BitAiToolCallPart readOnlyCall = AwaitingApproval("read_logs", "Read the logs", BitAiToolRisk.ReadOnly);
+private BitAiToolCallPart writeCall = AwaitingApproval("send_email", "Send email", BitAiToolRisk.Write);
+private BitAiToolCallPart destructiveCall = AwaitingApproval("delete_records", "Delete records", BitAiToolRisk.Destructive,
+    "Permanently delete the 128 archived records? This cannot be undone.");
+
+private static BitAiToolCallPart AwaitingApproval(string toolName, string title, BitAiToolRisk risk, string? reason = null)
+{
+    var call = new BitAiToolCallPart(BitAiId.NewToolCallId(), toolName)
+    {
+        Definition = new BitAiToolDefinition(toolName) { Title = title, Risk = risk, RequiresApproval = true },
+        ApprovalReason = reason,
+    };
+
+    call.CompleteArguments();
+    call.SetStatus(BitAiToolCallStatus.AwaitingApproval);
+
+    return call;
+}
 """;
 
     private readonly string example7RazorCode = """
@@ -253,6 +290,25 @@ private readonly BitAiToolApprovalParams[] approvalParams =
     <br />
     <BitAiToolApproval Call="destructiveCall" />
 </div>
+""";
+    private readonly string example7CsharpCode = """
+private BitAiToolCallPart writeCall = AwaitingApproval("send_email", "Send email", BitAiToolRisk.Write);
+private BitAiToolCallPart destructiveCall = AwaitingApproval("delete_records", "Delete records", BitAiToolRisk.Destructive,
+    "Permanently delete the 128 archived records? This cannot be undone.");
+
+private static BitAiToolCallPart AwaitingApproval(string toolName, string title, BitAiToolRisk risk, string? reason = null)
+{
+    var call = new BitAiToolCallPart(BitAiId.NewToolCallId(), toolName)
+    {
+        Definition = new BitAiToolDefinition(toolName) { Title = title, Risk = risk, RequiresApproval = true },
+        ApprovalReason = reason,
+    };
+
+    call.CompleteArguments();
+    call.SetStatus(BitAiToolCallStatus.AwaitingApproval);
+
+    return call;
+}
 """;
 
     private readonly string example8RazorCode = """

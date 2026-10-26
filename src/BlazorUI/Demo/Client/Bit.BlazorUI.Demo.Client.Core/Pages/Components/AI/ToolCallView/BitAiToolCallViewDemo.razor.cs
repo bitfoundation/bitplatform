@@ -12,7 +12,7 @@ public partial class BitAiToolCallViewDemo
             Name = "Call",
             Type = "BitAiToolCallPart",
             DefaultValue = "",
-            Description = "The tool call to render (required): its tool, arguments, status, progress, result and approval. The card subscribes to the call and re-renders itself whenever it changes - at most once per BitAiUiOptions.RenderInterval - so nothing has to re-render it while the call streams or runs. Its Definition names the tool (Title, else the tool name) and decides how an approval prompt looks (Risk).",
+            Description = "The tool call to render (required): its tool, arguments, status, progress, result and approval. The card subscribes to the call and re-renders itself whenever it changes - at most once per BitAiUiOptions.RenderInterval - so nothing has to re-render it while the call streams or runs. Its Definition names the tool (Title, else the tool name) and picks the icon of the header (Icon) - until a session sets it, the definition registered for the tool does - and the Risk of the Definition decides how an approval prompt looks.",
             LinkType = LinkType.Link,
             Href = "#tool-call-part",
         },
@@ -199,7 +199,7 @@ public partial class BitAiToolCallViewDemo
                     Name = "Definition",
                     Type = "BitAiToolDefinition?",
                     DefaultValue = "null",
-                    Description = "The definition of the tool, resolved from the tool registry when the session starts running the call. The card is headed by its DisplayName and draws its Icon, and its Risk decides how the approval prompt looks. Until it is set, the card reads the definition registered for the tool with AddBitBlazorUIAIServices (IBitAiToolRegistry); a tool the host does not know is shown by its raw name.",
+                    Description = "The definition of the tool, resolved from the tool registry when the session starts running the call. The card is headed by its DisplayName and draws its Icon, and its Risk decides how the approval prompt looks. Until it is set, the card reads the definition registered for the tool with AddBitBlazorUIAIServices (IBitAiToolRegistry, see its table); a tool the host does not know is shown by its raw name, under the wrench.",
                     LinkType = LinkType.Link,
                     Href = "/components/ai/toolapproval#tool-definition",
                 },
@@ -337,6 +337,43 @@ public partial class BitAiToolCallViewDemo
                     DefaultValue = "",
                     Description = "Records the result, clears the progress and moves the call to Completed or, for a failed outcome, Failed.",
                 },
+                new()
+                {
+                    Name = "PartId",
+                    Type = "string",
+                    DefaultValue = "",
+                    Description = "The identifier of the part (inherited from BitAiMessagePart, like the four members below): the partId given to the constructor, else a generated one. A good @key for the card.",
+                    LinkType = LinkType.Link,
+                    Href = "/components/ai/messagepartview#message-part",
+                },
+                new()
+                {
+                    Name = "Kind",
+                    Type = "string",
+                    DefaultValue = "\"tool-call\"",
+                    Description = "The kind of the part (BitAiMessagePartKinds.ToolCall), which BitAiMessagePartView renders with this card.",
+                },
+                new()
+                {
+                    Name = "Version",
+                    Type = "int",
+                    DefaultValue = "0",
+                    Description = "Increments on every change, for a cheap ShouldRender of a view of the app's own.",
+                },
+                new()
+                {
+                    Name = "Message",
+                    Type = "BitAiMessage?",
+                    DefaultValue = "null",
+                    Description = "The message the call belongs to, once it has been added to one.",
+                },
+                new()
+                {
+                    Name = "Changed",
+                    Type = "event Action<BitAiMessagePart>",
+                    DefaultValue = "",
+                    Description = "Raised after every change of the call, synchronously on the thread that made it. The card subscribes to it, so it follows its call without the page re-rendering it.",
+                },
             ],
         },
         new()
@@ -454,6 +491,43 @@ public partial class BitAiToolCallViewDemo
                     Type = "string?",
                     DefaultValue = "",
                     Description = "The text to display for the outcome: its Text, else the message of its Error, else its Value (a string as it is, anything else as JSON).",
+                },
+            ],
+        },
+        new()
+        {
+            Id = "tool-registry",
+            Title = "IBitAiToolRegistry",
+            Description = "The set of tools available to a conversation, found by the name the model calls them by (case does not matter). AddBitBlazorUIAIServices registers BitAiToolRegistry as a singleton, filled with the tools added through ai.AddTool(...) (BitAiTool.Create makes one); a session runs the tools it finds in it, and a card whose call carries no Definition yet reads the definition of its tool from it.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Tools",
+                    Type = "IReadOnlyCollection<IBitAiTool>",
+                    DefaultValue = "",
+                    Description = "Every registered tool, each with its Definition.",
+                },
+                new()
+                {
+                    Name = "Find(name)",
+                    Type = "IBitAiTool?",
+                    DefaultValue = "",
+                    Description = "The tool registered under that name, or null - in which case a card with no Definition on its call shows the raw name of the tool under the wrench.",
+                },
+                new()
+                {
+                    Name = "Register(tool)",
+                    Type = "void",
+                    DefaultValue = "",
+                    Description = "Adds a tool, or replaces the one registered under its name - at runtime too, which is how an app enables a capability for some users or conversations only.",
+                },
+                new()
+                {
+                    Name = "Unregister(name)",
+                    Type = "bool",
+                    DefaultValue = "",
+                    Description = "Removes a tool; true when one was removed.",
                 },
             ],
         },
@@ -653,6 +727,27 @@ public partial class BitAiToolCallViewDemo
 
 
 
+    private readonly BitAiToolCallPart unknownToolCall = CreateCompletedCall("get_stock_price", null,
+        """{"symbol":"MSFT"}""", "MSFT: 431.20 USD");
+    private readonly BitAiToolCallPart iconToolCall = CreateCompletedCall("book_meeting",
+        new BitAiToolDefinition("book_meeting") { Title = "Book a meeting", Icon = BitIconName.Calendar },
+        """{"with":"Ana","on":"Tuesday 10:00"}""", "Booked with Ana for Tuesday at 10:00.");
+    private readonly BitAiToolCallPart registeredToolCall = CreateCompletedCall("get_weather", null,
+        """{"city":"Lisbon"}""", "Lisbon: 17 degrees, clear");
+
+    private static BitAiToolCallPart CreateCompletedCall(string toolName, BitAiToolDefinition? definition, string arguments, string result)
+    {
+        var call = new BitAiToolCallPart(BitAiId.NewToolCallId(), toolName) { Definition = definition };
+
+        call.CompleteArguments(Json(arguments));
+        call.SetStatus(BitAiToolCallStatus.Running);
+        call.SetResult(BitAiToolOutcome.FromText(result) with { Duration = TimeSpan.FromMilliseconds(400) });
+
+        return call;
+    }
+
+
+
     private BitAiToolCallPart? indexCall;
     private bool isIndexing;
 
@@ -732,6 +827,22 @@ public partial class BitAiToolCallViewDemo
             Kind = BitAiErrorKind.Tool,
         }));
         call.SetStatus(BitAiToolCallStatus.Rejected);
+
+        return call;
+    }
+
+    private readonly BitAiToolCallPart cancelledCall = CreateCancelledCall();
+
+    private static BitAiToolCallPart CreateCancelledCall()
+    {
+        var call = new BitAiToolCallPart("call_export", "export_report")
+        {
+            Definition = new BitAiToolDefinition("export_report") { Title = "Export the report" },
+        };
+
+        call.CompleteArguments(Json("""{"format":"pdf","pages":"all"}"""));
+        call.SetStatus(BitAiToolCallStatus.Running);
+        call.SetStatus(BitAiToolCallStatus.Cancelled);
 
         return call;
     }

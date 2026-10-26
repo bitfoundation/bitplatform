@@ -1,7 +1,8 @@
 ﻿namespace Bit.BlazorUI;
 
 /// <summary>
-/// Which images the views fetch: those of Markdown, image parts, image artifacts, and the favicons of sources.
+/// Which images the views fetch: those of Markdown, image parts, image artifacts, the thumbnails of attachment chips,
+/// and the favicons of sources.
 /// </summary>
 /// <remarks>
 /// <para>

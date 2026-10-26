@@ -261,21 +261,35 @@ public partial class BitAiFormDemo
                     Name = "FromJsonSchema(schema, values?)",
                     Type = "BitAiFormDefinition (static)",
                     DefaultValue = "",
-                    Description = "Builds a form from a JSON Schema object (its title and description become the form's): type - including [\"string\", \"null\"], which makes a field optional -, format (date, date-time, time, email, uri, password, textarea), enum with enumNames, oneOf / anyOf of const values, const and readOnly (read-only fields), default, required, numeric and length bounds, multipleOf, pattern, examples (a placeholder), nested object properties, array items with minItems / maxItems, and local $refs into $defs or definitions. The optional values, keyed by property name, prefill it ahead of the defaults. Never throws on a malformed schema: a keyword of the wrong kind is ignored and an unknown shape falls back to a text box."
+                    Description = "Builds a form from a JSON Schema object (its title and description become the form's): type - including [\"string\", \"null\"], an anyOf with a null alternative or nullable: true, which make a field optional -, format (date, date-time, time, email / idn-email, uri / url / uri-reference / iri, password, textarea), enum with enumNames or x-enumNames, oneOf / anyOf of const values (labelled by their titles), const and readOnly (read-only fields), default, title, description, required, minimum / maximum, exclusiveMinimum / exclusiveMaximum (as numbers, or draft 4's flags), multipleOf, integer, minLength / maxLength, pattern, examples (a placeholder), nested object properties, array items with minItems / maxItems, and local $refs into $defs or definitions (a title or description beside the $ref wins). Objects and arrays nested deeper than 8 levels are edited as JSON text. The optional values, keyed by property name, prefill it ahead of the defaults. Never throws on a malformed schema: a keyword of the wrong kind is ignored and an unknown shape falls back to a text box."
                 },
                 new()
                 {
                     Name = "ToJson(values)",
                     Type = "JsonElement",
                     DefaultValue = "",
-                    Description = "Builds JSON in the shape of the form from the flat values a BitAiForm collects - nested objects and arrays rebuilt from the paths, numbers and booleans encoded as such - with one member per field that has a value. What OnSubmitJson is handed."
+                    Description = "Builds JSON in the shape of the form from the flat values a BitAiForm collects - nested objects and arrays rebuilt from the paths, numbers and booleans encoded as such (by each field's JsonType) - with one member per field that has a value, and a required field written even when it is empty (as null, or an empty object or array). What OnSubmitJson is handed."
                 },
                 new()
                 {
-                    Name = "Path(parent, name) / IndexPath(arrayPath, index) / CountItems(values, arrayPath)",
-                    Type = "string / string / int (static)",
+                    Name = "Path(parent, name)",
+                    Type = "string (static)",
                     DefaultValue = "",
-                    Description = "The paths the flat values are keyed by - venue.city, tags[0] - and the number of entries a list holds in them, for an app reading the values of OnSubmit or Values."
+                    Description = "The path of a member: its name at the root (parent null), else parent.name - venue.city. The keys of the flat values of OnSubmit and Values."
+                },
+                new()
+                {
+                    Name = "IndexPath(arrayPath, index)",
+                    Type = "string (static)",
+                    DefaultValue = "",
+                    Description = "The path of one entry of a list, by its zero-based index: tags[0], speakers[1] (and speakers[1].name for a member of it)."
+                },
+                new()
+                {
+                    Name = "CountItems(values, arrayPath)",
+                    Type = "int (static)",
+                    DefaultValue = "",
+                    Description = "How many entries a list holds in the flat values: the highest index found under its path, plus one. For an app reading a list out of the values of OnSubmit or Values."
                 },
             ]
         },
@@ -296,17 +310,51 @@ public partial class BitAiFormDemo
                 new() { Name = "ReadOnly", Type = "bool", DefaultValue = "false", Description = "Whether the field is shown but cannot be edited, as for a schema const or readOnly. A read-only list can be neither added to nor removed from." },
                 new() { Name = "Options", Type = "IReadOnlyList<string>?", DefaultValue = "null", Description = "The choices of a Select field, as the values that are submitted. A value outside them fails validation." },
                 new() { Name = "OptionLabels", Type = "IReadOnlyList<string>?", DefaultValue = "null", Description = "Display labels for Options, in the same order, when they differ from the values." },
-                new() { Name = "Minimum / Maximum", Type = "double?", DefaultValue = "null", Description = "The smallest and the largest value a number accepts." },
-                new() { Name = "ExclusiveMinimum / ExclusiveMaximum", Type = "double?", DefaultValue = "null", Description = "Values a number must be strictly greater, or less, than." },
+                new() { Name = "Minimum", Type = "double?", DefaultValue = "null", Description = "The smallest value a number accepts (\"must be at least\"); also the lowest value of its spin buttons." },
+                new() { Name = "Maximum", Type = "double?", DefaultValue = "null", Description = "The largest value a number accepts (\"must be at most\"); also the highest value of its spin buttons." },
+                new() { Name = "ExclusiveMinimum", Type = "double?", DefaultValue = "null", Description = "A value a number must be strictly greater than (\"must be greater than\"); the lowest value of its spin buttons when there is no Minimum." },
+                new() { Name = "ExclusiveMaximum", Type = "double?", DefaultValue = "null", Description = "A value a number must be strictly less than (\"must be less than\"); the highest value of its spin buttons when there is no Maximum." },
                 new() { Name = "MultipleOf", Type = "double?", DefaultValue = "null", Description = "A step a number must be a multiple of, which is also the step of its spin buttons." },
-                new() { Name = "Integer", Type = "bool", DefaultValue = "false", Description = "Whether a number accepts whole numbers only." },
-                new() { Name = "MinLength / MaxLength", Type = "int?", DefaultValue = "null", Description = "The fewest and the most characters a text value may have." },
-                new() { Name = "MinItems / MaxItems", Type = "int?", DefaultValue = "null", Description = "The fewest and the most entries an Array field may hold; the add button turns off at the most." },
+                new() { Name = "Integer", Type = "bool", DefaultValue = "false", Description = "Whether a number accepts whole numbers only (a schema integer); its spin buttons step by 1." },
+                new() { Name = "MinLength", Type = "int?", DefaultValue = "null", Description = "The fewest characters a text, email, URL or password value may have (\"must be at least N characters\")." },
+                new() { Name = "MaxLength", Type = "int?", DefaultValue = "null", Description = "The most characters a text, email, URL or password value may have; the input stops taking more." },
+                new() { Name = "MinItems", Type = "int?", DefaultValue = "null", Description = "The fewest entries an Array field may hold (\"needs at least N items\")." },
+                new() { Name = "MaxItems", Type = "int?", DefaultValue = "null", Description = "The most entries an Array field may hold; its add button turns off at the most." },
                 new() { Name = "Pattern", Type = "string?", DefaultValue = "null", Description = "A regular expression the value must match, run under a timeout: one that takes too long fails the field." },
                 new() { Name = "Fields", Type = "IReadOnlyList<BitAiFormField>?", DefaultValue = "null", Description = "The nested fields of an Object field." },
                 new() { Name = "Items", Type = "BitAiFormField?", DefaultValue = "null", Description = "The template of each entry of an Array field: a scalar field for a list of inputs, an Object field for repeatable groups." },
                 new() { Name = "JsonType", Type = "string?", DefaultValue = "null", Description = "The JSON Schema primitive the value is submitted as by ToJson - string, integer, number, boolean, object or array; null means string." },
                 new() { Name = "DisplayLabel", Type = "string", DefaultValue = "", Description = "The label shown for the field: Label, else the name written as a label." },
+            ]
+        },
+        new()
+        {
+            Id = "form-strings",
+            Title = "BitAiStrings (form)",
+            Description = "The texts of the form, members of the BitAiStrings of the options in force. Every member is virtual: a subclass overrides the ones it words differently and is handed as the Strings of the BitAiUiOptions - of a BitAiOptionsProvider, or of ConfigureUi (see /components/ai/optionsprovider#strings). The label in a message is the field's DisplayLabel - for an entry of a list of values, the list's label and the entry's place (Tags 2).",
+            Parameters =
+            [
+                new() { Name = "Submit / Cancel", Type = "string", DefaultValue = "\"Submit\" / \"Cancel\"", Description = "The texts of the two buttons while the definition gives no SubmitLabel / CancelLabel." },
+                new() { Name = "Submitted", Type = "string", DefaultValue = "\"Submitted\"", Description = "The confirmation shown in place of the actions once Submitted is set." },
+                new() { Name = "AddItem", Type = "string", DefaultValue = "\"Add item\"", Description = "The text of the button adding an entry to a list." },
+                new() { Name = "ListItem(label, index)", Type = "string", DefaultValue = "\"{label} {index}\"", Description = "The name of an entry of a list (one-based): the accessible name of its group or input, and the label in its messages." },
+                new() { Name = "RemoveItem(label, index)", Type = "string", DefaultValue = "\"Remove {label} {index}\"", Description = "The name and tooltip of the button removing an entry." },
+                new() { Name = "FieldRequired(label)", Type = "string", DefaultValue = "\"{label} is required.\"", Description = "A required field left empty, a required list with no entry, or an entry of a list of values left empty." },
+                new() { Name = "FieldTooShort(label, minimum)", Type = "string", DefaultValue = "\"{label} must be at least {minimum} characters.\"", Description = "A text shorter than MinLength." },
+                new() { Name = "FieldTooLong(label, maximum)", Type = "string", DefaultValue = "\"{label} must be at most {maximum} characters.\"", Description = "A text longer than MaxLength." },
+                new() { Name = "FieldInvalidFormat(label)", Type = "string", DefaultValue = "\"{label} is not in the expected format.\"", Description = "A value that does not match the Pattern (or whose match timed out), or a choice the Options do not offer." },
+                new() { Name = "FieldNotANumber(label)", Type = "string", DefaultValue = "\"{label} must be a number.\"", Description = "A number field holding something that is not a finite number." },
+                new() { Name = "FieldNotAnInteger(label)", Type = "string", DefaultValue = "\"{label} must be a whole number.\"", Description = "A fraction in an Integer field." },
+                new() { Name = "FieldBelowMinimum(label, minimum)", Type = "string", DefaultValue = "\"{label} must be at least {minimum}.\"", Description = "A number below Minimum." },
+                new() { Name = "FieldAboveMaximum(label, maximum)", Type = "string", DefaultValue = "\"{label} must be at most {maximum}.\"", Description = "A number above Maximum." },
+                new() { Name = "FieldNotAboveMinimum(label, minimum)", Type = "string", DefaultValue = "\"{label} must be greater than {minimum}.\"", Description = "A number not above ExclusiveMinimum." },
+                new() { Name = "FieldNotBelowMaximum(label, maximum)", Type = "string", DefaultValue = "\"{label} must be less than {maximum}.\"", Description = "A number not below ExclusiveMaximum." },
+                new() { Name = "FieldNotAMultipleOf(label, step)", Type = "string", DefaultValue = "\"{label} must be a multiple of {step}.\"", Description = "A number that is not a multiple of MultipleOf." },
+                new() { Name = "FieldNotAnEmail(label)", Type = "string", DefaultValue = "\"{label} must be an email address.\"", Description = "An Email field without exactly one @ between two parts, or with a space." },
+                new() { Name = "FieldNotAUrl(label)", Type = "string", DefaultValue = "\"{label} must be a web address.\"", Description = "A Url field that is not an absolute http or https address with a host (javascript:, mailto: and a bare example.com all fail)." },
+                new() { Name = "FieldNotADate(label)", Type = "string", DefaultValue = "\"{label} must be a valid date or time.\"", Description = "A Date, DateTime or Time field holding something that does not parse as one (a prefill a model got wrong)." },
+                new() { Name = "FieldTooFewItems(label, minimum)", Type = "string", DefaultValue = "\"{label} needs at least {minimum} item(s).\"", Description = "A list with fewer entries than MinItems." },
+                new() { Name = "FieldTooManyItems(label, maximum)", Type = "string", DefaultValue = "\"{label} can have at most {maximum} item(s).\"", Description = "A list with more entries than MaxItems - one prefilled past it, since the add button stops there." },
             ]
         },
     ];
@@ -420,6 +468,39 @@ public partial class BitAiFormDemo
 
     private JsonElement? bookingJson;
 
+    private readonly BitAiFormDefinition seatForm = BitAiFormDefinition.FromJsonSchema(Parse("""
+        {
+          "title": "Reserve a seat",
+          "type": "object",
+          "$defs": {
+            "contact": {
+              "type": "object",
+              "title": "Contact",
+              "required": ["name"],
+              "properties": { "name": { "type": "string" }, "email": { "type": "string", "format": "email" } }
+            }
+          },
+          "required": ["event", "ticket", "phone"],
+          "properties": {
+            "event": { "const": "BlazorConf 2026", "title": "Event" },
+            "ticket": {
+              "title": "Ticket",
+              "oneOf": [
+                { "const": "standard", "title": "Standard - $99" },
+                { "const": "vip", "title": "VIP - $249" }
+              ]
+            },
+            "seat": { "type": "string", "title": "Seat", "readOnly": true, "default": "B12" },
+            "arrival": { "type": "string", "format": "date-time", "title": "Arrival" },
+            "pin": { "type": "string", "format": "password", "title": "Door PIN" },
+            "phone": { "type": ["string", "null"], "title": "Phone", "examples": ["+1 555 0100"] },
+            "contact": { "$ref": "#/$defs/contact", "description": "Who we write to about the seat." }
+          }
+        }
+        """));
+
+    private JsonElement? seatJson;
+
     private readonly BitAiFormDefinition signUpForm = BitAiFormDefinition.FromJsonSchema(Parse("""
         {
           "title": "Create an account",
@@ -430,7 +511,7 @@ public partial class BitAiFormDemo
             "age": { "type": "integer", "minimum": 18, "maximum": 120 },
             "email": { "type": "string", "format": "email" },
             "website": { "type": "string", "format": "uri" },
-            "donation": { "type": "number", "exclusiveMinimum": 0, "multipleOf": 5, "description": "Optional, in steps of 5." }
+            "donation": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1000, "multipleOf": 5, "description": "Optional, in steps of 5, under 1000." }
           }
         }
         """)) with { SubmitLabel = "Sign up" };
@@ -538,6 +619,11 @@ public partial class BitAiFormDemo
         feedbackSubmitted = false;
         feedbackStatus = string.Empty;
     }
+
+    private readonly BitAiFormParams[] formParams =
+    [
+        new() { Styles = new() { Root = "border-radius: 1rem", Title = "color: var(--bit-clr-pri)", SubmitButton = new() { Root = "border-radius: 1rem" } } },
+    ];
 
     private readonly BitAiFormDefinition persianForm = new()
     {

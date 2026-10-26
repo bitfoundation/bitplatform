@@ -98,4 +98,9 @@ public partial class BitAiCollapsibleDemo
 
     private bool isOpen;
     private int toggleCount;
+
+    private readonly BitAiCollapsibleParams[] collapsibleParams =
+    [
+        new() { Styles = new() { Accordion = new() { Title = "color: var(--bit-clr-pri); font-weight: 600;" } } }
+    ];
 }

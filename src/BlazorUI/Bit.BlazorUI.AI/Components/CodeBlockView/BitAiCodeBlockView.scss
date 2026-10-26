@@ -32,7 +32,7 @@
 //   --bit-AiCodeBlockView-constant-color        true, false, null and other constants     (default: $clr-sec-fg)
 //   --bit-AiCodeBlockView-inserted-color        lines a diff adds                         (default: $clr-suc-fg)
 //   --bit-AiCodeBlockView-deleted-color         lines a diff removes                      (default: $clr-err-fg)
-//   --bit-AiCodeBlockView-meta-color            diff headers, preprocessor lines          (default: $clr-fg-ter with 15% of $clr-fg-pri)
+//   --bit-AiCodeBlockView-meta-color            diff file headers and hunk markers        (default: $clr-fg-ter with 15% of $clr-fg-pri)
 //   --bit-AiCodeBlockView-label-color           lifetimes and loop labels, in italics     (default: the type color)
 //   --bit-AiCodeBlockView-variable-color        variables written with a sigil ($name)    (default: the property color)
 

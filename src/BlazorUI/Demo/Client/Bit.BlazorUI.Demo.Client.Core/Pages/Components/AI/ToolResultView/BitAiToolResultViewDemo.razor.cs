@@ -124,6 +124,43 @@ public partial class BitAiToolResultViewDemo
                     LinkType = LinkType.Link,
                     Href = "/components/ai/toolcallview#tool-outcome",
                 },
+                new()
+                {
+                    Name = "PartId",
+                    Type = "string",
+                    DefaultValue = "",
+                    Description = "The identifier of the part (inherited from BitAiMessagePart, like the four members below): the partId given to the constructor, else a generated one.",
+                    LinkType = LinkType.Link,
+                    Href = "/components/ai/messagepartview#message-part",
+                },
+                new()
+                {
+                    Name = "Kind",
+                    Type = "string",
+                    DefaultValue = "\"tool-result\"",
+                    Description = "The kind of the part (BitAiMessagePartKinds.ToolResult), which BitAiMessagePartView renders with this view.",
+                },
+                new()
+                {
+                    Name = "Version",
+                    Type = "int",
+                    DefaultValue = "0",
+                    Description = "Increments on every change of the part.",
+                },
+                new()
+                {
+                    Name = "Message",
+                    Type = "BitAiMessage?",
+                    DefaultValue = "null",
+                    Description = "The message the part belongs to, once it has been added to one.",
+                },
+                new()
+                {
+                    Name = "Changed",
+                    Type = "event Action<BitAiMessagePart>",
+                    DefaultValue = "",
+                    Description = "Raised after a part changes - which a result part never does: its Outcome is fixed, and setting its ToolName raises nothing. The view does not listen to it, so a ToolName set afterwards is drawn with the next render of the page.",
+                },
             ],
         },
     ];
@@ -191,8 +228,24 @@ public partial class BitAiToolResultViewDemo
 
 
 
+    private readonly BitAiToolResultViewParams[] resultViewParams =
+    [
+        new() { Styles = new() { Root = "border-style: dashed", Title = "font-style: italic" } },
+    ];
+
+
+
     private readonly BitAiToolResultPart rtlResult = new("call_weather_fa", BitAiToolOutcome.FromText("تهران: ۱۸ درجه، آفتابی\nرطوبت: ۲۰٪"))
     {
         ToolName = "آب و هوا",
     };
+
+    private readonly BitAiToolResultPart rtlUnnamedResult = new("call_unknown_fa", BitAiToolOutcome.FromText("۱۲۸ رکورد حذف شد."));
+
+    private readonly BitAiUiOptions persianOptions = BitAiUiOptions.Default with { Strings = new PersianAiStrings() };
+
+    private sealed class PersianAiStrings : BitAiStrings
+    {
+        public override string Result => "نتیجه";
+    }
 }

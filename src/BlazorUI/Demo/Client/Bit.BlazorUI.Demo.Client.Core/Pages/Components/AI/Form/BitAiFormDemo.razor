@@ -33,15 +33,27 @@
             arrives as a structured output part whose JSON Schema an app turns into a definition with
             <b>BitAiFormDefinition.FromJsonSchema</b>, in a renderer registered for that schema - see
             <BitLink Href="/components/ai/structureddataview">BitAiStructuredDataView</BitLink> and the
-            <BitLink Href="/ai/scenarios/forms">Forms</BitLink> scenario. Its labels, the default button texts and the
-            validation messages come from the string table of the AI options (<b>BitAiOptionsProvider</b>, <b>ConfigureUi</b>).
+            <BitLink Href="/ai/scenarios/forms">Forms</BitLink> scenario. Its default button texts (Submit, Cancel), the
+            Submitted confirmation, the texts of its lists and the validation messages come from the strings in force
+            (<b>BitAiStrings</b>, listed in the tables below), which a
+            <BitLink Href="/components/ai/optionsprovider">BitAiOptionsProvider</BitLink> or <b>ConfigureUi</b> localizes.
         </BitText>
         <br />
         <BitText>
             <b>Security</b>: validation runs here because a model asked to check its own output will sometimes say yes when the
             answer is no - and the values a user submits are still input: validate them again wherever they execute. A
             <b>pattern</b> a model wrote is matched under a timeout, so a catastrophic one fails the field instead of freezing
-            the page.
+            the page; one that is not a valid regular expression is ignored.
+        </BitText>
+        <br />
+        <BitText>
+            <b>Accessibility</b>: each field is a core input with its own label, description and error message, which its
+            control points at through <b>aria-describedby</b> while it says <b>aria-invalid</b>. A nested object and a list are a
+            <b>fieldset</b> with a <b>legend</b>; an entry of a list of objects is a group named after the list and its place
+            (Speakers 2), an entry of a list of values an input named the same way, and its remove button says which entry it
+            removes. Once an entry is removed the focus moves to the remove button now in its place (or that of the new last
+            entry), or to the add button of a list left empty, rather than falling back to the top of the page. The errors the form renders itself (a list's, a
+            checkbox's) are announced as alerts.
         </BitText>
     </NotesTemplate>
     <Examples>
@@ -100,14 +112,36 @@
             <BitAiJsonView Value="bookingJson" />
         </DemoExample>
 
-        <DemoExample Title="Validation" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <DemoExample Title="Schema keywords" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                The rest of the vocabulary <b>FromJsonSchema</b> reads, one property each in the form below:
+                a <b>const</b> is a read-only field holding its value (<b>Event</b>), and so is a <b>readOnly</b> property with a
+                <b>default</b> (<b>Seat</b>); a <b>oneOf</b> - or <b>anyOf</b> - of <b>const</b> values is a dropdown labelled by
+                their titles (<b>Ticket</b>); <b>format</b> <b>date-time</b> is a date and time picker and <b>password</b> a masked
+                input; a <b>type</b> that also allows <b>"null"</b> (<b>["string", "null"]</b>, an <b>anyOf</b> with a null
+                alternative, or OpenAPI's <b>nullable: true</b>) makes a field optional even when it is <b>required</b>
+                (<b>Phone</b>), and <b>examples</b> become its placeholder; a local <b>$ref</b> into <b>$defs</b> (or
+                <b>definitions</b>) is followed, with a <b>title</b> or <b>description</b> written beside it winning over the
+                target's (<b>Contact</b>). <b>x-enumNames</b> labels an <b>enum</b> like <b>enumNames</b>, and the draft-4
+                boolean <b>exclusiveMinimum</b> / <b>exclusiveMaximum</b> are read too. A keyword of the wrong kind is ignored and an
+                unknown shape falls back to a text box, since a model wrote the schema.
+            </div>
+            <br />
+            <BitAiForm Definition="seatForm" OnSubmitJson="json => seatJson = json" />
+            <br />
+            <BitAiJsonView Value="seatJson" />
+        </DemoExample>
+
+        <DemoExample Title="Validation" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
                 Submit checks every field: <b>required</b>, <b>minLength</b> / <b>maxLength</b>, <b>pattern</b>,
-                <b>minimum</b> / <b>maximum</b> and their exclusive forms, whole numbers, <b>multipleOf</b>, and the format of an
-                email, a URL or a date. Each error is shown on its field - whose input points at it through
-                <b>aria-describedby</b> and says <b>aria-invalid</b> - and clears as the field is edited; <b>OnSubmit</b> is
-                raised only once the form is valid.
-                Press <b>Sign up</b> with the form empty, then fix it.
+                <b>minimum</b> / <b>maximum</b> and their exclusive forms, whole numbers (<b>integer</b>), <b>multipleOf</b>, the
+                format of an email, a web address (an absolute http or https URL) or a date, and a choice the options do not offer.
+                Each error is shown on its field - whose input points at it through <b>aria-describedby</b> and says
+                <b>aria-invalid</b> - and clears as the field is edited; <b>OnSubmit</b> is raised only once the form is valid.
+                The messages are the validation strings of the AI options (see the table below). Press <b>Sign up</b> with the
+                form empty, then fix it: try a username with capitals, an age of 17, a website without its https://, and a donation
+                of 7 or of 1000.
             </div>
             <br />
             <BitAiForm Definition="signUpForm" OnSubmit="values => signUpValues = values" />
@@ -118,7 +152,7 @@
             }
         </DemoExample>
 
-        <DemoExample Title="Nested objects & lists" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <DemoExample Title="Nested objects & lists" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
                 An <b>object</b> with <b>properties</b> becomes a group of fields (<b>BitAiFieldType.Object</b>) and an
                 <b>array</b> a list the user adds entries to and removes them from (<b>BitAiFieldType.Array</b>): a list of
@@ -132,7 +166,7 @@
             <BitAiJsonView Value="eventJson" />
         </DemoExample>
 
-        <DemoExample Title="Streaming schema" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" CodeFiles="@example6CodeFiles" Id="example6">
+        <DemoExample Title="Streaming schema" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" CodeFiles="@example7CodeFiles" Id="example7">
             <div>
                 A model streams its schema as partial JSON. Rebuilt from the part on every delta, the definition grows field by
                 field, and the form seeds each field once: a field that streams in later never overwrites what the user already
@@ -148,7 +182,7 @@
             }
         </DemoExample>
 
-        <DemoExample Title="Actions & state" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <DemoExample Title="Actions & state" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>
                 <b>SubmitLabel</b> and <b>CancelLabel</b> of the definition name the buttons. Cancel is shown on a form with an
                 <b>OnCancel</b>, which it raises (an empty <b>CancelLabel</b> hides it all the same); the other forms of this
@@ -172,7 +206,22 @@
             <BitAiForm Definition="contactForm" Disabled />
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <DemoExample Title="Cascading parameters" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                <b>BitParams</b> with a <b>BitAiFormParams</b> sets the <b>Classes</b> and <b>Styles</b> of the parts - and the
+                parameters every component shares, such as <b>Disabled</b> or <b>Dir</b> - of every form inside it, rather than
+                the definition and the callbacks of a single form. A form keeps what it sets itself: the second one gives
+                <b>Styles</b> of its own, so the cascaded ones do not reach it.
+            </div>
+            <br />
+            <BitParams Parameters="formParams">
+                <BitAiForm Definition="contactForm" />
+                <br />
+                <BitAiForm Definition="feedbackForm" Styles="@(new() { Title = "font-style: italic" })" />
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> each part (the buttons take the
                 class-styles of BitButton). The inputs are core components, restyled through their own variables. The public
@@ -194,7 +243,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <DemoExample Title="RTL" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div>
                 In right-to-left text the fields, the groups and the actions read from the right, whether the direction comes
                 from <b>Dir</b> or from a <b>dir</b> attribute around the form.

@@ -117,6 +117,34 @@ private async Task StreamForecastAsync()
 """";
 
     private readonly string example4RazorCode = """
+<BitParams Parameters="rendererBoundaryParams">
+    <BitAiRendererBoundary>
+        <WeatherCard Json="@osloForecast" />
+    </BitAiRendererBoundary>
+
+    <BitAiRendererBoundary>
+        <WeatherCard Json="@unexpectedForecast" />
+    </BitAiRendererBoundary>
+
+    <BitAiRendererBoundary Styles="@(new() { Notice = new() { Root = "border-style: dotted;" } })">
+        <WeatherCard Json="@unexpectedForecast" />
+    </BitAiRendererBoundary>
+</BitParams>
+""";
+    private readonly string example4CsharpCode = """"
+// osloForecast and unexpectedForecast are the ones of the Basic example; WeatherCard is its WeatherCard.razor tab.
+private readonly BitAiRendererBoundaryParams[] rendererBoundaryParams =
+[
+    new()
+    {
+        // Lands on the notice of a boundary whose content failed: the content that renders keeps its own look.
+        Style = "padding: 0.5rem; border-radius: 0.5rem; background-color: var(--bit-clr-bg-sec);",
+        Styles = new() { Notice = new() { Root = "border-style: dashed;", Text = "font-style: italic;" } },
+    },
+];
+"""";
+
+    private readonly string example5RazorCode = """
 <style>
     .custom-boundary {
         padding: 0.5rem;
@@ -155,7 +183,7 @@ private async Task StreamForecastAsync()
 </div>
 """;
 
-    private readonly string example5RazorCode = """
+    private readonly string example6RazorCode = """
 <BitAiRendererBoundary Dir="BitDir.Rtl" Label="کارت آب و هوا نتوانست این پیش‌بینی را نشان دهد">
     <WeatherCard Json="@unexpectedForecast" />
 </BitAiRendererBoundary>

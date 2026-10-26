@@ -37,6 +37,20 @@
                 back to an old answer still shows what the agent did to produce it.
             </p>
             <p>
+                In order, this transport sends <code>BitAiAgentRunStartedEvent(runId)</code> with the agent's
+                <code>AgentName</code> and its <code>Goal</code> (the question asked), the whole plan as a
+                <code>BitAiAgentPlanEvent</code> of four <code>BitAiAgentPlanStep</code>s, then for each step a
+                <code>BitAiAgentStepStartedEvent</code> and a <code>BitAiAgentStepCompletedEvent</code> with the
+                <code>Summary</code> of what it found, then <code>BitAiAgentRunCompletedEvent</code> - and only then the
+                answer, as ordinary text deltas under the run.
+            </p>
+            <p>
+                The first step searches, and the search runs on the provider's side, as a hosted web search does: the
+                transport reports the call (<code>BitAiToolCallStartedEvent</code> with its arguments) and its result
+                (<code>BitAiToolResultEvent</code>) itself, so the session shows the call without running anything, and the
+                step that was running when it started names it.
+            </p>
+            <p>
                 Plans are replaced rather than patched, because agents rewrite the tail of a plan as they learn. Steps that
                 keep their identifier keep their state and timings.
             </p>
@@ -47,6 +61,7 @@
                 <li><BitLink Href="/components/ai/agentrunview"><code>BitAiAgentRunView</code></BitLink> - the run: its goal, its plan and where it stands.</li>
                 <li><BitLink Href="/components/ai/agentstepview"><code>BitAiAgentStepView</code></BitLink> - each step, as an entry of a timeline.</li>
                 <li><BitLink Href="/components/ai/agentstatusbadge"><code>BitAiAgentStatusBadge</code></BitLink> - the one-word state, announced politely.</li>
+                <li><BitLink Href="/components/ai/toolcallview"><code>BitAiToolCallView</code></BitLink> - the search the provider ran, with its result.</li>
             </ul>
         </DocSection>
     </ChildContent>

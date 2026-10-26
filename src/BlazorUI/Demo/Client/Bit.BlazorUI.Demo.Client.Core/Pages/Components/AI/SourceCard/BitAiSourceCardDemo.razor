@@ -65,23 +65,28 @@
         <DemoExample Title="Site & favicon" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>
                 The line under the title is the <b>SiteName</b>, else the host of the <b>Url</b>, else the <b>Kind</b> of the
-                source; <b>IconUrl</b> adds a favicon before it, when the image policy of the options shows it outright (under
-                <b>ClickToLoad</b> or <b>Block</b> the card goes without it, with no placeholder). A source with no web address is a
-                plain card.
+                source; <b>IconUrl</b> adds a favicon before it, when the image policy of the options
+                (<b>BitAiUiOptions.Images</b>) shows it outright - under <b>ClickToLoad</b> or <b>Block</b> the card goes without
+                it, with no placeholder: turn on the toggle to see the first card under <b>Block</b>. A source with no web address
+                is a plain card.
             </div>
             <br />
-            <div class="example-grid">
-                <BitAiSourceCard Source="withFavicon" Number="1" />
-                <BitAiSourceCard Source="hostOnly" Number="2" />
-                <BitAiSourceCard Source="attachedFile" Number="3" />
-            </div>
+            <BitToggle @bind-Value="blockImages" Text="Images = BitAiImagePolicy.Block" />
+            <BitAiOptionsProvider UiOptions="@(blockImages ? blockedImageOptions : BitAiUiOptions.Default)">
+                <div class="example-grid">
+                    <BitAiSourceCard Source="withFavicon" Number="1" />
+                    <BitAiSourceCard Source="hostOnly" Number="2" />
+                    <BitAiSourceCard Source="attachedFile" Number="3" />
+                </div>
+            </BitAiOptionsProvider>
         </DemoExample>
 
         <DemoExample Title="Activation" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
                 With <b>OnActivate</b> the card is a button rather than a link, and hands over its source - to reveal it in place
                 rather than leave the page. The rest of what a source carries - its <b>Description</b>, <b>Author</b>,
-                <b>PublishedAt</b>, retrieval <b>Score</b> and <b>Metadata</b> - is the application's to show.
+                <b>PublishedAt</b>, retrieval <b>Score</b> and <b>Metadata</b> - is the application's to show. A <b>Disabled</b>
+                card (the third) hands over nothing, and one that would be a link leads nowhere.
             </div>
             <br />
             <div class="example-grid">

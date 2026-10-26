@@ -567,11 +567,12 @@ public sealed class BitAiChatSession : IAsyncDisposable
         }
         catch (Exception exception)
         {
+            // The message is shown as the failure of the call, but never the stack trace: the detail is shown too, behind
+            // a disclosure, and a trace hands the user the internals of the server. It stays on Exception, for the logs.
             _logger.LogError(exception, "Tool {ToolName} threw while executing.", call.ToolName);
             call.SetResult(BitAiToolOutcome.Failure(new BitAiError(exception.Message)
             {
                 Kind = BitAiErrorKind.Tool,
-                Detail = exception.ToString(),
                 Exception = exception,
                 IsRetryable = true,
             }));

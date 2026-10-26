@@ -90,7 +90,8 @@ public partial class BitAiChatMessage : BitAiComponentBase
     [Parameter] public EventCallback<BitAiCitationSource> OnSourceClick { get; set; }
 
     /// <summary>
-    /// The session driving the conversation, which enables edit, retry, and approval.
+    /// The session driving the conversation, which enables edit, retry, regenerate, tool approval, and answering the
+    /// questions of an agent run.
     /// </summary>
     [Parameter] public BitAiChatSession? Session { get; set; }
 

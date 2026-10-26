@@ -231,6 +231,15 @@ public partial class BitAiReasoningPartViewDemo
 
     private readonly BitAiUiOptions openReasoningOptions = BitAiUiOptions.Default with { CollapseReasoning = false };
 
+    private readonly BitAiReasoningPartViewParams[] reasoningPartViewParams =
+    [
+        new()
+        {
+            Style = "max-width: 32rem;",
+            Styles = new() { Icon = "color: goldenrod;", Title = "font-style: italic;" },
+        },
+    ];
+
     private readonly BitAiReasoningPart rtlReasoning = new("""
         کاربر درباره‌ی **هزینه‌ی یک رفت‌وبرگشت** می‌پرسد. دو هزینه را باید از هم جدا کرد:
 

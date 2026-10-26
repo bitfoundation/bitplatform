@@ -51,6 +51,17 @@ public class BitAiEmptyStateTests : BitAiTestBase
     }
 
     [TestMethod]
+    public void AnEmptyIconShouldStillDrawTheSparkleFromThePackageSubset()
+    {
+        var component = RenderComponent<BitAiEmptyState>(p => p.Add(c => c.Icon, new BitIconInfo()));
+
+        var icon = component.Find(".bit-ico.bit-aiems-ico");
+
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon--AutoEnhanceOn"));
+        Assert.IsTrue(icon.ClassList.Contains("bit-icon-ai--AutoEnhanceOn"));
+    }
+
+    [TestMethod]
     public void BitAiEmptyStateShouldRespectIconNameAndIconTemplate()
     {
         var named = RenderComponent<BitAiEmptyState>(p => p.Add(c => c.IconName, "Robot"));

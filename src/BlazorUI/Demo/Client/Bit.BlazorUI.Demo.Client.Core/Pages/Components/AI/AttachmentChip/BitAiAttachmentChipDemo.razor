@@ -33,7 +33,10 @@
             <BitLink Href="/components/ai/chatmessage">BitAiChatMessage</BitLink> one per file of the message; see the
             <BitLink Href="/ai/scenarios/attachments">attachments scenario</BitLink> for both. A thumbnail is decoration beside the
             name (an empty alt), and the remove button is named after the file (Remove quarterly-report.pdf). Only an image is
-            drawn from its own content, so point <b>ThumbnailUrl</b> or <b>Url</b> only at an image you trust to be one.
+            drawn from its own content, and only as the image policy in force (<b>BitAiUiOptions.Images</b>) allows, so point
+            <b>ThumbnailUrl</b> or <b>Url</b> only at an image you trust to be one. Its texts - the Remove of the button, the
+            UploadFailed of a failed upload without an <b>Error</b>, and the formatted size (<b>FormatBytes</b>) - come from the
+            strings in force, which a <BitLink Href="/components/ai/optionsprovider">BitAiOptionsProvider</BitLink> localizes.
         </BitText>
     </NotesTemplate>
     <Examples>
@@ -63,11 +66,31 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Status" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <DemoExample Title="Image policy" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>
-                The <b>Status</b> of an upload shows under the name: the <b>Progress</b> of one still <b>Uploading</b>, the
-                <b>Error</b> of one that <b>Failed</b> - in the error color, the state of the file rather than a look of the chip -
-                and the size once it is <b>Ready</b>.
+                The picture of an image follows <b>BitAiUiOptions.Images</b>, the
+                <BitLink Href="/components/ai/markdownview#image-policy">BitAiImagePolicy</BitLink> every image of a chat follows,
+                cascaded here by a <BitLink Href="/components/ai/optionsprovider">BitAiOptionsProvider</BitLink>. A chip is too small
+                for a placeholder, so an image the policy does not show outright - held back by <b>ClickToLoad</b> or a host
+                <b>AllowListedHosts</b> does not list, or hidden by <b>Block</b> - gets the glyph of its kind instead: the first chip
+                is under the default policy, the second under <b>Block</b>. An address with a script-capable scheme is never drawn,
+                whatever the policy.
+            </div>
+            <br />
+            <div style="display:flex;flex-wrap:wrap;gap:0.5rem">
+                <BitAiAttachmentChip Attachment="photo" />
+                <BitAiOptionsProvider UiOptions="blockImagesOptions">
+                    <BitAiAttachmentChip Attachment="photo" />
+                </BitAiOptionsProvider>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Status" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                The <b>Status</b> of an upload shows under the name: the size while it is <b>Pending</b> - press the button to send
+                it - then the <b>Progress</b> of one still <b>Uploading</b>, and the size again once it is <b>Ready</b>; the
+                <b>Error</b> of one that <b>Failed</b> (the UploadFailed text of the strings in force when it has none) shows in
+                the error color, the state of the file rather than a look of the chip.
             </div>
             <br />
             <BitButton OnClick="UploadAsync" Disabled="isUploading">Upload a file</BitButton>
@@ -78,7 +101,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="OnRemove" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <DemoExample Title="OnRemove" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
                 <b>OnRemove</b> adds the dismiss button of the tag, named after the file, and hands over the attachment it removes;
                 without it the chip has no button at all. The button goes with its chip, so the focus is handed on with
@@ -95,7 +118,7 @@
             <BitButton @ref="resetButton" Variant="BitVariant.Outline" OnClick="ResetStaged">Bring them back</BitButton>
         </DemoExample>
 
-        <DemoExample Title="Disabled" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <DemoExample Title="Disabled" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
                 A disabled chip is dimmed and its remove button cannot be pressed.
             </div>
@@ -103,7 +126,23 @@
             <BitAiAttachmentChip Disabled Attachment="report" OnRemove="RemoveDisabled" />
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <DemoExample Title="Cascading parameters" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <b>BitParams</b> with a <b>BitAiAttachmentChipParams</b> sets the look of every attachment chip inside it - its
+                <b>Styles</b>, <b>Classes</b> and the common parameters such as <b>Dir</b> or <b>Disabled</b>; the attachment and
+                <b>OnRemove</b> stay on each chip. A parameter of the chip itself still wins: the last one sets its own <b>Styles</b>.
+            </div>
+            <br />
+            <BitParams Parameters="attachmentChipParams">
+                <div style="display:flex;flex-wrap:wrap;gap:0.5rem">
+                    <BitAiAttachmentChip Attachment="report" />
+                    <BitAiAttachmentChip Attachment="photo" />
+                    <BitAiAttachmentChip Attachment="longName" Styles="@(new() { Thumbnail = "border-radius:0" })" />
+                </div>
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> the tag (BitTagClassStyles), the
                 thumbnail and the glyph. The public <b>--bit-AiAttachmentChip-*</b> variables (see the CSS variables table) size the
@@ -125,7 +164,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>
                 In right-to-left text the thumbnail stands at the right of the name and the remove button at its left, whether the
                 direction comes from <b>Dir</b> or from a <b>dir</b> attribute around the chip.

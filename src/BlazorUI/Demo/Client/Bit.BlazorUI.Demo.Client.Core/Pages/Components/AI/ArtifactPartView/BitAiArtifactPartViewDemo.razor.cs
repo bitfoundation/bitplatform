@@ -20,7 +20,7 @@ public partial class BitAiArtifactPartViewDemo
             Name = "Conversation",
             Type = "BitAiConversation?",
             DefaultValue = "null",
-            Description = "The conversation that holds the artifact, which the view finds it in by the id of the part (BitAiConversation.FindArtifact). While it is null, or holds no artifact of that id, the part is shown as a placeholder tag.",
+            Description = "The conversation that holds the artifact, which the view finds it in by the id of the part (BitAiConversation.FindArtifact). While it is null, or holds no artifact of that id, the part is shown as a placeholder tag. The artifact is looked up each time the view's parameters are set, so one that arrives later is shown once the parent renders the view again; the panel then follows the artifact itself as it streams and is revised.",
             LinkType = LinkType.Link,
             Href = "/components/ai/messagelist/#conversation",
         },
@@ -28,7 +28,7 @@ public partial class BitAiArtifactPartViewDemo
         {
             Name = "Part",
             Type = "BitAiArtifactPart",
-            DefaultValue = "null",
+            DefaultValue = "",
             Description = "The part of the message that references the artifact (required): its ArtifactId names it and its ArtifactVersion is the version the panel opens at, the latest when it is null.",
             LinkType = LinkType.Link,
             Href = "#artifact-part",
@@ -83,7 +83,7 @@ public partial class BitAiArtifactPartViewDemo
         {
             Id = "artifact-part",
             Title = "BitAiArtifactPart",
-            Description = "The part of a message that says it introduced an artifact. It holds no content of its own - the artifact is the conversation's - only which artifact, and at which version. A session adds one to the message whose transport opened the artifact.",
+            Description = "The part of a message that says it introduced an artifact. It holds no content of its own - the artifact is the conversation's - only which artifact, and at which version. A session adds one to the message whose transport opened the artifact (a BitAiArtifactCreatedEvent). Its Kind is BitAiMessagePartKinds.Artifact (\"artifact\"); like every part it also has a PartId, a Version and a Changed event (see AiMessagePartView).",
             Parameters =
             [
                 new()
@@ -105,7 +105,7 @@ public partial class BitAiArtifactPartViewDemo
                     Name = "ArtifactVersion",
                     Type = "int?",
                     DefaultValue = "null",
-                    Description = "The version of the artifact this turn introduced, which the panel opens at, so an older turn keeps showing what it produced. Not to be confused with Version, which counts the changes of the part itself."
+                    Description = "The version of the artifact this turn introduced, which the panel opens at (the latest when it is null), so an older turn keeps showing what it produced. Settable: a session stamps it with the version the turn opened. Not to be confused with Version, which counts the changes of the part itself."
                 },
             ]
         },
@@ -118,6 +118,18 @@ public partial class BitAiArtifactPartViewDemo
     private readonly BitAiArtifactPart notesPart = new("art-notes");
     private readonly BitAiArtifactPart missingPart = new("art-deleted");
     private readonly BitAiArtifactPart persianPart = new("art-persian");
+
+    private readonly BitAiArtifactPartViewParams[] artifactPartViewParams =
+    [
+        new()
+        {
+            Styles = new()
+            {
+                ArtifactView = new() { Header = "background-color: var(--bit-clr-pri-light);" },
+                Placeholder = new() { Root = "border-style: dashed;" },
+            },
+        },
+    ];
 
     // A scripted transport (Services/AI) that drafts a README into the artifact art-readme, and revises it on the next turn.
     private readonly BitAiChatSession readmeSession = new(AiDemoContentTransports.Artifacts());

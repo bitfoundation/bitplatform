@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Bit.BlazorUI.Demo.Client.Core.Services.AI;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.AI.MessagePartView;
 
@@ -239,7 +240,7 @@ public partial class BitAiMessagePartViewDemo
         {
             Id = "renderer-registry",
             Title = "BitAiRendererRegistry",
-            Description = "Where an app registers its own renderers, which the components resolve before their built-in views. A singleton: register at startup (AddBitBlazorUIAIServices(ai => ai.ConfigureRenderers(renderers => ...))) and treat the entries as fixed afterwards - every entry is app-wide. These are its part members; the tool members are on the AiToolCallView page.",
+            Description = "Where an app registers its own renderers, which the components resolve before their built-in views. A singleton: register at startup (AddBitBlazorUIAIServices(ai => ai.ConfigureRenderers(renderers => ...))) and treat the entries as fixed afterwards - every entry is app-wide. A region with renderers of its own cascades a registry of its own (new BitAiRendererRegistry(), in a CascadingValue), which every AI component inside it uses in place of the registered one - in place of it, not on top of it. These are its part members; RegisterTool is on the AiToolCallView page, RegisterArtifact on the AiArtifactView page, RegisterStructured on the AiStructuredDataView page, and RegisterCodeLanguage, MathRenderer and CitationRenderer on the AiMarkdownView page.",
             Parameters =
             [
                 new()
@@ -468,6 +469,39 @@ public partial class BitAiMessagePartViewDemo
 
 
 
+    [AutoInject] private IBitAiToolRegistry toolRegistry = default!;
+
+    private BitAiRenderScheduler sessionRenders = default!;
+    private BitAiChatSession planSession = default!;
+
+    // A conversation whose first answer wrote an artifact, the way a session leaves it: the artifact belongs to the
+    // conversation, and the part of the answer only names it.
+    private static BitAiConversation CreatePlanConversation()
+    {
+        var conversation = new BitAiConversation();
+
+        var plan = conversation.GetOrAddArtifact("art-cleanup", BitAiArtifactKind.Document, "Clean-up plan");
+        plan.SetContent("""
+            ## Clean-up plan
+
+            1. Archive the records nobody opened this year.
+            2. Delete the archived records.
+            """);
+        plan.Complete("First draft");
+
+        conversation.AddMessage(BitAiRole.User, "Plan the clean-up of the old records.");
+
+        var answer = conversation.AddMessage(new BitAiMessage(BitAiRole.Assistant));
+        answer.AddPart(new BitAiTextPart("Here is the plan:"));
+        answer.AddPart(new BitAiArtifactPart("art-cleanup"));
+
+        return conversation;
+    }
+
+    private Task AskToDeleteAsync() => planSession.SubmitAsync("Delete the archived records");
+
+
+
     [AutoInject] private BitAiRendererRegistry renderers = default!;
 
     protected override void OnInitialized()
@@ -476,7 +510,28 @@ public partial class BitAiMessagePartViewDemo
         // this page registers its own kind as it loads - the same call, under a kind nothing else uses.
         renderers.RegisterPart<InvoiceCard>("demo:invoice");
 
+        // The session of the Conversation & Session example raises StateChanged on every event it applies; the scheduler
+        // turns those into at most one render of the page per frame interval. A scripted model (Services/AI) asks for
+        // delete_records, then answers once the tool has returned; the tool is the one registered with
+        // AddBitBlazorUIAIServices, declared Destructive, so the default approval policy asks before it runs.
+        sessionRenders = new BitAiRenderScheduler(() => InvokeAsync(StateHasChanged));
+        planSession = new BitAiChatSession(
+            AiDemoToolTransports.CallsTool(
+                "delete_records",
+                """{"filter":"status = 'archived'"}""",
+                "Deleted 128 archived records."),
+            conversation: CreatePlanConversation(),
+            tools: toolRegistry,
+            approvalPolicy: new BitAiDefaultToolApprovalPolicy());
+        planSession.StateChanged += sessionRenders.Request;
+
         base.OnInitialized();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (planSession is not null) await planSession.DisposeAsync();
+        if (sessionRenders is not null) await sessionRenders.DisposeAsync();
     }
 
     private const string octoberInvoice = """
@@ -513,6 +568,74 @@ public partial class BitAiMessagePartViewDemo
 
         return message;
     }
+
+
+
+    private readonly BitAiMessage pollMessage = CreatePollMessage();
+
+    private static BitAiMessage CreatePollMessage()
+    {
+        var message = new BitAiMessage(BitAiRole.Assistant);
+
+        message.AddPart(new BitAiTextPart("Let us find a day for the review."));
+        message.AddPart(new BitAiCustomPart<string[]>("demo:poll", ["Tuesday", "Thursday"]) { Text = "Poll: which day suits you, Tuesday or Thursday?" });
+
+        return message;
+    }
+
+    // A registry of this region's own: the AI components inside the CascadingValue use it in place of the registered one,
+    // so it holds every renderer the region needs - here only the poll.
+    private readonly BitAiRendererRegistry regionRenderers = CreateRegionRenderers();
+
+    private static BitAiRendererRegistry CreateRegionRenderers()
+    {
+        var registry = new BitAiRendererRegistry();
+
+        registry.RegisterPart("demo:poll", RenderPoll);
+
+        return registry;
+    }
+
+    // A BitAiMessagePartRenderer: handed the part and its surroundings (context.Message, context.Conversation and
+    // context.Session as well), it returns the markup drawn in place of the built-in view. The choices are model output,
+    // so they are only ever written as text.
+    private static RenderFragment RenderPoll(BitAiMessagePartContext context) => builder =>
+    {
+        if (context.Part is not BitAiCustomPart<string[]> poll) return;
+
+        builder.OpenElement(0, "fieldset");
+        builder.AddAttribute(1, "style", "margin: 0; padding: 0.75rem 1rem; display: flex; gap: 0.5rem; flex-direction: column; border: 1px solid var(--bit-clr-brd-sec); border-radius: 0.5rem;");
+        builder.OpenElement(2, "legend");
+        builder.AddAttribute(3, "style", "padding-inline: 0.25rem; font-weight: 600;");
+        builder.AddContent(4, "Which day suits you?");
+        builder.CloseElement();
+
+        foreach (var choice in poll.Data)
+        {
+            builder.OpenElement(5, "label");
+            builder.AddAttribute(6, "style", "display: flex; gap: 0.5rem; align-items: center;");
+            builder.OpenElement(7, "input");
+            builder.AddAttribute(8, "type", "radio");
+            builder.AddAttribute(9, "name", poll.PartId);
+            builder.AddAttribute(10, "value", choice);
+            builder.CloseElement();
+            builder.AddContent(11, choice);
+            builder.CloseElement();
+        }
+
+        builder.CloseElement();
+    };
+
+
+
+    private readonly BitAiMessagePartViewParams[] partViewParams =
+    [
+        new()
+        {
+            Style = "padding-inline-start: 0.75rem; border-inline-start: 3px solid var(--bit-clr-pri);",
+            Styles = new() { CitationQuote = "color: var(--bit-clr-pri);", CitationLocator = "font-weight: bold;" },
+        },
+    ];
 
 
 

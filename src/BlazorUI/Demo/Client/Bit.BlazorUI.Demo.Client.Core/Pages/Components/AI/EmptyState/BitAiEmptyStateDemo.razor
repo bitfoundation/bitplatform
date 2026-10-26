@@ -70,7 +70,9 @@
         <DemoExample Title="Icon" RazorCode="@example4RazorCode" Id="example4">
             <div>
                 <b>IconName</b> picks another glyph of the built-in Fluent UI icons, and <b>IconTemplate</b> takes any markup in
-                its place - a logo, an avatar, an emoji.
+                its place - a logo, an avatar, an emoji. The robot is not one of the two dozen glyphs the core package embeds, so
+                an app showing it adds the Bit.BlazorUI.Icons package (see <BitLink Href="/iconography">Iconography</BitLink>);
+                markup of an IconTemplate that only decorates is the app's to hide with <b>aria-hidden</b>.
             </div>
             <br />
             <BitAiEmptyState IconName="@BitIconName.Robot" Title="Hi, I am Bit" />
@@ -94,9 +96,12 @@
 
         <DemoExample Title="Cascading parameters" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
-                <b>BitParams</b> with a <b>BitAiEmptyStateParams</b> sets the words and the glyph every empty state inside it
-                greets with - the one of each BitAiChat in it included; an empty state's own value wins (the second keeps its
-                own title). The suggestions, the templates and the callback are not cascaded.
+                <b>BitParams</b> with a <b>BitAiEmptyStateParams</b> sets the words, the glyph, the classes and the styles every
+                empty state inside it greets with; an empty state's own value wins (the second keeps its own title). The
+                suggestions, the templates and the callback are not cascaded. The glyph reaches the empty state of each
+                BitAiChat in it too, while its words come from the chat's <b>EmptyTitle</b> and <b>EmptyBody</b> and its look
+                from the chat's <b>Styles</b> / <b>Classes</b> - cascade those through a
+                <BitLink Href="/components/ai/chat">BitAiChatParams</BitLink>.
             </div>
             <br />
             <BitParams Parameters="emptyStateParams">
@@ -109,7 +114,8 @@
         <DemoExample Title="External Icons" RazorCode="@example7RazorCode" Id="example7">
             <div>
                 <b>Icon</b> takes any CSS-class icon library (raw classes or <b>BitIconInfo.Css</b> / <b>Fa</b> / <b>Bi</b>) and
-                wins over <b>IconName</b>. Reference the library's stylesheet in your app.
+                wins over <b>IconName</b>. Reference the library's stylesheet in your app. See the
+                <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> table for the rest of what it describes.
             </div>
             <br />
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />

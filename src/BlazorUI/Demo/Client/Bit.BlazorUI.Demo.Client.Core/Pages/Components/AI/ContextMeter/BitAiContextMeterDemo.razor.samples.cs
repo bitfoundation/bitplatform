@@ -83,6 +83,12 @@ public ValueTask DisposeAsync() => tinySession.DisposeAsync();
 """;
 
     private readonly string example6RazorCode = """
+<BitAiContextMeter Disabled Used="42_000" Window="128_000" />
+
+<BitAiContextMeter Disabled Used="124_000" Window="128_000" />
+""";
+
+    private readonly string example7RazorCode = """
 <BitParams Parameters="meterParams">
     <BitAiContextMeter Used="64_000" Window="128_000" />
 
@@ -91,14 +97,14 @@ public ValueTask DisposeAsync() => tinySession.DisposeAsync();
     <BitAiContextMeter Used="90_000" Window="128_000" Critical="0.95" />
 </BitParams>
 """;
-    private readonly string example6CsharpCode = """
+    private readonly string example7CsharpCode = """
 private readonly BitAiContextMeterParams[] meterParams =
 [
     new() { Warn = 0.5, Critical = 0.6, Styles = new() { Label = "font-weight: bold" } }
 ];
 """;
 
-    private readonly string example7RazorCode = """
+    private readonly string example8RazorCode = """
 <style>
     .custom-class {
         padding: 0.5rem 0.75rem;
@@ -129,7 +135,7 @@ private readonly BitAiContextMeterParams[] meterParams =
                           --bit-AiContextMeter-warning-color: #c2410c" />
 """;
 
-    private readonly string example8RazorCode = """
+    private readonly string example9RazorCode = """
 <BitAiContextMeter Dir="BitDir.Rtl" Used="42_000" Window="128_000" />
 
 <div dir="rtl">

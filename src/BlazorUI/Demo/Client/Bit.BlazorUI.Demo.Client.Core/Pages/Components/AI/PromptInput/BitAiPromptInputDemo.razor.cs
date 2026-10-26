@@ -11,7 +11,7 @@ public partial class BitAiPromptInputDemo
             Name = "Accept",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The file types to accept, in the syntax of the HTML accept attribute: extensions such as .pdf, MIME types such as image/png, or wildcards such as image/*. Applied to the file picker and also checked for pasted and dropped files, which the browser does not filter. When null, the types follow the capabilities of the Model (or Capabilities) when one is given - image/* for Vision, audio/* for Audio, application/pdf, .pdf and text/* for Documents - and every type is accepted otherwise.",
+            Description = "The file types to accept, in the syntax of the HTML accept attribute: extensions such as .pdf, MIME types such as image/png, or wildcards such as image/*. Applied to the file picker and also checked for pasted and dropped files, which the browser does not filter. When null, the types follow the capabilities of the Model (or Capabilities) when one is given - image/* for Vision, audio/* for Audio, application/pdf, .pdf and text/* for Documents - and every type is accepted otherwise. A file already staged that the accepted types no longer take - another model was picked - is taken off and named in the alert, as a file turned away (TypeNotAllowed).",
         },
         new()
         {
@@ -172,7 +172,9 @@ public partial class BitAiPromptInputDemo
             Name = "Session",
             Type = "BitAiChatSession?",
             DefaultValue = "null",
-            Description = "The session, which supplies the generation state and receives the submissions while OnSubmit is not set. Stopping a turn stops it.",
+            Description = "The session, which supplies the generation state (unless Generating is set) and receives the submissions while OnSubmit is not set. Stopping a turn stops it.",
+            LinkType = LinkType.Link,
+            Href = "/components/ai/chat#chat-session",
         },
         new()
         {
@@ -572,7 +574,7 @@ public partial class BitAiPromptInputDemo
         {
             Id = "attachment-rejection",
             Title = "BitAiAttachmentRejection",
-            Description = "A file the composer did not stage, and why - the same thing the alert under the composer tells the user, for the app to log or to offer another route for, such as uploading the file to its own storage.",
+            Description = "A file the composer did not stage, and why - the same thing the alert in the composer, above the text, tells the user, for the app to log or to offer another route for, such as uploading the file to its own storage.",
             Parameters =
             [
                 new()
@@ -611,7 +613,7 @@ public partial class BitAiPromptInputDemo
         {
             Id = "composer-file",
             Title = "BitAiComposerFile",
-            Description = "A file the browser hands the composer from a paste or a drop: described first, its bytes streamed only when they are read, since one interop message carrying a whole file would exceed the SignalR message limit of Blazor Server (32 KB by default). The composer makes BitAiAttachments of these itself; an app meets the type only where it writes a composer of its own over the same browser helpers.",
+            Description = "A file the browser hands the composer from a paste or a drop: described first, its bytes streamed only when they are read, since one interop message carrying a whole file would exceed the SignalR message limit of Blazor Server (32 KB by default). The composer makes BitAiAttachments of these itself, so an app rarely meets the type: it is public because the script of the composer calls into it, and for an app that gets the bytes of a file in the browser its own way - new BitAiComposerFile(name, contentType, size, base64).ToAttachment() makes a BitAiAttachment of one sent inline, and ToAttachmentAsync one whose Content is an IJSStreamReference of its own JS interop - to hand to a session or a message itself.",
             Parameters =
             [
                 new()
@@ -688,7 +690,7 @@ public partial class BitAiPromptInputDemo
             Items =
             [
                 new() { Name = "TooLarge", Description = "The file is larger than MaxAttachmentSize.", Value = "0" },
-                new() { Name = "TypeNotAllowed", Description = "The file does not match Accept (or the types the capabilities of the model take).", Value = "1" },
+                new() { Name = "TypeNotAllowed", Description = "The file does not match Accept (or the types the capabilities of the model take) - or a staged file no longer does, once the accepted types moved under it (another model was picked).", Value = "1" },
                 new() { Name = "ReadFailed", Description = "The browser could not deliver the content, or the transfer was interrupted.", Value = "2" },
                 new() { Name = "TooMany", Description = "Staging the file would exceed MaxAttachments.", Value = "3" },
             ]
@@ -696,6 +698,8 @@ public partial class BitAiPromptInputDemo
     ];
 
 
+
+    private const long InlineSize = 64 * 1024;
 
     private const long MaxSize = 1024 * 1024;
 
@@ -751,7 +755,7 @@ public partial class BitAiPromptInputDemo
     private string templatesSubmission = "nothing yet";
 
     private string cascadeSubmission = "nothing yet";
-    private BitAiPromptInputParams[] promptInputParams =>
+    private readonly BitAiPromptInputParams[] promptInputParams =
     [
         new()
         {

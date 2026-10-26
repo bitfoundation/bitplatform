@@ -129,6 +129,46 @@ private JsonElement? bookingJson;
 """";
 
     private readonly string example4RazorCode = """
+<BitAiForm Definition="seatForm" OnSubmitJson="json => seatJson = json" />
+
+<BitAiJsonView Value="seatJson" />
+""";
+    private readonly string example4CsharpCode = """"
+private readonly BitAiFormDefinition seatForm = BitAiFormDefinition.FromJsonSchema(JsonDocument.Parse("""
+    {
+      "title": "Reserve a seat",
+      "type": "object",
+      "$defs": {
+        "contact": {
+          "type": "object",
+          "title": "Contact",
+          "required": ["name"],
+          "properties": { "name": { "type": "string" }, "email": { "type": "string", "format": "email" } }
+        }
+      },
+      "required": ["event", "ticket", "phone"],
+      "properties": {
+        "event": { "const": "BlazorConf 2026", "title": "Event" },
+        "ticket": {
+          "title": "Ticket",
+          "oneOf": [
+            { "const": "standard", "title": "Standard - $99" },
+            { "const": "vip", "title": "VIP - $249" }
+          ]
+        },
+        "seat": { "type": "string", "title": "Seat", "readOnly": true, "default": "B12" },
+        "arrival": { "type": "string", "format": "date-time", "title": "Arrival" },
+        "pin": { "type": "string", "format": "password", "title": "Door PIN" },
+        "phone": { "type": ["string", "null"], "title": "Phone", "examples": ["+1 555 0100"] },
+        "contact": { "$ref": "#/$defs/contact", "description": "Who we write to about the seat." }
+      }
+    }
+    """).RootElement);
+
+private JsonElement? seatJson;
+"""";
+
+    private readonly string example5RazorCode = """
 <BitAiForm Definition="signUpForm" OnSubmit="values => signUpValues = values" />
 
 @if (signUpValues is not null)
@@ -136,7 +176,7 @@ private JsonElement? bookingJson;
     <div>Valid: <b>@string.Join(", ", signUpValues.Select(v => $"{v.Key} = {v.Value}"))</b></div>
 }
 """;
-    private readonly string example4CsharpCode = """"
+    private readonly string example5CsharpCode = """"
 private readonly BitAiFormDefinition signUpForm = BitAiFormDefinition.FromJsonSchema(JsonDocument.Parse("""
     {
       "title": "Create an account",
@@ -147,7 +187,7 @@ private readonly BitAiFormDefinition signUpForm = BitAiFormDefinition.FromJsonSc
         "age": { "type": "integer", "minimum": 18, "maximum": 120 },
         "email": { "type": "string", "format": "email" },
         "website": { "type": "string", "format": "uri" },
-        "donation": { "type": "number", "exclusiveMinimum": 0, "multipleOf": 5, "description": "Optional, in steps of 5." }
+        "donation": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1000, "multipleOf": 5, "description": "Optional, in steps of 5, under 1000." }
       }
     }
     """).RootElement) with { SubmitLabel = "Sign up" };
@@ -155,17 +195,17 @@ private readonly BitAiFormDefinition signUpForm = BitAiFormDefinition.FromJsonSc
 private IReadOnlyDictionary<string, string?>? signUpValues;
 """";
 
-    private readonly string example5RazorCode = """
+    private readonly string example6RazorCode = """
 <BitAiForm Definition="eventForm" OnSubmitJson="json => eventJson = json" />
 
 <BitAiJsonView Value="eventJson" />
 """;
-    private readonly string example5CsharpCode = EventSampleCode + """
+    private readonly string example6CsharpCode = EventSampleCode + """
 
 private JsonElement? eventJson;
 """;
 
-    private readonly string example6RazorCode = """
+    private readonly string example7RazorCode = """
 @implements IAsyncDisposable
 
 <BitButton OnClick="ProposeBookingAsync" Disabled="proposalSession.IsGenerating">Book a table for Friday</BitButton>
@@ -175,7 +215,7 @@ private JsonElement? eventJson;
     <BitAiForm Definition="proposed" Busy="proposalSession.IsGenerating" Submitted="proposalSubmitted" OnSubmit="values => proposalSubmitted = true" />
 }
 """;
-    private readonly string example6CsharpCode = """
+    private readonly string example7CsharpCode = """
 // A scripted transport that streams the JSON Schema of a booking form (see the next tab).
 private readonly BitAiChatSession proposalSession = new(AiDemoInteractiveTransports.ProposesForm());
 private BitAiRenderScheduler? renderScheduler;
@@ -208,7 +248,7 @@ public async ValueTask DisposeAsync()
     await proposalSession.DisposeAsync();
 }
 """;
-    private const string example6TransportCode = """"
+    private const string example7TransportCode = """"
 public static IBitAiTransport ProposesForm() =>
     new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
     {
@@ -247,12 +287,12 @@ public static IBitAiTransport ProposesForm() =>
         await yielder(new BitAiMessageCompletedEvent());
     }));
 """";
-    private readonly DemoCodeFile[] example6CodeFiles =
+    private readonly DemoCodeFile[] example7CodeFiles =
     [
-        new("AiDemoInteractiveTransports.cs", example6TransportCode),
+        new("AiDemoInteractiveTransports.cs", example7TransportCode),
     ];
 
-    private readonly string example7RazorCode = """
+    private readonly string example8RazorCode = """
 <BitAiForm @ref="feedbackFormRef"
            Definition="feedbackForm"
            Busy="feedbackBusy"
@@ -267,7 +307,7 @@ public static IBitAiTransport ProposesForm() =>
 
 <BitAiForm Definition="contactForm" Disabled />
 """;
-    private readonly string example7CsharpCode = ContactSampleCode + """
+    private readonly string example8CsharpCode = ContactSampleCode + """
 
 private readonly BitAiFormDefinition feedbackForm = new()
 {
@@ -310,7 +350,34 @@ private void StartOver()
 }
 """;
 
-    private readonly string example8RazorCode = """
+    private readonly string example9RazorCode = """
+<BitParams Parameters="formParams">
+    <BitAiForm Definition="contactForm" />
+
+    <BitAiForm Definition="feedbackForm" Styles="@(new() { Title = "font-style: italic" })" />
+</BitParams>
+""";
+    private readonly string example9CsharpCode = ContactSampleCode + """
+
+private readonly BitAiFormDefinition feedbackForm = new()
+{
+    Title = "Rate the answer",
+    SubmitLabel = "Send feedback",
+    CancelLabel = "Not now",
+    Fields =
+    [
+        new("rating") { Type = BitAiFieldType.Select, Required = true, Options = ["5", "4", "3", "2", "1"], OptionLabels = ["Excellent", "Good", "Fair", "Poor", "Wrong"] },
+        new("comment") { Type = BitAiFieldType.MultilineText, Placeholder = "What would have made it better?" },
+    ],
+};
+
+private readonly BitAiFormParams[] formParams =
+[
+    new() { Styles = new() { Root = "border-radius: 1rem", Title = "color: var(--bit-clr-pri)", SubmitButton = new() { Root = "border-radius: 1rem" } } },
+];
+""";
+
+    private readonly string example10RazorCode = """
 <style>
     .custom-form {
         border-width: 0;
@@ -340,16 +407,16 @@ private void StartOver()
     <BitAiForm Definition="contactForm" />
 </div>
 """;
-    private readonly string example8CsharpCode = ContactSampleCode + "\n" + EventSampleCode;
+    private readonly string example10CsharpCode = ContactSampleCode + "\n" + EventSampleCode;
 
-    private readonly string example9RazorCode = """
+    private readonly string example11RazorCode = """
 <BitAiForm Dir="BitDir.Rtl" Definition="persianForm" />
 
 <div dir="rtl">
     <BitAiForm Definition="persianForm" />
 </div>
 """;
-    private readonly string example9CsharpCode = """
+    private readonly string example11CsharpCode = """
 private readonly BitAiFormDefinition persianForm = new()
 {
     Title = "تماس با ما",

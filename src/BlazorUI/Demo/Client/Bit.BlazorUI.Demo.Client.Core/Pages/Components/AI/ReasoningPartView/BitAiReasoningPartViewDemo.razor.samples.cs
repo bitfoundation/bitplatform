@@ -93,6 +93,23 @@ public async ValueTask DisposeAsync()
 private readonly BitAiUiOptions openReasoningOptions = BitAiUiOptions.Default with { CollapseReasoning = false };";
 
     private readonly string example4RazorCode = @"
+<BitParams Parameters=""reasoningPartViewParams"">
+    <BitAiReasoningPartView Part=""finishedReasoning"" />
+
+    <BitAiReasoningPartView Part=""finishedReasoning"" Styles=""@(new() { Title = ""font-weight: bold;"" })"" />
+</BitParams>";
+    private readonly string example4CsharpCode = @"
+// finishedReasoning is the one of the Basic example.
+private readonly BitAiReasoningPartViewParams[] reasoningPartViewParams =
+[
+    new()
+    {
+        Style = ""max-width: 32rem;"",
+        Styles = new() { Icon = ""color: goldenrod;"", Title = ""font-style: italic;"" },
+    },
+];";
+
+    private readonly string example5RazorCode = @"
 <style>
     .custom-class {
         max-width: 32rem;
@@ -135,11 +152,11 @@ private readonly BitAiUiOptions openReasoningOptions = BitAiUiOptions.Default wi
     <BitAiReasoningPartView Part=""finishedReasoning"" />
 </div>";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitAiOptionsProvider UiOptions=""persianOptions"">
     <BitAiReasoningPartView Dir=""BitDir.Rtl"" Part=""rtlReasoning"" />
 </BitAiOptionsProvider>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private readonly BitAiReasoningPart rtlReasoning = new(""""""
     کاربر درباره‌ی **هزینه‌ی یک رفت‌وبرگشت** می‌پرسد. دو هزینه را باید از هم جدا کرد:
 

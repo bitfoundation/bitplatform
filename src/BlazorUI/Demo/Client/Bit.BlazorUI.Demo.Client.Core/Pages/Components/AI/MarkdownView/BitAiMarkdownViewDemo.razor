@@ -26,9 +26,12 @@
         </BitText>
         <br />
         <BitText>
-            It needs no chat session: parse the Markdown with <b>BitAiMarkdownParser.Parse</b> and hand it the document. For text
-            that is still arriving, use <BitLink Href="/components/ai/streamingmarkdown">BitAiStreamingMarkdown</BitLink>, which
-            parses incrementally and renders through this view. The registered renderers (<b>BitAiRendererRegistry</b>) are a
+            It needs no chat session: parse the Markdown with <b>BitAiMarkdownParser.Parse</b> and hand it the document - a public
+            tree of <b>BitAiMarkdownBlock</b> and <b>BitAiMarkdownInline</b> nodes (see the tables below) an app can read as well.
+            For text that is still arriving, use <BitLink Href="/components/ai/streamingmarkdown">BitAiStreamingMarkdown</BitLink>,
+            which parses incrementally and renders through this view. Fenced code is drawn by a
+            <BitLink Href="/components/ai/codeblockview">BitAiCodeBlockView</BitLink>, whose page lists the highlighted languages
+            and how to add one, and resolved citation markers by a <BitLink Href="/components/ai/citationmarker">BitAiCitationMarker</BitLink>. The registered renderers (<b>BitAiRendererRegistry</b>) are a
             singleton: register them once, at startup, with <b>ConfigureRenderers</b> of <b>AddBitBlazorUIAIServices</b>.
         </BitText>
         <br />
@@ -54,9 +57,11 @@
 
         <DemoExample Title="Blocks" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
             <div>
-                Tables with aligned columns (scrolling in their own frame), block quotes, task lists, thematic breaks and fenced code -
-                every fenced block is a <BitLink Href="/components/ai/codeblockview">BitAiCodeBlockView</BitLink> with its header,
-                copy button and highlighting.
+                Tables, their columns aligned by the delimiter row (<b>:---</b> start, <b>:---:</b> centre, <b>---:</b> end - see
+                <BitLink Href="#column-alignment-enum">BitAiColumnAlignment</BitLink>) and scrolling in their own frame; block
+                quotes; task lists, whose checkboxes show what the model wrote and cannot be changed; thematic breaks; and fenced
+                code - every fenced block is a <BitLink Href="/components/ai/codeblockview">BitAiCodeBlockView</BitLink> with its
+                header, copy button and highlighting in the language of its fence.
             </div>
             <br />
             <BitAiMarkdownView Document="blocksDocument" />
@@ -66,11 +71,14 @@
             <div>
                 <b>ShowCaret</b> draws a caret at the end of the text while the document is still being written - one parsed with
                 <b>isComplete</b> false, the sign that more text is on its way. It follows the paragraph or the heading being
-                written, and after a code block, a table or a blank line it waits where the next block will start.
-                <b>BitAiUiOptions.ShowStreamingCaret</b> turns it off for every view at once.
+                written (the first view), and after a code block, a table or a blank line it waits where the next block will start
+                (the second). A document with no block yet draws none. <b>BitAiUiOptions.ShowStreamingCaret</b> turns it off for
+                every view at once.
             </div>
             <br />
             <BitAiMarkdownView Document="openDocument" ShowCaret />
+            <br />
+            <BitAiMarkdownView Document="openCodeDocument" ShowCaret />
         </DemoExample>
 
         <DemoExample Title="Footnotes & headings" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
@@ -156,7 +164,9 @@
                 placeholder is a button that loads the image, named after its alternative text. A relative URL is resolved against
                 the base address of the page before the policy is asked, so the host list here names this site's own host too.
                 Inline <b>data:</b> images are fetched from nowhere, so they are shown under every policy but <b>Block</b> - unless
-                <b>AllowDataImages</b> is off. Script-capable URL schemes are neutralised whatever the policy.
+                <b>AllowDataImages</b> is off. Script-capable URL schemes are neutralised whatever the policy. <b>Decide</b> is
+                what the views ask the policy about each image, and an app can ask it about images of its own: below, what the
+                policy decides about the clock.
             </div>
             <br />
             <BitChoiceGroup Label="Policy" Items="imageModeItems" @bind-Value="imageMode" @bind-Value:after="UpdateImageOptions" Horizontal />
@@ -164,6 +174,8 @@
             <BitAiOptionsProvider UiOptions="imageOptions">
                 <BitAiMarkdownView Document="imagesDocument" />
             </BitAiOptionsProvider>
+            <br />
+            <div>Images.Decide(the clock): <b>@imageOptions.Images.Decide(clockUrl)</b></div>
         </DemoExample>
 
         <DemoExample Title="Untrusted content" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
@@ -186,6 +198,11 @@
                 as links, mathematics, footnotes, citation markers and heading ids are on by default, and
                 <b>SoftBreaksAsHardBreaks</b> - for chat models that write one line per sentence and mean the breaks - is off. Hand
                 them to <b>BitAiMarkdownParser.Parse</b>; a BitAiStreamingMarkdown reads them from <b>BitAiUiOptions.Markdown</b>.
+                Turn each off to see what it reads: the text it covers stays as written. The view here is handed the
+                <b>Citations</b> of the Citations example, so <b>[1]</b> is a chip while <b>CitationMarkers</b> is on.
+                <b>HideDanglingDelimiters</b> only matters while text streams (see the Markdown options of
+                <BitLink Href="/components/ai/streamingmarkdown">AiStreamingMarkdown</BitLink>), and
+                <b>AllowRawHtml</b> is shown under Untrusted content above.
             </div>
             <br />
             <BitStack Horizontal Wrap AutoHeight Gap="0.5rem 1.5rem">
@@ -194,13 +211,53 @@
                 <BitToggle @bind-Value="parseStrikethrough" @bind-Value:after="Reparse" Text="Strikethrough" />
                 <BitToggle @bind-Value="parseAutoLinks" @bind-Value:after="Reparse" Text="AutoLinks" />
                 <BitToggle @bind-Value="parseMath" @bind-Value:after="Reparse" Text="Math" />
+                <BitToggle @bind-Value="parseFootnotes" @bind-Value:after="Reparse" Text="Footnotes" />
+                <BitToggle @bind-Value="parseCitationMarkers" @bind-Value:after="Reparse" Text="CitationMarkers" />
                 <BitToggle @bind-Value="parseSoftBreaks" @bind-Value:after="Reparse" Text="SoftBreaksAsHardBreaks" />
             </BitStack>
             <br />
-            <BitAiMarkdownView Document="optionsDocument" />
+            <BitAiMarkdownView Document="optionsDocument" Citations="citations" />
         </DemoExample>
 
-        <DemoExample Title="Cascading parameters" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <DemoExample Title="More of the syntax" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div>
+                The parser reads the rest of the CommonMark a model writes too: a heading underlined with <b>=</b> or <b>-</b>; a
+                link with a title, which is its tooltip; a reference link (<b>[text][label]</b>) whose address a <b>[label]: url</b>
+                line gives anywhere in the text; <b>www.</b> addresses and addresses or e-mails in angle brackets as links (while
+                <b>AutoLinks</b> is on); a backslash - or two spaces - at the end of a line as a line break; backslash escapes and
+                HTML entities; a block indented by four spaces as code; and a numbered list that starts at any number.
+            </div>
+            <br />
+            <BitAiMarkdownView Document="syntaxDocument" />
+        </DemoExample>
+
+        <DemoExample Title="The document tree" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+            <div>
+                The parsed document is a public tree (see <b>BitAiMarkdownBlock</b> and <b>BitAiMarkdownInline</b> below), so an app
+                can read an answer as well as show it - for a table of contents, or to offer the code it holds. Here its headings,
+                with the ids the view gives them (the view's own <b>Id</b> before the heading's <b>Id</b>), and its code blocks,
+                found by walking the blocks down through the quotes and the list items.
+            </div>
+            <br />
+            <BitAiMarkdownView Id="guide" Document="treeDocument" />
+            <br />
+            <div>Headings:</div>
+            <ul>
+                @foreach (var heading in Walk(treeDocument.Blocks).OfType<BitAiHeadingBlock>())
+                {
+                    <li>level @heading.Level, "@TextOf(heading.Inlines)", id <b>guide-@heading.Id</b></li>
+                }
+            </ul>
+            <div>Code blocks:</div>
+            <ul>
+                @foreach (var block in Walk(treeDocument.Blocks).OfType<BitAiCodeBlock>())
+                {
+                    <li>@(block.Language ?? "text"), @(block.Code.Split('\n').Length) line(s)</li>
+                }
+            </ul>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
             <div>
                 <b>BitParams</b> with a <b>BitAiMarkdownViewParams</b> sets the defaults of every Markdown view inside it - here the
                 styles of its links and quotes, bold and italic. A parameter of the view itself still wins, and wins whole: the
@@ -215,7 +272,7 @@
             </BitParams>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> every element the view renders - each
                 under a class of its own, so the prose styles never reach into what a registered renderer draws. The public
@@ -241,7 +298,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <DemoExample Title="RTL" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
             <div>
                 In right-to-left text the Markdown reads from the right - list markers, the bar of a quote, the columns of a table
                 and its end-aligned cells - whether the direction comes from <b>Dir</b> or from a <b>dir</b> attribute around it.

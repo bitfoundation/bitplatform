@@ -164,6 +164,32 @@ private readonly BitAiArtifactPart missingPart = new("art-deleted");
 """;
 
     private readonly string example4RazorCode = """
+<BitParams Parameters="artifactPartViewParams">
+    <BitAiArtifactPartView Part="notesPart" Conversation="conversation" />
+
+    <BitAiArtifactPartView Part="missingPart" Conversation="conversation" />
+
+    <BitAiArtifactPartView Part="notesPart" Conversation="conversation" Styles="@(new() { ArtifactView = new() { Title = "font-style: italic;" } })" />
+</BitParams>
+""";
+    private readonly string example4CsharpCode = ConversationSampleCode + """
+
+private readonly BitAiArtifactPart missingPart = new("art-deleted");
+
+private readonly BitAiArtifactPartViewParams[] artifactPartViewParams =
+[
+    new()
+    {
+        Styles = new()
+        {
+            ArtifactView = new() { Header = "background-color: var(--bit-clr-pri-light);" },
+            Placeholder = new() { Root = "border-style: dashed;" },
+        },
+    },
+];
+""";
+
+    private readonly string example5RazorCode = """
 <style>
     .custom-placeholder {
         font-style: italic;
@@ -183,19 +209,19 @@ private readonly BitAiArtifactPart missingPart = new("art-deleted");
                        Conversation="conversation"
                        Style="--bit-AiArtifactView-border-color: #d2691e; --bit-AiArtifactView-radius: 0; --bit-AiArtifactView-header-background: #d2691e1a" />
 """;
-    private readonly string example4CsharpCode = ConversationSampleCode + """
+    private readonly string example5CsharpCode = ConversationSampleCode + """
 
 private readonly BitAiArtifactPart missingPart = new("art-deleted");
 """;
 
-    private readonly string example5RazorCode = """
+    private readonly string example6RazorCode = """
 <BitAiArtifactPartView Dir="BitDir.Rtl" Part="persianPart" Conversation="conversation" />
 
 <div dir="rtl">
     <BitAiArtifactPartView Part="missingPart" Conversation="conversation" />
 </div>
 """;
-    private readonly string example5CsharpCode = """"
+    private readonly string example6CsharpCode = """"
 private readonly BitAiConversation conversation = new();
 private readonly BitAiArtifactPart persianPart = new("art-persian");
 private readonly BitAiArtifactPart missingPart = new("art-deleted");

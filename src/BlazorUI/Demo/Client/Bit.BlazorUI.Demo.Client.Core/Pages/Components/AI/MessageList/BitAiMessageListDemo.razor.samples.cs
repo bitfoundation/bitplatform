@@ -29,8 +29,20 @@ private static BitAiConversation CreateConversation()
     <BitAiPromptInput Session=""session"" />
 </div>";
     private readonly string example2CsharpCode = @"
-// A transport that echoes the prompt, over the conversation built in the Basic example.
+// A transport that echoes the prompt, over a conversation that already has some history.
 private readonly BitAiChatSession session = new(AiDemoTransports.Echo(), CreateConversation());
+
+private static BitAiConversation CreateConversation()
+{
+    var conversation = new BitAiConversation();
+
+    conversation.AddMessage(BitAiRole.User, ""What is BitAiMessageList for?"");
+    conversation.AddMessage(BitAiRole.Assistant, ""It renders the **transcript** of a conversation: every message, laid out by role, in a column that scrolls."");
+    conversation.AddMessage(BitAiRole.User, ""Does it follow a streaming reply?"");
+    conversation.AddMessage(BitAiRole.Assistant, ""Only while you are at the bottom. Scroll up to re-read and it leaves you where you are."");
+
+    return conversation;
+}
 
 public ValueTask DisposeAsync() => session.DisposeAsync();";
 
@@ -115,21 +127,29 @@ private static BitAiConversation CreateSystemConversation()
     private readonly string example6RazorCode = @"
 @implements IAsyncDisposable
 
+<BitToggle @bind-Value=""autoScroll"" Text=""AutoScroll"" />
+
 <div style=""height:440px;display:flex;flex-direction:column"">
-    <BitAiMessageList @ref=""followList""
-                      Conversation=""followSession.Conversation""
-                      Session=""followSession""
-                      OnPinnedChange=""HandlePinnedChange"" />
-    <div style=""position:relative"">
-        <BitAiScrollToLatest Visible=""@(isPinned is false)"" OnClick=""ScrollToLatest"" />
-        <BitAiPromptInput Session=""followSession"" />
-    </div>
+    <BitAiOptionsProvider UiOptions=""@(autoScroll ? null : manualScrollOptions)"">
+        <BitAiMessageList @ref=""followList""
+                          Conversation=""followSession.Conversation""
+                          Session=""followSession""
+                          OnPinnedChange=""HandlePinnedChange"" />
+        <div style=""position:relative"">
+            <BitAiScrollToLatest Visible=""@(isPinned is false)"" OnClick=""ScrollToLatest"" />
+            <BitAiPromptInput Session=""followSession"" />
+        </div>
+    </BitAiOptionsProvider>
 </div>
 
 <div>Following the newest message: <b>@isPinned</b></div>";
     private readonly string example6CsharpCode = @"
 private BitAiMessageList? followList;
 private bool isPinned = true;
+
+// Null hands the registered options down unchanged, which follow new content (AutoScroll is on by default).
+private bool autoScroll = true;
+private readonly BitAiUiOptions manualScrollOptions = new() { AutoScroll = false };
 
 // A transport that streams a long Markdown answer, over a conversation that already has some history.
 private readonly BitAiChatSession followSession = new(AiDemoTransports.Markdown(), AiDemoConversations.Long(12));
@@ -233,9 +253,54 @@ private void HandleFeedback(BitAiMessageFeedback feedback)
 private bool isDisabled = true;
 private readonly BitAiChatSession disabledSession = new(AiDemoTransports.Echo(), CreateConversation());
 
+private static BitAiConversation CreateConversation()
+{
+    var conversation = new BitAiConversation();
+
+    conversation.AddMessage(BitAiRole.User, ""What is BitAiMessageList for?"");
+    conversation.AddMessage(BitAiRole.Assistant, ""It renders the **transcript** of a conversation: every message, laid out by role, in a column that scrolls."");
+    conversation.AddMessage(BitAiRole.User, ""Does it follow a streaming reply?"");
+    conversation.AddMessage(BitAiRole.Assistant, ""Only while you are at the bottom. Scroll up to re-read and it leaves you where you are."");
+
+    return conversation;
+}
+
 public ValueTask DisposeAsync() => disabledSession.DisposeAsync();";
 
     private readonly string example10RazorCode = @"
+<BitParams Parameters=""listParams"">
+    <div style=""height:260px;display:flex;flex-direction:column"">
+        <BitAiMessageList Conversation=""cascadeConversation"" />
+    </div>
+
+    <div style=""height:260px;display:flex;flex-direction:column"">
+        <BitAiMessageList Conversation=""cascadeOwnConversation"" HideSystemMessages />
+    </div>
+</BitParams>";
+    private readonly string example10CsharpCode = @"
+private readonly BitAiMessageListParams[] listParams =
+[
+    new()
+    {
+        HideSystemMessages = false,
+        Styles = new() { Root = ""border:1px dashed var(--bit-clr-brd-pri);border-radius:0.5rem"" },
+    }
+];
+private readonly BitAiConversation cascadeConversation = CreateSystemConversation();
+private readonly BitAiConversation cascadeOwnConversation = CreateSystemConversation();
+
+private static BitAiConversation CreateSystemConversation()
+{
+    var conversation = new BitAiConversation();
+
+    conversation.AddMessage(BitAiRole.System, ""You are a concise assistant. Answer in one sentence."");
+    conversation.AddMessage(BitAiRole.User, ""What is a transcript?"");
+    conversation.AddMessage(BitAiRole.Assistant, ""The written record of a conversation, in the order it was said."");
+
+    return conversation;
+}";
+
+    private readonly string example11RazorCode = @"
 <style>
     .custom-list {
         border-radius: 1rem;
@@ -264,16 +329,28 @@ public ValueTask DisposeAsync() => disabledSession.DisposeAsync();";
     <BitAiMessageList Conversation=""variablesConversation""
                       Style=""--bit-AiMessageList-max-width:30rem;--bit-AiMessageList-gap:0.75rem;--bit-AiMessageList-padding:1rem;--bit-AiMessageList-scrollbar-color:var(--bit-clr-pri)"" />
 </div>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private readonly BitAiConversation styleConversation = CreateConversation();
 private readonly BitAiConversation classConversation = CreateConversation();
-private readonly BitAiConversation variablesConversation = CreateConversation();";
+private readonly BitAiConversation variablesConversation = CreateConversation();
 
-    private readonly string example11RazorCode = @"
+private static BitAiConversation CreateConversation()
+{
+    var conversation = new BitAiConversation();
+
+    conversation.AddMessage(BitAiRole.User, ""What is BitAiMessageList for?"");
+    conversation.AddMessage(BitAiRole.Assistant, ""It renders the **transcript** of a conversation: every message, laid out by role, in a column that scrolls."");
+    conversation.AddMessage(BitAiRole.User, ""Does it follow a streaming reply?"");
+    conversation.AddMessage(BitAiRole.Assistant, ""Only while you are at the bottom. Scroll up to re-read and it leaves you where you are."");
+
+    return conversation;
+}";
+
+    private readonly string example12RazorCode = @"
 <div style=""height:300px;display:flex;flex-direction:column"">
     <BitAiMessageList Dir=""BitDir.Rtl"" Conversation=""rtlConversation"" />
 </div>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private readonly BitAiConversation rtlConversation = CreateRtlConversation();
 
 private static BitAiConversation CreateRtlConversation()

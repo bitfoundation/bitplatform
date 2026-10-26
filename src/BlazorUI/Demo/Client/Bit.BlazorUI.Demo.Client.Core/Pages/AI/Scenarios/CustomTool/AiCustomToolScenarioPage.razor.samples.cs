@@ -46,9 +46,18 @@ builder.Services.AddBitBlazorUIAIServices(ai =>
             invocation.Progress.Report(new BitAiToolProgress(0.7, "Ranking results"));
             await Task.Delay(500, token);
 
+            var source = new BitAiCitationSource("docs-render-modes", "Render modes")
+            {
+                Kind = BitAiSourceKind.Document,
+                SiteName = "Product documentation",
+                Url = "https://example.com/docs/render-modes",
+            };
+
+            // The value the card reads, the text the model reads, and the source the reply lists.
             return BitAiToolOutcome.Success(SearchHits(args.Query), AiDemoJsonContext.Default.SearchResult) with
             {
                 Text = $"2 passages matched “{args.Query}”.",
+                Citations = [new BitAiCitation(BitAiId.New("cit"), source)],
             };
         },
         definition => definition with { Title = "Search docs", Icon = BitIconName.Search }));
@@ -56,6 +65,66 @@ builder.Services.AddBitBlazorUIAIServices(ai =>
     // Wherever search_docs is called, SearchResultCard draws it instead of the default card.
     ai.ConfigureRenderers(renderers => renderers.RegisterTool<SearchResultCard>("search_docs"));
 });
+
+static SearchResult SearchHits(string query) => new(query,
+[
+    new SearchHit("Render modes", 0.94),
+    new SearchHit("Circuit lifetime", 0.81),
+]);
+""";
+
+    private const string example1JsonContextCode = """
+public sealed record SearchArgs(string Query);
+
+public sealed record SearchResult(string Query, IReadOnlyList<SearchHit> Hits);
+
+public sealed record SearchHit(string Title, double Score);
+
+// The web defaults write "hits", "title" and "score", which is what SearchResultCard reads back.
+[JsonSourceGenerationOptions(JsonSerializerDefaults.Web)]
+[JsonSerializable(typeof(SearchArgs))]
+[JsonSerializable(typeof(SearchResult))]
+public partial class AiDemoJsonContext : JsonSerializerContext
+{
+}
+""";
+
+    private const string example1TransportCode = """
+// AiScriptedTransport and AiScript are the demo's helpers - see the Basic chat scenario.
+public static IBitAiTransport CallsTool(string toolName, string arguments, string answer, string? declinedAnswer = null) =>
+    new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
+    {
+        var outcome = AiScript.ToolOutcomeThisTurn(request);
+
+        await yielder(new BitAiMessageStartedEvent());
+
+        // First round trip: ask for the tool, streaming its arguments, and stop; the session runs it.
+        if (outcome is null)
+        {
+            await yielder(new BitAiStatusEvent("Deciding what to look up"));
+            await AiScript.Pause(500, token);
+
+            var callId = BitAiId.NewToolCallId();
+            await yielder(new BitAiToolCallStartedEvent(callId, toolName));
+
+            foreach (var slice in AiScript.Slice(arguments, 6))
+            {
+                await AiScript.Pause(40, token);
+                await yielder(new BitAiToolCallDeltaEvent(callId, slice));
+            }
+
+            await yielder(new BitAiToolCallCompletedEvent(callId));
+            await yielder(new BitAiMessageCompletedEvent(BitAiFinishReason.ToolCalls));
+            return;
+        }
+
+        // Second round trip: the result is on the request.
+        var reply = outcome.IsSuccess ? answer : declinedAnswer ?? $"I did not run {toolName}, so nothing was changed.";
+
+        await foreach (var evt in AiScript.Write(reply, 4, 12, token)) await yielder(evt);
+        await yielder(AiScript.Usage(request, reply));
+        await yielder(new BitAiMessageCompletedEvent());
+    }));
 """;
 
     private const string example1CardCode = """
@@ -124,5 +193,7 @@ builder.Services.AddBitBlazorUIAIServices(ai =>
     [
         new("Program.cs", example1ProgramCode),
         new("SearchResultCard.razor", example1CardCode),
+        new("AiDemoJsonContext.cs", example1JsonContextCode),
+        new("AiDemoToolTransports.cs", example1TransportCode),
     ];
 }

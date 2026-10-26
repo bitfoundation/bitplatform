@@ -48,6 +48,15 @@
 
         <DocSection Id="how-it-works" Title="How it works">
             <p>
+                The transport first shows what it is doing (<code>BitAiStatusEvent("Searching the documentation")</code>,
+                cleared with <code>BitAiStatusEvent(null)</code>), then writes the answer a sentence at a time, sending a
+                <code>BitAiCitationEvent</code> after each sentence it can source. Its <code>BitAiCitation</code> names a
+                <code>BitAiCitationSource</code> - an id, a title, its <code>Kind</code> (web page, document...), its
+                <code>Url</code>, <code>SiteName</code> and <code>Description</code> - and the <code>Quote</code> it relies
+                on. A citation sent without offsets is not anchored anywhere: it only adds its source to the list under the
+                answer.
+            </p>
+            <p>
                 A <code>BitAiCitation</code> carries character offsets into the text it supports
                 (<code>StartIndex</code>, <code>EndIndex</code>). The renderer inserts a marker at each offset before
                 parsing, so the superscript lands mid-sentence instead of being collected into a footnote nobody connects to

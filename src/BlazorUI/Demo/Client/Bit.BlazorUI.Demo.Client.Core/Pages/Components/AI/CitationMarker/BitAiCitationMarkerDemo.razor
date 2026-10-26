@@ -137,15 +137,17 @@
 
         <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
             <div>
-                <b>Style</b> and <b>Class</b> (or <b>Styles.Root</b> and <b>Classes.Root</b>) reach the button. The public
-                <b>--bit-AiCitationMarker-*</b> variables re-skin the markers from <b>:root</b>, an ancestor or <b>Style</b> -
-                at rest and under the pointer.
+                <b>Style</b> and <b>Class</b> reach the button, and so do <b>Styles</b> and <b>Classes</b> - the marker is one
+                element, so their <b>Root</b> is all they hold. The public <b>--bit-AiCitationMarker-*</b> variables re-skin the
+                markers from <b>:root</b>, an ancestor or <b>Style</b> - at rest and under the pointer.
             </div>
             <br />
-            @* A plain element of this page for the scoped ::deep rule of the custom class to anchor on. *@
+            @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
             <div>
                 A styled marker<BitAiCitationMarker Citation="renderModes" Style="font-weight: bold; text-decoration: underline" />,
-                a classy one<BitAiCitationMarker Citation="circuits" Class="custom-class" />.
+                a classy one<BitAiCitationMarker Citation="circuits" Class="custom-class" />,
+                one with Styles<BitAiCitationMarker Citation="renderModes" Styles="@(new() { Root = "border-radius: 50%; font-style: italic" })" />
+                and one with Classes<BitAiCitationMarker Citation="circuits" Classes="@(new() { Root = "custom-root" })" />.
             </div>
             <br />
             <div style="--bit-AiCitationMarker-background: #fef3c7;

@@ -84,6 +84,7 @@ builder.Services.AddBitBlazorUIAIServices(ai =>
 """;
 
     private const string example1TransportCode = """"
+// AiScriptedTransport and AiScript are the demo's helpers - see the Basic chat scenario.
 public static IBitAiTransport ProposesForm() => new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
 {
     await yielder(new BitAiMessageStartedEvent());

@@ -127,6 +127,36 @@ public partial class BitAiJsonViewDemo
                 },
             ]
         },
+        new()
+        {
+            Id = "partial-json",
+            Title = "BitAiPartialJson",
+            Description = "A static class that parses JSON still being written - the payload a model streams a few characters at a time - which is what lets a tree, a table or a form fill in as it arrives rather than all at once at the end. The repair closes the open containers, drops an incomplete trailing key or literal, and keeps a string still being written, so a text grows character by character; it never invents data: every value in the result was in the input.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "TryParse(json)",
+                    Type = "JsonElement?",
+                    DefaultValue = "",
+                    Description = "Parses JSON that may be truncated, repairing it first when it does not parse as it is. Null for null or blank text, and for text no repair makes valid.",
+                },
+                new()
+                {
+                    Name = "TryParseComplete(json)",
+                    Type = "JsonElement?",
+                    DefaultValue = "",
+                    Description = "Parses complete JSON only, returning null rather than throwing on invalid (or null or blank) text.",
+                },
+                new()
+                {
+                    Name = "Repair(json)",
+                    Type = "string?",
+                    DefaultValue = "",
+                    Description = "Repairs truncated JSON text into the closest valid document, for an app that keeps the text rather than the element; null when nothing usable has arrived yet.",
+                },
+            ]
+        },
     ];
 
     private readonly List<ComponentCssVariable> componentCssVariables =
@@ -144,6 +174,11 @@ public partial class BitAiJsonViewDemo
     ];
 
 
+
+    private readonly BitAiJsonViewParams[] jsonViewParams =
+    [
+        new() { DefaultExpandDepth = 1, Styles = new() { Key = "font-weight: bold" } },
+    ];
 
     private static JsonElement Parse(string json) => JsonDocument.Parse(json).RootElement;
 

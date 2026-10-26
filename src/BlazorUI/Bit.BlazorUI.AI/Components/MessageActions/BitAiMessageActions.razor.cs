@@ -9,7 +9,8 @@ namespace Bit.BlazorUI;
 /// </summary>
 /// <remarks>
 /// The actions are revealed when the message they belong to is hovered or holds the focus, on a device that can hover;
-/// on a touch screen, under a preference for more contrast, and when <see cref="Pinned"/> is set, they are always shown.
+/// on a touch screen, at phone width, under a preference for more contrast, and when <see cref="Pinned"/> is set, they
+/// are always shown.
 /// The metadata is always shown: the model by the name the registered <see cref="IBitAiModelCatalog"/> gives it, and
 /// the time in the <see cref="BitAiUiOptions.TimeZone"/> in force, else in the browser's.
 /// </remarks>

@@ -46,8 +46,11 @@
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
             <div>
-                A <b>Message</b> is laid out by its role: the user's as a bubble at the end of the line, the assistant's as
+                A <b>Message</b> is laid out by its role: the user's as a bubble at the end of the line, under the files it
+                carries (its <b>Attachments</b>, as chips), the assistant's as
                 prose with its actions (revealed on hover) and the model and usage under it, a system message as a centered note.
+                Without a <b>Session</b> a reply offers copy and feedback only, and a user message no action at all. The model and
+                the usage show because this site's options turn <b>ShowModelName</b> and <b>ShowUsage</b> on.
             </div>
             <br />
             <div class="message-surface" style="display:flex;flex-direction:column;gap:1.5rem">
@@ -160,7 +163,23 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <DemoExample Title="Cascading parameters" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                <b>BitParams</b> with a <b>BitAiChatMessageParams</b> sets the classes and styles of every message inside it -
+                the messages a BitAiMessageList or a BitAiChat draws included, since neither sets them itself; a message's own
+                value wins, as a whole (the third keeps its own <b>Styles</b>).
+            </div>
+            <br />
+            <BitParams Parameters="messageParams">
+                <div class="message-surface" style="display:flex;flex-direction:column;gap:1.5rem">
+                    <BitAiChatMessage Message="cascadeUserMessage" />
+                    <BitAiChatMessage Message="cascadeAssistantMessage" />
+                    <BitAiChatMessage Message="cascadeOwnMessage" Styles="@(new() { Bubble = "font-style:italic" })" />
+                </div>
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>
                 <b>Style</b> / <b>Class</b> reach the root, <b>Styles</b> / <b>Classes</b> each part (the bubble, the body,
                 the system pill, the actions and the editor, with the class-styles of the buttons and of the
@@ -182,7 +201,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <DemoExample Title="RTL" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>Use BitAiChatMessage in right-to-left (RTL).</div>
             <br />
             <div class="message-surface" style="display:flex;flex-direction:column;gap:1.5rem">

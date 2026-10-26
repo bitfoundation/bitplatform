@@ -31,7 +31,23 @@ public sealed record BitAiToolCallContext(BitAiToolCallPart Call, BitAiMessage M
 /// </summary>
 /// <param name="Artifact">The artifact to render.</param>
 /// <param name="IsExpanded">Whether the artifact is being shown full size rather than as a card.</param>
-public sealed record BitAiArtifactContext(BitAiArtifact Artifact, bool IsExpanded = false);
+public sealed record BitAiArtifactContext(BitAiArtifact Artifact, bool IsExpanded = false)
+{
+    /// <summary>
+    /// The version on screen: the latest one (<see cref="BitAiArtifact.Version"/>) unless an earlier one was picked in
+    /// the version selector of the panel.
+    /// </summary>
+    public int Version { get; init; } = Artifact.Version;
+
+    /// <summary>
+    /// The content of the version on screen - what a renderer draws, rather than <see cref="BitAiArtifact.Content"/>, which
+    /// is always the latest one's.
+    /// </summary>
+    public string? Content { get; init; } = Artifact.Content;
+
+    /// <summary>Whether the version on screen is the latest one, which is the only one that can still be streaming.</summary>
+    public bool IsLatest => Version == Artifact.Version;
+}
 
 /// <summary>
 /// What a custom structured-data renderer is given.

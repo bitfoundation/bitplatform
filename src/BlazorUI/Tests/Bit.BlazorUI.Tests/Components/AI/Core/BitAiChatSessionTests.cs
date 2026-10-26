@@ -259,6 +259,36 @@ public class BitAiChatSessionTests
     }
 
     [TestMethod]
+    public async Task AToolThatThrowsFailsItsCallWithItsMessageButNeverItsStackTrace()
+    {
+        var thrown = new InvalidOperationException("The index is being rebuilt.");
+        var registry = new BitAiToolRegistry();
+        registry.Register(BitAiTool.Create(new BitAiToolDefinition("search_docs"), (_, _) => throw thrown));
+
+        var transport = new BitAiFakeTransport(_ =>
+        [
+            new BitAiToolCallStartedEvent("c1", "search_docs") { Arguments = JsonDocument.Parse("{}").RootElement },
+            new BitAiMessageCompletedEvent(),
+        ]);
+
+        await using var session = Create(transport, registry,
+            new BitAiChatSessionOptions { Pacing = null, MaxToolRoundtrips = 1 });
+
+        await session.SubmitAsync("search");
+
+        var call = Assert.IsExactInstanceOfType<BitAiToolCallPart>(session.Conversation.Messages[^1].Parts[0]);
+        var error = call.Result!.Error!;
+
+        // The detail is shown to the user behind a disclosure, so the trace stays on Exception, for the app's logs.
+        Assert.AreEqual(BitAiToolCallStatus.Failed, call.Status);
+        Assert.AreEqual(BitAiErrorKind.Tool, error.Kind);
+        Assert.AreEqual("The index is being rebuilt.", error.Message);
+        Assert.IsNull(error.Detail);
+        Assert.AreSame(thrown, error.Exception);
+        Assert.IsTrue(error.IsRetryable);
+    }
+
+    [TestMethod]
     public async Task ADestructiveToolWaitsForApprovalAndRunsOnceApproved()
     {
         var executed = false;

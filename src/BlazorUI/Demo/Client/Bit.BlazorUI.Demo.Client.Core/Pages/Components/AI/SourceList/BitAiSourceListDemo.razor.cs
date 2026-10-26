@@ -29,7 +29,7 @@ public partial class BitAiSourceListDemo
             Name = "OnSourceClick",
             Type = "EventCallback<BitAiCitationSource>",
             DefaultValue = "",
-            Description = "The callback for when the user activates a source card, with its source. When set, the cards become buttons instead of links.",
+            Description = "The callback for when the user activates a source card, with its source. When set, the cards become buttons instead of links - for revealing the source in place. A disabled list hands over nothing.",
             LinkType = LinkType.Link,
             Href = "/components/ai/sourcecard#citation-source",
         },
@@ -38,7 +38,7 @@ public partial class BitAiSourceListDemo
             Name = "ShowHeading",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Shows the heading (BitAiStrings.Sources, \"Sources\") above the cards.",
+            Description = "Shows the heading (BitAiStrings.Sources, \"Sources\") above the cards, which names the list for assistive technologies. Left out, the list is named by the same words all the same.",
         },
         new()
         {
@@ -144,6 +144,11 @@ public partial class BitAiSourceListDemo
 
         isAsking = false;
     }
+
+
+
+    // Disabled.
+    private BitAiCitationSource? disabledClicked;
 
 
 

@@ -128,7 +128,7 @@ public partial class BitAiStructuredDataViewDemo
                     Name = "Value",
                     Type = "JsonElement?",
                     DefaultValue = "null",
-                    Description = "The parsed value once complete; until then a lenient parse of the JSON received so far (BitAiPartialJson.TryParse), null while nothing parseable has arrived."
+                    Description = "The parsed value once complete; until then a lenient parse of the JSON received so far (BitAiPartialJson.TryParse, described on the AiJsonView page, /components/ai/jsonview#partial-json), null while nothing parseable has arrived."
                 },
                 new()
                 {
@@ -176,9 +176,59 @@ public partial class BitAiStructuredDataViewDemo
         },
         new()
         {
+            Id = "renderer-registry",
+            Title = "BitAiRendererRegistry",
+            Description = "Where an app registers its own renderers, which the components resolve before their built-in views. A singleton: register at startup (AddBitBlazorUIAIServices(ai => ai.ConfigureRenderers(renderers => ...))) and treat the entries as fixed afterwards - every entry is app-wide. A region with renderers of its own cascades a registry of its own (new BitAiRendererRegistry(), in a CascadingValue), which every AI component inside it uses in place of the registered one. These are its structured-data members; the whole registry is on the AiMessagePartView page (/components/ai/messagepartview#renderer-registry).",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "RegisterStructured(schemaName, renderer)",
+                    Type = "void",
+                    DefaultValue = "",
+                    Description = "Registers a BitAiStructuredDataRenderer for a schema name (case does not matter): every BitAiStructuredDataView of a part with that SchemaName renders it in place of the table, list or tree it would draw, inside a BitAiRendererBoundary; a later registration replaces an earlier one. A part with no SchemaName is never drawn by one.",
+                    LinkType = LinkType.Link,
+                    Href = "#structured-data-renderer",
+                },
+                new()
+                {
+                    Name = "FindStructured(schemaName)",
+                    Type = "BitAiStructuredDataRenderer?",
+                    DefaultValue = "",
+                    Description = "The renderer registered for a schema name, or null (also for a null name) when the view reads the shape of the value itself.",
+                },
+            ]
+        },
+        new()
+        {
+            Id = "structured-data-renderer",
+            Title = "BitAiStructuredDataRenderer",
+            Description = "The delegate a custom structured-data renderer is: public delegate RenderFragment BitAiStructuredDataRenderer(BitAiStructuredDataContext context). It is called each time the view's parameters are set - on every render of a streaming answer - so it reads what it draws off the part as it renders; a part still streaming holds a partial Value (or none yet).",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "context",
+                    Type = "BitAiStructuredDataContext",
+                    DefaultValue = "",
+                    Description = "The part and the message it belongs to.",
+                    LinkType = LinkType.Link,
+                    Href = "#structured-data-context",
+                },
+                new()
+                {
+                    Name = "(return value)",
+                    Type = "RenderFragment",
+                    DefaultValue = "",
+                    Description = "The markup drawn in place of the built-in table, list or tree.",
+                },
+            ]
+        },
+        new()
+        {
             Id = "structured-data-context",
             Title = "BitAiStructuredDataContext",
-            Description = "What a renderer registered with BitAiRendererRegistry.RegisterStructured(schemaName, context => ...) is handed, through ConfigureRenderers of AddBitBlazorUIAIServices.",
+            Description = "What a renderer registered with BitAiRendererRegistry.RegisterStructured(schemaName, context => ...) is handed (a sealed record), through ConfigureRenderers of AddBitBlazorUIAIServices.",
             Parameters =
             [
                 new()
@@ -264,6 +314,11 @@ public partial class BitAiStructuredDataViewDemo
         await optionsSession.DisposeAsync();
         await bookingSession.DisposeAsync();
     }
+
+    private readonly BitAiStructuredDataViewParams[] structuredDataViewParams =
+    [
+        new() { Styles = new() { List = "border-radius: 1rem", Label = "color: var(--bit-clr-pri)" } },
+    ];
 
     private readonly BitAiStructuredDataPart persianFlightPart = new(Parse("""
         { "شماره پرواز": "IR 721", "مبدا": "تهران", "مقصد": "لندن", "صندلی": 2, "قابل استرداد": true, "غذا": null }

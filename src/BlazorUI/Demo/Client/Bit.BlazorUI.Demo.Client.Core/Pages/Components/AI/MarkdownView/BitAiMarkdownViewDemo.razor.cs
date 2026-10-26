@@ -30,9 +30,9 @@ public partial class BitAiMarkdownViewDemo
             Name = "Document",
             Type = "BitAiMarkdownDocument?",
             DefaultValue = "null",
-            Description = "The parsed document to render (BitAiMarkdownParser.Parse, or the incremental parser a BitAiStreamingMarkdown holds). Nothing is rendered while it is null.",
+            Description = "The parsed document to render (BitAiMarkdownParser.Parse, or the incremental parser a BitAiStreamingMarkdown holds). Nothing is rendered while it is null. It is a public tree of blocks and inlines an app can read too (see The document tree).",
             LinkType = LinkType.Link,
-            Href = "#markdown-parser",
+            Href = "#markdown-document",
         },
         new()
         {
@@ -99,7 +99,7 @@ public partial class BitAiMarkdownViewDemo
         {
             Id = "markdown-parser",
             Title = "BitAiMarkdownParser",
-            Description = "Parses Markdown into the BitAiMarkdownDocument the view renders: a CommonMark subset with the GitHub-flavoured extensions models write (tables, task lists, strikethrough, autolinks, footnotes, mathematics), built to parse a half-written answer many times a second rather than for conformance. Every block records whether the source ended inside it, which is what keeps streaming settled. For text that grows, BitAiIncrementalMarkdownParser (new(options), Parse(source, isComplete), Reset()) reuses the work done for the text already seen; BitAiStreamingMarkdown holds one.",
+            Description = "Parses Markdown into the BitAiMarkdownDocument the view renders: a CommonMark subset with the GitHub-flavoured extensions models write (tables, task lists, strikethrough, autolinks, footnotes, mathematics), built to parse a half-written answer many times a second rather than for conformance. Every block records whether the source ended inside it, which is what keeps streaming settled. A text with link reference or footnote definitions is parsed twice - once to collect them, once to resolve the references - since a definition may follow the text that uses it. For text that grows, the BitAiIncrementalMarkdownParser a BitAiStreamingMarkdown holds (see its page) reuses the work done for the text already seen.",
             Parameters =
             [
                 new()
@@ -108,6 +108,26 @@ public partial class BitAiMarkdownViewDemo
                     Type = "BitAiMarkdownDocument",
                     DefaultValue = "",
                     Description = "Parses the Markdown with the given extensions (BitAiMarkdownOptions.Default when null). isComplete false marks the trailing block open: more text is expected. A null or empty source is an empty document.",
+                    LinkType = LinkType.Link,
+                    Href = "#markdown-document",
+                },
+            ]
+        },
+        new()
+        {
+            Id = "inline-parser",
+            Title = "BitAiInlineParser",
+            Description = "Parses the inline content of one block - emphasis, strikethrough, code spans, links, images, mathematics, footnote references and citation markers - for an app that shows a line of model text (a title, a label) without the blocks around it. The block parser runs it on every paragraph, heading and table cell.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Parse(string? text, BitAiMarkdownOptions? options = null, bool isComplete = true)",
+                    Type = "List<BitAiMarkdownInline>",
+                    DefaultValue = "",
+                    Description = "The inlines of the text, with the given extensions (BitAiMarkdownOptions.Default when null). isComplete false - more text expected - leaves an unmatched emphasis or code delimiter at the end out rather than showing it. Reference links and footnotes need the definitions of a whole document, so they are not resolved here. A null or empty text has none.",
+                    LinkType = LinkType.Link,
+                    Href = "#markdown-inlines",
                 },
             ]
         },
@@ -115,12 +135,54 @@ public partial class BitAiMarkdownViewDemo
         {
             Id = "markdown-document",
             Title = "BitAiMarkdownDocument",
-            Description = "A parsed document: what BitAiMarkdownParser.Parse returns and the view renders. Its blocks are a tree of BitAiMarkdownBlock nodes (paragraphs, headings, lists, quotes, tables, fenced code, mathematics, ...), each of which records whether the source ended inside it (IsOpen).",
+            Description = "A parsed document: what BitAiMarkdownParser.Parse returns and the view renders, itself a BitAiMarkdownBlock. Its blocks are a tree of BitAiMarkdownBlock nodes (paragraphs, headings, lists, quotes, tables, fenced code, mathematics, ...) whose text is BitAiMarkdownInline nodes - a public tree an app can walk (see The document tree).",
             Parameters =
             [
-                new() { Name = "Blocks", Type = "List<BitAiMarkdownBlock>", DefaultValue = "[]", Description = "The blocks of the document, in order." },
-                new() { Name = "Footnotes", Type = "List<BitAiFootnoteBlock>", DefaultValue = "[]", Description = "The footnotes the text cites, in the order they are first cited and numbered from one; a definition nobody cites is dropped." },
+                new() { Name = "Blocks", Type = "List<BitAiMarkdownBlock>", DefaultValue = "[]", Description = "The blocks of the document, in order.", LinkType = LinkType.Link, Href = "#markdown-blocks" },
+                new() { Name = "Footnotes", Type = "List<BitAiFootnoteBlock>", DefaultValue = "[]", Description = "The footnotes the text cites, in the order they are first cited and numbered from one; a definition nobody cites is dropped. The view lists them after the blocks, each with a link back to every reference to it.", LinkType = LinkType.Link, Href = "#markdown-blocks" },
+                new() { Name = "IsOpen", Type = "bool", DefaultValue = "false", Description = "Whether the document was parsed with more text expected (isComplete false), whatever its last block is - the condition for the caret of ShowCaret." },
                 new() { Name = "Empty", Type = "BitAiMarkdownDocument", DefaultValue = "", Description = "Static: an empty document." },
+            ]
+        },
+        new()
+        {
+            Id = "markdown-blocks",
+            Title = "BitAiMarkdownBlock",
+            Description = "The base of every block of a document (a BitAiMarkdownNode, the base of every node). The parser fills the blocks in; to an app they are read-only. The block types it produces are listed under its one member.",
+            Parameters =
+            [
+                new() { Name = "IsOpen", Type = "bool", DefaultValue = "false", Description = "True when the block may still grow because the source ended inside it. A renderer defers on it what would flicker: an open fenced block is not highlighted, and the caret follows an open paragraph or heading." },
+                new() { Name = "BitAiParagraphBlock", Type = "sealed class", DefaultValue = "", Description = "A run of text ended by a blank line or another block: Inlines (List<BitAiMarkdownInline>).", LinkType = LinkType.Link, Href = "#markdown-inlines" },
+                new() { Name = "BitAiHeadingBlock", Type = "sealed class", DefaultValue = "", Description = "A heading: Level (int, 1 to 6; the view renders it one level lower, so a # is an h2), Inlines, and Id (string? - bit-ai-h-<slug> while HeadingIds is on, which the view renders after its own id)." },
+                new() { Name = "BitAiCodeBlock", Type = "sealed class", DefaultValue = "", Description = "A code block: Code (string, without the fences), Language (string?, from the info string) and Meta (string?, the rest of the info string), and IsFenced (bool: fenced with ``` or ~~~, or indented by four spaces)." },
+                new() { Name = "BitAiListBlock", Type = "sealed class", DefaultValue = "", Description = "A bulleted or numbered list: IsOrdered (bool), Start (int, the first number of a numbered list), IsLoose (bool, items separated by blank lines and spaced apart) and Items (List<BitAiListItemBlock>)." },
+                new() { Name = "BitAiListItemBlock", Type = "sealed class", DefaultValue = "", Description = "An item of a list: IsChecked (bool? - the checkbox of a task-list item, null for an item without one) and Blocks (List<BitAiMarkdownBlock>)." },
+                new() { Name = "BitAiQuoteBlock", Type = "sealed class", DefaultValue = "", Description = "A block quote: Blocks (List<BitAiMarkdownBlock>)." },
+                new() { Name = "BitAiTableBlock", Type = "sealed class", DefaultValue = "", Description = "A pipe table: Header (List<List<BitAiMarkdownInline>>, the inlines of each header cell), Rows (List<List<List<BitAiMarkdownInline>>>, the cells of each body row) and Alignments (List<BitAiColumnAlignment>, one per column).", LinkType = LinkType.Link, Href = "#column-alignment-enum" },
+                new() { Name = "BitAiThematicBreakBlock", Type = "sealed class", DefaultValue = "", Description = "A horizontal rule (---, *** or ___), with no member of its own." },
+                new() { Name = "BitAiFootnoteBlock", Type = "sealed class", DefaultValue = "", Description = "A footnote the text cites, listed on the Footnotes of the document: Label (string, as written, without the caret), Number (int, its position in the list), ReferenceCount (int, how many references cite it, each with a back-link) and Blocks." },
+                new() { Name = "BitAiMathBlock", Type = "sealed class", DefaultValue = "", Description = "Displayed mathematics ($$...$$): Expression (string, without the delimiters)." },
+                new() { Name = "BitAiHtmlBlock", Type = "sealed class", DefaultValue = "", Description = "A block of raw HTML, read only while AllowRawHtml is on (otherwise the markup is text of a paragraph): Html (string)." },
+            ]
+        },
+        new()
+        {
+            Id = "markdown-inlines",
+            Title = "BitAiMarkdownInline",
+            Description = "The base of every inline node - the text of a paragraph, a heading, a list item or a table cell (a BitAiMarkdownNode too). The inline types the parser produces, filled in by it and read-only to an app:",
+            Parameters =
+            [
+                new() { Name = "BitAiTextInline", Type = "sealed class", DefaultValue = "", Description = "Literal text: Text (string), which is also its ToString()." },
+                new() { Name = "BitAiEmphasisInline", Type = "sealed class", DefaultValue = "", Description = "Emphasised text: IsStrong (bool: true for **strong**, false for *ordinary*) and Inlines." },
+                new() { Name = "BitAiStrikethroughInline", Type = "sealed class", DefaultValue = "", Description = "Struck-through text (~~...~~): Inlines." },
+                new() { Name = "BitAiCodeInline", Type = "sealed class", DefaultValue = "", Description = "A code span: Code (string)." },
+                new() { Name = "BitAiLinkInline", Type = "sealed class", DefaultValue = "", Description = "A link: Url (string, as written - the view renders it only when its scheme is safe), Title (string?), Inlines (the link text) and IsAutoLink (bool: a bare or angle-bracketed address rather than [text](url))." },
+                new() { Name = "BitAiImageInline", Type = "sealed class", DefaultValue = "", Description = "An image: Url (string), Alt (string, the alternative text) and Title (string?). The view loads it under the image policy." },
+                new() { Name = "BitAiLineBreakInline", Type = "sealed class", DefaultValue = "", Description = "A line break inside a paragraph: IsHard (bool - true for a backslash or two spaces at the end of the line, and for every break under SoftBreaksAsHardBreaks; a soft one renders as a space)." },
+                new() { Name = "BitAiMathInline", Type = "sealed class", DefaultValue = "", Description = "Inline mathematics ($...$): Expression (string, without the delimiters)." },
+                new() { Name = "BitAiCitationMarkerInline", Type = "sealed class", DefaultValue = "", Description = "A citation marker written [n] (with CitationMarkers on): Number (int) - what the Citations of the view resolve it against - and CitationId (string?)." },
+                new() { Name = "BitAiFootnoteReferenceInline", Type = "sealed class", DefaultValue = "", Description = "A footnote reference written [^label]: Label (string), Number (int, assigned in the order the footnotes are first cited) and Ordinal (int, which reference to the footnote it is, from one)." },
+                new() { Name = "BitAiRawHtmlInline", Type = "sealed class", DefaultValue = "", Description = "Raw inline HTML, read only while AllowRawHtml is on (otherwise the markup is text): Html (string). An element closed later in the same text is one inline, its content included (<kbd>Ctrl</kbd>). The view renders it as markup only while the options in force allow raw HTML too, and as text otherwise." },
             ]
         },
         new()
@@ -240,6 +302,19 @@ public partial class BitAiMarkdownViewDemo
                 new() { Name = "Hide", Value = "2", Description = "Render the alternative text in place of the image." },
             ]
         },
+        new()
+        {
+            Id = "column-alignment-enum",
+            Name = "BitAiColumnAlignment",
+            Description = "How a column of a pipe table is aligned (the Alignments of a BitAiTableBlock), as its delimiter row writes it.",
+            Items =
+            [
+                new() { Name = "None", Value = "0", Description = "No alignment written (---): the cells sit at the start of the reading direction." },
+                new() { Name = "Left", Value = "1", Description = "Left aligned (:---): drawn at the start of the reading direction, as None is." },
+                new() { Name = "Center", Value = "2", Description = "Centre aligned (:---:)." },
+                new() { Name = "Right", Value = "3", Description = "Right aligned (---:): drawn at the end of the reading direction, so it follows a right-to-left text." },
+            ]
+        },
     ];
 
     private readonly List<ComponentCssVariable> componentCssVariables =
@@ -311,6 +386,16 @@ public partial class BitAiMarkdownViewDemo
     private const string openMarkdown = "The answer is still being written, so its last paragraph is open";
 
     private readonly BitAiMarkdownDocument openDocument = BitAiMarkdownParser.Parse(openMarkdown, isComplete: false);
+
+    private const string openCodeMarkdown = """
+        Install the package:
+
+        ```bash
+        dotnet add package Bit.BlazorUI.AI
+        ```
+        """;
+
+    private readonly BitAiMarkdownDocument openCodeDocument = BitAiMarkdownParser.Parse(openCodeMarkdown, isComplete: false);
 
     private const string footnotesMarkdown = """
         ## Setup
@@ -521,6 +606,8 @@ public partial class BitAiMarkdownViewDemo
 
     [Inject] private NavigationManager Navigation { get; set; } = default!;
 
+    private const string clockUrl = "https://img.icons8.com/fluency/2x/clock.png";
+
     private const string imagesMarkdown = """
         From this site: ![A portrait of a woman](_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female-72.png)
 
@@ -593,6 +680,10 @@ public partial class BitAiMarkdownViewDemo
         ~~Struck through~~, a bare URL https://bitplatform.dev and $x^2$.
         One line,
         and the next.
+
+        A cited claim [1] and a footnote[^1].
+
+        [^1]: Listed under the text.
         """;
 
     private bool parseTables = true;
@@ -600,6 +691,8 @@ public partial class BitAiMarkdownViewDemo
     private bool parseStrikethrough = true;
     private bool parseAutoLinks = true;
     private bool parseMath = true;
+    private bool parseFootnotes = true;
+    private bool parseCitationMarkers = true;
     private bool parseSoftBreaks;
     private BitAiMarkdownDocument optionsDocument = BitAiMarkdownParser.Parse(optionsMarkdown);
 
@@ -612,11 +705,91 @@ public partial class BitAiMarkdownViewDemo
             Strikethrough = parseStrikethrough,
             AutoLinks = parseAutoLinks,
             Math = parseMath,
+            Footnotes = parseFootnotes,
+            CitationMarkers = parseCitationMarkers,
             SoftBreaksAsHardBreaks = parseSoftBreaks,
         };
 
         optionsDocument = BitAiMarkdownParser.Parse(optionsMarkdown, options);
     }
+
+    private const string syntaxMarkdown = """
+        A heading underlined
+        --------------------
+
+        A link with a title: [the docs](https://learn.microsoft.com/aspnet/core/blazor "The Blazor documentation"), and a
+        [reference link][docs] whose address is given further down. www.bitplatform.dev,
+        <https://github.com/bitfoundation/bitplatform> and <hello@bitplatform.dev> are links too.
+
+        A backslash at the end of a line\
+        breaks it. Escapes keep \*stars\* and \[brackets\] as they are, and entities read as their characters:
+        &copy; &rarr; &#8364;.
+
+            An indented block is code: dotnet run
+
+        3. A numbered list may start at any number
+        4. and counts on from there.
+
+        [docs]: https://learn.microsoft.com/aspnet/core/blazor
+        """;
+
+    private readonly BitAiMarkdownDocument syntaxDocument = BitAiMarkdownParser.Parse(syntaxMarkdown);
+
+    private const string treeMarkdown = """
+        ## Install
+
+        Add the package to the project:
+
+        ```bash
+        dotnet add package Bit.BlazorUI.AI
+        ```
+
+        ## Register
+
+        > Register the services once, at startup:
+        >
+        > ```csharp
+        > builder.Services.AddBitBlazorUIAIServices();
+        > ```
+
+        1. Then put a chat on a page:
+
+           ```razor
+           <BitAiChat />
+           ```
+        """;
+
+    private readonly BitAiMarkdownDocument treeDocument = BitAiMarkdownParser.Parse(treeMarkdown);
+
+    // Every block of the document in reading order, the ones inside the quotes and the list items included.
+    private static IEnumerable<BitAiMarkdownBlock> Walk(IEnumerable<BitAiMarkdownBlock> blocks)
+    {
+        foreach (var block in blocks)
+        {
+            yield return block;
+
+            if (block is BitAiQuoteBlock quote)
+            {
+                foreach (var child in Walk(quote.Blocks)) yield return child;
+            }
+            else if (block is BitAiListBlock list)
+            {
+                foreach (var child in Walk(list.Items.SelectMany(item => item.Blocks))) yield return child;
+            }
+        }
+    }
+
+    // The plain text of a run of inlines: the words of a heading without its emphasis, its code spans or its links.
+    private static string TextOf(IEnumerable<BitAiMarkdownInline> inlines) =>
+        string.Concat(inlines.Select(inline => inline switch
+        {
+            BitAiTextInline text => text.Text,
+            BitAiCodeInline code => code.Code,
+            BitAiEmphasisInline emphasis => TextOf(emphasis.Inlines),
+            BitAiStrikethroughInline strike => TextOf(strike.Inlines),
+            BitAiLinkInline link => TextOf(link.Inlines),
+            _ => string.Empty,
+        }));
 
     private const string paramsMarkdown = """
         > A link of a view inside the BitParams, such as [this one](https://bitplatform.dev), is bold - unless its view sets Styles of its own.

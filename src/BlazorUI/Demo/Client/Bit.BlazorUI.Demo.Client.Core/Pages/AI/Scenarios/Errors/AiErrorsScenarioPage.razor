@@ -37,6 +37,20 @@
                 technical <code>Detail</code>. Components branch on that rather than on any provider's exception type.
             </p>
             <p>
+                Here the first request writes a few words, then sends a terminal <code>BitAiErrorEvent</code>: a rate limit
+                (<code>BitAiErrorKind.RateLimit</code>) that is retryable after three seconds. The reply fails with the error
+                on it, the session keeps it as <code>LastError</code>, and the error view shows the message, how long to wait
+                (<code>RetryAfter</code>, until that time is up) and, since it is retryable, Try again - which calls
+                <code>BitAiChatSession.RetryAsync()</code>: the failed reply is removed and the same user message is sent
+                again, and this time the transport answers.
+            </p>
+            <p>
+                The session words two failures itself, with the same shape: a turn that runs out of
+                <code>BitAiChatSessionOptions.Timeout</code> fails as a retryable <code>Timeout</code>, and a stopped turn keeps
+                what it had written and is marked cancelled. An error sent with <code>isTerminal: false</code> does not end
+                the reply: it adds a <code>BitAiErrorPart</code> and the stream goes on.
+            </p>
+            <p>
                 An exception that escapes the transport is translated into the same shape (unless
                 <code>BitAiChatSessionOptions.CatchTransportExceptions</code> is turned off), so an unhandled failure still
                 renders as a retryable error rather than tearing down the page. Whatever had already streamed is kept: losing

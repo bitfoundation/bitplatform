@@ -216,6 +216,65 @@ private readonly BitAiGenerativeUiPart faultyPart = Card("forecast_card", """{ "
     private readonly string example6CsharpCode = FaultySampleCode;
 
     private readonly string example7RazorCode = """
+<BitAiJsonView Value="ticketCard.Schema" />
+
+<div>IsComplete: <b>@ticketBinding.IsComplete</b></div>
+<ul>
+    @foreach (var (name, value) in ticketBinding.Parameters)
+    {
+        <li>Bound: <b>@name</b> = @value</li>
+    }
+    @foreach (var failure in ticketBinding.Failures)
+    {
+        <li>@failure.Kind: <b>@failure.PropertyName</b> - @failure</li>
+    }
+    @foreach (var name in ticketBinding.IgnoredProperties)
+    {
+        <li>Ignored: <b>@name</b></li>
+    }
+</ul>
+""";
+    private readonly string example7CsharpCode = """"
+// using System.Diagnostics.CodeAnalysis;
+
+// A component of the page's own (a .razor file would do as well).
+public sealed class TicketCard : ComponentBase
+{
+    [Parameter, System.ComponentModel.Description("The event the ticket is for.")]
+    public string Event { get; set; } = string.Empty;
+
+    [Parameter, System.ComponentModel.Description("How many seats.")]
+    public int Seats { get; set; }
+
+    [Parameter, System.ComponentModel.Description("The row of the seats.")]
+    public string? Row { get; set; }
+
+    // Set by the app, never by a model: left out of the schema, and ignored when a payload sends it.
+    [Parameter, BitAiGenerativeIgnore]
+    public string? TenantId { get; set; }
+
+    // A callback is never bindable, whatever is registered.
+    [Parameter] public EventCallback OnBuy { get; set; }
+
+    protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) =>
+        builder.AddContent(0, $"{Event}: {Seats} seat(s) in row {Row}");
+}
+
+// Registered in a registry of the page's own; an app registers in the one of ConfigureGenerativeUi.
+private static readonly BitAiGenerativeComponent ticketCard = RegisterTicketCard();
+
+[UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "TicketCard is kept whole by the annotation of Register, and its bindable parameters are strings and integers.")]
+[UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "TicketCard's bindable parameters are strings and integers, which need no code generated at run time.")]
+private static BitAiGenerativeComponent RegisterTicketCard() =>
+    new BitAiGenerativeUiRegistry().Register<TicketCard>("ticket_card", "Shows a ticket for an event.", "Event");
+
+// row binds; seats is not a number; Event (required) is missing; tenantId, onBuy and color are not offered, so ignored.
+private readonly BitAiGenerativeBindResult ticketBinding = BitAiGenerativePropsBinder.Bind(ticketCard, JsonDocument.Parse("""
+    { "row": "B", "seats": "two", "tenantId": "someone-else", "onBuy": "alert(1)", "color": "red" }
+    """).RootElement);
+"""";
+
+    private readonly string example8RazorCode = """
 <BitToggle @bind-Value="showDiagnostics" Text="Show binding errors" />
 
 <BitParams Parameters="generativeParams">
@@ -223,13 +282,13 @@ private readonly BitAiGenerativeUiPart faultyPart = Card("forecast_card", """{ "
     <BitAiGenerativeUiView Part="faultyPart" ShowBindingErrors="false" />
 </BitParams>
 """;
-    private readonly string example7CsharpCode = FaultySampleCode + """
+    private readonly string example8CsharpCode = FaultySampleCode + """
 
 private bool showDiagnostics = true;
 private BitAiGenerativeUiViewParams[] generativeParams => [new() { ShowBindingErrors = showDiagnostics }];
 """;
 
-    private readonly string example8RazorCode = """
+    private readonly string example9RazorCode = """
 <style>
     .custom-diagnostics {
         padding: 0.5rem;
@@ -248,21 +307,21 @@ private BitAiGenerativeUiViewParams[] generativeParams => [new() { ShowBindingEr
     <BitAiGenerativeUiView Part="faultyPart" ShowBindingErrors />
 </div>
 """;
-    private readonly string example8CsharpCode = CardSampleCode + """"
+    private readonly string example9CsharpCode = CardSampleCode + """"
 
 private readonly BitAiGenerativeUiPart osloPart = Card("forecast_card", """{ "city": "Oslo", "degrees": -3, "condition": "Snow", "humidity": 81 }""");
 
 private readonly BitAiGenerativeUiPart faultyPart = Card("forecast_card", """{ "degrees": "very cold", "condition": "Windy", "wind": "40 km/h" }""");
 """";
 
-    private readonly string example9RazorCode = """
+    private readonly string example10RazorCode = """
 <BitAiGenerativeUiView Dir="BitDir.Rtl" Part="tehranPart" />
 
 <div dir="rtl">
     <BitAiGenerativeUiView Part="unregisteredPart" />
 </div>
 """;
-    private readonly string example9CsharpCode = CardSampleCode + """"
+    private readonly string example10CsharpCode = CardSampleCode + """"
 
 private readonly BitAiGenerativeUiPart tehranPart = Card("forecast_card", """{ "city": "تهران", "degrees": 24, "condition": "آفتابی", "humidity": 30 }""");
 

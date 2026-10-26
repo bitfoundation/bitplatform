@@ -38,9 +38,19 @@
                 near-identical code blocks through the transcript.
             </p>
             <p>
+                Here every turn writes a line of text, then opens <code>art-readme</code> with its <code>Kind</code>
+                (<code>BitAiArtifactKind.Document</code>), its title and its <code>Language</code> (<code>markdown</code>),
+                streams the body a dozen characters at a time, and completes it with a <code>Summary</code> of what changed,
+                which labels the version. The same id on a later turn is what makes it a revision: the conversation
+                (<code>BitAiConversation.Artifacts</code>) keeps one <code>BitAiArtifact</code> whose versions grow, and the
+                message gets a <code>BitAiArtifactPart</code> pointing at the version it produced. An artifact that is not
+                streamed is sent whole, with <code>Content</code> on the created event, or as a <code>Url</code>.
+            </p>
+            <p>
                 Each message shows the artifact opened at the version that turn produced, so a later revision never
                 rewrites what an earlier turn appears to have said. Copy and download work on the version being viewed, and
-                an HTML artifact renders in a sandboxed frame with same-origin access denied.
+                an HTML artifact renders in a sandboxed frame with same-origin access denied. A kind of the app's own gets
+                its own view through <code>renderers.RegisterArtifact(kind, ...)</code>.
             </p>
         </DocSection>
 

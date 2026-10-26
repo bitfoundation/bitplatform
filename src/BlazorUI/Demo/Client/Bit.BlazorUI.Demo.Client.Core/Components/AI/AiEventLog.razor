@@ -1,0 +1,74 @@
+﻿@implements IAsyncDisposable
+
+@* The events a session applies, in the order they arrive, in the AI streaming scenario. A run of the same event is one
+   line with a count, and every reply starts a log of its own.
+
+   It listens to the session's reducer (BitAiChatSession.Processor, a BitAiConversationStreamProcessor), whose
+   EventApplied is raised for every event once it has been applied - on the thread that applied it, so the log is drawn
+   through a BitAiRenderScheduler, at most once every 100 ms. Only this component renders for it: the chat beside it is
+   not drawn again for the log. *@
+@if (_lines.Length == 0)
+{
+    <BitText Element="p" Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">Nothing yet. Send a message.</BitText>
+}
+else
+{
+    <ul>
+        @foreach (var line in _lines)
+        {
+            <li><code>@line.Type</code>@(line.Count > 1 ? $" × {line.Count}" : null)</li>
+        }
+    </ul>
+}
+
+@code {
+    private readonly List<Line> _log = [];
+    private Line[] _lines = [];
+    private BitAiRenderScheduler? _renders;
+    private BitAiChatSession? _subscribed;
+
+    /// <summary>The session whose events are listed.</summary>
+    [Parameter, EditorRequired]
+    public BitAiChatSession Session { get; set; } = default!;
+
+    protected override void OnInitialized() =>
+        _renders = new BitAiRenderScheduler(() => InvokeAsync(Refresh), TimeSpan.FromMilliseconds(100));
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_subscribed, Session)) return;
+
+        if (_subscribed is not null) _subscribed.Processor.EventApplied -= OnEventApplied;
+        _subscribed = Session;
+        _subscribed.Processor.EventApplied += OnEventApplied;
+    }
+
+    private void OnEventApplied(BitAiEvent evt)
+    {
+        lock (_log)
+        {
+            if (evt is BitAiMessageStartedEvent) _log.Clear();
+
+            if (_log.Count > 0 && _log[^1].Type == evt.Type) _log[^1] = _log[^1] with { Count = _log[^1].Count + 1 };
+            else _log.Add(new Line(evt.Type, 1));
+        }
+
+        _renders?.Request();
+    }
+
+    private void Refresh()
+    {
+        lock (_log) _lines = [.. _log];
+
+        StateHasChanged();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_subscribed is not null) _subscribed.Processor.EventApplied -= OnEventApplied;
+        if (_renders is not null) await _renders.DisposeAsync();
+    }
+
+    // One line of the log: an event type (BitAiEvent.Type) and how many arrived in a row.
+    private sealed record Line(string Type, int Count);
+}

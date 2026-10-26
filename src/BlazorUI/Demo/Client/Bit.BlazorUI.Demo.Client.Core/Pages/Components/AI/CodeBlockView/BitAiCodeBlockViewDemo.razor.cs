@@ -276,7 +276,7 @@ public partial class BitAiCodeBlockViewDemo
                 new() { Name = "Constant", Value = "12", Description = "A language constant such as a boolean or null literal: bit-aicbv-cst, --bit-AiCodeBlockView-constant-color." },
                 new() { Name = "Inserted", Value = "13", Description = "An added line in a diff: bit-aicbv-ins, --bit-AiCodeBlockView-inserted-color." },
                 new() { Name = "Deleted", Value = "14", Description = "A removed line in a diff: bit-aicbv-del, --bit-AiCodeBlockView-deleted-color." },
-                new() { Name = "Meta", Value = "15", Description = "A file header or hunk marker in a diff, a preprocessor line: bit-aicbv-met, --bit-AiCodeBlockView-meta-color." },
+                new() { Name = "Meta", Value = "15", Description = "A file header or hunk marker in a diff: bit-aicbv-met, --bit-AiCodeBlockView-meta-color." },
                 new() { Name = "Label", Value = "16", Description = "A lifetime or loop label, such as Rust's 'a or 'outer, set in italics: bit-aicbv-lab, --bit-AiCodeBlockView-label-color." },
                 new() { Name = "Variable", Value = "17", Description = "A variable introduced by a sigil, such as PowerShell's $name: bit-aicbv-vrb, --bit-AiCodeBlockView-variable-color." },
             ]
@@ -309,7 +309,7 @@ public partial class BitAiCodeBlockViewDemo
         new() { Name = "--bit-AiCodeBlockView-constant-color", DefaultValue = "var(--bit-clr-sec-fg)", Description = "Color of true, false, null and the other constants." },
         new() { Name = "--bit-AiCodeBlockView-inserted-color", DefaultValue = "var(--bit-clr-suc-fg)", Description = "Color of the lines a diff adds." },
         new() { Name = "--bit-AiCodeBlockView-deleted-color", DefaultValue = "var(--bit-clr-err-fg)", Description = "Color of the lines a diff removes." },
-        new() { Name = "--bit-AiCodeBlockView-meta-color", DefaultValue = "color-mix(in srgb, var(--bit-clr-fg-ter), var(--bit-clr-fg-pri) 15%)", Description = "Color of the diff headers and the preprocessor lines. The tertiary text color has a little of the text color mixed in, as the comments' has." },
+        new() { Name = "--bit-AiCodeBlockView-meta-color", DefaultValue = "color-mix(in srgb, var(--bit-clr-fg-ter), var(--bit-clr-fg-pri) 15%)", Description = "Color of the file headers and the hunk markers of a diff. The tertiary text color has a little of the text color mixed in, as the comments' has." },
         new() { Name = "--bit-AiCodeBlockView-label-color", DefaultValue = "the type color", Description = "Color of the lifetimes and loop labels (set in italics); it falls back to --bit-AiCodeBlockView-type-color." },
         new() { Name = "--bit-AiCodeBlockView-variable-color", DefaultValue = "the property color", Description = "Color of the variables written with a sigil ($name); it falls back to --bit-AiCodeBlockView-property-color." },
     ];
@@ -589,6 +589,8 @@ public partial class BitAiCodeBlockViewDemo
     private const string tokenPowerShellCode = """
         $files = Get-ChildItem -Path $env:TEMP -Recurse | Where-Object { $_.Length -gt 1MB }
         """;
+
+    private string? highlighterCode = "var total = Math.Max(count, 1) * 2; // never zero";
 
     private readonly BitAiCodeBlockViewParams[] codeBlockParams = [new() { ShowHeader = false }];
 

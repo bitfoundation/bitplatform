@@ -55,10 +55,15 @@
                 only submits once it is valid.
             </p>
             <p>
-                A structured renderer registered for the <code>booking_form</code> schema replaces the default view, so the
-                user sees a form rather than the JSON behind it. The renderer, <code>BookingForm</code>, hands the values to
-                whatever page cascaded a <code>BookingSubmitted</code> callback, so it stays reusable and the page decides
-                what a booking means.
+                The transport writes a line of text, then streams the JSON Schema as <code>BitAiStructuredDataDeltaEvent</code>s
+                named <code>booking_form</code>. A structured renderer registered for that name
+                (<code>renderers.RegisterStructured("booking_form", context =&gt; ...)</code>, a
+                <code>BitAiStructuredDataRenderer</code> handed a <code>BitAiStructuredDataContext</code> with the part and its
+                message) replaces the default view, so the user sees a form rather than the JSON behind it. The renderer,
+                <code>BookingForm</code>, hands the values - keyed by the schema's property names - to whatever page
+                cascaded a <code>BookingSubmitted</code> callback, so it stays reusable and the page decides what a booking
+                means: this one lists them beside the chat, where a real one would make the booking, and could tell the
+                model what was booked with the session's <code>SubmitAsync</code>.
             </p>
             <p>
                 Fields appear as the schema streams in, and anything already typed survives a new field arriving. What the

@@ -18,8 +18,8 @@
 
     <ChildContent>
         <DocSection Id="demo" Title="Live demo"
-                    Description="Drag a file onto the composer, paste a screenshot, or use the paperclip. Files over 2 MB are turned away, and listed beside the chat.">
-            <DemoExample Title="Three ways in, one limit" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+                    Description="Drag a file onto the composer, paste a screenshot, or use the paperclip, and send: the reply says what arrived and sends it back. Files over 2 MB are turned away, and listed beside the chat.">
+            <DemoExample Title="Three ways in, one limit" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
                 <AiScenarioFrame AsideLabel="Turned away">
                     <Aside>
                         <BitText Element="h4" Typography="BitTypography.Subtitle2">Turned away</BitText>
@@ -57,16 +57,31 @@
                 <li>Pasting attaches what the clipboard holds, which is how screenshots actually arrive.</li>
             </ul>
             <p>
-                All three share one size limit (<code>MaxAttachmentSize</code>) and one type filter. The size is checked in
-                the browser before a byte is read, and accepted files are streamed rather than sent as one message, so a large
-                paste cannot overrun the Blazor Server message limit. What is turned away is reported through
-                <code>OnAttachmentRejected</code> - the composer already tells the user; that callback is where an app logs
-                or counts it.
+                All three share one size limit (<code>MaxAttachmentSize</code>, 2&nbsp;MB here) and one type filter (the
+                composer's <code>Accept</code>, which a <code>BitAiPromptInputParams</code> cascades into the chat's
+                composer). The size is checked in the browser before a byte is read, and accepted files are streamed rather
+                than sent as one message, so a large paste cannot overrun the Blazor Server message limit. What is turned
+                away is reported through <code>OnAttachmentRejected</code> - the composer already tells the user; that
+                callback is where an app logs or counts it.
             </p>
             <p>
-                This demo keeps content inline as a data URL, which suits screenshots. An application that accepts large
-                uploads handles <code>OnSubmit</code>, uploads to its own storage, and attaches a URL instead, so nothing large
-                is ever held in circuit memory.
+                Sending puts the files on the user message (<code>BitAiChatSession.SubmitAsync(text, attachments)</code>),
+                so the transport finds them on the request: <code>IBitAiMessage.Attachments</code>, each a
+                <code>BitAiAttachment</code> with its <code>Name</code>, <code>ContentType</code>, <code>Size</code> and
+                <code>Kind</code>. A file within the composer's <code>MaxInlineSize</code> (256&nbsp;KB) carries its bytes
+                (<code>Data</code>) and a data URL (<code>Url</code>), which suits screenshots; a larger one stays in the
+                browser and is read when something opens it (<code>OpenReadAsync</code>, through its
+                <code>ContentFactory</code>), so nothing large is held in circuit memory. An application that accepts large
+                uploads handles <code>OnSubmit</code> instead, uploads to its own storage, and attaches a URL.
+            </p>
+            <p>
+                Files go the other way too. A model that generates an image sends it with a <code>BitAiImageEvent</code>
+                (its <code>Url</code>, the <code>Alt</code> text that names it, and a <code>Width</code> and
+                <code>Height</code> that reserve its space), which becomes a <code>BitAiImagePart</code> drawn under the image
+                policy (<code>BitAiUiOptions.Images</code>); any other file arrives as a <code>BitAiFileEvent</code> carrying
+                a <code>BitAiAttachment</code>, which becomes a <code>BitAiFilePart</code> drawn as a chip. This transport
+                lists what it received - inline or read on demand - and sends each file back that way: images as images,
+                the rest as files.
             </p>
             <p>
                 The microphone of <code>AllowDictation</code> appears only where the browser can transcribe, and no audio
@@ -77,7 +92,8 @@
         <DocSection Id="components" Title="Components used">
             <ul>
                 <li><BitLink Href="/components/ai/promptinput"><code>BitAiPromptInput</code></BitLink> - the composer: picker, drop target, paste and the limit.</li>
-                <li><BitLink Href="/components/ai/attachmentchip"><code>BitAiAttachmentChip</code></BitLink> - each attached file, in the composer and in the message.</li>
+                <li><BitLink Href="/components/ai/attachmentchip"><code>BitAiAttachmentChip</code></BitLink> - each attached file, in the composer, in the message, and in the reply that sends it back.</li>
+                <li><BitLink Href="/components/ai/imagepartview"><code>BitAiImagePartView</code></BitLink> - an image the reply sends.</li>
                 <li><BitLink Href="/components/ai/voiceinput"><code>BitAiVoiceInput</code></BitLink> - the dictation button.</li>
                 <li><BitLink Href="/components/ai/chat"><code>BitAiChat</code></BitLink> - the chat that hands its attachment settings to the composer.</li>
             </ul>

@@ -15,14 +15,16 @@ private void HandleBasicTranscript(string transcript)
 }";
 
     private readonly string example2RazorCode = @"
-<BitAiVoiceInput OnTranscript=""HandleListeningTranscript""
+<BitAiVoiceInput @ref=""listeningInput""
+                 OnTranscript=""HandleListeningTranscript""
                  OnInterim=""HandleInterim""
                  OnListeningChanged=""HandleListeningChanged"" />
 
-<div>Listening: <b>@isListening</b></div>
+<div>Listening: <b>@isListening</b> (IsListening: <b>@(listeningInput?.IsListening)</b>)</div>
 <div>Provisional: <i>@interim</i></div>
 <div>Final: <b>@listeningTranscript</b></div>";
     private readonly string example2CsharpCode = @"
+private BitAiVoiceInput listeningInput = default!;
 private bool isListening;
 private string? interim;
 private string listeningTranscript = string.Empty;

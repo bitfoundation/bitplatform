@@ -35,7 +35,21 @@
                 (<code>renderers.RegisterTool&lt;SearchResultCard&gt;("search_docs")</code>), so the substitution applies
                 wherever that tool is called without touching the message list. The component is handed the call as its
                 <code>Call</code> parameter and re-renders as the call changes: its progress reports while the tool runs, its
-                result once it has returned.
+                result once it has returned. <code>RegisterTool(name, context =&gt; ...)</code> takes a render fragment
+                instead, handed a <code>BitAiToolCallContext</code> (the call, its message and the session).
+            </p>
+            <p>
+                The transport asks for <code>search_docs</code> as for any tool (see
+                <BitLink Href="/ai/scenarios/tools">Tool calling</BitLink>), and the session runs it. The tool is declared
+                with the <code>BitAiTool.Create&lt;TArgs&gt;(name, description, argumentsTypeInfo, (args, invocation, token) =&gt; ...)</code>
+                overload (see <BitLink Href="/ai/scenarios/tools#declaring">Declaring a tool</BitLink>), whose handler is
+                handed the <code>BitAiToolInvocation</code> and returns the whole outcome. It reports where it is through
+                <code>invocation.Progress</code> - a <code>BitAiToolProgress</code> with a
+                <code>Fraction</code> and a <code>Message</code>, which lands on the call as <code>Call.Progress</code> - and
+                returns a full <code>BitAiToolOutcome</code>: the value the card reads (<code>Call.Result.Value</code>), the
+                <code>Text</code> the model reads, and the <code>Citations</code> of what it searched, which the session adds
+                to the reply's sources. The card reads the arguments through <code>Call.DisplayArguments</code>, which holds
+                them while they still stream, and the time the call took through <code>Call.Duration</code>.
             </p>
             <p>
                 A custom renderer is handed data a model produced, so the shape it wants is a hope, not a guarantee: the card
@@ -50,6 +64,7 @@
                 <li><BitLink Href="/components/ai/toolcallview"><code>BitAiToolCallView</code></BitLink> - the view that hands the call to the registered renderer.</li>
                 <li><BitLink Href="/components/ai/rendererboundary"><code>BitAiRendererBoundary</code></BitLink> - what keeps a failing renderer to itself.</li>
                 <li><BitLink Href="/components/ai/messagepartview"><code>BitAiMessagePartView</code></BitLink> - the dispatcher every part goes through.</li>
+                <li><BitLink Href="/components/ai/sourcelist"><code>BitAiSourceList</code></BitLink> - the source the tool's result cites, under the reply.</li>
             </ul>
         </DocSection>
     </ChildContent>

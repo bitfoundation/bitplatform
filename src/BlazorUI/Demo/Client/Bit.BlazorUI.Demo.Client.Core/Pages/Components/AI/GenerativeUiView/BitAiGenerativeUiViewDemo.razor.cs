@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Bit.BlazorUI.Demo.Client.Core.Services.AI;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.AI.GenerativeUiView;
@@ -265,7 +266,9 @@ public partial class BitAiGenerativeUiViewDemo
                     Name = "Properties",
                     Type = "IReadOnlyList<BitAiGenerativeProperty>",
                     DefaultValue = "[]",
-                    Description = "The properties the model may set: each one's Name (as the model must spell it, matched case-insensitively), Type, Description and IsRequired."
+                    Description = "The properties the model may set: each one's Name (as the model must spell it, matched case-insensitively), Type, Description and IsRequired.",
+                    LinkType = LinkType.Link,
+                    Href = "#generative-property"
                 },
                 new()
                 {
@@ -297,6 +300,107 @@ public partial class BitAiGenerativeUiViewDemo
                     DefaultValue = "",
                     Description = "Goes on a component parameter, or on a property or field of a parameter's type (a member of a record the component takes), once per member; inherited by overrides. The registry and the schema skip the member, and the binder ignores a value the model sends for it."
                 },
+            ]
+        },
+        new()
+        {
+            Id = "generative-property",
+            Title = "BitAiGenerativeProperty",
+            Description = "One bindable property of a registration (a sealed record), as Register discovers it: new BitAiGenerativeProperty(name, type, description?, isRequired?).",
+            Parameters =
+            [
+                new() { Name = "Name", Type = "string", DefaultValue = "", Description = "The parameter name, as the model must spell it (matched case-insensitively)." },
+                new() { Name = "Type", Type = "Type", DefaultValue = "", Description = "The CLR type the JSON value is read as." },
+                new() { Name = "Description", Type = "string?", DefaultValue = "null", Description = "What the property means, from its [Description]; included in the schema the model is shown." },
+                new() { Name = "IsRequired", Type = "bool", DefaultValue = "false", Description = "Whether the model must supply it: named in the required of Register, or marked [Required]. A required property left out is a Missing failure." },
+            ]
+        },
+        new()
+        {
+            Id = "generative-ui-registry-interface",
+            Title = "IBitAiGenerativeUiRegistry",
+            Description = "What BitAiGenerativeUiView resolves names through - injected, so the registry is app-wide; AddBitBlazorUIAIServices registers BitAiGenerativeUiRegistry as it.",
+            Parameters =
+            [
+                new() { Name = "Components", Type = "IReadOnlyCollection<BitAiGenerativeComponent>", DefaultValue = "", Description = "Every registered component.", LinkType = LinkType.Link, Href = "#generative-component" },
+                new() { Name = "Find(name)", Type = "BitAiGenerativeComponent?", DefaultValue = "", Description = "The registration of a name, or null - which must render a fallback, since it is the case of a model naming something it should not have.", LinkType = LinkType.Link, Href = "#generative-component" },
+            ]
+        },
+        new()
+        {
+            Id = "generative-props-binder",
+            Title = "BitAiGenerativePropsBinder",
+            Description = "Turns model-produced JSON into the parameters of a registered component - strict about what it accepts, forgiving about the rest: a name the registration does not offer is ignored rather than passed, and a value of the wrong shape is reported and skipped rather than thrown, so one bad field does not lose the whole card. It tolerates partial input, since props stream in and the component renders several times before they are done. BitAiGenerativeUiView calls it whenever its part changes; an app calls it to log or check a payload itself.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Bind(component, props)",
+                    Type = "BitAiGenerativeBindResult (static)",
+                    DefaultValue = "",
+                    Description = "Binds a JSON object onto the properties of a registration, matching names case-insensitively. A null is bound only to a property that can hold it; anything but an object binds nothing and leaves every required property reported as missing.",
+                    LinkType = LinkType.Link,
+                    Href = "#generative-bind-result"
+                },
+            ]
+        },
+        new()
+        {
+            Id = "generative-bind-result",
+            Title = "BitAiGenerativeBindResult",
+            Description = "The outcome of a binding (a sealed record). Failures are not fatal: the component renders with whatever did bind, because a partly usable card beats an error message.",
+            Parameters =
+            [
+                new() { Name = "Parameters", Type = "IReadOnlyDictionary<string, object?>", DefaultValue = "", Description = "The parameters to render the component with, keyed by the name the component declares." },
+                new() { Name = "Failures", Type = "IReadOnlyList<BitAiGenerativeBindError>", DefaultValue = "[]", Description = "The properties that did not bind, each with why - what a page shows, worded in its own language.", LinkType = LinkType.Link, Href = "#generative-bind-error" },
+                new() { Name = "Errors", Type = "IReadOnlyList<string>", DefaultValue = "", Description = "The same failures in English (each one's ToString()), in the same order, for a log." },
+                new() { Name = "IgnoredProperties", Type = "IReadOnlyList<string>", DefaultValue = "[]", Description = "Names in the payload the component does not offer - not a parameter, not bindable, or marked [BitAiGenerativeIgnore] - as the model wrote them. Not errors: models routinely add one, and a model that keeps guessing names is a sign the schema it was given is out of date." },
+                new() { Name = "IsComplete", Type = "bool", DefaultValue = "", Description = "True when every property supplied bound and every required one was there; ignored names do not count against it." },
+            ]
+        },
+        new()
+        {
+            Id = "generative-bind-error",
+            Title = "BitAiGenerativeBindError",
+            Description = "A property that did not bind, and why (a sealed record): new BitAiGenerativeBindError(kind, propertyName). It describes the failure rather than wording it, so whoever shows it words it in the language of the page - BitAiGenerativeUiView through the UnreadableProperty and MissingProperty strings.",
+            Parameters =
+            [
+                new() { Name = "Kind", Type = "BitAiGenerativeBindErrorKind", DefaultValue = "", Description = "Why the property did not bind.", LinkType = LinkType.Link, Href = "#generative-bind-error-kind-enum" },
+                new() { Name = "PropertyName", Type = "string", DefaultValue = "", Description = "The property: as the model wrote it for an Unreadable value, as the component declares it for a Missing one." },
+                new() { Name = "ComponentName", Type = "string?", DefaultValue = "null", Description = "The name of the registration the property belongs to." },
+                new() { Name = "ExpectedType", Type = "Type?", DefaultValue = "null", Description = "The type an Unreadable value was to be read as." },
+                new() { Name = "Detail", Type = "string?", DefaultValue = "null", Description = "What the serializer said about an Unreadable value - written for a developer, in the language of the runtime; the view shows it as the tooltip of the error's tag." },
+                new() { Name = "ToString()", Type = "string", DefaultValue = "", Description = "The English description a log reads, the same text Errors lists." },
+            ]
+        },
+        new()
+        {
+            Id = "generative-strings",
+            Title = "BitAiStrings (generative UI)",
+            Description = "The texts of the view, members of the BitAiStrings of the options in force. Every member is virtual: a subclass overrides the ones it words differently and is handed as the Strings of the BitAiUiOptions - of a BitAiOptionsProvider, or of ConfigureUi (see /components/ai/optionsprovider#strings).",
+            Parameters =
+            [
+                new() { Name = "ComponentNotRegistered(component)", Type = "string", DefaultValue = "\"No component named '{component}' is registered.\"", Description = "The tooltip and accessible name of the warning tag of an unregistered name." },
+                new() { Name = "ComponentFailed(component)", Type = "string", DefaultValue = "\"'{component}' could not be rendered\"", Description = "The notice of the error boundary when the component throws." },
+                new() { Name = "UnreadableProperty(name, type)", Type = "string", DefaultValue = "\"'{name}' could not be read as {type}\"", Description = "The text of the tag of an Unreadable failure (the type as a person reads it: Int32, List)." },
+                new() { Name = "MissingProperty(name, component)", Type = "string", DefaultValue = "\"'{name}' is required by '{component}'\"", Description = "The text of the tag of a Missing failure." },
+                new() { Name = "IgnoredProperty(name)", Type = "string", DefaultValue = "\"Ignored: {name}\"", Description = "The text of the tag of an ignored name." },
+                new() { Name = "IgnoredPropertyHint", Type = "string", DefaultValue = "\"The component does not declare this property, so it was not passed.\"", Description = "The tooltip of the tag of an ignored name." },
+            ]
+        },
+    ];
+
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+            Id = "generative-bind-error-kind-enum",
+            Name = "BitAiGenerativeBindErrorKind",
+            Description = "Why a property of a generated component did not bind (BitAiGenerativeBindError.Kind).",
+            Items =
+            [
+                new() { Name = "Unreadable", Value = "0", Description = "The value the model wrote could not be read as the type the component declares for it (\"very cold\" for an int); the property is skipped and the rest still bind." },
+                new() { Name = "Missing", Value = "1", Description = "A property the component requires was not supplied (or was null where its type cannot hold one); the component still renders, without it." },
             ]
         },
     ];
@@ -370,6 +474,43 @@ public partial class BitAiGenerativeUiViewDemo
     private readonly BitAiGenerativeUiPart unregisteredPart = Card("stock_ticker", """{ "symbol": "BIT", "price": 42.5 }""");
 
     private readonly BitAiGenerativeUiPart faultyPart = Card("forecast_card", """{ "degrees": "very cold", "condition": "Windy", "wind": "40 km/h" }""");
+
+    // A component of the page's own (a .razor file would do as well).
+    public sealed class TicketCard : ComponentBase
+    {
+        [Parameter, System.ComponentModel.Description("The event the ticket is for.")]
+        public string Event { get; set; } = string.Empty;
+
+        [Parameter, System.ComponentModel.Description("How many seats.")]
+        public int Seats { get; set; }
+
+        [Parameter, System.ComponentModel.Description("The row of the seats.")]
+        public string? Row { get; set; }
+
+        // Set by the app, never by a model: left out of the schema, and ignored when a payload sends it.
+        [Parameter, BitAiGenerativeIgnore]
+        public string? TenantId { get; set; }
+
+        // A callback is never bindable, whatever is registered.
+        [Parameter] public EventCallback OnBuy { get; set; }
+
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) =>
+            builder.AddContent(0, $"{Event}: {Seats} seat(s) in row {Row}");
+    }
+
+    // Registered in a registry of the page's own rather than the app's, which every BitAiGenerativeUiView reads: this
+    // example binds in code and renders no view of it.
+    private static readonly BitAiGenerativeComponent ticketCard = RegisterTicketCard();
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "TicketCard is kept whole by the annotation of Register, and its bindable parameters are strings and integers.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "TicketCard's bindable parameters are strings and integers, which need no code generated at run time.")]
+    private static BitAiGenerativeComponent RegisterTicketCard() =>
+        new BitAiGenerativeUiRegistry().Register<TicketCard>("ticket_card", "Shows a ticket for an event.", "Event");
+
+    // row binds; seats is not a number; Event (required) is missing; tenantId, onBuy and color are not offered, so ignored.
+    private readonly BitAiGenerativeBindResult ticketBinding = BitAiGenerativePropsBinder.Bind(ticketCard, JsonDocument.Parse("""
+        { "row": "B", "seats": "two", "tenantId": "someone-else", "onBuy": "alert(1)", "color": "red" }
+        """).RootElement);
 
     private bool showDiagnostics = true;
     private BitAiGenerativeUiViewParams[] generativeParams => [new() { ShowBindingErrors = showDiagnostics }];

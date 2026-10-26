@@ -274,6 +274,29 @@ public partial class BitAiAgentStepViewDemo
 
 
 
+    // Disabled: a failed step with a detail to disclose and a tool call to show.
+    private readonly (BitAiConversation Conversation, BitAiAgentStep Step) disabled = CreateDisabledStep();
+
+    private static (BitAiConversation Conversation, BitAiAgentStep Step) CreateDisabledStep()
+    {
+        var conversation = new BitAiConversation();
+        var message = conversation.AddMessage(new BitAiMessage(BitAiRole.Assistant));
+        var call = message.AddPart(new BitAiToolCallPart(BitAiId.NewToolCallId(), "run_tests"));
+        call.SetResult(BitAiToolOutcome.Failure("3 of 812 tests failed."));
+
+        var step = new BitAiAgentStep("test", "Run the test suite");
+        step.Start();
+        step.AddToolCall(call.ToolCallId);
+        step.Complete(BitAiAgentStepStatus.Failed, error: new BitAiError("3 of 812 tests failed.")
+        {
+            Detail = "Checkout.AppliesDiscount\nCheckout.RoundsTax\nCheckout.HandlesRefund",
+        });
+
+        return (conversation, step);
+    }
+
+
+
     // Cascading parameters.
     private readonly BitAiAgentStepViewParams[] stepViewParams =
     [

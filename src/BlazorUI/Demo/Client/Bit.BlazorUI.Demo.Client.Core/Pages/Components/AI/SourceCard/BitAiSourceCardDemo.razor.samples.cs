@@ -36,11 +36,19 @@ private static readonly BitAiCitationSource circuits = new("circuits", "SignalR 
 """;
 
     private readonly string example3RazorCode = """
-<BitAiSourceCard Source="withFavicon" Number="1" />
-<BitAiSourceCard Source="hostOnly" Number="2" />
-<BitAiSourceCard Source="attachedFile" Number="3" />
+<BitToggle @bind-Value="blockImages" Text="Images = BitAiImagePolicy.Block" />
+
+<BitAiOptionsProvider UiOptions="@(blockImages ? blockedImageOptions : BitAiUiOptions.Default)">
+    <BitAiSourceCard Source="withFavicon" Number="1" />
+    <BitAiSourceCard Source="hostOnly" Number="2" />
+    <BitAiSourceCard Source="attachedFile" Number="3" />
+</BitAiOptionsProvider>
 """;
     private readonly string example3CsharpCode = """
+private bool blockImages;
+
+private static readonly BitAiUiOptions blockedImageOptions = BitAiUiOptions.Default with { Images = BitAiImagePolicy.Block };
+
 private static readonly BitAiCitationSource withFavicon = new("bitplatform", "bitfoundation/bitplatform")
 {
     Kind = BitAiSourceKind.Web,
@@ -106,6 +114,7 @@ private static readonly BitAiCitationSource untrusted = new("untrusted", "A page
 </BitParams>
 """;
     private readonly string example6CsharpCode = """
+// renderModes, circuits and attachedFile are the sources of the examples above.
 private readonly BitAiSourceCardParams[] cardParams =
 [
     new() { Styles = new() { Title = "font-weight: 600", Index = "color: var(--bit-clr-pri)" } }

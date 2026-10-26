@@ -1,4 +1,5 @@
-﻿using Bit.BlazorUI.Demo.Client.Core.Services.AI;
+﻿using System.Text.Json;
+using Bit.BlazorUI.Demo.Client.Core.Services.AI;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.AI.ArtifactView;
 
@@ -396,9 +397,59 @@ public partial class BitAiArtifactViewDemo
         },
         new()
         {
+            Id = "renderer-registry",
+            Title = "BitAiRendererRegistry",
+            Description = "Where an app registers its own renderers, which the components resolve before their built-in views. A singleton: register at startup (AddBitBlazorUIAIServices(ai => ai.ConfigureRenderers(renderers => ...))) and treat the entries as fixed afterwards - every entry is app-wide. A region with renderers of its own cascades a registry of its own (new BitAiRendererRegistry(), in a CascadingValue), which every AI component inside it uses in place of the registered one. These are its artifact members; the whole registry is on the AiMessagePartView page (/components/ai/messagepartview#renderer-registry).",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "RegisterArtifact(kind, renderer)",
+                    Type = "void",
+                    DefaultValue = "",
+                    Description = "Registers a BitAiArtifactRenderer for an artifact kind (case does not matter) - a built-in kind or one of the app's own. Every BitAiArtifactView of an artifact of that kind renders it as its body in place of the built-in one, inside a BitAiRendererBoundary; a later registration replaces an earlier one.",
+                    LinkType = LinkType.Link,
+                    Href = "#artifact-renderer",
+                },
+                new()
+                {
+                    Name = "FindArtifact(kind)",
+                    Type = "BitAiArtifactRenderer?",
+                    DefaultValue = "",
+                    Description = "The renderer registered for an artifact kind, or null when the built-in body draws it.",
+                },
+            ]
+        },
+        new()
+        {
+            Id = "artifact-renderer",
+            Title = "BitAiArtifactRenderer",
+            Description = "The delegate a custom artifact renderer is: public delegate RenderFragment BitAiArtifactRenderer(BitAiArtifactContext context). It is called on every render of the panel - each coalesced change of a streaming artifact and each turn of the full-screen toggle - so it reads what it draws off the context as it is called. It draws the context's Content - the content of the version on screen, which follows the panel's version selector - rather than the artifact's own Content, which is always the latest one's.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "context",
+                    Type = "BitAiArtifactContext",
+                    DefaultValue = "",
+                    Description = "The artifact and how it is being shown.",
+                    LinkType = LinkType.Link,
+                    Href = "#artifact-context",
+                },
+                new()
+                {
+                    Name = "(return value)",
+                    Type = "RenderFragment",
+                    DefaultValue = "",
+                    Description = "The markup drawn as the body of the panel, under its header.",
+                },
+            ]
+        },
+        new()
+        {
             Id = "artifact-context",
             Title = "BitAiArtifactContext",
-            Description = "What a renderer registered with BitAiRendererRegistry.RegisterArtifact(kind, context => ...) is handed, through ConfigureRenderers of AddBitBlazorUIAIServices. The renderer draws the body of every panel of that kind, inside a BitAiRendererBoundary.",
+            Description = "What a renderer registered with BitAiRendererRegistry.RegisterArtifact(kind, context => ...) is handed (a sealed record). The renderer draws the body of every panel of that kind, inside a BitAiRendererBoundary.",
             Parameters =
             [
                 new()
@@ -416,6 +467,27 @@ public partial class BitAiArtifactViewDemo
                     Type = "bool",
                     DefaultValue = "false",
                     Description = "Whether the panel is full screen, for a renderer that lays itself out to the room it has."
+                },
+                new()
+                {
+                    Name = "Version",
+                    Type = "int",
+                    DefaultValue = "Artifact.Version",
+                    Description = "The version on screen: the latest one unless an earlier one was picked in the version selector of the panel (or set as its InitialVersion)."
+                },
+                new()
+                {
+                    Name = "Content",
+                    Type = "string?",
+                    DefaultValue = "Artifact.Content",
+                    Description = "The content of the version on screen - what a renderer draws. The artifact's own Content is always the latest version's, so a renderer reading it would ignore the version selector."
+                },
+                new()
+                {
+                    Name = "IsLatest",
+                    Type = "bool",
+                    DefaultValue = "",
+                    Description = "Whether the version on screen is the latest one - the only one that can still be streaming (Artifact.IsStreaming)."
                 },
             ]
         },
@@ -560,9 +632,67 @@ public partial class BitAiArtifactViewDemo
         </svg>
         """);
 
+    private readonly BitAiUiOptions clickToLoadOptions = BitAiUiOptions.Default with { Images = BitAiImagePolicy.ClickToLoad };
+    private readonly BitAiUiOptions blockOptions = BitAiUiOptions.Default with { Images = BitAiImagePolicy.Block };
+
     private readonly BitAiArtifact chartArtifact = Completed(BitAiArtifactKind.Chart, "Monthly sales", """
         { "type": "bar", "labels": ["Jan", "Feb", "Mar"], "data": [120, 180, 150] }
         """, "json");
+
+    private readonly BitAiArtifact brokenChartArtifact = Completed(BitAiArtifactKind.Chart, "Quarterly sales", """
+        { "type": "bar", "labels": ["Q1", "Q2"] }
+        """, "json");
+
+    // The registered registry is one instance for the whole app - every circuit of a server-side app - so this page
+    // cascades a registry of its own to the panels of the Custom renderers example rather than changing that one.
+    private readonly BitAiRendererRegistry artifactRenderers = CreateArtifactRenderers();
+
+    private static BitAiRendererRegistry CreateArtifactRenderers()
+    {
+        var renderers = new BitAiRendererRegistry();
+        renderers.RegisterArtifact(BitAiArtifactKind.Chart, RenderChart);
+        return renderers;
+    }
+
+    // Draws a { "labels": [...], "data": [...] } spec as bars, taller in the full-screen panel. A half-written spec is
+    // waited for, and the labels are model output, so they are only ever written as text.
+    private static RenderFragment RenderChart(BitAiArtifactContext context) => builder =>
+    {
+        if (context.IsLatest && context.Artifact.IsStreaming)
+        {
+            builder.AddContent(0, "Drawing the chart...");
+            return;
+        }
+
+        using var spec = JsonDocument.Parse(context.Content ?? "{}");
+        var labels = spec.RootElement.GetProperty("labels").EnumerateArray().Select(l => l.GetString()).ToArray();
+        var values = spec.RootElement.GetProperty("data").EnumerateArray().Select(v => v.GetDouble()).ToArray();
+        var max = Math.Max(1, values.Max());
+        var height = context.IsExpanded ? 24 : 8;
+
+        builder.OpenElement(1, "div");
+        builder.AddAttribute(2, "role", "img");
+        builder.AddAttribute(3, "aria-label", string.Join(", ", labels.Zip(values, (label, value) => $"{label} {value}")));
+        builder.AddAttribute(4, "style", "display: flex; align-items: flex-end; gap: 1rem; padding: 1rem;");
+
+        for (var i = 0; i < values.Length; i++)
+        {
+            builder.OpenElement(5, "div");
+            builder.AddAttribute(6, "style", "flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.25rem;");
+
+            builder.OpenElement(7, "div");
+            builder.AddAttribute(8, "style", $"width: 100%; height: {Math.Round(values[i] / max * height * 16)}px; border-radius: 0.25rem; background-color: var(--bit-clr-pri);");
+            builder.CloseElement();
+
+            builder.OpenElement(9, "span");
+            builder.AddContent(10, i < labels.Length ? labels[i] : null);
+            builder.CloseElement();
+
+            builder.CloseElement();
+        }
+
+        builder.CloseElement();
+    };
 
     private readonly BitAiArtifact mermaidArtifact = Completed(new BitAiArtifactKind("mermaid"), "Sign-in flow", """
         flowchart LR
@@ -615,6 +745,11 @@ public partial class BitAiArtifactViewDemo
     }
 
     private void RestoreFirstVersion() => pricingArtifact.Restore(1);
+
+    private readonly BitAiArtifactViewParams[] artifactViewParams =
+    [
+        new() { Styles = new() { Panel = "border-radius: 1rem", Header = "background-color: var(--bit-clr-pri-light)", Title = "color: var(--bit-clr-pri)" } },
+    ];
 
     private readonly BitAiArtifact persianArtifact = Completed(BitAiArtifactKind.Document, "یادداشت انتشار", """
         # یادداشت انتشار

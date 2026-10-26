@@ -9,10 +9,12 @@ public partial class AiParallelToolsScenarioPage
     private readonly string[] _suggestions = ["Compare the weather in Oslo and Lisbon"];
 
     [AutoInject] private IBitAiToolRegistry _tools = default!;
+    [AutoInject] private BitAiChatSessionFactory _sessionFactory = default!;
 
     protected override Task OnInitAsync()
     {
-        _session = new BitAiChatSession(AiDemoToolTransports.CallsTwoTools(), tools: _tools);
+        // A transport of its own, with the registered tools and the session options configured for the site.
+        _session = new BitAiChatSession(AiDemoToolTransports.CallsTwoTools(), options: _sessionFactory.Defaults, tools: _tools);
 
         return base.OnInitAsync();
     }

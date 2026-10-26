@@ -154,7 +154,7 @@ public partial class BitAiErrorViewDemo
                     Name = "Kind",
                     Type = "BitAiErrorKind",
                     DefaultValue = "BitAiErrorKind.Unknown",
-                    Description = "The kind of failure, which the app can drive its own recovery from.",
+                    Description = "The kind of failure, which the app can drive its own recovery from. The view draws every kind the same way; an agent run ended with an error of the Cancelled kind (BitAiAgentRun.SetError) ends as cancelled rather than failed.",
                     LinkType = LinkType.Link,
                     Href = "#error-kind-enum",
                 },

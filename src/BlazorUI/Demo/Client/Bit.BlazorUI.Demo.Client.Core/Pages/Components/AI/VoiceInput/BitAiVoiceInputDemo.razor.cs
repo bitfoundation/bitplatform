@@ -39,7 +39,7 @@ public partial class BitAiVoiceInputDemo
             Name = "OnListeningChanged",
             Type = "EventCallback<bool>",
             DefaultValue = "",
-            Description = "Raised when the dictation starts (true) or stops (false), however that happens: the button, a Disabled set while listening, a silence the browser ends it on, or an error.",
+            Description = "Raised when the dictation starts (true) or stops (false), however that happens: the button, a Disabled set while listening, a silence the browser ends it on, an error, or another voice input of the page starting its own dictation (one runs at a time).",
         },
         new()
         {
@@ -66,7 +66,7 @@ public partial class BitAiVoiceInputDemo
             Name = "IsListening",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the dictation is running.",
+            Description = "Whether the dictation is running - what OnListeningChanged reported last. False while the browser cannot transcribe.",
         },
     ];
 
@@ -114,6 +114,7 @@ public partial class BitAiVoiceInputDemo
 
     private string basicTranscript = "nothing yet";
 
+    private BitAiVoiceInput listeningInput = default!;
     private bool isListening;
     private string? interim;
     private string listeningTranscript = string.Empty;

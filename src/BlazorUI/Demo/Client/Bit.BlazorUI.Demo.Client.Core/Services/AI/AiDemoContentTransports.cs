@@ -1,7 +1,7 @@
 ﻿namespace Bit.BlazorUI.Demo.Client.Core.Services.AI;
 
 /// <summary>
-/// The scripted responses behind the content scenarios: citations, artifacts and structured output.
+/// The scripted responses behind the content scenarios: citations, artifacts, structured output and attachments.
 /// </summary>
 public static class AiDemoContentTransports
 {
@@ -169,6 +169,124 @@ public static class AiDemoContentTransports
                 await yielder(new BitAiStructuredDataDeltaEvent(slice) { SchemaName = "options" });
             }
 
+            await yielder(new BitAiMessageCompletedEvent());
+        }));
+
+    /// <summary>
+    /// Answers in the shape the request asks for (<see cref="BitAiRequestOptions.ResponseFormat"/>): with a JSON format,
+    /// the comparison streams as structured data named after the requested schema; with none, as a Markdown table.
+    /// </summary>
+    /// <returns>The transport.</returns>
+    /// <remarks>
+    /// What a real transport does with the format is hand it to its provider, which constrains the model to it. The
+    /// name of the format becomes the <see cref="BitAiStructuredDataDeltaEvent.SchemaName"/> of the part, which is what
+    /// picks a renderer registered for that schema.
+    /// </remarks>
+    public static IBitAiTransport StructuredAsRequested() =>
+        new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
+        {
+            var format = request.Options?.ResponseFormat ?? BitAiResponseFormat.Text;
+
+            await yielder(new BitAiMessageStartedEvent());
+
+            if (format.Kind is BitAiResponseFormatKind.Text)
+            {
+                const string text = """
+                    No response format was asked for, so here is the comparison as text.
+
+                    | Option | Effort | Risk | Notes |
+                    | --- | --- | --- | --- |
+                    | Server-side rendering | Low | Low | Fastest to ship |
+                    | WebAssembly | Medium | Low | Best offline story |
+                    | Hybrid per page | Medium | Medium | Two mental models |
+                    | Rewrite the front end | High | High | Not this quarter |
+                    """;
+
+                await foreach (var evt in AiScript.Write(text, 5, 10, token)) await yielder(evt);
+                await yielder(AiScript.Usage(request, text));
+                await yielder(new BitAiMessageCompletedEvent());
+                return;
+            }
+
+            var intro = $"Asked for {(format.Kind is BitAiResponseFormatKind.JsonSchema ? "JSON matching a schema" : "JSON")}, so here are the four candidates as data.\n\n";
+            await foreach (var evt in AiScript.Write(intro, 4, 12, token)) await yielder(evt);
+
+            const string json = """
+                [
+                  {"option":"Server-side rendering","effort":"Low","risk":"Low","notes":"Fastest to ship"},
+                  {"option":"WebAssembly","effort":"Medium","risk":"Low","notes":"Best offline story"},
+                  {"option":"Hybrid per page","effort":"Medium","risk":"Medium","notes":"Two mental models"},
+                  {"option":"Rewrite the front end","effort":"High","risk":"High","notes":"Not this quarter"}
+                ]
+                """;
+
+            foreach (var slice in AiScript.Slice(json, 14))
+            {
+                await AiScript.Pause(70, token);
+                await yielder(new BitAiStructuredDataDeltaEvent(slice) { SchemaName = format.Name });
+            }
+
+            await yielder(AiScript.Usage(request, json));
+            await yielder(new BitAiMessageCompletedEvent());
+        }));
+
+    /// <summary>
+    /// Reads the files of the user's message, the way a transport hands them to its provider, and sends them back the way
+    /// a model returns a file it made: an image as an image part, anything else as a file part.
+    /// </summary>
+    /// <returns>The transport.</returns>
+    /// <remarks>
+    /// The files arrive on the message (<see cref="IBitAiMessage.Attachments"/>): a small one with its content inline - the
+    /// bytes and a data URL - and a larger one with a <see cref="BitAiAttachment.ContentFactory"/> that reads it from the
+    /// browser when opened. A model that generates an image or a file streams it back with a <see cref="BitAiImageEvent"/>
+    /// or a <see cref="BitAiFileEvent"/>, as this does with the files it was given.
+    /// </remarks>
+    public static IBitAiTransport ReadsAttachments() =>
+        new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
+        {
+            var said = AiScript.LastUserMessage(request);
+            IReadOnlyList<BitAiAttachment> files = said is null ? [] : said.Attachments;
+
+            await yielder(new BitAiMessageStartedEvent());
+
+            if (files.Count == 0)
+            {
+                var nothing = $"You said: {said?.GetText()}\n\nAttach a file as well, and I will read it and send it back.";
+                await foreach (var evt in AiScript.Write(nothing, 4, 12, token)) await yielder(evt);
+                await yielder(AiScript.Usage(request, nothing));
+                await yielder(new BitAiMessageCompletedEvent());
+                return;
+            }
+
+            // A small file arrives with its bytes; a larger one is read from the browser when something opens it.
+            var lines = files.Select(f =>
+                $"- **{f.Name}**: {f.ContentType ?? "an unknown type"}, " +
+                $"{(f.Size is { } size ? $"{size / 1024.0:0.#} KB" : "size unknown")}, " +
+                (f.HasInlineData ? "sent inline" : "read on demand"));
+
+            var reply = (files.Count == 1 ? "I received 1 file:" : $"I received {files.Count} files:") + "\n\n" +
+                        string.Join("\n", lines) + "\n\n" +
+                        "Here " + (files.Count == 1 ? "it is" : "they are") + " back, the way a model returns a file it made:";
+
+            await foreach (var evt in AiScript.Write(reply, 4, 12, token)) await yielder(evt);
+
+            foreach (var file in files)
+            {
+                await AiScript.Pause(250, token);
+
+                // An image is drawn in the answer - from its data URL, or from the browser's own preview of a file too
+                // large to hold inline; anything else is offered as a file.
+                if (file.Kind is BitAiAttachmentKind.Image && (file.Url ?? file.ThumbnailUrl) is { Length: > 0 } url)
+                {
+                    await yielder(new BitAiImageEvent(url) { Alt = file.Name });
+                }
+                else
+                {
+                    await yielder(new BitAiFileEvent(file));
+                }
+            }
+
+            await yielder(AiScript.Usage(request, reply));
             await yielder(new BitAiMessageCompletedEvent());
         }));
 }

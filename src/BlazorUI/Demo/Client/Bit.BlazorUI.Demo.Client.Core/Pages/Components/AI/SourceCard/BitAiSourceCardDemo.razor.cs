@@ -189,6 +189,10 @@ public partial class BitAiSourceCardDemo
         Score = 0.72,
     };
 
+    private bool blockImages;
+
+    private static readonly BitAiUiOptions blockedImageOptions = BitAiUiOptions.Default with { Images = BitAiImagePolicy.Block };
+
 
 
     // Activation.

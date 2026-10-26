@@ -83,20 +83,26 @@ builder.Services.AddBitBlazorUIAIServices(ai =>
     ai.AddModels(AiDemoCatalog.Models, AiDemoCatalog.Providers, defaultModelId: "demo-model-1");
 });
 
-// One of them: the rates are what the cost under each answer is priced with.
-new BitAiModel("demo-model-1", "Demo Large")
+// AiDemoCatalog.Models holds three; this is one of them. The rates are what the cost under each answer is priced with.
+var demoLarge = new BitAiModel("demo-model-1", "Demo Large")
 {
     ProviderId = "demo",
     Family = "Demo Provider",
-    Capabilities = BitAiModelCapabilities.Streaming | BitAiModelCapabilities.Tools | BitAiModelCapabilities.Vision,
+    Description = "The general model. Slower, better at long reasoning.",
+    Capabilities = BitAiModelCapabilities.Streaming | BitAiModelCapabilities.Tools | BitAiModelCapabilities.Vision
+        | BitAiModelCapabilities.Reasoning | BitAiModelCapabilities.StructuredOutput | BitAiModelCapabilities.Citations,
     ContextWindow = 200_000,
     MaxOutputTokens = 16_000,
     InputPricePerMillion = 3m,
     OutputPricePerMillion = 15m,
 };
+
+// The providers the models are grouped under.
+var demoProvider = new BitAiProvider("demo", "Demo Provider") { Website = "https://example.com" };
 """;
 
     private const string example1TransportCode = """
+// AiScriptedTransport and AiScript are the demo's helpers - see the Basic chat scenario.
 public static IBitAiTransport Metered(BitAiModel model) => new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
 {
     await yielder(new BitAiMessageStartedEvent());

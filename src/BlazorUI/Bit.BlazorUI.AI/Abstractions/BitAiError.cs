@@ -24,7 +24,10 @@ public sealed record BitAiError
     /// <summary>A stable machine-readable code, for example <c>rate_limit</c>.</summary>
     public string? Code { get; init; }
 
-    /// <summary>The kind of failure, which drives the default recovery affordance in the UI.</summary>
+    /// <summary>
+    /// The kind of failure. A <see cref="BitAiErrorKind.Cancelled"/> one ends the message or the agent run it fails as
+    /// cancelled rather than failed; the views draw every other kind alike, so the rest are the app's own to tell apart.
+    /// </summary>
     public BitAiErrorKind Kind { get; init; } = BitAiErrorKind.Unknown;
 
     /// <summary>Whether retrying the same request could plausibly succeed.</summary>
@@ -80,7 +83,7 @@ public sealed record BitAiError
 }
 
 /// <summary>
-/// Broad categories of failure that the UI presents differently.
+/// Broad categories of failure, for an app's own recovery logic (<see cref="BitAiError.Kind"/>).
 /// </summary>
 public enum BitAiErrorKind
 {

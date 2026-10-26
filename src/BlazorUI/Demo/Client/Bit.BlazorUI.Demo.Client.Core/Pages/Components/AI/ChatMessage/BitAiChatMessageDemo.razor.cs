@@ -43,7 +43,7 @@ public partial class BitAiChatMessageDemo
             Name = "IsLatest",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether this is the newest message in the transcript. Regeneration is offered only for the newest reply, because regenerating an older one discards everything after it.",
+            Description = "Whether this is the newest message in the transcript. Regeneration is offered only for the newest reply, because regenerating an older one discards everything after it. It defaults to true, so a reply drawn on its own with a Session offers it; a transcript drawn by hand sets it on the last message only, as BitAiMessageList does.",
         },
         new()
         {
@@ -61,7 +61,7 @@ public partial class BitAiChatMessageDemo
             DefaultValue = "",
             Description = "The callback for when the user activates a numbered citation in the message.",
             LinkType = LinkType.Link,
-            Href = "/components/ai/citationmarker",
+            Href = "/components/ai/citationmarker#citation",
         },
         new()
         {
@@ -79,7 +79,7 @@ public partial class BitAiChatMessageDemo
             DefaultValue = "",
             Description = "The callback for when the user activates a source card in the list of sources under the message.",
             LinkType = LinkType.Link,
-            Href = "/components/ai/sourcecard",
+            Href = "/components/ai/sourcecard#citation-source",
         },
         new()
         {
@@ -255,7 +255,7 @@ public partial class BitAiChatMessageDemo
                     DefaultValue = "[]",
                     Description = "The parts the message is made of, in order: BitAiTextPart, BitAiMarkdownPart, reasoning, tool calls, artifacts, images, generative UI and the rest.",
                     LinkType = LinkType.Link,
-                    Href = "/components/ai/messagepartview"
+                    Href = "/components/ai/messagepartview#message-part"
                 },
                 new()
                 {
@@ -264,7 +264,7 @@ public partial class BitAiChatMessageDemo
                     DefaultValue = "[]",
                     Description = "The files the message carries, shown as chips above a user bubble.",
                     LinkType = LinkType.Link,
-                    Href = "/components/ai/attachmentchip"
+                    Href = "/components/ai/attachmentchip#attachment"
                 },
                 new()
                 {
@@ -273,7 +273,7 @@ public partial class BitAiChatMessageDemo
                     DefaultValue = "[]",
                     Description = "The citations of the message, each numbered by AddCitation (a source cited twice keeps its number).",
                     LinkType = LinkType.Link,
-                    Href = "/components/ai/citationmarker"
+                    Href = "/components/ai/citationmarker#citation"
                 },
                 new()
                 {
@@ -298,7 +298,7 @@ public partial class BitAiChatMessageDemo
                     DefaultValue = "null",
                     Description = "What the provider reported about the generation: the model, the token usage, the finish reason, the timings. Merged with MergeMetadata.",
                     LinkType = LinkType.Link,
-                    Href = "/components/ai/tokenusageview"
+                    Href = "/components/ai/tokenusageview#generation-metadata"
                 },
                 new()
                 {
@@ -307,7 +307,7 @@ public partial class BitAiChatMessageDemo
                     DefaultValue = "null",
                     Description = "The failure that ended the message, shown with a retry when it is retryable.",
                     LinkType = LinkType.Link,
-                    Href = "/components/ai/errorview"
+                    Href = "/components/ai/errorview#error"
                 },
                 new()
                 {
@@ -332,7 +332,7 @@ public partial class BitAiChatMessageDemo
                     DefaultValue = "null",
                     Description = "The agent run the message reports, drawn above its parts.",
                     LinkType = LinkType.Link,
-                    Href = "/components/ai/agentrunview"
+                    Href = "/components/ai/agentrunview#agent-run"
                 },
                 new()
                 {
@@ -343,6 +343,13 @@ public partial class BitAiChatMessageDemo
                 },
                 new()
                 {
+                    Name = "Version",
+                    Type = "int",
+                    DefaultValue = "0",
+                    Description = "A number that goes up on every change of the message, structural or inside a part, for a cheap check of whether anything changed since it was last read."
+                },
+                new()
+                {
                     Name = "AddPart(part) / InsertPart(index, part) / RemovePart(partId)",
                     Type = "TPart / TPart / bool",
                     DefaultValue = "",
@@ -350,10 +357,17 @@ public partial class BitAiChatMessageDemo
                 },
                 new()
                 {
-                    Name = "FindPart(partId) / PartsOf<TPart>() / FindToolCall(toolCallId)",
-                    Type = "BitAiMessagePart? / IEnumerable<TPart> / BitAiToolCallPart?",
+                    Name = "FindPart(partId) / FindPart<TPart>(partId) / PartsOf<TPart>() / FindToolCall(toolCallId)",
+                    Type = "BitAiMessagePart? / TPart? / IEnumerable<TPart> / BitAiToolCallPart?",
                     DefaultValue = "",
-                    Description = "Finds a part by its identifier, enumerates the parts of a type, or finds a tool call anywhere in the message."
+                    Description = "Finds a part by its identifier (of a type, with the generic one), enumerates the parts of a type, or finds a tool call anywhere in the message."
+                },
+                new()
+                {
+                    Name = "GetOrCreateOpenPart<TPart>(kind, factory) / CompleteOpenParts()",
+                    Type = "TPart / void",
+                    DefaultValue = "",
+                    Description = "What a stream writes through: the last part when it is of that kind and still open, else a new one the factory creates and appends - so text after a tool call starts a new paragraph below it. CompleteOpenParts closes every part still open, for a message that ends abruptly."
                 },
                 new()
                 {
@@ -388,14 +402,14 @@ public partial class BitAiChatMessageDemo
                     Name = "SetFeedback(feedback, comment?)",
                     Type = "void",
                     DefaultValue = "",
-                    Description = "Records the user's sentiment about the message."
+                    Description = "Records the user's sentiment about the message, with an optional free-text comment (FeedbackComment)."
                 },
                 new()
                 {
                     Name = "GetText()",
                     Type = "string",
                     DefaultValue = "",
-                    Description = "The text of the message: its text parts joined - what the copy button copies."
+                    Description = "The text of the message: the text of its parts, the reasoning left out, joined by a blank line - what the copy button copies."
                 },
                 new()
                 {
@@ -440,7 +454,7 @@ public partial class BitAiChatMessageDemo
         {
             Id = "message-feedback",
             Title = "BitAiMessageFeedback",
-            Description = "A feedback decision the user made on a message, raised by the OnFeedback of BitAiChatMessage, BitAiMessageList and BitAiChat so the host can persist it.",
+            Description = "A feedback decision the user made on a message, raised by the OnFeedback of BitAiChatMessage, BitAiMessageList and BitAiChat so the host can persist it. The BitAiMessageActions under a reply reports only the BitAiFeedbackKind; the message pairs it with itself. A sealed record, compared by value.",
             Parameters =
             [
                 new()
@@ -509,9 +523,18 @@ public partial class BitAiChatMessageDemo
     }
 
 
-    private readonly BitAiMessage userMessage = CreateMessage(BitAiRole.User, "Can you lay a message out by its role?");
+    private readonly BitAiMessage userMessage = CreateUserMessage();
     private readonly BitAiMessage assistantMessage = CreateReply("Yes. A reply is **full-width prose**, with copy and feedback under it - hover it to see them.");
     private readonly BitAiMessage systemMessage = CreateMessage(BitAiRole.System, "The assistant joined the conversation.");
+
+    private static BitAiMessage CreateUserMessage()
+    {
+        var message = CreateMessage(BitAiRole.User, "Can you lay a message out by its role?");
+
+        message.AddAttachment(new BitAiAttachment("a1", "layout.pdf") { ContentType = "application/pdf", Size = 182_400 });
+
+        return message;
+    }
 
 
     private readonly BitAiConversation partsConversation = AiDemoConversations.Long(8);
@@ -613,6 +636,22 @@ public partial class BitAiChatMessageDemo
 
         return conversation;
     }
+
+
+    private readonly BitAiChatMessageParams[] messageParams =
+    [
+        new()
+        {
+            Styles = new()
+            {
+                Bubble = "border:1px solid var(--bit-clr-pri);border-radius:0.5rem",
+                Body = "padding-inline-start:0.75rem;border-inline-start:3px solid var(--bit-clr-pri)",
+            },
+        }
+    ];
+    private readonly BitAiMessage cascadeUserMessage = CreateMessage(BitAiRole.User, "My bubble takes its style from the BitParams around me.");
+    private readonly BitAiMessage cascadeAssistantMessage = CreateReply("So does the body of this reply.");
+    private readonly BitAiMessage cascadeOwnMessage = CreateMessage(BitAiRole.User, "I keep my own Styles, so none of the cascaded ones reach me.");
 
 
     private readonly BitAiMessage styleUserMessage = CreateMessage(BitAiRole.User, "A bubble with a style of its own.");

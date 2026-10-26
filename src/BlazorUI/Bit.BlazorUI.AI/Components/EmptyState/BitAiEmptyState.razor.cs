@@ -105,8 +105,8 @@ public partial class BitAiEmptyState : BitAiComponentBase
     private BitIconInfo? _Icon => BitIconInfo.From(Icon, IconName ?? "AutoEnhanceOn");
 
     // The default sparkle is not one of the 25 glyphs the core font carries, so it is drawn from this package's own subset
-    // (bit-icon-ai). An icon the app names is its own to load.
-    private string _IconClass => Icon is null && IconName is null
+    // (bit-icon-ai). An icon the app names is its own to load; an empty Icon names none, so the sparkle stands in for it too.
+    private string _IconClass => (Icon is null || Icon.IsEmpty) && IconName is null
                                     ? $"bit-aiems-ico bit-icon-ai bit-icon-ai--AutoEnhanceOn {Classes?.Icon}"
                                     : $"bit-aiems-ico {Classes?.Icon}";
 

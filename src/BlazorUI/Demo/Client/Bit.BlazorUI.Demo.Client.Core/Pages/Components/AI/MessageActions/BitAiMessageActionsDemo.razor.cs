@@ -11,7 +11,7 @@ public partial class BitAiMessageActionsDemo
             Name = "CanRegenerate",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Offers regeneration of the message, when a Session is given. Only the newest assistant message should offer it, since regenerating an older one discards everything after it.",
+            Description = "Offers regeneration of the message, when a Session is given. Only the newest assistant message should offer it, since regenerating an older one discards everything after it; a BitAiChatMessage sets it from its IsLatest.",
         },
         new()
         {
@@ -27,7 +27,7 @@ public partial class BitAiMessageActionsDemo
             Name = "ExtraActionsTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The extra buttons appended to the row of actions, after the feedback buttons. They are revealed and hidden with the built-in ones.",
+            Description = "The extra buttons appended to the row of actions, after the feedback buttons. They are revealed and hidden with the built-in ones, and left out with them when the ShowMessageActions of the options in force is off.",
         },
         new()
         {
@@ -43,7 +43,7 @@ public partial class BitAiMessageActionsDemo
             Name = "OnFeedback",
             Type = "EventCallback<BitAiFeedbackKind>",
             DefaultValue = "",
-            Description = "The callback for when the user records feedback, so a host can persist it: Positive or Negative, or None when the user pressed the chosen one again to withdraw it. The message's Feedback is already updated when it is raised.",
+            Description = "The callback for when the user records feedback, so a host can persist it: Positive or Negative, or None when the user pressed the chosen one again to withdraw it. The message's Feedback is already updated when it is raised. A BitAiChatMessage (and the BitAiMessageList and BitAiChat around it) reports the same choice through its own OnFeedback as a BitAiMessageFeedback, which pairs it with the message (see the BitAiChatMessage page).",
             LinkType = LinkType.Link,
             Href = "#feedback-kind-enum",
         },

@@ -9,11 +9,20 @@ public partial class AiConversationsScenarioPage
 
     private readonly string[] _suggestions = ["Plan a weekend in Lisbon", "Draft a release note"];
 
+    // The second demo: a thread of its own, the JSON it was last saved as, and how many messages that held.
+    private BitAiChatSession? _savedSession;
+    private string? _json;
+    private int _savedCount;
+
+    private readonly string[] _persistenceSuggestions = ["Plan a weekend in Lisbon"];
+
     [AutoInject] private BitAiChatSessionFactory _sessionFactory = default!;
     [AutoInject] private IBitAiConversationStore _store = default!;
 
     protected override async Task OnInitAsync()
     {
+        _savedSession = _sessionFactory.Create();
+
         _summaries = await _store.ListAsync();
 
         if (_summaries.Count > 0 && await _store.LoadAsync(_summaries[0].ConversationId) is BitAiConversation latest)
@@ -128,8 +137,30 @@ public partial class AiConversationsScenarioPage
             StateHasChanged();
         });
 
+    // The whole thread - messages, parts, tool calls, artifacts, agent runs - as the JSON a store would keep.
+    private void Save()
+    {
+        if (_savedSession is null) return;
+
+        _json = BitAiConversationSerializer.ToJson(_savedSession.Conversation);
+        _savedCount = _savedSession.Conversation.Messages.Count;
+    }
+
+    // The JSON read back into a live conversation, and a new session to drive it; the old one only has to stop.
+    private async Task RestoreAsync()
+    {
+        if (_json is null) return;
+
+        var previous = _savedSession;
+        _savedSession = _sessionFactory.Create(BitAiConversationSerializer.FromJson(_json));
+
+        if (previous is not null) await previous.DisposeAsync();
+    }
+
     protected override async ValueTask DisposeAsync(bool disposing)
     {
+        if (_savedSession is not null) await _savedSession.DisposeAsync();
+
         foreach (var session in _sessions.Values)
         {
             Detach(session);

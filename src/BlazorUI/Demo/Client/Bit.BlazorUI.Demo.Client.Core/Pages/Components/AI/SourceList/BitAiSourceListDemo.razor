@@ -30,7 +30,9 @@
             <BitLink Href="/components/ai/citationmarker">AiCitationMarker</BitLink>) and draws their sources with
             <BitLink Href="/components/ai/sourcecard">AiSourceCard</BitLink> - links to web sources, opened in a new tab, or
             buttons with an <b>OnSourceClick</b>; a source URL is untrusted input, which the cards only ever link to when it is
-            an http or https address. The heading is <b>BitAiStrings.Sources</b>. See it under an answer in the
+            an http or https address. The heading is <b>BitAiStrings.Sources</b>. Accessibility: the cards are a list a screen
+            reader announces with its count and steps through card by card, named by the heading over it - or, with the heading
+            left out, by the same words. See it under an answer in the
             <BitLink Href="/ai/scenarios/citations">Citations</BitLink> scenario.
         </BitText>
     </NotesTemplate>
@@ -52,7 +54,8 @@
 
         <DemoExample Title="Heading" RazorCode="@example3RazorCode" Id="example3">
             <div>
-                <b>ShowHeading</b> false leaves the "Sources" heading off - for a list under a heading of the page's own.
+                <b>ShowHeading</b> false leaves the "Sources" heading off - for a list under a heading of the page's own. The list is
+                still named "Sources" for a screen reader.
             </div>
             <br />
             <BitAiSourceList Citations="citations" ShowHeading="false" />
@@ -85,7 +88,20 @@
             }
         </DemoExample>
 
-        <DemoExample Title="Cascading parameters" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <DemoExample Title="Disabled" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                A <b>Disabled</b> list disables every card it draws: a card that would link to its source leads nowhere, and
+                <b>OnSourceClick</b> is handed nothing.
+            </div>
+            <br />
+            <BitAiSourceList Citations="citations" Disabled />
+            <br />
+            <BitAiSourceList Citations="citations" OnSourceClick="s => disabledClicked = s" Disabled />
+            <br />
+            <div>Clicked: <b>@(disabledClicked?.Title ?? "-")</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 <b>BitParams</b> with a <b>BitAiSourceListParams</b> sets the heading and the look of every source list inside it
                 - the ones the messages of a chat render included - and a list's own value still wins (the second shows its
@@ -99,7 +115,7 @@
             </BitParams>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
+        <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> the heading, the grid of the cards and
                 every card (<b>SourceCard</b>, a <b>BitAiSourceCardClassStyles</b>). The public <b>--bit-AiSourceList-*</b>
@@ -125,7 +141,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>
                 In right-to-left text the heading and the grid of the cards are mirrored, whether the direction comes from
                 <b>Dir</b> or from a <b>dir</b> attribute around the list.

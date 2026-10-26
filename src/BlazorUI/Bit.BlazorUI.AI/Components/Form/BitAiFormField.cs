@@ -34,10 +34,10 @@ public sealed record BitAiFormField(string Name, string? Label = null)
     /// <summary>Display labels for <see cref="Options"/>, in the same order, when they differ from the values.</summary>
     public IReadOnlyList<string>? OptionLabels { get; init; }
 
-    /// <summary>The smallest accepted value, for numbers and dates.</summary>
+    /// <summary>The smallest accepted value, for numbers.</summary>
     public double? Minimum { get; init; }
 
-    /// <summary>The largest accepted value, for numbers and dates.</summary>
+    /// <summary>The largest accepted value, for numbers.</summary>
     public double? Maximum { get; init; }
 
     /// <summary>A value the number must be strictly greater than.</summary>

@@ -18,7 +18,7 @@ public partial class BitAiImagePartViewDemo
             Name = "Part",
             Type = "BitAiImagePart",
             DefaultValue = "",
-            Description = "The image to render (required): its URL, its alternative text, its caption and its intrinsic size.",
+            Description = "The image to render (required): its URL, its alternative text, its caption and its intrinsic size. The view reads it each time it renders rather than subscribing to it, so a change to a part already shown appears when the parent renders again. A source the user loaded under a policy that asks first stays loaded until the view is handed another one.",
             LinkType = LinkType.Link,
             Href = "#image-part",
         },
@@ -84,7 +84,7 @@ public partial class BitAiImagePartViewDemo
         {
             Id = "image-part",
             Title = "BitAiImagePart",
-            Description = "An image inside a message - one a model generated or a tool returned. Created with new BitAiImagePart(url, partId = null), where url is an absolute, relative or data URL (required) and partId the identifier a transport addresses the part by (one is generated when it is null).",
+            Description = "An image inside a message - one a model generated or a tool returned. Created with new BitAiImagePart(url, partId = null), where url is an absolute, relative or data URL (required) and partId the identifier a transport addresses the part by (one is generated when it is null). A transport sends one as a BitAiImageEvent. It is a BitAiMessagePart, so it also has the Message, Version and Changed of every part (see AiMessagePartView).",
             Parameters =
             [
                 new()
@@ -185,6 +185,15 @@ public partial class BitAiImagePartViewDemo
 
     private readonly BitAiUiOptions clickToLoadOptions = BitAiUiOptions.Default with { Images = BitAiImagePolicy.ClickToLoad };
     private readonly BitAiUiOptions blockOptions = BitAiUiOptions.Default with { Images = BitAiImagePolicy.Block };
+
+    private readonly BitAiImagePartViewParams[] imagePartViewParams =
+    [
+        new()
+        {
+            Style = "max-width: 24rem;",
+            Styles = new() { Image = "border: 2px solid var(--bit-clr-pri);", Caption = "font-style: italic;" },
+        },
+    ];
 
     private readonly BitAiImagePart styledImage = new("_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg")
     {

@@ -26,9 +26,13 @@
         <BitText>
             Every renderer registered with <b>BitAiRendererRegistry</b> - for a part kind
             (<BitLink Href="/components/ai/messagepartview">BitAiMessagePartView</BitLink>), a tool
-            (<BitLink Href="/components/ai/toolcallview">BitAiToolCallView</BitLink>), a structured schema, an artifact kind, a code language,
-            the math or the citations of the Markdown - is already rendered inside one. Wrap your own templates of model output in one the
-            same way. It is Blazor's <b>ErrorBoundary</b>: it catches what its
+            (<BitLink Href="/components/ai/toolcallview">BitAiToolCallView</BitLink>), a structured schema
+            (<BitLink Href="/components/ai/structureddataview">BitAiStructuredDataView</BitLink>), an artifact kind
+            (<BitLink Href="/components/ai/artifactview">BitAiArtifactView</BitLink>), a code language, the math or the citations of the
+            Markdown (<BitLink Href="/components/ai/markdownview">BitAiMarkdownView</BitLink>) - is already rendered inside one, labelled
+            with the <b>RendererFailed</b> text of the strings and the name it was registered for; so is every component a model generates
+            (<BitLink Href="/components/ai/generativeuiview">BitAiGenerativeUiView</BitLink>, labelled with <b>ComponentFailed</b>). Wrap
+            your own templates of model output in one the same way. It is Blazor's <b>ErrorBoundary</b>: it catches what its
             content throws while rendering, in its lifecycle methods and in its event handlers - never what a fire-and-forget task throws -
             and Blazor logs each failure it catches. The message of the exception is the tooltip of the notice, so keep secrets out of the
             exceptions a renderer throws. See the <BitLink Href="/ai/scenarios/custom-tool">Custom tool UI</BitLink> and
@@ -89,7 +93,33 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example4RazorCode" Id="example4">
+        <DemoExample Title="Cascading parameters" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                <b>BitParams</b> with a <b>BitAiRendererBoundaryParams</b> sets the look of every boundary inside it - the boundaries the
+                built-in views render around the renderers registered with them included, so a <b>BitParams</b> around a chat restyles the
+                notice of every renderer that fails in it. The content and the <b>Label</b> are not among them: they are what makes one
+                boundary the one it is. It is a default, not an override: a boundary keeps what it sets itself (the last one sets
+                <b>Styles</b> of its own, which replace the cascaded ones).
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitParams Parameters="rendererBoundaryParams">
+                    <BitAiRendererBoundary>
+                        <WeatherCard Json="@osloForecast" />
+                    </BitAiRendererBoundary>
+
+                    <BitAiRendererBoundary>
+                        <WeatherCard Json="@unexpectedForecast" />
+                    </BitAiRendererBoundary>
+
+                    <BitAiRendererBoundary Styles="@(new() { Notice = new() { Root = "border-style: dotted;" } })">
+                        <WeatherCard Json="@unexpectedForecast" />
+                    </BitAiRendererBoundary>
+                </BitParams>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
             <div>
                 The boundary has no element of its own while its content renders, so <b>Style</b>, <b>Class</b>, <b>Styles.Root</b> and
                 <b>Classes.Root</b> land on the notice that stands in for failed content - a block holding a <b>BitTag</b>, which
@@ -122,8 +152,11 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example5RazorCode" Id="example5">
-            <div>Use BitAiRendererBoundary in right-to-left (RTL).</div>
+        <DemoExample Title="RTL" RazorCode="@example6RazorCode" Id="example6">
+            <div>
+                In right-to-left text the notice reads from the right, its icon at the right of its label. <b>Dir</b> sets the direction
+                of the notice alone; the content the boundary protects takes the direction of the page around it.
+            </div>
             <br />
             <div class="example-stack">
                 <BitAiRendererBoundary Dir="BitDir.Rtl" Label="کارت آب و هوا نتوانست این پیش‌بینی را نشان دهد">

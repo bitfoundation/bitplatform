@@ -34,7 +34,10 @@
             a model writes in it stays inert. Copying takes the code exactly as it is - the line numbers are generated content
             and are never part of it. <b>BitAiUiOptions.ShowCodeCopy</b> and <b>BitAiUiOptions.ShowLineNumbers</b> turn the copy
             button and the line numbers on and off for every block at once (see <BitLink Href="/components/ai/optionsprovider">AiOptionsProvider</BitLink>).
-            See it at work in the <BitLink Href="/ai/scenarios/streaming">Streaming</BitLink> and
+            Accessibility: the code scrolls sideways in a group named after the file or the language (<b>BitAiStrings.CodeBlock</b>,
+            "csharp code"), which takes the keyboard focus while it has something to scroll, so a long line can be read without a
+            pointer; and the code is laid out left to right in right-to-left text too, so its punctuation stays where it was
+            written. See it at work in the <BitLink Href="/ai/scenarios/streaming">Streaming</BitLink> and
             <BitLink Href="/ai/scenarios/artifacts">Artifacts</BitLink> scenarios.
         </BitText>
     </NotesTemplate>
@@ -146,7 +149,39 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Cascading parameters" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <DemoExample Title="Highlighter" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                <b>BitAiSyntaxHighlighter.Highlight</b> is the highlighter the code block uses, for an app that colors code anywhere
+                else. It returns the tokens of the code in the language registered under a name - a <b>BitAiCodeToken</b> each, its
+                <b>Kind</b> with the <b>Start</b> and the <b>Length</b> of its text - in order and never overlapping; the text between
+                them is plain, and a language that is not registered returns none. <b>Slice</b> reads the text of a token back from
+                the code. Edit the code and watch its tokens follow.
+            </div>
+            <br />
+            <BitTextField @bind-Value="highlighterCode" Immediate Label="C# code" />
+            <br />
+            <BitAiCodeBlockView Language="csharp" Code="@(highlighterCode ?? string.Empty)" />
+            <br />
+            <div style="display:flex;flex-wrap:wrap;gap:0.5rem">
+                @foreach (var token in BitAiSyntaxHighlighter.Highlight(highlighterCode, "csharp"))
+                {
+                    <span style="padding:0.125rem 0.5rem;border-radius:0.25rem;background-color:var(--bit-clr-bg-sec)">
+                        <b>@token.Kind</b> <code>@(token.Slice(highlighterCode!).ToString())</code>
+                    </span>
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example10RazorCode" Id="example10">
+            <div>
+                A <b>Disabled</b> code block still shows its code, highlighted as ever, and disables its copy button with it: nothing
+                is copied from the header. The code itself can still be selected.
+            </div>
+            <br />
+            <BitAiCodeBlockView Disabled Language="bash" Code="dotnet add package Bit.BlazorUI.AI" />
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
             <div>
                 <b>BitParams</b> with a <b>BitAiCodeBlockViewParams</b> sets the defaults of every code block inside it - here no
                 header - and a parameter of the block itself still wins.
@@ -161,7 +196,7 @@
             </BitParams>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> its parts: the <b>Header</b> with its
                 <b>Label</b> and <b>CopyButton</b>, the scrolling <b>Body</b>, the <b>Pre</b> and <b>Code</b> elements, and every
@@ -187,10 +222,11 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <DemoExample Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
                 In right-to-left text the header is mirrored - the label at the right, the copy button at the left - whether the
-                direction comes from <b>Dir</b> or from a <b>dir</b> attribute around the block.
+                direction comes from <b>Dir</b> or from a <b>dir</b> attribute around the block. The code itself stays left to
+                right, as it is written.
             </div>
             <br />
             <BitAiCodeBlockView Dir="BitDir.Rtl" FileName="مثال.cs" Language="csharp" Code="@rtlCode" />

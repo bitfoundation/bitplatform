@@ -20,9 +20,9 @@ public partial class BitAiTextPartViewDemo
             Name = "Message",
             Type = "BitAiMessage",
             DefaultValue = "",
-            Description = "The message the part belongs to (required), whose citations the markers of the text resolve against. Only the citations anchored to this part (their PartId, or none) and whose span the text already reaches are woven in.",
+            Description = "The message the part belongs to (required), whose citations the markers of the text resolve against. Only the citations anchored to this part (their PartId, or none) and whose span the text already reaches are woven in, as numbered markers placed where each span ends; a span that ends inside code gets none.",
             LinkType = LinkType.Link,
-            Href = "/components/ai/chatmessage",
+            Href = "/components/ai/chatmessage#message",
         },
         new()
         {
@@ -36,7 +36,7 @@ public partial class BitAiTextPartViewDemo
             Name = "Part",
             Type = "BitAiTextPart",
             DefaultValue = "",
-            Description = "The part to render (required). Its text is rendered as Markdown, with a caret and its last block left open while the part is streaming; the citations are woven in again only when the version of the part or the number of citations of the message changed.",
+            Description = "The part to render (required) - a BitAiTextPart or a BitAiMarkdownPart. Its text is rendered as Markdown, with a caret and its last block left open while the part is streaming; the citations are woven in again only when the part, its version, the message, the number of its citations or BitAiUiOptions.InlineCitations changed. The view does not subscribe to the part: it shows the part as it stands each time its parent renders it.",
             LinkType = LinkType.Link,
             Href = "#text-part",
         },
@@ -81,7 +81,7 @@ public partial class BitAiTextPartViewDemo
         {
             Id = "text-part",
             Title = "BitAiTextPart",
-            Description = "A run of text that grows as the model writes it - the body of an assistant message. new BitAiTextPart() creates an empty part that expects more text (streaming), new BitAiTextPart(text) a finished one, and new BitAiTextPart(text, partId) a part with an identifier a transport addresses it by (null text: streaming). Appending is amortised constant time, and it is safe for one writer and any number of readers. BitAiMarkdownPart is the same part marked as Markdown, for hosts that render plain text parts verbatim.",
+            Description = "A run of text that grows as the model writes it - the body of an assistant message. new BitAiTextPart() creates an empty part that expects more text (streaming), new BitAiTextPart(text) a finished one, and new BitAiTextPart(text, partId) a part with an identifier a transport addresses it by (null text: streaming). Appending is amortised constant time, and it is safe for one writer and any number of readers. BitAiMarkdownPart is the same part marked as Markdown, for hosts that render plain text parts verbatim; BitAiReasoningPart and BitAiCodePart derive from it too, so they share every member below.",
             Parameters =
             [
                 new()
@@ -156,6 +156,13 @@ public partial class BitAiTextPartViewDemo
                 },
                 new()
                 {
+                    Name = "Message",
+                    Type = "BitAiMessage?",
+                    DefaultValue = "null",
+                    Description = "The message the part belongs to, once it has been added to one (BitAiMessage.AddPart).",
+                },
+                new()
+                {
                     Name = "Changed",
                     Type = "event Action<BitAiMessagePart>?",
                     DefaultValue = "",
@@ -192,6 +199,15 @@ public partial class BitAiTextPartViewDemo
     private readonly BitAiMessage citedMessage = new(BitAiRole.Assistant);
     private BitAiTextPart citedPart = default!;
     private string? clickedSource;
+
+    private readonly BitAiTextPartViewParams[] textPartViewParams =
+    [
+        new()
+        {
+            Style = "padding-inline-start: 0.75rem; border-inline-start: 3px solid var(--bit-clr-pri);",
+            Styles = new() { Markdown = new() { Markdown = new() { Paragraph = "font-style: italic;" } } },
+        },
+    ];
 
     private const string styleText = "A [link](https://learn.microsoft.com/aspnet/core/blazor), some `inline code` and **bold** text.";
 

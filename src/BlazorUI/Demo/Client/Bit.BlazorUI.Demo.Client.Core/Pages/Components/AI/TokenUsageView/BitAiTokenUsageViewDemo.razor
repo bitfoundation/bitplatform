@@ -32,8 +32,10 @@
             <b>BitAiGenerationMetadata</b> itself. A transport reports them as <b>BitAiUsageUpdatedEvent</b>s and
             <b>BitAiMetadataEvent</b>s; the session times the generation. Its words and number formats come from the string table
             (<b>BitAiStrings.Tokens</b>, <b>FormatTokens</b>, <b>TokensPerSecond</b>, <b>FormatDuration</b>, <b>UsageLine</b>,
-            <b>TimeToFirstToken</b>), in the culture of the page, and each figure reads in the direction its own words are written
-            in, a right-to-left row included. A cost is written to the minor unit of its currency, and a cost of less than that
+            <b>TimeToFirstToken</b>, and <b>InputTokens</b>, <b>OutputTokens</b>, <b>CachedTokens</b> and <b>ReasoningTokens</b>
+            for the lines of the breakdown), in the culture of the page, which a
+            <BitLink Href="/components/ai/optionsprovider">BitAiOptionsProvider</BitLink> localizes; each figure reads in the
+            direction its own words are written in, a right-to-left row included. A cost is written to the minor unit of its currency, and a cost of less than that
             unit - less than a cent - with two decimals more. Accessibility: the breakdown of the
             tokens is visually hidden text of the readout as well as its tooltip, which the keyboard, a touch screen and a screen
             reader never reach, and the latency is named (TimeToFirstToken) for a screen reader. See it under every message of the
@@ -119,7 +121,16 @@
             }
         </DemoExample>
 
-        <DemoExample Title="Cascading parameters" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <DemoExample Title="Disabled" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                A disabled readout is drawn in the disabled color, every figure alike - for a message of a conversation that is no
+                longer active, say. It still shows every figure and keeps its tooltip.
+            </div>
+            <br />
+            <BitAiTokenUsageView Disabled Usage="metadata.Usage" Metadata="metadata" ShowLatency />
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 <b>BitParams</b> with a <b>BitAiTokenUsageViewParams</b> sets which figures every readout inside it shows, and its
                 look - the readouts of the messages of a chat included - and a readout's own value still wins (the last shows
@@ -134,7 +145,7 @@
             </BitParams>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
+        <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> each figure - the tokens, the cost,
                 the speed and the latency. The public <b>--bit-AiTokenUsageView-*</b> variables re-skin the readouts from
@@ -156,7 +167,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example8RazorCode" Id="example8">
+        <DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>
                 In right-to-left text the figures are laid out from right to left, whether the direction comes from <b>Dir</b> or
                 from a <b>dir</b> attribute around the readout.

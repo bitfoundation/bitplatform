@@ -268,6 +268,12 @@ public partial class BitAiConversationListDemo
     }
 
 
+    // Never called: a disabled list raises none of its callbacks.
+    private void HandleDisabledNew() { }
+
+    private void HandleDisabledDelete(BitAiConversationSummary summary) { }
+
+
     // One live session per thread, so a reply keeps streaming in a thread that was switched away from.
     private readonly Dictionary<string, BitAiChatSession> chatSessions = new(StringComparer.Ordinal);
     private IReadOnlyList<BitAiConversationSummary> chatSummaries = [];
@@ -339,6 +345,41 @@ public partial class BitAiConversationListDemo
         RefreshChatSummaries();
         StateHasChanged();
     });
+
+
+    // Two zones twelve hours apart and with no daylight saving time, so a new day has always begun in one of them and not
+    // yet in the other for twelve hours, whatever the time is.
+    private static readonly TimeZoneInfo tokyoZone = TimeZoneInfo.CreateCustomTimeZone("Tokyo", TimeSpan.FromHours(9), "Tokyo (UTC+9)", "Tokyo (UTC+9)");
+    private static readonly TimeZoneInfo saoPauloZone = TimeZoneInfo.CreateCustomTimeZone("Sao Paulo", TimeSpan.FromHours(-3), "São Paulo (UTC-3)", "São Paulo (UTC-3)");
+    private readonly IReadOnlyList<BitAiConversationSummary> zoneSummaries = CreateZoneSummaries();
+
+    private static IReadOnlyList<BitAiConversationSummary> CreateZoneSummaries()
+    {
+        var now = DateTimeOffset.UtcNow;
+
+        // Halfway between the midnights the two cities passed last: after the later one in one city, before it in the other.
+        var sinceTokyoMidnight = TimeZoneInfo.ConvertTime(now, tokyoZone).TimeOfDay;
+        var sinceSaoPauloMidnight = TimeZoneInfo.ConvertTime(now, saoPauloZone).TimeOfDay;
+        var ago = (sinceTokyoMidnight + sinceSaoPauloMidnight) / 2;
+
+        return
+        [
+            new("z1", "Check in for the trip", now.AddMinutes(-10), "Seats 14A and 14B.", 2),
+            new("z2", "Book the flights", now - ago, "The direct one on Friday morning.", 6),
+            new("z3", "Pack for the weather", now.AddDays(-3), "Light layers and an umbrella.", 4),
+        ];
+    }
+
+
+    private readonly BitAiConversationListParams[] conversationListParams =
+    [
+        new()
+        {
+            ShowNewButton = false,
+            TimeZone = TimeZoneInfo.Utc,
+            Styles = new() { GroupHeader = "color:var(--bit-clr-pri)", Root = "border:1px solid var(--bit-clr-brd-sec);border-radius:0.5rem" },
+        }
+    ];
 
 
     private string? rtlSelectedId = "r1";

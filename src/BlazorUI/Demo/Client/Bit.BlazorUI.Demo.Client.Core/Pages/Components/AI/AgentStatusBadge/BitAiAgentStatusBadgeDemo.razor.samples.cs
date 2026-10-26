@@ -70,6 +70,12 @@ private sealed class PlainStatusStrings : BitAiStrings
 """;
 
     private readonly string example5RazorCode = """
+<BitAiAgentStatusBadge Disabled Status="BitAiAgentRunStatus.Running" />
+<BitAiAgentStatusBadge Disabled Status="BitAiAgentRunStatus.WaitingForInput" />
+<BitAiAgentStatusBadge Disabled Status="BitAiAgentRunStatus.Failed" />
+""";
+
+    private readonly string example6RazorCode = """
 <BitParams Parameters="badgeParams">
     <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.Running" />
     <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.WaitingForInput" />
@@ -77,14 +83,14 @@ private sealed class PlainStatusStrings : BitAiStrings
                            Styles="@(new() { Tag = new() { Root = "border-radius: 0" } })" />
 </BitParams>
 """;
-    private readonly string example5CsharpCode = """
+    private readonly string example6CsharpCode = """
 private readonly BitAiAgentStatusBadgeParams[] badgeParams =
 [
     new() { Styles = new() { Tag = new() { Root = "border-radius: 1rem", Text = "font-weight: 600" } } }
 ];
 """;
 
-    private readonly string example6RazorCode = """
+    private readonly string example7RazorCode = """
 <style>
     .custom-class {
         padding: 0.25rem;
@@ -110,7 +116,7 @@ private readonly BitAiAgentStatusBadgeParams[] badgeParams =
 </div>
 """;
 
-    private readonly string example7RazorCode = """
+    private readonly string example8RazorCode = """
 <BitAiOptionsProvider UiOptions="rtlOptions">
     <div dir="rtl">
         <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.Running" />
@@ -119,7 +125,7 @@ private readonly BitAiAgentStatusBadgeParams[] badgeParams =
     </div>
 </BitAiOptionsProvider>
 """;
-    private readonly string example7CsharpCode = """
+    private readonly string example8CsharpCode = """
 private readonly BitAiUiOptions rtlOptions = BitAiUiOptions.Default with { Strings = new PersianStatusStrings() };
 
 private sealed class PersianStatusStrings : BitAiStrings

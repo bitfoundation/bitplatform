@@ -96,7 +96,7 @@
             @if (Renderers.FindArtifact(Artifact.Kind) is { } renderer)
             {
                 <BitAiRendererBoundary Label="@Strings.RendererFailed(Artifact.Kind.ToString())">
-                    @renderer(new BitAiArtifactContext(Artifact, _expanded))
+                    @renderer(new BitAiArtifactContext(Artifact, _expanded) { Version = ViewedVersion, Content = ViewedContent })
                 </BitAiRendererBoundary>
             }
             else

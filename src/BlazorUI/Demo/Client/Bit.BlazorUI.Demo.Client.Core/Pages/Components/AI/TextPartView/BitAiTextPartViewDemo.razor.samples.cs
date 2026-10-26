@@ -119,6 +119,25 @@ protected override void OnInitialized()
 }";
 
     private readonly string example4RazorCode = @"
+<BitParams Parameters=""textPartViewParams"">
+    <BitAiTextPartView Part=""answerPart"" Message=""answer"" />
+
+    <BitAiTextPartView Part=""citedPart"" Message=""citedMessage"" />
+
+    <BitAiTextPartView Part=""citedPart"" Message=""citedMessage"" Styles=""@(new() { Markdown = new() { Markdown = new() { Paragraph = ""font-weight: bold;"" } } })"" />
+</BitParams>";
+    private readonly string example4CsharpCode = @"
+// answer, answerPart, citedMessage and citedPart are the ones of the Basic and Citations examples.
+private readonly BitAiTextPartViewParams[] textPartViewParams =
+[
+    new()
+    {
+        Style = ""padding-inline-start: 0.75rem; border-inline-start: 3px solid var(--bit-clr-pri);"",
+        Styles = new() { Markdown = new() { Markdown = new() { Paragraph = ""font-style: italic;"" } } },
+    },
+];";
+
+    private readonly string example5RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem 1rem;
@@ -151,7 +170,7 @@ protected override void OnInitialized()
 <div style=""--bit-AiMarkdownView-link-color: hotpink; --bit-AiMarkdownView-code-background: #fde68a; --bit-AiMarkdownView-code-color: #78350f;"">
     <BitAiTextPartView Part=""stylePart"" Message=""styleMessage"" />
 </div>";
-    private readonly string example4CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private const string styleText = ""A [link](https://learn.microsoft.com/aspnet/core/blazor), some `inline code` and **bold** text."";
 
 private readonly BitAiMessage styleMessage = new(BitAiRole.Assistant);
@@ -162,9 +181,9 @@ protected override void OnInitialized()
     stylePart = styleMessage.AddPart(new BitAiTextPart(styleText));
 }";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitAiTextPartView Dir=""BitDir.Rtl"" Part=""rtlPart"" Message=""rtlMessage"" />";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private const string rtlText = """"""
     بلیزر یک کامپوننت را در **دو جا** رندر می‌کند:
 

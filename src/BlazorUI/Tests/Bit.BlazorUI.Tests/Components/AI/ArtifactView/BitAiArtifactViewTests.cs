@@ -178,6 +178,38 @@ public class BitAiArtifactViewTests : BitAiTestBase
     }
 
     [TestMethod]
+    public void ARegisteredArtifactRendererIsHandedTheVersionOnScreen()
+    {
+        Renderers.RegisterArtifact(BitAiArtifactKind.Chart, context => builder =>
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "class", "my-chart");
+            builder.AddContent(2, $"{context.Version}:{context.Content}:{context.IsLatest}");
+            builder.CloseElement();
+        });
+
+        var conversation = new BitAiConversation();
+        var artifact = conversation.GetOrAddArtifact("a1", BitAiArtifactKind.Chart, "Sales");
+        artifact.SetContent("first");
+        artifact.Complete();
+        var firstVersion = artifact.Version;
+
+        artifact.BeginRevision();
+        artifact.SetContent("second");
+        artifact.Complete();
+
+        var view = RenderComponent<BitAiArtifactView>(p => p
+            .Add(c => c.Artifact, artifact)
+            .Add(c => c.InitialVersion, firstVersion));
+
+        Assert.AreEqual($"{firstVersion}:first:False", view.Find(".bit-aiatv-bdy .my-chart").TextContent);
+
+        view.FindAll(".bit-aiatv-hdr [role=option]")[1].Click();
+
+        Assert.AreEqual($"{artifact.Version}:second:True", view.Find(".bit-aiatv-bdy .my-chart").TextContent);
+    }
+
+    [TestMethod]
     public void ASingleVersionOffersNoVersionSelector()
     {
         var view = RenderArtifact(Completed(BitAiArtifactKind.Code, "Program", "x"));

@@ -230,6 +230,21 @@ public static IBitAiTransport ProposesForm() =>
     ];
 
     private readonly string example5RazorCode = """
+<BitParams Parameters="structuredDataViewParams">
+    <BitAiStructuredDataView Part="flightPart" />
+
+    <BitAiStructuredDataView Part="flightPart" Styles="@(new() { Label = "font-style: italic" })" />
+</BitParams>
+""";
+    private readonly string example5CsharpCode = FlightSampleCode + """
+
+private readonly BitAiStructuredDataViewParams[] structuredDataViewParams =
+[
+    new() { Styles = new() { List = "border-radius: 1rem", Label = "color: var(--bit-clr-pri)" } },
+];
+""";
+
+    private readonly string example6RazorCode = """
 <style>
     .custom-list {
         border-width: 0;
@@ -259,16 +274,16 @@ public static IBitAiTransport ProposesForm() =>
     <BitAiStructuredDataView Part="flightPart" />
 </div>
 """;
-    private readonly string example5CsharpCode = FlightSampleCode;
+    private readonly string example6CsharpCode = FlightSampleCode;
 
-    private readonly string example6RazorCode = """
+    private readonly string example7RazorCode = """
 <BitAiStructuredDataView Dir="BitDir.Rtl" Part="persianFlightPart" />
 
 <div dir="rtl">
     <BitAiStructuredDataView Part="persianFlightPart" />
 </div>
 """;
-    private readonly string example6CsharpCode = """"
+    private readonly string example7CsharpCode = """"
 private readonly BitAiStructuredDataPart persianFlightPart = new(JsonDocument.Parse("""
     { "شماره پرواز": "IR 721", "مبدا": "تهران", "مقصد": "لندن", "صندلی": 2, "قابل استرداد": true, "غذا": null }
     """).RootElement);

@@ -27,11 +27,17 @@
         <BitText>
             A chat renders it for every text part of a message (through BitAiMessagePartView) while a chat session appends the
             deltas its transport streams; render it yourself to show a part anywhere else. It needs the part and the message the
-            part belongs to, whose citations the markers resolve against, and it re-renders when its parent does - a message
-            re-renders on every change of its parts. Model output is untrusted: the Markdown is rendered by a BitAiMarkdownView,
-            which escapes raw HTML and neutralises script URLs (see <BitLink Href="/components/ai/markdownview">AiMarkdownView</BitLink>).
-            See it at work in the <BitLink Href="/ai/scenarios/streaming">Streaming</BitLink> and
-            <BitLink Href="/ai/scenarios/citations">Citations</BitLink> scenarios.
+            part belongs to, whose citations the markers resolve against. It does not listen to the part itself: it renders the
+            part as it stands each time its parent renders it, so whatever appends to a part re-renders its parent - inside a chat
+            that is the <BitLink Href="/components/ai/messagepartview">BitAiMessagePartView</BitLink> of the part, which follows
+            it; on a page of your own, the page (the Streaming example below does it through a
+            <BitLink Href="/components/ai/optionsprovider#render-scheduler">BitAiRenderScheduler</BitLink>). Two of the AI options
+            reach it: <b>InlineCitations</b> (the citation markers) and <b>ShowStreamingCaret</b> (the caret), set for a region with a
+            <BitLink Href="/components/ai/optionsprovider">BitAiOptionsProvider</BitLink>. Model output is untrusted: the Markdown is
+            rendered by a BitAiMarkdownView, which escapes raw HTML and neutralises script URLs (see
+            <BitLink Href="/components/ai/markdownview">AiMarkdownView</BitLink>). See it at work in the
+            <BitLink Href="/ai/scenarios/streaming">Streaming</BitLink> and <BitLink Href="/ai/scenarios/citations">Citations</BitLink>
+            scenarios.
         </BitText>
     </NotesTemplate>
     <Examples>
@@ -64,10 +70,13 @@
 
         <DemoExample Title="Citations" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>
-                A citation of the message anchored to the part (<b>StartIndex</b> / <b>EndIndex</b> of its text) is drawn as a
-                numbered chip where its span ends. <b>OnCitationClick</b> is raised when the user activates one. The second
+                A citation of the message anchored to the part (<b>StartIndex</b> / <b>EndIndex</b> of its text, and its <b>PartId</b>
+                - see <BitLink Href="/components/ai/citationmarker#citation">BitAiCitation</BitLink>) is drawn as a numbered chip where its
+                span ends, numbered as the message numbers it. <b>OnCitationClick</b> is raised when the user activates one. The second
                 citation of this message ends inside a code span, so it gets no marker - a source list under the message still
-                lists it. <b>BitAiUiOptions.InlineCitations</b> turns the markers off for every part at once.
+                lists it. A span the streamed text has not reached yet gets its marker once it has. <b>BitAiUiOptions.InlineCitations</b>
+                turns the markers off for every part at once (see the Basic example of
+                <BitLink Href="/components/ai/optionsprovider">AiOptionsProvider</BitLink>).
             </div>
             <br />
             <BitAiTextPartView Part="citedPart" Message="citedMessage" OnCitationClick="(BitAiCitation citation) => clickedSource = citation.Source.Title" />
@@ -75,7 +84,24 @@
             <div>Activated: <b>@(clickedSource ?? "none yet")</b></div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <DemoExample Title="Cascading parameters" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                <b>BitParams</b> with a <b>BitAiTextPartViewParams</b> sets the look of every text part view inside it - here the
+                <b>Style</b> of the root and the <b>Styles</b> of the Markdown, for the text of a whole region. Inside a chat that
+                reaches the text parts of every message. It is a default, not an override: a view keeps what it sets itself (the last one
+                sets <b>Styles</b> of its own, which replace the cascaded ones).
+            </div>
+            <br />
+            <BitParams Parameters="textPartViewParams">
+                <BitAiTextPartView Part="answerPart" Message="answer" />
+                <br />
+                <BitAiTextPartView Part="citedPart" Message="citedMessage" />
+                <br />
+                <BitAiTextPartView Part="citedPart" Message="citedMessage" Styles="@(new() { Markdown = new() { Markdown = new() { Paragraph = "font-weight: bold;" } } })" />
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> its parts: <b>Markdown</b> takes the
                 classes and styles of the BitAiStreamingMarkdown the text is rendered with, and through its own <b>Markdown</b> those of
@@ -101,7 +127,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <DemoExample Title="RTL" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
                 In right-to-left text the Markdown reads from the right - lists, quotes and tables included - whether the direction
                 comes from <b>Dir</b> or from a <b>dir</b> attribute around the part.

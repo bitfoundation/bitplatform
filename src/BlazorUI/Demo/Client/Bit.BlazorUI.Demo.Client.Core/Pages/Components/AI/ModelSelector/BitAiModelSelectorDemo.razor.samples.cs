@@ -59,11 +59,12 @@ private readonly IReadOnlyList<BitAiModel> planModels =
 ];";
 
     private readonly string example4RazorCode = @"
-<BitAiModelSelector @bind-ModelId=""catalogModelId"" Catalog=""teamCatalog"" />
+<BitAiModelSelector @ref=""catalogSelector"" @bind-ModelId=""catalogModelId"" Catalog=""teamCatalog"" />
 
-<div>ModelId: <b>@catalogModelId</b></div>";
+<div>ModelId: <b>@catalogModelId</b>, Selected: <b>@(catalogSelector?.Selected?.Name)</b></div>";
     private readonly string example4CsharpCode = @"
 private string? catalogModelId;
+private BitAiModelSelector catalogSelector = default!;
 private static readonly BitAiModelCatalog teamCatalog = new(
     [
         new BitAiModel(""team-chat"", ""Team Chat"") { ProviderId = ""gateway"", Description = ""Served by the company gateway."" },

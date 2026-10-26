@@ -33,11 +33,14 @@
                 Reasoning arrives as <code>BitAiReasoningDeltaEvent</code> and becomes a <code>BitAiReasoningPart</code>.
                 Because it is a part of its own rather than text with a label, it can be collapsed, timed, excluded from the
                 copy button, and left out of the plain-text projection of the conversation sent back to the provider on the
-                next turn.
+                next turn (<code>IBitAiMessage.GetText()</code> skips it). A provider that needs its reasoning replayed on a
+                later turn sends an opaque <code>Signature</code> with the delta, which the part keeps.
             </p>
             <p>
-                The panel is open while the model thinks and folds itself away once the answer starts, with the time it took
-                in its header. <code>BitAiUiOptions.CollapseReasoning</code> turns the folding off; a reader who opens or
+                The transport here streams the reasoning a word at a time, then the answer as ordinary text deltas. Nothing
+                says where the thinking ends: the first part of the answer completes the reasoning part, as a
+                <code>BitAiPartCompletedEvent</code> for it would. The panel is open while the model thinks and folds itself
+                away once the answer starts, with the time it took in its header. <code>BitAiUiOptions.CollapseReasoning</code> turns the folding off; a reader who opens or
                 closes the panel themselves keeps it the way they left it.
             </p>
         </DocSection>

@@ -34,6 +34,13 @@
             model is left to offer. See the <BitLink Href="/ai/scenarios/usage">usage scenario</BitLink> for it in the prefix
             of a composer, beside the context meter and the token usage it drives.
         </BitText>
+        <br />
+        <BitText>
+            The picker is named Model for assistive technologies, the header of the models without a group is Other, and a
+            deprecated model is labelled "Name (deprecated)". These texts come from the strings in force (<b>Model</b>,
+            <b>OtherModels</b>, <b>ModelDeprecated</b>), which a
+            <BitLink Href="/components/ai/optionsprovider">BitAiOptionsProvider</BitLink> localizes.
+        </BitText>
     </NotesTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
@@ -83,12 +90,13 @@
             <div>
                 <b>Catalog</b> takes an <b>IBitAiModelCatalog</b> of your own - a <b>BitAiModelCatalog</b> for a fixed list, or an
                 implementation over the model list of a gateway. Its providers name the groups of the models that have no
-                <b>Family</b>, and its default model is the one selected while <b>ModelId</b> names none.
+                <b>Family</b>, and its default model is the one selected while <b>ModelId</b> names none - Team Vision here. The
+                <b>Selected</b> property of the selector is the model it shows.
             </div>
             <br />
-            <BitAiModelSelector @bind-ModelId="catalogModelId" Catalog="teamCatalog" />
+            <BitAiModelSelector @ref="catalogSelector" @bind-ModelId="catalogModelId" Catalog="teamCatalog" />
             <br /><br />
-            <div>ModelId: <b>@catalogModelId</b></div>
+            <div>ModelId: <b>@catalogModelId</b>, Selected: <b>@(catalogSelector?.Selected?.Name)</b></div>
         </DemoExample>
 
         <DemoExample Title="RequiredCapabilities" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">

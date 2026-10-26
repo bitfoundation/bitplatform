@@ -30,14 +30,21 @@
 
         <DocSection Id="how-it-works" Title="How it works">
             <p>
-                The session runs every call the model asked for in one round concurrently, and waits for all of them before
-                asking again. Each card updates on its own, because each <code>BitAiToolCallPart</code> raises its own change
-                event and only its own view re-renders - which is where a serial tool UI falls apart.
+                The transport asks for both calls in one response: two <code>BitAiToolCallStartedEvent</code>s, each with
+                its <code>Arguments</code> complete from the start - which makes the delta and completion events
+                unnecessary - then <code>BitAiFinishReason.ToolCalls</code>. The session runs every call of the round
+                concurrently, each through its own approval check, and waits for all of them before asking again; the
+                transport then finds both results on the request and answers from them. Each card updates on its own,
+                because each <code>BitAiToolCallPart</code> raises its own change event and only its own view re-renders -
+                which is where a serial tool UI falls apart.
             </p>
             <p>
                 A declined or failed call does not stop the others. Its failure is recorded on that call and sent back to the
-                model with the rest. <code>BitAiChatSessionOptions.MaxToolRoundtrips</code> (six on this site) caps how many
-                rounds of tools one turn may take.
+                model with the rest. <code>BitAiChatSessionOptions.MaxToolRoundtrips</code> caps how many rounds of tools one
+                turn may take - ten by default, six for the sessions of this site, set with <code>ai.ConfigureSessions</code>.
+                This page builds its session over a transport of its own, so it hands it those configured options
+                (<code>BitAiChatSessionFactory.Defaults</code>) together with the tool registry. A model still asking for
+                tools when the limit is reached gets no more: the reply ends with an error part saying the limit was hit.
             </p>
         </DocSection>
 

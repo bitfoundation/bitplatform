@@ -32,9 +32,17 @@
                 (<code>BitAiUiOptions.VirtualizeThreshold</code>, sixty messages here) only the newest sixty are: scroll up
                 and the older ones come in thirty at a time above what you are reading, which stays where it is, and once you
                 are back at the newest message they are let go of again. Nothing is estimated - every message drawn is drawn
-                at its own height - so nothing is estimated, the content never jumps and the view never goes blank. The conversation is
+                at its own height - so the content never jumps and the view never goes blank. The conversation is
                 deliberately varied - a thousand identical paragraphs would prove nothing; the hard case is mixed content
                 with wildly different heights.
+            </p>
+            <p>
+                The five hundred messages are built in code (<code>AiDemoConversations.Long</code>) - a
+                <code>BitAiConversation</code> filled with <code>AddMessage</code>, each answer a
+                <code>BitAiMessage</code> of parts: text, Markdown, a tool call with its result, a table with a citation - and
+                handed to the session factory (<code>SessionFactory.Create(conversation)</code>), so new messages go to the
+                transport registered for the site, which echoes them. A conversation restored from storage is handed over
+                the same way (see <BitLink Href="/ai/scenarios/conversations">Conversations</BitLink>).
             </p>
             <p>Where the render budget goes:</p>
             <ul>
@@ -43,8 +51,15 @@
                     transcript. The chat around it renders as a turn starts and as it ends.
                 </li>
                 <li>
-                    Each of those views renders at most once per @(_options.RenderInterval.TotalMilliseconds)&nbsp;ms,
-                    however many tokens arrive in that time.
+                    Each of those views renders at most once per @(_options.RenderInterval.TotalMilliseconds)&nbsp;ms
+                    (<code>BitAiUiOptions.RenderInterval</code>), however many tokens arrive in that time - coalesced by a
+                    <code>BitAiRenderScheduler</code>, which an app's own component listening to a stream can use too (see
+                    <BitLink Href="/ai/scenarios/streaming">Streaming</BitLink>).
+                </li>
+                <li>
+                    Bursts of text are evened out before they reach the conversation: the session paces the deltas
+                    (<code>BitAiChatSessionOptions.Pacing</code>), so a paragraph arriving at once is drawn over a few
+                    frames rather than in one.
                 </li>
                 <li>Text accumulates in a builder, so appending stays linear.</li>
                 <li>Markdown before the last block boundary is parsed once and reused.</li>

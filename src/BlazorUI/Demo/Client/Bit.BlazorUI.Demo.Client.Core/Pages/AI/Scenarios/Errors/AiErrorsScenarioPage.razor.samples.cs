@@ -22,6 +22,7 @@ public ValueTask DisposeAsync() => session.DisposeAsync();
 """;
 
     private const string example1TransportCode = """
+// AiScriptedTransport and AiScript are the demo's helpers - see the Basic chat scenario.
 public static IBitAiTransport FailsThenRecovers()
 {
     var attempts = 0;

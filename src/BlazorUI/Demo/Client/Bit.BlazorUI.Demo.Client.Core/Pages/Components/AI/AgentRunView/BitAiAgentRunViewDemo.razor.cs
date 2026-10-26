@@ -262,8 +262,10 @@ public partial class BitAiAgentRunViewDemo
     {
         isBasicRunning = true;
 
+        // A new run is Idle; its plan moves it to Planning, and the page moves it on to Running.
         var run = new BitAiAgentRun(agentName: "Research agent") { Goal = "Find out why the three studies disagree" };
         basicRun = run;
+        await Task.Delay(1000);
 
         run.SetPlan(
         [
@@ -272,6 +274,8 @@ public partial class BitAiAgentRunViewDemo
             new BitAiAgentPlanStep("reconcile", "Reconcile the disagreements"),
             new BitAiAgentPlanStep("write", "Write the summary"),
         ]);
+        await Task.Delay(1000);
+
         run.SetStatus(BitAiAgentRunStatus.Running);
 
         string[] summaries =
@@ -332,6 +336,52 @@ public partial class BitAiAgentRunViewDemo
 
         isFailingRunning = false;
     }
+
+
+
+    // Cancellation: a run the user stops, whose unfinished steps are skipped.
+    private BitAiAgentRun? cancellableRun;
+    private CancellationTokenSource? cancelSource;
+
+    private async Task StartCancellableRun()
+    {
+        using var source = new CancellationTokenSource();
+        cancelSource = source;
+
+        var run = new BitAiAgentRun(agentName: "Backup agent") { Goal = "Back up the three databases" };
+        cancellableRun = run;
+
+        run.SetPlan(
+        [
+            new BitAiAgentPlanStep("orders", "Back up the orders database"),
+            new BitAiAgentPlanStep("customers", "Back up the customers database"),
+            new BitAiAgentPlanStep("analytics", "Back up the analytics database"),
+        ]);
+        run.SetStatus(BitAiAgentRunStatus.Running);
+
+        try
+        {
+            foreach (var step in run.Steps)
+            {
+                step.Start();
+                await Task.Delay(2000, source.Token);
+                step.Complete(summary: "Backed up");
+            }
+
+            run.SetStatus(BitAiAgentRunStatus.Completed);
+        }
+        catch (OperationCanceledException)
+        {
+            // Ending the run as cancelled completes the step it was on, and the ones it will no longer reach, as Skipped.
+            run.SetStatus(BitAiAgentRunStatus.Cancelled);
+        }
+        finally
+        {
+            cancelSource = null;
+        }
+    }
+
+    private void StopCancellableRun() => cancelSource?.Cancel();
 
 
 
@@ -443,6 +493,35 @@ public partial class BitAiAgentRunViewDemo
 
         run.SetStatus(BitAiAgentRunStatus.Completed);
         isUsageRunning = false;
+    }
+
+
+
+    // Disabled: a run waiting on the user, drawn by a view that takes no answer.
+    private readonly BitAiAgentRun disabledRun = CreateDisabledRun();
+
+    private static BitAiAgentRun CreateDisabledRun()
+    {
+        var run = new BitAiAgentRun(agentName: "Deploy agent") { Goal = "Ship the release" };
+
+        run.SetPlan(
+        [
+            new BitAiAgentPlanStep("test", "Run the test suite"),
+            new BitAiAgentPlanStep("deploy", "Deploy"),
+        ]);
+        run.SetStatus(BitAiAgentRunStatus.Running);
+
+        run.Steps[0].Start();
+        run.Steps[0].Complete(BitAiAgentStepStatus.Failed, error: new BitAiError("3 of 812 tests failed.")
+        {
+            Detail = "Checkout.AppliesDiscount\nCheckout.RoundsTax\nCheckout.HandlesRefund",
+        });
+
+        // The question blocks the step running with it (Deploy).
+        run.Steps[1].Start();
+        run.RequestInput("Three tests of the checkout failed. Deploy anyway?", ["Deploy anyway", "Stop here"]);
+
+        return run;
     }
 
 

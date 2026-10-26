@@ -56,7 +56,25 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Lifecycle" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <DemoExample Title="Tool definition" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                The header is drawn from the <b>BitAiToolDefinition</b> of the tool (its table is on the
+                <BitLink Href="/components/ai/toolapproval#tool-definition">AiToolApproval</BitLink> page): its <b>DisplayName</b> - the
+                <b>Title</b>, else the <b>Name</b> - and its <b>Icon</b>, a Fabric MDL2 icon name drawn in place of the default wrench. A call
+                carries the definition as its <b>Definition</b>, which a session sets as it starts running the call; until then - and for a call
+                no session runs, such as one a server ran - the card reads the definition registered for the tool (<b>IBitAiToolRegistry</b>).
+                Below: a tool nobody defined (its raw name under the wrench), a call with a definition of its own that names an icon, and a call
+                with no definition whose tool this site registers (<b>get_weather</b>, titled Weather, with a globe).
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiToolCallView Call="unknownToolCall" />
+                <BitAiToolCallView Call="iconToolCall" />
+                <BitAiToolCallView Call="registeredToolCall" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Lifecycle" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>
                 A call moves through <b>Streaming</b> (the model is still writing the arguments, shown as they arrive), <b>Pending</b>,
                 <b>Running</b> and <b>Completed</b> - see the BitAiToolCallStatus table. While it runs, the <b>BitAiToolProgress</b> a tool
@@ -77,20 +95,23 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Failure" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <DemoExample Title="Failure & cancellation" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
                 A call whose result failed (<b>BitAiToolOutcome.Failure</b>) is outlined in the error color and opens by itself, its result a
                 compact <b>BitAiErrorView</b> - only as it moves into that status, so a card the reader closes again stays closed. A call the
-                user declined is <b>Rejected</b>: outlined the same way, with the failure the session records for it as its result.
+                user declined is <b>Rejected</b>: outlined the same way, with the failure the session records for it as its result. A call that
+                was running when the user stopped the turn is <b>Cancelled</b>: the header says so, without a duration, and the card goes back to
+                the outline at rest, since nothing went wrong.
             </div>
             <br />
             <div class="example-stack">
                 <BitAiToolCallView Call="failedCall" />
                 <BitAiToolCallView Call="declinedCall" />
+                <BitAiToolCallView Call="cancelledCall" />
             </div>
         </DemoExample>
 
-        <DemoExample Title="Approval" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <DemoExample Title="Approval" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
                 A call that waits for a human decision (<b>AwaitingApproval</b>) is outlined in the warning color, opens by itself and ends in a
                 <b>BitAiToolApproval</b>: decline, always allow, or allow. Hand the card the <b>Session</b> that is waiting, and the decision goes
@@ -113,7 +134,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Custom renderer" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" CodeFiles="@example5CodeFiles" Id="example5">
+        <DemoExample Title="Custom renderer" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" CodeFiles="@example6CodeFiles" Id="example6">
             <div>
                 A renderer registered for a tool (<b>BitAiRendererRegistry.RegisterTool</b>, see the tables below) replaces the card wherever
                 that tool is called. It is drawn in the card's place - with no frame, header or approval of the card's own - inside a
@@ -136,7 +157,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Disabled" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <DemoExample Title="Disabled" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 <b>Disabled</b> turns the header and the approval buttons off: the card stays as it is and no decision can be made. An open
                 card keeps its arguments and its result readable; a collapsed one stays collapsed.
@@ -147,7 +168,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Cascading parameters" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <DemoExample Title="Cascading parameters" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>
                 <b>BitParams</b> with a <b>BitAiToolCallViewParams</b> sets the defaults of every card inside it - here a region whose cards are
                 disabled and drawn with a style of their own. It is a default, not an override: a card keeps what it sets itself (the last one
@@ -163,7 +184,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
+        <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
             <div>
                 <b>Style</b> and <b>Class</b> land on the root, <b>Styles</b> and <b>Classes</b> on every part: the header, its icons, title and
                 status, the progress bar and busy dots, the body with its sections, labels and raw text, and the approval prompt. The public
@@ -195,7 +216,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <DemoExample Title="RTL" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
                 In right-to-left text the chevron points the other way and the card is laid out from the right. Its own words come from the
                 <b>BitAiStrings</b> of the options in force - here a subclass of them, cascaded by a <b>BitAiOptionsProvider</b>.

@@ -45,11 +45,23 @@ private const string blocksMarkdown = """"""
 private readonly BitAiMarkdownDocument blocksDocument = BitAiMarkdownParser.Parse(blocksMarkdown);";
 
     private readonly string example3RazorCode = @"
-<BitAiMarkdownView Document=""openDocument"" ShowCaret />";
+<BitAiMarkdownView Document=""openDocument"" ShowCaret />
+
+<BitAiMarkdownView Document=""openCodeDocument"" ShowCaret />";
     private readonly string example3CsharpCode = @"
 private const string openMarkdown = ""The answer is still being written, so its last paragraph is open"";
 
-private readonly BitAiMarkdownDocument openDocument = BitAiMarkdownParser.Parse(openMarkdown, isComplete: false);";
+private readonly BitAiMarkdownDocument openDocument = BitAiMarkdownParser.Parse(openMarkdown, isComplete: false);
+
+private const string openCodeMarkdown = """"""
+    Install the package:
+
+    ```bash
+    dotnet add package Bit.BlazorUI.AI
+    ```
+    """""";
+
+private readonly BitAiMarkdownDocument openCodeDocument = BitAiMarkdownParser.Parse(openCodeMarkdown, isComplete: false);";
 
     private readonly string example4RazorCode = @"
 <BitAiMarkdownView Id=""answer"" Document=""footnotesDocument"" />";
@@ -308,9 +320,13 @@ private static RenderFragment RenderCitationChip(BitAiCitationContext context) =
 
 <BitAiOptionsProvider UiOptions=""imageOptions"">
     <BitAiMarkdownView Document=""imagesDocument"" />
-</BitAiOptionsProvider>";
+</BitAiOptionsProvider>
+
+<div>Images.Decide(the clock): <b>@imageOptions.Images.Decide(clockUrl)</b></div>";
     private readonly string example9CsharpCode = @"
 [Inject] private NavigationManager Navigation { get; set; } = default!;
+
+private const string clockUrl = ""https://img.icons8.com/fluency/2x/clock.png"";
 
 private const string imagesMarkdown = """"""
     From this site: ![A portrait of a woman](_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female-72.png)
@@ -387,11 +403,14 @@ private void UpdateRawHtml()
     <BitToggle @bind-Value=""parseStrikethrough"" @bind-Value:after=""Reparse"" Text=""Strikethrough"" />
     <BitToggle @bind-Value=""parseAutoLinks"" @bind-Value:after=""Reparse"" Text=""AutoLinks"" />
     <BitToggle @bind-Value=""parseMath"" @bind-Value:after=""Reparse"" Text=""Math"" />
+    <BitToggle @bind-Value=""parseFootnotes"" @bind-Value:after=""Reparse"" Text=""Footnotes"" />
+    <BitToggle @bind-Value=""parseCitationMarkers"" @bind-Value:after=""Reparse"" Text=""CitationMarkers"" />
     <BitToggle @bind-Value=""parseSoftBreaks"" @bind-Value:after=""Reparse"" Text=""SoftBreaksAsHardBreaks"" />
 </BitStack>
 
-<BitAiMarkdownView Document=""optionsDocument"" />";
+<BitAiMarkdownView Document=""optionsDocument"" Citations=""citations"" />";
     private readonly string example11CsharpCode = @"
+// citations as in the Citations example.
 private const string optionsMarkdown = """"""
     | Option | Default |
     | --- | --- |
@@ -403,6 +422,10 @@ private const string optionsMarkdown = """"""
     ~~Struck through~~, a bare URL https://bitplatform.dev and $x^2$.
     One line,
     and the next.
+
+    A cited claim [1] and a footnote[^1].
+
+    [^1]: Listed under the text.
     """""";
 
 private bool parseTables = true;
@@ -410,6 +433,8 @@ private bool parseTaskLists = true;
 private bool parseStrikethrough = true;
 private bool parseAutoLinks = true;
 private bool parseMath = true;
+private bool parseFootnotes = true;
+private bool parseCitationMarkers = true;
 private bool parseSoftBreaks;
 private BitAiMarkdownDocument optionsDocument = BitAiMarkdownParser.Parse(optionsMarkdown);
 
@@ -422,6 +447,8 @@ private void Reparse()
         Strikethrough = parseStrikethrough,
         AutoLinks = parseAutoLinks,
         Math = parseMath,
+        Footnotes = parseFootnotes,
+        CitationMarkers = parseCitationMarkers,
         SoftBreaksAsHardBreaks = parseSoftBreaks,
     };
 
@@ -429,12 +456,111 @@ private void Reparse()
 }";
 
     private readonly string example12RazorCode = @"
+<BitAiMarkdownView Document=""syntaxDocument"" />";
+    private readonly string example12CsharpCode = @"
+private const string syntaxMarkdown = """"""
+    A heading underlined
+    --------------------
+
+    A link with a title: [the docs](https://learn.microsoft.com/aspnet/core/blazor ""The Blazor documentation""), and a
+    [reference link][docs] whose address is given further down. www.bitplatform.dev,
+    <https://github.com/bitfoundation/bitplatform> and <hello@bitplatform.dev> are links too.
+
+    A backslash at the end of a line\
+    breaks it. Escapes keep \*stars\* and \[brackets\] as they are, and entities read as their characters:
+    &copy; &rarr; &#8364;.
+
+        An indented block is code: dotnet run
+
+    3. A numbered list may start at any number
+    4. and counts on from there.
+
+    [docs]: https://learn.microsoft.com/aspnet/core/blazor
+    """""";
+
+private readonly BitAiMarkdownDocument syntaxDocument = BitAiMarkdownParser.Parse(syntaxMarkdown);";
+
+    private readonly string example13RazorCode = @"
+<BitAiMarkdownView Id=""guide"" Document=""treeDocument"" />
+
+<div>Headings:</div>
+<ul>
+    @foreach (var heading in Walk(treeDocument.Blocks).OfType<BitAiHeadingBlock>())
+    {
+        <li>level @heading.Level, ""@TextOf(heading.Inlines)"", id <b>guide-@heading.Id</b></li>
+    }
+</ul>
+<div>Code blocks:</div>
+<ul>
+    @foreach (var block in Walk(treeDocument.Blocks).OfType<BitAiCodeBlock>())
+    {
+        <li>@(block.Language ?? ""text""), @(block.Code.Split('\n').Length) line(s)</li>
+    }
+</ul>";
+    private readonly string example13CsharpCode = @"
+private const string treeMarkdown = """"""
+    ## Install
+
+    Add the package to the project:
+
+    ```bash
+    dotnet add package Bit.BlazorUI.AI
+    ```
+
+    ## Register
+
+    > Register the services once, at startup:
+    >
+    > ```csharp
+    > builder.Services.AddBitBlazorUIAIServices();
+    > ```
+
+    1. Then put a chat on a page:
+
+       ```razor
+       <BitAiChat />
+       ```
+    """""";
+
+private readonly BitAiMarkdownDocument treeDocument = BitAiMarkdownParser.Parse(treeMarkdown);
+
+// Every block of the document in reading order, the ones inside the quotes and the list items included.
+private static IEnumerable<BitAiMarkdownBlock> Walk(IEnumerable<BitAiMarkdownBlock> blocks)
+{
+    foreach (var block in blocks)
+    {
+        yield return block;
+
+        if (block is BitAiQuoteBlock quote)
+        {
+            foreach (var child in Walk(quote.Blocks)) yield return child;
+        }
+        else if (block is BitAiListBlock list)
+        {
+            foreach (var child in Walk(list.Items.SelectMany(item => item.Blocks))) yield return child;
+        }
+    }
+}
+
+// The plain text of a run of inlines: the words of a heading without its emphasis, its code spans or its links.
+private static string TextOf(IEnumerable<BitAiMarkdownInline> inlines) =>
+    string.Concat(inlines.Select(inline => inline switch
+    {
+        BitAiTextInline text => text.Text,
+        BitAiCodeInline code => code.Code,
+        BitAiEmphasisInline emphasis => TextOf(emphasis.Inlines),
+        BitAiStrikethroughInline strike => TextOf(strike.Inlines),
+        BitAiLinkInline link => TextOf(link.Inlines),
+        _ => string.Empty,
+    }));";
+
+    private readonly string example14RazorCode = @"
 <BitParams Parameters=""markdownParams"">
     <BitAiMarkdownView Document=""paramsDocument"" />
 
     <BitAiMarkdownView Document=""paramsDocument"" Styles=""@(new() { Link = ""color: mediumseagreen;"" })"" />
 </BitParams>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private const string paramsMarkdown = """"""
     > A link of a view inside the BitParams, such as [this one](https://bitplatform.dev), is bold - unless its view sets Styles of its own.
     """""";
@@ -446,7 +572,7 @@ private readonly BitAiMarkdownViewParams[] markdownParams =
     new() { Styles = new() { Link = ""font-weight: bold;"", Quote = ""font-style: italic;"" } },
 ];";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example15RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem 1rem;
@@ -485,7 +611,7 @@ private readonly BitAiMarkdownViewParams[] markdownParams =
 <div style=""--bit-AiMarkdownView-heading-color: light-dark(#6d28d9, #a78bfa); --bit-AiMarkdownView-link-color: light-dark(#6d28d9, #a78bfa); --bit-AiMarkdownView-quote-border-color: #8b5cf6; --bit-AiMarkdownView-code-color: #4c1d95; --bit-AiMarkdownView-code-background: #ede9fe; --bit-AiMarkdownView-block-spacing: 0.5rem;"">
     <BitAiMarkdownView Document=""styleDocument"" />
 </div>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private const string styleMarkdown = """"""
     #### A styled answer
 
@@ -499,9 +625,9 @@ private const string styleMarkdown = """"""
 
 private readonly BitAiMarkdownDocument styleDocument = BitAiMarkdownParser.Parse(styleMarkdown);";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitAiMarkdownView Dir=""BitDir.Rtl"" Document=""rtlDocument"" />";
-    private readonly string example14CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private const string rtlMarkdown = """"""
     #### دو حالت رندر
 

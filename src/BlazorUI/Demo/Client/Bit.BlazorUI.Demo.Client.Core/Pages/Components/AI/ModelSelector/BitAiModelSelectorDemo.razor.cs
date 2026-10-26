@@ -211,7 +211,7 @@ public partial class BitAiModelSelectorDemo
                     Name = "Icon",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "An icon shown beside the model. The picker reads it as the name of an icon of the built-in set (BitIconName).",
+                    Description = "The icon shown beside the model in the picker: a Fluent UI (Fabric MDL2) icon name such as BitIconName.Robot, never an image URL. The core package ships only the glyphs its own components draw, so a name outside them needs the Bit.BlazorUI.Icons nuget package to be drawn.",
                     LinkType = LinkType.Link,
                     Href = "/iconography"
                 },
@@ -286,7 +286,7 @@ public partial class BitAiModelSelectorDemo
         {
             Id = "model-catalog",
             Title = "IBitAiModelCatalog",
-            Description = "The models and providers a host offers. ai.AddModels(models, providers, defaultModelId) registers a BitAiModelCatalog - an in-memory one, new BitAiModelCatalog(models, providers, defaultModelId), whose default is the first model that is not deprecated unless one is named; a host that fetches its model list from a gateway implements this interface over that instead.",
+            Description = "The models and providers a host offers. ai.AddModels(models, providers, defaultModelId) registers a BitAiModelCatalog - an in-memory one, new BitAiModelCatalog(models, providers, defaultModelId), whose default is the first model that is not deprecated unless one is named, and whose GroupByProvider() hands its models grouped by provider, in catalog order, to a picker of your own; a host that fetches its model list from a gateway implements this interface over that instead.",
             Parameters =
             [
                 new()
@@ -396,6 +396,7 @@ public partial class BitAiModelSelectorDemo
     ];
 
     private string? catalogModelId;
+    private BitAiModelSelector catalogSelector = default!;
     private static readonly BitAiModelCatalog teamCatalog = new(
         [
             new BitAiModel("team-chat", "Team Chat") { ProviderId = "gateway", Description = "Served by the company gateway." },

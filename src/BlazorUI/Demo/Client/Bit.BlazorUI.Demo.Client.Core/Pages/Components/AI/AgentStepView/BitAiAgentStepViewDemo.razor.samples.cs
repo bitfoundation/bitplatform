@@ -130,13 +130,38 @@ private async Task RunToolStep()
 """;
 
     private readonly string example5RazorCode = """
+<BitAiAgentStepView Disabled Step="disabled.Step" Conversation="disabled.Conversation" />
+""";
+    private readonly string example5CsharpCode = """
+private readonly (BitAiConversation Conversation, BitAiAgentStep Step) disabled = CreateDisabledStep();
+
+private static (BitAiConversation Conversation, BitAiAgentStep Step) CreateDisabledStep()
+{
+    var conversation = new BitAiConversation();
+    var message = conversation.AddMessage(new BitAiMessage(BitAiRole.Assistant));
+    var call = message.AddPart(new BitAiToolCallPart(BitAiId.NewToolCallId(), "run_tests"));
+    call.SetResult(BitAiToolOutcome.Failure("3 of 812 tests failed."));
+
+    var step = new BitAiAgentStep("test", "Run the test suite");
+    step.Start();
+    step.AddToolCall(call.ToolCallId);
+    step.Complete(BitAiAgentStepStatus.Failed, error: new BitAiError("3 of 812 tests failed.")
+    {
+        Detail = "Checkout.AppliesDiscount\nCheckout.RoundsTax\nCheckout.HandlesRefund",
+    });
+
+    return (conversation, step);
+}
+""";
+
+    private readonly string example6RazorCode = """
 <BitParams Parameters="stepViewParams">
     <BitAiAgentStepView Step="cascadingSteps[0]" />
     <BitAiAgentStepView Step="cascadingSteps[1]" />
     <BitAiAgentStepView Step="cascadingSteps[2]" Styles="@(new() { Summary = "font-weight: bold" })" />
 </BitParams>
 """;
-    private readonly string example5CsharpCode = """
+    private readonly string example6CsharpCode = """
 private readonly BitAiAgentStepViewParams[] stepViewParams =
 [
     new() { Styles = new() { Summary = "font-style: italic", Title = "color: var(--bit-clr-pri)" } }
@@ -158,7 +183,7 @@ private static BitAiAgentStep[] CreateCascadingSteps()
 }
 """;
 
-    private readonly string example6RazorCode = """
+    private readonly string example7RazorCode = """
 <style>
     .custom-class {
         padding-inline: 1rem;
@@ -194,7 +219,7 @@ private static BitAiAgentStep[] CreateCascadingSteps()
     }
 </div>
 """;
-    private readonly string example6CsharpCode = """
+    private readonly string example7CsharpCode = """
 private readonly BitAiAgentStep[] styleSteps = CreateStyleSteps();
 
 private static BitAiAgentStep[] CreateStyleSteps()
@@ -209,7 +234,7 @@ private static BitAiAgentStep[] CreateStyleSteps()
 }
 """;
 
-    private readonly string example7RazorCode = """
+    private readonly string example8RazorCode = """
 <div dir="rtl">
     @foreach (var step in rtlSteps)
     {
@@ -219,7 +244,7 @@ private static BitAiAgentStep[] CreateStyleSteps()
 
 <BitAiAgentStepView Dir="BitDir.Rtl" Step="rtlSteps[0]" />
 """;
-    private readonly string example7CsharpCode = """
+    private readonly string example8CsharpCode = """
 private readonly BitAiAgentStep[] rtlSteps = CreateRtlSteps();
 
 private static BitAiAgentStep[] CreateRtlSteps()

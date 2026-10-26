@@ -7,7 +7,7 @@ public partial class BitAiChatMessageDemo
 <BitAiChatMessage Message=""assistantMessage"" />
 <BitAiChatMessage Message=""systemMessage"" />";
     private readonly string example1CsharpCode = @"
-private readonly BitAiMessage userMessage = CreateMessage(BitAiRole.User, ""Can you lay a message out by its role?"");
+private readonly BitAiMessage userMessage = CreateUserMessage();
 private readonly BitAiMessage assistantMessage = CreateReply(""Yes. A reply is **full-width prose**, with copy and feedback under it - hover it to see them."");
 private readonly BitAiMessage systemMessage = CreateMessage(BitAiRole.System, ""The assistant joined the conversation."");
 
@@ -16,6 +16,16 @@ private static BitAiMessage CreateMessage(BitAiRole role, string text)
     var message = new BitAiMessage(role);
 
     message.AddPart(new BitAiTextPart(text));
+
+    return message;
+}
+
+// The files a user message carries are shown as chips above its bubble.
+private static BitAiMessage CreateUserMessage()
+{
+    var message = CreateMessage(BitAiRole.User, ""Can you lay a message out by its role?"");
+
+    message.AddAttachment(new BitAiAttachment(""a1"", ""layout.pdf"") { ContentType = ""application/pdf"", Size = 182_400 });
 
     return message;
 }
@@ -96,6 +106,7 @@ public async ValueTask DisposeAsync()
     <BitAiChatMessage @key=""message.MessageId"" Message=""message"" Animate />
 }";
     private readonly string example4CsharpCode = @"
+// CreateMessage and CreateReply are the helpers of the Basic example.
 private readonly List<BitAiMessage> animatedMessages = [CreateMessage(BitAiRole.User, ""Add a few messages below."")];
 
 private void AddAnimatedMessage()
@@ -114,6 +125,7 @@ private void AddAnimatedMessage()
 
 <div>@(trackingStatus ?? ""The order has not been opened yet."")</div>";
     private readonly string example5CsharpCode = @"
+// CreateReply is the helper of the Basic example.
 private string? trackingStatus;
 private readonly BitAiMessage childContentMessage = CreateReply(""Your order shipped this morning and should arrive on Thursday."");
 
@@ -130,6 +142,7 @@ private void TrackOrder()
 
 <div>Last event: <b>@(lastEvent ?? ""-"")</b></div>";
     private readonly string example6CsharpCode = @"
+// CreateReply is the helper of the Basic example.
 private string? lastEvent;
 private readonly BitAiMessage citedMessage = CreateCitedMessage();
 
@@ -193,6 +206,7 @@ private void HandleFeedback(BitAiMessageFeedback feedback)
                       Session=""disabledSession"" />
 }";
     private readonly string example7CsharpCode = @"
+// CreateMessage and CreateReply are the helpers of the Basic example.
 private bool isDisabled = true;
 private readonly BitAiChatSession disabledSession = new(AiDemoTransports.Echo(), CreateDisabledConversation());
 
@@ -224,6 +238,29 @@ public async ValueTask DisposeAsync()
 }";
 
     private readonly string example8RazorCode = @"
+<BitParams Parameters=""messageParams"">
+    <BitAiChatMessage Message=""cascadeUserMessage"" />
+    <BitAiChatMessage Message=""cascadeAssistantMessage"" />
+    <BitAiChatMessage Message=""cascadeOwnMessage"" Styles=""@(new() { Bubble = ""font-style:italic"" })"" />
+</BitParams>";
+    private readonly string example8CsharpCode = @"
+// CreateMessage and CreateReply are the helpers of the Basic example.
+private readonly BitAiChatMessageParams[] messageParams =
+[
+    new()
+    {
+        Styles = new()
+        {
+            Bubble = ""border:1px solid var(--bit-clr-pri);border-radius:0.5rem"",
+            Body = ""padding-inline-start:0.75rem;border-inline-start:3px solid var(--bit-clr-pri)"",
+        },
+    }
+];
+private readonly BitAiMessage cascadeUserMessage = CreateMessage(BitAiRole.User, ""My bubble takes its style from the BitParams around me."");
+private readonly BitAiMessage cascadeAssistantMessage = CreateReply(""So does the body of this reply."");
+private readonly BitAiMessage cascadeOwnMessage = CreateMessage(BitAiRole.User, ""I keep my own Styles, so none of the cascaded ones reach me."");";
+
+    private readonly string example9RazorCode = @"
 <style>
     .custom-message {
         padding: 1rem;
@@ -248,16 +285,18 @@ public async ValueTask DisposeAsync()
     <BitAiChatMessage Message=""variablesUserMessage"" />
     <BitAiChatMessage Message=""variablesSystemMessage"" />
 </div>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
+// CreateMessage and CreateReply are the helpers of the Basic example.
 private readonly BitAiMessage styleUserMessage = CreateMessage(BitAiRole.User, ""A bubble with a style of its own."");
 private readonly BitAiMessage styleAssistantMessage = CreateReply(""A reply with a class on its root and its body."");
 private readonly BitAiMessage variablesUserMessage = CreateMessage(BitAiRole.User, ""A bubble restyled by the variables of its container."");
 private readonly BitAiMessage variablesSystemMessage = CreateMessage(BitAiRole.System, ""So is this note."");";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitAiChatMessage Dir=""BitDir.Rtl"" Message=""rtlUserMessage"" />
 <BitAiChatMessage Dir=""BitDir.Rtl"" Message=""rtlAssistantMessage"" />";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
+// CreateMessage and CreateReply are the helpers of the Basic example.
 private readonly BitAiMessage rtlUserMessage = CreateMessage(BitAiRole.User, ""می‌توانی پیام را بر اساس نقشش بچینی؟"");
 private readonly BitAiMessage rtlAssistantMessage = CreateReply(""بله. پاسخ به صورت **متن تمام‌عرض** نمایش داده می‌شود و دکمه‌های کپی و بازخورد زیر آن هستند."");";
 }

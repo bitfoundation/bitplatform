@@ -69,6 +69,7 @@ static void RegisterGenerativeComponents(BitAiGenerativeUiRegistry registry)
 """;
 
     private const string example1TransportCode = """"
+// AiScriptedTransport and AiScript are the demo's helpers - see the Basic chat scenario.
 public static IBitAiTransport GenerativeUi() => new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
 {
     await yielder(new BitAiMessageStartedEvent());
@@ -83,14 +84,48 @@ public static IBitAiTransport GenerativeUi() => new AiScriptedTransport((request
     await yielder(new BitAiGenerativeUiEvent("forecast_card",
         AiScript.Json("""{"city":"Auckland","degrees":22,"condition":"Showers","humidity":72}""")));
 
+    await foreach (var evt in AiScript.Write("\n\nOslo is the outlier. If the trip is flexible, move it a month.", 4, 12, token))
+        await yielder(evt);
+
     await yielder(new BitAiMessageCompletedEvent());
 }));
 """";
+
+    private const string example1BindingCode = """
+// The binding BitAiGenerativeUiView runs on every change, run by the app: here, to log what a model got wrong while a
+// prompt is being developed. Called with each reply as its turn ends (session.TurnCompleted += CheckCards).
+[Inject] private IBitAiGenerativeUiRegistry Registry { get; set; } = default!;
+[Inject] private ILogger<ForecastPage> Logger { get; set; } = default!;
+
+private void CheckCards(BitAiMessage reply)
+{
+    foreach (var part in reply.PartsOf<BitAiGenerativeUiPart>())
+    {
+        // A name nothing is registered under is never rendered at all.
+        if (Registry.Find(part.ComponentName) is not { } component) continue;
+
+        var result = BitAiGenerativePropsBinder.Bind(component, part.Props);
+
+        // Missing: a required property left out. Unreadable: a value of the wrong shape, with the serializer's Detail.
+        foreach (var failure in result.Failures)
+        {
+            Logger.LogWarning("{Component}.{Property} {Kind}: {Detail}", failure.ComponentName, failure.PropertyName, failure.Kind, failure.Detail);
+        }
+
+        // Names the component does not declare, never passed to it: often a sign the schema the model has is out of date.
+        foreach (var name in result.IgnoredProperties)
+        {
+            Logger.LogInformation("{Component} ignored {Property}", component.Name, name);
+        }
+    }
+}
+""";
 
     private readonly DemoCodeFile[] example1CodeFiles =
     [
         new("Program.cs", example1ProgramCode),
         new("ForecastCard.razor", example1CardCode),
         new("AiDemoInteractiveTransports.cs", example1TransportCode),
+        new("Binding a payload", example1BindingCode, "csharp"),
     ];
 }

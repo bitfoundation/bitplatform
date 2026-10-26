@@ -72,6 +72,49 @@ private static BitAiMessage CreateResultMessage()
 """;
 
     private readonly string example5RazorCode = """
+<BitParams Parameters="resultViewParams">
+    <BitAiToolResultView Part="textResult" />
+    <BitAiToolResultView Part="failedResult" />
+    <BitAiToolResultView Part="jsonResult" Styles="@(new() { Root = "border-style: solid", Title = "font-weight: bold" })" />
+</BitParams>
+""";
+    private readonly string example5CsharpCode = """"
+private readonly BitAiToolResultViewParams[] resultViewParams =
+[
+    new() { Styles = new() { Root = "border-style: dashed", Title = "font-style: italic" } },
+];
+
+private static JsonElement Json(string json) => JsonDocument.Parse(json).RootElement;
+
+private readonly BitAiToolResultPart textResult = new("call_logs", BitAiToolOutcome.FromText("""
+    3 errors in the last hour:
+    12:04  payment-api  Timeout after 30s calling the ledger
+    12:31  payment-api  Timeout after 30s calling the ledger
+    12:58  search       Index rebuild failed: out of disk space
+    """))
+{
+    ToolName = "read_logs",
+};
+
+private readonly BitAiToolResultPart failedResult = new("call_deploy", BitAiToolOutcome.Failure(new BitAiError("The deployment was rejected: the branch has failing checks.")
+{
+    Code = "checks_failed",
+    Kind = BitAiErrorKind.Tool,
+    Detail = "build (ubuntu-latest): failed\ntest (windows-latest): failed\nlint: passed",
+}))
+{
+    ToolName = "deploy",
+};
+
+private readonly BitAiToolResultPart jsonResult = new("call_weather", BitAiToolOutcome.Success(Json("""
+    {"city":"Oslo","degrees":-3,"condition":"Snow","humidity":81,"forecast":[{"day":"Tue","high":-1},{"day":"Wed","high":2}]}
+    """)))
+{
+    ToolName = "get_weather",
+};
+"""";
+
+    private readonly string example6RazorCode = """
 <style>
     .custom-result {
         border-width: 2px;
@@ -105,14 +148,50 @@ private static BitAiMessage CreateResultMessage()
     <BitAiToolResultView Part="jsonResult" />
 </div>
 """;
+    private readonly string example6CsharpCode = """"
+private static JsonElement Json(string json) => JsonDocument.Parse(json).RootElement;
 
-    private readonly string example6RazorCode = """
+private readonly BitAiToolResultPart textResult = new("call_logs", BitAiToolOutcome.FromText("""
+    3 errors in the last hour:
+    12:04  payment-api  Timeout after 30s calling the ledger
+    12:31  payment-api  Timeout after 30s calling the ledger
+    12:58  search       Index rebuild failed: out of disk space
+    """))
+{
+    ToolName = "read_logs",
+};
+
+private readonly BitAiToolResultPart jsonResult = new("call_weather", BitAiToolOutcome.Success(Json("""
+    {"city":"Oslo","degrees":-3,"condition":"Snow","humidity":81,"forecast":[{"day":"Tue","high":-1},{"day":"Wed","high":2}]}
+    """)))
+{
+    ToolName = "get_weather",
+};
+"""";
+
+    private readonly string example7RazorCode = """
 <BitAiToolResultView Dir="BitDir.Rtl" Part="rtlResult" />
+
+<BitAiOptionsProvider UiOptions="persianOptions">
+    <div dir="rtl">
+        <BitAiToolResultView Part="rtlUnnamedResult" />
+    </div>
+</BitAiOptionsProvider>
 """;
-    private readonly string example6CsharpCode = """
+    private readonly string example7CsharpCode = """
 private readonly BitAiToolResultPart rtlResult = new("call_weather_fa", BitAiToolOutcome.FromText("تهران: ۱۸ درجه، آفتابی\nرطوبت: ۲۰٪"))
 {
     ToolName = "آب و هوا",
 };
+
+private readonly BitAiToolResultPart rtlUnnamedResult = new("call_unknown_fa", BitAiToolOutcome.FromText("۱۲۸ رکورد حذف شد."));
+
+private readonly BitAiUiOptions persianOptions = BitAiUiOptions.Default with { Strings = new PersianAiStrings() };
+
+// The heading of a result with no ToolName, in Persian.
+private sealed class PersianAiStrings : BitAiStrings
+{
+    public override string Result => "نتیجه";
+}
 """;
 }

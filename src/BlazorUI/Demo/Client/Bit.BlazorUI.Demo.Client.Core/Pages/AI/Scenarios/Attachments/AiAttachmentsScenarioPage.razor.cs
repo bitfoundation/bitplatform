@@ -1,20 +1,13 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.AI.Scenarios.Attachments;
+﻿using Bit.BlazorUI.Demo.Client.Core.Services.AI;
+
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.AI.Scenarios.Attachments;
 
 public partial class AiAttachmentsScenarioPage
 {
     private const long MaxSize = 2 * 1024 * 1024;
 
     private readonly List<BitAiAttachmentRejection> _rejections = [];
-    private BitAiChatSession? _session;
-
-    [AutoInject] private BitAiChatSessionFactory _sessionFactory = default!;
-
-    protected override Task OnInitAsync()
-    {
-        _session = _sessionFactory.Create();
-
-        return base.OnInitAsync();
-    }
+    private readonly BitAiChatSession _session = new(AiDemoContentTransports.ReadsAttachments());
 
     // The composer already tells the user; this is where an application would log or count it.
     private void OnRejected(BitAiAttachmentRejection rejection)
@@ -33,7 +26,7 @@ public partial class AiAttachmentsScenarioPage
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        if (_session is not null) await _session.DisposeAsync();
+        await _session.DisposeAsync();
 
         await base.DisposeAsync(disposing);
     }

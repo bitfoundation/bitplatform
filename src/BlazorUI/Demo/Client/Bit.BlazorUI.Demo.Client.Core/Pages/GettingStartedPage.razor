@@ -260,6 +260,14 @@ dotnet add package Bit.BlazorUI.Legacy</CodeBox>
 builder.Services.AddBitBlazorUIAIServices(ai => ai.UseTransport&lt;MyTransport>()); // Bit.BlazorUI.AI
 builder.Services.AddBitBlazorUILegacyServices(); // Bit.BlazorUI.Legacy</CodeBox>
 
+                <BitText Element="p">
+                    <code>Bit.BlazorUI.AI</code> needs one class of yours: the <code>IBitAiTransport</code> its chat
+                    streams answers from, around your model provider. The
+                    <BitLink Href="/ai/scenarios/basic">Basic chat</BitLink> scenario shows one, and everything else the
+                    <code>ai =&gt; ...</code> callback can configure - tools, models, a conversation store, session and
+                    presentation defaults, custom renderers.
+                </BitText>
+
                 <BitAccordion Title="One optimization, and the one place it is unsafe">
                     <BitText Element="p">
                         All four registrations take a <code>trySingleton</code> flag that registers the

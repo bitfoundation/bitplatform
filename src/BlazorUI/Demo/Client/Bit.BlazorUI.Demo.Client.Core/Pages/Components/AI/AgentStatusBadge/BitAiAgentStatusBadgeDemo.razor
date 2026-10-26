@@ -36,7 +36,10 @@
     </NotesTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-            <div>Give it a <b>Status</b>.</div>
+            <div>
+                Give it a <b>Status</b> (a <b>BitAiAgentRunStatus</b>, usually the <b>Status</b> of a <b>BitAiAgentRun</b>): it says it in
+                one word, drawn as a tag.
+            </div>
             <br />
             <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.Running" />
         </DemoExample>
@@ -83,7 +86,20 @@
             </BitAiOptionsProvider>
         </DemoExample>
 
-        <DemoExample Title="Cascading parameters" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <DemoExample Title="Disabled" RazorCode="@example5RazorCode" Id="example5">
+            <div>
+                A <b>Disabled</b> badge draws its tag in the disabled look of a tag, whatever the status; the word stays. It is still the
+                live region, so a change of status is still announced.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitAiAgentStatusBadge Disabled Status="BitAiAgentRunStatus.Running" />
+                <BitAiAgentStatusBadge Disabled Status="BitAiAgentRunStatus.WaitingForInput" />
+                <BitAiAgentStatusBadge Disabled Status="BitAiAgentRunStatus.Failed" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
             <div>
                 <b>BitParams</b> with a <b>BitAiAgentStatusBadgeParams</b> sets the look of every badge inside it - the ones the
                 run views render included - and a badge's own value still wins (the last keeps its own <b>Styles</b>).
@@ -99,7 +115,7 @@
             </BitParams>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
+        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root (the live region), <b>Styles.Tag</b> and <b>Classes.Tag</b> the tag
                 inside it as a <b>BitTagClassStyles</b>. The badge has no variables of its own: the tag is restyled by the
@@ -123,7 +139,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <DemoExample Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>
                 In right-to-left text the tag follows the direction - from <b>Dir</b> or from a <b>dir</b> around it - and the
                 words of a right-to-left language come from its string table.

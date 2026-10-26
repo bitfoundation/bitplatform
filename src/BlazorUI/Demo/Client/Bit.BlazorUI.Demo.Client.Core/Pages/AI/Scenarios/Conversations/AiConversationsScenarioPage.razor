@@ -3,12 +3,12 @@
 
 <PageOutlet Url="ai/scenarios/conversations"
             Title="Multiple AI conversations"
-            Keywords="Blazor chat history, AI conversation list, chat threads sidebar, BitAiConversationList, conversation store"
-            Description="A sidebar of AI conversations over a conversation store with bit BlazorUI: grouped by recency, with new, switch and delete, and replies that keep streaming while another thread is open." />
+            Keywords="Blazor chat history, AI conversation list, chat threads sidebar, BitAiConversationList, conversation store, BitAiConversationSerializer, save chat as JSON"
+            Description="A sidebar of AI conversations over a conversation store with bit BlazorUI: grouped by recency, with new, switch and delete, and replies that keep streaming while another thread is open - and BitAiConversationSerializer, which saves a conversation as JSON and restores it." />
 
 <DocsArticle Eyebrow="AI scenarios"
              Title="Conversations"
-             Lead="A sidebar over a conversation store, grouped by recency, with new, switch, and delete - and a reply that keeps streaming in a thread you switched away from."
+             Lead="A sidebar over a conversation store, grouped by recency, with new, switch, and delete - and a reply that keeps streaming in a thread you switched away from. Then a conversation written out as JSON and read back."
              GitHubUrl="AI/Scenarios/Conversations/AiConversationsScenarioPage.razor">
 
     <Badges>
@@ -56,10 +56,78 @@
                 their own threads rather than everyone's.
             </p>
             <p>
-                A new thread is saved when its first message arrives, and again as each reply completes
-                (<code>BitAiChatSession.TurnCompleted</code>), since a store over a database keeps the reply as it was
-                handed - empty, had it been saved only as it arrived. New reuses a thread nobody has written in yet, so
-                pressing it twice does not leave an empty conversation in the list.
+                The store's four methods are the whole contract: <code>ListAsync</code> returns the
+                <code>BitAiConversationSummary</code>s the sidebar draws (id, title, last change, a preview, the message
+                count), <code>LoadAsync</code> one conversation in full, <code>SaveAsync</code> creates or replaces one, and
+                <code>DeleteAsync</code> removes one. A loaded conversation is an <code>IBitAiConversation</code>;
+                <code>BitAiConversationSerializer.ToConversation(loaded)</code> turns it into the
+                <code>BitAiConversation</code> a session drives, returning it as it is when it already is one.
+            </p>
+            <p>
+                A new thread is saved when its first message arrives (<code>BitAiConversation.MessageAdded</code>), and again
+                as each reply completes (<code>BitAiChatSession.TurnCompleted</code>), since a store over a database keeps
+                the reply as it was handed - empty, had it been saved only as it arrived. New reuses a thread nobody has
+                written in yet, so pressing it twice does not leave an empty conversation in the list.
+            </p>
+        </DocSection>
+
+        <DocSection Id="persistence" Title="Saved and restored"
+                    Description="Write a message or two and press Save: the thread is written out as JSON. Keep writing, then press Restore: the thread is read back from that JSON into a session of its own.">
+            <DemoExample Title="A conversation as JSON" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" CodeFiles="@example2CodeFiles" Id="example2">
+                <AiScenarioFrame AsideLabel="Saved JSON">
+                    <Aside>
+                        <BitText Element="h4" Typography="BitTypography.Subtitle2">Saved JSON</BitText>
+                        <BitStack Horizontal Gap="0.5rem">
+                            <BitButton Size="BitSize.Small" OnClick="Save">Save</BitButton>
+                            <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" Disabled="@(_json is null)" OnClick="RestoreAsync">Restore</BitButton>
+                        </BitStack>
+                        @if (_json is null)
+                        {
+                            <BitText Element="p" Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">Nothing saved yet.</BitText>
+                        }
+                        else
+                        {
+                            <BitText Element="p" Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">@_savedCount messages, @_json.Length characters:</BitText>
+                            <BitAiCodeBlockView Code="@_json" Language="json" FileName="conversation.json" />
+                        }
+                    </Aside>
+                    <ChildContent>
+                        @if (_savedSession is not null)
+                        {
+                            <BitAiChat @key="_savedSession"
+                                       Session="_savedSession"
+                                       EmptyTitle="Write something to save"
+                                       EmptyBody="Then press Save, keep writing, and press Restore."
+                                       Suggestions="_persistenceSuggestions" />
+                        }
+                    </ChildContent>
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
+        <DocSection Id="serializer" Title="Persisting a conversation">
+            <p>
+                A store over a database keeps data, not live objects, and <code>BitAiConversationSerializer</code> is what
+                turns one into the other. <code>ToSnapshot(conversation)</code> takes a <code>BitAiConversationSnapshot</code>
+                - plain records of the conversation, its messages (<code>BitAiMessageSnapshot</code>) and their parts
+                (<code>BitAiPartSnapshot</code>), its artifacts and their versions, its agent runs, under a
+                <code>SchemaVersion</code> - and <code>ToJson(snapshot)</code> writes it; <code>SnapshotFromJson(json)</code>
+                and <code>ToConversation(snapshot)</code> go back, and <code>ToJson(conversation)</code> /
+                <code>FromJson(json)</code> do both steps at once, as the demo above does. A reply that was still streaming
+                when it was saved comes back cancelled, and a tool call that never finished likewise: nothing will ever
+                finish them.
+            </p>
+            <p>
+                An attachment is kept by reference (<code>Url</code>) and with its inline <code>Data</code>; a
+                <code>ContentFactory</code>, like an error's <code>Exception</code>, cannot be written and is dropped. The JSON
+                is written through the package's source-generated metadata, so it is safe to trim. A
+                <code>BitAiConversationSerializerOptions</code> adapts it: <code>SnapshotPart</code> and
+                <code>RestorePart</code> persist a part type of the app's own (without them a <code>BitAiCustomJsonPart</code>
+                keeps its JSON, but any other part of the app's keeps only its text, and comes back as a
+                <code>BitAiCustomJsonPart</code>), and <code>Json</code> takes settings that know
+                the app's types, for values the app keeps in the <code>Extensions</code> or <code>Metadata</code>
+                dictionaries (<code>CreateJsonOptions()</code> plus the app's <code>JsonSerializerContext</code>). The
+                <b>FileConversationStore.cs</b> tab is a store over a folder of JSON files built that way.
             </p>
         </DocSection>
 
@@ -67,6 +135,7 @@
             <ul>
                 <li><BitLink Href="/components/ai/conversationlist"><code>BitAiConversationList</code></BitLink> - the sidebar: today, yesterday, the previous seven and thirty days, then by month.</li>
                 <li><BitLink Href="/components/ai/chat"><code>BitAiChat</code></BitLink> - the open thread, keyed by its conversation so switching starts it afresh.</li>
+                <li><BitLink Href="/components/ai/codeblockview"><code>BitAiCodeBlockView</code></BitLink> - the saved JSON, with its copy button.</li>
             </ul>
         </DocSection>
     </ChildContent>

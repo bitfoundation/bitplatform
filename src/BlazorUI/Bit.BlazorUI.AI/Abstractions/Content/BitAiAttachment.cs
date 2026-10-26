@@ -13,10 +13,10 @@ public enum BitAiAttachmentKind
     /// <summary>A raster or vector image, previewed as a thumbnail.</summary>
     Image = 1,
 
-    /// <summary>An audio clip, previewed with a player.</summary>
+    /// <summary>An audio clip, shown with a microphone glyph.</summary>
     Audio = 2,
 
-    /// <summary>A video clip, previewed with a player.</summary>
+    /// <summary>A video clip, shown with a video glyph.</summary>
     Video = 3,
 
     /// <summary>A PDF or other paginated document.</summary>

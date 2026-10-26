@@ -32,21 +32,25 @@ public partial class BitAiEmptyStateDemo
             Name = "Icon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
-            Description = "The icon of the empty state, provided as custom CSS classes of an external icon library. It wins over IconName.",
+            Description = "The icon of the empty state, provided as custom CSS classes of an external icon library (or a ligature of Material Icons / Symbols, since it is drawn by a BitIcon). It wins over IconName; the library's stylesheet is the app's to load.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
         },
         new()
         {
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The name of the icon of the empty state, from the built-in Fluent UI icons. Left unset (and with no Icon), a sparkle (AutoEnhanceOn) drawn from the AI package's own glyphs.",
+            Description = "The name of the icon of the empty state, from the built-in Fluent UI icons (BitIconName). Only two dozen of them ship in the core package's font; the rest need the Bit.BlazorUI.Icons package. Left unset (and with no Icon), a sparkle (AutoEnhanceOn) drawn from the AI package's own glyphs.",
+            LinkType = LinkType.Link,
+            Href = "/iconography",
         },
         new()
         {
             Name = "IconTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The template rendered in place of the icon, which takes precedence over Icon and IconName.",
+            Description = "The template rendered in place of the icon, which takes precedence over Icon and IconName. Unlike the glyph, it is not hidden from assistive technologies: mark it aria-hidden when it only decorates.",
         },
         new()
         {
@@ -145,6 +149,50 @@ public partial class BitAiEmptyStateDemo
                     LinkType = LinkType.Link,
                     Href = "/components/button#button-class-styles"
                 }
+            ]
+        },
+        new()
+        {
+            Id = "bit-icon-info",
+            Title = "BitIconInfo",
+            Description = "Names a glyph for any icon set. A class-based set (Fabric MDL2, FontAwesome, Bootstrap Icons) is described by BaseClass, Prefix and Name; a ligature-based set (Material Icons, Material Symbols) puts the family on BaseClass and the ligature on Content. The static factories build each of them: Bit(name), Fa(icons), Bi(name), Mi(name, style), Ms(name, style), Css(cssClasses). A plain string converts implicitly and is taken as the complete class list.",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Name",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The name of the icon. For an external set this can be the complete CSS class list when BaseClass and Prefix are empty."
+               },
+               new()
+               {
+                   Name = "BaseClass",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The base CSS class of the icon set - \"bit-icon\" for the built-in set, \"bi\" for Bootstrap Icons, \"material-symbols-outlined\" for Material Symbols. Leave it empty for a set that needs none."
+               },
+               new()
+               {
+                   Name = "Prefix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The CSS class prefix written before the icon name - \"bit-icon--\" for the built-in set, \"bi-\" for Bootstrap Icons. Leave it empty for a set that uses none."
+               },
+               new()
+               {
+                   Name = "Content",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The text rendered inside the icon element - the ligature of a ligature-based icon set such as Material Icons or Material Symbols. Class-based sets leave it null. The empty state draws its icon with a BitIcon, which renders it."
+               },
+               new()
+               {
+                   Name = "IsEmpty",
+                   Type = "bool",
+                   DefaultValue = "",
+                   Description = "Whether this instance names no glyph at all. An empty instance is treated as no icon, so an IconName given beside it is still used."
+               },
             ]
         },
     ];

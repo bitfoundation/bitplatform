@@ -18,8 +18,10 @@ private async Task StartBasicRun()
 {
     isBasicRunning = true;
 
+    // A new run is Idle; its plan moves it to Planning, and the page moves it on to Running.
     var run = new BitAiAgentRun(agentName: "Research agent") { Goal = "Find out why the three studies disagree" };
     basicRun = run;
+    await Task.Delay(1000);
 
     run.SetPlan(
     [
@@ -28,6 +30,8 @@ private async Task StartBasicRun()
         new BitAiAgentPlanStep("reconcile", "Reconcile the disagreements"),
         new BitAiAgentPlanStep("write", "Write the summary"),
     ]);
+    await Task.Delay(1000);
+
     run.SetStatus(BitAiAgentRunStatus.Running);
 
     string[] summaries =
@@ -98,6 +102,60 @@ private async Task StartFailingRun()
 """;
 
     private readonly string example3RazorCode = """
+<BitButton OnClick="StartCancellableRun" Disabled="@(cancelSource is not null)">Back up the databases</BitButton>
+<BitButton Variant="BitVariant.Outline" OnClick="StopCancellableRun" Disabled="@(cancelSource is null)">Stop</BitButton>
+
+@if (cancellableRun is not null)
+{
+    <BitAiAgentRunView Run="cancellableRun" />
+}
+""";
+    private readonly string example3CsharpCode = """
+private BitAiAgentRun? cancellableRun;
+private CancellationTokenSource? cancelSource;
+
+private async Task StartCancellableRun()
+{
+    using var source = new CancellationTokenSource();
+    cancelSource = source;
+
+    var run = new BitAiAgentRun(agentName: "Backup agent") { Goal = "Back up the three databases" };
+    cancellableRun = run;
+
+    run.SetPlan(
+    [
+        new BitAiAgentPlanStep("orders", "Back up the orders database"),
+        new BitAiAgentPlanStep("customers", "Back up the customers database"),
+        new BitAiAgentPlanStep("analytics", "Back up the analytics database"),
+    ]);
+    run.SetStatus(BitAiAgentRunStatus.Running);
+
+    try
+    {
+        foreach (var step in run.Steps)
+        {
+            step.Start();
+            await Task.Delay(2000, source.Token);
+            step.Complete(summary: "Backed up");
+        }
+
+        run.SetStatus(BitAiAgentRunStatus.Completed);
+    }
+    catch (OperationCanceledException)
+    {
+        // Ending the run as cancelled completes the step it was on, and the ones it will no longer reach, as Skipped.
+        run.SetStatus(BitAiAgentRunStatus.Cancelled);
+    }
+    finally
+    {
+        cancelSource = null;
+    }
+}
+
+private void StopCancellableRun() => cancelSource?.Cancel();
+""";
+
+    private readonly string example4RazorCode = """
 <BitButton OnClick="StartAskingRun" Disabled="isAskingRunning">Start the migration</BitButton>
 
 @if (askingRun is not null)
@@ -105,7 +163,7 @@ private async Task StartFailingRun()
     <BitAiAgentRunView Run="askingRun" OnRespond="RespondToAskingRun" />
 }
 """;
-    private readonly string example3CsharpCode = """
+    private readonly string example4CsharpCode = """
 private BitAiAgentRun? askingRun;
 private bool isAskingRunning;
 
@@ -154,7 +212,7 @@ private async Task RespondToAskingRun(string answer)
 }
 """;
 
-    private readonly string example4RazorCode = """
+    private readonly string example5RazorCode = """
 @implements IAsyncDisposable
 
 <BitButton OnClick="() => StartSessionRun(AiDemoAgentTransports.Research())">Research</BitButton>
@@ -166,7 +224,7 @@ private async Task RespondToAskingRun(string answer)
     <BitAiAgentRunView Run="sessionRun" Session="session" />
 }
 """;
-    private readonly string example4CsharpCode = """
+    private readonly string example5CsharpCode = """
 // AiDemoAgentTransports are the scripted agents of this site (an IBitAiTransport each):
 // https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Services/AI/AiDemoAgentTransports.cs
 private BitAiChatSession? session;
@@ -199,7 +257,7 @@ public async ValueTask DisposeAsync()
 }
 """;
 
-    private readonly string example5RazorCode = """
+    private readonly string example6RazorCode = """
 <BitButton OnClick="StartUsageRun" Disabled="isUsageRunning">Start the run</BitButton>
 
 @if (usageRun is not null)
@@ -209,7 +267,7 @@ public async ValueTask DisposeAsync()
     </BitAiOptionsProvider>
 }
 """;
-    private readonly string example5CsharpCode = """
+    private readonly string example6CsharpCode = """
 private readonly BitAiUiOptions usageOptions = BitAiUiOptions.Default with { ShowUsage = true };
 private BitAiAgentRun? usageRun;
 private bool isUsageRunning;
@@ -243,7 +301,38 @@ private async Task StartUsageRun()
 }
 """;
 
-    private readonly string example6RazorCode = """
+    private readonly string example7RazorCode = """
+<BitAiAgentRunView Disabled Run="disabledRun" />
+""";
+    private readonly string example7CsharpCode = """
+private readonly BitAiAgentRun disabledRun = CreateDisabledRun();
+
+private static BitAiAgentRun CreateDisabledRun()
+{
+    var run = new BitAiAgentRun(agentName: "Deploy agent") { Goal = "Ship the release" };
+
+    run.SetPlan(
+    [
+        new BitAiAgentPlanStep("test", "Run the test suite"),
+        new BitAiAgentPlanStep("deploy", "Deploy"),
+    ]);
+    run.SetStatus(BitAiAgentRunStatus.Running);
+
+    run.Steps[0].Start();
+    run.Steps[0].Complete(BitAiAgentStepStatus.Failed, error: new BitAiError("3 of 812 tests failed.")
+    {
+        Detail = "Checkout.AppliesDiscount\nCheckout.RoundsTax\nCheckout.HandlesRefund",
+    });
+
+    // The question blocks the step running with it (Deploy).
+    run.Steps[1].Start();
+    run.RequestInput("Three tests of the checkout failed. Deploy anyway?", ["Deploy anyway", "Stop here"]);
+
+    return run;
+}
+""";
+
+    private readonly string example8RazorCode = """
 <BitButton OnClick="StartCascadingRun" Disabled="isCascadingRunning">Start the run</BitButton>
 
 @if (cascadingRun is not null)
@@ -255,7 +344,7 @@ private async Task StartUsageRun()
     </BitParams>
 }
 """;
-    private readonly string example6CsharpCode = """
+    private readonly string example8CsharpCode = """
 private readonly BitAiAgentRunViewParams[] runViewParams =
 [
     new()
@@ -293,7 +382,7 @@ private async Task StartCascadingRun()
 }
 """;
 
-    private readonly string example7RazorCode = """
+    private readonly string example9RazorCode = """
 <style>
     .custom-class {
         border-width: 2px;
@@ -342,7 +431,7 @@ private async Task StartCascadingRun()
                           --bit-Button-outline-border-color: #64748b;
                           color: #f1f5f9" />
 """;
-    private readonly string example7CsharpCode = """
+    private readonly string example9CsharpCode = """
 private BitAiAgentRun styledRun = CreateStyledRun();
 
 private static BitAiAgentRun CreateStyledRun()
@@ -382,14 +471,14 @@ private async Task RespondToStyledRun(string answer)
 private void ResetStyledRun() => styledRun = CreateStyledRun();
 """;
 
-    private readonly string example8RazorCode = """
+    private readonly string example10RazorCode = """
 <BitButton Variant="BitVariant.Outline" OnClick="ResetRtlRun">دوباره بپرس</BitButton>
 
 <BitAiOptionsProvider UiOptions="persianOptions">
     <BitAiAgentRunView Dir="BitDir.Rtl" Run="rtlRun" OnRespond="RespondToRtlRun" />
 </BitAiOptionsProvider>
 """;
-    private readonly string example8CsharpCode = """
+    private readonly string example10CsharpCode = """
 private readonly BitAiUiOptions persianOptions = BitAiUiOptions.Default with { Strings = new PersianAiStrings() };
 private BitAiAgentRun rtlRun = CreateRtlRun();
 

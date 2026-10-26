@@ -20,14 +20,14 @@ public partial class BitAiScrollToLatestDemo
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text of the button, in place of the ScrollToLatest of the string table (\"Scroll to latest\").",
+            Description = "The text of the button, which is also its accessible name, in place of the ScrollToLatest of the string table (\"Scroll to latest\").",
         },
         new()
         {
             Name = "OnClick",
             Type = "EventCallback",
             DefaultValue = "",
-            Description = "The callback for when the button is pressed - typically the ScrollToLatestAsync of the BitAiMessageList it belongs to. Not raised while the button is disabled.",
+            Description = "The callback for when the button is pressed - typically the ScrollToLatestAsync of the BitAiMessageList it belongs to, then moving the focus to the composer, since the button goes away. Not raised while the button is disabled.",
         },
         new()
         {

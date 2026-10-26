@@ -7,6 +7,13 @@
     flex-direction: column;
 }
 
+// The turns of a conversation, one message under the other.
+.example-turns {
+    gap: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
 ::deep {
     .custom-part {
         padding-inline-start: 1rem;

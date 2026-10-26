@@ -100,7 +100,29 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Disabled" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <DemoExample Title="TimeZone" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                <b>TimeZone</b> is the zone the days of the groups are counted in: what is today, yesterday, the previous seven and
+                thirty days, and the month of an older conversation. While it is null the list counts them in the <b>TimeZone</b>
+                of the <BitLink Href="/components/ai/optionsprovider#ui-options">BitAiUiOptions</BitLink> in force, the zone the
+                times of the messages are shown in, else in the zone of the browser. Here the same conversations are counted in
+                Tokyo (UTC+9) and in São Paulo (UTC-3): "Book the flights" changed after midnight in one of the two cities but
+                before midnight in the other, so one list has it under Today and the other under Yesterday.
+            </div>
+            <br />
+            <div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fit, minmax(14rem, 1fr))">
+                <div>
+                    <b>Tokyo</b>
+                    <BitAiConversationList Conversations="zoneSummaries" TimeZone="tokyoZone" ShowNewButton="false" />
+                </div>
+                <div>
+                    <b>São Paulo</b>
+                    <BitAiConversationList Conversations="zoneSummaries" TimeZone="saoPauloZone" ShowNewButton="false" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
                 A disabled list stays readable, with the open conversation marked, and takes no choice, new or delete.
             </div>
@@ -110,12 +132,31 @@
                                        Conversations="summaries"
                                        SelectedId="@selectedId"
                                        OnSelect="HandleSelect"
-                                       OnNew="HandleNew"
-                                       OnDelete="HandleDelete" />
+                                       OnNew="HandleDisabledNew"
+                                       OnDelete="HandleDisabledDelete" />
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <DemoExample Title="Cascading parameters" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>BitParams</b> with a <b>BitAiConversationListParams</b> sets what the conversation lists inside it agree on -
+                <b>ShowNewButton</b>, the <b>TimeZone</b> they count their days in, and their look - while the conversations, the
+                open one and the callbacks stay each list's own. A parameter of the list itself still wins: the second list sets
+                its own <b>Styles</b>, which take the place of the cascaded ones.
+            </div>
+            <br />
+            <BitParams Parameters="conversationListParams">
+                <div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fit, minmax(14rem, 1fr))">
+                    <BitAiConversationList Conversations="summaries" SelectedId="@selectedId" OnSelect="HandleSelect" />
+                    <BitAiConversationList Conversations="summaries"
+                                           SelectedId="@selectedId"
+                                           OnSelect="HandleSelect"
+                                           Styles="@(new() { SelectedItemButton = "font-weight:bold" })" />
+                </div>
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 <b>Style</b> / <b>Class</b> reach the root, <b>Styles</b> / <b>Classes</b> each part (the new button with the
                 class-styles of BitActionButton, the group headings, the lists, the items, the item buttons and the selected
@@ -145,7 +186,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <DemoExample Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
             <div>Use BitAiConversationList in right-to-left (RTL).</div>
             <br />
             <div dir="rtl" style="max-width:18rem">

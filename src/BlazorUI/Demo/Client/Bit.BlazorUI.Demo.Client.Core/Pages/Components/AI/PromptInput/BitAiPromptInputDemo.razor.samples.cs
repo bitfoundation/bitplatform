@@ -106,19 +106,24 @@ private void StopGeneration()
 }";
 
     private readonly string example5RazorCode = @"
-<BitAiPromptInput OnSubmit=""HandleAttachmentsSubmit"" />
+<BitAiPromptInput MaxInlineSize=""InlineSize"" OnSubmit=""HandleAttachmentsSubmit"" />
 
 <BitAiPromptInput AllowAttachments=""false"" Placeholder=""No attachments here"" OnSubmit=""HandleAttachmentsSubmit"" />
 
 <div>Sent: <b>@attachmentsSubmission</b></div>
 
-<div style=""display:flex;flex-wrap:wrap;gap:0.5rem"">
+<div style=""display:flex;flex-direction:column;align-items:flex-start;gap:0.5rem"">
     @foreach (var attachment in sentAttachments)
     {
-        <BitAiAttachmentChip @key=""attachment.AttachmentId"" Attachment=""attachment"" />
+        <div @key=""attachment.AttachmentId"" style=""display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem"">
+            <BitAiAttachmentChip Attachment=""attachment"" />
+            <span>@(attachment.HasInlineData ? ""held in memory (Data)"" : ""kept in the browser, read on demand (ContentFactory)"")</span>
+        </div>
     }
 </div>";
     private readonly string example5CsharpCode = @"
+private const long InlineSize = 64 * 1024;
+
 private string attachmentsSubmission = ""nothing yet"";
 private IReadOnlyList<BitAiAttachment> sentAttachments = [];
 
@@ -194,7 +199,7 @@ private void HandleDictationSubmit(BitAiPromptSubmission submission)
 <div>Sent: <b>@capabilitiesSubmission</b></div>";
     private readonly string example8CsharpCode = @"
 // The catalog AddBitBlazorUIAIServices registers with ai.AddModels(...).
-[AutoInject] private IBitAiModelCatalog modelCatalog { get; set; } = default!;
+[Inject] private IBitAiModelCatalog modelCatalog { get; set; } = default!;
 
 private string? capabilityModelId = ""demo-model-1"";
 private string capabilitiesSubmission = ""nothing yet"";
@@ -298,7 +303,7 @@ private void HandleDraftSubmit(BitAiPromptSubmission submission)
 
 <div>Sent: <b>@templatesSubmission</b></div>";
     private readonly string example11CsharpCode = @"
-[AutoInject] private IBitAiModelCatalog modelCatalog { get; set; } = default!;
+[Inject] private IBitAiModelCatalog modelCatalog { get; set; } = default!;
 
 private string templatesValue = string.Empty;
 private string? templatesModelId = ""demo-model-1"";
@@ -326,7 +331,7 @@ private void HandleTemplatesSubmit(BitAiPromptSubmission submission)
 <div>Sent: <b>@cascadeSubmission</b></div>";
     private readonly string example12CsharpCode = @"
 private string cascadeSubmission = ""nothing yet"";
-private BitAiPromptInputParams[] promptInputParams =>
+private readonly BitAiPromptInputParams[] promptInputParams =
 [
     new()
     {

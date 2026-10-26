@@ -62,4 +62,54 @@ protected override void OnInitialized() => commands =
 
 public ValueTask DisposeAsync() => session.DisposeAsync();
 """;
+
+    private const string example1TransportCode = """"
+using System.Text.RegularExpressions;
+
+// AiScriptedTransport and AiScript are the demo's helpers - see the Basic chat scenario.
+public static partial class AiDemoInteractiveTransports
+{
+    // A mention arrives as plain text, @roadmap.md: resolving it is the application's job.
+    public static IBitAiTransport Commands() => new AiScriptedTransport((request, token) => AiScript.Stream(token, async yielder =>
+    {
+        await yielder(new BitAiMessageStartedEvent());
+
+        var text = AiScript.LastUserText(request);
+        var mentions = MentionRegex().Matches(text)
+            .Select(m => m.Groups[1].Value)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var fromYou = request.Messages.Count(m => m.Role.IsUser);
+        var fromMe = request.Messages.Count(m => m.Role.IsAssistant);
+
+        // What the /summarize template writes.
+        var answer = text.StartsWith("Summarize", StringComparison.OrdinalIgnoreCase)
+            ? $"""
+              So far:
+
+              - {fromYou} {(fromYou == 1 ? "message" : "messages")} from you, {fromMe} from me.
+              - Nothing has been decided yet.
+              - The next step is yours.
+              """
+            : mentions.Length > 0
+                ? "You referenced " + string.Join(", ", mentions.Select(m => $"**{m}**")) +
+                  ". A real application resolves each one by identifier and puts its content into the prompt; " +
+                  "the model never has to guess which file or person you meant."
+                : "Type `/` for commands or `@` to reference a file, a person, or a data source.";
+
+        await foreach (var evt in AiScript.Write(answer, 4, 12, token)) await yielder(evt);
+        await yielder(AiScript.Usage(request, answer));
+        await yielder(new BitAiMessageCompletedEvent());
+    }));
+
+    [GeneratedRegex(@"(?<=^|\s)@([\w.\-]+)")]
+    private static partial Regex MentionRegex();
+}
+"""";
+
+    private readonly DemoCodeFile[] example1CodeFiles =
+    [
+        new("AiDemoInteractiveTransports.cs", example1TransportCode),
+    ];
 }

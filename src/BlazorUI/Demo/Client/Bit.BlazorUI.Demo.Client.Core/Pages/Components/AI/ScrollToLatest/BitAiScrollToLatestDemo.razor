@@ -33,8 +33,11 @@
         <br />
         <BitText>
             The button is a labelled BitButton (the ScrollToLatest string, "Scroll to latest", unless <b>Label</b> says
-            otherwise), so it is reachable with the keyboard and named for a screen reader. Its entrance follows the motion
-            tokens and is skipped under reduced motion, and it is left out of a printout.
+            otherwise), so it is reachable with the keyboard and named for a screen reader. Once pressed it goes away, as the
+            view reaches the newest message, and the focus would go with it to the page: BitAiChat moves it to its composer,
+            and a chat assembled by hand does the same in its <b>OnClick</b> (the <b>FocusAsync</b> of a
+            <BitLink Href="/components/ai/promptinput">BitAiPromptInput</BitLink>). Its entrance follows the motion tokens and
+            is skipped under reduced motion, and it is left out of a printout.
         </BitText>
     </NotesTemplate>
     <Examples>
@@ -92,8 +95,9 @@
         <DemoExample Title="Cascading parameters" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
             <div>
                 <b>BitParams</b> with a <b>BitAiScrollToLatestParams</b> sets the label, the classes and the styles of every
-                button inside it - the one of each BitAiChat in it included; a button's own value wins. Whether it is shown and
-                what pressing it does are not cascaded.
+                button inside it; a button's own value wins. Whether it is shown and what pressing it does are not cascaded. The
+                label reaches the button of each BitAiChat in it too, while its classes and styles come from the chat's own
+                <b>Styles</b> / <b>Classes</b> (their <b>ScrollToLatest</b> member).
             </div>
             <br />
             <BitParams Parameters="scrollParams">

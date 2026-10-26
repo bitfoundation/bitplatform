@@ -63,6 +63,26 @@ private int toggleCount;";
 </BitAiCollapsible>";
 
     private readonly string example5RazorCode = @"
+<BitParams Parameters=""collapsibleParams"">
+    <BitAiCollapsible Title=""Searched the documentation"">
+        Three pages matched.
+    </BitAiCollapsible>
+
+    <BitAiCollapsible Title=""Planned the answer"">
+        Compare the two render modes.
+    </BitAiCollapsible>
+
+    <BitAiCollapsible Title=""Styled on its own"" Styles=""@(new() { Accordion = new() { Title = ""font-style: italic;"" } })"">
+        Italic, and not in the primary color.
+    </BitAiCollapsible>
+</BitParams>";
+    private readonly string example5CsharpCode = @"
+private readonly BitAiCollapsibleParams[] collapsibleParams =
+[
+    new() { Styles = new() { Accordion = new() { Title = ""color: var(--bit-clr-pri); font-weight: 600;"" } } }
+];";
+
+    private readonly string example6RazorCode = @"
 <style>
     .custom-class {
         border-radius: 1rem;
@@ -104,7 +124,7 @@ private int toggleCount;";
     </BitAiCollapsible>
 </div>";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitAiCollapsible Dir=""BitDir.Rtl"" Title=""جستجو در مستندات"">
     سه صفحه پیدا شد: حالت‌های رندر، اتصال SignalR و پیش‌رندر.
 </BitAiCollapsible>

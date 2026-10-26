@@ -1,4 +1,5 @@
 ﻿@page "/components/ai/messagepartview"
+@implements IAsyncDisposable
 
 <PageOutlet Url="components/ai/messagepartview"
             Title="AiMessagePartView"
@@ -26,13 +27,25 @@
         <br />
         <BitText>
             <BitLink Href="/components/ai/chatmessage">BitAiChatMessage</BitLink> renders every part of a message through this view; render it
-            yourself to lay the parts of a message out your own way. It is the extension point for content the library has no view for: give
+            yourself to lay the parts of a message out your own way. It needs <b>AddBitBlazorUIAIServices</b> at startup, whose
+            <b>BitAiRendererRegistry</b> it looks a renderer up in (unless a registry is cascaded to it), even where the app registers no
+            renderer. It is the extension point for content the library has no view for: give
             the part a kind of its own (<b>BitAiCustomPart&lt;T&gt;</b>, <b>BitAiCustomJsonPart</b>) and register a renderer for that kind with
             <b>BitAiRendererRegistry</b> at startup. A registered renderer is handed what the model produced, so it is rendered inside a
             <BitLink Href="/components/ai/rendererboundary">BitAiRendererBoundary</BitLink>: a shape it did not expect replaces that one part with
             a notice. See the <BitLink Href="/ai/scenarios/streaming">Streaming</BitLink>,
             <BitLink Href="/ai/scenarios/custom-tool">Custom tool UI</BitLink> and
             <BitLink Href="/ai/scenarios/performance">Performance</BitLink> scenarios.
+        </BitText>
+        <br />
+        <BitText>
+            The same registry holds the other renderers of the package, each shown on the page of the view that uses it: tools
+            (<BitLink Href="/components/ai/toolcallview#renderer-registry">AiToolCallView</BitLink>), artifact kinds
+            (<BitLink Href="/components/ai/artifactview#artifact-context">AiArtifactView</BitLink>), structured-data schemas
+            (<BitLink Href="/components/ai/structureddataview#structured-data-context">AiStructuredDataView</BitLink>), and code
+            languages, mathematics and citation chips (<BitLink Href="/components/ai/markdownview#renderer-registry">AiMarkdownView</BitLink>).
+            Every AI component finds its renderers, like its options, through the base class they share - a registry cascaded to it,
+            else the registered one (see <BitLink Href="/components/ai/optionsprovider#component-base">BitAiComponentBase</BitLink>).
         </BitText>
     </NotesTemplate>
     <Examples>
@@ -99,14 +112,45 @@
             <div>Activated: <b>@(clickedCitation ?? "none yet")</b></div>
         </DemoExample>
 
-        <DemoExample Title="Custom part renderer" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" CodeFiles="@example5CodeFiles" Id="example5">
+        <DemoExample Title="Conversation & Session" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                Two kinds of part need more than their message. An artifact part only names its artifact, which belongs to the
+                conversation: handed the <b>Conversation</b>, the view finds it there and shows it in a panel - without one, a
+                placeholder tag (see the Missing artifacts example of <BitLink Href="/components/ai/artifactpartview">AiArtifactPartView</BitLink>). A tool call
+                waiting for approval hands the decision to the <b>Session</b> waiting for it. A registered part renderer is handed both
+                (<b>BitAiMessagePartContext</b>). Below, a session continues a conversation whose first answer wrote a plan: ask it to
+                delete the archived records, and allow or decline the call it makes - the turn waits for your decision.
+            </div>
+            <br />
+            <BitButton OnClick="AskToDeleteAsync" Disabled="planSession.IsGenerating">Delete the archived records</BitButton>
+            <br /><br />
+            <div class="example-turns">
+                @foreach (var message in planSession.Conversation.Messages)
+                {
+                    <div @key="message.MessageId" class="example-message">
+                        <b>@(message.Role.IsUser ? "You" : "Assistant")</b>
+                        @foreach (var part in message.Parts)
+                        {
+                            <BitAiMessagePartView @key="part.PartId"
+                                                  Part="part"
+                                                  Message="message"
+                                                  Conversation="planSession.Conversation"
+                                                  Session="planSession" />
+                        }
+                    </div>
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Custom part renderer" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" CodeFiles="@example6CodeFiles" Id="example6">
             <div>
                 A renderer registered for a kind (<b>BitAiRendererRegistry.RegisterPart</b>, see the tables below) replaces the built-in view of
                 every part of that kind. Here an invoice the model produced travels as a <b>BitAiCustomJsonPart</b> of the kind
                 <b>demo:invoice</b>, and an <b>InvoiceCard</b> component is registered for it: the registry renders it with the part as its
                 <b>Part</b> parameter. <b>RegisterPart(kind, context => builder => ...)</b> takes a <b>BitAiMessagePartRenderer</b> delegate
-                instead, handed the part, its message, the conversation and the session. An app registers its renderers once, at startup
-                (the Program.cs tab); this page registers its own kind as it loads instead.
+                instead, handed the part, its message, the conversation and the session (the Renderers of a region example below). A
+                renderer registered for a built-in kind replaces its built-in view the same way. An app registers its renderers once, at
+                startup (the Program.cs tab); this page registers its own kind as it loads instead, under a kind nothing else uses.
             </div>
             <br />
             <div class="example-message">
@@ -117,7 +161,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Renderer failure" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <DemoExample Title="Renderer failure" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
             <div>
                 A registered renderer is handed what a model produced, so the view renders it inside a
                 <BitLink Href="/components/ai/rendererboundary">BitAiRendererBoundary</BitLink>. The second invoice below has no <b>lines</b>,
@@ -133,7 +177,52 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <DemoExample Title="Renderers of a region" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                The registered registry is one instance for the whole app - for every user of a server-side app - so a region with
+                renderers of its own (a page, a test, one chat among others) cascades a registry of its own: a <b>CascadingValue</b> of a
+                <b>BitAiRendererRegistry</b>, which every AI component inside it uses in place of the registered one. It replaces the
+                registered registry rather than adding to it, so it holds every renderer the region needs. The renderer here is the
+                delegate form, <b>RegisterPart(kind, context => builder => ...)</b>: handed a <b>BitAiMessagePartContext</b> - the part,
+                its message, the conversation and the session - it returns the markup to draw. The same message is rendered twice: outside
+                the region its poll is the text of a kind no view knows, as in the Part kinds example; inside it, a list of choices.
+            </div>
+            <br />
+            <div class="example-message">
+                @foreach (var part in pollMessage.Parts)
+                {
+                    <BitAiMessagePartView @key="part.PartId" Part="part" Message="pollMessage" />
+                }
+            </div>
+            <br />
+            <CascadingValue Value="regionRenderers" IsFixed="true">
+                <div class="example-message">
+                    @foreach (var part in pollMessage.Parts)
+                    {
+                        <BitAiMessagePartView @key="part.PartId" Part="part" Message="pollMessage" />
+                    }
+                </div>
+            </CascadingValue>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                <b>BitParams</b> with a <b>BitAiMessagePartViewParams</b> sets the look of every part view inside it - inside a chat, of
+                every part of every message. The part, its message, the conversation, the session and <b>OnCitationClick</b> are not among
+                them: they are what makes one part view the one it is. It is a default, not an override: a view keeps what it sets itself
+                (the last one sets <b>Styles</b> of its own, which replace the cascaded ones).
+            </div>
+            <br />
+            <BitParams Parameters="partViewParams">
+                <div class="example-message">
+                    <BitAiMessagePartView Part="citedMessage.Parts[0]" Message="citedMessage" />
+                    <BitAiMessagePartView Part="citedMessage.Parts[1]" Message="citedMessage" />
+                    <BitAiMessagePartView Part="citedMessage.Parts[1]" Message="citedMessage" Styles="@(new() { CitationQuote = "font-style: normal;" })" />
+                </div>
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
                 <b>Style</b> and <b>Class</b> land on the root, the block each part is laid out in; <b>Styles.Fallback</b> and
                 <b>Classes.Fallback</b> on the text shown for a kind no view knows; <b>Citation</b>, <b>CitationCard</b>,
@@ -159,8 +248,11 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-            <div>Use BitAiMessagePartView in right-to-left (RTL).</div>
+        <DemoExample Title="RTL" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>
+                In right-to-left text each part reads from the right - the Markdown of a text part, the text of a kind no view knows.
+                <b>Dir</b> writes the direction on the root of the view, and the view of the part inherits it.
+            </div>
             <br />
             <div class="example-message">
                 @foreach (var part in rtlMessage.Parts)

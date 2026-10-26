@@ -80,6 +80,36 @@ public partial class BitAiStreamingMarkdownDemo
                 },
             ]
         },
+        new()
+        {
+            Id = "incremental-parser",
+            Title = "BitAiIncrementalMarkdownParser",
+            Description = "The parser a BitAiStreamingMarkdown holds for its lifetime, for an app that renders streamed Markdown with a BitAiMarkdownView of its own (ShowCaret while it streams). It keeps the blocks before the last point no later text can change - the start of a line after a blank line that begins a new top-level block - and parses only the tail again on every call, so a long answer costs linear work rather than quadratic. A text with a link reference or footnote definition, which makes any text depend on any other, is parsed whole on every call. An instance belongs to one streaming text and is not thread-safe.",
+            Parameters =
+            [
+                new() { Name = "BitAiIncrementalMarkdownParser(BitAiMarkdownOptions? options = null)", Type = "constructor", DefaultValue = "", Description = "Creates a parser for the given extensions (BitAiMarkdownOptions.Default when null). Make a new one when the options change.", LinkType = LinkType.Link, Href = "/components/ai/markdownview#markdown-options" },
+                new() { Name = "Parse(string? source, bool isComplete = false)", Type = "BitAiMarkdownDocument", DefaultValue = "", Description = "Parses the whole text received so far - not just the new part - and returns a new document whose blocks may be shared with the previous one. isComplete false leaves the last block open; a source that does not continue the previous one is parsed afresh.", LinkType = LinkType.Link, Href = "/components/ai/markdownview#markdown-document" },
+                new() { Name = "Reset()", Type = "void", DefaultValue = "", Description = "Discards all cached state, so the next parse starts from scratch." },
+                new() { Name = "StableLength", Type = "int", DefaultValue = "0", Description = "How many characters of the source have been promoted to the stable prefix that is never parsed again - for diagnostics and tests: the measure of how much work is being reused." },
+                new() { Name = "StableBlockCount", Type = "int", DefaultValue = "0", Description = "How many blocks are in the stable prefix." },
+            ]
+        },
+        new()
+        {
+            Id = "render-scheduler",
+            Title = "BitAiRenderScheduler",
+            Description = "Coalesces the change notifications of a stream - hundreds of deltas a second - into a bounded number of renders, the way the AI components do with BitAiUiOptions.RenderInterval. Rendering every delta is wasted work in WebAssembly and a flood of diffs down the circuit of Blazor Server; the scheduler makes the frame rate matter rather than the throughput. While a render is in flight, further requests only mark it dirty and one more render follows, so a slow renderer falls behind in render count, never in memory. Dispose it with the page (IAsyncDisposable).",
+            Parameters =
+            [
+                new() { Name = "BitAiRenderScheduler(Func<Task> flush, TimeSpan? interval = null)", Type = "constructor", DefaultValue = "", Description = "Creates a scheduler that calls flush when a render is due - in a component, () => InvokeAsync(StateHasChanged) - at most once per interval (DefaultInterval when null)." },
+                new() { Name = "DefaultInterval", Type = "TimeSpan", DefaultValue = "50 ms", Description = "Static: one render every 50 milliseconds, twenty a second - continuous to the eye, and comfortable over a Blazor Server circuit on a poor connection." },
+                new() { Name = "Request()", Type = "void", DefaultValue = "", Description = "Asks for a render. Cheap and safe to call from any thread, on every token." },
+                new() { Name = "FlushAsync()", Type = "Task", DefaultValue = "", Description = "Renders at once, bypassing the interval: call it when the stream ends, so the final state is never left waiting behind a timer." },
+                new() { Name = "RenderCount", Type = "int", DefaultValue = "0", Description = "How many renders the scheduler has performed, for tests and diagnostics." },
+                new() { Name = "CoalescedCount", Type = "int", DefaultValue = "0", Description = "How many requests have been coalesced away." },
+                new() { Name = "DisposeAsync()", Type = "ValueTask", DefaultValue = "", Description = "Stops the scheduler: a pending render is dropped, and later requests are ignored." },
+            ]
+        },
     ];
 
 
@@ -182,12 +212,26 @@ public partial class BitAiStreamingMarkdownDemo
         Auto starts on one and moves to the other.
         """;
 
+    private const string danglingMarkdown = "The **short answer** is that it depends on **where";
+
     private bool keepLineBreaks;
-    private readonly BitAiUiOptions softBreakOptions = BitAiUiOptions.Default;
-    private readonly BitAiUiOptions hardBreakOptions = BitAiUiOptions.Default with
+    private bool hideDanglingDelimiters = true;
+    private BitAiUiOptions markdownOptions = BitAiUiOptions.Default;
+
+    // A new options instance only when a choice changes: one made on every render would rebuild the parser every time.
+    private void UpdateMarkdownOptions() => markdownOptions = BitAiUiOptions.Default with
     {
-        Markdown = BitAiMarkdownOptions.Default with { SoftBreaksAsHardBreaks = true },
+        Markdown = BitAiMarkdownOptions.Default with
+        {
+            SoftBreaksAsHardBreaks = keepLineBreaks,
+            HideDanglingDelimiters = hideDanglingDelimiters,
+        },
     };
+
+    private readonly BitAiStreamingMarkdownParams[] streamingParams =
+    [
+        new() { Styles = new() { Markdown = new() { Heading = "color: var(--bit-clr-pri);" } } }
+    ];
 
     private const string styleMarkdown = """
         #### A styled answer

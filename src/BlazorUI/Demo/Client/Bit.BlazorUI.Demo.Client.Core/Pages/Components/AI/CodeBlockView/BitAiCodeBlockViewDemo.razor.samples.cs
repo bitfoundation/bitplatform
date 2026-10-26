@@ -354,15 +354,34 @@ private const string tokenPowerShellCode = """"""
     """""";";
 
     private readonly string example9RazorCode = @"
+<BitTextField @bind-Value=""highlighterCode"" Immediate Label=""C# code"" />
+
+<BitAiCodeBlockView Language=""csharp"" Code=""@(highlighterCode ?? string.Empty)"" />
+
+<div style=""display:flex;flex-wrap:wrap;gap:0.5rem"">
+    @foreach (var token in BitAiSyntaxHighlighter.Highlight(highlighterCode, ""csharp""))
+    {
+        <span style=""padding:0.125rem 0.5rem;border-radius:0.25rem;background-color:var(--bit-clr-bg-sec)"">
+            <b>@token.Kind</b> <code>@(token.Slice(highlighterCode!).ToString())</code>
+        </span>
+    }
+</div>";
+    private readonly string example9CsharpCode = @"
+private string? highlighterCode = ""var total = Math.Max(count, 1) * 2; // never zero"";";
+
+    private readonly string example10RazorCode = @"
+<BitAiCodeBlockView Disabled Language=""bash"" Code=""dotnet add package Bit.BlazorUI.AI"" />";
+
+    private readonly string example11RazorCode = @"
 <BitParams Parameters=""codeBlockParams"">
     <BitAiCodeBlockView Language=""bash"" Code=""dotnet new blazor -o MyChat"" />
     <BitAiCodeBlockView Language=""bash"" Code=""dotnet add package Bit.BlazorUI.AI"" />
     <BitAiCodeBlockView Language=""bash"" Code=""dotnet run"" ShowHeader=""true"" />
 </BitParams>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private readonly BitAiCodeBlockViewParams[] codeBlockParams = [new() { ShowHeader = false }];";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example12RazorCode = @"
 <style>
     .custom-class {
         border-width: 2px;
@@ -398,12 +417,12 @@ private readonly BitAiCodeBlockViewParams[] codeBlockParams = [new() { ShowHeade
 <div style=""--bit-AiCodeBlockView-background: #0f172a; --bit-AiCodeBlockView-color: #e2e8f0; --bit-AiCodeBlockView-header-background: #1e293b; --bit-AiCodeBlockView-header-color: #94a3b8; --bit-AiCodeBlockView-border-color: #334155; --bit-AiCodeBlockView-radius: 1rem;"">
     <BitAiCodeBlockView Language=""bash"" Code=""@styleCode"" />
 </div>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private const string styleCode = ""dotnet add package Bit.BlazorUI.AI"";";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitAiCodeBlockView Dir=""BitDir.Rtl"" FileName=""مثال.cs"" Language=""csharp"" Code=""@rtlCode"" />";
-    private readonly string example11CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private const string rtlCode = """"""
     // سلام دنیا
     Console.WriteLine(""سلام دنیا"");

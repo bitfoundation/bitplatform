@@ -179,6 +179,7 @@ public async ValueTask DisposeAsync()
 </BitParams>
 """;
     private readonly string example6CsharpCode = """
+// renderModes, circuits and prerendering are the citations of the examples above.
 private readonly BitAiCitationMarkerParams[] markerParams =
 [
     new() { Styles = new() { Root = "border-radius: 1rem; font-weight: bold" } }
@@ -192,11 +193,19 @@ private readonly BitAiCitationMarkerParams[] markerParams =
         background-color: #16a34a;
         box-shadow: 0 0 0.25rem #16a34a;
     }
+
+    .custom-root {
+        color: #7c3aed;
+        background-color: transparent;
+        outline: 1px solid #7c3aed;
+    }
 </style>
 
 <div>
     A styled marker<BitAiCitationMarker Citation="renderModes" Style="font-weight: bold; text-decoration: underline" />,
-    a classy one<BitAiCitationMarker Citation="circuits" Class="custom-class" />.
+    a classy one<BitAiCitationMarker Citation="circuits" Class="custom-class" />,
+    one with Styles<BitAiCitationMarker Citation="renderModes" Styles="@(new() { Root = "border-radius: 50%; font-style: italic" })" />
+    and one with Classes<BitAiCitationMarker Citation="circuits" Classes="@(new() { Root = "custom-root" })" />.
 </div>
 
 <div style="--bit-AiCitationMarker-background: #fef3c7;

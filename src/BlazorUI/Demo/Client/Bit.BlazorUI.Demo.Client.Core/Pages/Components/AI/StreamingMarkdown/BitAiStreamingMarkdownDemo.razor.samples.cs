@@ -156,10 +156,13 @@ private readonly BitAiCitation[] citations =
 private string? clickedSource;";
 
     private readonly string example4RazorCode = @"
-<BitToggle @bind-Value=""keepLineBreaks"" Text=""SoftBreaksAsHardBreaks"" />
+<BitToggle @bind-Value=""keepLineBreaks"" @bind-Value:after=""UpdateMarkdownOptions"" Text=""SoftBreaksAsHardBreaks"" />
+<BitToggle @bind-Value=""hideDanglingDelimiters"" @bind-Value:after=""UpdateMarkdownOptions"" Text=""HideDanglingDelimiters"" />
 
-<BitAiOptionsProvider UiOptions=""@(keepLineBreaks ? hardBreakOptions : softBreakOptions)"">
+<BitAiOptionsProvider UiOptions=""markdownOptions"">
     <BitAiStreamingMarkdown Text=""@lineBreakMarkdown"" />
+
+    <BitAiStreamingMarkdown Text=""@danglingMarkdown"" IsStreaming />
 </BitAiOptionsProvider>";
     private readonly string example4CsharpCode = @"
 private const string lineBreakMarkdown = """"""
@@ -168,14 +171,42 @@ private const string lineBreakMarkdown = """"""
     Auto starts on one and moves to the other.
     """""";
 
+private const string danglingMarkdown = ""The **short answer** is that it depends on **where"";
+
 private bool keepLineBreaks;
-private readonly BitAiUiOptions softBreakOptions = BitAiUiOptions.Default;
-private readonly BitAiUiOptions hardBreakOptions = BitAiUiOptions.Default with
+private bool hideDanglingDelimiters = true;
+private BitAiUiOptions markdownOptions = BitAiUiOptions.Default;
+
+// A new options instance only when a choice changes: one made on every render would rebuild the parser every time.
+private void UpdateMarkdownOptions() => markdownOptions = BitAiUiOptions.Default with
 {
-    Markdown = BitAiMarkdownOptions.Default with { SoftBreaksAsHardBreaks = true },
+    Markdown = BitAiMarkdownOptions.Default with
+    {
+        SoftBreaksAsHardBreaks = keepLineBreaks,
+        HideDanglingDelimiters = hideDanglingDelimiters,
+    },
 };";
 
     private readonly string example5RazorCode = @"
+<BitParams Parameters=""streamingParams"">
+    <BitAiStreamingMarkdown Text=""@styleMarkdown"" />
+
+    <BitAiStreamingMarkdown Text=""@styleMarkdown"" Styles=""@(new() { Markdown = new() { ListItem = ""font-style: italic;"" } })"" />
+</BitParams>";
+    private readonly string example5CsharpCode = @"
+private const string styleMarkdown = """"""
+    #### A styled answer
+
+    - a first point
+    - a second point
+    """""";
+
+private readonly BitAiStreamingMarkdownParams[] streamingParams =
+[
+    new() { Styles = new() { Markdown = new() { Heading = ""color: var(--bit-clr-pri);"" } } }
+];";
+
+    private readonly string example6RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem 1rem;
@@ -208,7 +239,7 @@ private readonly BitAiUiOptions hardBreakOptions = BitAiUiOptions.Default with
 <div style=""--bit-AiMarkdownView-heading-color: mediumseagreen; --bit-AiMarkdownView-marker-color: mediumseagreen; --bit-AiMarkdownView-line-height: 2;"">
     <BitAiStreamingMarkdown Text=""@styleMarkdown"" />
 </div>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private const string styleMarkdown = """"""
     #### A styled answer
 
@@ -216,9 +247,9 @@ private const string styleMarkdown = """"""
     - a second point
     """""";";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitAiStreamingMarkdown Dir=""BitDir.Rtl"" Text=""@rtlMarkdown"" IsStreaming />";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private const string rtlMarkdown = """"""
     #### دو حالت رندر
 

@@ -36,7 +36,7 @@ public partial class BitAiChatDemo
             DefaultValue = "null",
             Description = "The commands offered when the user types a forward slash in the composer. A command either inserts its Template into the text or runs its Handler.",
             LinkType = LinkType.Link,
-            Href = "/components/ai/promptinput",
+            Href = "/components/ai/promptinput#slash-command",
         },
         new()
         {
@@ -87,7 +87,7 @@ public partial class BitAiChatDemo
             Name = "EmptyTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content that replaces the empty state (and with it EmptyTitle, EmptyBody and Suggestions) while the conversation has no messages.",
+            Description = "The content that replaces the empty state (and with it EmptyTitle, EmptyBody and Suggestions) while the conversation has no message to show - the system messages it hides do not count.",
         },
         new()
         {
@@ -129,7 +129,7 @@ public partial class BitAiChatDemo
             Name = "ListHeaderTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content at the top of the scroll area, above the first message.",
+            Description = "The content at the top of the scroll area, above the first message. Past BitAiUiOptions.VirtualizeThreshold messages it is drawn once the reader has scrolled up to the first message, along with it.",
         },
         new()
         {
@@ -145,7 +145,7 @@ public partial class BitAiChatDemo
             DefaultValue = "null",
             Description = "The items offered when the user types an at sign in the composer: files, people or data sources the application resolves by their Id later. A chosen one is inserted as @Label.",
             LinkType = LinkType.Link,
-            Href = "/components/ai/promptinput",
+            Href = "/components/ai/promptinput#mention-item",
         },
         new()
         {
@@ -163,7 +163,7 @@ public partial class BitAiChatDemo
             DefaultValue = "",
             Description = "The callback for each file the composer turns away (too large, of a type it does not take, one too many). The user is told either way; this is the same information for the application.",
             LinkType = LinkType.Link,
-            Href = "/components/ai/promptinput",
+            Href = "/components/ai/promptinput#attachment-rejection",
         },
         new()
         {
@@ -172,7 +172,7 @@ public partial class BitAiChatDemo
             DefaultValue = "",
             Description = "The callback for when the user activates a numbered citation in a reply.",
             LinkType = LinkType.Link,
-            Href = "/components/ai/citationmarker",
+            Href = "/components/ai/citationmarker#citation",
         },
         new()
         {
@@ -190,7 +190,7 @@ public partial class BitAiChatDemo
             DefaultValue = "",
             Description = "The callback for when the user activates a source card in the list of sources under a reply.",
             LinkType = LinkType.Link,
-            Href = "/components/ai/sourcecard",
+            Href = "/components/ai/sourcecard#citation-source",
         },
         new()
         {
@@ -199,14 +199,14 @@ public partial class BitAiChatDemo
             DefaultValue = "",
             Description = "The callback for when the user submits (the composer or a suggestion). Handle it to submit yourself - after uploading the attachments, or adding context to the text - through the session; leave it unset and the chat submits to the session.",
             LinkType = LinkType.Link,
-            Href = "/components/ai/promptinput",
+            Href = "/components/ai/promptinput#prompt-submission",
         },
         new()
         {
             Name = "Placeholder",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The placeholder of the composer, which also names it when no AriaLabel is given. Defaults to the PromptPlaceholder of the string table (\"Send a message...\").",
+            Description = "The placeholder of the composer, which is also its accessible name. Defaults to the PromptPlaceholder of the string table (\"Send a message...\").",
         },
         new()
         {
@@ -222,7 +222,7 @@ public partial class BitAiChatDemo
             Name = "SessionOptions",
             Type = "BitAiChatSessionOptions?",
             DefaultValue = "null",
-            Description = "The settings of a session this component creates. Ignored when a Session is supplied, which carries its own.",
+            Description = "The settings of a session this component creates. Ignored when a Session is supplied, which carries its own. Left null, the defaults configured with AddBitBlazorUIAIServices (ai.ConfigureSessions) apply. Options that name no Strings take the ones of the UI options in force, and SmoothStreaming off in those options drops their Pacing.",
             LinkType = LinkType.Link,
             Href = "#session-options",
         },
@@ -247,9 +247,9 @@ public partial class BitAiChatDemo
             Name = "UiOptions",
             Type = "BitAiUiOptions?",
             DefaultValue = "null",
-            Description = "The presentation settings of everything inside this chat (the string table, the render interval, what a message shows), in place of the ones a BitAiOptionsProvider cascades or AddBitBlazorUIAIServices registers.",
+            Description = "The presentation settings of everything inside this chat (the string table, the render interval, what a message shows), in place of the ones a BitAiOptionsProvider cascades or AddBitBlazorUIAIServices registers - a whole record, not merged with them. A session the chat creates follows them too: its errors are worded in their Strings, and with SmoothStreaming off its text is not paced.",
             LinkType = LinkType.Link,
-            Href = "/components/ai/optionsprovider",
+            Href = "/components/ai/optionsprovider#ui-options",
         },
     ];
 
@@ -368,9 +368,25 @@ public partial class BitAiChatDemo
                     Name = "Options",
                     Type = "BitAiChatSessionOptions",
                     DefaultValue = "new()",
-                    Description = "The settings in force.",
+                    Description = "The settings in force, given to its constructor. It is settable - assign a changed copy (session.Options with { ... }) - and each turn reads the ones in force as it starts.",
                     LinkType = LinkType.Link,
                     Href = "#session-options"
+                },
+                new()
+                {
+                    Name = "Processor",
+                    Type = "BitAiConversationStreamProcessor",
+                    DefaultValue = "",
+                    Description = "The reducer that applies the events of the transport to the conversation: it turns them into parts, tool calls, artifacts and agent steps. Its EventApplied event is raised for every event once it is applied, which suits logging and tracing."
+                },
+                new()
+                {
+                    Name = "Strings",
+                    Type = "BitAiStrings",
+                    DefaultValue = "BitAiStrings.Default",
+                    Description = "The text of the errors the session writes itself: the Strings of its Options, else BitAiStrings.Default.",
+                    LinkType = LinkType.Link,
+                    Href = "/components/ai/optionsprovider#strings"
                 },
                 new()
                 {
@@ -386,7 +402,7 @@ public partial class BitAiChatDemo
                     DefaultValue = "null",
                     Description = "The failure of the last turn, cleared when a new turn starts.",
                     LinkType = LinkType.Link,
-                    Href = "/components/ai/errorview"
+                    Href = "/components/ai/errorview#error"
                 },
                 new()
                 {
@@ -400,21 +416,21 @@ public partial class BitAiChatDemo
                     Name = "RegenerateAsync(messageId?, cancellationToken?)",
                     Type = "Task<BitAiMessage?>",
                     DefaultValue = "",
-                    Description = "Regenerates an assistant message - the most recent one when no id is given - discarding it and everything after it."
+                    Description = "Regenerates an assistant message - the most recent one when no id is given - discarding it and everything after it. Returns the new assistant message, or null when there was no assistant message to regenerate or a turn was already running."
                 },
                 new()
                 {
                     Name = "RetryAsync(cancellationToken?)",
                     Type = "Task<BitAiMessage?>",
                     DefaultValue = "",
-                    Description = "Retries the last turn after a failure, keeping the user message in place."
+                    Description = "Retries the last turn after a failure: the failed assistant message is removed and the user message before it is answered again. Returns null when the conversation is empty or a turn was already running."
                 },
                 new()
                 {
                     Name = "EditAsync(messageId, text, cancellationToken?)",
                     Type = "Task<BitAiMessage?>",
                     DefaultValue = "",
-                    Description = "Replaces the text of a user message and regenerates everything after it."
+                    Description = "Replaces the text of a user message and regenerates everything after it. Returns null when no user message of that id was found or a turn was already running."
                 },
                 new()
                 {
@@ -426,18 +442,18 @@ public partial class BitAiChatDemo
                 new()
                 {
                     Name = "Approve(toolCallId, decision)",
-                    Type = "void",
+                    Type = "bool",
                     DefaultValue = "",
-                    Description = "Records a human decision on a tool call that is waiting for one.",
+                    Description = "Records a human decision (a BitAiApprovalDecision) on a tool call that is waiting for one. Returns false, changing nothing, when no call of that id is waiting - it has run, been decided or been cancelled, or is not known.",
                     LinkType = LinkType.Link,
-                    Href = "/components/ai/toolapproval"
+                    Href = "/components/ai/toolapproval#approval-decision-enum"
                 },
                 new()
                 {
                     Name = "RespondToAgentAsync(runId, answer, cancellationToken?)",
                     Type = "Task<BitAiMessage?>",
                     DefaultValue = "",
-                    Description = "Answers a question an agent run is blocked on (appended as a user message), then continues the turn.",
+                    Description = "Answers a question an agent run is blocked on (appended as a user message), then continues the turn. Returns null when that run was not waiting for input or a turn was already running.",
                     LinkType = LinkType.Link,
                     Href = "/components/ai/agentrunview"
                 },
@@ -461,6 +477,13 @@ public partial class BitAiChatDemo
                     Type = "event Action<BitAiToolCallPart>?",
                     DefaultValue = "",
                     Description = "Raised when a tool call needs a human decision."
+                },
+                new()
+                {
+                    Name = "DisposeAsync()",
+                    Type = "ValueTask",
+                    DefaultValue = "",
+                    Description = "Ends the session: cancels the turn in flight and any decision it waits for, and detaches every handler, so no event is raised after it. A session the page created is the page's to dispose; one a BitAiChat created, the chat disposes."
                 }
             ]
         },
@@ -483,7 +506,7 @@ public partial class BitAiChatDemo
                     Name = "CatchTransportExceptions",
                     Type = "bool",
                     DefaultValue = "true",
-                    Description = "Leaves a retryable error on the assistant message when a turn fails, rather than throwing."
+                    Description = "Whether a failed turn only leaves a retryable error on the assistant message, rather than throwing. Either way the message ends failed with the error on it; turned off, the exception also reaches the caller of the turn (SubmitAsync and the rest)."
                 },
                 new()
                 {

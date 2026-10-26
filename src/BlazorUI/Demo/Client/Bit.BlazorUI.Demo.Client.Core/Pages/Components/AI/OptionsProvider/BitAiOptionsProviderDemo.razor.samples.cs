@@ -86,6 +86,11 @@ private sealed class GermanAiStrings : BitAiStrings
         <BitAiStreamingMarkdown Text="@answer" Citations="citations" />
         <BitAiSourceList Citations="citations" />
     </BitAiOptionsProvider>
+
+    <BitAiOptionsProvider>
+        <BitAiStreamingMarkdown Text="@answer" Citations="citations" />
+        <BitAiSourceList Citations="citations" />
+    </BitAiOptionsProvider>
 </BitAiOptionsProvider>
 """;
     private readonly string example3CsharpCode = """

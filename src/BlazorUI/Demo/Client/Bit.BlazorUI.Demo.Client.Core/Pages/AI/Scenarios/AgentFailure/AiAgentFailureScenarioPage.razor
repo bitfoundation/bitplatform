@@ -30,13 +30,22 @@
 
         <DocSection Id="how-it-works" Title="How it works">
             <p>
-                The failing step keeps its own <code>BitAiError</code>, shown on the step itself; the completed
-                steps keep their summaries; and the run is marked <code>Failed</code>. Nothing that already succeeded is lost,
-                which is what lets the answer explain what happened rather than just report that something did.
+                The transport fails the second step with
+                <code>BitAiAgentStepCompletedEvent(runId, "s2", BitAiAgentStepStatus.Failed)</code>, carrying a
+                <code>BitAiError</code> - its message, the failing tests as its <code>Detail</code>, and
+                <code>IsRetryable</code> - then ends the run with
+                <code>BitAiAgentRunCompletedEvent(runId, BitAiAgentRunStatus.Failed)</code>, and still writes its answer.
+                The failing step keeps its error, shown on the step itself; the completed steps keep their summaries; the
+                step the run never reached (Deploy) is marked <code>Skipped</code> rather than left pending; and the run is
+                marked <code>Failed</code>. Nothing that already succeeded is lost, which is what lets the answer explain
+                what happened rather than just report that something did.
             </p>
             <p>
-                A failure that does not end the turn can also be added as a <code>BitAiErrorPart</code> inside a message, for
-                the common case where one of several parallel calls failed and the rest are still worth showing.
+                The failure is the step's, not the reply's: the turn itself succeeds. A failure that ends the reply is a
+                terminal <code>BitAiErrorEvent</code> (see <BitLink Href="/ai/scenarios/errors">Errors and retry</BitLink>),
+                and one that does not - one of several parallel calls failed, and the rest are still worth showing - is
+                the same event with <code>isTerminal: false</code>, which adds a <code>BitAiErrorPart</code> inside the
+                message and lets it stream on.
             </p>
         </DocSection>
 
