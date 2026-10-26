@@ -94,22 +94,48 @@ internal sealed class ScriptedJsRuntime : IJSRuntime
             return ValueTask.FromResult(default(TValue)!);
         }
 
+        // Web Locks. Nothing to play back - the recorded calls are what the tests assert on.
+        if (objectName == "host" && identifier is "acquireLock" or "releaseLock")
+        {
+            return ValueTask.FromResult(default(TValue)!);
+        }
+
         throw new InvalidOperationException($"Unexpected call '{objectName}.{identifier}'.");
     }
 }
 
 internal sealed class ScriptedJsObject(ScriptedJsRuntime runtime, string name) : IJSObjectReference
 {
+    /// <summary>Whether <see cref="DisposeAsync"/> ran. A call after it throws, as a real reference's does.</summary>
+    public bool Disposed { get; private set; }
+
+    /// <summary>
+    /// Runs inside <see cref="DisposeAsync"/>, once the reference is disposed: the moment work still
+    /// unwinding from the worker's termination can reach it in a browser.
+    /// </summary>
+    public Func<Task>? Disposing { get; set; }
+
     public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
-        => runtime.InvokeObjectAsync<TValue>(name, identifier, args);
+        => InvokeAsync<TValue>(identifier, CancellationToken.None, args);
 
     public ValueTask<TValue> InvokeAsync<TValue>(
         string identifier,
         CancellationToken cancellationToken,
         object?[]? args)
-        => runtime.InvokeObjectAsync<TValue>(name, identifier, args);
+    {
+        ObjectDisposedException.ThrowIf(Disposed, this);
+        return runtime.InvokeObjectAsync<TValue>(name, identifier, args);
+    }
 
-    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    public async ValueTask DisposeAsync()
+    {
+        Disposed = true;
+
+        if (Disposing is { } disposing)
+        {
+            await disposing();
+        }
+    }
 }
 
 internal sealed record JsCall(string Identifier, object?[] Args);

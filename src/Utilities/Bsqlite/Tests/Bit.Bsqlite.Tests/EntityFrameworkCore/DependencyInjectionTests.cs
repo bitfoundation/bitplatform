@@ -238,6 +238,62 @@ public sealed class DependencyInjectionTests
         Assert.IsTrue(database.IsOpen);
     }
 
+    /// <summary>
+    /// The database stays closed for the whole of the work: an open from anywhere else - a page loading,
+    /// an Opened handler still running from the last open - waits for the work, instead of reopening the
+    /// database on the binding the work is about to change and leaving the session and the binding on
+    /// two different backends.
+    /// </summary>
+    [TestMethod]
+    public async Task Database_WhileClosed_HoldsAnOpenFromElsewhere_UntilTheWorkIsDone()
+    {
+        await using var provider = Build();
+        var database = provider.GetRequiredService<BsqliteDatabase>();
+        var before = await database.OpenAsync(Ct);
+
+        var inWork = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var finishWork = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var whileClosed = database.WhileClosedAsync(async _ =>
+        {
+            inWork.SetResult();
+            await finishWork.Task;
+        }, Ct);
+
+        await inWork.Task;
+        var elsewhere = database.OpenAsync(Ct).AsTask();
+        await Task.Delay(100, Ct);
+
+        Assert.IsFalse(elsewhere.IsCompleted, "An open went ahead while the work was running.");
+        Assert.IsFalse(database.IsOpen);
+
+        finishWork.SetResult();
+        await whileClosed;
+        var after = await elsewhere;
+
+        Assert.AreSame(database.Session, after);
+        Assert.AreNotSame(before, after);
+    }
+
+    /// <summary>
+    /// The work holds the database closed, so it cannot open it itself: that would wait on the work
+    /// forever. It is told so instead.
+    /// </summary>
+    [TestMethod]
+    public async Task Database_WhileClosed_RefusesAnOpenFromInsideTheWork()
+    {
+        await using var provider = Build();
+        var database = provider.GetRequiredService<BsqliteDatabase>();
+        await database.OpenAsync(Ct);
+
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() =>
+            database.WhileClosedAsync(async ct => await database.OpenAsync(ct), Ct));
+
+        // A failed work leaves the database closed, and the next open is an ordinary one.
+        Assert.IsFalse(database.IsOpen);
+        await database.OpenAsync(Ct);
+        Assert.IsTrue(database.IsOpen);
+    }
+
     private sealed class InProcessTransportFactory : IBsqliteTransportFactory
     {
         public IBsqliteTransport Create(IBsqliteStorageProvider provider) => new BsqliteInProcessTransport();

@@ -127,12 +127,145 @@ public sealed class DemoTests : DemoTest
         Assert.AreEqual(target, await WaitForSessionAsync(page, target));
         await Assertions.Expect(products).ToHaveCountAsync(count);
 
+        // The reload needs the copy to outlive the worker that wrote it, which Cache Storage does not do in
+        // Playwright's WebKit - the target there, since that WebKit opens on IndexedDB (see CacheStorageTests).
+        SkipWhen(BrowserName == "webkit" && target == "cache-storage",
+            "Playwright's WebKit discards Cache Storage entries once no context holds the cache open");
+
         await page.ReloadAsync();
         await page.WaitForSelectorAsync(".page[data-interactive='true']");
         Assert.AreEqual(target, await WaitForSessionAsync(page, target), "The reload did not reopen the database where it was moved to.");
         await Assertions.Expect(products).ToHaveCountAsync(count);
 
         Assert.AreEqual(0, errors.Count, "Console errors:" + Environment.NewLine + string.Join(Environment.NewLine, errors));
+    }
+
+    /// <summary>
+    /// The session bar used the moment it names a backend - while the page's own first load is still running
+    /// against the database - lands where it was asked to. Nothing the page was doing may reopen the database
+    /// on the old binding while it is being rebound, which would leave the session on one backend, the binding
+    /// on another, and the next reload on a database the reader never saw.
+    /// </summary>
+    [TestMethod]
+    public async Task Switching_backends_while_the_page_is_still_loading_lands_where_it_was_asked_to()
+    {
+        // Not asserted: the load the switch cuts off fails on the closing worker, and says so in the console.
+        var page = await NewDemoPageAsync([]);
+
+        await GotoInteractiveAsync(page, "/catalog");
+        var first = await WaitForSessionAsync(page);
+        var target = first == "indexeddb" ? "cache-storage" : "indexeddb";
+
+        // Reloaded the moment the database opens, so the first load - migrations, the seed and the first-use
+        // lock - is cut off, and runs again after the reload while the bar is used.
+        await page.ReloadAsync();
+        await page.WaitForSelectorAsync(".page[data-interactive='true']");
+        await WaitForSessionAsync(page);
+        await page.Locator("section[data-session] select").SelectOptionAsync(target);
+        await page.Locator("section[data-session] button", new PageLocatorOptions { HasText = "Start empty" }).ClickAsync();
+
+        Assert.AreEqual(target, await WaitForSessionAsync(page, target));
+        await Assertions.Expect(page.Locator("table[data-rows='products'] tbody tr").First).ToBeVisibleAsync();
+        Assert.AreEqual(target, await page.EvaluateAsync<string>("() => localStorage.getItem('bit-bsqlite.binding.app.db')"));
+
+        await page.ReloadAsync();
+        await page.WaitForSelectorAsync(".page[data-interactive='true']");
+        Assert.AreEqual(target, await WaitForSessionAsync(page, target), "The reload did not reopen the database where it was switched to.");
+        await Assertions.Expect(page.Locator("#blazor-error-ui")).ToBeHiddenAsync();
+    }
+
+    /// <summary>
+    /// A database on the in-memory backend lives in the worker's own heap, out of reach of the admin API a move
+    /// is built from: a move onto it would delete the source and open an empty database. The bar offers only
+    /// "Start empty" there, and says why.
+    /// </summary>
+    [TestMethod]
+    public async Task The_session_bar_does_not_offer_to_move_data_onto_the_in_memory_backend()
+    {
+        var page = await NewDemoPageAsync([]);
+
+        await GotoInteractiveAsync(page, "/storage");
+        await WaitForSessionAsync(page);
+
+        var session = page.Locator("section[data-session]");
+        await session.Locator("select").SelectOptionAsync("in-memory");
+
+        await Assertions.Expect(session.Locator("button", new LocatorLocatorOptions { HasText = "Move data" })).ToBeDisabledAsync();
+        await Assertions.Expect(session.Locator("button", new LocatorLocatorOptions { HasText = "Start empty" })).ToBeEnabledAsync();
+        await Assertions.Expect(session.Locator(".bq-session-status[role=note]")).ToContainTextAsync("Start empty instead");
+    }
+
+    /// <summary>
+    /// A write the engine refuses is the demo working, not failing: the page names SQLite's reason rather than
+    /// the "see the inner exception" of the DbUpdateException around it, and Blazor's "An unhandled error has
+    /// occurred" bar stays down.
+    /// </summary>
+    [TestMethod]
+    public async Task A_refused_write_shows_SQLites_reason_and_no_error_bar()
+    {
+        var page = await NewDemoPageAsync([]);
+
+        await GotoInteractiveAsync(page, "/catalog");
+        await WaitForSessionAsync(page);
+
+        // TL-100 is on an order, and OrderLine -> Product is Restrict.
+        var products = page.Locator("table[data-rows='products'] tbody tr");
+        await products.Filter(new LocatorFilterOptions { HasText = "TL-100" })
+            .Locator("button", new LocatorLocatorOptions { HasText = "Delete" })
+            .ClickAsync();
+
+        await Assertions.Expect(page.Locator(".bb-note-danger[role=alert]")).ToHaveTextAsync("FOREIGN KEY constraint failed");
+        await Assertions.Expect(page.Locator("#blazor-error-ui")).ToBeHiddenAsync();
+    }
+
+    /// <summary>
+    /// The order editor works on a copy: an edit shows in the grid once it is saved, not while it is typed, and
+    /// not at all when the reader moves on without saving.
+    /// </summary>
+    [TestMethod]
+    public async Task An_order_edited_but_not_saved_leaves_the_grid_as_it_was()
+    {
+        var page = await NewDemoPageAsync([]);
+
+        await GotoInteractiveAsync(page, "/orders");
+        await WaitForSessionAsync(page);
+
+        var orders = page.Locator("table[data-rows='orders'] tbody tr");
+        var edited = orders.Filter(new LocatorFilterOptions { HasText = "SO-1043" });
+        await edited.ClickAsync();
+        var before = await edited.InnerTextAsync();
+
+        // Set the way a reader's edit ends - the value, then change - since not every browser Playwright
+        // drives has a native date widget to fill.
+        await page.Locator(".bb-stage form.bq-form label", new PageLocatorOptions { HasText = "Ship by" }).Locator("input").EvaluateAsync(
+            "input => { input.value = '2030-01-01'; input.dispatchEvent(new Event('change', { bubbles: true })); }");
+        await orders.Filter(new LocatorFilterOptions { HasText = "SO-1042" }).ClickAsync();
+        await Assertions.Expect(page.Locator(".bb-stage .bq-panel-title").First).ToHaveTextAsync("SO-1042");
+
+        Assert.AreEqual(before, await edited.InnerTextAsync());
+    }
+
+    /// <summary>
+    /// A file that is not a SQLite database is refused when it is picked, before it can replace the database
+    /// and leave every page failing to open it.
+    /// </summary>
+    [TestMethod]
+    public async Task A_file_that_is_not_a_SQLite_database_is_refused_before_it_replaces_anything()
+    {
+        var page = await NewDemoPageAsync([]);
+
+        await GotoInteractiveAsync(page, "/admin");
+        await WaitForSessionAsync(page);
+
+        await page.Locator("section:has(h3:has-text('Seed a tab from a file')) input[type=file]").SetInputFilesAsync(new FilePayload
+        {
+            Name = "notes.db",
+            MimeType = "application/octet-stream",
+            Buffer = "these are notes, not a database"u8.ToArray(),
+        });
+
+        await Assertions.Expect(page.Locator(".bb-note-danger[role=alert]")).ToContainTextAsync("notes.db is not a SQLite database");
+        await Assertions.Expect(page.Locator("button", new PageLocatorOptions { HasText = "Import and reopen" })).ToBeDisabledAsync();
     }
 
     /// <summary>

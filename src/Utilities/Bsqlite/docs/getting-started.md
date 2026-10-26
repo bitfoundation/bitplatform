@@ -129,7 +129,9 @@ What the connection offers beyond the basics:
 await Database.OpenAsync();                // idempotent
 Database.Resolution?.Provider.Name;         // "opfs", "indexeddb", ...
 await Database.CloseAsync();               // raises Closing first, then terminates the worker
-await Database.WhileClosedAsync(ct => provider.Admin.ImportAsync("app.db", bytes, ct));
+await Database.WhileClosedAsync(ct => provider.Admin.ImportAsync("app.db", bytes, ct).AsTask());
 ```
 
 Subscribe to `Closing` to drop contexts and live queries before the worker goes away, and to `Opened` to reload afterwards. The demo's `SessionLifecycle` component is one way to wire that into pages.
+
+`WhileClosedAsync` keeps the database closed until its work is done: an `OpenAsync` from anywhere else - a page loading, an `Opened` handler still running - waits and gets the reopened session, so a binding the work changes is the one the database opens on. The work itself must not open the database; it gets an `InvalidOperationException` if it tries.

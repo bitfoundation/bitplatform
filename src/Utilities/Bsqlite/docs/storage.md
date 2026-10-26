@@ -54,7 +54,7 @@ Nothing in selection, the transport or the worker knows it exists: it is built o
 
 ### In-memory
 
-SQLite's own memory VFS: no JavaScript to load and nothing persisted. Every connection is its own worker with its own heap, so a second connection to the "same" database would be a different, empty one, and the backend declares no multiple connections. Use it for tests and demos, and as a last resort only behind `AllowNonPersistentFallback()`. Its `Admin` sees only images handed to it directly, not what a connection wrote.
+SQLite's own memory VFS: no JavaScript to load and nothing persisted. Every connection is its own worker with its own heap, so a second connection to the "same" database would be a different, empty one, and the backend declares no multiple connections. Use it for tests and demos, and as a last resort only behind `AllowNonPersistentFallback()`. Its `Admin` sees only images handed to it directly, not what a connection wrote - so data does not migrate to or from it: a migration away copies nothing, and a migration onto it puts the image in that store, deletes the source, and the next open starts empty. Migrate between persistent backends only.
 
 ### File system (Blazor Hybrid)
 

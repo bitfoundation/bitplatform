@@ -177,7 +177,8 @@ from those queries in the browser as from the stock provider on its server.
   multithreaded WebAssembly is not Blazor's default.
 - `in-memory` has no admin view of live data. It registers no VFS, so a database opened on it lives in the engine's own
   heap inside the worker; `Admin` describes only images passed to it directly. Export, list, and migration away from
-  this backend do not see what a connection wrote. Persistent backends do not have this gap.
+  this backend do not see what a connection wrote, and a migration onto it does not reach the database a connection
+  opens - the source is deleted and the next open starts empty. Persistent backends do not have this gap.
 - `indexeddb` serializes readers. `IDBBatchAtomicVFS` is registered with `WebLocksMixin`'s default `exclusive` lock
   policy, so a read holds the same lock a write does. `SupportsConcurrentReads` reports that honestly.
 

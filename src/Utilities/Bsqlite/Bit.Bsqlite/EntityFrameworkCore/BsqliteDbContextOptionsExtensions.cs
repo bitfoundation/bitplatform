@@ -1,7 +1,9 @@
 ﻿using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
+using Bit.Bsqlite.Data;
 using Bit.Bsqlite.EntityFrameworkCore;
 using Bit.Bsqlite.Interop;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -21,7 +23,9 @@ public static class BsqliteDbContextOptionsExtensions
     /// This is <c>UseSqlite(connection)</c> plus replacements for
     /// <see cref="IRelationalDatabaseCreator"/> and <see cref="IHistoryRepository"/>. SQL generation
     /// is the stock provider's; the replacements exist only so <c>EnsureCreatedAsync</c> and
-    /// <c>MigrateAsync</c> do not call <c>DbConnection.Open()</c>.
+    /// <c>MigrateAsync</c> do not call <c>DbConnection.Open()</c>. On a <see cref="BsqliteConnection"/>,
+    /// EF's <c>UnexpectedConnectionTypeWarning</c> is ignored: the <c>ef_*</c> functions it warns about
+    /// are registered by Bsqlite on every connection.
     /// </remarks>
     public static DbContextOptionsBuilder UseBitBsqlite(
         this DbContextOptionsBuilder optionsBuilder,
@@ -52,6 +56,17 @@ public static class BsqliteDbContextOptionsExtensions
         BsqlitePcl.EnsureInitialized();
         optionsBuilder.UseSqlite(connection, contextOwnsConnection, sqliteOptionsAction);
         ReplaceSyncBoundServices(optionsBuilder);
+
+        // EF warns, for every context, that the ef_* functions could not be created because the
+        // connection is not a SqliteConnection, and asks for them to be defined by hand. On a Bsqlite
+        // connection they are: the transport behind it - the worker, or in a Blazor Hybrid app the
+        // native one - registers them on every connection it opens, so the warning would only send a
+        // reader looking for a gap that is not there.
+        if (connection is BsqliteConnection)
+        {
+            optionsBuilder.ConfigureWarnings(w => w.Ignore(SqliteEventId.UnexpectedConnectionTypeWarning));
+        }
+
         return optionsBuilder;
     }
 
