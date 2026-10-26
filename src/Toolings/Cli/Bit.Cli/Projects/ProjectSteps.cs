@@ -138,6 +138,19 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             $"cd {ProcessSpec.Quote(project.Directory)} && bit setup", resultCode: "sdk.missing");
     }
 
+    public async Task<StepResult> ContainerRuntimeAsync(Action<string> progress, CancellationToken cancellationToken)
+    {
+        if (await ToolCatalog.ContainerRuntimeAsync(Runner, cli.Environment, cancellationToken) is not { } runtime)
+            return StepResult.Skipped("Skipped the container runtime", "neither Docker nor Podman answers");
+
+        var name = runtime is "podman" ? "Podman" : "Docker";
+        string[] arguments = ["user-secrets", "set", "DcpPublisher:ContainerRuntime", runtime, "--project", project.AppHostDirectory];
+        var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(2));
+
+        return StepResult.FromProcess(result, $"Aspire runs the containers on {name}", $"Couldn't tell Aspire to use {name}",
+            $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}", "kept in the AppHost's user secrets");
+    }
+
     public async Task<StepResult> WorkloadsAsync(Action<string> progress, CancellationToken cancellationToken)
     {
         var support = Templates.Platforms.BuildSupport(project.Platforms);
