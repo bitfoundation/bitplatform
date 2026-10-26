@@ -92,7 +92,7 @@ public static class ProjectProcesses
 
     private static bool IsStartedByABuild(int id)
     {
-        if (OperatingSystem.IsWindows() is false || FolderHolders.ParentOf(id) is not { } parentId || TryGetProcess(parentId) is not { } parent)
+        if (!OperatingSystem.IsWindows() || FolderHolders.ParentOf(id) is not { } parentId || TryGetProcess(parentId) is not { } parent)
             return false;
 
         using (parent)

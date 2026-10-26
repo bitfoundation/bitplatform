@@ -31,6 +31,13 @@ public class ProcessRunnerTests
     }
 
     [TestMethod]
+    public void ColoredOutput_Should_ShowAsPlainTextNextToTheSpinner()
+    {
+        Assert.AreEqual("[18:02] Compiled App.razor.scss to App.razor.css.", CliConsole.PlainText("\u001b[90m[18:02] \u001b[32mCompiled App.razor.scss to App.razor.css.\u001b[0m"));
+        Assert.AreEqual("Restored 2 projects", CliConsole.PlainText("\u001b]0;dotnet\u0007Restored\t2 projects\u001b[K"));
+    }
+
+    [TestMethod]
     public async Task ACommandThatTakesTooLong_Should_BeStopped()
     {
         var runner = new ProcessRunner(CliEnvironment.FromProcess(), CliLog.None);

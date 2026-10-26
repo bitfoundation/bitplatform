@@ -1,4 +1,5 @@
-﻿using Spectre.Console;
+﻿using System.Text.RegularExpressions;
+using Spectre.Console;
 
 namespace Bit.Cli.Infrastructure;
 
@@ -10,7 +11,7 @@ public enum StepStatus
     Skipped
 }
 
-public sealed class CliConsole(IAnsiConsole output, IAnsiConsole error)
+public sealed partial class CliConsole(IAnsiConsole output, IAnsiConsole error)
 {
     private const int TitleWidth = 34;
 
@@ -108,7 +109,7 @@ public sealed class CliConsole(IAnsiConsole output, IAnsiConsole error)
                 {
                     result = await work(line =>
                     {
-                        var text = Truncate(line.Trim(), Math.Max(10, Width - title.Length - 10));
+                        var text = Truncate(PlainText(line).Trim(), Math.Max(10, Width - title.Length - 10));
                         context.Status($"{Markup.Escape(title)} [grey]{Markup.Escape(text)}[/]");
                     });
                 });
@@ -135,4 +136,12 @@ public sealed class CliConsole(IAnsiConsole output, IAnsiConsole error)
 
         return text.Length <= length ? text : length <= 3 ? text[..length] : text[..(length - 3)] + "...";
     }
+
+    public static string PlainText(string text)
+    {
+        return new([.. AnsiSequenceRegex().Replace(text, "").Select(c => char.IsControl(c) ? ' ' : c)]);
+    }
+
+    [GeneratedRegex(@"\x1B(?:\[[0-?]*[ -/]*[@-~]|\][^\x07\x1B]*(?:\x07|\x1B\\)?|[@-Z\\-_])")]
+    private static partial Regex AnsiSequenceRegex();
 }
