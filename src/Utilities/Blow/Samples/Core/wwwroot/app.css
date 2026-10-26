@@ -74,12 +74,12 @@ main button:not(.bit-blow-controls-button):hover {
     background: #e7f1fa;
 }
 
-main button.active {
+main button:not(.bit-blow-controls-button).active {
     color: #fff;
     background: #1276c6;
 }
 
-main button:disabled {
+main button:not(.bit-blow-controls-button):disabled {
     border-color: #c4c4cc;
     color: #8a8a94;
     background: #fff;

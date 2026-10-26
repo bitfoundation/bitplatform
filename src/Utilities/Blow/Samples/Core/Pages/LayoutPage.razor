@@ -79,7 +79,8 @@
 
 @code {
     // The rules this graph is held to: well formed, no cycle, nothing unconnected, and everything reachable from Start.
-    private static readonly BlowGraphValidator Validator = new(
+    // Held per page, like the layouts below: a validator is mutable too.
+    private readonly BlowGraphValidator _validator = new(
         BlowValidationRules.Structure(),
         BlowValidationRules.NoCycles(),
         BlowValidationRules.NoIsolatedNodes(),
@@ -102,7 +103,8 @@
     private readonly List<BlowEdge> _edges = [];
 
     private BlowValidationResult _validation = BlowValidationResult.Empty;
-    private BlowGraphStatistics _statistics = new(0, 0, 0, 0, 0, 0, 0, 0, 0, true, 0);
+    // Set by Analyze, which OnInitialized runs (through Reset and Arrange) before the first render.
+    private BlowGraphStatistics _statistics = null!;
     private string _order = string.Empty;
     private string _timing = string.Empty;
     private string _current = "Layered";
@@ -168,7 +170,7 @@
 
     private void Analyze()
     {
-        _validation = Validator.Validate(_nodes, _edges);
+        _validation = _validator.Validate(_nodes, _edges);
 
         var graph = new BlowGraphIndex(_nodes, _edges);
         _statistics = BlowGraphAlgorithms.GetStatistics(graph);

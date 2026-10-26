@@ -13,6 +13,8 @@
     through in topological order, recomputed on this host after every edit.
 </p>
 
+<HostFacts />
+
 <div class="toolbar">
     <button type="button" @onclick="AddNumberAsync">Add number</button>
     <span class="muted" role="status">@_lastConnection</span>
@@ -33,16 +35,18 @@
         <NodeTemplate Context="node">
             <div class="df-node">
                 <div class="df-title">@node.Label</div>
-                @* nodrag hands presses back to the field, so clicking or selecting in it never drags the node. *@
+                @* nodrag hands presses back to the field, so clicking or selecting in it never drags the node. @bind
+                   writes the value the graph computes with back into the field after every change, at full precision
+                   (an emptied number field reads 0), so the field and the results never disagree. *@
                 @if (node.Data is NumberData number)
                 {
-                    <input class="nodrag df-input" type="number" value="@Format(number.Value)"
-                           aria-label="@($"Value of {node.Label}")" @onchange="e => SetNumber(number, e.Value)" />
+                    <input class="nodrag df-input" type="number" @bind="number.Value" @bind:after="Recompute"
+                           aria-label="@($"Value of {node.Label}")" />
                 }
                 else if (node.Data is TextData text)
                 {
-                    <input class="nodrag df-input" value="@text.Value"
-                           aria-label="@($"Value of {node.Label}")" @onchange="e => SetText(text, e.Value)" />
+                    <input class="nodrag df-input" @bind="text.Value" @bind:after="Recompute"
+                           aria-label="@($"Value of {node.Label}")" />
                 }
                 @foreach (var port in node.Ports ?? [])
                 {
@@ -102,8 +106,11 @@
         public string Value { get; set; } = string.Empty;
     }
 
-    /// <summary>Structure and ports: unconnected required inputs, full ports, and edges between incompatible types.</summary>
-    private static readonly BlowGraphValidator Validator = BlowGraphValidator.CreateDefault();
+    /// <summary>
+    /// Structure and ports: unconnected required inputs, full ports, and edges between incompatible types. Held per
+    /// page rather than shared: a validator is mutable, and on Server a static would be shared by every circuit.
+    /// </summary>
+    private readonly BlowGraphValidator _validator = BlowGraphValidator.CreateDefault();
 
     private readonly List<BlowNode> _nodes =
     [
@@ -177,26 +184,10 @@
         }
 
         // Below everything already there, so a new node never lands on another one, then brought into view and focused.
+        // AddNodes raises NodesChanged, which recomputes the graph.
         var node = Number($"number-{_next++}", 1, new(0, _nodes.Count == 0 ? 0 : _nodes.Max(n => n.GetRect().Bottom) + 40));
         _flow.AddNodes(node);
-        Recompute();
         await _flow.FocusNodeAsync(node.Id, durationMs: 300);
-    }
-
-    private void SetNumber(NumberData data, object? raw)
-    {
-        if (double.TryParse(raw?.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
-        {
-            data.Value = value;
-        }
-
-        Recompute();
-    }
-
-    private void SetText(TextData data, object? raw)
-    {
-        data.Value = raw?.ToString() ?? string.Empty;
-        Recompute();
     }
 
     private void OnConnectEnd(BlowConnectEndInfo end)
@@ -212,9 +203,14 @@
     /// Validates the graph and evaluates it. The topological order computes every node's inputs before the node itself.
     /// Both are plain C# over the lists: on Server they run on the server, on WebAssembly in the browser.
     /// </summary>
+    /// <remarks>
+    /// A deliberate copy of the demo's typed-ports example (Demo/Client/Pages/Examples/TypedPortsExample.razor), whose
+    /// page has to show all of its own source; together with the port factories and OnConnectEnd above, a fix to one
+    /// belongs in the other.
+    /// </remarks>
     private void Recompute()
     {
-        _validation = Validator.Validate(_nodes, _edges);
+        _validation = _validator.Validate(_nodes, _edges);
 
         var graph = new BlowGraphIndex(_nodes, _edges);
         _values = [];

@@ -10,6 +10,8 @@
     on WebAssembly - and the document and the image are written and read by plain C#.
 </p>
 
+<HostFacts />
+
 <div class="toolbar">
     <button type="button" disabled="@(!_history.CanUndo)" @onclick="UndoAsync">Undo @_history.UndoLabel</button>
     <button type="button" disabled="@(!_history.CanRedo)" @onclick="RedoAsync">Redo @_history.RedoLabel</button>
@@ -140,9 +142,16 @@
             return;
         }
 
-        // Copy takes the selected nodes and every edge between two of them; with nothing selected it keeps what it had.
+        // Copy takes the selected nodes and every edge between two of them. With no node selected it keeps the clipboard
+        // and returns what was copied last, which says nothing about this click: so the selection is checked first.
+        if (!_nodes.Any(n => n.Selected))
+        {
+            _clipboardStatus = "Nothing selected to copy.";
+            return;
+        }
+
         var copied = _flow.Copy();
-        _clipboardStatus = copied.IsEmpty ? "Nothing selected to copy." : $"Copied {copied.Nodes.Count} node(s) and {copied.Edges.Count} edge(s).";
+        _clipboardStatus = $"Copied {copied.Nodes.Count} node(s) and {copied.Edges.Count} edge(s).";
     }
 
     private async Task PasteAsync()
