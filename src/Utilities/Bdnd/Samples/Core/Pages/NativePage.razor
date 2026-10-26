@@ -56,13 +56,19 @@
     private int _drops;
 
     // Only the first characters of each file are read, so a file of any size is opened: the read stops long before
-    // its end. A file gone from the page fails on its own and is reported as such.
+    // its end. A folder, or a file gone from the page, is reported as such.
     private async Task ReadFiles(BdndNativeDropEventArgs e)
     {
         var drop = ++_drops;
         var results = new List<string>();
-        foreach (var file in e.Files.Where(f => f.CanRead))
+        foreach (var file in e.Files)
         {
+            if (file.CanRead is false)
+            {
+                results.Add($"{file.Name}: could not be read ({(file.IsDirectory ? "a folder has no contents" : "its drop is no longer kept")})");
+                continue;
+            }
+
             try
             {
                 await using var stream = await file.OpenReadStreamAsync(maxAllowedSize: file.Size);
