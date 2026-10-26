@@ -22,7 +22,18 @@
         mutates state and calls <code>StateHasChanged</code>, and the browser handles the rest.
         Elements that carry a <code>view-transition-name</code> get their own snapshot pair and can
         be animated individually in CSS. Where the API is unsupported the state change simply
-        applies without a transition - there is no fallback to write.
+        applies without a transition - there is no fallback to write. <code>StartAsync</code> returns
+        whether the browser played one, which the line under the panel reports.
+    </p>
+    <p>
+        <strong>BmViewTransitionOptions</strong> tunes a single call. <code>Types</code> tags the transition so a
+        stylesheet can tell kinds of change apart with <code>:active-view-transition-type()</code>: with the box
+        ticked, moving to a tab on the right is a <code>"forward"</code> transition and slides the panel left,
+        and moving back is <code>"backward"</code> and slides it right. A browser without typed transitions
+        plays the plain cross-fade. <code>ReduceMotion</code> overrides the library's reduced-motion policy for
+        the call: <code>null</code> follows it (skipping the transition when motion is reduced),
+        <code>true</code> always skips it, <code>false</code> always plays it - for a transition whose own CSS
+        already honours <code>prefers-reduced-motion</code>.
     </p>
 
     <div class="bb-tabs vt-tabs" role="tablist">
@@ -37,6 +48,11 @@
     <div class="vt-panel" role="tabpanel">
         <h4>@_active</h4>
         <p>@_copy[_active]</p>
+    </div>
+
+    <div class="bb-toolbar">
+        <label class="demo-label"><input type="checkbox" @bind="_typed" /> Types: "forward" / "backward"</label>
+        <span class="demo-label">Last switch: @_lastSwitch</span>
     </div>
 
     <CodeSnippet Code="@_code" />
@@ -72,10 +88,21 @@
         ["Pricing"] = "Free and open-source, under the MIT licence, as part of bit platform.",
     };
 
+    private bool _typed = true;
+    private string _lastSwitch = "none yet";
+
     private async Task SwitchAsync(string tab)
     {
         if (tab == _active) return;
-        await ViewTransition.StartAsync(() => { _active = tab; StateHasChanged(); });
+
+        // Moving right is "forward", moving left "backward"; the stylesheet slides each its own way.
+        var kind = Array.IndexOf(_tabs, tab) > Array.IndexOf(_tabs, _active) ? "forward" : "backward";
+        var options = _typed ? new BmViewTransitionOptions { Types = [kind] } : null;
+
+        var played = await ViewTransition.StartAsync(() => { _active = tab; StateHasChanged(); }, options);
+        _lastSwitch = !played ? "applied without one - the API is missing here, or motion is reduced"
+                    : _typed ? $"played as a \"{kind}\" view transition"
+                    : "played as an untyped view transition (a cross-fade)";
     }
 
     private const string _code = """
@@ -87,17 +114,38 @@
             .panel { view-transition-name: vt-panel; }
             ::view-transition-old(vt-panel),
             ::view-transition-new(vt-panel) { animation-duration: .4s; }
+
+            /* Typed transitions: one rule per kind of change. Untyped, it stays a cross-fade. */
+            :root:active-view-transition-type(forward)::view-transition-old(vt-panel)  { animation-name: out-left; }
+            :root:active-view-transition-type(forward)::view-transition-new(vt-panel)  { animation-name: in-right; }
+            :root:active-view-transition-type(backward)::view-transition-old(vt-panel) { animation-name: out-right; }
+            :root:active-view-transition-type(backward)::view-transition-new(vt-panel) { animation-name: in-left; }
+            @@keyframes out-left  { to   { opacity: 0; transform: translateX(-2rem); } }
+            @@keyframes in-right  { from { opacity: 0; transform: translateX(2rem); } }
+            @@keyframes out-right { to   { opacity: 0; transform: translateX(2rem); } }
+            @@keyframes in-left   { from { opacity: 0; transform: translateX(-2rem); } }
         </style>
 
         <div class="panel">@_active</div>
 
         @code {
+            private readonly string[] _tabs = ["Overview", "Features", "Pricing"];
             private string _active = "Overview";
 
             // The callback mutates state and re-renders; the browser snapshots either side of it.
-            // Unsupported browsers just apply the change - no fallback to write.
-            private async Task SwitchAsync(string tab) =>
-                await ViewTransition.StartAsync(() => { _active = tab; StateHasChanged(); });
+            // Unsupported browsers just apply the change - no fallback to write. StartAsync returns
+            // whether the browser played a transition.
+            private async Task SwitchAsync(string tab)
+            {
+                var forward = Array.IndexOf(_tabs, tab) > Array.IndexOf(_tabs, _active);
+                bool played = await ViewTransition.StartAsync(
+                    () => { _active = tab; StateHasChanged(); },
+                    new BmViewTransitionOptions
+                    {
+                        Types = [forward ? "forward" : "backward"],
+                        // ReduceMotion = false,   // play it even when motion is reduced
+                    });
+            }
         }
         """;
 }

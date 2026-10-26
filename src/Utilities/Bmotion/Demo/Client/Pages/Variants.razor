@@ -239,11 +239,42 @@
 </section>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Grid stagger</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Every target can name one</h3>
+    <p>
+        <code>State</code> is not the only way in. Every target parameter - <code>Initial</code>,
+        <code>Animate</code>, <code>Exit</code>, <code>WhileHover</code>, <code>WhileTap</code>,
+        <code>WhileFocus</code>, <code>WhileInView</code>, <code>WhileDrag</code> - takes a variant name as readily
+        as a <code>Bm.To(...)</code>, so a component can keep all of its looks in one <code>BmVariants</code> and
+        refer to each by name. Those parameters read their value as C#, so the name goes in as a string
+        expression - <code>WhileHover="@@("hover")"</code>; <code>State</code> and <code>InitialState</code> are
+        plain strings, which is why they exist. A gesture's name resolves against the element's own variants (or,
+        failing that, an ancestor's) and plays on that element alone: unlike <code>State</code>, it doesn't
+        cascade to the children.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">variants "rest", "hover" and "press" &middot; hover it, press it</span>
+            <Bmotion Variants="_cardVariants"
+                     State="rest"
+                     WhileHover="@("hover")"
+                     WhileTap="@("press")"
+                     Transition="Bm.Spring(stiffness: 320, damping: 22)">
+                <div class="box" role="button" tabindex="0" aria-label="Named gesture states sample" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_namedGestureCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Grid stagger</h3>
     <p>
         <strong>Bm.Stagger</strong> is a delay <em>generator</em>, and it radiates across two
         dimensions as happily as one: pass <code>grid: (cols, rows)</code> and a <code>from</code>
-        origin, and each element's delay grows with its Euclidean distance from that cell. Driven
+        origin, and each element's delay grows with its Euclidean distance from that cell;
+        <code>startDelay</code> holds the whole cascade back before the first one starts. Driven
         here by <strong>BmotionAnimateService</strong>, which animates by CSS selector and needs no
         wrapper component at all.
     </p>
@@ -305,6 +336,12 @@
         ["visible"] = Bm.To(opacity: 1, x: 0, transition: Bm.Spring(stiffness: 300, damping: 24)),
     };
 
+    // One component's looks, each named once and picked by State or by a gesture.
+    private readonly BmVariants _cardVariants = BmVariants.Create(
+        ("rest", Bm.To(scale: 1, rotate: 0, y: 0)),
+        ("hover", Bm.To(scale: 1.08, rotate: -4, y: -6)),
+        ("press", Bm.To(scale: 0.92, rotate: 0, y: 0)));
+
     // Dynamic variants: one named state, resolved per element against that element's Custom value.
     private readonly BmVariants _fanVariants = new BmVariants()
         .Add("closed", Bm.To(x: 0, rotate: 0, y: 0))
@@ -313,6 +350,30 @@
             var i = (int)custom! - 2;   // centre the fan on the middle card
             return Bm.To(x: i * 58, rotate: i * 9, y: Math.Abs(i) * 8);
         });
+
+    private const string _namedGestureCode = """
+        @using Bit.Bmotion
+
+        @* The gesture targets read C#, so a variant name goes in as a string expression.
+           State and InitialState are plain strings and take the bare name. *@
+        <Bmotion Variants="_card"
+                 State="rest"
+                 WhileHover="@("hover")"
+                 WhileTap="@("press")"
+                 Transition="Bm.Spring(stiffness: 320, damping: 22)">
+            <div class="box" role="button" tabindex="0" />
+        </Bmotion>
+
+        @* Animate="@("visible")" is the same as State="visible"; Exit="@("gone")" works too. *@
+
+        @code {
+            // BmVariants.Create takes (name, target) pairs - the same as the dictionary initializer.
+            private readonly BmVariants _card = BmVariants.Create(
+                ("rest",  Bm.To(scale: 1, rotate: 0, y: 0)),
+                ("hover", Bm.To(scale: 1.08, rotate: -4, y: -6)),
+                ("press", Bm.To(scale: 0.92, rotate: 0, y: 0)));
+        }
+        """;
 
     private const string _gridStaggerCode = """
         @inject BmotionAnimateService Motion
@@ -323,7 +384,8 @@
 
         @code {
             @* Stagger is a delay generator: with a grid it uses the Euclidean distance from
-               the "from" cell, so the animation radiates instead of sweeping. *@
+               the "from" cell, so the animation radiates instead of sweeping. startDelay: 0.2
+               would hold the whole ripple back before the first dot moves. *@
             async Task RippleAsync() =>
                 await Motion.AnimateAsync(".grid-dot",
                     Bm.To(scale: [1, 1.6, 1]),

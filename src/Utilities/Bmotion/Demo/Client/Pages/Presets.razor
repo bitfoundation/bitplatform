@@ -145,8 +145,9 @@
     <p>
         Every factory takes the knobs that matter for it, such as the edge a slide starts from or how far a card
         lifts. Presets add with <code>+</code>, target by target, and the right-hand side's transition wins.
-        They are records, so <code>with</code> changes a single part. Set a property on the element and it
-        overrides the preset's.
+        They are records, so <code>with</code> changes a single part, and <code>new BmPreset { … }</code> makes
+        one of your own - an app's house entrance, written once and reused everywhere. Set a property on the
+        element and it overrides the preset's.
     </p>
     <div class="demo-row">
         <div class="demo-card stack presence-stage preset-stage">
@@ -161,6 +162,12 @@
                 <Bmotion Preset="BmPresets.Slide(from: BmEdge.Left, distance: 60)" Transition="Bm.Tween(0.9, BmEase.Out)">
                     <div class="box box-sm" />
                 </Bmotion>
+            </BmotionAnimatePresence>
+        </div>
+        <div class="demo-card stack presence-stage preset-stage">
+            <span class="demo-label">new BmPreset { … } &middot; your own</span>
+            <BmotionAnimatePresence IsPresent="_shown">
+                <Bmotion Preset="_houseEntrance"><div class="box box-sm" /></Bmotion>
             </BmotionAnimatePresence>
         </div>
     </div>
@@ -206,12 +213,24 @@
 
     private readonly BmPreset _composed = BmPresets.Fade() + BmPresets.Scale(from: 0.5) with { Transition = Bm.Spring(bounce: 0.5, duration: 0.5) };
 
+    private static readonly BmPreset _houseEntrance = new()
+    {
+        Initial = Bm.To(opacity: 0, scale: 0.6, rotate: -20),
+        Animate = Bm.To(opacity: 1, scale: 1, rotate: 0),
+        Exit = Bm.To(opacity: 0, scale: 0.6, rotate: 20),
+        Transition = Bm.Spring(bounce: 0.4, duration: 0.5),
+    };
+
     private const string _enterCode = """
         <BmotionAnimatePresence IsPresent="_open">
             <Bmotion Preset="BmPresets.Slide(from: BmEdge.Bottom, distance: 24)">
                 <div class="card">…</div>
             </Bmotion>
         </BmotionAnimatePresence>
+
+        @code {
+            private bool _open = true;
+        }
         """;
 
     private const string _overlayCode = """
@@ -226,6 +245,11 @@
                 <ul role="menu" class="menu">…</ul>
             </Bmotion>
         </BmotionAnimatePresence>
+
+        @code {
+            private bool _dialogOpen;
+            private bool _menuOpen;
+        }
         """;
 
     private const string _gestureCode = """
@@ -238,6 +262,10 @@
         <Bmotion @key="_attempt" Preset="BmPresets.Shake()">
             <input type="password" />
         </Bmotion>
+
+        @code {
+            private int _attempt;   // ++ on every failed sign-in
+        }
         """;
 
     private const string _loopCode = """
@@ -261,5 +289,19 @@
 
         @* Anything set on the element wins over the preset *@
         <Bmotion Preset="BmPresets.Slide(from: BmEdge.Left, distance: 60)" Transition="Bm.Tween(0.9, BmEase.Out)">…</Bmotion>
+
+        @code {
+            // Your own: every target is optional - Initial, Animate, Exit, WhileHover, WhileTap, WhileFocus,
+            // WhileInView - plus the Viewport and the Transition they share.
+            static readonly BmPreset HouseEntrance = new()
+            {
+                Initial = Bm.To(opacity: 0, scale: 0.6, rotate: -20),
+                Animate = Bm.To(opacity: 1, scale: 1, rotate: 0),
+                Exit = Bm.To(opacity: 0, scale: 0.6, rotate: 20),
+                Transition = Bm.Spring(bounce: 0.4, duration: 0.5),
+            };
+        }
+
+        <Bmotion Preset="HouseEntrance">…</Bmotion>
         """;
 }

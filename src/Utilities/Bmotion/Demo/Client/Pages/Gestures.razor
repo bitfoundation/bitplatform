@@ -55,16 +55,20 @@
         <em>keyboard</em> focus: wherever the browser would draw a focus ring (<code>:focus-visible</code>),
         as in Motion. Tabbing to a button plays it, and clicking the button with the mouse doesn't. Text
         fields count however they were focused. It is the accessible half of a hover effect: keyboard users
-        get the same affordance pointer users do, without a second code path.
+        get the same affordance pointer users do, without a second code path. <code>OnFocusStart</code> and
+        <code>OnFocusEnd</code> report the same moments, under the same rule.
     </p>
     <div class="demo-row">
         <div class="demo-card stack">
             <span class="demo-label">Tab into the field</span>
             <Bmotion Animate="Bm.To(scale: 1)"
                     WhileFocus='Bm.To(scale: 1.03, borderColor: "#1276C6")'
+                    OnFocusStart="@(() => _focusState = "OnFocusStart · focused")"
+                    OnFocusEnd="@(() => _focusState = "OnFocusEnd · not focused")"
                     Transition="Bm.Tween(0.2)">
                 <input class="focus-input" placeholder="Click or tab to focus…" type="text" />
             </Bmotion>
+            <div class="readout">@_focusState</div>
         </div>
     </div>
 
@@ -72,7 +76,44 @@
 </section>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Pan</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> In view</h3>
+    <p>
+        <strong>WhileInView</strong> is the same kind of overlay, switched on while the element is on screen.
+        An <code>IntersectionObserver</code> does the watching, so nothing runs while you scroll, and
+        <code>OnViewportEnter</code> / <code>OnViewportLeave</code> report each crossing. "On screen" means the
+        browser viewport unless <strong>Viewport</strong> says otherwise: <code>Root</code> measures against a
+        scrolling container instead - a chat log, a carousel, a side panel - <code>Amount</code> sets how much
+        of the element has to show (<code>"some"</code>, <code>"all"</code> or a <code>0..1</code> fraction) and
+        <code>Margin</code> grows or shrinks the area that counts. Scroll the list: a row lights up only once all
+        of it is inside the list's own scrollport. The observer measures the element as it is drawn, transform
+        included, so an in-view state that grows the element can push it back out of view - which is why these
+        rows only fade. The <a href="scroll">Scroll</a> page has the page-level reveals, with <code>Once</code>.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <div class="inview-scroller" tabindex="0" role="region" aria-label="Scrollable list of messages">
+                @for (int i = 0; i < 10; i++)
+                {
+                    var idx = i;
+                    <Bmotion Initial="Bm.To(opacity: 0.25)"
+                             WhileInView="Bm.To(opacity: 1)"
+                             Viewport="_rowViewport"
+                             OnViewportEnter="@(() => _rowsInView.Add(idx))"
+                             OnViewportLeave="@(() => _rowsInView.Remove(idx))"
+                             Transition="Bm.Tween(0.25)">
+                        <div class="inview-row">Message @(idx + 1)</div>
+                    </Bmotion>
+                }
+            </div>
+            <div class="readout">in view: @(_rowsInView.Count == 0 ? "none" : string.Join(", ", _rowsInView.Order().Select(i => i + 1)))</div>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_inViewCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Pan</h3>
     <p>
         A pan is a pointer drag <em>reported</em> rather than applied: <code>OnPan</code> hands you
         a <strong>BmPanInfo</strong> - the pointer position, the delta since the last event, the
@@ -102,7 +143,7 @@
 </section>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Gesture events</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Gesture events</h3>
     <p>
         Every gesture also reports itself as a callback, so an animation can be paired with real
         work. Note the ordering below: <code>TapCancel</code> fires instead of <code>Tap</code> when
@@ -138,7 +179,7 @@
 </section>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Nested gestures</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Nested gestures</h3>
     <p>
         Pointer gestures bubble, so a tappable button inside a tappable card presses both. That is
         usually right - a card that reacts to being pressed anywhere feels alive - but not when the
@@ -179,7 +220,7 @@
 </section>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Owning the transform string</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Owning the transform string</h3>
     <p>
         Bmotion composes one <code>transform</code> from every animated component, in a fixed order.
         <strong>TransformTemplate</strong> hands that string back to you before it is written -
@@ -220,6 +261,11 @@
 
     private bool _pinned;
     private bool _panning;
+    private string _focusState = "not focused";
+
+    // Visibility is measured against the list's own scrollport, and a row counts only once all of it shows.
+    private readonly BmViewport _rowViewport = new() { Root = ".inview-scroller", Amount = "all" };
+    private readonly HashSet<int> _rowsInView = [];
     private BmPoint _panOffset = new();
     private BmPoint _panVelocity = new();
 
@@ -299,12 +345,56 @@
         </style>
 
         @* WhileFocus is the accessible half of a hover effect: it also fires when a
-           descendant takes focus, so wrapping a whole field group works too. *@
+           descendant takes focus, so wrapping a whole field group works too. The two
+           callbacks follow the same keyboard-focus rule as the overlay. *@
         <Bmotion Animate="Bm.To(scale: 1)"
                  WhileFocus='Bm.To(scale: 1.03, borderColor: "#1276C6")'
+                 OnFocusStart="@(() => _focused = true)"
+                 OnFocusEnd="@(() => _focused = false)"
                  Transition="Bm.Tween(0.2)">
             <input class="focus-input" placeholder="Click or tab to focus…" type="text" />
         </Bmotion>
+
+        <p>@(_focused ? "focused" : "not focused")</p>
+
+        @code {
+            private bool _focused;
+        }
+        """;
+
+    private const string _inViewCode = """
+        @using Bit.Bmotion
+
+        <style>
+            .inview-scroller { height: 12rem; overflow-y: auto; display: flex; flex-direction: column; gap: .5rem; }
+        </style>
+
+        @* Root measures against the list's own scrollport instead of the browser viewport;
+           Amount = "all" counts a row only once every pixel of it shows. Only opacity changes:
+           the observer measures the transformed box, so a state that scaled the row up could
+           push it partly out again and flicker. *@
+        <div class="inview-scroller">
+            @for (int i = 0; i < 10; i++)
+            {
+                var idx = i;
+                <Bmotion Initial="Bm.To(opacity: 0.25)"
+                         WhileInView="Bm.To(opacity: 1)"
+                         Viewport="_rowViewport"
+                         OnViewportEnter="@(() => _inView.Add(idx))"
+                         OnViewportLeave="@(() => _inView.Remove(idx))"
+                         Transition="Bm.Tween(0.25)">
+                    <div class="row">Message @(idx + 1)</div>
+                </Bmotion>
+            }
+        </div>
+
+        <p>in view: @string.Join(", ", _inView.Order().Select(i => i + 1))</p>
+
+        @code {
+            // Margin = "0px 0px -40px 0px" would also shrink the area that counts by 40px at the bottom.
+            private readonly BmViewport _rowViewport = new() { Root = ".inview-scroller", Amount = "all" };
+            private readonly HashSet<int> _inView = [];
+        }
         """;
 
     private const string _panCode = """

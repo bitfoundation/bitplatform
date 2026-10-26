@@ -43,6 +43,18 @@ builder.Services.AddBitBmotionServices();</pre>
     o.ReducedMotion = BmReducedMotionMode.User;   <span class="c">// follow the OS everywhere</span>
     o.Prerender = BmPrerenderMode.Animate;        <span class="c">// play enter animations from the served HTML</span>
 });</pre>
+    <p class="bb-card-desc">
+        The other two are safety switches with sensible defaults. <code>CssSafeMode</code> checks the string
+        values a target carries - colours, sizes, shadows, filters - before they are written into the inline
+        style, and is worth turning on wherever any of them come from user input. <code>InertWhileExiting</code>,
+        on by default, makes content that is playing its exit animation <code>inert</code>, so a closing dialog
+        cannot be clicked, focused or read out a second time.
+    </p>
+    <pre class="bb-code">builder.Services.AddBitBmotionServices(o =&gt;
+{
+    o.CssSafeMode = BmCssSafeMode.Throw;   <span class="c">// Off (default), Warn or Throw on an unsafe CSS string</span>
+    o.InertWhileExiting = true;            <span class="c">// the default: exiting content can't be interacted with</span>
+});</pre>
 </section>
 
 <section class="bb-card">
@@ -63,9 +75,10 @@ builder.Services.AddBitBmotionServices();</pre>
     <div class="bb-note bb-note-warn">
         On <strong>Blazor Server</strong> the browser plays the same animations: transforms, opacity, colours,
         sizes, filters, keyframes, springs, inertia and arcs, on enter, exit, gestures and variants alike. Drag
-        stays under the pointer, with <code>OnDrag</code> a round trip behind. What needs the per-frame loop, per-frame callbacks and SVG path
-        morphs, becomes an instant change. Inject <code>BmotionCapabilities</code> to tell which runtime you are
-        on rather than guessing; the <a href="accessibility">Accessibility</a> page shows it live.
+        stays under the pointer, with <code>OnDrag</code> a round trip behind. The two things that need the
+        per-frame loop - per-frame callbacks and SVG path morphs - become an instant change. Inject
+        <code>BmotionCapabilities</code> to tell which runtime you are on rather than guessing; the
+        <a href="accessibility">Accessibility</a> page shows it live.
     </div>
 </section>
 
@@ -80,6 +93,16 @@ builder.Services.AddBitBmotionServices();</pre>
     </p>
     <pre class="bb-code"><span class="c">&lt;!-- App.razor, in &lt;head&gt; - only needed for BmPrerenderMode.Animate --&gt;</span>
 &lt;<span class="k">link</span> rel=<span class="s">"stylesheet"</span> href=<span class="s">"_content/Bit.Bmotion/bit-bmotion.css"</span> /&gt;</pre>
+    <p class="bb-card-desc">
+        The option is the default for every element, and any one element can choose differently with its own
+        <code>Prerender</code> parameter - for instance the headline that must be readable, and indexable, the
+        moment the HTML arrives, on a page whose other content animates in. Whichever mode prerendered it, an
+        element that was served at rest is taken over at rest, so its entrance doesn't play a second time.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">Bmotion</span> Prerender=<span class="s">"BmPrerenderMode.Final"</span>
+         Initial=<span class="s">"Bm.To(opacity: 0, y: 20)"</span> Animate=<span class="s">"Bm.To(opacity: 1, y: 0)"</span>&gt;
+    &lt;<span class="k">h1</span>&gt;Visible in the served HTML&lt;/<span class="k">h1</span>&gt;
+&lt;/<span class="k">Bmotion</span>&gt;</pre>
 </section>
 
 <section class="bb-card">

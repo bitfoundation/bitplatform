@@ -75,7 +75,76 @@
 </section>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Overshoot on mount</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Mass and a starting push</h3>
+    <p>
+        <strong>mass</strong> is the inertia the spring has to move. With the stiffness and damping held, a heavier
+        element is slower to get going and swings further past the target before the same friction stops it.
+        <strong>velocity</strong> is a push the element already has when the spring takes over, in units per
+        second - a negative one sends it the wrong way first, which is how a recoil or a flick reads. Left at
+        <code>0</code>, a spring that interrupts another animation inherits that animation's velocity instead (see
+        below). Two more knobs, set on a <code>new BmSpring { … }</code>, decide when a spring counts as finished:
+        <code>RestSpeed</code> and <code>RestDelta</code>, the speed and the distance from the target below which
+        it stops. Raise them to cut a long, barely visible tail short.
+    </p>
+
+    <div class="demo-row">
+        @foreach (var cfg in _masses)
+        {
+            <div class="demo-card stack">
+                <span class="demo-label">@cfg.Label</span>
+                <Bmotion Animate="@(_massed ? Bm.To(x: 80) : Bm.To(x: 0))"
+                        Transition="@cfg.Config">
+                    <div class="box box-sm" />
+                </Bmotion>
+                <span class="demo-label">@cfg.Note</span>
+            </div>
+        }
+    </div>
+
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _massed = !_massed)">@(_massed ? "Send back" : "Animate")</button>
+    </div>
+
+    <CodeSnippet Code="@_massCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Interrupting mid-flight</h3>
+    <p>
+        Change the target while the element is still on its way, and the two kinds of transition part company. A
+        tween starts its new run from where the element is, but it has no notion of speed: an <code>InOut</code>
+        curve eases in from a standstill, so the turnaround is a visible stop. A spring carries the velocity it
+        has into the new motion and curves round without one. Press the button, then press it again before the
+        boxes arrive, and watch each one turn around.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">Bm.Tween(0.9, BmEase.InOut) &middot; stops, then turns</span>
+            <Bmotion Animate="@(_chased ? Bm.To(x: 80) : Bm.To(x: -80))"
+                     Transition="Bm.Tween(0.9, BmEase.InOut)">
+                <div class="box box-sm" />
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">Bm.Spring(bounce: 0.15, duration: 0.9) &middot; curves round</span>
+            <Bmotion Animate="@(_chased ? Bm.To(x: 80) : Bm.To(x: -80))"
+                     Transition="Bm.Spring(bounce: 0.15, duration: 0.9)">
+                <div class="box box-sm" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _chased = !_chased)">Retarget</button>
+    </div>
+
+    <CodeSnippet Code="@_interruptCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Overshoot on mount</h3>
     <p>
         An underdamped spring on an entrance is the cheapest way to make an interface feel alive:
         the element passes its resting state, comes back, and settles. Re-mount below to replay it -
@@ -101,11 +170,13 @@
 </section>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Repeating springs</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Repeating springs</h3>
     <p>
         <strong>BmRepeat</strong> replays a spring without an <code>int.MaxValue</code> sentinel
         anywhere in sight. <em>Mirror</em> ping-pongs back through the motion it just played;
-        <em>Loop</em> jumps home and replays from the origin, optionally with a pause between runs.
+        <em>Loop</em> jumps home and replays from the origin, optionally with a pause between runs. The count is
+        the number of runs <em>after</em> the first, so <code>BmRepeat.Loop(3)</code> plays four times in all. The
+        <a href="keyframes">Keyframes</a> page puts all three repeat types side by side.
     </p>
 
     <div class="demo-row">
@@ -121,7 +192,7 @@
         </div>
 
         <div class="demo-card stack">
-            <span class="demo-label">Loop &middot; 3&times;, 300 ms apart</span>
+            <span class="demo-label">Loop(3) &middot; 3 more runs, 300 ms apart</span>
             <Bmotion Animate="@(_repeat ? Bm.To(y: 60) : Bm.To(y: 0))"
                     Transition="@(_repeat ? Bm.Spring(stiffness: 300, damping: 18, repeat: BmRepeat.Loop(3, delay: 0.3))
                                           : Bm.Spring(stiffness: 300, damping: 18))">
@@ -143,6 +214,8 @@
     private bool _on;
     private bool _bounce;
     private bool _repeat;
+    private bool _massed;
+    private bool _chased;
     private int  _mountKey;
 
     /// <summary>One spring stage: its caption, the transition it plays and a note on the feel.</summary>
@@ -164,7 +237,73 @@
         new("bounce 0.6 · duration 1.2", Bm.Spring(bounce: 0.6,  duration: 1.2)),
     ];
 
+    private readonly SpringDemo[] _masses =
+    [
+        new("mass 1",           Bm.Spring(stiffness: 100, damping: 10, mass: 1),   "the default"),
+        new("mass 4",           Bm.Spring(stiffness: 100, damping: 10, mass: 4),   "slower, swings further"),
+        new("velocity: -600",   Bm.Spring(stiffness: 100, damping: 12, velocity: -600), "pushed the wrong way first"),
+    ];
+
     void Remount() => _mountKey++;
+
+    private const string _massCode = """
+        @using Bit.Bmotion
+
+        @* Same stiffness and damping: only the mass changes, so only the inertia does. *@
+        <Bmotion Animate="@(_on ? Bm.To(x: 80) : Bm.To(x: 0))"
+                 Transition="Bm.Spring(stiffness: 100, damping: 10, mass: 4)">
+            <div class="box-sm" />
+        </Bmotion>
+
+        @* A starting push in units per second; negative moves it away from the target first. *@
+        <Bmotion Animate="@(_on ? Bm.To(x: 80) : Bm.To(x: 0))"
+                 Transition="Bm.Spring(stiffness: 100, damping: 12, velocity: -600)">
+            <div class="box-sm" />
+        </Bmotion>
+
+        @* The default spring, told to call itself settled sooner. *@
+        <Bmotion Animate="@(_on ? Bm.To(x: 80) : Bm.To(x: 0))" Transition="_quickToSettle">
+            <div class="box-sm" />
+        </Bmotion>
+
+        <button @onclick="@(() => _on = !_on)">Animate</button>
+
+        @code {
+            private bool _on;
+
+            // The two thresholds that end a spring live on the class: below this speed AND this
+            // distance from the target, it counts as settled. The defaults are 0.01 for both.
+            private readonly BmTransition _quickToSettle = new BmSpring
+            {
+                Stiffness = 100, Damping = 10, RestSpeed = 2, RestDelta = 0.5,
+            };
+        }
+        """;
+
+    private const string _interruptCode = """
+        @using Bit.Bmotion
+
+        @* A tween restarts from where the element is, but from a standstill... *@
+        <Bmotion Animate="@(_on ? Bm.To(x: 80) : Bm.To(x: -80))"
+                 Transition="Bm.Tween(0.9, BmEase.InOut)">
+            <div class="box-sm" />
+        </Bmotion>
+
+        @* ...while a spring keeps the velocity it had, so a retarget curves round instead of
+           stopping. Same visual duration as the tween, so both are at full speed mid-way.
+           (An authored velocity: on the spring replaces the inherited one.) *@
+        <Bmotion Animate="@(_on ? Bm.To(x: 80) : Bm.To(x: -80))"
+                 Transition="Bm.Spring(bounce: 0.15, duration: 0.9)">
+            <div class="box-sm" />
+        </Bmotion>
+
+        @* Press it twice, quickly. *@
+        <button @onclick="@(() => _on = !_on)">Retarget</button>
+
+        @code {
+            private bool _on;
+        }
+        """;
 
     private const string _springCode = """
         @using Bit.Bmotion
@@ -345,8 +484,9 @@
                 </div>
 
                 <div class="demo-card">
-                    <span class="label">Loop · 3×, 300 ms apart</span>
-                    @* Loop jumps home and replays from the origin. *@
+                    <span class="label">Loop(3) · 3 more runs, 300 ms apart</span>
+                    @* Loop jumps home and replays from the origin. The count is the runs AFTER the
+                       first, so Loop(3) plays four times in all; repeat: 3 is the same as Loop(3). *@
                     <Bmotion Animate="@(_repeat ? Bm.To(y: 60) : Bm.To(y: 0))"
                             Transition="@(_repeat ? Bm.Spring(stiffness: 300, damping: 18, repeat: BmRepeat.Loop(3, delay: 0.3))
                                                   : Bm.Spring(stiffness: 300, damping: 18))">

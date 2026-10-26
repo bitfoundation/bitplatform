@@ -309,6 +309,38 @@
     font-size: 2rem;
 }
 
+/* A count that reports on the presence stage it sits in (AnimatePresence, Split text): pinned to the stage's
+   foot, so it keeps its place while the content above it is removed and added back. */
+.presence-count {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: .75rem;
+}
+
+/* ---------- Basics ---------- */
+
+/* One transform component per stage, eight to a row: narrower than the default stage, and tall enough for the box
+   at its largest - stretched 1.8 wide or turned 135deg. */
+.demo-card.transform-stage {
+    flex-basis: 9rem;
+    min-height: 9rem;
+    padding: 1.25rem;
+}
+
+/* The row WithDelay offsets: one spring, a box apart. The top padding is the room the boxes rise into. */
+.timing-row {
+    display: flex;
+    gap: .5rem;
+    padding-top: 1.75rem;
+}
+
+.timing-dot {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: .375rem;
+}
+
 /* ---------- Color ---------- */
 
 .swatch-pair {
@@ -359,6 +391,38 @@
 
 .css-track-wide {
     min-height: 60px;
+}
+
+/* The same track anchored at the opposite corner, so right / bottom offsets push away from the edges they name. */
+.css-track-end {
+    justify-content: flex-end;
+    align-items: flex-end;
+}
+
+/* Its width is what animates; it starts at the 40px its resting target names, so the mount doesn't animate it. */
+.size-bar {
+    width: 40px;
+    height: 1rem;
+    border-radius: var(--bb-radius-pill);
+    background: var(--demo-gradient);
+}
+
+.size-box {
+    width: 3rem;
+    height: 3rem;
+    border-radius: .625rem;
+    background: var(--demo-gradient);
+}
+
+/* Its border and outline are what animate, so it starts in the colours the sample's resting target names. */
+.outline-box {
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: .625rem;
+    background: var(--bb-surface);
+    border: 6px solid rgb(18, 118, 198);
+    outline: 4px solid hsl(22, 98%, 60%);
+    outline-offset: 4px;
 }
 
 /* Solid, so its label stays readable: what this sample shows is the padding animating, which the
@@ -542,6 +606,38 @@
     background: repeating-linear-gradient(to right, var(--demo-accent-line) 0 1px, transparent 1px 3.75rem);
 }
 
+/* The zone BmDragConstraints.Within(".drag-zone") keeps the box inside: a sibling of the box, not its parent, and
+   drawn only - the pointer goes straight through it to the box. */
+.drag-zone {
+    position: absolute;
+    inset: 2.5rem 22% 1.25rem;
+    pointer-events: none;
+    border: 2px dashed var(--demo-accent-line);
+    border-radius: var(--bb-radius-lg);
+}
+
+/* DragAutoScroll: a window shorter than the track inside it, so holding the box at its edge has somewhere to
+   scroll. The track is ruled every 3rem, so the scroll reads as movement even where the box keeps still. */
+.autoscroll-window {
+    width: 100%;
+    max-width: 18rem;
+    height: 12rem;
+    overflow-y: auto;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+}
+
+.autoscroll-track {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    height: 36rem;
+    padding: .75rem;
+    background-image: repeating-linear-gradient(to bottom, transparent 0 calc(3rem - 1px), var(--demo-accent-line) calc(3rem - 1px) 3rem);
+}
+
 /* The carousel's window: one page wide, so a stop shows one page with the edges of its neighbours. */
 .snap-window {
     width: calc(5.75rem + 1.5rem + 2px);
@@ -723,6 +819,31 @@
     overflow: auto;
 }
 
+/* The scroller WhileInView measures against (Viewport.Root): shorter than its rows, so some are always outside
+   its scrollport, or only partly inside it. */
+.inview-scroller {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    width: 100%;
+    max-width: 18rem;
+    height: 12rem;
+    padding: .5rem;
+    overflow-y: auto;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+}
+
+.inview-row {
+    flex: none;
+    padding: .7rem 1rem;
+    border-radius: var(--bb-radius-lg);
+    color: var(--bb-text);
+    background: var(--bb-primary-soft);
+    border: 1px solid var(--demo-accent-line);
+}
+
 /* ---------- Keyframes ---------- */
 
 .keyframe-bar {
@@ -789,6 +910,40 @@
 .tone-2 { background: #C25520; }
 .tone-3 { background: #7E3714; }
 .tone-4 { background: #4D4D4D; }
+
+/* The layout-mode stages: a track the box crosses from one end to the other, doubling in size on the way. */
+.demo-card.mode-stage {
+    flex-basis: 15rem;
+}
+
+.mode-track {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    height: 6rem;
+}
+
+.mode-track.moved {
+    justify-content: flex-end;
+}
+
+.mode-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    color: #fff;
+    font-weight: 700;
+    border-radius: .5rem;
+    background: var(--demo-gradient);
+}
+
+.mode-box.big {
+    width: 5rem;
+    height: 5rem;
+}
 
 .layout-tab-stage {
     align-items: flex-start;
@@ -920,6 +1075,11 @@
 .arc-stage {
     justify-content: flex-start;
     min-height: 11rem;
+}
+
+/* The arc that bulges below the line needs the room under it. */
+.arc-stage.arc-below {
+    min-height: 13rem;
 }
 
 .arc-start {
@@ -1237,6 +1397,40 @@
     border: 1px solid var(--demo-accent-line);
 }
 
+/* A rail that scrolls sideways, for BmScrollTimeline.Container(".h-rail", BmScrollAxis.X) and a tracker on the
+   same container: eight cards, wider together than any stage. */
+.h-rail {
+    display: flex;
+    gap: .75rem;
+    width: 100%;
+    padding: .25rem .25rem .75rem;
+    overflow-x: auto;
+}
+
+.h-rail-card {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 7rem;
+    height: 5rem;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.25rem;
+    border-radius: var(--bb-radius-lg);
+    background: var(--demo-gradient);
+}
+
+/* The bands Bm.Velocity skews: narrower than the stage, so the lean shows at both edges. */
+.velocity-stack {
+    width: min(100%, 16rem);
+}
+
+.velocity-stack > .inview-band {
+    height: 3rem;
+    margin-bottom: .5rem;
+}
+
 /* overflow-x: clip rather than hidden: hidden would make this a scroll container and break
    position: sticky for anything inside it. */
 .inview-strip {
@@ -1287,6 +1481,25 @@
    that the break lands between words rather than inside one. */
 .split-narrow {
     max-width: 15rem;
+}
+
+/* The container As="p" renders, and the class UnitClass puts on every word: each word is a pill of its own. */
+.split-pills {
+    margin: 0 0 1.5rem;
+    max-width: 18rem;
+    font-size: var(--fl-font-size-400);
+    line-height: 2.2;
+    text-align: center;
+    color: var(--bb-text);
+}
+
+.split-pill {
+    padding: .15em .6em;
+    cursor: pointer;
+    user-select: none;
+    border-radius: var(--bb-radius-pill);
+    background: var(--bb-primary-soft);
+    border: 1px solid var(--demo-accent-line);
 }
 
 /* ---------- Variants ---------- */
@@ -1388,6 +1601,19 @@
 ::view-transition-new(vt-panel) {
     animation-duration: .4s;
 }
+
+/* Typed transitions (BmViewTransitionOptions.Types). A view transition's motion is authored in CSS by design -
+   this is the sample's own stylesheet, not the frame around it: a "forward" switch slides the panel out to the
+   left and the new one in from the right, a "backward" one the other way. Untyped, it stays the cross-fade. */
+:root:active-view-transition-type(forward)::view-transition-old(vt-panel) { animation-name: vt-out-left; }
+:root:active-view-transition-type(forward)::view-transition-new(vt-panel) { animation-name: vt-in-right; }
+:root:active-view-transition-type(backward)::view-transition-old(vt-panel) { animation-name: vt-out-right; }
+:root:active-view-transition-type(backward)::view-transition-new(vt-panel) { animation-name: vt-in-left; }
+
+@keyframes vt-out-left { to { opacity: 0; transform: translateX(-2rem); } }
+@keyframes vt-in-right { from { opacity: 0; transform: translateX(2rem); } }
+@keyframes vt-out-right { to { opacity: 0; transform: translateX(2rem); } }
+@keyframes vt-in-left { from { opacity: 0; transform: translateX(-2rem); } }
 
 /* ---------- MCP console ---------- */
 

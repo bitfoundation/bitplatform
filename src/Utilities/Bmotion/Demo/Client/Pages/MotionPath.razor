@@ -25,9 +25,13 @@
     </p>
     <p>
         <strong>strength</strong> sets how far it bends (as a fraction of the distance travelled),
-        <strong>peak</strong> moves where it crests, <strong>direction</strong> picks the side, and
-        <strong>rotate</strong> turns the element to follow the tangent - which is the difference
-        between a box sliding along a curve and a card being thrown.
+        <strong>peak</strong> moves where it crests - towards the start below <code>0.5</code>, the end above -
+        <strong>direction</strong> picks the side (<code>Auto</code> bulges upward, as a throw does;
+        <code>Clockwise</code> and <code>CounterClockwise</code> are fixed sides), and <strong>rotate</strong>
+        turns the element to follow the tangent - which is the difference between a box sliding along a curve
+        and a card being thrown. The timing is still the transition's, so a spring on a path curves
+        <em>and</em> overshoots. An arc needs <code>x</code> and <code>y</code> as single values in the same
+        target; anything else moves in a straight line.
     </p>
 
     <div class="demo-row">
@@ -52,6 +56,30 @@
             <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
                      Transition="Bm.Tween(1.1, BmEase.InOut, path: Bm.Arc(strength: 0.6, rotate: 1))">
                 <div class="box box-sm arc-start arc-card">&#9992;</div>
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack arc-stage">
+            <span class="demo-label">arc &middot; peak 0.15 &middot; crests early</span>
+            <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
+                     Transition="Bm.Tween(1.1, BmEase.InOut, path: Bm.Arc(strength: 0.6, peak: 0.15))">
+                <div class="box box-sm arc-start" />
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack arc-stage arc-below">
+            <span class="demo-label">arc &middot; direction CounterClockwise &middot; bulges below</span>
+            <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
+                     Transition="Bm.Tween(1.1, BmEase.InOut, path: Bm.Arc(strength: 0.35, direction: BmArcDirection.CounterClockwise))">
+                <div class="box box-sm arc-start" />
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack arc-stage">
+            <span class="demo-label">a spring on an arc &middot; curves and overshoots</span>
+            <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
+                     Transition="Bm.Spring(bounce: 0.45, duration: 0.9, path: Bm.Arc(strength: 0.6))">
+                <div class="box box-sm arc-start" />
             </Bmotion>
         </div>
     </div>
@@ -103,9 +131,12 @@
         normalised <code>0..1</code> coordinate space that makes it readable comes from a
         <code>pathLength="1"</code> attribute that <strong>Bmotion injects for you</strong> on
         drawable SVG elements - so the same numbers mean the same thing whether the shape is 40
-        units long or 4000. <code>pathOffset</code> slides the visible run along the shape and
-        <code>pathSpacing</code> sets the gap between repeats, which together give you a chasing
-        dash without a keyframe in sight.
+        units long or 4000. <code>pathOffset</code> slides the visible run along the shape - looped from
+        <code>0</code> to <code>1</code>, a chasing dash - and <code>pathSpacing</code> sets the gap after each
+        run (the whole length by default, so one run per lap): a run of <code>0.1</code> and a gap of
+        <code>0.15</code> repeats four times around the circle. For a dash of fixed length, set the run in
+        <code>Initial</code> and animate only the offset; a <code>pathLength</code> in the looping target would
+        shrink from the full length again on every lap.
     </p>
 
     <div class="demo-row">
@@ -124,10 +155,23 @@
         <div class="demo-card stack">
             <span class="demo-label">pathOffset &middot; a chasing dash</span>
             <svg viewBox="0 0 200 120" class="draw-svg">
-                <Bmotion Animate="Bm.To(pathLength: 0.25, pathOffset: [0, 1])"
+                <Bmotion Initial="Bm.To(pathLength: 0.25)"
+                         Animate="Bm.To(pathOffset: [0, 1])"
                          Transition="Bm.Tween(2.4, BmEase.Linear, repeat: BmRepeat.Forever)">
                     <circle cx="100" cy="60" r="42"
                             fill="none" style="stroke:var(--bb-accent)" stroke-width="6" stroke-linecap="round" />
+                </Bmotion>
+            </svg>
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">pathSpacing 0.15 &middot; four dashes marching</span>
+            <svg viewBox="0 0 200 120" class="draw-svg">
+                <Bmotion Initial="Bm.To(pathLength: 0.1, pathSpacing: 0.15)"
+                         Animate="Bm.To(pathOffset: [0, 1])"
+                         Transition="Bm.Tween(4, BmEase.Linear, repeat: BmRepeat.Forever)">
+                    <circle cx="100" cy="60" r="42"
+                            fill="none" style="stroke:var(--bb-primary)" stroke-width="6" stroke-linecap="round" />
                 </Bmotion>
             </svg>
         </div>
@@ -218,13 +262,26 @@
             </Bmotion>
         </svg>
 
-        @* A quarter-length run whose offset loops: a chasing dash with no keyframes.
-           pathSpacing sets the gap between repeats of the visible run. *@
+        @* A quarter-length run whose offset loops: a chasing dash. The run's length is set in
+           Initial and left alone - put in Animate, it would animate from the full length on
+           every loop. Only the offset moves. *@
         <svg viewBox="0 0 200 120">
-            <Bmotion Animate="Bm.To(pathLength: 0.25, pathOffset: [0, 1])"
+            <Bmotion Initial="Bm.To(pathLength: 0.25)"
+                     Animate="Bm.To(pathOffset: [0, 1])"
                      Transition="Bm.Tween(2.4, BmEase.Linear, repeat: BmRepeat.Forever)">
                 <circle cx="100" cy="60" r="42"
                         fill="none" stroke="#FD7F36" stroke-width="6" stroke-linecap="round" />
+            </Bmotion>
+        </svg>
+
+        @* pathSpacing is the gap after each run (default 1, the whole length): 0.1 + 0.15 = 0.25,
+           so the run repeats four times around the shape. *@
+        <svg viewBox="0 0 200 120">
+            <Bmotion Initial="Bm.To(pathLength: 0.1, pathSpacing: 0.15)"
+                     Animate="Bm.To(pathOffset: [0, 1])"
+                     Transition="Bm.Tween(4, BmEase.Linear, repeat: BmRepeat.Forever)">
+                <circle cx="100" cy="60" r="42"
+                        fill="none" stroke="#1276C6" stroke-width="6" stroke-linecap="round" />
             </Bmotion>
         </svg>
         """;
@@ -273,8 +330,23 @@
             <div class="box">&#9992;</div>
         </Bmotion>
 
-        @* The timing is still the transition's, so a spring on a path arcs AND overshoots:
-           Bm.Spring(bounce: 0.4, duration: 0.9, path: Bm.Arc(strength: 0.8)) *@
+        @* peak moves the crest along the journey (0 towards the start, 1 towards the end);
+           direction fixes the side - Auto bulges upward, as a throw does. *@
+        <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
+                 Transition="Bm.Tween(1.1, BmEase.InOut, path: Bm.Arc(strength: 0.6, peak: 0.15))">
+            <div class="box" />
+        </Bmotion>
+        <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
+                 Transition="Bm.Tween(1.1, BmEase.InOut,
+                                      path: Bm.Arc(strength: 0.35, direction: BmArcDirection.CounterClockwise))">
+            <div class="box" />
+        </Bmotion>
+
+        @* The timing is still the transition's, so a spring on a path arcs AND overshoots. *@
+        <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
+                 Transition="Bm.Spring(bounce: 0.45, duration: 0.9, path: Bm.Arc(strength: 0.6))">
+            <div class="box" />
+        </Bmotion>
 
         @code {
             private bool _thrown;

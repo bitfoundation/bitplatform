@@ -157,12 +157,18 @@
         path morphs, lands on its target at once. Drag works, but follows the pointer a round trip
         behind, so immediate pointer response needs WebAssembly. Detect it and offer a different
         affordance instead of shipping a control that does not feel the way you meant.
+        <code>SupportsCompositor</code> is true everywhere - the browser's Web Animations API is what plays most
+        animations on both runtimes. <code>IsPrerendering</code> is true during the server's prerender pass,
+        when nothing animates and the other two describe the server rather than the runtime that takes over -
+        so check it first. (This page is prerendered too: the badges below were briefly the server's before
+        WebAssembly took over.)
     </p>
 
     <div class="demo-row">
         <div class="demo-card stack">
             <span class="demo-label">This runtime</span>
             <div class="caps-list">
+                <span class="bb-badge">IsPrerendering: @Caps.IsPrerendering</span>
                 <span class="bb-badge">SupportsFrameLoop: @Caps.SupportsFrameLoop</span>
                 <span class="bb-badge">SupportsCompositor: @Caps.SupportsCompositor</span>
             </div>
@@ -198,7 +204,8 @@
         anywhere in a development build and it lists every element registered with the engine, its
         active drivers and its live values. It is the answer to "is this element animating, and
         what does the engine think its transform is?" - a question that is otherwise very hard to
-        ask from the outside.
+        ask from the outside. <code>RefreshMs</code> sets how often it polls the engine (200&nbsp;ms by default)
+        and <code>StartOpen="false"</code> starts it collapsed to its title bar.
     </p>
 
     <div class="bb-toolbar">
@@ -320,8 +327,13 @@
 
         @* SupportsFrameLoop is false on Blazor Server, where drag follows the pointer a round trip
            behind and per-frame callbacks and SVG path morphs land at once. Branch on it rather than
-           shipping a control that doesn't feel the way you meant. *@
-        @if (Caps.SupportsFrameLoop)
+           shipping a control that doesn't feel the way you meant - after IsPrerendering, which is
+           true while the server prerenders and makes the other flags describe the server. *@
+        @if (Caps.IsPrerendering)
+        {
+            <div class="box" />
+        }
+        else if (Caps.SupportsFrameLoop)
         {
             <Bmotion Drag="true"><div class="box" /></Bmotion>
         }
@@ -352,8 +364,9 @@
         <code>@_lastFrame</code>
 
         @* The whole engine at once: every registered element, its active drivers and live values.
-           Drop it into a development build. *@
-        <BmotionInspector RefreshMs="120" />
+           Drop it into a development build. RefreshMs is the polling interval (default 200);
+           StartOpen="false" starts it collapsed. *@
+        <BmotionInspector RefreshMs="120" StartOpen="true" />
 
         @code {
             private string _lastFrame = "";

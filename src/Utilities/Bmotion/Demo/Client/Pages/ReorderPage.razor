@@ -121,13 +121,56 @@
 </section>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Keyboard access</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The lift and the settle</h3>
     <p>
-        Every list here is keyboard-reorderable out of the box. Tab to a row and press <kbd>Space</kbd> to
-        pick it up. The arrow keys move it while the others make way, <kbd>Space</kbd> drops it, and
-        <kbd>Escape</kbd> puts it back. Each step is announced to screen readers, and <code>Announce</code>
-        lets you word those announcements or translate them.
+        Two parameters shape how a reorder feels. <code>WhileDrag</code> is the overlay the held item wears -
+        a slight scale-up by default - and takes any target, so it can lift, tilt or cast a shadow.
+        <code>Transition</code> is the spring the other items make way with and the dropped one settles on -
+        snappy by default; a softer one below lets the rows drift into place. The same overlay shows on an item
+        picked up from the keyboard.
     </p>
+
+    <div class="demo-row">
+        <div class="demo-card list-stage">
+            <BmotionReorderGroup @bind-Items="_notes" Context="note"
+                                 WhileDrag='Bm.To(scale: 1.04, rotate: -2, boxShadow: "0 14px 28px rgba(0,0,0,.25)")'
+                                 Transition="Bm.Spring(stiffness: 160, damping: 20)">
+                <div class="track-row"><span class="track-title">@note</span></div>
+            </BmotionReorderGroup>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_feelCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Keyboard access</h3>
+    <p>
+        Every list here is keyboard-reorderable out of the box (<code>Keyboard="false"</code> turns it off). Tab
+        to a row and press <kbd>Space</kbd> or <kbd>Enter</kbd> to pick it up. The arrow keys move it while the
+        others make way, <kbd>Space</kbd> drops it - so does moving focus away - and <kbd>Escape</kbd> puts it
+        back. Each step is announced to screen readers through a live region. <code>Announce</code> words those
+        announcements: it is handed a <strong>BmReorderAnnouncement</strong> - the <code>Event</code> (picked up,
+        moved, dropped, cancelled), the <code>Item</code>, its 1-based <code>Position</code> and the
+        <code>Count</code> - and returns the sentence, so it can name the item or speak another language.
+        <code>DefaultText</code> is the library's own English wording. The list below names the track, and shows
+        what a screen reader would hear.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card list-stage">
+            <BmotionReorderGroup @bind-Items="_playlist" ItemKey="@(t => t.Id)" Context="track"
+                                 Announce="AnnounceTrack">
+                <div class="track-row">
+                    <span class="track-title">@track.Title</span>
+                    <span class="track-time">@track.Duration</span>
+                </div>
+            </BmotionReorderGroup>
+        </div>
+    </div>
+
+    <p class="reorder-readout" aria-hidden="true">Announced: @(_announcement ?? "nothing yet - tab to a row and press Space")</p>
+
     <p>
         The group also follows any change to the bound list, so plain move-up / move-down buttons that
         reorder <code>Items</code> directly (the ▲▼ controls in the first sample) animate exactly like a
@@ -156,6 +199,33 @@
     private List<string> _tiles = ["🍎", "🍐", "🍊", "🍋", "🍌", "🍉", "🍇", "🍓", "🍒"];
 
     private List<string> _chapters = [.. Enumerable.Range(1, 14).Select(i => $"Chapter {i}")];
+
+    private List<string> _notes = ["Buy strings", "Book the studio", "Mix the demo", "Send it out"];
+
+    private List<Track> _playlist =
+    [
+        new(1, "Around the World", "7:09"),
+        new(2, "Da Funk", "5:28"),
+        new(3, "Aerodynamic", "3:27"),
+        new(4, "Instant Crush", "5:37"),
+    ];
+
+    private string? _announcement;
+
+    // What a screen reader hears at each keyboard step: the track's own name in front of the library's
+    // wording. Kept here as well so the page can print it - the group's live region is visually hidden.
+    private string AnnounceTrack(BmReorderAnnouncement<Track> a)
+    {
+        _announcement = a.Event switch
+        {
+            BmReorderEvent.PickedUp => $"{a.Item.Title}, picked up. Position {a.Position} of {a.Count}.",
+            BmReorderEvent.Moved => $"{a.Item.Title}, position {a.Position} of {a.Count}.",
+            BmReorderEvent.Dropped => $"{a.Item.Title}, dropped at position {a.Position} of {a.Count}.",
+            _ => $"{a.Item.Title}: {a.DefaultText}",
+        };
+        _ = InvokeAsync(StateHasChanged);
+        return _announcement;
+    }
 
     // Another source of order next to the drag and the built-in keyboard reordering: the group observes external
     // Items mutations, so moving an item in the bound list reorders the rendered rows.
@@ -257,10 +327,27 @@
         }
         """;
 
+    private const string _feelCode = """
+        @using Bit.Bmotion
+
+        @* WhileDrag: what the held item wears (default: a slight scale-up), for a drag and a keyboard
+           pick-up alike. Transition: the spring the others make way with and the dropped one settles on. *@
+        <BmotionReorderGroup @bind-Items="_notes" Context="note"
+                             WhileDrag='Bm.To(scale: 1.04, rotate: -2, boxShadow: "0 14px 28px rgba(0,0,0,.25)")'
+                             Transition="Bm.Spring(stiffness: 160, damping: 20)">
+            <div class="row">@note</div>
+        </BmotionReorderGroup>
+
+        @code {
+            private List<string> _notes = ["Buy strings", "Book the studio", "Mix the demo", "Send it out"];
+        }
+        """;
+
     private const string _keyboardCode = """
-        @* Keyboard reordering is built in (Space, the arrow keys, Space; Escape cancels) - Announce words it: *@
+        @* Keyboard reordering is built in (Space or Enter, the arrow keys, Space; Escape cancels) and on by
+           default - Keyboard="false" turns it off. Announce words what a screen reader hears at each step. *@
         <BmotionReorderGroup @bind-Items="_tracks" ItemKey="@(t => t.Id)" Context="track"
-                             Announce='a => $"{a.Item.Title}, {a.Event}: {a.Position} of {a.Count}"'>
+                             Announce="AnnounceTrack">
             <div class="row">
                 @track.Title
                 @* And the group observes external mutations of the bound list, so anything that reorders
@@ -275,6 +362,16 @@
             private sealed record Track(int Id, string Title);
 
             private List<Track> _tracks = [new(1, "One More Time"), new(2, "Digital Love"), new(3, "Voyager")];
+
+            // Event is PickedUp, Moved, Dropped or Cancelled; Position is 1-based, out of Count.
+            // DefaultText is the library's own English sentence for the same step.
+            private string AnnounceTrack(BmReorderAnnouncement<Track> a) => a.Event switch
+            {
+                BmReorderEvent.PickedUp => $"{a.Item.Title}, picked up. Position {a.Position} of {a.Count}.",
+                BmReorderEvent.Moved    => $"{a.Item.Title}, position {a.Position} of {a.Count}.",
+                BmReorderEvent.Dropped  => $"{a.Item.Title}, dropped at position {a.Position} of {a.Count}.",
+                _                       => $"{a.Item.Title}: {a.DefaultText}",
+            };
 
             private void MoveTrack(Track track, int delta)
             {
