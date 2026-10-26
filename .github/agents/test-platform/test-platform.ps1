@@ -1097,6 +1097,10 @@ function Invoke-DevContainerTest {
         if ($Sha) {
             Set-BitUnderTestFeed $project '/feed'
             $mount = '--mount', "type=bind,source=$($feed -replace '\\', '/'),target=/feed"
+
+            $devContainerJson = Join-Path $project '.devcontainer\devcontainer.json'
+            $content = Get-Content $devContainerJson -Raw
+            Set-Content $devContainerJson -Encoding utf8NoBOM -NoNewline -Value ($content -replace '(Bit\.Cli --version )\S+', '${1}0.0.0')
         }
 
         $upLog = Join-Path $lab 'up.log'
