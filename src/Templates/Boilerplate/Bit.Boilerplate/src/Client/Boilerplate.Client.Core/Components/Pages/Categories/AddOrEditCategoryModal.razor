@@ -44,7 +44,6 @@
                         <BitLabel Element="div" Id="category-color-label">@Localizer[nameof(AppStrings.Color)]</BitLabel>
 
                         <BitStack role="group" aria-labelledby="category-color-label">
-                            @* A palette picker: the presets and a preview of the current color, without the gradient and the hue track. *@
                             <BitColorPicker @bind-Value="category.Color"
                                             ShowSaturationArea="false"
                                             ShowHueSlider="false"
