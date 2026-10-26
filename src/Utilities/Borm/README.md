@@ -133,6 +133,17 @@ To run it locally:
 dotnet run --project src/Utilities/Borm/Demo/Server
 ```
 
+[`Samples`](Samples/) is the hosting harness rather than the docs: one shared [Core](Samples/Core/) project of pages
+(a form generated from a C# type, the fluent builder with conditions, an async rule and a custom renderer, a wizard
+with a conditional step and a review, a JSON Schema form with a repeater and computed totals, and a form that posts
+with no interactivity), hosted unchanged under [Server](Samples/Server/), [WASM](Samples/Wasm/) and
+[Auto](Samples/Auto/) so the same forms run, prerendered first, in each render mode - and under [MAUI](Samples/Maui/)
+(Android, iOS, Mac Catalyst and Windows), where a `BlazorWebView` runs them as a Blazor Hybrid app - all but the form
+that posts, which has no server to post to there. Each host is also a
+minimal example of the wiring its platform needs: `AddBorm()` in every container that renders the pages - called
+through `AddCoreServices()` in each host's `Program.cs` (`MauiProgram.cs` in the MAUI app) - and the
+`_content/Bit.Borm/bit-borm.css` link in its `App.razor` (`wwwroot/index.html` in the MAUI app).
+
 ## How it fits together
 
 ```text

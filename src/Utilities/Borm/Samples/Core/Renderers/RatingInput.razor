@@ -1,0 +1,81 @@
+﻿@inherits BormInputBase
+@using Microsoft.JSInterop
+
+@* A custom renderer: a row of stars, registered under the key "rating" (AddCoreServices in
+   Extensions/IServiceCollectionExtensions.cs) and asked for with CustomRenderer("rating"). Each star is a native radio
+   button, hidden from sight but not from the keyboard or a screen reader: the group is one tab stop and the arrow keys
+   move through it. The group carries the field's id, state, messages and extra attributes, and the stars post under
+   the field's name in a form that posts, as the built-in radio group does; what it looks like is app.css's, painted
+   with the form's own --bit-borm-* tokens. *@
+<div @attributes="ExtraAttributes"
+     id="@Context.ElementId"
+     class="rating"
+     @ref="Element"
+     tabindex="-1"
+     role="radiogroup"
+     aria-labelledby="@(Field.ShowLabel ? Context.LabelId : null)"
+     aria-label="@AriaLabel"
+     aria-required="@AriaRequired"
+     aria-invalid="@AriaInvalid"
+     aria-describedby="@DescribedBy">
+    @for (var n = 1; n <= Max; n++)
+    {
+        var star = n;
+        <label class="@(star <= Current ? "rating__star rating__star--on" : "rating__star")">
+            <input type="radio"
+                   name="@(Context.InputName ?? _group)"
+                   value="@star"
+                   checked="@(star == Current)"
+                   disabled="@DisabledOrReadOnly"
+                   @ref="_stars[star]"
+                   @onchange="@(() => Context.SetValueAsync(star))"
+                   @onblur="OnBlur" />
+            <span aria-hidden="true">@(star <= Current ? "★" : "☆")</span>
+            <span class="rating__name">@(star == 1 ? "1 star" : $"{star} stars")</span>
+        </label>
+    }
+    @* A read-only rating's stars are disabled, and a disabled radio posts nothing: this carries its answer instead. *@
+    @if (ReadOnlyPostedName is { } posted)
+    {
+        <input type="hidden" name="@posted" value="@Context.StringValue" />
+    }
+</div>
+
+@code {
+    private static int s_groups;
+
+    // One name per control, so two ratings on a page are separate groups - unless the form posts, when the stars
+    // post under the field's own name for [SupplyParameterFromForm] to bind.
+    private readonly string _group = "rating-" + Interlocked.Increment(ref s_groups);
+    private readonly Dictionary<int, ElementReference> _stars = [];
+
+    // The rule's upper bound - Range(1, 5) - so the stars drawn and the stars allowed cannot disagree; Attr("max", n)
+    // for a rating with no range.
+    private int Max => Field.Max is { } max ? (int)max : Attr("max", 5);
+
+    // Whatever number type, or text, the model holds the rating as.
+    private int Current => BormValueConverter.TryCoerce(Context.Value, typeof(int), out var value) && value is int current ? current : 0;
+
+    /// <summary>
+    /// The star the keyboard would land on - the chosen one, else the first - for "take me to the first error" and the
+    /// summary's links. The group itself takes focus only when no star can: landing there, the arrow keys scrolled the
+    /// page instead of moving through the stars.
+    /// </summary>
+    public override async ValueTask<bool> FocusAsync()
+    {
+        if (!DisabledOrReadOnly && _stars.TryGetValue(Math.Max(Current, 1), out var star))
+        {
+            try
+            {
+                await star.FocusAsync();
+                return true;
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or JSDisconnectedException or ObjectDisposedException or JSException)
+            {
+                // Not rendered yet, or no longer: the group below.
+            }
+        }
+
+        return await base.FocusAsync();
+    }
+}

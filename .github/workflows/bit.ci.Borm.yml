@@ -55,6 +55,12 @@ jobs:
       with:
         node-version: 24
 
+    # The MAUI sample is the one project that needs a workload (maui-android here). Installing it and building an
+    # Android app would add minutes to every library change, so this build leaves the sample out; it still builds from
+    # Bit.Borm.slnx on a developer's machine.
+    - name: Leave the MAUI sample out of the build
+      run: cd src/Utilities/Borm && dotnet sln Bit.Borm.slnx remove Samples/Maui/Bit.Borm.Samples.Maui.csproj
+
     - name: dotnet workload restore
       run:  cd src/Utilities/Borm && dotnet workload restore
 
