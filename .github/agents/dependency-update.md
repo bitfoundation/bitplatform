@@ -83,7 +83,7 @@ consumes a test project, so every band takes the newest patch of its own band. L
 
 **Version ranges stay.** `[10.0.0,11.0.0)` is a compatibility contract, not a pin.
 
-**`Bit.*` self-references track the in-development version**, currently `11.0.0-pre-13`. Never read
+**`Bit.*` self-references track the in-development version**, currently `11.0.0-pre-14`. Never read
 these off nuget.org — the published `latest` is behind the working tree by design, and unrelated
 higher-numbered lines exist there.
 

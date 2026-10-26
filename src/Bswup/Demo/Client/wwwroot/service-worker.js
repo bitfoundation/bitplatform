@@ -1,4 +1,4 @@
-// bit version: 11.0.0-pre-13
+// bit version: 11.0.0-pre-14
 
 // Development service worker of the Bswup docs site. Unlike the standard Blazor template -
 // whose dev worker is a no-op so caching never hides source changes - this site runs the full

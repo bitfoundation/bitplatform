@@ -141,7 +141,7 @@ Whoever reads the trace usually has neither the project nor the publish: a map k
 file are enough, and the decoder is a command of the bit CLI, run without installing anything:
 
 ```
-dnx Bit.Cli --version 11.0.0-pre-13 -- decode bit-minifier.map trace.txt
+dnx Bit.Cli --version 11.0.0-pre-14 -- decode bit-minifier.map trace.txt
 ```
 
 Leaving the trace out reads it from standard input there too, and run inside the project, `bit decode` finds the
