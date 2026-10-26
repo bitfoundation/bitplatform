@@ -307,11 +307,11 @@ public class BitBhSortable<TItem> : BitBhComponentBase, IAsyncDisposable
     {
         /// <summary>A pointer drag started. The runtime calls it by this name.</summary>
         [JSInvokable]
-        public Task OnPointerDragStart(int from) => sortable.HandlePointerDragStartAsync(from);
+        public Task OnPointerDragStart(int from) => sortable.RunFromRuntimeAsync(() => sortable.HandlePointerDragStartAsync(from));
 
         /// <summary>A pointer drag ended. The runtime calls it by this name.</summary>
         [JSInvokable]
-        public Task OnPointerDragEnd(int from, int to, bool cancelled) => sortable.HandlePointerDragEndAsync(from, to, cancelled);
+        public Task OnPointerDragEnd(int from, int to, bool cancelled) => sortable.RunFromRuntimeAsync(() => sortable.HandlePointerDragEndAsync(from, to, cancelled));
     }
 
     internal async Task HandlePointerDragStartAsync(int from)

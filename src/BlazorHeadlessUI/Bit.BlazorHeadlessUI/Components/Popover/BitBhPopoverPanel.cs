@@ -115,6 +115,16 @@ public class BitBhPopoverPanel : BitBhFloatingContentBase
         // tabindex=-1 so the panel is programmatically focusable when it has no
         // focusable descendants, but isn't in the natural tab order.
         attrs["tabindex"] = "-1";
+        if (PopoverContext is { Modal: true } context)
+        {
+            // A modal popover traps focus and makes the rest of the page inert: to assistive tech that is a
+            // modal dialog, and it is announced as one. Without a name of its own it is named by the button
+            // that opens it.
+            attrs["role"] = "dialog";
+            attrs["aria-modal"] = "true";
+            if (context.HasButton && GetAdditionalAttribute("aria-label") is null && GetAdditionalAttribute("aria-labelledby") is null)
+                attrs["aria-labelledby"] = context.ButtonId;
+        }
         SetDataState(attrs, IsOpen);
         return attrs;
     }

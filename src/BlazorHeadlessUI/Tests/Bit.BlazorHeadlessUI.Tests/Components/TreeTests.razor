@@ -110,7 +110,7 @@
         Assert.AreEqual("true", Item(cut, "readme.md").GetAttribute("aria-selected"));
         Assert.AreEqual("false", Item(cut, "src").GetAttribute("aria-selected"));
 
-        Item(cut, "src").Click();
+        Item(cut, "src").PointerClick();
         Assert.AreEqual("src", selected);
         Assert.AreEqual("false", Item(cut, "readme.md").GetAttribute("aria-selected"));
     }
@@ -210,6 +210,25 @@
         cut.FindAll("[role=treeitem]")[0].Press("ArrowLeft");
         cut.FindAll("[role=treeitem]")[0].Press("z");
         Assert.AreEqual(cut.FindAll("[role=treeitem]").Last().Id, this.LastFocusRequest());
+    }
+
+    [TestMethod]
+    public void A_chevron_click_expands_without_selecting()
+    {
+        var cut = Render(
+            @<BitBhTree TValue="string" aria-label="Files">
+                <BitBhTreeItem TValue="string" Value="@("docs")">
+                    <BitBhTreeItemToggle TValue="string" /> docs
+                    <BitBhTreeGroup TValue="string">
+                        <BitBhTreeItem TValue="string" Value="@("zeta")">zeta.md</BitBhTreeItem>
+                    </BitBhTreeGroup>
+                </BitBhTreeItem>
+            </BitBhTree>);
+
+        // The item listens to the owned click; the chevron's press must reach neither its plain nor its owned one.
+        cut.Find("[aria-hidden=true]").PointerClick();
+        Assert.AreEqual("true", cut.FindAll("[role=treeitem]")[0].GetAttribute("aria-expanded"));
+        Assert.AreEqual("false", cut.FindAll("[role=treeitem]")[0].GetAttribute("aria-selected"));
     }
 
     [TestMethod]
@@ -365,9 +384,8 @@
                 <BitBhTreeItem TValue="string" Value="@("b")" Label="b">b</BitBhTreeItem>
             </BitBhTree>);
 
-        // Focus moves into the item's button: focusin bubbles to the item, then the keys do.
+        // Keys pressed on the item's button bubble to the item, but they are the button's.
         var rename = cut.Find("button.rename");
-        rename.FocusIn();
         rename.Press(" ");
         rename.Press("Enter");
         rename.Press("ArrowDown");
@@ -375,11 +393,25 @@
         Assert.IsNull(activated);
         Assert.IsNull(this.LastFocusRequest());
 
-        // Back on the item itself, its keys work again.
-        Item(cut, "a").Focus();
-        Item(cut, "a").FocusIn();
+        // So is a click on it: it renames, it does not select the item.
+        rename.PointerClick();
+        Assert.IsNull(selected);
+
+        // On the item itself its keys work.
         Item(cut, "a").Press(" ");
         Assert.AreSequenceEqual(new[] { "a" }, selected!);
+    }
+
+    [TestMethod]
+    public void Keys_of_a_child_item_are_not_its_parent_s()
+    {
+        var cut = Render(Files(BitBhTreeSelectionMode.Multiple));
+        Item(cut, "src").Press("ArrowRight");
+
+        // The child's keys bubble through its parent item: the parent must not act on them as well.
+        Item(cut, "app.cs").Press(" ");
+        Assert.AreEqual("true", Item(cut, "app.cs").GetAttribute("aria-selected"));
+        Assert.AreEqual("false", Item(cut, "src").GetAttribute("aria-selected"));
     }
 
     [TestMethod]
@@ -387,7 +419,7 @@
     {
         var cut = Render(Files(BitBhTreeSelectionMode.Multiple));
         Item(cut, "readme.md").Press(" ");
-        Item(cut, "readme.md").KeyDown(new KeyboardEventArgs { Key = " ", Repeat = true, Type = "keydown" });
+        Item(cut, "readme.md").Press(" ", repeat: true);
         Assert.AreEqual("true", Item(cut, "readme.md").GetAttribute("aria-selected"));
     }
 }

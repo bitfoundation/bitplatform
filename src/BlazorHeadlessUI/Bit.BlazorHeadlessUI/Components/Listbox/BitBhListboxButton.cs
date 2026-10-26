@@ -40,6 +40,9 @@ public class BitBhListboxButton<TValue> : BitBhComponentBase, IDisposable
     private bool IsOpen => ListboxContext?.IsOpen ?? false;
     private bool IsDisabled => ListboxContext?.Disabled ?? false;
 
+    private static IEnumerable<TValue> SelectedValues(BitBhListboxContext<TValue> context)
+        => context.Multiple ? context.MultiValues : context.HasValue ? [context.SingleValue!] : [];
+
     protected override void OnInitialized()
     {
         if (ListboxContext is not null) ListboxContext.Listbox.Button = this;
@@ -66,7 +69,9 @@ public class BitBhListboxButton<TValue> : BitBhComponentBase, IDisposable
         }
         else if (ListboxContext is not null)
         {
-            var text = string.Join(", ", ListboxContext.State.SelectedTexts());
+            var text = string.Join(", ", ListboxContext.State.OptionTextsKnown
+                ? ListboxContext.State.SelectedTexts()
+                : SelectedValues(ListboxContext).Select(ListboxContext.Listbox.TextOfValue).Where(t => string.IsNullOrEmpty(t) is false));
             if (Template is not null)
             {
                 builder.AddContent(51, Template(new BitBhListboxButtonRenderContext<TValue>

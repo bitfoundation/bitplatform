@@ -12,7 +12,7 @@ namespace Bit.BlazorHeadlessUI;
 /// "Close" button — it will close the popover when clicked from there too.
 /// </para>
 /// </summary>
-public class BitBhPopoverButton : BitBhComponentBase
+public class BitBhPopoverButton : BitBhComponentBase, IDisposable
 {
     [CascadingParameter]
     private BitBhPopoverContext? PopoverContext { get; set; }
@@ -55,6 +55,12 @@ public class BitBhPopoverButton : BitBhComponentBase
     {
         // A button rendered inside the panel receives the panel's floating scope.
         _insidePanel = Scope is BitBhFloatingScope s && s.Owner == PopoverContext?.PanelId;
+        if (IsInsidePanel is false) PopoverContext?.RegisterButton(true);
+    }
+
+    public void Dispose()
+    {
+        if (IsInsidePanel is false) PopoverContext?.RegisterButton(false);
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)

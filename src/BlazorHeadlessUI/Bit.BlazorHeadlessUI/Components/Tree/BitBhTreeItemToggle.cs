@@ -43,6 +43,8 @@ public class BitBhTreeItemToggle<TValue> : BitBhComponentBase
         builder.AddMultipleAttributes(10, GetFinalAttributes());
         builder.AddAttribute(20, "onclick", On<MouseEventArgs>("onclick", HandleClick));
         builder.AddEventStopPropagationAttribute(21, "onclick", true);
+        // The host it sits in acts on the owned click; a chevron press expands and nothing else.
+        builder.AddEventStopPropagationAttribute(22, BitBhEventHandlers.Click, true);
         builder.AddElementReferenceCapture(30, CaptureElement);
         builder.AddContent(40, BitBhContent.Pick(Template, ChildContent, IsExpanded));
         builder.CloseElement();

@@ -60,6 +60,7 @@ interface AnchorState {
 }
 
 interface LayerOptions {
+    secondaryIds?: string[];
     escape?: boolean;
     outside?: boolean;
     focusOutside?: boolean;
@@ -685,10 +686,19 @@ function createRuntime() {
 
     let pendingTouchDismiss: EventTarget | null = null;
 
-    function processOutside(target: EventTarget | null, reason: string) {
+    function isSecondaryPressOf(layer: Layer, target: EventTarget | null) {
+        for (const id of layer.options.secondaryIds || []) {
+            const el = document.getElementById(id);
+            if (el && el.contains(target as Node)) return true;
+        }
+        return false;
+    }
+
+    function processOutside(target: EventTarget | null, reason: string, secondary = false) {
         for (let i = layerStack.length - 1; i >= 0; i--) {
             const layer = layerStack[i];
-            if (!isInLayerBranch(layer, target) && layer.options[reason === 'focus-outside' ? 'focusOutside' : 'outside']) {
+            if (!isInLayerBranch(layer, target) && layer.options[reason === 'focus-outside' ? 'focusOutside' : 'outside']
+                && !(secondary && isSecondaryPressOf(layer, target))) {
                 dismissLayer(layer, reason);
             }
             if (layer.options.modal) break;
@@ -702,7 +712,9 @@ function createRuntime() {
             return;
         }
         pendingTouchDismiss = null;
-        processOutside(e.target, 'outside');
+        // The press that opens a context menu: the right button, or Ctrl+click on Apple platforms.
+        const secondary = e.button === 2 || (e.button === 0 && e.ctrlKey && isApple);
+        processOutside(e.target, 'outside', secondary);
     }
 
     function onLayerClick(e: MouseEvent) {

@@ -60,7 +60,7 @@ public abstract class BitBhFloatingContentBase : BitBhComponentBase, IAsyncDispo
     public bool Unmount { get; set; }
 
     /// <summary>The controller driving the JS surface.</summary>
-    protected BitBhFloatingController Floating => _floating ??= new BitBhFloatingController(Interop, OnDismissAsync, StateHasChanged);
+    protected BitBhFloatingController Floating => _floating ??= new BitBhFloatingController(Interop, OnDismissAsync, StateHasChanged, DispatchExceptionAsync);
 
     /// <summary>Whether the owning component is open.</summary>
     protected abstract bool IsOpen { get; }

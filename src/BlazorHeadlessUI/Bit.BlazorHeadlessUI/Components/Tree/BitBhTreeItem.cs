@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
@@ -20,8 +21,6 @@ public class BitBhTreeItem<TValue> : BitBhComponentBase, IBitBhCollectionItem, I
 {
     private BitBhTreeGroup<TValue>? _group;
     private RenderedState? _rendered;
-    private bool _focusInside;
-    private bool _selfFocusPending;
     private bool _quietEvent;
 
     [CascadingParameter]
@@ -132,6 +131,9 @@ public class BitBhTreeItem<TValue> : BitBhComponentBase, IBitBhCollectionItem, I
             await TreeContext.Items.EnsureOrderAsync(Interop);
     }
 
+    // The owned events' args are read from JSON by reflection, which trimming cannot see.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitBhKeyboardEventArgs))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitBhMouseEventArgs))]
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         var context = TreeContext;
@@ -155,17 +157,17 @@ public class BitBhTreeItem<TValue> : BitBhComponentBase, IBitBhCollectionItem, I
         builder.OpenElement(0, Tag);
         builder.AddAttribute(10, "id", ItemId);
         builder.AddMultipleAttributes(20, GetFinalAttributes());
-        builder.AddAttribute(30, "onkeydown",
-            On<KeyboardEventArgs>("onkeydown", HandleKeyDown));
+        // Owned events: keys and clicks of a child item, or of interactive content in the item's label (a
+        // button, an input), reach the item too, but they are not its own, and the item leaves them alone.
+        builder.AddAttribute(30, BitBhEventHandlers.KeyDown,
+            On<BitBhKeyboardEventArgs>(BitBhEventHandlers.KeyDown, HandleKeyDown));
         builder.AddEventStopPropagationAttribute(31, "onkeydown", true);
-        builder.AddAttribute(32, "onclick",
-            On<MouseEventArgs>("onclick", HandleClick));
+        builder.AddAttribute(32, BitBhEventHandlers.Click,
+            On<BitBhMouseEventArgs>(BitBhEventHandlers.Click, HandleClick));
         builder.AddEventStopPropagationAttribute(33, "onclick", true);
         builder.AddAttribute(34, "onfocus",
             On<FocusEventArgs>("onfocus", HandleFocus));
         builder.AddEventStopPropagationAttribute(35, "onfocus", true);
-        builder.AddAttribute(36, "onfocusin",
-            On<FocusEventArgs>("onfocusin", HandleFocusIn));
         builder.AddElementReferenceCapture(40, CaptureElement);
 
         builder.OpenComponent<CascadingValue<BitBhTreeItem<TValue>>>(50);
@@ -224,38 +226,30 @@ public class BitBhTreeItem<TValue> : BitBhComponentBase, IBitBhCollectionItem, I
         if (Label is not null) attrs["data-bit-bh-text"] = Label;
         if (IsItemDisabled) attrs["aria-disabled"] = "true";
         attrs[BitBhKeyboard.KeysAttribute] = "ArrowUp ArrowDown ArrowLeft ArrowRight Home End Space Enter Ctrl+a Meta+a";
+        attrs[BitBhEventHandlers.OwnerAttribute] = "";
         attrs["style"] = FormattableString.Invariant($"--bit-bh-tree-level:{Level}");
         SetDataValue(attrs, "level", Level.ToString(System.Globalization.CultureInfo.InvariantCulture));
         SetDataFlag(attrs, "disabled", IsItemDisabled);
         return attrs;
     }
 
-    // Keys pressed in interactive content of the item (a button or input in its label) bubble to it too, but
-    // they belong to that content. KeyboardEventArgs has no target, so the item follows where focus is: its
-    // own focus event, or a focusin bubbling up from something inside it (browsers send focus, then focusin).
-    private Task HandleKeyDown(KeyboardEventArgs e)
-        => _focusInside ? Task.CompletedTask : Tree?.HandleKeyDownAsync(this, e) ?? Task.CompletedTask;
+    private bool Owns(string? ownerId) => ownerId == ItemId;
+
+    private Task HandleKeyDown(BitBhKeyboardEventArgs e)
+        => Owns(e.OwnerId) ? Tree?.HandleKeyDownAsync(this, e) ?? Task.CompletedTask : Task.CompletedTask;
 
     private void HandleFocus()
     {
-        _selfFocusPending = true;
-        _focusInside = false;
         Tree?.OnItemFocused(this);
         _quietEvent = true;
     }
 
-    private void HandleFocusIn()
-    {
-        _focusInside = !_selfFocusPending;
-        _selfFocusPending = false;
-        _quietEvent = true;
-    }
+    private Task HandleClick(BitBhMouseEventArgs e)
+        => Owns(e.OwnerId) ? Tree?.HandleClickAsync(this, e) ?? Task.CompletedTask : Task.CompletedTask;
 
-    private Task HandleClick(MouseEventArgs e) => Tree?.HandleClickAsync(this, e) ?? Task.CompletedTask;
-
-    // Focus bookkeeping changes nothing on screen (OnItemFocused refreshes the items whose tab stop moved), and
-    // focusin reaches every ancestor item: re-rendering each of them, branch and all, on every focus move would
-    // be wasted. Other events re-render the item as ComponentBase does.
+    // Focus bookkeeping changes nothing on screen (OnItemFocused refreshes the items whose tab stop moved):
+    // re-rendering the item, branch and all, on every focus move would be wasted. Other events re-render the
+    // item as ComponentBase does.
     Task IHandleEvent.HandleEventAsync(EventCallbackWorkItem callback, object? arg)
     {
         _quietEvent = false;

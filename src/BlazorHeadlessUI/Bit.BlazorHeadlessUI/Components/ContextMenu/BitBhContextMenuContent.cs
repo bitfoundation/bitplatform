@@ -41,17 +41,24 @@ public class BitBhContextMenuContent : BitBhMenuContentBase, IBitBhPointAnchored
 
     private protected override BitBhMenuFocus PeekFocusIntent() => MenuContext?.Menu.PeekFocusIntent() ?? BitBhMenuFocus.Container;
 
-    protected override BitBhFloatingRequest CreateFloatingRequest() => new()
+    protected override BitBhFloatingRequest CreateFloatingRequest()
     {
-        ContentId = ContentId,
-        Point = (MenuContext?.X ?? 0, MenuContext?.Y ?? 0),
-        Anchor = EffectiveAnchor,
-        ArrowId = ArrowId,
-        Portal = EffectivePortal,
-        PortalTarget = PortalTarget,
-        Layer = new BitBhLayerOptions { ParentHandle = ParentLayerHandle },
-        Focus = CreateFocusOptions(null),
-    };
+        var layer = new BitBhLayerOptions { ParentHandle = ParentLayerHandle };
+        // A right-click in the trigger area while open moves the menu (BitBhContextMenu.OpenAtAsync) rather
+        // than dismissing it and opening a new one, exit animation and all.
+        layer.SecondaryPressIds.Add(MenuContext?.TriggerId);
+        return new()
+        {
+            ContentId = ContentId,
+            Point = (MenuContext?.X ?? 0, MenuContext?.Y ?? 0),
+            Anchor = EffectiveAnchor,
+            ArrowId = ArrowId,
+            Portal = EffectivePortal,
+            PortalTarget = PortalTarget,
+            Layer = layer,
+            Focus = CreateFocusOptions(null),
+        };
+    }
 
     protected override Task OnDismissAsync(BitBhDismissReason reason)
         => MenuContext?.CloseAsync() ?? Task.CompletedTask;

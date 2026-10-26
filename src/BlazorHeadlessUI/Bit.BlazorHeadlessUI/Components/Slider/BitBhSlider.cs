@@ -409,7 +409,7 @@ public class BitBhSlider : BitBhComponentBase, IAsyncDisposable
     {
         /// <summary>Pointer interaction (fraction 0–1 along the track). The runtime calls it by this name.</summary>
         [JSInvokable]
-        public Task OnSliderPointer(string phase, double fraction) => slider.HandlePointerAsync(phase, fraction);
+        public Task OnSliderPointer(string phase, double fraction) => slider.RunFromRuntimeAsync(() => slider.HandlePointerAsync(phase, fraction));
     }
 
     private async Task HandlePointerAsync(string phase, double fraction)

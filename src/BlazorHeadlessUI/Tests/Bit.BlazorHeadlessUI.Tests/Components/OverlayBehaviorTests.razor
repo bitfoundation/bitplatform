@@ -99,6 +99,62 @@
     }
 
     [TestMethod]
+    public void A_modal_popover_panel_is_a_modal_dialog_named_by_its_button()
+    {
+        var cut = Render(
+            @<BitBhPopover Modal="true" DefaultOpen="true">
+                <BitBhPopoverButton>Filters</BitBhPopoverButton>
+                <BitBhPopoverPanel><button>Apply</button></BitBhPopoverPanel>
+            </BitBhPopover>);
+
+        var panel = cut.Find("[role=dialog]");
+        Assert.AreEqual("true", panel.GetAttribute("aria-modal"));
+        Assert.AreEqual("Filters", panel.AccessibleName());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void A_non_modal_popover_panel_keeps_no_dialog_role()
+    {
+        var cut = Render(
+            @<BitBhPopover DefaultOpen="true">
+                <BitBhPopoverButton>Share</BitBhPopoverButton>
+                <BitBhPopoverPanel aria-label="Share options"><a href="/copy">Copy link</a></BitBhPopoverPanel>
+            </BitBhPopover>);
+
+        Assert.IsEmpty(cut.FindAll("[role=dialog]"));
+    }
+
+    [TestMethod]
+    public void A_right_click_in_the_trigger_of_an_open_context_menu_moves_it()
+    {
+        // The open surface needs a handle for the move to reach the runtime.
+        var module = JSInterop.SetupModule("./_content/Bit.BlazorHeadlessUI/bit-blazorheadlessui.js");
+        module.Mode = JSRuntimeMode.Loose;
+        module.Setup<int>("floating.open", _ => true).SetResult(3);
+
+        var cut = Render(
+            @<BitBhContextMenu>
+                <BitBhContextMenuTrigger>Right-click here</BitBhContextMenuTrigger>
+                <BitBhContextMenuContent aria-label="Actions">
+                    <BitBhContextMenuItem>Reload</BitBhContextMenuItem>
+                </BitBhContextMenuContent>
+            </BitBhContextMenu>);
+
+        var trigger = cut.Find("[id$=-trigger]");
+        trigger.ContextMenu(new MouseEventArgs { ClientX = 10, ClientY = 10, Detail = 1 });
+
+        // The runtime must not take the next right-click in the trigger for an outside press: the menu moves.
+        var options = (IDictionary<string, object?>)JSInterop.Invocations["floating.open"].Last().Arguments[2]!;
+        var layer = (IDictionary<string, object?>)options["layer"]!;
+        Assert.Contains(trigger.Id, (string[])layer["secondaryIds"]!);
+
+        cut.Find("[id$=-trigger]").ContextMenu(new MouseEventArgs { ClientX = 40, ClientY = 50, Detail = 1 });
+        Assert.HasCount(1, JSInterop.Invocations["floating.open"]);
+        Assert.IsNotEmpty(JSInterop.Invocations["floating.setPoint"]);
+    }
+
+    [TestMethod]
     public void A_tooltip_trigger_keeps_the_consumer_s_own_description()
     {
         var cut = Render(

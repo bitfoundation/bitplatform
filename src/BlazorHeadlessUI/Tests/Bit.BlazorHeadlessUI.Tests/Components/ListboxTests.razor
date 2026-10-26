@@ -191,6 +191,37 @@
     }
 
     [TestMethod]
+    public void A_selection_whose_unmounted_options_never_rendered_is_named_by_ValueText()
+    {
+        var cut = Render(
+            @<BitBhListbox TValue="string" DefaultValue="@("b")" ValueText="@(v => v == "b" ? "Banana" : v)">
+                <BitBhListboxButton TValue="string" aria-label="Fruit" Placeholder="Pick" />
+                <BitBhListboxOptions TValue="string" Unmount="true">
+                    <BitBhListboxOption TValue="string" Value="@("a")">Apple</BitBhListboxOption>
+                    <BitBhListboxOption TValue="string" Value="@("b")">Banana</BitBhListboxOption>
+                </BitBhListboxOptions>
+            </BitBhListbox>);
+
+        // Nothing rendered an option yet, but something is selected: the placeholder would say otherwise.
+        Assert.IsEmpty(cut.FindAll("[role=option]"));
+        Assert.AreEqual("Banana", cut.Find("[role=combobox]").TextContent);
+    }
+
+    [TestMethod]
+    public void Without_ValueText_a_never_rendered_selection_shows_its_value()
+    {
+        var cut = Render(
+            @<BitBhListbox TValue="string" DefaultValue="@("b")">
+                <BitBhListboxButton TValue="string" aria-label="Fruit" Placeholder="Pick" />
+                <BitBhListboxOptions TValue="string" Unmount="true">
+                    <BitBhListboxOption TValue="string" Value="@("b")">Banana</BitBhListboxOption>
+                </BitBhListboxOptions>
+            </BitBhListbox>);
+
+        Assert.AreEqual("b", cut.Find("[role=combobox]").TextContent);
+    }
+
+    [TestMethod]
     public void A_value_type_listbox_without_a_default_selects_nothing()
     {
         // default(int) is 0, an option value: only a supplied DefaultValue selects.

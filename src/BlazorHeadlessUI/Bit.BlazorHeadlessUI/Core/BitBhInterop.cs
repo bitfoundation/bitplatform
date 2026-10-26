@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace Bit.BlazorHeadlessUI;
@@ -24,20 +26,25 @@ public sealed class BitBhInterop : IAsyncDisposable, IDisposable
         DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties;
 
     private readonly IJSRuntime _js;
+    private readonly ILogger? _logger;
     private Task<IJSObjectReference>? _module;
     private bool _disposed;
 
     /// <summary>Creates the interop wrapper. Registered as a scoped service by <c>AddBitBlazorHeadlessUIServices()</c>.</summary>
-    public BitBhInterop(IJSRuntime js)
+    /// <param name="js">The JS runtime.</param>
+    /// <param name="logger">Where failed calls are reported. Optional: they are swallowed either way.</param>
+    public BitBhInterop(IJSRuntime js, ILogger<BitBhInterop>? logger = null)
     {
         _js = js;
+        _logger = logger;
     }
 
     private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<IJSRuntime, BitBhInterop> Fallback = new();
 
     /// <summary>Returns the registered instance, or a shared one per JS runtime when <c>AddBitBlazorHeadlessUIServices()</c> wasn't called.</summary>
     internal static BitBhInterop Resolve(IServiceProvider services, IJSRuntime js)
-        => (BitBhInterop?)services.GetService(typeof(BitBhInterop)) ?? Fallback.GetValue(js, static r => new BitBhInterop(r));
+        => (BitBhInterop?)services.GetService(typeof(BitBhInterop))
+           ?? Fallback.GetValue(js, r => new BitBhInterop(r, services.GetService<ILogger<BitBhInterop>>()));
 
     private Task<IJSObjectReference> Module
     {
@@ -59,7 +66,7 @@ public sealed class BitBhInterop : IAsyncDisposable, IDisposable
             if (module is null) return default!;
             return await module.InvokeAsync<T>(identifier, args);
         }
-        catch (Exception ex) when (IsBenign(ex))
+        catch (Exception ex) when (IsBenign(ex, identifier))
         {
             return default!;
         }
@@ -74,7 +81,7 @@ public sealed class BitBhInterop : IAsyncDisposable, IDisposable
             if (module is null) return;
             await module.InvokeVoidAsync(identifier, args);
         }
-        catch (Exception ex) when (IsBenign(ex))
+        catch (Exception ex) when (IsBenign(ex, identifier))
         {
         }
     }
@@ -83,19 +90,24 @@ public sealed class BitBhInterop : IAsyncDisposable, IDisposable
     /// Exceptions that are expected when the browser is gone or not available
     /// (a disconnected circuit, a cancelled call, a disposed runtime, calling
     /// during static prerendering), plus JS errors: a failed DOM enhancement must
-    /// never tear down the circuit, so it is reported to the debugger and ignored.
+    /// never tear down the circuit, so it is logged and ignored. A JS error is a
+    /// warning; an InvalidOperationException is what every call made while
+    /// prerendering throws, so it is logged at debug level - where it also shows
+    /// a payload System.Text.Json refused to serialize in a trimmed app.
     /// </summary>
-    private static bool IsBenign(Exception ex)
+    private bool IsBenign(Exception ex, string identifier)
     {
         switch (ex)
         {
             case JSDisconnectedException:
             case OperationCanceledException:
             case ObjectDisposedException:
-            case InvalidOperationException:
                 return true;
-            case JSException js:
-                System.Diagnostics.Debug.WriteLine($"[BlazorHeadlessUI] JS error: {js.Message}");
+            case InvalidOperationException:
+                _logger?.LogDebug(ex, "The Bit.BlazorHeadlessUI runtime call {Identifier} could not be made.", identifier);
+                return true;
+            case JSException:
+                _logger?.LogWarning(ex, "The Bit.BlazorHeadlessUI runtime call {Identifier} failed in the browser.", identifier);
                 return true;
             default:
                 return false;
@@ -275,7 +287,7 @@ public sealed class BitBhInterop : IAsyncDisposable, IDisposable
             var module = await _module;
             await module.DisposeAsync();
         }
-        catch (Exception ex) when (IsBenign(ex))
+        catch (Exception ex) when (IsBenign(ex, "dispose"))
         {
         }
     }

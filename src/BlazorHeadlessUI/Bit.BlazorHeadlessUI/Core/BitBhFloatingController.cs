@@ -48,6 +48,12 @@ public sealed class BitBhLayerOptions
     /// <summary>Extra element ids that belong to the layer (trigger, input, …).</summary>
     public List<string?> BranchIds { get; } = new();
 
+    /// <summary>
+    /// Element ids where a secondary-button press (the one that opens a context menu) is not "outside": the
+    /// context menu it opens again moves the open one instead of closing and reopening it.
+    /// </summary>
+    public List<string?> SecondaryPressIds { get; } = new();
+
     internal Dictionary<string, object?> ToJs() => new()
     {
         ["escape"] = Escape,
@@ -57,6 +63,7 @@ public sealed class BitBhLayerOptions
         ["hover"] = Hover,
         ["parentFloating"] = ParentHandle,
         ["ids"] = BranchIds.Where(id => !string.IsNullOrEmpty(id)).ToArray(),
+        ["secondaryIds"] = SecondaryPressIds.Where(id => !string.IsNullOrEmpty(id)).ToArray(),
     };
 }
 
@@ -144,6 +151,7 @@ public sealed class BitBhFloatingController : IAsyncDisposable
     private readonly BitBhInterop _interop;
     private readonly Func<BitBhDismissReason, Task> _onDismiss;
     private readonly Action _stateHasChanged;
+    private readonly Func<Exception, Task>? _onError;
     private DotNetObjectReference<BitBhFloatingController>? _selfRef;
     private Phase _phase;
     private bool _syncing;
@@ -154,11 +162,17 @@ public sealed class BitBhFloatingController : IAsyncDisposable
     /// <param name="interop">The JS runtime wrapper.</param>
     /// <param name="onDismiss">Invoked when the layer requests dismissal (Escape, outside click, focus outside).</param>
     /// <param name="stateHasChanged">The owner's <c>StateHasChanged</c>.</param>
-    public BitBhFloatingController(BitBhInterop interop, Func<BitBhDismissReason, Task> onDismiss, Action stateHasChanged)
+    /// <param name="onError">
+    /// Receives what <paramref name="onDismiss"/> throws when the runtime asked for the dismissal (the owner's
+    /// <c>DispatchExceptionAsync</c>, so it reaches an <c>ErrorBoundary</c>). Without it the exception goes back
+    /// to the runtime, which cannot report it.
+    /// </param>
+    public BitBhFloatingController(BitBhInterop interop, Func<BitBhDismissReason, Task> onDismiss, Action stateHasChanged, Func<Exception, Task>? onError = null)
     {
         _interop = interop;
         _onDismiss = onDismiss;
         _stateHasChanged = stateHasChanged;
+        _onError = onError;
     }
 
     /// <summary>The JS handle of the open surface, or 0. Pass to child layers as their parent.</summary>
@@ -260,7 +274,7 @@ public sealed class BitBhFloatingController : IAsyncDisposable
             "focus-outside" => BitBhDismissReason.FocusOutside,
             _ => BitBhDismissReason.PointerDownOutside,
         };
-        await _onDismiss(parsed);
+        await DismissAsync(parsed);
         return _disposed || _phase != Phase.Open || _isOpen?.Invoke() is not true;
     }
 
@@ -275,7 +289,19 @@ public sealed class BitBhFloatingController : IAsyncDisposable
         Handle = 0;
         _phase = Phase.Closed;
         _stateHasChanged();
-        return _onDismiss(BitBhDismissReason.ParentClosed);
+        return DismissAsync(BitBhDismissReason.ParentClosed);
+    }
+
+    private async Task DismissAsync(BitBhDismissReason reason)
+    {
+        try
+        {
+            await _onDismiss(reason);
+        }
+        catch (Exception ex) when (_onError is not null)
+        {
+            await _onError(ex);
+        }
     }
 
     /// <inheritdoc />

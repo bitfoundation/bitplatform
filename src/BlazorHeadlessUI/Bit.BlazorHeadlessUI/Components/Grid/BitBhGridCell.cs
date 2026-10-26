@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
@@ -25,9 +26,6 @@ public enum BitBhSortDirection
 /// </summary>
 public class BitBhGridCell : BitBhComponentBase, IBitBhCollectionItem, IDisposable
 {
-    private bool _focusInside;
-    private bool _selfFocusPending;
-
     [CascadingParameter]
     private BitBhGridRow? ParentRow { get; set; }
 
@@ -87,15 +85,19 @@ public class BitBhGridCell : BitBhComponentBase, IBitBhCollectionItem, IDisposab
 
     public void Dispose() => ParentRow?.UnregisterCell(this);
 
+    // The owned events' args are read from JSON by reflection, which trimming cannot see.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitBhKeyboardEventArgs))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitBhMouseEventArgs))]
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         builder.OpenElement(0, Tag);
         builder.AddAttribute(10, "id", ItemId);
         builder.AddMultipleAttributes(20, GetFinalAttributes());
-        builder.AddAttribute(30, "onkeydown", On<KeyboardEventArgs>("onkeydown", HandleKeyDown));
+        // Owned events: keys and clicks of interactive content inside the cell (an input, a button) reach the
+        // cell too, but they are that content's, and the cell leaves them alone.
+        builder.AddAttribute(30, BitBhEventHandlers.KeyDown, On<BitBhKeyboardEventArgs>(BitBhEventHandlers.KeyDown, HandleKeyDown));
         builder.AddAttribute(31, "onfocus", On<FocusEventArgs>("onfocus", HandleFocus));
-        builder.AddAttribute(32, "onclick", On<MouseEventArgs>("onclick", () => OnActivate.InvokeAsync()));
-        builder.AddAttribute(33, "onfocusin", On<FocusEventArgs>("onfocusin", HandleFocusIn));
+        builder.AddAttribute(32, BitBhEventHandlers.Click, On<BitBhMouseEventArgs>(BitBhEventHandlers.Click, HandleClick));
         builder.AddElementReferenceCapture(40, CaptureElement);
         builder.AddContent(50, ChildContent);
         builder.CloseElement();
@@ -113,29 +115,20 @@ public class BitBhGridCell : BitBhComponentBase, IBitBhCollectionItem, IDisposab
         var focused = grid?.IsTabStop(this) ?? false;
         attrs["tabindex"] = focused ? "0" : "-1";
         attrs[BitBhKeyboard.KeysAttribute] = "ArrowUp ArrowDown ArrowLeft ArrowRight Home End PageUp PageDown Space Ctrl+Home Ctrl+End Ctrl+a Meta+a";
+        attrs[BitBhEventHandlers.OwnerAttribute] = "";
         SetDataFlag(attrs, "focused", grid is not null && ReferenceEquals(grid.FocusedCell, this));
         return attrs;
     }
 
-    // Keys pressed in interactive content of the cell (an input, a button) bubble to it too, but they belong to
-    // that content. KeyboardEventArgs has no target, so the cell follows where focus is: its own focus event,
-    // or a focusin bubbling up from something inside it (browsers send focus, then focusin).
-    private void HandleFocus()
-    {
-        _selfFocusPending = true;
-        _focusInside = false;
-        ParentRow?.Grid?.SetFocus(this);
-    }
+    private void HandleFocus() => ParentRow?.Grid?.SetFocus(this);
 
-    private void HandleFocusIn()
-    {
-        _focusInside = !_selfFocusPending;
-        _selfFocusPending = false;
-    }
+    private bool Owns(string? ownerId) => ownerId == ItemId;
 
-    private async Task HandleKeyDown(KeyboardEventArgs e)
+    private Task HandleClick(BitBhMouseEventArgs e) => Owns(e.OwnerId) ? OnActivate.InvokeAsync() : Task.CompletedTask;
+
+    private async Task HandleKeyDown(BitBhKeyboardEventArgs e)
     {
-        if (_focusInside || ParentRow?.Grid is not { } grid) return;
+        if (Owns(e.OwnerId) is false || ParentRow?.Grid is not { } grid) return;
         if (e.Key == "Enter" && OnActivate.HasDelegate)
         {
             await OnActivate.InvokeAsync();

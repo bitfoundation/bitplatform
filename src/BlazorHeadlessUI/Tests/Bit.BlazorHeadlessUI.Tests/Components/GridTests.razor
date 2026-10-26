@@ -167,7 +167,7 @@
         // The hidden child row can't hold the tab stop: the next visible preferred cell does.
         Assert.AreEqual("readme.md", cut.TabSequence().Single().Element.TextContent);
 
-        cut.Find("[aria-hidden=true]").Click();
+        cut.Find("[aria-hidden=true]").PointerClick();
         Assert.AreEqual("true", cut.FindAll("[role=row]")[0].GetAttribute("aria-expanded"));
         Assert.AreEqual("open", cut.Find("[aria-hidden=true]").GetAttribute("data-state"));
         Assert.IsNull(selected);
@@ -219,7 +219,7 @@
         Cell(cut, "app.cs").Focus();
         Assert.AreEqual("app.cs", cut.TabSequence().Single().Element.TextContent);
 
-        cut.Find("[aria-hidden=true]").Click();
+        cut.Find("[aria-hidden=true]").PointerClick();
         Assert.AreEqual("false", cut.FindAll("[role=row]")[1].GetAttribute("aria-expanded"));
         Assert.AreEqual("▸src", cut.TabSequence().Single().Element.TextContent);
     }
@@ -244,7 +244,6 @@
 
         // Typing in the input: Space, arrows and Enter are the input's, not the grid's.
         var input = cut.Find("input");
-        input.FocusIn();
         input.Press(" ");
         input.Press("ArrowRight");
         input.Press("ArrowDown");
@@ -254,10 +253,29 @@
         Assert.IsNull(this.LastFocusRequest());
 
         // On the cell itself the grid's keys work.
-        cut.Find("input").ParentElement!.Focus();
-        cut.Find("input").ParentElement!.FocusIn();
         cut.Find("input").ParentElement!.Press(" ");
         Assert.AreSequenceEqual(new[] { "a" }, selected!);
+    }
+
+    [TestMethod]
+    public void Clicks_on_interactive_content_of_a_cell_are_left_to_it()
+    {
+        var activated = 0;
+        var removed = 0;
+        var cut = Render(
+            @<BitBhGrid aria-label="Files">
+                <BitBhGridRow Key="a">
+                    <BitBhGridCell OnActivate="() => activated++">alpha.txt <button type="button" @onclick="() => removed++">Remove</button></BitBhGridCell>
+                </BitBhGridRow>
+            </BitBhGrid>);
+
+        cut.Find("button").PointerClick();
+        Assert.AreEqual(1, removed);
+        Assert.AreEqual(0, activated);
+
+        // A click on the cell's own content activates it.
+        cut.Find("[role=gridcell]").PointerClick();
+        Assert.AreEqual(1, activated);
     }
 
     [TestMethod]
@@ -266,7 +284,7 @@
         IReadOnlyCollection<string>? selected = null;
         var cut = Render(Grid(Flat, mode: BitBhGridSelectionMode.Multiple, onSelect: k => selected = k));
         Cell(cut, "alpha.txt").Press(" ");
-        Cell(cut, "alpha.txt").KeyDown(new KeyboardEventArgs { Key = " ", Repeat = true, Type = "keydown" });
+        Cell(cut, "alpha.txt").Press(" ", repeat: true);
         Assert.AreSequenceEqual(new[] { "a" }, selected!);
     }
 }

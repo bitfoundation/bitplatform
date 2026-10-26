@@ -93,7 +93,7 @@ public class BitBhAlertDialog : BitBhComponentBase, IAsyncDisposable
 
     private bool IsOpen => IsProvided(nameof(Open)) ? Open : _open;
 
-    private BitBhFloatingController Floating => _floating ??= new BitBhFloatingController(Interop, DismissAsync, StateHasChanged);
+    private BitBhFloatingController Floating => _floating ??= new BitBhFloatingController(Interop, DismissAsync, StateHasChanged, DispatchExceptionAsync);
 
     protected override void OnInitialized() => _open = DefaultOpen;
 

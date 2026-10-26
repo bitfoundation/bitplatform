@@ -189,6 +189,43 @@
     }
 
     [TestMethod]
+    public async Task An_exception_of_a_handler_the_runtime_triggered_reaches_the_error_boundary()
+    {
+        var cut = Render(
+            @<ErrorBoundary>
+                <ChildContent>
+                    <BitBhHotkey Keys="mod+k" OnTriggered="@(() => throw new InvalidOperationException("boom"))" />
+                </ChildContent>
+                <ErrorContent>Something went wrong.</ErrorContent>
+            </ErrorBoundary>);
+
+        var hotkey = (DotNetObjectReference<BitBhHotkey>)JSInterop.Invocations["hotkeys.register"].Last().Arguments[0]!;
+        await cut.InvokeAsync(() => hotkey.Value.OnHotkey());
+
+        // Not lost in the promise the runtime gets back: reported as a DOM event handler's would be.
+        cut.WaitForAssertion(() => Assert.Contains("Something went wrong.", cut.Markup));
+    }
+
+    [TestMethod]
+    public async Task An_exception_of_a_dismissal_the_runtime_asked_for_reaches_the_error_boundary()
+    {
+        var cut = Render(
+            @<ErrorBoundary>
+                <ChildContent>
+                    <BitBhPopover DefaultOpen="true" OnDismissRequest="@(_ => throw new InvalidOperationException("boom"))">
+                        <BitBhPopoverButton>Filters</BitBhPopoverButton>
+                        <BitBhPopoverPanel aria-label="Filters">…</BitBhPopoverPanel>
+                    </BitBhPopover>
+                </ChildContent>
+                <ErrorContent>Something went wrong.</ErrorContent>
+            </ErrorBoundary>);
+
+        await cut.InvokeAsync(() => FloatingRef().Value.OnLayerDismiss("outside"));
+
+        cut.WaitForAssertion(() => Assert.Contains("Something went wrong.", cut.Markup));
+    }
+
+    [TestMethod]
     public void A_disabled_generic_element_is_not_given_aria_disabled()
     {
         var cut = Render(@<BitBhDataInteractive Disabled="true">Card</BitBhDataInteractive>);

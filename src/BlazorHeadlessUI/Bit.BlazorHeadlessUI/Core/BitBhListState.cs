@@ -27,6 +27,7 @@ public sealed class BitBhListState<TValue>
     private bool _hasActiveValue;
     private TValue _activeValue = default!;
     private bool _optionsUnmounted;
+    private bool _optionsEverMounted;
     private (TValue Value, string? Text)[] _unmountedTexts = [];
 
     internal BitBhListState(string key, BitBhInterop interop, Func<TValue, bool> isSelected, Action refreshOwner, Func<IEqualityComparer<TValue>>? comparer = null)
@@ -206,6 +207,7 @@ public sealed class BitBhListState<TValue>
     /// </summary>
     internal void SetOptionsMounted(bool mounted)
     {
+        _optionsEverMounted |= mounted;
         if (_optionsUnmounted != mounted) return;
         _optionsUnmounted = !mounted;
         _unmountedTexts = _optionsUnmounted ? Options.Items.Select(o => (o.Value, o.ItemText)).ToArray() : [];
@@ -278,6 +280,12 @@ public sealed class BitBhListState<TValue>
         if (ActiveId is not null && IndexOfId(ActiveId) >= 0) return;
         SetActiveIndex(fallbackToFirst ? FirstEnabled() : -1, scroll: false);
     }
+
+    /// <summary>
+    /// Whether the options' texts can be known: an options panel with <c>Unmount</c> that has never been opened
+    /// has rendered no option to read a text from (and until a panel renders, none has).
+    /// </summary>
+    internal bool OptionTextsKnown => IsDataMode || _optionsEverMounted;
 
     /// <summary>Text of the options whose value is selected (for button labels).</summary>
     internal IEnumerable<string> SelectedTexts()

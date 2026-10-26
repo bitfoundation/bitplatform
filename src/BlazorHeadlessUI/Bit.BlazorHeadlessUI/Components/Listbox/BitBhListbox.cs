@@ -128,6 +128,14 @@ public class BitBhListbox<TValue> : BitBhComponentBase, IDisposable
     public Func<TValue, string?>? FormatValue { get; set; }
 
     /// <summary>
+    /// The text that names a selected value while no option of it has rendered: an options panel with
+    /// <c>Unmount</c> that has not been opened yet has no option to read the text from. Defaults to the value's
+    /// <c>ToString()</c> - never the placeholder, which would say nothing is selected.
+    /// </summary>
+    [Parameter]
+    public Func<TValue, string?>? ValueText { get; set; }
+
+    /// <summary>
     /// Child content. Should contain an <see cref="BitBhListboxButton{TValue}"/> and an
     /// <see cref="BitBhListboxOptions{TValue}"/> with <see cref="BitBhListboxOption{TValue}"/> children.
     /// </summary>
@@ -330,6 +338,9 @@ public class BitBhListbox<TValue> : BitBhComponentBase, IDisposable
     }
 
     internal Task ToggleAsync() => _open ? CloseAsync() : OpenAsync(BitBhMenuFocus.None);
+
+    /// <summary>The text naming <paramref name="value"/> when no rendered option names it (see <see cref="ValueText"/>).</summary>
+    internal string? TextOfValue(TValue value) => ValueText is not null ? ValueText(value) : value?.ToString();
 
     // ── Selection ────────────────────────────────────────────────────────────
 

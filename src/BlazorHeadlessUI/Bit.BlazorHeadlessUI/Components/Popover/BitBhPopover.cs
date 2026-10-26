@@ -108,10 +108,21 @@ public class BitBhPopover : BitBhComponentBase, IDisposable
         isOpen: IsOpen,
         modal: Modal,
         baseId: ComponentId,
+        hasButton: _hasButton,
         openAsync: OpenAsync,
         closeAsync: CloseAsync,
         toggleAsync: ToggleAsync,
-        dismissAsync: DismissAsync);
+        dismissAsync: DismissAsync,
+        registerButton: RegisterButton);
+
+    private bool _hasButton;
+
+    private void RegisterButton(bool present)
+    {
+        if (_hasButton == present) return;
+        _hasButton = present;
+        StateHasChanged();
+    }
 
     /// <summary>Opens the popover.</summary>
     public async Task OpenAsync()

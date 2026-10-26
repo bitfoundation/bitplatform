@@ -12,19 +12,24 @@ public sealed class BitBhPopoverContext : IBitBhCloseContext
     private readonly Func<Task> _closeAsync;
     private readonly Func<Task> _toggleAsync;
     private readonly Func<BitBhDismissReason, Task> _dismissAsync;
+    private readonly Action<bool> _registerButton;
 
     internal BitBhPopoverContext(
         bool isOpen,
         bool modal,
         string baseId,
+        bool hasButton,
         Func<Task> openAsync,
         Func<Task> closeAsync,
         Func<Task> toggleAsync,
-        Func<BitBhDismissReason, Task> dismissAsync)
+        Func<BitBhDismissReason, Task> dismissAsync,
+        Action<bool> registerButton)
     {
         IsOpen = isOpen;
         Modal = modal;
         BaseId = baseId;
+        HasButton = hasButton;
+        _registerButton = registerButton;
         _openAsync = openAsync;
         _closeAsync = closeAsync;
         _toggleAsync = toggleAsync;
@@ -42,6 +47,11 @@ public sealed class BitBhPopoverContext : IBitBhCloseContext
 
     /// <summary>Deterministic id of the popover button.</summary>
     public string ButtonId => $"{BaseId}-button";
+
+    /// <summary>Whether a <see cref="BitBhPopoverButton"/> (outside the panel) is rendered.</summary>
+    public bool HasButton { get; }
+
+    internal void RegisterButton(bool present) => _registerButton(present);
 
     /// <summary>Deterministic id of the popover panel.</summary>
     public string PanelId => $"{BaseId}-panel";

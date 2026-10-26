@@ -193,6 +193,23 @@ public abstract class BitBhComponentBase : ComponentBase
     protected EventCallback<TArgs> On<TArgs>(string eventName, Action handler)
         => On<TArgs>(eventName, _ => { handler(); return Task.CompletedTask; });
 
+    /// <summary>
+    /// Runs work the JS runtime started (a JS-invokable callback). An exception it throws - often from a
+    /// consumer's handler - is reported like one from a DOM event handler (an <c>ErrorBoundary</c>, the circuit's
+    /// error handling) rather than lost in the rejected promise the runtime gets back.
+    /// </summary>
+    protected async Task RunFromRuntimeAsync(Func<Task> work)
+    {
+        try
+        {
+            await work();
+        }
+        catch (Exception ex)
+        {
+            await DispatchExceptionAsync(ex);
+        }
+    }
+
     /// <summary>Runs the handler of <paramref name="eventName"/> the consumer put on the component, if any.</summary>
     protected Task InvokeConsumerHandlerAsync<TArgs>(string eventName, TArgs args)
     {

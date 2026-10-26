@@ -95,7 +95,19 @@ public sealed class BitBhHotkey : ComponentBase, IAsyncDisposable
 
     /// <summary>Invoked by the JS runtime.</summary>
     [JSInvokable]
-    public Task OnHotkey() => _disposed ? Task.CompletedTask : OnTriggered.InvokeAsync();
+    public async Task OnHotkey()
+    {
+        if (_disposed) return;
+        try
+        {
+            await OnTriggered.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            // Reported like an exception of a DOM event handler, not lost in the runtime's rejected promise.
+            await DispatchExceptionAsync(ex);
+        }
+    }
 
     public async ValueTask DisposeAsync()
     {
