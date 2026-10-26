@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.3.26522.148" />
-    <PackageReference Include="Bit.Minifier" Version="11.0.0-pre-12" PrivateAssets="all" />
+    <PackageReference Include="Bit.Minifier" Version="11.0.0-pre-13" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
