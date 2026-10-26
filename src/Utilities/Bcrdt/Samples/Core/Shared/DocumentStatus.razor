@@ -1,0 +1,44 @@
+﻿@* What every sample page shows above its document: who has it open, where its connection stands, and a switch that
+   takes it offline on purpose. Place it inside a BcrdtCollaborationScope, which cascades the open document. *@
+@inherits BcrdtComponentBase
+
+<div class="status">
+    <BcrdtPresenceView Presence="Document.Presence" />
+
+    @if (Document.Sync is null)
+    {
+        @* The MAUI host registers no transport by default: the document is this device's alone, and still persisted. *@
+        <span class="muted">local only - no transport is configured</span>
+    }
+    else
+    {
+        <span class="muted">@Document.ConnectionStatus</span>
+        @* A deliberate disconnect. The document stays editable, and the handshake on reconnect sends each side whatever
+           the other wrote meanwhile. *@
+        <button type="button" @onclick="ToggleAsync">@(_online ? "Go offline" : "Go online")</button>
+    }
+
+    @if (Document.IsReadOnly)
+    {
+        <em>read-only - this replica follows the others but cannot edit</em>
+    }
+</div>
+
+@code {
+    [CascadingParameter] public BcrdtCollaborativeDocument Document { get; set; } = default!;
+
+    private bool _online = true;
+
+    // Re-render, coalesced, whenever the connection changes status. BcrdtPresenceView follows presence by itself.
+    protected override void OnInitialized()
+    {
+        if (Document.Sync is not null) Track(Document.Sync);
+    }
+
+    private async Task ToggleAsync()
+    {
+        _online = !_online;
+        if (_online) await Document.ConnectAsync();
+        else await Document.DisconnectAsync();
+    }
+}

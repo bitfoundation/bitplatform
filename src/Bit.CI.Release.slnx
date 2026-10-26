@@ -154,6 +154,21 @@
     <Project Path="Utilities/Bcrdt/Bit.Bcrdt.Testing/Bit.Bcrdt.Testing.csproj" />
     <Project Path="Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests/Bit.Bcrdt.Tests.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Bcrdt/Samples/" />
+  <Folder Name="/Utilities/Bcrdt/Samples/Auto/">
+    <Project Path="Utilities/Bcrdt/Samples/Auto/Bit.Bcrdt.Samples.Auto/Bit.Bcrdt.Samples.Auto.csproj" />
+    <Project Path="Utilities/Bcrdt/Samples/Auto/Bit.Bcrdt.Samples.Auto.Client/Bit.Bcrdt.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bcrdt/Samples/Core/">
+    <Project Path="Utilities/Bcrdt/Samples/Core/Bit.Bcrdt.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bcrdt/Samples/Server/">
+    <Project Path="Utilities/Bcrdt/Samples/Server/Bit.Bcrdt.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bcrdt/Samples/Wasm/">
+    <Project Path="Utilities/Bcrdt/Samples/Wasm/Bit.Bcrdt.Samples.Wasm/Bit.Bcrdt.Samples.Wasm.csproj" />
+    <Project Path="Utilities/Bcrdt/Samples/Wasm/Bit.Bcrdt.Samples.Wasm.Client/Bit.Bcrdt.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Bonboarding/">
     <File Path="Utilities/Bonboarding/README.md" />
     <Project Path="Utilities/Bonboarding/Demo/Client/Bit.Bonboarding.Demo.Client.csproj" />

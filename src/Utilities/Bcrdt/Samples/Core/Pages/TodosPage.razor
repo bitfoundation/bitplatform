@@ -1,0 +1,83 @@
+﻿@page "/todos"
+@inject SampleSession Session
+
+<PageTitle>To-do list - Bcrdt samples</PageTitle>
+
+<h1>To-do list</h1>
+
+<BcrdtCollaborationScope DocumentId="samples-todos" User="Session.User" Context="document">
+    <LoadingContent>
+        <p class="muted">Opening the document…</p>
+    </LoadingContent>
+    <ErrorContent Context="error">
+        <p class="error">The document could not be opened: @error.Message</p>
+    </ErrorContent>
+    <ChildContent>
+        @{
+            BcrdtArray items = document.Array("items");
+        }
+
+        <DocumentStatus />
+
+        <div class="row">
+            <input type="text" aria-label="New item" placeholder="New item…" @bind="_draft" @bind:event="oninput"
+                   @onkeydown="args => OnDraftKey(items, args)" />
+            <button type="button" @onclick="() => Add(items)">Add</button>
+        </div>
+
+        <ul class="todos">
+            @for (int index = 0; index < items.Count; index++)
+            {
+                int position = index;
+                if (items.GetMap(position) is not { } item) continue;
+
+                @* Keyed by the item itself: remote insertions and deletions shift positions, and a row reused for a
+                   different item would send a half-typed title to the wrong one. *@
+                <li @key="item" class="row">
+                    <input type="checkbox" aria-label="Done"
+                           checked="@(item.Get<bool>("done"))"
+                           @onchange="@(args => item.Set("done", args.Value is true))" />
+
+                    @* Sent when the field loses focus or Enter is pressed: a map key is last-writer-wins. *@
+                    <input type="text" aria-label="Title"
+                           value="@(item.Get<string>("title"))"
+                           @onchange="@(args => item.Set("title", args.Value as string ?? string.Empty))" />
+
+                    <button type="button" disabled="@(position == 0)" @onclick="() => items.Move(position, position - 1)">↑</button>
+                    @* Move's destination is a position in the list before the element is lifted out, so one step down is + 2. *@
+                    <button type="button" disabled="@(position == items.Count - 1)" @onclick="() => items.Move(position, position + 2)">↓</button>
+                    <button type="button" aria-label="Delete" @onclick="() => items.Delete(position)">✕</button>
+                </li>
+            }
+        </ul>
+
+        <p class="muted">@items.Count items, @Done(items) done</p>
+    </ChildContent>
+</BcrdtCollaborationScope>
+
+@code {
+    private string _draft = "";
+
+    private void Add(BcrdtArray items)
+    {
+        if (string.IsNullOrWhiteSpace(_draft)) return;
+
+        // A detached map is filled in before it is inserted, and its writes replay when it joins the document - so the
+        // element and both of its keys reach the others as one update, not three.
+        var item = new BcrdtMap();
+        item.Set("title", _draft.Trim());
+        item.Set("done", false);
+        items.Push(item);
+
+        _draft = "";
+    }
+
+    // An Enter that confirms an input method's candidate belongs to the composition, not to the form.
+    private void OnDraftKey(BcrdtArray items, KeyboardEventArgs args)
+    {
+        if (args.Key is "Enter" && !args.IsComposing) Add(items);
+    }
+
+    private static int Done(BcrdtArray items) =>
+        Enumerable.Range(0, items.Count).Count(index => items.GetMap(index)?.Get<bool>("done") == true);
+}

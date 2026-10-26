@@ -30,6 +30,12 @@ runs at [bcrdt.bitplatform.dev](https://bcrdt.bitplatform.dev).
 That same server hosts an **MCP server** at `/mcp`, so an AI agent works against bit Bcrdt's real API instead of
 guessing at it - see [MCP server](#mcp-server).
 
+[`Samples`](Samples/) is the hosting-model harness rather than the docs: one shared [Core](Samples/Core/) project of
+collaborative pages - notes, a to-do list and a ticket form - hosted unchanged under [Server](Samples/Server/),
+[WASM](Samples/Wasm/) and [Auto](Samples/Auto/), each with its own `BcrdtHub` and document host, so two tabs edit
+one document whichever render mode they run in - and under [MAUI](Samples/Maui/) (Android, iOS, Mac Catalyst and
+Windows), where a `BlazorWebView` runs them as a local-first Blazor Hybrid app over a file-system store.
+
 ---
 
 ## Contents
@@ -476,6 +482,9 @@ a specific reason:
   edits apart.
 - **Blazor Web App** - register it in both projects; whichever side renders interactively owns the replica.
 - **Hybrid (MAUI, WPF, WinForms)** - as WebAssembly, with the local process as the replica.
+
+The [samples](Samples/) wire bit Bcrdt into each of these - their `Program.cs` (and the MAUI sample's `MauiProgram.cs`)
+is the registration to copy.
 
 The engine requires no JavaScript interop, so it runs unchanged in all of them, in a background service, in a console
 application, or on a server that hosts documents without rendering them.
@@ -1350,6 +1359,7 @@ called without input. Every tool is read-only, and every one is also a plain HTT
 | `Bit.Bcrdt.Server` | The ASP.NET Core relays: the SignalR hub and the WebSocket endpoint. |
 | `Bit.Bcrdt.Testing` | The network simulator, operation generators, convergence harness and update corrupter. |
 | `Demo` | The demo (`Client` + prerendering `Server` host): side-by-side replicas over the in-memory transport, a live page across tabs through the server's relays, and the MCP server. |
+| `Samples` | The hosting samples: the `Core` pages hosted under `Server`, `Wasm` and `Auto` (each with its own relay) and `Maui` (local-first, file-system store). |
 | `Tests/Bit.Bcrdt.Tests` | MSTest tests - convergence, adversarial networks, fuzzing, persistence recovery, undo, presence, the transports and relays, the demo's own plumbing - on every target framework. |
 | `Tests/Bit.Bcrdt.Tests.Mcp` | MCP server tests, over the real protocol against the demo server's own `Program.cs`. |
 | `Tests/Bit.Bcrdt.Tests.E2E` | Playwright tests of the demo in a real browser, including collaboration between tabs. See its [README](Tests/Bit.Bcrdt.Tests.E2E/README.md). |

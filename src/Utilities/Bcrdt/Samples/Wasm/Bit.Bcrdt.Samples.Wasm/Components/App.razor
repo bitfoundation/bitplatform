@@ -1,0 +1,21 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#FFFFFF" />
+    <base href="/" />
+    <title>Bcrdt - Real-time collaboration for Blazor (WebAssembly)</title>
+    <link rel="stylesheet" href="_content/Bit.Bcrdt.Samples.Core/app.css" />
+    <link rel="icon" type="image/svg+xml" href="_content/Bit.Bcrdt.Samples.Core/favicon.svg" />
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+<body>
+    <Routes @rendermode="InteractiveWebAssembly" />
+    @* No script tag for Bcrdt: BcrdtTextArea imports its one small module itself, on demand. *@
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>

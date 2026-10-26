@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <!-- The collaborative pages every hosting sample renders unchanged. The Server, WebAssembly, Auto and MAUI hosts
+         differ only in where these components run and in the transport and store each one registers for them (see
+         each host's Program.cs or MauiProgram.cs). -->
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+        <ProjectReference Include="..\..\Bit.Bcrdt\Bit.Bcrdt.csproj" />
+        <!-- SamplesRelay connects through the web hosts' BcrdtHub. -->
+        <ProjectReference Include="..\..\Bit.Bcrdt.SignalR\Bit.Bcrdt.SignalR.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Bit.Bcrdt" />
+    </ItemGroup>
+
+</Project>

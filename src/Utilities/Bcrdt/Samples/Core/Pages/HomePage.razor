@@ -1,0 +1,30 @@
+﻿@page "/"
+
+<PageTitle>Bcrdt samples</PageTitle>
+
+<h1>Bcrdt samples</h1>
+
+<p>
+    The same collaborative pages, hosted unchanged in every Blazor hosting model.
+    @if (RendererInfo.IsInteractive)
+    {
+        <span>This page is running interactively on <strong>@RendererInfo.Name</strong>.</span>
+    }
+    else
+    {
+        <span>This page was prerendered and turns interactive in a moment.</span>
+    }
+</p>
+
+<p class="muted">
+    Open a page in a second tab, window or browser: each one is a replica of its own, with its own client identity and
+    its own presence entry, and the web hosts have them meet through their <code>BcrdtHub</code>. Take one offline, edit
+    both, and bring it back.
+</p>
+
+<h2>Documents</h2>
+<ul>
+    <li><a href="notes">Notes</a> - a <code>BcrdtText</code> behind a <code>BcrdtTextArea</code>, with presence and selective undo</li>
+    <li><a href="todos">To-do list</a> - a <code>BcrdtArray</code> of <code>BcrdtMap</code>s: add, tick, rename, reorder and delete</li>
+    <li><a href="ticket">Ticket</a> - map entries, a nested <code>BcrdtSet</code> and a nested <code>BcrdtText</code>, each merging its own way</li>
+</ul>

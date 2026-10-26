@@ -1,0 +1,58 @@
+﻿@page "/notes"
+@inherits BcrdtComponentBase
+@inject SampleSession Session
+
+<PageTitle>Notes - Bcrdt samples</PageTitle>
+
+<h1>Notes</h1>
+
+<BcrdtCollaborationScope DocumentId="samples-notes" User="Session.User" OnOpened="Opened" Context="document">
+    @* Shown while the page is prerendered and while the document opens. *@
+    <LoadingContent>
+        <p class="muted">Opening the document…</p>
+    </LoadingContent>
+    <ErrorContent Context="error">
+        <p class="error">The document could not be opened: @error.Message</p>
+    </ErrorContent>
+    <ChildContent>
+        <DocumentStatus />
+
+        @* Turns each keystroke into the minimal edit, keeps the caret on its character while somebody types above it,
+           and publishes the caret through presence. *@
+        <BcrdtTextArea Text="@document.Text("body")" Presence="document.Presence" Field="body" Rows="12"
+                       Placeholder="Type here, then open this page in another tab." />
+
+        <div class="row">
+            <button type="button" disabled="@(_undo is not { CanUndo: true })" @onclick="Undo">Undo</button>
+            <button type="button" disabled="@(_undo is not { CanRedo: true })" @onclick="Redo">Redo</button>
+            <span class="muted">@document.Text("body").Count characters</span>
+        </div>
+    </ChildContent>
+</BcrdtCollaborationScope>
+
+@code {
+    private BcrdtUndoManager? _undo;
+    private IDisposable? _undoHandle;
+
+    // Called for every document the scope opens, so a stack over the one before is let go first.
+    private void Opened(BcrdtCollaborativeDocument document)
+    {
+        _undoHandle?.Dispose();
+
+        // Selective undo: the stack captures this replica's own edits only, never the updates that arrive from peers,
+        // so undoing never takes away somebody else's work.
+        _undo = new BcrdtUndoManager(document.Text("body"));
+        _undoHandle = TrackDisposable(_undo);
+
+        // The buttons follow the stack, not only the document. RequestRender renders once the edit is over, coalesced.
+        _undo.StackItemAdded += _ => RequestRender();
+        _undo.StackItemUpdated += _ => RequestRender();
+        _undo.StackItemPopped += _ => RequestRender();
+    }
+
+    // Not a rewind: an undo makes new edits that reverse this replica's last step, and they sync and merge like
+    // keystrokes - so everyone else's work, even work done later, is left alone.
+    private void Undo() => _undo?.Undo();
+
+    private void Redo() => _undo?.Redo();
+}
