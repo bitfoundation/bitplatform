@@ -119,7 +119,7 @@ public class RemoveTests
 
             Assert.IsTrue(Directory.Exists(folder));
             Assert.IsEmpty(Directory.EnumerateFileSystemEntries(folder));
-            StringAssert.Contains(host.FlatOutput, "stays, empty, while a terminal is in it");
+            StringAssert.Contains(host.FlatOutput, $"stays, empty, while cmd ({terminal.Id}) is in it");
             Assert.IsFalse(terminal.HasExited);
         }
         finally
@@ -129,6 +129,72 @@ public class RemoveTests
                 terminal.Kill();
                 terminal.WaitForExit();
             }
+        }
+    }
+
+    [TestMethod]
+    public async Task Remove_Should_StopTheBuildProcessThatIsInTheFolder()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost(HostOs.Windows);
+        var folder = CreateProject(host);
+        host.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
+        var buildProcess = Path.Combine(Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "sdk")).FullName, "MSBuild.exe");
+        File.Copy(Path.Combine(Environment.SystemDirectory, "cmd.exe"), buildProcess);
+
+        using var node = Process.Start(new ProcessStartInfo(buildProcess) { WorkingDirectory = folder, UseShellExecute = false, RedirectStandardInput = true, RedirectStandardOutput = true, CreateNoWindow = true })!;
+
+        try
+        {
+            Assert.AreEqual(0, await host.RunAsync("remove", folder, "--yes"), host.Output);
+
+            Assert.IsFalse(Directory.Exists(folder));
+            Assert.IsTrue(node.WaitForExit(TimeSpan.FromSeconds(10)));
+            StringAssert.Contains(host.FlatOutput, $"after stopping MSBuild ({node.Id})");
+        }
+        finally
+        {
+            Stop(node);
+        }
+    }
+
+    [TestMethod]
+    public async Task Remove_Should_DeleteTheFolderOnceTheAppInItLeaves()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        var prompter = new ScriptedPrompter().On("Delete", true);
+        using var host = new TestHost(HostOs.Windows, prompter: prompter);
+        var folder = CreateProject(host);
+        host.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
+
+        using var terminal = Process.Start(new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "cmd.exe")) { WorkingDirectory = folder, UseShellExecute = false, RedirectStandardInput = true, RedirectStandardOutput = true, CreateNoWindow = true })!;
+
+        var leaving = Task.Run(async () =>
+        {
+            while (File.Exists(Path.Combine(folder, "Contoso.Web.slnf")))
+            {
+                await Task.Delay(100);
+            }
+
+            await Task.Delay(TimeSpan.FromSeconds(2));
+            Stop(terminal);
+        });
+
+        try
+        {
+            Assert.AreEqual(0, await host.RunAsync("remove", folder), host.Output);
+            await leaving;
+
+            Assert.IsFalse(Directory.Exists(folder));
+            Assert.IsFalse(host.FlatOutput.Contains("stays, empty"), host.Output);
+        }
+        finally
+        {
+            Stop(terminal);
         }
     }
 

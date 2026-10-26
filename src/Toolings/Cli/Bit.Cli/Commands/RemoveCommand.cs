@@ -60,6 +60,7 @@ public static class RemoveCommand
 
             var steps = new StepRunner(cli);
             var onlyEmptyFoldersLeft = false;
+            IReadOnlyList<string> inFolder = [];
 
             await ProjectProcesses.StopAsync(cli, steps, folder, cancellationToken);
             LeaveFolder(folder);
@@ -74,6 +75,18 @@ public static class RemoveCommand
                     freed = ProjectProcesses.Free(cli, failures.Select(f => f.Path));
 
                     if (freed.Stopped.Count > 0)
+                    {
+                        (failures, emptyFoldersLeft) = FolderRemover.Delete(folder);
+                    }
+                }
+
+                if (emptyFoldersLeft)
+                {
+                    var inIt = ProjectProcesses.FreeFolder(cli, folder);
+                    freed = freed with { Stopped = [.. freed.Stopped, .. inIt.Stopped] };
+                    inFolder = inIt.Holders;
+
+                    if (inIt.Stopped.Count > 0)
                     {
                         (failures, emptyFoldersLeft) = FolderRemover.Delete(folder);
                     }
@@ -97,9 +110,14 @@ public static class RemoveCommand
                 var after = freed.Stopped.Count > 0 ? $"after stopping {string.Join(", ", freed.Stopped)}" : null;
 
                 return emptyFoldersLeft
-                    ? StepResult.Warning("Deleted everything in the folder", "a terminal is still in it")
+                    ? StepResult.Warning("Deleted everything in the folder", $"{Describe(inFolder)} {(inFolder.Count > 1 ? "are" : "is")} still in it")
                     : StepResult.Succeeded("Deleted the project folder", after);
             }, token), cancellationToken);
+
+            if (onlyEmptyFoldersLeft && cli.IsInteractive)
+            {
+                onlyEmptyFoldersLeft = await WaitForTheFolderAsync(cli, folder, inFolder, cancellationToken) is false;
+            }
 
             cli.Console.Out.WriteLine();
 
@@ -120,13 +138,41 @@ public static class RemoveCommand
 
             if (onlyEmptyFoldersLeft)
             {
-                cli.Console.Out.MarkupLine($"    [grey]{Markup.Escape(folder)} stays, empty, while a terminal is in it. Delete it after leaving it.[/]");
+                cli.Console.Out.MarkupLine($"    [grey]{Markup.Escape(folder)} stays, empty, while {Markup.Escape(Describe(inFolder))} {(inFolder.Count > 1 ? "are" : "is")} in it. Close {(inFolder.Count > 1 ? "them" : "it")}, then delete the folder.[/]");
             }
 
             return CliApp.ExitOk;
         });
 
         return command;
+    }
+
+    private static string Describe(IReadOnlyList<string> holders) => holders.Count switch
+    {
+        0 => "an app",
+        > ShownFailures => $"{string.Join(", ", holders.Take(ShownFailures))} and {holders.Count - ShownFailures} more",
+        _ => string.Join(", ", holders)
+    };
+
+    private static async Task<bool> WaitForTheFolderAsync(CliServices cli, string folder, IReadOnlyList<string> holders, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await cli.Console.RunWithStatusAsync($"Waiting for {Describe(holders)} to leave the folder. Close {(holders.Count > 1 ? "them" : "it")}, or press Ctrl+C to keep it", async _ =>
+            {
+                while (Directory.Exists(folder))
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+                    FolderRemover.Delete(folder);
+                }
+
+                return true;
+            });
+        }
+        catch (OperationCanceledException)
+        {
+            return false;
+        }
     }
 
     private static bool IsProjectRoot(string folder, string name)

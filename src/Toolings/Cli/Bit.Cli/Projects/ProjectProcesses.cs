@@ -39,9 +39,21 @@ public static class ProjectProcesses
         if (cli.Environment.IsWindows is false)
             return FreedFiles.None;
 
+        return Free(cli, OperatingSystem.IsWindows() ? FileHolders.Find(paths) : [], stopBuildProcesses, "it held the project's files");
+    }
+
+    public static FreedFiles FreeFolder(CliServices cli, string folder)
+    {
+        if (cli.Environment.IsWindows is false)
+            return FreedFiles.None;
+
+        return Free(cli, OperatingSystem.IsWindows() ? FolderHolders.Find(folder) : [], stopBuildProcesses: true, "it was in the project's folder");
+    }
+
+    private static FreedFiles Free(CliServices cli, IReadOnlyList<int> ids, bool stopBuildProcesses, string reason)
+    {
         var stopped = new List<string>();
         var holders = new List<string>();
-        IReadOnlyList<int> ids = OperatingSystem.IsWindows() ? FileHolders.Find(paths) : [];
 
         foreach (var id in ids)
         {
@@ -55,7 +67,7 @@ public static class ProjectProcesses
 
                 if (stopBuildProcesses && buildProcesses.Contains(name) && Stop(process, name, id) is { Status: StepStatus.Succeeded })
                 {
-                    cli.Log.Write($"stop {name} ({id}): it held the project's files");
+                    cli.Log.Write($"stop {name} ({id}): {reason}");
                     stopped.Add($"{name} ({id})");
                 }
                 else
