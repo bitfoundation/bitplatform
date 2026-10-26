@@ -286,7 +286,9 @@
     }
 
     private const string _valuesCode = """
+        @using Bit.Bmotion
         @inject BmotionScrollTracker Scroll
+        @implements IAsyncDisposable
 
         @* Values bindings flush to the DOM every frame WITHOUT re-rendering the component -
            no diff, no StateHasChanged, no per-frame render tree. *@
@@ -316,12 +318,16 @@
             {
                 if (firstRender) await Scroll.ObserveAsync(_ => Task.CompletedTask);
             }
+
+            // The tracker is transient and this component's: its browser listener goes with it.
+            public ValueTask DisposeAsync() => Scroll.DisposeAsync();
         }
         """;
 
     private const string _templateCode = """
         @using Bit.Bmotion
         @inject BmotionScrollTracker Scroll
+        @implements IAsyncDisposable
 
         <Bmotion StringValues="_filterValue">
             <div class="box" />
@@ -347,21 +353,26 @@
             {
                 if (firstRender) await Scroll.ObserveAsync(_ => Task.CompletedTask);
             }
+
+            public ValueTask DisposeAsync() => Scroll.DisposeAsync();
         }
         """;
 
     private const string _targetCode = """
         @using Bit.Bmotion
         @inject BmotionScrollTracker TargetScroll
+        @implements IAsyncDisposable
 
         <div id="scroll-target">…</div>
 
         <Bmotion Values="_targetValues">
             <div class="bar" style="transform-origin:0 50%" />
         </Bmotion>
+        <span>Target progress: @((_progress * 100).ToString("F1"))%</span>
 
         @code {
             private Dictionary<string, BmValue<double>> _targetValues = default!;
+            private double _progress;
 
             protected override void OnInitialized()
                 => _targetValues = new() { ["scaleX"] = TargetScroll.TargetProgressValue };
@@ -379,6 +390,8 @@
                     Offset = ["start end", "end start"],
                 }, info => { _progress = info.TargetProgress ?? 0; return InvokeAsync(StateHasChanged); });
             }
+
+            public ValueTask DisposeAsync() => TargetScroll.DisposeAsync();
         }
         """;
 
@@ -498,7 +511,7 @@
 
         @* For finer control, swap Once for the full viewport options: *@
         <Bmotion WhileInView="Bm.To(opacity: 1)"
-                 Viewport="new BmViewport { Once = true, Amount = "all", Margin = "0px 0px -80px 0px" }">
+                 Viewport='new BmViewport { Once = true, Amount = "all", Margin = "0px 0px -80px 0px" }'>
             <div class="band" />
         </Bmotion>
         """;

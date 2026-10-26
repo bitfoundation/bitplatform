@@ -463,6 +463,9 @@
     private const string _valuesCode = """
         @using Bit.Bmotion
         @inject BmotionAnimateService Motion
+        @implements IDisposable
+
+        <input type="range" min="0" max="100" @bind:get="_slider" @bind:set="OnSlider" @bind:event="oninput" />
 
         <Bmotion Values="_directValues"><div class="box" /></Bmotion>
         <Bmotion Values="_springValues"><div class="box" /></Bmotion>
@@ -471,6 +474,8 @@
         @code {
             // One source of truth; everything else is derived from it.
             private readonly BmValue<double> _driver = Bm.Value(20.0);
+            private BmValue<double>? _follower;
+            private int _slider = 20;
 
             private Dictionary<string, BmValue<double>> _directValues = default!;
             private Dictionary<string, BmValue<double>> _springValues = default!;
@@ -482,17 +487,24 @@
                 _directValues = new() { ["x"] = _driver.Transform([0, 100], [-60, 60]) };
 
                 // A spring follower lags the source with physics rather than tracking it.
-                var follower = Motion.Spring(_driver, Bm.Spring(stiffness: 120, damping: 14));
-                _springValues = new() { ["x"] = follower.Transform([0, 100], [-60, 60]) };
+                _follower = Motion.Spring(_driver, Bm.Spring(stiffness: 120, damping: 14));
+                _springValues = new() { ["x"] = _follower.Transform([0, 100], [-60, 60]) };
 
                 _rotateValues = new() { ["rotate"] = _driver.Transform([0, 100], [0, 360]) };
             }
 
             // Setting the source flushes every dependent binding to the DOM next frame -
             // with no re-render of this component at all.
-            void OnSlider(int value) => _driver.SetSync(value);
+            void OnSlider(int value)
+            {
+                _slider = value;
+                _driver.SetSync(value);
+            }
 
             // Or animate the value itself: await Motion.AnimateAsync(_driver, 100, Bm.Spring());
+
+            // The follower runs its spring until it is disposed.
+            public void Dispose() => _follower?.Dispose();
         }
         """;
 

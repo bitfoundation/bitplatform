@@ -27,7 +27,8 @@
              OnAnimationStart='_ => Log("armed:grow")'
              Transition="Bm.Tween(0.5, BmEase.Linear)"
              OnLayoutAnimationComplete='() => Log("grow:complete")'>
-        <div id="grow-box" class="box" style="width: @(_wide ? 200 : 60)px"></div>
+        @* The child keeps its own size while the box scales: it is counter-scaled throughout the FLIP. *@
+        <div id="grow-box" class="box" style="width: @(_wide ? 200 : 60)px"><div id="grow-child" style="width: 20px; height: 20px"></div></div>
     </Bmotion>
 </div>
 

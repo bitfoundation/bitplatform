@@ -410,6 +410,11 @@
                         <div class="box" />
                     </Bmotion>
                 }
+                @* Inherit="false" cuts one element out of the cascade: it stops reacting to the label
+                   coming down and plays only what its own Animate says, once, on mount. *@
+                <Bmotion Inherit="false" Initial="Bm.To(opacity: 0.25)" Animate="Bm.To(opacity: 1)">
+                    <div class="box" />
+                </Bmotion>
             </div>
         </Bmotion>
 
@@ -428,8 +433,10 @@
         </Bmotion>
 
         @* AfterChildren is the mirror image: the container waits for the whole cascade - the last
-           child's stagger slot plus that child's own transition - and only then animates itself. *@
-        <Bmotion Variants="_containerVariants"
+           child's stagger slot plus that child's own transition - and only then animates itself.
+           It needs a change you can still see once its contents have arrived: a fade alone would
+           be hidden behind opaque children. *@
+        <Bmotion Variants="_fadeVariants"
                  InitialState="hidden"
                  State='@(_visible ? "visible" : "hidden")'
                  Transition="Bm.Tween(0.4, staggerChildren: 0.12, when: BmWhen.AfterChildren)">
@@ -455,11 +462,7 @@
             </div>
         </Bmotion>
 
-        @* Inherit="false" cuts one element out of the cascade: it stops reacting to the label
-           coming down and plays only what its own Animate says. *@
-        <Bmotion Inherit="false" Initial="Bm.To(opacity: 0.25)" Animate="Bm.To(opacity: 1)">
-            <div class="box" />
-        </Bmotion>
+        <button @onclick="@(() => _visible = !_visible)">@(_visible ? "Hide" : "Show") boxes</button>
 
         @code {
             private bool _visible = true;
@@ -470,10 +473,18 @@
                 ["visible"] = Bm.To(opacity: 1),
             };
 
+            private readonly BmVariants _fadeVariants = new()
+            {
+                ["hidden"]  = Bm.To(opacity: 0.15, scale: 0.94),
+                ["visible"] = Bm.To(opacity: 1, scale: 1),
+            };
+
+            // A variant can carry its own transition: the rows land on a spring while the
+            // containers simply fade.
             private readonly BmVariants _itemVariants = new()
             {
                 ["hidden"]  = Bm.To(opacity: 0, x: -30),
-                ["visible"] = Bm.To(opacity: 1, x: 0),
+                ["visible"] = Bm.To(opacity: 1, x: 0, transition: Bm.Spring(stiffness: 300, damping: 24)),
             };
         }
         """;

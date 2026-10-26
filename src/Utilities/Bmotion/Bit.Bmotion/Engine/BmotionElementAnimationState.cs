@@ -58,7 +58,9 @@ internal sealed class BmotionElementAnimationState
     private readonly Dictionary<string, IBmotionAnimationDriver> _activeAnims = new();
 
     // ── Gesture layer stack ────────────────────────────────────────────────────
-    private static readonly string[] GesturePriority = ["drag", "focus", "tap", "hover", "inview"];
+    // Highest first, as in motion.dev: a press shows over the hover it happens under, and both over a focus - which
+    // a keyboard tap always has, so a focus ranked above the press would hide WhileTap from every keyboard user.
+    private static readonly string[] GesturePriority = ["drag", "tap", "hover", "focus", "inview"];
     private readonly Dictionary<string, GestureLayer> _gestureLayers = new();
     // What each property a gesture took over showed before the first gesture touched it, for the
     // properties the resting target doesn't define (an Initial-only value, say): it is what they
@@ -924,6 +926,9 @@ internal sealed class BmotionElementAnimationState
     {
         _isDragging = true;
         _transformDirty = true;
+        // A layout animation that paused the transform writes has been cut short by the press (the bridge ends it):
+        // the drag's writes must reach the element from the first move, not once the FLIP would have ended.
+        _transformSuspendUntil = 0;
     }
 
     public void EndDrag() => _isDragging = false;
@@ -1060,7 +1065,7 @@ internal sealed class BmotionElementAnimationState
         for (int i = 0; i < frames.Length - 1; i++)
         {
             var (from, to) = BmotionStringMixer.MixEnds(key, frames[i], frames[i + 1]);
-            if (BmotionStringMixer.TryCreateMix(from, to) is not { } mix)
+            if (BmotionStringMixer.TryCreateMix(from, to, key) is not { } mix)
                 return false;
             mixes[i] = mix;
         }
@@ -1252,7 +1257,7 @@ internal sealed class BmotionElementAnimationState
         // Complex strings with a matching shape ("blur(0px)" → "blur(8px)", multi-part shadows,
         // matching gradients) interpolate token-wise via the string mixer, driven by an eased /
         // sprung progress track.
-        else if (BmotionStringMixer.TryCreateMix(BmotionStringMixer.MixEnds(key, fromRaw, toValue)) is { } mix)
+        else if (BmotionStringMixer.TryCreateMix(BmotionStringMixer.MixEnds(key, fromRaw, toValue), key) is { } mix)
         {
             // At the end the authored string itself, not the mixer's re-serialisation of it.
             _activeAnims[key] = CreateProgressDriver(config, p => ApplyString(key, p == 1 ? toValue : mix(p)));
@@ -1377,6 +1382,9 @@ internal sealed class BmotionElementAnimationState
         public required double DelayMs { get; init; }
         public required double DurationMs { get; init; }    // one iteration
         public required double[] Progress { get; init; }    // eased progress samples, uniform over DurationMs
+        // The exact curve, when the browser plays one the samples can't stand in for: a steps() staircase,
+        // which interpolating between samples would turn into ramps the browser never shows.
+        public Func<double, double>? Ease { get; init; }
         public required Dictionary<string, (double From, double To)> Values { get; init; }
         public required int Iterations { get; init; }       // -1 = infinite
         public required bool Mirror { get; init; }          // alternate direction per iteration
@@ -1522,6 +1530,7 @@ internal sealed class BmotionElementAnimationState
 
         private double Sample(double local)
         {
+            if (Ease is not null) return Ease(Math.Clamp(local, 0, 1));
             if (Progress.Length == 1) return Progress[0];
             double pos = Math.Clamp(local, 0, 1) * (Progress.Length - 1);
             int i = (int)pos;

@@ -38,6 +38,27 @@ public sealed class ReorderTests : BmotionPageTest
     }
 
     [TestMethod]
+    public async Task ANewOrderFromOutside_SlidesTheItemsIntoPlace()
+    {
+        // The bound list mutated in place, D moved to the front: every other item steps down one place (40px items,
+        // 4px apart) - and travels there, as for a drag, rather than jumping.
+        await Page.Locator("#vertical-rotate").ScrollIntoViewIfNeededAsync();
+        const string a = "#vertical .item[data-item='A']";
+        var before = await ProbeAsync(a);
+
+        await ClickAsync("vertical-rotate");
+        var samples = await SampleAsync(a, 400);
+
+        await ExpectReadoutAsync("vertical-order", "D,A,B,C");
+        CollectionAssert.AreEqual(new[] { "D", "A", "B", "C" }, await DomOrderAsync("vertical"));
+        var after = await WaitForRestAsync(a);
+        Assert.AreEqual(44, after.Top - before.Top, 1, "A didn't end up one place down.");
+        Assert.AreEqual(0, after.Y, 0.5, "The layout animation's transform was left on the item.");
+        Assert.IsTrue(samples.Any(s => s.Top > before.Top + 8 && s.Top < after.Top - 8),
+            $"No intermediate position: {string.Join(", ", samples.Select(s => s.Top.ToString("0", CultureInfo.InvariantCulture)))}");
+    }
+
+    [TestMethod]
     public async Task TheKeyboard_PicksAnItemUp_MovesIt_AndDropsIt_KeepingFocusOnIt()
     {
         var a = Page.Locator("#vertical .item[data-item='A']");

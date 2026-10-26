@@ -132,6 +132,19 @@
     </Bmotion>
 </div>
 
+@* Text either side of a draggable, for a drag to pass over: a drag must select none of it (in WebKit a later press
+   inside a selection would start a native drag-and-drop that takes the pointer over). *@
+<div class="track" id="texty-track">
+    Text before it
+    <Bmotion Drag="BmDrag.X" DragMomentum="false"
+             Animate="Bm.To(opacity: 1)"
+             OnAnimationStart='_ => Log("armed:texty")'
+             OnDragEnd='() => Log("texty:end")'>
+        <div id="texty" class="small" style="display: inline-block"></div>
+    </Bmotion>
+    and text after it
+</div>
+
 @code {
     private readonly BmDragControls _controls = new();
 

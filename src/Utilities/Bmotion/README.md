@@ -419,6 +419,10 @@ around it in reading order:
 </div>
 ```
 
+**Changes from outside.** The group follows any change to the bound list, and a new order from
+anywhere else - move-up / move-down buttons, a sort, a server push - animates like a drag: each item
+slides from where it was to its new place.
+
 **Long lists.** An item held near the edge of the list's scroll container - or of the page -
 scrolls it, faster the closer it gets, and travels with the scroll, so it can be carried past
 what's in view. It stops at the end of the list. Turn it off with `AutoScroll="false"`.
@@ -1319,6 +1323,10 @@ Gestures follow the input that made them. A touch doesn't trigger `WhileHover`, 
 no way to end, and a press on a form field inside a draggable element types into the field rather
 than starting a drag. `WhileFocus` follows keyboard focus (`:focus-visible`): it plays when a
 keyboard user tabs to the element, and not when a mouse click happens to focus it.
+
+When gestures overlap, the stronger one shows, as in Motion: drag over tap over hover over focus
+over in-view. A keyboard tap is pressed while the element has focus, so its `WhileTap` shows over
+the `WhileFocus` and gives way back to it on release.
 
 Content that is leaving is `inert` while its exit plays (see
 [BmotionAnimatePresence](#bmotionanimatepresence)): keyboard and screen-reader users never land on

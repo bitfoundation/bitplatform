@@ -148,13 +148,16 @@
             </Bmotion>
         }
 
+        <button @onclick="@(() => _on = !_on)">@(_on ? "Send back" : "Animate")</button>
+
         @code {
             private bool _on;
 
             private readonly BmEase[] _eases =
             [
                 BmEase.SineInOut, BmEase.QuadInOut, BmEase.QuartInOut, BmEase.QuintInOut,
-                BmEase.ExpoOut, BmEase.BackOut, BmEase.ElasticOut, BmEase.BounceOut,
+                BmEase.CircOut, BmEase.ExpoOut, BmEase.BackOut, BmEase.Anticipate,
+                BmEase.ElasticOut, BmEase.BounceOut,
             ];
         }
         """;
@@ -168,6 +171,12 @@
                  Transition="Bm.Tween(0.9, bezier: [0.68, -0.6, 0.32, 1.6])">
             <div class="box-sm" />
         </Bmotion>
+
+        <button @onclick="@(() => _on = !_on)">@(_on ? "Send back" : "Animate")</button>
+
+        @code {
+            private bool _on;
+        }
         """;
 
     private const string _stepsCode = """
@@ -179,5 +188,11 @@
                  Transition="Bm.Tween(1.2, steps: 6, stepJump: BmStepJump.End)">
             <div class="box-sm" />
         </Bmotion>
+
+        <button @onclick="@(() => _on = !_on)">@(_on ? "Send back" : "Step")</button>
+
+        @code {
+            private bool _on;
+        }
         """;
 }

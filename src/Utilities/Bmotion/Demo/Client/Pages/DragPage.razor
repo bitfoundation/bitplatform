@@ -154,15 +154,17 @@
 
         <div class="demo-card drag-stage">
             <span class="stage-note">Pages &middot; snaps to 1 of 3</span>
-            <Bmotion Drag="BmDrag.X"
-                    DragConstraints="BmDragConstraints.Horizontal(-200, 0)"
-                    DragElastic="0.15"
-                    DragTransition="Bm.Inertia(modifyTarget: Bm.SnapTo([0, -100, -200]))"
-                    WhileDrag="Bm.To(scale: 1.05)">
-                <div class="snap-pages">
-                    <span>1</span><span>2</span><span>3</span>
-                </div>
-            </Bmotion>
+            <div class="snap-window">
+                <Bmotion Drag="BmDrag.X"
+                        DragConstraints="BmDragConstraints.Horizontal(-200, 0)"
+                        DragElastic="0.15"
+                        DragTransition="Bm.Inertia(modifyTarget: Bm.SnapTo([0, -100, -200]))"
+                        WhileDrag="Bm.To(scale: 1.05)">
+                    <div class="snap-pages">
+                        <span>1</span><span>2</span><span>3</span>
+                    </div>
+                </Bmotion>
+            </div>
         </div>
     </div>
 
@@ -388,15 +390,18 @@
             <div class="box" />
         </Bmotion>
 
-        @* 2 - Pages: snap to whichever of the fixed stops the fling was heading for. *@
-        <Bmotion Drag="BmDrag.X"
-                 DragConstraints="BmDragConstraints.Horizontal(-200, 0)"
-                 DragElastic="0.15"
-                 DragTransition="Bm.Inertia(modifyTarget: Bm.SnapTo([0, -100, -200]))">
-            <div class="pages">
-                <span>1</span><span>2</span><span>3</span>
-            </div>
-        </Bmotion>
+        @* 2 - Pages: snap to whichever of the fixed stops the fling was heading for. The pages sit
+           100px apart, inside a window one page wide (overflow: hidden). *@
+        <div class="window">
+            <Bmotion Drag="BmDrag.X"
+                     DragConstraints="BmDragConstraints.Horizontal(-200, 0)"
+                     DragElastic="0.15"
+                     DragTransition="Bm.Inertia(modifyTarget: Bm.SnapTo([0, -100, -200]))">
+                <div class="pages">
+                    <span>1</span><span>2</span><span>3</span>
+                </div>
+            </Bmotion>
+        </div>
 
         @* modifyTarget takes any function - Bm.SnapTo is just the common shape:
            DragTransition="Bm.Inertia(modifyTarget: v => v < -100 ? -200 : 0)" *@
@@ -420,7 +425,8 @@
             <Bmotion Drag="BmDrag.X"
                      DragControls="_thumbControls"
                      DragListener="false"
-                     DragConstraints="BmDragConstraints.Parent()">
+                     DragConstraints="BmDragConstraints.Parent()"
+                     DragElastic="BmDragElastic.None">
                 <div class="thumb" />
             </Bmotion>
         </div>

@@ -1226,6 +1226,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             DelayMs = delayMs,
             DurationMs = durationMs,
             Progress = samples,
+            Ease = config.Type != BmotionTransitionType.Spring && config.StepCount > 0 ? BmEaseFunctions.Get(config) : null,
             Values = numeric,
             Strings = strings.Count == 0 ? null : strings.ToDictionary(kv => kv.Key, kv => kv.Value.Track, StringComparer.Ordinal),
             Iterations = infinite ? -1 : config.Repeat,
@@ -1345,7 +1346,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         // A "none" end plays as the other end's neutral values, sent explicitly so the browser and the mirror agree;
         // the authored "none" is written once it is over.
         var (mixFrom, mixTo) = BmotionStringMixer.MixEnds(key, from, to);
-        if (IsInterpolableProperty(key) && BmotionStringMixer.TryCreateMix(mixFrom, mixTo) is { } mix)
+        if (IsInterpolableProperty(key) && BmotionStringMixer.TryCreateMix(mixFrom, mixTo, key) is { } mix)
         {
             var mixed = new BmotionElementAnimationState.WaapiPlan.StringTrack(p => p >= 1 ? to : mix(p), to) { RewriteFinal = true };
             return (mixFrom, mixTo, mixed);

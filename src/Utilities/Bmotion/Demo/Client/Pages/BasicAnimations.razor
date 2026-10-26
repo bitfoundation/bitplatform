@@ -37,7 +37,7 @@
                                         : Bm.To(scale: 1, rotate: 0, backgroundColor: "#1276C6"))'
                     Transition="Bm.Tween(0.4)"
                     OnTap="@(() => _toggled = !_toggled)">
-                <div class="box" />
+                <div class="box box-solid box-grows" />
             </Bmotion>
         </div>
     </div>
@@ -66,7 +66,7 @@
                         : Bm.To(borderRadius: "10px", backgroundColor: "#1276C6", scale: 1))'
                     Transition="Bm.Tween(0.5, BmEase.InOut)"
                     OnTap="@(() => _rounded = !_rounded)">
-                <div class="box" />
+                <div class="box box-solid" />
             </Bmotion>
         </div>
         <div class="demo-card stack">
@@ -176,6 +176,9 @@
                 cursor: pointer; user-select: none;
                 display: flex; align-items: center; justify-content: center;
             }
+            /* A box whose colour animates needs a flat fill: a gradient is a background IMAGE, painted over
+               whatever background-color the animation writes. */
+            .box.solid { background: var(--bm-primary); }
             .btn-bm {
                 background: var(--bm-primary); color: var(--bm-primary-text); border: none; border-radius: 8px;
                 padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
@@ -202,7 +205,7 @@
                                                 : Bm.To(scale: 1, rotate: 0, backgroundColor: "#1276C6"))'
                             Transition="Bm.Tween(0.4)"
                             OnTap="@(() => _toggled = !_toggled)">
-                        <div class="box" />
+                        <div class="box solid" />
                     </Bmotion>
                 </div>
             </div>
@@ -237,6 +240,9 @@
                 cursor: pointer; user-select: none;
                 display: flex; align-items: center; justify-content: center;
             }
+            /* A box whose colour animates needs a flat fill: a gradient is a background IMAGE, painted over
+               whatever background-color the animation writes. */
+            .box.solid { background: var(--bm-primary); }
         </style>
 
         <div class="demo-section">
@@ -249,7 +255,7 @@
                                 : Bm.To(borderRadius: "10px", backgroundColor: "#1276C6", scale: 1))'
                             Transition="Bm.Tween(0.5, BmEase.InOut)"
                             OnTap="@(() => _rounded = !_rounded)">
-                        <div class="box" />
+                        <div class="box solid" />
                     </Bmotion>
                 </div>
 
@@ -308,7 +314,8 @@
            Pinning it to the bottom-left corner turns a rotate into a hinge. *@
         <Bmotion Animate="@(_hinged ? Bm.To(rotate: -75, originX: 0, originY: 1)
                                     : Bm.To(rotate: 0, originX: 0, originY: 1))"
-                 Transition="Bm.Spring(stiffness: 200, damping: 16)">
+                 Transition="Bm.Spring(stiffness: 200, damping: 16)"
+                 OnTap="@(() => _hinged = !_hinged)">
             <div class="box" />
         </Bmotion>
 

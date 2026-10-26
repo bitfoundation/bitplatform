@@ -111,8 +111,11 @@
     <div class="demo-row">
         <div class="demo-card stack">
             <span class="demo-label">Mirror &middot; forever</span>
+            @* The repeat belongs to the run out only: a transition applies to whatever target it is given, so
+               keeping it on the way back would mirror between here and home forever instead of resetting. *@
             <Bmotion Animate="@(_repeat ? Bm.To(x: 90) : Bm.To(x: 0))"
-                    Transition="Bm.Spring(stiffness: 200, damping: 12, repeat: BmRepeat.Mirror())">
+                    Transition="@(_repeat ? Bm.Spring(stiffness: 200, damping: 12, repeat: BmRepeat.Mirror())
+                                          : Bm.Spring(stiffness: 200, damping: 12))">
                 <div class="box box-sm" />
             </Bmotion>
         </div>
@@ -120,7 +123,8 @@
         <div class="demo-card stack">
             <span class="demo-label">Loop &middot; 3&times;, 300 ms apart</span>
             <Bmotion Animate="@(_repeat ? Bm.To(y: 60) : Bm.To(y: 0))"
-                    Transition="Bm.Spring(stiffness: 300, damping: 18, repeat: BmRepeat.Loop(3, delay: 0.3))">
+                    Transition="@(_repeat ? Bm.Spring(stiffness: 300, damping: 18, repeat: BmRepeat.Loop(3, delay: 0.3))
+                                          : Bm.Spring(stiffness: 300, damping: 18))">
                 <div class="box box-sm" />
             </Bmotion>
         </div>
@@ -228,10 +232,14 @@
 
         @* The same spring, described the way a designer would: how bouncy, and for how long.
            Bmotion solves for the stiffness/damping/mass that produce it. *@
-        <Bmotion Animate="@(_on ? Bm.To(y: 60) : Bm.To(y: 0))"
-                 Transition="Bm.Spring(bounce: 0.6, duration: 0.6)">
-            <div class="box-sm" />
-        </Bmotion>
+        @foreach (var bounce in _bounces)
+        {
+            <Bmotion Animate="@(_on ? Bm.To(y: 60) : Bm.To(y: 0))" Transition="bounce">
+                <div class="box-sm" />
+            </Bmotion>
+        }
+
+        <button @onclick="@(() => _on = !_on)">@(_on ? "Send back" : "Animate")</button>
 
         @code {
             private bool _on;
@@ -326,9 +334,12 @@
             <div class="demo-row">
                 <div class="demo-card">
                     <span class="label">Mirror · forever</span>
-                    @* Mirror ping-pongs back through the motion it just played. *@
+                    @* Mirror ping-pongs back through the motion it just played. The repeat goes on the run
+                       out only: a transition applies to whatever target it is handed, so one kept for the
+                       way back would mirror between here and home forever. *@
                     <Bmotion Animate="@(_repeat ? Bm.To(x: 90) : Bm.To(x: 0))"
-                            Transition="Bm.Spring(stiffness: 200, damping: 12, repeat: BmRepeat.Mirror())">
+                            Transition="@(_repeat ? Bm.Spring(stiffness: 200, damping: 12, repeat: BmRepeat.Mirror())
+                                                  : Bm.Spring(stiffness: 200, damping: 12))">
                         <div class="box-sm" />
                     </Bmotion>
                 </div>
@@ -337,7 +348,8 @@
                     <span class="label">Loop · 3×, 300 ms apart</span>
                     @* Loop jumps home and replays from the origin. *@
                     <Bmotion Animate="@(_repeat ? Bm.To(y: 60) : Bm.To(y: 0))"
-                            Transition="Bm.Spring(stiffness: 300, damping: 18, repeat: BmRepeat.Loop(3, delay: 0.3))">
+                            Transition="@(_repeat ? Bm.Spring(stiffness: 300, damping: 18, repeat: BmRepeat.Loop(3, delay: 0.3))
+                                                  : Bm.Spring(stiffness: 300, damping: 18))">
                         <div class="box-sm" />
                     </Bmotion>
                 </div>

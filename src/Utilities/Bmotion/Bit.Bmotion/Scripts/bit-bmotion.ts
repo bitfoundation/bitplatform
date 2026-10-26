@@ -87,6 +87,20 @@ function hasNativeSpaceActivation(el: HTMLElement): boolean {
 // is not hovering it.
 let _activeDrags = 0;
 
+// While a drag is under way the browser must not run a gesture of its own off the same pointer. WebKit starts a text
+// selection from a press on a draggable (user-select: none on the element doesn't stop one anchored around it) and
+// extends it over the page as the pointer travels; a later press inside that selection then starts a native
+// drag-and-drop of it, which takes the pointer over - no more moves, no pointerup, and the drag never ends.
+let _nativeGesturesGuarded = false;
+
+function _guardNativeGestures(): void {
+    if (_nativeGesturesGuarded) return;
+    _nativeGesturesGuarded = true;
+    const block = (e: Event) => { if (_activeDrags > 0) e.preventDefault(); };
+    document.addEventListener('selectstart', block, true);
+    document.addEventListener('dragstart', block, true);
+}
+
 /** Normalised 0→1 scroll progress along one axis (0 when the content doesn't overflow). */
 export function scrollFraction(scroll: number, size: number, client: number): number {
     return size > client ? scroll / (size - client) : 0;
@@ -136,51 +150,68 @@ function _awaitsOffset(part: string): boolean {
 }
 
 /**
- * Layout FLIP child counter-transform (plan item 1.2). The parent element FLIPs with the transform
- * `translate(dx,dy) scale(sx,sy)` about its top-left (origin O). A direct child would ride along -
- * stretched by the scale AND shifted by the translate. To keep the child crisp and in place, apply
- * the exact inverse of the parent transform about the SAME physical point (the parent's top-left);
- * in the child's own box coordinates that point is (-offsetX, -offsetY).
- *
- * Deriving the inverse: the parent maps x → sx·x + (dx + O(1-sx)). Its inverse, written as a CSS
- * `translate(t) scale(k)` about O, is k = 1/sx and t = -dx/sx. Counter-scaling alone (t = 0) - the
- * previous behaviour - left a residual translation of exactly (dx,dy) on the child, so it visibly
- * jumped toward the FLIP corner at the start and slid back to centre. Including the -d/s translate
- * cancels that: net is identity at both endpoints, so children stay put and undistorted.
+ * Layout FLIP corrections (plan item 1.2). The box FLIPs with `translate(d) scale(s)` about its anchor, eased
+ * back to identity; a direct child would ride along - stretched by the scale and shifted by the translate - and
+ * its corners would scale with it. The child is given the exact inverse of the box's transform about the same
+ * physical point, and the corners a radius that renders constant, at every step of the way (flipChildFrames,
+ * flipRadiusFrames). A correction keyframed only at the two ends would be exact there and wrong in between.
  */
 // FLIP scale factors come from width/height ratios, so they are non-negative; clamp them away
 // from zero so a collapsed (0-sized) start rect can't turn the inverse math into Infinity/NaN.
 const MIN_FLIP_SCALE = 1e-4;
 
-interface BmFlipChildCorrection {
-    originX: number; originY: number;
-    fromScaleX: number; fromScaleY: number;
-    fromTranslateX: number; fromTranslateY: number;
-}
-
-export function flipChildCorrection(
-    parentRect: BmRect, childRect: BmRect, sx: number, sy: number, dx = 0, dy = 0): BmFlipChildCorrection {
-    sx = Math.max(sx, MIN_FLIP_SCALE);
-    sy = Math.max(sy, MIN_FLIP_SCALE);
-    const offsetX = childRect.left - parentRect.left;
-    const offsetY = childRect.top - parentRect.top;
-    return {
-        originX: -offsetX, originY: -offsetY,
-        fromScaleX: 1 / sx, fromScaleY: 1 / sy,
-        fromTranslateX: -dx / sx, fromTranslateY: -dy / sy,
-    };
+/**
+ * The progress offsets the FLIP's corrections are keyframed at. The parent's scale runs linearly from s to 1,
+ * so a correction 1/scale is a curve, not a line: two keyframes would interpolate 1/s → 1 linearly and the
+ * product would leave 1 in between (12.5% at the midpoint of a 2× grow). Keyframing it closely enough keeps it
+ * exact to the eye; the samples are spaced evenly in log(scale), which is where 1/scale bends, plus evenly in
+ * progress for the translate. Both animations share the timing easing, so the offsets are in the same
+ * eased-progress space as the parent's two keyframes.
+ */
+export function flipCorrectionOffsets(sx: number, sy: number, segments = 12): number[] {
+    const offsets = new Set<number>();
+    for (let i = 0; i <= segments; i++) offsets.add(i / segments);
+    for (const s of [Math.max(sx, MIN_FLIP_SCALE), Math.max(sy, MIN_FLIP_SCALE)]) {
+        if (Math.abs(Math.log(s)) < 0.01) continue;
+        for (let i = 1; i < segments; i++) {
+            // The scale at this sample, geometric between s and 1, and the progress the parent reaches it at.
+            const at = Math.exp(Math.log(s) * (1 - i / segments));
+            offsets.add((at - s) / (1 - s));
+        }
+    }
+    return Array.from(new Set(Array.from(offsets, o => Math.round(o * 1e6) / 1e6))).sort((a, b) => a - b);
 }
 
 /**
- * Border-radius that, once scaled by (sx,sy), renders as the target radius - so corners stay a
- * constant visual size while the box scales (Motion's border-radius correction). Uses the CSS
- * elliptical `h / v` form so non-uniform scale still yields round corners.
+ * The keyframes that keep a direct child of a FLIPping box where it is and the size it is. The box plays
+ * `translate(d·(1-q)) scale(s + (1-s)·q)` about its anchor at progress q; each keyframe is that transform's exact
+ * inverse about the same physical point, written in the child's own coordinates.
  */
-export function correctedRadius(radius: number, sx: number, sy: number): { fromX: number; fromY: number } {
+export function flipChildFrames(
+    parentRect: BmRect, childRect: BmRect, sx: number, sy: number, dx: number, dy: number,
+    anchorX = 0, anchorY = 0): { originX: number; originY: number; frames: Keyframe[] } {
+    sx = Math.max(sx, MIN_FLIP_SCALE);
+    sy = Math.max(sy, MIN_FLIP_SCALE);
+    const frames = flipCorrectionOffsets(sx, sy).map(q => {
+        const scaleX = sx + (1 - sx) * q, scaleY = sy + (1 - sy) * q;
+        const tx = -dx * (1 - q) / scaleX, ty = -dy * (1 - q) / scaleY;
+        return { offset: q, transform: `translate(${tx}px,${ty}px) scaleX(${1 / scaleX}) scaleY(${1 / scaleY})` };
+    });
     return {
-        fromX: radius / Math.max(sx, MIN_FLIP_SCALE),
-        fromY: radius / Math.max(sy, MIN_FLIP_SCALE),
+        originX: parentRect.left + anchorX * parentRect.width - childRect.left,
+        originY: parentRect.top + anchorY * parentRect.height - childRect.top,
+        frames,
     };
+}
+
+/** The border-radius keyframes that render as `radius` throughout a FLIP's scale (see flipChildFrames). */
+export function flipRadiusFrames(radius: number, sx: number, sy: number): Keyframe[] {
+    sx = Math.max(sx, MIN_FLIP_SCALE);
+    sy = Math.max(sy, MIN_FLIP_SCALE);
+    return flipCorrectionOffsets(sx, sy).map(q => ({
+        offset: q,
+        borderRadius: `${radius / (sx + (1 - sx) * q)}px / ${radius / (sy + (1 - sy) * q)}px`,
+    }));
 }
 
 //
@@ -772,6 +803,13 @@ function _attachDrag(
         // and cancel it so the drag takes over seamlessly. C# resolves its own state from the
         // mirrored plan inside GetCurrentXY below.
         _cancelWaapiForElement(elementId, true);
+        // So does a layout (FLIP) animation in flight - a reordered row grabbed as it slides into its new place:
+        // settled where it is heading, it stops projecting the old layout over the drag.
+        const flip = _flips.get(elementId);
+        if (flip) {
+            flip.end();
+            flip.anim.cancel();
+        }
         // Retrieve starting transform position from C# state synchronously - or, without synchronous
         // interop, from the element itself (just committed above, so it is what's on screen), letting
         // C# fold the cancelled compositor animations back into its state in the background.
@@ -795,6 +833,7 @@ function _attachDrag(
         window.addEventListener('scroll', onScroll, { capture: true, passive: true });
         if (!dragging) _activeDrags++;
         dragging = true;
+        _guardNativeGestures();
         lockedAxis = null;
         constraints = _resolveDragConstraints(constraintsCfg, el, startElX, startElY);
         // Re-measure element-bounds constraints if the layout changes mid-drag (container resize
@@ -1370,20 +1409,16 @@ export function playWaapiAnimation(elementId: string, token: string, keyframes: 
     // Started on an element that is paused or re-timed (Blazor Server, where C# can't move it to
     // its frame loop instead).
     if (typeof timing.playbackRate === 'number') anim.playbackRate = timing.playbackRate;
-    // Start the moment the engine sampled its starting point, not on the next frame: a new animation is otherwise
-    // held on its first keyframe for a whole frame, and when it takes over from one in flight (a retargeted spring)
-    // that frame of standing still is a visible kink. One that continues an interrupted animation (timing.continues)
-    // starts from the instant that one was cancelled - when the engine read the values it starts from - however long
-    // building it took.
-    let start = performance.now();
-    if (timing.continues) {
-        const at = _interruptedAt.get(elementId);
-        if (at !== undefined && at <= start) start = at;
-    }
+    // Started the moment the engine sampled its starting point rather than on the next frame - unless this task has
+    // run so long that the moment is gone (waapiStartTime), and then on its first frame, with the rest of the task's.
+    const frame = document.timeline?.currentTime;
+    const frameTime = frame == null ? null : Number(frame);
+    const start = waapiStartTime(performance.now(), frameTime, !!timing.continues, _interruptedAt.get(elementId));
     _interruptedAt.delete(elementId);
     try {
-        if (document.timeline?.currentTime != null) anim.startTime = start;
+        if (start !== null && frameTime !== null) anim.startTime = start;
     } catch { /* an inactive timeline: the animation starts on the next frame as usual */ }
+    if (!timing.continues && frameTime !== null) _startWithTask(anim, frameTime, start === null);
 
     let map = _waapiAnims.get(elementId);
     if (!map) { map = new Map(); _waapiAnims.set(elementId, map); }
@@ -1449,6 +1484,72 @@ export function setWaapiPlaybackRate(elementId: string, rate: number): void {
 // When each element's animations were last interrupted to hand over to a new one (performance.now()): the instant
 // the engine sampled the values that one starts from.
 const _interruptedAt = new Map<string, number>();
+
+// How far past the last frame a task has to be before a new animation waits for the next one (waapiStartTime): past
+// a click's own few milliseconds, short of any batch long enough to eat into a short animation.
+const LATE_START_MS = 50;
+
+/**
+ * When a Web Animation created at <c>now</c> starts on the document timeline, or null for the frame that first shows
+ * it. Normally at once - the moment the engine sampled its starting point, not on the next frame: a new animation is
+ * otherwise held on its first keyframe for a whole frame, and when it takes over from one in flight that frame of
+ * standing still is a visible kink. A continuation starts from the instant the animation it carries on was
+ * interrupted (when the engine read the values it starts from), however long building it took.
+ * <para>
+ * But a task that has run long by <c>now</c> - building a whole batch, a staggered ripple of dozens of elements -
+ * shows nothing until it ends, while performance.now() runs on (the timeline's clock only moves with a frame).
+ * Backdated to then, a new animation would have played that long before its first frame, and a short one created
+ * early in the batch would never be seen at all: those start on their first frame instead. A continuation keeps its
+ * instant whatever the wait - it carries on a motion that was on screen.
+ * </para>
+ */
+export function waapiStartTime(now: number, frameTime: number | null, continues: boolean, interruptedAt?: number): number | null {
+    if (continues) return interruptedAt !== undefined && interruptedAt <= now ? interruptedAt : now;
+    return frameTime !== null && now - frameTime > LATE_START_MS ? null : now;
+}
+
+// The new animations the current task has started - one task as long as the timeline's time hasn't moved - and
+// whether it has turned out long.
+let _taskFrame: number | null = null;
+let _taskAnims: Animation[] = [];
+let _taskLate = false;
+
+// The late animations held on their first keyframe until the frame that shows them (_startWithTask).
+const _heldLate = new WeakSet<Animation>();
+
+/**
+ * A task that turns out long (waapiStartTime) starts every new animation it created on the frame that first shows
+ * them, the early ones included: those were started at once, before the task was known to be long, and left so they
+ * would run that far ahead of the rest - a stagger's first delays eaten, its first elements arriving together with the
+ * next. A late one is held (paused) on its first keyframe until then and played from there: left pending instead,
+ * WebKit would resolve its start to the time the task began in and show that first frame far along. An early one is
+ * moved to the real time of that frame - not the timeline's, which Chromium leaves at a vsync from inside the task.
+ */
+function _startWithTask(anim: Animation, frameTime: number, late: boolean): void {
+    if (frameTime !== _taskFrame) {
+        _taskFrame = frameTime;
+        _taskAnims = [];
+        _taskLate = false;
+    }
+    _taskAnims.push(anim);
+    if (!late) return;
+    try {
+        anim.pause();
+        _heldLate.add(anim);
+    } catch { /* not pausable: it starts when the browser starts it */ }
+    if (_taskLate) return;
+    _taskLate = true;
+    const anims = _taskAnims;
+    requestAnimationFrame(() => {
+        const at = performance.now();
+        for (const a of anims) {
+            try {
+                if (_heldLate.delete(a)) { if (a.playState === 'paused') a.play(); }
+                else if (a.playState === 'running') a.startTime = at;
+            } catch { /* gone */ }
+        }
+    });
+}
 
 /** Cancels one offloaded animation; commit=true snapshots current values inline first. */
 export function cancelWaapiAnimation(elementId: string, token: string, commit: boolean): void {
@@ -2011,33 +2112,18 @@ export function playWaapiFlip(
         const correctTiming: KeyframeAnimationOptions = { duration: durationMs, easing: easingStr || 'ease', fill: 'none' };
 
         const radius = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0;
-        if (radius > 0) {
-            const r = correctedRadius(radius, sx, sy);
-            el.animate(
-                [
-                    { borderRadius: `${r.fromX}px / ${r.fromY}px` },
-                    { borderRadius: `${radius}px / ${radius}px` },
-                ],
-                correctTiming
-            );
-        }
+        if (radius > 0) el.animate(flipRadiusFrames(radius, sx, sy), correctTiming);
 
         const children = Array.from(el.children);
         for (let i = 0; i < children.length; i++) {
             const child = children[i];
             if (!(child instanceof HTMLElement)) continue;
-            const c = flipChildCorrection(pRect, childRects[i], sx, sy, dx, dy);
+            // Keyframed as the exact inverse of the parent's transform at every step, about the parent's own
+            // transform origin (the anchor), so the child neither stretches nor jumps (flipChildFrames).
+            const c = flipChildFrames(pRect, childRects[i], sx, sy, dx, dy, originX ?? 0, originY ?? 0);
             const prevOrigin = child.style.transformOrigin;
             child.style.transformOrigin = `${c.originX}px ${c.originY}px`;
-            // translate first (outermost), then the inverse scale - the exact inverse of the
-            // parent's `translate(dx,dy) scale(sx,sy)`, so the child neither stretches nor jumps.
-            child.animate(
-                [
-                    { transform: `translate(${c.fromTranslateX}px,${c.fromTranslateY}px) scaleX(${c.fromScaleX}) scaleY(${c.fromScaleY})` },
-                    { transform: 'translate(0px,0px) scaleX(1) scaleY(1)' },
-                ],
-                correctTiming
-            );
+            child.animate(c.frames, correctTiming);
             cleanups.push(() => { child.style.transformOrigin = prevOrigin; });
         }
     }

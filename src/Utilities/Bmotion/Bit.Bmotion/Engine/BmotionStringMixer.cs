@@ -23,15 +23,16 @@ internal static partial class BmotionStringMixer
     private sealed record NumberToken(double Value) : Token;
     private sealed record ColorToken(double[] Channels) : Token;
 
-    /// <summary><see cref="TryCreateMix(string, string)"/> between the two <paramref name="ends"/> (see <see cref="MixEnds"/>).</summary>
-    public static Func<double, string>? TryCreateMix((string From, string To) ends) => TryCreateMix(ends.From, ends.To);
+    /// <summary><see cref="TryCreateMix(string, string, string?)"/> between the two <paramref name="ends"/> (see <see cref="MixEnds"/>).</summary>
+    public static Func<double, string>? TryCreateMix((string From, string To) ends, string? key = null) => TryCreateMix(ends.From, ends.To, key);
 
     /// <summary>
     /// Builds a mix function from <paramref name="from"/> to <paramref name="to"/>, or
     /// <c>null</c> when the strings don't share an interpolatable shape (different literal
-    /// skeletons, token counts or token kinds - or no tokens at all).
+    /// skeletons, token counts or token kinds - or no tokens at all). <paramref name="key"/> is the
+    /// property being mixed: it tells which numbers CSS doesn't allow below zero (see <see cref="Floored"/>).
     /// </summary>
-    public static Func<double, string>? TryCreateMix(string from, string to)
+    public static Func<double, string>? TryCreateMix(string from, string to, string? key = null)
     {
         if (string.IsNullOrEmpty(from) || string.IsNullOrEmpty(to)) return null;
         if (!TryParse(from, out var fromLiterals, out var fromTokens)) return null;
@@ -41,6 +42,7 @@ internal static partial class BmotionStringMixer
         if (!fromLiterals.SequenceEqual(toLiterals, StringComparer.Ordinal)) return null;
         for (int i = 0; i < fromTokens.Count; i++)
             if (fromTokens[i].GetType() != toTokens[i].GetType()) return null;
+        var floored = Floored(key, fromLiterals, fromTokens);
 
         return p =>
         {
@@ -51,8 +53,11 @@ internal static partial class BmotionStringMixer
                 switch (fromTokens[i])
                 {
                     case NumberToken a when toTokens[i] is NumberToken b:
-                        // Numbers extrapolate freely so spring overshoot looks natural.
-                        sb.Append(BmotionCssFormat.Num(a.Value + (b.Value - a.Value) * p));
+                        // Numbers extrapolate freely so spring overshoot looks natural - down to zero for the
+                        // ones CSS has no negative of: below it the value is invalid, and the browser drops the
+                        // frame (an inline style) or the whole keyframe (a recording).
+                        double value = a.Value + (b.Value - a.Value) * p;
+                        sb.Append(BmotionCssFormat.Num(floored[i] && value < 0 ? 0 : value));
                         break;
                     case ColorToken a when toTokens[i] is ColorToken b:
                         // Colors clamp: channel overshoot would wrap/saturate unpredictably.
@@ -63,6 +68,51 @@ internal static partial class BmotionStringMixer
             sb.Append(fromLiterals[^1]);
             return sb.ToString();
         };
+    }
+
+    // Filter functions whose argument can't be negative (hue-rotate's can).
+    private static readonly string[] _nonNegativeFilters =
+        ["blur(", "brightness(", "contrast(", "grayscale(", "invert(", "opacity(", "saturate(", "sepia("];
+
+    /// <summary>
+    /// Which of <paramref name="tokens"/> CSS doesn't allow below zero, so the mix stops them there when a spring
+    /// undershoots: the blur radius of every shadow - the third length of each in a <c>box-shadow</c> or
+    /// <c>text-shadow</c> list, and of a <c>drop-shadow()</c> - and the amount of a filter like <c>blur()</c> or
+    /// <c>brightness()</c>. Offsets, spreads and angles keep their sign.
+    /// </summary>
+    private static bool[] Floored(string? key, List<string> literals, List<Token> tokens)
+    {
+        var floored = new bool[tokens.Count];
+        bool shadows = string.Equals(key, "boxShadow", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(key, "textShadow", StringComparison.OrdinalIgnoreCase);
+        bool filters = string.Equals(key, "filter", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(key, "backdropFilter", StringComparison.OrdinalIgnoreCase);
+        if (!shadows && !filters) return floored;
+
+        // The lengths seen so far in the current shadow. Colours are tokens, so a comma left in the skeleton is one
+        // between shadows; in a filter, drop-shadow( starts a shadow and the next closing parenthesis ends it.
+        int lengths = 0;
+        bool inShadow = shadows;
+        for (int i = 0; i < tokens.Count; i++)
+        {
+            var before = literals[i];
+            if (filters)
+            {
+                if (before.Contains(')')) inShadow = false;
+                if (before.Contains("drop-shadow(", StringComparison.OrdinalIgnoreCase)) { inShadow = true; lengths = 0; }
+            }
+            else if (before.Contains(',')) lengths = 0;
+
+            if (tokens[i] is not NumberToken) continue;
+            if (inShadow)
+                floored[i] = ++lengths == 3;
+            else
+            {
+                var name = before.TrimEnd();
+                floored[i] = Array.Exists(_nonNegativeFilters, f => name.EndsWith(f, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+        return floored;
     }
 
     // Properties whose "none" is the identity of a value list: no filter, no shadow. CSS interpolates "none" there

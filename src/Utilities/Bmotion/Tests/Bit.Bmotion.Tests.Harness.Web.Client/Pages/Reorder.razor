@@ -42,6 +42,10 @@
 </div>
 <Readout @ref="_scrollingOrder" Id="scrolling-order" Initial="R0,R1,R2,R3,R4,R5,R6,R7,R8,R9" />
 
+@* A new order for the vertical list from outside its group, the way move-up / move-down buttons make one: the
+   bound list mutated in place. Last on the page, so it moves none of the lists above. *@
+<button id="vertical-rotate" @onclick="() => Change(RotateVertical)">last to first</button>
+
 @code {
     private List<string> _grid = ["1", "2", "3", "4", "5", "6"];
     private Readout _gridOrder = default!;
@@ -53,6 +57,14 @@
     private Readout _verticalOrder = default!;
     private Readout _horizontalOrder = default!;
     private Readout _handledOrder = default!;
+
+    private void RotateVertical()
+    {
+        var last = _vertical[^1];
+        _vertical.RemoveAt(_vertical.Count - 1);
+        _vertical.Insert(0, last);
+        _verticalOrder.Set(string.Join(",", _vertical));
+    }
 
     private void Committed(List<string> items, Readout readout, string name)
     {

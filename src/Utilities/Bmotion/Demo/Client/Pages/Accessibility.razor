@@ -61,7 +61,7 @@
                         ? Bm.To(x: 60, rotate: 180, backgroundColor: "#FD7F36")
                         : Bm.To(x: -60, rotate: 0, backgroundColor: "#1276C6"))'
                      Transition="Bm.Tween(0.8, BmEase.InOut)">
-                <div class="box" />
+                <div class="box box-solid" />
             </Bmotion>
         </div>
 
@@ -72,7 +72,7 @@
                             ? Bm.To(x: 60, rotate: 180, backgroundColor: "#FD7F36")
                             : Bm.To(x: -60, rotate: 0, backgroundColor: "#1276C6"))'
                          Transition="Bm.Tween(0.8, BmEase.InOut)">
-                    <div class="box" />
+                    <div class="box box-solid" />
                 </Bmotion>
             </BmotionConfig>
         </div>
@@ -234,11 +234,20 @@
 
     private readonly double[] _speeds = [1, 0.35, 0.1];
 
+    private long _lastFrameRender;
+
     // Plain delegate, not an EventCallback: this runs inside the engine's frame loop, so it must
-    // not re-render per frame. Here it only reads the transform into a field that the *next*
-    // ordinary render happens to pick up.
+    // not re-render per frame. It reads the transform into a field on every frame and throttles
+    // to state - a render ten times a second shows the readout live at a fraction of the cost.
     private void OnFrame(IReadOnlyDictionary<string, string> css)
-        => _lastFrame = css.TryGetValue("transform", out var t) ? t : string.Join("; ", css.Values);
+    {
+        _lastFrame = css.TryGetValue("transform", out var t) ? t : string.Join("; ", css.Values);
+
+        var now = Environment.TickCount64;
+        if (now - _lastFrameRender < 100) return;
+        _lastFrameRender = now;
+        _ = InvokeAsync(StateHasChanged);
+    }
 
     private const string _modesCode = """
         // Program.cs - pick the policy once.
@@ -260,7 +269,7 @@
                         ? Bm.To(x: 60, rotate: 180, backgroundColor: "#FD7F36")
                         : Bm.To(x: -60, rotate: 0, backgroundColor: "#1276C6"))'
                      Transition="Bm.Tween(0.8, BmEase.InOut)">
-                <div class="box" />
+                <div class="box" style="background:#1276C6" />
             </Bmotion>
         </BmotionConfig>
 
@@ -318,9 +327,15 @@
         }
         else
         {
-            @* Drag works here too: the browser keeps the element under the pointer. Buttons still serve whoever can't drag. *@
-            <Bmotion Drag="true"><div class="box" /></Bmotion>
-            <p>Drag it, or move it with the buttons.</p>
+            @* Drag works here too: the browser keeps the element under the pointer, and .NET follows a
+               round trip behind. Buttons serve whoever finds that lag gets in the way. *@
+            <Bmotion @ref="_box" Drag="true"><div class="box" /></Bmotion>
+            <button @onclick="@(() => _box.AnimateAsync(Bm.To(x: -80)).AsTask())">◀</button>
+            <button @onclick="@(() => _box.AnimateAsync(Bm.To(x: 80)).AsTask())">▶</button>
+        }
+
+        @code {
+            private Bmotion _box = default!;
         }
         """;
 
@@ -334,6 +349,7 @@
                  OnUpdate="OnFrame">
             <div class="box" />
         </Bmotion>
+        <code>@_lastFrame</code>
 
         @* The whole engine at once: every registered element, its active drivers and live values.
            Drop it into a development build. *@
@@ -341,9 +357,18 @@
 
         @code {
             private string _lastFrame = "";
+            private long _lastRender;
 
+            // Every frame updates the field; a render at most ten times a second shows it.
             private void OnFrame(IReadOnlyDictionary<string, string> css)
-                => _lastFrame = css.TryGetValue("transform", out var t) ? t : "";
+            {
+                _lastFrame = css.TryGetValue("transform", out var t) ? t : "";
+
+                var now = Environment.TickCount64;
+                if (now - _lastRender < 100) return;
+                _lastRender = now;
+                _ = InvokeAsync(StateHasChanged);
+            }
         }
         """;
 }

@@ -315,6 +315,11 @@
         <BmotionLayoutGroup Name="sidebar">
             ... <Bmotion LayoutId="tab-underline"><div /></Bmotion> ...
         </BmotionLayoutGroup>
+
+        @code {
+            private readonly string[] _tabs = ["Home", "Projects", "About", "Contact"];
+            private string _activeTab = "Home";
+        }
         """;
 
     private const string _sizeCode = """

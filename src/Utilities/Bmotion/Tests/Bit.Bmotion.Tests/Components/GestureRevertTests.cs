@@ -45,6 +45,41 @@ public class GestureRevertTests
     }
 
     [TestMethod]
+    public async Task Gestures_RankAsInMotion_TapOverHoverOverFocus()
+    {
+        using var ctx = new BmotionTestContext();
+        ctx.Interop.WebAnimationsSupported = false;
+        var cut = ctx.Render<Bmotion>(ps => ps
+            .Add(p => p.Id, "box")
+            .Add(p => p.Transition, Bm.Tween(0.1, ease: BmEase.Linear))
+            .Add(p => p.WhileFocus, Bm.To(scale: 1.08))
+            .Add(p => p.WhileHover, Bm.To(scale: 1.2))
+            .Add(p => p.WhileTap, Bm.To(scale: 0.88))
+            .Add(p => p.ChildContent, Div));
+        await ctx.RunFramesAsync(0, 100);
+        double Scale() => State(ctx, "box").Transforms["scale"];
+
+        // A keyboard tap: the element holds focus throughout, and the press still shows.
+        await cut.InvokeAsync(Events(ctx, "box").OnFocusIn);
+        await ctx.RunFramesAsync(116, 400);
+        Assert.AreEqual(1.08, Scale(), 1e-6);
+        await cut.InvokeAsync(Events(ctx, "box").OnPointerDown);
+        await ctx.RunFramesAsync(416, 700);
+        Assert.AreEqual(0.88, Scale(), 1e-6, "WhileTap shows over WhileFocus");
+        await cut.InvokeAsync(() => Events(ctx, "box").OnPointerUp(true));
+        await ctx.RunFramesAsync(716, 1000);
+        Assert.AreEqual(1.08, Scale(), 1e-6, "released, the focus state is back");
+
+        // The pointer over a focused element shows the hover; leaving hands back to the focus.
+        await cut.InvokeAsync(Events(ctx, "box").OnPointerEnter);
+        await ctx.RunFramesAsync(1016, 1300);
+        Assert.AreEqual(1.2, Scale(), 1e-6, "WhileHover shows over WhileFocus");
+        await cut.InvokeAsync(Events(ctx, "box").OnPointerLeave);
+        await ctx.RunFramesAsync(1316, 1600);
+        Assert.AreEqual(1.08, Scale(), 1e-6);
+    }
+
+    [TestMethod]
     public async Task HoverEnd_LeavesAnInFlightEnterOnAnUnrelatedPropertyAlone()
     {
         using var ctx = new BmotionTestContext();

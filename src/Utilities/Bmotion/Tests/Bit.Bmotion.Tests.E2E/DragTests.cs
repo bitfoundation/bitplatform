@@ -85,6 +85,26 @@ public sealed class DragTests : BmotionPageTest
     }
 
     [TestMethod]
+    public async Task ADrag_SelectsNoText_SoTheNextOneIsNotTakenOverByTheBrowser()
+    {
+        await ExpectEventAsync("armed:texty");
+        await Page.Locator("#texty").ScrollIntoViewIfNeededAsync();
+
+        // Across the text on its left: WebKit would select it from the press on the element.
+        await DragByAsync("#texty", -80, 0);
+        await ExpectEventAsync("texty:end");
+        Assert.AreEqual("", await Page.EvaluateAsync<string>("() => getSelection().toString()"), "The drag selected the text it passed over.");
+
+        // A press inside a selection starts a native drag-and-drop of it there, after which no more pointer events
+        // arrive: this drag would never move the element nor end.
+        var before = await ProbeAsync("#texty");
+        await DragByAsync("#texty", 60, 0);
+        await ExpectEventAsync("texty:end", 2);
+        // It followed the pointer: the browser didn't take the gesture over.
+        await WaitForStateAsync("#texty", $"s => s.x > {(before.X + 40).ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+    }
+
+    [TestMethod]
     public async Task AxisX_IgnoresVerticalMovement()
     {
         await ExpectEventAsync("armed:axis-x");

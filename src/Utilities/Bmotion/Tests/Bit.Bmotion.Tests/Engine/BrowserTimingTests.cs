@@ -43,4 +43,15 @@ public class BrowserTimingTests
         StringAssert.StartsWith(BmotionBrowserTiming.ChooseEasing(config, samples, linearSupported: true, preferKeyword: false), "linear(");
         Assert.AreEqual("linear", BmotionBrowserTiming.ChooseEasing(config, samples, linearSupported: false, preferKeyword: false));
     }
+
+    [TestMethod]
+    public void Easing_StepsAlwaysPlayAsSteps()
+    {
+        // Sampled to linear(), each jump of a staircase would play as a ramp between two samples.
+        var config = Bm.Tween(1.2, steps: 6, stepJump: BmStepJump.None).ToConfig();
+        var samples = BmotionBrowserTiming.SampleProgress(config)!.Value.Samples;
+
+        Assert.AreEqual("steps(6,jump-none)", BmotionBrowserTiming.ChooseEasing(config, samples, linearSupported: true, preferKeyword: false));
+        Assert.AreEqual("steps(6,jump-none)", BmotionBrowserTiming.ChooseEasing(config, samples, linearSupported: true, preferKeyword: true));
+    }
 }

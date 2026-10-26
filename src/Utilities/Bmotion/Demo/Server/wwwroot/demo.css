@@ -203,6 +203,19 @@
     font-size: 1.125rem;
 }
 
+/* A box whose background colour is what animates (Basics, Accessibility): a flat fill in the colour the
+   samples start from, because the gradient is a background image and would paint over every colour the
+   animation writes. */
+.box-solid {
+    background: var(--demo-blue);
+}
+
+/* A box that comes to rest bigger than its own box - scaled 1.3 and turned 45deg, a diamond 147px tall
+   (Basics): the room it grows into, above and below, so it doesn't settle over the caption on its stage. */
+.box-grows {
+    margin-block: 2.25rem;
+}
+
 /* ---------- Accessibility ---------- */
 
 .caps-list {
@@ -529,8 +542,17 @@
     background: repeating-linear-gradient(to right, var(--demo-accent-line) 0 1px, transparent 1px 3.75rem);
 }
 
+/* The carousel's window: one page wide, so a stop shows one page with the edges of its neighbours. */
+.snap-window {
+    width: calc(5.75rem + 1.5rem + 2px);
+    overflow: hidden;
+    border-radius: .625rem;
+}
+
+/* The pages sit 100px apart (a 92px page and its 8px gap), the distance between the stops it snaps to. */
 .snap-pages {
     display: flex;
+    width: max-content;
     gap: .5rem;
     padding: .75rem;
     cursor: grab;
@@ -543,7 +565,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 5rem;
+    width: 5.75rem;
     height: 3.5rem;
     color: #fff;
     font-size: 1.25rem;
@@ -644,6 +666,24 @@
     min-height: 11rem;
 }
 
+/* The mark: a crosshair over the stage's centre, which a centred pin sits under. */
+.pin-stage::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1.25rem;
+    height: 1.25rem;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    opacity: .6;
+    background:
+        linear-gradient(var(--bb-text), var(--bb-text)) center / 1px 100% no-repeat,
+        linear-gradient(var(--bb-text), var(--bb-text)) center / 100% 1px no-repeat;
+}
+
+/* Centred on its own anchor with a transform - the one an animated transform overwrites, which the sample
+   without a TransformTemplate shows. */
 .pin {
     position: absolute;
     top: 50%;
@@ -652,6 +692,7 @@
     height: 2.5rem;
     border-radius: 50%;
     background: var(--demo-gradient);
+    transform: translate(-50%, -50%);
 }
 
 /* The field WhileFocus animates - its border colour included - so it draws its own border rather

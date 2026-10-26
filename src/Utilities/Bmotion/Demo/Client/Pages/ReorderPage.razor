@@ -259,18 +259,23 @@
 
     private const string _keyboardCode = """
         @* Keyboard reordering is built in (Space, the arrow keys, Space; Escape cancels) - Announce words it: *@
-        <BmotionReorderGroup @bind-Items="_tracks" Context="track"
+        <BmotionReorderGroup @bind-Items="_tracks" ItemKey="@(t => t.Id)" Context="track"
                              Announce='a => $"{a.Item.Title}, {a.Event}: {a.Position} of {a.Count}"'>
-            …
+            <div class="row">
+                @track.Title
+                @* And the group observes external mutations of the bound list, so anything that reorders
+                   Items animates exactly like a drag: move buttons, a sort, a server push, an undo. *@
+                <button aria-label="Move @track.Title up"
+                        disabled="@(_tracks.IndexOf(track) is 0)"
+                        @onclick="() => MoveTrack(track, -1)">▲</button>
+            </div>
         </BmotionReorderGroup>
 
-        @* And the group observes external mutations of the bound list, so anything that reorders
-           Items animates exactly like a drag: move buttons, a sort, a server push, an undo. *@
-        <button aria-label="Move @track.Title up"
-                disabled="@(_tracks.IndexOf(track) is 0)"
-                @onclick="() => MoveTrack(track, -1)">▲</button>
-
         @code {
+            private sealed record Track(int Id, string Title);
+
+            private List<Track> _tracks = [new(1, "One More Time"), new(2, "Digital Love"), new(3, "Voyager")];
+
             private void MoveTrack(Track track, int delta)
             {
                 var index = _tracks.IndexOf(track);

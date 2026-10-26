@@ -49,6 +49,32 @@ public sealed class LayoutTests : BmotionPageTest
     }
 
     [TestMethod]
+    public async Task LayoutSize_KeepsAChildItsOwnSize_WhileTheBoxScales()
+    {
+        await ClickAsync("grow");
+        // The box's rendered width and its child's, a frame at a time through the FLIP.
+        var frames = await Page.EvaluateAsync<double[][]>("""
+            async () => {
+                const box = document.getElementById('grow-box'), child = document.getElementById('grow-child');
+                const out = [], end = performance.now() + 450;
+                while (performance.now() < end) {
+                    await new Promise(requestAnimationFrame);
+                    out.push([box.getBoundingClientRect().width, child.getBoundingClientRect().width]);
+                }
+                return out;
+            }
+            """);
+        await ExpectEventAsync("grow:complete");
+
+        // Exact at every step, not only at the two ends: a correction interpolated straight from 1/scale to 1
+        // would leave the child 40% too wide halfway through this grow.
+        var scaling = frames.Where(f => f[0] is > 65 and < 195).ToArray();
+        Assert.IsTrue(scaling.Length > 3, "The box didn't scale through the FLIP.");
+        foreach (var f in scaling)
+            Assert.AreEqual(20, f[1], 0.6, $"The child is {f[1]:0.#}px wide while the box is {f[0]:0.#}px: it was stretched.");
+    }
+
+    [TestMethod]
     public async Task AfterALayoutAnimation_TheElementStillShowsItsOwnTransform()
     {
         await ClickAsync("move");

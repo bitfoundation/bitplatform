@@ -94,6 +94,10 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
 
     private readonly List<Entry> _entries = new();
 
+    // Counts the orders that came from outside the group: the items' LayoutDependency, so they measure for a FLIP
+    // on exactly those renders and on no other.
+    private int _externalOrder;
+
     // ── Active drag session ────────────────────────────────────────────────────
     private Entry? _dragged;
     private List<Entry> _visualOrder = new();
@@ -128,10 +132,17 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
             order.Add(key);
         }
 
+        bool external = !order.SequenceEqual(_entries.Select(e => e.Key));
+
         // An external Items mutation (keys added/removed/reordered) while a drag preview is in
         // flight invalidates the measured session; drop it and follow the new list.
-        if (_dragged != null && !order.SequenceEqual(_entries.Select(e => e.Key)))
+        if (_dragged != null && external)
             _dragged = null;
+
+        // A new order from outside - move buttons, a sort, a server push - slides the items into place like a drag
+        // does: each item FLIPs from where it was. A drag's own commit has put _entries in the new order already, so
+        // the list it hands back is no change here and moves nothing a second time.
+        if (external && _entries.Count > 0) _externalOrder++;
 
         var byKey = _entries.ToDictionary(e => e.Key, e => e);
         _entries.Clear();
@@ -171,7 +182,11 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
             builder.AddComponentParameter(9, "DragAutoScroll", AutoScroll);
             builder.AddComponentParameter(10, "ChildContent",
                 (RenderFragment)(b => b.AddContent(0, ChildContent, captured.Item)));
-            builder.AddComponentReferenceCapture(11, o => captured.Ref = (Bmotion)o);
+            // Measured for a layout animation only when the order changes from outside (see OnParametersSet), and
+            // position only: a reordered item moves, it doesn't resize.
+            builder.AddComponentParameter(11, "Layout", BmLayout.Position);
+            builder.AddComponentParameter(12, "LayoutDependency", _externalOrder);
+            builder.AddComponentReferenceCapture(13, o => captured.Ref = (Bmotion)o);
             builder.CloseComponent();
         }
     }

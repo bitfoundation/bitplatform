@@ -7,9 +7,11 @@
     <p class="bb-subtitle">
         Interpolating a color means walking a straight line between two points - but <em>which</em>
         space you draw that line in decides what the midpoints look like. In sRGB the channels are
-        mixed numerically, which is why complementary colors pass through a desaturated grey on the
-        way. <strong>OKLab</strong> is built so that equal steps look like equal steps, so the same
-        journey keeps its chroma the whole way across.
+        mixed numerically, which is why two distant colors pass through a dark, muddy middle on the
+        way. <strong>OKLab</strong> is built so that equal steps look like equal steps: the lightness
+        travels evenly from one end to the other, so the same journey stays clean and bright the
+        whole way across. Opposite hues still meet near grey in the middle - in any space a straight
+        line between them crosses it - but a light grey, not a dark one.
     </p>
 </div>
 
@@ -90,14 +92,19 @@
         @using Bit.Bmotion
 
         @* Per-transition. sRGB is the default, matching Framer Motion. *@
-        <Bmotion Animate='Bm.To(backgroundColor: "#FFDD00")'
+        <Bmotion Animate='@(_on ? Bm.To(backgroundColor: "#FFDD00") : Bm.To(backgroundColor: "#0000FF"))'
                  Transition="Bm.Tween(1.6, colorSpace: BmColorSpace.Oklab)">
-            <div class="swatch" />
+            <div class="swatch" style="background:#0000FF" />
         </Bmotion>
+        <button @onclick="@(() => _on = !_on)">Cross-fade</button>
 
         @* …or once, for a whole subtree. *@
         <BmotionConfig ColorSpace="BmColorSpace.Oklab">
             ...
         </BmotionConfig>
+
+        @code {
+            private bool _on;
+        }
         """;
 }
