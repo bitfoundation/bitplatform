@@ -16,6 +16,7 @@
     <meta property="og:site_name" content="Bit.Bonboarding" />
     <meta property="og:title" content="Bonboarding - onboarding and product tours for Blazor" />
     <meta property="og:description" content="Spotlights, branching and multi-page product tours for Blazor. Every decision made in C#; the browser only measures, observes and routes keys." />
+    <meta property="og:image" content="https://bonboarding.bitplatform.dev/icon-512.png" />
     <meta name="twitter:card" content="summary" />
 
     <ResourcePreloader />
@@ -32,7 +33,8 @@
     @* Synchronous on purpose: applies the light/dark theme before first paint. *@
     <script src="@Assets["theme.js"]"></script>
     <ImportMap />
-    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="icon" href="favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
     <HeadOutlet @rendermode="InteractiveAuto" />
 </head>

@@ -18,6 +18,7 @@
     <meta property="og:site_name" content="Bit.Borm" />
     <meta property="og:title" content="Borm - schema-driven forms for Blazor" />
     <meta property="og:description" content="Describe a form once - from a C# type, a fluent builder or JSON Schema - and Borm renders it, validates it and keeps its state, with every decision made in C#." />
+    <meta property="og:image" content="https://borm.bitplatform.dev/icon-512.png" />
     <meta name="twitter:card" content="summary" />
 
     <ResourcePreloader />
@@ -35,7 +36,9 @@
     @* Synchronous on purpose: applies the light/dark theme before first paint. *@
     <script src="@Assets["theme.js"]"></script>
     <ImportMap />
+    <link rel="icon" href="favicon.ico" sizes="32x32" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
     <HeadOutlet @rendermode="PageRenderMode" />
 </head>
 

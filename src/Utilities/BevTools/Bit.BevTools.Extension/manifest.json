@@ -3,6 +3,12 @@
     "name": "bit BevTools",
     "version": "1.0.0",
     "description": "Blazor developer tools: every BevTools runtime of the inspected page (Server circuit, WebAssembly) in a DevTools panel.",
+    "icons": {
+        "16": "icon-16.png",
+        "32": "icon-32.png",
+        "48": "icon-48.png",
+        "128": "icon-128.png"
+    },
     "devtools_page": "devtools.html",
     "minimum_chrome_version": "110",
     "browser_specific_settings": {
