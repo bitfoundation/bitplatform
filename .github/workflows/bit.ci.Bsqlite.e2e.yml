@@ -57,7 +57,7 @@ jobs:
         node-version: 24
 
     - name: Install wasm-tools
-      run: cd src && dotnet workload install wasm-tools
+      run: cd src && dotnet workload install wasm-tools wasm-tools-net10
 
     # The tests drive the demo published the way bsqlite.demo.cd.yml publishes it, not a build output: only a publish
     # trims the WebAssembly client, and an interop payload the trimmer breaks - an anonymous type whose constructor

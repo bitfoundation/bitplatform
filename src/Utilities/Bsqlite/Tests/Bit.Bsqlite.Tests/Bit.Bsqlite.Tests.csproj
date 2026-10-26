@@ -34,12 +34,12 @@
     </ItemGroup>
 
     <!-- The demo's model and migrations are the proof that one AppDbContext and one migration set run on both
-         sides. The demo only exists for net11.0, so the tests that load it do too. -->
-    <ItemGroup Condition="'$(TargetFramework)' == 'net11.0'">
+         sides. The demo only exists for net10.0, so the tests that load it do too. -->
+    <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
         <ProjectReference Include="..\..\Demo\Data\Bit.Bsqlite.Demo.Data.csproj" />
     </ItemGroup>
 
-    <ItemGroup Condition="'$(TargetFramework)' != 'net11.0'">
+    <ItemGroup Condition="'$(TargetFramework)' != 'net10.0'">
         <Compile Remove="EntityFrameworkCore\SharedSampleModelTests.cs" />
     </ItemGroup>
 

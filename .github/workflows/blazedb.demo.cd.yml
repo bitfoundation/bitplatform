@@ -30,7 +30,7 @@ jobs:
         node-version: 24
 
     - name: Install wasm
-      run:  cd src && dotnet workload install wasm-tools
+      run:  cd src && dotnet workload install wasm-tools wasm-tools-net10
 
     - name: Publish
       run: dotnet publish src/Utilities/BlazeDb/Demo/Server/Bit.BlazeDb.Demo.Server.csproj -c Release -p:AspNetCoreHostingModel=OutOfProcess -o server -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true
