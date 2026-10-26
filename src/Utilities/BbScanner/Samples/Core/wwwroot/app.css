@@ -1,0 +1,189 @@
+﻿/* Minimal styling for the BbScanner samples - just enough to keep the pages readable. The scanner styles itself:
+   its stylesheet is added to the page by the package's JS initializer. */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+    color: #1b1b1f;
+    background: #fafafa;
+}
+
+code {
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 0.9em;
+}
+
+.topbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    padding: 0.75rem 1.5rem;
+    background: #1276c6;
+}
+
+.topbar a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.topbar a.active {
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+main {
+    max-width: 72rem;
+    padding: 1rem 1.5rem 4rem;
+}
+
+/* <FocusOnNavigate> moves focus to the heading after each navigation so screen readers announce the page; the heading
+   is not a control, so it gets no focus ring. */
+h1:focus {
+    outline: none;
+}
+
+section {
+    margin-bottom: 1.5rem;
+}
+
+button {
+    padding: 0.4rem 0.9rem;
+    border: 1px solid #1276c6;
+    border-radius: 4px;
+    color: #1276c6;
+    background: #fff;
+    font: inherit;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #e7f1fa;
+}
+
+button:disabled {
+    border-color: #c4c4cc;
+    color: #8a8a94;
+    background: #fff;
+    cursor: default;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    margin: 0.5rem 0;
+}
+
+.surface {
+    max-width: 40rem;
+}
+
+.surface.narrow {
+    max-width: 28rem;
+}
+
+.muted {
+    color: #5b5b66;
+    font-size: 0.875rem;
+}
+
+.status {
+    padding: 0.5rem 0.75rem;
+    border-left: 3px solid #1276c6;
+    background: #fff;
+}
+
+.status.error {
+    border-left-color: #b91c1c;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0 0.5rem;
+    border-radius: 999px;
+    background: #e7f1fa;
+    color: #0d5a97;
+    font-size: 0.875rem;
+}
+
+.badge-error {
+    background: #fde8e8;
+    color: #b91c1c;
+}
+
+.value {
+    font-family: ui-monospace, Consolas, monospace;
+    overflow-wrap: anywhere;
+}
+
+.facts {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.25rem 1rem;
+}
+
+.facts dt {
+    font-weight: 600;
+}
+
+.facts dd {
+    margin: 0;
+}
+
+.features {
+    padding-left: 1.25rem;
+}
+
+.features li {
+    margin-bottom: 0.35rem;
+}
+
+.results {
+    width: 100%;
+    margin-top: 0.75rem;
+    border-collapse: collapse;
+}
+
+.results th,
+.results td {
+    padding: 0.35rem 0.5rem;
+    border-bottom: 1px solid #e3e4e8;
+    text-align: start;
+    vertical-align: top;
+}
+
+.symbols {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    gap: 1rem;
+}
+
+.symbol {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0.75rem;
+    border: 1px solid #e3e4e8;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.symbol figcaption {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+}
+
+.symbol-image {
+    display: block;
+    width: 100%;
+    max-height: 10rem;
+}

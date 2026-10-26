@@ -1,0 +1,10 @@
+﻿@* The interactive root of every sample. BbScanner needs nothing here: no service, no initializer component and no
+   stylesheet link - the package's Blazor JS initializer adds _content/Bit.BbScanner/bit-bbscanner.css to the page by
+   itself, and the component imports its own JavaScript module the first time it renders. *@
+
+<Router AppAssembly="typeof(Routes).Assembly" NotFoundPage="typeof(NotFoundPage)">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>

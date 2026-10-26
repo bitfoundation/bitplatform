@@ -94,6 +94,12 @@ The demo site, [bbscanner.bitplatform.dev](https://bbscanner.bitplatform.dev), h
 parameter, generated sample barcodes for every symbology, camera control, scan regions, image scanning, an
 in-browser decoder benchmark, customisation and error handling.
 
+[`Samples`](Samples/) is the hosting harness rather than the docs: one shared [Core](Samples/Core/) project of
+pages (the live camera, still images, and the decoder reading every symbology in-process), hosted unchanged under
+[Server](Samples/Server/), [WASM](Samples/Wasm/), [Auto](Samples/Auto/) and [MAUI](Samples/Maui/) (Blazor Hybrid on
+Android, iOS, macOS and Windows), so each [hosting model](#hosting-models) can be seen doing what it can: the camera
+under WebAssembly, `NotSupported` from the component under Server and MAUI, and `BbBarcodeDecoder` everywhere.
+
 ## How it fits together
 
 ```text
@@ -1003,7 +1009,9 @@ what perspective takes off one side, so the stop that is clearly best aligned wi
 Bit.BbScanner                     the library
 Demo/Client                       the demo's pages, run on WebAssembly
 Demo/Server                       the demo's host, and the MCP server
-Tests/Bit.BbScanner.TestKit       encoders and image helpers, shared by the tests, the benchmarks and the demo
+Samples/Core                      the samples' shared pages
+Samples/Server, Wasm, Auto, Maui  the same pages in each hosting model
+Tests/Bit.BbScanner.TestKit       encoders and image helpers, shared by the tests, the benchmarks, the demo and the samples
 Tests/Bit.BbScanner.Tests         unit, round-trip and image robustness tests
 Tests/Bit.BbScanner.Tests.Mcp     the MCP server, over the wire
 Tests/Bit.BbScanner.Tests.E2E     browser tests: a real page, a real camera stream

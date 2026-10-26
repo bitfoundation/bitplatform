@@ -1,0 +1,94 @@
+﻿@page "/decoder"
+
+<PageTitle>Decoder - BbScanner samples</PageTitle>
+
+<h1>Decoder</h1>
+
+<p>
+    <code>BbBarcodeDecoder</code> has no dependency on Blazor, JavaScript or a camera, so it runs wherever .NET does:
+    in the browser on WebAssembly, on the server, and natively in a MAUI app, where it is what the frames of the
+    platform's own camera API go to. Every symbol below was generated in memory, rendered to grayscale pixels and
+    read back on this host by one decoder, frame after frame, the way a camera loop reads them.
+</p>
+
+<HostFacts />
+
+<div class="toolbar">
+    <label>
+        <input type="checkbox" @bind="_stillImageTuning" />
+        Still image tuning (<code>BbScannerOptions.ForStillImages()</code>)
+    </label>
+    <button type="button" disabled="@_decoding" @onclick="DecodeAllAsync">Decode again</button>
+    <span class="muted">@_rows.Count(r => r.Read) of @SymbolCatalog.All.Count read, @_total.TotalMilliseconds.ToString("0.0") ms in all</span>
+</div>
+
+<p class="muted">
+    The first pass includes the runtime's warm-up; <em>Decode again</em> measures the decoder alone. On WebAssembly the
+    times are those of the IL interpreter unless the app is compiled ahead of time - the README's performance section
+    has the numbers.
+</p>
+
+<div class="symbols">
+    @foreach (var row in _rows)
+    {
+        <figure class="symbol">
+            <SymbolImage Path="@row.Path" Width="row.Width" Height="row.Height" Label="@($"{row.Symbol.Caption} encoding {row.Symbol.Text}")" />
+            <figcaption>
+                <strong>@row.Symbol.Caption</strong>
+                @if (row.Read)
+                {
+                    <span class="badge">read in @row.Time.TotalMilliseconds.ToString("0.00") ms</span>
+                }
+                else
+                {
+                    <span class="badge badge-error">@(row.Result is null ? "not read" : $"misread as {row.Result.Format}")</span>
+                }
+                <span class="value">@(row.Result?.Text ?? row.Symbol.Text)</span>
+            </figcaption>
+        </figure>
+    }
+</div>
+
+@code {
+    private sealed record Row(SampleSymbol Symbol, string Path, int Width, int Height, BbBarcodeResult? Result, TimeSpan Time)
+    {
+        public bool Read => Result is not null && Result.Format == Symbol.Format && Result.Text == Symbol.Text;
+    }
+
+    private readonly List<Row> _rows = [];
+    private bool _stillImageTuning;
+    private bool _decoding;
+    private TimeSpan _total;
+
+    protected override Task OnInitializedAsync() => DecodeAllAsync();
+
+    private async Task DecodeAllAsync()
+    {
+        _decoding = true;
+        _rows.Clear();
+        _total = TimeSpan.Zero;
+
+        var options = _stillImageTuning ? BbScannerOptions.ForStillImages() : new BbScannerOptions();
+        options.Formats = BbBarcodeFormat.All;
+        options.DuplicateSuppressionWindow = TimeSpan.Zero;
+
+        // One decoder for every symbol: it owns the scratch state a frame needs and reuses it, which is what keeps a
+        // camera loop free of garbage. It is not thread safe - one per scanning session.
+        using var decoder = new BbBarcodeDecoder(options);
+        foreach (var symbol in SymbolCatalog.All)
+        {
+            using var image = symbol.Render();
+            var result = decoder.Decode(image.View, suppressDuplicates: false);
+            var time = decoder.LastFrame.Total;
+            _total += time;
+            _rows.Add(new Row(symbol, SymbolImage.Trace(image), image.Width, image.Height, result, time));
+
+            // Hand the thread back between symbols, so each row shows as soon as it is read - on WebAssembly the
+            // decoder and the renderer share the one thread.
+            StateHasChanged();
+            await Task.Yield();
+        }
+
+        _decoding = false;
+    }
+}
