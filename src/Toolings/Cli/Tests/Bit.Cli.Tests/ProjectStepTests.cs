@@ -269,6 +269,46 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public async Task AHungDocker_Should_LeaveAspireOnThePodmanThatAnswers()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var project = CreateFakeProject(host, "Contoso");
+        host.Runner.On("docker", "version", 1);
+        host.Runner.Executables["podman"] = "/usr/bin/podman";
+        host.Runner.On("podman", "container ls", 0);
+
+        var result = await new ProjectSteps(host.Services, project).ContainerRuntimeAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail + result.FollowUp);
+        Assert.AreEqual("Aspire runs the containers on Podman", result.Title);
+        CollectionAssert.AreEqual(new[] { "user-secrets", "set", "DcpPublisher:ContainerRuntime", "podman", "--project", project.AppHostDirectory },
+            host.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() is "user-secrets").Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task TheContainerRuntime_Should_BeDockerWhenItAnswers_AndLeftAloneWhenNothingDoes()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var project = CreateFakeProject(host, "Contoso");
+        var steps = new ProjectSteps(host.Services, project);
+        host.Runner.Executables["podman"] = "/usr/bin/podman";
+        host.Runner.On("podman", "container ls", 125);
+        host.Runner.On("docker", "version", 1);
+
+        Assert.AreEqual(StepStatus.Skipped, (await steps.ContainerRuntimeAsync(_ => { }, CancellationToken.None)).Status);
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "user-secrets"));
+
+        using var dockerHost = new TestHost(HostOs.Linux);
+        var dockerProject = CreateFakeProject(dockerHost, "Contoso");
+        dockerHost.Runner.On("docker", "version", 0, "29.1.3");
+
+        var docker = await new ProjectSteps(dockerHost.Services, dockerProject).ContainerRuntimeAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual("Aspire runs the containers on Docker", docker.Title);
+        Assert.AreEqual("docker", dockerHost.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() is "user-secrets").Arguments[3]);
+    }
+
+    [TestMethod]
     public async Task AspireStart_Should_WaitForEveryServerAndStopTheProject()
     {
         using var host = new TestHost(HostOs.Linux);

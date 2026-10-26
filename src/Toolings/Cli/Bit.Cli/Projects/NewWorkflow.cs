@@ -204,6 +204,11 @@ public sealed partial class NewWorkflow(CliServices cli)
             return false;
         }
 
+        if (cli.Environment.IsCI is false && Directory.Exists(context.AppHostDirectory))
+        {
+            await RunProjectStepAsync(steps, context, "container-runtime", "Checking the container runtime", projectSteps.ContainerRuntimeAsync, cancellationToken);
+        }
+
         if (noWorkloads is false)
         {
             await RunProjectStepAsync(steps, context, "workloads", $"Installing {Platforms.BuildSupport(context.Platforms)}", projectSteps.WorkloadsAsync, cancellationToken);
@@ -476,6 +481,7 @@ public sealed partial class NewWorkflow(CliServices cli)
         if (request.NoCertificate is false) stepsList.Add("unique app certificate");
         if (request.NoGit is false) stepsList.Add("git with develop and main");
         stepsList.Add(".NET SDK check");
+        if (selection.Aspire && cli.Environment.IsCI is false) stepsList.Add("container runtime for Aspire");
         if (request.NoWorkloads is false) stepsList.Add(Platforms.BuildSupport(context.Platforms));
         if (cli.Environment.IsMacOS && context.BuildsSolution) stepsList.Add("Xcode check");
         if (request.NoRestore is false) stepsList.Add("restore");

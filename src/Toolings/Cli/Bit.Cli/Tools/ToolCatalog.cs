@@ -97,6 +97,19 @@ public static partial class ToolCatalog
         }
     }
 
+    public static async Task<string?> ContainerRuntimeAsync(IProcessRunner runner, CliEnvironment environment, CancellationToken cancellationToken)
+    {
+        var docker = await runner.RunAsync(new ProcessSpec { FileName = "docker", Arguments = ["version", "--format", "{{.Server.Version}}"], Timeout = TimeSpan.FromSeconds(20) }, cancellationToken);
+
+        if (docker.Succeeded && ParseVersion(docker.Output) is not null)
+            return "docker";
+
+        return DockerTool.FindPodman(runner, environment) is { } podman
+            && (await runner.RunAsync(new ProcessSpec { FileName = podman, Arguments = ["container", "ls", "-n", "1"], Timeout = TimeSpan.FromSeconds(20) }, cancellationToken)).Succeeded
+            ? "podman"
+            : null;
+    }
+
     public static string? DotnetRoot(ToolContext context) => DotnetRoot(context.Runner);
 
     public static string? DotnetRoot(IProcessRunner runner)
@@ -691,17 +704,21 @@ public static partial class ToolCatalog
             };
         }
 
-        private static string? FindPodman(ToolContext context)
+        private static string? FindPodman(ToolContext context) => FindPodman(context.Runner, context.Environment);
+
+        internal static string? FindPodman(IProcessRunner runner, CliEnvironment environment)
         {
-            if (context.Runner.FindExecutable("podman") is { } podman)
+            if (runner.FindExecutable("podman") is { } podman)
                 return podman;
 
-            var installed = PodmanInstallPath(context);
-            return context.Environment.IsWindows && File.Exists(installed) ? installed : null;
+            var installed = PodmanInstallPath(environment);
+            return environment.IsWindows && File.Exists(installed) ? installed : null;
         }
 
-        private static string PodmanInstallPath(ToolContext context)
-            => Path.Combine(context.Environment.GetVariable("LOCALAPPDATA") ?? Path.Combine(context.Environment.HomeDirectory, "AppData", "Local"), "Programs", "Podman", "podman.exe");
+        private static string PodmanInstallPath(ToolContext context) => PodmanInstallPath(context.Environment);
+
+        private static string PodmanInstallPath(CliEnvironment environment)
+            => Path.Combine(environment.GetVariable("LOCALAPPDATA") ?? Path.Combine(environment.HomeDirectory, "AppData", "Local"), "Programs", "Podman", "podman.exe");
 
         private static string? FindDockerDesktop(ToolContext context)
         {
