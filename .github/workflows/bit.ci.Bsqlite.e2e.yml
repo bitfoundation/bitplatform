@@ -40,16 +40,6 @@ jobs:
       with:
         dotnet-version: 10.0.x
 
-    - name: Setup .NET 9.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-      with:
-        dotnet-version: 9.0.x
-
-    - name: Setup .NET 8.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-      with:
-        dotnet-version: 8.0.x
-
     # Node runs the TypeScript build, and the restore of the storage packages runs it to rewrite the imports of
     # the wa-sqlite VFSes they vendor - so it has to be there before the first restore.
     - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0

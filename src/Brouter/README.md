@@ -156,7 +156,7 @@ Mac Catalyst and Windows), where a `BlazorWebView` runs it as a Blazor Hybrid ap
 - Configurable case sensitivity and trailing-slash handling
 - **Scroll management**: optional scroll-to-top, fragment scrolling (`/docs#install` lands on `#install`), and scroll-position restoration on Back/Forward
 - **Focus management** for accessibility: move focus to a selector after navigation so screen readers announce the new page (mirrors Blazor's `FocusOnNavigate`)
-- Multi-target: net8.0, net9.0, net10.0
+- Multi-target: net10.0, net11.0
 
 ## Type-safe parameters
 

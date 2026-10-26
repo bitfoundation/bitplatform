@@ -55,14 +55,10 @@ internal sealed class BlazeDbCompiledQueryBinder : ExpressionVisitor
             ? Expression.Constant(value, node.Type)
             : node;
 
-#if NET10_0_OR_GREATER
     protected override Expression VisitExtension(Expression node) =>
         node is QueryParameterExpression parameter && TryGetValue(parameter.Name, out var value)
             ? Expression.Constant(value, parameter.Type)
             : base.VisitExtension(node);
 
     private bool TryGetValue(string name, out object? value) => _queryContext.Parameters.TryGetValue(name, out value);
-#else
-    private bool TryGetValue(string name, out object? value) => _queryContext.ParameterValues.TryGetValue(name, out value);
-#endif
 }

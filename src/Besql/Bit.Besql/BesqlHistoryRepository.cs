@@ -1,5 +1,4 @@
-﻿#if NET9_0_OR_GREATER
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Sqlite.Migrations.Internal;
 
 namespace Bit.Besql;
@@ -18,4 +17,3 @@ public class BesqlHistoryRepository(HistoryRepositoryDependencies dependencies) 
         return Task.FromResult<IMigrationsDatabaseLock>(new NoopMigrationsDatabaseLock(this));
     }
 }
-#endif

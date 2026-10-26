@@ -8,7 +8,7 @@ public static class E2EEnvironment
 {
     /// <summary>
     /// <c>BROUTER_E2E_FRAMEWORK</c>: the target framework the web harness host runs on
-    /// (net11.0, net10.0, net9.0 or net8.0). Defaults to net11.0. The hybrid host is always net11.0-windows.
+    /// (net11.0 or net10.0). Defaults to net11.0. The hybrid host is always net11.0-windows.
     /// </summary>
     public static string Framework { get; } = Read("BROUTER_E2E_FRAMEWORK") ?? "net11.0";
 
@@ -45,12 +45,6 @@ public static class E2EEnvironment
 
     /// <summary><c>BROUTER_E2E_HEADED=1</c>: show the browser.</summary>
     public static bool Headed { get; } = Read("BROUTER_E2E_HEADED") == "1";
-
-    /// <summary>RendererInfo, which reports the renderer name, only exists from .NET 9 on.</summary>
-    public static bool FrameworkReportsRendererName(string framework) => framework is not "net8.0";
-
-    /// <summary>NavigationManager.NotFound, which lets static rendering answer 404, only exists from .NET 10 on.</summary>
-    public static bool FrameworkHasNotFound(string framework) => framework is not ("net8.0" or "net9.0");
 
     private static string? Read(string name)
     {

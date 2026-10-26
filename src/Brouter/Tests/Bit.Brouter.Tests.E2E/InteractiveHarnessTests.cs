@@ -21,7 +21,7 @@ public abstract class InteractiveHarnessTests : HarnessTest
     /// <summary>Whether the first response already carries the rendered route.</summary>
     protected abstract bool Prerenders { get; }
 
-    /// <summary><c>RendererInfo.Name</c> values the host may render with (checked from .NET 9 on).</summary>
+    /// <summary><c>RendererInfo.Name</c> values the host may render with.</summary>
     protected abstract IReadOnlyList<string> ExpectedRenderers { get; }
 
     /// <summary><c>data-platform</c> values the host may render on: "dotnet" or "browser".</summary>
@@ -42,10 +42,7 @@ public abstract class InteractiveHarnessTests : HarnessTest
         var status = Page.Locator("#status");
         CollectionAssert.Contains(ExpectedPlatforms.ToList(), await status.GetAttributeAsync("data-platform"));
 
-        if (E2EEnvironment.FrameworkReportsRendererName(Framework))
-        {
-            CollectionAssert.Contains(ExpectedRenderers.ToList(), await status.GetAttributeAsync("data-renderer"));
-        }
+        CollectionAssert.Contains(ExpectedRenderers.ToList(), await status.GetAttributeAsync("data-renderer"));
     }
 
     [TestMethod]
@@ -140,9 +137,6 @@ public abstract class InteractiveHarnessTests : HarnessTest
     [TestMethod]
     public async Task NavigationManager_NotFound_from_a_page_renders_the_not_found_content()
     {
-        if (E2EEnvironment.FrameworkHasNotFound(Framework) is false)
-            Assert.Inconclusive("NavigationManager.NotFound exists from .NET 10 on.");
-
         await GotoAsync("/");
         await WaitForInteractiveAsync();
 

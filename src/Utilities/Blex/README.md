@@ -73,7 +73,7 @@ dotnet add package Bit.Blex.Maui        # .NET MAUI integration (XAML binding, P
 dotnet add package Bit.Blex.Testing     # optional, for unit tests
 ```
 
-The runtime packages target **net8.0, net9.0 and net10.0**. `Bit.Blex` is all a Blazor app needs:
+The runtime packages target **net10.0 and net11.0**. `Bit.Blex` is all a Blazor app needs:
 
 - **The source generator** that writes the store plumbing ships inside it, under `analyzers/dotnet/cs`, so it
   adds nothing to your app's output and there is no separate generator package to install. NuGet does not
@@ -1350,8 +1350,8 @@ last - assigning `DevToolsStateSanitizer` afterwards replaces it outright.
 
 ## .NET MAUI
 
-All runtime packages ship plain `net8.0`/`net9.0`/`net10.0` builds that resolve from every MAUI platform
-target (`net8.0-android`, `net8.0-ios`, `net8.0-maccatalyst`, `net8.0-windows`) - no workloads
+All runtime packages ship plain `net10.0`/`net11.0` builds that resolve from every MAUI platform
+target (`net10.0-android`, `net10.0-ios`, `net10.0-maccatalyst`, `net10.0-windows`) - no workloads
 involved on the library side.
 
 ### Blazor Hybrid

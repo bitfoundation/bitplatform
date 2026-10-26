@@ -30,9 +30,9 @@ Therefore, we decided to generate an `ES2019`-based output from the `aspnetcore`
 ```shell
 git clone https://github.com/dotnet/aspnetcore.git
 cd aspnetcore
-git switch release/9.0
+git switch release/10.0
 git submodule update --init --recursive
-sed -i 's/"target": "ES2022"/"target": "ES2019"/' src/Components/Shared.JS/tsconfig.json
+sed -i 's/"target": "ES2024"/"target": "ES2019"/' src/Components/Shared.JS/tsconfig.json
 npm install
 npm run-script build
 cd src/Components/Web.JS

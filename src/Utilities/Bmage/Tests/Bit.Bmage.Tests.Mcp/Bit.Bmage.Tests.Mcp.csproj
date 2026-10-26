@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <!-- Separate from Bit.Bmage.Tests because the subject is the demo's ASP.NET Core host, which only
-         exists on net11.0, while the library's own tests multi-target back to net8.0. -->
+         exists on net11.0, while the library's own tests multi-target back to net10.0. -->
     <PropertyGroup>
         <TargetFramework>net11.0</TargetFramework>
         <!-- A ProjectReference to a Web SDK project leaves OutputType at Library, and the MSTest

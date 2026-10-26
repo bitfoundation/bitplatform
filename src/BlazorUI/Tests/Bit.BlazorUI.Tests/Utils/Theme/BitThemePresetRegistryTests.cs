@@ -250,9 +250,8 @@ public sealed class BitThemePresetRegistryTests
     [TestMethod]
     public void TheExtrasPresetsAreAlsoReachableWithoutExtensionMembers()
     {
-        // Extension members are a C# 14 feature on the reading side too, and Bit.BlazorUI.Extras
-        // still targets net8.0 and net9.0, whose consumers compile at C# 12 / 13 by default and are
-        // handed CS9202 for one. BitExtraThemePresets / BitExtraThemeName / BitExtraThemeSurfaces are
+        // Extension members are a C# 14 feature on the reading side too, so a consumer pinned to an
+        // older LangVersion is handed CS9202 for one. BitExtraThemePresets / BitExtraThemeName / BitExtraThemeSurfaces are
         // what those consumers name, so they have to say exactly what the extension members say - and
         // BitExtraThemePresets has to stay const, which is the other thing a property cannot be.
         Assert.AreEqual(BitThemePresets.MaterialDark, BitExtraThemePresets.MaterialDark);

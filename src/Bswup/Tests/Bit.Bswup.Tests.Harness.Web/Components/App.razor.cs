@@ -20,9 +20,5 @@ public partial class App
 
     private Dictionary<string, object> ScriptAttributes => HostedApp.Root.ScriptAttributes(Options).ToDictionary(a => a.Key, a => (object)a.Value);
 
-#if NET9_0_OR_GREATER
     private string BlazorScript => Options.FingerprintedBlazorScript ? Assets["_framework/blazor.web.js"] : "_framework/blazor.web.js";
-#else
-    private string BlazorScript => "_framework/blazor.web.js";
-#endif
 }

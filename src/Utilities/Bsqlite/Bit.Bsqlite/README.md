@@ -8,7 +8,7 @@ the worker transport, the storage provider contract, the storage backends - OPFS
 Storage and in-memory - and the browser assets (SQLite engine builds, worker host, VFSes) served
 under `_content/Bit.Bsqlite`.
 
-**Runtime:** .NET 8, 9 and 10, each with its EF Core. **License:** MIT (bundles [wa-sqlite](https://github.com/rhashimoto/wa-sqlite), also MIT).
+**Runtime:** .NET 10 and 11, each with its EF Core. **License:** MIT (bundles [wa-sqlite](https://github.com/rhashimoto/wa-sqlite), also MIT).
 
 ## Install
 

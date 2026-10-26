@@ -1,7 +1,7 @@
 name: bit platform CI - Butil E2E
 
 # The cross-host suites: the standalone WebAssembly sample and every Blazor Web App render mode in Chromium (on
-# net11.0/net10.0/net9.0/net8.0 where the runtime is what differs), Blazor Hybrid in WebView2, and trimmed/AOT publishes.
+# net11.0/net10.0 where the runtime is what differs), Blazor Hybrid in WebView2, and trimmed/AOT publishes.
 # They take far longer than the build, MCP and hosting pipeline (bit.ci.Butil.yml), so they run only when started
 # by hand. Every job runs the same suite against a different host (BUTIL_E2E_HOST); see
 # src/Butil/Tests/Bit.Butil.Tests.E2E/README.md for what each host proves and how to run the same thing locally.
@@ -36,10 +36,6 @@ jobs:
         - { host: auto-noprerender, framework: net11.0 }
         - { host: server, framework: net10.0 }
         - { host: wasm, framework: net10.0 }
-        - { host: server, framework: net9.0 }
-        - { host: wasm, framework: net9.0 }
-        - { host: server, framework: net8.0 }
-        - { host: wasm, framework: net8.0 }
 
     steps:
     - name: Checkout source code
@@ -56,16 +52,6 @@ jobs:
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         dotnet-version: 10.0.x
-
-    - name: Setup .NET 9.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-      with:
-        dotnet-version: 9.0.x
-
-    - name: Setup .NET 8.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-      with:
-        dotnet-version: 8.0.x
 
     - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:

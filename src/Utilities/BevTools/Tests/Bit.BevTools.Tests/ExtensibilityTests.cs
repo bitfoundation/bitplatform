@@ -53,7 +53,6 @@ public class ExtensibilityTests : BunitContext
         Assert.Contains("Acme panel says hello", cut.Markup, StringComparison.Ordinal);
     }
 
-#if NET10_0_OR_GREATER
     /// <summary>
     /// A panel an extension contributes from its own assembly is BevTools' own UI, like the built-in ones, although its
     /// namespace is not BevTools': clicking in it is not an application event, and its parameter updates are not the
@@ -74,7 +73,6 @@ public class ExtensibilityTests : BunitContext
         Assert.IsTrue(Session.Components.IsBevToolsOnlyType(typeof(AcmePanel).FullName!));
         Assert.DoesNotContain(typeof(AcmePanel).FullName!, Session.TypeMetrics.Keys);
     }
-#endif
 
     [TestMethod]
     public void A_state_provider_from_an_extension_is_attached_and_its_changes_are_diffed()

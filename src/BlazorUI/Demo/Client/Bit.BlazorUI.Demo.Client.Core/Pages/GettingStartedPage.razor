@@ -19,7 +19,7 @@
         <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground"
                 Text="MIT licensed" />
         <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground"
-                Text=".NET 8, 9 and 10" />
+                Text=".NET 10 and 11" />
     </Badges>
 
     <Actions>
@@ -58,9 +58,9 @@
                 <div class="req-grid">
                     <div class="req">
                         <BitIcon IconName="@BitIconName.Installation" Color="BitColor.Primary" Class="req-icon" />
-                        <span class="req-title">The .NET 8, 9 or 10 SDK</span>
+                        <span class="req-title">The .NET 10 or 11 SDK</span>
                         <span class="req-text">
-                            One package multi-targets all three, so moving the app to a newer framework
+                            One package multi-targets both, so moving the app to a newer framework
                             never means changing the reference.
                         </span>
                     </div>
@@ -276,7 +276,7 @@ builder.Services.AddBitBlazorUILegacyServices(); // Bit.BlazorUI.Legacy</CodeBox
                     </thead>
                     <tbody>
                         <tr>
-                            <th scope="row">Blazor Web App (.NET 8+)</th>
+                            <th scope="row">Blazor Web App (.NET 10+)</th>
                             <td><code>Components/App.razor</code></td>
                         </tr>
                         <tr>
@@ -429,8 +429,7 @@ bit new MyBitProject</CodeBox>
                         Description="Worth doing before your first deployment rather than after it. Without it, the browser of someone already using your app keeps serving them the previous version of the library's css and js.">
 
                 <BitText Element="p">
-                    On .NET 9 or later, the built-in <code>@@Assets[""]</code> feature fingerprints the
-                    resource files for you.
+                    The built-in <code>@@Assets[""]</code> feature fingerprints the resource files for you.
                 </BitText>
 
                 <BitText Element="p">
@@ -539,8 +538,7 @@ bit new MyBitProject</CodeBox>
                             <BitLink Href="/getting-started#styles-and-scripts">step 4</BitLink> is missing
                             or is not being served. Look for <code>bit.blazorui.css</code> in the browser's
                             network tab: a 404 there means the path is wrong, or that the app is not
-                            serving static web assets at all - <code>app.MapStaticAssets()</code> on .NET 9
-                            and later, <code>app.UseStaticFiles()</code> before that.
+                            serving static web assets at all - <code>app.MapStaticAssets()</code>.
                         </p>
                     </div>
                     <div class="trouble">

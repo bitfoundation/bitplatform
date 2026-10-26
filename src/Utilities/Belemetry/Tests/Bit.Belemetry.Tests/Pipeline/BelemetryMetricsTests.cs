@@ -119,7 +119,6 @@ public class BelemetryMetricsTests
         Assert.IsFalse(empty.HasDeltaUpdate);
     }
 
-#if NET9_0_OR_GREATER
     [TestMethod]
     public void Histogram_UsesAdvisedBounds()
     {
@@ -141,7 +140,6 @@ public class BelemetryMetricsTests
         Assert.AreEqual(BelemetryMetricType.Gauge, metric.Type);
         Assert.AreEqual(18L, metric.Points[0].LongValue);
     }
-#endif
 
     [TestMethod]
     public void ObservableGauge_AndObservableCounter_ThroughTheCollector()

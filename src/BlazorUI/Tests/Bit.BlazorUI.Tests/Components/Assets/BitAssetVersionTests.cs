@@ -147,16 +147,13 @@ public class BitAssetVersionTests : BunitTestContext
         return RenderComponent<Script>(parameters => Interactive(parameters.Add(p => p.Src, src)));
     }
 
-    // The components only carry their path over where they render again after prerendering, which from
-    // net9.0 on is what the assigned render mode says. On net8.0 the framework does not say, and they
-    // carry it over from every render, so there is no mode to assign there - nor a bUnit API to assign it.
+    // The components only carry their path over where they render again after prerendering, which is what
+    // the assigned render mode says.
     private static ComponentParameterCollectionBuilder<TComponent> Interactive<TComponent>(
         ComponentParameterCollectionBuilder<TComponent> parameters)
         where TComponent : IComponent
     {
-#if NET9_0_OR_GREATER
         parameters.SetAssignedRenderMode(Microsoft.AspNetCore.Components.Web.RenderMode.InteractiveAuto);
-#endif
 
         return parameters;
     }

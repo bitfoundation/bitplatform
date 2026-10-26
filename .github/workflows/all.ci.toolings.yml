@@ -41,23 +41,6 @@ jobs:
       with:
         node-version: 24
 
-    - name: Generate ES2019 based blazor.*.js files for .NET 9
-      run: |
-        git clone https://github.com/dotnet/aspnetcore.git
-        cd aspnetcore
-        git switch release/9.0
-        git submodule update --init --recursive
-        sed -i 's/"target": "ES2022"/"target": "ES2019"/' src/Components/Shared.JS/tsconfig.json
-        npm install
-        npm run-script build
-        cd src/Components/Web.JS
-        npm install
-        npm run-script build:production
-        cd ../../../../
-        mkdir -p src/Toolings/BlazorES2019/wwwroot.net9/
-        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/Toolings/BlazorES2019/wwwroot.net9/
-        rm -rf aspnetcore
-
     - name: Generate ES2019 based blazor.*.js files for .NET 10
       run: |
         git clone https://github.com/dotnet/aspnetcore.git

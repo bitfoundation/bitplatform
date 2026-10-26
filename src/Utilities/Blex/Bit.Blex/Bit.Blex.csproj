@@ -3,7 +3,7 @@
     <Import Project="../../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net11.0;net10.0;net9.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
         <IsTrimmable>true</IsTrimmable>
         <PackageTags>$(PackageTags);Blazor;MAUI;State management;Redux;Flux;DevTools;Source generator;Query;Cache;OpenTelemetry</PackageTags>
         <Description>Lightweight, source-generator-powered reactive state management for Blazor and .NET MAUI, with computed state, effects (cancellation, concurrency, debounce, retries, timeouts), middleware, persistence, undo/redo, a server-state query cache, OpenTelemetry tracing and Redux DevTools time-travel. Ships the Roslyn source generator that turns [BlexStore] classes into reactive stores, and the Blazor integration: the BlexComponentBase base class, &lt;BlexProvider&gt;, browser-storage persistence and the Redux DevTools bridge.</Description>
@@ -17,12 +17,8 @@
     <ItemGroup>
         <!-- Floating low-bound ranges so consumers can pin to any servicing release of their TFM's band;
              the upper bound keeps a newer major (which targets a newer TFM) from being pulled in. -->
-        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[8.0.0,9.0.0)" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[9.0.0,10.0.0)" />
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[10.0.0,11.0.0)" />
         <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[11.0.0-rc.1.26425.128,12.0.0)" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[8.0.0,9.0.0)" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[9.0.0,10.0.0)" />
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[10.0.0,11.0.0)" />
         <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[11.0.0-rc.1.26425.128,12.0.0)" />
     </ItemGroup>

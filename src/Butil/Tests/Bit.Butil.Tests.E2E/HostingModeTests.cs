@@ -20,12 +20,8 @@ public class HostingModeTests : ButilPageTest
         var platform = await status.GetAttributeAsync("data-platform");
         Assert.Contains(platform!, HarnessHostKinds.ExpectedPlatforms(Host), $"{Host} ran the page on '{platform}'.");
 
-        // RendererInfo arrived in .NET 9; the page reports "unknown" before that.
         var renderer = await status.GetAttributeAsync("data-renderer");
-        if (renderer is not "unknown")
-        {
-            Assert.Contains(renderer!, HarnessHostKinds.ExpectedRenderers(Host), $"{Host} rendered the page with '{renderer}'.");
-        }
+        Assert.Contains(renderer!, HarnessHostKinds.ExpectedRenderers(Host), $"{Host} rendered the page with '{renderer}'.");
     }
 
     [TestMethod]

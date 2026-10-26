@@ -29,9 +29,7 @@ internal sealed class BmotionPrerenderState : IDisposable
 
     private readonly PersistentComponentState? _state;
     private readonly List<PersistingComponentStateSubscription> _persisting = [];
-#if NET10_0_OR_GREATER
     private readonly RestoringComponentStateSubscription _restoring;
-#endif
     // Prerendering pass: how many elements have rested alike so far, per resting signature.
     private readonly Dictionary<string, int> _prerendered = new(StringComparer.Ordinal);
     // Interactive runtime: per resting signature, how many entries the prerendering pass persisted
@@ -46,7 +44,6 @@ internal sealed class BmotionPrerenderState : IDisposable
         ArgumentNullException.ThrowIfNull(services);
         // Optional: hosts that never prerender (e.g. a BlazorWebView) may not register it at all.
         _state = services.GetService<PersistentComponentState>();
-#if NET10_0_OR_GREATER
         // Enhanced navigation can bring new prerendered islands - and their entries - to a runtime
         // that is already running: their first render is a hydration window of its own.
         try
@@ -57,7 +54,6 @@ internal sealed class BmotionPrerenderState : IDisposable
         {
             // A state that doesn't support restoration callbacks: only the first render hydrates.
         }
-#endif
     }
 
     /// <summary>The signature elements resting alike share: what they render at rest, and how.</summary>
@@ -213,8 +209,6 @@ internal sealed class BmotionPrerenderState : IDisposable
     {
         foreach (var subscription in _persisting) subscription.Dispose();
         _persisting.Clear();
-#if NET10_0_OR_GREATER
         _restoring.Dispose();
-#endif
     }
 }

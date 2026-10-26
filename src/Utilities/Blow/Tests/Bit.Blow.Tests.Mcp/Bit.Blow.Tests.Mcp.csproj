@@ -2,7 +2,7 @@
 
     <!-- Separate from Bit.Blow.Tests because the subject is the demo's ASP.NET Core host - and the
          client it serves, whose code viewer is tested here too - which only exists on net11.0, while
-         the library's own tests multi-target back to net8.0. -->
+         the library's own tests multi-target back to net10.0. -->
     <PropertyGroup>
         <TargetFramework>net11.0</TargetFramework>
         <!-- A ProjectReference to a Web SDK project leaves OutputType at Library, and the MSTest

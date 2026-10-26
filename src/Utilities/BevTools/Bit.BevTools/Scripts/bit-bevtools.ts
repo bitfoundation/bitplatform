@@ -2148,7 +2148,7 @@ export function highlightFinding(index: number, label: string) {
 
 /**
  * The PDB of one assembly, for a runtime that has no files to read it from (WebAssembly): the one the runtime's own
- * resource list names for this build (fingerprinted names on .NET 9+, plain ones on .NET 8), so it matches the code
+ * resource list names for this build, so it matches the code
  * that runs. Null when the app serves none (a Release build, or one published without symbols).
  */
 /**
@@ -2166,9 +2166,6 @@ export async function fetchPdb(assemblyName: string): Promise<Uint8Array | null>
         const entry = pdb.find((e: any) => e && (e.virtualPath === file || e.name === file));
         url = entry ? entry.resolvedUrl || "_framework/" + entry.name : null;
         integrity = entry && typeof entry.integrity === "string" ? entry.integrity : undefined;
-    } else if (pdb && typeof pdb === "object" && Object.prototype.hasOwnProperty.call(pdb, file)) {
-        url = "_framework/" + file;
-        integrity = typeof pdb[file] === "string" && pdb[file].startsWith("sha") ? pdb[file] : undefined;
     }
     if (!url) return null;
     const response = await fetch(new URL(url, document.baseURI).href, { integrity, cache: "no-cache" });

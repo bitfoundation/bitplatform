@@ -73,7 +73,7 @@ public static class BmotionSetupGuide
         automatically the first time an animation runs. There is no `<script>` tag to add, and no
         JavaScript to write.
 
-        Targets .NET 8, 9 and 10.
+        Targets .NET 10 and 11.
         """;
 
     private const string Imports = """

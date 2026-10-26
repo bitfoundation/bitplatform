@@ -85,8 +85,8 @@ public static partial class BlazeDbSetupGuide
                 """
                 The first visit renders on the server while the WebAssembly runtime downloads, later ones in the browser - but
                 the database only ever lives in the browser. Put the code that uses it in the .Client project and open it only
-                once the component runs in the browser (`OperatingSystem.IsBrowser()`, or `RendererInfo.Name == "WebAssembly"`
-                on .NET 9 and later), rendering a placeholder during the server-rendered visit. Pages that need the
+                once the component runs in the browser (`OperatingSystem.IsBrowser()`, or `RendererInfo.Name == "WebAssembly"`),
+                rendering a placeholder during the server-rendered visit. Pages that need the
                 database on every visit are simpler as `InteractiveWebAssembly` without prerendering, as in this demo.
                 """,
                 ["Blazor Web App", "Blazor WebAssembly"],

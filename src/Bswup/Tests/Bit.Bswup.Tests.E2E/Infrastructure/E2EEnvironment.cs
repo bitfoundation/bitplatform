@@ -7,7 +7,7 @@
 public static class E2EEnvironment
 {
     /// <summary>
-    /// <c>BSWUP_E2E_FRAMEWORK</c>: the target framework the harness host runs on (net11.0, net10.0, net9.0 or net8.0).
+    /// <c>BSWUP_E2E_FRAMEWORK</c>: the target framework the harness host runs on (net11.0 or net10.0).
     /// Defaults to net11.0.
     /// </summary>
     public static string Framework { get; } = Read("BSWUP_E2E_FRAMEWORK") ?? "net11.0";
@@ -41,15 +41,6 @@ public static class E2EEnvironment
 
     /// <summary><c>BSWUP_E2E_HEADED=1</c>: show the browser.</summary>
     public static bool Headed { get; } = Read("BSWUP_E2E_HEADED") == "1";
-
-    /// <summary>RendererInfo, which reports the renderer name, only exists from .NET 9 on.</summary>
-    public static bool FrameworkReportsRendererName(string framework) => framework is not "net8.0";
-
-    /// <summary>
-    /// blazor.web.js is a fingerprinted static web asset only from .NET 10 on. <c>@Assets</c> exists since .NET 9, but
-    /// there the script is still served from an embedded resource, so <c>@Assets</c> hands back its plain name.
-    /// </summary>
-    public static bool FrameworkFingerprintsBlazorScript(string framework) => framework is not ("net8.0" or "net9.0");
 
     private static string? Read(string name)
     {

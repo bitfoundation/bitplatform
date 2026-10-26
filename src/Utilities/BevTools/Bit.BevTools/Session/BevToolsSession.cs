@@ -167,8 +167,7 @@ public sealed class BevToolsSession : IDisposable
     /// True when the session lives in a process that serves many users - an ASP.NET Core server, home of Blazor Server
     /// circuits, static SSR requests and prerendering - rather than WebAssembly, a WebView or a test host, where the only
     /// session is the only possible owner of activity that cannot be attributed otherwise. Decided by the host, not by
-    /// <see cref="Platform"/> alone: a circuit's platform is unknown until something reports it (always on .NET 8, where
-    /// RendererInfo does not exist), and a request scope that renders nothing never reports one.
+    /// <see cref="Platform"/> alone: a circuit's platform is unknown until something reports it, and a request scope that renders nothing never reports one.
     /// </summary>
     internal bool IsInMultiUserHost
     {

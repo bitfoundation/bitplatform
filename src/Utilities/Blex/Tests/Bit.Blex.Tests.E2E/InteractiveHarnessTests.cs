@@ -40,7 +40,7 @@ public abstract class InteractiveHarnessTests : HarnessTest
         })();
         """;
 
-    /// <summary><c>RendererInfo.Name</c> values the host may render with (checked from .NET 9 on).</summary>
+    /// <summary><c>RendererInfo.Name</c> values the host may render with.</summary>
     protected abstract IReadOnlyList<string> ExpectedRenderers { get; }
 
     /// <summary><c>data-platform</c> values the host may render on: "dotnet" or "browser".</summary>
@@ -60,11 +60,7 @@ public abstract class InteractiveHarnessTests : HarnessTest
 
         var status = Page.Locator("#status");
         CollectionAssert.Contains(ExpectedPlatforms.ToList(), await status.GetAttributeAsync("data-platform"));
-
-        if (E2EEnvironment.FrameworkReportsRendererName(Framework))
-        {
-            CollectionAssert.Contains(ExpectedRenderers.ToList(), await status.GetAttributeAsync("data-renderer"));
-        }
+        CollectionAssert.Contains(ExpectedRenderers.ToList(), await status.GetAttributeAsync("data-renderer"));
     }
 
     [TestMethod]

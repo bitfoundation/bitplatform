@@ -65,11 +65,11 @@ for the oldest supported SDK:
 | `System.Reflection.Metadata` | 1.6.0 | `Bit.BlazorUI.Build` |
 
 **TFM-conditioned floors — only the highest band moves.** A multi-targeted library pins the `.0` of
-each band it supports, because the pin *is* the consumer's minimum runtime. Raising 8.0.0 to 8.0.x
+each band it supports, because the pin *is* the consumer's minimum runtime. Raising 10.0.0 to 10.0.x
 raises that minimum for no gain.
 
 ```xml
-<PackageReference Include="Microsoft.JSInterop" Version="8.0.0" Condition="'$(TargetFramework)' == 'net8.0'" />
+<PackageReference Include="Microsoft.JSInterop" Version="10.0.0" Condition="'$(TargetFramework)' == 'net10.0'" />
 ```
 
 Applies to `Bit.Besql` (JSInterop, Components.WebAssembly, EF Core Sqlite), `Bit.BlazorUI` /
@@ -77,11 +77,11 @@ Applies to `Bit.Besql` (JSInterop, Components.WebAssembly, EF Core Sqlite), `Bit
 `BlazorEmpty` template.
 
 The rule keys on the `.0` in a *shipped library*. A TFM-conditioned pin at a concrete patch —
-`Bit.BlazorUI.Tests` on Components.WebView `8.0.x` / `9.0.x` / `10.0.x` — is not a floor: nothing
+`Bit.BlazorUI.Tests` on Components.WebView `10.0.x` — is not a floor: nothing
 consumes a test project, so every band takes the newest patch of its own band. Likewise a lone
 `10.0.0` sitting among `10.0.11` siblings in `Directory.Packages.props` is staleness, not intent.
 
-**Version ranges stay.** `[8.0.0,9.0.0)` is a compatibility contract, not a pin.
+**Version ranges stay.** `[10.0.0,11.0.0)` is a compatibility contract, not a pin.
 
 **`Bit.*` self-references track the in-development version**, currently `11.0.0-pre-11`. Never read
 these off nuget.org — the published `latest` is behind the working tree by design, and unrelated

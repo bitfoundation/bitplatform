@@ -20,21 +20,11 @@ HarnessRenderModes.Resolve(HarnessRenderModes.FromConfiguration(app.Configuratio
 // apply to every request - static assets included.
 app.UseMiddleware<HarnessMiddleware>();
 
-#if NET9_0_OR_GREATER
 // Explicit, and after the middleware: WebApplication would otherwise match endpoints before it runs, and
 // the middleware rewrites /standalone/_content/ request paths.
 app.UseRouting();
 app.UseAntiforgery();
 app.MapStaticAssets();
-#else
-// The standalone app's framework files (.dat, .blat, ...) need the content types UseBlazorFrameworkFiles
-// registers. Explicit UseRouting after the static files: WebApplication otherwise matches endpoints first,
-// the catch-all page claims /_content/... and UseStaticFiles steps aside for a request that already has one.
-app.UseBlazorFrameworkFiles("/standalone");
-app.UseStaticFiles();
-app.UseRouting();
-app.UseAntiforgery();
-#endif
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()

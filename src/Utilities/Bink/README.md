@@ -74,7 +74,7 @@ automatically by the package's Blazor initializer. The full walkthrough is in [g
 
 ## Requirements
 
-- .NET 8, .NET 9 or .NET 10
+- .NET 10 or .NET 11
 - Blazor WebAssembly, Blazor Server, Blazor Web App or Blazor Hybrid
 
 ### Browser support

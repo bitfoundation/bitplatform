@@ -34,10 +34,9 @@ one through `wwwroot/index.lazy.html`, the host page without the packages' scrip
 publish carries none of the lazy scripts.
 
 `PackageTrimmingTests` packs the packages into a feed of their own and publishes apps outside the repository that
-reference them, with each of the .NET 8, 9 and 10 SDKs: the package layout and the SDK paths a ProjectReference never
-takes. Its Blazor Web App's client has a service worker too, whose manifest has to come out rewritten on every SDK, and
-so does its Blazor WebAssembly app, a standalone PWA whose own manifest must be left to the SDK on every SDK - the .NET 8
-one lists it before writing it.
+reference them, with the .NET 10 SDK: the package layout and the SDK paths a ProjectReference never takes. Its Blazor
+Web App's client has a service worker too, whose manifest has to come out rewritten, and so does its Blazor WebAssembly
+app, a standalone PWA whose own manifest must be left to the SDK.
 
 ## Running
 
@@ -54,7 +53,7 @@ CI runs it with both variables below set, in the `trimming` job of `.github/work
 | Variable | Adds |
 | --- | --- |
 | `RUN_BROWSER_TESTS=1` | the trimmed WebAssembly and server apps run in Chromium, Firefox and WebKit, each driven through the components whose scripts the trimming kept (Playwright's browsers installed, as for `Tests/Performance`) |
-| `RUN_PACKAGE_TESTS=1` | the packed packages under every installed .NET 8, 9 and 10 SDK; their version (`99.0.0-trimming.*`) lands in the machine's NuGet cache |
+| `RUN_PACKAGE_TESTS=1` | the packed packages under the installed .NET 10 SDK; their version (`99.0.0-trimming.*`) lands in the machine's NuGet cache |
 
 The publishes run with `-nodeReuse:false`: a node kept from an earlier build holds the task assembly it loaded then,
 and the source tree's task is rebuilt along with the packages. Do the same when publishing one of these apps by hand

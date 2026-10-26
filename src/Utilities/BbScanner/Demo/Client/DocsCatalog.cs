@@ -40,7 +40,7 @@ public static class SiteInfo
         "GS1 DataBar, from the camera or from still images, with no barcode SDK and no JavaScript scanner " +
         "library. This site is itself a Blazor WebAssembly app built on it.";
 
-    public static readonly string[] Badges = ["MIT", "net8.0", "net9.0", "net10.0"];
+    public static readonly string[] Badges = ["MIT", "net10.0", "net11.0"];
 
     /// <summary>Words the search palette suggests when a query finds nothing.</summary>
     public static readonly string[] SearchHints = ["qr", "torch", "region", "image", "options"];

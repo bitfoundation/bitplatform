@@ -40,7 +40,7 @@ public static class SiteInfo
         "the Blazor counterpart to React Flow, with interaction, layout and edge geometry written in C#. This " +
         "site is itself a Blazor app built on it.";
 
-    public static readonly string[] Badges = ["MIT", "net8.0", "net9.0", "net10.0"];
+    public static readonly string[] Badges = ["MIT", "net10.0", "net11.0"];
 
     /// <summary>Words the search palette suggests when a query finds nothing.</summary>
     public static readonly string[] SearchHints = ["custom node", "minimap", "layout", "undo", "subflow"];

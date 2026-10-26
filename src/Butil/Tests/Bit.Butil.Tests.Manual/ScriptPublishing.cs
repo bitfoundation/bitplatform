@@ -231,14 +231,6 @@ internal static class ScriptPublishing
             Project: HostedFixture,
             ServiceWorker: ServiceWorkerRewrite.Rehash),
 
-        // The same on .NET 8, which the SDK fingerprints and compresses differently: no content fingerprint in
-        // an asset's path, and the identity file's hash on a compressed endpoint as a weak ETag instead.
-        new("a .NET 8 Blazor Web App's service worker lists the bundle its server trimmed, under that bundle's hash",
-            ["FixtureFramework=net8.0"],
-            Bundle: HostedServerModules,
-            Project: HostedFixture,
-            ServiceWorker: ServiceWorkerRewrite.Rehash),
-
         // Lazy scripts, with a client that does not trim: it lists every module file, and the server publishes
         // four of them. A service worker that is still told about the rest requests each one and gets a 404 -
         // which fails the install of Blazor's own template service worker outright.
@@ -637,7 +629,7 @@ internal static class ScriptPublishing
     /// </summary>
     /// <remarks>
     /// A compressed response describes two files, and each value is checked against the right one: Content-Length
-    /// and the strong ETag are the compressed file's, while the integrity and the weak ETag the .NET 8 SDK adds are
+    /// and the strong ETag are the compressed file's, while the integrity and a weak ETag are
     /// those of the file it decompresses to - the identity file the same route serves without compression.
     /// </remarks>
     private static void CheckEndpoints(ScriptBundling.Checks checks, Scenario scenario, string output)

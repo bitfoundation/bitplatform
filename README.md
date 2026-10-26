@@ -14,7 +14,7 @@
 
 # 🧾 Introduction
 
-**bitplatform** is a set of open-source tools for building fast, polished apps with Blazor and C#. The libraries target **.NET 8, 9 and 10** and are built for Blazor WebAssembly, Server, and Hybrid (MAUI) apps.
+**bitplatform** is a set of open-source tools for building fast, polished apps with Blazor and C#. The libraries target **.NET 10 and 11** and are built for Blazor WebAssembly, Server, and Hybrid (MAUI) apps.
 
 For more details, visit us at [bitplatform.dev](https://bitplatform.dev/).
 

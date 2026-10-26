@@ -10,7 +10,7 @@
 
     Run it with `dotnet run` (see README.md): a publish takes seconds to minutes, so it is not one of the projects the
     unit test run covers. The browser check of a trimmed WebAssembly app runs with RUN_BROWSER_TESTS=1, the check of the
-    packed packages under the .NET 8, 9 and 10 SDKs with RUN_PACKAGE_TESTS=1.
+    packed packages under the .NET 10 SDK with RUN_PACKAGE_TESTS=1.
     -->
 
     <PropertyGroup>

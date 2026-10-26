@@ -41,16 +41,6 @@ jobs:
       with:
         dotnet-version: 10.0.x
 
-    - name: Setup .NET 9.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-      with:
-        dotnet-version: 9.0.x
-
-    - name: Setup .NET 8.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-      with:
-        dotnet-version: 8.0.x
-
     # Node runs the TypeScript build, so it has to be there before the first build.
     - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
@@ -64,7 +54,7 @@ jobs:
     - name: dotnet build
       run: dotnet build src/Utilities/Bsqlite/Bit.Bsqlite.slnx
 
-    - name: dotnet test (ADO.NET, EF Core and storage tests, net8.0/net9.0/net10.0/net11.0)
+    - name: dotnet test (ADO.NET, EF Core and storage tests, net10.0/net11.0)
       # Run from inside src so src/global.json's "test" runner setting applies
       # (from the repo root the SDK falls back to the unsupported VSTest path).
       run: cd src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests && dotnet test --no-build

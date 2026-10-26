@@ -7,7 +7,7 @@
 public static class E2EEnvironment
 {
     /// <summary>
-    /// <c>BELEMETRY_E2E_FRAMEWORK</c>: the target framework the web harness host runs on (net11.0, net10.0, net9.0 or net8.0).
+    /// <c>BELEMETRY_E2E_FRAMEWORK</c>: the target framework the web harness host runs on (net11.0 or net10.0).
     /// Defaults to net11.0. The hybrid host is always net11.0-windows.
     /// </summary>
     public static string Framework { get; } = Read("BELEMETRY_E2E_FRAMEWORK") ?? "net11.0";

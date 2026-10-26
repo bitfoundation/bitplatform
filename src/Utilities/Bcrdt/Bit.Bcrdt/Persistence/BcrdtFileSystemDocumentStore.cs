@@ -475,11 +475,7 @@ public sealed class BcrdtFileSystemDocumentStore : IBcrdtDocumentStore
         ArgumentException.ThrowIfNullOrEmpty(documentId);
 
         byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(documentId));
-#if NET9_0_OR_GREATER
         string name = Convert.ToHexStringLower(hash.AsSpan(0, 16));
-#else
-        string name = Convert.ToHexString(hash.AsSpan(0, 16)).ToLowerInvariant();
-#endif
         return (name, Path.Combine(_root, name + ".bcl"));
     }
 

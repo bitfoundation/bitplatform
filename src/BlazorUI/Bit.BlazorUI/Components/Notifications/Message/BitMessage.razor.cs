@@ -978,20 +978,13 @@ public partial class BitMessage : BitComponentBase
         StateHasChanged();
     }
 
-    // A render with no JS runtime behind it is not an interactive one. Only from net9.0 on does the framework say
-    // which of the two others it is - a static render has no render mode, a prerender has the one of the
-    // interactive render that follows it - and before it the two cannot be told apart, so both count as static:
-    // a prerendered message then shows its text before the page is interactive, at the cost of the interactive
-    // render holding it back for one render, rather than a static one never showing it at all.
+    // A render with no JS runtime behind it is not an interactive one. The framework says which of the two others
+    // it is - a static render has no render mode, a prerender has the one of the interactive render that follows it.
     private bool IsRenderedStatically()
     {
         if (_js.IsRuntimeInvalid() is false) return false;
 
-#if NET9_0_OR_GREATER
         return AssignedRenderMode is null;
-#else
-        return true;
-#endif
     }
 
 

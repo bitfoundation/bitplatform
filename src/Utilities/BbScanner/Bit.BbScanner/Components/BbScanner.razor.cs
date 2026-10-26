@@ -451,7 +451,6 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
             // WebAssembly runtime takes over. An interactive render mode that is not the
             // browser, though, will never activate, and saying so is better than a Start button
             // that quietly does nothing.
-#if NET9_0_OR_GREATER
             if (firstRender && RendererInfo.IsInteractive)
             {
                 await FailAsync(new BbScannerException(
@@ -459,18 +458,6 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
                     "Camera scanning needs Blazor WebAssembly; this component is running on the "
                     + $"{RendererInfo.Name} renderer, which cannot reach the browser's camera API.")).ConfigureAwait(true);
             }
-#else
-            // .NET 8 has no RendererInfo, but it needs none: a static prerender never calls
-            // OnAfterRender, so reaching this point outside the browser means an interactive
-            // renderer that is not WebAssembly.
-            if (firstRender)
-            {
-                await FailAsync(new BbScannerException(
-                    BbScannerErrorKind.NotSupported,
-                    "Camera scanning needs Blazor WebAssembly; this component is running on an "
-                    + "interactive renderer that cannot reach the browser's camera API.")).ConfigureAwait(true);
-            }
-#endif
 
             return;
         }

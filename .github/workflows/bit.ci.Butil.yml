@@ -41,16 +41,6 @@ jobs:
       with:
         dotnet-version: 10.0.x
 
-    - name: Setup .NET 9.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-      with:
-        dotnet-version: 9.0.x
-
-    - name: Setup .NET 8.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-      with:
-        dotnet-version: 8.0.x
-
     - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
         node-version: 24
@@ -89,7 +79,7 @@ jobs:
         path: '**/butil-mcp.trx'
         if-no-files-found: ignore
 
-    # Every render mode of the Blazor Web App harness host over HTTP, on net8.0/net9.0/net10.0/net11.0: the prerendered
+    # Every render mode of the Blazor Web App harness host over HTTP, on net10.0/net11.0: the prerendered
     # pages, the served scripts, and every member of every service called during a static render. Browser, hybrid
     # and trimmed/AOT publish coverage is in bit.ci.Butil.e2e.yml.
     - name: Hosting tests

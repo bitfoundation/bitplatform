@@ -382,12 +382,7 @@
     /// <summary>"browser" inside the WebAssembly runtime, "dotnet" in a Server circuit or a BlazorWebView.</summary>
     private static string Platform => OperatingSystem.IsBrowser() ? "browser" : "dotnet";
 
-#if NET9_0_OR_GREATER
     private string RendererName => RendererInfo.Name;
-#else
-    // RendererInfo arrived in .NET 9; data-platform is what tells the runtimes apart on net8.0.
-    private string RendererName => "unknown";
-#endif
 
     private ElementReference _elementBox;
     private ElementReference _elementContent;

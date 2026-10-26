@@ -56,7 +56,7 @@ if (!BitBswup.initialized) {
         };
 
         // Default Blazor entry-point scripts to auto-detect when `blazorScript` is
-        // not set explicitly. Covers both the .NET 8+ Blazor Web App template
+        // not set explicitly. Covers both the Blazor Web App template
         // (blazor.web.js) and the standalone Blazor WebAssembly template
         // (blazor.webassembly.js), so the same setup works without extra config.
         const defaultBlazorScripts = ['_framework/blazor.web.js', '_framework/blazor.webassembly.js'];

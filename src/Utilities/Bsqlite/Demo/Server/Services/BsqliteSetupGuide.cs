@@ -281,8 +281,7 @@ public static partial class BsqliteSetupGuide
            the registration in one extension method in the .Client project and call it from both Program.cs files, as the
            demo's `AddDemoServices` is.
         9. Open the database only once the page is interactive: `if (RendererInfo.IsInteractive is false) return;` before
-           the first `CreateDbContextAsync()` (on .NET 8, which has no `RendererInfo`, `OperatingSystem.IsBrowser()`). The
-           demo's `SessionLifecycle` component does it for every page.
+           the first `CreateDbContextAsync()`. The demo's `SessionLifecycle` component does it for every page.
         10. Render the pages that use the database with InteractiveWebAssembly - the demo sets it once, on `<Routes>`.
         11. Drop live queries and contexts when `BsqliteDatabase.Closing` fires and reload on `Opened`: that is how a page
             survives the database being moved or replaced underneath it.
@@ -357,7 +356,7 @@ public static partial class BsqliteSetupGuide
     private const string TestingChecklist = """
         ## Checklist
 
-        1. A desktop test project (net8.0, net9.0 or net10.0) on MSTest, and `dotnet add package Bit.Bsqlite.Testing` - it
+        1. A desktop test project (net10.0 or net11.0) on MSTest, and `dotnet add package Bit.Bsqlite.Testing` - it
            brings Microsoft.Data.Sqlite with its native engine, which belongs in tests and never in the browser app.
         2. `new BsqliteInProcessTransport()` is a private in-memory database; wrap it in
            `new BsqliteConnection(transport, "test.db")`, `await connection.OpenAsync()`, and hand the connection to

@@ -17,19 +17,6 @@ internal static class CapabilityReport
         : "System.Diagnostics.Metrics is compiled out of this app: Blazor WebAssembly disables it by default. "
           + "Add <MetricsSupport>true</MetricsSupport> to the WebAssembly project to get diff durations and lifecycle timings.";
 
-    /// <summary>
-    /// Whether the runtime this build targets has the framework's ActivitySource and meters at all: they arrived in
-    /// .NET 10. On .NET 8 and 9 "not observed yet" would send the developer looking for a switch that does not exist.
-    /// </summary>
-    internal static bool FrameworkInstrumentationExists =>
-#if NET10_0_OR_GREATER
-        true;
-#else
-        false;
-#endif
-
-    internal const string EarlierRuntimeHint = "Requires .NET 10: the Microsoft.AspNetCore.Components ActivitySource and meters this comes from do not exist on earlier runtimes.";
-
     public static IReadOnlyList<BevToolsCapability> Build(BevToolsSession session)
     {
         var platform = session.Platform ?? "unknown";
@@ -45,15 +32,13 @@ internal static class CapabilityReport
         var diffAttributionLost = session.RenderTracker.DiffAttributionLost;
         var bridge = session.Browser.BridgeAttached;
         var metricsSupported = MetricsAreSupported();
-        var metricsHint = FrameworkInstrumentationExists ? MetricsHint(metricsSupported) : EarlierRuntimeHint;
+        var metricsHint = MetricsHint(metricsSupported);
         var attachment = session.Attachment;
-        var eventsHint = !FrameworkInstrumentationExists
-            ? EarlierRuntimeHint + " Renders inside events are labeled StateHasChanged."
-            : attachment is null
-                ? "No HandleEvent activities observed yet: interact with the app once. Requires BitBevToolsOptions.UseFrameworkInstrumentation; until an event is seen, renders inside events are labeled StateHasChanged."
-                : session.FrameworkInstrumentation.ActivitySource
-                    ? "No HandleEvent activities observed yet: interact with the app once. Until an event is seen, renders inside events are labeled StateHasChanged."
-                    : "BevTools was attached at runtime, and a renderer reads the framework ActivitySource only when it is created, from the services registered at startup: register it there (Bit.BevTools.Loader does, or call AddComponentsTracing). Until then renders inside events are labeled StateHasChanged.";
+        var eventsHint = attachment is null
+            ? "No HandleEvent activities observed yet: interact with the app once. Requires BitBevToolsOptions.UseFrameworkInstrumentation; until an event is seen, renders inside events are labeled StateHasChanged."
+            : session.FrameworkInstrumentation.ActivitySource
+                ? "No HandleEvent activities observed yet: interact with the app once. Until an event is seen, renders inside events are labeled StateHasChanged."
+                : "BevTools was attached at runtime, and a renderer reads the framework ActivitySource only when it is created, from the services registered at startup: register it there (Bit.BevTools.Loader does, or call AddComponentsTracing). Until then renders inside events are labeled StateHasChanged.";
 
         return
         [
@@ -86,7 +71,7 @@ internal static class CapabilityReport
             new("Rendering", "Render cause: UI event", !eventsObserved ? BevCapabilityStatus.RequiresRuntimeSupport : renderQueueOk ? BevCapabilityStatus.Available : BevCapabilityStatus.Partial, eventsObserved ? "Observed through the Microsoft.AspNetCore.Components.HandleEvent activity (.NET 10). AddBitBevToolsServices registers the framework ActivitySource itself, which is what makes this work outside server-side rendering. Work a handler starts without awaiting it (a timer, a fire-and-forget task) is not attributed to the event once the event has ended." + (renderQueueOk ? "" : " The renderer's render queue could not be read on this framework version, so the render a synchronous handler queued, which the framework processes after the event ended, is labeled StateHasChanged.") : eventsHint),
             new("Rendering", "Render cause: explicit StateHasChanged", BevCapabilityStatus.Partial, "Anything not attributable to a parent, event or navigation is reported as StateHasChanged (timer, async continuation, state notification). The caller is not identifiable without a stack walk."),
             new("Rendering", "Lifecycle method durations (SetParametersAsync)", lifecycleObserved ? BevCapabilityStatus.Available : metricsSupported ? BevCapabilityStatus.RequiresRuntimeSupport : BevCapabilityStatus.NotAvailable, lifecycleObserved ? "Per component type, from aspnetcore.components.update_parameters.duration (.NET 10)." : metricsHint),
-            new("Events", "UI events with handler duration", eventsObserved ? BevCapabilityStatus.Available : BevCapabilityStatus.RequiresRuntimeSupport, FrameworkInstrumentationExists ? "From the framework ActivitySource; includes component type, method and attribute name." : EarlierRuntimeHint),
+            new("Events", "UI events with handler duration", eventsObserved ? BevCapabilityStatus.Available : BevCapabilityStatus.RequiresRuntimeSupport, "From the framework ActivitySource; includes component type, method and attribute name."),
             new("Events", "Navigation", navObserved || session.LastNavigationEventId is not null ? BevCapabilityStatus.Available : BevCapabilityStatus.Partial, "From NavigationManager.LocationChanged and the Navigate activity when available."),
             new("State", "Registered state providers", BevCapabilityStatus.RequiresIntegration, "Implement IBevStateProvider (or register an adapter) to get snapshots, change history and before/after diffs."),
             new("State", "Authentication state", session.State.Entries.Any(e => e.Provider is BevAuthenticationStateProvider) ? BevCapabilityStatus.Available : BevCapabilityStatus.RequiresIntegration,
@@ -94,8 +79,7 @@ internal static class CapabilityReport
             new("Routing", "Current route, route values, query", session.Components.All.Any(r => r.Component is Microsoft.AspNetCore.Components.RouteView) ? BevCapabilityStatus.Available : BevCapabilityStatus.Partial,
                 "From the RouteView's RouteData and NavigationManager. Without a RouteView in this session (the router runs during static rendering) only the URI is known."),
             new("Routing", "Matched route template", BevCapabilityStatus.Partial,
-                (FrameworkInstrumentationExists ? "RouteData.Template when the router fills it in (.NET 10); otherwise" : "RouteData has no template before .NET 10, so it is")
-                + " inferred for a page with a single @page, and labeled so; a page with several stays unknown."),
+                "RouteData.Template when the router fills it in (.NET 10); otherwise inferred for a page with a single @page, and labeled so; a page with several stays unknown."),
             new("Rendering", "What prerendering did", session.Prerender is not null ? BevCapabilityStatus.Available : BevCapabilityStatus.RequiresInstrumentation,
                 session.Prerender is not null ? "Handed over from the prerendering session through persistent component state." : "Arrives when the page was prerendered with the BevTools panel in it, and ValueAccess is Full (the summary travels in the page)."),
             new("State", "Cascading values", BevCapabilityStatus.Available, "Read from [CascadingParameter] properties of the selected component."),
