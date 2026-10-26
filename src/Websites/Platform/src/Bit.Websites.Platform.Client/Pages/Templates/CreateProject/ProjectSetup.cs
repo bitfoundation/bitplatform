@@ -113,7 +113,7 @@ public class ProjectSetup
 
         Choice(command, "ide", Ide, defaults.Ide);
 
-        command.Append("--yes");
+        command.Append("--non-interactive");
 
         return command.ToString();
     }
