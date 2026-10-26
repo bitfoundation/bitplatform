@@ -232,7 +232,7 @@ custom.aprof
 
 .env
 .playwright-mcp/
-# A file Aspire on Podman can leave in the AppHost folder on Windows, where NUL is a reserved name.
+# Podman on Windows has ssh write its known hosts to NUL, which Git's own ssh makes a real file that git add -A then fails on.
 NUL
 
 *.keystore
