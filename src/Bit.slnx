@@ -225,6 +225,23 @@
     <Project Path="Utilities/BbScanner/Demo/Client/Bit.BbScanner.Demo.Client.csproj" />
     <Project Path="Utilities/BbScanner/Demo/Server/Bit.BbScanner.Demo.Server.csproj" />
   </Folder>
+  <Folder Name="/Utilities/BbScanner/Samples/">
+    <Project Path="Utilities/BbScanner/Samples/Core/Bit.BbScanner.Samples.Core.csproj" />
+    <Project Path="Utilities/BbScanner/Samples/Maui/Bit.BbScanner.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Utilities/BbScanner/Samples/Auto/">
+    <Project Path="Utilities/BbScanner/Samples/Auto/Bit.BbScanner.Samples.Auto/Bit.BbScanner.Samples.Auto.csproj" />
+    <Project Path="Utilities/BbScanner/Samples/Auto/Bit.BbScanner.Samples.Auto.Client/Bit.BbScanner.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/BbScanner/Samples/Server/">
+    <Project Path="Utilities/BbScanner/Samples/Server/Bit.BbScanner.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/BbScanner/Samples/Wasm/">
+    <Project Path="Utilities/BbScanner/Samples/Wasm/Bit.BbScanner.Samples.Wasm/Bit.BbScanner.Samples.Wasm.csproj" />
+    <Project Path="Utilities/BbScanner/Samples/Wasm/Bit.BbScanner.Samples.Wasm.Client/Bit.BbScanner.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/BbScanner/Tests/">
     <Project Path="Utilities/BbScanner/Tests/Bit.BbScanner.TestKit/Bit.BbScanner.TestKit.csproj" />
     <Project Path="Utilities/BbScanner/Tests/Bit.BbScanner.Tests/Bit.BbScanner.Tests.csproj" />

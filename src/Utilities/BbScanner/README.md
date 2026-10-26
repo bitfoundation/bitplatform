@@ -94,6 +94,12 @@ The demo site, [bbscanner.bitplatform.dev](https://bbscanner.bitplatform.dev), h
 parameter, generated sample barcodes for every symbology, camera control, scan regions, image scanning, an
 in-browser decoder benchmark, customisation and error handling.
 
+[`Samples`](Samples/) is the hosting harness rather than the docs: one shared [Core](Samples/Core/) project of
+pages (the live camera, still images, and the decoder reading every symbology in-process), hosted unchanged under
+[Server](Samples/Server/), [WASM](Samples/Wasm/), [Auto](Samples/Auto/) and [MAUI](Samples/Maui/) (Blazor Hybrid on
+Android, iOS, macOS and Windows), so each [hosting model](#hosting-models) can be seen doing what it can: the camera
+under WebAssembly, `NotSupported` from the component under Server and MAUI, and `BbBarcodeDecoder` everywhere.
+
 ## How it fits together
 
 ```text
@@ -413,7 +419,8 @@ refused, as is one larger than `MaxImageFileSize` (32 MB by default), and an ima
 An image the application already holds goes to `ScanImageAsync`: the bytes of a PNG, JPEG, WebP or any format the
 browser decodes, from a `Stream` or from memory. It is decoded in the browser exactly like a picked file, under the
 same limits, and returns every symbol in it rather than raising `OnScan`; a refused or undecodable image throws a
-`BbScannerException` of kind `InvalidImage`. With Blazor's `InputFile`:
+`BbScannerException` of kind `InvalidImage`. Off WebAssembly it throws `NotSupported` before reading a byte of the
+stream, so an upload to a Server app does not cross the circuit only to be refused. With Blazor's `InputFile`:
 
 ```razor
 @* Only images: the camera never starts, and no permission is asked for. *@
@@ -1003,7 +1010,9 @@ what perspective takes off one side, so the stop that is clearly best aligned wi
 Bit.BbScanner                     the library
 Demo/Client                       the demo's pages, run on WebAssembly
 Demo/Server                       the demo's host, and the MCP server
-Tests/Bit.BbScanner.TestKit       encoders and image helpers, shared by the tests, the benchmarks and the demo
+Samples/Core                      the samples' shared pages
+Samples/Server, Wasm, Auto, Maui  the same pages in each hosting model
+Tests/Bit.BbScanner.TestKit       encoders, image helpers and the sample catalog, shared by the tests, the benchmarks, the demo and the samples
 Tests/Bit.BbScanner.Tests         unit, round-trip and image robustness tests
 Tests/Bit.BbScanner.Tests.Mcp     the MCP server, over the wire
 Tests/Bit.BbScanner.Tests.E2E     browser tests: a real page, a real camera stream
@@ -1017,10 +1026,18 @@ scannable symbols.
 From `src/Utilities/BbScanner` (inside `src`, so `src/global.json` selects the Microsoft.Testing.Platform runner):
 
 ```bash
+dotnet workload restore Samples/Maui/Bit.BbScanner.Samples.Maui.csproj  # once: the MAUI sample needs the MAUI workloads
 dotnet build Bit.BbScanner.slnx
 cd Tests/Bit.BbScanner.Tests && dotnet test
 dotnet run --project Demo/Server
 ```
+
+`Bit.BbScanner.slnx` includes the MAUI sample, whose Android, iOS and Mac Catalyst (and, on Windows, Windows) targets
+need the `maui-*` workloads; without them the solution build fails with `NETSDK1147`. To work without them, build
+the projects you need instead - `dotnet build Bit.BbScanner/Bit.BbScanner.csproj`, `dotnet test` from the tests
+folder - or run a web sample: `dotnet run --project Samples/Server` (also `Samples/Wasm/Bit.BbScanner.Samples.Wasm`
+and `Samples/Auto/Bit.BbScanner.Samples.Auto`). The MAUI sample itself runs with
+`dotnet build -t:Run -f net10.0-android Samples/Maui`.
 
 What the tests cover:
 

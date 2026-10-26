@@ -1,0 +1,167 @@
+﻿@page "/image"
+@implements IDisposable
+
+<PageTitle>Images - BbScanner samples</PageTitle>
+
+<h1>Still images</h1>
+
+<p>
+    Three ways to read a still image, none of which opens the camera, so no permission is asked for. The first two
+    have the browser decode the image file and need the WebAssembly runtime, as the camera does; the third hands the
+    scanner pixels the application already has, and works on every host.
+</p>
+
+<div class="surface narrow">
+    <BbScanner @ref="_scanner"
+               AutoStart="false"
+               Formats="BbBarcodeFormat.All"
+               OnScan="HandleScan"
+               OnError="e => _error = e" />
+</div>
+
+<section>
+    <h2>Pick or drop an image</h2>
+    <p>
+        The scanner's own <em>Scan image</em> button, an image file dropped onto it, or a button of the page's own
+        through <code>OpenFilePickerAsync</code>. Results arrive through <code>OnScan</code>. Off WebAssembly
+        <code>OpenFilePickerAsync</code> does nothing, so the page's button says why instead.
+    </p>
+    <div class="toolbar">
+        <button type="button" @onclick="OpenPickerAsync">Choose an image</button>
+    </div>
+</section>
+
+<section>
+    <h2>Blazor's InputFile</h2>
+    <p>
+        <code>ScanImageAsync</code> reads an image the application holds - an upload, a download, a file from
+        <code>InputFile</code> - and returns every symbol in it instead of raising <code>OnScan</code>. Off WebAssembly
+        it throws <code>NotSupported</code> before reading the stream, so a file is not uploaded just to be refused.
+    </p>
+    <div class="toolbar">
+        <label for="image-to-scan">Image to scan</label>
+        <InputFile id="image-to-scan" accept="image/*" OnChange="ScanFileAsync" />
+    </div>
+</section>
+
+<section>
+    <h2>Pixels the application has</h2>
+    <p>
+        <code>DecodeImage</code> takes pixels - from a canvas, a platform camera API, or here a generated QR code
+        turned 20 degrees - and decodes them in-process with the scanner's symbologies and the still image tuning.
+    </p>
+    <div class="toolbar">
+        <button type="button" @onclick="DecodeGeneratedImage">Decode a generated image</button>
+    </div>
+</section>
+
+@if (_error is not null)
+{
+    <p class="status error"><strong>@_error.Kind</strong>: @_error.Message</p>
+}
+
+<ResultList Results="_results" />
+
+@code {
+    private readonly List<BbBarcodeResult> _results = [];
+    private readonly CancellationTokenSource _leaving = new();
+    private BbScanner? _scanner;
+    private BbScannerException? _error;
+
+    private void HandleScan(BbBarcodeResult result)
+    {
+        _error = null;
+        ResultList.Prepend(_results, [result]);
+    }
+
+    private async Task OpenPickerAsync()
+    {
+        _error = null;
+        if (!OperatingSystem.IsBrowser())
+        {
+            // OpenFilePickerAsync does nothing off WebAssembly, where the scanner has no picker to open: say so,
+            // rather than leave a button that looks broken.
+            _error = new BbScannerException(
+                BbScannerErrorKind.NotSupported,
+                $"The scanner's file picker needs Blazor WebAssembly; this page is running on the {RendererInfo.Name} renderer.");
+            return;
+        }
+
+        if (_scanner is not null)
+        {
+            await _scanner.OpenFilePickerAsync();
+        }
+    }
+
+    private async Task ScanFileAsync(InputFileChangeEventArgs args)
+    {
+        _error = null;
+        if (_scanner is null)
+        {
+            return;
+        }
+
+        try
+        {
+            // Zero is no limit to the scanner, but no bytes at all to OpenReadStream.
+            var limit = _scanner.MaxImageFileSize > 0 ? _scanner.MaxImageFileSize : long.MaxValue;
+            await using var stream = args.File.OpenReadStream(limit, _leaving.Token);
+            var results = await _scanner.ScanImageAsync(stream, cancellationToken: _leaving.Token);
+            if (results.Count == 0)
+            {
+                _error = new BbScannerException(BbScannerErrorKind.InvalidImage, $"No barcode found in {args.File.Name}.");
+            }
+
+            ResultList.Prepend(_results, results);
+        }
+        catch (BbScannerException ex)
+        {
+            // NotSupported off WebAssembly; InvalidImage for a file that is refused or unreadable.
+            _error = ex;
+        }
+        catch (IOException ex)
+        {
+            // InputFile's own size limit, which is the scanner's.
+            _error = new BbScannerException(BbScannerErrorKind.InvalidImage, ex.Message, ex);
+        }
+        catch (JSException ex)
+        {
+            // The browser could no longer read the file: it was moved or deleted after it was chosen.
+            _error = new BbScannerException(BbScannerErrorKind.InvalidImage, ex.Message, ex);
+        }
+        catch (Exception ex) when ((ex is OperationCanceledException or ObjectDisposedException) && _leaving.IsCancellationRequested)
+        {
+            // The page was left while the file was read, and the scanner went with it: there is nobody to tell.
+        }
+    }
+
+    private void DecodeGeneratedImage()
+    {
+        _error = null;
+        if (_scanner is null)
+        {
+            return;
+        }
+
+        var qr = SampleCatalog.All.First(s => s.Format == BbBarcodeFormat.QrCode);
+        using var upright = SampleCatalog.RenderMatrix(qr, scale: 4);
+        using var turned = ImageTransforms.Rotate(upright, 20);
+
+        // The packed RGBA an application gets from a canvas or a camera.
+        var rgba = ImageTransforms.ToRgba(turned, tint: false);
+        var result = _scanner.DecodeImage(rgba, turned.Width, turned.Height, BbPixelFormat.Rgba32);
+        if (result is null)
+        {
+            _error = new BbScannerException(BbScannerErrorKind.Unknown, "The generated image did not decode.");
+            return;
+        }
+
+        ResultList.Prepend(_results, [result]);
+    }
+
+    public void Dispose()
+    {
+        _leaving.Cancel();
+        _leaving.Dispose();
+    }
+}

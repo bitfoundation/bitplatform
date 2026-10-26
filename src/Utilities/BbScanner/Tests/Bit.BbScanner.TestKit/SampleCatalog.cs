@@ -1,11 +1,9 @@
-﻿using Bit.BbScanner.TestKit;
-
-namespace Bit.BbScanner.Demo.Client;
+﻿namespace Bit.BbScanner.TestKit;
 
 /// <summary>One generated symbol, ready to render.</summary>
 /// <param name="Format">The symbology.</param>
 /// <param name="Caption">Label shown under the symbol.</param>
-/// <param name="Value">The encoded value.</param>
+/// <param name="Value">What the decoder reads back: the encoded value, or the GS1 element string it makes.</param>
 /// <param name="Matrix">The module grid for a two dimensional symbology.</param>
 /// <param name="Modules">The module array for a linear symbology.</param>
 public sealed record BarcodeSample(
@@ -19,9 +17,10 @@ public sealed record BarcodeSample(
 /// Generates a scannable example of every supported symbology.
 /// </summary>
 /// <remarks>
-/// The demo generates its own barcodes rather than shipping images, so the samples are always
-/// consistent with the decoder and a visitor can point a real phone camera at the page to check
-/// that the library reads symbols it did not itself render.
+/// The demo and the samples generate their own barcodes rather than shipping images, so the
+/// samples are always consistent with the decoder and a visitor can point a real phone camera at
+/// the page to check that the library reads symbols it did not itself render. Both draw from this
+/// one catalog, so a value or an encoder parameter cannot drift between them.
 /// </remarks>
 public static class SampleCatalog
 {
@@ -45,6 +44,19 @@ public static class SampleCatalog
         sample.Format == BbBarcodeFormat.MaxiCode
             ? SyntheticImage.FromMaxiCode(sample.Matrix!, moduleWidth: scale, quietZoneModules: 4)
             : SyntheticImage.FromMatrix(sample.Matrix!, scale: scale);
+
+    /// <summary>
+    /// Rasterises any sample with its quiet zone: a two dimensional one as <see cref="RenderMatrix"/> does, a linear
+    /// one <paramref name="linearScale"/> pixels a module and <paramref name="height"/> pixels tall.
+    /// </summary>
+    /// <param name="sample">The sample.</param>
+    /// <param name="scale">Pixels a module of a two dimensional symbol.</param>
+    /// <param name="linearScale">Pixels a module of a linear symbol.</param>
+    /// <param name="height">Height of a linear symbol, in pixels.</param>
+    public static BbLuminanceBuffer Render(BarcodeSample sample, int scale, int linearScale, int height) =>
+        sample.Matrix is not null
+            ? RenderMatrix(sample, scale)
+            : SyntheticImage.FromLinear(sample.Modules!, scale: linearScale, height: height);
 
     private static List<BarcodeSample> Build() =>
     [
