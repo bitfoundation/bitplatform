@@ -1,6 +1,4 @@
 ﻿@page "/scroll"
-@inject BmotionScrollTracker Scroll
-@implements IAsyncDisposable
 
 <PageTitle>Scroll · Bmotion samples</PageTitle>
 
@@ -13,12 +11,7 @@
     on WebAssembly. Scroll down.
 </p>
 
-<div class="scroll-readout" aria-live="off">
-    @* The scroll position as a number in C#, for when it is needed there rather than on an element. Every scroll
-       event crosses to .NET - over the circuit on Server - and the count says how many have. *@
-    <span>BmotionScrollTracker: <strong id="scroll-progress">@_progress.ToString("P0", CultureInfo.InvariantCulture)</strong> scrolled</span>
-    <span class="muted"><span id="scroll-callbacks">@_callbacks</span> callbacks</span>
-</div>
+<ScrollReadout />
 
 <section>
     <h2>Each card's own journey</h2>
@@ -68,22 +61,4 @@
         "Scrolling back up leaves them where they are.",
         "With reduced motion they fade in without moving.",
     ];
-
-    private double _progress;
-    private int _callbacks;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender is false) return;
-
-        await Scroll.ObserveAsync(info =>
-        {
-            _progress = info.ProgressY;
-            _callbacks++;
-            return InvokeAsync(StateHasChanged);
-        });
-    }
-
-    // The tracker is transient: this page owns it, and stops observing by disposing it.
-    public ValueTask DisposeAsync() => Scroll.DisposeAsync();
 }

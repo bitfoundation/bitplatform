@@ -486,14 +486,21 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
     }
 
     // ── Scroll ────────────────────────────────────────────────────────────────
-    public ValueTask<string?> ObserveScrollAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string? containerId, DotNetObjectReference<T> dotnetRef, object? options = null) where T : class
+    /// <summary>
+    /// When set, <see cref="ObserveScrollAsync"/> waits for it before answering, so a test can hold
+    /// a subscription mid-setup while the tracker is disposed.
+    /// </summary>
+    public Task? ObserveScrollGate { get; set; }
+
+    public async ValueTask<string?> ObserveScrollAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string? containerId, DotNetObjectReference<T> dotnetRef, object? options = null) where T : class
     {
         var key = "scroll-key-" + (++_scrollKeySeq);
         // Keyed by subscription so a test can fire OnScroll through the exact ref JS would hold.
         ScrollRefs[key] = dotnetRef.Value;
         ScrollReferences[key] = dotnetRef;
         Record("observeScroll", containerId, options, key);
-        return ValueTask.FromResult<string?>(key);
+        if (ObserveScrollGate is { } gate) await gate;
+        return key;
     }
 
     public ValueTask UnobserveScrollAsync(string key)

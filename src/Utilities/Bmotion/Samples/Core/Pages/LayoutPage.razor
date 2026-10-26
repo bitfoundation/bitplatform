@@ -15,7 +15,9 @@
     <p>
         Each tile is a <code>&lt;Bmotion Layout="true"&gt;</code> with a <code>@@key</code>, so Blazor moves the same
         element rather than rewriting another one, and Bmotion slides it from where it was. Nothing here animates a
-        position by hand: the list changes, and the grid lays itself out.
+        position by hand: the list changes, and the grid lays itself out. Measuring costs a reflow (and on Server holds
+        the element for a round trip), so the tiles measure only when <code>LayoutDependency</code> - bumped by Shuffle
+        and Sort - changes, not on every render of the page.
     </p>
 
     <div class="toolbar">
@@ -26,7 +28,7 @@
     <div class="number-grid">
         @foreach (var number in _numbers)
         {
-            <Bmotion @key="number" Layout="true" Transition="Bm.Tween(0.4, BmEase.InOut)">
+            <Bmotion @key="number" Layout="true" LayoutDependency="_arrangement" Transition="Bm.Tween(0.4, BmEase.InOut)">
                 <div class="number-tile tone-@(number % 4)">@number</div>
             </Bmotion>
         }
@@ -87,6 +89,7 @@
     private static readonly string[] Tabs = ["Spring", "Summer", "Autumn", "Winter"];
 
     private List<int> _numbers = [.. Enumerable.Range(1, 12)];
+    private int _arrangement;
     private string _tab = Tabs[0];
     private List<string> _tasks = ["Write the draft", "Ask for a review", "Fix the typos", "Publish", "Tell everyone"];
     private int _reorders;
@@ -98,9 +101,15 @@
         _ => "",
     };
 
-    private void Shuffle() => _numbers = [.. _numbers.OrderBy(_ => Random.Shared.Next())];
+    private void Shuffle() => Arrange([.. _numbers.OrderBy(_ => Random.Shared.Next())]);
 
-    private void Sort() => _numbers = [.. _numbers.Order()];
+    private void Sort() => Arrange([.. _numbers.Order()]);
+
+    private void Arrange(List<int> numbers)
+    {
+        _numbers = numbers;
+        _arrangement++;
+    }
 
     private void Reverse() => _tasks = [.. Enumerable.Reverse(_tasks)];
 

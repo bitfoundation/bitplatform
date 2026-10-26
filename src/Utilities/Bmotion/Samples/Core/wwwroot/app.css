@@ -117,9 +117,11 @@ section {
     font-size: 0.875rem;
 }
 
+/* The terms take what they need up to 40% of the width, and wrap past it, so a long one leaves room for its
+   description on a phone. */
 .facts {
     display: grid;
-    grid-template-columns: max-content 1fr;
+    grid-template-columns: fit-content(40%) minmax(0, 1fr);
     gap: 0.25rem 1rem;
     margin: 1rem 0;
 }
@@ -130,6 +132,7 @@ section {
 
 .facts dd {
     margin: 0;
+    overflow-wrap: anywhere;
 }
 
 .toolbar {
@@ -243,11 +246,12 @@ main .btn-primary:hover {
     touch-action: none;
 }
 
-/* 40px thumb travelling 4 x 60px: the stops in GesturesPage.razor. */
+/* 40px thumb travelling 4 x 44px: the stops in GesturesPage.razor. A fixed width, never squeezed to fit, or the drag
+   constraint would shrink with it and the stops would no longer meet the ticks; 216px fits inside main's and the
+   stage's padding on a 320px-wide screen. */
 .track {
     position: relative;
-    width: 280px;
-    max-width: 100%;
+    width: 216px;
     height: 40px;
     border-radius: 20px;
     background: var(--primary-soft);

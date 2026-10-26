@@ -1269,10 +1269,10 @@ drag, variants & stagger, keyframes, enter/exit transitions, presence switching,
 [`Samples`](Samples/) is the hosting harness rather than the docs: one shared [Core](Samples/Core/) project of
 pages (gestures and drag, presence, layout and reorder, the programmatic API, and scroll), hosted unchanged under
 [Server](Samples/Server/), [WASM](Samples/Wasm/), [Auto](Samples/Auto/) and [MAUI](Samples/Maui/) (Blazor Hybrid on
-Android, iOS, macOS and Windows). Every page says which renderer it is on and whether the engine has its per-frame
-loop there. It does on WebAssembly. On Server and in the MAUI app interop is asynchronous, so the browser plays nearly
-everything and what needs the loop lands on its target at once. The web hosts prerender every page with
-`BmPrerenderMode.Animate`.
+Android, iOS, macOS and Windows). The bar on every page names the renderer it is on, and the home, Gestures and
+Programmatic pages say whether the engine has its per-frame loop there. It does on WebAssembly. On Server and in the
+MAUI app interop is asynchronous, so the browser plays nearly everything and what needs the loop lands on its target
+at once. The web hosts prerender every page with `BmPrerenderMode.Animate`.
 
 ```bash
 dotnet run --project src/Utilities/Bmotion/Samples/Server

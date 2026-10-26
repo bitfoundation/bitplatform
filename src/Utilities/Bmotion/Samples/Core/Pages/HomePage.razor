@@ -22,13 +22,15 @@
     <p class="muted">
         These cards came in one after another: a variant cascade, which a web host serves already playing as CSS
         (<code>BmPrerenderMode.Animate</code>), before any runtime has started. Hover or press one; Hide and Show play
-        the cascade again from C#. <strong>Slow motion</strong> in the bar above plays the transitions on these pages at a
-        quarter of their speed.
+        the cascade again from C#, and a hidden list is <code>inert</code>, so no tile can be pressed or focused while it
+        cannot be seen. <strong>Slow motion</strong> in the bar above plays the transitions of every
+        <code>&lt;Bmotion&gt;</code> on these pages at a quarter of their speed; what <code>BmotionAnimateService</code>
+        starts on the Programmatic page keeps its own.
     </p>
 
     <Bmotion Variants="_list" InitialState="hidden" State="@(_shown ? "visible" : "hidden")"
-             Transition="Bm.Tween(0.3, staggerChildren: 0.07)">
-        <ul class="tiles">
+             Transition="@(_shown ? ShowTiles : HideTiles)">
+        <ul class="tiles" inert="@(_shown is false)">
             @foreach (var sample in _samples)
             {
                 <Bmotion @key="sample.Href" Variants="_tile" WhileHover="Bm.To(y: -4)" WhileTap="Bm.To(scale: 0.97)">
@@ -49,7 +51,12 @@
 @code {
     private bool _shown = true;
 
-    // The container's own fade; the transition on the container staggers the tiles under it.
+    // The transition on the container staggers the tiles under it. Going, the container fades only once the last tile
+    // has left: fading with them, it would hide the cascade while most of it is still to come.
+    private static readonly BmTransition ShowTiles = Bm.Tween(0.3, staggerChildren: 0.07);
+    private static readonly BmTransition HideTiles = Bm.Tween(0.3, staggerChildren: 0.07, when: BmWhen.AfterChildren);
+
+    // The container's own fade.
     private readonly BmVariants _list = new()
     {
         ["hidden"] = Bm.To(opacity: 0),
