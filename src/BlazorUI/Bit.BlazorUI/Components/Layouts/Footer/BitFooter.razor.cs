@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -508,8 +507,8 @@ public partial class BitFooter : BitComponentBase
         // the 0px fallback wherever there is no inset, which leaves the plain height untouched.
         StyleBuilder.Register(() => Height.HasValue
                                     ? (IsPinned
-                                        ? $"height:calc({Height}px + env(safe-area-inset-bottom, 0px))"
-                                        : $"height:{Height}px")
+                                        ? FormattableString.Invariant($"height:calc({Height}px + env(safe-area-inset-bottom, 0px))")
+                                        : FormattableString.Invariant($"height:{Height}px"))
                                     : string.Empty);
 
         StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-ftr-gap:{Gap}" : string.Empty);
@@ -519,7 +518,6 @@ public partial class BitFooter : BitComponentBase
 
 
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitFooterParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

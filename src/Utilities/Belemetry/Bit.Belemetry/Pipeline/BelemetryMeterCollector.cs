@@ -42,7 +42,9 @@ internal sealed class BelemetryMeterCollector : IDisposable
 
     private static void Record(object? state, double value, long longValue, ReadOnlySpan<KeyValuePair<string, object?>> tags, bool isInteger)
     {
-        if (state is not BelemetryInstrumentAggregator aggregator || BelemetrySuppression.IsActive) return;
+        // Measurements made while exporting are the exporter's own HTTP traffic - except Belemetry's self-telemetry,
+        // which counts exactly that and is recorded there.
+        if (state is not BelemetryInstrumentAggregator aggregator || (BelemetrySuppression.IsActive && aggregator.IsSelf is false)) return;
 
         aggregator.IsInteger = isInteger;
         try

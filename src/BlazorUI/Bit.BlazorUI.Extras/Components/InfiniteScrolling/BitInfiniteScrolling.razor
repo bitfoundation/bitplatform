@@ -33,7 +33,7 @@
            belongs to - whose size is unknown (-1) for as long as more of it can still arrive. A feed owns nothing
            but its articles, so the role is carried by a box of its own that the status blocks and the button stay
            out of. A null key is no key at all, so one article serves both the keyed and the unkeyed feed. *@
-        var setSize = _feedSetSize;
+        var setSize = _feedSetSize.ToString(System.Globalization.CultureInfo.InvariantCulture);
         var offset = _feedPositionOffset;
         var itemClass = GetItemClass();
         <div class="bit-isc-fed" role="feed" aria-label="@AriaLabel" aria-busy="@(_isLoading ? "true" : "false")">

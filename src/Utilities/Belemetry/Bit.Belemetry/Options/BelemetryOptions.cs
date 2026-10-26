@@ -39,7 +39,8 @@ public sealed class BelemetryOptions
     /// <summary>
     /// Whether the standard <c>OTEL_*</c> environment variables (<c>OTEL_SERVICE_NAME</c>, <c>OTEL_RESOURCE_ATTRIBUTES</c>,
     /// <c>OTEL_EXPORTER_OTLP_ENDPOINT</c>, <c>OTEL_EXPORTER_OTLP_HEADERS</c>, <c>OTEL_EXPORTER_OTLP_PROTOCOL</c>) and
-    /// <c>APPLICATIONINSIGHTS_CONNECTION_STRING</c> fill in unset values. Ignored in the browser. Defaults to <see langword="true"/>.
+    /// <c>APPLICATIONINSIGHTS_CONNECTION_STRING</c> fill in unset values, and whether <c>OTEL_SDK_DISABLED=true</c> - an
+    /// operator's kill switch, which wins over code - turns Belemetry off. Ignored in the browser. Defaults to <see langword="true"/>.
     /// </summary>
     public bool UseEnvironmentVariables { get; set; } = true;
 
@@ -48,6 +49,18 @@ public sealed class BelemetryOptions
 
     /// <summary>Data minimization.</summary>
     public BelemetryPrivacyOptions Privacy { get; } = new();
+
+    /// <summary>Protection against error floods (duplicates and a per-minute cap), on both sides.</summary>
+    public BelemetryErrorOptions Errors { get; } = new();
+
+    /// <summary>
+    /// The longest string kept in an attribute value, a log body or a span status message, in characters; longer
+    /// strings are cut there, after privacy scrubbing (so a cut never hides an e-mail address from it). It is the
+    /// OpenTelemetry attribute value length limit, applied to bodies too, so one runaway string - a serialized
+    /// object, a huge stack trace - cannot make a request too large to deliver, or to send while the page unloads.
+    /// Defaults to 32768; zero or less keeps strings whole.
+    /// </summary>
+    public int MaxValueLength { get; set; } = 32768;
 
     /// <summary>The browser script.</summary>
     public BelemetryBrowserOptions Browser { get; } = new();

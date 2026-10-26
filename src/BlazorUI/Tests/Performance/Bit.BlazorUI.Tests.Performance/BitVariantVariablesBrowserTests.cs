@@ -231,17 +231,19 @@ public partial class BitVariantVariablesBrowserTests : PerformanceTestBase
             var chevron = root.Locator(".bit-mnb-chb");
             var operatorButton = root.Locator(".bit-mnb-opb");
 
+            // The hovered and pressed colors are polled for, as BitNavStateColorsBrowserTests waits for :hover / :active,
+            // rather than read once right after the pointer moved.
             await chevron.HoverAsync();
-            Assert.AreEqual("rgb(201, 1, 1)", await Css(chevron, "background-color"), $"The hovered {variant} chevron half ignores its own style.");
+            await Expect(chevron).ToHaveCSSAsync("background-color", "rgb(201, 1, 1)");
 
             await Page.Mouse.DownAsync();
-            Assert.AreEqual("rgb(201, 1, 2)", await Css(chevron, "background-color"), $"The pressed {variant} chevron half ignores its own style.");
+            await Expect(chevron).ToHaveCSSAsync("background-color", "rgb(201, 1, 2)");
             await Page.Mouse.MoveAsync(0, 0);
             await Page.Mouse.UpAsync();
             await Page.Keyboard.PressAsync("Escape");
 
             await operatorButton.HoverAsync();
-            Assert.AreEqual("rgb(201, 1, 3)", await Css(operatorButton, "background-color"), $"The hovered {variant} operator half ignores its own style.");
+            await Expect(operatorButton).ToHaveCSSAsync("background-color", "rgb(201, 1, 3)");
             await Page.Mouse.MoveAsync(0, 0);
         }
     }

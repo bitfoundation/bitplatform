@@ -87,9 +87,12 @@ public partial class NotAuthorizedPage
 
     private async Task SignIn()
     {
-        await AuthManager.SignOut(CurrentCancellationToken);
         var returnUrl = ReturnUrl is null ? NavigationManager.GetRelativePath() : GetSafeReturnUrl();
-        await signInModalService.SignIn(returnUrl);
+
+        if (await signInModalService.SignIn(returnUrl) && ReturnUrl is not null)
+        {
+            NavigationManager.NavigateTo(returnUrl, replace: true);
+        }
 
         // Alternatively, you can redirect the user to the sign-in page.
         // NavigationManager.NavigateTo($"{PageUrls.SignIn}?return-url={Uri.EscapeDataString(returnUrl)}");

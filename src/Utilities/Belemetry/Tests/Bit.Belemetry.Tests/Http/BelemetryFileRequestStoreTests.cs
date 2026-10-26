@@ -261,4 +261,48 @@ public class BelemetryFileRequestStoreTests
 
         Assert.IsEmpty(StoredFiles());
     }
+
+    [TestMethod]
+    public async Task Pipeline_ABackendThatIsDown_HoldsBackOnlyItsOwnBacklog()
+    {
+        var sent = new List<string>();
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(new BelemetryHttpMessageHandlerProvider(new ByHost(sent, down: "down.test")));
+        services.AddBitBelemetryServices(o =>
+        {
+            TestHost.ApplyTestDefaults(o);
+            o.Persistence.Enabled = true;
+            o.Persistence.Directory = _directory;
+            o.AddOtlpExporter("http://down.test:4318");
+            o.AddOtlpExporter("http://up.test:4318");
+        });
+        await using var provider = services.BuildServiceProvider();
+        var pipeline = provider.GetRequiredService<BelemetryPipeline>();
+        var store = pipeline.Exporters.Store!;
+        var time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - 1000;
+        foreach (var (exporter, host, age) in new[] { ("otlp", "down", 3), ("otlp1", "up", 2), ("otlp", "down", 1), ("otlp1", "up", 0) })
+        {
+            var request = Request(time - age, exporter: exporter);
+            request.Url = $"http://{host}.test:4318/v1/logs";
+            await store.SaveAsync(request, CancellationToken.None);
+        }
+
+        await pipeline.Exporters.RetryStoredAsync(persistenceAllowed: true, CancellationToken.None);
+
+        // One attempt at the backend that is down, and the other backend's backlog all the same.
+        CollectionAssert.AreEqual(new[] { "down.test", "up.test", "up.test" }, sent);
+        var left = await store.LoadAsync(10, CancellationToken.None);
+        Assert.IsTrue(left.Count == 2 && left.All(r => r.Url.StartsWith("http://down.test", StringComparison.Ordinal)), string.Join(" | ", left.Select(r => r.Url)));
+    }
+
+    /// <summary>Answers 503 for one host and 200 for the others, recording the hosts it was sent to.</summary>
+    private sealed class ByHost(List<string> sent, string down) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            sent.Add(request.RequestUri!.Host);
+            return Task.FromResult(new HttpResponseMessage(request.RequestUri.Host == down ? HttpStatusCode.ServiceUnavailable : HttpStatusCode.OK) { Content = new ByteArrayContent([]) });
+        }
+    }
 }

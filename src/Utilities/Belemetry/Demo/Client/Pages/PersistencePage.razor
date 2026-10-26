@@ -21,23 +21,33 @@
     <p>
         Persistence works on whole export requests, already serialized, rather than on records: what is
         stored is exactly the body that could not be delivered, so it is sent again unchanged. A request is
-        kept when it fails with a network error, or with one of the statuses a receiver uses to say
-        "later":
+        kept when it fails with a network error, or with one of the statuses its backend uses to say "later" -
+        which differ, because each protocol says which failures are worth another try:
     </p>
-    <div class="demo-badges">
-        <span class="bb-badge">408 Request Timeout</span>
-        <span class="bb-badge">429 Too Many Requests</span>
-        <span class="bb-badge">439 (Azure daily quota)</span>
-        <span class="bb-badge">500</span>
-        <span class="bb-badge">502</span>
-        <span class="bb-badge">503</span>
-        <span class="bb-badge">504</span>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th scope="col">Backend</th><th scope="col">Retried and kept</th><th scope="col">Why</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>OTLP</td>
+                    <td><span class="bb-badge">429</span> <span class="bb-badge">502</span> <span class="bb-badge">503</span> <span class="bb-badge">504</span></td>
+                    <td>The only ones the OTLP specification allows retrying</td>
+                </tr>
+                <tr>
+                    <td>Azure Monitor</td>
+                    <td><span class="bb-badge">408</span> <span class="bb-badge">429</span> <span class="bb-badge">439</span> <span class="bb-badge">500</span> <span class="bb-badge">502</span> <span class="bb-badge">503</span> <span class="bb-badge">504</span></td>
+                    <td>What the ingestion endpoint asks to retry (439 is the daily quota)</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
     <p>
         Before a request is stored it is first retried in place a few times, with backoff that honours
-        <code>Retry-After</code>. Any other status - a 400 for a malformed body, a 401 for a wrong key - is
-        a permanent answer, and the request is dropped rather than replayed forever. An Azure Monitor
-        <code>206</code> partial success retries only the items the response lists as retryable.
+        <code>Retry-After</code>. Any other status - a 400 for a malformed body, a 401 for a wrong key, and for OTLP a
+        408 or 500 too - is the backend's final word: the request is dropped, with a warning in the
+        <code>Bit.Belemetry</code> log category, rather than replayed forever. An Azure Monitor <code>206</code> partial
+        success stores only the items the response lists as retryable; an OTLP <code>partial_success</code> is never
+        retried.
     </p>
     <p>Persistence needs two things at once:</p>
     <ul class="bb-detail-list">
@@ -87,10 +97,60 @@
         headers - an API key has no business sitting in <code>localStorage</code> or in a file - so they are
         added again from the exporter's current configuration when a request is resent (a rotated key applies
         to the backlog too). Credentials that expire, such as an Entra
-        ID token for Azure Monitor, are never stored on either side: the exporter adds a fresh one at send time.
+        ID token for Azure Monitor, are never stored on either side: the exporter adds a fresh one at send time. In
+        WebAssembly, a .NET request the script stored is resent with the headers of the browser exporter that posts to
+        the same URL.
     </p>
     <p>Each entry of the browser queue has this shape:</p>
     <CodeSnippet Code="@QueueShapeCode" Language="JSON" />
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> How a retry pass works</h3>
+    <p>The same on both sides, every <code>RetryInterval</code> and on the other triggers above:</p>
+    <ul class="bb-detail-list">
+        <li><strong>Oldest first, one attempt each.</strong> A pass sends the stored requests in the order they failed, and does not retry within the pass.</li>
+        <li>
+            <strong>A failure holds back its own backend only.</strong> When a request fails again, the rest of the
+            backlog for its URL waits for the next pass - that backend is still unreachable, and hammering it would only
+            waste the network - while the requests to other backends go on.
+        </li>
+        <li>
+            <strong>A partial success settles the request.</strong> What the backend accepted is gone, what it asked to
+            retry is stored again, and the pass continues: the backend answered.
+        </li>
+        <li>
+            <strong>The backlog survives the page going away.</strong> The script takes a stored request out of
+            <code>localStorage</code> only while sending it, and puts it back if the page is hidden mid-send - so closing
+            the tab during a pass loses nothing.
+        </li>
+    </ul>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> When the page goes away</h3>
+    <p>
+        When the page is hidden or unloads, the script sends what is queued with
+        <code>fetch(..., { keepalive: true })</code>, which outlives the page. In WebAssembly it first asks the .NET
+        pipeline for its pending records, already serialized, because async .NET work does not survive the unload. But
+        a browser caps the bodies of all of a page's keepalive requests in flight at 64 KiB together (and Chromium at
+        nine requests), so the script keeps a budget:
+    </p>
+    <ul class="bb-detail-list">
+        <li>A request that fits is sent with <code>keepalive</code>.</li>
+        <li>
+            One that does not is <strong>stored</strong>, with <code>Persistence</code> granted, and sent on the next
+            visit - or, without it, sent as a plain request, which still completes if the page was only hidden.
+        </li>
+        <li>
+            Compression is skipped for these final batches: <code>CompressionStream</code> is asynchronous, and the page
+            would be gone before it finished.
+        </li>
+    </ul>
+    <p>
+        Delivery during unload is best effort - nothing can guarantee it - which is exactly why the stored backlog
+        exists.
+    </p>
 </div>
 
 <div class="bb-card">

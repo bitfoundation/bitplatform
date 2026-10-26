@@ -9,8 +9,8 @@
         <IsTrimmable>true</IsTrimmable>
         <!-- The imaging stages (pixel conversion, binarization and the bit planes) work on spans of pixels through pointers. -->
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Description>A dependency-free, high performance barcode scanner for Blazor: BbScanner reads QR Code, Data Matrix, Code 128, Code 39, EAN-13, EAN-8, UPC-A, UPC-E and ITF from the camera or from still images. The decoding is implemented entirely in C#: no barcode SDK and no JavaScript scanner library; the browser layer only opens the camera and copies pixels.</Description>
-        <PackageTags>Bit;Blazor;Barcode;QrCode;Scanner;DataMatrix;Pdf417;Ean;Upc;Code128;Code39;Itf;Camera;WebAssembly</PackageTags>
+        <Description>A dependency-free, high performance barcode scanner for Blazor: BbScanner reads QR Code, Micro QR, Data Matrix, PDF417, Aztec, MaxiCode, Code 128, Code 39, Code 93, Codabar, EAN-13, EAN-8, UPC-A, UPC-E, ITF, GS1 DataBar, DataBar Limited and DataBar Expanded from the camera or from still images. The decoding is implemented entirely in C#: no barcode SDK and no JavaScript scanner library; the browser layer only opens the camera and copies pixels.</Description>
+        <PackageTags>Bit;Blazor;Barcode;QrCode;MicroQr;Scanner;DataMatrix;Pdf417;Aztec;MaxiCode;Ean;Upc;Code128;Code39;Code93;Codabar;Itf;DataBar;DataBarExpanded;GS1;Camera;WebAssembly</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>

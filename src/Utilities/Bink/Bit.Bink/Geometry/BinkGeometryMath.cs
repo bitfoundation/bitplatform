@@ -26,6 +26,79 @@ public static class BinkGeometryMath
     public static float DistanceToSegment(Vector2 p, Vector2 a, Vector2 b) => MathF.Sqrt(DistanceToSegmentSquared(p, a, b));
 
     /// <summary>
+    /// Whether a transform stretches every direction by the same factor: any combination of rotation, reflection,
+    /// even scaling and translation. Under such a transform a distance converts between local and document units by
+    /// one factor; under any other (stretching a selection by an edge handle produces one) it does not.
+    /// </summary>
+    public static bool IsConformal(Matrix3x2 m)
+    {
+        float tolerance = 1e-4f * (MathF.Abs(m.M11) + MathF.Abs(m.M12) + MathF.Abs(m.M21) + MathF.Abs(m.M22)) + 1e-9f;
+        return (MathF.Abs(m.M11 - m.M22) <= tolerance && MathF.Abs(m.M12 + m.M21) <= tolerance)
+            || (MathF.Abs(m.M11 + m.M22) <= tolerance && MathF.Abs(m.M12 - m.M21) <= tolerance);
+    }
+
+    /// <summary>The most a transform stretches any direction: its largest singular value.</summary>
+    public static float MaxScale(Matrix3x2 m)
+    {
+        float sum = m.M11 * m.M11 + m.M12 * m.M12 + m.M21 * m.M21 + m.M22 * m.M22;
+        float determinant = m.GetDeterminant();
+        float spread = MathF.Sqrt(MathF.Max(sum * sum - 4f * determinant * determinant, 0f));
+        return MathF.Sqrt((sum + spread) / 2f);
+    }
+
+    /// <summary>
+    /// How far a band of half-width <paramref name="halfWidth"/> around the local segment <paramref name="a"/> to
+    /// <paramref name="b"/> reaches either side of it in document units under <paramref name="m"/>. The band's sides
+    /// stay parallel under the transform, at the half-width times the determinant over the segment's stretch: an even
+    /// scale multiplies it by the scale, a stretch along the segment leaves it alone, a stretch across it widens it by
+    /// the full factor. A degenerate segment is a dot, given its mean radius.
+    /// </summary>
+    public static float TransformedHalfWidth(Vector2 a, Vector2 b, Matrix3x2 m, float halfWidth)
+    {
+        if (m.IsIdentity) return halfWidth;
+        float determinant = MathF.Abs(m.GetDeterminant());
+        Vector2 local = b - a;
+        float documentLength = Vector2.TransformNormal(local, m).Length();
+        if (documentLength < Epsilon) return halfWidth * MathF.Sqrt(determinant);
+        return halfWidth * determinant * local.Length() / documentLength;
+    }
+
+    /// <summary>
+    /// Whether a document point lies within <paramref name="tolerance"/> of a round-ended band of local half-width
+    /// <paramref name="halfWidth"/> around the local segment <paramref name="localA"/> to <paramref name="localB"/>,
+    /// drawn under <paramref name="m"/>. Beside the segment the band reaches <see cref="TransformedHalfWidth"/>; at
+    /// its ends, the round cap becomes an ellipse, measured along the direction to the point.
+    /// </summary>
+    internal static bool NearTransformedSegment(Vector2 point, Vector2 localA, Vector2 localB, Matrix3x2 m, Matrix3x2 inverse, float halfWidth, float tolerance)
+    {
+        Vector2 a = Vector2.Transform(localA, m);
+        Vector2 b = Vector2.Transform(localB, m);
+        Vector2 ab = b - a;
+        float length2 = ab.LengthSquared();
+        float t = length2 < Epsilon * Epsilon ? 0f : Vector2.Dot(point - a, ab) / length2;
+        if (t > 0f && t < 1f)
+        {
+            float reach = TransformedHalfWidth(localA, localB, m, halfWidth) + tolerance;
+            return (point - (a + ab * t)).LengthSquared() <= reach * reach;
+        }
+        return WithinTransformedDot(point - (t <= 0f ? a : b), inverse, halfWidth, tolerance);
+    }
+
+    /// <summary>
+    /// Whether an offset from a dot's centre, in document units, lies within <paramref name="tolerance"/> of a dot of
+    /// local radius <paramref name="radius"/> drawn under the transform whose inverse is <paramref name="inverse"/>.
+    /// The dot is an ellipse in the document, reaching <c>radius / |inverse · u|</c> along a unit direction u.
+    /// </summary>
+    internal static bool WithinTransformedDot(Vector2 offset, Matrix3x2 inverse, float radius, float tolerance)
+    {
+        float distance = offset.Length();
+        if (distance <= tolerance) return true;
+        float shrink = Vector2.TransformNormal(offset / distance, inverse).Length();
+        float reach = shrink > Epsilon ? radius / shrink : radius;
+        return distance <= reach + tolerance;
+    }
+
+    /// <summary>
     /// Parameter <c>t</c> in [0,1] of the point on segment <paramref name="a"/>-<paramref name="b"/> closest to <paramref name="p"/>.
     /// </summary>
     public static float ProjectOnSegment(Vector2 p, Vector2 a, Vector2 b)
@@ -111,7 +184,14 @@ public static class BinkGeometryMath
     public static float Angle(Vector2 v) => MathF.Atan2(v.Y, v.X);
 
     /// <summary>True when point is inside a polygon (nonzero winding rule).</summary>
-    public static bool PointInPolygon(Vector2 p, ReadOnlySpan<Vector2> polygon)
+    public static bool PointInPolygon(Vector2 p, ReadOnlySpan<Vector2> polygon) => WindingNumber(p, polygon) != 0;
+
+    /// <summary>
+    /// How many times a polygon, closed implicitly, winds around a point, signed by its direction. Summed over several
+    /// polygons, it decides whether the point is inside their combined fill: under the non-zero rule when the sum is
+    /// not zero, under the even-odd rule when it is odd.
+    /// </summary>
+    internal static int WindingNumber(Vector2 p, ReadOnlySpan<Vector2> polygon)
     {
         int winding = 0;
         for (int i = 0, j = polygon.Length - 1; i < polygon.Length; j = i++)
@@ -127,7 +207,7 @@ public static class BinkGeometryMath
                 winding--;
             }
         }
-        return winding != 0;
+        return winding;
     }
 
     /// <summary>Computes the bounding rectangle of a set of points.</summary>

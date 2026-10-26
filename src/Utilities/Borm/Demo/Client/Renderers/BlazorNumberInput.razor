@@ -1,0 +1,29 @@
+﻿@inherits BormInputBase
+
+@* Blazor's own InputNumber<int> (with an emptied box read as 0, see EmptyAsZeroInputNumber), registered as
+   "blazor-number". ValueExpression<int>() names the int property the field is bound to - asking for another type
+   throws rather than read it wrongly. *@
+<EmptyAsZeroInputNumber @ref="_input"
+                        id="@Context.ElementId"
+                        class="@CssClass"
+                        Value="@(Context.Value is int value ? value : 0)"
+                        ValueChanged="@((int value) => Context.SetValueAsync(value))"
+                        ValueExpression="@(Context.ValueExpression<int>())"
+                        disabled="@Disabled"
+                        aria-required="@AriaRequired"
+                        aria-describedby="@DescribedBy" />
+
+@code {
+    private EmptyAsZeroInputNumber? _input;
+
+    /// <summary>
+    /// The input InputNumber renders, for "take me to the first error" and the summary's links: without it the form
+    /// had nothing to focus here and moved on to the next field with a problem.
+    /// </summary>
+    public override async ValueTask<bool> FocusAsync()
+    {
+        if (_input?.Element is not { } element) return false;
+        await element.FocusAsync();
+        return true;
+    }
+}

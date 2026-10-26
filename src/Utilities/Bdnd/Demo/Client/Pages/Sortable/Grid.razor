@@ -1,0 +1,53 @@
+﻿@page "/sortable/grid"
+
+<PageTitle>Sortable - Grid · Bdnd</PageTitle>
+
+<div class="bb-intro">
+    <h1>Sortable - Grid</h1>
+    <p class="bb-subtitle">
+        Tiles in a wrapping grid, each in a drop target with <code>Edges="BdndEdges.Horizontal"</code>: a grid is a
+        horizontal list that wraps, so a tile dragged over another lands on the side the pointer is closest to,
+        whatever row it is in. Within one list the drop is a reorder: <code>BdndList.ReorderIndex</code> works out
+        where the tile ends up - one place less when it came from before the tile it was dropped on, since taking it
+        out shifts the rest - and <code>BdndList.Reorder</code> moves it there. With the keyboard, Left and Right step
+        through the gaps between the tiles, and Up and Down go a row up or down - to the gap closest across, so a tile
+        moved down keeps its column - rather than one tile on. (<code>BdndEdges.All</code> would report the nearest
+        of all four edges, for tiles where above and below mean something of their own.)
+    </p>
+</div>
+
+<div class="bb-demo">
+    <BdndProvider>
+        <div class="sortable-grid">
+            @for (var i = 0; i < _tiles.Count; i++)
+            {
+                var index = i;
+                var tile = _tiles[i];
+                <BdndDropTarget TItem="string" Accept="tile" Edges="BdndEdges.Horizontal" Label="@tile" class="grid-slot"
+                                OnDrop="@(e => Drop(e, index))" @key="tile" Context="slot">
+                    <BdndDraggable TItem="string" Type="tile" Item="tile" Label="@tile" class="grid-tile" Context="drag">
+                        @tile
+                    </BdndDraggable>
+                </BdndDropTarget>
+            }
+        </div>
+    </BdndProvider>
+
+    <p class="demo-caption grid-order">Order: @string.Join(", ", _tiles)</p>
+</div>
+
+<DemoCode />
+
+@code {
+    private readonly List<string> _tiles =
+        ["Amber", "Blue", "Coral", "Denim", "Emerald", "Fuchsia", "Gold", "Hazel", "Indigo", "Jade", "Khaki", "Lilac"];
+
+    // Dropped on a tile: before or after it, as the edge says. (BdndList.Move with BdndList.InsertionIndex does the
+    // same, and also moves an item from one list to another.)
+    private void Drop(BdndDropEventArgs<string> e, int index)
+    {
+        if (e.Item is not { } tile) return;
+        var from = _tiles.IndexOf(tile);
+        BdndList.Reorder(_tiles, from, BdndList.ReorderIndex(from, index, e.ClosestEdge));
+    }
+}

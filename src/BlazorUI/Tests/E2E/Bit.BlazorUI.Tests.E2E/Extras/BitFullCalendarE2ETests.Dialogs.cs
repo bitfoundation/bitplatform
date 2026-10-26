@@ -299,6 +299,8 @@ public partial class BitFullCalendarE2ETests
         await Badge(Cal, "e3").ClickAsync();
         var dialog = Dialog(Cal);
         await Expect(dialog).ToBeVisibleAsync();
+        // The dialog takes the focus once it is open; a Tab pressed before it got there would leave from the badge.
+        await Page.WaitForFunctionAsync("d => d.contains(document.activeElement)", await dialog.ElementHandleAsync());
 
         for (var i = 0; i < 8; i++)
         {

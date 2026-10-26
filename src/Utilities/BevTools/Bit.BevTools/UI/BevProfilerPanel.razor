@@ -1,53 +1,60 @@
 ﻿@namespace Bit.BevTools
 @inherits BevToolsTab
+@using Microsoft.AspNetCore.Components.Forms
 
 <div class="bev-split">
     <div class="bev-left" style="flex-basis:62%">
         <div class="bev-toolbar">
-            <input type="text" aria-label="Filter profiler" placeholder='Filter: name, "renders>20", "sort:max|total|renders|avg|last|instances"' value="@Query" @oninput="OnQuery" />
-            <label title="Aggregate all instances of a type into one row: the only way to see what 500 rows of a list cost together"><input type="checkbox" aria-label="Group by type" checked="@_byType" @onchange='e => { _byType = e.Value is true; OnParametersSet(); }' /> by type</label>
-            <label><input type="checkbox" checked="@_includeDisposed" @onchange='e => { _includeDisposed = e.Value is true; OnParametersSet(); }' /> disposed</label>
+            <input type="text" aria-label="Filter profiler" placeholder='Filter: name, "renders>20", "sort:max|total|renders|avg|p95|last|instances"' @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput" />
+            <label title="Aggregate all instances of a type into one row: the only way to see what 500 rows of a list cost together"><input type="checkbox" aria-label="Group by type" checked="@View.ByType" @onchange='e => { View.ByType = e.Value is true; OnParametersSet(); }' /> by type</label>
+            <label><input type="checkbox" checked="@View.IncludeDisposed" @onchange='e => { View.IncludeDisposed = e.Value is true; OnParametersSet(); }' /> disposed</label>
+            <label class="bev-file" title="Compare what rendered here with an export saved earlier (Export in the About tab, or the session.export command): which components now render more often or for longer">
+                ⇄ Compare… <InputFile accept=".json,application/json" aria-label="Compare with a saved export" OnChange="CompareAsync" />
+            </label>
             <button type="button" aria-label="Reset profiler baseline" title="Start a new profiling window: counts and times restart from zero for every component (raw totals are kept). Reset, perform one interaction, read what rendered." @onclick="ResetBaseline">⟲ Reset</button>
             @if (_baselineAt is { } baseline)
             {
-                <label title="Show only what happened since the last reset (@BevFmt.Time(baseline))"><input type="checkbox" aria-label="Since baseline" checked="@_sinceBaseline" @onchange='e => { _sinceBaseline = e.Value is true; OnParametersSet(); }' /> since reset @BevFmt.Ago(baseline)</label>
+                <label title="Show only what happened since the last reset (@BevFmt.Time(baseline))"><input type="checkbox" aria-label="Since baseline" checked="@View.SinceBaseline" @onchange='e => { View.SinceBaseline = e.Value is true; OnParametersSet(); }' /> since reset @BevFmt.Ago(baseline)</label>
             }
-            <span class="bev-muted bev-nowrap">@_rows.Count @(_byType ? "types" : "components") · @Session.RenderTracker.BatchCount batches</span>
+            <span class="bev-muted bev-nowrap">@_rows.Count @(View.ByType ? "types" : "components") · @Session.RenderTracker.BatchCount batches</span>
         </div>
-        <div class="bev-scroll">
+        @* overflow inline too: Virtualize picks its scroll root when it first renders, which can be before the stylesheet applies. *@
+        <div class="bev-scroll" style="overflow:auto">
             <table>
                 <thead>
                     <tr>
-                        <th class="bev-sortable" @onclick='() => Sort("name")'>@(_byType ? "Type" : "Component")</th>
-                        @if (_byType)
+                        @SortHeader("name", View.ByType ? "Type" : "Component", null, numeric: false)
+                        @if (View.ByType)
                         {
-                            <th class="bev-num bev-sortable" @onclick='() => Sort("instances")'>Instances</th>
+                            @SortHeader("instances", "Instances", null)
                         }
-                        <th class="bev-num bev-sortable" @onclick='() => Sort("renders")'>Renders</th>
-                        <th class="bev-num bev-sortable" @onclick='() => Sort("total")'>Total</th>
-                        <th class="bev-num bev-sortable" @onclick='() => Sort("avg")'>Avg</th>
-                        <th class="bev-num bev-sortable" @onclick='() => Sort("max")'>Max</th>
-                        @if (!_byType)
+                        @SortHeader("renders", "Renders", null)
+                        @SortHeader("total", "Total", null)
+                        @SortHeader("avg", "Avg", null)
+                        @SortHeader("p95", "p95", "95th percentile of the render durations BevTools still holds (the last " + Session.Options.MaxRendersPerComponent + " per instance)")
+                        @SortHeader("max", "Max", null)
+                        @if (!View.ByType)
                         {
-                            <th class="bev-num bev-sortable" @onclick='() => Sort("last")'>Last</th>
+                            @SortHeader("last", "Last", null)
                         }
-                        <th>@(_byType ? "Causes" : "Last cause")</th>
+                        <th>@(View.ByType ? "Causes" : "Last cause")</th>
                         <th style="width:120px"></th>
                     </tr>
                 </thead>
                 <tbody>
                     <Virtualize Items="_rows" ItemSize="23" Context="r" SpacerElement="tr">
-                        <tr class="bev-row @(!_byType && Ui.SelectedComponentId == r.InstanceId ? "bev-selected" : "")" @onclick="() => Open(r)">
+                        <tr class="bev-row @(!View.ByType && Ui.SelectedComponentId == r.InstanceId ? "bev-selected" : "")" @onclick="() => Open(r)">
                             <td class="bev-mono bev-truncate" style="max-width:220px" title="@r.TypeName">@r.DisplayName @(r.IsDisposed ? "†" : "")</td>
-                            @if (_byType)
+                            @if (View.ByType)
                             {
                                 <td class="bev-num">@r.Instances</td>
                             }
                             <td class="bev-num">@r.RenderCount</td>
                             <td class="bev-num">@BevFmt.Ms(r.TotalRenderMs)</td>
                             <td class="bev-num">@BevFmt.Ms(r.AverageRenderMs)</td>
+                            <td class="bev-num" title="of @r.Samples retained render@(r.Samples == 1 ? "" : "s")">@(r.Samples == 0 ? "–" : BevFmt.Ms(r.P95))</td>
                             <td class="bev-num @(r.MaxRenderMs >= Session.Options.Diagnostics.SlowRenderMs ? "bev-err" : "")">@BevFmt.Ms(r.MaxRenderMs)</td>
-                            @if (!_byType)
+                            @if (!View.ByType)
                             {
                                 <td class="bev-num">@BevFmt.Ms(r.LastRenderMs)</td>
                             }
@@ -59,11 +66,177 @@
             </table>
             @if (_rows.Count == 0)
             {
-                <div class="bev-empty">@(_sinceBaseline ? "Nothing rendered since the baseline was reset." : "No renders captured yet.")</div>
+                <div class="bev-empty">@(View.SinceBaseline ? "Nothing rendered since the baseline was reset." : "No renders captured yet.")</div>
             }
         </div>
     </div>
     <div class="bev-right">
+        @if (View.ComparisonError is { } comparisonError)
+        {
+            <div class="bev-section">
+                <div class="bev-section-title">Comparison <button type="button" style="margin-left:auto" aria-label="Close the comparison" @onclick="CloseComparison">✕</button></div>
+                <div class="bev-section-body"><div class="bev-chip bev-err">@comparisonError</div></div>
+            </div>
+        }
+        else if (View.Comparison is { } comparison)
+        {
+            var changed = comparison.Changes.Count(c => c.Kind != BevProfileChangeKind.Unchanged);
+            var listed = comparison.Changes.Where(c => c.Kind != BevProfileChangeKind.Unchanged).Take(MaxListedChanges).ToList();
+            <div class="bev-section">
+                <div class="bev-section-title">
+                    Compared with @View.ComparedFile
+                    <span class="bev-muted" style="font-weight:normal">@(comparison.BaselineRecordedAt is { } at ? "exported " + BevFmt.Time(at) + " · " : "")@(comparison.CurrentRecordedAt is { } compared ? "compared " + BevFmt.Time(compared) : "")</span>
+                    <button type="button" class="bev-nowrap" style="margin-left:auto;font-weight:normal" title="Compare the same export with what has rendered by now: Reset, try again, compare again" @onclick="CompareAgain">↻ Compare again</button>
+                    <button type="button" class="bev-nowrap" style="font-weight:normal" @onclick="CopyComparisonAsync">Copy as Markdown</button>
+                    <button type="button" aria-label="Close the comparison" @onclick="CloseComparison">✕</button>
+                </div>
+                <div class="bev-section-body">
+                    <div>
+                        Renders @comparison.BaselineRenders → @comparison.CurrentRenders · render time @BevFmt.Ms(comparison.BaselineRenderMs) → @BevFmt.Ms(comparison.CurrentRenderMs) ·
+                        @if (comparison.HasRegressions)
+                        {
+                            <span class="bev-chip bev-err">@comparison.Regressions.Count() regressed</span>
+                        }
+                        else
+                        {
+                            <span class="bev-chip bev-ok">no regressions</span>
+                        }
+                    </div>
+                    @foreach (var warning in comparison.Warnings)
+                    {
+                        <div class="bev-chip bev-warn" style="white-space:normal">@warning</div>
+                    }
+                    @if (listed.Count == 0)
+                    {
+                        <div class="bev-muted">Every component rendered as often, and about as long, as in the export.</div>
+                    }
+                    else
+                    {
+                        <table>
+                            <thead><tr><th>Component</th><th>Change</th><th class="bev-num">Renders</th><th class="bev-num">Time</th><th>Why</th></tr></thead>
+                            <tbody>
+                                @foreach (var change in listed)
+                                {
+                                    <tr class="bev-row" @onclick="() => FilterTo(change.DisplayName, includeDisposed: true)">
+                                        <td class="bev-mono bev-truncate" style="max-width:180px"><button type="button" class="bev-link bev-mono" title="@change.Type: show its instances, disposed ones included (components already let go are not listed)" @onclick:stopPropagation="true" @onclick="() => FilterTo(change.DisplayName, includeDisposed: true)">@change.DisplayName</button></td>
+                                        <td><span class="bev-chip @(change.Kind switch { BevProfileChangeKind.Regressed => "bev-err", BevProfileChangeKind.Improved => "bev-ok", _ => "" })">@ChangeLabel(change.Kind)</span></td>
+                                        <td class="bev-num">@change.BaselineRenders → @change.CurrentRenders</td>
+                                        <td class="bev-num">@BevFmt.Ms(change.BaselineRenderMs) → @BevFmt.Ms(change.CurrentRenderMs)</td>
+                                        <td class="bev-muted">@change.Reason</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        @if (changed > listed.Count)
+                        {
+                            <div class="bev-muted">… @(changed - listed.Count) more (Copy as Markdown lists the first @MarkdownRowsPerSection of each kind)</div>
+                        }
+                    }
+                </div>
+            </div>
+        }
+        @if (View.BatchId is { } selectedBatch)
+        {
+            <div class="bev-section">
+                <div class="bev-section-title">
+                    Render batch #@selectedBatch: what it rendered <span class="bev-muted" style="font-weight:normal">BuildRenderTree time; renders BevTools still holds</span>
+                    <span class="bev-segmented" role="group" aria-label="Show the batch" style="margin-left:auto;font-weight:normal">
+                        <button type="button" aria-pressed="@(View.BatchOnTimeAxis ? "false" : "true")" title="Self and with descendants, as a tree" @onclick="() => ShowBatchOnTimeAxis(false)">Tree</button>
+                        <button type="button" aria-pressed="@(View.BatchOnTimeAxis ? "true" : "false")" title="Each render where it started, in the order the renderer took them" @onclick="() => ShowBatchOnTimeAxis(true)">Time</button>
+                    </span>
+                    <button type="button" aria-label="Close the batch" @onclick="() => SelectBatch(null, null)">✕</button>
+                </div>
+                <div class="bev-section-body">
+                    @if (_batchTree.Rows.Count == 0)
+                    {
+                        <div class="bev-muted">None of its renders is held any more (each component keeps its last @Session.Options.MaxRendersPerComponent).</div>
+                    }
+                    else if (View.BatchOnTimeAxis)
+                    {
+                        var timeline = _batchTimeline;
+                        <div class="bev-time-axis" role="img" aria-label="@("Render batch #" + selectedBatch + " on a time axis: " + timeline.Bars.Count + " renders over " + BevFmt.Ms(timeline.SpanMs) + ". The tree view lists the same renders.")">
+                            <div class="bev-time-scale"><span>0</span><span>@BevFmt.Ms(timeline.SpanMs / 2)</span><span>@BevFmt.Ms(timeline.SpanMs)</span></div>
+                            <div class="bev-time-rows" style="height:@(timeline.Depth * 18 + 2)px">
+                                @for (var i = 0; i < timeline.Bars.Count; i++)
+                                {
+                                    var bar = timeline.Bars[i];
+                                    // A span of zero: the clock did not tell the renders apart, so they go side by side in the order they started.
+                                    var left = timeline.SpanMs <= 0 ? 100.0 * i / timeline.Bars.Count : 100 * bar.StartMs / timeline.SpanMs;
+                                    var width = timeline.SpanMs <= 0 ? 100.0 / timeline.Bars.Count : Math.Max(0.25, 100 * bar.DurationMs / timeline.SpanMs);
+                                    @* Too narrow for its name: a hundred rows side by side would be a strip of clipped first letters. *@
+                                    <div class="@(width < 4 ? "bev-time-bar bev-time-narrow" : "bev-time-bar")" style="left:@(left.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture))%;width:@(width.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture))%;top:@(bar.Depth * 18)px"
+                                         title="@(bar.Name + ": " + BevFmt.Ms(bar.DurationMs) + " at +" + BevFmt.Ms(bar.StartMs))" @onclick="() => Host.SelectComponent(bar.InstanceId)">@bar.Name</div>
+                                }
+                            </div>
+                        </div>
+                        @if (timeline.SpanMs <= 0)
+                        {
+                            <div class="bev-muted">The clock did not tell these renders apart (each took less than it can measure): they are drawn in the order they started, at equal widths, not to scale.</div>
+                        }
+                        @if (timeline.Omitted > 0)
+                        {
+                            <div class="bev-muted">… @timeline.Omitted later renders not drawn (the first @MaxBatchTreeRows are).</div>
+                        }
+                    }
+                    else
+                    {
+                        <div style="max-height:40vh;overflow:auto">
+                        <table>
+                            <thead><tr><th>Component</th><th class="bev-num">Self</th><th class="bev-num">With descendants</th><th style="width:120px"></th></tr></thead>
+                            <tbody>
+                                @foreach (var node in _batchTree.Rows)
+                                {
+                                    <tr class="bev-row" @onclick="() => OpenBatchNode(node)">
+                                        <td class="bev-mono" style="padding-left:@(node.Depth * 14 + 6)px"><button type="button" class="bev-link bev-mono" title="@(node.Instances > 1 ? "Show these in the profiler, by type" : "Select this component")" @onclick:stopPropagation="true" @onclick="() => OpenBatchNode(node)">@node.Name</button> <span class="bev-muted">@(node.Instances > 1 ? "×" + node.Instances + " instances" : node.Renders > 1 ? node.Renders + " renders" : "")</span></td>
+                                        <td class="bev-num">@BevFmt.Ms(node.SelfMs)</td>
+                                        <td class="bev-num">@BevFmt.Ms(node.TotalMs)</td>
+                                        <td><span class="bev-bar" style="width:@(Math.Max(1, 110 * node.TotalMs / Math.Max(0.001, _batchTree.TotalMs)))px"></span></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        </div>
+                        @if (_batchTree.Omitted > 0)
+                        {
+                            <div class="bev-muted">… @_batchTree.Omitted more components (the first @MaxBatchTreeRows rows are listed)</div>
+                        }
+                    }
+                </div>
+            </div>
+        }
+        <div class="bev-section">
+            <div class="bev-section-title">
+                Renders per page <span class="bev-muted" style="font-weight:normal">each render on the page shown when it happened; the renders BevTools still holds</span>
+                <button type="button" style="margin-left:auto;font-weight:normal" aria-expanded="@(View.ShowRoutes ? "true" : "false")" @onclick="ToggleRoutes">@(View.ShowRoutes ? "Hide" : "Show")</button>
+            </div>
+            @if (View.ShowRoutes)
+            {
+                <div class="bev-section-body">
+                    @if (_routes.Count == 0)
+                    {
+                        <div class="bev-muted">No renders held yet.</div>
+                    }
+                    else
+                    {
+                        <table>
+                            <thead><tr><th>Page</th><th class="bev-num">Visits</th><th class="bev-num">Renders</th><th class="bev-num">Render time</th><th>Costliest there</th></tr></thead>
+                            <tbody>
+                                @foreach (var route in _routes)
+                                {
+                                    <tr>
+                                        <td class="bev-mono bev-truncate" style="max-width:200px" title="@route.Route">@route.Route</td>
+                                        <td class="bev-num">@(route.Visits == 0 ? "–" : route.Visits)</td>
+                                        <td class="bev-num">@route.Renders</td>
+                                        <td class="bev-num">@BevFmt.Ms(route.RenderMs)</td>
+                                        <td class="bev-truncate" style="max-width:260px" title="@string.Join(", ", route.Top.Select(t => t.Component + " ×" + t.Renders + " " + BevFmt.Ms(t.Ms)))">@string.Join(", ", route.Top.Select(t => t.Component + " " + BevFmt.Ms(t.Ms)))</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            }
+        </div>
         <div class="bev-section">
             <div class="bev-section-title">Recent render batches <span class="bev-muted" style="font-weight:normal">(one batch = one DOM diff; click to open)</span></div>
             <div class="bev-section-body">
@@ -72,9 +245,10 @@
                     <tbody>
                         @foreach (var b in _batches)
                         {
-                            <tr class="bev-row @(b.Severity == BevToolsSeverity.Warning ? "bev-sev-warning" : "")" @onclick="() => Host.SelectEvent(b.Id)">
+                            var batchId = b.TryGetData("batch", out var idValue) && idValue is long id ? id : (long?)null;
+                            <tr class="bev-row @(b.Severity == BevToolsSeverity.Warning ? "bev-sev-warning" : "") @(batchId is not null && batchId == View.BatchId ? "bev-selected" : "")" @onclick="() => ToggleBatch(batchId, b.Id)">
                                 <td class="bev-mono">@BevFmt.Time(b.Timestamp)</td>
-                                <td>@b.Title</td>
+                                <td class="bev-nowrap"><button type="button" class="bev-link" title="Show what this batch rendered" aria-pressed="@(batchId is not null && batchId == View.BatchId ? "true" : "false")" @onclick:stopPropagation="true" @onclick="() => ToggleBatch(batchId, b.Id)">@b.Title</button> <button type="button" class="bev-link" aria-label="Open @b.Title in the timeline" @onclick:stopPropagation="true" @onclick="() => Host.SelectEvent(b.Id)">↗</button></td>
                                 <td class="bev-num">@(b.TryGetData("count", out var batchCount) ? batchCount : "…")</td>
                                 <td class="bev-num">@BevFmt.Ms(b.DurationMs)</td>
                                 <td class="bev-muted bev-truncate" style="max-width:200px">@DiffSummary(b.Detail)</td>
@@ -111,7 +285,209 @@
 
 @code {
     /// <summary>One row: an instance, or (grouped) every instance of a type. <see cref="InstanceId"/> is null for a group.</summary>
-    private sealed record Row(long? InstanceId, string DisplayName, string TypeName, int Instances, int RenderCount, double TotalRenderMs, double AverageRenderMs, double MaxRenderMs, double LastRenderMs, string? LastCause, bool IsDisposed);
+    private sealed record Row(long? InstanceId, string DisplayName, string TypeName, int Instances, int RenderCount, double TotalRenderMs, double AverageRenderMs, double MaxRenderMs, double LastRenderMs, string? LastCause, bool IsDisposed, double P95, int Samples);
+
+    /// <summary>Uploads are parsed into one JSON document; this bounds it (a 20,000-component session exports to a few MB).</summary>
+    private const long MaxComparedExportBytes = 32L * 1024 * 1024;
+
+    private const int MaxListedChanges = 200;
+
+    private const int MaxBatchTreeRows = 300;
+
+    private const int MarkdownRowsPerSection = 25;
+
+    private BevProfilerView View => Ui.Profiler;
+
+    private async Task CompareAsync(InputFileChangeEventArgs e)
+    {
+        View.Comparison = null;
+        View.ComparedProfile = null;
+        View.ComparisonError = null;
+        View.ComparedFile = e.File.Name;
+        try
+        {
+            // On Blazor Server this streams the file to the server the app runs on; nothing goes anywhere else.
+            await using var stream = e.File.OpenReadStream(MaxComparedExportBytes);
+            View.ComparedProfile = await BevRenderProfile.ParseAsync(stream);
+            CompareAgain();
+        }
+        catch (Exception ex)
+        {
+            // Whatever goes wrong with a file (too large, cancelled, unreadable, not an export) is the comparison's
+            // error to show: an exception out of this handler would reach the app's renderer and, on Server, end the circuit.
+            View.ComparisonError = e.File.Name + ": " + ex.Message;
+        }
+    }
+
+    /// <summary>Compares the uploaded profile with what rendered so far: after Reset and another try, without uploading again.</summary>
+    private void CompareAgain()
+    {
+        if (View.ComparedProfile is { } baseline)
+        {
+            View.Comparison = BevProfileComparison.Compare(baseline, BevRenderProfile.Of(Session), null);
+        }
+    }
+
+    private void CloseComparison()
+    {
+        View.Comparison = null;
+        View.ComparedProfile = null;
+        View.ComparisonError = null;
+    }
+
+    private async Task CopyComparisonAsync()
+    {
+        if (View.Comparison is { } comparison)
+        {
+            var ok = await Host.CopyAsync(comparison.ToMarkdown(MarkdownRowsPerSection));
+            Host.Notify(ok ? "Comparison copied as Markdown" : "Clipboard unavailable");
+        }
+    }
+
+    private void FilterTo(string displayName, bool includeDisposed = false)
+    {
+        View.ByType = true;
+        View.IncludeDisposed |= includeDisposed;
+        Ui.SetQuery("profiler", displayName);
+        OnParametersSet();
+    }
+
+    private static string ChangeLabel(BevProfileChangeKind kind) => kind switch
+    {
+        BevProfileChangeKind.Regressed => "regressed",
+        BevProfileChangeKind.Improved => "improved",
+        BevProfileChangeKind.New => "new",
+        BevProfileChangeKind.Gone => "gone",
+        _ => "",
+    };
+
+    private BevBatchCostTree _batchTree = BevBatchCostTree.Empty;
+    private BevBatchTimeline _batchTimeline = BevBatchTimeline.Empty;
+    private List<BevRouteCost> _routes = [];
+    private long _routesVersion = -1;
+    private long _routesBuiltAt;
+    private bool _routesRebuildPending;
+
+    // Renders per page reads every retained render; as often as the panel refreshes would be up to four times a second.
+    private static readonly TimeSpan RoutesInterval = TimeSpan.FromSeconds(1);
+
+    private void ShowBatchOnTimeAxis(bool onTimeAxis)
+    {
+        View.BatchOnTimeAxis = onTimeAxis;
+        BuildBatchTree();
+    }
+
+    private void ToggleRoutes()
+    {
+        View.ShowRoutes = !View.ShowRoutes;
+        _routesVersion = -1;
+        OnParametersSet();
+    }
+
+    private void RefreshRoutes()
+    {
+        if (!View.ShowRoutes || _routesVersion == Session.Version)
+        {
+            return;
+        }
+
+        var since = System.Diagnostics.Stopwatch.GetElapsedTime(_routesBuiltAt);
+        if (_routesVersion == -1 || since >= RoutesInterval)
+        {
+            BuildRoutes();
+        }
+        else if (!_routesRebuildPending)
+        {
+            // A trailing rebuild: what was captured within the second shows when it is over, even if nothing follows.
+            _routesRebuildPending = true;
+            _ = RebuildRoutesLaterAsync(RoutesInterval - since);
+        }
+    }
+
+    private void BuildRoutes()
+    {
+        _routes = BevRouteProfile.Build(Session);
+        _routesVersion = Session.Version;
+        _routesBuiltAt = System.Diagnostics.Stopwatch.GetTimestamp();
+    }
+
+    private async Task RebuildRoutesLaterAsync(TimeSpan delay)
+    {
+        try
+        {
+            await Task.Delay(delay);
+            await InvokeAsync(() =>
+            {
+                _routesRebuildPending = false;
+                // Builds, rather than asking RefreshRoutes again: the timer can fire a fraction of a millisecond before
+                // the stopwatch agrees the second is over, and a rebuild scheduled for that fraction is a Task.Delay(0)
+                // that completes at once - on the dispatcher, on this stack, again and again until the process dies.
+                if (View.ShowRoutes && _routesVersion != Session.Version)
+                {
+                    BuildRoutes();
+                    StateHasChanged();
+                }
+            });
+        }
+        catch (Exception ex) when (ex is ObjectDisposedException or InvalidOperationException)
+        {
+            // The panel went away meanwhile.
+        }
+    }
+
+    // The batch the tree was built for: a batch is history, so the tree is built when it is selected (or the tab
+    // opens with one selected), not on every refresh.
+    private long? _batchTreeFor;
+
+    private RenderFragment SortHeader(string key, string label, string? title, bool numeric = true) => __builder =>
+    {
+        <BevSortHeader Key="@key" Label="@label" Title="@title" Numeric="numeric" Active="@(_sortKey == key)" Ascending="_sortAscending" OnSort="Sort" />
+    };
+
+    // The sort in effect: a "sort:" token in the filter wins over the headers, in the column's first direction.
+    private string _sortKey = "total";
+    private bool _sortAscending;
+
+    private static IEnumerable<Row> Ordered<T>(IEnumerable<Row> rows, Func<Row, T> key, bool ascending) =>
+        ascending ? rows.OrderBy(key) : rows.OrderByDescending(key);
+
+    private void OpenBatchNode(BevBatchNode node)
+    {
+        if (node.Instances > 1)
+        {
+            FilterTo(node.Name);
+        }
+        else
+        {
+            Host.SelectComponent(node.InstanceId);
+        }
+    }
+
+    private void ToggleBatch(long? batchId, long eventId)
+    {
+        if (batchId is not null && batchId == View.BatchId)
+        {
+            SelectBatch(null, null);
+        }
+        else
+        {
+            SelectBatch(batchId, eventId);
+        }
+    }
+
+    private void SelectBatch(long? batchId, long? eventId)
+    {
+        View.BatchId = batchId;
+        View.BatchEventId = eventId;
+        BuildBatchTree();
+    }
+
+    private void BuildBatchTree()
+    {
+        _batchTreeFor = View.BatchId;
+        _batchTree = View.BatchId is { } batch ? BevBatchCostTree.Build(Session.Components.All, batch, MaxBatchTreeRows) : BevBatchCostTree.Empty;
+        _batchTimeline = View.BatchId is { } timed && View.BatchOnTimeAxis ? BevBatchTimeline.Build(Session.Components.All, timed, MaxBatchTreeRows) : BevBatchTimeline.Empty;
+    }
 
     private string? Query => Ui.GetQuery("profiler");
 
@@ -138,31 +514,37 @@
         return detail[(index + "ms building, ".Length)..];
     }
 
-    private bool _includeDisposed;
-    private bool _byType;
-    private bool _sinceBaseline;
-    private string _sort = "total";
 
     protected override void OnParametersSet()
     {
         _baselineAt = Session.Components.BaselineAt;
         if (_baselineAt is null)
         {
-            _sinceBaseline = false;
+            View.SinceBaseline = false;
         }
 
         var filter = BevQueryFilter.Parse(Query);
-        var sort = filter.Token("sort") ?? _sort;
+        var token = filter.Token("sort")?.ToLowerInvariant();
+        _sortKey = token ?? View.Sorting.Key;
+        _sortAscending = token is null ? View.Sorting.Ascending : _sortKey == "name";
+        if ((_sortKey == "instances" && !View.ByType) || (_sortKey == "last" && View.ByType))
+        {
+            // That column is not shown in this grouping: sort by what is, so a header always says what the order is.
+            _sortKey = "total";
+            _sortAscending = false;
+        }
+        var sort = _sortKey;
+        var ascending = _sortAscending;
         var minRenders = filter.IntToken("renders>") ?? 0;
-        var since = _sinceBaseline;
+        var since = View.SinceBaseline;
         var components = Session.Components.All
-            .Where(c => !c.IsBevTools && !c.IsHidden && (_includeDisposed || !c.IsDisposed))
+            .Where(c => !c.IsBevTools && !c.IsHidden && (View.IncludeDisposed || !c.IsDisposed))
             .Where(c => filter.MatchesText(c.DisplayName, c.TypeName))
             .Select(c => (Record: c, Renders: since ? c.RendersSinceBaseline : c.RenderCount, Ms: since ? c.RenderMsSinceBaseline : c.TotalRenderMs, Max: since ? c.MaxRenderMsSinceBaseline : c.MaxRenderMs))
             .Where(c => c.Renders > 0 && c.Renders > minRenders);
 
         IEnumerable<Row> rows;
-        if (_byType)
+        if (View.ByType)
         {
             rows = components
                 .GroupBy(c => c.Record.TypeName)
@@ -177,28 +559,95 @@
                         .Where(x => x.Count > 0)
                         .OrderByDescending(x => x.Count)
                         .Select(x => x.Count + " " + CauseLabel(x.Cause));
-                    return new Row(null, g.First().Record.DisplayName, g.Key, g.Count(), renders, total, renders == 0 ? 0 : total / renders, g.Max(c => c.Max), 0, string.Join(" · ", causes), g.All(c => c.Record.IsDisposed));
+                    var (p95, sampleCount) = TypePercentile(g.Key, g.Select(c => c.Record).ToList(), since);
+                    return new Row(null, g.First().Record.DisplayName, g.Key, g.Count(), renders, total, renders == 0 ? 0 : total / renders, g.Max(c => c.Max), 0, string.Join(" · ", causes), g.All(c => c.Record.IsDisposed), p95, sampleCount);
                 });
         }
         else
         {
-            rows = components.Select(c => new Row(c.Record.InstanceId, c.Record.DisplayName, c.Record.TypeName, 1, c.Renders, c.Ms, c.Ms / c.Renders, c.Max, c.Record.LastRenderMs, c.Record.LastRender?.CauseDetail, c.Record.IsDisposed));
+            rows = components.Select(c =>
+            {
+                var samples = RetainedDurations(c.Record, since);
+                return new Row(c.Record.InstanceId, c.Record.DisplayName, c.Record.TypeName, 1, c.Renders, c.Ms, c.Ms / c.Renders, c.Max, c.Record.LastRenderMs, c.Record.LastRender?.CauseDetail, c.Record.IsDisposed, BevStats.Percentile(samples, 95), samples.Length);
+            });
         }
 
         rows = sort switch
         {
-            "name" => rows.OrderBy(r => r.DisplayName),
-            "instances" => rows.OrderByDescending(r => r.Instances),
-            "renders" => rows.OrderByDescending(r => r.RenderCount),
-            "avg" => rows.OrderByDescending(r => r.AverageRenderMs),
-            "max" => rows.OrderByDescending(r => r.MaxRenderMs),
-            "last" => rows.OrderByDescending(r => r.LastRenderMs),
-            _ => rows.OrderByDescending(r => r.TotalRenderMs),
+            "name" => Ordered(rows, r => r.DisplayName, ascending),
+            "instances" => Ordered(rows, r => r.Instances, ascending),
+            "renders" => Ordered(rows, r => r.RenderCount, ascending),
+            "avg" => Ordered(rows, r => r.AverageRenderMs, ascending),
+            "max" => Ordered(rows, r => r.MaxRenderMs, ascending),
+            "p95" => Ordered(rows, r => r.P95, ascending),
+            "last" => Ordered(rows, r => r.LastRenderMs, ascending),
+            _ => Ordered(rows, r => r.TotalRenderMs, ascending),
         };
         _rows = rows.ToList();
+        if (_durations.Count > 512)
+        {
+            // Records the registry evicted: forget their durations too.
+            foreach (var id in _durations.Keys.Where(id => Session.Components.Get(id) is null).ToList())
+            {
+                _durations.Remove(id);
+            }
+        }
+
         _maxTotal = _rows.Count == 0 ? 0 : _rows.Max(r => r.TotalRenderMs);
         _batches = Session.Timeline.Snapshot().Where(e => e.Kind == BevToolsEventKind.RenderBatch).Reverse().Take(25).ToArray();
-        _typeMetrics = Session.TypeMetrics.Values.OrderByDescending(m => m.ParameterUpdateMs + m.EventHandlerMs).Take(30).ToArray();
+        // The framework's metric names a type, never an instance: what a framework component that only BevTools' own UI
+        // renders (Virtualize in the component tree) measured before the registry knew it was BevTools' is not the app's.
+        _typeMetrics = Session.TypeMetrics.Values.Where(m => !Session.Components.IsBevToolsOnlyType(m.TypeName)).OrderByDescending(m => m.ParameterUpdateMs + m.EventHandlerMs).Take(30).ToArray();
+        if (View.BatchEventId is { } batchEvent && Session.Timeline.Find(batchEvent) is null)
+        {
+            // The timeline was cleared (or let the batch go): there is nothing left to show for it.
+            View.BatchId = null;
+            View.BatchEventId = null;
+        }
+
+        if (_batchTreeFor != View.BatchId)
+        {
+            BuildBatchTree();
+        }
+
+        // Only while open, and again only when something was captured since, at most once a second.
+        RefreshRoutes();
+    }
+
+    // p95 of a type, kept until one of its instances renders again or the set of instances or the window changes.
+    private readonly Dictionary<string, (long Signature, double P95, int Samples)> _typePercentiles = [];
+
+    private (double P95, int Samples) TypePercentile(string type, List<BevComponentRecord> instances, bool sinceBaseline)
+    {
+        var signature = HashCode.Combine(sinceBaseline, Session.Components.BaselineAt, instances.Count, instances.Sum(r => (long)r.RenderCount), instances.Sum(r => r.InstanceId));
+        if (_typePercentiles.TryGetValue(type, out var cached) && cached.Signature == signature)
+        {
+            return (cached.P95, cached.Samples);
+        }
+
+        var samples = instances.SelectMany(r => RetainedDurations(r, sinceBaseline)).ToArray();
+        Array.Sort(samples);
+        var p95 = BevStats.Percentile(samples, 95);
+        _typePercentiles[type] = (signature, p95, samples.Length);
+        return (p95, samples.Length);
+    }
+
+    // Sorted retained durations per instance, kept until it renders again or the window changes: a refresh then sorts
+    // only what rendered since the last one instead of every component's samples (hundreds of rows on a list page).
+    private readonly Dictionary<long, (int RenderCount, DateTimeOffset? Since, double[] Sorted)> _durations = [];
+
+    private double[] RetainedDurations(BevComponentRecord record, bool sinceBaseline)
+    {
+        var since = sinceBaseline ? record.BaselineAt : null;
+        if (_durations.TryGetValue(record.InstanceId, out var cached) && cached.RenderCount == record.RenderCount && cached.Since == since)
+        {
+            return cached.Sorted;
+        }
+
+        var sorted = record.Renders.Where(s => since is not { } at || s.At >= at).Select(s => s.DurationMs).ToArray();
+        Array.Sort(sorted);
+        _durations[record.InstanceId] = (record.RenderCount, since, sorted);
+        return sorted;
     }
 
     private static readonly BevRenderCause[] Causes = Enum.GetValues<BevRenderCause>();
@@ -222,7 +671,7 @@
         else
         {
             // A type row: switch to instances filtered to that type, so the developer can pick the offender.
-            _byType = false;
+            View.ByType = false;
             Ui.SetQuery("profiler", row.DisplayName);
             OnParametersSet();
         }
@@ -231,20 +680,26 @@
     private void ResetBaseline()
     {
         Session.Components.MarkBaseline();
-        _sinceBaseline = true;
+        View.SinceBaseline = true;
         OnParametersSet();
     }
 
-    private void OnQuery(ChangeEventArgs e)
+    private void OnQuery(string? value)
     {
-        Ui.SetQuery("profiler", e.Value?.ToString());
+        Ui.SetQuery("profiler", value);
         OnParametersSet();
     }
 
     private void Sort(string key)
     {
-        _sort = key;
         var filter = BevQueryFilter.Parse(Query);
+        if (filter.Token("sort")?.ToLowerInvariant() is { } token)
+        {
+            // Sorted by the filter's token: the headers continue from it.
+            View.Sorting.Set(token, ascending: token == "name");
+        }
+
+        View.Sorting.Select(key, ascendingFirst: key == "name");
         if (filter.Tokens.ContainsKey("sort"))
         {
             Ui.SetQuery("profiler", string.Join(' ', (Query ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries).Where(p => !p.StartsWith("sort:", StringComparison.OrdinalIgnoreCase))));

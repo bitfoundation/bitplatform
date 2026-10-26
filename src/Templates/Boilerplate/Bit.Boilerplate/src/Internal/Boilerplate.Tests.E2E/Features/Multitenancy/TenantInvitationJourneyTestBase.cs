@@ -68,6 +68,7 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
                 "The invitation body must be rendered in the recipient's Persian session culture.");
 
             var invitationLink = invitation.HttpLinksInArguments().First();
+            Assert.AreEqual(PageUrls.ManageMyTenants, new Uri(invitationLink).AbsolutePath, "The invitation has to lead to the page that accepts it, not to the home page.");
 
             // Parked off the route the link opens, so that the link being what opened the app stays observable.
             await adminPanelAppForToBeInvitedUser.GoToInApp(PageUrls.Settings);

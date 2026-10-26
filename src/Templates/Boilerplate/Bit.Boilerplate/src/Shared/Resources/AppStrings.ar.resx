@@ -128,6 +128,9 @@
   <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
     <value>يجب أن تكون قيمة Length في MaxLengthAttribute أكبر من صفر. استخدم MaxLength() بدون معاملات للإشارة إلى أن السلسلة أو المصفوفة يمكن أن تكون بأقصى طول مسموح.</value>
   </data>
+  <data name="MaxLengthAttribute_ValidationError" xml:space="preserve">
+    <value>يجب أن يكون حقل {0} من نوع سلسلة أو مصفوفة بطول أقصى '{1}'</value>
+  </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>يجب أن يكون حقل {0} من نوع سلسلة أو مصفوفة بطول أدنى '{1}'</value>
   </data>
@@ -394,12 +397,6 @@
   </data>
   <data name="InvalidUserCredentials" xml:space="preserve">
     <value>بيانات اعتماد المستخدم غير صالحة</value>
-  </data>
-  <data name="EmailAlreadyConfirmed" xml:space="preserve">
-    <value>تم تأكيد بريدك الإلكتروني بالفعل</value>
-  </data>
-  <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
-    <value>تم تأكيد رقم هاتفك بالفعل</value>
   </data>
   <data name="Title" xml:space="preserve">
     <value>العنوان</value>
@@ -1206,6 +1203,9 @@
   </data>
   <data name="AiChatPanelVoiceCallAssistantFailed" xml:space="preserve">
     <value>تعذّر على المساعد الرد. حاول مرة أخرى.</value>
+  </data>
+  <data name="AiChatTooManyRequests" xml:space="preserve">
+    <value>أنت ترسل الرسائل بسرعة كبيرة. يرجى الانتظار دقيقة ثم المحاولة مرة أخرى.</value>
   </data>
   <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
     <value>اترك بيانات التواصل الخاصة بك وسيتواصل معك أحد موظفي الدعم.</value>
@@ -2083,5 +2083,17 @@
   </data>
     <data name="UploadImageAsIs" xml:space="preserve">
     <value>رفع كما هي</value>
+  </data>
+    <data name="ResetPasswordTwoFactorCodeRequired" xml:space="preserve">
+    <value>المصادقة الثنائية مفعّلة لهذا الحساب. أدخل رمزًا من تطبيق المصادقة أو أحد رموز الاسترداد الخاصة بك.</value>
+  </data>
+    <data name="AccountAlreadyExistsShortText" xml:space="preserve">
+    <value>لديك بالفعل حساب في Boilerplate بهذا الرقم. إذا كنت قد حاولت التسجيل للتو، فسجّل الدخول بدلًا من ذلك.</value>
+  </data>
+    <data name="AddAnotherAccount" xml:space="preserve">
+    <value>إضافة حساب آخر</value>
+  </data>
+    <data name="SignOutOfAllAccounts" xml:space="preserve">
+    <value>تسجيل الخروج من جميع الحسابات على هذا الجهاز</value>
   </data>
 </root>

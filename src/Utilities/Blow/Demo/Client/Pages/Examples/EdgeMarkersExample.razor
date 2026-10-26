@@ -3,7 +3,7 @@
 <PageTitle>Edge Markers · Blow</PageTitle>
 
 <ExampleScaffold Title="Edge Markers"
-                 Summary="Arrowheads are configured per edge: open or closed, in any colour and at any size. Edges asking for the same arrowhead share a single SVG definition, so a large graph declares one marker per style rather than one per edge.">
+                 Summary="Arrowheads are configured per edge: open or closed, at either end, in any colour and at any size. Edges asking for the same arrowhead share a single SVG definition, so a large graph declares one marker per style rather than one per edge.">
     <Toolbar>
         <label>
             Size
@@ -11,13 +11,38 @@
                    @oninput="@(e => SetSize(e.Value))" />
             <span class="marker-size">@_size px</span>
         </label>
+        <label>
+            Default marker colour
+            <select @bind="_defaultColor">
+                <option value="">None (the edge's own colour)</option>
+                <option value="#f59e0b">Amber</option>
+                <option value="#7c3aed">Violet</option>
+            </select>
+        </label>
     </Toolbar>
     <ChildContent>
-        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    DefaultMarkerColor="@(string.IsNullOrEmpty(_defaultColor) ? null : _defaultColor)"
+                    OnConnect="@(_ => ApplySize())">
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
             <BlowControls />
         </BlowCanvas>
     </ChildContent>
+    <TryIt>
+        <li>Compare the four edges: an open arrow, a closed one, a closed red head on a grey line, and a blue line with a closed head at both ends.</li>
+        <li>Move <strong>Size</strong>: every arrowhead grows or shrinks together, staying square.</li>
+        <li>Pick a <strong>Default marker colour</strong>: every head without a colour of its own takes it - the blue line's two heads included - while the red head keeps its red.</li>
+        <li><strong>Click</strong> an edge: its line and every head that follows the line's colour turn the selection colour; a head with a colour of its own keeps it.</li>
+        <li><strong>Drag</strong> from Source's right-hand dot to any node's left-hand dot: the new edge gets an open arrow at the current size.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>MarkerEnd</code> (on by default) and <code>MarkerStart</code> (off) draw an arrowhead at the target and source end.</li>
+        <li><code>MarkerType</code> is <code>BlowMarkerType.Arrow</code> (open, the default) or <code>ArrowClosed</code> (filled).</li>
+        <li>Without a <code>MarkerColor</code> a head takes its edge's <code>Stroke</code>; <code>MarkerColor</code> sets one of its own, here red on a grey line.</li>
+        <li><code>DefaultMarkerColor</code> on the canvas (null by default) colours every head that names no <code>MarkerColor</code>, ahead of the edge's stroke.</li>
+        <li><code>MarkerWidth</code> defaults to 7 (8 for a closed head), and <code>MarkerHeight</code> follows the width when left null; the slider sets the width of every edge.</li>
+        <li>SVG markers have to be declared up front, so the canvas declares one <code>&lt;marker&gt;</code> for each distinct shape, colour and size in use, shared by every edge that asks for it.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
@@ -28,6 +53,7 @@
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
     private double _size = 12;
+    private string _defaultColor = "";
 
     protected override void OnInitialized()
     {
@@ -80,14 +106,15 @@
 
     private void SetSize(object? raw)
     {
-        if (double.TryParse(raw?.ToString(), out var value))
+        if (double.TryParse(raw?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out var value))
         {
             _size = value;
             ApplySize();
         }
     }
 
-    // Leaving MarkerHeight null makes it follow the width, keeping the head square.
+    // Every edge, the ones the user draws included. Leaving MarkerHeight null makes it follow the width, keeping the
+    // head square.
     private void ApplySize()
     {
         foreach (var edge in _edges) edge.MarkerWidth = _size;

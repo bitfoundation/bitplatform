@@ -408,8 +408,8 @@ public class BitImageE2ETests : E2ETestBase
         var srcset = Page.Locator("#img-srcset-small img");
         await Expect(srcset).ToHaveAttributeAsync("srcset", "samples/image-landscape.svg 200w, samples/image-wide.svg 400w");
         await Expect(srcset).ToHaveAttributeAsync("sizes", "100px");
-        StringAssert.Matches(await srcset.EvaluateAsync<string>("el => el.currentSrc"), new Regex("image-(landscape|wide)\\.svg$"), "A srcset candidate, not the Src fallback.");
-        StringAssert.EndsWith(await Page.Locator("#img-srcset-large img").EvaluateAsync<string>("el => el.currentSrc"), "image-wide.svg", "Laid out at 380px, the 400w candidate.");
+        StringAssert.Matches(await CurrentSrcAsync(srcset), new Regex("image-(landscape|wide)\\.svg$"), "A srcset candidate, not the Src fallback.");
+        StringAssert.EndsWith(await CurrentSrcAsync(Page.Locator("#img-srcset-large img")), "image-wide.svg", "Laid out at 380px, the 400w candidate.");
 
         var picture = Page.Locator("#img-sources picture.bit-img-pic");
         await Expect(picture).ToHaveCSSAsync("display", "contents");
@@ -419,11 +419,11 @@ public class BitImageE2ETests : E2ETestBase
         await Expect(picture.Locator("source").Nth(0)).ToHaveAttributeAsync("type", "image/x-e2e-unsupported");
 
         // The unsupported type is skipped and the first matching media wins.
-        StringAssert.EndsWith(await Page.Locator("#img-sources img").EvaluateAsync<string>("el => el.currentSrc"), "image-portrait.svg");
+        StringAssert.EndsWith(await CurrentSrcAsync(Page.Locator("#img-sources img")), "image-portrait.svg");
 
         // No source matches (and a source without a srcset is not rendered): the Src is used.
         await Expect(Page.Locator("#img-sources-nomatch source")).ToHaveCountAsync(1);
-        StringAssert.EndsWith(await Page.Locator("#img-sources-nomatch img").EvaluateAsync<string>("el => el.currentSrc"), "image-square.svg");
+        StringAssert.EndsWith(await CurrentSrcAsync(Page.Locator("#img-sources-nomatch img")), "image-square.svg");
     }
 
     [TestMethod]
@@ -465,6 +465,8 @@ public class BitImageE2ETests : E2ETestBase
         await OpenAsync(Path);
 
         await Page.Locator("#before-clickable").FocusAsync();
+        // The Tab moves on from where the focus is, so it is pressed once the focus has landed there.
+        await Expect(Page.Locator("#before-clickable")).ToBeFocusedAsync();
         await Page.Keyboard.PressAsync("Tab");
         await Expect(Page.Locator("#img-click img")).ToBeFocusedAsync();
         await Expect(Page.Locator("#img-click")).ToHaveCSSAsync("outline-style", "solid");
@@ -850,6 +852,14 @@ public class BitImageE2ETests : E2ETestBase
         : double.Parse(value.TrimEnd('s'), CultureInfo.InvariantCulture);
 
     // What a CSS value - a theme token, typically - resolves to on this page, read off a probe element.
+    // The candidate an image picked: currentSrc stays empty until it has picked one, which a loaded runner can take a
+    // while to get to, so it is waited for rather than read once.
+    private async Task<string> CurrentSrcAsync(ILocator image)
+    {
+        await Page.WaitForFunctionAsync("el => el.currentSrc !== ''", await image.ElementHandleAsync());
+        return await image.EvaluateAsync<string>("el => el.currentSrc");
+    }
+
     private Task<string> ResolveAsync(string property, string value)
     {
         return Page.EvaluateAsync<string>(

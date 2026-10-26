@@ -40,7 +40,7 @@ public class IdentityRateLimitTests
             {
                 try
                 {
-                    // An address no account owns: the endpoint answers UserNotFound, writes nothing and mails nobody.
+                    // An address no account owns: the endpoint answers it like any other address, writes nothing and mails nobody.
                     await identityController.SendConfirmEmailToken(new() { Email = $"{Guid.NewGuid()}@e2e.invalid" }, TestContext.CancellationToken);
                     return true;
                 }

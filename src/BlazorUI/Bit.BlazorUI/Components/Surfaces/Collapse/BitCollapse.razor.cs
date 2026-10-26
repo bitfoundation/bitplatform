@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -626,7 +625,6 @@ public partial class BitCollapse : BitComponentBase
         StyleBuilder.Register(() => CollapsedSize.HasValue() ? $"--bit-col-csz:{CollapsedSize}" : string.Empty);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCollapseParams))]
     protected override void OnParametersSet()
     {
         var expandOnPrintAssigned = HasNotBeenSet(nameof(ExpandOnPrint)) is false;

@@ -21,11 +21,22 @@
     <p>
         The endpoint is plain Streamable HTTP, so any MCP client connects with a URL and nothing else:
         <code>https://bcrdt.bitplatform.dev/mcp</code>, or <code>http://localhost:5560/mcp</code> while the demo runs
-        locally. The same tools are also served, version by version, through the bit platform's own server at
-        <code>https://bitplatform.dev/mcp</code>, next to the other bit libraries.
+        locally.
     </p>
 
     <pre class="bb-code">@ClientConfig</pre>
+
+    <p>
+        Or from the command line, in Claude Code:
+    </p>
+
+    <pre class="bb-code">claude mcp add --transport http bcrdt https://bcrdt.bitplatform.dev/mcp</pre>
+
+    <p>
+        The server introduces itself on connecting - its name, the library's version and a short set of instructions
+        put in front of the model before it calls anything - and offers completions for every argument that takes a
+        name from a fixed list (a guide heading, a type, a source path, a hosting model), so a client can type ahead.
+    </p>
 </section>
 
 <section class="bb-card">
@@ -55,7 +66,7 @@
                 </tr>
                 <tr>
                     <td class="bb-table-key"><code>InspectBcrdtMerge</code></td>
-                    <td>Runs the real engine on concurrent edits by two to four replicas and reports each one's state before the merge, what they converge to, every update's size, and what was decided - one value wins for a map key, both survive in a text.</td>
+                    <td>Runs the real engine on concurrent edits by two to four replicas, delivered in every order, and reports each one's state before the merge, what they converge to, every update's size, and what was decided for each contested key, text, list or set - one value wins for a map key, both survive in a text. One operation per line, such as <code>A: map meta set title "Draft"</code>, <code>B: text notes insert 0 "Hi"</code> or <code>B: set tags add "urgent"</code>; <code>base:</code> lines build the shared starting point.</td>
                 </tr>
                 <tr>
                     <td class="bb-table-key"><code>InspectBcrdtUpdate</code></td>
@@ -70,9 +81,38 @@
     </div>
 
     <p>
-        The guide, the API, the setup guides and the sources are also exposed as <code>bcrdt://</code> resources, and
-        three prompts - <code>add-bcrdt-to-app</code>, <code>implement-bcrdt-feature</code> and
-        <code>debug-bcrdt-sync</code> - walk an agent through the common jobs in the right order.
+        Start with <code>SearchBcrdt</code> when you do not know where an answer lives: every hit names the exact call
+        that returns its full text. Every tool called without its argument returns its index - the hosting models, the
+        guide's sections, the public types, the demo's files - and the two inspectors run a sample.
+    </p>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Resources and prompts</h3>
+
+    <p>
+        The same material is exposed as resources a client can attach to a conversation:
+    </p>
+
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Resource</th><th>What it holds</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>bcrdt://guide</code></td><td>The whole reference guide; <code>bcrdt://guide/{heading}</code> one section of it, and each top-level section is listed on its own.</td></tr>
+                <tr><td class="bb-table-key"><code>bcrdt://api</code></td><td>The index of public types; <code>bcrdt://api/{typeName}</code> one type with its members.</td></tr>
+                <tr><td class="bb-table-key"><code>bcrdt://setup</code></td><td>The index of setup guides, one per hosting model.</td></tr>
+                <tr><td class="bb-table-key"><code>bcrdt://source/{path}</code></td><td>One of the demo's files, verbatim.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>
+        And three prompts walk an agent through the common jobs in the right order: <code>add-bcrdt-to-app</code>
+        wires the library into an app of a given hosting model, <code>implement-bcrdt-feature</code> builds a
+        collaborative feature - choosing its data types first - and <code>debug-bcrdt-sync</code> diagnoses a problem:
+        edits that never arrive, one person's typing lost, clients disconnecting, presence that lingers.
     </p>
 </section>
 
@@ -87,8 +127,10 @@
     <ul class="bb-detail-list">
         <li><a href="/api/mcp/SearchBcrdt?query=concurrent%20map%20writes" target="_blank" rel="noopener">/api/mcp/SearchBcrdt?query=concurrent map writes</a></li>
         <li><a href="/api/mcp/GetBcrdtSetupGuide?hostingModel=server" target="_blank" rel="noopener">/api/mcp/GetBcrdtSetupGuide?hostingModel=server</a></li>
+        <li><a href="/api/mcp/GetBcrdtGuideSection?heading=Choosing%20a%20data%20type" target="_blank" rel="noopener">/api/mcp/GetBcrdtGuideSection?heading=Choosing a data type</a></li>
         <li><a href="/api/mcp/GetBcrdtApi?typeName=BcrdtCollaborativeDocument" target="_blank" rel="noopener">/api/mcp/GetBcrdtApi?typeName=BcrdtCollaborativeDocument</a></li>
         <li><a href="/api/mcp/InspectBcrdtMerge" target="_blank" rel="noopener">/api/mcp/InspectBcrdtMerge</a> (runs a sample merge)</li>
+        <li><a href="/api/mcp/InspectBcrdtMerge?operations=A%3A%20map%20meta%20set%20title%20%22Draft%22%3B%20B%3A%20map%20meta%20set%20title%20%22Final%22" target="_blank" rel="noopener">/api/mcp/InspectBcrdtMerge?operations=A: map meta set title "Draft"; B: map meta set title "Final"</a> (two writes to one key)</li>
         <li><a href="/api/mcp/InspectBcrdtUpdate" target="_blank" rel="noopener">/api/mcp/InspectBcrdtUpdate</a> (decodes a sample)</li>
         <li><a href="/api/mcp/GetBcrdtSourceFile?path=Demo/Client/Pages/Live.razor" target="_blank" rel="noopener">/api/mcp/GetBcrdtSourceFile?path=Demo/Client/Pages/Live.razor</a></li>
     </ul>

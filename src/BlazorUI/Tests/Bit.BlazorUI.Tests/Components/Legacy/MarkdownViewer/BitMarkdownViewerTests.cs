@@ -45,7 +45,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             Assert.Contains(html, root.InnerHtml);
-            Assert.AreEqual(Context.JSInterop.VerifyInvoke("BitBlazorUI.Legacy.MarkdownViewer.parseAsync").Arguments[0], markdown);
+            Assert.AreEqual(markdown, Context.JSInterop.VerifyInvoke("BitBlazorUI.Legacy.MarkdownViewer.parseAsync").Arguments[0]);
         });
     }
 

@@ -10,9 +10,9 @@
 
     <ItemGroup>
         <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.13" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.14" />
         <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
-        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
+        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.3.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -42,10 +42,11 @@
         <EmbeddedResource Include="..\..\Bit.Blow\Styles\bit-blow.css" LogicalName="BlowSource/Library/Styles/bit-blow.css" />
 
         <!-- Every demo page - each one is a working flow - plus the examples gallery, its scaffold and the
-             client half of the hosting. The MCP page describes this server rather than the library, and
-             the not-found page teaches nothing about flows. -->
+             client half of the hosting. The MCP page describes this server rather than the library, the
+             not-found page teaches nothing about flows, and the code viewer (CodeBlock and its
+             SyntaxHighlighter) is the site's chrome, not a flow. -->
         <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
-                          Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor">
+                          Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor;..\Client\Examples\CodeBlock.razor;..\Client\Examples\SyntaxHighlighter.cs">
             <LogicalName>BlowSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
 

@@ -3,11 +3,24 @@ using System.Numerics;
 using Bit.Bmage.Codecs;
 using Bit.Bmage.Geometry;
 using Bit.Bmage.Memory;
+using Bit.Bmage.Operations;
 using Bit.Bmage.Operations.Transforms;
 
 namespace Bit.Bmage.Drawing;
 
-/// <summary>How a drawing operation combines with what is already on the canvas.</summary>
+/// <summary>How a drawing operation, or a layer, combines with what is already on the canvas.</summary>
+/// <remarks>
+/// <para>
+/// Everything from <see cref="Multiply"/> on follows the W3C Compositing and Blending Level 1 specification, the same
+/// definitions as CSS <c>mix-blend-mode</c>, the canvas <c>globalCompositeOperation</c> and the blend modes of image
+/// editors: the blend function decides the colour where the two overlap, weighted by the destination's alpha, and the
+/// result is composited source-over. A transparent destination therefore shows the source unchanged, whatever the mode.
+/// </para>
+/// <para>
+/// The separable modes work on each channel alone; <see cref="Hue"/>, <see cref="Saturation"/>, <see cref="Color"/> and
+/// <see cref="Luminosity"/> work on the colour as a whole.
+/// </para>
+/// </remarks>
 public enum BlendMode
 {
     /// <summary>Standard alpha compositing.</summary>
@@ -16,6 +29,38 @@ public enum BlendMode
     Copy,
     /// <summary>Removes coverage from the destination, making it transparent (an eraser).</summary>
     Erase,
+    /// <summary>Multiplies the colours: never lighter than either, white leaves the destination unchanged.</summary>
+    Multiply,
+    /// <summary>Inverts, multiplies and inverts again: never darker than either, black leaves the destination unchanged.</summary>
+    Screen,
+    /// <summary>Multiplies the destination's darks and screens its lights, raising contrast.</summary>
+    Overlay,
+    /// <summary>Keeps the darker of the two, channel by channel.</summary>
+    Darken,
+    /// <summary>Keeps the lighter of the two, channel by channel.</summary>
+    Lighten,
+    /// <summary>Brightens the destination to reflect the source.</summary>
+    ColorDodge,
+    /// <summary>Darkens the destination to reflect the source.</summary>
+    ColorBurn,
+    /// <summary>Multiplies or screens depending on the source, like a harsh spotlight.</summary>
+    HardLight,
+    /// <summary>Darkens or lightens depending on the source, like a diffuse spotlight.</summary>
+    SoftLight,
+    /// <summary>The absolute difference of the colours.</summary>
+    Difference,
+    /// <summary>Like <see cref="Difference"/> with lower contrast.</summary>
+    Exclusion,
+    /// <summary>The source's hue with the destination's saturation and luminosity.</summary>
+    Hue,
+    /// <summary>The source's saturation with the destination's hue and luminosity.</summary>
+    Saturation,
+    /// <summary>The source's hue and saturation with the destination's luminosity: tints a photo, keeping its shading.</summary>
+    Color,
+    /// <summary>The source's luminosity with the destination's hue and saturation.</summary>
+    Luminosity,
+    /// <summary>Adds the colours, clipping at white (linear dodge): light leaks, glows and fireworks.</summary>
+    Add,
 }
 
 /// <summary>
@@ -34,15 +79,18 @@ public sealed class ImageCanvas : IDisposable
 {
     private ImageBuffer _buffer;
     private readonly bool _ownsBuffer;
+    // What drawing allocates working buffers with, how many threads it spreads rows over, and what cancels it.
+    private readonly OperationContext _context;
     private readonly Stack<CanvasState> _states = new();
     private CanvasState _state;
 
     private readonly record struct CanvasState(Matrix3x2 Transform, Rectangle Clip, float Opacity);
 
-    private ImageCanvas(ImageBuffer buffer, bool ownsBuffer)
+    private ImageCanvas(ImageBuffer buffer, bool ownsBuffer, OperationContext context)
     {
         _buffer = buffer;
         _ownsBuffer = ownsBuffer;
+        _context = context.WithProgress(null);
         _state = new CanvasState(Matrix3x2.Identity, buffer.Bounds, 1f);
     }
 
@@ -51,21 +99,32 @@ public sealed class ImageCanvas : IDisposable
     {
         var buffer = ImageBuffer.Create(width, height, allocator, clear: true, limits);
         if (background.A != 0) buffer.Fill(background);
-        return new ImageCanvas(buffer, ownsBuffer: true);
+        return new ImageCanvas(buffer, ownsBuffer: true, new OperationContext(allocator, limits));
     }
 
     /// <summary>Creates a canvas that draws directly into an existing buffer. The buffer is not disposed by the canvas.</summary>
     public static ImageCanvas FromBuffer(ImageBuffer buffer)
     {
         ArgumentNullException.ThrowIfNull(buffer);
-        return new ImageCanvas(buffer, ownsBuffer: false);
+        return new ImageCanvas(buffer, ownsBuffer: false, OperationContext.Default);
+    }
+
+    /// <summary>
+    /// A canvas drawing directly into an existing buffer with the allocator, limits, threads and cancellation of
+    /// <paramref name="context"/>, as an operation or a layer draws.
+    /// </summary>
+    internal static ImageCanvas FromBuffer(ImageBuffer buffer, OperationContext context)
+    {
+        ArgumentNullException.ThrowIfNull(buffer);
+        ArgumentNullException.ThrowIfNull(context);
+        return new ImageCanvas(buffer, ownsBuffer: false, context);
     }
 
     /// <summary>Creates a canvas holding a copy of an existing image.</summary>
     public static ImageCanvas FromImage(ImageBuffer source, IPixelAllocator? allocator = null)
     {
         ArgumentNullException.ThrowIfNull(source);
-        return new ImageCanvas(source.Clone(allocator), ownsBuffer: true);
+        return new ImageCanvas(source.Clone(allocator), ownsBuffer: true, new OperationContext(allocator));
     }
 
     /// <summary>The pixels being drawn into. Valid until the canvas is disposed.</summary>
@@ -327,26 +386,34 @@ public sealed class ImageCanvas : IDisposable
         else
         {
             // Resample only the visible part, using the window trick so edges match a full-size resample.
-            scaled = ImageBuffer.Create(visible.Width, visible.Height, clear: false);
+            scaled = ImageBuffer.Create(visible.Width, visible.Height, _context.Allocator, clear: false, _context.Limits);
             var shifted = new Rectangle(device.X - visible.X, device.Y - visible.Y, device.Width, device.Height);
-            Resampler.Resample(image, source, scaled, shifted, filter);
+            Resampler.Resample(image, source, scaled, shifted, filter, _context);
             scaledSource = scaled.Bounds;
         }
         try
         {
             var opacity = _state.Opacity;
-            for (var y = 0; y < visible.Height; y++)
+            // Rows blend independently, unless the canvas is drawn onto itself and a row may read one another writes.
+            ParallelRows.For(RowContext(scaled), 0, visible.Height, visible.Width, (start, end, band) =>
             {
-                var src = scaled.GetRow(scaledSource.Y + y).Slice(scaledSource.X, visible.Width);
-                var dst = _buffer.GetRow(visible.Y + y).Slice(visible.X, visible.Width);
-                Blend(src, dst, blend, opacity);
-            }
+                for (var y = start; y < end; y++)
+                {
+                    if (((y - start) & 31) == 0) band.ThrowIfCancellationRequested();
+                    var src = scaled.GetRow(scaledSource.Y + y).Slice(scaledSource.X, visible.Width);
+                    var dst = _buffer.GetRow(visible.Y + y).Slice(visible.X, visible.Width);
+                    Blend(src, dst, blend, opacity);
+                }
+            });
         }
         finally
         {
             if (!sameSize) scaled.Dispose();
         }
     }
+
+    /// <summary>The context rows are drawn with: one thread when <paramref name="image"/> is the canvas's own pixels.</summary>
+    private OperationContext RowContext(ImageBuffer image) => ReferenceEquals(image, _buffer) ? _context.WithParallelism(1) : _context;
 
     private ImageCanvas DrawImageTransformed(ImageBuffer image, Rectangle source, RectangleF destination, BlendMode blend, ResamplingFilter filter)
     {
@@ -371,25 +438,28 @@ public sealed class ImageCanvas : IDisposable
         if (area.IsEmptyArea()) return this;
 
         var opacity = _state.Opacity;
+        // A copy at partial opacity is drawn over what is there, as a canvas always did: it never punches the image's
+        // transparent pixels into the target. A layer that must is composited through Compositor.BlendRow.
+        var over = blend == BlendMode.SourceOver || (blend == BlendMode.Copy && opacity < 1f);
         var sw = source.Width;
         var sh = source.Height;
-        for (var y = area.Top; y < area.Bottom; y++)
+        // Every pixel is sampled from the image alone, so the rows split into bands; the work per pixel is a few samples.
+        ParallelRows.For(RowContext(image), area.Top, area.Bottom, area.Width * 4L, (start, end, band) =>
         {
-            var dst = _buffer.GetRow(y);
-            for (var x = area.Left; x < area.Right; x++)
+            for (var y = start; y < end; y++)
             {
-                var sp = Vector2.Transform(new Vector2(x + 0.5f, y + 0.5f), inverse);
-                if (sp.X < -0.5f || sp.Y < -0.5f || sp.X > sw + 0.5f || sp.Y > sh + 0.5f) continue;
-                var color = SampleBilinear(image, source, sp.X - 0.5f, sp.Y - 0.5f, filter);
-                if (color.A == 0 && blend == BlendMode.SourceOver) continue;
-                dst[x] = blend switch
+                if (((y - start) & 15) == 0) band.ThrowIfCancellationRequested();
+                var dst = _buffer.GetRow(y);
+                for (var x = area.Left; x < area.Right; x++)
                 {
-                    BlendMode.Copy => opacity >= 1f ? color : Compositor.SourceOver(dst[x], color, opacity),
-                    BlendMode.Erase => Compositor.Erase(dst[x], color.A / 255f * opacity),
-                    _ => Compositor.SourceOver(dst[x], color, opacity),
-                };
+                    var sp = Vector2.Transform(new Vector2(x + 0.5f, y + 0.5f), inverse);
+                    if (sp.X < -0.5f || sp.Y < -0.5f || sp.X > sw + 0.5f || sp.Y > sh + 0.5f) continue;
+                    var color = SampleBilinear(image, source, sp.X - 0.5f, sp.Y - 0.5f, filter);
+                    if (color.A == 0 && over) continue;
+                    dst[x] = over ? Compositor.SourceOver(dst[x], color, opacity) : Compositor.Blend(dst[x], color, blend, opacity);
+                }
             }
-        }
+        });
         return this;
     }
 
@@ -436,13 +506,19 @@ public sealed class ImageCanvas : IDisposable
             case BlendMode.Erase:
                 for (var i = 0; i < src.Length; i++) dst[i] = Compositor.Erase(dst[i], src[i].A / 255f * opacity);
                 break;
-            default:
+            case BlendMode.SourceOver:
+            // A copy at partial opacity is drawn over what is there, as a canvas always did: it never punches the
+            // image's transparent pixels into the target. A layer that must is composited through Compositor.BlendRow.
+            case BlendMode.Copy:
                 for (var i = 0; i < src.Length; i++)
                 {
                     var s = src[i];
                     if (s.A == 0) continue;
                     dst[i] = Compositor.SourceOver(dst[i], s, opacity);
                 }
+                break;
+            default:
+                Compositor.BlendRow(src, dst, mode, opacity);
                 break;
         }
     }

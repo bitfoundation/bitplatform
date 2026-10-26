@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Update;
+﻿using System.Runtime.CompilerServices;
+using Microsoft.EntityFrameworkCore.Update;
 
 namespace Bit.BlazeDb.EntityFrameworkCore.Metadata;
 
@@ -12,10 +13,12 @@ internal static class BlazeDbOriginalValueFactory
     public static object Create(IUpdateEntry entry)
     {
         var entityType = entry.EntityType;
-        var original = Activator.CreateInstance(entityType.ClrType)
-            ?? throw new InvalidOperationException(
-                $"Entity type '{entityType.ClrType.Name}' could not be instantiated. BlazeDb needs a " +
-                "parameterless constructor to reconstruct an entity's original values.");
+        // A type built through its constructor - a positional record, or one with get-only properties -
+        // is created without running any constructor: every mapped property is set below, through its
+        // setter or its backing field, and nothing else of the copy is ever read.
+        var original = entityType.ClrType.GetConstructor(Type.EmptyTypes) is not null
+            ? Activator.CreateInstance(entityType.ClrType)!
+            : RuntimeHelpers.GetUninitializedObject(entityType.ClrType);
 
         foreach (var property in entityType.GetProperties())
         {

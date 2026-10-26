@@ -2979,19 +2979,27 @@ public class BitPdfViewerTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll("[data-thumb]").Count));
 
+        // bUnit records the invocations grouped by identifier, not in call order, so the order is read at the moment the
+        // jump's scroll is sent: the matcher that sees that call notes which thumbnail held the focus then.
+        var scrolled = false;
+        object? focusedWhenScrolled = null;
+        Context.JSInterop.SetupVoid("BitBlazorUI.PdfViewer.scrollToPage", _ =>
+        {
+            var focuses = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.focusThumb"];
+            focusedWhenScrolled = focuses.Count > 0 ? focuses[^1].Arguments[1] : null;
+            scrolled = true;
+            return true;
+        }).SetVoidResult();
+
         component.Find("[data-thumb='1']").KeyDown(new KeyboardEventArgs { Key = "End" });
 
         // Focus lands on the new option before the jump renders and scrolls to its
         // page; a focus that waited would take the next key on the option just left.
-        component.WaitForAssertion(() =>
-        {
-            Assert.AreEqual(3, component.Instance.CurrentPage);
-            var calls = Context.JSInterop.Invocations.Select(i => i.Identifier).ToList();
-            int focus = calls.LastIndexOf("BitBlazorUI.PdfViewer.focusThumb");
-            int scroll = calls.LastIndexOf("BitBlazorUI.PdfViewer.scrollToPage");
-            Assert.IsTrue(focus >= 0 && focus < scroll, $"focusThumb at {focus}, scrollToPage at {scroll}");
-        });
-        Assert.AreEqual(3, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.focusThumb"].Last().Arguments[1]);
+        // The scroll is sent after the last render, and WaitForAssertion only checks again on a render, so it is polled.
+        Assert.IsTrue(System.Threading.SpinWait.SpinUntil(() => System.Threading.Volatile.Read(ref scrolled), TimeSpan.FromSeconds(10)),
+            "the jump scrolls to its page");
+        Assert.AreEqual(3, component.Instance.CurrentPage);
+        Assert.AreEqual(3, focusedWhenScrolled);
     }
 
     [TestMethod]
@@ -3569,8 +3577,10 @@ internal static class TestPdf
             "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
             "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Contents 4 0 R >>",
             Stream(content),
-            // The /Encrypt dictionary is never itself encrypted.
-            $"<< /Filter /Standard /V 1 /R 2 /Length 40 /P {p} /O <{Hex(o)}> /U <{Hex(u)}> >>",
+            // The /Encrypt dictionary is never itself encrypted. PDF syntax has one way of writing a number, so the
+            // usually negative /P is written invariantly: under ar-SA or fa-IR the current culture puts a direction
+            // mark before the minus sign, which no reader takes for part of the number.
+            FormattableString.Invariant($"<< /Filter /Standard /V 1 /R 2 /Length 40 /P {p} /O <{Hex(o)}> /U <{Hex(u)}> >>"),
         };
         return Build(bodies, rootObjNum: 1, trailerExtra: $" /Encrypt 5 0 R /ID [<{Hex(id0)}> <{Hex(id0)}>]");
     }

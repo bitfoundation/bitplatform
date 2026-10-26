@@ -116,9 +116,9 @@ public static partial class Program
             }
             //#endif
 
+            services.AddSingleton<IValidateOptions<ClientWindowsSettings>, ClientWindowsSettingsValidator>();
             services.AddOptions<ClientWindowsSettings>()
                 .Bind(configuration)
-                .ValidateDataAnnotations()
                 .ValidateOnStart();
         }
     }

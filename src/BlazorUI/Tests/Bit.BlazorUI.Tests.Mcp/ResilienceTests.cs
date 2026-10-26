@@ -29,7 +29,7 @@ public class ResilienceTests : McpTestBase
             "The first search this process answered did not find the date picker, so a cold client sees an index that is not there yet.");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("GetBitBlazorUIComponent", "name", "BitDataGrd", "BitDataGrid")]
     [DataRow("GetBitBlazorUIComponentExamples", "name", "BitTogle", "BitToggle")]
     [DataRow("GetBitBlazorUIType", "typeName", "BitColour", "BitColor")]
@@ -46,7 +46,7 @@ public class ResilienceTests : McpTestBase
         StringAssert.Contains(text, expected, $"{tool} did not suggest {expected} for '{typed}'.");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("GetBitBlazorUISetupGuide", "hostingModel", "blazor")]
     [DataRow("GetBitBlazorUIThemingGuide", "section", "Nonsense")]
     [DataRow("FindBitBlazorUIIcons", "query", "zzzzzzzz")]

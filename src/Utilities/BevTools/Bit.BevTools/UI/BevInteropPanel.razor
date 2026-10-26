@@ -4,7 +4,7 @@
 <div class="bev-split">
     <div class="bev-left" style="flex-basis:50%">
         <div class="bev-toolbar">
-            <input type="text" aria-label="Filter JS interop calls" placeholder="Filter identifier, component, result or error" value="@Query" @oninput="OnQuery" />
+            <input type="text" aria-label="Filter JS interop calls" placeholder="Filter identifier, component, result or error" @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput" />
             <span class="bev-muted bev-nowrap">@_calls.Count calls · → .NET→JS, ← JS→.NET</span>
             <button type="button" @onclick="() => Session.Interop.Clear()">Clear</button>
         </div>
@@ -36,7 +36,8 @@
     </div>
     <div class="bev-right">
         <div class="bev-toolbar"><strong>Recent calls</strong> <span class="bev-muted">newest first</span></div>
-        <div class="bev-scroll">
+        @* overflow inline too: Virtualize picks its scroll root when it first renders, which can be before the stylesheet applies. *@
+        <div class="bev-scroll" style="overflow:auto">
             <table>
                 <thead><tr><th>Time</th><th>Call</th><th>Component</th><th class="bev-num">Duration</th><th>Result</th></tr></thead>
                 <tbody>
@@ -79,9 +80,9 @@
             .ToArray();
     }
 
-    private void OnQuery(ChangeEventArgs e)
+    private void OnQuery(string? value)
     {
-        Ui.SetQuery("interop", e.Value?.ToString());
+        Ui.SetQuery("interop", value);
         OnParametersSet();
     }
 }

@@ -5,14 +5,15 @@
 <div class="bev-split">
     <div class="bev-left" style="flex-basis:50%">
         <div class="bev-toolbar">
-            <input type="text" placeholder="Filter: type name, lifetime:scoped|singleton|transient" value="@Query" @oninput="OnQuery" />
+            <input type="text" aria-label="Filter services" placeholder="Filter: type name, lifetime:scoped|singleton|transient" @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput" />
             <label><input type="checkbox" checked="@_showFramework" @onchange='e => { _showFramework = e.Value is true; OnParametersSet(); }' /> framework</label>
             <span class="bev-muted bev-nowrap">@_rows.Count / @(Host.Graph?.Count ?? 0)</span>
         </div>
-        <div class="bev-scroll">
+        @* overflow inline too: Virtualize picks its scroll root when it first renders, which can be before the stylesheet applies. *@
+        <div class="bev-scroll" style="overflow:auto">
             @if (Host.Graph is null)
             {
-                <div class="bev-empty">The service collection was not captured (AddBitBevToolsServices was called with a collection that could not be enumerated).</div>
+                <div class="bev-empty">@(Host.Session.IsAttachedAtRuntime ? "BevTools was attached at runtime (BitBevTools.Attach), after the container was built, so the service collection was not captured. Bit.BevTools.Loader keeps it from startup." : "The service collection was not captured (AddBitBevToolsServices was called with a collection that could not be enumerated).")</div>
             }
             else
             {
@@ -149,9 +150,9 @@
             .Distinct()
             .ToArray());
 
-    private void OnQuery(ChangeEventArgs e)
+    private void OnQuery(string? value)
     {
-        Ui.SetQuery("services", e.Value?.ToString());
+        Ui.SetQuery("services", value);
         _selected = null;
         OnParametersSet();
     }

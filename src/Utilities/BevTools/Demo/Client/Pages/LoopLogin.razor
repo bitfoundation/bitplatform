@@ -1,0 +1,17 @@
+﻿@page "/loop/login"
+@inject NavigationManager Navigation
+@inject RedirectCounter Counter
+
+<PageTitle>Login · BevTools</PageTitle>
+
+@code {
+    // Problem 18: "already signed in, go back" - the condition the account page redirects on is not the one this checks.
+    protected override void OnInitialized()
+    {
+        if (RendererInfo.IsInteractive)
+        {
+            Counter.Hops++;
+            Navigation.NavigateTo("loop/account");
+        }
+    }
+}

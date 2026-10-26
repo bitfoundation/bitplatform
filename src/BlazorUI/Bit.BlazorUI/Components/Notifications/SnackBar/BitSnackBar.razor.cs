@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -987,7 +986,6 @@ public partial class BitSnackBar : BitComponentBase
         StyleBuilder.Register(() => MaxWidth.HasValue() ? $"--bit-snb-max-w:{MaxWidth}" : string.Empty);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSnackBarParams))]
     protected override async Task OnParametersSetAsync()
     {
         CascadingParameters?.UpdateParameters(this);
@@ -1903,7 +1901,12 @@ public partial class BitSnackBar : BitComponentBase
 
             if (cts.IsCancellationRequested || IsDisposed) return;
 
-            await InvokeAsync(() => DismissAsync(item, animate: true, reason: BitSnackBarDismissReason.Timeout));
+            // A pause, a restart or a dismissal that ran while this continuation was waiting for the dispatcher has
+            // already taken the countdown's source out of the item: the countdown it called off must not dismiss the
+            // item all the same.
+            await InvokeAsync(() => ReferenceEquals(item._cts, cts) && IsDisposed is false
+                ? DismissAsync(item, animate: true, reason: BitSnackBarDismissReason.Timeout)
+                : Task.CompletedTask);
         }
         catch (OperationCanceledException) { }
         catch (ObjectDisposedException) { }

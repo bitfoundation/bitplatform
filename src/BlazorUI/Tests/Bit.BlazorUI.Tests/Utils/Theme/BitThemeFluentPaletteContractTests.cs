@@ -54,7 +54,7 @@ public sealed class BitThemeFluentPaletteContractTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false, "colors.fluent-light.scss")]
     [DataRow(true, "colors.fluent-dark.scss")]
     public void TranscribedPaletteMatchesTheStylesheet(bool isDark, string paletteFile)

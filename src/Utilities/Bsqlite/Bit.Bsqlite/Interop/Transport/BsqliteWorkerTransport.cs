@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Bit.Bsqlite.Data;
 using Bit.Bsqlite.Storage;
 using Microsoft.JSInterop;
@@ -134,20 +135,20 @@ public sealed class BsqliteWorkerTransport : IBsqliteTransport, IBsqliteSnapshot
         }
 
         await CallAsync(
-            new
+            new JsonObject
             {
-                kind = "open",
-                databaseName,
-                requiredBuild = EncodeBuild(_options.RequiredBuild),
-                vfs = EncodeModule(_options.Vfs),
-                limits = new
+                ["kind"] = "open",
+                ["databaseName"] = databaseName,
+                ["requiredBuild"] = EncodeBuild(_options.RequiredBuild),
+                ["vfs"] = EncodeModule(_options.Vfs),
+                ["limits"] = new JsonObject
                 {
-                    supportsMultiDatabaseTransactions = _options.SupportsMultiDatabaseTransactions,
-                    canChangePageSize = _options.CanChangePageSize,
+                    ["supportsMultiDatabaseTransactions"] = _options.SupportsMultiDatabaseTransactions,
+                    ["canChangePageSize"] = _options.CanChangePageSize,
                 },
-                foreignKeys = _options.EnableForeignKeys,
-                onOpenSql = _options.OnOpenSql,
-                extensions = _options.ExtensionModules.Select(EncodeModule).ToArray(),
+                ["foreignKeys"] = _options.EnableForeignKeys,
+                ["onOpenSql"] = new JsonArray([.. _options.OnOpenSql.Select(sql => JsonValue.Create(sql))]),
+                ["extensions"] = new JsonArray([.. _options.ExtensionModules.Select(EncodeModule)]),
             },
             cancellationToken).ConfigureAwait(false);
 
@@ -164,7 +165,7 @@ public sealed class BsqliteWorkerTransport : IBsqliteTransport, IBsqliteSnapshot
             return;
         }
 
-        await CallAsync(new { kind = "close" }, cancellationToken).ConfigureAwait(false);
+        await CallAsync(new JsonObject { ["kind"] = "close" }, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -323,7 +324,7 @@ public sealed class BsqliteWorkerTransport : IBsqliteTransport, IBsqliteSnapshot
         }
     }
 
-    private async Task<JsonElement> CallAsync(object request, CancellationToken cancellationToken)
+    private async Task<JsonElement> CallAsync(JsonObject request, CancellationToken cancellationToken)
     {
         var envelope = await _host!
             .InvokeAsync<JsonElement>("call", cancellationToken, request)
@@ -353,8 +354,8 @@ public sealed class BsqliteWorkerTransport : IBsqliteTransport, IBsqliteSnapshot
         _ => throw new ArgumentOutOfRangeException(nameof(build), build, "Unknown engine build."),
     };
 
-    private static object? EncodeModule(BsqliteJsModule? module)
-        => module is null ? null : new { moduleUrl = module.ModuleUrl, registerExport = module.RegisterExport };
+    private static JsonObject? EncodeModule(BsqliteJsModule? module)
+        => module is null ? null : new JsonObject { ["moduleUrl"] = module.ModuleUrl, ["registerExport"] = module.RegisterExport };
 
     private sealed class HeldLock(BsqliteWorkerTransport transport, int id) : IAsyncDisposable
     {

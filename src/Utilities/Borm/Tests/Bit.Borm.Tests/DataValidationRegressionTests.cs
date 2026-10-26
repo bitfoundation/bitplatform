@@ -349,6 +349,13 @@ public class DataValidationRegressionTests
     }
 
     [TestMethod]
+    public void Numbers_are_duplicates_by_the_value_they_were_written_as()
+    {
+        Assert.IsTrue(Run(new BormUniqueItemsRule(), new List<object?> { 1000000000000001.0, 1000000000000002.0 }).IsValid);
+        Assert.IsFalse(Run(new BormUniqueItemsRule(), new List<object?> { 0.1f, 0.1m }).IsValid);
+    }
+
+    [TestMethod]
     public void Equal_dictionary_rows_are_duplicates_whatever_the_key_casing_or_order()
     {
         var rows = new List<object?>
@@ -739,6 +746,25 @@ public class DataValidationRegressionTests
         Assert.IsTrue(Run(new BormMultipleOfRule(0.01), 123456789.12m).IsValid);
         Assert.IsFalse(Run(new BormMultipleOfRule(5), double.NaN).IsValid);
         Assert.IsTrue(Run(new BormMultipleOfRule(5), 15L).IsValid);
+    }
+
+    [TestMethod]
+    public void MultipleOf_reads_every_number_as_the_one_it_was_written_as()
+    {
+        // Integers are exact past a double's fifteen digits, and so is a whole double below 2^53.
+        Assert.IsFalse(Run(new BormMultipleOfRule(2), 1000000000000001L).IsValid);
+        Assert.IsTrue(Run(new BormMultipleOfRule(2), 1000000000000002L).IsValid);
+        Assert.IsFalse(Run(new BormMultipleOfRule(2), 1000000000000001.0).IsValid);
+        Assert.IsFalse(Run(new BormMultipleOfRule(2), ulong.MaxValue).IsValid);
+        // A float is the number it prints as, not its binary noise.
+        Assert.IsTrue(Run(new BormMultipleOfRule(0.1), 0.3f).IsValid);
+        Assert.IsFalse(Run(new BormMultipleOfRule(0.1), 0.35f).IsValid);
+        // A fraction left noisy by binary arithmetic is still a multiple.
+        Assert.IsTrue(Run(new BormMultipleOfRule(0.1), 0.1 + 0.2).IsValid);
+        Assert.IsTrue(Run(new BormMultipleOfRule(0.01), 19.99 * 3).IsValid);
+        // Text is read through the double it parses as.
+        Assert.IsTrue(Run(new BormMultipleOfRule(0.01), "1234567.89").IsValid);
+        Assert.IsFalse(Run(new BormMultipleOfRule(0.01), "1234567.891").IsValid);
     }
 
     // ---- #9: the dictionary store
@@ -1271,6 +1297,16 @@ public class DataValidationRegressionTests
         Assert.IsTrue(Run(new BormCompareRule("pin"), 5, data: data).IsValid);
         Assert.IsFalse(Run(new BormCompareRule("pin"), 6, data: data).IsValid);
         Assert.IsFalse(Run(new BormCompareRule("pin"), "5", data: data).IsValid);
+    }
+
+    [TestMethod]
+    public void Compare_reads_a_float_and_a_long_number_as_the_ones_they_were_written_as()
+    {
+        var data = new BormDictionaryDataAccessor(new Dictionary<string, object?> { ["rate"] = 0.1m, ["id"] = 1000000000000001.0 });
+
+        Assert.IsTrue(Run(new BormCompareRule("rate"), 0.1f, data: data).IsValid);
+        Assert.IsTrue(Run(new BormCompareRule("id"), 1000000000000001L, data: data).IsValid);
+        Assert.IsFalse(Run(new BormCompareRule("id"), 1000000000000002.0, data: data).IsValid);
     }
 
     [TestMethod]

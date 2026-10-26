@@ -66,6 +66,12 @@ public partial class TestIdentityEmailService : IdentityEmailService
         return Task.CompletedTask;
     }
 
+    public override Task SendAccountAlreadyExists(User user, Uri signInLink, Uri forgotPasswordLink, CancellationToken cancellationToken)
+    {
+        captureStore.Add(new() { Kind = CapturedEmailKind.AccountAlreadyExists, ToEmailAddress = user.Email!, Link = signInLink });
+        return Task.CompletedTask;
+    }
+
     //#if (multitenant == true)
     public override Task SendTenantInvitation(User user, string inviterDisplayName, string tenantTitle, Uri link, CancellationToken cancellationToken)
     {

@@ -16,6 +16,7 @@
 
         <WasmApplicationEnvironmentName>$(Environment)</WasmApplicationEnvironmentName>
         <WasmEnableWebcil Condition="'$(Environment)' == 'Development'">false</WasmEnableWebcil>
+        <MetricsSupport>true</MetricsSupport>
     </PropertyGroup>
 
     <ItemGroup>
@@ -52,6 +53,7 @@
     <!-- Lazy loading can cause trouble in AOT builds, and next to the size of an AOT app it saves little. -->
     <ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' AND '$(PublishAot)' != 'true' ">
         <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.wasm" />
+        <BlazorWebAssemblyLazyLoad Condition=" '$(Environment)' != 'Development' " Include="Bit.BevTools.wasm" />
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" BeforeTargets="ResolveScopedCssInputs" Condition=" '$(DesignTimeBuild)' != 'true' ">

@@ -855,7 +855,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         await base.OnInitializedAsync();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitNumberFieldParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

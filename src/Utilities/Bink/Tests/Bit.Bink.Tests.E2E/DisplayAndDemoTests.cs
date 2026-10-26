@@ -205,8 +205,10 @@ public sealed class DisplayAndDemoTests : BinkTest
     [DataRow("/image-annotation")]
     [DataRow("/document-annotation")]
     [DataRow("/collaboration")]
+    [DataRow("/input-and-accessibility")]
     [DataRow("/serialization")]
     [DataRow("/performance")]
+    [DataRow("/extending")]
     public async Task Every_demo_page_loads_without_console_errors(string path)
     {
         var context = await NewContextAsync(new BrowserNewContextOptions

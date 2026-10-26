@@ -1,12 +1,15 @@
 ﻿@namespace Bit.Borm
 @inherits BormInputBase
 
-@* Splat first so the renderer's own attributes below always win. *@
+@* Splat first so the renderer's own attributes below always win. Not disabled while its options load: aria-busy says
+   so, and the "Loading…" placeholder is all there is to choose - disabled, it left the tab order, and a Tab pressed
+   straight after choosing the country it waits for jumped past it. *@
 <select @attributes="ExtraAttributes"
         id="@Context.ElementId"
+        name="@Context.InputName"
         @ref="Element"
         class="@CssClass"
-        disabled="@(DisabledOrReadOnly || Context.IsLoadingOptions)"
+        disabled="@DisabledOrReadOnly"
         value="@Context.StringValue"
         autocomplete="@Field.Autocomplete"
         aria-required="@AriaRequired"
@@ -39,6 +42,10 @@
         }
     }
 </select>
+@if (ReadOnlyPostedName is { } posted)
+{
+    <input type="hidden" name="@posted" value="@Context.StringValue" />
+}
 
 @code {
     // Options may come from an async provider, so ask for them on first render and again whenever a
@@ -55,7 +62,7 @@
         ? Context.Text(BormMessageKeys.SelectLoading)
         : Context.OptionsFailed
             ? Context.Text(BormMessageKeys.SelectError)
-            : Field.Placeholder ?? Context.Text(BormMessageKeys.SelectPlaceholder);
+            : Context.Placeholder ?? Context.Text(BormMessageKeys.SelectPlaceholder);
 
     private IEnumerable<IGrouping<string?, BormSelectOption>> Grouped
         => Context.Options.GroupBy(o => o.Group);

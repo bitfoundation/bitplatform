@@ -49,6 +49,18 @@
         padding: 0 0.5rem 0.25rem;
     }
 
+    .account-button {
+        .bit-acb-inn,
+        .bit-acb-con,
+        .bit-prs {
+            min-width: 0;
+        }
+
+        .bit-acb-con {
+            display: flex;
+        }
+    }
+
     .accent-color-switcher {
         gap: 8px;
         width: 100%;

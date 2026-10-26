@@ -14,7 +14,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.13" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.14" />
+        <PackageReference Include="Bit.Minifier" Version="10.7.0" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>
@@ -22,11 +23,11 @@
     </ItemGroup>
 
     <!--
-        Generates a compiled lookup (DemoSources.g.cs) that maps each routable demo page's
-        @page route to its full .razor source text, so the demo can render "View code"
-        snippets at runtime without any per-page wiring. The other files of the Pages folder -
-        components a page renders, such as the recursive NestedList.razor, and plain .cs models -
-        are kept too, by their path, for a page that names them in <DemoCode Files="..." />.
+        Generates a compiled lookup (DemoSources.g.cs) that maps each file of the Samples folder to
+        its source text, so the "View code" panel under a demo sample shows the code of that sample
+        and nothing else. Every sample is a component of its own - the very one the page renders - so
+        what the panel shows is what runs; a sample built from more files (the recursive
+        NestedList.razor, a plain .cs model) names them in <DemoCode Files="..." />.
     -->
     <UsingTask TaskName="GenerateDemoSources"
                TaskFactory="RoslynCodeTaskFactory"
@@ -40,73 +41,20 @@
             <Using Namespace="System.IO" />
             <Using Namespace="System.Linq" />
             <Using Namespace="System.Text" />
-            <Using Namespace="System.Text.RegularExpressions" />
             <Code Type="Fragment" Language="cs">
 <![CDATA[
-var byRoute = new StringBuilder();
-var pathByRoute = new StringBuilder();
-var byFile = new StringBuilder();
+var files = new StringBuilder();
 var root = Path.GetFullPath(SourceDir).TrimEnd('\\', '/') + Path.DirectorySeparatorChar;
-var files = Directory.GetFiles(SourceDir, "*.razor", SearchOption.AllDirectories)
+var sources = Directory.GetFiles(SourceDir, "*.razor", SearchOption.AllDirectories)
     .Concat(Directory.GetFiles(SourceDir, "*.cs", SearchOption.AllDirectories))
     .OrderBy(f => f, StringComparer.Ordinal);
-foreach (var file in files)
+foreach (var file in sources)
 {
-    var content = File.ReadAllText(file);
+    // Shown verbatim, under its path relative to Samples: "CloneSource.razor".
     var path = Path.GetFullPath(file).Substring(root.Length).Replace('\\', '/');
-    var pathEsc = path.Replace("\"", "\"\"");
-    var match = Regex.Match(content, "@page\\s+\"([^\"]+)\"");
-    if (!match.Success)
-    {
-        // A component or a model a page uses: shown verbatim, under its path.
-        var textEsc = content.TrimStart('\r', '\n', ' ', '\t').Replace("\"", "\"\"");
-        byFile.Append("        [@\"").Append(pathEsc).Append("\"] = @\"").Append(textEsc).AppendLine("\",");
-        continue;
-    }
-    var route = match.Groups[1].Value.TrimStart('/');
-
-    // Strip demo-app chrome so the snippet shows only the example itself.
-    // 1. The @page routing directive.
-    content = Regex.Replace(content, @"(?m)^[ \t]*@page[ \t]+""[^""]*""[ \t]*\r?\n", "");
-    // 2. The <PageTitle> that sets the browser tab title.
-    content = Regex.Replace(content, @"(?s)[ \t]*<PageTitle>.*?</PageTitle>[ \t]*\r?\n", "");
-    // 3. The bb-intro title block. Its end is found by balancing <div> tags rather than
-    //    with a lazy match, which would stop at the first </div> nested inside the header and
-    //    leave the rest of it behind.
-    var header = Regex.Match(content, @"[ \t]*<div class=""bb-intro"">");
-    if (header.Success)
-    {
-        var depth = 0;
-        var end = -1;
-        for (var tag = Regex.Match(content.Substring(header.Index), @"<div\b|</div\s*>"); tag.Success; tag = tag.NextMatch())
-        {
-            depth += tag.Value.StartsWith("</", StringComparison.Ordinal) ? -1 : 1;
-            if (depth == 0)
-            {
-                end = header.Index + tag.Index + tag.Length;
-                break;
-            }
-        }
-        if (end >= 0)
-        {
-            // Take the rest of the closing tag's line with it.
-            var rest = Regex.Match(content.Substring(end), @"^[ \t]*\r?\n");
-            if (rest.Success) end += rest.Length;
-            content = content.Remove(header.Index, end - header.Index);
-        }
-    }
-    // 4. The <DemoCode /> toggle element, with or without its Files attribute (it powers this
-    //    snippet, it isn't part of the demo).
-    content = Regex.Replace(content, @"(?s)[ \t]*<DemoCode\b[^>]*/>[ \t]*\r?\n", "");
-    // Collapse any runs of blank lines left by the removals.
-    content = Regex.Replace(content, @"(\r?\n){3,}", "\n\n");
-    // Drop any blank lines left at the very top.
-    content = content.TrimStart('\r', '\n', ' ', '\t');
-
-    var keyEsc = route.Replace("\"", "\"\"");
-    var valEsc = content.Replace("\"", "\"\"");
-    byRoute.Append("        [@\"").Append(keyEsc).Append("\"] = @\"").Append(valEsc).AppendLine("\",");
-    pathByRoute.Append("        [@\"").Append(keyEsc).Append("\"] = @\"").Append(pathEsc).AppendLine("\",");
+    var content = File.ReadAllText(file).Trim('\r', '\n', ' ', '\t');
+    files.Append("        [@\"").Append(path.Replace("\"", "\"\"")).Append("\"] = @\"")
+         .Append(content.Replace("\"", "\"\"")).AppendLine("\",");
 }
 
 var sb = new StringBuilder();
@@ -114,23 +62,15 @@ sb.AppendLine("// <auto-generated />");
 sb.AppendLine("namespace Bit.Bortable.Demo.Client.Examples;");
 sb.AppendLine("public static class DemoSources");
 sb.AppendLine("{");
-// Case-insensitive, like the router: /Shared renders the same page as /shared.
-sb.AppendLine("    public static readonly System.Collections.Generic.Dictionary<string, string> ByRoute = new(System.StringComparer.OrdinalIgnoreCase)");
+// Case-insensitive, like the file system the samples come from.
+sb.AppendLine("    public static readonly System.Collections.Generic.Dictionary<string, string> Files = new(System.StringComparer.OrdinalIgnoreCase)");
 sb.AppendLine("    {");
-sb.Append(byRoute);
-sb.AppendLine("    };");
-sb.AppendLine("    public static readonly System.Collections.Generic.Dictionary<string, string> PathByRoute = new(System.StringComparer.OrdinalIgnoreCase)");
-sb.AppendLine("    {");
-sb.Append(pathByRoute);
-sb.AppendLine("    };");
-sb.AppendLine("    public static readonly System.Collections.Generic.Dictionary<string, string> ByFile = new(System.StringComparer.OrdinalIgnoreCase)");
-sb.AppendLine("    {");
-sb.Append(byFile);
+sb.Append(files);
 sb.AppendLine("    };");
 sb.AppendLine("}");
 
 // Only touch the file when its content changed: rewriting it on every build would bump its
-// timestamp and force a full recompile of the demo even when no page was edited.
+// timestamp and force a full recompile of the demo even when no sample was edited.
 var text = sb.ToString();
 if (!File.Exists(OutputFile) || File.ReadAllText(OutputFile) != text)
 {
@@ -146,7 +86,7 @@ if (!File.Exists(OutputFile) || File.ReadAllText(OutputFile) != text)
         <PropertyGroup>
             <DemoSourcesFile>$(IntermediateOutputPath)DemoSources.g.cs</DemoSourcesFile>
         </PropertyGroup>
-        <GenerateDemoSources SourceDir="$(MSBuildProjectDirectory)\Pages" OutputFile="$(DemoSourcesFile)" />
+        <GenerateDemoSources SourceDir="$(MSBuildProjectDirectory)\Samples" OutputFile="$(DemoSourcesFile)" />
         <!-- Unconditional: the file has to be compiled whether or not this build rewrote it.
              FileWrites lets Clean delete it. -->
         <ItemGroup>

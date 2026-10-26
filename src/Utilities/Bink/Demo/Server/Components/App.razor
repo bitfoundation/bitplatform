@@ -16,6 +16,7 @@
     <meta property="og:site_name" content="Bit.Bink" />
     <meta property="og:title" content="Bink - drawing and ink for Blazor" />
     <meta property="og:description" content="Signature fields, handwriting, whiteboards and annotation on one vector document model - with the ink engine written in C#, not a JavaScript drawing library." />
+    <meta property="og:image" content="https://bink.bitplatform.dev/icon-512.png" />
     <meta name="twitter:card" content="summary" />
 
     <ResourcePreloader />
@@ -29,11 +30,18 @@
     @* Synchronous on purpose: applies the light/dark theme before first paint. *@
     <script src="@Assets["theme.js"]"></script>
     <ImportMap />
-    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="icon" href="favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
     <HeadOutlet @rendermode="InteractiveWebAssembly" />
 </head>
 
-<body>
+@* data-enhance-nav="false": a link followed before the WebAssembly runtime has started is a plain
+   page load rather than an enhanced one. Enhanced navigation fetches and merges the next page while
+   the runtime is still starting, and the router the runtime then attaches can render the address
+   it read before the merge - the URL says /getting-started and the page is the landing page. Once
+   the app is interactive its router handles every link itself and this attribute is not consulted. *@
+<body data-enhance-nav="false">
     @* InteractiveWebAssembly rather than Auto or Server: BinkCanvas hands its command buffer to
        JavaScript without serializing it only on WebAssembly, and pointer input never waits on a
        network round trip there. The pages are still prerendered, so the first response carries them. *@

@@ -90,6 +90,29 @@ public readonly struct BbLuminanceView
         }
     }
 
+    /// <summary>
+    /// Reads the luminance at a point between samples, interpolated bilinearly between the four round it. Sample
+    /// (<c>x</c>, <c>y</c>) is at the point (<c>x</c>, <c>y</c>) - a caller measuring from pixel edges, where a
+    /// pixel's centre is half a pixel in, subtracts that half first - and a point beyond the outermost samples reads
+    /// as the nearest one at the edge.
+    /// </summary>
+    /// <param name="x">Horizontal position relative to the window.</param>
+    /// <param name="y">Vertical position relative to the window.</param>
+    /// <remarks>The window must not be empty.</remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal float Interpolate(float x, float y)
+    {
+        Debug.Assert(!IsEmpty);
+        x = Math.Clamp(x, 0, Width - 1);
+        y = Math.Clamp(y, 0, Height - 1);
+        var (x0, y0) = ((int)x, (int)y);
+        var (x1, y1) = (Math.Min(x0 + 1, Width - 1), Math.Min(y0 + 1, Height - 1));
+        var (tx, ty) = (x - x0, y - y0);
+        var top = (this[x0, y0] * (1 - tx)) + (this[x1, y0] * tx);
+        var bottom = (this[x0, y1] * (1 - tx)) + (this[x1, y1] * tx);
+        return (top * (1 - ty)) + (bottom * ty);
+    }
+
     /// <summary>Returns a view of a sub-region of this window, without copying.</summary>
     /// <param name="x">Left edge relative to this window.</param>
     /// <param name="y">Top edge relative to this window.</param>

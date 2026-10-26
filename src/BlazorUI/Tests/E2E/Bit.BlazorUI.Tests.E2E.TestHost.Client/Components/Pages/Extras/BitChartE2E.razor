@@ -174,6 +174,29 @@
     <div class="box"><BitChart Id="cht-rtl" Dir="BitDir.Rtl" Type="BitChartType.Bar" Data="_barData" Options="LegendAt(BitPlacement.Start)" /></div>
     <div class="box"><BitChart Id="cht-ltr-start" Type="BitChartType.Bar" Data="_barData" Options="LegendAt(BitPlacement.Start)" /></div>
     <div class="box" dir="rtl"><BitChart Id="cht-rtl-inherited" Type="BitChartType.Bar" Data="_barData" Options="LegendAt(BitPlacement.Start)" /></div>
+    <div class="box"><BitChart @ref="_rtlLabelsChart" Id="cht-rtl-labels" Dir="BitDir.Rtl" Type="BitChartType.Line" Data="_rtlLabelsData" Options="RtlLabels()" /></div>
+    <div class="box" dir="rtl"><BitChart Id="cht-rtl-labels-inherited" Type="BitChartType.Line" Data="_rtlLabelsData" Options="RtlLabels()" /></div>
+    @* The exported file, in a page of its own that reads left to right and has none of the chart's stylesheet. *@
+    <button id="btn-rtl-svg" @onclick="EmbedRtlLabelsSvg">ToSvgStringAsync into a left-to-right page</button>
+    <span id="rtl-svg-status">@_rtlLabelsSvgStatus</span>
+    <iframe id="rtl-svg-frame" class="box" style="height: 480px; border: 0;" title="The exported chart" srcdoc="@_rtlLabelsSvgPage"></iframe>
+    @* Every kind of label placed on a side of the screen, in a left-to-right chart and in its right-to-left twin; and
+       categories at the Start of Align, which follows the reading direction instead. *@
+    <div class="box"><BitChart Id="cht-ltr-turned" Type="BitChartType.Bar" Data="_sidedData" Options="TurnedLabels()" /></div>
+    <div class="box"><BitChart Id="cht-rtl-turned" Dir="BitDir.Rtl" Type="BitChartType.Bar" Data="_sidedData" Options="TurnedLabels()" /></div>
+    <div class="box"><BitChart Id="cht-ltr-mirrored" Type="BitChartType.Bar" Data="_sidedData" Options="MirroredValues()" /></div>
+    <div class="box"><BitChart Id="cht-rtl-mirrored" Dir="BitDir.Rtl" Type="BitChartType.Bar" Data="_sidedData" Options="MirroredValues()" /></div>
+    <div class="box"><BitChart @ref="_ltrHorizontalChart" Id="cht-ltr-horizontal" Type="BitChartType.Bar" Data="_sidedData" Options="Horizontal()" /></div>
+    <div class="box"><BitChart @ref="_rtlHorizontalChart" Id="cht-rtl-horizontal" Dir="BitDir.Rtl" Type="BitChartType.Bar" Data="_sidedData" Options="Horizontal()" /></div>
+    <div class="box"><BitChart Id="cht-ltr-radar" Type="BitChartType.Radar" Data="_radarData" Options="NoAnim()" /></div>
+    <div class="box"><BitChart Id="cht-rtl-radar" Dir="BitDir.Rtl" Type="BitChartType.Radar" Data="_radarData" Options="NoAnim()" /></div>
+    <div class="box"><BitChart Id="cht-ltr-align" Type="BitChartType.Bar" Data="_barData" Options="AlignedAtStart()" /></div>
+    <div class="box"><BitChart Id="cht-rtl-align" Dir="BitDir.Rtl" Type="BitChartType.Bar" Data="_barData" Options="AlignedAtStart()" /></div>
+    @* The two horizontal bar charts as the pictures ToBase64ImageAsync paints of them. *@
+    <button id="btn-rtl-png" @onclick="RasterizeHorizontalTwins">ToBase64ImageAsync of both horizontal bar charts</button>
+    <span id="rtl-png-status">@_horizontalPngStatus</span>
+    <img id="png-ltr-horizontal" src="@_ltrHorizontalPng" alt="The left-to-right horizontal bar chart" />
+    <img id="png-rtl-horizontal" src="@_rtlHorizontalPng" alt="The right-to-left horizontal bar chart" />
 </E2ESection>
 
 <E2ESection Id="motion" Title="Animation & reduced motion">
@@ -306,6 +329,25 @@
         }
     };
 
+    // Long values in Persian on a left and a right axis, the labels of a right-to-left app (#14044).
+    private readonly BitChartData _rtlLabelsData = new()
+    {
+        Labels = { "فروردین", "اردیبهشت", "خرداد", "تیر" },
+        Datasets =
+        {
+            new BitChartDataset { Label = "فروش", Data = [12000, 25000, 18000, 40000], BorderColor = "rgb(0, 128, 0)" },
+            new BitChartDataset { Label = "سهم", Data = [20, 45, 30, 60], BorderColor = "rgb(0, 0, 255)", YAxisID = "y1" }
+        }
+    };
+
+    // Long Latin categories, which read the same in either direction, so a label of a right-to-left chart lies exactly
+    // where its left-to-right twin does.
+    private readonly BitChartData _sidedData = new()
+    {
+        Labels = { "Netherlands", "Switzerland", "New Zealand", "Portugal" },
+        Datasets = { new BitChartDataset { Label = "Exports", Data = [10, 20, 30, 40], BackgroundColor = "rgb(0, 128, 0)" } }
+    };
+
     private readonly BitChartData _emptyData = new();
 
     private readonly BitChartData _zoomData = new()
@@ -361,6 +403,16 @@
     private string? _csv;
     private string? _svgString;
     private string? _base64;
+
+    private BitChart _rtlLabelsChart = default!;
+    private string? _rtlLabelsSvgStatus;
+    private string? _rtlLabelsSvgPage;
+
+    private BitChart _ltrHorizontalChart = default!;
+    private BitChart _rtlHorizontalChart = default!;
+    private string? _horizontalPngStatus;
+    private string? _ltrHorizontalPng;
+    private string? _rtlHorizontalPng;
 
     private bool _loading = true;
 
@@ -423,6 +475,57 @@
         Animation = new() { Animate = false },
         Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = placement } }
     };
+
+    private static BitChartOptions RtlLabels() => new()
+    {
+        Animation = new() { Animate = false },
+        Scales =
+        {
+            ["y"] = new BitChartScaleOptions
+            {
+                Id = "y", BeginAtZero = true,
+                Ticks = new() { Callback = (v, _) => $"{v.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)} میلیون" }
+            },
+            ["y1"] = new BitChartScaleOptions
+            {
+                Id = "y1", Placement = BitPlacement.Right, BeginAtZero = true,
+                Ticks = new() { Callback = (v, _) => $"{v.ToString(System.Globalization.CultureInfo.InvariantCulture)} درصد" }
+            }
+        }
+    };
+
+    private static BitChartOptions TurnedLabels() => new()
+    {
+        Animation = new() { Animate = false },
+        Scales = { ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Category, Ticks = new() { MinRotation = 40 } } }
+    };
+
+    private static BitChartOptions MirroredValues() => new()
+    {
+        Animation = new() { Animate = false },
+        Scales = { ["y"] = new BitChartScaleOptions { Id = "y", BeginAtZero = true, Ticks = new() { Mirror = true } } }
+    };
+
+    private static BitChartOptions AlignedAtStart() => new()
+    {
+        Animation = new() { Animate = false },
+        Scales = { ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Category, Ticks = new() { Align = BitPlacement.Start } } }
+    };
+
+    // A failed export is written as null, so the test reports it as one instead of waiting on a frame that never draws.
+    private async Task EmbedRtlLabelsSvg()
+    {
+        var svg = await _rtlLabelsChart.ToSvgStringAsync();
+        _rtlLabelsSvgStatus = svg is null ? "null" : "ready";
+        _rtlLabelsSvgPage = svg is null ? null : $"<!doctype html><html dir=\"ltr\"><body style=\"margin: 0;\">{svg}</body></html>";
+    }
+
+    private async Task RasterizeHorizontalTwins()
+    {
+        _ltrHorizontalPng = await _ltrHorizontalChart.ToBase64ImageAsync(scale: 1);
+        _rtlHorizontalPng = await _rtlHorizontalChart.ToBase64ImageAsync(scale: 1);
+        _horizontalPngStatus = _ltrHorizontalPng is null || _rtlHorizontalPng is null ? "null" : "ready";
+    }
 
     private static BitChartOptions StaticLegend() => new()
     {

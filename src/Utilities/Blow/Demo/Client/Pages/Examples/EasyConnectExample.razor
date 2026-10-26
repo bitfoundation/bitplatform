@@ -3,23 +3,40 @@
 <PageTitle>Easy Connect · Blow</PageTitle>
 
 <ExampleScaffold Title="Easy Connect"
-                 Summary="Each node is almost entirely covered by a connectable handle, so you can start and finish a connection from anywhere inside it; drag a node by its rim to move it. Uses loose connection mode and floating edges.">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" ConnectionMode="BlowConnectionMode.Loose">
-        <NodeTemplate Context="node">
-            <div class="easy-node">@node.Label</div>
-            @* Inset, not edge to edge: a handle covering the whole node would leave nothing to
-               press that drags the node instead of starting a connection. *@
-            <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Top"
-                    Style="position:absolute;inset:8px;width:auto;height:auto;border-radius:6px;background:transparent;border:1px dashed #a5b4fc;transform:none;" />
-        </NodeTemplate>
-        <EdgeTemplate Context="ctx">
-            <BlowBaseEdge Path="@FloatingPath(ctx.Edge)" StrokeWidth="2" />
-        </EdgeTemplate>
-        <ChildContent>
-            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-            <BlowControls />
-        </ChildContent>
-    </BlowCanvas>
+                 Summary="Each node is almost entirely covered by one connectable handle, so a connection starts and ends anywhere inside a node instead of on an 8px dot. Loose connection mode lets that single handle take both ends of an edge, and floating edges attach to whichever side faces the other node.">
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    ConnectionMode="BlowConnectionMode.Loose" ConnectionLineType="BlowEdgeType.Straight">
+            <NodeTemplate Context="node">
+                <div class="easy-node">@node.Label</div>
+                @* Inset, not edge to edge: a handle covering the whole node would leave nothing to
+                   press that drags the node instead of starting a connection. *@
+                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Top"
+                            Style="position:absolute;inset:8px;width:auto;height:auto;border-radius:6px;background:transparent;border:1px dashed #a5b4fc;transform:none;" />
+            </NodeTemplate>
+            <EdgeTemplate Context="ctx">
+                <BlowBaseEdge Path="@FloatingPath(ctx.Edge)" StrokeWidth="2" />
+            </EdgeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Press anywhere inside the dashed outline</strong> of a node and drag: a connection starts. <strong>Release anywhere over another node</strong> to connect the two.</li>
+        <li><strong>Drag a node by its rim</strong> - the thin strip outside the dashed outline - to move it; its edges slide round to the side that faces the other node.</li>
+        <li>Release over the node you started from: nothing is connected. The canvas refuses self-connections by default, and even <code>AllowSelfConnections</code> needs two different handles - each node here has one.</li>
+        <li><strong>Click</strong> an edge to select it and press <strong>Delete</strong> or <strong>Backspace</strong> to remove it.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>Each node draws a single <code>BlowHandle</code>, stretched by its <code>Style</code> to 8px inside the node (<code>position:absolute; inset:8px; width:auto; height:auto; transform:none</code>). The rim outside it is still the node, so pressing there drags.</li>
+        <li><code>ConnectionMode="BlowConnectionMode.Loose"</code> lets any handle connect to any other. The only handle here is a source, and in the default <code>Strict</code> mode a source can never be dropped on another source.</li>
+        <li>A drop counts anywhere over the target handle, because the canvas looks for the handle under the pointer; within <code>ConnectionRadius</code> (20px) of a handle's centre it also snaps to it.</li>
+        <li>A handle's anchor is its centre, so here the line drawn while connecting starts in the middle of the node; <code>ConnectionLineType="BlowEdgeType.Straight"</code> draws it straight, like the edges.</li>
+        <li>The <code>EdgeTemplate</code> ignores the handles: <code>BlowGraphUtils.GetFloatingEdgeParams(source, target)</code> finds the point and side on each node's border facing the other, <code>BlowEdgePath.Compute</code> turns them into a straight path, and <code>BlowBaseEdge</code> draws it, together with the wide invisible path that makes a thin edge easy to click.</li>
+        <li>The node's <code>Class</code>, <code>easy-shell</code>, strips the default node chrome (padding, border, minimum width) so the node draws its own box, edge to edge.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>

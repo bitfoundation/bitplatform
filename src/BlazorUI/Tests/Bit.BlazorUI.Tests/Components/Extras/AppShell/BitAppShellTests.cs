@@ -48,7 +48,8 @@ public class BitAppShellTests : BunitTestContext
     {
         var component = RenderComponent<BitAppShell>();
 
-        Assert.IsNotNull(component.Instance.RootElement);
+        // RootElement is a struct, never null: only the id the render captured into it says the root element was taken.
+        Assert.IsFalse(string.IsNullOrEmpty(component.Instance.RootElement.Id));
     }
 
     [TestMethod]

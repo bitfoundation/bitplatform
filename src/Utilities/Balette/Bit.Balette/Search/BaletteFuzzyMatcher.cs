@@ -33,6 +33,15 @@ public sealed class BaletteFuzzyMatcher : IBaletteMatcher
     /// <summary>Disable smart case and always match case-insensitively.</summary>
     public bool IgnoreCase { get; init; }
 
+    /// <summary>
+    /// Match letters the way people type them rather than the way they are stored (default true): <c>cafe</c> finds
+    /// "Café" and <c>lodz</c> "Łódź", unless the query types a diacritic itself, as fzf does; and the Arabic and Persian
+    /// forms of a letter (<c>ي</c>/<c>ی</c>, <c>ك</c>/<c>ک</c>), Arabic-Indic and Persian digits (<c>۱۲</c>/<c>12</c>) and
+    /// fullwidth ASCII are always the same character. Set false to match every character literally, like fzf's
+    /// <c>--literal</c>.
+    /// </summary>
+    public bool Normalize { get; init; } = true;
+
     /// <summary>Scores <paramref name="query"/> against <paramref name="text"/>, with the positions of the best alignment.</summary>
     public BaletteFieldMatch Match(string query, string text)
     {
@@ -49,11 +58,12 @@ public sealed class BaletteFuzzyMatcher : IBaletteMatcher
         // Runs once per field per command on every keystroke (interpreted on WebAssembly), so it avoids
         // LINQ, per-call pooling and full-matrix initialization. Results are identical to the plain DP.
         var caseSensitive = !IgnoreCase && HasUpper(query);
+        var strip = Normalize && !BaletteTextFold.HasDiacritic(query);
         int p = query.Length, t = text.Length;
         var size = (p + 1) * (t + 1);
         (t_scratch ??= new Scratch()).Get(p, t, size, out var q, out var tx, out var m, out var d, out var consec, out var bonus);
-        Fold(query, q, caseSensitive);
-        Fold(text, tx, caseSensitive);
+        Fold(query, q, caseSensitive, Normalize, strip);
+        Fold(text, tx, caseSensitive, Normalize, strip);
 
         // Fast reject: must be a subsequence.
         if (!IsSubsequence(q, p, tx, t))
@@ -261,21 +271,25 @@ public sealed class BaletteFuzzyMatcher : IBaletteMatcher
         return false;
     }
 
-    /// <summary>Copies <paramref name="s"/> into <paramref name="dst"/>, lower-cased unless matching case-sensitively.</summary>
-    private static void Fold(string s, char[] dst, bool caseSensitive)
+    /// <summary>
+    /// Copies <paramref name="s"/> into <paramref name="dst"/>, lower-cased unless matching case-sensitively and folded (see
+    /// <see cref="BaletteTextFold"/>) when normalizing. One character in, one out: positions stay those of the original.
+    /// </summary>
+    private static void Fold(string s, char[] dst, bool caseSensitive, bool normalize, bool strip)
     {
-        if (caseSensitive)
+        if (caseSensitive && !normalize)
         {
             s.CopyTo(0, dst, 0, s.Length);
             return;
         }
 
+        var ignoreCase = !caseSensitive;
         for (var i = 0; i < s.Length; i++)
         {
             var c = s[i];
             dst[i] = c < 128
-                ? ((uint)(c - 'A') <= 'Z' - 'A' ? (char)(c | 0x20) : c)
-                : char.ToLowerInvariant(c);
+                ? (ignoreCase && (uint)(c - 'A') <= 'Z' - 'A' ? (char)(c | 0x20) : c)
+                : BaletteTextFold.Fold(c, ignoreCase, normalize, strip);
         }
     }
 
@@ -355,6 +369,9 @@ public sealed class BaletteSubstringMatcher : IBaletteMatcher
     /// <summary>Shared default instance.</summary>
     public static BaletteSubstringMatcher Default { get; } = new();
 
+    /// <summary>Fold diacritics and keyboard variants as <see cref="BaletteFuzzyMatcher.Normalize"/> does. Default true.</summary>
+    public bool Normalize { get; init; } = true;
+
     /// <summary>Finds <paramref name="query"/> in <paramref name="text"/> ignoring case, scoring a match at the start higher.</summary>
     public BaletteFieldMatch Match(string query, string text)
     {
@@ -363,7 +380,7 @@ public sealed class BaletteSubstringMatcher : IBaletteMatcher
             return BaletteFieldMatch.Empty;
         }
 
-        var idx = text.IndexOf(query, StringComparison.OrdinalIgnoreCase);
+        var idx = BaletteTextFold.Find(text, query, BaletteTextMatchKind.Anywhere, Normalize);
         if (idx < 0)
         {
             return BaletteFieldMatch.None;

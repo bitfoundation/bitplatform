@@ -36,17 +36,19 @@ To add a new skill: create `.github/agents/<your-skill>.agent.md` with the full 
 
 **What it does**: Generates a complete CRUD (Create, Read, Update, Delete) implementation for a new entity in your project, including all necessary layers from database to UI.
 
-**When to use it**: When you need to add a new data entity to your application with full CRUD functionality.
+**When to use it**: When a new data entity's fields, rules and screens are settled, usually as a task of an `ai-dlc` plan. A new feature whose shape is still open starts with `ai-dlc`, which calls this skill once the entity is pinned down.
 
 **Key capabilities**:
+- Starts from the CRUD entity the project ships, or from the Admin module's when it ships none, and asks whether rows are edited in a modal or on a page of their own
 - Creates Entity Type Configuration for EF Core
 - Generates DTO (Data Transfer Object) with validation attributes, or separate request and response DTOs when what the client reads and writes differ a lot
 - Creates Mapper using Mapperly for high-performance object mapping, ignoring on the way in every property the client must not write
 - Generates API Controller with OData support
 - Creates IAppController Interface for strongly-typed HTTP client
-- Adds Resource Strings to AppStrings.resx for localization
+- Adds `.resx` keys only for validation attributes; other new text goes through the `Localizer["..."]` literal indexer
 - Creates Data Grid Page for listing records
-- Creates Add/Edit Page for creating and updating records
+- Creates Add/Edit Modal or Page for creating and updating records
+- Adds a permission to `AppFeatures` when the entity needs its own, and tests for the rules it adds
 - Integrates with navigation (PageUrls.cs, NavBar, MainLayout items)
 - Updates AppJsonContext for JSON serialization
 - Generates EF Core migration
@@ -61,7 +63,7 @@ To add a new skill: create `.github/agents/<your-skill>.agent.md` with the full 
 
 **What it does**: Identifies hardcoded strings in your code and moves them to resource files (.resx) for proper localization support.
 
-**When to use it**: When you explicitly want hardcoded user-facing text in your Blazor components, pages, or controllers moved into `AppStrings.resx` - for example as a dedicated translation pass before a release. (Day-to-day, new text stays in the `Localizer["..."]` literal indexer per `AGENTS.md` section 5, because `.resx` edits break hot reload.)
+**When to use it**: When you explicitly want hardcoded user-facing text in your Blazor components, pages, or controllers moved into `AppStrings.resx` - for example as a dedicated translation pass before a release - and when the changes are about to be pushed. (Day-to-day, new text stays in the `Localizer["..."]` literal indexer per `AGENTS.md` section 5, because `.resx` edits break hot reload.)
 
 **Key capabilities**:
 - Identifies hardcoded user-facing strings in selected code
@@ -71,6 +73,7 @@ To add a new skill: create `.github/agents/<your-skill>.agent.md` with the full 
 - Uses `nameof(AppStrings.ResourceKey)` for type-safe resource access
 - Preserves string formatting with placeholders (e.g., `{0}`, `{1}`)
 - Follows naming conventions with descriptive resource keys
+- Fills in the new keys for every other language in `Bit.ResxTranslator.json` with `bit translate`
 
 **What it won't move**:
 - CSS class names or IDs
@@ -121,6 +124,8 @@ To add a new skill: create `.github/agents/<your-skill>.agent.md` with the full 
 - Checks API controllers (`AppControllerBase`, `IAppController`, `[EnableQuery]`, Mapperly `Project()`, `long Version`)
 - Checks DTOs (`[DtoResourceType]`, `nameof(AppStrings.X)` validation, `AppJsonContext` registration)
 - Checks nullability, `async/await`, structured logging, secrets and localization
+- Checks that `[mirror]` counterparts got the same change and that new features come with tests
+- Flags security gaps the change leaves unaddressed: authorization, ownership checks, server-side validation, sanitizing, and sensitive data in logs
 - Ignores anything `.editorconfig` already handles
 
 It carries `context: fork` in its frontmatter, so tools that support forked skill contexts (Claude Code, VS Code Copilot) run it in a dedicated subagent context instead of filling your main conversation; every other tool simply ignores that field and runs it inline.
@@ -133,17 +138,20 @@ It carries `context: fork` in its frontmatter, so tools that support forked skil
 
 **Canonical file**: `.github/agents/ai-dlc.agent.md`
 
-**What it does**: Drives a feature end-to-end through the AI-Driven Development Lifecycle, with approval gates before any code is written.
+**What it does**: Drives a task end-to-end through the AI-Driven Development Lifecycle, with approval gates before any code is written.
 
-**When to use it**: For non-trivial features where you want requirements pinned down and a plan approved before implementation starts.
+**When to use it**: For every task that is not a small, obvious edit: building or changing a feature, fixing a reported bug even when its cause turns out obvious, work spanning several files. AGENTS.md makes it the agent's default for such tasks, so it runs whether or not you ask for it; `/ai-dlc` starts it explicitly.
 
 **Key capabilities**:
+- Sizes the work first: a known bug or a change inside one feature takes a short track - reproduce, fix, a test that fails without the fix, validation - with no plan to approve, and moves to the full track when it turns out bigger
 - Phase 1 - Requirements elaboration, with clarifying questions until requirements are unambiguous
 - Phase 2 - Planning and task decomposition, presented for approval
 - Phase 3 - Design of affected files, components, APIs and data models
 - Phase 4 - Implementation, one task at a time
+- On the full track, writes the agreed requirements into the feature specs in `specs/` and the approved plan into `specs/changes/` - design, a task checklist and plan changes, kept current - so the work can be resumed in another session or tool and reviewed with the code, and picks the work up from there when the branch already has a plan
 - Phase 5 - Validation via build, tests and the `review` skill
 - Checks every request against the optional template features this project did not enable, so they are ported from `bitfoundation/bitplatform` instead of reinvented
+- Proposes the bit libraries this project doesn't use yet, which `AGENTS.md` lists with their MCP servers, when a request falls in their area
 - Delegates to `scaffold-entity` and `bitify-ui` where they apply
 - Checks, alongside phase 1, whether the project is on the newest bit platform release, makes the case for upgrading from the release notes, and remembers a no instead of asking again every session
 

@@ -14,7 +14,7 @@
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Install the package</h3>
     <p>Bit.Bonboarding targets .NET 8, .NET 9 and .NET 10, and depends on nothing but Blazor itself.</p>
-    <pre class="bb-code">dotnet add package Bit.Bonboarding</pre>
+    <pre class="bb-code" tabindex="0">dotnet add package Bit.Bonboarding</pre>
 </section>
 
 <section class="bb-card">
@@ -23,7 +23,7 @@
         Everything is registered as scoped - per circuit on Blazor Server, per application on WebAssembly - which
         matches the lifetime of a user's onboarding state. Global defaults are set in the same call.
     </p>
-    <pre class="bb-code"><span class="k">using</span> Bit.Bonboarding;
+    <pre class="bb-code" tabindex="0"><span class="k">using</span> Bit.Bonboarding;
 
 builder.Services.AddBitBonboardingServices(options =>
 {
@@ -46,7 +46,7 @@ builder.Services.AddBitBonboardingServices(options =>
         so your overrides of its <code>--bit-bonboarding-*</code> variables win. There is no script tag to add: the
         library imports its own JavaScript module.
     </p>
-    <pre class="bb-code">&lt;<span class="k">link</span> rel=<span class="s">"stylesheet"</span> href=<span class="s">"@@Assets["_content/Bit.Bonboarding/bit-bonboarding.css"]"</span> /&gt;</pre>
+    <pre class="bb-code" tabindex="0">&lt;<span class="k">link</span> rel=<span class="s">"stylesheet"</span> href=<span class="s">"@@Assets["_content/Bit.Bonboarding/bit-bonboarding.css"]"</span> /&gt;</pre>
 </section>
 
 <section class="bb-card">
@@ -56,7 +56,7 @@ builder.Services.AddBitBonboardingServices(options =>
         navigation - the main layout, or beside the router as this site does - because a host on a page would be
         disposed by the navigation a multi-page tour performs. Then import the namespace in <code>_Imports.razor</code>.
     </p>
-    <pre class="bb-code"><span class="c">@@* MainLayout.razor *@@</span>
+    <pre class="bb-code" tabindex="0"><span class="c">@@* MainLayout.razor *@@</span>
 &lt;<span class="k">div</span> class=<span class="s">"page"</span>&gt;
     @@Body
 &lt;/<span class="k">div</span>&gt;
@@ -80,12 +80,77 @@ builder.Services.AddBitBonboardingServices(options =>
         <button type="button" class="btn btn-primary" data-bonboarding-anchor="probe" @onclick="RunAsync">Test the setup</button>
     </div>
 
-    <pre class="bb-code">@ProbeExample</pre>
+    <pre class="bb-code" tabindex="0">@ProbeExample</pre>
+
+    <div class="bb-note">
+        If the card appears but sits in the wrong place, the stylesheet is not loaded. If nothing appears at all,
+        <code>BonboardingRoot</code> is missing from the layout - or the component that starts the tour is not interactive.
+    </div>
 
     <p>
         The same tour can be declared in markup with <code>&lt;BonboardingTour&gt;</code> and
         <code>&lt;BonboardingStep&gt;</code> - the landing page's welcome tour is written that way.
     </p>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Pointing at an element</h3>
+    <p>
+        A step's <code>Target</code> says which element it is about. Each button below is found a different way; the
+        tour visits all three and ends on a step with no target at all, which is drawn as a centred card - the right
+        shape for a welcome or a summary.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <button type="button" class="btn btn-primary" @onclick="RunTargetingAsync">Run the targeting tour</button>
+        </div>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-secondary" @attributes="BitBonboarding.Anchor(TargetingAnchor)">By anchor</button>
+            <button type="button" class="btn btn-secondary" id="targeting-by-selector">By CSS selector</button>
+            <button type="button" class="btn btn-secondary" @ref="_byElement">By element reference</button>
+        </div>
+    </div>
+
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Target kinds">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Target</th><th>Finds</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="bb-table-key"><code>Anchor("name")</code></td>
+                    <td>
+                        The element carrying <code>data-bonboarding-anchor="name"</code>. <strong>Preferred</strong>: it is
+                        looked up again on every measurement, so it survives re-renders and elements that appear later.
+                        <code>BitBonboarding.Anchor("name")</code> splats the attribute for you.
+                    </td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key"><code>Css("#id .cls")</code></td>
+                    <td>The first rendered element matching a CSS selector. A plain string converts to one implicitly.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key"><code>Element(reference)</code></td>
+                    <td>
+                        A captured <code>ElementReference</code>. It names one DOM node, so it goes stale if Blazor replaces
+                        that node - use it for elements that are rendered once and stay.
+                    </td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key"><code>Dynamic(resolver)</code></td>
+                    <td>Decided when the step activates. See <a href="dynamic">dynamic targets</a>.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key"><code>None</code></td>
+                    <td>No element: a centred card with no spotlight and no arrow. The default.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <pre class="bb-code" tabindex="0">@TargetingExample</pre>
 </section>
 
 <section class="bb-card">
@@ -95,26 +160,92 @@ builder.Services.AddBitBonboardingServices(options =>
         hydration - in two different scopes. Start tours from <code>OnAfterRenderAsync(firstRender: true)</code>, from a
         user action, or with <code>AutoStart</code>, which already does the right thing.
     </p>
-    <pre class="bb-code">&lt;<span class="k">BonboardingTour</span> Id=<span class="s">"welcome"</span> AutoStart=<span class="s">"BonboardingAutoStart.Once"</span>&gt;
+    <pre class="bb-code" tabindex="0">&lt;<span class="k">BonboardingTour</span> Id=<span class="s">"welcome"</span> AutoStart=<span class="s">"BonboardingAutoStart.Once"</span>&gt;
     ...
 &lt;/<span class="k">BonboardingTour</span>&gt;
 
 <span class="k">await</span> BonboardingService.StartAsync(tour);       <span class="c">// always start, resuming saved progress</span>
-<span class="k">await</span> BonboardingService.StartOnceAsync(tour);   <span class="c">// only if not already completed or dismissed</span>
+<span class="k">await</span> BonboardingService.StartOnceAsync(tour);   <span class="c">// only if not already completed, dismissed or snoozed</span>
 <span class="k">await</span> BonboardingService.RestartAsync(tour);     <span class="c">// forget progress and start from the top</span></pre>
+    <p>
+        <code>AutoStart</code> is <code>None</code> (the default), <code>Once</code> - per user, remembered by the store -
+        or <code>Always</code>, every time the page renders.
+    </p>
+    <div class="bb-note">
+        On Blazor Server, a dropped circuit is rebuilt in a new scope; because progress is stored after every step, a
+        reconnected user resumes where they were. Under a Content Security Policy, the library needs its own ES module
+        from your origin and inline <code>style</code> attributes for positioning - a policy that allows Blazor allows
+        both, unless its <code>style-src</code> forbids <code>unsafe-inline</code>.
+    </div>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Let people replay it</h3>
+    <p>
+        A tour is known by its id, so a help menu anywhere in the application can start it again. A tour declared in
+        markup is registered only while its page is on screen; register the ones a help menu should always offer at
+        startup. A ready-made list of tours with Start, Resume and Replay buttons is on the
+        <a href="guidance">guidance page</a>.
+    </p>
+    <pre class="bb-code" tabindex="0">@ReplayExample</pre>
 </section>
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Where to go next</h3>
     <ul class="bb-detail-list">
         <li><a href="placement">Placement &amp; spotlight</a> - where the popover goes, and what the overlay does with a click.</li>
-        <li><a href="dynamic">Dynamic targets</a> - elements that render late, re-render or never appear.</li>
+        <li><a href="dynamic">Dynamic targets</a> - elements that render late, re-render or never appear, and steps the user completes.</li>
         <li><a href="flows">Conditional &amp; branching</a> - different tours for different users.</li>
+        <li><a href="lifecycle">Lifecycle &amp; orchestration</a> - pausing, queueing, snoozing and checking a tour.</li>
+        <li><a href="guidance">Beacons, checklists &amp; tour lists</a> - guidance that stays on the page.</li>
+        <li><a href="workspace">Multi-page tour</a> - one tour across several routes.</li>
         <li><a href="theming">Theming &amp; RTL</a> - make the card look like your product.</li>
+        <li><a href="headless">Headless UI</a> - draw the card yourself.</li>
+        <li><a href="events">Events &amp; persistence</a> - know how it went, and remember where each user got to.</li>
     </ul>
 </section>
 
 @code {
+    private const string TargetingAnchor = "targeting-by-anchor";
+
+    private ElementReference _byElement;
+
+    private Task RunTargetingAsync() => BonboardingService.StartAsync(new BonboardingTourDefinition
+    {
+        Id = "targeting",
+        Persist = false,
+        Steps =
+        {
+            new BonboardingStepDefinition
+            {
+                Id = "anchor",
+                Target = BonboardingStepTarget.Anchor(TargetingAnchor),
+                Title = "Found by its anchor",
+                Description = "This button carries data-bonboarding-anchor, added with BitBonboarding.Anchor(...).",
+            },
+            new BonboardingStepDefinition
+            {
+                Id = "selector",
+                Target = "#targeting-by-selector",
+                Title = "Found by a CSS selector",
+                Description = "Any selector works, so an element you cannot add an attribute to can still be pointed at.",
+            },
+            new BonboardingStepDefinition
+            {
+                Id = "element",
+                Target = _byElement,
+                Title = "Found by an element reference",
+                Description = "A captured ElementReference: fine for an element that is rendered once and stays.",
+            },
+            new BonboardingStepDefinition
+            {
+                Id = "none",
+                Title = "And no element at all",
+                Description = "A step without a target is a centred card, with no spotlight and no arrow.",
+            },
+        },
+    });
+
     private Task RunAsync() => BonboardingService.StartAsync(new BonboardingTourDefinition
     {
         Id = "probe",
@@ -151,5 +282,33 @@ builder.Services.AddBitBonboardingServices(options =>
                 },
             });
         }
+        """;
+
+    private const string TargetingExample = """
+        <button @attributes="BitBonboarding.Anchor("targeting-by-anchor")">By anchor</button>
+        <button id="targeting-by-selector">By CSS selector</button>
+        <button @ref="_byElement">By element reference</button>
+
+        Steps =
+        {
+            new BonboardingStepDefinition { Target = BonboardingStepTarget.Anchor("targeting-by-anchor"), Title = "Found by its anchor" },
+            new BonboardingStepDefinition { Target = "#targeting-by-selector", Title = "Found by a CSS selector" },
+            new BonboardingStepDefinition { Target = _byElement, Title = "Found by an element reference" },
+            new BonboardingStepDefinition { Title = "And no element at all" },   // a centred card
+        }
+
+        @* In markup, each kind has its own parameter: *@
+        <BonboardingStep Anchor="targeting-by-anchor" ... />
+        <BonboardingStep Selector="#targeting-by-selector" ... />
+        <BonboardingStep Element="_byElement" ... />
+        """;
+
+    private const string ReplayExample = """
+        // MainLayout.razor: registered once per user, so every page can start it by id.
+        protected override void OnInitialized() => BonboardingService.Register(WelcomeTour.Create());
+
+        // A help menu, anywhere in the application:
+        <button @onclick='() => BonboardingService.StartAsync("welcome")'>Replay the welcome tour</button>
+        <button @onclick='() => BonboardingService.RestartAsync(WelcomeTour.Create())'>Start it from the top</button>
         """;
 }

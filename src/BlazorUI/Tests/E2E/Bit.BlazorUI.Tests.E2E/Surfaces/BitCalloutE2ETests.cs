@@ -261,8 +261,10 @@ public class BitCalloutE2ETests : E2ETestBase
         await Expect(callout).ToBeVisibleAsync();
         Assert.IsTrue(watch.ElapsedMilliseconds >= 550, $"Opened after {watch.ElapsedMilliseconds}ms.");
 
-        await El("hover-far").HoverAsync();
+        // Restarted ahead of the move that starts the HoverCloseDelay, so the time the move takes to come back is not
+        // taken off what is measured.
         watch.Restart();
+        await El("hover-far").HoverAsync();
         Assert.IsTrue(await callout.IsVisibleAsync(), "Closed without waiting for HoverCloseDelay.");
         await Expect(callout).ToBeHiddenAsync();
         Assert.IsTrue(watch.ElapsedMilliseconds >= 450, $"Closed after {watch.ElapsedMilliseconds}ms.");

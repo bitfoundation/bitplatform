@@ -50,7 +50,7 @@ public class BitForcedColorsBrowserTests : PerformanceTestBase
         "aicitationmarker", "aiconversationlist", "aipromptinput", "aitoolapproval",
     ];
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("dark")]
     [DataRow("light")]
     public async Task BitComponents_UnderForcedColors_KeepEveryLabelReadableAtRest(string scheme)
@@ -67,7 +67,7 @@ public class BitForcedColorsBrowserTests : PerformanceTestBase
         AssertReadable(failures, $"at rest, {scheme} contrast theme");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("dark")]
     [DataRow("light")]
     public async Task BitComponents_UnderForcedColors_KeepEveryLabelReadableUnderThePointer(string scheme)
@@ -117,7 +117,7 @@ public class BitForcedColorsBrowserTests : PerformanceTestBase
 
     // A Transparent Fill header gets its solid fill back when transparency is reduced, in a rule that follows the
     // forced-colors one; only Chromium can emulate the preference.
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("dark")]
     [DataRow("light")]
     public async Task BitHeader_UnderForcedColorsAndReducedTransparency_KeepsItsLabelReadable(string scheme)
@@ -144,7 +144,7 @@ public class BitForcedColorsBrowserTests : PerformanceTestBase
 
     // A focus ring drawn by the keyboard is a state of its own (:focus-visible), which neither the pointer nor a scripted
     // focus brings up, so the first button is reached with Tab.
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("dark")]
     [DataRow("light")]
     public async Task BitButton_UnderForcedColors_KeepsItsLabelReadableUnderKeyboardFocus(string scheme)
@@ -163,7 +163,7 @@ public class BitForcedColorsBrowserTests : PerformanceTestBase
     // Every item reserves the bar of the selection with a transparent border, which the mode forces to a system color on
     // every row; only the selected item and a collapsed branch holding it may show it, and the bar keeps one width on
     // every item, never under the thick stroke - it is the one mark of the selection left - whatever the public width says.
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("dark", null)]
     [DataRow("light", null)]
     [DataRow("dark", "0")]
@@ -220,7 +220,7 @@ public class BitForcedColorsBrowserTests : PerformanceTestBase
     }
 
     // The rows of the overflow menu reserve a border's room, which the mode would draw around each of them.
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("dark")]
     [DataRow("light")]
     public async Task BitBreadcrumb_UnderForcedColors_DrawsNoFrameAroundTheOverflowRows(string scheme)
@@ -244,7 +244,7 @@ public class BitForcedColorsBrowserTests : PerformanceTestBase
     // off from the panel. The tabs that are not selected hide every edge, the selected one is framed in CanvasText, open on
     // the panel's side and accented in Highlight (GrayText disabled), and the rule is laid over the tabs, the selected one
     // over the rule, so it runs on under every tab.
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("dark")]
     [DataRow("light")]
     public async Task BitPivot_UnderForcedColors_FramesTheSelectedOutlineTabAlone(string scheme)

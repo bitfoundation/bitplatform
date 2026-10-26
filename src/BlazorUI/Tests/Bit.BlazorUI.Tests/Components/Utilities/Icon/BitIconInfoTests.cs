@@ -512,7 +512,7 @@ public class BitIconInfoTests
         Assert.AreNotEqual(BitIconInfo.Bit("Add"), BitIconInfo.Bit("Remove"));
         Assert.AreNotEqual(BitIconInfo.Bit("Add"), BitIconInfo.Bi("add"));
         Assert.AreNotEqual(BitIconInfo.Ms("home"), BitIconInfo.Ms("house"));
-        Assert.AreNotEqual<BitIconInfo?>(BitIconInfo.Bit("Add"), null);
+        Assert.AreNotEqual<BitIconInfo?>(null, BitIconInfo.Bit("Add"));
     }
 
     [TestMethod]

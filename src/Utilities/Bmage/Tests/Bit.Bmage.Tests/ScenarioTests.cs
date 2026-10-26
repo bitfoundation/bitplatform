@@ -242,15 +242,26 @@ public sealed class ScenarioTests
 
         using var cts = new CancellationTokenSource();
         var completed = 0;
-        var progress = new Progress<BatchProgress>(_ =>
+        // Reported inline: a Progress<T> would post to the thread pool and could cancel the token after it is disposed.
+        var progress = new Inline<BatchProgress>(_ =>
         {
             if (Interlocked.Increment(ref completed) >= 5) cts.Cancel();
         });
 
-        var task = processor.ProcessBatchAsync(items, ImagePipeline.Create().MaxSize(200, 200),
-            new BatchOptions { MaxConcurrency = 2, ExportOptions = ImageExportOptions.Jpeg, Progress = progress }, cts.Token);
+        // Cancelled like any other method, so a caller's catch for the token still works - with what finished attached.
+        var stopped = await Assert.ThrowsExactlyAsync<BatchCancelledException>(async () =>
+            await processor.ProcessBatchAsync(items, ImagePipeline.Create().MaxSize(200, 200),
+                new BatchOptions { MaxConcurrency = 2, ExportOptions = ImageExportOptions.Jpeg, Progress = progress }, cts.Token));
+        var result = stopped.Result;
 
-        await Assert.ThrowsAsync<OperationCanceledException>(async () => await task);
+        Assert.IsTrue(result.WasCancelled);
+        Assert.AreEqual(60, result.Results.Count);
+        // Every image that finished before the stop is still there, with its output; the rest are marked, not dropped.
+        Assert.IsGreaterThanOrEqualTo(5, result.SuccessCount);
+        Assert.IsGreaterThan(0, result.CancelledCount);
+        Assert.AreEqual(60, result.SuccessCount + result.CancelledCount);
+        foreach (var finished in result.Succeeded) Assert.AreEqual(200, Math.Max(finished.Output!.Width, finished.Output.Height));
+        CollectionAssert.AreEqual(items.Select(i => i.FileName).ToList(), result.Results.Select(r => r.FileName).ToList());
     }
 
     /// <summary>
@@ -348,5 +359,10 @@ public sealed class ScenarioTests
 
         var preview = await session.RenderPreviewAsync();
         Assert.AreEqual(new Size(300, 75), preview.Size);
+    }
+
+    private sealed class Inline<T>(Action<T> report) : IProgress<T>
+    {
+        public void Report(T value) => report(value);
     }
 }

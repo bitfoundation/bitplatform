@@ -483,7 +483,6 @@ public partial class BitPullToRefresh : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitPullToRefreshParams))]
     protected override void OnParametersSet()
     {
         // Runs before OnParametersSetAsync, so the gesture numbers a cascade fills in are the ones compared

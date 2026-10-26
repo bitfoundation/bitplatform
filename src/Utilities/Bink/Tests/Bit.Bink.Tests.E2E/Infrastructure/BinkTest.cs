@@ -56,6 +56,26 @@ public abstract class BinkTest
         return context;
     }
 
+    /// <summary>
+    /// A page in a fresh browser context allowed to read and write the system clipboard. An engine that cannot be
+    /// granted that under automation makes the test inconclusive, naming why, rather than letting it pass untested.
+    /// Firefox refuses the grant itself; WebKit accepts it and refuses when the page is created, so both are inside.
+    /// </summary>
+    protected async Task<IPage> NewClipboardPageAsync()
+    {
+        var context = await NewContextAsync();
+        try
+        {
+            await context.GrantPermissionsAsync(["clipboard-read", "clipboard-write"], new BrowserContextGrantPermissionsOptions { Origin = BaseUrl });
+            return await context.NewPageAsync();
+        }
+        catch (PlaywrightException ex)
+        {
+            Assert.Inconclusive($"{E2EEnvironment.Browser} cannot be given clipboard access under automation: {ex.Message}");
+            throw;
+        }
+    }
+
     /// <summary>Opens a page of the demo in a context of its own, and waits until its canvas can be drawn on.</summary>
     protected async Task<IPage> OpenAsync(string path)
     {

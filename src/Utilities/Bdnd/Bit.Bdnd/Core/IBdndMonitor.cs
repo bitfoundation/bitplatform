@@ -17,6 +17,12 @@ public interface IBdndMonitor
     /// </summary>
     bool IsDragging(string? sourceId);
 
+    /// <summary>
+    /// How the drag in progress is being made - the browser's native drag and drop or the keyboard - or null when
+    /// nothing is being dragged. A drag layer can, for one, skip its preview for keyboard drags.
+    /// </summary>
+    BdndDragInput? GetDragInput() => IsDragging() ? BdndDragInput.Native : null;
+
     /// <summary>Returns the type string of the item currently being dragged, or null.</summary>
     string? GetItemType();
 

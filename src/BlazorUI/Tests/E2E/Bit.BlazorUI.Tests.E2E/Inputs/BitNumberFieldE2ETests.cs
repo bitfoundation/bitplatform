@@ -467,14 +467,16 @@ public class BitNumberFieldE2ETests : E2ETestBase
         await Expect(Text("continuous-value")).ToHaveTextAsync(new Regex(@"^([5-9]|\d{2,})$"));
         await Page.Mouse.UpAsync();
 
-        // After the release the value settles: a round trip later it has moved by at most the one step in flight.
-        var released = int.Parse((await Text("continuous-value").TextContentAsync())!);
+        // Ticks already on their way at the release may still land - at this 25ms interval, several on a busy machine:
+        // a round trip of the page's own button, processed after the release, says the circuit has caught up, and
+        // from then on the value never moves again.
         await Page.ClickAsync("#btn-set-oneway");
         await Expect(Input("nf-oneway")).ToHaveValueAsync("77");
+        var released = int.Parse((await Text("continuous-value").TextContentAsync())!);
         await Page.ClickAsync("#btn-set-twoway");
         await Expect(Input("nf-twoway")).ToHaveValueAsync("42");
         var settled = int.Parse((await Text("continuous-value").TextContentAsync())!);
-        Assert.IsTrue(settled - released <= 1, $"The spin stopped ({released} then {settled}).");
+        Assert.AreEqual(released, settled, $"The spin stopped ({released} then {settled}).");
     }
 
     [TestMethod]

@@ -41,6 +41,7 @@ internal static class BelemetryBrowserConfigFactory
                 Events = [.. browser.InteractionEvents.Distinct(StringComparer.OrdinalIgnoreCase)],
                 CaptureText = browser.CaptureInteractionText,
                 MaxTextLength = browser.MaxInteractionTextLength,
+                RageClicks = browser.TrackRageClicks,
             },
             Performance = new()
             {
@@ -56,16 +57,22 @@ internal static class BelemetryBrowserConfigFactory
                 PropagateTraceContextTo = [.. browser.PropagateTraceContextTo],
                 IgnoreUrls = [.. browser.IgnoreUrls],
             },
-            Errors = new() { IgnoreMessages = [.. browser.IgnoreErrorMessages] },
+            Errors = new()
+            {
+                IgnoreMessages = [.. browser.IgnoreErrorMessages.Distinct(StringComparer.Ordinal)],
+                DuplicateWindowMs = (int)Math.Clamp(options.Errors.DuplicateWindow.TotalMilliseconds, 0, int.MaxValue),
+                MaxPerMinute = Math.Max(0, options.Errors.MaxPerMinute),
+            },
             Logs = new() { CaptureConsole = browser.CaptureConsole, ConsoleLevels = [.. browser.ConsoleLevels.Distinct(StringComparer.OrdinalIgnoreCase)] },
             Privacy = new()
             {
-                RedactQueryParameters = [.. options.Privacy.RedactQueryParameters],
+                RedactQueryParameters = [.. options.Privacy.RedactQueryParameters.Distinct(StringComparer.OrdinalIgnoreCase)],
                 StripQueryString = options.Privacy.StripQueryString,
                 StripFragment = options.Privacy.StripFragment,
                 ScrubPatterns = options.Privacy.ScrubPatterns,
                 CollectUserAgent = options.Privacy.CollectUserAgent,
                 BlockedAttributes = [.. options.Privacy.BlockedAttributes],
+                RedactedAttributes = [.. options.Privacy.RedactedAttributes.Distinct(StringComparer.OrdinalIgnoreCase)],
             },
             Session = new()
             {
@@ -89,6 +96,7 @@ internal static class BelemetryBrowserConfigFactory
                     ? (int)Math.Min(int.MaxValue, Math.Max(1000, options.Persistence.RetryInterval.TotalMilliseconds))
                     : 60000,
             },
+            MaxValueLength = Math.Max(0, options.MaxValueLength),
             Debug = browser.Debug,
         };
 
@@ -98,7 +106,11 @@ internal static class BelemetryBrowserConfigFactory
             if (BelemetryAttributes.Normalize(value) is { } normalized) config.Resource[key] = normalized;
         }
 
-        AddExporterUrlsToIgnore(settings, config.Dependencies.IgnoreUrls);
+        // Only a .NET pipeline running in the page exports through fetch. A server's exporters never do - and listing
+        // them would publish internal collector addresses in every page; the script recognizes its own exporters' URLs
+        // anyway. A WebAssembly client's exports carry a fetch option the script skips (BelemetryHttpSender.MarkAsExport),
+        // even under a script the server started; its list is handed over too when it starts the script (start merges).
+        if (settings.IsServer is false) AddExporterUrlsToIgnore(settings, config.Dependencies.IgnoreUrls);
 
         if (relay is false)
         {
@@ -119,7 +131,7 @@ internal static class BelemetryBrowserConfigFactory
                     TracesEndpoint = otlp.BrowserEndpoint is null && otlp.Signals.HasFlag(BelemetrySignals.Traces) ? otlp.TracesEndpoint?.ToString() : null,
                     LogsEndpoint = otlp.BrowserEndpoint is null && otlp.Signals.HasFlag(BelemetrySignals.Logs) ? otlp.LogsEndpoint?.ToString() : null,
                     Protocol = otlp.Protocol == BelemetryOtlpProtocol.HttpJson ? "http/json" : "http/protobuf",
-                    Headers = otlp.Headers.Count > 0 ? new Dictionary<string, string>(otlp.Headers) : null,
+                    Headers = BrowserHeaders(settings, otlp),
                     Compression = otlp.Compression == BelemetryCompression.Gzip ? "gzip" : "none",
                     Signals = (int)(otlp.Signals & browserSignals),
                 });
@@ -145,6 +157,25 @@ internal static class BelemetryBrowserConfigFactory
         }
 
         return config;
+    }
+
+    /// <summary>
+    /// The headers the page sends to an OTLP exporter. A server renders this configuration into every page it serves,
+    /// so its <see cref="BelemetryOtlpExporterOptions.Headers"/> - server configuration, often a real API key, or the
+    /// Aspire dashboard's key from <c>OTEL_EXPORTER_OTLP_HEADERS</c> - stay on the server, and only the explicitly
+    /// public <see cref="BelemetryOtlpExporterOptions.BrowserHeaders"/> go out. A WebAssembly or Hybrid app's own
+    /// configuration is on the device already, so there both go.
+    /// </summary>
+    internal static Dictionary<string, string>? BrowserHeaders(BelemetrySettings settings, BelemetryOtlpExporterOptions otlp)
+    {
+        var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (settings.IsServer is false)
+        {
+            foreach (var (name, value) in otlp.Headers) headers[name] = value;
+        }
+
+        foreach (var (name, value) in otlp.BrowserHeaders) headers[name] = value;
+        return headers.Count > 0 ? headers : null;
     }
 
     /// <summary>

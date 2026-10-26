@@ -10,9 +10,9 @@
 
     <ItemGroup>
         <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.13" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.14" />
         <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
-        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
+        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.3.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -47,8 +47,8 @@
         <EmbeddedResource Include="..\..\Bit.Bortable\Components\Bortable.razor" LogicalName="BortableSource/Library/Components/Bortable.razor" />
         <EmbeddedResource Include="..\..\Bit.Bortable\Components\Bortable.razor.cs" LogicalName="BortableSource/Library/Components/Bortable.razor.cs" />
 
-        <!-- Every demo page - each one is a working list - plus the "view code" toggle and the client half
-             of the hosting. The MCP page describes this server rather than the library, and the not-found
+        <!-- Every demo page and the samples it renders - each sample a working list - plus the "view code"
+             toggle and the client half of the hosting. The MCP page describes this server rather than the library, and the not-found
              page teaches nothing about lists. -->
         <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
                           Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor">

@@ -13,7 +13,13 @@
 
     <ItemGroup>
         <PackageReference Include="MSTest" Version="4.5.1" />
-        <PackageReference Include="bunit" Version="2.11.3" />
+        <PackageReference Include="bunit" Version="2.13.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Symbols written by an independent encoder; Reference/generate-reference-symbols.mjs regenerates them. -->
+        <EmbeddedResource Include="Reference\ReferenceSymbols.json" LogicalName="ReferenceSymbols.json" />
+        <None Remove="Reference\ReferenceSymbols.json" />
     </ItemGroup>
 
     <ItemGroup>

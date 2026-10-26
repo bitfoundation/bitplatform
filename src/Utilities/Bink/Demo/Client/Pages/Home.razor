@@ -1,5 +1,7 @@
 ﻿@page "/"
 @layout MainLayout
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
 
 <PageTitle>Bink - drawing and ink for Blazor</PageTitle>
 
@@ -41,18 +43,23 @@
                     <span class="bb-browser-dots" aria-hidden="true"><i></i><i></i><i></i></span>
                     <span class="bb-browser-url">Sketch.razor</span>
                 </div>
-                <pre class="bb-code">&lt;<span class="k">BinkCanvas</span> @@ref=<span class="s">"_canvas"</span> Height=<span class="s">"240px"</span> Brush=<span class="s">"_pen"</span>
-            EnableTouchGestures=<span class="s">"true"</span> /&gt;
+                <pre class="bb-code">&lt;<span class="k">BinkCanvas</span> @@ref=<span class="s">"_canvas"</span> Document=<span class="s">"_sketch"</span> Height=<span class="s">"240px"</span>
+            Brush=<span class="s">"_pen"</span> EnableTouchGestures=<span class="s">"true"</span> /&gt;
 
+<span class="c">// No background, so the page shows through.</span>
+<span class="k">private</span> BinkDocument _sketch = <span class="k">new</span>(BinkDocumentSettings.Default
+    <span class="k">with</span> { Background = BinkColor.Transparent });
+<span class="c">// On this page its colour also follows the theme.</span>
 <span class="k">private</span> BinkBrush _pen = <span class="k">new</span> BinkPenBrush { Width = 4f };</pre>
                 <div class="bink-hero-live">
                     <div class="bink-surface">
                         @* A host that reads canvas state (such as the undo button below) re-renders on these
-                           callbacks. Pointer input itself never re-renders anything. *@
-                        <BinkCanvas @ref="_canvas" Height="240px" Brush="_pen" EnableTouchGestures="true"
+                           callbacks. Pointer input itself never re-renders anything. The document has no
+                           background, so the sketch sits on the theme's surface (demo.css). *@
+                        <BinkCanvas @ref="_canvas" Document="_sketch" Height="240px" Brush="_pen" EnableTouchGestures="true"
                                     AriaLabel="Try drawing here"
                                     HistoryChanged="() => StateHasChanged()"
-                                    DocumentChanged="() => StateHasChanged()" />
+                                    DocumentChanged="OnSketchChanged" />
                         @if (_canvas is null || _canvas.CurrentDocument.IsEmpty)
                         {
                             <span class="bink-surface-hint" aria-hidden="true">Draw here with a mouse, a finger or a stylus</span>
@@ -106,7 +113,8 @@
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Whiteboard</h3>
                 <p class="bb-card-desc">
-                    Pens, markers, highlighters, three erasers, shapes, text, selection, layers, pan and zoom.
+                    Pens, markers, highlighters, three erasers, every shape, text, pictures, grouping, alignment, layers,
+                    the clipboard, pan, zoom and autosave.
                 </p>
                 <a href="whiteboard" class="btn btn-outline">Whiteboard →</a>
             </section>
@@ -121,8 +129,8 @@
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Image annotation</h3>
                 <p class="bb-card-desc">
-                    Drop in a screenshot, mark it up with arrows, boxes and highlights, export a flattened PNG or
-                    an editable SVG.
+                    Open a screenshot, mark it up with arrows, boxes and highlights, export a flattened PNG, JPEG or
+                    WebP, or an editable SVG.
                 </p>
                 <a href="image-annotation" class="btn btn-outline">Image annotation →</a>
             </section>
@@ -145,12 +153,14 @@
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Under the hood</h3>
                 <p class="bb-card-desc">
-                    Save, inspect and reload the document, and time the engine on thousands of strokes in your own
-                    browser.
+                    Work the canvas by keyboard and touch, save and reload the document, time the engine on thousands of
+                    strokes in your own browser, and add brushes and elements of your own.
                 </p>
                 <div class="bb-try">
+                    <a href="input-and-accessibility" class="btn btn-outline">Input and accessibility →</a>
                     <a href="serialization" class="btn btn-outline">Serialization →</a>
                     <a href="performance" class="btn btn-outline">Performance →</a>
+                    <a href="extending" class="btn btn-outline">Extending →</a>
                 </div>
             </section>
         </div>
@@ -330,10 +340,86 @@ _canvas.LoadDocument(BinkSerializer.Deserialize(json));
 </div>
 
 @code {
+    // The theme's text colour (--bit-clr-fg-pri in app.css), so the sketch reads on the theme's surface the way
+    // the page's own text does.
+    private static readonly BinkColor LightInk = BinkColor.Parse("#1A1A1A");
+    private static readonly BinkColor DarkInk = BinkColor.Parse("#E6ECF2");
+
     private BinkCanvas? _canvas;
-    private readonly BinkBrush _pen = new BinkPenBrush { Width = 4f };
+    private readonly BinkDocument _sketch = new(BinkDocumentSettings.Default with { Background = BinkColor.Transparent });
+    private BinkBrush _pen = new BinkPenBrush { Width = 4f, Color = LightInk };
+    private DotNetObjectReference<Home>? _self;
+    private IJSObjectReference? _themeSubscription;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        // Not during prerendering, where OnAfterRender does not run: the pen starts in the light theme's ink, and
+        // theme.js calls back with the current theme at once, recolouring anything drawn in between.
+        _self = DotNetObjectReference.Create(this);
+        _themeSubscription = await JSRuntime.InvokeAsync<IJSObjectReference>("bitDemoTheme.subscribe", _self, nameof(OnThemeChanged));
+    }
+
+    /// <summary>Called by theme.js with "light" or "dark" when subscribing and after every change.</summary>
+    [JSInvokable]
+    public Task OnThemeChanged(string theme) => InvokeAsync(() =>
+    {
+        BinkColor ink = theme == "dark" ? DarkInk : LightInk;
+        if (_pen.Color == ink) return;
+
+        _pen = _pen with { Color = ink };
+        RecolorInk();
+        StateHasChanged();
+    });
+
+    /// <summary>
+    /// Gives the other theme's ink the current theme's colour; any other colour is left as drawn. It is applied the
+    /// way a loaded document is, which history does not record, so undo never brings the old ink back.
+    /// </summary>
+    private void RecolorInk()
+    {
+        BinkColor stale = _pen.Color == DarkInk ? LightInk : DarkInk;
+        var strokes = new List<BinkStroke>();
+        foreach (BinkLayer layer in _sketch.Layers)
+            foreach (BinkElement element in layer.Elements)
+                if (element is BinkStroke { IsEraser: false } stroke && stroke.Brush.Color == stale) strokes.Add(stroke);
+        if (strokes.Count == 0) return;
+
+        using (_sketch.BeginBatch("Theme", BinkChangeOrigin.Load))
+        {
+            foreach (BinkStroke stroke in strokes) _sketch.ReplaceElement(stroke with { Brush = stroke.Brush with { Color = _pen.Color } });
+        }
+    }
+
+    // Undo and redo put strokes back exactly as history recorded them, so a stroke cleared or undone before the theme
+    // changed comes back in the other theme's ink.
+    private void OnSketchChanged(BinkDocumentChangedEventArgs e)
+    {
+        if (e.Origin is BinkChangeOrigin.Undo or BinkChangeOrigin.Redo) RecolorInk();
+    }
 
     private void Undo() => _canvas?.Undo();
 
     private void Clear() => _canvas?.Clear();
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_themeSubscription is not null)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("bitDemoTheme.unsubscribe", _themeSubscription);
+                await _themeSubscription.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // The circuit is already gone; there is nothing on the other side to unsubscribe from.
+            }
+            _themeSubscription = null;
+        }
+
+        _self?.Dispose();
+        _self = null;
+    }
 }

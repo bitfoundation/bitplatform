@@ -1,0 +1,18 @@
+﻿@namespace Bit.Bonboarding
+
+@* A pulsing dot on an element of the page. The browser layer positions it (no call per frame) and hides it
+   while its target is missing, hidden or scrolled out of sight; the attribute it sets is deliberately not
+   rendered here, so a re-render never undoes it. *@
+
+@if (_shown)
+{
+    <button @ref="_element"
+            type="button"
+            class="@BonboardingCss.Classes("bit-bonboarding-beacon", "bit-bonboarding-themed", Class)"
+            data-bonboarding-theme="@ThemeAttribute"
+            data-bonboarding-beacon="@BeaconKey"
+            aria-label="@AccessibleName"
+            aria-haspopup="@(OpensDialog ? "dialog" : null)"
+            aria-expanded="@(OpensDialog ? (IsOpen ? "true" : "false") : null)"
+            @onclick="OpenAsync"></button>
+}

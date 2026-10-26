@@ -11,10 +11,17 @@
         <!-- Publishes this project's static web assets at the app root (not under _content/), the
              way a Blazor Web App's client project is expected to contribute them. -->
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        <!-- The WebAssembly SDK turns HttpClient's own tracing off by default. On, HttpClient records a
+             System.Net.Http span inside the current activity's trace and sends traceparent - which the
+             .NET instrumentation page's checkout trace and the processors page's DemoNoiseFilter show.
+             It sends traceparent to every origin it calls, so it is safe here only because this app
+             calls nothing but its own origin. -->
+        <HttpActivityPropagationSupport>true</HttpActivityPropagationSupport>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.12" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.14" />
+        <PackageReference Include="Bit.Minifier" Version="10.7.0" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>

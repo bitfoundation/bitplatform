@@ -38,7 +38,7 @@ public class BitCountryPickerE2ETests : E2ETestBase
 
         // Positioned under the field, as wide as it.
         // Measured once the callout has finished sliding in, not partway through its entry transition.
-        await callout.EvaluateAsync("el => Promise.all(el.getAnimations({ subtree: true }).map(a => a.finished))");
+        await callout.EvaluateAsync("el => Promise.all(el.getAnimations({ subtree: true }).map(a => a.finished.catch(() => null)))");
         var fieldBox = (await field.BoundingBoxAsync())!;
         var calloutBox = (await callout.BoundingBoxAsync())!;
         Assert.IsTrue(calloutBox.Y >= fieldBox.Y + fieldBox.Height - 2, $"callout at {calloutBox.Y}, field bottom {fieldBox.Y + fieldBox.Height}");
@@ -626,7 +626,7 @@ public class BitCountryPickerE2ETests : E2ETestBase
         Assert.AreNotEqual("0px", await ComputedStyleAsync("#cnp-plain .bit-cnp-fld", "border-top-width"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("primary", "bit-cnp-bpr", "--bit-clr-bg-pri")]
     [DataRow("secondary", "bit-cnp-bse", "--bit-clr-bg-sec")]
     [DataRow("tertiary", "bit-cnp-btr", "--bit-clr-bg-ter")]
@@ -640,7 +640,7 @@ public class BitCountryPickerE2ETests : E2ETestBase
         Assert.AreEqual(expected, await ComputedStyleAsync($"#cnp-bg-{kind} .bit-cnp-fld", "background-color"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("primary", "bit-cnp-brp", "--bit-clr-brd-pri")]
     [DataRow("secondary", "bit-cnp-brs", "--bit-clr-brd-sec")]
     [DataRow("tertiary", "bit-cnp-brt", "--bit-clr-brd-ter")]
@@ -805,7 +805,7 @@ public class BitCountryPickerE2ETests : E2ETestBase
         await Expect(Field("cnp-params-outside").Locator(".bit-cnp-pls")).ToHaveCountAsync(1);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("primary", "pri", "--bit-clr-pri")]
     [DataRow("secondary", "sec", "--bit-clr-sec")]
     [DataRow("tertiary", "ter", "--bit-clr-ter")]
@@ -831,7 +831,7 @@ public class BitCountryPickerE2ETests : E2ETestBase
         Assert.AreEqual(await ResolveColorAsync(token), await ComputedStyleAsync($"#cnp-color-{name} .bit-cnp-fld", "border-top-color"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("small", "sm", "26px")]
     [DataRow("medium", "md", "32px")]
     [DataRow("large", "lg", "40px")]

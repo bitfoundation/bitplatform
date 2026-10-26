@@ -61,6 +61,14 @@
     <span class="k">private void</span> HandleError(BbScannerException error) =&gt; _error = error;
 }</pre>
 
+    <p class="bb-card-desc">
+        Everything below comes with the component and needs no code: the status bar (top), a dimmed surround and a
+        corner reticle marking the scan region, an outline drawn round each symbol it reads, and a control bar
+        with <em>Pause</em>, <em>Stop</em>/<em>Start</em> and <em>Scan image</em> - plus a camera picker, a torch
+        button and a zoom slider, each only when the device offers one. Drop an image file onto the scanner to scan
+        it without the camera.
+    </p>
+
     <div class="bb-demo">
         <div class="bb-demo-bar">
             <span class="bb-demo-label">Live</span>
@@ -83,6 +91,10 @@
                                 <dd><span class="bb-badge">@_last.Format</span></dd>
                                 <dt>Text</dt>
                                 <dd>@_last.Text</dd>
+                                <dt>Raw bytes</dt>
+                                <dd>@_last.RawBytes.Length</dd>
+                                <dt>Position</dt>
+                                <dd>@_last.BoundingBox in a @_last.FrameWidth×@_last.FrameHeight frame</dd>
                             </dl>
                         }
                         else
@@ -149,12 +161,17 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Where to go next</h3>
     <p class="bb-card-desc">
         Narrow <code>Formats</code> to the symbologies you need - it is the single most effective speed-up -
-        then aim with a region and tune the rest in the playground.
+        then aim with a region and tune the rest in the playground. Each page of these docs is a working scanner
+        that shows one part of the component.
     </p>
     <div class="bb-try">
         <a href="scan" class="btn btn-outline">Every parameter, live →</a>
         <a href="samples" class="btn btn-outline">Barcodes to scan →</a>
+        <a href="lifecycle" class="btn btn-outline">Start, stop, duplicates →</a>
+        <a href="camera" class="btn btn-outline">Cameras, torch, zoom →</a>
         <a href="image" class="btn btn-outline">Scan a photo →</a>
+        <a href="customize" class="btn btn-outline">Theme and translate →</a>
+        <a href="errors" class="btn btn-outline">Handle failures →</a>
         <a href="api" class="btn btn-outline">API reference →</a>
     </div>
 </div>

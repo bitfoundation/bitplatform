@@ -337,15 +337,18 @@ public class BitDatePickerTimeE2ETests : BitDatePickersE2ETestBase
 
         await Page.Mouse.UpAsync();
 
-        // A tick already on its way when the button was released may still land, so the value is read once that
-        // has had the time to arrive; then nothing is waited for but the absence of a change - a spin that went on
-        // after the release would move the minute within this time at the 40ms interval it runs at.
-        await Page.WaitForTimeoutAsync(300);
+        // A tick already on its way when the button was released may still land: a key the picker answers in a round
+        // trip of its own, sent after the release, says the circuit has caught up, so the value read then is the
+        // final one. Then nothing is waited for but the absence of a change - a spin that went on after the release
+        // would move the minute within this time at the 40ms interval it runs at.
+        await Field(pid, "Hour").FocusAsync();
+        await Page.Keyboard.PressAsync("PageUp");
+        await Expect(Field(pid, "Hour")).ToHaveValueAsync("11");
         var released = await minute.InputValueAsync();
         await Page.WaitForTimeoutAsync(500);
 
         Assert.AreEqual(released, await minute.InputValueAsync(), "The spin stopped when the button was released.");
-        await Expect(Page.Locator("#spin-value")).ToHaveTextAsync($"2024-06-12 10:{int.Parse(released):D2}");
+        await Expect(Page.Locator("#spin-value")).ToHaveTextAsync($"2024-06-12 11:{int.Parse(released):D2}");
     }
 
     [TestMethod]

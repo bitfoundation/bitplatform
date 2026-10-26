@@ -16,7 +16,8 @@
     <p class="bb-card-desc">
         <code>Bit.Bcrdt</code> carries the engine, the synchronization, presence and persistence, the in-memory and
         WebSocket transports and the Blazor components. The SignalR client transport is a package of its own with no
-        ASP.NET Core server dependency, so it runs in WebAssembly and Hybrid apps too.
+        ASP.NET Core server dependency, so it runs in WebAssembly and Hybrid apps too. All four packages target .NET 8,
+        9 and 10.
     </p>
     <pre class="bb-code"><span class="c"># the engine and the Blazor components</span>
 dotnet add package Bit.Bcrdt
@@ -31,7 +32,7 @@ dotnet add package Bit.Bcrdt.SignalR</pre>
             <tbody>
                 <tr>
                     <td class="bb-table-key">Bit.Bcrdt</td>
-                    <td>The engine - <code>BcrdtText</code>, <code>BcrdtArray</code>, <code>BcrdtMap</code> and <code>BcrdtSet</code>, updates, snapshots and selective undo - with presence, the stores, the sync protocol, <code>AddBitBcrdtServices</code>, the input bindings, the in-memory and WebSocket transports and the Blazor components.</td>
+                    <td>The engine - <code>BcrdtText</code>, <code>BcrdtArray</code>, <code>BcrdtMap</code> and <code>BcrdtSet</code>, updates, snapshots and selective undo - with presence, the in-memory, file-system and IndexedDB stores, the sync protocol, <code>AddBitBcrdtServices</code>, the input bindings, the in-memory and WebSocket transports, metrics, and the Blazor components: <code>BcrdtCollaborationScope</code>, <code>BcrdtTextArea</code>, <code>BcrdtPresenceView</code> and <code>BcrdtComponentBase</code>.</td>
                 </tr>
                 <tr>
                     <td class="bb-table-key">Bit.Bcrdt.SignalR</td>
@@ -39,11 +40,11 @@ dotnet add package Bit.Bcrdt.SignalR</pre>
                 </tr>
                 <tr>
                     <td class="bb-table-key">Bit.Bcrdt.Server</td>
-                    <td>The ASP.NET Core relays: <code>BcrdtHub</code> for the SignalR transport and <code>MapBitBcrdtWebSocket</code> for the WebSocket transport.</td>
+                    <td>The ASP.NET Core relays - <code>BcrdtHub</code> for the SignalR transport and <code>MapBitBcrdtWebSocket</code> for the WebSocket transport - with per-document read-only or read-write access, and <code>BcrdtDocumentHost</code>, which keeps a stored replica of every document the relays carry.</td>
                 </tr>
                 <tr>
                     <td class="bb-table-key">Bit.Bcrdt.Testing</td>
-                    <td>A deterministic, seeded network simulator, random operation generators, a convergence harness and an update corrupter for fuzzing.</td>
+                    <td>A deterministic, seeded network simulator, random operation generators, a convergence harness and an update corrupter for fuzzing - for testing a collaborative feature, or a type of your own, against loss, duplication, reordering and partitions.</td>
                 </tr>
             </tbody>
         </table>
@@ -71,6 +72,31 @@ builder.Services.AddBitBcrdtServices(collaboration =&gt; collaboration
         working, purely local collaborative document, so a feature can be built and tested without a server and then
         connected to one without changing how it reads or writes state.
     </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Seam</th><th>Choices</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="bb-table-key">Transport</td>
+                    <td><code>BcrdtSignalRTransportFactory</code> (SignalR), <code>BcrdtWebSocketTransportFactory</code> (a raw WebSocket, built in), or any <code>IBcrdtTransportFactory</code> of your own. None: the document stays local.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Store</td>
+                    <td><code>UseIndexedDbStore()</code> in the browser - a document, and what was typed into it offline, survives a reload or a closed tab; <code>UseStore(new BcrdtFileSystemDocumentStore("./documents"))</code> on a server, the desktop or MAUI; <code>UseInMemoryStore()</code> for tests; or any <code>IBcrdtDocumentStore</code>.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Options</td>
+                    <td><code>Configure(options =&gt; ...)</code>: how long presence lasts (<code>PresenceTimeout</code>, 30 s), heartbeat and reconnection timing (<code>Sync</code>), compaction (<code>Persistence</code>), whether deleted content is reclaimed (<code>GarbageCollect</code>), and whether each document gets a default undo stack.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <pre class="bb-code"><span class="c">// The WebSocket transport instead: {documentId} is filled in per document.</span>
+builder.Services.AddBitBcrdtServices(collaboration =&gt; collaboration
+    .UseTransport(<span class="k">new</span> BcrdtWebSocketTransportFactory(<span class="s">"https://example.com/ws/bcrdt/{documentId}"</span>))
+    .UseIndexedDbStore());</pre>
 </div>
 
 <div class="bb-card">
@@ -88,8 +114,19 @@ builder.Services.AddBitBcrdtHub();   <span class="c">// AddSignalR, with a recei
 app.MapHub&lt;BcrdtHub&gt;(<span class="s">"/hub/bcrdt"</span>);</pre>
     <p class="bb-card-desc">
         The raw WebSocket transport has its relay in the same package: call <code>app.UseWebSockets()</code> and map
-        it with <code>app.MapBitBcrdtWebSocket("/ws/bcrdt/{documentId}")</code>. Neither relay decodes a message or
-        holds a replica - they only forward bytes between the clients of a document.
+        it with <code>app.MapBitBcrdtWebSocket("/ws/bcrdt/{documentId}")</code>. On its own a relay only relays: a
+        document exists while somebody has it open. To keep every document on the server as well - so the first
+        person into an empty room still gets everything ever written into it - register a document host, as the
+        <a href="live">live page</a>'s server does:
+    </p>
+    <pre class="bb-code">builder.Services.AddBitBcrdtDocumentHost(_ =&gt; <span class="k">new</span> BcrdtDocumentHostOptions
+{
+    Store = <span class="k">new</span> BcrdtFileSystemDocumentStore(Path.Combine(builder.Environment.ContentRootPath, <span class="s">"documents"</span>)),
+});</pre>
+    <p class="bb-card-desc">
+        Who may join a document, and whether they may write, is decided by overriding
+        <code>BcrdtHub.AuthorizeAccessAsync</code> (or setting <code>AuthorizeAccess</code> on the WebSocket endpoint).
+        The <a href="live">live page</a> shows a read-only link enforced that way.
     </p>
 </div>
 
@@ -97,10 +134,11 @@ app.MapHub&lt;BcrdtHub&gt;(<span class="s">"/hub/bcrdt"</span>);</pre>
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A first editor</h3>
     <p class="bb-card-desc">
         <code>BcrdtCollaborationScope</code> opens the document, renders its content with the document as context,
-        shows <code>LoadingContent</code> while it opens and releases the document when it goes away.
+        shows <code>LoadingContent</code> while it opens (and <code>ErrorContent</code> if it cannot), follows
+        <code>DocumentId</code> when it changes and releases the document when it goes away.
         <code>BcrdtTextArea</code> turns every keystroke into the minimal edit and publishes the caret through
-        presence. There is no stylesheet to reference and no script tag to add: the one small module the textarea
-        needs is imported on demand.
+        presence; <code>BcrdtPresenceView</code> lists who is here. There is no stylesheet to reference and no script
+        tag to add: the one small module the textarea needs is imported on demand.
     </p>
     <pre class="bb-code"><span class="k">@@using</span> Bit.Bcrdt
 <span class="k">@@using</span> Bit.Bcrdt.Blazor
@@ -114,9 +152,77 @@ app.MapHub&lt;BcrdtHub&gt;(<span class="s">"/hub/bcrdt"</span>);</pre>
     <span class="k">private readonly</span> BcrdtCollaboratorInfo _me = <span class="k">new</span>(<span class="s">"u-1"</span>, <span class="s">"Ada"</span>, BcrdtPresenceService.SuggestColor(<span class="s">"u-1"</span>));
 }</pre>
     <p class="bb-card-desc">
-        In a page that is prerendered and then becomes interactive, open documents only once the component is
-        interactive (<code>RendererInfo.IsInteractive</code>) - a document opened while prerendering belongs to a
-        request that is already over. The <a href="live">live page</a> is exactly this, across browser tabs.
+        <code>SuggestColor</code> hashes a user id into a fixed palette, so every participant agrees on everyone's
+        colour without asking anyone. In a page that is prerendered and then becomes interactive, a document may only
+        be opened once the component is interactive (<code>RendererInfo.IsInteractive</code>) - one opened while
+        prerendering belongs to a request that is already over. <code>BcrdtCollaborationScope</code> waits for that by
+        itself. The <a href="live">live page</a> is exactly this, across browser tabs.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> A component of your own</h3>
+    <p class="bb-card-desc">
+        Derive from <code>BcrdtComponentBase</code> - the base of the three components - to make any component
+        collaborative. Its <code>Track</code> overloads re-render the component whenever a type, a document, presence
+        or the connection changes, from anyone; they marshal the notification onto the renderer, coalesce bursts onto
+        a frame (<code>RenderInterval</code>, 16 ms) so five people typing do not cause hundreds of renders a second,
+        and unsubscribe when the component goes away.
+    </p>
+    <pre class="bb-code"><span class="k">@@inherits</span> BcrdtComponentBase
+
+&lt;p&gt;@@_title.Count characters&lt;/p&gt;
+
+<span class="k">@@code</span> {
+    [CascadingParameter] <span class="k">public</span> BcrdtCollaborativeDocument Document { <span class="k">get</span>; <span class="k">set</span>; } = <span class="k">default</span>!;
+
+    <span class="k">private</span> BcrdtText _title = <span class="k">default</span>!;
+
+    <span class="k">protected override void</span> OnParametersSet()
+    {
+        _title = Document.Text(<span class="s">"title"</span>);
+        Track(_title);   <span class="c">// re-render, coalesced, whenever the text changes - from anyone</span>
+    }
+}</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Working with a document in code</h3>
+    <p class="bb-card-desc">
+        Outside a component, <code>IBcrdtCollaborationService</code> is the whole API. <code>OpenAsync</code> loads the
+        document from the store first - so it is usable at once, and offline - then connects and lets the handshake
+        reconcile whatever changed meanwhile. Opening the same identifier twice returns the same instance, reference
+        counted, so pair every <code>OpenAsync</code> with a <code>CloseAsync</code>.
+    </p>
+    <pre class="bb-code">BcrdtCollaborativeDocument document = <span class="k">await</span> collaboration.OpenAsync(<span class="s">"board-7"</span>,
+    <span class="k">new</span> BcrdtOpenDocumentOptions { User = me });
+
+<span class="k">using</span> (<span class="k">var</span> transaction = document.BeginTransaction())   <span class="c">// one update, one round of events</span>
+{
+    document.Map.Set(<span class="s">"title"</span>, <span class="s">"Q3 planning"</span>);
+    document.Array(<span class="s">"attendees"</span>).Push(<span class="s">"Ada"</span>, <span class="s">"Grace"</span>);
+    document.Text(<span class="s">"notes"</span>).Insert(0, <span class="s">"Agenda:\n"</span>);
+}
+
+document.Changed += change =&gt; { <span class="c">/* every committed update, with its origin */</span> };
+document.Text(<span class="s">"notes"</span>).Observe((change, transaction) =&gt; { <span class="c">/* change.Delta */</span> });
+
+<span class="k">await</span> collaboration.CloseAsync(<span class="s">"board-7"</span>);</pre>
+    <ul class="bb-detail-list">
+        <li><strong>Connection.</strong> <code>ConnectAsync</code> and <code>DisconnectAsync</code> take a document
+            online and offline on purpose; <code>ConnectionStatus</code>, <code>IsSynced</code> and
+            <code>Sync.LastSyncedAt</code> say where it stands. A dropped connection is retried by itself.</li>
+        <li><strong>Values.</strong> A document holds <code>null</code>, <code>bool</code>, <code>string</code>,
+            integers, <code>double</code>, <code>float</code>, <code>decimal</code>, <code>byte[]</code>, dates,
+            <code>Guid</code>, lists and string-keyed dictionaries of those, and nested collaborative types. Anything
+            else is refused up front; an object of your own is flattened onto those with <code>SetObject</code>.</li>
+        <li><strong>Threads.</strong> A document is not thread-safe. One opened through the service applies every
+            network update on the synchronization context it was opened on - in Blazor, the renderer's.</li>
+        <li><strong>The engine alone.</strong> <code>document.Crdt</code> is the replica itself, a
+            <code>BcrdtDocument</code> that runs anywhere with no service at all - a console app, a worker, a test.</li>
+    </ul>
+    <p class="bb-card-desc">
+        The <a href="internals">internals page</a> shows transactions, updates and change events as they happen.
     </p>
 </div>
 
@@ -129,13 +235,13 @@ app.MapHub&lt;BcrdtHub&gt;(<span class="s">"/hub/bcrdt"</span>);</pre>
     <div class="bb-scroll">
         <table class="bb-table">
             <thead>
-                <tr><th>Type</th><th>Concurrent edits resolve as</th><th>Reach for it when</th></tr>
+                <tr><th>Type</th><th>Concurrent edits resolve as</th><th>Reach for it when</th><th>See it</th></tr>
             </thead>
             <tbody>
-                <tr><td class="bb-table-key">BcrdtText</td><td>Both edits survive, each author's run stays contiguous</td><td>Anything a person types into at length</td></tr>
-                <tr><td class="bb-table-key">BcrdtArray</td><td>Both insertions survive, in a stable order</td><td>Lists, ordered collections</td></tr>
-                <tr><td class="bb-table-key">BcrdtMap</td><td><strong>One value wins</strong>, deterministically but arbitrarily</td><td>Fields where a later value legitimately replaces an earlier one</td></tr>
-                <tr><td class="bb-table-key">BcrdtSet</td><td>An add wins over a concurrent remove - if it added something</td><td>Tags, membership, flags</td></tr>
+                <tr><td class="bb-table-key">BcrdtText</td><td>Both edits survive, each author's run stays contiguous</td><td>Anything a person types into at length</td><td><a href="text">Collaborative text</a>, <a href="rich-text">Rich text</a></td></tr>
+                <tr><td class="bb-table-key">BcrdtArray</td><td>Both insertions survive, in a stable order</td><td>Lists, ordered collections</td><td><a href="list">Collaborative list</a></td></tr>
+                <tr><td class="bb-table-key">BcrdtMap</td><td><strong>One value wins</strong>, deterministically but arbitrarily</td><td>Fields where a later value legitimately replaces an earlier one</td><td><a href="form">Collaborative form</a></td></tr>
+                <tr><td class="bb-table-key">BcrdtSet</td><td>An add wins over a concurrent remove - if it added something (re-adding a present element is a no-op)</td><td>Tags, membership, flags</td><td><a href="form">Collaborative form</a></td></tr>
             </tbody>
         </table>
     </div>
@@ -147,15 +253,45 @@ app.MapHub&lt;BcrdtHub&gt;(<span class="s">"/hub/bcrdt"</span>);</pre>
     </p>
     <pre class="bb-code">document.Map.EnsureText(<span class="s">"description"</span>).Insert(0, <span class="s">"..."</span>);   <span class="c">// merges</span>
 document.Map.Set(<span class="s">"description"</span>, <span class="s">"..."</span>);                    <span class="c">// one side wins</span></pre>
+    <p class="bb-card-desc">
+        The same caution applies to <code>BcrdtArray.Replace</code> and <code>Move</code>: both delete the element and
+        insert a new one, so an edit made to the element at the same time is lost, and two people moving one element
+        at once end up with two copies. Change a nested type in place when that matters. The
+        <a href="conflicts">conflict lab</a> runs each rule on purpose.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Every hosting model</h3>
+    <p class="bb-card-desc">
+        The registration is the same everywhere, and <code>IBcrdtCollaborationService</code> is registered
+        <strong>scoped</strong> on purpose. In WebAssembly and Hybrid apps - MAUI, WPF, Windows Forms - there is one
+        scope, so each app is one replica. On Blazor Server each circuit is a scope, so every connected user gets a
+        replica and a client identity of their own; a singleton would make every visitor one replica. In a Blazor Web
+        App, register it in both projects: whichever side renders interactively owns the replica.
+    </p>
+    <p class="bb-card-desc">
+        On Blazor Server a circuit outlives its browser tab for a while, and keeps publishing presence until it goes. To
+        withdraw a user the moment the connection drops, call <code>document.Presence.Suspend()</code> from a
+        <code>CircuitHandler</code>'s <code>OnConnectionDownAsync</code> and <code>Resume()</code> from
+        <code>OnConnectionUpAsync</code>. The engine needs no JavaScript at all, so it runs as well in a background
+        service or a console app.
+    </p>
 </div>
 
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Where to go next</h3>
     <ul class="bb-detail-list">
-        <li><a href="text">Collaborative text</a> - three replicas of one paragraph, and what happens when one goes offline.</li>
-        <li><a href="conflicts">Conflict lab</a> - six conflicts provoked on purpose, each with its outcome stated before it runs.</li>
+        <li><a href="text">Collaborative text</a> - three replicas of one paragraph, presence and carets, and what happens when one goes offline or loses its connection.</li>
+        <li><a href="list">Collaborative list</a> - a list of maps, where a rename and a tick of the same item both survive.</li>
+        <li><a href="form">Collaborative form</a> - map entries, a set and a nested text, each merging its own way.</li>
+        <li><a href="rich-text">Rich text</a> - formatting marks that merge like any edit, read back as a delta.</li>
+        <li><a href="conflicts">Conflict lab</a> - eight conflicts provoked on purpose, each with its outcome stated before it runs.</li>
         <li><a href="undo">Collaborative undo</a> - a stack per replica that undoes only its own edits.</li>
+        <li><a href="history">Version history</a> - snapshots that rebuild the document as it was.</li>
+        <li><a href="internals">Internals</a> - state vectors, blocks, updates, deltas and metrics, measured live.</li>
+        <li><a href="live">Live, across tabs</a> - one replica per browser tab through the demo server, with a read-only link.</li>
         <li><a href="mcp-server">MCP server</a> - point an AI agent at this site and it reads the real API, the guide and these pages.</li>
-        <li>The full reference guide - persistence, presence, transports, the architecture and the correctness tests - is the <a href="@SiteInfo.ProjectUrl" target="_blank" rel="noopener noreferrer">README on GitHub</a>.</li>
+        <li>The full reference guide - persistence, presence, transports, security, extending the library, the architecture and the correctness tests - is the <a href="@SiteInfo.ProjectUrl" target="_blank" rel="noopener noreferrer">README on GitHub</a>.</li>
     </ul>
 </div>

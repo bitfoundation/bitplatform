@@ -1,5 +1,6 @@
 ﻿@* Shows what the engine and the device are actually doing. Useful for judging the library, not decoration.
    The first number is the element count, which is what the E2E suite reads back from it. *@
+@implements IHandleEvent
 
 @if (Canvas is not null)
 {
@@ -28,6 +29,28 @@
     [Parameter] public BinkCanvas? Canvas { get; set; }
 
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    // The zoom this line shows, so a change is noticed whichever render showed the last one.
+    private float _zoom = 1f;
+
+    protected override void OnParametersSet() => _zoom = Canvas?.CurrentViewport.Zoom ?? 1f;
+
+    /// <summary>
+    /// For the canvas's <c>ViewportChanged</c>, so the zoom shown follows the wheel, a pinch and the keyboard, not
+    /// only the page's own buttons. It re-renders this line alone, and only when the zoom changed: a pan raises the
+    /// same callback every frame and must not re-render anything.
+    /// </summary>
+    public EventCallback<BinkViewport> ViewportChanged => EventCallback.Factory.Create<BinkViewport>(this, OnViewportChanged);
+
+    private void OnViewportChanged(BinkViewport viewport)
+    {
+        if (viewport.Zoom == _zoom) return;
+        _zoom = viewport.Zoom;
+        StateHasChanged();
+    }
+
+    // Events render only when OnViewportChanged asks for it, not after every one as ComponentBase would.
+    Task IHandleEvent.HandleEventAsync(EventCallbackWorkItem callback, object? arg) => callback.InvokeAsync(arg);
 
     /// <summary>A capability the canvas has is a success badge; one it lacks is a neutral one.</summary>
     public static string Badge(bool on) => on ? "bb-badge bb-badge-success" : "bb-badge bink-badge-off";

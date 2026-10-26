@@ -44,7 +44,7 @@ public partial class BitTimeZonePicker<TValue> : BitInputBase<TValue>
     // every render: an open list asks every one of its rows whether it is the selected one.
     private bool _selectedResolved;
     private object? _selectedOf;
-    private List<BitTimeZone>? _selectedIn;
+    private int _selectedIn;
     private BitTimeZone? _selected;
 
     // The time zones the picker offers in the order of their offsets, what the search term leaves of them, the one the
@@ -521,7 +521,6 @@ public partial class BitTimeZonePicker<TValue> : BitInputBase<TValue>
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTimeZonePickerParams))]
     protected override void OnInitialized()
     {
         // A value is read and written as one of the types the time zone of the list converts to, and a picker of any
@@ -550,7 +549,6 @@ public partial class BitTimeZonePicker<TValue> : BitInputBase<TValue>
         base.OnInitialized();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTimeZonePickerParams))]
     protected override void OnParametersSet()
     {
         // The cascade is read first, so that the time zone list and the classes below are computed from the parameters
@@ -801,11 +799,11 @@ public partial class BitTimeZonePicker<TValue> : BitInputBase<TValue>
     {
         var value = (object?)CurrentValue;
 
-        if (_selectedResolved is false || Equals(_selectedOf, value) is false || ReferenceEquals(_selectedIn, _list.All) is false)
+        if (_selectedResolved is false || Equals(_selectedOf, value) is false || _selectedIn != _list.Version)
         {
             _selected = ToZone(CurrentValue);
             _selectedOf = value;
-            _selectedIn = _list.All;
+            _selectedIn = _list.Version;
             _selectedResolved = true;
         }
 

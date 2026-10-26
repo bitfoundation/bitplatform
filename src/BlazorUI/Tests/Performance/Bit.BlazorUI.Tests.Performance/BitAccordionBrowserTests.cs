@@ -32,7 +32,7 @@ public class BitAccordionBrowserTests : PerformanceTestBase
 
     private static readonly JsonSerializerOptions _json = new() { PropertyNameCaseInsensitive = true };
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(ParamAccordion)]
     [DataRow(ThemeAccordion)]
     [DataRow(ListAccordion)]
@@ -62,7 +62,7 @@ public class BitAccordionBrowserTests : PerformanceTestBase
         Assert.IsTrue(hiddenAt >= CloseDuration - Margin, $"hidden=\"until-found\" landed {hiddenAt:0}ms into the close.");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(ParamAccordion, "param-target")]
     [DataRow(ThemeAccordion, "theme-target")]
     [DataRow(ListAccordion, "list-target")]
@@ -140,7 +140,9 @@ public class BitAccordionBrowserTests : PerformanceTestBase
         return collapsed.Start ?? collapsed.T;
     }
 
-    // Clicks the header from inside the page and records the panel on every frame from then on, for the given ms.
+    // Clicks the header from inside the page and records the panel on every frame from then on, for the given ms after the
+    // accordion took its new state: the click goes to the server and back first, which on a loaded machine can take longer
+    // than the margin a window counted from the click would leave after the transition.
     private async Task<List<Sample>> ClickAndSample(string accordion, double duration)
     {
         var json = await Page.EvaluateAsync<string>(@"async ([root, duration]) => {
@@ -170,11 +172,16 @@ public class BitAccordionBrowserTests : PerformanceTestBase
                 });
             };
             sample();
+            const initial = r.classList.contains('bit-acd-exp');
+            let changedAt = null;
             r.querySelector(':scope > .bit-acd-hwr .bit-acd-hdr').click();
             await new Promise(resolve => {
                 const tick = () => {
                     sample();
-                    if (performance.now() - t0 < duration) requestAnimationFrame(tick); else resolve();
+                    const now = performance.now();
+                    if (changedAt === null && r.classList.contains('bit-acd-exp') !== initial) changedAt = now;
+                    const sampling = changedAt === null ? now - t0 < 10000 : now - changedAt < duration;
+                    if (sampling) requestAnimationFrame(tick); else resolve();
                 };
                 requestAnimationFrame(tick);
             });

@@ -213,7 +213,7 @@ internal sealed class BitParamsScope
     /// <paramref name="basis"/>, a params object of the same type, if there is one. A type that cannot be copied -
     /// one without a public parameterless constructor - is used as is.
     /// </summary>
-    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Every params type is preserved by the DynamicDependency of the component that reads it.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "A params object is of a type an app created, which the DynamicDependency of its constructor preserves.")]
     private static IBitComponentParams Merge(IBitComponentParams? basis, IBitComponentParams overlay)
     {
         var type = overlay.GetType();
@@ -370,7 +370,7 @@ internal sealed class BitParamsScope
     /// <summary>
     /// The public read-write properties of a params type, or null when the type cannot be copied.
     /// </summary>
-    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Every params type is preserved by the DynamicDependency of the component that reads it.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "A params object is of a type an app created, which the DynamicDependency of its constructor preserves.")]
     private static PropertyInfo[]? GetCopyableProperties(Type type)
     {
         return _copyablePropertiesCache.GetOrAdd(type, static t =>
@@ -388,7 +388,7 @@ internal sealed class BitParamsScope
     /// The properties a value of a type that can be copied is taken apart by: the read-write ones, and the read-only
     /// ones holding a collection, which is changed through what it holds rather than by being assigned.
     /// </summary>
-    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Every params type is preserved by the DynamicDependency of the component that reads it.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "A params object is of a type an app created, which the DynamicDependency of its constructor preserves.")]
     private static PropertyInfo[]? GetSnapshotProperties(Type type)
     {
         return _snapshotPropertiesCache.GetOrAdd(type, static t =>

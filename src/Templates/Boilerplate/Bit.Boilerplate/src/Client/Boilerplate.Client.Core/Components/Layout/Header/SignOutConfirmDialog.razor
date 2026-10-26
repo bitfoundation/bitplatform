@@ -15,4 +15,11 @@
            OkText="@Localizer[nameof(AppStrings.SignOut)]"
            CancelText="@Localizer[nameof(AppStrings.Cancel)]"
            Message="@Localizer[nameof(AppStrings.SignOutPrompt)]"
-           Styles="@(new() { OkButton = "width:100%", CancelButton = "width:100%" })" />
+           Styles="@(new() { OkButton = "width:100%", CancelButton = "width:100%" })">
+    @if (CanSignOutOfAllAccounts)
+    {
+        <div class="sign-out-all">
+            <BitCheckbox @bind-Value="signOutOfAllAccounts" Label="@Localizer[nameof(AppStrings.SignOutOfAllAccounts)]" />
+        </div>
+    }
+</BitDialog>

@@ -28,13 +28,13 @@ footer {
         grid-auto-columns: 1fr;
         grid-template-rows: auto;
         justify-content: space-between;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 2fr;
 
         @include lg {
             grid-template-columns: 1fr 1.75fr;
         }
 
-        @include sm {
+        @include lt-lg {
             grid-template-columns: 1fr;
         }
     }
@@ -72,7 +72,30 @@ footer {
     height: 100%;
     display: grid;
     grid-auto-columns: 1fr;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr;
+
+    @include sm {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.footer-products {
+    @include sm {
+        grid-column: 1 / -1;
+    }
+}
+
+.footer-product-links {
+    columns: 2;
+    column-gap: rem2(20px);
+    align-self: stretch;
+
+    .footer-link {
+        margin-top: 0;
+        display: block;
+        break-inside: avoid;
+        padding-top: rem2(10px);
+    }
 }
 
 .go-to-top {

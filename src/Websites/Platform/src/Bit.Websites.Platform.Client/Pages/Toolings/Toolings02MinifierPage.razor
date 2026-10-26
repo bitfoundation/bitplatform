@@ -1,0 +1,112 @@
+﻿@page "/toolings/minifier"
+@inherits AppComponentBase
+
+<PageOutlet Url="toolings/minifier"
+            Title="bit Minifier - Toolings"
+            Description="bit Minifier takes around 400 KB off what a Blazor WebAssembly app downloads, with no code changes, no settings and no runtime cost. Install it and publish in Release." />
+
+<div class="page-container">
+    <BitText Typography="BitTypography.H3" Element="h1" Gutter>bit Minifier</BitText>
+    <br />
+    <BitText Typography="BitTypography.H5" Gutter>A smaller Blazor WebAssembly app, for free</BitText>
+    <br />
+    <BitText Typography="BitTypography.Subtitle1" Gutter>
+        Every kilobyte your users download is time they wait before your app starts.
+        bit Minifier takes around 400 KB off what a Blazor WebAssembly app downloads, and asks nothing in return:
+        no code changes, no settings and no cost at runtime. Install it in the Blazor WebAssembly project and publish in Release.
+    </BitText>
+    <CodeBox>dotnet add package Bit.Minifier</CodeBox>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>Why it costs nothing</BitText>
+            <ul>
+                <li><b>Nothing to set up.</b> Install the package and publish in Release.</li>
+                <li><b>Nothing at runtime.</b> The app runs the same code, only with shorter names and without the attributes nothing reads while it runs.</li>
+                <li><b>Nothing during development.</b> <code>dotnet build</code>, <code>dotnet run</code> and <code>dotnet watch</code> are never touched; only a Release publish is.</li>
+                <li><b>Nothing ships broken.</b> Nothing is written unless every reference still resolves. An assembly that can't be minified safely is left as it was, and the publish says which one and why.</li>
+                <li><b>Still debuggable.</b> The pdbs are rewritten too, so breakpoints and line numbers keep working, and a map turns any stack trace back into the names your source has.</li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>Numbers</BitText>
+            The bit BlazorUI demo, its WebAssembly client published in Release, measured as browsers download it, brotli compressed:
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr><th></th><th class="num">Download</th><th class="num">Saved</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Without it</td><td class="num">6,604 KB</td><td class="num"></td></tr>
+                        <tr><td>Default</td><td class="num">6,132 KB</td><td class="num">472 KB</td></tr>
+                        <tr><td>Aggressive</td><td class="num">6,064 KB</td><td class="num">540 KB</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <br />
+            That's 7.2% and 8.2% less to download, for about 8 seconds more of publishing.
+            The libraries give up the most: <code>Bit.BlazorUI</code> 594 KB of its 3.6 MB (-16%), <code>Newtonsoft.Json</code> 137 KB (-20%),
+            <code>System.Text.Json</code> 72 KB (-18%). The app's own code keeps every name it has and still gives up 310 KB, all of it attributes.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>What it does</BitText>
+            Trimming removes the code an app doesn't use. Right after it, bit Minifier rewrites every trimmed assembly, the app's, the libraries'
+            and the framework's, along with its pdb. Every name that isn't public gets a short one, and the attributes only the compiler, debuggers
+            and analyzers read (<code>[CompilerGenerated]</code>, <code>[Nullable]</code>, <code>[DebuggerDisplay]</code>, ...) go.
+            <br />
+            <br />
+            What something reads by name at runtime stays:
+            <ul>
+                <li>names a string literal mentions, as <code>nameof(...)</code>, <code>GetMethod("...")</code> and <code>[UnsafeAccessor(Name = "...")]</code> do;</li>
+                <li>public properties and fields, which serializers read;</li>
+                <li>Blazor component types, and members with runtime attributes such as <code>[Parameter]</code> and <code>[JSInvokable]</code>.</li>
+            </ul>
+            <b>Your own code keeps its names.</b> The assemblies of your own projects keep every name they have, so an exception your app logs
+            reads as your source does. Only their attributes go.
+            <br />
+            <br />
+            To turn it all off without uninstalling anything:
+            <CodeBox>&lt;BitMinify>false&lt;/BitMinify></CodeBox>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>Aggressive (experimental)</BitText>
+            <CodeBox>&lt;BitMinifyAggressive>true&lt;/BitMinifyAggressive></CodeBox>
+            Public names go too: public types and their namespaces, public non-virtual methods, fields and parameter names.
+            What the runtime, a serializer or a server finds by name still stays, such as names a string mentions, virtual and interface members,
+            properties, enum members and exception types.
+            It's for apps whose names nothing reads from outside the WebAssembly client, published by someone who tests the result.
+            Don't use it when code builds a name at runtime, a serializer reads public fields or type names, configuration names framework types,
+            or a type name is stored across releases.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>Reading a stack trace</BitText>
+            Every publish writes a map of the names it changed to <code>obj/&lt;configuration>/&lt;tfm>/bit-minifier.map</code>.
+            The <a href="@Urls.Cli">bit CLI</a> reads a stack trace your app logged back into the names its source has, without installing anything:
+            <CodeBox>dnx Bit.Cli --version 10.7.0 -- decode bit-minifier.map trace.txt</CodeBox>
+            turns
+            <CodeBox HideCopyButton>   at _aN+_a.MoveNext()
+   at Microsoft.Extensions.DependencyInjection._aD.ah[a,b](IServiceCollection services)</CodeBox>
+            into
+            <CodeBox HideCopyButton>   at ...Services.HttpMessageHandlers.ExceptionDelegatingHandler+&lt;SendAsync>d__1.MoveNext()
+   at Microsoft.Extensions.DependencyInjection.IServiceCollectionExtensions.AddSessioned[TService,TImplementation](IServiceCollection services)</CodeBox>
+            Every publish renames afresh, so keep each release's map with the release, not next to the app.
+            <code>BitMinifyMapOutputPath</code> copies it out of <code>obj</code> for a CI job to collect:
+            <CodeBox>dotnet publish MyApp.Client.csproj -c Release -p:BitMinifyMapOutputPath=bit-minifier.map</CodeBox>
+            The full reference is in the <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Toolings/Minifier" target="_blank" rel="noopener">bit Minifier's README</a>.
+        </div>
+    </section>
+</div>
+
+<NavigationButtons Prev="bit CLI" PrevUrl="@Urls.Cli" Next="BlazorES2019" NextUrl="@Urls.BlazorES2019" />

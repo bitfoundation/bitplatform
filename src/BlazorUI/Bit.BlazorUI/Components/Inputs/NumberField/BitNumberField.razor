@@ -15,7 +15,7 @@
     // The buttons normally stay out of the tab order (the focused input is the spinbutton and already
     // handles the whole keyboard set). In HideInput mode there is no focusable input left, so they
     // become the only way to operate the component and must be reachable by keyboard.
-    var spinTabIndex = HideInput ? 0 : -1;
+    var spinTabIndex = HideInput ? "0" : "-1";
 
     // Each button changes the value of the spinbutton, which aria-controls lets a screen reader say (and
     // jump to). A hidden input is not exposed at all, so there is nothing to point at in HideInput mode.

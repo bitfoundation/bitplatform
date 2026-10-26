@@ -62,7 +62,7 @@ Try it out on [Google Play, App Store, Web, and Windows](https://bitplatform.dev
 Create a project that's ready to run, on Windows, macOS or Linux, with the [bit CLI](https://www.nuget.org/packages/Bit.Cli):
 
 ```bash
-dotnet tool install --global Bit.Cli --prerelease
+dotnet tool install --global Bit.Cli --version 10.7.0
 bit new MyApp
 ```
 

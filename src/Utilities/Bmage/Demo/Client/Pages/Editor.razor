@@ -1,18 +1,21 @@
 ﻿@page "/editor"
+@inject DemoFonts Fonts
 
 @* The editor component, whole: the built-in toolbar and panel, a theme forced or left to follow the
    site, a direction, and two example translations. Under it, the document the editor is editing,
-   printed live from OnDocumentChanged - the clearest way to show that an edit here is a value (a
-   pipeline and a list of annotations) rather than a mutated bitmap. The rest of the page is the
-   component's reference. *@
+   printed live from OnDocumentChanged and OnImageLoaded - the clearest way to show that an edit here
+   is a value (a pipeline, layers and annotations) rather than a mutated bitmap. The rest of the page
+   is the component's reference. *@
 
 <PageTitle>The editor · Bmage</PageTitle>
 
 <div class="bb-intro">
     <h1>The editor</h1>
     <p class="bb-subtitle">
-        Everything in one component: crop, rotate, adjustments, filters, drawing, annotations, layers,
-        history and export. Drop an image on it, or open one from its own drop zone - then try the
+        Everything in one component: crop, rotate, straighten, resize and trim; adjustments with a
+        histogram, a colour mixer and white balance; filters; selections with the magic wand; painting;
+        annotations and redaction; layers and groups; before and after; history; export and project
+        files. Drop an image on it, or open one from its own drop zone - then try the
         <strong>theme</strong>, <strong>direction</strong> and <strong>language</strong> switches.
     </p>
 </div>
@@ -57,16 +60,17 @@
                      Strings="_strings"
                      ExportOptions="ExportOptions"
                      OnDocumentChanged="OnDocumentChanged"
-                     OnImageLoaded="_ => StateHasChanged()" />
+                     OnImageLoaded="OnImageLoaded" />
     </div>
 </div>
 
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The document behind the editor</h3>
     <p>
-        This is the whole edit: a list of pixel operations and a list of annotation objects. It is a
-        value, so it can be stored, sent to a server, replayed on the original file, or applied to a
-        different image entirely. It updates as you work.
+        This is the whole edit: a list of pixel operations, the layers composited over them - paint,
+        images, fills and adjustments - and a list of annotation objects. It is a value, so it can be
+        stored, sent to a server, replayed on the original file, or applied to a different image
+        entirely. It updates as you work.
     </p>
     @if (_document is null)
     {
@@ -107,12 +111,15 @@
                 <tr><th scope="row"><code>Strings</code></th><td>Every user-visible label - see <a href="/editor#localisation">Localisation</a>.</td></tr>
                 <tr><th scope="row"><code>Direction</code></th><td><code>"ltr"</code> or <code>"rtl"</code>. The layout uses logical CSS properties, so it mirrors correctly.</td></tr>
                 <tr><th scope="row"><code>Class</code>, <code>Style</code></th><td>Applied to the root element. <code>bmg-theme-dark</code> or <code>bmg-theme-light</code> force a theme.</td></tr>
+                <tr><th scope="row"><code>AriaLabel</code></th><td>The accessible name of the editor region, for a page with more than one.</td></tr>
+                <tr><th scope="row"><code>AcceptedFileTypes</code></th><td>The file types its own drop zone and file picker offer. Default <code>image/*</code>.</td></tr>
+                <tr><th scope="row"><code>TextRasterizer</code></th><td>What text and step numbers are drawn with. Null uses the <code>FontTextRasterizer</code> from the services, which draws once a font is registered with it - this site registers Noto Sans and Vazirmatn.</td></tr>
                 <tr><th scope="row"><code>ShowToolbar</code>, <code>ShowPanel</code></th><td>Hide the built-in chrome without replacing it.</td></tr>
                 <tr><th scope="row"><code>Toolbar</code>, <code>Panel</code>, <code>Footer</code></th><td>Replace the chrome entirely; each receives a <code>BmageEditorContext</code>.</td></tr>
                 <tr><th scope="row"><code>EmptyState</code></th><td>Replace the "drop an image here" view.</td></tr>
                 <tr><th scope="row"><code>MaxProxyDimension</code></th><td>Longest edge used for interactive editing. Falls back to <code>BitBmageOptions.MaxInteractiveDimension</code>, then 2048. <code>0</code> always edits at full resolution.</td></tr>
                 <tr><th scope="row"><code>MaxHistoryDepth</code></th><td>Undo steps kept. Default 100.</td></tr>
-                <tr><th scope="row"><code>ExportOptions</code></th><td>Settings used by the built-in save action.</td></tr>
+                <tr><th scope="row"><code>ExportOptions</code></th><td>Settings used by the built-in save action: the Export tab starts from its format, quality and metadata policy, and keeps the rest.</td></tr>
                 <tr><th scope="row"><code>OnDocumentChanged</code>, <code>OnExported</code>, <code>OnImageLoaded</code>, <code>OnError</code></th><td>Callbacks. <code>OnImageLoaded</code> matters more than it looks: the editor can load an image through its own drop zone while your <code>Image</code> is still null, so a page whose buttons depend on an image should re-render from it.</td></tr>
             </tbody>
         </table>
@@ -138,10 +145,11 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Replacing the chrome</h3>
     <p>
         <code>Toolbar</code>, <code>Panel</code> and <code>Footer</code> take a render fragment with a
-        <code>BmageEditorContext</code>: the current tool and settings, the document, the annotations,
-        the history and its position, the detected capabilities, the output size, and every action -
-        tool selection, crop, rotate, flip, adjustments, annotations, undo, redo, reset, zoom, load,
-        paste, export, download and clipboard copy.
+        <code>BmageEditorContext</code>: the current tool and settings, the document, the annotations and
+        layers, the selection, the history and its position, the detected capabilities, the output size,
+        and every action - tool selection, crop, rotate, flip, straighten, resize, canvas size, trim,
+        adjustments, white balance, annotations, layers and groups, selections, compare, undo, redo,
+        reset, zoom, load, paste, export, download, clipboard copy and projects.
     </p>
     <CodeSnippet Code="@ToolbarSnippet" Expanded="true" />
 </div>
@@ -167,11 +175,50 @@
     <p>
         <code>BmageEditorStrings</code> is a record with a property for every label, so a translation
         is an object rather than a resource file - and you can override only the words you care
-        about. Number and size formatting are functions on the same record. For a right-to-left
-        language set <code>Direction="rtl"</code>: the panel, the crop handles and the toolbar all
-        mirror. The Persian button above switches both at once.
+        about. Number and size formatting are functions on the same record, and so are the names of
+        annotation and layer kinds, blend modes and anchors. For a right-to-left language set
+        <code>Direction="rtl"</code>: the panel, the crop handles and the toolbar all mirror. The
+        Persian button above switches both at once; both translations set every label.
+    </p>
+    <p>
+        Text and step numbers are drawn into the image from font files, the same way on a server as
+        here: this site registers Noto Sans and Vazirmatn, and a letter one lacks comes from the
+        other. A Persian or Arabic label is shaped with the font's own OpenType rules - joined
+        letters, lam-alef, harakat in place - and laid out right to left by the Unicode
+        Bidirectional Algorithm, Latin words and numbers inside it included. Try the Text tool with
+        the Persian button on.
     </p>
     <CodeSnippet Code="@LocalisationSnippet" Language="C#" Expanded="true" />
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> The panel and the toolbar</h3>
+    <p>
+        The built-in panel is seven tabs, each a plain form over the same public methods - copy the calls
+        you need into a panel of your own.
+    </p>
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Editor panel tabs">
+        <table class="bb-table">
+            <thead>
+                <tr><th scope="col">Tab</th><th scope="col">What it holds</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row">Adjust</th><td>A live histogram with how much of the image is clipped to black or white; auto levels, automatic white balance and a white balance picker - click something that should be grey; brightness, contrast, saturation, exposure, temperature, vibrance, shadows, highlights, whites, blacks, tint, hue, sharpen, blur and vignette; and a colour mixer that shifts the hue, saturation and lightness of one of eight colour bands.</td></tr>
+                <tr><th scope="row">Filters</th><td>Looks - grayscale, sepia, invert, posterize, threshold, black and white, duotone - and a motion blur with a distance and an angle.</td></tr>
+                <tr><th scope="row">Transform</th><td>Straighten up to 45&deg; with the corners cropped away; resize to exact numbers, proportions kept or not; canvas size with an anchor and a colour or transparency; and trim to the content.</td></tr>
+                <tr><th scope="row">Tools</th><td>Stroke and fill colours, dashes, width, opacity and font size for the drawing tools; brush size and hardness; the tolerance of the fill, magic eraser and magic wand; the redaction style - and, for the selected annotation, its text, size, rotation, opacity, order and lock.</td></tr>
+                <tr><th scope="row">Layers</th><td>Add a paint layer or an image as a layer; every layer with show, hide, lock, reorder, duplicate and delete; the selected one's opacity, blend mode and clipping to the layer below; group it with the layer below, move it out of its group, ungroup, and blend a group as one. Annotations are listed under the layers.</td></tr>
+                <tr><th scope="row">History</th><td>Every step by name; click one to go back to it, or forward again.</td></tr>
+                <tr><th scope="row">Export</th><td>The output size (and the original's, while editing through a proxy); format, quality and metadata policy; download and copy to the clipboard; save the edit as a project, and open one.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        The toolbar holds the tools below, rotate and flip, undo, redo and reset, <strong>Compare with the
+        original</strong> - which shows the original until it is turned off - and zoom. While pixels are
+        selected it adds the selection's actions: make them transparent, fill them, copy them to a layer,
+        crop to them, invert, and deselect.
+    </p>
 </div>
 
 <div class="bb-card">
@@ -190,8 +237,15 @@
                 <tr><th scope="row">Rectangle, Ellipse</th><td>Drag to size; hold Shift for a square or a circle.</td></tr>
                 <tr><th scope="row">Highlight</th><td>A translucent block, like a marker pen.</td></tr>
                 <tr><th scope="row">Redact</th><td>Solid, pixelate or blur; replaces the pixels underneath.</td></tr>
-                <tr><th scope="row">Text</th><td>Places a label you then edit.</td></tr>
+                <tr><th scope="row">Text</th><td>Places a label you then edit from the Tools tab.</td></tr>
                 <tr><th scope="row">Step</th><td>Auto-numbered markers for tutorials and bug reports.</td></tr>
+                <tr><th scope="row">Brush</th><td>Paints onto the selected paint layer, or the topmost one, or a new one when there is none - with a round brush, soft or hard, narrowing with pen pressure.</td></tr>
+                <tr><th scope="row">Eraser</th><td>Removes paint from the paint layer and never touches the image below.</td></tr>
+                <tr><th scope="row">Pick a colour</th><td>The eyedropper: picks the colour under the pointer as the stroke and fill colour - or, started from the Adjust tab's picker, as the grey a white balance should make neutral.</td></tr>
+                <tr><th scope="row">Fill</th><td>Fills the region of similar colour under the pointer, as a new layer you can still change.</td></tr>
+                <tr><th scope="row">Magic eraser</th><td>Makes the region of similar colour under the pointer transparent.</td></tr>
+                <tr><th scope="row">Rectangle select, Ellipse select, Lasso</th><td>Select pixels by shape or by drawing around them, outlined with marching ants. Hold Shift to add to the selection, Alt to take away from it.</td></tr>
+                <tr><th scope="row">Magic wand</th><td>Selects the region of similar colour under the pointer, within the tolerance; Shift and Alt add and subtract here too.</td></tr>
             </tbody>
         </table>
     </div>
@@ -203,9 +257,14 @@
             <tbody>
                 <tr><th scope="row"><kbd>Ctrl</kbd> / <kbd>&#8984;</kbd> + <kbd>Z</kbd></th><td>Undo</td></tr>
                 <tr><th scope="row"><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd>, <kbd>Ctrl</kbd> + <kbd>Y</kbd></th><td>Redo</td></tr>
-                <tr><th scope="row"><kbd>Delete</kbd>, <kbd>Backspace</kbd></th><td>Delete the selected annotation</td></tr>
-                <tr><th scope="row">Arrow keys</th><td>Nudge the selection by 1px, or 10px with Shift</td></tr>
-                <tr><th scope="row"><kbd>Esc</kbd></th><td>Clear the selection, or cancel a pending crop</td></tr>
+                <tr><th scope="row"><kbd>Delete</kbd>, <kbd>Backspace</kbd></th><td>Delete the selected annotation, or make the selected pixels transparent</td></tr>
+                <tr><th scope="row">Arrow keys</th><td>Nudge the selected annotation by 1px, or 10px with Shift</td></tr>
+                <tr><th scope="row"><kbd>Ctrl</kbd> + <kbd>A</kbd></th><td>Select all the pixels</td></tr>
+                <tr><th scope="row"><kbd>Ctrl</kbd> + <kbd>D</kbd></th><td>Deselect</td></tr>
+                <tr><th scope="row"><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>I</kbd></th><td>Invert the selection</td></tr>
+                <tr><th scope="row"><kbd>Esc</kbd></th><td>Clear the annotation and pixel selections, or cancel a pending crop</td></tr>
+                <tr><th scope="row"><kbd>\</kbd></th><td>Compare with the original, and back</td></tr>
+                <tr><th scope="row"><kbd>[</kbd>, <kbd>]</kbd></th><td>Make the brush or eraser smaller or larger</td></tr>
                 <tr><th scope="row"><kbd>+</kbd>, <kbd>-</kbd></th><td>Zoom</td></tr>
                 <tr><th scope="row"><kbd>Ctrl</kbd> + <kbd>0</kbd></th><td>Fit to window</td></tr>
             </tbody>
@@ -246,6 +305,22 @@
     private string _language = "English";
     private BmageEditorStrings _strings = BmageEditorStrings.Default;
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || RendererInfo.IsInteractive is false) return;
+        try
+        {
+            await Fonts.EnsureAsync();
+        }
+        catch (Exception)
+        {
+            // Without the font the editor says why its text cannot be drawn, which is the honest outcome.
+            return;
+        }
+        // Text placed before the font arrived is drawn now.
+        if (_editor?.Session is not null) await _editor.RefreshAsync();
+    }
+
     private static readonly ImageExportOptions ExportOptions = new()
     {
         Format = ImageFormat.Png,
@@ -262,30 +337,14 @@
     };
 
     /// <summary>
-    /// Two example translations. Every label is a property on a record, so a translation is an object, not a resource
-    /// file, and a host can override just the few words it cares about.
+    /// Two example translations, every label set (see Shared/EditorTranslations.cs). Every label is a property on a
+    /// record, so a translation is an object, not a resource file, and a host can override just the few words it cares about.
     /// </summary>
     private static readonly Dictionary<string, (string Tag, BmageEditorStrings Strings)> Languages = new()
     {
         ["English"] = ("en", BmageEditorStrings.Default),
-        ["Deutsch"] = ("de", BmageEditorStrings.Default with
-        {
-            Select = "Auswählen", Crop = "Zuschneiden", Draw = "Zeichnen", Arrow = "Pfeil", Line = "Linie",
-            Rectangle = "Rechteck", Ellipse = "Ellipse", Text = "Text", Highlight = "Markieren", Redact = "Schwärzen",
-            Adjust = "Anpassen", Filters = "Filter", Layers = "Ebenen", History = "Verlauf", Export = "Exportieren",
-            Undo = "Rückgängig", Redo = "Wiederholen", Reset = "Zurücksetzen", Download = "Herunterladen",
-            Brightness = "Helligkeit", Contrast = "Kontrast", Saturation = "Sättigung", Tools = "Werkzeuge",
-            DropImageHere = "Bild hier ablegen oder klicken zum Auswählen",
-        }),
-        ["فارسی"] = ("fa", BmageEditorStrings.Default with
-        {
-            Select = "انتخاب", Crop = "برش", Draw = "رسم", Arrow = "پیکان", Line = "خط",
-            Rectangle = "مستطیل", Ellipse = "بیضی", Text = "متن", Highlight = "هایلایت", Redact = "پنهان‌سازی",
-            Adjust = "تنظیم", Filters = "فیلترها", Layers = "لایه‌ها", History = "تاریخچه", Export = "خروجی",
-            Undo = "واگرد", Redo = "ازنو", Reset = "بازنشانی", Download = "دانلود",
-            Brightness = "روشنایی", Contrast = "کنتراست", Saturation = "اشباع", Tools = "ابزارها",
-            DropImageHere = "تصویر را اینجا رها کنید یا برای انتخاب کلیک کنید",
-        }),
+        ["Deutsch"] = ("de", EditorTranslations.German),
+        ["فارسی"] = ("fa", EditorTranslations.Persian),
     };
 
     private const string Snippet = """
@@ -325,6 +384,28 @@
                 End   = new Vector2(300, 200),
                 Style = ShapeStyle.Default with { Stroke = new StrokeStyle { Width = 6 } },
             });
+
+            // Transforms: each one undoable, with annotations and layers kept on what they mark.
+            async Task Level() => await _editor!.SetStraightenAsync(-2.5);
+            async Task Shrink() => await _editor!.ResizeAsync(1600, 1200);
+            async Task Frame() => await _editor!.SetCanvasSizeAsync(2000, 2000, Anchor.Center, Rgba32.White);
+            async Task Trim() => await _editor!.TrimAsync();
+
+            // Selections: select, then act on the pixels inside.
+            void SelectSky()
+            {
+                _editor!.SetSelection(Mask.Gradient(new(0, 0), new(0, 0.4f)));
+                _editor.InvertSelection();                       // ...or everything else
+            }
+            async Task CutOut() => await _editor!.ClearSelectionAsync();          // make transparent
+            async Task Lift() => await _editor!.CopySelectionToLayerAsync();       // a new image layer
+            async Task CropToIt() => await _editor!.CropToSelectionAsync();
+
+            // Layers, before and after, and projects.
+            async Task Paint() { await _editor!.AddPaintLayerAsync(); _editor.SetTool(EditorToolKind.Brush); }
+            async Task Compare() => await _editor!.SetCompareAsync(!_editor.IsComparing);
+            async Task Keep() => await _editor!.SaveProjectAsync("holiday");      // a .bmage file
+            async Task Reopen(IBrowserFile file) => await _editor!.OpenProjectAsync(file);
         }
         """;
 
@@ -404,6 +485,10 @@
             if (_document.Pipeline.Count == 0) lines.Add("  (none)");
             foreach (var operation in _document.Pipeline) lines.Add($"  {operation}");
             lines.Add("");
+            lines.Add($"Layers ({_document.Layers.Count}, bottom first)");
+            if (_document.Layers.Count == 0) lines.Add("  (none)");
+            AddLayers(lines, _document.Layers, "  ");
+            lines.Add("");
             lines.Add($"Annotations ({_document.Annotations.Count})");
             if (_document.Annotations.Count == 0) lines.Add("  (none)");
             foreach (var annotation in _document.Annotations)
@@ -412,6 +497,21 @@
                 lines.Add($"  {annotation.Kind,-10} at ({b.X:0},{b.Y:0}) {b.Width:0}×{b.Height:0}");
             }
             return string.Join('\n', lines);
+        }
+    }
+
+    /// <summary>One line a layer, a group's own layers indented under it.</summary>
+    private static void AddLayers(List<string> lines, IReadOnlyList<Layer> layers, string indent)
+    {
+        foreach (var layer in layers)
+        {
+            var details = new List<string>();
+            if (layer.Name is { } name) details.Add(name);
+            if (layer.BlendMode != BlendMode.SourceOver) details.Add(layer.BlendMode.ToString());
+            if (layer.Opacity < 1) details.Add($"{layer.Opacity * 100:0}%");
+            if (!layer.IsVisible) details.Add("hidden");
+            lines.Add($"{indent}{layer.Kind,-10} {string.Join(" · ", details)}".TrimEnd());
+            if (layer is GroupLayer group) AddLayers(lines, group.Layers, indent + "  ");
         }
     }
 
@@ -426,6 +526,14 @@
     private void OnDocumentChanged(ImageDocument document)
     {
         _document = document;
+        StateHasChanged();
+    }
+
+    // A new image is a new, empty document, but not an edit, so OnDocumentChanged waits for the first change: without
+    // this the readout would go on showing the previous image's edit.
+    private void OnImageLoaded(ImageBuffer image)
+    {
+        _document = _editor?.Document;
         StateHasChanged();
     }
 }

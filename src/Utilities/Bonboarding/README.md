@@ -38,6 +38,11 @@ Every decision about what to show, when to show it, and where to put it is made 
   announcements, reduced motion, forced colors.
 - **Theming through CSS variables**, per-step templates, or a fully headless popover that still gets
   measurement, placement and focus management.
+- **Guidance that stays on the page**: beacons that open hints or tours, onboarding checklists that tick
+  themselves off, and a list of tours to start again from a help menu.
+- **Respectful by default**: an automatic tour never interrupts one the user is taking (it queues, by
+  priority), "remind me later" snoozes, and completion is remembered across replays of the same tour version.
+- **Definitions checked before anyone sees them**, and a user held on a step is told why.
 - **Analytics-grade events**, including how long each step was on screen.
 - Works unchanged on **Blazor Server, Blazor WebAssembly and Blazor Web App**, including while
   prerendering.
@@ -80,8 +85,10 @@ The full walkthrough is in [getting started](#getting-started) and [installation
 dotnet run --project src/Utilities/Bonboarding/Demo/Server
 ```
 
-The demo covers placement and spotlights, dynamic and missing targets, conditional and branching
-flows, a tour spanning two routes, theming and RTL, headless rendering, and a live event log.
+The demo covers placement and spotlights, dynamic, missing and replaced targets, steps that advance on
+an interaction or an application signal, conditional and branching flows, driving, queueing, snoozing
+and validating tours, beacons, checklists and tour lists, a tour spanning two routes, theming, RTL and
+localisation, headless rendering, and a live event log with the stored record beside it.
 
 ## How it fits together
 
@@ -111,8 +118,7 @@ opinion about the DOM, and the browser layer has no opinion about tours.
 
 The demo hosts a [Model Context Protocol](https://modelcontextprotocol.io) server at `/mcp`, so an AI
 agent building tours reads the library itself - its compiled API documentation, this guide, its
-stylesheet and the demo's working tours - instead of guessing at an API it half remembers. It is also
-served, version by version, through `https://bitplatform.dev/mcp` next to the other bit libraries.
+stylesheet and the demo's working tours - instead of guessing at an API it half remembers.
 
 ```json
 {
@@ -144,6 +150,7 @@ Bit.Bonboarding                 The library
 Demo                            Demo application (Blazor Web App: Server + Client) and the MCP server
 Tests/Bit.Bonboarding.Tests     Engine, layout and component tests
 Tests/Bit.Bonboarding.Tests.Mcp The MCP server, exercised over the protocol
+Tests/Bit.Bonboarding.Tests.E2E The demo in Chromium, Firefox and WebKit, with axe-core (see its README)
 ```
 
 ## Documentation
@@ -152,6 +159,7 @@ Tests/Bit.Bonboarding.Tests.Mcp The MCP server, exercised over the protocol
 - [Installation](#installation)
 - [Basic tours](#basic-tours)
 - [Highlighting and contextual help](#highlighting-and-contextual-help)
+- [Beacons, checklists and tour lists](#beacons-checklists-and-tour-lists)
 - [Dynamic and async targets](#dynamic-and-async-targets)
 - [Conditional and branching flows](#conditional-and-branching-flows)
 - [Multi-page tours](#multi-page-tours)
@@ -162,6 +170,7 @@ Tests/Bit.Bonboarding.Tests.Mcp The MCP server, exercised over the protocol
 - [Persistence](#persistence)
 - [Events and analytics](#events-and-analytics)
 - [Performance](#performance)
+- [Upgrading](#upgrading)
 - [API reference](#api-reference)
 
 ## Getting started
@@ -742,8 +751,29 @@ exception.
 
 Starting a tour cancels any other running one by default, including one that is still starting, so
 two starts that race each other (a double click, or a layout's `StartOnceAsync` alongside a page's
-`AutoStart`) leave exactly one session behind. To run several at once - a tour plus a persistent
-hint, say - opt out:
+`AutoStart`) leave exactly one session behind. The cancelled tour keeps its progress and resumes next time.
+
+That default suits a start the user asked for. A start nobody asked for - a page's tour starting itself -
+should not take the screen from a tour the user is in the middle of, so it can **queue** instead:
+
+```csharp
+await BonboardingService.StartOnceAsync(featureTour, new BonboardingStartOptions
+{
+    WhenBusy = BonboardingBusyBehavior.Queue,   // or Skip: do not start at all if something is running
+});
+```
+
+A queued start returns its session at once, in `BonboardingTourStatus.Idle`, and publishes `TourQueued`.
+When the running tour ends, the queued tour with the highest `BonboardingTourDefinition.Priority` starts
+first (equal priorities in the order they were queued), and only one runs at a time. Eligibility is checked
+again at that moment - a once-only tour the user finished in the meantime, one they snoozed, or one whose
+`CanStart` now says no is cancelled instead of started. Cancel a queued session yourself to withdraw it.
+A declarative tour's `AutoStart` always queues, and withdraws its queued start when its page goes away.
+Starting the tour that is already running is a restart, never a conflict to wait out. Nor is a tour the user
+walked away from (see [Navigating away mid-tour](#navigating-away-mid-tour)): nothing of it is on screen and
+they may never go back, so a queued start replaces it rather than waiting for it, and it keeps its progress.
+
+To run several at once - a tour plus a persistent hint, say - opt out of all of this:
 
 ```csharp
 await BonboardingService.StartAsync(hint, new BonboardingStartOptions { StopOthers = false });
@@ -759,11 +789,33 @@ await BonboardingService.StartAsync(tour, new BonboardingStartOptions
 {
     StartAtStepId = "billing",   // begin here instead of the first step
     Resume = false,              // ignore saved progress
-    Force = true,                // start even if completed, dismissed, or CanStart says no
+    Force = true,                // start even if completed, dismissed, snoozed, or CanStart says no
     StopOthers = false,
+    WhenBusy = BonboardingBusyBehavior.Queue,   // wait for a running tour instead of replacing it
     State = new Dictionary<string, object?> { ["plan"] = "pro" },
 });
 ```
+
+### Checking a definition
+
+`StartAsync` validates the definition before anything is shown. **Errors** refuse the start with a
+`BonboardingException` listing every one of them, because the tour could not work: two steps sharing an
+id (a jump, Back and resuming would all find the first), a blank or reserved (`$end`) step id, an action
+that jumps to a step that does not exist or names none, a negative `WaitTimeout`, a tour with no id or no
+steps. **Warnings** are logged and the tour starts: a step that hides Next and has no other way forward, an
+`AdvanceOn` step whose target the user cannot reach (`Interaction = Blocked`) or that has no target to
+listen on, an absolute URL as a route, an `OverlayOpacity` outside 0-1.
+
+Run the same check in a unit test, so a mistake is caught before a user meets it:
+
+```csharp
+[TestMethod]
+public void The_welcome_tour_is_well_formed()
+    => Assert.IsEmpty(WelcomeTour.Create().Validate());
+```
+
+Each `BonboardingValidationIssue` carries a `Severity`, a stable `Code` (`"duplicate-step-id"`), a message
+naming the tour and the step, and the `StepId`.
 
 ## Highlighting and contextual help
 
@@ -894,7 +946,33 @@ AdvanceOn = new BonboardingAdvanceTrigger
 }
 ```
 
-The listener fires once and is then removed, since the step is about to change anyway.
+The listener stays armed until the step changes, so if `CanAdvance` holds the user, their next attempt is
+heard. Events while an advance is already on its way (a double click, every keystroke of an `input`
+event) belong to that advance, and a click is never charged to the step after the one it was meant for.
+
+#### Advancing on something the application does
+
+Some tasks are not one DOM event: a project counts as created when the server says so, not when a button is
+pressed. The code that knows raises a **signal**, and the step waiting for it moves on - with no reference to
+the tour or the session:
+
+```csharp
+new BonboardingStepDefinition
+{
+    Target = BonboardingStepTarget.Anchor("new-project"),
+    Title = "Create your first project",
+    ShowNext = false,
+    AdvanceOnSignal = "project-created",
+}
+
+// Wherever projects are created:
+await _projects.CreateAsync(name);
+await BonboardingService.SignalAsync("project-created");
+```
+
+Signals are compared ordinally, `CanAdvance` still decides, and `SignalAsync` returns whether a tour moved on.
+They are not remembered: one raised while no step waits for it does nothing, so use `When` to skip a step
+whose task the user had already done before reaching it.
 
 ### Scrolling
 
@@ -909,7 +987,9 @@ new BonboardingStepDefinition
 ```
 
 Scrolling walks every scrollable ancestor, so nested panes, dialogs and virtualized lists all work.
-A target that is already comfortably visible is left alone rather than being re-centred, and a smooth
+A target that is already comfortably visible - in the viewport, and in every pane that scrolls it - is left
+alone rather than being re-centred; one in the middle of the screen but scrolled out of sight inside its pane is
+scrolled to like any other. A smooth
 scroll is allowed to settle before the first measurement is taken so the popover does not appear
 mid-flight.
 
@@ -938,6 +1018,137 @@ Both are handled without special configuration:
   so the arrow is clamped to stay within both the target and the popover's straight edge.
 - When the popover ends up with no cross-axis overlap with the target at all, the arrow is hidden
   rather than pointing at nothing.
+- A target **partly scrolled out of its pane** (a long table in a scrolling panel, a card in a carousel) is
+  spotlit and pointed at only where its scrolling ancestors show it, not across the rest of the page. A target
+  scrolled out of its pane entirely is pointed at on the edge of the pane it went past - where its visible part
+  shrank to as it left - rather than with its own box drawn over whatever is next to the pane.
+
+### The visible part of the screen
+
+The popover is kept inside the part of the screen the user can actually see, not just the browser window:
+
+- **The on-screen keyboard and pinch zoom.** Both shrink the visual viewport, and the popover is placed inside it,
+  so an interactive step on a text field is not covered by the keyboard that field opened.
+- **Notches and rounded corners.** When the page asks for the whole screen (`viewport-fit=cover`), the safe-area
+  insets are kept clear as well. The host carries them as its padding, which moves nothing because everything
+  inside it is fixed.
+- **A host inside a transformed ancestor.** A `transform`, `filter`, `perspective` or `contain` on an ancestor makes
+  it the containing block of every `position: fixed` element inside it, so fixed positions stop being viewport
+  positions - the classic reason popovers drift once the page scrolls. Positions are measured relative to the
+  host's own box, so the tour stays on its target either way. Placing `BonboardingRoot` outside such ancestors is
+  still the better choice: it keeps the tour layer above them too.
+
+## Beacons, checklists and tour lists
+
+Not all guidance should take over the screen. These three components render on the page itself, use the same
+engine, store and theme as the tours, and need nothing more than `BonboardingRoot` in the layout.
+
+### Beacons
+
+A beacon is a small pulsing dot on an element. Pressed, it opens a hint about that element, starts a tour, or
+runs a handler of yours:
+
+```razor
+@* A hint: one non-modal step on the element, with no overlay and no focus trap. *@
+<BonboardingBeacon Id="import-hint"
+                   Anchor="import"
+                   Title="Import is here"
+                   Description="Bring projects in from a CSV file. It used to live under Settings." />
+
+@* A tour. *@
+<BonboardingBeacon Anchor="usage" Tour="UsageTour" Label="Take the usage tour" />
+
+@* Anything else. *@
+<BonboardingBeacon Selector="#plan-badge" Label="What's new" OnClick="OpenChangelog" />
+```
+
+- **Placement.** `Position` picks a corner, an edge or the centre of the element (`TopEnd` by default; Start and
+  End are logical, so they mirror in right-to-left), and `OffsetX` / `OffsetY` nudge it. Place the component
+  anywhere in the markup: it positions itself over its element.
+- **It follows its element** as the page scrolls, resizes and re-renders, positioned in the browser with no call
+  into .NET per frame. All beacons share one set of observers, so a page of them costs nothing while idle, on
+  Blazor Server too. The element is found the way a step's target is - the first rendered match of the selector -
+  and found again when a re-render replaces it.
+- **It hides** while its element is missing, not rendered, or scrolled out of sight (in the viewport or in any
+  scrolling ancestor), and while any other tour runs (`HideWhileTourRuns`, on by default). It sits one layer below
+  the tour overlay.
+- **It goes away for good** once read, when it has an `Id`: the hint is persisted like a one-step tour under that
+  id, and once the user closes it the beacon does not come back (`ResetAsync(id)` brings it back). A beacon that
+  starts a tour goes away once that tour is completed or dismissed, unless `KeepAfterClosed` is set. A beacon
+  without an `Id` always shows.
+- **Accessibility.** It is a real button, named by `Label`, then `Title`, then `BonboardingLabels.BeaconLabel`, with
+  `aria-haspopup="dialog"` and `aria-expanded` while its hint or tour is open. The touch target is 24 pixels (WCAG
+  2.2's minimum) around a smaller dot. The hint takes focus when it opens and gives it back to the beacon when it
+  closes; a beacon that goes away for good moves focus to its element (or the first control inside it). The pulse
+  stops under reduced motion, and forced colors draw the dot in `Highlight`.
+
+The variables `--bit-bonboarding-beacon-size`, `--bit-bonboarding-beacon-dot` and `--bit-bonboarding-beacon-color`
+restyle it.
+
+### Checklists
+
+A checklist shows a new user the handful of things worth doing, and ticks each off as it gets done:
+
+```csharp
+private static readonly BonboardingChecklistDefinition GettingStarted = new()
+{
+    Id = "getting-started",
+    Title = "Get started",
+    Items =
+    {
+        // Done once its tour is completed; pressing the item starts the tour.
+        new() { Id = "tour", Title = "Take the project tour", Tour = ProjectTour },
+        // Done, for good, when the application says so.
+        new() { Id = "invite", Title = "Invite a teammate", CompleteOnSignal = "member-invited" },
+        // Done while a condition holds.
+        new() { Id = "avatar", Title = "Add a picture", IsComplete = ctx => ValueTask.FromResult(user.HasAvatar) },
+        // Pressing it goes somewhere; listed only for administrators.
+        new() { Id = "billing", Title = "Set up billing", Route = "settings/billing", When = ctx => ValueTask.FromResult(user.IsAdmin) },
+    },
+};
+```
+
+```razor
+<BonboardingChecklist Checklist="GettingStarted" Dismissible="true" OnCompleted="Celebrate" />
+```
+
+An item is done when any of its sources says so: its tour (`Tour` or `TourId`) was completed, its `IsComplete`
+condition holds, or the application ticked it off - with a signal while the checklist is on screen, or directly:
+
+```csharp
+await BonboardingService.SetChecklistItemAsync("getting-started", "invite");        // done
+await BonboardingService.SetChecklistItemAsync("getting-started", "invite", false); // not done after all
+```
+
+Ticked items and a dismissal are stored in the `IBonboardingStore` next to the tours' records, under the key
+`checklist:{id}` (so a custom store needs no changes), and in memory only when `Persist` is off. The checklist
+refreshes itself when a tour ends and when its stored progress changes; call `RefreshAsync()` after your own state
+changed something an `IsComplete` or `When` condition reads. It renders nothing until its progress has been read,
+so it never shows every item unticked for a moment (nor while prerendering, where the store cannot be read).
+
+It is a `<section>` labelled by its title (a `role="heading"` at `HeadingLevel`, 2 by default), with a
+`progressbar` and a list whose items say "Done" or "Not done" to screen readers as well as showing it.
+`ItemTemplate` replaces each item's markup and keeps the list; `HideWhenComplete` removes it once everything is
+done. `GetCompletedChecklistItemsAsync`, `DismissChecklistAsync`, `IsChecklistDismissedAsync` and
+`ResetChecklistAsync` are on `IBonboardingService`.
+
+### Tour lists
+
+A tour list is the entry point of a help menu or resource centre: the tours, where the user stands with each, and
+a button to start, resume or replay it, so guidance can be found again on purpose rather than only offered once.
+
+```razor
+<BonboardingTourList Title="Guided tours" />                               @* every registered tour *@
+<BonboardingTourList Tours="[WelcomeTour, BillingTour]" HideCompleted="true" />
+```
+
+Each tour shows as new, in progress or completed (`BonboardingTourProgress`), with **Start**, **Resume** or
+**Replay**; a replay starts from the first step, anything else resumes. The button's accessible name includes the
+tour's title, so a screen reader moving from button to button hears "Start Welcome tour" rather than "Start" five
+times, and it is disabled while its tour runs (but not while the user is away from it). The list follows what it
+is given, and the tours' progress as it changes, a reset included. `CanStart` still decides. Tours declared in markup are registered
+only while their page is on screen, so register the ones a help menu should always offer at startup with
+`IBonboardingService.Register`.
 
 ## Dynamic and async targets
 
@@ -966,8 +1177,20 @@ new BonboardingStepDefinition
 `WaitTimeoutBehavior` defaults to `Skip`. Setting it to `Wait` would spin forever, so it is treated
 as `Skip`.
 
-While waiting, the session's `Status` is `BonboardingTourStatus.Waiting` and `IsWaiting` is true. The default UI
-shows a small spinner; replace it with `BonboardingRoot.WaitingTemplate`.
+While waiting, the session's `Status` is `BonboardingTourStatus.Waiting`, `IsWaiting` is true and
+`WaitReason` is `BonboardingWaitReason.Target`. The default UI shows a small card with a spinner and a close
+button (replace it with `BonboardingRoot.WaitingTemplate`), and **the page stays usable**: nothing is blocked
+and the keyboard is not trapped, whatever the step's `Interaction`. There is nothing on screen to protect yet,
+and the element often appears because the user does something - opens the menu it lives in, expands a panel -
+so a step can wait for exactly that. The step's own interaction mode and focus trap apply from the moment its
+target is on screen.
+
+A target that exists but is not rendered - `display: none`, inside a closed `<details>`,
+`visibility: hidden`, or with no size - counts as missing, so the same strategy applies to it. When a
+selector matches several elements, the first one that is rendered is used, which is what a responsive layout
+with a desktop and a mobile copy of the same control needs. A selector the browser cannot parse is reported
+as an error in the log (with the step and the selector) and handled straight away as a wait that has run out,
+rather than waited on for the whole timeout.
 
 #### Which to choose
 
@@ -983,8 +1206,16 @@ Waiting uses a `MutationObserver` on the document, coalesced onto animation fram
 polling timer, so a step waiting for ten seconds costs nothing while the page is idle.
 
 The observer watches for added and removed nodes anywhere in the tree, plus changes to the attributes
-that affect whether a target matches (`data-bonboarding-anchor`, `id`, `class`, `hidden`, `style`). When the
-element appears it is scrolled into view, the observers are attached, and the step is shown.
+that affect whether a target matches or is rendered (`data-bonboarding-anchor`, `id`, `class`, `hidden`,
+`style`, `open`). An element that becomes visible by animating in changes no attribute, so the end of every
+CSS transition and animation triggers a check as well. When the element appears it is scrolled into view, the
+observers are attached, and the step is shown.
+
+A target that disappears while its step is on screen - removed, or hidden by a collapsed panel or a layout
+switching to its mobile form - is handled the same way: if another rendered match exists the step moves to
+it, otherwise the step's missing-target strategy applies. The one exception is the moment after the user
+acted on the target of an `AdvanceOn` step: the action is often the very thing that hides it, and the step is
+about to move on anyway.
 
 ### Targets that are replaced, not removed
 
@@ -1036,7 +1267,11 @@ Once a step is showing, the browser layer keeps the popover glued to its target 
 - capture-phase `scroll` listeners, which catch every scrollable ancestor without having to find
   them;
 - `resize` on both the window and the visual viewport, which is what mobile zoom and the on-screen
-  keyboard change.
+  keyboard change;
+- a `MutationObserver` on the document (child lists, plus the `class`, `style`, `hidden` and `open`
+  attributes), and the end of CSS transitions and animations. These catch a target that moves or disappears
+  with nothing resized: a sibling growing inside a fixed-height pane, or a class that sets
+  `visibility: hidden`. Changes inside the tour's own host are ignored.
 
 All of them feed one animation-frame callback that takes a single measurement, compares it with the
 last one, and only calls into .NET when something actually moved by more than half a pixel. An idle
@@ -1208,9 +1443,30 @@ new BonboardingStepDefinition
 }
 ```
 
-Pressing Next simply does nothing while the guard is unsatisfied. To explain *why*, render your own
-message in the step body - the tour re-renders whenever the session changes, and a two-way bound
-field will update it.
+To tell the user *why* they are held on the step, give a message - on the step, or from the guard itself,
+which wins:
+
+```csharp
+new BonboardingStepDefinition
+{
+    Title = "Name your project",
+    ValidationMessage = "Give the project a name first.",
+    CanAdvance = ctx =>
+    {
+        if (_projectName?.Length > 40) ctx.ValidationMessage = "Keep the name under 40 characters.";
+        return ValueTask.FromResult(!string.IsNullOrWhiteSpace(_projectName) && _projectName.Length <= 40);
+    },
+}
+```
+
+The default popover shows it under the body with `role="alert"`, so a screen reader reads it out the moment
+the user is told no; it stays until the step changes (`IBonboardingTourSession.ValidationMessage`,
+`BonboardingStepRenderContext.ValidationMessage` for a custom template). Every held advance also publishes
+`BonboardingEventKind.AdvanceBlocked`, which, counted per step, points at instructions people find hard to
+follow. Without a message, a held advance is silent, as it always was.
+
+The guard decides for every way forward: the Next button, the arrow keys, an `AdvanceOn` trigger (which stays
+armed, so the user's next attempt is heard) and an application signal.
 
 For validation that should stop the transition and surface an error, throw from `OnBeforeLeave`
 instead; that fails the tour with your exception attached.
@@ -1320,12 +1576,23 @@ is no single URL to navigate to. Use this for steps that apply across a section.
 
 ### Navigating away mid-tour
 
-If the user leaves the page a step belongs to, the tour **holds its place**. The overlay is removed,
-the observers are torn down, and the session moves to `BonboardingTourStatus.Waiting`. When the user returns to a
-matching route, the step is re-activated exactly where it was.
+If the user leaves the page a step belongs to, the tour **holds its place**. The host renders nothing -
+no overlay, no blocker, no card - the observers are torn down, and the session moves to
+`BonboardingTourStatus.Waiting` with `WaitReason` set to `BonboardingWaitReason.Route`. When the user returns
+to a matching route, the step is re-activated exactly where it was, and its popover takes focus again.
+
+The same holds for every wait on a route: while the engine navigates to a step's page, and while a step
+waits for the user to get to a wildcard route or to a route the engine was told not to navigate to. The page
+stays fully usable, because using it is how the user gets there.
 
 The library deliberately does not drag the user back. Fighting someone for control of the address bar
 is never the right call, and a user who navigated away usually meant it.
+
+While the user is away from a step's page - they left it, or it is a route the engine does not navigate to - the
+tour is not one they are taking. An automatic start does not queue behind it but replaces it (cancelled, it keeps
+its place, so a tour list's **Resume** or its own `AutoStart` picks it up again), beacons stop stepping aside for
+it, and a tour list offers to resume it. A step the engine is navigating to is on its way to the screen, and still
+counts as running.
 
 To turn off automatic navigation entirely - so routes are only ever constraints - set:
 
@@ -1422,18 +1689,23 @@ refused.
 
 ## Theming
 
-Every value in the default look is a CSS custom property under `.bit-bonboarding-root`. Restyling the library is a
-matter of overriding variables in your own stylesheet - no selector fights, no `!important`, and no
-CSS framework to install.
+Every value in the default look is a CSS custom property under `.bit-bonboarding-root` (the tour layer) and
+`.bit-bonboarding-themed` (the beacons, checklists and tour lists, which render on the page itself). Restyling
+the library is a matter of overriding variables in your own stylesheet - no selector fights, no `!important`,
+and no CSS framework to install.
 
 ```css
 /* Your stylesheet, loaded after the library's. */
-.bit-bonboarding-root {
+.bit-bonboarding-root,
+.bit-bonboarding-themed {
     --bit-bonboarding-accent: #6d28d9;
     --bit-bonboarding-radius: 6px;
     --bit-bonboarding-font: "Inter", system-ui, sans-serif;
 }
 ```
+
+An override on `.bit-bonboarding-root` alone still restyles every tour, as it always did; add
+`.bit-bonboarding-themed` to reach the on-page components too.
 
 ### The variables
 
@@ -1511,8 +1783,10 @@ new BonboardingTourDefinition { Theme = BonboardingTheme.Dark }
 builder.Services.AddBitBonboardingServices(o => o.Theme = BonboardingTheme.Dark);
 ```
 
-`BonboardingTheme.System` (the default) leaves the attribute as `system` and lets the light palette
-apply. If your application has its own theme switch, bind it to the host:
+`BonboardingTheme.System` (the default) leaves the attribute as `system`, and the stylesheet applies the
+dark palette to it while the operating system asks for a dark scheme (`prefers-color-scheme: dark`) and the
+light one otherwise. It follows a change of the system setting immediately, with no round trip to .NET. If
+your application has its own theme switch, bind it to the host:
 
 ```razor
 <BonboardingRoot Theme="@(_dark ? BonboardingTheme.Dark : BonboardingTheme.Light)" />
@@ -1521,14 +1795,37 @@ apply. If your application has its own theme switch, bind it to the host:
 The host parameter overrides both the tour and the global setting, which is what you want for a
 switch: it keeps tours consistent with the rest of the page.
 
-To adjust the dark palette:
+To adjust the dark palette, override both rules that apply it - the explicit dark theme, and the
+system theme on a dark system:
 
 ```css
 .bit-bonboarding-root[data-bonboarding-theme="dark"] {
     --bit-bonboarding-surface: #0b0e14;
     --bit-bonboarding-accent: #8b5cf6;
 }
+
+@media (prefers-color-scheme: dark) {
+    .bit-bonboarding-root[data-bonboarding-theme="system"] {
+        --bit-bonboarding-surface: #0b0e14;
+        --bit-bonboarding-accent: #8b5cf6;
+    }
+}
 ```
+
+The system rule is written with the specificity of a plain `.bit-bonboarding-root`, so an application
+that restyles the palette on `.bit-bonboarding-root` (with its stylesheet loaded after the library's) keeps
+its own colours on a dark system. An application that follows its own theme switch rather than the operating
+system's maps `system` from there, as this repository's demo does:
+
+```css
+:root[data-app-theme="dark"] .bit-bonboarding-root[data-bonboarding-theme="system"] {
+    --bit-bonboarding-surface: #15191e;
+}
+```
+
+An explicit `Light` or `Dark` theme also sets `color-scheme` on the root, so native controls a custom step
+body renders (inputs, selects, scrollbars) match the card. `System` inherits the page's `color-scheme`, which
+an application with dark mode normally sets on `:root`.
 
 ### Scoping a theme
 
@@ -1778,9 +2075,12 @@ keeps handling everything else:
 
 ```razor
 @* One page: renders its own tour with a custom card *@
-<BonboardingRoot Session="_session" Unstyled="true">
-    <ChildContent> ... </ChildContent>
-</BonboardingRoot>
+@if (_session is not null)
+{
+    <BonboardingRoot Session="_session" Unstyled="true">
+        <ChildContent> ... </ChildContent>
+    </BonboardingRoot>
+}
 
 @code {
     private IBonboardingTourSession? _session;
@@ -1794,7 +2094,8 @@ keeps handling everything else:
 ```
 
 The claim is released when the host is disposed, so navigating away hands the session back to the
-layout rather than leaving it invisible.
+layout rather than leaving it invisible. Render such a host only once it has its session, as above: a host
+whose `Session` is `null` is an ambient host like the layout's, and would draw the active tour a second time.
 
 ### Building the UI from scratch
 
@@ -1846,12 +2147,27 @@ public sealed class BonboardingLabels
     public string StepAnnouncementFormat { get; set; } = "Step {0} of {1}. {2}";
     public string WaitingAnnouncement { get; set; } = "Waiting for the next part of the page.";
     public string ProgressLabel { get; set; } = "Tour progress";
+
+    // Beacons, checklists and tour lists
+    public string BeaconLabel { get; set; } = "Show tip";
+    public string HintDone { get; set; } = "Got it";
+    public string ChecklistProgressFormat { get; set; } = "{0} of {1} done";
+    public string ChecklistDismiss { get; set; } = "Dismiss checklist";
+    public string ChecklistItemDone { get; set; } = "Done";
+    public string ChecklistItemTodo { get; set; } = "Not done";
+    public string TourNew { get; set; } = "New";
+    public string TourInProgress { get; set; } = "In progress";
+    public string TourCompleted { get; set; } = "Completed";
+    public string TourStart { get; set; } = "Start";
+    public string TourResume { get; set; } = "Resume";
+    public string TourReplay { get; set; } = "Replay";
 }
 ```
 
-`DialogLabel`, `StepAnnouncementFormat`, `WaitingAnnouncement` and `ProgressLabel` are read by
-assistive technology rather than shown on screen. Translate them: they are the only thing a screen
-reader user hears.
+`DialogLabel`, `StepAnnouncementFormat`, `WaitingAnnouncement`, `ProgressLabel`, `BeaconLabel`,
+`ChecklistDismiss`, `ChecklistItemDone` and `ChecklistItemTodo` are read by assistive technology rather than
+shown on screen. Translate them: they are the only thing a screen reader user hears. The on-page components
+read the global labels (`IBonboardingLocalizer.GetLabels(null)`), since they belong to no one tour.
 
 #### Globally
 
@@ -1917,6 +2233,18 @@ public sealed class ResourceOnboardingLocalizer(IStringLocalizer<Tours> localize
         StepAnnouncementFormat = localizer["Tour_Announcement"],
         WaitingAnnouncement = localizer["Tour_Waiting"],
         ProgressLabel = localizer["Tour_ProgressLabel"],
+        BeaconLabel = localizer["Beacon_Label"],
+        HintDone = localizer["Hint_Done"],
+        ChecklistProgressFormat = localizer["Checklist_Progress"],
+        ChecklistDismiss = localizer["Checklist_Dismiss"],
+        ChecklistItemDone = localizer["Checklist_ItemDone"],
+        ChecklistItemTodo = localizer["Checklist_ItemTodo"],
+        TourNew = localizer["TourList_New"],
+        TourInProgress = localizer["TourList_InProgress"],
+        TourCompleted = localizer["TourList_Completed"],
+        TourStart = localizer["TourList_Start"],
+        TourResume = localizer["TourList_Resume"],
+        TourReplay = localizer["TourList_Replay"],
     };
 
     // Lets step titles and descriptions be resource keys rather than literals.
@@ -1957,6 +2285,9 @@ Direction changes more than text alignment:
 
 - **`Start` and `End` alignments mirror.** `BonboardingPlacement.BottomStart` aligns to the target's right edge
   in RTL.
+- **Logical sides follow the direction.** `Left` and `Right` are physical; `InlineStart` (with `InlineStartTop`
+  and `InlineStartBottom`) is the side text starts from and `InlineEnd` the side it ends on, so one placement
+  serves both directions: `InlineEnd` is on the right in English and on the left in Arabic or Hebrew.
 - **Arrow keys swap.** In an RTL tour, Left advances and Right goes back, matching reading order.
 - **Layout uses logical properties.** Padding, margins and the footer's button order all flip.
 
@@ -2053,9 +2384,10 @@ disables the transitions, the entry fades and the spotlight's movement between s
 #### Contrast and forced colors
 
 The default light and dark palettes meet AA contrast for body text, muted text and button labels. A
-`forced-colors` block replaces the shadow with a border, outlines the spotlight with `Highlight`, and
-gives buttons a `ButtonText` border, so nothing relies on colour that Windows high contrast has
-removed.
+`forced-colors` block replaces the shadow with a border, outlines the spotlight with `Highlight`,
+gives buttons a `ButtonText` border, draws a beacon's dot in `Highlight`, and turns every focus ring
+(drawn with `box-shadow`, which forced colors do not paint) into a `Highlight` outline, so nothing relies
+on colour or shadow that Windows high contrast has removed.
 
 #### Target size
 
@@ -2089,7 +2421,21 @@ Things worth checking in your own application:
 - Zoom to 200% and confirm the popover stays on screen and its content scrolls rather than clipping.
 
 The library's own test suite covers dialog semantics, labelling, live-region announcements, focus
-capture and restoration, keyboard navigation, and the reduced-motion path.
+capture and restoration, keyboard navigation, and the reduced-motion path. Its browser suite
+(`Tests/Bit.Bonboarding.Tests.E2E`) also runs axe-core's WCAG 2.2 A and AA rules on every demo page, on a
+spotlight step and a hint in both themes and on the waiting card, checks that Tab cannot leave a modal step
+and is not trapped while a step waits, and that focus stays visible in forced colors. Automated rules catch a
+part of what matters; the list above is still worth going through by hand.
+
+### Known limitations
+
+- **A target inside a modal `<dialog>`** opened with `showModal()`: the dialog sits in the browser's top layer
+  above any `z-index`, and makes everything outside it inert, the tour's popover included. Open such dialogs
+  without `showModal()` while a tour points into them, or guide the dialog with steps that have no target.
+- **Shadow DOM and iframes**: targets are found with `querySelector` on the document, which does not look inside
+  shadow roots or frames. A custom element's host can be targeted; its insides cannot.
+- **A scaled ancestor** (`zoom`, `transform: scale()`) of `BonboardingRoot`: a transformed ancestor is compensated
+  for, a scaled one is not. Place the host outside it.
 
 ## Persistence
 
@@ -2110,15 +2456,22 @@ public sealed record BonboardingRecord
     public IReadOnlyList<string> VisitedStepIds { get; init; }
     public DateTimeOffset UpdatedAt { get; init; }
     public DateTimeOffset? CompletedAt { get; init; }
+    public DateTimeOffset? SnoozedUntil { get; init; }
     public IReadOnlyDictionary<string, string>? Data { get; init; }
 
     public bool IsClosed => Completed || Dismissed;
+    public bool IsSnoozedAt(DateTimeOffset now);
 }
 ```
 
 A record is written after every step, and again when the tour ends. `Data` belongs to your
 application: write it through your `IBonboardingStore`, and the library carries it over on every
 write of its own.
+
+**Completion is sticky.** `Completed` says the user ran the tour to the end at some point, so replaying a
+finished tour from a help menu does not un-finish it, however the replay ends; `CompletedAt` is the most
+recent completion, and `Dismissed` how the most recent run ended. A completion recorded by another version
+of the tour is not carried over (see [Versioning](#versioning)).
 
 ### How a tour ends matters
 
@@ -2128,10 +2481,27 @@ write of its own.
 | `SkipAsync` | no | yes | no |
 | `DismissAsync` | no | yes | no |
 | `CancelAsync` | no | no | **yes** |
+| `SnoozeAsync` | no | no | **after the snooze** |
 | Failed | no | no | yes |
 
 `CancelAsync` is the "interrupted, not refused" ending. Starting another tour cancels the running one
 rather than dismissing it, so being interrupted never counts as the user turning a tour down.
+
+`SnoozeAsync` is "remind me later". The record keeps the user's place and gets a `SnoozedUntil`; until
+then `StartOnceAsync` and a declarative `AutoStart` pass the tour over, and afterwards it resumes where
+it was snoozed. A start the user asks for (`StartAsync`) is not held back by a snooze. The simplest way to
+offer it is the built-in action:
+
+```csharp
+new BonboardingStepDefinition
+{
+    Title = "A quick tour?",
+    Actions = [BonboardingStepAction.RemindMeLater("Not now", TimeSpan.FromDays(3))],
+}
+```
+
+Snoozes and record times come from the registered `TimeProvider` (`TimeProvider.System` unless you
+register another), so tests can move time on.
 
 ### Resuming
 
@@ -2162,6 +2532,22 @@ A record written by an older version is discarded rather than resumed into, and
 `IsCompletedAsync` / `IsClosedAsync` report `false`, so `StartOnceAsync` offers the updated tour
 again.
 
+When a bump should not mean "everyone sees it again", migrate the old record instead. Return it unchanged
+to keep everything (the right choice after rewording a tour), map renamed step ids, or return `null` to
+discard it after all. The result is stamped with the current version; a migration that throws is logged and
+treated as `null`.
+
+```csharp
+new BonboardingTourDefinition
+{
+    Id = "welcome",
+    Version = 3,
+    MigrateRecord = record => record.Version == 2
+        ? record with { CurrentStepId = record.CurrentStepId == "plans" ? "pricing" : record.CurrentStepId }
+        : null,
+}
+```
+
 ### Turning it off
 
 ```csharp
@@ -2185,6 +2571,47 @@ The mirror matters more than it sounds:
 
 `ClearAsync` only removes keys carrying the configured prefix. The rest of `localStorage` belongs to
 your application.
+
+#### Several people on one device
+
+A shared computer, or an application where several accounts can be signed in at once, must not let one person's
+finished tours hide them from the next. Tell the store whose progress it is:
+
+```csharp
+builder.Services.AddBitBonboardingServices(options =>
+{
+    options.StorageScope = async (services, ct) =>
+        (await services.GetRequiredService<AuthenticationStateProvider>().GetAuthenticationStateAsync())
+            .User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+});
+```
+
+Every key then carries the owner (`bit-bonboarding:@{user}/{tourId}`, the user escaped), the in-memory mirror is
+kept per owner too, so signing in as someone else in the same tab never shows the previous person's progress, and
+`ResetAllAsync` forgets only the current person's records (or, while nobody is signed in, only the device's).
+`null` - the default, and the right answer while nobody is signed in - stores progress for the device as a whole.
+The scope is asked on every read and write, so return a cached value; one that throws is logged and treated as
+`null` rather than losing the progress.
+
+#### Two tabs
+
+`localStorage` is shared by every tab of the site, and the store listens to the browser's `storage` event, so what
+one tab writes the others pick up: their cached copy is dropped, a checklist ticks off in every tab, a tour list
+updates, and a tour the user completed, dismissed, skipped or snoozed in one tab stops in the others (cancelled,
+which writes nothing, so the decision taken in the first tab stands). Progress made in one tab does not stop the
+tour in another.
+
+The notification comes from `IBonboardingStoreEvents`, which a store of your own can implement as well - a
+server-backed store pushing changes made on another device over SignalR, say. Raise its `Changed` event with the
+record's key, or `null` when everything may have changed.
+
+#### One visit only
+
+```csharp
+builder.Services.AddBitBonboardingServices(options => options.StorageLocation = BonboardingStorageLocation.Session);
+```
+
+Keeps progress in `sessionStorage` instead: it lasts as long as the tab, so `StartOnceAsync` means once per visit.
 
 #### Memory only
 
@@ -2234,12 +2661,14 @@ await BonboardingService.IsClosedAsync("welcome");      // completed, skipped or
 await BonboardingService.GetRecordAsync("welcome");     // the whole record, or null
 
 await BonboardingService.ResetAsync("welcome");         // forget one tour
-await BonboardingService.ResetAllAsync();               // forget every tour
+await BonboardingService.ResetAllAsync();               // forget every tour, and every checklist's progress
 
 await BonboardingService.RestartAsync(tour);            // reset, then start from the beginning
 ```
 
-A "replay the tours" button in a settings page is `ResetAllAsync` followed by a reload.
+The checklists, tour lists and beacons on screen follow a reset at once. `RestartAsync` checks the definition
+first, so a tour that cannot start (see [Checking a definition](#checking-a-definition)) throws without costing the
+user their progress. A "replay the tours" button in a settings page is `ResetAllAsync` followed by a reload.
 
 ## Events and analytics
 
@@ -2262,8 +2691,11 @@ published as an `BonboardingEvent`, including how long each step was on screen.
 | `TourCompleted` | Ran to the end |
 | `TourSkipped` | The user skipped the rest |
 | `TourDismissed` | The user closed it |
-| `TourCancelled` | Interrupted by the application; progress kept |
+| `TourCancelled` | Interrupted by the application; progress kept. Also a queued start withdrawn before it ran |
 | `TourFailed` | A hook threw, or a `Fail` strategy fired; `Error` is populated |
+| `AdvanceBlocked` | `CanAdvance` held the user on the step |
+| `TourSnoozed` | The user asked to be reminded later; progress kept |
+| `TourQueued` | A start found another tour running and waits for it (`TourStarted` follows when it really starts) |
 
 Each event carries:
 
@@ -2545,6 +2977,34 @@ performance profiler will show the `requestAnimationFrame` callbacks; a healthy 
 - Set `Scroll = BonboardingScrollMode.None` for steps whose target is always in view.
 - Place exactly one `BonboardingRoot`, in the layout.
 
+## Upgrading
+
+Nothing public was removed or renamed, and members added to `IBonboardingTourSession` and `IBonboardingInterop`
+have default implementations, so code written against an earlier version compiles unchanged. The exception is an
+implementation of `IBonboardingService` of your own, such as a decorator: it now has to forward `SignalAsync` and
+the checklist members too, because the only default they could have would do nothing, silently. A few behaviours
+changed; each made the library do what its documentation already promised, but an application may have come to
+rely on the old behaviour:
+
+| What changed | Before | Now | If you relied on the old behaviour |
+|---|---|---|---|
+| `BonboardingTheme.System` (the default) | Always the light palette | The dark palette on a dark operating system | Set `Theme = BonboardingTheme.Light`, or keep restyling `.bit-bonboarding-root`, which still wins (the system rule has the same specificity). |
+| A step waiting for its route | The page was dimmed and blocked behind a waiting card | Nothing is rendered until the route matches | Render your own indicator from `session.WaitReason`. |
+| A step waiting for its target | The page was blocked and Tab trapped | The page stays usable; the waiting card has a close button | Nothing to do, unless a test expected the blocker. |
+| A target that exists but is not rendered | Counted as found: no spotlight, a centred card | Counted as missing: the missing-target strategy applies | Set `MissingTarget = Center` for the old look. |
+| Replaying a completed tour | Wrote `Completed = false` until it was completed again | Completion is sticky (per version) | Use `ResetAsync` or `RestartAsync` to forget a completion on purpose. |
+| A definition with duplicate step ids or a jump to nowhere | Started, and misbehaved | `StartAsync` throws `BonboardingException` listing the problems | Fix the definition; `Validate()` lists the same problems in a test. |
+| A declarative `AutoStart` while another tour runs | Cancelled the running tour | Queues behind it, by `Priority` | Start the tour yourself with the default `WhenBusy = Replace`. |
+| `BonboardingTour.StopAsync(BonboardingTourEndReason.Cancelled)` | Dismissed the tour | Cancels it (progress kept, not recorded as refused) | Pass `Dismissed`. |
+| A double click on an action whose handler is still running | Ran the handler twice | The second click is ignored while the first runs | Nothing to do. |
+| An `AdvanceOn` trigger held back by `CanAdvance` | Never fired again | Stays armed until the step changes | Nothing to do. |
+| An unparseable target selector | Waited out the whole timeout silently | Logged as an error and handled as a timed-out wait at once | Nothing to do. |
+
+New enum members are appended (`BonboardingTourStatus.Snoozed`, `BonboardingTourEndReason.Snoozed`,
+`BonboardingStepActionEffect.Snooze`, `BonboardingEventKind.AdvanceBlocked`/`TourSnoozed`/`TourQueued`, the
+`Inline*` placements), so stored and reported values keep their meaning; a `switch` over one of them may want the
+new cases.
+
 ## API reference
 
 Everything public lives in the `Bit.Bonboarding` namespace.
@@ -2591,13 +3051,17 @@ Declares a tour in markup. Renders nothing.
 |---|---|---|
 | `Id` | `string` | Required. Also the persistence key. |
 | `Title` | `string?` | Dialog label fallback. |
+| `Description` | `string?` | Shown by a tour list. |
 | `Version` | `int` | Bump to discard stale saved progress. Default `1`. |
-| `AutoStart` | `BonboardingAutoStart` | `None`, `Once` or `Always`. Default `None`. |
+| `AutoStart` | `BonboardingAutoStart` | `None`, `Once` or `Always`. Default `None`. An automatic start queues behind a running tour and passes over a snoozed one. |
+| `Priority` | `int` | Order among queued starts. Default `0`. |
+| `CanStart` | `Func<BonboardingTourContext, ValueTask<bool>>?` | Gate evaluated before starting. |
+| `Data` | `object?` | Arbitrary payload. |
 | `ChildContent` | `RenderFragment?` | The `BonboardingStep` children. |
 | `Template` | `RenderFragment<BonboardingStepRenderContext>?` | Replace the popover contents for this tour. |
 | `Labels` | `BonboardingLabels?` | Override the label set. |
 | `Persist` | `bool?` | Override global persistence. |
-| `Placement`, `Theme`, `Direction`, `Progress`, `Interaction`, `ShowOverlay`, `ShowSpotlight`, `ShowSkip`, `ShowClose`, `ShowPrevious`, `CloseOnEscape`, `CloseOnOverlayClick` | nullable | Defaults for every step. |
+| `Placement`, `Theme`, `Direction`, `Progress`, `Interaction`, `ShowOverlay`, `ShowSpotlight`, `ShowSkip`, `ShowClose`, `ShowPrevious`, `ShowNext`, `CloseOnEscape`, `CloseOnOverlayClick`, `Offset`, `OverlayOpacity`, `SpotlightPadding`, `SpotlightRadius`, `SpotlightShape`, `Scroll`, `MissingTarget`, `WaitTimeout`, `WaitTimeoutBehavior`, `AnimationDuration`, `ZIndex`, `PopoverClass`, `KeyboardNavigation`, `TrapFocus`, `RestoreFocus`, `AutoFocus` | nullable | Defaults for every step. |
 | `Configure` | `Action<BonboardingTourDefinition>?` | Escape hatch for anything not exposed as a parameter. Runs on every rebuild, so keep it idempotent. |
 | `OnStarted` | `EventCallback` | |
 | `OnStepChanged` | `EventCallback<BonboardingStepChangedEventArgs>` | |
@@ -2625,14 +3089,74 @@ Declares one step. Renders nothing. Must be inside an `BonboardingTour`.
 | `Actions` | `IReadOnlyList<BonboardingStepAction>?` | Extra footer buttons. |
 | `Route` | `string?` | Route this step belongs to; `*` suffix for a prefix match. |
 | `When` | `Func<BonboardingStepContext, ValueTask<bool>>?` | Gate. |
-| `CanAdvance` | `Func<BonboardingStepContext, ValueTask<bool>>?` | Blocks the forward button. |
+| `CanAdvance` | `Func<BonboardingStepContext, ValueTask<bool>>?` | Holds the user on the step. |
+| `ValidationMessage` | `string?` | Shown and announced when `CanAdvance` holds the user. |
 | `ResolveNext`, `ResolvePrevious` | `Func<BonboardingStepContext, ValueTask<string?>>?` | Branching. |
 | `AdvanceOn` | `BonboardingAdvanceTrigger?` | Advance on a real interaction. |
+| `AdvanceOnSignal` | `string?` | Advance when the application raises this signal. |
 | `OnBeforeShow`, `OnShown`, `OnBeforeLeave` | `Func<BonboardingStepContext, ValueTask>?` | Lifecycle. |
 | `Data` | `object?` | Arbitrary payload. |
+| `Metadata` | `IReadOnlyDictionary<string, object?>?` | Analytics dimensions. |
 | `NextLabel`, `PreviousLabel`, `SkipLabel`, `DoneLabel` | `string?` | Per-step label overrides. |
-| Presentation overrides | nullable | `Placement`, `PlacementFallbacks`, `Offset`, `ShowSpotlight`, `SpotlightPadding`, `SpotlightRadius`, `SpotlightShape`, `ShowOverlay`, `Interaction`, `Scroll`, `MissingTarget`, `WaitTimeout`, `WaitTimeoutBehavior`, `Progress`, `ShowNext`, `ShowPrevious`, `ShowSkip`, `ShowClose`, `PopoverClass` |
+| Presentation overrides | nullable | `Placement`, `PlacementFallbacks`, `Offset`, `ViewportPadding`, `ArrowSize`, `ShowSpotlight`, `SpotlightPadding`, `SpotlightRadius`, `SpotlightShape`, `ShowOverlay`, `OverlayOpacity`, `Interaction`, `CloseOnOverlayClick`, `CloseOnEscape`, `Scroll`, `ScrollPadding`, `MissingTarget`, `WaitTimeout`, `WaitTimeoutBehavior`, `Progress`, `ShowNext`, `ShowPrevious`, `ShowSkip`, `ShowClose`, `AnimationDuration`, `Theme`, `Direction`, `ZIndex`, `PopoverClass`, `KeyboardNavigation`, `TrapFocus`, `AutoFocus` |
 | `Configure` | `Action<BonboardingStepDefinition>?` | Escape hatch. Runs on every rebuild, so keep it idempotent. |
+
+#### `BonboardingBeacon`
+
+A pulsing dot on an element; see [Beacons](#beacons).
+
+| Parameter | Type | Description |
+|---|---|---|
+| `Id` | `string?` | Persists the hint under this id; the beacon goes away once it has been read. |
+| `Target`, `Anchor`, `Selector`, `Element` | | The element it sits on (one is required). |
+| `Position` | `BonboardingBeaconPosition` | Corner, edge or centre. Default `TopEnd`. |
+| `OffsetX`, `OffsetY` | `double` | Nudge, in pixels (X towards the inline end). |
+| `Title`, `Description`, `ChildContent` | | The hint. |
+| `Placement` | `BonboardingPlacement?` | Where the hint goes. |
+| `Tour`, `TourId` | | Start this tour instead of opening a hint. |
+| `KeepAfterClosed` | `bool` | Keep showing after its tour was completed or dismissed. |
+| `OnClick` | `EventCallback` | Run this instead. |
+| `Label` | `string?` | Accessible name; defaults to `Title`, then `BonboardingLabels.BeaconLabel`. |
+| `HideWhileTourRuns` | `bool` | Default `true`. |
+| `Theme`, `Class` | | |
+
+Member: `IsOpen`.
+
+#### `BonboardingChecklist`
+
+Renders a `BonboardingChecklistDefinition`; see [Checklists](#checklists).
+
+| Parameter | Type | Description |
+|---|---|---|
+| `Checklist` | `BonboardingChecklistDefinition` | Required. |
+| `Dismissible` | `bool` | Show a button that hides it for good. |
+| `HideWhenComplete` | `bool` | Render nothing once every task is done. |
+| `HeadingLevel` | `int` | 1-6, default `2`. |
+| `ItemTemplate` | `RenderFragment<BonboardingChecklistItemState>?` | Replace each task's markup. |
+| `OnCompleted` | `EventCallback` | The last task got done while on screen. |
+| `Theme`, `Class` | | |
+
+Members: `Items`, `IsComplete`, `RefreshAsync()`.
+
+`BonboardingChecklistDefinition`: `Id`, `Title`, `Description`, `Items`, `FindItem`, constant `StorageKeyPrefix`.
+`BonboardingChecklistItem`: `Id`, `Title`, `Description`, `Tour`, `TourId`, `Route`, `OnClick`, `IsComplete`,
+`CompleteOnSignal`, `When`.
+
+#### `BonboardingTourList`
+
+Tours to start, resume or replay; see [Tour lists](#tour-lists).
+
+| Parameter | Type | Description |
+|---|---|---|
+| `Tours` | `IEnumerable<BonboardingTourDefinition>?` | Defaults to every registered tour, by title. |
+| `Title` | `string?` | Heading. |
+| `HeadingLevel` | `int` | 1-6, default `2`. |
+| `HideCompleted` | `bool` | Leave out completed tours. |
+| `ItemTemplate` | `RenderFragment<BonboardingTourListItem>?` | Replace each tour's markup. |
+| `EmptyContent` | `RenderFragment?` | Shown when there is nothing to list. |
+| `Theme`, `Class` | | |
+
+Members: `Items`, `RefreshAsync()`.
 
 ---
 
@@ -2666,10 +3190,26 @@ Task<bool> IsClosedAsync(string tourId, CancellationToken ct = default);
 Task<BonboardingRecord?> GetRecordAsync(string tourId, CancellationToken ct = default);
 Task ResetAsync(string tourId, CancellationToken ct = default);
 Task ResetAllAsync(CancellationToken ct = default);
+
+Task<bool> SignalAsync(string signal, CancellationToken ct = default);
+
+Task SetChecklistItemAsync(string checklistId, string itemId, bool done = true, CancellationToken ct = default);
+Task<IReadOnlyCollection<string>> GetCompletedChecklistItemsAsync(string checklistId, CancellationToken ct = default);
+Task DismissChecklistAsync(string checklistId, CancellationToken ct = default);
+Task<bool> IsChecklistDismissedAsync(string checklistId, CancellationToken ct = default);
+Task ResetChecklistAsync(string checklistId, CancellationToken ct = default);
 ```
 
-`StartAsync` throws `BonboardingException` when the tour has no steps, when the id is not registered,
-or when `CanStart` declines. `StartOnceAsync` returns `null` instead of throwing.
+`StartAsync` throws `BonboardingException` when the tour has no steps, when its definition has errors
+(see [Checking a definition](#checking-a-definition)), when the id is not registered, when `CanStart`
+declines, or when `WhenBusy = Skip` and another tour runs. `StartOnceAsync` returns `null` instead of
+throwing for the last three. Either throws `OperationCanceledException` when its token is cancelled before the tour
+got going, and leaves nothing behind.
+
+A decorator of your own (a logging or telemetry wrapper) forwards every member to the service underneath.
+`SignalAsync` and the checklist members have no default implementation on purpose: the only possible default does
+nothing, and a wrapper that inherited it would silently drop signals and checklist progress. Checklists, tour lists
+and beacons keep working behind a wrapper that forwards.
 
 #### `BonboardingStartOptions`
 
@@ -2678,9 +3218,10 @@ or when `CanStart` declines. `StartOnceAsync` returns `null` instead of throwing
 | `StartAtStepId` | `null` | Begin at this step. |
 | `StartAtIndex` | `null` | Begin at this index. Ignored when `StartAtStepId` is set. |
 | `Resume` | `true` | Continue from persisted progress. |
-| `Force` | `false` | Start even when closed, and bypass `CanStart`. |
+| `Force` | `false` | Start even when closed or snoozed, and bypass `CanStart`. |
 | `State` | `null` | Seed values for `IBonboardingTourSession.State`. |
-| `StopOthers` | `true` | Cancel any other running tour first. |
+| `StopOthers` | `true` | Deal with any other running tour first (see `WhenBusy`). |
+| `WhenBusy` | `Replace` | `Replace` the running tour, `Queue` behind it, or `Skip` this start. |
 
 ---
 
@@ -2698,6 +3239,8 @@ Inherits every member of [`BonboardingStepOptions`](#bonboardingstepoptions) as 
 | `Labels` | `BonboardingLabels?` | Replaces the global set. |
 | `Persist` | `bool?` | |
 | `Version` | `int` | Default `1`. |
+| `MigrateRecord` | `Func<BonboardingRecord, BonboardingRecord?>?` | Carry progress over a version bump. |
+| `Priority` | `int` | Order among queued starts. Default `0`. |
 | `Template` | `RenderFragment<BonboardingStepRenderContext>?` | |
 | `CanStart` | `Func<BonboardingTourContext, ValueTask<bool>>?` | |
 | `OnStarted` | `Func<BonboardingTourContext, ValueTask>?` | |
@@ -2705,7 +3248,7 @@ Inherits every member of [`BonboardingStepOptions`](#bonboardingstepoptions) as 
 | `OnEnded` | `Func<BonboardingTourEndedEventArgs, ValueTask>?` | |
 | `Data` | `object?` | |
 
-Methods: `FindStep(string)`, `IndexOf(string)`. Constant: `EndStepId` (`"$end"`).
+Methods: `FindStep(string)`, `IndexOf(string)`, `Validate()`. Constant: `EndStepId` (`"$end"`).
 
 #### `BonboardingStepDefinition`
 
@@ -2724,9 +3267,14 @@ parameters above, plus `Body` (the component's `ChildContent`) and `Metadata`.
 | `OnClick` | `Func<BonboardingStepContext, ValueTask>?` | Awaited before `Effect`. |
 | `Effect` | `BonboardingStepActionEffect` | `None` |
 | `TargetStepId` | `string?` | For `GoTo`. |
+| `SnoozeFor` | `TimeSpan?` | For `Snooze`; a day when unset. |
 | `IsDisabled` | `Func<BonboardingStepContext, bool>?` | |
 | `CssClass` | `string?` | |
 | `AutoFocus` | `bool` | Receives focus instead of the forward button. |
+
+`BonboardingStepAction.RemindMeLater(label, duration)` builds a "remind me later" button. While an action's
+handler runs, its button is `aria-busy` and a second press is ignored, so a handler that creates something runs
+once per request rather than once per click.
 
 #### `BonboardingAdvanceTrigger`
 
@@ -2741,7 +3289,8 @@ parameters above, plus `Body` (the component's `ChildContent`) and `Metadata`.
 
 #### `BonboardingStepContext` / `BonboardingTourContext`
 
-`BonboardingStepContext`: `Session`, `Tour`, `Step`, `Index`, `Count`, `Services`, `CancellationToken`, `State`.
+`BonboardingStepContext`: `Session`, `Tour`, `Step`, `Index`, `Count`, `Services`, `CancellationToken`, `State`,
+and the settable `ValidationMessage`.
 
 `BonboardingTourContext`: `Tour`, `Services`, `Session?`.
 
@@ -2802,6 +3351,8 @@ member is nullable; `null` means "inherit". Resolution order is step, tour, glob
 | `Labels` | `BonboardingLabels` | English |
 | `Persist` | `bool` | `true` |
 | `StorageKeyPrefix` | `string` | `"bit-bonboarding:"` |
+| `StorageLocation` | `BonboardingStorageLocation` | `Local` (`Session` keeps progress for the visit) |
+| `StorageScope` | `Func<IServiceProvider, CancellationToken, ValueTask<string?>>?` | `null` (whose progress it is; see [Several people on one device](#several-people-on-one-device)) |
 | `AutoNavigateToStepRoute` | `bool` | `true` |
 | `EnableJsDiagnostics` | `bool` | `false` |
 
@@ -2845,14 +3396,14 @@ Returns splattable attributes: `<button @attributes="BitBonboarding.Anchor("crea
 #### `IBonboardingTourSession`
 
 State: `Id`, `Tour`, `Status`, `CurrentStep`, `CurrentIndex`, `DisplayPosition`, `DisplayCount`,
-`CurrentOptions`, `TargetRect`, `Placement`, `HasTarget`, `IsWaiting`, `IsActive`, `IsFirstStep`,
-`IsLastStep`, `History`, `State`, `EndReason`, `Error`.
+`CurrentOptions`, `TargetRect`, `Placement`, `HasTarget`, `IsWaiting`, `WaitReason`, `IsActive`, `IsFirstStep`,
+`IsLastStep`, `History`, `State`, `EndReason`, `Error`, `ValidationMessage`.
 
 Event: `Changed` (`BonboardingTourSessionChangedEventArgs.Change` is `Step`, `Geometry` and/or `Ended`).
 
 Commands: `StartAsync`, `NextAsync`, `PreviousAsync`, `GoToAsync(string)`, `GoToAsync(int)`,
-`SkipAsync`, `CompleteAsync`, `DismissAsync`, `CancelAsync`, `PauseAsync`, `ResumeAsync`,
-`RefreshAsync`, `InvokeActionAsync`.
+`SkipAsync`, `CompleteAsync`, `DismissAsync`, `CancelAsync`, `SnoozeAsync(TimeSpan)`, `PauseAsync`,
+`ResumeAsync`, `RefreshAsync`, `InvokeActionAsync`.
 
 Commands are serialised: concurrent calls queue rather than interleaving, and a command issued from
 inside a hook runs inline rather than deadlocking on the lock its caller holds.
@@ -2903,7 +3454,10 @@ Implementations: `BonboardingBrowserStore` (default) and `BonboardingInMemorySto
 #### `BonboardingRecord`
 
 `TourId`, `Version`, `CurrentStepId`, `CurrentIndex`, `Completed`, `Dismissed`, `VisitedStepIds`,
-`UpdatedAt`, `CompletedAt`, `Data`, `IsClosed`.
+`UpdatedAt`, `CompletedAt`, `SnoozedUntil`, `Data`, `IsClosed`, `IsSnoozedAt(DateTimeOffset)`.
+
+A checklist's progress is a record too, under `checklist:{id}`: `Data` maps each ticked item to when it was
+ticked, and `Dismissed` says the checklist was dismissed.
 
 ---
 
@@ -2919,8 +3473,10 @@ string? Localize(string? text) => text;    // default: unchanged
 #### `BonboardingLabels`
 
 `Next`, `Previous`, `Skip`, `Done`, `Close`, `DialogLabel`, `ProgressFormat`,
-`StepAnnouncementFormat`, `WaitingAnnouncement`, `ProgressLabel`. Static `Default`, instance
-`Clone()`.
+`StepAnnouncementFormat`, `WaitingAnnouncement`, `ProgressLabel`, and for the on-page components
+`BeaconLabel`, `HintDone`, `ChecklistProgressFormat` (`{0}` done, `{1}` total), `ChecklistDismiss`,
+`ChecklistItemDone`, `ChecklistItemTodo`, `TourNew`, `TourInProgress`, `TourCompleted`, `TourStart`,
+`TourResume`, `TourReplay`. Static `Default`, instance `Clone()`.
 
 ---
 
@@ -2971,12 +3527,17 @@ static string Normalize(string? path);
 
 | Enum | Values |
 |---|---|
-| `Placement` | `Auto`, `Top`, `TopStart`, `TopEnd`, `Bottom`, `BottomStart`, `BottomEnd`, `Left`, `LeftStart`, `LeftEnd`, `Right`, `RightStart`, `RightEnd`, `Center` |
+| `Placement` | `Auto`, `Top`, `TopStart`, `TopEnd`, `Bottom`, `BottomStart`, `BottomEnd`, `Left`, `LeftStart`, `LeftEnd`, `Right`, `RightStart`, `RightEnd`, `Center`, `InlineStart`, `InlineStartTop`, `InlineStartBottom`, `InlineEnd`, `InlineEndTop`, `InlineEndBottom` |
 | `BonboardingPlacementSide` | `Top`, `Right`, `Bottom`, `Left`, `Center` |
 | `BonboardingPlacementAlign` | `Start`, `Center`, `End` |
 | `BonboardingMissingTargetBehavior` | `Wait`, `Skip`, `Center`, `Fail` |
-| `BonboardingTourStatus` | `Idle`, `Running`, `Waiting`, `Paused`, `Completed`, `Skipped`, `Dismissed`, `Cancelled`, `Failed` |
-| `BonboardingTourEndReason` | `Completed`, `Skipped`, `Dismissed`, `Cancelled`, `Failed` |
+| `BonboardingTourStatus` | `Idle`, `Running`, `Waiting`, `Paused`, `Completed`, `Skipped`, `Dismissed`, `Cancelled`, `Failed`, `Snoozed` |
+| `BonboardingTourEndReason` | `Completed`, `Skipped`, `Dismissed`, `Cancelled`, `Failed`, `Snoozed` |
+| `BonboardingWaitReason` | `None`, `Target`, `Route` |
+| `BonboardingBusyBehavior` | `Replace`, `Queue`, `Skip` |
+| `BonboardingValidationSeverity` | `Warning`, `Error` |
+| `BonboardingBeaconPosition` | `TopEnd`, `TopStart`, `Top`, `End`, `Center`, `Start`, `BottomEnd`, `BottomStart`, `Bottom` |
+| `BonboardingTourProgress` | `New`, `InProgress`, `Completed` |
 | `BonboardingStepChangeReason` | `Start`, `Next`, `Previous`, `Jump`, `Resume`, `Retarget` |
 | `BonboardingInteractionMode` | `Blocked`, `TargetOnly`, `Free` |
 | `BonboardingScrollMode` | `Auto`, `Smooth`, `Instant`, `None` |
@@ -2986,7 +3547,7 @@ static string Normalize(string? path);
 | `BonboardingDirection` | `Auto`, `LeftToRight`, `RightToLeft` |
 | `BonboardingAutoStart` | `None`, `Once`, `Always` |
 | `BonboardingStepActionStyle` | `Primary`, `Secondary`, `Ghost`, `Danger` |
-| `BonboardingStepActionEffect` | `None`, `Next`, `Previous`, `GoTo`, `Complete`, `Skip`, `Dismiss` |
+| `BonboardingStepActionEffect` | `None`, `Next`, `Previous`, `GoTo`, `Complete`, `Skip`, `Dismiss`, `Snooze` |
 | `BonboardingEventKind` | see [events](#the-event-stream) |
 | `BonboardingTourSessionChange` | `None`, `Step`, `Geometry`, `Ended` (flags) |
 
@@ -3028,7 +3589,13 @@ ValueTask<string?> GetStorageAsync(string key, CancellationToken ct = default);
 ValueTask SetStorageAsync(string key, string value, CancellationToken ct = default);
 ValueTask RemoveStorageAsync(string key, CancellationToken ct = default);
 ValueTask<IReadOnlyList<string>> ListStorageKeysAsync(string prefix, CancellationToken ct = default);
+
+// With default implementations, so a test double written for an earlier version still compiles:
+ValueTask AttachBeaconAsync(BonboardingBeaconActivation activation, ElementReference beacon, CancellationToken ct = default);
+ValueTask DetachBeaconAsync(string beaconId, CancellationToken ct = default);
+ValueTask FocusTargetAsync(BonboardingTargetDescriptor target, CancellationToken ct = default);
 ```
 
 Supporting types: `BonboardingTargetDescriptor`, `BonboardingTargetKind`, `BonboardingAdvanceTriggerDescriptor`, `BonboardingStepActivation`,
-`BonboardingStepGeometry`, `BonboardingBrowserEnvironment`, `IBonboardingInteropCallbacks`.
+`BonboardingStepGeometry` (including `InvalidSelector`), `BonboardingBeaconActivation`, `BonboardingBrowserEnvironment`,
+`IBonboardingInteropCallbacks`.

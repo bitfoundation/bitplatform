@@ -19,9 +19,7 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Connect a client</h3>
 
     <p>
-        The endpoint is plain Streamable HTTP, so any MCP client connects with a URL and nothing else. The same tools
-        are also served, version by version, through the bit platform's own server at
-        <code>https://bitplatform.dev/mcp</code>, next to the other bit libraries.
+        The endpoint is plain Streamable HTTP, so any MCP client connects with a URL and nothing else.
     </p>
 
     <pre class="bb-code">@ClientConfig</pre>
@@ -48,9 +46,25 @@
     </div>
 
     <p>
-        The guide, the API, the theme, a sample flow and the sources are also exposed as <code>blow://</code>
-        resources, and three prompts - <code>add-blow-to-app</code>, <code>implement-blow-feature</code> and
-        <code>debug-blow-flow</code> - walk an agent through the common jobs in the right order.
+        Called without its key, a reference tool - <code>GetBlowGuideSection</code>, <code>GetBlowApi</code>,
+        <code>GetBlowTheme</code>, <code>GetBlowSourceFile</code> - answers with the index of what there is, and
+        <code>InspectBlowFlow</code> with a sample flow, so no separate listing tool is needed.
+    </p>
+
+    <p>
+        The same material is exposed as <code>blow://</code> resources, for a client that attaches documentation up
+        front: the whole guide (<code>blow://guide</code>) or one section of it (<code>blow://guide/{heading}</code>,
+        with every top-level section also listed on its own), the API index and one type
+        (<code>blow://api</code>, <code>blow://api/{typeName}</code>), the theme (<code>blow://theme</code>), a sample
+        flow (<code>blow://sample-flow</code>) and any source file (<code>blow://source/{path}</code>). In a client that
+        supports completions, the resources' and prompts' arguments complete as you type - guide headings, type names,
+        source paths, render modes, and common features and symptoms.
+    </p>
+
+    <p>
+        Three prompts walk an agent through the common jobs in the right order: <code>add-blow-to-app</code> (for a
+        render mode), <code>implement-blow-feature</code> (for a feature you describe) and <code>debug-blow-flow</code>
+        (for a symptom you describe).
     </p>
 </section>
 
@@ -72,7 +86,8 @@
 
 @code {
     private const string ClientConfig = """
-        // .mcp.json (Claude Code, VS Code, and anything else reading this shape)
+        // .mcp.json - the "mcpServers" shape most clients read; VS Code's .vscode/mcp.json
+        // takes the same entry under "servers" instead
         {
           "mcpServers": {
             "blow": {

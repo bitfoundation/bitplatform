@@ -110,9 +110,9 @@ public static partial class MauiProgram
                 builder.Logging.AddEventLog(options => configuration.Bind("Logging:EventLog", options));
             }
 
+            services.AddSingleton<IValidateOptions<ClientMauiSettings>, ClientMauiSettingsValidator>();
             services.AddOptions<ClientMauiSettings>()
                 .Bind(configuration)
-                .ValidateDataAnnotations()
                 .ValidateOnStart();
 
             //-:cnd:noEmit

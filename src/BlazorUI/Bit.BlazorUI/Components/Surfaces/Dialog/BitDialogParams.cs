@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The parameters for <see cref="BitDialog"/> component.
@@ -29,6 +31,13 @@ public class BitDialogParams : BitComponentBaseParams, IBitComponentParams
 
 
 
+    // What BitParams reads of a params object by reflection is kept by its constructor rather than by the component
+    // reading it, so the trimmer keeps it only for the params types an app creates.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitDialogParams))]
+    public BitDialogParams() { }
+
+
+
     public string Name => ParamName;
 
 
@@ -45,6 +54,9 @@ public class BitDialogParams : BitComponentBaseParams, IBitComponentParams
 
     /// <summary>
     /// Which of the dialog's own buttons AutoFocus lands on, e.g. the safe answer of a destructive confirmation.
+    /// It is a default: a dialog's own AutoFocusButton, its AutoFocusSelector and an element its content marks with
+    /// data-autofocus or autofocus all come first, and it is fallen back on when none of them can take the focus,
+    /// before the first focusable element.
     /// </summary>
     public BitDialogButton? AutoFocusButton { get; set; }
 

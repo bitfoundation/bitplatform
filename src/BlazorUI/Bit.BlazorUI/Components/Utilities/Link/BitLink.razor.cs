@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Components.Routing;
+﻿using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI;
 
@@ -377,7 +376,6 @@ public partial class BitLink : BitComponentBase
 
 
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitLinkParams))]
     protected override void OnParametersSet()
     {
         if (CascadingParameters is not null)

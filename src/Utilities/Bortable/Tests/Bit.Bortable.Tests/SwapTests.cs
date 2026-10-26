@@ -37,8 +37,8 @@ public class SwapTests : BortableTestContext
         Assert.AreEqual("C", LabelsWithClass(list, Highlight));
         Assert.AreSequenceEqual(["A", "B", "C"], items);
         Assert.AreEqual("A,B,C", Labels(list));
-        // Swap mode never asks for an insertion point, and a highlight is not a position change.
-        Assert.IsEmpty(DropIndexCalls);
+        // Swap mode hit-tests the item under the pointer rather than a gap, and a highlight is not a position change.
+        Assert.IsTrue(SentOptions(list)!.Swap);
         Assert.AreEqual("Start:L1", Sequence(log));
     }
 

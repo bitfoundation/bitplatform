@@ -3,7 +3,7 @@
 namespace Bit.Borm.Tests.E2E.Infrastructure;
 
 /// <summary>
-/// One Playwright driver, one launched Chromium and one running demo for the whole run. Tests isolate
+/// One Playwright driver, one launched browser (Chromium unless <c>BORM_E2E_BROWSER</c> says otherwise) and one running demo for the whole run. Tests isolate
 /// from each other with a browser context apiece (separate storage, cache and WebAssembly instance),
 /// which is far cheaper than a browser apiece and isolates just as well.
 /// </summary>
@@ -51,7 +51,9 @@ public static class PlaywrightSession
         if (browser is null)
         {
             playwright.Dispose();
-            return Session.Fail("no Chromium-based browser could be launched. Run 'pwsh bin/<configuration>/net10.0/playwright.ps1 install chromium', or install Chrome or Edge.");
+            return Session.Fail(E2EEnvironment.Browser == "chromium"
+                ? "no Chromium-based browser could be launched. Run 'pwsh bin/<configuration>/net10.0/playwright.ps1 install chromium', or install Chrome or Edge."
+                : $"{E2EEnvironment.Browser} could not be launched. Run 'pwsh bin/<configuration>/net10.0/playwright.ps1 install {E2EEnvironment.Browser}'.");
         }
 
         try
@@ -68,6 +70,29 @@ public static class PlaywrightSession
 
     private static async Task<IBrowser?> LaunchAsync(IPlaywright playwright)
     {
+        if (E2EEnvironment.Browser != "chromium")
+        {
+            var engine = E2EEnvironment.Browser switch
+            {
+                "firefox" => playwright.Firefox,
+                "webkit" => playwright.Webkit,
+                _ => throw new InvalidOperationException($"BORM_E2E_BROWSER must be chromium, firefox or webkit, not '{E2EEnvironment.Browser}'."),
+            };
+
+            try
+            {
+                return await engine.LaunchAsync(new BrowserTypeLaunchOptions
+                {
+                    ExecutablePath = E2EEnvironment.Executable,
+                    Headless = E2EEnvironment.Headed is false,
+                });
+            }
+            catch (PlaywrightException)
+            {
+                return null;
+            }
+        }
+
         // Preferred: the browser Playwright manages. Falling back to an installed one keeps the suite usable
         // where that download is blocked. A channel or an executable asked for explicitly is the only candidate.
         string?[] channels = E2EEnvironment.Channel is { } channel ? [channel]

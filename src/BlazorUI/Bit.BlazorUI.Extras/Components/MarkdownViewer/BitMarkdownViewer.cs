@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI;
@@ -236,7 +235,6 @@ public partial class BitMarkdownViewer : BitComponentBase
         base.OnInitialized();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMarkdownViewerParams))]
     protected override void OnParametersSet()
     {
         // Before anything below reads the parameters it may fill in.

@@ -85,12 +85,23 @@
                 </tr>
                 <tr>
                     <td>Errors</td>
-                    <td>Logs at Error or Critical, or carrying an exception - unhandled request exceptions among them</td>
+                    <td>Logs at Error or Critical, or carrying an exception - unhandled request exceptions among them. Not deduplicated or rate-limited: <code>options.Errors</code> caps one client's error loop, and a server's errors come from every user at once</td>
                     <td>The same logger provider</td>
                 </tr>
             </tbody>
         </table>
     </div>
+    <p>
+        ASP.NET Core's request activity (<code>Microsoft.AspNetCore.Hosting.HttpRequestIn</code>) carries no HTTP tags of
+        its own on .NET 8 and 9. Belemetry fills them in without a middleware or a reference to ASP.NET Core, from the
+        tags ASP.NET Core puts on its <code>http.server.request.duration</code> measurement:
+        <code>http.request.method</code>, <code>url.scheme</code>, <code>http.route</code>,
+        <code>http.response.status_code</code>, <code>network.protocol.version</code> and <code>error.type</code>. The
+        span is named <code>{method} {route}</code> (or <code>{method}</code> without a route, unless the app renamed the
+        activity), and a 5xx marks it as an error. On .NET 10 Belemetry also turns off ASP.NET Core's
+        <code>Microsoft.AspNetCore.Hosting.SuppressActivityOpenTelemetryData</code> switch (unless the app set it either
+        way), which adds <code>url.path</code>, <code>server.address</code> and <code>server.port</code>.
+    </p>
 </div>
 
 <div class="bb-card">

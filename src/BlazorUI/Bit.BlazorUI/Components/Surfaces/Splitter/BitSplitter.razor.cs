@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -734,7 +733,6 @@ public partial class BitSplitter : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSplitterParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

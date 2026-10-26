@@ -122,6 +122,8 @@ public partial class AppClientCoordinator : AppComponentBase
             SubscribeToSignalRSharedAppMessages();
             //#endif
             await PropagateAuthState(firstRun: true, AuthenticationStateTask);
+
+            await SwitchToAccountInUrl(NavigationManager.Uri);
         }
     }
 
@@ -158,6 +160,36 @@ public partial class AppClientCoordinator : AppComponentBase
         //#if (appInsights != true)
         navigatorLogger.LogInformation("Navigator's location changed to {Location}", TelemetryContext.PageUrl);
         //#endif
+
+        _ = SwitchToAccountInUrl(e.Location);
+    }
+
+    private async Task SwitchToAccountInUrl(string location)
+    {
+        try
+        {
+            var uri = new Uri(location);
+            var query = HttpUtility.ParseQueryString(uri.Query);
+
+            if (Guid.TryParse(query[DeviceAccountDto.QueryParameter], out var userId) is false)
+                return;
+
+            query.Remove(DeviceAccountDto.QueryParameter);
+            var remainingQuery = query.ToString();
+
+            NavigationManager.NavigateTo($"{uri.AbsolutePath}{(string.IsNullOrWhiteSpace(remainingQuery) ? "" : $"?{remainingQuery}")}{uri.Fragment}", replace: true);
+
+            var user = (await AuthManager.GetAuthenticationStateAsync()).User;
+
+            if (user.IsAuthenticated() && user.GetUserId() == userId)
+                return;
+
+            await AuthManager.SwitchAccount(userId);
+        }
+        catch (Exception exp)
+        {
+            ExceptionHandler.Handle(exp);
+        }
     }
 
     //#if (appInsights == true)
@@ -182,25 +214,31 @@ public partial class AppClientCoordinator : AppComponentBase
     //#endif
 
     private ClaimsPrincipal? lastPropagatedUser;
+    private ClaimsPrincipal? propagatingUser;
     /// <summary>
     /// This code manages the association of a user with sensitive services, such as SignalR, push notifications, App Insights, and others,
     /// ensuring the user is correctly set or cleared as needed.
     /// </summary>
     public async Task PropagateAuthState(bool firstRun, Task<AuthenticationState> task)
     {
+        ClaimsPrincipal? user = null;
+
         try
         {
-            var user = (await task).User;
+            user = (await task).User;
             var isAuthenticated = user.IsAuthenticated();
             var userId = isAuthenticated ? user.GetUserId() : (Guid?)null;
 
-            if (user.IsTheSame(lastPropagatedUser))
+            if (user.IsTheSame(propagatingUser ?? lastPropagatedUser))
                 return;
+
+            propagatingUser = user;
 
             await Abort(); // Cancels ongoing user id propagation, because the new authentication state is available.
 
             //#if (brouter == true)
             brouter.TryClearKeepAlive();
+            brouter.ClearLoaderCache();
             //#endif
 
             TelemetryContext.UserId = userId;
@@ -226,24 +264,41 @@ public partial class AppClientCoordinator : AppComponentBase
                 authLogger.LogInformation("Propagating {AuthStateType} {AuthState} authentication state.", firstRun ? "Initial" : "Updated", user.IsAuthenticated() ? "Authenticated" : "Anonymous");
             }
 
+            List<Task> propagations = [];
+
             //#if (signalR == true)
-            await EnsureSignalRStarted();
+            propagations.Add(EnsureSignalRStarted());
             //#endif
 
             //#if (notification == true)
-            await pushNotificationService.Subscribe(CurrentCancellationToken);
+            var pushSubscription = SubscribeToPushNotifications();
+            propagations.Add(pushSubscription);
             //#endif
 
             if (isAuthenticated)
             {
-                await UpdateUserSession();
+                propagations.Add(UpdateUserSession());
             }
+
+            await Task.WhenAll(propagations);
+
+            //#if (notification == true)
+            if (await pushSubscription is false)
+                return;
+            //#endif
 
             lastPropagatedUser = user;
         }
         catch (Exception exp)
         {
             ExceptionHandler.Handle(exp);
+        }
+        finally
+        {
+            if (ReferenceEquals(propagatingUser, user))
+            {
+                propagatingUser = null;
+            }
         }
     }
 
@@ -440,6 +495,22 @@ public partial class AppClientCoordinator : AppComponentBase
             PlatformType = AppPlatform.Type
         }, CurrentCancellationToken);
     }
+
+    //#if (notification == true)
+    private async Task<bool> SubscribeToPushNotifications()
+    {
+        try
+        {
+            await pushNotificationService.Subscribe(CurrentCancellationToken);
+            return true;
+        }
+        catch (TooManyRequestsException exp)
+        {
+            ExceptionHandler.Handle(exp, displayKind: ExceptionDisplayKind.None);
+            return false;
+        }
+    }
+    //#endif
 
     private async Task ConfigureUISetup()
     {

@@ -7,12 +7,36 @@ namespace Bit.Borm;
 /// objects and array items and honouring conditional visibility (hidden fields are not validated).
 /// </summary>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static",
-    Justification = "The validator is stateless today, but it is a public, instantiable seam; making " +
+    Justification = "The validator is a public, instantiable seam with settings of its own; making " +
                     "its methods static would break every caller for no functional gain.")]
 public sealed class BormValidator
 {
     // Stateless and reused: RequiredWhen would otherwise allocate one per field per validation pass.
     private static readonly BormRequiredRule ConditionalRequired = new();
+
+    /// <summary>
+    /// Whether a field's asynchronous rules still run when one of its synchronous rules has already
+    /// found an error. False (the default) skips them: a value that does not pass its own format check
+    /// gains nothing from a remote lookup, which costs a request and answers with a second complaint
+    /// about a value the user has to change anyway. Synchronous rules always run, and always first.
+    /// </summary>
+    public bool RunAsyncRulesOnInvalidFields { get; set; }
+
+    /// <summary>
+    /// The language the built-in messages are written in - a culture name, <c>de</c> or <c>pt-BR</c> - when the
+    /// registered message provider is an <see cref="IBormLocalizedMessageProvider"/> such as
+    /// <see cref="BormTranslatedMessageProvider"/>. Null (the default) follows the current UI culture. A
+    /// <see cref="BormState"/> keeps it at its own <see cref="BormState.Language"/>; set it yourself to validate a
+    /// posted form on the server in the language of the person who filled it in.
+    /// </summary>
+    public string? Language { get; set; }
+
+    /// <summary>The code a rule's messages carry: its key, looking through a <c>When(…)</c> wrapper to the rule inside.</summary>
+    private static string? CodeOf(IBormValidationRule rule)
+    {
+        while (rule is BormConditionalRule conditional) rule = conditional.Inner;
+        return rule.Key;
+    }
 
     /// <summary>Validates the whole form (or a subset of top-level fields).</summary>
     /// <param name="form">The schema.</param>
@@ -21,13 +45,28 @@ public sealed class BormValidator
     /// <param name="restrictToFields">When set, only these top-level field names are validated.</param>
     /// <param name="includeAsync">When false, async rules are skipped (e.g. for fast on-change validation).</param>
     /// <param name="cancellationToken">Abandons the run when a newer validation supersedes this one.</param>
-    public async ValueTask<IReadOnlyList<BormValidationMessage>> ValidateAsync(
+    public ValueTask<IReadOnlyList<BormValidationMessage>> ValidateAsync(
         BormDefinition form,
         IBormDataReader data,
         IServiceProvider? services = null,
         ISet<string>? restrictToFields = null,
         bool includeAsync = true,
         CancellationToken cancellationToken = default)
+        => ValidateAsync(form, data, services, restrictToFields, includeAsync, visited: null, cancellationToken);
+
+    /// <summary>
+    /// The whole-form validation, collecting into <paramref name="visited"/> the path of every field the run
+    /// judged — every one not hidden — so a caller can say which fields have been validated without walking
+    /// the schema and building every row's paths again.
+    /// </summary>
+    internal async ValueTask<IReadOnlyList<BormValidationMessage>> ValidateAsync(
+        BormDefinition form,
+        IBormDataReader data,
+        IServiceProvider? services,
+        ISet<string>? restrictToFields,
+        bool includeAsync,
+        ICollection<string>? visited,
+        CancellationToken cancellationToken)
     {
         var messages = new List<BormValidationMessage>();
         foreach (var field in form.Fields)
@@ -35,7 +74,7 @@ public sealed class BormValidator
             cancellationToken.ThrowIfCancellationRequested();
             if (restrictToFields is not null && !restrictToFields.Contains(field.Name))
                 continue;
-            await ValidateField(field, field.Name, data, services, includeAsync, messages, cancellationToken);
+            await ValidateField(field, field.Name, data, services, includeAsync, messages, visited, cancellationToken);
         }
 
         // Form-level rules run only for a full validation: a step or single field cannot judge the whole form.
@@ -47,11 +86,12 @@ public sealed class BormValidator
                 cancellationToken.ThrowIfCancellationRequested();
                 var ctx = new BormValidationContext(string.Empty, data.Root, data, services)
                 {
-                    CancellationToken = cancellationToken
+                    CancellationToken = cancellationToken,
+                    Language = Language
                 };
                 var result = await rule.ValidateAsync(ctx);
                 if (!result.IsValid && result.Message is not null)
-                    messages.Add(new BormValidationMessage(result.FieldPath ?? string.Empty, result.Message, result.Severity));
+                    messages.Add(new BormValidationMessage(result.FieldPath ?? string.Empty, result.Message, result.Severity) { Code = CodeOf(rule) });
             }
         }
 
@@ -68,7 +108,7 @@ public sealed class BormValidator
         CancellationToken cancellationToken = default)
     {
         var messages = new List<BormValidationMessage>();
-        await ValidateField(field, path, data, services, includeAsync, messages, cancellationToken);
+        await ValidateField(field, path, data, services, includeAsync, messages, null, cancellationToken);
         return messages;
     }
 
@@ -84,17 +124,18 @@ public sealed class BormValidator
         IServiceProvider? services)
     {
         var messages = new List<BormValidationMessage>();
-        await ValidateField(field, path, data, services, includeAsync: false, messages, CancellationToken.None, descend: false);
+        await ValidateField(field, path, data, services, includeAsync: false, messages, null, CancellationToken.None, descend: false);
         return messages;
     }
 
-    private static async ValueTask ValidateField(
+    private async ValueTask ValidateField(
         BormFieldDefinition field,
         string path,
         IBormDataReader data,
         IServiceProvider? services,
         bool includeAsync,
         List<BormValidationMessage> messages,
+        ICollection<string>? visited,
         CancellationToken cancellationToken,
         bool descend = true)
     {
@@ -111,29 +152,61 @@ public sealed class BormValidator
         if (field.VisibleWhen is not null && !field.VisibleWhen.Evaluate(scoped))
             return;
 
+        visited?.Add(path);
+
         var value = data.GetValue(path);
         var ctx = new BormValidationContext(path, value, scoped, services, field)
         {
-            CancellationToken = cancellationToken
+            CancellationToken = cancellationToken,
+            Language = Language
         };
+
+        // Synchronous rules first, asynchronous ones after — and only when the synchronous ones found no
+        // error. A username that does not even match its pattern gains nothing from a round trip to ask
+        // whether it is taken: the request costs the server, and its answer is a second complaint about a
+        // value the user already has to change. (TanStack Form's default; see RunAsyncRulesOnInvalidFields.)
+        var failedSynchronously = false;
 
         // Conditional requiredness is evaluated before the declared rules so its message leads.
         if (field.RequiredWhen is not null && field.RequiredWhen.Evaluate(scoped) && !field.Required)
         {
             var result = await ConditionalRequired.ValidateAsync(ctx);
             if (!result.IsValid && result.Message is not null)
-                messages.Add(new BormValidationMessage(path, result.Message, result.Severity));
+            {
+                messages.Add(new BormValidationMessage(path, result.Message, result.Severity) { Code = ConditionalRequired.Key });
+                if (result.Severity == BormValidationSeverity.Error) failedSynchronously = true;
+            }
         }
 
+        var hasAsync = false;
         foreach (var rule in field.Validators)
         {
-            if (rule.IsAsync && !includeAsync)
+            if (rule.IsAsync)
+            {
+                hasAsync = true;
                 continue;
+            }
 
             cancellationToken.ThrowIfCancellationRequested();
             var result = await rule.ValidateAsync(ctx);
             if (!result.IsValid && result.Message is not null)
-                messages.Add(new BormValidationMessage(result.FieldPath ?? path, result.Message, result.Severity));
+            {
+                messages.Add(new BormValidationMessage(result.FieldPath ?? path, result.Message, result.Severity) { Code = CodeOf(rule) });
+                if (result.Severity == BormValidationSeverity.Error) failedSynchronously = true;
+            }
+        }
+
+        if (hasAsync && includeAsync && (!failedSynchronously || RunAsyncRulesOnInvalidFields))
+        {
+            foreach (var rule in field.Validators)
+            {
+                if (!rule.IsAsync) continue;
+
+                cancellationToken.ThrowIfCancellationRequested();
+                var result = await rule.ValidateAsync(ctx);
+                if (!result.IsValid && result.Message is not null)
+                    messages.Add(new BormValidationMessage(result.FieldPath ?? path, result.Message, result.Severity) { Code = CodeOf(rule) });
+            }
         }
 
         // Recurse into composition.
@@ -141,7 +214,7 @@ public sealed class BormValidator
         if (field.Type == BormFieldType.Object)
         {
             foreach (var child in field.Children)
-                await ValidateField(child, BormPath.Combine(path, child.Name), data, services, includeAsync, messages, cancellationToken);
+                await ValidateField(child, BormPath.Combine(path, child.Name), data, services, includeAsync, messages, visited, cancellationToken);
         }
         else if (field.Type == BormFieldType.Array && field.ItemTemplate is not null)
         {
@@ -160,11 +233,11 @@ public sealed class BormValidator
                 if (template.Type == BormFieldType.Object)
                 {
                     foreach (var child in template.Children)
-                        await ValidateField(child, BormPath.Combine(itemPath, child.Name), data, services, includeAsync, messages, cancellationToken);
+                        await ValidateField(child, BormPath.Combine(itemPath, child.Name), data, services, includeAsync, messages, visited, cancellationToken);
                 }
                 else
                 {
-                    await ValidateField(template, itemPath, data, services, includeAsync, messages, cancellationToken);
+                    await ValidateField(template, itemPath, data, services, includeAsync, messages, visited, cancellationToken);
                 }
             }
         }

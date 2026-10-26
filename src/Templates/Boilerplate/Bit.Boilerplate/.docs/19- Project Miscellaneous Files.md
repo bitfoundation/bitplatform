@@ -223,7 +223,7 @@ These namespaces are **automatically imported** in every C# file, eliminating th
 
 Instead of this in each `.csproj`:
 ```xml
-<PackageReference Include="Bit.BlazorUI" Version="10.7.0-pre-02" />
+<PackageReference Include="Bit.BlazorUI" Version="10.7.0" />
 ```
 
 You write this in `.csproj`:
@@ -233,7 +233,7 @@ You write this in `.csproj`:
 
 And the version is defined centrally in `Directory.Packages.props`:
 ```xml
-<PackageVersion Include="Bit.BlazorUI" Version="10.7.0-pre-02" />
+<PackageVersion Include="Bit.BlazorUI" Version="10.7.0" />
 ```
 
 **Benefits**:
@@ -244,8 +244,8 @@ And the version is defined centrally in `Directory.Packages.props`:
 **Example packages included**:
 
 ```xml
-<PackageVersion Include="Bit.BlazorUI" Version="10.7.0-pre-02" />
-<PackageVersion Include="Bit.Butil" Version="10.7.0-pre-02" />
+<PackageVersion Include="Bit.BlazorUI" Version="10.7.0" />
+<PackageVersion Include="Bit.Butil" Version="10.7.0" />
 <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0" />
 <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />
 <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.21" />
@@ -333,13 +333,13 @@ chmod +x Clean.sh  # Make it executable (first time only)
 
 **AI Provider**: Uses OpenAI's GPT-4.1-mini model (or Azure OpenAI)
 
-**Learn more**: See [bit translate documentation](https://github.com/bitfoundation/bitplatform/tree/develop/src/Cli#bit-translate)
+**Learn more**: See [bit translate documentation](https://github.com/bitfoundation/bitplatform/tree/develop/src/Toolings/Cli#bit-translate)
 
 **Installation and Usage**:
 
 ```bash
 # Run the translator anywhere in the project; dnx fetches the bit CLI, nothing is installed
-dnx Bit.Cli --prerelease -- translate
+dnx Bit.Cli --version 10.7.0 -- translate
 ```
 
 **To add a new language**:
@@ -446,7 +446,7 @@ dnx Bit.Cli --prerelease -- translate
 - **Model Context Protocol**: A standardized way to connect AI assistants (like GitHub Copilot) to external data sources and tools
 
 **Configured Servers**:
-- **bitplatform**: The bit platform documentation server. It exposes the bit BlazorUI tools (`SearchBitBlazorUI`, `GetBitBlazorUIComponent`, `GetBitBlazorUIComponentExamples`, ...), the Butil/Bswup/Bmotion/Bink/Balette/BbScanner/Bdnd/BlazeDb/Blow/Borm/Bcrdt/Bonboarding/Bortable/Blex/Bmage/Bsqlite/Brouter tools, the `AskGitHubRepository` tool for the third-party libraries this project builds on, the `GetBitPlatformReleases` tool that says whether a version is the newest bit platform release and returns the release notes of every newer one, the tools that read the source code of the bitfoundation/bitplatform repository itself rather than this project (`FindBitPlatformSymbols`, `GetBitPlatformSymbolSource`, ...), and the Microsoft Docs tools - all answering from the shipped assemblies, documentation and source rather than from the model's memory
+- **bitplatform**: The bit platform documentation server. It exposes the bit BlazorUI tools (`SearchBitBlazorUI`, `GetBitBlazorUIComponent`, `GetBitBlazorUIComponentExamples`, ...), the Butil tools, the `AskGitHubRepository` tool for the third-party libraries this project builds on, the `GetBitPlatformReleases` tool that says whether a version is the newest bit platform release and returns the release notes of every newer one, the tools that read the source code of the bitfoundation/bitplatform repository itself rather than this project (`FindBitPlatformSymbols`, `GetBitPlatformSymbolSource`, ...), and the Microsoft Docs tools - all answering from the shipped assemblies, documentation and source rather than from the model's memory. Every other bit library has an MCP server of its own, which `AGENTS.md` lists and the agent connects to by itself when it needs one
 - **aspire**: The .NET Aspire CLI's own MCP server, for inspecting the running application's resources, logs and traces
 - **playwright**: Browser automation, so the agent can drive and verify the running app
 
@@ -596,6 +596,14 @@ When you open the project in VS Code, you'll be prompted to install these extens
 **Who uses it**: `bit diff` and the `upgrade` skill read the version and the options to create the project again with the old and the new template version. An upgrade updates the version in it, and new options arrive through the diff like any other change.
 
 **Keep it**: the bit CLI may keep more of what it needs to know about the project here. Edit an option's value when you change the project in a way that matches another option, such as removing Aspire, so the next upgrade compares the right templates.
+
+### 8.3 `specs/`
+
+**Location**: [`/specs/`](/specs/README.md)
+
+**Purpose**: What the product does and why, kept next to the code: one spec per feature area with its requirements, acceptance criteria, decisions and open questions, plus one plan per larger change. [`specs/README.md`](/specs/README.md) describes both.
+
+**Who uses it**: the whole team, product people included, and every AI tool. `AGENTS.md` has the agents read a feature's spec before changing it and write the product decisions a conversation settles into it, and the `ai-dlc` skill keeps its plans there, so work can be resumed in another session or tool and reviewed with the code.
 
 ---
 

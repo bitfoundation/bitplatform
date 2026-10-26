@@ -8,6 +8,9 @@ public sealed class BbQrDetector
     private readonly BbQrFinderPatternFinder _finder = new();
     private BbBitMatrix _image;
 
+    /// <summary>The module size, in pixels, below which a grid the binarised image does not decode is sampled from luminance.</summary>
+    private const float MaxLuminanceModule = 3.5f;
+
     /// <summary>Creates a detector over a binarised image.</summary>
     /// <param name="image">The binarised image.</param>
     public BbQrDetector(BbBitMatrix image)
@@ -25,6 +28,17 @@ public sealed class BbQrDetector
     {
         ArgumentNullException.ThrowIfNull(image);
         _image = image;
+    }
+
+    /// <summary>The finder pattern centres the last <see cref="Detect(bool, Func{BbDetectorResult, bool})"/> found, a Micro QR symbol's among them.</summary>
+    internal ReadOnlySpan<BbQrFinderPattern> FinderCenters => _finder.Centers;
+
+    /// <summary>Searches the image for finder patterns without trying them as a QR symbol's; see <see cref="FinderCenters"/>.</summary>
+    internal ReadOnlySpan<BbQrFinderPattern> ScanFinders(bool tryHarder)
+    {
+        _finder.Reset(_image);
+        _finder.FindCandidates(tryHarder);
+        return _finder.Centers;
     }
 
     /// <summary>Detects and samples a symbol.</summary>
@@ -61,7 +75,19 @@ public sealed class BbQrDetector
     /// <param name="tryHarder">When <see langword="true"/> the finder pattern search scans every row.</param>
     /// <param name="accept">Called with each candidate; returning <see langword="true"/> ends the search.</param>
     /// <returns>The accepted result, or <see langword="null"/>. Rejected candidates are disposed.</returns>
-    public BbDetectorResult? Detect(bool tryHarder, Func<BbDetectorResult, bool> accept)
+    public BbDetectorResult? Detect(bool tryHarder, Func<BbDetectorResult, bool> accept) => Detect(tryHarder, accept, default, inverted: false);
+
+    /// <summary>
+    /// Detects and samples a symbol as <see cref="Detect(bool, Func{BbDetectorResult, bool})"/> does, and samples a grid
+    /// the binarised image does not decode again from the luminance plane it was made from, when that is not empty and
+    /// the symbol's modules are small enough for binarisation to have lost some; see
+    /// <see cref="BbGridSampler.SampleLuminance"/>.
+    /// </summary>
+    /// <param name="tryHarder">When <see langword="true"/> the finder pattern search scans every row.</param>
+    /// <param name="accept">Called with each candidate; returning <see langword="true"/> ends the search.</param>
+    /// <param name="luminance">The luminance plane the image was binarised from, or an empty view.</param>
+    /// <param name="inverted">Whether the symbol sought is light on dark.</param>
+    internal BbDetectorResult? Detect(bool tryHarder, Func<BbDetectorResult, bool> accept, in BbLuminanceView luminance, bool inverted)
     {
         ArgumentNullException.ThrowIfNull(accept);
 
@@ -69,7 +95,7 @@ public sealed class BbQrDetector
         var triples = _finder.FindCandidates(tryHarder);
         foreach (var triple in triples)
         {
-            if (DetectFrom(triple.TopLeft, triple.TopRight, triple.BottomLeft, accept) is { } result)
+            if (DetectFrom(triple.TopLeft, triple.TopRight, triple.BottomLeft, accept, luminance, inverted) is { } result)
             {
                 return result;
             }
@@ -82,7 +108,9 @@ public sealed class BbQrDetector
         BbQrFinderPattern topLeft,
         BbQrFinderPattern topRight,
         BbQrFinderPattern bottomLeft,
-        Func<BbDetectorResult, bool> accept)
+        Func<BbDetectorResult, bool> accept,
+        in BbLuminanceView luminance,
+        bool inverted)
     {
         // Written this way so that a NaN, which every comparison answers false to, is rejected
         // rather than carried into the dimension estimate.
@@ -92,79 +120,103 @@ public sealed class BbQrDetector
             return null;
         }
 
-        if (!TryComputeDimension(topLeft, topRight, bottomLeft, moduleSize, out var dimension))
-        {
-            return null;
-        }
+        // Every dimension near the estimate is a candidate, nearest first, and the timing check
+        // in TryCandidate turns the wrong ones away for the price of two lines of modules.
+        Span<int> dimensions = stackalloc int[MaxDimensionCandidates];
+        var count = CandidateDimensions(EstimateDimension(topLeft, topRight, bottomLeft, moduleSize), dimensions);
 
-        var provisionalVersion = BbQrVersion.GetProvisionalVersionForDimension(dimension);
-        if (provisionalVersion is null)
-        {
-            return null;
-        }
-
-        var alignmentPattern = provisionalVersion.AlignmentPatternCenters.Length > 0
-            ? FindAlignment(topLeft, topRight, bottomLeft, provisionalVersion, moduleSize)
-            : null;
-
-        // Preferred first: the alignment pattern corrects for perspective when it is real.
-        if (alignmentPattern is not null &&
-            TryCandidate(topLeft, topRight, bottomLeft, alignmentPattern, dimension, accept) is { } withAlignment)
-        {
-            return withAlignment;
-        }
-
-        // The affine grid, which ignores the alignment pattern entirely. This is the one that
-        // works when the alignment search found noise.
-        if (TryCandidate(topLeft, topRight, bottomLeft, null, dimension, accept) is { } affine)
-        {
-            return affine;
-        }
-
-        // Finally, let the symbol say how big it is. Version information is only present from
-        // version 7 up, which is exactly where the dimension estimate becomes unreliable.
-        if (dimension < 45)
-        {
-            return null;
-        }
-
-        Span<int> candidates = stackalloc int[DimensionDeltas.Length];
-        var count = NearbyDimensions(dimension, candidates);
+        BbQrFinderPattern? alignmentPattern = null;
+        var alignmentSearched = false;
         for (var i = 0; i < count; i++)
         {
-            var candidateDimension = candidates[i];
-            if (alignmentPattern is not null &&
-                TryCandidate(topLeft, topRight, bottomLeft, alignmentPattern, candidateDimension, accept) is { } resized)
+            var dimension = dimensions[i];
+            var version = BbQrVersion.GetProvisionalVersionForDimension(dimension);
+            if (version is null)
             {
-                return resized;
+                continue;
             }
 
-            if (TryCandidate(topLeft, topRight, bottomLeft, null, candidateDimension, accept) is { } resizedAffine)
+            var hasAlignment = version.AlignmentPatternCenters.Length > 0;
+
+            // Searched for once: where the bottom right alignment pattern sits moves by a fraction
+            // of a pixel between neighbouring dimensions, far less than the search allows for.
+            if (hasAlignment && !alignmentSearched)
             {
-                return resizedAffine;
+                alignmentPattern = FindAlignment(topLeft, topRight, bottomLeft, version, moduleSize);
+                alignmentSearched = true;
+            }
+
+            // Preferred first: the alignment pattern corrects for perspective when it is real.
+            if (hasAlignment && alignmentPattern is not null &&
+                TryCandidate(topLeft, topRight, bottomLeft, alignmentPattern, dimension, accept, luminance, inverted) is { } withAlignment)
+            {
+                return withAlignment;
+            }
+
+            // The affine grid, which ignores the alignment pattern entirely. This is the one that
+            // works when the alignment search found noise.
+            if (TryCandidate(topLeft, topRight, bottomLeft, null, dimension, accept, luminance, inverted) is { } affine)
+            {
+                return affine;
             }
         }
 
         return null;
     }
 
-    /// <summary>Offsets from the estimated dimension to retry, nearest first.</summary>
-    private static readonly int[] DimensionDeltas = [4, -4, 8, -8];
+    /// <summary>The most dimensions tried for one finder pattern triple: the estimate's and two either side.</summary>
+    private const int MaxDimensionCandidates = 5;
 
     /// <summary>
-    /// Writes the legal dimensions within eight modules of the estimate into
-    /// <paramref name="candidates"/>, nearest first, and returns how many there are.
+    /// The symbol's dimension as the finder pattern spacing gives it: the centres are seven modules
+    /// in from the corners between them, so the spacing in modules plus seven. Unrounded, so that
+    /// the legal dimension it falls nearest can be told apart from the one it merely rounds to.
     /// </summary>
-    private static int NearbyDimensions(int dimension, Span<int> candidates)
+    private static float EstimateDimension(
+        BbQrFinderPattern topLeft,
+        BbQrFinderPattern topRight,
+        BbQrFinderPattern bottomLeft,
+        float moduleSize)
     {
-        var count = 0;
-        foreach (var delta in DimensionDeltas)
+        var tlTr = BbMathUtils.Distance(topLeft.X, topLeft.Y, topRight.X, topRight.Y) / moduleSize;
+        var tlBl = BbMathUtils.Distance(topLeft.X, topLeft.Y, bottomLeft.X, bottomLeft.Y) / moduleSize;
+        return ((tlTr + tlBl) / 2) + 7;
+    }
+
+    /// <summary>
+    /// Writes the legal dimensions near an estimate into <paramref name="candidates"/>, nearest
+    /// first, and returns how many there are.
+    /// </summary>
+    /// <remarks>
+    /// Legal dimensions are four apart, and the estimate is a ratio of measured distances, so its
+    /// error grows with the symbol: a module size two per cent off is a fraction of a module on
+    /// a version 1 symbol and two and a half modules on a version 25 one. An estimate two modules
+    /// from either neighbour is the ordinary case on a rotated large symbol, not a sign the triple
+    /// is false, so both neighbours are tried, and then the ones beyond them. Small symbols are
+    /// searched within four modules, large ones - where the estimate drifts furthest - within
+    /// eight.
+    /// </remarks>
+    private static int CandidateDimensions(float estimate, Span<int> candidates)
+    {
+        if (!float.IsFinite(estimate))
         {
-            var candidate = dimension + delta;
-            if (candidate is >= 21 and <= 177 && BbQrVersion.GetProvisionalVersionForDimension(candidate) is not null)
+            return 0;
+        }
+
+        var reach = estimate < 45 ? 4.5f : 8.5f;
+        var count = 0;
+        var first = Math.Max(21, (int)MathF.Ceiling((estimate - reach - 17) / 4) * 4 + 17);
+        for (var dimension = first; dimension <= 177 && dimension <= estimate + reach && count < candidates.Length; dimension += 4)
+        {
+            // Insertion sort by distance from the estimate keeps the list ordered as it grows.
+            var at = count++;
+            while (at > 0 && MathF.Abs(candidates[at - 1] - estimate) > MathF.Abs(dimension - estimate))
             {
-                candidates[count++] = candidate;
+                candidates[at] = candidates[at - 1];
+                at--;
             }
+
+            candidates[at] = dimension;
         }
 
         return count;
@@ -176,10 +228,27 @@ public sealed class BbQrDetector
         BbQrFinderPattern bottomLeft,
         BbQrFinderPattern? alignmentPattern,
         int dimension,
-        Func<BbDetectorResult, bool> accept)
+        Func<BbDetectorResult, bool> accept,
+        in BbLuminanceView luminance,
+        bool inverted)
     {
         var transform = CreateTransform(topLeft, topRight, bottomLeft, alignmentPattern, dimension);
-        var bits = BbGridSampler.Sample(_image, dimension, dimension, transform);
+        if (TryGrid(BbGridSampler.Sample(_image, dimension, dimension, transform), transform, dimension, accept) is { } result)
+        {
+            return result;
+        }
+
+        // At two or three pixels a module a turned symbol's binarised image has lost modules its luminance still tells
+        // apart, so a grid that did not decode is sampled again from that.
+        var module = BbScanPoint.Distance(transform.Transform(new BbScanPoint(0, 0)), transform.Transform(new BbScanPoint(dimension, 0))) / dimension;
+        return !luminance.IsEmpty && module < MaxLuminanceModule
+            ? TryGrid(BbGridSampler.SampleLuminance(luminance, dimension, dimension, transform, inverted), transform, dimension, accept)
+            : null;
+    }
+
+    /// <summary>Checks a sampled grid's timing patterns and hands it to <paramref name="accept"/> with its corners.</summary>
+    private static BbDetectorResult? TryGrid(BbBitMatrix? bits, BbPerspectiveTransform transform, int dimension, Func<BbDetectorResult, bool> accept)
+    {
         if (bits is null)
         {
             return null;
@@ -191,9 +260,17 @@ public sealed class BbQrDetector
             return null;
         }
 
-        BbScanPoint[] points = alignmentPattern is null
-            ? [bottomLeft.Point, topLeft.Point, topRight.Point]
-            : [bottomLeft.Point, topLeft.Point, topRight.Point, alignmentPattern.Point];
+        // The symbol's own corners, clockwise from its top-left: where the module grid the
+        // transform samples begins and ends. The finder pattern centres the transform was built
+        // from sit three and a half modules inside them, and a box drawn through those would
+        // cut the symbol's outer modules off.
+        BbScanPoint[] points =
+        [
+            transform.Transform(new BbScanPoint(0, 0)),
+            transform.Transform(new BbScanPoint(dimension, 0)),
+            transform.Transform(new BbScanPoint(dimension, dimension)),
+            transform.Transform(new BbScanPoint(0, dimension)),
+        ];
 
         var result = new BbDetectorResult(bits, points);
         if (accept(result))
@@ -314,34 +391,6 @@ public sealed class BbQrDetector
             topRight.X, topRight.Y,
             bottomRightX, bottomRightY,
             bottomLeft.X, bottomLeft.Y);
-    }
-
-    private static bool TryComputeDimension(
-        BbQrFinderPattern topLeft,
-        BbQrFinderPattern topRight,
-        BbQrFinderPattern bottomLeft,
-        float moduleSize,
-        out int dimension)
-    {
-        var tlTr = BbMathUtils.Round(BbMathUtils.Distance(topLeft.X, topLeft.Y, topRight.X, topRight.Y) / moduleSize);
-        var tlBl = BbMathUtils.Round(BbMathUtils.Distance(topLeft.X, topLeft.Y, bottomLeft.X, bottomLeft.Y) / moduleSize);
-        dimension = ((tlTr + tlBl) / 2) + 7;
-
-        // Every legal QR dimension is congruent to 1 modulo 4, so a result that is off by one can
-        // be snapped; being off by two means the estimate is not trustworthy at all.
-        switch (dimension & 0x03)
-        {
-            case 0:
-                dimension++;
-                break;
-            case 2:
-                dimension--;
-                break;
-            case 3:
-                return false;
-        }
-
-        return dimension is >= 21 and <= 177;
     }
 
     private float CalculateModuleSize(BbQrFinderPattern topLeft, BbQrFinderPattern topRight, BbQrFinderPattern bottomLeft) =>

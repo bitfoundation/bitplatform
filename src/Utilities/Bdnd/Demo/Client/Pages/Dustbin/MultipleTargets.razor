@@ -5,12 +5,14 @@
 <div class="bb-intro">
     <h1>Dustbin - Multiple Targets</h1>
     <p class="bb-subtitle">
-        Each dustbin <code>Accept</code>s a different set of types, so a box only highlights
-        the dustbins that can receive it. Boxes themselves carry a type.
+        Each box carries a <code>Type</code> and each dustbin lists the types it takes in
+        <code>AcceptTypes</code>. While a box is in the air, every bin renders from its <code>CanDrop</code>, hovered
+        or not: the bins that can take the box get a dashed outline, the others dim - and turn the pointer into a
+        no-drop cursor. A bin turns black once the box is over it and can drop (<code>IsOver</code> and
+        <code>CanDrop</code>), and remembers the last box it took. The item's .NET type plays no part: all four boxes
+        are the same <code>SourceBox</code> record.
     </p>
 </div>
-
-<DemoCode />
 
 <div class="bb-demo">
     <BdndProvider>
@@ -49,6 +51,8 @@
         </div>
     </BdndProvider>
 </div>
+
+<DemoCode />
 
 @code {
     public record SourceBox(string Name, string Type);

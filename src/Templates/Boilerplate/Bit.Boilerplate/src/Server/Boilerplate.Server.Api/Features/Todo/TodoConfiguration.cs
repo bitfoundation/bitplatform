@@ -8,5 +8,7 @@ public class TodoConfiguration : IEntityTypeConfiguration<TodoItem>
             .WithMany(u => u.TodoItems)
             .HasForeignKey(t => t.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(t => new { t.UserId, t.UpdatedAt });
     }
 }

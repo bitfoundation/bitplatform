@@ -370,7 +370,6 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
         catch (JSException) { } // a JS-side failure while reading the marker order is not fatal, keep the current order
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitChoiceGroupParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

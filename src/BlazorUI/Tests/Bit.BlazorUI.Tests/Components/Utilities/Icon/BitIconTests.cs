@@ -684,7 +684,9 @@ public class BitIconTests : BunitTestContext
             parameters.Add(p => p.RotateAngle, angle);
         });
 
-        component.MarkupMatches(@$"<i style=""--bit-ico-rotate:{angle}deg"" class=""{CLASS} bit-ico-trn"" {HIDDEN} id:ignore />");
+        // The CSS value is culture-free, so the expected one is too: a culture such as fa-IR or ar-SA writes a
+        // negative number with a bidi mark in front of its sign.
+        component.MarkupMatches(@$"<i style=""--bit-ico-rotate:{angle.ToString(CultureInfo.InvariantCulture)}deg"" class=""{CLASS} bit-ico-trn"" {HIDDEN} id:ignore />");
     }
 
     [TestMethod]
@@ -729,19 +731,21 @@ public class BitIconTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitIconShouldWriteTheRotateAngleWithAnInvariantDecimalSeparator()
+    public void BitIconShouldWriteTheRotateAngleInvariantly()
     {
         var culture = CultureInfo.CurrentCulture;
         CultureInfo.CurrentCulture = new CultureInfo("fa-IR");
 
         try
         {
+            // The angle is a whole number, so the only part of it a culture writes differently is the sign: fa-IR puts
+            // a bidi mark in front of it, which no CSS parser reads as a number.
             var component = RenderComponent<BitIcon>(parameters =>
             {
-                parameters.Add(p => p.RotateAngle, 45);
+                parameters.Add(p => p.RotateAngle, -45);
             });
 
-            Assert.AreEqual("--bit-ico-rotate:45deg", component.Find("i").GetAttribute("style"));
+            Assert.AreEqual("--bit-ico-rotate:-45deg", component.Find("i").GetAttribute("style"));
         }
         finally
         {

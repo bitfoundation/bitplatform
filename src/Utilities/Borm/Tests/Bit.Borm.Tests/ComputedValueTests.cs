@@ -176,4 +176,42 @@ public class ComputedValueTests
 
         Assert.AreEqual(12d, state.GetValue("area"));
     }
+
+    [TestMethod]
+    public void A_formula_reading_its_own_value_is_applied_once_when_the_form_opens_or_is_rebased()
+    {
+        var form = BormBuilder.Create()
+            .Number("Counter", f => f.Computed("{Counter} + 1"))
+            .Number("Price")
+            .Number("Total", f => f.Computed("{Price} * 2"))
+            .Build();
+        var data = new Dictionary<string, object?> { ["Counter"] = 0d, ["Price"] = 5d };
+
+        var state = new BormState(form, new BormDictionaryDataAccessor(data));
+
+        // Once, as a single edit runs it once: another formula moving in the same pass is not a reason to run it again.
+        Assert.AreEqual(1d, Convert.ToDouble(data["Counter"]));
+        Assert.AreEqual(10d, Convert.ToDouble(data["Total"]));
+
+        state.Reset([new("Counter", 10d)]);
+        Assert.AreEqual(11d, Convert.ToDouble(data["Counter"]));
+    }
+
+    [TestMethod]
+    public void A_formula_reading_its_own_value_runs_again_for_another_value_it_reads_that_moved_after_it()
+    {
+        // Running sum: reads itself and Step, and Step is computed after it in the same pass.
+        var form = BormBuilder.Create()
+            .Number("Sum", f => f.Computed("{Sum} + {Step}"))
+            .Number("Base")
+            .Number("Step", f => f.Computed("{Base} * 2"))
+            .Build();
+        var data = new Dictionary<string, object?> { ["Sum"] = 0d, ["Base"] = 1d, ["Step"] = 0d };
+
+        _ = new BormState(form, new BormDictionaryDataAccessor(data));
+
+        // First pass: Sum = 0 + 0, Step = 2; the second runs Sum again for Step, once: 0 + 2.
+        Assert.AreEqual(2d, Convert.ToDouble(data["Step"]));
+        Assert.AreEqual(2d, Convert.ToDouble(data["Sum"]));
+    }
 }

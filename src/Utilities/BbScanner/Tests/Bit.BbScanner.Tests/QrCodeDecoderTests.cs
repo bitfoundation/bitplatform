@@ -249,4 +249,33 @@ public class QrCodeDecoderTests
                 }
         }
     }
+    [TestMethod]
+    public void AnImageTiledWithFinderPatternsIsGivenUpOnQuickly()
+    {
+        // Choosing the finder patterns tries every triple of the centres found, so a picked file tiled with thousands of
+        // them - which no photograph of real symbols is - cost the cube of their number: seven and a half minutes for
+        // this one, about a second once the search keeps a few dozen. The bound only has to tell those apart, and a
+        // shared build machine running every target framework's tests side by side takes ten times as long.
+        const int Period = 8;
+        const int Modules = 1500;
+        using var tiles = new BbBitMatrix(Modules, Modules);
+        for (var y = 0; y < Modules; y++)
+        {
+            for (var x = 0; x < Modules; x++)
+            {
+                var ring = Math.Max(Math.Abs((x % Period) - 3), Math.Abs((y % Period) - 3));
+                tiles[x, y] = ring == 3 || ring <= 1;
+            }
+        }
+
+        using var image = SyntheticImage.FromMatrix(tiles, 2, quietZoneModules: 0);
+        var options = BbScannerOptions.ForStillImages();
+        options.Formats = BbBarcodeFormat.QrCode;
+        using var decoder = new BbBarcodeDecoder(options);
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        decoder.Decode(image.View, suppressDuplicates: false);
+        watch.Stop();
+
+        Assert.IsLessThan(TimeSpan.FromSeconds(60), watch.Elapsed, $"Took {watch.Elapsed}.");
+    }
 }

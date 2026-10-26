@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <!-- Single-target: a measurement tool, not a shipped library. net10.0 matches global.json's pinned SDK. -->
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <!-- BenchmarkDotNet refuses to measure an unoptimized assembly; numbers should come from a Release run. -->
+        <Optimize>true</Optimize>
+        <!-- A console harness run by hand (dotnet run -c Release), not a test project. -->
+        <!-- Signed with the repository key: Bit.Belemetry grants InternalsVisibleTo to this assembly by public key, so
+             a benchmark can time an internal hot path directly. -->
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>..\..\..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
+        <!-- AddLogging: the recording benchmarks go through a real logger factory, as an app does. -->
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.14" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.Belemetry\Bit.Belemetry.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Bit.Belemetry" />
+        <Using Include="BenchmarkDotNet.Attributes" />
+    </ItemGroup>
+
+</Project>

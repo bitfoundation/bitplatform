@@ -129,6 +129,9 @@ selects them:
 RUN_BROWSER_TESTS=1 dotnet test --filter FullyQualifiedName~BitTextFieldBrowserTests
 ```
 
+CI runs every test of `Bit.BlazorUI.Tests.Performance` with `RUN_BROWSER_TESTS=1`, in the `browser tests` job of
+`.github/workflows/bit.ci.BlazorUI.e2e.yml`.
+
 ## Performance Thresholds
 
 Default thresholds are defined in `PerformanceTestBase.Thresholds`:

@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Bit.Bmage.Capabilities;
 using Bit.Bmage.Geometry;
 using Bit.Bmage.Interop;
@@ -72,6 +73,9 @@ public sealed class BrowserImageDecoder : IImageDecoder
         }
     }
 
+    // The request's properties are only ever set in .NET and read by System.Text.Json, so without this the trimmer
+    // drops their getters and the browser decodes with none of the request's hints in trimmed (release) builds.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(DecodeRequest))]
     public async ValueTask<ImageBuffer> DecodeAsync(ReadOnlyMemory<byte> data, DecodeOptions options, IPixelAllocator allocator, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -81,7 +85,7 @@ public sealed class BrowserImageDecoder : IImageDecoder
         if (format == ImageFormat.Unknown)
             throw new ImageDecodeException("The data does not look like a supported image format.");
         if (format == ImageFormat.Svg)
-            throw new ImageDecodeException("SVG input is not decoded by Bmage because rasterising untrusted SVG can execute embedded scripts and fetch remote resources. Rasterise it yourself and pass the pixels instead.");
+            throw new ImageDecodeException(ImageFormats.SvgRefused);
 
         // The browser can decode straight to a smaller bitmap, which is what keeps a 48 megapixel phone photo from
         // ever existing at full size on a memory constrained device. It only preserves the aspect ratio when told a

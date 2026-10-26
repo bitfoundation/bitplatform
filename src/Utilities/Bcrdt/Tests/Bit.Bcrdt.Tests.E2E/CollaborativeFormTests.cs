@@ -5,7 +5,8 @@ namespace Bit.Bcrdt.Tests.E2E;
 
 /// <summary>
 /// The collaborative form: plain map fields that follow each other across replicas and resolve a concurrent write
-/// last-writer-wins, next to a nested text field whose concurrent edits both survive.
+/// last-writer-wins, next to a nested set whose concurrent additions are all kept and a nested text field whose
+/// concurrent edits both survive.
 /// </summary>
 [TestClass]
 public sealed class CollaborativeFormTests : BcrdtTest
@@ -65,6 +66,38 @@ public sealed class CollaborativeFormTests : BcrdtTest
 
         await ExpectSameProjectionsAsync(page);
     }
+
+    [TestMethod]
+    public async Task Labels_ticked_on_both_replicas_while_apart_are_all_kept()
+    {
+        var page = await OpenReplicasAsync("/form", 2);
+        ILocator a = Replica(page, "Replica A"), b = Replica(page, "Replica B");
+
+        // Like the notes, the set of labels is created by each replica on its first render and races once; a label
+        // ticked in A and shown by B proves the race is settled before the replicas are separated.
+        await Label(a, "customer").CheckAsync();
+        await Assertions.Expect(Label(b, "customer")).ToBeCheckedAsync();
+
+        await GoOfflineAsync(b);
+        await Label(a, "urgent").CheckAsync();
+        await Label(b, "blocked").CheckAsync();
+        await GoOnlineAsync(b);
+
+        // A set merges per member: both new labels are kept on both replicas, next to the shared one.
+        foreach (var panel in new[] { a, b })
+        {
+            await Assertions.Expect(Label(panel, "urgent")).ToBeCheckedAsync();
+            await Assertions.Expect(Label(panel, "blocked")).ToBeCheckedAsync();
+            await Assertions.Expect(Label(panel, "customer")).ToBeCheckedAsync();
+            await Assertions.Expect(Label(panel, "internal")).Not.ToBeCheckedAsync();
+        }
+
+        await ExpectSameProjectionsAsync(page);
+    }
+
+    /// <summary>The checkbox of the label called <paramref name="name"/> in the panel's labels field.</summary>
+    private static ILocator Label(ILocator panel, string name) =>
+        panel.Locator("fieldset.form-labels").GetByLabel(name, new() { Exact = true });
 
     /// <summary>The input, menu or text area of the form field labelled <paramref name="label"/>.</summary>
     private static ILocator Field(ILocator panel, string label) => panel.Locator("label.field")

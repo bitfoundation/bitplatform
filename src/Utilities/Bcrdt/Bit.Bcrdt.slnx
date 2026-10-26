@@ -8,6 +8,7 @@
   </Folder>
   <Folder Name="/Demo/">
     <Project Path="Demo/Client/Bit.Bcrdt.Demo.Client.csproj" />
+    <Project Path="Demo/Samples/Bit.Bcrdt.Demo.Samples.csproj" />
     <Project Path="Demo/Server/Bit.Bcrdt.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Tests/">

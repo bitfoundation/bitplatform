@@ -338,8 +338,8 @@ public partial class McpOracleTests
     {
         // The pages, the shared collaboration code and the hosting are what the index promises; a new page
         // that the .csproj's patterns miss would silently be absent from every answer. The site chrome - the
-        // shared Layout/ components and the DocsCatalog.cs they are driven by - is left out on purpose, with
-        // the MCP and not-found pages.
+        // shared Layout/ components, the DocsCatalog.cs they are driven by, and the CodeSnippet that draws the
+        // code under each sample - is left out on purpose, with the MCP and not-found pages.
         var client = FindDemoDirectory("Client");
         if (client is null) Assert.Inconclusive("The demo's sources are not next to this build.");
 
@@ -349,11 +349,33 @@ public partial class McpOracleTests
             .Where(path => path.Contains("/bin/", StringComparison.Ordinal) is false && path.Contains("/obj/", StringComparison.Ordinal) is false)
             .Where(path => path.StartsWith("Demo/Client/Layout/", StringComparison.Ordinal) is false)
             .Where(path => path is not "Demo/Client/Pages/McpServer.razor" and not "Demo/Client/Pages/NotFound.razor" and not "Demo/Client/DocsCatalog.cs")
+            .Where(path => path is not "Demo/Client/Components/CodeSnippet.razor" and not "Demo/Client/Components/SyntaxHighlighter.cs")
             .ToArray();
 
         var embedded = BcrdtSourceCatalog.SourceFiles.Select(file => file.Path).Where(path => path.StartsWith("Demo/Client/", StringComparison.Ordinal)).ToArray();
 
         CollectionAssert.AreEquivalent(expected, embedded);
+    }
+
+    [TestMethod]
+    public void Every_sample_is_embedded()
+    {
+        // The samples are the code each page shows under its replicas, and the closest thing in the index to
+        // what an application writes. Their _Imports.razor only stands in for an application's own.
+        var samples = FindDemoDirectory("Samples");
+        if (samples is null) Assert.Inconclusive("The demo's sources are not next to this build.");
+
+        var expected = Directory.EnumerateFiles(samples, "*.*", SearchOption.TopDirectoryOnly)
+            .Where(path => path.EndsWith(".razor", StringComparison.Ordinal) || path.EndsWith(".cs", StringComparison.Ordinal))
+            .Select(path => $"Demo/Samples/{Path.GetFileName(path)}")
+            .Where(path => path is not "Demo/Samples/_Imports.razor")
+            .ToArray();
+
+        var embedded = BcrdtSourceCatalog.SourceFiles.Where(file => file.Path.StartsWith("Demo/Samples/", StringComparison.Ordinal)).ToArray();
+
+        Assert.IsNotEmpty(expected);
+        CollectionAssert.AreEquivalent(expected, embedded.Select(file => file.Path).ToArray());
+        Assert.IsTrue(embedded.All(file => file.Kind == "Sample"), "Every file of Demo/Samples is indexed as a Sample.");
     }
 
     [TestMethod]
@@ -427,7 +449,7 @@ public partial class McpOracleTests
 
         foreach (var tool in McpSurfaceTests.ExpectedTools) Assert.Contains($"<code>{tool}</code>", markup, tool);
         foreach (var prompt in new[] { "add-bcrdt-to-app", "implement-bcrdt-feature", "debug-bcrdt-sync" }) Assert.Contains(prompt, markup, prompt);
-        foreach (var endpoint in new[] { "https://bcrdt.bitplatform.dev/mcp", "https://bitplatform.dev/mcp", "http://localhost:5560/mcp" }) Assert.Contains(endpoint, markup, endpoint);
+        foreach (var endpoint in new[] { "https://bcrdt.bitplatform.dev/mcp", "http://localhost:5560/mcp" }) Assert.Contains(endpoint, markup, endpoint);
 
         using var http = McpTestHost.CreateHttpClient();
 

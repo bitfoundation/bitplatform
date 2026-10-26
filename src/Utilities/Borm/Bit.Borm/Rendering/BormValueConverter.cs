@@ -15,6 +15,11 @@ public static class BormValueConverter
     public static string ToInputString(object? value, BormFieldType type)
     {
         if (value is null) return string.Empty;
+
+        // A month or week picker shows the period the date falls in, whichever kind of date holds it.
+        if (type is BormFieldType.Month or BormFieldType.Week && AsDate(value) is { } period)
+            return type == BormFieldType.Month ? BormPeriod.FormatMonth(period) : BormPeriod.FormatWeek(period);
+
         return value switch
         {
             string s => s,
@@ -41,6 +46,14 @@ public static class BormValueConverter
             _ => ToInvariantString(value)
         };
     }
+
+    private static DateTime? AsDate(object value) => value switch
+    {
+        DateTime dt => dt,
+        DateOnly d => d.ToDateTime(TimeOnly.MinValue),
+        DateTimeOffset dto => dto.DateTime,
+        _ => null
+    };
 
     /// <summary>
     /// Renders any value as a stable, culture-independent string — used for option matching,
@@ -81,6 +94,20 @@ public static class BormValueConverter
             if (type is null || nullable || !type.IsValueType) return null;
             // A non-nullable value type cannot hold "no value", so fall back to its default.
             return Activator.CreateInstance(type);
+        }
+
+        // A month or a week: the period's first day, in whatever kind of date the model holds; with no
+        // CLR type (or a string property) the text the picker speaks is the value. Text that is not a
+        // period is kept as it came, for the state to report.
+        if (fieldType is BormFieldType.Month or BormFieldType.Week && type != typeof(string))
+        {
+            if (!BormPeriod.TryParse(raw.Trim(), fieldType, out var start)) return raw;
+            if (type is null) return fieldType == BormFieldType.Month ? BormPeriod.FormatMonth(start) : BormPeriod.FormatWeek(start);
+            if (type == typeof(DateOnly)) return DateOnly.FromDateTime(start);
+            if (type == typeof(DateTime)) return start;
+            if (type == typeof(DateTimeOffset))
+                return current is DateTimeOffset existing ? new DateTimeOffset(start, existing.Offset) : new DateTimeOffset(start);
+            return raw;
         }
 
         // No target type: infer from the field type (the dictionary-backed, schema-only case).
@@ -151,6 +178,21 @@ public static class BormValueConverter
                 var member = Enum.ToObject(underlying, Convert.ChangeType(value, Enum.GetUnderlyingType(underlying), CultureInfo.InvariantCulture));
                 if (!IsAcceptableEnumValue(underlying, member)) return false;
                 result = member;
+                return true;
+            }
+            // A number keeps the value it was written as. Convert.ChangeType keeps a double's exact binary
+            // value from .NET 11 on, so a default of 0.3 reached a decimal property as
+            // 0.2999999999999999888977697537, and a float widened to a double kept its binary noise, so
+            // 0.1f reached a double property as 0.10000000149011612.
+            if (underlying == typeof(decimal) && BormNumber.IsNumber(value))
+            {
+                if (!BormNumber.TryToDecimal(value, out var number)) return false;
+                result = number;
+                return true;
+            }
+            if (underlying == typeof(double) && value is float f)
+            {
+                result = BormNumber.Widen(f);
                 return true;
             }
             if (value is IConvertible && typeof(IConvertible).IsAssignableFrom(underlying))

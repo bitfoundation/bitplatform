@@ -84,6 +84,32 @@ public abstract class BlazeDbTest
         return await page.Locator(".bd-status").GetAttributeAsync("data-storage") ?? string.Empty;
     }
 
+    /// <summary>
+    /// Ends the test as inconclusive when the browser offers no writable OPFS to this context - WebKit's
+    /// Playwright contexts are ephemeral, like a private window, and refuse navigator.storage.getDirectory().
+    /// The demo then runs on its in-memory fallback, which every other suite still drives. Chromium and
+    /// Firefox do offer it, so on a build server their losing it fails the test: an inconclusive there would
+    /// be a green run with no persistence coverage.
+    /// </summary>
+    protected static async Task RequireOpfsAsync(IPage page)
+    {
+        var missing = await page.EvaluateAsync<string?>(
+            """
+            async () => {
+              if (typeof FileSystemFileHandle === 'undefined' || typeof FileSystemFileHandle.prototype.createWritable !== 'function')
+                return 'FileSystemFileHandle.createWritable is missing';
+              try { await navigator.storage.getDirectory(); return null; }
+              catch (e) { return `navigator.storage.getDirectory() failed with ${e.name}`; }
+            }
+            """);
+
+        if (missing is null) return;
+
+        var reason = $"{E2EEnvironment.Browser} offers this context no writable OPFS: {missing}.";
+        if (E2EEnvironment.IsContinuousIntegration && E2EEnvironment.Browser != "webkit") Assert.Fail(reason);
+        Assert.Inconclusive(reason);
+    }
+
     /// <summary>Collects every uncaught error and console error a page reports, for a test to assert there were none.</summary>
     protected static List<string> CollectErrors(IPage page)
     {

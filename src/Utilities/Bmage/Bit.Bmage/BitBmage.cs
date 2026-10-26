@@ -24,12 +24,14 @@ public static class BitBmage
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Services are registered as scoped, which is correct for both hosting models: in WebAssembly a scope lives for the
-    /// whole application, and in Server one scope exists per circuit, so browser state is never shared between users.
+    /// Services are registered as scoped, which is correct for every hosting model: in WebAssembly a scope lives for the
+    /// whole application, in Server one scope exists per circuit, so browser state is never shared between users, and in
+    /// Blazor Hybrid one exists per BlazorWebView.
     /// </para>
     /// <para>
     /// In a Blazor Web App, register this in the client project for WebAssembly and Auto render modes, and in the server
-    /// project as well if any component uses Interactive Server.
+    /// project as well if any component uses Interactive Server. In a Blazor Hybrid app (MAUI, WPF, Windows Forms),
+    /// register it once, next to <c>AddMauiBlazorWebView</c> or its equivalent.
     /// </para>
     /// </remarks>
     /// <example>
@@ -85,7 +87,7 @@ public static class BitBmage
         services.TryAddSingleton(sp =>
         {
             var o = sp.GetRequiredService<BitBmageOptions>();
-            return new Pipeline.ImageProcessor(Codecs.ImageCodecRegistry.CreateDefault(), o.Allocator, o.Limits);
+            return new Pipeline.ImageProcessor(Codecs.ImageCodecRegistry.CreateDefault(), o.Allocator, o.Limits) { MaxDegreeOfParallelism = o.MaxDegreeOfParallelism };
         });
         services.TryAddSingleton<FontTextRasterizer>();
         return services;

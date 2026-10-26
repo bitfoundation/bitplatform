@@ -627,8 +627,10 @@ public class BitDropMenuE2ETests : E2ETestBase
         await Expect(callout).ToBeVisibleAsync();
         Assert.IsTrue(watch.ElapsedMilliseconds >= 550, $"HoverOpenDelay=600 (opened after {watch.ElapsedMilliseconds}ms).");
 
-        await Page.Mouse.MoveAsync(away.X + away.Width - 5, away.Y + away.Height / 2);
+        // Restarted ahead of the move that starts the HoverCloseDelay, so the time the move takes to come back is not
+        // taken off what is measured.
         watch.Restart();
+        await Page.Mouse.MoveAsync(away.X + away.Width - 5, away.Y + away.Height / 2);
         await Expect(callout).ToBeVisibleAsync();
         Assert.AreEqual("true", await Button("dm-hover-delay").GetAttributeAsync("aria-expanded"), "Still open as soon as the pointer leaves.");
         await Expect(callout).ToBeHiddenAsync();

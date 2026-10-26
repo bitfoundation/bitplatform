@@ -12,10 +12,19 @@
          way a Blazor Web App's client project is expected to contribute them. -->
     <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    <!-- The runtime's own exception messages are part of what this site teaches: the errors page prints
+         each one it provokes. WebAssembly trims them to resource keys by default ("Arg_ParamName_Name",
+         "ObjectDisposed_Generic"), which reads as a bug rather than an error. -->
+    <UseSystemResourceKeys>false</UseSystemResourceKeys>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.13" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.14" />
+    <!-- No Bit.Minifier, unlike the other demos: this client runs EF Core, and the minifier strips the parameter
+         names of EF Core's internal methods, which EntityFrameworkQueryableExtensions' static constructor finds
+         its methods by - so the first AsNoTracking or Include throws a TypeInitializationException, in the
+         published site only. The Boilerplate leaves the minifier out with its client-side EF Core (offlineDb)
+         for the same reason. -->
   </ItemGroup>
 
   <ItemGroup>

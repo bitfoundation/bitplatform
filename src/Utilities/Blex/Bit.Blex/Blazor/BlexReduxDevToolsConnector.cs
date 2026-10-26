@@ -94,6 +94,13 @@ public sealed class BlexReduxDevToolsConnector : IBlexDevTools, IAsyncDisposable
             FireAndForget(_module.InvokeVoidAsync("send", _handle, actionName, globalState.ToJsonString(), payload?.ToJsonString()));
     }
 
+    /// <inheritdoc />
+    public void SendLiftedState(JsonObject liftedState)
+    {
+        if (_ready && _module is not null)
+            FireAndForget(_module.InvokeVoidAsync("sendLifted", _handle, liftedState.ToJsonString()));
+    }
+
     // DevTools is a non-critical sink, so interop is dispatched without blocking the dispatch
     // pipeline. We still observe the task so a transient interop failure can't surface as an
     // unobserved task exception.

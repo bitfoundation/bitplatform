@@ -16,6 +16,7 @@
     <meta property="og:site_name" content="Bit.Blex" />
     <meta property="og:title" content="Blex - reactive state management for Blazor" />
     <meta property="og:description" content="One [BlexState] field, one [BlexAction] method. No reducers, no boilerplate - and Redux DevTools time-travel out of the box." />
+    <meta property="og:image" content="https://blex.bitplatform.dev/icon-512.png" />
     <meta name="twitter:card" content="summary" />
 
     <ResourcePreloader />
@@ -28,12 +29,19 @@
     @* Synchronous on purpose: applies the light/dark theme before first paint. *@
     <script src="@Assets["theme.js"]"></script>
     <ImportMap />
+    <link rel="icon" href="favicon.ico" sizes="32x32" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
     @* Same render mode as the app itself, so <PageTitle> keeps working after hydration. *@
     <HeadOutlet @rendermode="InteractiveWebAssembly" />
 </head>
 
-<body>
+@* data-enhance-nav="false": a link followed before the WebAssembly runtime has started is a plain
+   page load rather than an enhanced one. Enhanced navigation fetches and merges the next page while
+   the runtime is still starting, and the router the runtime then attaches can render the address
+   it read before the merge - the URL says /introduction and the page is the landing page. Once the
+   app is interactive its router handles every link itself and this attribute is not consulted. *@
+<body data-enhance-nav="false">
     @* Prerendered on the server, then hydrated by the WebAssembly runtime. Stores render their
        initial state in the served HTML; <BlexProvider> hands that state to the interactive render
        and then rehydrates the persisted stores from localStorage. Bit.Blex has no stylesheet, and

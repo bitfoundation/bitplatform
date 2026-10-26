@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -576,7 +575,6 @@ public partial class BitAccordion : BitComponentBase
         await base.OnInitializedAsync();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAccordionParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

@@ -9,9 +9,9 @@
 
     <ItemGroup>
         <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.13" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.14" />
         <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
-        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
+        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.3.0" />
         <!-- Flattens the rendered HTML of a docs page into the Markdown an MCP client reads. -->
         <PackageReference Include="HtmlAgilityPack" Version="1.13.1" />
         <!-- InspectBlexStore compiles the submitted store and runs the generator over it. The version the
@@ -61,14 +61,18 @@
             <LogicalName>BlexSource/Demo/Server/Components/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
 
-        <!-- The minimal standalone WebAssembly sample, whole - it is the smallest complete Blex app there is. -->
-        <EmbeddedResource Include="..\..\Samples\Bit.Blex.Samples.Wasm\**\*.razor;..\..\Samples\Bit.Blex.Samples.Wasm\**\*.cs;..\..\Samples\Bit.Blex.Samples.Wasm\*.csproj"
-                          Exclude="..\..\Samples\Bit.Blex.Samples.Wasm\bin\**;..\..\Samples\Bit.Blex.Samples.Wasm\obj\**">
+        <!-- The samples: the Core library of stores and pages, and every host that renders it unchanged - Blazor
+             Server, WebAssembly, Auto, standalone WebAssembly and .NET MAUI Blazor Hybrid. They are the smallest
+             complete Blex apps there are. The layout, the landing and not-found pages and the MAUI platform
+             boilerplate answer no question about Blex. -->
+        <EmbeddedResource Include="..\..\Samples\**\*.razor;..\..\Samples\**\*.cs;..\..\Samples\**\*.csproj;..\..\Samples\**\*.xaml"
+                          Exclude="..\..\Samples\**\bin\**;..\..\Samples\**\obj\**;..\..\Samples\Core\Shared\**;..\..\Samples\Core\Pages\Home.razor;..\..\Samples\Core\Pages\NotFound.razor;..\..\Samples\MAUI\Platforms\**">
             <LogicalName>BlexSource/Sample/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
 
         <!-- Named outright: %(RecursiveDir) only captures what a '**' matched, so the folder would be dropped. -->
-        <EmbeddedResource Include="..\..\Samples\Bit.Blex.Samples.Wasm\wwwroot\index.html" LogicalName="BlexSource/Sample/wwwroot/index.html" />
+        <EmbeddedResource Include="..\..\Samples\Standalone\wwwroot\index.html" LogicalName="BlexSource/Sample/Standalone/wwwroot/index.html" />
+        <EmbeddedResource Include="..\..\Samples\MAUI\wwwroot\index.html" LogicalName="BlexSource/Sample/MAUI/wwwroot/index.html" />
     </ItemGroup>
 
 </Project>

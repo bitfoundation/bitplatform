@@ -1,8 +1,8 @@
 ﻿@page "/hosting"
 
 @* Where Bmage runs and what changes between hosts. The Blazor Web App section is this site's own
-   setup, copied from its Program.cs files and App.razor, so the snippets are known to work rather
-   than paraphrased. *@
+   setup, copied from its Program.cs files and App.razor, and the Blazor Hybrid one follows
+   Samples/MAUI, so the snippets are known to work rather than paraphrased. *@
 
 <PageTitle>Hosting models · Bmage</PageTitle>
 
@@ -27,6 +27,7 @@
                 <tr><th scope="row">Blazor Web App, <code>InteractiveWebAssembly</code></th><td>Everything</td><td>Same as above once the component is interactive. This site.</td></tr>
                 <tr><th scope="row">Blazor Web App, <code>InteractiveAuto</code></th><td>Everything once interactive</td><td>The first visit runs on the server while the runtime downloads - see Interactive Server.</td></tr>
                 <tr><th scope="row">Blazor Web App, <code>InteractiveServer</code></th><td>Everything</td><td>Works, but pixels cross the circuit.</td></tr>
+                <tr><th scope="row">Blazor Hybrid (MAUI, WPF, Windows Forms)</th><td>Everything</td><td>.NET runs in the app and reaches the WebView over its interop bridge; no network involved. Saving a file on Android and iOS is the app's job.</td></tr>
                 <tr><th scope="row">Prerendering</th><td>Managed codecs only</td><td>No browser exists yet. Call browser features from <code>OnAfterRenderAsync</code>.</td></tr>
                 <tr><th scope="row">ASP.NET Core, console, worker</th><td>Headless API</td><td><code>AddBitBmageHeadlessServices</code>. Managed codecs only, no JavaScript.</td></tr>
             </tbody>
@@ -112,6 +113,72 @@
     </p>
     <CodeSnippet Code="@StandaloneProgramSnippet" Language="C#" Expanded="true" />
     <CodeSnippet Code="@IndexHtmlSnippet" Language="HTML" Expanded="true" />
+</div>
+
+<div class="bb-card" id="blazor-hybrid">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Blazor Hybrid (MAUI, WPF, Windows Forms)</h3>
+    <p>
+        Everything works. The components run in compiled .NET inside the app's own process and render
+        into a WebView, which Bmage reaches over JavaScript interop - the same position as Interactive
+        Server, so <code>IImageCapabilityProvider</code> reports <code>ImageEnvironment.BrowserServer</code>
+        and picks codecs the same way: PNG, JPEG, BMP and GIF are coded by .NET in the app, and WebP,
+        AVIF and photos with a colour profile other than sRGB by the WebView. Nothing crosses a network,
+        but those pixels and the editor's previews are copied through the WebView's message channel.
+    </p>
+    <p>
+        There is one container, and the WebView is there from the first render: register the services
+        once, next to the WebView, and link the stylesheet from the page the WebView hosts. The pixel loops run on the device's CPU
+        rather than in WebAssembly, so an image can have every core.
+    </p>
+    <CodeSnippet Code="@MauiProgramSnippet" Language="C#" Expanded="true" />
+    <CodeSnippet Code="@IndexHtmlSnippet" Language="HTML" Expanded="true" />
+    <p>
+        Saving a file is the platform's job on mobile. <code>DownloadAsync</code> hands the file to the
+        WebView: WebView2 on Windows saves it as Edge would, but Android's WebView and iOS's WKWebView
+        leave downloads to the app. There, encode and save the bytes with the platform's APIs:
+    </p>
+    <CodeSnippet Code="@HybridSaveSnippet" Language="C#" Expanded="true" />
+    <ul class="bb-detail-list">
+        <li>Which formats the WebView codes depends on its engine - Chromium in WebView2 and on Android, Safari's in WKWebView on iOS and Mac Catalyst. The probe measures the one the app runs in, so pick formats with <code>ChooseEncodableFormat</code> or <code>EncodeWithFallbackAsync</code>.</li>
+        <li>The MAUI template interprets .NET in Debug builds, for Hot Reload. Judge performance on a Release build.</li>
+        <li><a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Samples/MAUI">Samples/MAUI</a> is a working app over the same pages as the Web App samples.</li>
+    </ul>
+</div>
+
+<div class="bb-card" id="lazy-loading">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Lazy loading on WebAssembly</h3>
+    <p>
+        <code>BmageEditor</code> also works without the registration, so a WebAssembly app can download
+        Bmage only when someone opens the editor. When <code>ImageLoader</code> is not registered, the
+        editor builds every service it needs itself, once per browser connection, with the
+        <code>BitBmageOptions</code> the app registered or the defaults. Mark the assembly as lazy
+        loaded, and load it before the editor first renders:
+    </p>
+    <CodeSnippet Code="@LazyProjectSnippet" Language="XML" Expanded="true" />
+    <CodeSnippet Code="@LazyLoadSnippet" Language="Razor" Expanded="true" />
+    <ul class="bb-detail-list">
+        <li>Leave <code>AddBitBmageServices</code> out of that project's <code>Program.cs</code>: calling it references Bmage's types before the assembly is there.</li>
+        <li>Code of your own that injects <code>ImageLoader</code> or <code>ImageExporter</code> needs the registration, so lazy loading suits an app whose only use of Bmage is the editor.</li>
+        <li>Do not lazy load in an AOT build. AOT compiles every assembly into <code>dotnet.native.wasm</code>, so there is nothing left to download later, and lazy loading an AOT-compiled assembly can fail at startup.</li>
+    </ul>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Web Workers and a Content Security Policy</h3>
+    <p>
+        In the browser, decoding, encoding and building the editor's working copy run in a small pool of
+        Web Workers loaded from <code>_content/Bit.Bmage/bit-bmage-worker.js</code>, so the page's thread -
+        which on WebAssembly is also .NET's - keeps painting while a photo decodes. A Content Security
+        Policy that lists sources explicitly has to allow them, with <code>worker-src 'self'</code> or a
+        <code>script-src 'self'</code> it falls back to; Blob URLs are never used for workers.
+    </p>
+    <CodeSnippet Code="Content-Security-Policy: worker-src 'self'" Language="Shell" Expanded="true" />
+    <p>
+        Nothing breaks without them: where workers are blocked or the browser has no
+        <code>OffscreenCanvas</code>, the same work runs on the page's thread. Cap the pool, or turn it
+        off, with <code>BitBmageOptions.MaxCodecWorkers</code> - see
+        <a href="/performance#threads-workers-and-memory">Performance</a>.
+    </p>
 </div>
 
 <div class="bb-card">
@@ -267,6 +334,61 @@
             ...
             <link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" />
         </head>
+        """;
+
+    private const string MauiProgramSnippet = """
+        // MauiProgram.cs
+        using Bit.Bmage;
+
+        var builder = MauiApp.CreateBuilder();
+        builder.UseMauiApp<App>();
+
+        builder.Services.AddMauiBlazorWebView();
+        builder.Services.AddBitBmageServices(options =>
+        {
+            options.MaxDegreeOfParallelism = Environment.ProcessorCount;
+        });
+
+        return builder.Build();
+        """;
+
+    private const string HybridSaveSnippet = """
+        var encoded = await Exporter.EncodeWithFallbackAsync(image, [ImageFormat.WebP, ImageFormat.Jpeg]);
+
+        var path = Path.Combine(FileSystem.CacheDirectory, "photo" + encoded.Extension);
+        await File.WriteAllBytesAsync(path, encoded.Data);
+
+        await Share.Default.RequestAsync(new ShareFileRequest
+        {
+            Title = "Save the image",
+            File = new ShareFile(path)
+        });
+        """;
+
+    private const string LazyProjectSnippet = """
+        <!-- The browser project's .csproj -->
+        <ItemGroup>
+          <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.wasm" />
+        </ItemGroup>
+        """;
+
+    private const string LazyLoadSnippet = """
+        @* App.razor: the router waits for OnNavigateAsync before it renders the page. *@
+        @using Microsoft.AspNetCore.Components.WebAssembly.Services
+        @inject LazyAssemblyLoader LazyAssemblyLoader
+
+        <Router AppAssembly="typeof(App).Assembly" OnNavigateAsync="OnNavigateAsync">
+            ...
+        </Router>
+
+        @code {
+            private async Task OnNavigateAsync(NavigationContext context)
+            {
+                // The page with the editor on it: fetch Bmage before it renders.
+                if (context.Path == "edit")
+                    await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bmage.wasm"]);
+            }
+        }
         """;
 
     private const string AotSnippet = """

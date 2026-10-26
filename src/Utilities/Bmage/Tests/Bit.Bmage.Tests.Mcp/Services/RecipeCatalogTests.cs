@@ -53,21 +53,33 @@ public class RecipeCatalogTests
     public void Recipes_NameOnlyTypesThatExist()
     {
         var known = BmageApiCatalog.Types.Select(type => type.Name).ToHashSet(StringComparer.Ordinal);
+        var namespaces = BmageApiCatalog.Types.Select(type => type.Namespace).ToHashSet(StringComparer.Ordinal);
 
         // The Bmage-looking names in the code: Image*, Bmage*, *Annotation, *Options, *Exception, Rgba32 and friends.
         var pattern = new Regex(@"\b(?:Image\w+|Bmage\w+|\w+Annotation|Redaction\w+|Metadata\w+|Exif\w+|Batch\w+|MaxFileSizeStrategy|Resize\w+|Resampling\w+|AspectRatio|Anchor|Rgba32|ShapeStyle|StrokeStyle|TextStyle|TextAlignment|TextBaseline|EditorToolKind|DecodeOptions|DocumentRenderer|FontTextRasterizer|BrowserTextRasterizer|EncodedImage|SmartCrop)\b");
 
         foreach (var recipe in BmageRecipeCatalog.All)
         {
-            var unknown = pattern.Matches(recipe.Code!)
-                .Select(match => match.Value)
-                .Where(name => known.Contains(name) is false)
+            var code = recipe.Code!;
+            var unknown = new List<string>();
+            foreach (Match match in pattern.Matches(code))
+            {
+                // A member, not a type, when set in an initializer (ImageReferences = ...).
+                if (Regex.IsMatch(code[(match.Index + match.Length)..], @"^\s*=(?![=>])")) continue;
+                if (match.Index > 0 && code[match.Index - 1] == '.')
+                {
+                    // After a dot a name is a member (options.ImageResolver, ImagePipeline.Empty), unless what comes
+                    // before it is a namespace: Bit.Bmage.Layers.ImageLayer names a type like any other, and so does
+                    // the namespace it is in.
+                    var qualifier = Regex.Match(code[..(match.Index - 1)], @"[\w.]+$").Value;
+                    if (qualifier.StartsWith("Bit.Bmage", StringComparison.Ordinal) is false || known.Contains(qualifier[(qualifier.LastIndexOf('.') + 1)..])) continue;
+                    if (namespaces.Contains(qualifier) is false) unknown.Add(qualifier);
+                }
                 // ImageDocument.AddAnnotation is a method, not a type.
-                .Where(name => name.StartsWith("Add", StringComparison.Ordinal) is false)
-                .Distinct()
-                .ToArray();
+                if (known.Contains(match.Value) is false && match.Value.StartsWith("Add", StringComparison.Ordinal) is false) unknown.Add(match.Value);
+            }
 
-            Assert.IsEmpty(unknown, $"{recipe.Id} names types this build does not have: {string.Join(", ", unknown)}.");
+            Assert.IsEmpty(unknown, $"{recipe.Id} names types this build does not have: {string.Join(", ", unknown.Distinct())}.");
         }
     }
 

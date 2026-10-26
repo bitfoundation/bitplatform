@@ -687,7 +687,6 @@ public partial class BitRichTextEditor : BitComponentBase
         StyleBuilder.Register(() => MaxHeight is null ? string.Empty : $"--bit-RichTextEditor-max-height:{MaxHeight}");
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitRichTextEditorParams))]
     protected override void OnParametersSet()
     {
         // Before anything below reads the parameters it may fill in. A BitParams that has gone away takes what it

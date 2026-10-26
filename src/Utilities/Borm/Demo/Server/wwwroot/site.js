@@ -1,5 +1,6 @@
-﻿/* Progressive decoration for the site chrome, plus the two things a Blazor component cannot do
-   for itself: listen at the document for a keyboard shortcut, and lock the page behind a dialog.
+﻿/* Progressive decoration for the site chrome, plus the things a Blazor component cannot do for
+   itself: listen at the document for a keyboard shortcut, lock the page behind a dialog, and get a
+   fragment link - the skip link, or a section of another page - to land where it points.
 
    Part of the site kit every Utilities demo shares (see app.css).
 
@@ -103,6 +104,14 @@
             });
         });
 
+        // The button is positioned inside the scroller it decorates, so a code block scrolled sideways
+        // would carry it off with the text. Shifting it back by the scroll offset pins it to the
+        // block's visible edge; in a right-to-left block scrollLeft runs negative, which shifts it the
+        // other way, as it should.
+        pre.addEventListener('scroll', function () {
+            button.style.transform = pre.scrollLeft === 0 ? '' : 'translateX(' + pre.scrollLeft + 'px)';
+        }, { passive: true });
+
         pre.appendChild(button);
     }
 
@@ -136,20 +145,27 @@
         return heading.closest('.bb-card, .bb-section') || heading;
     }
 
+    /* The address of a section of the CURRENT page. A bare "#id" is resolved against the document's
+       base URL, and the host page sets <base href="/">, so "#id" means the home page's section: a
+       copied link would open the wrong page, and Blazor's router would navigate there on a click. */
+    function hereWith(id) {
+        return location.pathname + location.search + '#' + id;
+    }
+
     /* A link to the heading itself, so a reader can hand someone else the exact section. Kept as
        the heading's last child; if Blazor has since appended something after it, re-appending
        moves it back rather than adding a second one. */
     function anchorFor(heading, id) {
         var existing = heading.querySelector(':scope > .bb-anchor');
         if (existing) {
-            existing.setAttribute('href', '#' + id);
+            existing.setAttribute('href', hereWith(id));
             if (existing !== heading.lastChild) heading.appendChild(existing);
             return;
         }
 
         var link = document.createElement('a');
         link.className = 'bb-anchor';
-        link.href = '#' + id;
+        link.href = hereWith(id);
         link.title = 'Link to this section';
         link.setAttribute('aria-label', 'Link to this section');
         link.appendChild(svg(ANCHOR_ICON));
@@ -167,8 +183,9 @@
 
         target.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
         // Written without a jump: replaceState keeps the fragment shareable but does not add a
-        // history entry for every heading the reader passes through.
-        history.replaceState(history.state, '', '#' + id);
+        // history entry for every heading the reader passes through. The URL is resolved against
+        // the base like a link's, so it carries the page's own path (see hereWith).
+        history.replaceState(history.state, '', hereWith(id));
     }
 
     function prefersReducedMotion() {
@@ -225,7 +242,9 @@
 
         var container = document.querySelector('.bb-docs-content') || rail.parentElement;
         var items = headingsOf(container);
-        var signature = items.map(function (i) { return i.id; }).join('|');
+        // The path is part of it because the links are: two pages with the same sections still need
+        // links to their own addresses.
+        var signature = location.pathname + '|' + items.map(function (i) { return i.id; }).join('|');
 
         // The observer that calls this fires for our own writes too; rebuilding only when the set
         // of sections actually changed is what keeps that from looping.
@@ -255,7 +274,7 @@
             li.dataset.for = item.id;
 
             var link = document.createElement('a');
-            link.href = '#' + item.id;
+            link.href = hereWith(item.id);
             link.textContent = item.title;
             link.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -341,6 +360,124 @@
         window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
     }
 
+    // ── Fragments ────────────────────────────────────────────────────────────────────────────
+
+    // ── A page with no interactivity ───────────────────────────────────────────────────────────
+
+    /* A page that stays on the server (MainLayout marks it data-static) runs none of the shell's Blazor handlers. Its
+       header is an interactive island of its own; the docs drawer and the footer's Back to top are worked from here -
+       and only there, so nothing here ever touches markup a running Blazor page is drawing. */
+    function isStaticPage() {
+        var page = document.querySelector('.page');
+        return page !== null && page.dataset.static === 'true';
+    }
+
+    function setStaticDrawer(open, focus) {
+        var panel = document.getElementById('bb-docs-nav');
+        var toggle = document.querySelector('.bb-docs-menu-toggle');
+        if (panel === null || toggle === null) return;
+
+        panel.classList.toggle('bb-open', open);
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        var label = toggle.querySelector('.bb-docs-menu-label');
+        if (label !== null) label.textContent = open ? 'Hide docs' : 'Browse docs';
+
+        if (!focus) return;
+        var target = open ? panel.querySelector('.bb-docs-close') : toggle;
+        // After the panel is shown: a panel still hidden when the focus call arrives refuses it.
+        if (target !== null) requestAnimationFrame(function () { target.focus(); });
+    }
+
+    function onStaticChrome(e) {
+        if (!isStaticPage() || !(e.target instanceof Element)) return;
+
+        if (e.target.closest('.bb-go-to-top')) {
+            goToTop();
+        } else if (e.target.closest('.bb-docs-menu-toggle')) {
+            var panel = document.getElementById('bb-docs-nav');
+            setStaticDrawer(panel === null || !panel.classList.contains('bb-open'), true);
+        } else if (e.target.closest('.bb-docs-close')) {
+            setStaticDrawer(false, true);
+        }
+    }
+
+    function onStaticEscape(e) {
+        if (e.key !== 'Escape' || !isStaticPage()) return;
+        var panel = document.getElementById('bb-docs-nav');
+        if (panel !== null && panel.classList.contains('bb-open')) setStaticDrawer(false, true);
+    }
+
+    /* The skip link. Blazor's router hears every link click at the document, and for a fragment
+       it scrolls at most - it never moves focus - so the next Tab after "Skip to content" would land
+       in the very header the link exists to skip. Heard here in the capture phase, ahead of the
+       router's listener, which leaves alone a click whose default was already prevented. */
+    function onSkipLink(e) {
+        if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+
+        var link = e.target instanceof Element ? e.target.closest('a.bb-skip-link') : null;
+        var main = document.getElementById('bb-main');
+        if (link === null || main === null) return;
+
+        e.preventDefault();
+        // On a docs page <main> opens with the nav panel - thirty-odd links - so landing on <main> skipped the header
+        // and left the panel still to tab through. The page's own heading is where the content starts; <main> (which
+        // carries tabindex="-1" for this, its focus ring suppressed in app.css) is the landing page's.
+        var heading = main.querySelector('.bb-docs-content h1');
+        if (heading !== null) {
+            if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1');
+            heading.focus();
+            return;
+        }
+        main.focus();
+    }
+
+    /* A link to a section of ANOTHER page - actions#dispatch-by-name - would arrive at the top of
+       it: the router scrolls to a fragment only on the page it was already showing, the section ids
+       are written by this script once the new page has rendered (headingsOf), and <FocusOnNavigate>
+       (Routes.razor) then focuses the page's h1, which scrolls it back into view. So the fragment is
+       taken over here: noted when the path changes, and scrolled to by the first pass that finds
+       its target. A target that never turns up is given up on rather than jumped to much later. */
+    var fragmentPath = location.pathname + location.search;
+    var pendingFragment = null;
+
+    function syncFragment() {
+        var path = location.pathname + location.search;
+        if (path !== fragmentPath) {
+            fragmentPath = path;
+            pendingFragment = location.hash.length > 1 ? { id: decodeFragment(location.hash), until: Date.now() + 3000 } : null;
+        }
+
+        if (pendingFragment === null) return;
+        if (Date.now() > pendingFragment.until) {
+            pendingFragment = null;
+            return;
+        }
+
+        var target = document.getElementById(pendingFragment.id);
+        if (target === null) return;
+        pendingFragment = null;
+
+        var scroll = function () { target.scrollIntoView({ behavior: 'instant', block: 'start' }); };
+        scroll();
+
+        // The h1's focus normally lands before this pass - it is part of the render that started
+        // it - but should it come later, its scroll-into-view runs after its focus event, so the
+        // scroll is repeated once that has happened.
+        var refocus = function (e) {
+            if (e.target instanceof Element && e.target.matches('h1')) setTimeout(scroll, 0);
+        };
+        document.addEventListener('focusin', refocus);
+        setTimeout(function () { document.removeEventListener('focusin', refocus); }, 1000);
+    }
+
+    function decodeFragment(hash) {
+        try {
+            return decodeURIComponent(hash.slice(1));
+        } catch (_) {
+            return hash.slice(1);
+        }
+    }
+
     // ── Wiring ───────────────────────────────────────────────────────────────────────────────
 
     // ── Nav panel ────────────────────────────────────────────────────────────────────────────
@@ -352,22 +489,20 @@
        Only the PANEL is scrolled, never the page, and only when the row is actually out of view:
        scrollIntoView would scroll every ancestor including the document, which on arrival would
        throw away the scroll-to-top the router just performed. */
-    var navScrolledFor = null;
-
     function syncSidebar() {
         var panel = document.querySelector('.bb-docs-sidebar');
-        if (panel === null) {
-            navScrolledFor = null;
-            return;
-        }
+        if (panel === null) return;
 
         var active = panel.querySelector('a.active');
         if (active === null) return;
 
-        // Once per selected row: re-running it would fight a reader scrolling the panel by hand.
+        // Once per selected row: re-running it would fight a reader scrolling the panel by hand. The
+        // mark is kept on the panel element rather than in this script, because the panel is not
+        // always the same element: the interactive render replaces the prerendered one - scrolled
+        // here moments earlier - with a new panel that starts at the top again.
         var key = active.getAttribute('href');
-        if (key === navScrolledFor) return;
-        navScrolledFor = key;
+        if (panel.bbScrolledFor === key) return;
+        panel.bbScrolledFor = key;
 
         var panelBox = panel.getBoundingClientRect();
         var rowBox = active.getBoundingClientRect();
@@ -381,6 +516,8 @@
         decorateAll();
         buildRail();
         syncSidebar();
+        // Last: the section ids it looks for are written by buildRail.
+        syncFragment();
     }
 
     function start() {
@@ -409,6 +546,9 @@
         }, { passive: true });
 
         document.addEventListener('keydown', onShortcut);
+        document.addEventListener('click', onSkipLink, true);
+        document.addEventListener('click', onStaticChrome);
+        document.addEventListener('keydown', onStaticEscape);
     }
 
     window.bitDemoSite = {

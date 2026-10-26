@@ -9,9 +9,11 @@ namespace Bit.Borm;
 /// </summary>
 /// <remarks>
 /// The export is designed to round-trip: conditions, wizard steps, layout and widget choices all
-/// survive. The one thing that cannot is a condition or rule backed by a delegate
-/// (<see cref="BormPredicateCondition"/>, <c>Must</c>/<c>MustAsync</c>) — code has no JSON form.
-/// Such conditions are omitted rather than approximated.
+/// survive, and so do expressions — conditions, computed values (<c>x-computed</c>) and rules
+/// (<c>x-rules</c>) written as <see cref="BormExpression"/>s. The one thing that cannot is a
+/// condition or rule backed by a delegate (<see cref="BormPredicateCondition"/>,
+/// <c>Must(predicate)</c>/<c>MustAsync</c>) — code has no JSON form. Such conditions are omitted
+/// rather than approximated.
 /// </remarks>
 public static class BormJsonSchemaExporter
 {
@@ -34,7 +36,25 @@ public static class BormJsonSchemaExporter
         WriteObjectBody(writer, form.Title, form.Description, form.Fields);
 
         if (form.Columns > 1) writer.WriteNumber("x-columns", form.Columns);
+        if (form.Version is not null) writer.WriteString("x-version", form.Version);
+        if (form.HasSteps && form.StepLayout != BormStepLayout.Wizard)
+            writer.WriteString("x-stepLayout", form.StepLayout.ToString().ToLowerInvariant());
         WriteSteps(writer, form);
+        WriteRules(writer, form.Validators, formLevel: true);
+
+        if (form.Translations.Count > 0)
+        {
+            writer.WritePropertyName("x-translations");
+            writer.WriteStartObject();
+            foreach (var (culture, table) in form.Translations)
+            {
+                writer.WritePropertyName(culture);
+                writer.WriteStartObject();
+                foreach (var (key, text) in table) writer.WriteString(key, text);
+                writer.WriteEndObject();
+            }
+            writer.WriteEndObject();
+        }
 
         writer.WriteEndObject();
     }
@@ -146,6 +166,7 @@ public static class BormJsonSchemaExporter
         if (!isTags) WriteAdditionalPatterns(writer, field);
         if (field.MinItems is { } minI) writer.WriteNumber("minItems", minI);
         if (field.MaxItems is { } maxI) writer.WriteNumber("maxItems", maxI);
+        if (field.PageSize is { } pageSize) writer.WriteNumber("x-pageSize", pageSize);
 
         // A multi-select is a set: it cannot hold the same answer twice, and the standard spelling of
         // "pick several of these" says so.
@@ -302,6 +323,13 @@ public static class BormJsonSchemaExporter
         if (field.Accept is not null) writer.WriteString("x-accept", field.Accept);
         if (field.Multiple) writer.WriteBoolean("x-multiple", true);
         if (field.ClearOnHide) writer.WriteBoolean("x-clearOnHide", true);
+        if (field.Sensitive) writer.WriteBoolean("x-sensitive", true);
+        if (field.Mask is { Length: > 0 } mask)
+        {
+            writer.WriteString("x-mask", mask);
+            if (field.MaskStoresRaw) writer.WriteBoolean("x-maskStoresRaw", true);
+        }
+        if (field.TextKey is { Length: > 0 } textKey) writer.WriteString("x-i18n", textKey);
         if (field.Autofocus) writer.WriteBoolean("x-autofocus", true);
         if (field.MaxFileSize is { } maxFile) writer.WriteNumber("x-maxFileSize", maxFile);
 
@@ -341,6 +369,41 @@ public static class BormJsonSchemaExporter
         BormConditionJson.WriteIfRepresentable(writer, "x-disabledWhen", field.DisabledWhen);
         BormConditionJson.WriteIfRepresentable(writer, "x-readOnlyWhen", field.ReadOnlyWhen);
         BormConditionJson.WriteIfRepresentable(writer, "x-requiredWhen", field.RequiredWhen);
+
+        // An expression is text, so unlike a delegate it travels. A computed value built from one is
+        // recognised by the delegate's target, which is the expression itself.
+        if (field.Computed?.Target is BormExpression computed)
+        {
+            writer.WriteString("x-computed", computed.Text);
+            // The importer locks a computed field unless told otherwise, so one the user may override says so.
+            if (!field.ReadOnly) writer.WriteBoolean("readOnly", false);
+        }
+        WriteRules(writer, field.Validators, formLevel: false);
+    }
+
+    /// <summary>
+    /// Writes the expression rules among <paramref name="rules"/> as <c>x-rules</c>. Rules backed by code
+    /// are left out, as they always have been; a rule wrapped by <c>When(…)</c> is too, since its
+    /// condition is a delegate.
+    /// </summary>
+    private static void WriteRules(Utf8JsonWriter writer, IEnumerable<IBormValidationRule> rules, bool formLevel)
+    {
+        var expressions = rules.OfType<BormExpressionRule>().ToList();
+        if (expressions.Count == 0) return;
+
+        writer.WritePropertyName("x-rules");
+        writer.WriteStartArray();
+        foreach (var rule in expressions)
+        {
+            writer.WriteStartObject();
+            writer.WriteString("expression", rule.Expression.Text);
+            if (rule.Message is not null) writer.WriteString("message", rule.Message);
+            if (rule.Severity != BormValidationSeverity.Error)
+                writer.WriteString("severity", rule.Severity.ToString().ToLowerInvariant());
+            if (formLevel && rule.FieldPath is not null) writer.WriteString("field", rule.FieldPath);
+            writer.WriteEndObject();
+        }
+        writer.WriteEndArray();
     }
 
     /// <summary>
@@ -377,7 +440,7 @@ public static class BormJsonSchemaExporter
 
     private static void WriteSteps(Utf8JsonWriter writer, BormDefinition form)
     {
-        if (!form.IsWizard) return;
+        if (!form.HasSteps) return;
 
         writer.WritePropertyName("x-steps");
         writer.WriteStartArray();
@@ -489,8 +552,14 @@ public static class BormJsonSchemaExporter
         BormFieldType.Date => ("string", "date", null),
         BormFieldType.DateTime => ("string", "date-time", null),
         BormFieldType.Time => ("string", "time", null),
+        // JSON Schema has no format for a month or a week, so the value travels as the picker's text
+        // and the control as a widget.
+        BormFieldType.Month => ("string", null, "month"),
+        BormFieldType.Week => ("string", null, "week"),
         BormFieldType.Color => ("string", "color", null),
         BormFieldType.TextArea => ("string", null, "textarea"),
+        BormFieldType.Markdown => ("string", null, "markdown"),
+        BormFieldType.Signature => ("string", null, "signature"),
         // A dropdown whose choices arrive at run time (a cascading select) has no `enum` to give it
         // away, and without a widget it came back as a plain text box the app could not re-attach its
         // provider to.

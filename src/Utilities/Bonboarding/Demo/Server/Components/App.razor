@@ -16,6 +16,7 @@
     <meta property="og:site_name" content="Bit.Bonboarding" />
     <meta property="og:title" content="Bonboarding - onboarding and product tours for Blazor" />
     <meta property="og:description" content="Spotlights, branching and multi-page product tours for Blazor. Every decision made in C#; the browser only measures, observes and routes keys." />
+    <meta property="og:image" content="https://bonboarding.bitplatform.dev/icon-512.png" />
     <meta name="twitter:card" content="summary" />
 
     <ResourcePreloader />
@@ -32,12 +33,19 @@
     @* Synchronous on purpose: applies the light/dark theme before first paint. *@
     <script src="@Assets["theme.js"]"></script>
     <ImportMap />
-    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="icon" href="favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
     <HeadOutlet @rendermode="InteractiveAuto" />
 </head>
 
-<body>
+@* data-enhance-nav="false": a link followed before the runtime has started - the Server circuit on a
+   first visit, the WebAssembly runtime on later ones - is a plain page load rather than an enhanced
+   one. Enhanced navigation fetches and merges the next page while the runtime is still starting, and
+   the router the runtime then attaches can render the address it read before the merge - the URL
+   says /getting-started and the page is the landing page. Once the app is interactive its router
+   handles every link itself and this attribute is not consulted. *@
+<body data-enhance-nav="false">
     @* InteractiveAuto: the first visit runs on the server while the WebAssembly runtime downloads,
        later ones in the browser - which is why both projects register the Bonboarding services. The
        pages are prerendered either way, so the first response carries the docs. *@

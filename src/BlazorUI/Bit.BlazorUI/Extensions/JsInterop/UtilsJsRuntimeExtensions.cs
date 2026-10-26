@@ -59,9 +59,9 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    internal static ValueTask BitUtilsFocusFirstElement(this IJSRuntime jsRuntime, string elementId, string? selector = null)
+    internal static ValueTask BitUtilsFocusFirstElement(this IJSRuntime jsRuntime, string elementId, string? selector = null, ElementReference? fallback = null)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.focusFirstElement", elementId, selector);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.focusFirstElement", elementId, selector, fallback);
     }
 
     // Focuses the trigger inside the given container unless the focus is already in it; see Utils.focusClickedTrigger.

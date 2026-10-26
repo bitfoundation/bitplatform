@@ -24,6 +24,25 @@ public sealed class BonboardingStepAction
     /// <summary>Destination step id when <see cref="Effect"/> is <see cref="BonboardingStepActionEffect.GoTo"/>.</summary>
     public string? TargetStepId { get; set; }
 
+    /// <summary>
+    /// How long automatic starts leave the tour alone when <see cref="Effect"/> is
+    /// <see cref="BonboardingStepActionEffect.Snooze"/>. Default <see cref="BonboardingDefaults.SnoozeDuration"/>.
+    /// </summary>
+    public TimeSpan? SnoozeFor { get; set; }
+
+    /// <summary>
+    /// A "remind me later" button: ends the tour for now, keeps the user's place, and has automatic starts pass it
+    /// over for <paramref name="duration"/> (a day when omitted).
+    /// </summary>
+    public static BonboardingStepAction RemindMeLater(string label = "Remind me later", TimeSpan? duration = null) => new()
+    {
+        Id = "remind-later",
+        Label = label,
+        Style = BonboardingStepActionStyle.Ghost,
+        Effect = BonboardingStepActionEffect.Snooze,
+        SnoozeFor = duration,
+    };
+
     /// <summary>Disables the button when it returns <see langword="true"/>.</summary>
     public Func<BonboardingStepContext, bool>? IsDisabled { get; set; }
 

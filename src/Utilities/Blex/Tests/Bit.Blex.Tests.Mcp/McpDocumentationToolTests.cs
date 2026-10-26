@@ -127,7 +127,8 @@ public class McpDocumentationToolTests
 
         CollectionAssert.Contains(paths, "Demo/Client/Stores/CartStore.cs");
         CollectionAssert.Contains(paths, "Demo/Client/Extensions/IServiceCollectionExtensions.cs");
-        CollectionAssert.Contains(paths, "Sample/Program.cs");
+        CollectionAssert.Contains(paths, "Sample/Standalone/Program.cs");
+        CollectionAssert.Contains(paths, "Sample/MAUI/MauiProgram.cs");
 
         // A documentation page's source is its prose, which the docs tool already serves rendered.
         Assert.IsFalse(paths.Any(path => path.EndsWith("/Effects.razor", StringComparison.OrdinalIgnoreCase)), "A docs page leaked into the source catalog.");

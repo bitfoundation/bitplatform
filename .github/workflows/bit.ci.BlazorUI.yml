@@ -6,7 +6,7 @@ on:
   pull_request:
     paths:
     - 'src/BlazorUI/**'
-    - 'src/Minifier/**'
+    - 'src/Toolings/Minifier/**'
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true

@@ -1,0 +1,60 @@
+@inherits BlexComponentBase
+@inject InventoryApi Api
+
+@*
+    One page of the stock-movement log at a time, keyed by the page it shows. The queries page passes Page in, so
+    every new number is a parameter pass in which this call site asks UseQuery for another key - and a call site
+    that follows one key at a time keeps the previous key's data on screen with KeepPreviousData, flagged
+    IsPlaceholderData, until the new page arrives. No "Loading…" flash between pages.
+*@
+<div class="bb-stats">
+    <div class="bb-stat">
+        <span class="bb-stat-label">Key</span>
+        <span class="bb-stat-value demo-stat-text">@_page.Key</span>
+    </div>
+    <div class="bb-stat">
+        <span class="bb-stat-label">IsPlaceholderData</span>
+        <span class="bb-stat-value demo-accent">@(_page.IsPlaceholderData ? "true" : "false")</span>
+    </div>
+    <div class="bb-stat">
+        <span class="bb-stat-label">FetchStatus</span>
+        <span class="bb-stat-value">@_page.FetchStatus</span>
+    </div>
+</div>
+
+@if (_page.Data is { } page)
+{
+    @* Dimmed while it is the previous page standing in for the one on its way. *@
+    <ul class="demo-list @(_page.IsPlaceholderData ? "demo-dimmed" : null)" aria-busy="@(_page.IsPlaceholderData ? "true" : "false")">
+        @foreach (var entry in page.Entries)
+        {
+            <li>@entry</li>
+        }
+    </ul>
+}
+else if (_page.IsPaused)
+{
+    <p class="bb-card-desc">Offline - the page loads once the network is back.</p>
+}
+else
+{
+    <p class="bb-card-desc">Loading…</p>
+}
+
+@code {
+    private static readonly BlexQueryOptions Options = new() { KeepPreviousData = true, StaleTime = TimeSpan.FromSeconds(15) };
+
+    private BlexQuery<ActivityPage> _page = default!;
+
+    /// <summary>The page to show, 1 to 4.</summary>
+    [Parameter] public int Page { get; set; } = 1;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _page = UseQuery(["activity-page", Page], ct => Api.GetActivityPageAsync(Page, ct), Options);
+
+        // The prerender waits for the first page, as the page around it does, so the HTML carries it.
+        if (!RendererInfo.IsInteractive)
+            await _page.WhenSettledAsync();
+    }
+}

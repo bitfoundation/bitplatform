@@ -632,4 +632,48 @@ public class BdndDragDropManagerTests
         Assert.AreEqual(0, offsets);
         Assert.IsNull(manager.GetInitialSourceClientOffset());
     }
+
+    // ---- the focus after a keyboard drag ----
+
+    [TestMethod]
+    public void ADraggableThatTookTheFocusOverDuringADragIsNotAskedToAgain()
+    {
+        var manager = Manager();
+        Begin(manager);
+        manager.RequestFocus("crate", "box", "src", ended: false);
+        Assert.IsTrue(manager.WantsFocus("crate", "box", "adopter"));
+
+        manager.FocusTaken("adopter");
+
+        Assert.IsFalse(manager.WantsFocus("crate", "box", "adopter"), "it has the focus already");
+        Assert.IsTrue(manager.WantsFocus("crate", "box", "another"), "the item shown elsewhere next still takes it");
+    }
+
+    [TestMethod]
+    public void TheFocusTakenAfterADragIsTakenForGood()
+    {
+        var manager = Manager();
+        manager.RequestFocus("crate", "box", "src", ended: true);
+
+        manager.FocusTaken("adopter");
+
+        Assert.IsFalse(manager.WantsFocus("crate", "box", "another"));
+    }
+
+    // ---- keyboard ----
+
+    [TestMethod]
+    public void TurningTheKeyboardOffOrOnNotifiesTheSources()
+    {
+        var manager = Manager();
+        var changes = 0;
+        manager.StateChanged += () => changes++;
+
+        manager.AllowKeyboard = true;
+        manager.AllowKeyboard = false;
+        manager.AllowKeyboard = false;
+        manager.AllowKeyboard = true;
+
+        Assert.AreEqual(2, changes);
+    }
 }

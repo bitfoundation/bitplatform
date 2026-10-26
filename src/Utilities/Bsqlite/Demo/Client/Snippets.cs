@@ -488,6 +488,13 @@ internal static class Snippets
             // Databases as files, outside any SQL connection. No EF involved.
             foreach (var provider in Database.Providers)
             {
+                // A backend this browser cannot use has nothing to list; probe.UnavailableReason says why.
+                var probe = await provider.ProbeAsync();
+                if (!probe.IsAvailable)
+                {
+                    continue;
+                }
+
                 IReadOnlyList<string> names = await provider.Admin.ListAsync();
             }
             """;

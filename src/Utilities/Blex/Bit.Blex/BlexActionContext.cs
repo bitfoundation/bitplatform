@@ -10,14 +10,15 @@ public sealed class BlexActionContext
     private readonly Func<JsonObject>? _capture;
     private JsonObject? _globalState;
 
-    internal BlexActionContext(IBlexStore store, string actionName, Func<JsonObject> captureGlobalState, int sequence, IReadOnlyList<BlexActionArg>? args)
+    internal BlexActionContext(IBlexStore store, string actionName, Func<JsonObject> captureGlobalState, int sequence, IReadOnlyList<BlexActionArg>? args, DateTimeOffset timestamp, bool isNested)
     {
         Store = store;
         ActionName = actionName;
         _capture = captureGlobalState;
         Sequence = sequence;
         Args = args ?? [];
-        Timestamp = DateTimeOffset.UtcNow;
+        Timestamp = timestamp;
+        IsNested = isNested;
     }
 
     /// <summary>The store that produced the action.</summary>
@@ -44,8 +45,17 @@ public sealed class BlexActionContext
     /// </summary>
     public IReadOnlyList<BlexActionArg> Args { get; }
 
-    /// <summary>When the action completed (UTC).</summary>
+    /// <summary>When the action completed (UTC), read from <see cref="BlexManager.TimeProvider"/>.</summary>
     public DateTimeOffset Timestamp { get; }
+
+    /// <summary>
+    /// Whether the action ran inside the body of another action of the same manager -- a cross-store
+    /// call such as <c>cart.Checkout()</c> calling <c>orders.Place()</c>, or an effect that body started.
+    /// It is recorded in its own right, but running the outer action again runs it again too, which is
+    /// why a replay skips it. An action a subscriber dispatches in reaction to another one is not
+    /// nested: the action it reacts to has finished by then.
+    /// </summary>
+    public bool IsNested { get; }
 
     private string? _qualifiedName;
 

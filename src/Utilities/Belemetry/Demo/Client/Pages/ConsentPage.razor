@@ -2,6 +2,7 @@
 @using System.Text.Json
 @implements IDisposable
 @inject IBelemetryConsent Consent
+@inject IBelemetry Belemetry
 @inject IJSRuntime JS
 
 <PageTitle>Consent and GDPR · Belemetry</PageTitle>
@@ -22,7 +23,8 @@
         This panel is wired straight to <code>IBelemetryConsent</code> - the same service the site's banner
         uses. Tick a feature to grant it, untick it to revoke it, or set a whole group at once. The decision is
         remembered in this browser, and the <a href="/live">Live telemetry</a> page shows what each grant lets
-        through.
+        through. Open this page in a second tab, then change something here: the other tab adopts the decision
+        at once, the way a banner answered in one tab closes in the rest.
     </p>
 
     <div class="bb-demo">
@@ -175,14 +177,21 @@
             A feature switched off by configuration is never collected, whatever is granted.
         </li>
         <li>
+            <strong>The grant never exceeds the configuration.</strong> <code>Granted</code> (and the script's
+            <code>getConsent()</code>) is always a subset of <code>Available</code>: granting a feature the
+            configuration switched off records nothing, not even in the remembered choice - so a feature you enable
+            in a later release needs the user's consent before it collects anything.
+        </li>
+        <li>
             <strong>Opt-in by default.</strong> Before the user decides, only <code>Consent.Default</code> is
             granted - <code>None</code> unless you set it, for example to <code>Errors</code> when error
             reporting is covered by legitimate interest, or to <code>All</code> for an app that needs no consent.
         </li>
         <li>
             <strong>Nothing undecided leaves the device.</strong> Records of features not yet granted are held in
-            memory, up to <code>Consent.PendingLimit</code> (500). When the user decides, what they granted is
-            sent and the rest is dropped.
+            memory, up to <code>Consent.PendingLimit</code> (500; past it the oldest go first, counted as
+            <code>pending_full</code> by <code>BitBelemetry.getStats()</code>). When the user decides, what they
+            granted is sent and the rest is dropped.
         </li>
         <li>
             <strong>Revoking is immediate.</strong> Queued records of a revoked feature are discarded, and its
@@ -193,6 +202,12 @@
             <strong>The choice is remembered</strong> (<code>Consent.Persist</code>, on by default) in
             <code>localStorage</code> under <code>bit-belemetry-consent</code>, and in a file in Hybrid apps.
             Recording the choice itself is strictly necessary, so it needs no consent of its own.
+        </li>
+        <li>
+            <strong>Other tabs follow.</strong> The app's other open tabs adopt a decision as it is made (through the
+            <code>storage</code> event of <code>bit-belemetry-consent</code>), exactly as if it had been made there:
+            a banner answered in one tab closes in the rest, and a revoke purges what they queued and stops them
+            sending too.
         </li>
         <li>
             <strong>Global Privacy Control is honored</strong> (<code>Consent.HonorGlobalPrivacyControl</code>,
@@ -213,6 +228,59 @@
         server pipeline is governed by <code>Server.Features</code> instead, since it serves every user at once.
     </p>
     <CodeSnippet Code="@OptionsCode" Language="C#" Expanded="true" />
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Sessions and users</h3>
+    <p>
+        Every record carries a <code>session.id</code>, so a backend can put one visit's page views, clicks, errors
+        and fetches side by side. Without the <code>Sessions</code> feature the id lives in memory only, and every
+        page load starts a new one; with it, the id is kept in <code>sessionStorage</code> and survives reloads in
+        the tab. Either way it is rotated after <code>Browser.SessionInactivityTimeout</code> (30 minutes) without
+        activity, or after <code>Browser.SessionMaxDuration</code> (24 hours) at most.
+        <code>Browser.SessionSampleRatio</code> (1.0) records only a fraction of sessions, decided on the session id -
+        so a session is recorded whole or not at all, never a scattered sample of its clicks; the rest are counted
+        as <code>sampled_out</code> by <code>BitBelemetry.getStats()</code>.
+    </p>
+    <p>
+        <code>UserTracking</code> adds two ids. <code>enduser.pseudo.id</code> is a random id kept in
+        <code>localStorage</code>, the same on every visit from this browser - it identifies a browser, not a person.
+        <code>user.id</code> is the authenticated id your app passes to <code>IBelemetry.SetUserAsync</code> (or
+        <code>BitBelemetry.setUser</code>), kept in <code>sessionStorage</code>. Both exist only while
+        <code>UserTracking</code> is granted: an id set without it is not kept at all, and revoking it deletes both.
+        Application Insights shows them as <code>ai.user.id</code> and <code>ai.user.authUserId</code>.
+    </p>
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">IBelemetry.SetUserAsync</span></span></div>
+        <dl class="bb-params">
+            <dt>UserTracking</dt>
+            <dd><span class="bb-badge @(Consent.IsGranted(BelemetryFeatures.UserTracking) ? "bb-badge-success" : "demo-badge-off")">@(Consent.IsGranted(BelemetryFeatures.UserTracking) ? "granted" : "not granted")</span></dd>
+            <dt>session.id</dt>
+            <dd><code>@(_browser?.SessionId ?? "-")</code> @(Consent.IsGranted(BelemetryFeatures.Sessions) ? "(sessionStorage: survives a reload)" : "(memory only: a reload starts a new one)")</dd>
+            <dt>enduser.pseudo.id</dt>
+            <dd><code>@(_browser?.PseudoId ?? "-")</code></dd>
+            <dt>user.id</dt>
+            <dd><code>@(_browser?.UserId ?? "-")</code></dd>
+        </dl>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-primary" disabled="@(_ready is false)" @onclick="@(() => SetUserAsync(DemoUserId))">SetUserAsync("@DemoUserId")</button>
+            <button type="button" class="btn btn-secondary" disabled="@(_ready is false)" @onclick="@(() => SetUserAsync(null))">SetUserAsync(null)</button>
+            @if (Consent.IsGranted(BelemetryFeatures.UserTracking))
+            {
+                <button type="button" class="btn demo-btn-danger" disabled="@(_ready is false)" @onclick="@(() => ToggleAsync(BelemetryFeatures.UserTracking, false))">Revoke UserTracking</button>
+            }
+            else
+            {
+                <button type="button" class="btn btn-secondary" disabled="@(_ready is false)" @onclick="@(() => ToggleAsync(BelemetryFeatures.UserTracking, true))">Grant UserTracking</button>
+            }
+        </div>
+        @if (_userStatus is not null)
+        {
+            <p class="demo-status" role="status">@_userStatus</p>
+        }
+    </div>
+    <CodeSnippet Code="@UserCode" Language="Razor" />
+    <CodeSnippet Code="@SessionCode" Language="C#" />
 </div>
 
 <div class="bb-card">
@@ -258,9 +326,12 @@
         new(BelemetryFeatures.Events, "Custom events (TrackEvent)"),
     ];
 
+    private const string DemoUserId = "demo-user-42";
+
     private TelemetryFeedClient.BrowserContext? _browser;
     private bool _ready;
     private string? _error;
+    private string? _userStatus;
 
     protected override void OnInitialized() => Consent.Changed += OnConsentChanged;
 
@@ -307,6 +378,25 @@
         await ReadBrowserAsync();
     }
 
+    private async Task SetUserAsync(string? id)
+    {
+        try
+        {
+            await Belemetry.SetUserAsync(id);
+            _userStatus = id is null
+                ? "Cleared: records from now on carry no user.id."
+                : Consent.IsGranted(BelemetryFeatures.UserTracking)
+                    ? $"Every record from now on carries user.id = {id}, in the browser and in the WebAssembly pipeline alike."
+                    : $"UserTracking is not granted, so {id} was not kept at all. Grant it, then set the user again.";
+        }
+        catch (Exception ex)
+        {
+            _userStatus = $"Could not set the user: {ex.Message}";
+        }
+
+        await ReadBrowserAsync();
+    }
+
     private async Task ReadBrowserAsync()
     {
         try
@@ -342,6 +432,31 @@
             options.Consent.Persist = true;                        // remember the choice (default)
             options.Consent.HonorGlobalPrivacyControl = true;      // GPC: never Analytics (default)
             options.Consent.PendingLimit = 500;                    // held until the decision (default)
+        });
+        """;
+
+    private const string UserCode = """
+        @inject IBelemetry Belemetry
+        @inject AuthenticationStateProvider Auth
+
+        @code {
+            protected override async Task OnInitializedAsync()
+            {
+                // Only kept - and only sent - while the user has granted UserTracking.
+                var user = (await Auth.GetAuthenticationStateAsync()).User;
+                await Belemetry.SetUserAsync(user.Identity?.IsAuthenticated is true ? user.FindFirst("sub")?.Value : null);
+            }
+
+            private async Task SignOutAsync() => await Belemetry.SetUserAsync(null);
+        }
+        """;
+
+    private const string SessionCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.Browser.SessionInactivityTimeout = TimeSpan.FromMinutes(30);   // the default
+            options.Browser.SessionMaxDuration = TimeSpan.FromHours(24);           // the default
+            options.Browser.SessionSampleRatio = 0.1;                              // record one session in ten, whole
         });
         """;
 

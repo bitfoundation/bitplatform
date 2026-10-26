@@ -1,0 +1,453 @@
+﻿@page "/encryption"
+@using System.Security.Cryptography
+@using System.Text
+@using Bit.BlazeDb.Browser
+
+<PageTitle>Encryption at rest · BlazeDb</PageTitle>
+
+<PageHeader Eyebrow="Encryption at rest" Title="Sealed before it reaches the disk"
+            Lead="BlazeDbEncryptedStorage wraps any backend and seals each write into its own AES-GCM frame, so the log stays an append-only log and nothing readable ever reaches the origin's file system. In the browser the cipher is WebCrypto's; on the desktop it is the managed AesGcm. Below, a real encrypted database is written, read back, opened with the wrong key and tampered with.">
+    <span class="bb-badge bd-badge-neutral">AES-GCM, 96-bit random nonces</span>
+    <span class="bb-badge bd-badge-neutral">PBKDF2-HMAC-SHA256 key derivation</span>
+    <span class="bb-badge bd-badge-neutral">File name bound as associated data</span>
+</PageHeader>
+
+<Section Title="Wrap any backend"
+         Lead="Encryption is a storage decorator: the engine above it, and the backend below it, do not change. Quota awareness passes straight through it.">
+    <div class="bb-split">
+        <CodeBlock Title="In the browser" Code="@BrowserSnippet" />
+        <CodeBlock Title="On the desktop, the server, in tests" Code="@DesktopSnippet" />
+    </div>
+    <Callout Tone="warn" Title="The managed AesGcm throws inside the browser sandbox.">
+        That is why the browser gets a cipher of its own, <code>BlazeDbWebCryptoCipher</code>, which imports the key into
+        WebCrypto as non-extractable. <code>BlazeDbEncryptedStorage.DeriveKey</code> uses PBKDF2, one of the few primitives
+        that works on both sides. Store the salt next to the database, and never reuse it for another one.
+        <button type="button" class="btn btn-secondary" @onclick="TryManagedAes">
+            <Icon Name="play" /> new BlazeDbAesGcmCipher(key) - here
+        </button>
+        @if (_managedNote is not null)
+        {
+            <span class="bb-mono">@_managedNote</span>
+        }
+    </Callout>
+</Section>
+
+<Section Title="An encrypted database, live"
+         Lead="Step through it in order: derive a key, write six people through the encrypted storage, then try to read them back in every way that should and should not work. The storage under the encryption is an in-memory dictionary, so the bytes that would have reached OPFS are right there to look at.">
+    <div class="bd-main-side">
+        <div class="bb-flex">
+            <Panel Title="1 · Derive a key" IconName="key">
+                <div class="bb-fields">
+                    <div class="bb-field" style="flex:2 1 220px">
+                        <label for="enc-pass">Passphrase</label>
+                        <input id="enc-pass" @bind="_passphrase" @bind:event="oninput" />
+                    </div>
+                    <div class="bb-field" style="flex:1 1 160px">
+                        <label for="enc-iter">PBKDF2 iterations</label>
+                        <select id="enc-iter" @bind="_iterations">
+                            <option value="10000">10,000 - quick, for this demo</option>
+                            <option value="100000">100,000</option>
+                            <option value="210000">210,000 - the default</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="bb-toolbar">
+                    <button type="button" class="btn btn-primary" disabled="@(_busy || string.IsNullOrEmpty(_passphrase))" @onclick="DeriveAsync">
+                        <Icon Name="key" /> BlazeDbEncryptedStorage.DeriveKey(passphrase, salt)
+                    </button>
+                </div>
+                <dl class="bb-params">
+                    <dt>Salt</dt>
+                    <dd class="bb-mono">@Convert.ToHexString(_salt).ToLowerInvariant()</dd>
+                    <dt>Key</dt>
+                    <dd class="bb-mono">@(_key is null ? "not derived yet" : $"{_key.Length * 8}-bit, derived in {_deriveTime}")</dd>
+                </dl>
+                <p class="bd-foot">
+                    The default 210,000 iterations is deliberately slow - every guess at a passphrase costs an attacker the
+                    same. The demo offers fewer so a run takes moments in the WebAssembly runtime; an application keeps the
+                    default.
+                </p>
+            </Panel>
+
+            <Panel Title="2 · Use it" IconName="play">
+                <div class="bd-actions">
+                    <button type="button" class="btn btn-secondary" disabled="@(_busy || _key is null)" @onclick="WriteAsync">
+                        <Icon Name="plus" /> Write six people through the encrypted storage
+                    </button>
+                    <button type="button" class="btn btn-secondary" disabled="@(_busy || !HasData)" @onclick="ReopenAsync">
+                        <Icon Name="unlock" /> Reopen with this key
+                    </button>
+                    <button type="button" class="btn btn-secondary" disabled="@(_busy || !HasData)" @onclick="WrongKeyAsync">
+                        <Icon Name="lock" /> Reopen with a different passphrase
+                    </button>
+                    <button type="button" class="btn bd-btn-danger" disabled="@(_busy || !HasData)" @onclick="TamperAsync">
+                        <Icon Name="binary" /> Flip one stored byte, then reopen
+                    </button>
+                    <button type="button" class="btn btn-secondary" disabled="@(_busy || !HasData)" @onclick="TearAsync">
+                        <Icon Name="file" /> Append half a frame to the log, then reopen
+                    </button>
+                    <button type="button" class="btn btn-secondary" disabled="@(_busy || !HasData)" @onclick="RotateAsync">
+                        <Icon Name="refresh" /> Rotate to a new key
+                    </button>
+                    <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="ResetAsync">
+                        <Icon Name="close" /> Start over
+                    </button>
+                </div>
+            </Panel>
+
+            <Panel Title="Trace" IconName="history" Flush="true">
+                <Actions>
+                    @if (_busy)
+                    {
+                        <span class="bb-spinner"></span>
+                    }
+                </Actions>
+                <ChildContent>
+                    <ScenarioSteps Steps="_log.Steps" EmptyText="Derive a key, then write through it." />
+                </ChildContent>
+            </Panel>
+        </div>
+
+        <div class="bb-flex">
+            <Panel Title="What reached the storage" IconName="disk" Flush="true">
+                @if (_inner.FileNames.Count == 0)
+                {
+                    <div class="bb-empty">Nothing yet.</div>
+                }
+                else
+                {
+                    <div class="bb-scroll">
+                        <table class="bb-table">
+                            <thead><tr><th>File</th><th class="bd-num">Stored</th><th class="bd-num">Plain</th></tr></thead>
+                            <tbody>
+                                @foreach (var file in _files)
+                                {
+                                    <tr>
+                                        <td class="bd-strong">@file.Name</td>
+                                        <td class="bd-num">@DemoSandbox.Bytes(file.Stored)</td>
+                                        <td class="bd-num">@(file.Plain is { } plain ? DemoSandbox.Bytes(plain) : "-")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </Panel>
+
+            @if (_compareName is not null)
+            {
+                <Panel Title="@($"{_compareName} - the engine's bytes")" IconName="file" Flush="true">
+                    <Actions>
+                        <span class="@Tones.Badge(_plainHasName ? "warn" : "")">@(_plainHasName ? "\"Lovelace\" is readable" : "no names found")</span>
+                    </Actions>
+                    <ChildContent>
+                        <HexView Lines="_plainHex" />
+                    </ChildContent>
+                </Panel>
+                <Panel Title="@($"{_compareName} - what the storage holds")" IconName="lock" Flush="true">
+                    <Actions>
+                        <span class="@Tones.Badge(_cipherHasName ? "err" : "ok")">@(_cipherHasName ? "\"Lovelace\" leaked" : "\"Lovelace\" is nowhere in it")</span>
+                    </Actions>
+                    <ChildContent>
+                        <HexView Lines="_cipherHex" />
+                    </ChildContent>
+                </Panel>
+            }
+        </div>
+    </div>
+</Section>
+
+<Section Title="What it protects, and what it does not">
+    <div class="bb-split">
+        <Panel Title="Protected" IconName="shield">
+            <ul class="bd-ticks">
+                <li><strong>Confidentiality.</strong> Nothing - not a table name, not a row, not the manifest - is readable without the key.</li>
+                <li><strong>Integrity.</strong> Every frame is authenticated; a changed byte is reported as <code>BlazeDbCorruptDatabaseException</code> rather than decoded into wrong data.</li>
+                <li><strong>Placement.</strong> The file name is the associated data, so a frame cannot be moved from one file into another.</li>
+                <li><strong>Crashes.</strong> A short trailing frame is a torn write and is ignored, as the log ignores a torn record; the next append trims it away first.</li>
+            </ul>
+        </Panel>
+        <Panel Title="Not protected" IconName="alert">
+            <ul class="bd-ticks">
+                <li><strong>Rollback.</strong> Someone with access to the files can put back an older, internally consistent manifest, snapshot and log.</li>
+                <li><strong>Key rotation in place.</strong> To change the key, write the database out through a storage wrapped with the new cipher - the export and import above do exactly that.</li>
+                <li><strong>Endless use of one key.</strong> Random 96-bit nonces are safe for about 2<sup>32</sup> frames per key. Every flush writes one and every checkpoint two, so at the default flush interval that is about a decade of continuous writing - a long-lived database should rotate before then.</li>
+                <li><strong>Exports.</strong> <code>ExportAsync</code> writes plaintext; encrypt the stream, or keep the file where the data may live.</li>
+            </ul>
+        </Panel>
+    </div>
+    <CodeBlock Title="Each write becomes one frame" Code="@FrameSnippet" Language="text" />
+</Section>
+
+@code {
+    private sealed record FileRow(string Name, int Stored, int? Plain);
+
+    private string _passphrase = "correct horse battery staple";
+    private int _iterations = 10_000;
+    private byte[] _salt = RandomNumberGenerator.GetBytes(16);
+    private byte[]? _key;
+    private string _deriveTime = "";
+
+    private BlazeDbInMemoryStorage _inner = new();
+    private readonly ScenarioLog _log = new();
+    private List<FileRow> _files = [];
+    private bool _busy;
+    private string? _managedNote;
+
+    private string? _compareName;
+    private List<HexView.Line> _plainHex = [];
+    private List<HexView.Line> _cipherHex = [];
+    private bool _plainHasName;
+    private bool _cipherHasName;
+
+    private bool HasData => _inner.FileNames.Count > 0;
+
+    private static BlazeDbDatabaseOptions Options(IBlazeDbStorage storage) =>
+        new BlazeDbDatabaseOptions { Storage = storage, FlushInterval = TimeSpan.FromHours(1) }.AddTable(Person.Table);
+
+    private async Task<BlazeDbEncryptedStorage> WrapAsync(IBlazeDbStorage inner, byte[] key) =>
+        new(inner, await BlazeDbWebCryptoCipher.CreateAsync(key), ownsCipher: true);
+
+    private async Task Busy(Func<Task> work)
+    {
+        _busy = true;
+        StateHasChanged();
+        await Task.Yield();
+        try
+        {
+            await work();
+        }
+        catch (Exception ex)
+        {
+            _log.Error("Unexpected exception", ex.GetType().Name, ex.Message);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private Task DeriveAsync() => Busy(async () =>
+    {
+        // PBKDF2 is plain managed code: give the browser a frame to paint the spinner first.
+        await Task.Delay(30);
+        var sw = Stopwatch.StartNew();
+        _key = BlazeDbEncryptedStorage.DeriveKey(_passphrase, _salt, _iterations);
+        _deriveTime = DemoSandbox.Duration(sw.Elapsed.TotalMilliseconds);
+        _log.Ok("Key derived", $"BlazeDbEncryptedStorage.DeriveKey(passphrase, salt, iterations: {_iterations:N0})",
+            $"{_key.Length * 8}-bit AES key in {_deriveTime}. The same passphrase and salt always give the same key.");
+    });
+
+    private Task WriteAsync() => Busy(async () =>
+    {
+        _inner = new BlazeDbInMemoryStorage();
+        using var storage = await WrapAsync(_inner, _key!);
+        _log.Run("Wrapped the storage", "new BlazeDbEncryptedStorage(inner, await BlazeDbWebCryptoCipher.CreateAsync(key), ownsCipher: true)");
+
+        await using (var db = await BlazeDbDatabase.OpenAsync(Options(storage)))
+        {
+            db.GetTable(Person.Table).InsertMany(DemoData.People());
+            await db.FlushAsync();
+            await db.CheckpointAsync();
+        }
+
+        await RefreshAsync(storage);
+        _log.Ok("Wrote, flushed and checkpointed", "people.InsertMany(...); await db.CheckpointAsync()",
+            "The engine wrote its usual manifest, snapshot and log - each write sealed into a frame on the way down.");
+    });
+
+    private Task ReopenAsync() => Busy(async () =>
+    {
+        using var storage = await WrapAsync(_inner, _key!);
+        await using var db = await BlazeDbDatabase.OpenAsync(Options(storage));
+        var people = db.GetTable(Person.Table);
+        _log.Ok("Reopened with the same key", $"people.Count → {people.Count}",
+            $"people.Get(1)!.Name → \"{people.Get(1)?.Name}\"");
+    });
+
+    private Task WrongKeyAsync() => Busy(async () =>
+    {
+        await Task.Delay(30);
+        var wrong = BlazeDbEncryptedStorage.DeriveKey(_passphrase + "!", _salt, _iterations);
+        using var storage = await WrapAsync(_inner, wrong);
+        try
+        {
+            await using var db = await BlazeDbDatabase.OpenAsync(Options(storage));
+            _log.Error("Opened", "unexpected - a wrong key read the data");
+        }
+        catch (BlazeDbCorruptDatabaseException ex)
+        {
+            _log.Error("A different passphrase cannot open it", "BlazeDbCorruptDatabaseException", ex.Message);
+        }
+    });
+
+    private Task TamperAsync() => Busy(async () =>
+    {
+        var name = _inner.FileNames.FirstOrDefault(f => f.StartsWith("snapshot-", StringComparison.Ordinal)) ?? _inner.FileNames.First();
+        var bytes = _inner.GetFile(name)!;
+        bytes[bytes.Length / 2] ^= 0x01;
+        _inner.SetFile(name, bytes);
+        _log.Run("Flipped one bit of the stored bytes", $"{name}[{bytes.Length / 2}] ^= 0x01");
+
+        using var storage = await WrapAsync(_inner, _key!);
+        try
+        {
+            await using var db = await BlazeDbDatabase.OpenAsync(Options(storage));
+            _log.Error("Opened", "unexpected - the change went unnoticed");
+        }
+        catch (BlazeDbCorruptDatabaseException ex)
+        {
+            _log.Error("The frame failed authentication", "BlazeDbCorruptDatabaseException", ex.Message);
+        }
+
+        bytes[bytes.Length / 2] ^= 0x01;
+        _inner.SetFile(name, bytes);
+        _log.Ok("Flipped it back", "the data opens again - nothing was lost, only refused");
+    });
+
+    private Task TearAsync() => Busy(async () =>
+    {
+        // After a checkpoint the log is empty, so give it a frame to tear behind.
+        using (var storage = await WrapAsync(_inner, _key!))
+        {
+            await using var db = await BlazeDbDatabase.OpenAsync(Options(storage));
+            db.GetTable(Person.Table).Upsert(new Person { Id = 7, Name = "Barbara Liskov", Email = "barbara@mit.edu", City = "Boston", Role = "researcher", Joined = new(2025, 9, 1) });
+            await db.FlushAsync();
+        }
+
+        var wal = _inner.FileNames.Where(f => f.StartsWith("wal-", StringComparison.Ordinal)).OrderBy(f => f, StringComparer.Ordinal).Last();
+        var bytes = _inner.GetFile(wal)!;
+        _inner.SetFile(wal, [.. bytes, .. RandomNumberGenerator.GetBytes(10)]);
+        _log.Run("A crash mid-append left ten bytes of a frame behind", $"{wal}: {DemoSandbox.Bytes(bytes.Length)} → {DemoSandbox.Bytes(bytes.Length + 10)}");
+
+        using (var storage = await WrapAsync(_inner, _key!))
+        {
+            await using var db = await BlazeDbDatabase.OpenAsync(Options(storage));
+            var people = db.GetTable(Person.Table);
+            _log.Ok("Opened past the torn frame", $"people.Count → {people.Count}",
+                "A frame too short to hold its own header and body is a crash, not tampering - so it is ignored, and the next append trims it away.");
+            people.Delete(7);
+            await db.FlushAsync();
+        }
+
+        await RefreshAsync();
+    });
+
+    private Task RotateAsync() => Busy(async () =>
+    {
+        using var file = new MemoryStream();
+        using (var oldStorage = await WrapAsync(_inner, _key!))
+        {
+            await using var db = await BlazeDbDatabase.OpenAsync(Options(oldStorage));
+            await db.ExportAsync(file);
+        }
+        _log.Run("Exported through the old key", $"await db.ExportAsync(file) → {DemoSandbox.Bytes(file.Length)} of plaintext");
+
+        _salt = RandomNumberGenerator.GetBytes(16);
+        await Task.Delay(30);
+        _key = BlazeDbEncryptedStorage.DeriveKey(_passphrase, _salt, _iterations);
+        _inner = new BlazeDbInMemoryStorage();
+        using var newStorage = await WrapAsync(_inner, _key);
+        file.Position = 0;
+        await BlazeDbDatabase.ImportAsync(file, newStorage);
+        _log.Add("Imported through a key derived with a new salt", "await BlazeDbDatabase.ImportAsync(file, newStorage)",
+            "The old files can now be deleted; nothing on the new storage was ever sealed with the old key.");
+
+        await using (var db = await BlazeDbDatabase.OpenAsync(Options(newStorage)))
+        {
+            _log.Ok("Opened with the new key", $"people.Count → {db.GetTable(Person.Table).Count}");
+        }
+
+        await RefreshAsync();
+    });
+
+    private async Task ResetAsync()
+    {
+        _inner = new BlazeDbInMemoryStorage();
+        _salt = RandomNumberGenerator.GetBytes(16);
+        _key = null;
+        _files = [];
+        _compareName = null;
+        _log.Clear();
+        await Task.CompletedTask;
+    }
+
+    private void TryManagedAes()
+    {
+        try
+        {
+            using var cipher = new BlazeDbAesGcmCipher(new byte[32]);
+            _managedNote = "constructed - this runtime has a managed AesGcm";
+        }
+        catch (Exception ex)
+        {
+            _managedNote = $"{ex.GetType().Name}: {ex.Message}";
+        }
+    }
+
+    /// <summary>Lists the stored files, and puts the snapshot's plaintext next to its ciphertext.</summary>
+    private async Task RefreshAsync(BlazeDbEncryptedStorage? storage = null)
+    {
+        var owned = storage is null && _key is not null ? await WrapAsync(_inner, _key) : null;
+        var reader = storage ?? owned;
+        try
+        {
+            _files = [];
+            foreach (var name in _inner.FileNames.OrderBy(f => f, StringComparer.Ordinal))
+            {
+                var plain = reader is null ? null : await reader.ReadAsync(name);
+                _files.Add(new FileRow(name, _inner.GetFile(name)?.Length ?? 0, plain?.Length));
+            }
+
+            var compare = _inner.FileNames.FirstOrDefault(f => f.StartsWith("snapshot-", StringComparison.Ordinal));
+            if (compare is not null && reader is not null)
+            {
+                var cipher = _inner.GetFile(compare)!;
+                var plain = await reader.ReadAsync(compare) ?? [];
+                _compareName = compare;
+                _plainHex = HexView.Dump(plain, 96);
+                _cipherHex = HexView.Dump(cipher, 96);
+                _plainHasName = Contains(plain, "Lovelace");
+                _cipherHasName = Contains(cipher, "Lovelace");
+            }
+        }
+        finally
+        {
+            owned?.Dispose();
+        }
+    }
+
+    private static bool Contains(byte[] haystack, string needle) =>
+        haystack.AsSpan().IndexOf(Encoding.UTF8.GetBytes(needle)) >= 0;
+
+    private const string BrowserSnippet = """
+        var key = BlazeDbEncryptedStorage.DeriveKey(passphrase, salt);   // PBKDF2, 210,000 iterations
+        var cipher = await BlazeDbWebCryptoCipher.CreateAsync(key);      // a non-extractable WebCrypto key
+
+        var storage = new BlazeDbEncryptedStorage(
+            await BlazeDbOpfsStorage.CreateAsync("mydb"), cipher, ownsCipher: true);
+
+        var db = await BlazeDbDatabase.OpenAsync(
+            new BlazeDbDatabaseOptions { Storage = storage }.AddTable(TodoItem.Table));
+        """;
+
+    private const string DesktopSnippet = """
+        var key = BlazeDbEncryptedStorage.DeriveKey(passphrase, salt);
+        using var cipher = new BlazeDbAesGcmCipher(key);                 // System.Security.Cryptography.AesGcm
+
+        var storage = new BlazeDbEncryptedStorage(new BlazeDbFileStorage(directory), cipher);
+
+        // Any IBlazeDbAeadCipher works - an HSM, a platform keystore, a test double.
+        """;
+
+    private const string FrameSnippet = """
+        [version 1 B][nonce 12 B][length 4 B][header CRC 4 B][ciphertext + 16 B tag]
+
+        - one frame per WriteAtomicAsync or AppendAsync, so the log stays an append
+        - a fresh random nonce for every frame
+        - the file name as associated data: a frame only decrypts in the file it was written to
+        - the header carries its own checksum, so a damaged length is reported as corruption
+          instead of being mistaken for a torn tail
+        - a read decrypts the frames in order and concatenates them back into the engine's bytes
+        """;
+}

@@ -9,9 +9,9 @@
 
   <ItemGroup>
     <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.13" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.14" />
     <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
-    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.3.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -54,6 +54,15 @@
 
     <!-- The host: how a Blazor Web App is wired up around Bmage. -->
     <EmbeddedResource Include="Program.cs" LogicalName="BmageSource/Demo/Server/Program.cs" />
+
+    <!-- The MAUI sample's wiring: the real files of a Blazor Hybrid app, which the hybrid setup guide points at. One
+         item each, because %(RecursiveDir) is empty for an include without a wildcard. -->
+    <EmbeddedResource Include="..\..\Samples\MAUI\MauiProgram.cs" LogicalName="BmageSource/Samples/MAUI/MauiProgram.cs" />
+    <EmbeddedResource Include="..\..\Samples\MAUI\MainPage.xaml" LogicalName="BmageSource/Samples/MAUI/MainPage.xaml" />
+    <EmbeddedResource Include="..\..\Samples\MAUI\Extensions\IServiceCollectionExtensions.cs" LogicalName="BmageSource/Samples/MAUI/Extensions/IServiceCollectionExtensions.cs" />
+    <EmbeddedResource Include="..\..\Samples\MAUI\wwwroot\index.html" LogicalName="BmageSource/Samples/MAUI/wwwroot/index.html" />
+    <EmbeddedResource Include="..\..\Samples\MAUI\Bit.Bmage.Samples.Maui.csproj" LogicalName="BmageSource/Samples/MAUI/Bit.Bmage.Samples.Maui.csproj" />
+    <EmbeddedResource Include="..\..\Samples\Core\Extensions\IServiceCollectionExtensions.cs" LogicalName="BmageSource/Samples/Core/Extensions/IServiceCollectionExtensions.cs" />
 
     <!-- The Components\ prefix is written out: %(RecursiveDir) only captures what the '**' matched,
          so it would start at the folder below and drop the one the components live in. -->

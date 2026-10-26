@@ -2,12 +2,21 @@
 
 namespace Bit.BevTools;
 
-/// <summary>Process-wide BevTools state: extension contributions, the DI service graph and the enabled flag. Singleton.</summary>
+/// <summary>
+/// Process-wide BevTools state: extension contributions, the DI service graph and the enabled flag. Singleton when
+/// BevTools is registered, and one per process too when Bit.BevTools.Loader attaches it; only a bare
+/// <see cref="BitBevTools.Attach"/>, whose options can differ per call, gets one per session, which shares the graph.
+/// </summary>
 public sealed class BevToolsRegistry
 {
     private readonly Lazy<BevServiceGraph?> _serviceGraph;
 
     internal BevToolsRegistry(BitBevToolsOptions options, bool isEnabled, string enabledReason, IServiceCollection? services)
+        : this(options, isEnabled, enabledReason, CreateGraph(services))
+    {
+    }
+
+    internal BevToolsRegistry(BitBevToolsOptions options, bool isEnabled, string enabledReason, Lazy<BevServiceGraph?> serviceGraph)
     {
         Options = options;
         IsEnabled = isEnabled;
@@ -33,7 +42,7 @@ public sealed class BevToolsRegistry
         StateProviderFactories = builder.StateProviderFactories;
         Formatters = builder.Formatters;
         HiddenNamespaces = builder.HiddenNamespaces;
-        _serviceGraph = new Lazy<BevServiceGraph?>(() => services is null ? null : BevServiceGraph.Build(services), LazyThreadSafetyMode.ExecutionAndPublication);
+        _serviceGraph = serviceGraph;
 
         if (isEnabled)
         {
@@ -68,6 +77,10 @@ public sealed class BevToolsRegistry
 
     /// <summary>Snapshot of the DI registrations captured at <c>AddBitBevToolsServices</c> time (built lazily on first use).</summary>
     public BevServiceGraph? ServiceGraph => _serviceGraph.Value;
+
+    /// <summary>Built on first use, once: it analyzes every constructor in the collection.</summary>
+    internal static Lazy<BevServiceGraph?> CreateGraph(IServiceCollection? services) =>
+        new(() => services is null ? null : BevServiceGraph.Build(services), LazyThreadSafetyMode.ExecutionAndPublication);
 
     private sealed class ExtensionBuilder : IBevToolsExtensionBuilder
     {

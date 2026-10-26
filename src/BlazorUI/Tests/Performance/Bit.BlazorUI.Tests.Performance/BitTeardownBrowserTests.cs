@@ -72,7 +72,7 @@ public class BitTeardownBrowserTests : PerformanceTestBase
         // Three times over, so a teardown that only breaks once the circuit has seen one shows up too.
         for (var cycle = 0; cycle < 3; cycle++)
         {
-            await Activate(part);
+            await Activate(part, cycle);
             await Settle();
 
             var log = await Text("#log");
@@ -345,8 +345,10 @@ public class BitTeardownBrowserTests : PerformanceTestBase
     }
 
     // Puts the component in the state its teardown has the most to undo in: a popup open, a tooltip shown, a pane
-    // scrolled, a grid sorted on the column that goes away with it.
-    private async Task Activate(string part)
+    // scrolled, a grid sorted on the column that goes away with it. What the activation (or the mount before it) raises
+    // is waited for where the log shows it, so it is in the log the teardown is compared against rather than counted as
+    // raised by the teardown when it lands late.
+    private async Task Activate(string part, int cycle = 0)
     {
         switch (part)
         {
@@ -361,11 +363,12 @@ public class BitTeardownBrowserTests : PerformanceTestBase
 
             case "country-picker":
                 await Page.Locator("#country-picker").ClickAsync();
-                await Expect(Page.Locator("#log")).ToContainTextAsync("OnOpen");
+                await ExpectLogged("OnOpen", cycle + 1);
                 break;
 
             case "phone-input":
                 await Page.Locator("#phone-input button").First.ClickAsync();
+                await ExpectLogged("OnOpen", cycle + 1);
                 break;
 
             case "tooltip":
@@ -374,7 +377,21 @@ public class BitTeardownBrowserTests : PerformanceTestBase
                 break;
 
             case "scrollable-pane":
-                await Page.Locator("#pane").EvaluateAsync("el => el.scrollTop = 300");
+                // The pane hears its scroll through its script, which a remounted pane registers with only after its
+                // first render; a scroll made before that is never reported, so it is nudged until the pane reports it.
+                await Page.WaitForFunctionAsync(@"(times) => {
+                    const pane = document.getElementById('pane');
+                    pane.scrollTop = pane.scrollTop === 300 ? 301 : 300;
+                    return document.getElementById('log').innerText.split('|').filter(e => e === 'OnScroll').length >= times;
+                }", cycle + 1, new() { PollingInterval = 100 });
+                break;
+
+            case "snack-bar":
+                await ExpectLogged("OnShow:Snack", cycle + 1);
+                break;
+
+            case "infinite-scrolling":
+                await ExpectLogged("OnItemsLoaded:20", cycle + 1);
                 break;
 
             case "header":
@@ -440,6 +457,11 @@ public class BitTeardownBrowserTests : PerformanceTestBase
     private Task Press(string selector) => Page.Locator(selector).DispatchEventAsync("click");
 
     private Task<string> Text(string selector) => Page.Locator(selector).InnerTextAsync();
+
+    // The log is kept across the cycles, so an entry of this cycle is told from the ones before it by how many there are.
+    private Task ExpectLogged(string entry, int times) => Page.WaitForFunctionAsync(
+        "([entry, times]) => document.getElementById('log').innerText.split('|').filter(e => e === entry).length >= times",
+        new object[] { entry, times });
 
     private static string Added(string before, string after) => after.Length > before.Length ? after[before.Length..].TrimStart('|') : after;
 

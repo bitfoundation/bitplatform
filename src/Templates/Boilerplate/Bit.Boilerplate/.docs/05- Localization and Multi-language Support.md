@@ -189,8 +189,8 @@ Here are the corresponding entries from `AppStrings.resx`:
   <value>The {0} field is required.</value>
 </data>
 
-<data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
-  <value>MaxLengthAttribute must have a Length value that is greater than zero...</value>
+<data name="MaxLengthAttribute_ValidationError" xml:space="preserve">
+  <value>The field {0} must be a string or array type with a maximum length of '{1}'.</value>
 </data>
 
 <!-- Field Names -->
@@ -535,7 +535,7 @@ The tool performs the following tasks automatically:
 
 ### Installation
 
-Nothing to install: `dnx Bit.Cli --prerelease -- translate` runs it straight from NuGet. With the bit CLI installed as a .NET global tool (`dotnet tool install --global Bit.Cli --prerelease`), the command is `bit translate`.
+Nothing to install: `dnx Bit.Cli --version 10.7.0 -- translate` runs it straight from NuGet. With the bit CLI installed as a .NET global tool (`dotnet tool install --global Bit.Cli --version 10.7.0`), the command is `bit translate`.
 
 #### `Bit.ResxTranslator.json` Configuration Options Explained
 
@@ -634,7 +634,7 @@ That's why `bit translate` is added to the project CD pipelines. Here's how it's
     bit translate
 ```
 
-The job installs the bit CLI once in an earlier step, with `dotnet tool install Bit.Cli --prerelease`.
+The job installs the bit CLI once in an earlier step, with `dotnet tool install Bit.Cli --version 10.7.0`.
 
 > The secret is named **`OPENAI_APIKEY`** (no underscore between `API` and `KEY`) and the endpoint comes from
 > the repository **variable** `OPENAI_ENDPOINT`. Both names have to match exactly: with no key configured the
@@ -657,7 +657,7 @@ The job installs the bit CLI once in an earlier step, with `dotnet tool install 
 
 On multilingual builds (`InvariantGlobalization=false`), the culture a page is served in is part of its **URL**, as a
 leading path segment: `https://example.com/fa-IR/about`. Every page route also registers a `{culture?}` prefix variant
-for this (see `Routes.razor` / the `@attribute [Route("{culture?}" + ...)]` pattern).
+for this (see `AppRoutes.razor` / the `@attribute [Route("{culture?}" + ...)]` pattern).
 
 ### How a request's culture is resolved
 

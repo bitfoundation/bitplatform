@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.BlazorUI;
 
@@ -120,7 +119,6 @@ public partial class BitAccentColorSwitcher : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAccentColorSwitcherParams))]
     protected override void OnParametersSet()
     {
         // First, so that the configuration below is resolved from the Config the switcher ends up with - its own or

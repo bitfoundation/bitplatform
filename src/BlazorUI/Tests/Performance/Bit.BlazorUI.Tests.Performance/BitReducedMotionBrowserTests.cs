@@ -122,7 +122,7 @@ public class BitReducedMotionBrowserTests : PerformanceTestBase
         Assert.AreEqual(600, (await Measure("#self", "chart")).Delay, 1);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("NoPreference", "#swiper-plain", true)]
     [DataRow("Reduce", "#swiper-plain", false)]
     [DataRow("Reduce", "#swiper-fam", true)]
@@ -130,15 +130,18 @@ public class BitReducedMotionBrowserTests : PerformanceTestBase
     {
         await Open(Enum.Parse<ReducedMotion>(preference));
 
-        // Where the container is a third of the pace into the move: on its way with motion, already there without.
+        // Where the container is a third of the pace into the move: on its way with motion, already there without. The
+        // press goes to the server and back before the swiper moves, which on a loaded machine can take longer than that
+        // third, so the pace is timed from the first frame the container has moved in rather than from the press.
         var positions = await Page.EvaluateAsync<double[]>(@"async (root) => {
             const container = document.querySelector(root + ' .bit-swp-cnt');
-            const t0 = performance.now();
+            const frame = () => new Promise(resolve => requestAnimationFrame(resolve));
+            const start = Math.abs(container.scrollLeft);
             document.querySelector(root + ' .bit-swp-rbt').click();
-            await new Promise(resolve => {
-                const tick = () => performance.now() - t0 < 560 ? requestAnimationFrame(tick) : resolve();
-                requestAnimationFrame(tick);
-            });
+            const deadline = performance.now() + 10000;
+            while (Math.abs(container.scrollLeft) === start && performance.now() < deadline) await frame();
+            const t0 = performance.now();
+            while (performance.now() - t0 < 560) await frame();
             const midway = Math.abs(container.scrollLeft);
             await new Promise(resolve => setTimeout(resolve, 2000));
             return [midway, Math.abs(container.scrollLeft)];
@@ -158,7 +161,7 @@ public class BitReducedMotionBrowserTests : PerformanceTestBase
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("NoPreference", "#plain", "smooth")]
     [DataRow("Reduce", "#plain", "auto")]
     [DataRow("Reduce", "#fam", "smooth")]
@@ -173,7 +176,7 @@ public class BitReducedMotionBrowserTests : PerformanceTestBase
         Assert.AreEqual(expected, behavior);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("NoPreference")]
     [DataRow("Reduce")]
     public async Task TheStylesheetOnlyQueriesStepAsideForForceAnimation(string preference)

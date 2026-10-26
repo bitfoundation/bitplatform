@@ -25,7 +25,7 @@ public class BitCollapseTests : BunitTestContext
         var root = component.Find(".bit-col");
 
         Assert.IsNotNull(root);
-        Assert.AreEqual("div", root.TagName.ToLower());
+        Assert.AreEqual("div", root.TagName.ToLowerInvariant());
     }
 
     [TestMethod]
@@ -123,7 +123,7 @@ public class BitCollapseTests : BunitTestContext
         Assert.IsNull(content.GetAttribute("aria-labelledby"));
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow("none"),
         DataRow("presentation"),
         DataRow("generic"),
@@ -1065,7 +1065,7 @@ public class BitCollapseTests : BunitTestContext
         var root = component.Find(".bit-col");
 
         Assert.AreEqual(isRtl, root.ClassList.Contains("bit-rtl"));
-        Assert.AreEqual(dir.ToString().ToLower(), root.GetAttribute("dir"));
+        Assert.AreEqual(dir.ToString().ToLowerInvariant(), root.GetAttribute("dir"));
     }
 
     [TestMethod]
@@ -1744,7 +1744,7 @@ public class BitCollapseTests : BunitTestContext
         Assert.AreEqual(0, invocation.Invocations.Count);
     }
 
-    [DataTestMethod,
+    [TestMethod,
         DataRow(true, false, false, false),
         DataRow(false, true, false, false),
         DataRow(false, false, true, false),

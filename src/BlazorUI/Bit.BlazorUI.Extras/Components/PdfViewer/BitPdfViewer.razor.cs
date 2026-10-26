@@ -2333,7 +2333,6 @@ public partial class BitPdfViewer : BitComponentBase
         StyleBuilder.Register(() => Width.HasValue() ? $"--bit-PdfViewer-width:{Width}" : string.Empty);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitPdfViewerParams))]
     protected override void OnInitialized()
     {
         // The initial layout is seeded below, and the parameters a BitParams fills in are already in place for it.

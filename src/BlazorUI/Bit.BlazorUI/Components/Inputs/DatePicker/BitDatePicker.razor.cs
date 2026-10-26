@@ -1326,7 +1326,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         base.OnInitialized();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitDatePickerParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

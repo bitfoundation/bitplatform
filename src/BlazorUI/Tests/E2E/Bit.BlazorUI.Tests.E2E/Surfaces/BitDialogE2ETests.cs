@@ -1244,6 +1244,76 @@ public class BitDialogE2ETests : E2ETestBase
         await Expect(Part("casc-folder-dialog", ".bit-dlg-cnb")).ToHaveTextAsync("Keep");
     }
 
+    [TestMethod]
+    public async Task BitParams_AutoFocusButton_LandsOnTheButtonUnlessTheContentMarksAnElement()
+    {
+        await OpenAsync(PagePath);
+        await OpenDialogAsync("btn-casc-file-open", "casc-file-dialog");
+
+        await Expect(Part("casc-file-dialog", ".bit-dlg-cnb")).ToBeFocusedAsync();
+
+        await Page.Keyboard.PressAsync("Escape");
+        await Expect(Root("casc-file-dialog")).ToHaveCountAsync(0);
+
+        // The cascaded button is a default for every dialog; the one whose content asks for its field keeps it.
+        await OpenDialogAsync("btn-casc-rename-open", "casc-rename-dialog");
+
+        await Expect(Page.Locator("#casc-rename-input")).ToBeFocusedAsync();
+    }
+
+    [TestMethod]
+    public async Task BitParams_OwnAutoFocusButton_LandsOnTheButtonEvenWhenTheContentMarksAnElement()
+    {
+        await OpenAsync(PagePath);
+
+        // A button the dialog names itself is its own choice rather than the app-wide default, so it wins over the
+        // cascaded one and over an element its content marks with data-autofocus.
+        await OpenDialogAsync("btn-casc-share-open", "casc-share-dialog");
+
+        await Expect(Part("casc-share-dialog", ".bit-dlg-okb")).ToBeFocusedAsync();
+    }
+
+    [TestMethod]
+    public async Task BitParams_OwnAutoFocusSelector_ComesBeforeTheCascadedButtonWhichComesBeforeTheFirstElement()
+    {
+        await OpenAsync(PagePath);
+
+        // The field the dialog names is where it starts, over the cascaded Cancel and over the link above the field.
+        await OpenDialogAsync("btn-casc-name-open", "casc-name-dialog");
+
+        await Expect(Page.Locator("#casc-name-input")).ToBeFocusedAsync();
+
+        await PressAsync(Part("casc-name-dialog", ".bit-dlg-cnb"));
+        await Expect(Root("casc-name-dialog")).ToHaveCountAsync(0);
+
+        // Without the field the selector matches nothing, and the dialog falls back on the cascaded Cancel rather than
+        // on the first focusable element.
+        await Page.Locator("#casc-name-shown").UncheckAsync();
+        await OpenDialogAsync("btn-casc-name-open", "casc-name-dialog");
+
+        await Expect(Part("casc-name-dialog", ".bit-dlg-cnb")).ToBeFocusedAsync();
+    }
+
+    [TestMethod]
+    public async Task BitParams_OwnAutoFocusButtonThatCannotTakeTheFocus_FallsBackOnTheCascadedOne()
+    {
+        await OpenAsync(PagePath);
+
+        // The close button the dialog names is one the cascade hides, which leaves the destructive Ok as the first
+        // focusable element.
+        await OpenDialogAsync("btn-casc-trash-open", "casc-trash-dialog");
+
+        await Expect(Part("casc-trash-dialog", ".bit-dlg-cnb")).ToBeFocusedAsync();
+
+        await Page.Keyboard.PressAsync("Escape");
+        await Expect(Root("casc-trash-dialog")).ToHaveCountAsync(0);
+
+        // The Ok button the dialog names is one it disables.
+        await OpenDialogAsync("btn-casc-locked-open", "casc-locked-dialog");
+
+        await Expect(Part("casc-locked-dialog", ".bit-dlg-cnb")).ToBeFocusedAsync();
+    }
+
     // ---------- Color ----------
 
     [TestMethod]

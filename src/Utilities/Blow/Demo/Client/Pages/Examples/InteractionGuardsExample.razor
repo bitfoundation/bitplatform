@@ -3,51 +3,79 @@
 <PageTitle>Interaction Guards · Blow</PageTitle>
 
 <ExampleScaffold Title="Interaction Guards"
-                 Summary="Three CSS classes carve interactivity back out of the canvas. Drag the slider or select the text in the top node: neither moves it, because they sit in a 'nodrag' area. Scroll the list in the second node and the list scrolls instead of the canvas zooming, because it is marked 'nowheel'. The panel top-right is marked 'nopan', so dragging it does not pan.">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
-        <NodeTemplate Context="node">
-            @if (node.Id == "controls")
-            {
-                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
-                <div class="guard-title">Drag me by my title</div>
+                 Summary="Inside the canvas every press and wheel belongs to the flow - until an element opts out. Three CSS classes hand them back: nodrag for controls inside a node, nopan for overlays of your own, nowheel for areas that scroll. NoDragClass, NoPanClass and NoWheelClass choose the class names, or switch a guard off.">
+    <Toolbar>
+        <label>Guard classes
+            <select @onchange="@(e => _mode = e.Value?.ToString() ?? "default")">
+                <option value="default" selected="@(_mode == "default")">nodrag · nopan · nowheel (defaults)</option>
+                <option value="renamed" selected="@(_mode == "renamed")">Renamed: app-nodrag · app-nopan · app-nowheel</option>
+                <option value="off" selected="@(_mode == "off")">Off: all three null</option>
+            </select>
+        </label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    NoDragClass="@NoDragClass"
+                    NoPanClass="@NoPanClass"
+                    NoWheelClass="@NoWheelClass">
+            <NodeTemplate Context="node">
+                @if (node.Id == "controls")
+                {
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                    <div class="guard-title">Drag me by my title</div>
 
-                @* Everything below opts out of dragging, so the widgets behave normally. *@
-                <div class="nodrag guard-body">
-                    <input type="range" min="0" max="100" @bind="_volume" @bind:event="oninput" />
-                    <div class="guard-value">@_volume</div>
-                    <p class="guard-hint">Select this text - the node stays put.</p>
-                </div>
-                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
-            }
-            else
-            {
-                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
-                <div class="guard-title">Scrollable log</div>
+                    @* Everything below opts out of dragging, so the widgets behave normally. *@
+                    <div class="@DragClass guard-body">
+                        <input type="range" min="0" max="100" @bind="_volume" @bind:event="oninput" aria-label="Volume" />
+                        <div class="guard-value">@_volume</div>
+                        <p class="guard-hint">Select this text - the node stays put.</p>
+                        <code class="guard-class">class="@DragClass"</code>
+                    </div>
+                    <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+                }
+                else
+                {
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                    <div class="guard-title">Scrollable log</div>
 
-                @* nowheel keeps the wheel event for this element instead of zooming the flow. *@
-                <div class="nowheel guard-log">
-                    @foreach (var line in _log)
-                    {
-                        <div>@line</div>
-                    }
-                </div>
-                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
-            }
-        </NodeTemplate>
-        <ChildContent>
-            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-            <BlowControls />
+                    @* The wheel stays with this element instead of zooming the flow. *@
+                    <div class="@WheelClass guard-log">
+                        @foreach (var line in _log)
+                        {
+                            <div>@line</div>
+                        }
+                    </div>
+                    <code class="guard-class">class="@WheelClass"</code>
+                    <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+                }
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
 
-            @* Panel already stops pointer events itself; the class is what a plain
-               overlay of your own would use to opt out of panning. *@
-            <BlowPanel Anchor="BlowPanelPosition.TopRight" Class="nopan">
-                <div class="guard-panel">
-                    <strong>nopan</strong>
+                @* A plain overlay of the page's own, not a BlowPanel: a panel keeps pointer presses to itself already,
+                   while this element would pan the canvas when dragged were it not for the class. *@
+                <div class="@PanClass guard-panel">
+                    <strong>@PanClass</strong>
                     <div>Dragging here does not pan the canvas.</div>
                 </div>
-            </BlowPanel>
-        </ChildContent>
-    </BlowCanvas>
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Drag the slider</strong> in the top node, or <strong>select the text</strong> under it: the node stays put and is not even selected, because that area carries the drag guard. <strong>Drag the node by its title</strong> to move it.</li>
+        <li><strong>Scroll</strong> over the list in the lower node: the list scrolls and the canvas does not zoom. <strong>Scroll</strong> over the rest of the node, or the background, and the canvas zooms.</li>
+        <li><strong>Drag</strong> the box at the top right: the view does not pan. <strong>Drag the empty background</strong> beside it and the view pans.</li>
+        <li>Pick <strong>Renamed</strong> under <strong>Guard classes</strong>: everything behaves the same, with the classes now called app-nodrag, app-nopan and app-nowheel - the labels in the nodes and the box show the class in force.</li>
+        <li>Pick <strong>Off</strong>: now dragging the slider drags its node, scrolling over the list zooms the canvas, and dragging the box pans - the classes are still in the markup, but nothing honours them.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>NoDragClass</code> (<code>"nodrag"</code>): a press on an element with the class, or anywhere inside one, never reaches the canvas - it does not select or drag the node and does not pan. The usual home for inputs, sliders, buttons and selectable text in a <code>NodeTemplate</code>.</li>
+        <li><code>NoPanClass</code> (<code>"nopan"</code>): the same guard, named for overlays of your own that must not pan the canvas when dragged - here a plain <code>div</code> placed in the canvas's child content.</li>
+        <li><code>NoWheelClass</code> (<code>"nowheel"</code>): the element keeps its wheel events, so a scrollable area inside the flow scrolls instead of zooming it.</li>
+        <li>Set a parameter to another name when the class clashes with your CSS, or to <code>null</code> to switch that guard off. Only elements inside the canvas count, so a page that wraps the whole flow in one of these classes does not switch the flow off.</li>
+        <li>The guards are listeners in the browser, because only the DOM knows which element an event started on; changing a parameter puts new ones up. Keys typed into an input, textarea, select or editable element always belong to it, guard or not.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
@@ -56,6 +84,7 @@
     .guard-body input { width: 100%; }
     .guard-value { font-variant-numeric: tabular-nums; }
     .guard-hint { margin: 6px 0 0; font-size: 11px; color: var(--bit-blow-text-muted); user-select: text; }
+    .guard-class { display: block; margin-top: 4px; font-size: 10px; color: var(--bit-blow-text-muted); }
     .guard-log {
         max-height: 70px;
         overflow-y: auto;
@@ -66,7 +95,12 @@
         border-radius: 4px;
         padding: 4px 6px;
     }
+    /* Placed where a top-right panel would go, and above the nodes as a panel is. */
     .guard-panel {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        z-index: 5;
         padding: 6px 10px;
         font-size: 12px;
         background: var(--bit-blow-surface);
@@ -81,8 +115,20 @@
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
     private int _volume = 40;
+    private string _mode = "default";
 
     private readonly string[] _log = Enumerable.Range(1, 20).Select(i => $"line {i:00}").ToArray();
+
+    // The classes written into the markup: renamed together with the parameters, and left at the defaults when the
+    // guards are off, so that mode shows the same markup with nothing honouring it.
+    private string DragClass => _mode == "renamed" ? "app-nodrag" : "nodrag";
+    private string PanClass => _mode == "renamed" ? "app-nopan" : "nopan";
+    private string WheelClass => _mode == "renamed" ? "app-nowheel" : "nowheel";
+
+    // What the canvas is told to look for.
+    private string? NoDragClass => _mode == "off" ? null : DragClass;
+    private string? NoPanClass => _mode == "off" ? null : PanClass;
+    private string? NoWheelClass => _mode == "off" ? null : WheelClass;
 
     protected override void OnInitialized()
     {

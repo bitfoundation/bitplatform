@@ -16,6 +16,7 @@
     <meta property="og:site_name" content="Bit.BlazeDb" />
     <meta property="og:title" content="BlazeDb - a memory-first database for Blazor" />
     <meta property="og:description" content="Live rows in managed memory, typed index lookups with no SQL and no interop, atomic transactions, an EF Core provider and a write-ahead log persisted to OPFS." />
+    <meta property="og:image" content="https://blazedb.bitplatform.dev/icon-512.png" />
     <meta name="twitter:card" content="summary" />
 
     <ResourcePreloader />
@@ -29,11 +30,20 @@
        below included. *@
     <script src="@Assets["theme.js"]"></script>
     <ImportMap />
+    <link rel="icon" href="favicon.ico" sizes="32x32" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
     <HeadOutlet @rendermode="RenderMode" />
 </head>
 
-<body>
+@* data-enhance-nav="false": a link followed before the WebAssembly runtime has started is a plain
+   page load rather than an enhanced one. Enhanced navigation fetches and merges the next page while
+   the runtime is still starting, and the router the runtime then attaches can render the address
+   it read before the merge. Nothing is prerendered here, so the boot screen below has no link to
+   follow; the attribute keeps this demo's shell the same as every other one the site kit runs in.
+   Once the app is interactive its router handles every link itself and this attribute is not
+   consulted. *@
+<body data-enhance-nav="false">
     @* Shown until the app's shell replaces it (demo.css hides it once a .page exists): nothing is
        prerendered, so this is what the first response carries while the runtime downloads. *@
     <div class="bd-boot">

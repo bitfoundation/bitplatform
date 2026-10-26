@@ -15,4 +15,12 @@ internal sealed class BortableMoveInfo
     public int NewIndex { get; init; }
     public required IBortableZone From { get; init; }
     public required IBortableZone To { get; init; }
+
+    public BortableInput Input { get; init; }
+
+    /// <summary>A copy of the item goes into <see cref="To"/>, another list; the original stays.</summary>
+    public bool IsClone { get; init; }
+
+    /// <summary>The drag ended with every list it touched put back as it was.</summary>
+    public bool Canceled { get; init; }
 }

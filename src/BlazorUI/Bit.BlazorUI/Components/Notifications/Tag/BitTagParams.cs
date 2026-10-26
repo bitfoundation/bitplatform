@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The parameters for <see cref="BitTag"/> component.
@@ -14,6 +16,13 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
     /// of typographical errors.
     /// </remarks>
     public const string ParamName = $"{nameof(BitParams)}.{nameof(BitTag)}";
+
+
+
+    // What BitParams reads of a params object by reflection is kept by its constructor rather than by the component
+    // reading it, so the trimmer keeps it only for the params types an app creates.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTagParams))]
+    public BitTagParams() { }
 
 
 

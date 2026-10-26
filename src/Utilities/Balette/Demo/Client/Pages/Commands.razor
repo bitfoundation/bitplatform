@@ -1,4 +1,5 @@
 ﻿@page "/commands"
+@using System.Globalization
 @implements IDisposable
 @inject IBaletteService Palette
 @inject DemoState State
@@ -16,8 +17,8 @@
 
 <PaletteBar />
 
-@* Exists only while this page is rendered: leave the page and the three counter commands are gone from the
-   palette, shortcuts included (kbar calls this useRegisterActions). *@
+@* Exists only while this page is rendered: leave the page and its commands are gone from the palette, shortcuts
+   included (kbar calls this useRegisterActions). *@
 <BaletteCommands Commands="_pageCommands" />
 
 <div class="bb-split">
@@ -27,11 +28,16 @@
         <p>
             Open the palette and look for <em>Increment counter</em> and <em>Decrement counter</em> under "This page",
             or press <kbd>Ctrl</kbd> <kbd>↑</kbd> / <kbd>Ctrl</kbd> <kbd>↓</kbd> with the palette closed. Both keep the
-            palette open, so the value can be stepped from inside it.
+            palette open, so the value can be stepped from inside it, and both carry the count as a badge.
+        </p>
+        <p>
+            Every change hands the registry a copy of each row made with <code>command.With(...)</code> - same id, handler
+            and shortcut, a new badge - through <code>Palette.Update</code>. <em>Reset counter</em> is destructive, so it
+            asks first, and it is disabled, with its reason, while the counter is at zero.
         </p>
         <div class="bb-try">
             <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("counter")'>Search "counter"</button>
-            <button type="button" class="btn btn-secondary" @onclick="() => _count++">+1 from the page</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => SetCount(_count + 1)">+1 from the page</button>
         </div>
     </div>
 
@@ -39,20 +45,111 @@
         <div class="bb-demo-bar"><span class="bb-demo-label">The programmatic API</span></div>
         <p>
             <code>IBaletteService</code> is the palette's remote control: register, update, find, open, close and execute
-            from anywhere that can inject it.
+            from anywhere that can inject it - and listen to what the palette does.
         </p>
         <div class="demo-stack">
             <button type="button" class="btn btn-secondary" @onclick='() => Palette.ExecuteAsync("toggle:wordwrap")'>Execute "Word wrap" without opening</button>
             <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("!delete")'>Open with a negated query: <code>!delete</code></button>
             <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync(pageCommandId: "actions.set-labels")'>Open on the "Set labels…" page</button>
+            <button type="button" class="btn btn-secondary" @onclick="ToggleGreeting">@(_greeting is null ? "Register \"Say hello\" with Palette.Register" : "Dispose the handle Register returned")</button>
+            <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("hello")'>Search "hello"</button>
         </div>
+        <p class="bb-muted demo-small">
+            <code>Register</code> hands back an <code>IDisposable</code>: <em>Say hello</em> is in the palette - and
+            <code>Find("@GreetingId")</code> finds it - from the moment it is registered until the handle is disposed
+            (<strong>@(Palette.Find(GreetingId) is null ? "not registered now" : "registered now")</strong>).
+            <code>Palette.Unregister(id)</code> removes one command by its id instead; the to-dos on
+            <a href="pages">Nested pages &amp; flows</a> work that way.
+        </p>
         <p class="bb-muted demo-small" role="status">
             Executed this visit: <strong>@_executed</strong> · Last: <strong>@(_lastExecuted ?? "nothing yet")</strong>
             · The palette is <strong>@(Palette.IsOpen ? "open" : "closed")</strong>
             · The registry holds <strong>@Palette.Commands.Count</strong> commands
+            · <code>Find("toggle:wordwrap")</code> says it is <strong>@(Palette.Find("toggle:wordwrap")?.Checked == true ? "on" : "off")</strong>
         </p>
+        <p class="bb-soft demo-small">The service's events, newest first:</p>
+        <div class="bb-log demo-events" aria-label="Service events">
+            @if (_events.Count == 0)
+            {
+                <div class="bb-log-empty">Open the palette or run a command.</div>
+            }
+            @foreach (var entry in _events)
+            {
+                <div class="bb-log-line">@entry</div>
+            }
+        </div>
     </div>
 </div>
+
+<div class="bb-demo" id="visible-when">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Shown only when it applies</span></div>
+    <p>
+        <em>Merge selected files</em> is registered by this page with <code>.VisibleWhen(() =&gt; _selected.Count &gt;= 2)</code>
+        and the shortcut <kbd>Alt</kbd> <kbd>M</kbd>. Select two files, open the palette and it is there; select one and it is
+        gone - from the list and from the keyboard: the shortcut of a command its predicate hides is left to the page.
+    </p>
+    <div class="bb-segmented" role="group" aria-label="Files">
+        @foreach (var file in Files)
+        {
+            <button type="button" aria-pressed="@(_selected.Contains(file) ? "true" : "false")" @onclick="() => ToggleFile(file)">@file</button>
+        }
+    </div>
+    <p class="bb-muted demo-small" role="status">
+        Selected: <strong>@(_selected.Count == 0 ? "nothing" : string.Join(", ", Files.Where(_selected.Contains)))</strong>
+        · <em>Merge selected files</em> is <strong>@(_selected.Count >= 2 ? "listed, and Alt+M runs it" : "hidden, and Alt+M is the page's")</strong>
+    </p>
+    <div class="bb-try">
+        <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("merge")'>Search "merge"</button>
+    </div>
+    <div class="bb-note">
+        A predicate is evaluated every time the list is built, so an open palette is always right. The global shortcuts are
+        synced to the browser ahead of time, though, so after state a predicate reads changes while the palette is closed -
+        a selection, the signed-in user, the current route - call <code>Palette.Refresh()</code>: the command that just became
+        available answers its keys, and the one that went away leaves them alone. This page calls it on every click above.
+    </div>
+</div>
+
+<section class="bb-card" id="model">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The model</h3>
+    <p>
+        Every member of <code>BaletteCommand</code>, with a command of this app that uses it - search for it and look. The
+        builder has a method of the same name for each, and <code>BaletteItem</code> a parameter for most of them (see
+        <a href="commands#markup">declarative markup</a>).
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Member</th><th>Meaning</th><th>In this app</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>Id</code></td><td>Stable identity, derived from the title, group and parent unless set (see <a href="commands#identity">identity</a>).</td><td>The toggles' <code>toggle:wordwrap</code></td></tr>
+                <tr><td class="bb-table-key"><code>Title</code></td><td>The label. Required, searched with the highest weight, highlighted.</td><td>Every row</td></tr>
+                <tr><td class="bb-table-key"><code>Subtitle</code></td><td>A secondary label next to the title. Searched and highlighted.</td><td><em>Theme › Dark</em>: "Always dark"</td></tr>
+                <tr><td class="bb-table-key"><code>Description</code></td><td>Longer text for the detail pane. Searched with a low weight.</td><td><em>New issue</em>, in the detail pane</td></tr>
+                <tr><td class="bb-table-key"><code>Keywords</code></td><td>Aliases, synonyms, abbreviations. A keyword hit is shown under the title.</td><td><em>Settings</em> also matches <code>config</code></td></tr>
+                <tr><td class="bb-table-key"><code>Group</code></td><td>The heading the command is listed under.</td><td>Navigation, Actions, Preferences…</td></tr>
+                <tr><td class="bb-table-key"><code>Icon</code> / <code>IconCss</code></td><td>A <code>RenderFragment</code>, or a CSS class such as <code>bi bi-house</code> for an icon font. Without one, the kind's icon.</td><td><code>Icon</code>: the counter's <em>+</em> and <em>−</em> on this page, inline SVG. <code>IconCss</code>: the labels' coloured dots, the people's avatars</td></tr>
+                <tr><td class="bb-table-key"><code>Shortcut</code> / <code>GlobalShortcut</code></td><td>A chord or a sequence. Global by default, so it fires while the palette is closed; <code>global: false</code> only shows it.</td><td><kbd>G</kbd> <kbd>S</kbd>, <kbd>Alt</kbd> <kbd>Z</kbd>, <kbd>F2</kbd></td></tr>
+                <tr><td class="bb-table-key"><code>Priority</code></td><td>A ranking nudge: <code>BaletteCommandPriority</code> names <code>Lowest</code> (-100), <code>Low</code> (-50), <code>Normal</code> (0, the default), <code>High</code> (50) and <code>Highest</code> (100); any other number works too. It leads on the empty query and only nudges a search (see <a href="search">ranking</a>).</td><td><em>Introduction</em> is High, the feedback row Lowest</td></tr>
+                <tr><td class="bb-table-key"><code>Parent</code></td><td>The id of the command whose page lists this one. Set for you on registered children.</td><td>The theme options: <code>preferences.theme</code></td></tr>
+                <tr><td class="bb-table-key"><code>Children</code> / <code>ChildrenProvider</code> / <code>Source</code></td><td>Nested commands: static, loaded when the page opens, or searched as the page is typed in.</td><td><em>Theme</em>, <em>Assign to…</em>, <em>Find a person…</em></td></tr>
+                <tr><td class="bb-table-key"><code>ChildrenPlaceholder</code> / <code>MultiSelectChildren</code></td><td>The search box placeholder on that page, and whether its rows are checkboxes.</td><td><em>Set labels…</em></td></tr>
+                <tr><td class="bb-table-key"><code>Actions</code></td><td>Secondary actions, listed in the action panel on <kbd>Tab</kbd> before pin and forget.</td><td>People rows: <code>@@ada</code>, then <kbd>Tab</kbd></td></tr>
+                <tr><td class="bb-table-key"><code>Handler</code></td><td>What runs on selection, and what it answers decides what happens next (see <a href="pages">flows</a>).</td><td>Every action</td></tr>
+                <tr><td class="bb-table-key"><code>Href</code> / <code>ForceLoad</code> / <code>OpenInNewTab</code></td><td>A navigation target, used when there is no handler. Only relative links and the allowed schemes are followed.</td><td><em>GitHub repository</em> opens a new tab</td></tr>
+                <tr><td class="bb-table-key"><code>Kind</code></td><td><code>Action</code>, <code>Navigation</code>, <code>Toggle</code>, <code>Setting</code>, <code>Search</code>, <code>Page</code>, <code>Help</code> or <code>Recent</code>: picks the default icon and is exposed as <code>data-kind</code>.</td><td>The Help group sets <code>Help</code> after <code>Href</code></td></tr>
+                <tr><td class="bb-table-key"><code>Disabled</code> / <code>DisabledReason</code></td><td>Listed but not runnable; the reason replaces the subtitle, and <kbd>Enter</kbd> answers with it.</td><td><em>Export… › PDF</em>, <em>Reset counter</em> at zero</td></tr>
+                <tr><td class="bb-table-key"><code>IsVisible</code></td><td>A predicate (<code>VisibleWhen</code>) evaluated every time the list is built.</td><td><em>Merge selected files</em>, above</td></tr>
+                <tr><td class="bb-table-key"><code>Destructive</code> / <code>ConfirmMessage</code></td><td>Drawn in the danger colour; with a message, the first <kbd>Enter</kbd> arms it and the second runs it. <code>.Confirm("message")</code> asks for the second <kbd>Enter</kbd> without the danger colour.</td><td><em>Delete project</em></td></tr>
+                <tr><td class="bb-table-key"><code>Badge</code> / <code>Value</code> / <code>Checked</code></td><td>A pill ("New", "3"), a current value ("Dark"), or a toggle's switch.</td><td><em>What's new</em>, <em>Theme</em>, <em>Word wrap</em></td></tr>
+                <tr><td class="bb-table-key"><code>AlwaysShow</code></td><td>Listed whatever the query, like cmdk's <code>forceMount</code>.</td><td><em>Feedback: couldn't find a command?</em></td></tr>
+                <tr><td class="bb-table-key"><code>ExcludeFromHistory</code></td><td>Never recorded in recents or frecency.</td><td>The rows <em>Find a person…</em> finds</td></tr>
+                <tr><td class="bb-table-key"><code>Tags</code></td><td>Free-form labels that <a href="modes">modes</a> can scope to.</td><td><code>command</code>, which the <code>&gt;</code> mode lists</td></tr>
+                <tr><td class="bb-table-key"><code>Data</code></td><td>Anything your templates or handlers need.</td><td>The <code>Person</code> a people row shows in the detail pane</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The fluent builder</h3>
@@ -60,22 +157,104 @@
         Every command in this app's <em>Navigation</em>, <em>Actions</em>, <em>Preferences</em>, <em>Danger zone</em> and
         <em>Help</em> groups is built in <code>Services/DemoCommands.cs</code> and registered once, from
         <code>Components/AppPalette.razor</code>. <code>BaletteCmd</code> is the entry point; a builder converts to a
-        command on its own, so a list of them needs no <code>Build()</code> calls.
+        command on its own, so a list of them needs no <code>Build()</code> calls - only a target that is not a
+        <code>BaletteCommand</code> does.
     </p>
     <pre class="bb-code">@BuilderExample</pre>
+    <pre class="bb-code">@EntryPointsExample</pre>
+    <p>
+        <code>Handler</code> takes an <code>Action</code>, an <code>Action&lt;BaletteCommandContext&gt;</code> or a
+        <code>Func&lt;BaletteCommandContext, Task&gt;</code> - all of which close the palette when they are done - or a
+        <code>Func&lt;BaletteCommandContext, Task&lt;BaletteCommandResult&gt;&gt;</code>, which says what happens next: stay
+        open, go back, a page, a prompt, a toast or an error (see <a href="pages">nested pages &amp; flows</a>).
+    </p>
 </section>
 
-<section class="bb-card">
+<section class="bb-card" id="identity">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Identity</h3>
+    <p>
+        Recents, pins, the active row, <code>Find</code>, <code>ExecuteAsync</code> and <code>OpenAsync(pageCommandId: ...)</code>
+        all go by a command's <code>Id</code>. Without one it is a slug of the title, prefixed with the parent's id or the
+        group. These are worked out by the library on this page, right now:
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Built as</th><th>Id</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var (built, command) in IdentityExamples)
+                {
+                    <tr><td><code>@built</code></td><td><code>@command.Id</code></td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <p>
+        Set the id whenever the title can change - a toggle that says "On" or "Off", a translated title - so recents, pins and
+        the active row survive the change. A copy made with <code>With</code> keeps its id even when its title changes.
+        Registering an id that is already registered replaces it: the later registration wins, which lets a page override a
+        global command. <code>C#</code> and <code>C++</code> both derive <code>c</code>, so one would replace the other;
+        when two commands registered together share an id, the palette logs a warning naming both titles.
+    </p>
+    <pre class="bb-code">@IdentityExample</pre>
+</section>
+
+<section class="bb-card" id="markup">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Declarative markup</h3>
     <p>
         Commands can live in markup next to the component that owns them. A <code>BaletteItem</code> inside a
-        <code>BaletteItem</code> turns the outer one into a page, and a <code>BaletteGroup</code> hands its heading and
-        priority to every item in it. The <em>Quick create</em> group of this app is declared like this in
-        <code>Components/AppPalette.razor</code>:
+        <code>BaletteItem</code> turns the outer one into a page, and a <code>BaletteGroup</code> gives its heading to its
+        items, its priority to every item that does not set its own, and adds its tags to theirs. The <em>Quick create</em>
+        group of this app is declared like this in <code>Components/AppPalette.razor</code>:
     </p>
     <pre class="bb-code">@MarkupExample</pre>
+    <p>
+        <code>OnExecute</code> receives the <code>BaletteCommandContext</code>, and the palette closes after it unless
+        <code>KeepOpen</code> is set; an item with an <code>Href</code> and no <code>OnExecute</code> navigates. An item
+        re-registers only when one of its parameters actually changed, so re-rendering the layout is cheap. The parameters:
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Component</th><th>Parameters</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="bb-table-key"><code>BaletteItem</code></td>
+                    <td>
+                        <code>Title</code> (required), <code>Id</code>, <code>Subtitle</code>, <code>Description</code>,
+                        <code>Keywords</code> (one comma or space separated string), <code>Shortcut</code> and
+                        <code>GlobalShortcut</code>, <code>Icon</code> or <code>IconCss</code>, <code>Href</code> and
+                        <code>NewTab</code>, <code>OnExecute</code> and <code>KeepOpen</code>, <code>Priority</code>,
+                        <code>Disabled</code> and <code>DisabledReason</code>, <code>Destructive</code> and
+                        <code>ConfirmMessage</code> (a message alone asks for the second <kbd>Enter</kbd> without the danger
+                        colour), <code>Badge</code>, <code>Value</code>, <code>Checked</code>, <code>Kind</code>,
+                        <code>Tags</code>, <code>AlwaysShow</code>, <code>ChildrenPlaceholder</code>, <code>MultiSelect</code>, and
+                        nested items as its child content.
+                    </td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key"><code>BaletteGroup</code></td>
+                    <td><code>Heading</code> (required), <code>Priority</code>, <code>Tags</code>, and the items as its child content.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        What markup cannot say needs the builder: <code>Data</code>, <code>VisibleWhen</code>, <code>ExcludeFromHistory</code>,
+        <code>Actions</code>, <code>ForceLoad</code>, children loaded when the page opens, a page that searches a source,
+        and a handler that answers with a prompt, a page, a toast or an error rather than closing or staying open. Pass such
+        commands to the palette's <code>Commands</code> parameter, or register them with the service.
+    </p>
     <div class="bb-try">
         <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("new")'>Search "new"</button>
+        <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync(pageCommandId: "quick-create.new")'>Open the "New…" page</button>
+    </div>
+    <div class="bb-note">
+        Where a palette's commands come from: the service's registry, shared by every palette in the scope; the markup
+        inside that palette, which belongs to it alone; and its <code>Commands</code> parameter, a third, per-instance list -
+        the only one the inline palette at the end of this page uses.
     </div>
 </section>
 
@@ -84,9 +263,26 @@
     <p>
         <code>BaletteCommands</code> registers its list when it renders and removes it when it is disposed, and hands a
         new registration over when it is passed a different list. <code>IBaletteService.Register</code> does the same from
-        code and returns the handle to dispose.
+        code and returns the handle to dispose. A registered command is changed in place with <code>Update</code>, which
+        replaces the command with the same id wherever it was registered - its static children included.
     </p>
     <pre class="bb-code">@ScopedExample</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Groups and ordering</h3>
+    <ul class="bb-detail-list">
+        <li>On the empty query, ungrouped commands come first, then the groups in <code>options.GroupOrder</code> - here
+            Navigation, Actions, Preferences, Danger zone and Help - then the rest: the group holding the highest-priority or
+            most-used command first, alphabetically on a tie. <em>Quick create</em> and <em>This page</em> are not in the
+            list, so they follow it. Pinned and recent commands come before all of them, and ungrouped commands listed under
+            those get a heading of their own, <em>Suggestions</em>, so they do not read like more recents.</li>
+        <li>Inside a group, commands are ordered by priority, then by frecency, then in the order they were registered or
+            declared - list <em>Auto</em>, <em>Light</em> and <em>Dark</em> and that is the order they appear in.</li>
+        <li>While searching, results are ordered by rank - equal ranks by title - and groups by their best match.
+            <code>GroupWhenSearching = false</code> flattens them into one ranked list; try it on
+            <a href="search">Search &amp; ranking</a>.</li>
+    </ul>
 </section>
 
 <section class="bb-card" id="settings">
@@ -121,10 +317,41 @@
         </label>
     </div>
 
+    <p>
+        Or search them, with a palette in the page rather than over it: <code>Inline="true"</code>, listing only its own
+        commands (<code>IncludeRegisteredCommands="false"</code>) in the compact density. It stays out of the layout's
+        palette's way - <code>Ctrl+K</code> still opens that one, and <code>Alt+Z</code> still toggles word wrap once.
+    </p>
+    <div class="demo-inline-palette">
+        <Balette Inline="true"
+                 IncludeRegisteredCommands="false"
+                 Density="compact"
+                 ShowFooter="false"
+                 EnableHistory="false"
+                 Placeholder="Search these settings…"
+                 Style="--bit-balette-max-height: 260px"
+                 Commands="_settingsCommands" />
+    </div>
+    <pre class="bb-code">@InlineExample</pre>
+    <ul class="bb-detail-list">
+        <li>An inline palette is a <code>&lt;section&gt;</code> named like the dialog (<code>data-balette="inline"</code>),
+            always open and as wide as its container; <code>--bit-balette-max-height</code> bounds its list.</li>
+        <li><kbd>Esc</kbd> goes back a page or clears the query instead of closing, and with nothing to undo it is left to
+            the page, so a drawer around the palette still closes on it. <kbd>Tab</kbd> moves the focus on - there is no
+            focus trap.</li>
+        <li>A command that would close the palette resets it to its root page, and result counts are announced only while
+            it has the focus.</li>
+        <li>It neither opens on the toggle shortcut nor answers <code>OpenAsync</code>, <code>CloseAsync</code> or
+            <code>ExecuteAsync</code>, and claims no global shortcuts, so nothing runs twice; a key the modal palette claimed
+            - <kbd>Ctrl</kbd> <kbd>K</kbd> typed in this box - is left to it.</li>
+        <li><code>IncludeRegisteredCommands="false"</code> leaves out the registry's commands, sources and modes, so it
+            lists only what is declared in its markup or passed to <code>Commands</code>.</li>
+    </ul>
+
     <div class="bb-note">
         Rebuilding the whole list is the simplest way to keep it current, and cheap: it is a few dozen records.
         <code>IBaletteService.Update(command)</code> replaces a single command by id instead, which suits a registry
-        too large to rebuild on every change.
+        too large to rebuild on every change - the counter at the top of this page works that way.
     </div>
 </section>
 
@@ -147,10 +374,27 @@
             }),
         """;
 
+    private const string EntryPointsExample = """
+        BaletteCmd.New("Export…")                       // a blank command
+        BaletteCmd.Navigate("Settings", "/settings")    // Kind = Navigation, Href set
+        BaletteCmd.Action("Save", () => Save())         // runs and closes
+        BaletteCmd.Action("Reload", ReloadAsync)        // a Func<Task>
+        BaletteCmd.Action("Rename…", ctx => ...)        // full control over the result
+        BaletteCmd.Page("Theme", light, dark)           // Kind = Page, with children
+        """;
+
+    private const string IdentityExample = """
+        // A title that changes needs an id that does not.
+        BaletteCmd.New(wordWrap ? "Disable word wrap" : "Enable word wrap").Id("toggle:wordwrap")
+
+        // A copy keeps the id, whatever it changes.
+        var renamed = command.With(b => b.Title("Rename…").Badge("New"));
+        """;
+
     private const string MarkupExample = """
         <Balette>
             <BaletteGroup Heading="Quick create" Priority="20">
-                <BaletteItem Title="New issue" Shortcut="C" IconCss="demo-plus"
+                <BaletteItem Title="New issue" Shortcut="C" Keywords="create add" IconCss="demo-plus"
                              OnExecute='_ => State.Record("New issue dialog opened")' />
                 <BaletteItem Title="New…" ChildrenPlaceholder="What do you want to create?">
                     <BaletteItem Title="Project" OnExecute='_ => State.Record("New project")' />
@@ -173,9 +417,12 @@
                 BaletteCmd.New("Increment counter")
                     .Group("This page")
                     .Shortcut("Ctrl+Up")
+                    .Badge("0")
                     .Handler(_ =>
                     {
                         _count++;
+                        // The same command, with the new count: Update swaps it in by id.
+                        Palette.Update(Palette.Find("this-page.increment-counter")!.With(b => b.Badge($"{_count}")));
                         StateHasChanged();
                         return Task.FromResult(BaletteCommandResult.KeepOpen);
                     }),
@@ -183,70 +430,220 @@
         }
         """;
 
+    private const string InlineExample = """
+        <Balette Inline="true"
+                 IncludeRegisteredCommands="false"
+                 Commands="_settingsCommands"
+                 Density="compact"
+                 ShowFooter="false"
+                 EnableHistory="false"
+                 Placeholder="Search these settings…"
+                 Style="--bit-balette-max-height: 260px" />
+        """;
+
     private static readonly BaletteKeyboardShortcut WordWrapShortcut = "Alt+Z";
 
+    private static readonly string[] Files = ["README.md", "Program.cs", "App.razor", "site.css"];
+
+    // Worked out by the library itself when the page renders, so the table cannot drift from what it does.
+    private static readonly (string Built, BaletteCommand Command)[] IdentityExamples =
+    [
+        ("BaletteCmd.New(\"Settings\").Group(\"Navigation\")", BaletteCmd.New("Settings").Group("Navigation").Build()),
+        ("BaletteCmd.New(\"Rename project…\").Group(\"Actions\")", BaletteCmd.New("Rename project…").Group("Actions").Build()),
+        ("BaletteCmd.New(\"What's new\").Group(\"Help\")", BaletteCmd.New("What's new").Group("Help").Build()),
+        ("BaletteCmd.New(\"Dark\").Parent(\"preferences.theme\")", BaletteCmd.New("Dark").Parent("preferences.theme").Build()),
+        ("BaletteCmd.New(\"C#\")", BaletteCmd.New("C#").Build()),
+        ("BaletteCmd.New(\"C++\")", BaletteCmd.New("C++").Build()),
+        ("BaletteCmd.New(\"🚀\")", BaletteCmd.New("🚀").Build()),
+        ("BaletteCmd.New(\"Word wrap\").Id(\"toggle:wordwrap\")", BaletteCmd.New("Word wrap").Id("toggle:wordwrap").Build()),
+    ];
+
+    private const string IncrementId = "this-page.increment-counter";
+    private const string DecrementId = "this-page.decrement-counter";
+    private const string ResetId = "this-page.reset-counter";
+    private const string GreetingId = "this-page.say-hello";
+
+    private IDisposable? _greeting;
     private int _count;
     private int _executed;
     private string? _lastExecuted;
+    private readonly HashSet<string> _selected = [];
+    private readonly List<string> _events = [];
     private List<BaletteCommand> _pageCommands = [];
+    private List<BaletteCommand> _settingsCommands = [];
 
     protected override void OnInitialized()
     {
+        // Icon takes a RenderFragment as well as a CSS class: any markup, here an inline SVG drawn in the row's colour.
+        RenderFragment plus = @<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v10M3 8h10" /></svg>;
+        RenderFragment minus = @<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10" /></svg>;
+
+        _settingsCommands = SettingsCommands();
         _pageCommands =
         [
-            BaletteCmd.New("Increment counter").Group("This page").Shortcut("Ctrl+Up").Keywords("plus", "add")
+            BaletteCmd.New("Increment counter").Group("This page").Shortcut("Ctrl+Up").Keywords("plus", "add").Badge("0").Icon(plus)
                 .Description("Registered by Pages/Commands.razor; gone when you leave the page.")
                 .Handler(_ => Step(+1)),
-            BaletteCmd.New("Decrement counter").Group("This page").Shortcut("Ctrl+Down").Keywords("minus", "subtract")
+            BaletteCmd.New("Decrement counter").Group("This page").Shortcut("Ctrl+Down").Keywords("minus", "subtract").Badge("0").Icon(minus)
                 .Description("Registered by Pages/Commands.razor; gone when you leave the page.")
                 .Handler(_ => Step(-1)),
             BaletteCmd.New("Reset counter").Group("This page").Keywords("zero", "clear")
                 .Destructive("Reset the counter to zero?")
+                .Disabled(true, ZeroReason)
                 .Handler(_ =>
                 {
-                    _count = 0;
-                    Changed();
+                    SetCount(0);
                     return Task.FromResult(BaletteCommandResult.Close);
+                }),
+            BaletteCmd.New("Merge selected files").Group("This page").Shortcut("Alt+M").Keywords("combine", "join")
+                .Description("Listed only while two or more files are selected on Pages/Commands.razor (VisibleWhen).")
+                .VisibleWhen(() => _selected.Count >= 2)
+                .Handler(_ =>
+                {
+                    var count = _selected.Count;
+                    State.Record($"Merged {count} files");
+                    _selected.Clear();
+                    // The selection the predicate reads just changed: the shortcut is the page's again.
+                    Palette.Refresh();
+                    Refresh();
+                    return Task.FromResult(BaletteCommandResult.Toast($"Merged {count} files"));
                 }),
         ];
 
-        State.Changed += Refresh;
+        State.Changed += OnStateChanged;
         Palette.CommandExecuted += OnExecuted;
-        Palette.CommandsChanged += Refresh;
-        Palette.Opened += Refresh;
-        Palette.Closed += Refresh;
+        Palette.CommandsChanged += OnCommandsChanged;
+        Palette.Opened += OnOpened;
+        Palette.Closed += OnClosed;
     }
+
+    private const string ZeroReason = "The counter is already at zero";
 
     private Task<BaletteCommandResult> Step(int delta)
     {
-        _count += delta;
-        Changed();
+        SetCount(_count + delta);
         return Task.FromResult(BaletteCommandResult.KeepOpen);
     }
 
-    private void Changed()
+    private void SetCount(int count)
     {
+        _count = count;
         State.Record($"Counter is now {_count}");
+
+        // Commands are immutable, so a change is a copy - With keeps the id, the handler and the shortcut - and Update
+        // swaps it in wherever it was registered. The registration BaletteCommands holds is edited in place, so disposing
+        // it when the page goes still removes the copies.
+        var badge = _count.ToString(CultureInfo.InvariantCulture);
+        foreach (var id in (string[])[IncrementId, DecrementId])
+        {
+            if (Palette.Find(id) is { } command)
+            {
+                Palette.Update(command.With(b => b.Badge(badge)));
+            }
+        }
+
+        if (Palette.Find(ResetId) is { } reset)
+        {
+            Palette.Update(reset.With(b => b.Disabled(_count == 0, _count == 0 ? ZeroReason : null)));
+        }
+
         Refresh();
+    }
+
+    /// <summary>Registers a command from code, or disposes the handle that registration returned.</summary>
+    private void ToggleGreeting()
+    {
+        if (_greeting is not null)
+        {
+            _greeting.Dispose();
+            _greeting = null;
+            return;
+        }
+
+        _greeting = Palette.Register(BaletteCmd.New("Say hello").Group("This page").Keywords("greet", "wave")
+            .Description("Registered by a button on Pages/Commands.razor with Palette.Register; disposing the handle it returned removes it.")
+            .Handler(_ => Task.FromResult(BaletteCommandResult.Toast("Hello!", keepOpen: true))));
+    }
+
+    private void ToggleFile(string file)
+    {
+        if (!_selected.Remove(file))
+        {
+            _selected.Add(file);
+        }
+
+        // VisibleWhen reads the selection: tell the palette, so Alt+M is claimed or released right away.
+        Palette.Refresh();
     }
 
     private void OnExecuted(object? sender, BaletteCommandExecutedEventArgs e)
     {
         _executed++;
         _lastExecuted = e.Command.Title;
+        var result = e.Result.GetType().Name.Replace("Result", string.Empty, StringComparison.Ordinal);
+        Log($"CommandExecuted  {e.Command.Id} → {result} in {e.Duration.TotalMilliseconds:0} ms");
+    }
+
+    // The registry changes in bursts - a toggle swaps the app's whole list - so a run of them is one line.
+    private void OnCommandsChanged()
+    {
+        if (_events.Count > 0 && _events[0].Contains("CommandsChanged", StringComparison.Ordinal))
+        {
+            _events.RemoveAt(0);
+        }
+
+        Log($"CommandsChanged  {Palette.Commands.Count} commands registered");
+    }
+
+    private void OnOpened() => Log("Opened");
+
+    private void OnClosed() => Log("Closed");
+
+    private void Log(string entry)
+    {
+        _events.Insert(0, $"{DateTime.Now:HH:mm:ss}  {entry}");
+        if (_events.Count > 8)
+        {
+            _events.RemoveAt(_events.Count - 1);
+        }
+
         Refresh();
     }
 
     private void Refresh() => _ = InvokeAsync(StateHasChanged);
 
+    // A new list for the inline palette, so its switches show the new state: it re-reads Commands when handed a new one.
+    private void OnStateChanged() => _ = InvokeAsync(() =>
+    {
+        _settingsCommands = SettingsCommands();
+        StateHasChanged();
+    });
+
+    private List<BaletteCommand> SettingsCommands() =>
+    [
+        BaletteCmd.New("Word wrap").Id("setting:wordwrap").Keywords("soft wrap lines").Checked(State.WordWrap)
+            .Handler(_ => { State.ToggleWordWrap(); return Task.FromResult(BaletteCommandResult.KeepOpen); }),
+        BaletteCmd.New("Desktop notifications").Id("setting:notifications").Keywords("alerts push").Checked(State.Notifications)
+            .Handler(_ => { State.ToggleNotifications(); return Task.FromResult(BaletteCommandResult.KeepOpen); }),
+        BaletteCmd.New("Show minimap").Id("setting:minimap").Keywords("outline overview").Checked(State.ShowMinimap)
+            .Handler(_ => { State.ToggleMinimap(); return Task.FromResult(BaletteCommandResult.KeepOpen); }),
+        .. new[] { "auto", "light", "dark" }.Select(theme => BaletteCmd.New($"Theme: {char.ToUpperInvariant(theme[0])}{theme[1..]}")
+            .Id($"setting:theme-{theme}")
+            .Keywords("appearance", "color scheme")
+            .Checked(State.Theme == theme)
+            .Handler(async _ => { await State.SetThemeAsync(theme); return BaletteCommandResult.KeepOpen; })
+            .Build()),
+    ];
+
     private Task OnThemeChanged(ChangeEventArgs e) => State.SetThemeAsync(e.Value?.ToString() ?? "auto");
 
     public void Dispose()
     {
-        State.Changed -= Refresh;
+        State.Changed -= OnStateChanged;
         Palette.CommandExecuted -= OnExecuted;
-        Palette.CommandsChanged -= Refresh;
-        Palette.Opened -= Refresh;
-        Palette.Closed -= Refresh;
+        Palette.CommandsChanged -= OnCommandsChanged;
+        Palette.Opened -= OnOpened;
+        Palette.Closed -= OnClosed;
+        _greeting?.Dispose();
     }
 }

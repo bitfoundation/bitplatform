@@ -32,7 +32,8 @@ public class BdndDragHandleTests : BdndComponentTestBase
         var handle = HandleOf(cut);
         Assert.AreEqual("true", handle.GetAttribute("draggable"));
         Assert.AreEqual("", handle.GetAttribute("data-bit-bdnd-handle"));
-        Assert.AreEqual("cursor: move;", handle.GetAttribute("style"));
+        // touch drags it at once from the handle, which does not scroll
+        Assert.AreEqual("cursor: move; touch-action: none;", handle.GetAttribute("style"));
         Assert.AreEqual("::", handle.QuerySelector(".grip")!.TextContent);
         Assert.AreEqual("false", HostOf(cut).GetAttribute("draggable"), "the host is not the native draggable");
     }
@@ -42,7 +43,7 @@ public class BdndDragHandleTests : BdndComponentTestBase
     {
         var cut = RenderWithHandle(d => d.Add(x => x.UseHandle, true), h => h.Add(x => x.Style, "color: red"));
 
-        Assert.AreEqual("cursor: move; color: red", HandleOf(cut).GetAttribute("style"));
+        Assert.AreEqual("cursor: move; touch-action: none; color: red", HandleOf(cut).GetAttribute("style"));
     }
 
     [TestMethod]

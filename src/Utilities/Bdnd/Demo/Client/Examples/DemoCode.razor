@@ -1,8 +1,10 @@
 ﻿@namespace Bit.Bdnd.Demo.Client.Examples
 @inject NavigationManager Nav
 
-@* A collapsible "View code" panel that shows the .razor source of the current demo page.
-   The source is resolved from the build-generated DemoSources lookup, keyed by route. *@
+@* A collapsible "View code" panel under a demo's sample: the .razor source of the current page, then of
+   the components beside it that the page renders (a sortable card, a tree node), each under its file
+   name. The sources are resolved from the build-generated DemoSources lookup, keyed by route, and each
+   one is a CodeBlock. *@
 
 <div class="bb-source demo-code">
     <button type="button"
@@ -16,20 +18,24 @@
 
     @if (_open)
     {
-        @if (_source is null)
+        @if (_files is null)
         {
             <div class="bb-empty demo-code__empty">Source for this page is not available.</div>
         }
         else
         {
-            <pre class="bb-code demo-code__pre"><code class="demo-code__code">@_source</code></pre>
+            @foreach (var file in _files)
+            {
+                <p class="bb-source-file demo-code__file">@file.Name</p>
+                <CodeBlock Code="@file.Code" Class="demo-code__pre" />
+            }
         }
     }
 </div>
 
 @code {
     private bool _open;
-    private string? _source;
+    private (string Name, string Code)[]? _files;
     private bool _resolved;
 
     private void Toggle()
@@ -37,12 +43,12 @@
         _open = !_open;
         if (_open && !_resolved)
         {
-            _source = Resolve();
+            _files = Resolve();
             _resolved = true;
         }
     }
 
-    private string? Resolve()
+    private (string Name, string Code)[]? Resolve()
     {
         var key = Nav.ToBaseRelativePath(Nav.Uri);
 
@@ -51,6 +57,6 @@
         var cut = key.IndexOfAny(['?', '#']);
         if (cut >= 0) key = key[..cut];
 
-        return DemoSources.ByRoute.TryGetValue(key.TrimEnd('/'), out var src) ? src : null;
+        return DemoSources.ByRoute.TryGetValue(key.TrimEnd('/'), out var sources) ? sources : null;
     }
 }

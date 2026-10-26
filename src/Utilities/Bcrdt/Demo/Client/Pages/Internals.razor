@@ -1,4 +1,5 @@
 ﻿@page "/internals"
+@using System.Diagnostics.Metrics
 @inherits ReplicaPageBase
 
 <PageTitle>Internals · Bcrdt</PageTitle>
@@ -17,6 +18,10 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Two replicas, measured</h3>
     <p class="bb-card-desc">
         Type into either replica, or let the buttons do it, and watch what each one stores and what it would send.
+        <em>Type 500 characters</em> makes 500 separate one-character edits at the end of the text, the way a person
+        types; <em>500 insertions in one transaction</em> makes the same 500 edits inside one transaction;
+        <em>Make 200 scattered edits</em> inserts 200 characters at random places, the case that defeats run-length
+        encoding. Hover over a measurement's name for a reminder of what it counts.
     </p>
 
     @if (!Ready)
@@ -41,6 +46,9 @@
                             <button type="button" class="btn btn-primary" @onclick="() => TypeBurst(replica, 500)">
                                 Type 500 characters
                             </button>
+                            <button type="button" class="btn btn-secondary" @onclick="() => TypeInOneTransaction(replica, 500)">
+                                500 insertions in one transaction
+                            </button>
                             <button type="button" class="btn btn-secondary" @onclick="() => Scatter(replica, 200)">
                                 Make 200 scattered edits
                             </button>
@@ -63,27 +71,29 @@
                             <dt title="What a peer sends to ask for exactly what it is missing.">
                                 State vector
                             </dt>
-                            <dd>@replica.Document.Crdt.GetStateVector().Encode().Length bytes</dd>
+                            <dd>@Bytes(replica.Document.Crdt.GetStateVector().Encode().Length)</dd>
 
                             <dt title="The whole document, encoded. What a brand-new peer would receive.">
                                 Full document
                             </dt>
-                            <dd>@FullSize(replica).ToString("N0") bytes</dd>
+                            <dd>@Bytes(FullSize(replica))</dd>
 
                             <dt title="What this replica would send to a peer that is already up to date.">
                                 Delta for an up-to-date peer
                             </dt>
-                            <dd>@NoOpSize(replica).ToString("N0") bytes</dd>
+                            <dd>@Bytes(NoOpSize(replica))</dd>
                         </dl>
                     </ChildContent>
 
                     <Footer>
-                        <span class="metric">clients known: @replica.Document.Crdt.GetStateVector().Count</span>
+                        <span class="metric" title="Entries in the state vector: every client that has ever written to this document.">clients known: @replica.Document.Crdt.GetStateVector().Count</span>
                     </Footer>
                 </ReplicaPanel>
             }
         </div>
     }
+
+    <CodeSnippet Sample="DocumentStats.razor" />
 </div>
 
 <div class="bb-card">
@@ -92,13 +102,24 @@
         The <strong>state vector</strong> is a replica's complete summary of what it has seen - one
         entry per author, a few bytes each. It is the whole of what a peer needs in order to compute
         the exact delta this replica is missing, which is why reconnecting after a long absence costs
-        one small message rather than a full document transfer.
+        one small message rather than a full document transfer. <strong>Clients known</strong>, under each
+        panel, is its number of entries: every replica that has ever written to this document, this
+        session's included.
     </p>
     <p class="bb-card-desc">
         <strong>Blocks</strong> are the engine's internal unit of storage. Watch the ratio between
         characters and blocks as you type: a run of consecutive typing collapses into a single block,
         so a long document typically holds a few dozen blocks rather than one per character. That
         collapse is the single most important reason collaborative text is affordable at all.
+        Scattered edits are the opposite: each one splits a run, and the ratio falls.
+    </p>
+    <p class="bb-card-desc">
+        <strong>Full document</strong> is what a peer that holds nothing is sent: every block, plus the record of
+        what has been deleted. <strong>Delta for an up-to-date peer</strong> is what a peer that already holds
+        everything is sent, and it is not zero: the delete set always travels, because a deletion does not advance
+        a state vector, and re-sending it is the only way a deletion lost in transit is ever repaired. It stays
+        small - deletions are stored as ranges - which is what keeps "anything new?" cheap however big the
+        document grows.
     </p>
 </div>
 
@@ -108,8 +129,16 @@
         <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Updates as they happen</h3>
         <p class="bb-card-desc">
             Every committed change produces exactly one update, whatever it contained - this is why a
-            paste of five hundred rows is one network message rather than five hundred. The most
-            recent are listed newest first, with the replica that produced them.
+            paste of five hundred rows is one network message rather than five hundred. Compare the two buttons:
+            <em>Type 500 characters</em> fills the log with one-character updates, <em>500 insertions in one
+            transaction</em> adds a single row. The most recent are listed newest first, with the replica that
+            produced them; the content column is the start of the encoded bytes.
+        </p>
+        <p class="bb-card-desc">
+            The origin column tells a replica's own edits from what it received. Local edits - the editor's
+            keystrokes and the buttons alike - carry no origin, while an update that arrived from the other replica
+            carries its sync provider. That tag is how the provider avoids echoing a peer's change back to it, and
+            how an undo stack knows to leave remote edits alone.
         </p>
         @if (_updates.Count == 0)
         {
@@ -127,7 +156,7 @@
                         {
                             <tr>
                                 <td class="bb-table-key"><span class="replica-dot" style="--replica-color: @record.Color" aria-hidden="true"></span>@record.Label</td>
-                                <td class="bb-nowrap">@record.Size bytes</td>
+                                <td class="bb-nowrap">@Bytes(record.Size)</td>
                                 <td>@record.Origin</td>
                                 <td class="bb-mono">@record.Preview</td>
                             </tr>
@@ -139,6 +168,91 @@
         <div class="bb-toolbar">
             <button type="button" class="btn btn-secondary" @onclick="() => _updates.Clear()">Clear the log</button>
         </div>
+        <pre class="bb-code"><span class="k">using</span> (<span class="k">var</span> transaction = document.BeginTransaction())   <span class="c">// or document.Transact(t =&gt; ...)</span>
+{
+    <span class="k">for</span> (<span class="k">int</span> i = 0; i &lt; 500; i++) text.Insert(text.Count, <span class="s">"x"</span>);
+}                                                          <span class="c">// one update, one round of events</span>
+
+document.Changed += change =&gt; Send(change.Update, change.Origin);</pre>
+        <CodeSnippet Sample="UpdateLog.razor" />
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Changes as deltas</h3>
+        <p class="bb-card-desc">
+            An update is what travels; a <strong>delta</strong> is what a view needs. Every collaborative type raises
+            an event after each transaction that changed it, and a text's event describes the change as
+            <em>retain</em>, <em>insert</em> and <em>delete</em> steps - so a view can patch exactly what moved instead
+            of re-reading the whole document. Below is the latest change each replica observed on its text, and
+            whether it was made locally or arrived from the other replica.
+        </p>
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead>
+                    <tr><th>Replica</th><th>Latest change</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (DemoReplica replica in Replicas)
+                    {
+                        <tr>
+                            <td class="bb-table-key bb-nowrap"><span class="replica-dot" style="--replica-color: @replica.Color" aria-hidden="true"></span> @replica.Label</td>
+                            <td class="bb-mono">@(_deltas.GetValueOrDefault(replica) ?? "nothing yet")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <pre class="bb-code">IDisposable subscription = text.Observe((change, transaction) =&gt;
+{
+    <span class="c">// Read the delta here, inside the handler: it is computed from the blocks the</span>
+    <span class="c">// transaction touched, which are compacted once the transaction settles.</span>
+    IReadOnlyList&lt;BcrdtDeltaOperation&gt; delta = change.Delta;   <span class="c">// retain 12, insert "x"</span>
+    <span class="k">bool</span> mine = transaction.Local;
+});</pre>
+        <p class="bb-card-desc">
+            A map's event reports which <code>Keys</code> changed, a set's what was <code>Added</code> and
+            <code>Removed</code>, and <code>ObserveDeep</code> on a type hears changes to everything nested inside it.
+        </p>
+        <CodeSnippet Sample="LatestChange.razor" />
+    </div>
+
+    <div class="bb-card">
+        <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Metrics</h3>
+        <p class="bb-card-desc">
+            Every measurement the library takes is published on one meter, <code>Bit.Bcrdt</code>
+            (<code>BcrdtDiagnostics.MeterName</code>), through <code>System.Diagnostics.Metrics</code>, and costs a
+            single check while nobody listens. This page listens, in the browser, and totals what every replica in
+            this tab has done since the page opened - messages and bytes in both directions, handshakes,
+            reconnections, errors and store writes. The message counters keep ticking while you do nothing: each
+            replica refreshes its presence every few seconds.
+        </p>
+        <div class="bb-scroll">
+            <table class="bb-table">
+                <thead>
+                    <tr><th>Instrument</th><th>Since this page opened</th><th>What it counts</th></tr>
+                </thead>
+                <tbody>
+                    @foreach ((string name, string meaning) in Instruments)
+                    {
+                        <tr>
+                            <td class="bb-table-key bb-nowrap">@name</td>
+                            <td class="bb-mono bb-nowrap">@Measured(name)</td>
+                            <td>@meaning</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <pre class="bb-code">builder.Services.AddOpenTelemetry()
+    .WithMetrics(metrics =&gt; metrics.AddMeter(BcrdtDiagnostics.MeterName));</pre>
+        <p class="bb-card-desc">
+            Or, with no code at all, <code>dotnet-counters monitor --counters Bit.Bcrdt</code> against a server.
+            Message counters are tagged with the message's kind; no measurement carries a document identifier, a
+            client identifier or any content. In Blazor WebAssembly the SDK turns <code>System.Diagnostics.Metrics</code>
+            off by default, so a browser app that wants the numbers sets <code>&lt;MetricsSupport&gt;true&lt;/MetricsSupport&gt;</code>
+            in its project file, as this demo does.
+        </p>
+        <CodeSnippet Sample="MeterTotals.razor" />
     </div>
 
     <div class="bb-card">
@@ -153,6 +267,7 @@
                 </div>
             }
         </div>
+        <CodeSnippet Sample="DocumentJson.razor" />
     </div>
 }
 
@@ -160,13 +275,38 @@
     private const string Field = "body";
     private const int MaxLoggedUpdates = 25;
 
+    // What the metrics table lists, in the order BcrdtDiagnostics declares them.
+    private static readonly (string Name, string Meaning)[] Instruments =
+    [
+        ("bcrdt.sync.messages.sent", "Protocol messages handed to a transport."),
+        ("bcrdt.sync.bytes.sent", "Bytes of those messages."),
+        ("bcrdt.sync.messages.received", "Protocol messages received from a transport."),
+        ("bcrdt.sync.bytes.received", "Bytes of those messages."),
+        ("bcrdt.sync.handshake.duration", "Handshakes completed, and how long the latest one took."),
+        ("bcrdt.sync.reconnects", "Reconnection attempts scheduled."),
+        ("bcrdt.sync.errors", "Failures a sync provider reported."),
+        ("bcrdt.persistence.writes", "Records written to a document store."),
+        ("bcrdt.persistence.bytes", "Bytes of those records."),
+        ("bcrdt.persistence.failures", "Store writes and compactions that failed."),
+        ("bcrdt.persistence.compactions", "Store compactions that completed."),
+    ];
+
     private readonly List<UpdateRecord> _updates = [];
+    private readonly Dictionary<DemoReplica, string> _deltas = [];
+    private readonly Dictionary<string, Measurement> _measured = new(StringComparer.Ordinal);
 
     protected override string DocumentId => "demo-internals";
 
     protected override string[] ReplicaLabels => ["Replica A", "Replica B"];
 
     private sealed record UpdateRecord(string Label, string Color, int Size, string Origin, string Preview);
+
+    private sealed class Measurement
+    {
+        public double Total;
+        public long Count;
+        public double Last;
+    }
 
     protected override void OnReplicasOpened()
     {
@@ -177,7 +317,15 @@
 
             captured.Document.Changed += Handler;
             TrackDisposable(new Unsubscribe(() => captured.Document.Changed -= Handler));
+
+            TrackDisposable(captured.Document.Text(Field).Observe((change, transaction) =>
+            {
+                _deltas[captured] = $"{Describe(change.Delta)}  ({(transaction.Local ? "local" : "from the other replica")})";
+                RequestRender();
+            }));
         }
+
+        StartListening();
     }
 
     /// <summary>
@@ -210,6 +358,78 @@
         RequestRender();
     }
 
+    /// <summary>
+    /// Listens to the library's meter the way any metrics pipeline does - OpenTelemetry and
+    /// dotnet-counters are MeterListeners too - and keeps a running total per instrument.
+    /// </summary>
+    /// <remarks>
+    /// The instruments are process-wide, so this hears every replica in the tab; leaving the page
+    /// disposes the listener along with the replicas.
+    /// </remarks>
+    private void StartListening()
+    {
+        var listener = new MeterListener
+        {
+            InstrumentPublished = (instrument, subscriber) =>
+            {
+                if (instrument.Meter.Name == BcrdtDiagnostics.MeterName) subscriber.EnableMeasurementEvents(instrument);
+            },
+        };
+
+        listener.SetMeasurementEventCallback<long>((instrument, value, _, _) => Measure(instrument.Name, value));
+        listener.SetMeasurementEventCallback<double>((instrument, value, _, _) => Measure(instrument.Name, value));
+        listener.Start();
+
+        TrackDisposable(listener);
+    }
+
+    private void Measure(string instrument, double value)
+    {
+        lock (_measured)
+        {
+            if (!_measured.TryGetValue(instrument, out Measurement? measurement))
+            {
+                _measured[instrument] = measurement = new Measurement();
+            }
+
+            measurement.Total += value;
+            measurement.Count++;
+            measurement.Last = value;
+        }
+
+        RequestRender();
+    }
+
+    private string Measured(string instrument)
+    {
+        lock (_measured)
+        {
+            if (!_measured.TryGetValue(instrument, out Measurement? measurement)) return "0";
+
+            return instrument == "bcrdt.sync.handshake.duration"
+                ? $"{measurement.Count:N0} (latest {measurement.Last:N0} ms)"
+                : measurement.Total.ToString("N0");
+        }
+    }
+
+    private static string Describe(IReadOnlyList<BcrdtDeltaOperation> delta)
+    {
+        const int shownSteps = 6;
+        const int shownCharacters = 24;
+
+        IEnumerable<string> steps = delta.Take(shownSteps).Select(step => step.Kind switch
+        {
+            BcrdtDeltaKind.Insert when step.Content is string inserted && !step.IsEmbed =>
+                inserted.Length > shownCharacters
+                    ? $"insert \"{inserted[..shownCharacters]}…\" ({inserted.Length:N0} characters)"
+                    : $"insert \"{inserted}\"",
+            _ => step.ToString(),
+        });
+
+        string described = string.Join(", ", steps);
+        return delta.Count > shownSteps ? $"{described}, … ({delta.Count:N0} steps)" : described;
+    }
+
     private static string Preview(byte[] update)
     {
         const int shown = 12;
@@ -228,6 +448,8 @@
     private static int NoOpSize(DemoReplica replica) =>
         replica.Document.Crdt.EncodeStateAsUpdate(replica.Document.Crdt.GetStateVector()).Length;
 
+    private static string Bytes(int count) => count == 1 ? "1 byte" : $"{count:N0} bytes";
+
     private static string Ratio(DemoReplica replica)
     {
         int blocks = BlockCount(replica);
@@ -243,6 +465,18 @@
     private static void TypeBurst(DemoReplica replica, int count)
     {
         BcrdtText text = replica.Document.Text(Field);
+        for (int i = 0; i < count; i++) text.Insert(text.Count, "x");
+    }
+
+    /// <summary>The same insertions as <see cref="TypeBurst"/>, grouped into one transaction.</summary>
+    /// <remarks>
+    /// Each call inside joins the transaction rather than committing its own, so the peer receives one
+    /// update and every observer hears about the change once.
+    /// </remarks>
+    private static void TypeInOneTransaction(DemoReplica replica, int count)
+    {
+        BcrdtText text = replica.Document.Text(Field);
+        using BcrdtCollaborativeTransaction transaction = replica.Document.BeginTransaction();
         for (int i = 0; i < count; i++) text.Insert(text.Count, "x");
     }
 

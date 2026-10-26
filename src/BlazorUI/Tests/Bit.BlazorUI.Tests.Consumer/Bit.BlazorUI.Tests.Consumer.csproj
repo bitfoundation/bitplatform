@@ -36,8 +36,18 @@
         </ItemGroup>
     </Target>
 
+    <!-- What ILLink left of the packages' assemblies, copied beside the publish (trimmed/) for Bit.BlazorUI.Tests.Trimming to
+         read: the published ones are WebAssembly modules, which no metadata reader opens, and the ones in obj are those of
+         whichever publish of this app ran last. -->
+    <Target Name="CopyTrimmedBitBlazorUIAssemblies" AfterTargets="ILLink">
+        <ItemGroup>
+            <_TrimmedBitBlazorUIAssembly Include="$(IntermediateLinkDir)Bit.BlazorUI*.dll" />
+        </ItemGroup>
+        <Copy SourceFiles="@(_TrimmedBitBlazorUIAssembly)" DestinationFolder="$(PublishDir)trimmed" />
+    </Target>
+
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.13" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.14" />
     </ItemGroup>
 
     <ItemGroup>

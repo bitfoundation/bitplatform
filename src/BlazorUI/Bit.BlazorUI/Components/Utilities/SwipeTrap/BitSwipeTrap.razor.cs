@@ -22,6 +22,7 @@ public partial class BitSwipeTrap : BitComponentBase
     private bool _appliedTouchOnly;
     private string? _appliedSkipSelector;
     private bool _appliedKeyboardTrigger;
+    private bool _setupFailed;
 
 
 
@@ -213,7 +214,6 @@ public partial class BitSwipeTrap : BitComponentBase
         });
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSwipeTrapParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
@@ -233,6 +233,7 @@ public partial class BitSwipeTrap : BitComponentBase
         var keyboardTrigger = KeyboardTrigger;
 
         if (firstRender ||
+            _setupFailed ||
             _appliedTrigger != trigger ||
             _appliedTriggerVelocity != triggerVelocity ||
             _appliedThreshold != threshold ||
@@ -242,6 +243,19 @@ public partial class BitSwipeTrap : BitComponentBase
             _appliedSkipSelector != skipSelector ||
             _appliedKeyboardTrigger != keyboardTrigger)
         {
+            // What is remembered is what the trap is being set up with, before the calls below are awaited, so a
+            // render that lands while they are in flight does not set it up all over again. A setup that failed
+            // is marked instead, and the next render tries again.
+            _appliedTrigger = trigger;
+            _appliedTriggerVelocity = triggerVelocity;
+            _appliedThreshold = threshold;
+            _appliedThrottle = throttle;
+            _appliedOrientationLock = orientationLock;
+            _appliedTouchOnly = touchOnly;
+            _appliedSkipSelector = skipSelector;
+            _appliedKeyboardTrigger = keyboardTrigger;
+            _setupFailed = false;
+
             try
             {
                 if (firstRender is false)
@@ -273,19 +287,16 @@ public partial class BitSwipeTrap : BitComponentBase
                     dotnetObj.Dispose();
                     throw;
                 }
-
-                // What is remembered is what the trap was actually set up with, so a setup that failed
-                // leaves the previous values in place and the next render tries again.
-                _appliedTrigger = trigger;
-                _appliedTriggerVelocity = triggerVelocity;
-                _appliedThreshold = threshold;
-                _appliedThrottle = throttle;
-                _appliedOrientationLock = orientationLock;
-                _appliedTouchOnly = touchOnly;
-                _appliedSkipSelector = skipSelector;
-                _appliedKeyboardTrigger = keyboardTrigger;
             }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
+            catch (JSDisconnectedException) // we can ignore this exception here
+            {
+                _setupFailed = true;
+            }
+            catch
+            {
+                _setupFailed = true;
+                throw;
+            }
         }
 
         await base.OnAfterRenderAsync(firstRender);

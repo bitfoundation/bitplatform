@@ -1,12 +1,23 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
-namespace Bit.BevTools;
+﻿namespace Bit.BevTools;
 
 internal static class BuiltInCommands
 {
+    private static BevToolsSession SessionOf(IBevToolsCommandContext ctx) =>
+        RuntimeAttachment.Resolve(ctx.Services) ?? throw new InvalidOperationException("BevTools is not available in this scope.");
+
     public static IEnumerable<IBevToolsCommand> Create() =>
     [
         new DelegateCommand("components.find", "Find component", "Components", (ctx, arg) => ctx.ShowPanel("components", arg), acceptsArgument: true, keywords: ["search", "tree", "locate"]),
+        new DelegateCommand("components.pick", "Pick a component in the page", "Components",
+            (ctx, _) => ctx is BevToolsPanel panel ? panel.TogglePickAsync() : Task.CompletedTask,
+            keywords: ["select", "element", "inspect", "dom", "click", "highlight", "which component"]),
+        new DelegateCommand("components.flash", "Flash components in the page as they render", "Components", (ctx, _) =>
+        {
+            if (ctx is BevToolsPanel panel)
+            {
+                panel.ToggleFlashRenders();
+            }
+        }, keywords: ["highlight updates", "renders", "outline", "paint", "rerender"]),
         new DelegateCommand("profiler.slow", "Show slow renders", "Profiler", (ctx, _) => ctx.ShowPanel("profiler", "sort:max"), keywords: ["expensive", "performance"]),
         new DelegateCommand("profiler.renders-over", "Show components rendering more than", "Profiler", (ctx, arg) => ctx.ShowPanel("profiler", "renders>" + (int.TryParse(arg?.Trim(), out var n) ? n : 20)), acceptsArgument: true, keywords: ["render count", "storm", "times"]),
         new DelegateCommand("profiler.show", "Show profiler", "Profiler", (ctx, _) => ctx.ShowPanel("profiler")),
@@ -15,19 +26,28 @@ internal static class BuiltInCommands
         new DelegateCommand("network.failures", "Show recent network failures", "Network", (ctx, _) => ctx.ShowPanel("network", "status:failed"), keywords: ["http", "requests", "500", "404"]),
         new DelegateCommand("network.show", "Show network", "Network", (ctx, arg) => ctx.ShowPanel("network", arg), acceptsArgument: true, keywords: ["http", "requests"]),
         new DelegateCommand("state.show", "Show state", "State", (ctx, _) => ctx.ShowPanel("state"), keywords: ["store", "providers"]),
+        new DelegateCommand("forms.show", "Show forms and validation", "Forms", (ctx, _) => ctx.ShowPanel("forms"), keywords: ["editform", "editcontext", "validation", "input", "field"]),
         new DelegateCommand("interop.show", "Show JS interop", "Interop", (ctx, _) => ctx.ShowPanel("interop"), keywords: ["javascript", "invoke"]),
         new DelegateCommand("services.show", "Show services", "Services", (ctx, arg) => ctx.ShowPanel("services", arg), acceptsArgument: true, keywords: ["di", "dependency injection", "container", "lifetime"]),
         new DelegateCommand("diagnostics.show", "Show diagnostics", "Diagnostics", (ctx, _) => ctx.ShowPanel("diagnostics"), keywords: ["warnings", "rules", "problems"]),
         new DelegateCommand("diagnostics.run", "Run diagnostics now", "Diagnostics", (ctx, _) =>
         {
-            ctx.Services.GetRequiredService<BevToolsSession>().Diagnostics.Evaluate(force: true);
+            SessionOf(ctx).Diagnostics.Evaluate(force: true);
             ctx.ShowPanel("diagnostics");
         }),
+        new DelegateCommand("routing.show", "Show routing", "Routing", (ctx, arg) => ctx.ShowPanel("routing", arg), acceptsArgument: true, keywords: ["route", "page", "navigation", "url", "query", "authorize", "auth", "user", "claims"]),
+        new DelegateCommand("runtime.show", "Show runtime and render modes", "Runtime", (ctx, _) => ctx.ShowPanel("runtime"), keywords: ["server", "webassembly", "wasm", "prerender", "render mode", "thread pool", "memory", "gc"]),
+        new DelegateCommand("trace.export", "Export performance trace", "Profiler",
+            (ctx, _) => BevTraceExporter.DownloadAsync(SessionOf(ctx), ctx),
+            keywords: ["perfetto", "chrome", "flame", "chart", "profile", "download", "timeline"]),
+        new DelegateCommand("trace.export-baseline", "Export performance trace since the profiler baseline", "Profiler",
+            (ctx, _) => BevTraceExporter.DownloadAsync(SessionOf(ctx), ctx, SessionOf(ctx).Components.BaselineAt),
+            keywords: ["perfetto", "chrome", "flame", "since", "reset"]),
         new DelegateCommand("browser.show", "Show browser activity", "Browser", (ctx, _) => ctx.ShowPanel("browser"), keywords: ["storage", "online", "reconnect"]),
         new DelegateCommand("about.show", "Show capabilities and overhead", "BevTools", (ctx, _) => ctx.ShowPanel("about"), keywords: ["about", "capabilities", "overhead", "cost"]),
         new DelegateCommand("capture.toggle", "Pause or resume capture", "BevTools", (ctx, _) =>
         {
-            var session = ctx.Services.GetRequiredService<BevToolsSession>();
+            var session = SessionOf(ctx);
             if (session.IsCapturing)
             {
                 session.PauseCapture();
@@ -43,24 +63,25 @@ internal static class BuiltInCommands
         }, keywords: ["pause", "resume", "freeze", "record", "stop"]),
         new DelegateCommand("profiler.reset", "Reset profiler baseline", "Profiler", (ctx, _) =>
         {
-            ctx.Services.GetRequiredService<BevToolsSession>().Components.MarkBaseline();
+            SessionOf(ctx).Components.MarkBaseline();
+            SessionOf(ctx).Ui.Profiler.SinceBaseline = true;
             ctx.ShowPanel("profiler");
             ctx.Notify("Profiler baseline reset: counts now show renders since this moment");
         }, keywords: ["counters", "zero", "restart", "mark", "since"]),
         new DelegateCommand("session.export", "Export session as JSON", "BevTools",
-            (ctx, _) => BevSessionExporter.DownloadJsonAsync(ctx.Services.GetRequiredService<BevToolsSession>(), ctx),
+            (ctx, _) => BevSessionExporter.DownloadJsonAsync(SessionOf(ctx), ctx),
             keywords: ["download", "save", "share", "dump", "file"]),
         new DelegateCommand("session.report", "Copy diagnostics report", "BevTools",
-            (ctx, _) => BevSessionExporter.CopyMarkdownReportAsync(ctx.Services.GetRequiredService<BevToolsSession>(), ctx),
+            (ctx, _) => BevSessionExporter.CopyMarkdownReportAsync(SessionOf(ctx), ctx),
             keywords: ["markdown", "summary", "clipboard", "issue", "share"]),
         new DelegateCommand("timeline.clear", "Clear timeline", "Timeline", (ctx, _) =>
         {
-            ctx.Services.GetRequiredService<BevToolsSession>().Timeline.Clear();
+            SessionOf(ctx).Timeline.Clear();
             ctx.Notify("Timeline cleared");
         }),
         new DelegateCommand("all.clear", "Clear captured event histories", "BevTools", (ctx, _) =>
         {
-            ctx.Services.GetRequiredService<BevToolsSession>().ClearAll();
+            SessionOf(ctx).ClearAll();
             ctx.Notify("Captured event histories cleared");
         }, keywords: ["reset"]),
         new DelegateCommand("ui.refresh", "Refresh captured data now", "BevTools", (ctx, _) =>
@@ -70,7 +91,7 @@ internal static class BuiltInCommands
         }, keywords: ["reload", "update", "live"]),
         new DelegateCommand("ui.live", "Toggle live updates", "BevTools", (ctx, _) =>
         {
-            var ui = ctx.Services.GetRequiredService<BevToolsSession>().Ui;
+            var ui = SessionOf(ctx).Ui;
             ui.LiveUpdates = !ui.LiveUpdates;
             ui.Touch();
             ctx.PersistPreferences();
@@ -78,7 +99,7 @@ internal static class BuiltInCommands
         }, keywords: ["realtime", "polling", "auto"]),
         new DelegateCommand("ui.theme", "Toggle theme", "BevTools", (ctx, _) =>
         {
-            var ui = ctx.Services.GetRequiredService<BevToolsSession>().Ui;
+            var ui = SessionOf(ctx).Ui;
             ui.Theme = ui.Theme switch
             {
                 BevToolsTheme.Auto => BevToolsTheme.Dark,
@@ -90,14 +111,14 @@ internal static class BuiltInCommands
         }, keywords: ["auto", "dark", "light"]),
         new DelegateCommand("ui.dock", "Toggle dock position", "BevTools", (ctx, _) =>
         {
-            var ui = ctx.Services.GetRequiredService<BevToolsSession>().Ui;
+            var ui = SessionOf(ctx).Ui;
             ui.Dock = ui.Dock == BevToolsDock.Bottom ? BevToolsDock.Right : BevToolsDock.Bottom;
             ui.Touch();
             ctx.PersistPreferences();
         }, keywords: ["bottom", "right", "side"]),
         new DelegateCommand("ui.close", "Close BevTools", "BevTools", (ctx, _) =>
         {
-            var ui = ctx.Services.GetRequiredService<BevToolsSession>().Ui;
+            var ui = SessionOf(ctx).Ui;
             ui.IsOpen = false;
             ui.Touch();
             ctx.PersistPreferences();

@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Mail;
 using ImageMagick;
+using ImageMagick.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Boilerplate.Server.Api.Features.Identity;
 using Boilerplate.Server.Api.Features.Identity.OAuth;
@@ -88,6 +89,7 @@ public static partial class Program
         ServerApiSettings appSettings = new();
         configuration.Bind(appSettings);
 
+        ConfigureImageMagickSecurityPolicy();
         ConfigureImageMagickResourceLimits();
 
         services.AddOAuth();
@@ -106,6 +108,7 @@ public static partial class Program
         services.AddScoped<Features.Attachments.AiChatImagesRetentionJobRunner>();
         services.AddScoped<Infrastructure.SignalR.AppChatbot>();
         services.AddSingleton<Features.Chatbot.ChatbotAnswerSigner>();
+        services.AddSingleton<Features.Chatbot.ChatbotRateLimiter>();
         //#endif
         services.AddDevMcp()
         //#if (signalR == true)
@@ -182,7 +185,9 @@ public static partial class Program
 
         //#if (notification == true)
         services.AddHttpClient("APNS"); // Apple Push Notification Service
-        services.AddHttpClient("Vapid"); // Web Push
+        services.AddHttpClient("Vapid", httpClient => httpClient.Timeout = TimeSpan.FromSeconds(30)) // Web Push
+            .ConfigureAdditionalHttpMessageHandlers((handlers, _) => handlers.Clear())
+            .UseSocketsHttpHandler((handler, _) => handler.AllowAutoRedirect = false);
         services.AddSingleton(sp =>
         {
             var adsPushSenderBuilder = new AdsPushSenderBuilder();
@@ -316,6 +321,7 @@ public static partial class Program
         {
             options.EnableDetailedErrors = env.IsDevelopment();
             configuration.GetRequiredSection("HubOptions").Bind(options);
+            options.AddFilter<Infrastructure.SignalR.UserSessionHubFilter>();
         }).AddJsonProtocol(options => options.PayloadSerializerOptions.ApplyDefaultOptions());
 
         if (string.IsNullOrWhiteSpace(configuration["Azure:SignalR:ConnectionString"]) is false)
@@ -419,12 +425,11 @@ public static partial class Program
 
         services.AddOptions<IdentityOptions>()
             .Bind(configuration.GetRequiredSection(nameof(ServerApiSettings.Identity)))
-            .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddSingleton<IValidateOptions<ServerApiSettings>, ServerApiSettingsValidator>();
         services.AddOptions<ServerApiSettings>()
             .Bind(configuration)
-            .ValidateDataAnnotations()
             .ValidateOnStart();
 
         services.AddSingleton(sp =>
@@ -744,6 +749,7 @@ public static partial class Program
         services.AddIdentity<User, Features.Identity.Models.Role>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders()
+            .AddUserManager<AppUserManager>()
             .AddErrorDescriber<AppIdentityErrorDescriber>()
             .AddClaimsPrincipalFactory<AppUserClaimsPrincipalFactory>()
             .AddApiEndpoints();
@@ -1066,5 +1072,22 @@ public static partial class Program
         ResourceLimits.Width = 16384;
         ResourceLimits.Height = 16384;
         ResourceLimits.Area = 16384 * 16384;
+    }
+
+    private static void ConfigureImageMagickSecurityPolicy()
+    {
+        var allowedCoders = string.Join(',', AttachmentController.AllowedImageFormats.Select(format => format.ToString().ToUpperInvariant()));
+
+        var configurationFiles = ConfigurationFiles.Default;
+
+        configurationFiles.Policy.Data = $$"""
+            <policymap>
+              <policy domain="delegate" rights="none" pattern="*" />
+              <policy domain="coder" rights="none" pattern="*" />
+              <policy domain="coder" rights="read | write" pattern="{{{allowedCoders}}}" />
+            </policymap>
+            """;
+
+        MagickNET.Initialize(configurationFiles);
     }
 }

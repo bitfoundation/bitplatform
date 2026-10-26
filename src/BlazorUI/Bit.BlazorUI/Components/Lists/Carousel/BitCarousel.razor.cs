@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -837,7 +836,6 @@ public partial class BitCarousel : BitComponentBase
         base.OnInitialized();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitCarouselParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

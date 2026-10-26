@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.14" />
+    <ProjectReference Include="..\Bit.Bmage.Samples.Auto.Client\Bit.Bmage.Samples.Auto.Client.csproj" />
+    <ProjectReference Include="..\..\Core\Bit.Bmage.Samples.Core.csproj" />
+  </ItemGroup>
+
+</Project>

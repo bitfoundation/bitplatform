@@ -1,6 +1,6 @@
 name: bit platform CI - Bmage
 
-# Build, engine tests and MCP server tests. The browser suite lives in bit.ci.Bmage.e2e.yml and runs on demand only.
+# Build, engine tests, MCP server tests and the hosting samples' HTTP tests. The browser suite lives in bit.ci.Bmage.e2e.yml and runs on demand only.
 
 on:
   workflow_dispatch:
@@ -66,3 +66,6 @@ jobs:
 
     - name: dotnet test (MCP server)
       run: cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.Mcp && dotnet test --no-build
+
+    - name: dotnet test (hosting samples - every render mode over HTTP)
+      run: cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.Hosting && dotnet test --no-build

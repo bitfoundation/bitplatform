@@ -1,0 +1,34 @@
+@page "/query"
+@inherits BlexComponentBase
+@inject QuoteSource Quotes
+@inject BlexQueryClient QueryClient
+
+<section id="page-query">
+    <h1>Query</h1>
+
+    <p>
+        Quote: <span id="quote" data-quote="@(_quote.Data ?? "")" data-fetching="@(_quote.IsFetching ? "true" : "false")">@_quote.Data</span>
+    </p>
+    <p>Requests sent by this runtime: <span id="quote-requests" data-requests="@Quotes.Requests">@Quotes.Requests</span></p>
+    <button id="refetch" @onclick="() => _quote.RefetchAsync()">refetch</button>
+    <button id="invalidate" @onclick="@(() => QueryClient.InvalidateAsync(["quote"]))">invalidate</button>
+
+    <p>Tick: <span id="tick" data-tick="@(_tick.Data ?? "")">@_tick.Data</span></p>
+</section>
+
+@code {
+    private BlexQuery<string> _quote = default!;
+    private BlexQuery<string> _tick = default!;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // Stale at once, so the page becoming visible again refetches it.
+        _tick = UseQuery(["tick"], Quotes.FetchTickAsync);
+
+        // Fresh for a minute, so the answer the prerender handed over is shown without fetching again.
+        _quote = UseQuery(["quote"], Quotes.FetchAsync, new BlexQueryOptions { StaleTime = TimeSpan.FromMinutes(1) });
+
+        // The prerender waits, so the response carries the quote and <BlexProvider> hands it over.
+        await _quote.WhenSettledAsync();
+    }
+}

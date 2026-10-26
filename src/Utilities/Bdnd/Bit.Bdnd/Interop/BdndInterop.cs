@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace Bit.Bdnd;
@@ -34,6 +35,7 @@ public sealed class BdndInterop : IAsyncDisposable
         return await module.InvokeAsync<BdndDomRect?>("getBoundingClientRect", element);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BdndDragSourceOptions))]
     internal async ValueTask<IJSObjectReference?> RegisterDragSourceAsync(
         ElementReference element, object dotNetRef, BdndDragSourceOptions options)
     {
@@ -42,12 +44,53 @@ public sealed class BdndInterop : IAsyncDisposable
             "registerDragSource", element, dotNetRef, options);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BdndDropTargetOptions))]
     internal async ValueTask<IJSObjectReference?> RegisterDropTargetAsync(
         ElementReference element, object dotNetRef, BdndDropTargetOptions options)
     {
         var module = await GetModuleAsync();
         return await module.InvokeAsync<IJSObjectReference?>(
             "registerDropTarget", element, dotNetRef, options);
+    }
+
+    /// <summary>
+    /// Moves a keyboard drag of the source behind <paramref name="registration"/> to another place among the
+    /// <paramref name="candidates"/> - a target, or an edge of a target that has edges - in document order from where
+    /// it is (<paramref name="currentId"/> and <paramref name="currentEdge"/>): <paramref name="command"/> is
+    /// <c>next</c>, <c>previous</c>, <c>first</c>, <c>last</c> or <c>stay</c>. <paramref name="sourceTargets"/> are the
+    /// targets around the source, by which the place the item already has is told apart. The target landed on is
+    /// scrolled into view. Null when no candidate is in the document.
+    /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BdndKeyboardCandidate))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BdndKeyboardTarget))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BdndDomRect))]
+    internal async ValueTask<BdndKeyboardTarget?> KeyboardNavigateAsync(IJSObjectReference registration,
+        BdndKeyboardCandidate[] candidates, string[] sourceTargets, string? currentId, string? currentEdge, string command, bool waiting = false)
+        => await registration.InvokeAsync<BdndKeyboardTarget?>("keyboardNavigate", candidates, sourceTargets, currentId, currentEdge, command, waiting);
+
+    /// <summary>
+    /// A stream of the contents of file <paramref name="index"/> of native drop <paramref name="dropId"/>. Takes no
+    /// cancellation token: a reference handed out after a cancellation would be lost, with the file it holds.
+    /// </summary>
+    internal async ValueTask<IJSStreamReference> ReadNativeFileAsync(string dropId, int index)
+    {
+        var module = await GetModuleAsync();
+        return await module.InvokeAsync<IJSStreamReference>("readNativeFile", dropId, index);
+    }
+
+    /// <summary>The descriptions of the files of native drop <paramref name="dropId"/> from <paramref name="offset"/> on, one page.</summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BdndNativeFile))]
+    internal async ValueTask<BdndNativeFile[]> GetNativeDropFilesAsync(string dropId, int offset, int count)
+    {
+        var module = await GetModuleAsync();
+        return await module.InvokeAsync<BdndNativeFile[]>("nativeDropFiles", dropId, offset, count);
+    }
+
+    /// <summary>Has screen readers read <paramref name="text"/> out, through the module's live region.</summary>
+    internal async ValueTask AnnounceAsync(string text)
+    {
+        var module = await GetModuleAsync();
+        await module.InvokeVoidAsync("announce", text);
     }
 
     // A failed import is retried by the next call instead of being cached for the whole scope.

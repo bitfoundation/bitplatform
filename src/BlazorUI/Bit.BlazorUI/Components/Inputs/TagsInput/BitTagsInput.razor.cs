@@ -1168,7 +1168,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         await base.OnInitializedAsync();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTagsInputParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -169,7 +170,9 @@ public class BitFullCalendarPrerenderTests : BunitTestContext
                 new BitFullCalendarEvent
                 {
                     Id = "loaded",
-                    Title = $"Loaded for {range.Start:yyyy-MM-dd}",
+                    // Spelled invariantly, as the assertions are: the machine's culture may count its years in another
+                    // calendar (Persian, Um Al Qura).
+                    Title = $"Loaded for {range.Start.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}",
                     StartDate = Anchor.AddHours(9),
                     EndDate = Anchor.AddHours(10),
                 }

@@ -16,6 +16,7 @@
     <meta property="og:site_name" content="Bit.Bdnd" />
     <meta property="og:title" content="Bdnd - declarative drag and drop for Blazor" />
     <meta property="og:description" content="React DnD's model in Blazor: draggables, drop targets, custom drag layers, drag handles, nesting and native file drops - with the drag state in C#." />
+    <meta property="og:image" content="https://bdnd.bitplatform.dev/icon-512.png" />
     <meta name="twitter:card" content="summary" />
 
     <ResourcePreloader />
@@ -34,15 +35,23 @@
        flashes in the frame; a frame of another origin has no frameElement and gets the whole site. *@
     <script>try { if (window.frameElement && window.frameElement.hasAttribute('data-bdnd-frame')) document.documentElement.classList.add('bdnd-framed'); } catch (_) { }</script>
     <ImportMap />
-    <link rel="icon" type="image/png" href="favicon.png" />
-    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+    <link rel="icon" href="favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+    <HeadOutlet @rendermode="PageRenderMode" />
 </head>
 
-<body>
+@* data-enhance-nav="false": a link followed before the WebAssembly runtime has started is a plain
+   page load rather than an enhanced one. Enhanced navigation fetches and merges the next page while
+   the runtime is still starting, and the router the runtime then attaches can render the address
+   it read before the merge - the URL says /getting-started and the page is the landing page. Once the
+   app is interactive its router handles every link itself and this attribute is not consulted. *@
+<body data-enhance-nav="false">
     @* InteractiveWebAssembly rather than Auto or Server: dragover fires continuously during a drag,
-       and on WebAssembly none of its handlers waits on a network round trip. The pages are still
-       prerendered, so the first response carries them. *@
-    <Routes @rendermode="InteractiveWebAssembly" />
+       and on WebAssembly none of its handlers waits on a network round trip. The one exception is
+       /hosting/server-check, served with InteractiveServer to show the library over a circuit (see
+       PageRenderMode). The pages are still prerendered, so the first response carries them. *@
+    <Routes @rendermode="PageRenderMode" />
     <div id="blazor-error-ui" data-nosnippet>
         An unhandled error has occurred.
         <a href="." class="reload">Reload</a>
@@ -53,3 +62,12 @@
 </body>
 
 </html>
+
+@code {
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+
+    // The server check page shows the library over a SignalR circuit: loaded by its address, the whole app runs on
+    // the server for that page. Everything else runs on WebAssembly.
+    private IComponentRenderMode PageRenderMode =>
+        HttpContext.Request.Path.StartsWithSegments("/hosting/server-check") ? InteractiveServer : InteractiveWebAssembly;
+}

@@ -3,54 +3,60 @@
 <PageTitle>Node Extents · Blow</PageTitle>
 
 <ExampleScaffold Title="Node Extents"
-                 Summary="Three ways to constrain where a node can go: a rectangle of its own, its parent's bounds, or no constraint at all but with the parent growing to keep the child enclosed. Drag each node and watch how it behaves at the boundary.">
+                 Summary="Four ways to limit where a node can be dragged: a rectangle of its own (Extent), its parent's box (ExtentParent), a parent that grows to keep its child enclosed (ExpandParent), and a rectangle no root node may leave (the canvas's NodeExtent).">
     <Toolbar>
         <button class="btn btn-primary" @onclick="Reset">Reset positions</button>
-        <span class="bb-muted">Dashed outline = the allowed area</span>
+        <label><input type="checkbox" checked="@_fenced" @onchange="e => _fenced = (bool)e.Value!" /> fence in the root nodes</label>
+        <span class="bb-muted">Dashed outlines show the allowed areas</span>
     </Toolbar>
     <ChildContent>
-        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
-            <NodeTemplate Context="node">
-                @if (node.Type == "group")
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" NodeExtent="Fence">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            @* Extents draw nothing themselves, so the page outlines them in the viewport layer, in flow coordinates. *@
+            <BlowViewportPortal>
+                <div class="ext-outline ext-outline--own" style="@OutlineStyle(OwnExtent)"></div>
+                @if (_fenced)
                 {
-                    <div class="ext-group-label">@node.Label</div>
+                    <div class="ext-outline ext-outline--fence" style="@OutlineStyle(FenceRect)"></div>
                 }
-                else
-                {
-                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
-                    <div class="ext-node">@node.Label</div>
-                    <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
-                }
-            </NodeTemplate>
-            <ChildContent>
-                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-                <BlowControls />
-                @* The free node's extent has no visual of its own, so draw it in the viewport layer. *@
-                <BlowViewportPortal>
-                    <div class="ext-bounds"></div>
-                </BlowViewportPortal>
-            </ChildContent>
+            </BlowViewportPortal>
         </BlowCanvas>
     </ChildContent>
+    <TryIt>
+        <li><strong>Drag Own extent</strong> around: it stops at the amber outline, the rectangle in its own <code>Extent</code>.</li>
+        <li><strong>Drag Pinned inside</strong> towards its group's border: it stops there.</li>
+        <li><strong>Drag Push the edges</strong> past its group's border: the group grows to keep it enclosed. Past the left or top edge the group's corner moves out instead, so nothing else on screen jumps.</li>
+        <li>Tick <strong>fence in the root nodes</strong>: a violet outline appears, and neither the free node nor the two groups can be dragged out of it. Own extent keeps to its own rectangle, which takes precedence.</li>
+        <li>Select a node and use the <strong>arrow keys</strong>: the nudges respect the same limits.</li>
+        <li>Press <strong>Reset positions</strong> to put everything back.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>BlowNode.Extent</code> is a <code>BlowRect</code> the node cannot leave, written in its own coordinate space - relative to its parent when it has one.</li>
+        <li><code>ExtentParent = true</code> keeps a child inside its parent's box (React Flow's <code>extent: 'parent'</code>).</li>
+        <li><code>ExpandParent = true</code> grows the parent instead when the child is dragged past its edge. It is ignored when <code>ExtentParent</code> is set.</li>
+        <li>The canvas's <code>NodeExtent</code> is a rectangle no root node may leave - bound to null here while the box is unticked. It does not apply to children, whose positions are in their parent's space.</li>
+        <li><code>ExtentParent</code> wins over <code>Extent</code>, which wins over <code>NodeExtent</code>. The same limits hold for arrow-key nudges, align and distribute, and resizing.</li>
+        <li>The outlines are plain elements in a <code>BlowViewportPortal</code>, which renders inside the zoomed layer, so they pan and zoom with the nodes.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
-    .ext-node { padding: 2px; font-size: 12px; }
-    .ext-group-label { position: absolute; top: 6px; left: 10px; font-size: 11px; font-weight: 600; color: var(--bit-blow-text-muted); }
-    .ext-bounds {
-        position: absolute;
-        left: 0; top: 0;
-        width: 360px; height: 200px;
-        border: 1px dashed #f59e0b;
-        border-radius: 4px;
-        pointer-events: none;
-    }
+    .ext-outline { position: absolute; border-radius: 4px; pointer-events: none; }
+    .ext-outline--own { border: 1px dashed #f59e0b; }
+    .ext-outline--fence { border: 1px dashed #8b5cf6; }
 </style>
 
 @code {
-    private BlowCanvas? _flow;
+    // The rectangle the "Own extent" node may not leave, and the one the fence keeps every root node in.
+    private static readonly BlowRect OwnExtent = new(0, 0, 360, 200);
+    private static readonly BlowRect FenceRect = new(-20, -20, 740, 490);
+
     private List<BlowNode> _nodes = [];
     private readonly List<BlowEdge> _edges = [];
+    private bool _fenced;
+
+    private BlowRect? Fence => _fenced ? FenceRect : (BlowRect?)null;
 
     protected override void OnInitialized() => Reset();
 
@@ -58,19 +64,14 @@
     {
         _nodes =
         [
-            // Constrained to its own rectangle, matching the dashed overlay above.
-            new BlowNode
-            {
-                Id = "bounded",
-                Label = "Bounded",
-                Position = new(20, 20),
-                Width = 120,
-                Height = 44,
-                Extent = new BlowRect(0, 0, 360, 200),
-            },
+            // Kept to its own rectangle, which the amber outline shows.
+            new BlowNode { Id = "own", Label = "Own extent", Position = new(20, 20), Width = 120, Height = 44, Extent = OwnExtent },
+
+            // No limit of its own: only the fence, when it is on.
+            new BlowNode { Id = "free", Label = "Free node", Position = new(60, 300), Width = 120, Height = 44 },
 
             // A group whose child cannot leave it.
-            new BlowNode { Id = "pinnedGroup", Type = "group", Label = "extent: parent", Position = new(430, 0), Width = 260, Height = 200 },
+            new BlowNode { Id = "pinnedGroup", Type = "group", Label = "ExtentParent", Position = new(430, 0), Width = 260, Height = 200 },
             new BlowNode
             {
                 Id = "pinned",
@@ -83,7 +84,7 @@
             },
 
             // A group that grows to keep its child enclosed.
-            new BlowNode { Id = "growGroup", Type = "group", Label = "expandParent", Position = new(430, 260), Width = 260, Height = 180 },
+            new BlowNode { Id = "growGroup", Type = "group", Label = "ExpandParent", Position = new(430, 260), Width = 260, Height = 180 },
             new BlowNode
             {
                 Id = "grower",
@@ -95,7 +96,8 @@
                 ExpandParent = true,
             },
         ];
-
-        _flow?.Refresh(remeasure: true);
     }
+
+    private static string OutlineStyle(BlowRect r)
+        => FormattableString.Invariant($"left:{r.X}px;top:{r.Y}px;width:{r.Width}px;height:{r.Height}px;");
 }

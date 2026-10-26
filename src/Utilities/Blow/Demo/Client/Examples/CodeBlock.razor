@@ -1,0 +1,37 @@
+﻿@namespace Bit.Blow.Demo.Client.Examples
+
+@* A code sample: the site kit's pre.bb-code, which site.js gives a copy button, coloured by
+   SyntaxHighlighter (its token colours are in demo.css). It shows the snippets on a page, and the
+   source in DemoCode's "View code" panel. *@
+
+<pre class="@(Class is null ? "bb-code" : $"bb-code {Class}")" @attributes="AdditionalAttributes"><code>@_html</code></pre>
+
+@code {
+    private MarkupString _html;
+    private string? _code;
+    private string? _language;
+
+    /// <summary>The source to show.</summary>
+    [Parameter, EditorRequired] public string Code { get; set; } = "";
+
+    /// <summary><c>razor</c> (the default) for markup and Razor, <c>csharp</c> for plain C#; any other value throws.</summary>
+    [Parameter] public string Language { get; set; } = "razor";
+
+    /// <summary>Classes for the block, besides the kit's own.</summary>
+    [Parameter] public string? Class { get; set; }
+
+    /// <summary>Any other attribute, put on the block: <c>hidden</c>, say.</summary>
+    [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        // A parent that renders again hands over the same snippet, which is not lexed again.
+        if (Code == _code && Language == _language)
+        {
+            return;
+        }
+        _code = Code;
+        _language = Language;
+        _html = (MarkupString)SyntaxHighlighter.Highlight(Code.Trim('\r', '\n'), Language);
+    }
+}

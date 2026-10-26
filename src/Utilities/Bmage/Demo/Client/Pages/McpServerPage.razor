@@ -48,9 +48,8 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Connect your agent</h3>
     <p>
-        The server speaks MCP over HTTP. Point any MCP client at this site's endpoint, at the deployed
-        <code>https://bmage.bitplatform.dev/mcp</code>, or at <code>https://bitplatform.dev/mcp</code>,
-        which serves the tools of every bit platform product - Bmage among them - from one address.
+        The server speaks MCP over HTTP. Point any MCP client at this site's endpoint or at the deployed
+        <code>https://bmage.bitplatform.dev/mcp</code>.
         The same methods are also plain <code>GET</code> endpoints under <code>/api/mcp/...</code>,
         which is what the panels further down this page call.
     </p>
@@ -429,15 +428,17 @@
         that returns it in full.
     </p>
 
-    <div class="mcp-search">
+    @* A form, so Enter in the box searches as it does in every other search box; the value follows each
+       keystroke, because the change event would only arrive once the box loses focus. *@
+    <form class="mcp-search" role="search" @onsubmit="SearchAsync">
         <input type="search" class="mcp-input" value="@_query" disabled="@(_searching || IsHydrating)"
-               @onchange="e => _query = e.Value?.ToString() ?? string.Empty"
+               @oninput="e => _query = e.Value?.ToString() ?? string.Empty"
                placeholder="avatar under 100 KB" aria-label="Search Bmage" />
-        <button type="button" class="btn btn-primary" disabled="@(_searching || IsHydrating)" @onclick="SearchAsync">
+        <button type="submit" class="btn btn-primary" disabled="@(_searching || IsHydrating)">
             <Icon Path="@Icons.Search" />
             @(_searching ? "Searching..." : "Search")
         </button>
-    </div>
+    </form>
 
     @if (_searchError is not null)
     {
@@ -645,7 +646,6 @@
     [
         new(ThisSite, "bmage", Nav.ToAbsoluteUri("mcp").ToString(), "The server you are reading this page on."),
         new("bmage.bitplatform.dev", "bmage", "https://bmage.bitplatform.dev/mcp", "The deployed Bmage documentation site, always the latest release."),
-        new("bitplatform.dev", "bitplatform", "https://bitplatform.dev/mcp", "One endpoint for every bit platform product - Bmage, BlazorUI, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bsqlite, Brouter, Butil, Bswup - with the bit platform's own source search alongside."),
     ];
 
     private McpEndpoint CurrentEndpoint => Array.Find(Endpoints, endpoint => endpoint.Name == _endpoint) ?? Endpoints[0];
@@ -695,6 +695,8 @@
         new("Adjust, then shrink", "ImagePipeline.Create()\n    .Brightness(0.05f)\n    .Contrast(0.1f)\n    .Vibrance(0.2f)\n    .MaxSize(1280, 1280)", "photo", ["jpeg"], 0),
         new("Screenshot", "ImagePipeline.Create()\n    .MaxSize(1600, 1600)", "screenshot", ["jpeg", "png"], 0),
         new("Logo with alpha", "ImagePipeline.Create()\n    .Resize(256, 256, ResizeMode.Contain)", "graphic", ["png", "jpeg"], 0),
+        new("Straighten and frame", "ImagePipeline.Create()\n    .MaxSize(1200, 1200)\n    .Straighten(3)\n    .Pad(40, Rgba32.White)", "photo", ["jpeg", "png"], 0),
+        new("Duotone poster", "ImagePipeline.Create()\n    .Cover(1080, 1350)\n    .AutoLevels()\n    .Duotone(new Rgba32(36, 24, 96), new Rgba32(255, 138, 112))", "photo", ["jpeg", "webp"], 0),
     ];
 
     private static readonly string[] Sources = ["photo", "screenshot", "graphic"];

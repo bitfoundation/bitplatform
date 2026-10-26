@@ -23,14 +23,16 @@ import { installXhr } from './instrumentations/xhr';
 import { onHidden } from './lifecycle';
 import { debug, setDebug } from './log';
 import { Severity, type Attributes, type TelemetryRecord } from './model';
-import { Pipeline } from './pipeline';
+import { Pipeline, type Processor } from './pipeline';
 import { createException, createLog, sanitizeAttributes } from './records';
 import { buildResource } from './resource';
 import { SessionManager } from './session';
+import { resetStats, statsSnapshot, type StatsSnapshot } from './stats';
+import { StorageKeys } from './storage';
 import { fromBase64, Transport } from './transport';
 
 export { Features };
-export type { BelemetryConfig };
+export type { BelemetryConfig, Processor, TelemetryRecord };
 
 /** `getContext()` result (C# BelemetryJsContext). */
 export interface BelemetryContext {
@@ -92,6 +94,13 @@ const INSTRUMENTATIONS: Installer[] = [
 let state: State | null = null;
 let bridge: Bridge | null = null;
 let lastContext = '';
+
+// Module-level, so a page can register them before the script starts (or before .NET starts it).
+const processors: Processor[] = [];
+const globalAttributes: Attributes = {};
+
+// Consent governs these: they are set through setUser and the session, never as plain attributes.
+const RESERVED_ATTRIBUTES = ['session.id', 'enduser.pseudo.id', 'user.id'];
 
 function effective(s: State): number {
     return s.config.features & s.consent.granted();
@@ -193,7 +202,7 @@ function onConsentChanged(s: State, previous: number, next: number, released: Te
     syncContext();
 }
 
-function onPageHidden(s: State): void {
+function onPageHidden(s: State, unloading: boolean): void {
     // Everything here must start its requests synchronously: nothing async is guaranteed to run after pagehide.
     s.pipeline.flush(true);
     if (bridge && bridge.unloadDrain) {
@@ -205,6 +214,7 @@ function onPageHidden(s: State): void {
             debug('unload drain unavailable', e);
         }
     }
+    s.transport.pageHidden(unloading);
 }
 
 function init(input: BelemetryConfig | null | undefined): State {
@@ -224,6 +234,8 @@ function init(input: BelemetryConfig | null | undefined): State {
     });
     const exporters = createExporters(config, transport);
     const pipeline = new Pipeline(config, consent, session, buildResource(config));
+    pipeline.processors = processors;
+    pipeline.attributes = globalAttributes;
     s = {
         config,
         consent,
@@ -252,6 +264,10 @@ export function start(config?: BelemetryConfig | null): void {
             updateSink(s);
             s.config.consent = next.consent;
             s.consent.update(next.consent);
+            // A WebAssembly client starting the script a server already started: its .NET pipeline exports through
+            // fetch, to URLs only it knows.
+            const ignore = s.config.dependencies.ignoreUrls;
+            for (const url of next.dependencies.ignoreUrls || []) if (ignore.indexOf(url) < 0) ignore.push(url);
             return;
         }
         const s = state = init(config);
@@ -259,10 +275,16 @@ export function start(config?: BelemetryConfig | null): void {
         updateSink(s);
         s.consent.onChange((previous, next, released) => onConsentChanged(s, previous, next, released));
         s.session.onChange = syncContext;
-        s.disposers.push(onHidden(() => onPageHidden(s), 'last'));
+        s.disposers.push(onHidden(unloading => onPageHidden(s, unloading), 'last'));
         const onOnline = () => s.transport.resendPersisted();
         addEventListener('online', onOnline);
         s.disposers.push(() => removeEventListener('online', onOnline));
+        // A decision made in another tab of the app reaches this one through the stored choice.
+        const onStorage = (event: StorageEvent) => {
+            if (event.key === StorageKeys.consent) s.consent.adopt(event.newValue);
+        };
+        addEventListener('storage', onStorage);
+        s.disposers.push(() => removeEventListener('storage', onStorage));
         // The online event only covers the device's own connection; a backend that was down needs a periodic retry.
         const retryMs = s.config.persistence.retryIntervalMs;
         if (s.config.persistence.enabled && retryMs > 0) {
@@ -331,6 +353,43 @@ export function trackException(type: string, message: string, stack?: string | n
     }
 }
 
+/**
+ * Adds a processor: a function run on every browser record as it is handed to the exporters (or relayed to .NET),
+ * after consent and privacy. It may change the record in place, and return `false` to drop it; one that throws is
+ * skipped for that record. Returns a function that removes it.
+ */
+export function addProcessor(processor: Processor): () => void {
+    if (typeof processor !== 'function') return () => undefined;
+    processors.push(processor);
+    return () => {
+        const index = processors.indexOf(processor);
+        if (index >= 0) processors.splice(index, 1);
+    };
+}
+
+/**
+ * Sets attributes added to every browser record from now on (the record's own attributes win) - app context such as
+ * a tenant or a feature flag. Merged with the previous ones; a null value removes a key, and `setAttributes(null)`
+ * removes them all. They go through privacy like any attribute. The consent-governed ids (`session.id`,
+ * `enduser.pseudo.id`, `user.id`) cannot be set here - use `setUser`.
+ */
+export function setAttributes(attributes?: Attributes | Record<string, unknown> | null): void {
+    try {
+        if (!attributes) {
+            for (const key of Object.keys(globalAttributes)) delete globalAttributes[key];
+            return;
+        }
+        const valid = sanitizeAttributes(attributes);
+        for (const key of Object.keys(attributes)) {
+            if (RESERVED_ATTRIBUTES.indexOf(key) >= 0) continue;
+            if (key in valid) globalAttributes[key] = valid[key];
+            else if ((attributes as Record<string, unknown>)[key] == null) delete globalAttributes[key];
+        }
+    } catch (e) {
+        debug('setAttributes failed', e);
+    }
+}
+
 /** Resolves when the queued records have been handed to the transport. */
 export function flush(): Promise<void> {
     try {
@@ -339,6 +398,20 @@ export function flush(): Promise<void> {
         debug('flush failed', e);
         return Promise.resolve();
     }
+}
+
+/** `getStats()` result: what the script dropped and why, what became of its requests, and what it holds now. */
+export interface BelemetryStats extends StatsSnapshot {
+    /** Records queued for the next export. */
+    queued: number;
+    /** Records held until the user decides on consent. */
+    pending: number;
+}
+
+/** What the script dropped and why, and what became of its requests, since the page loaded - for troubleshooting. */
+export function getStats(): BelemetryStats {
+    const snapshot = statsSnapshot();
+    return { ...snapshot, queued: state ? state.pipeline.size : 0, pending: state ? state.consent.pendingCount : 0 };
 }
 
 export function getContext(): BelemetryContext {
@@ -410,6 +483,9 @@ export function _reset(): void {
     state = null;
     bridge = null;
     lastContext = '';
+    processors.length = 0;
+    for (const key of Object.keys(globalAttributes)) delete globalAttributes[key];
+    resetStats();
     resetPageViewState();
     resetDocumentLoadState();
     resetWebVitalsState();
@@ -420,7 +496,10 @@ export function _getState(): State | null {
     return state;
 }
 
-const api = { start, setConsent, getConsent, isConsentDecided, setUser, trackEvent, trackPageView, trackException, flush, getContext, attachDotNet, sendRequests, Features };
+const api = {
+    start, setConsent, getConsent, isConsentDecided, setUser, trackEvent, trackPageView, trackException, addProcessor, setAttributes, flush, getContext,
+    getStats, attachDotNet, sendRequests, Features,
+};
 
 if (typeof window !== 'undefined') {
     (window as unknown as { BitBelemetry: typeof api }).BitBelemetry = api;

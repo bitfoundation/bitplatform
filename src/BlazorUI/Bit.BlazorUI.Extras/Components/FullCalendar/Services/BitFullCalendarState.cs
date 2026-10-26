@@ -51,10 +51,17 @@ public class BitFullCalendarState
     /// <summary>The current local date according to <see cref="TimeProvider"/>.</summary>
     public DateTime Today => Now.Date;
 
-    private DateTime _selectedDate = DateTime.Today;
+    private DateTime _selectedDate;
     // The first day a shorter week (WeekDayCount) shows. It moves only when the selected date leaves the run of days
     // on screen, so adding an event on the third of three days does not slide the view to start there.
-    private DateTime _daySpanStart = DateTime.Today;
+    private DateTime _daySpanStart;
+
+    public BitFullCalendarState()
+    {
+        // The state opens on the today of its own clock, read once: DateTime.Today is another clock than the one
+        // SetTimeProvider compares the selected date with, and two reads can fall on either side of a midnight.
+        _selectedDate = _daySpanStart = Today;
+    }
 
     public DateTime SelectedDate
     {

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 
 namespace Bit.BlazorUI;
@@ -397,7 +396,6 @@ public partial class BitProgress : BitComponentBase
         return base.OnInitializedAsync();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitProgressParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

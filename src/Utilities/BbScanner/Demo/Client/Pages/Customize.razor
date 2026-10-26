@@ -5,8 +5,9 @@
 <div class="bb-intro">
     <h1>Customisation</h1>
     <p class="bb-subtitle">
-        Every colour, radius and dimension is a CSS custom property, and every visual element can be
-        replaced with a render fragment. Nothing needs a selector override.
+        Every colour, radius and dimension is a CSS custom property, the reticle and the messages can be
+        replaced with render fragments, extra content can be added to the control bar and over the video,
+        and every text the scanner shows or announces can be translated. Nothing needs a selector override.
     </p>
 </div>
 
@@ -20,15 +21,20 @@
             <div class="scan-view">
 @* The custom properties are set on the scanner itself, through the unmatched attribute
    capture, because a declaration on the element always beats one inherited from an ancestor. *@
-                <BbScanner Formats="BbBarcodeFormat.All"
-                           Region="BbScanRegion.CenteredSquare(0.72)"
-                           ShowControls="_showControls"
-                           CssClass="demo-scanner"
-                           AriaLabel="Customisable barcode scanner"
-                           Overlay="CurrentOverlay"
-                           MessageTemplate="MessageTemplate"
-                           style="@ThemeStyle()"
-                           OnScan="r => _last = r" />
+                <div id="scanner-language" lang="@_language" dir="@(_language == "fa" ? "rtl" : "ltr")">
+                    <BbScanner Formats="BbBarcodeFormat.All"
+                               Region="BbScanRegion.CenteredSquare(0.72)"
+                               ShowControls="_showControls"
+                               CssClass="demo-scanner"
+                               AriaLabel="Customisable barcode scanner"
+                               Overlay="CurrentOverlay"
+                               MessageTemplate="@(_customMessages ? MessageTemplate : null)"
+                               ControlsContent="@(_extraControl ? ExtraControl : null)"
+                               ChildContent="@(_childBadge ? ChildBadge : null)"
+                               Texts="CurrentTexts"
+                               style="@ThemeStyle()"
+                               OnScan="r => _last = r" />
+                </div>
 
                 @if (_last is not null)
                 {
@@ -81,7 +87,7 @@
                 </section>
 
                 <section class="scan-panel">
-                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Overlay</h3>
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Render fragments</h3>
                     <label class="bb-field">
                         <span>Overlay fragment</span>
                         <select value="@_overlayStyle" @onchange="OnOverlayChanged">
@@ -91,13 +97,57 @@
                         </select>
                     </label>
                     <p class="bb-card-desc">
-                        The <code>Overlay</code> fragment receives the scanner itself, so a custom overlay
-                        can read the status, the open camera and the current zoom without extra plumbing.
+                        The <code>Overlay</code> fragment replaces the reticle entirely and receives the scanner
+                        itself, so a custom overlay can read the status, the open camera and the current zoom
+                        without extra plumbing - the instruction overlay shows the live status.
+                    </p>
+
+                    <label class="bb-check">
+                        <input type="checkbox" checked="@_customMessages" @onchange="e => _customMessages = (bool)(e.Value ?? false)" />
+                        Custom message template (<code>MessageTemplate</code>)
+                    </label>
+                    <label class="bb-check">
+                        <input type="checkbox" checked="@_extraControl" @onchange="e => _extraControl = (bool)(e.Value ?? false)" />
+                        An extra button in the control bar (<code>ControlsContent</code>)
+                    </label>
+                    <label class="bb-check">
+                        <input type="checkbox" checked="@_childBadge" @onchange="e => _childBadge = (bool)(e.Value ?? false)" />
+                        A badge over the video (<code>ChildContent</code>)
+                    </label>
+                    <p class="bb-card-desc">
+                        <code>MessageTemplate</code> renders the status and error messages - "Requesting camera
+                        access...", a failure - from the text it is given. <code>ControlsContent</code> is appended
+                        to the built-in control bar, so it inherits its layout; give its buttons the
+                        <code>bit-bbscanner__button</code> class to match. <code>ChildContent</code> is drawn on
+                        top of everything else.
+                    </p>
+                </section>
+
+                <section class="scan-panel">
+                    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Language</h3>
+                    <label class="bb-field">
+                        <span>Scanner texts</span>
+                        <select id="scanner-texts" value="@_language" @onchange="e => _language = e.Value?.ToString() ?? _language">
+                            <option value="en">English (the default)</option>
+                            <option value="es">Español</option>
+                            <option value="fa">فارسی (right to left)</option>
+                        </select>
+                    </label>
+                    <p class="bb-card-desc">
+                        Every label, status, notice, error message and screen reader announcement comes from
+                        <code>Texts</code>, a <code>BbScannerTexts</code>; anything a translation leaves out stays
+                        English. The layout follows the document's direction, so a right-to-left language needs
+                        nothing more than <code>dir="rtl"</code> on the page or an ancestor - as the wrapper here
+                        does for Persian.
                     </p>
                 </section>
 
                 <section class="scan-panel">
                     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Generated CSS</h3>
+                    <p class="bb-card-desc">
+                        What the theme controls set, passed as the scanner's <code>style</code> attribute. The same
+                        declarations work in a stylesheet rule for the class given in <code>CssClass</code>.
+                    </p>
                     <pre class="bb-code">@ThemeStyle().Replace(";", ";\n")</pre>
                 </section>
             </div>
@@ -136,26 +186,102 @@
         </table>
     </div>
     <p class="bb-card-desc">
-        This site tints the accent, the focus ring, the radius and the font of its scanners with one
-        rule on <code>.bit-bbscanner</code>, which outranks the zero-specificity defaults wherever it is
-        declared; the <code>style</code> attribute of the scanner above outranks that rule in turn.
+        The defaults are declared in a zero-specificity <code>:where(.bit-bbscanner)</code> block, so any rule
+        an application writes wins, whatever its order. This site tints the accent, the focus ring, the radius
+        and the font of its scanners with one rule on <code>.bit-bbscanner</code>; the <code>style</code>
+        attribute of the scanner above outranks that rule in turn. To theme one scanner from a stylesheet:
     </p>
+    <pre class="bb-code"><span class="c">/* CssClass="my-scanner" on the component */</span>
+.my-scanner {
+    --bit-bbscanner-accent: #35c77c;
+    --bit-bbscanner-reticle-color: #35c77c;
+    --bit-bbscanner-radius: 0;
+}</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Parts and states</h3>
+    <p class="bb-card-desc">
+        For anything the custom properties do not reach, every part has a stable class, and the root element
+        says what state it is in. <code>CssClass</code> adds classes to the root, and any other attribute -
+        <code>style</code>, <code>id</code>, <code>data-*</code> - is passed through to it, a
+        <code>class</code> or <code>style</code> merged with the component's own.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Selector</th><th>What it is</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key">.bit-bbscanner</td><td>The root: a region named by <code>AriaLabel</code>, keeping the camera's aspect ratio unless <code>Fill</code> is set</td></tr>
+                <tr><td class="bb-table-key">[data-status]</td><td>On the root: <code>idle</code>, <code>starting</code>, <code>scanning</code>, <code>paused</code>, <code>stopped</code> or <code>faulted</code></td></tr>
+                <tr><td class="bb-table-key">[data-fill]</td><td>On the root: <code>contain</code> under <code>Fill</code>, <code>aspect</code> otherwise</td></tr>
+                <tr><td class="bb-table-key">[data-drop="true"]</td><td>On the root while an image file is dragged over it</td></tr>
+                <tr><td class="bb-table-key">.bit-bbscanner__video</td><td>The camera preview; <code>[data-mirrored="true"]</code> for a front camera</td></tr>
+                <tr><td class="bb-table-key">.bit-bbscanner__mask</td><td>The dimmed surround outside the region</td></tr>
+                <tr><td class="bb-table-key">.bit-bbscanner__reticle, __corner</td><td>The aiming frame and its four corners (<code>--tl</code>, <code>--tr</code>, <code>--bl</code>, <code>--br</code>)</td></tr>
+                <tr><td class="bb-table-key">.bit-bbscanner__hit</td><td>The outline round a decoded symbol</td></tr>
+                <tr><td class="bb-table-key">.bit-bbscanner__status, __dot</td><td>The status bar and its coloured state dot</td></tr>
+                <tr><td class="bb-table-key">.bit-bbscanner__message</td><td>A status or error message; <code>--error</code> for a failure</td></tr>
+                <tr><td class="bb-table-key">.bit-bbscanner__controls</td><td>The control bar, holding <code>__button</code>, <code>__select</code> (camera) and <code>__range</code> (zoom)</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A translation</h3>
+    <p class="bb-card-desc">
+        Set the texts a language needs and leave the rest; one instance per language can be shared by every
+        scanner. Texts that carry a value are functions, so word order, number formatting and plurals stay the
+        translator's - <code>UnnamedCamera</code>, <code>ImageTooLarge</code>, <code>ErrorMessage</code>, which
+        usually switches on the error's <code>Kind</code>, and <code>ScanAnnouncement</code>, what a screen
+        reader says for a scan. The strings can as well come from an <code>IStringLocalizer</code>.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">BbScanner</span> Texts=<span class="s">"German"</span> /&gt;
+
+<span class="k">@@code</span> {
+    <span class="k">private static readonly</span> BbScannerTexts German = <span class="k">new</span>()
+    {
+        StartButton = <span class="s">"Starten"</span>,
+        StopButton = <span class="s">"Beenden"</span>,
+        StatusScanning = <span class="s">"Scannen"</span>,
+        NoBarcodeFound = <span class="s">"Kein Barcode im Bild gefunden."</span>,
+        ErrorMessage = e =&gt; e.Kind <span class="k">switch</span>
+        {
+            BbScannerErrorKind.PermissionDenied =&gt; <span class="s">"Der Zugriff auf die Kamera wurde verweigert."</span>,
+            _ =&gt; <span class="s">"Die Kamera konnte nicht gestartet werden."</span>,
+        },
+        ScanAnnouncement = r =&gt; <span class="s">$"{r.Format} gelesen: {r.Text}"</span>,
+    };
+}</pre>
 </div>
 
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Accessibility and direction</h3>
     <p class="bb-card-desc">
-        The scanner is a labelled region, the controls are real buttons with pressed state, results
-        are announced through a polite live region, and the layout uses logical properties throughout
-        so a right to left document needs no extra work. Animation is suppressed under
-        <code>prefers-reduced-motion</code>, and the reticle and controls switch to system colours
-        under <code>forced-colors</code>.
+        The scanner is a region named by <code>AriaLabel</code>. Its controls are real buttons, a select and a
+        range input, reachable and operable from the keyboard with a visible focus ring; the torch button reports
+        its pressed state, and Start and Stop are one button, so stopping from the keyboard leaves focus where it
+        was. A polite live region announces the camera opening, every reported scan and the outcome of a still
+        image; an alert announces a failure. Frames are never announced, and colour is never the only sign of a
+        state: the status bar spells it out. The layout uses logical properties throughout, so a right-to-left
+        document needs no extra work. Animation is suppressed under <code>prefers-reduced-motion</code>, and the
+        reticle and controls switch to system colours under <code>forced-colors</code>.
     </p>
 </div>
 
 @code {
     private readonly RenderFragment<string> MessageTemplate = message =>
-        @<span class="demo-message">@message</span>;
+        @<span class="demo-message"><span aria-hidden="true">▸ </span>@message</span>;
+
+    private RenderFragment ExtraControl => @<button type="button" class="bit-bbscanner__button" @onclick="() => _last = null">Clear last scan</button>;
+
+    private RenderFragment ChildBadge => @<div class="scan-badge">@(_last is null ? "ChildContent" : _last.Format.ToString())</div>;
+
+    private bool _customMessages = true;
+    private bool _extraControl;
+    private bool _childBadge;
 
     private enum OverlayStyle
     {
@@ -166,6 +292,15 @@
 
     private BbBarcodeResult? _last;
     private OverlayStyle _overlayStyle = OverlayStyle.Default;
+    private string _language = "en";
+
+    /// <summary>The texts for the selected language; null keeps the English defaults.</summary>
+    private BbScannerTexts? CurrentTexts => _language switch
+    {
+        "es" => ScannerTranslations.Spanish,
+        "fa" => ScannerTranslations.Persian,
+        _ => null,
+    };
 
     /// <summary>The overlay fragment for the selected style, or null to keep the built-in reticle.</summary>
     private RenderFragment<BbScanner>? CurrentOverlay => _overlayStyle switch

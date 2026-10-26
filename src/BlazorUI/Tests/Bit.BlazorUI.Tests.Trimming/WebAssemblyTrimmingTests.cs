@@ -48,6 +48,29 @@ public sealed class WebAssemblyTrimmingTests
     }
 
     [TestMethod]
+    public void AParamsTypeShouldBeKeptOnlyWhereTheAppCreatesOne()
+    {
+        Published.AssertSucceeded();
+
+        // The app cascades a BitButtonParams to its buttons: everything BitParams reads of it by reflection is kept.
+        var created = Published.ReadTrimmedAssembly(Core).FindType("Bit.BlazorUI.BitButtonParams");
+        Assert.IsNotNull(created, "BitButtonParams, which the app creates, was trimmed away.");
+        CollectionAssert.AreEquivalent(PublishResult.ReadUntrimmedAssembly(Core).FindType("Bit.BlazorUI.BitButtonParams")!.Properties, created.Properties,
+                                       "BitButtonParams, which the app creates, lost properties BitParams reads by reflection.");
+
+        // It renders a text field and a data grid but creates neither's params: nothing of those is left but the
+        // UpdateParameters their components call, emptied - no property, no field, no closure of the lambdas it held.
+        foreach (var (package, type) in new[] { (Core, "Bit.BlazorUI.BitTextFieldParams"), (Extras, "Bit.BlazorUI.BitDataGridParams") })
+        {
+            var members = Published.ReadTrimmedAssembly(package).FindType(type);
+            Assert.IsNotNull(members, $"{type} is gone altogether: does the app still render its component?");
+
+            var kept = members.Properties.Concat(members.Fields).Concat(members.NestedTypes).ToList();
+            Assert.AreEqual(0, kept.Count, $"{type}, which the app never creates, keeps {string.Join(", ", kept)}.");
+        }
+    }
+
+    [TestMethod]
     [DynamicData(nameof(BrowserSession.Engines), typeof(BrowserSession))]
     public async Task ATrimmedAppShouldRunWithEveryComponentStyledAndNoScriptMissing(string engine)
     {
@@ -63,6 +86,11 @@ public sealed class WebAssemblyTrimmingTests
         // What was trimmed away is gone from the page, and what the app uses is there.
         Assert.IsTrue(await page.EvaluateAsync<bool>("() => typeof BitBlazorUI.Callouts.toggle === 'function' && typeof BitBlazorUI.Utils.claimEscape === 'function'"));
         Assert.IsTrue(await page.EvaluateAsync<bool>("() => typeof BitBlazorUI.ScrollablePane === 'undefined' && typeof BitBlazorUI.Splitter === 'undefined'"));
+
+        // The variant the app cascades to its buttons through BitParams reaches its Open button: the params type it creates
+        // kept everything BitParams reads of it by reflection.
+        await session.WaitForAsync("() => [...document.querySelectorAll('.bit-btn')].some(b => b.textContent.trim() === 'Open' && b.classList.contains('bit-btn-otl'))",
+                                   "The Outline variant the app cascades through BitParams did not reach its Open button");
 
         await session.AssertEveryComponentIsStyledAsync(Published, Core, Extras, AI);
 

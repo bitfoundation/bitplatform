@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.CompilerServices;
 
 namespace Bit.BlazorUI;
@@ -998,7 +997,6 @@ public partial class BitStack : BitComponentBase
         StyleBuilder.Register(() => (FitSize || FitHeight) ? "height:fit-content" : string.Empty);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitStackParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

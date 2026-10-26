@@ -50,8 +50,28 @@
     <Project Path="Utilities/Blex/Demo/Client/Bit.Blex.Demo.Client.csproj" />
     <Project Path="Utilities/Blex/Demo/Server/Bit.Blex.Demo.Server.csproj" />
   </Folder>
-  <Folder Name="/Utilities/Blex/Samples/">
-    <Project Path="Utilities/Blex/Samples/Bit.Blex.Samples.Wasm/Bit.Blex.Samples.Wasm.csproj" />
+  <Folder Name="/Utilities/Blex/Samples/" />
+  <Folder Name="/Utilities/Blex/Samples/Auto/">
+    <Project Path="Utilities/Blex/Samples/Auto/Bit.Blex.Samples.Auto/Bit.Blex.Samples.Auto.csproj" />
+    <Project Path="Utilities/Blex/Samples/Auto/Bit.Blex.Samples.Auto.Client/Bit.Blex.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Blex/Samples/Core/">
+    <Project Path="Utilities/Blex/Samples/Core/Bit.Blex.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Blex/Samples/MAUI/">
+    <Project Path="Utilities/Blex/Samples/MAUI/Bit.Blex.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Utilities/Blex/Samples/Server/">
+    <Project Path="Utilities/Blex/Samples/Server/Bit.Blex.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Blex/Samples/Standalone/">
+    <Project Path="Utilities/Blex/Samples/Standalone/Bit.Blex.Samples.Standalone.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Blex/Samples/Wasm/">
+    <Project Path="Utilities/Blex/Samples/Wasm/Bit.Blex.Samples.Wasm/Bit.Blex.Samples.Wasm.csproj" />
+    <Project Path="Utilities/Blex/Samples/Wasm/Bit.Blex.Samples.Wasm.Client/Bit.Blex.Samples.Wasm.Client.csproj" />
   </Folder>
   <Folder Name="/Utilities/Blex/Tests/">
     <Project Path="Utilities/Blex/Tests/Bit.Blex.Benchmarks/Bit.Blex.Benchmarks.csproj" />
@@ -74,10 +94,30 @@
     <Project Path="Utilities/Bmage/Demo/Client/Bit.Bmage.Demo.Client.csproj" />
     <Project Path="Utilities/Bmage/Demo/Server/Bit.Bmage.Demo.Server.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Bmage/Samples/">
+    <Project Path="Utilities/Bmage/Samples/MAUI/Bit.Bmage.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Utilities/Bmage/Samples/Auto/">
+    <Project Path="Utilities/Bmage/Samples/Auto/Bit.Bmage.Samples.Auto/Bit.Bmage.Samples.Auto.csproj" />
+    <Project Path="Utilities/Bmage/Samples/Auto/Bit.Bmage.Samples.Auto.Client/Bit.Bmage.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bmage/Samples/Core/">
+    <Project Path="Utilities/Bmage/Samples/Core/Bit.Bmage.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bmage/Samples/Server/">
+    <Project Path="Utilities/Bmage/Samples/Server/Bit.Bmage.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bmage/Samples/Wasm/">
+    <Project Path="Utilities/Bmage/Samples/Wasm/Bit.Bmage.Samples.Wasm/Bit.Bmage.Samples.Wasm.csproj" />
+    <Project Path="Utilities/Bmage/Samples/Wasm/Bit.Bmage.Samples.Wasm.Client/Bit.Bmage.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Bmage/Tests/">
     <Project Path="Utilities/Bmage/Tests/Bit.Bmage.Benchmarks/Bit.Bmage.Benchmarks.csproj" />
     <Project Path="Utilities/Bmage/Tests/Bit.Bmage.Tests/Bit.Bmage.Tests.csproj" />
     <Project Path="Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj" />
+    <Project Path="Utilities/Bmage/Tests/Bit.Bmage.Tests.Hosting/Bit.Bmage.Tests.Hosting.csproj" />
     <Project Path="Utilities/Bmage/Tests/Bit.Bmage.Tests.Mcp/Bit.Bmage.Tests.Mcp.csproj" />
   </Folder>
   <Folder Name="/Utilities/Bsqlite/">
@@ -120,6 +160,23 @@
   <Folder Name="/Utilities/Bink/Demo/">
     <Project Path="Utilities/Bink/Demo/Client/Bit.Bink.Demo.Client.csproj" />
     <Project Path="Utilities/Bink/Demo/Server/Bit.Bink.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bink/Samples/">
+    <Project Path="Utilities/Bink/Samples/Core/Bit.Bink.Samples.Core.csproj" />
+    <Project Path="Utilities/Bink/Samples/MAUI/Bit.Bink.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Utilities/Bink/Samples/Auto/">
+    <Project Path="Utilities/Bink/Samples/Auto/Bit.Bink.Samples.Auto/Bit.Bink.Samples.Auto.csproj" />
+    <Project Path="Utilities/Bink/Samples/Auto/Bit.Bink.Samples.Auto.Client/Bit.Bink.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bink/Samples/Server/">
+    <Project Path="Utilities/Bink/Samples/Server/Bit.Bink.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bink/Samples/Wasm/">
+    <Project Path="Utilities/Bink/Samples/Wasm/Bit.Bink.Samples.Wasm/Bit.Bink.Samples.Wasm.csproj" />
+    <Project Path="Utilities/Bink/Samples/Wasm/Bit.Bink.Samples.Wasm.Client/Bit.Bink.Samples.Wasm.Client.csproj" />
   </Folder>
   <Folder Name="/Utilities/Bink/Tests/">
     <Project Path="Utilities/Bink/Tests/Bit.Bink.Tests/Bit.Bink.Tests.csproj" />
@@ -168,6 +225,7 @@
     <Project Path="Utilities/Bdnd/Tests/Bit.Bdnd.Tests/Bit.Bdnd.Tests.csproj" />
     <Project Path="Utilities/Bdnd/Tests/Bit.Bdnd.Tests.Mcp/Bit.Bdnd.Tests.Mcp.csproj" />
     <Project Path="Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj" />
+    <Project Path="Utilities/Bdnd/Tests/Bit.Bdnd.Tests.Harness.Hybrid/Bit.Bdnd.Tests.Harness.Hybrid.csproj" />
   </Folder>
   <Folder Name="/Utilities/BlazeDb/">
     <File Path="Utilities/BlazeDb/README.md" />
@@ -197,6 +255,7 @@
     <Project Path="Utilities/Blow/Tests/Bit.Blow.Tests/Bit.Blow.Tests.csproj" />
     <Project Path="Utilities/Blow/Tests/Bit.Blow.Tests.Mcp/Bit.Blow.Tests.Mcp.csproj" />
     <Project Path="Utilities/Blow/Tests/Bit.Blow.Tests.E2E/Bit.Blow.Tests.E2E.csproj" />
+    <Project Path="Utilities/Blow/Tests/Bit.Blow.Benchmarks/Bit.Blow.Benchmarks.csproj" />
   </Folder>
   <Folder Name="/Utilities/Borm/">
     <File Path="Utilities/Borm/README.md" />
@@ -240,6 +299,7 @@
   <Folder Name="/Utilities/Bonboarding/Tests/">
     <Project Path="Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests/Bit.Bonboarding.Tests.csproj" />
     <Project Path="Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests.Mcp/Bit.Bonboarding.Tests.Mcp.csproj" />
+    <Project Path="Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests.E2E/Bit.Bonboarding.Tests.E2E.csproj" />
   </Folder>
   <Folder Name="/Utilities/Bortable/">
     <File Path="Utilities/Bortable/README.md" />
@@ -303,17 +363,32 @@
     <File Path="Utilities/BevTools/README.md" />
     <Project Path="Utilities/BevTools/Bit.BevTools/Bit.BevTools.csproj" />
     <Project Path="Utilities/BevTools/Bit.BevTools.Server/Bit.BevTools.Server.csproj" />
+    <Project Path="Utilities/BevTools/Bit.BevTools.Loader/Bit.BevTools.Loader.csproj" />
   </Folder>
   <Folder Name="/Utilities/BevTools/Demo/">
     <Project Path="Utilities/BevTools/Demo/Client/Bit.BevTools.Demo.Client.csproj" />
     <Project Path="Utilities/BevTools/Demo/Server/Bit.BevTools.Demo.Server.csproj" />
   </Folder>
+  <Folder Name="/Utilities/BevTools/Samples/">
+    <Project Path="Utilities/BevTools/Samples/Core/Bit.BevTools.Samples.Core.csproj" />
+    <Project Path="Utilities/BevTools/Samples/MAUI/Bit.BevTools.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Utilities/BevTools/Samples/Auto/">
+    <Project Path="Utilities/BevTools/Samples/Auto/Bit.BevTools.Samples.Auto/Bit.BevTools.Samples.Auto.csproj" />
+    <Project Path="Utilities/BevTools/Samples/Auto/Bit.BevTools.Samples.Auto.Client/Bit.BevTools.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/BevTools/Samples/Server/">
+    <Project Path="Utilities/BevTools/Samples/Server/Bit.BevTools.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/BevTools/Samples/Wasm/">
+    <Project Path="Utilities/BevTools/Samples/Wasm/Bit.BevTools.Samples.Wasm/Bit.BevTools.Samples.Wasm.csproj" />
+    <Project Path="Utilities/BevTools/Samples/Wasm/Bit.BevTools.Samples.Wasm.Client/Bit.BevTools.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/BevTools/Tests/">
     <Project Path="Utilities/BevTools/Tests/Bit.BevTools.Benchmarks/Bit.BevTools.Benchmarks.csproj" />
     <Project Path="Utilities/BevTools/Tests/Bit.BevTools.Tests/Bit.BevTools.Tests.csproj" />
-  </Folder>
-  <Folder Name="/BlazorES2019/">
-    <Project Path="BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj" />
   </Folder>
   <Folder Name="/BlazorUI/">
     <File Path="BlazorUI/Clean.bat" />
@@ -321,6 +396,7 @@
     <Project Path="BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.AI/Bit.BlazorUI.AI.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj" />
+    <Project Path="BlazorUI/Bit.BlazorUI.Build/Bit.BlazorUI.Build.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj" />
@@ -351,9 +427,9 @@
     <File Path="Bswup/README.md" />
     <Project Path="Bswup/Bit.Bswup/Bit.Bswup.csproj" />
   </Folder>
-  <Folder Name="/Bswup/Bit.Bswup.Demo/">
-    <Project Path="Bswup/Bit.Bswup.Demo/Client/Bit.Bswup.Demo.Client.csproj" />
-    <Project Path="Bswup/Bit.Bswup.Demo/Server/Bit.Bswup.Demo.Server.csproj" />
+  <Folder Name="/Bswup/Demo/">
+    <Project Path="Bswup/Demo/Client/Bit.Bswup.Demo.Client.csproj" />
+    <Project Path="Bswup/Demo/Server/Bit.Bswup.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Bswup/Tests/">
     <Project Path="Bswup/Tests/Bit.Bswup.Tests.Mcp/Bit.Bswup.Tests.Mcp.csproj" />
@@ -378,9 +454,9 @@
     <Project Path="Brouter/Bit.Brouter.Generators/Bit.Brouter.Generators.csproj" />
     <Project Path="Brouter/Bit.Brouter/Bit.Brouter.csproj" />
   </Folder>
-  <Folder Name="/Brouter/Bit.Brouter.Demo/">
-    <Project Path="Brouter/Bit.Brouter.Demo/Client/Bit.Brouter.Demo.Client.csproj" />
-    <Project Path="Brouter/Bit.Brouter.Demo/Server/Bit.Brouter.Demo.Server.csproj" />
+  <Folder Name="/Brouter/Demo/">
+    <Project Path="Brouter/Demo/Client/Bit.Brouter.Demo.Client.csproj" />
+    <Project Path="Brouter/Demo/Server/Bit.Brouter.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Brouter/Samples/" />
   <Folder Name="/Brouter/Samples/Auto/">
@@ -389,6 +465,11 @@
   </Folder>
   <Folder Name="/Brouter/Samples/Core/">
     <Project Path="Brouter/Samples/Core/Bit.Brouter.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Brouter/Samples/Maui/">
+    <Project Path="Brouter/Samples/Maui/Bit.Brouter.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
   </Folder>
   <Folder Name="/Brouter/Samples/Server/">
     <Project Path="Brouter/Samples/Server/Bit.Brouter.Samples.Server.csproj" />
@@ -420,47 +501,73 @@
     <Project Path="Butil/Demo/Client/Bit.Butil.Demo.Client.csproj" />
     <Project Path="Butil/Demo/Server/Bit.Butil.Demo.Server.csproj" />
   </Folder>
-  <Folder Name="/Butil/Samples/">
-    <Project Path="Butil/Samples/Bit.Butil.Samples.Core/Bit.Butil.Samples.Core.csproj" />
-    <Project Path="Butil/Samples/Bit.Butil.Samples.Maui/Bit.Butil.Samples.Maui.csproj">
+  <Folder Name="/Butil/Samples/" />
+  <Folder Name="/Butil/Samples/Auto/">
+    <Project Path="Butil/Samples/Auto/Bit.Butil.Samples.Auto/Bit.Butil.Samples.Auto.csproj" />
+    <Project Path="Butil/Samples/Auto/Bit.Butil.Samples.Auto.Client/Bit.Butil.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Butil/Samples/Core/">
+    <Project Path="Butil/Samples/Core/Bit.Butil.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Butil/Samples/Maui/">
+    <Project Path="Butil/Samples/Maui/Bit.Butil.Samples.Maui.csproj">
       <Deploy />
     </Project>
-    <Project Path="Butil/Samples/Bit.Butil.Samples.Web/Bit.Butil.Samples.Web.csproj" />
+  </Folder>
+  <Folder Name="/Butil/Samples/Server/">
+    <Project Path="Butil/Samples/Server/Bit.Butil.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Butil/Samples/Wasm/">
+    <Project Path="Butil/Samples/Wasm/Bit.Butil.Samples.Wasm/Bit.Butil.Samples.Wasm.csproj" />
+    <Project Path="Butil/Samples/Wasm/Bit.Butil.Samples.Wasm.Client/Bit.Butil.Samples.Wasm.Client.csproj" />
+  </Folder>
+  <Folder Name="/Butil/Samples/Web/">
+    <Project Path="Butil/Samples/Web/Bit.Butil.Samples.Web.csproj" />
   </Folder>
   <Folder Name="/Butil/Tests/">
-    <Project Path="Butil/tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj" />
-    <Project Path="Butil/tests/Bit.Butil.Tests.Hosting/Bit.Butil.Tests.Hosting.csproj" />
-    <Project Path="Butil/tests/Bit.Butil.Tests.Manual/Bit.Butil.Tests.Manual.csproj" />
-    <Project Path="Butil/tests/Bit.Butil.Tests.Mcp/Bit.Butil.Tests.Mcp.csproj" />
+    <Project Path="Butil/Tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj" />
+    <Project Path="Butil/Tests/Bit.Butil.Tests.Hosting/Bit.Butil.Tests.Hosting.csproj" />
+    <Project Path="Butil/Tests/Bit.Butil.Tests.Manual/Bit.Butil.Tests.Manual.csproj" />
+    <Project Path="Butil/Tests/Bit.Butil.Tests.Mcp/Bit.Butil.Tests.Mcp.csproj" />
   </Folder>
   <Folder Name="/Butil/Tests/Harness/">
-    <Project Path="Butil/tests/Bit.Butil.Tests.Harness.Hybrid/Bit.Butil.Tests.Harness.Hybrid.csproj" />
-    <Project Path="Butil/tests/Bit.Butil.Tests.Harness.Web.Client/Bit.Butil.Tests.Harness.Web.Client.csproj" />
-    <Project Path="Butil/tests/Bit.Butil.Tests.Harness.Web/Bit.Butil.Tests.Harness.Web.csproj" />
+    <Project Path="Butil/Tests/Bit.Butil.Tests.Harness.Hybrid/Bit.Butil.Tests.Harness.Hybrid.csproj" />
+    <Project Path="Butil/Tests/Bit.Butil.Tests.Harness.Web.Client/Bit.Butil.Tests.Harness.Web.Client.csproj" />
+    <Project Path="Butil/Tests/Bit.Butil.Tests.Harness.Web/Bit.Butil.Tests.Harness.Web.csproj" />
   </Folder>
-  <Folder Name="/Cli/">
-    <File Path="Cli/README.md" />
-    <Project Path="Cli/Bit.Cli/Bit.Cli.csproj" />
+  <Folder Name="/Toolings/" />
+  <Folder Name="/Toolings/BlazorES2019/">
+    <Project Path="Toolings/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj" />
   </Folder>
-  <Folder Name="/Cli/Tests/">
-    <Project Path="Cli/Tests/Bit.Cli.Tests/Bit.Cli.Tests.csproj" />
+  <Folder Name="/Toolings/Cli/">
+    <File Path="Toolings/Cli/README.md" />
+    <Project Path="Toolings/Cli/Bit.Cli/Bit.Cli.csproj" />
   </Folder>
-  <Folder Name="/CodeAnalyzers/">
-    <File Path="CodeAnalyzers/README.md" />
-    <Project Path="CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj" />
+  <Folder Name="/Toolings/Cli/Tests/">
+    <Project Path="Toolings/Cli/Tests/Bit.Cli.Tests/Bit.Cli.Tests.csproj" />
   </Folder>
-  <Folder Name="/Minifier/">
-    <File Path="Minifier/README.md" />
-    <Project Path="Minifier/Bit.Minifier/Bit.Minifier.csproj" />
+  <Folder Name="/Toolings/CodeAnalyzers/">
+    <File Path="Toolings/CodeAnalyzers/README.md" />
+    <Project Path="Toolings/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj" />
   </Folder>
-  <Folder Name="/Minifier/Tests/">
-    <Project Path="Minifier/Tests/Bit.Minifier.Tests/Bit.Minifier.Tests.csproj" />
-    <Project Path="Minifier/Tests/Bit.Minifier.Tests.Friend/Bit.Minifier.Tests.Friend.csproj" />
-    <Project Path="Minifier/Tests/Bit.Minifier.Tests.Library/Bit.Minifier.Tests.Library.csproj" />
+  <Folder Name="/Toolings/CodeAnalyzers/Tests/">
+    <Project Path="Toolings/CodeAnalyzers/Tests/Bit.CodeAnalyzers.Tests/Bit.CodeAnalyzers.Tests.csproj" />
   </Folder>
-  <Folder Name="/SourceGenerators/">
-    <File Path="SourceGenerators/README.md" />
-    <Project Path="SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj" />
+  <Folder Name="/Toolings/Minifier/">
+    <File Path="Toolings/Minifier/README.md" />
+    <Project Path="Toolings/Minifier/Bit.Minifier/Bit.Minifier.csproj" />
+  </Folder>
+  <Folder Name="/Toolings/Minifier/Tests/">
+    <Project Path="Toolings/Minifier/Tests/Bit.Minifier.Tests/Bit.Minifier.Tests.csproj" />
+    <Project Path="Toolings/Minifier/Tests/Bit.Minifier.Tests.Friend/Bit.Minifier.Tests.Friend.csproj" />
+    <Project Path="Toolings/Minifier/Tests/Bit.Minifier.Tests.Library/Bit.Minifier.Tests.Library.csproj" />
+  </Folder>
+  <Folder Name="/Toolings/SourceGenerators/">
+    <File Path="Toolings/SourceGenerators/README.md" />
+    <Project Path="Toolings/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj" />
+  </Folder>
+  <Folder Name="/Toolings/SourceGenerators/Tests/">
+    <Project Path="Toolings/SourceGenerators/Tests/Bit.SourceGenerators.Tests/Bit.SourceGenerators.Tests.csproj" />
   </Folder>
   <Folder Name="/Templates/" />
   <Folder Name="/Templates/Boilerplate/">

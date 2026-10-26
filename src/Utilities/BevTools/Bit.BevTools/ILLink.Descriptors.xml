@@ -1,0 +1,7 @@
+﻿<linker>
+    <!-- Embedded, so the trimmer applies it only once something of this assembly is kept: by the app's code, or by
+         Bit.BevTools.Loader's DynamicDependency on the entry point, since an app that lazy loads BevTools reaches it
+         only by name. BevTools reflects over Blazor internals and over itself, and is not trim-safe (IsTrimmable is
+         off), so it is then kept whole, with everything it uses. An app that never uses it ships none of it. -->
+    <assembly fullname="Bit.BevTools" preserve="all" />
+</linker>

@@ -25,7 +25,7 @@ public sealed class BitChartLegacyFillingMode : BitChartLegacyObjectEnum
 
         if (relativeDatasetIndex < 0)
         {
-            return new BitChartLegacyFillingMode(relativeDatasetIndex.ToString());
+            return new BitChartLegacyFillingMode(relativeDatasetIndex.ToString(System.Globalization.CultureInfo.InvariantCulture));
         }
         else
         {

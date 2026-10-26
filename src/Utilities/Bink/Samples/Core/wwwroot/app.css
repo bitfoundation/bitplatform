@@ -1,0 +1,212 @@
+﻿body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: #1b1b1f;
+    background: #fafafa;
+}
+
+.topbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    padding: 0.75rem 1.5rem;
+    background: #0065ef;
+}
+
+.topbar a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.topbar a.active {
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+main {
+    max-width: 72rem;
+    padding: 1rem 1.5rem 4rem;
+}
+
+/* <FocusOnNavigate> moves focus to the heading after each navigation so screen readers announce the page; the heading
+   is not a control, so it gets no focus ring. */
+h1:focus {
+    outline: none;
+}
+
+section {
+    margin-bottom: 1.5rem;
+}
+
+button,
+.file-button {
+    padding: 0.4rem 0.9rem;
+    border: 1px solid #0065ef;
+    border-radius: 4px;
+    color: #0065ef;
+    background: #fff;
+    font: inherit;
+    cursor: pointer;
+}
+
+button:hover,
+.file-button:hover {
+    background: #e8f0fe;
+}
+
+button:disabled {
+    border-color: #c4c4cc;
+    color: #8a8a94;
+    background: #fff;
+    cursor: default;
+}
+
+button[aria-pressed="true"] {
+    color: #fff;
+    background: #0065ef;
+}
+
+/* The file input is the label's own control: clicking the label opens the picker, so the input itself is hidden. */
+.file-button input[type="file"] {
+    display: none;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.5rem 0;
+}
+
+.toolbar label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.segmented {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.spacer {
+    flex: 1;
+}
+
+.layer {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.layer.active {
+    border-color: #0065ef;
+}
+
+/* The canvas is transparent and draws the document's own background, so the frame around it comes from here. */
+.surface {
+    position: relative;
+    border: 1px solid #d0d0d7;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.surface.narrow {
+    max-width: 24rem;
+}
+
+/* The signing line is printed over the canvas by the page, so it never ends up in the saved or exported document. */
+.signature-line {
+    position: absolute;
+    right: 8%;
+    bottom: 48px;
+    left: 8%;
+    border-bottom: 2px solid #94a3b8;
+    pointer-events: none;
+}
+
+.status-line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    margin: 0.5rem 0;
+    font-size: 0.875rem;
+    color: #4b4b55;
+}
+
+.badge {
+    padding: 0 0.5rem;
+    border-radius: 999px;
+    background: #e8f0fe;
+    color: #0049ad;
+}
+
+.badge-error {
+    background: #fde8e8;
+    color: #b91c1c;
+}
+
+.status {
+    padding: 0.5rem 0.75rem;
+    border-left: 3px solid #0065ef;
+    background: #fff;
+}
+
+.facts {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.25rem 1rem;
+}
+
+.facts dt {
+    font-weight: 600;
+}
+
+.facts dd {
+    margin: 0;
+}
+
+.features {
+    padding-left: 1.25rem;
+}
+
+.features li {
+    margin-bottom: 0.35rem;
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+    gap: 1rem;
+}
+
+.preview-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.preview-grid figure {
+    margin: 0;
+}
+
+.preview {
+    display: inline-block;
+    max-width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d0d0d7;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.preview svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}

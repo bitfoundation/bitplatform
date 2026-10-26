@@ -60,10 +60,16 @@ public class BitTextInputBaseTests : BunitTestContext
         });
 
         // The handler of the keystroke is what waits the debounce out, so the value is not there with the keystroke
-        // itself and is once the handler has run to its end.
-        var typing = component.Find("input").InputAsync(new ChangeEventArgs { Value = "typed" });
+        // itself and is once the handler has run to its end. The keystroke is raised and the value read in one turn
+        // of the renderer's dispatcher, which is where the wait resumes: read from the test thread afterwards, a slow
+        // machine could let the 10 ms run out - and the value be committed - before the read.
+        Task typing = Task.CompletedTask;
+        await component.InvokeAsync(() =>
+        {
+            typing = component.Find("input").InputAsync(new ChangeEventArgs { Value = "typed" });
 
-        Assert.IsNull(component.Instance.Value);
+            Assert.IsNull(component.Instance.Value);
+        });
 
         await typing;
 
@@ -84,8 +90,16 @@ public class BitTextInputBaseTests : BunitTestContext
 
         var input = component.Find("input");
 
-        var first = input.InputAsync(new ChangeEventArgs { Value = "t" });
-        var second = input.InputAsync(new ChangeEventArgs { Value = "ty" });
+        // Both keystrokes are raised in one turn of the renderer's dispatcher, which is where the wait of each resumes:
+        // the first one's 10 ms cannot run out - and commit "t" - before the second one is raised, however slow the
+        // machine. Raised one after the other from the test, the first one's wait could run out in between.
+        Task first = Task.CompletedTask;
+        Task second = Task.CompletedTask;
+        await component.InvokeAsync(() =>
+        {
+            first = input.InputAsync(new ChangeEventArgs { Value = "t" });
+            second = input.InputAsync(new ChangeEventArgs { Value = "ty" });
+        });
 
         await first;
         await second;

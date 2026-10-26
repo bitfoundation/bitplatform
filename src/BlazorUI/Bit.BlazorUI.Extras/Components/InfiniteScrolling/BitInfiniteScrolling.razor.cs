@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -653,7 +652,6 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
 
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitInfiniteScrollingParams))]
     protected override async Task OnInitializedAsync()
     {
         // Preload below reads the page size and the cap, which a BitParams may be the one to set.

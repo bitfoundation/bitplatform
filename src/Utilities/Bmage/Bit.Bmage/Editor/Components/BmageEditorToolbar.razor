@@ -43,20 +43,29 @@
 
     <div class="bmg-toolgroup" role="group" aria-label="@Context.Strings.History">
         <button type="button" class="bmg-tool" title="@Context.Strings.Undo" aria-label="@Context.Strings.Undo"
-                disabled="@(!Context.CanUndo)" @onclick="Context.Undo">
+                disabled="@(!Context.CanUndo || Context.IsBusy)" @onclick="Context.Undo">
             @((MarkupString)Icons.Undo)
         </button>
         <button type="button" class="bmg-tool" title="@Context.Strings.Redo" aria-label="@Context.Strings.Redo"
-                disabled="@(!Context.CanRedo)" @onclick="Context.Redo">
+                disabled="@(!Context.CanRedo || Context.IsBusy)" @onclick="Context.Redo">
             @((MarkupString)Icons.Redo)
         </button>
         <button type="button" class="bmg-tool" title="@Context.Strings.Reset" aria-label="@Context.Strings.Reset"
-                disabled="@(!Context.HasImage)" @onclick="Context.Reset">
+                disabled="@(!Context.HasImage || Context.IsBusy)" @onclick="Context.Reset">
             @((MarkupString)Icons.Reset)
         </button>
     </div>
 
     <div class="bmg-toolbar-spacer"></div>
+
+    <div class="bmg-toolgroup" role="group" aria-label="@Context.Strings.Compare">
+        <button type="button" class="bmg-tool @(Context.IsComparing ? "bmg-tool-active" : null)"
+                title="@($"{Context.Strings.Compare} (\\)")" aria-label="@Context.Strings.Compare"
+                aria-pressed="@(Context.IsComparing ? "true" : "false")"
+                disabled="@(!Context.HasImage)" @onclick="() => Context.SetCompareAsync(!Context.IsComparing)">
+            @((MarkupString)Icons.Compare)
+        </button>
+    </div>
 
     <div class="bmg-toolgroup" role="group" aria-label="@Context.Strings.ZoomToFit">
         <button type="button" class="bmg-tool" title="@Context.Strings.ZoomOut" aria-label="@Context.Strings.ZoomOut"
@@ -68,6 +77,18 @@
         <button type="button" class="bmg-tool" title="@Context.Strings.ZoomIn" aria-label="@Context.Strings.ZoomIn"
                 disabled="@(!Context.HasImage)" @onclick="() => Context.SetZoom(Context.Zoom * 1.25)">+</button>
     </div>
+
+    @if (Context.HasSelection)
+    {
+        <div class="bmg-toolgroup" role="group" aria-label="@Context.Strings.Selection">
+            <button type="button" class="bmg-button" disabled="@Context.IsBusy" @onclick="Context.ClearSelectionAsync">@Context.Strings.ClearSelection</button>
+            <button type="button" class="bmg-button" disabled="@Context.IsBusy" @onclick="Context.FillSelectionAsync">@Context.Strings.FillSelection</button>
+            <button type="button" class="bmg-button" disabled="@Context.IsBusy" @onclick="Context.CopySelectionToLayerAsync">@Context.Strings.CopyToLayer</button>
+            <button type="button" class="bmg-button" disabled="@Context.IsBusy" @onclick="Context.CropToSelectionAsync">@Context.Strings.CropToSelection</button>
+            <button type="button" class="bmg-button" disabled="@Context.IsBusy" @onclick="Context.InvertSelection">@Context.Strings.InvertSelection</button>
+            <button type="button" class="bmg-button" @onclick="Context.Deselect">@Context.Strings.Deselect</button>
+        </div>
+    }
 
     @if (Context.Tool == EditorToolKind.Crop)
     {
@@ -112,5 +133,14 @@
         (EditorToolKind.Step, Context.Strings.Step, Icons.Step),
         (EditorToolKind.Highlight, Context.Strings.Highlight, Icons.Highlight),
         (EditorToolKind.Redact, Context.Strings.Redact, Icons.Redact),
+        (EditorToolKind.Brush, Context.Strings.Brush, Icons.Brush),
+        (EditorToolKind.Eraser, Context.Strings.Eraser, Icons.Eraser),
+        (EditorToolKind.Fill, Context.Strings.Fill, Icons.Fill),
+        (EditorToolKind.MagicEraser, Context.Strings.MagicEraser, Icons.MagicEraser),
+        (EditorToolKind.Eyedropper, Context.Strings.Eyedropper, Icons.Eyedropper),
+        (EditorToolKind.SelectRectangle, Context.Strings.SelectRectangle, Icons.SelectRectangle),
+        (EditorToolKind.SelectEllipse, Context.Strings.SelectEllipse, Icons.SelectEllipse),
+        (EditorToolKind.Lasso, Context.Strings.Lasso, Icons.Lasso),
+        (EditorToolKind.MagicWand, Context.Strings.MagicWand, Icons.MagicWand),
     ];
 }

@@ -8,7 +8,9 @@ namespace Bit.Bink.Demo.Client.Diagramming;
 /// <remarks>
 /// A custom tool needs nothing from the library beyond <see cref="BinkToolBase"/>: it reads pointer samples, draws
 /// its own preview on the overlay, and adds an ordinary element when the gesture ends. Everything else - undo,
-/// selection, hit testing, serialization, export - follows because the result is a normal document element.
+/// selection, hit testing, serialization, export - follows because the result is a normal document element. It snaps
+/// the way the built-in shape tool does, with a <see cref="BinkSnapper"/> built from the canvas's options when the
+/// drag starts.
 /// </remarks>
 public sealed class NodeTool : BinkToolBase
 {
@@ -16,6 +18,8 @@ public sealed class NodeTool : BinkToolBase
     private int _pointerId = -1;
     private Vector2 _start;
     private Vector2 _current;
+    private BinkSnapper _snapper = BinkSnapper.Disabled;
+    private readonly List<BinkSnapGuide> _guides = new();
 
     /// <inheritdoc />
     public override string Id => "diagram-node";
@@ -39,7 +43,12 @@ public sealed class NodeTool : BinkToolBase
         if (_dragging) return false;
         _dragging = true;
         _pointerId = sample.PointerId;
-        _start = context.Viewport.ToDocument(sample.Position);
+        // The snap targets are collected once, from what is visible, so each frame of the drag is a lookup.
+        _snapper = context.Snapping is { IsEnabled: true } snapping
+            ? BinkSnapper.Create(context.Document, snapping, null, context.Viewport.VisibleRect(context.ViewSize))
+            : BinkSnapper.Disabled;
+        _guides.Clear();
+        _start = Snap(context, context.Viewport.ToDocument(sample.Position), null);
         _current = _start;
         context.CapturePointer(sample.PointerId);
         context.InvalidateOverlay();
@@ -51,8 +60,18 @@ public sealed class NodeTool : BinkToolBase
     {
         ArgumentNullException.ThrowIfNull(context);
         if (!_dragging || sample.PointerId != _pointerId) return;
-        _current = context.Viewport.ToDocument(sample.Position);
+        _guides.Clear();
+        _current = Snap(context, context.Viewport.ToDocument(sample.Position), _guides);
         context.InvalidateOverlay();
+    }
+
+    /// <summary>Lines a corner of the box up with other elements, the page or the grid, within the canvas's threshold.</summary>
+    private Vector2 Snap(IBinkToolContext context, Vector2 point, List<BinkSnapGuide>? guides)
+    {
+        if (!_snapper.IsEnabled) return point;
+        // The threshold is in screen pixels, so it covers fewer document units the further in the view is zoomed.
+        float tolerance = context.Snapping.Threshold / MathF.Max(context.Viewport.Zoom, 0.001f);
+        return _snapper.SnapPoint(point, tolerance, guides: guides);
     }
 
     /// <inheritdoc />
@@ -60,7 +79,8 @@ public sealed class NodeTool : BinkToolBase
     {
         ArgumentNullException.ThrowIfNull(context);
         if (!_dragging || sample.PointerId != _pointerId) return;
-        _current = context.Viewport.ToDocument(sample.Position);
+        _current = Snap(context, context.Viewport.ToDocument(sample.Position), null);
+        _guides.Clear();
         context.ReleasePointer(sample.PointerId);
         _dragging = false;
         _pointerId = -1;
@@ -93,6 +113,7 @@ public sealed class NodeTool : BinkToolBase
         context.ReleasePointer(sample.PointerId);
         _dragging = false;
         _pointerId = -1;
+        _guides.Clear();
         context.InvalidateOverlay();
     }
 
@@ -101,6 +122,7 @@ public sealed class NodeTool : BinkToolBase
     {
         _dragging = false;
         _pointerId = -1;
+        _guides.Clear();
         context?.InvalidateOverlay();
     }
 
@@ -115,6 +137,7 @@ public sealed class NodeTool : BinkToolBase
         var path = new BinkPathBuilder(8).AddRoundedRect(box, 8f).ToGeometry();
         render.FillPath(path, new BinkFillPaint(new BinkColor(37, 99, 235, 30)));
         render.StrokePath(path, new BinkStrokePaint(new BinkColor(37, 99, 235), 1.5f, 0.9f));
+        BinkSnapper.DrawGuides(render, _guides, context.Viewport.Zoom);
     }
 }
 

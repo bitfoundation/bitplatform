@@ -81,6 +81,13 @@ trimmed - off the app's type references and everything they reach. A piece left 
   `_content/<package>/<folder>/` is.
 - **A class that only registers services carries `[BitAssetTrimmingRegistrar]`**: the scan does not follow it, since
   registering renders nothing and an app using a service names it itself.
+- **The icon font is cut with the icon stylesheet** (`BitBlazorUITrimIcons`, `IconFontSubsetter.cs`): to the codepoints
+  the kept glyph rules draw, on Node.js (fonttools, pinned by `Bit.BlazorUI.Build/fonttools/package-lock.json` and installed
+  with `npm ci`), with this assembly's own WOFF2 reader, TrueType subsetter and writer as the fallback (`Woff2.cs`,
+  `TrueTypeSubsetter.cs`). A glyph rule always draws one codepoint the font has (`BitIconFontCutTests` lists the one that
+  does not, `ContactInfoMirrored`); a change to the .NET cut's output raises its `DotNetVersion`, so no stale cut is reused.
+  The icon stylesheet's `.bit-icon` lists the core's own font after its own, which draws the core components' built-in
+  icons wherever a cut (an `Explicit` list) leaves them out - `BitIconFontCutTests` pins it.
 - `BitAssetTrimmingContractTests` checks these against the compiled assemblies (every identifier resolves, every owner is a
   type, every component brings the stylesheets of the classes it renders); `Tests/Bit.BlazorUI.Tests.Trimming` publishes
   real apps and reads what came out (`dotnet run`, see its README). Run both after touching a script's exports, a
@@ -375,6 +382,25 @@ right - the layout and the behaviour would disagree.
 `BitComponentDirFallbackTests` checks this for every stylesheet of every package, mixins included (a mixin's
 counterpart is looked for in the mixin itself). A rule whose explicit `Dir` is handled some other way (the root class
 setting a variable the part reads, or the C# doing the turn) goes in its `CoveredOtherwise` list.
+
+## A number in markup reads the same in every culture
+
+Blazor writes an attribute value that is not a string with its `ToString()` in the current culture, and an interpolated
+string formats its numbers the same way. A negative number comes out as `‎−1` under fa-IR and `؜-1` under
+ar-SA, a decimal as `1,5` under de-DE - none of which a browser reads as a number. A roving `tabindex` of -1 is then
+ignored and every day of a calendar lands in the tab order; `margin:1,5px` is dropped.
+
+- **An attribute bound to a number that can be negative is bound to a string**: `tabindex="@(focused ? "0" : "-1")"`,
+  never `? 0 : -1`; a computed one (`aria-setsize` of -1 while the size is not known) through
+  `.ToString(CultureInfo.InvariantCulture)`. A number that is never negative is safe as it is.
+- **A number written into a style, a CSS variable, an SVG attribute, an id or a selector goes through
+  `FormattableString.Invariant($"...")`** (or `ToString(CultureInfo.InvariantCulture)`), whatever its type.
+- **Text for a reader stays in the culture**: an `aria-label`, a `title`, the text an input shows, the value text of a
+  slider are formatted for the person reading them.
+- The unit suite runs in the machine's culture (invariant on CI), so `BitCultureInvariantMarkupContractTests` renders the
+  components that write such numbers under fa-IR and ar-SA, and fails on a negative number literal bound to an attribute
+  in any `.razor` of the packages. A test's expected markup is built invariantly too (`FormattableString.Invariant`),
+  or it fails on the machine of everyone whose culture writes numbers differently.
 
 ## Demo pages
 

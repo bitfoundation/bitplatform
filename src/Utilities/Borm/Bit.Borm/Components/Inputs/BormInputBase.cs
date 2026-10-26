@@ -14,6 +14,8 @@ public abstract class BormInputBase : ComponentBase, IDisposable
     private BormFieldContext? _pendingContext;
     private int? _liveLength;
     private string? _lastCommitted;
+    private string? _typed;
+    private BormFieldContext? _typedInto;
 
     /// <summary>The render context for the field being displayed.</summary>
     [Parameter, EditorRequired] public BormFieldContext Context { get; set; } = default!;
@@ -39,6 +41,15 @@ public abstract class BormInputBase : ComponentBase, IDisposable
     /// changing them.
     /// </summary>
     protected bool DisabledOrReadOnly => Disabled || ReadOnly;
+
+    /// <summary>
+    /// The name a read-only control's answer is posted under when it is drawn as <c>disabled</c> (see
+    /// <see cref="DisabledOrReadOnly"/>), in a form that posts (<see cref="BormFieldContext.InputName"/>): a
+    /// disabled control is never sent, so a hidden input carries the answer instead, as a read-only text box
+    /// sends its own. Null when the control posts for itself, the form does not post, or the field is disabled -
+    /// which is not sent at all.
+    /// </summary>
+    protected string? ReadOnlyPostedName => ReadOnly && !Disabled ? Context.InputName : null;
 
     protected string CssClass => Context.HasError && Context.ShowMessages
         ? "bit-borm-input bit-borm-input--invalid"
@@ -72,7 +83,7 @@ public abstract class BormInputBase : ComponentBase, IDisposable
     /// because a real <c>&lt;label&gt;</c> already points at the control and an <c>aria-label</c> would
     /// silently override it.
     /// </summary>
-    protected string? AriaLabel => Field.ShowLabel ? null : Field.Label ?? Field.Name;
+    protected string? AriaLabel => Field.ShowLabel ? null : Context.Label;
 
     /// <summary>
     /// Extra attributes declared on the schema, splatted onto the control. Attributes the renderer sets
@@ -104,19 +115,64 @@ public abstract class BormInputBase : ComponentBase, IDisposable
     /// half-written text with it.
     /// </remarks>
     protected Task OnChange(ChangeEventArgs e)
-        => UpdatesOnInput ? FlushAsync() : Context.SetFromStringAsync(e.Value?.ToString());
+    {
+        if (!UpdatesOnInput) return Context.SetFromStringAsync(e.Value?.ToString());
+        if (!_partialPending) return FlushAsync();
+
+        // The keystrokes left it to this commit (see OnInput): whatever the box holds now - emptied, or never
+        // made into a number - is the answer.
+        _partialPending = false;
+        return Context.SetFromStringAsync(e.Value?.ToString());
+    }
 
     /// <summary>
     /// Handles the browser's <c>input</c> event. It is only wired at all when something needs it (see
     /// <see cref="InputHandler"/>), so a change-driven field costs no round-trip per keystroke; when it
     /// is wired only for the character counter, the keystroke updates the counter and nothing else.
     /// </summary>
-    protected Task OnInput(ChangeEventArgs e)
+    protected Task OnInput(ChangeEventArgs e) => OnTyped(e.Value?.ToString());
+
+    /// <summary>
+    /// The setter of a control bound on <c>input</c> (<c>@bind:set</c>, with <see cref="LiveValue"/> as the
+    /// getter), for a field that writes as the user types. Such a control is a binding rather than <c>value</c>
+    /// plus an <c>oninput</c> handler: written as an attribute, the value each render carries is put back into the
+    /// box, and on Blazor Server a render arrives after the keys typed since it was asked for - so fast typing over
+    /// a slow link lost characters. A binding takes the box to hold what the browser last sent, and writes only a
+    /// value that differs from it.
+    /// </summary>
+    protected Task OnTyped(string? raw)
     {
-        var raw = e.Value?.ToString();
+        _typed = raw ?? "";
+        _typedInto = Context;
         _liveLength = raw?.Length ?? 0;
-        return UpdatesOnInput ? Debounced(raw) : Task.CompletedTask;
+        if (!UpdatesOnInput) return Task.CompletedTask;
+
+        // A number or a date half-typed - "-", "1e", a day with no month yet - is reported as no value at all, and
+        // written that way it put "0" (or nothing) back into the box under the caret: "-5" became 5, "1e3" became
+        // 3. The keystroke is left to the commit, which hears what the box finally holds.
+        if (string.IsNullOrEmpty(raw) && Field.Type is BormFieldType.Integer or BormFieldType.Number
+                or BormFieldType.Date or BormFieldType.DateTime or BormFieldType.Time)
+        {
+            CancelDebounce();
+            _hasPendingRaw = false;
+            _partialPending = true;
+            return Task.CompletedTask;
+        }
+
+        _partialPending = false;
+        return Debounced(raw);
     }
+
+    private bool _partialPending;
+
+    /// <summary>
+    /// What a control bound on <c>input</c> shows (its <c>@bind:get</c>): the text typed into it, else
+    /// <paramref name="committed"/>. The renderer writes the bound value into the box whenever it differs from
+    /// what the browser sent, so it stays the user's text for as long as that stands for what the model holds
+    /// (see <see cref="OnParametersSet"/>): the model's own text would erase a debounced word not written yet,
+    /// or the "." of a "1." the model holds as 1.
+    /// </summary>
+    protected string LiveValue(string committed) => _typed ?? committed;
 
     /// <summary>
     /// The <c>input</c> handler to bind, or a callback with no delegate — which Blazor omits from the
@@ -203,6 +259,9 @@ public abstract class BormInputBase : ComponentBase, IDisposable
         try
         {
             await Task.Delay(delay, cts.Token);
+            // The timer can fire just as the next keystroke arrives, too late for that keystroke to stop the
+            // delay: the newer text is the one pending now, and this older one must not land over it.
+            if (!ReferenceEquals(_debounce, cts)) return;
             // Read again rather than trusting the one captured above: a repeater row that moved while
             // the timer ran has been retargeted to its new path (see OnParametersSet).
             context = _pendingContext ?? context;
@@ -307,10 +366,24 @@ public abstract class BormInputBase : ComponentBase, IDisposable
         // A value that changed underneath us — a reset, a computed update, another field's cascade —
         // supersedes whatever the user had half-typed, so the counter goes back to tracking the model.
         var committed = Context.StringValue;
-        if (!string.Equals(_lastCommitted, committed, StringComparison.Ordinal))
+        var changed = !string.Equals(_lastCommitted, committed, StringComparison.Ordinal);
+        if (changed)
         {
             _lastCommitted = committed;
             _liveLength = null;
+        }
+
+        // A bound box keeps the text typed into it while the model holds what that text says - "1." is the 1
+        // the model holds, and a debounced word not written yet changed nothing - and while it is still that
+        // field's box (a repeater row that moved is). Anything else put a value there that the user did not
+        // type: a reset, a formula, the field's own tidying on blur, the next wizard step's field.
+        if (_typed is not null)
+        {
+            if (!ReferenceEquals(_typedInto!.State, Context.State) || !ReferenceEquals(_typedInto.Field, Context.Field)
+                || (changed && !string.Equals(ReadBack(_typed), committed, StringComparison.Ordinal)))
+                _typed = null;
+            else
+                _typedInto = Context;
         }
 
         if (_autofocusApplied || !Field.Autofocus || DisabledOrReadOnly) return;
@@ -321,6 +394,27 @@ public abstract class BormInputBase : ComponentBase, IDisposable
     private IDisposable? _focusRegistration;
     private string? _registeredPath;
     private BormState? _registeredState;
+    private bool _renderHeld;
+
+    /// <summary>
+    /// Skips a render while a mouse button is down in the form, and renders once it is released (see
+    /// <c>BormState.RendersHeld</c>): what leaving this control draws - a typed signature's preview, a counter -
+    /// moved the button being pressed out from under the pointer, and the click was lost.
+    /// </summary>
+    protected override bool ShouldRender()
+    {
+        if (!Context.State.RendersHeld) return true;
+        if (!_renderHeld)
+        {
+            _renderHeld = true;
+            Context.State.RenderAfterHold(() =>
+            {
+                _renderHeld = false;
+                _ = InvokeAsync(StateHasChanged);
+            });
+        }
+        return false;
+    }
 
     /// <summary>
     /// Moves focus to the control once the render in progress has reached the browser — for a control
@@ -374,6 +468,10 @@ public abstract class BormInputBase : ComponentBase, IDisposable
         if (raw is T typed) return typed;
         return BormValueConverter.TryCoerce(raw, typeof(T), out var converted) && converted is T c ? c : fallback;
     }
+
+    /// <summary>How the model's value reads once <paramref name="text"/> is written to this field: "1." as "1".</summary>
+    private string ReadBack(string text) => BormValueConverter.ToInputString(
+        BormValueConverter.FromInputString(text, Field.ValueType, Field.Type, Context.Value), Field.Type);
 
     private void CancelDebounce()
     {

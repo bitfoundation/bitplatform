@@ -9,9 +9,9 @@
 
   <ItemGroup>
     <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.13" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.14" />
     <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
-    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.3.0" />
     <!-- Flattens the rendered HTML of a docs page into the Markdown an MCP client reads. -->
     <PackageReference Include="HtmlAgilityPack" Version="1.13.1" />
   </ItemGroup>
@@ -68,12 +68,14 @@
       <LogicalName>ButilSource/Demo/Server/wwwroot/frames/%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
 
-    <!-- The minimal hosting samples - standalone WebAssembly and Hybrid (MAUI). Their pages are
-         left out on purpose: they are a smaller copy of this demo's pages, and the demo itself is
-         embedded above. The shared service registration is the exception - it is the piece the
-         setup guide has to show, and the piece most easily got wrong. -->
+    <!-- The minimal hosting samples - one per Blazor render mode (Server, Wasm, Auto), standalone
+         WebAssembly (Web) and Hybrid (Maui). Their pages are left out on purpose: they are a smaller
+         copy of this demo's pages, and the demo itself is embedded above. The shared service
+         registration is the exception - it is the piece the setup guide has to show, and the piece
+         most easily got wrong. The MAUI app's Platforms\ folder is the template's per-OS entry
+         points and says nothing about Butil. -->
     <EmbeddedResource Include="..\..\Samples\**\*.cs;..\..\Samples\**\*.csproj;..\..\Samples\**\index.html;..\..\Samples\**\*.razor"
-                      Exclude="..\..\Samples\**\bin\**;..\..\Samples\**\obj\**;..\..\Samples\Bit.Butil.Samples.Core\Pages\**;..\..\Samples\Bit.Butil.Samples.Core\Shared\**;..\..\Samples\Bit.Butil.Samples.Maui\Platforms\**">
+                      Exclude="..\..\Samples\**\bin\**;..\..\Samples\**\obj\**;..\..\Samples\Core\Pages\**;..\..\Samples\Core\Shared\**;..\..\Samples\**\Platforms\**">
       <LogicalName>ButilSource/Sample/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
   </ItemGroup>

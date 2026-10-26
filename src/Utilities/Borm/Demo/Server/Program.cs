@@ -5,6 +5,7 @@
 using Bit.Borm.Demo.Server.Components;
 using Bit.Borm.Demo.Server.Controllers;
 using Bit.Borm.Demo.Server.Services;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.HttpOverrides;
 using ModelContextProtocol.Protocol;
 using System.Text.Json.Serialization;
@@ -79,6 +80,17 @@ else
 }
 
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+
+// The not-found page is for people reading the site. The MCP endpoint and the HTTP mirror of its tools answer their
+// own clients with their own status codes: a browser opening /mcp, which takes no GET, was told "There is no page at
+// this address" - the page the MCP server page itself points it to.
+app.Use((context, next) =>
+{
+    if ((context.Request.Path.StartsWithSegments("/mcp") || context.Request.Path.StartsWithSegments("/api"))
+        && context.Features.Get<IStatusCodePagesFeature>() is { } statusCodePages)
+        statusCodePages.Enabled = false;
+    return next(context);
+});
 
 app.UseForwardedHeaders();
 

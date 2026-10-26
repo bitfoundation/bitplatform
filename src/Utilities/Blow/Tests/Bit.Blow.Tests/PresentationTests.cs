@@ -43,7 +43,7 @@ public class PresentationTests : BunitContext
             }));
         });
 
-        var parts = cut.Find(".bit-blow-minimap").GetAttribute("viewBox")!.Split(' ');
+        var parts = cut.Find(".bit-blow-minimap-graph").GetAttribute("viewBox")!.Split(' ');
         var boxWidth = double.Parse(parts[2], System.Globalization.CultureInfo.InvariantCulture);
         var boxHeight = double.Parse(parts[3], System.Globalization.CultureInfo.InvariantCulture);
 
@@ -65,7 +65,7 @@ public class PresentationTests : BunitContext
             }));
         });
 
-        var parts = cut.Find(".bit-blow-minimap").GetAttribute("viewBox")!
+        var parts = cut.Find(".bit-blow-minimap-graph").GetAttribute("viewBox")!
             .Split(' ')
             .Select(v => double.Parse(v, System.Globalization.CultureInfo.InvariantCulture))
             .ToArray();

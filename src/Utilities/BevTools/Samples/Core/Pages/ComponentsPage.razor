@@ -1,0 +1,54 @@
+﻿@page "/components"
+
+<PageTitle>Components - BevTools samples</PageTitle>
+
+<h1>Components</h1>
+
+<p>
+    Select a component in the <em>Components</em> panel to see its parameters, its state, the handlers it bound and why
+    it rendered last. The <em>Profiler</em> totals the renders per component; the <em>Timeline</em> lists each event
+    with the batch it caused.
+</p>
+
+<section>
+    <h2>Parent and children</h2>
+    <p>
+        Each row is a <code>SampleItem</code> with a <code>Name</code>, a <code>Count</code> and an
+        <code>OnIncrement</code> callback. <em>Re-render the parent</em> renders every row too, even though no value
+        changed: an <code>EventCallback</code> parameter always counts as changed.
+    </p>
+
+    <button @onclick="AddItem">Add an item</button>
+    <button @onclick="StateHasChanged">Re-render the parent</button>
+
+    @foreach (var item in _items)
+    {
+        <SampleItem @key="item.Id" Name="@item.Name" Count="item.Count" OnIncrement="() => item.Count++" />
+    }
+
+    <p>Total: @_items.Sum(i => i.Count)</p>
+</section>
+
+<section>
+    <h2>Timer</h2>
+    <p>
+        A component that renders itself every second from a timer, not from a UI event: the render cause reads
+        <em>StateHasChanged</em>, and left running it shows up in the <em>Profiler</em>.
+    </p>
+    <SampleClock />
+</section>
+
+@code {
+    private readonly List<Entry> _items = [new(1, "First"), new(2, "Second")];
+
+    private void AddItem() => _items.Add(new(_items.Count + 1, "Item " + (_items.Count + 1)));
+
+    private sealed class Entry(int id, string name)
+    {
+        public int Id { get; } = id;
+
+        public string Name { get; } = name;
+
+        public int Count { get; set; }
+    }
+}

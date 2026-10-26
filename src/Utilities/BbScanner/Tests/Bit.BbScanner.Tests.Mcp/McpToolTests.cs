@@ -85,7 +85,7 @@ public class McpToolTests
 
         Assert.StartsWith("# BbScanner (Component)", reference);
         Assert.Contains("## Parameter", reference);
-        Assert.Contains("**Formats** : `BbBarcodeFormat` = `BbBarcodeFormat.All`", reference);
+        Assert.Contains("**Formats** : `BbBarcodeFormat` = `BbBarcodeFormat.Common`", reference);
         Assert.Contains("**TargetFrameRate** : `int` = `15`", reference);
         Assert.Contains("**Facing** : `BbCameraFacing` = `BbCameraFacing.Rear`", reference);
         Assert.Contains("**OnScan** : `EventCallback<BbBarcodeResult>`", reference);
@@ -176,20 +176,22 @@ public class McpToolTests
     }
 
     [TestMethod]
-    public async Task Pdf417_says_why_the_pipeline_does_not_read_it()
+    public async Task Pdf417_is_described_as_read_once_asked_for()
     {
         var pdf417 = await McpCall.TextAsync("GetBbScannerFormats", new() { ["format"] = "Pdf417" });
+        var qr = await McpCall.TextAsync("GetBbScannerFormats", new() { ["format"] = "QrCode" });
 
-        Assert.Contains("The pipeline does not create this reader", pdf417);
-        Assert.Contains("BbPdf417SymbolTable.Register", pdf417);
+        Assert.Contains("Not enabled by default", pdf417);
+        Assert.DoesNotContain("The pipeline does not create this reader", pdf417);
+        Assert.Contains("Enabled by default", qr);
     }
 
     [TestMethod]
     public async Task An_unknown_format_lists_the_real_ones()
     {
-        var answer = await McpCall.TextAsync("GetBbScannerFormats", new() { ["format"] = "aztec" });
+        var answer = await McpCall.TextAsync("GetBbScannerFormats", new() { ["format"] = "dotcode" });
 
-        Assert.Contains("no symbology called 'aztec'", answer);
+        Assert.Contains("no symbology called 'dotcode'", answer);
         foreach (var format in BbScannerFormatCatalog.Formats) Assert.Contains(format.Name, answer);
     }
 

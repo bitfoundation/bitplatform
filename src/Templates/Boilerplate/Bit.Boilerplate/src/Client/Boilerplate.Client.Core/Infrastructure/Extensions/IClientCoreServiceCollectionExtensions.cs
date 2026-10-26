@@ -3,6 +3,7 @@
 using BlazorApplicationInsights;
 using BlazorApplicationInsights.Interfaces;
 //#endif
+using Bit.BevTools;
 using Boilerplate.Client.Core;
 using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
@@ -28,6 +29,11 @@ public static partial class IClientCoreServiceCollectionExtensions
             services.AddScoped<CultureService>();
             services.AddScoped<TimeZoneService>();
             services.AddScoped<LazyAssemblyLoader>();
+            services.AddBitBevToolsLoaderServices(options =>
+            {
+                options.RegisterAtStartup = AppEnvironment.IsDevelopment() || AppPlatform.IsBlazorHybrid;
+                options.ShowBadge = false;
+            });
             services.AddScoped<SignInModalService>();
             services.AddScoped<ImageEditorService>();
             services.AddScoped<IAuthTokenProvider, ClientSideAuthTokenProvider>();
@@ -73,9 +79,9 @@ public static partial class IClientCoreServiceCollectionExtensions
 
             services.AddSingleton(sp => sp.GetRequiredService<IOptions<ClientCoreSettings>>().Value);
 
+            services.AddSingleton<IValidateOptions<ClientCoreSettings>, ClientCoreSettingsValidator>();
             services.AddOptions<ClientCoreSettings>()
                 .Bind(configuration)
-                .ValidateDataAnnotations()
                 .ValidateOnStart();
 
             services.AddBitButilServices();
@@ -139,7 +145,7 @@ public static partial class IClientCoreServiceCollectionExtensions
             , dbContextInitializer: async (_, dbContext) =>
             {
                 if (AppEnvironment.IsDevelopment() is false && dbContext.Model.GetType() == typeof(EntityFrameworkCore.Metadata.RuntimeModel))
-                    throw new InvalidOperationException("AppOfflineDbContext has not been optimized. Run 'dnx dotnet-ef@10.0.13 -- dbcontext optimize --context AppOfflineDbContext' before publishing, and re-run it after every model or migration change. See Boilerplate.Client.Core/Infrastructure/Data/README.md.");
+                    throw new InvalidOperationException("AppOfflineDbContext has not been optimized. Run 'dnx dotnet-ef@10.0.14 -- dbcontext optimize --context AppOfflineDbContext' before publishing, and re-run it after every model or migration change. See Boilerplate.Client.Core/Infrastructure/Data/README.md.");
 
                 await Task.Run(async () => await dbContext.Database.MigrateAsync());
             }

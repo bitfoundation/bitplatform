@@ -69,13 +69,15 @@ public static class BlexSearchIndex
     /// </summary>
     private static readonly Dictionary<string, string> _synonyms = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["Actions"] = "reducer reducers dispatch mutation mutate",
+        ["Actions"] = "reducer reducers dispatch mutation mutate creator createaction typed strict",
         ["Effects"] = "async side effect thunk saga fetch http loading",
         ["Computed state"] = "derived getter memoized memo selector",
-        ["Components & selectors"] = "rerender re-render subscribe subscription selector",
+        ["Components & selectors"] = "rerender re-render subscribe subscription selector usestore useselector observer observable rx",
+        ["Scoped stores"] = "instance instances componentstore component-scoped provider context multiple dialog tab",
         ["Persistence"] = "localstorage sessionstorage save reload rehydrate hydrate",
         ["Undo & redo"] = "history undo redo",
-        ["DevTools & time travel"] = "redux devtools timetravel debugger",
+        ["DevTools & time travel"] = "redux devtools timetravel debugger dispatcher",
+        ["Testing"] = "deterministic fake clock timeprovider replay",
         ["Entity adapter"] = "normalized collection crud list",
         ["Middleware"] = "interceptor logger logging veto",
     };

@@ -1,13 +1,20 @@
 ﻿@namespace Bit.Blow
 @using Microsoft.AspNetCore.Components.Rendering
+@{
+    _renderedLook = CurrentLook();
+    var state = Settings.State?.Invoke(Node);
+    var severity = Severity(state);
+    var stateText = TabIndex is not null && state is { } s ? AriaLabels.NodeState(s) : null;
+}
 
-<div class="@CssClass"
+<div class="@(CssClass + SeverityClass(severity) + RunClass(state))"
      data-id="@Node.Id"
      style="@StyleString"
      tabindex="@TabIndex"
      role="group"
      aria-roledescription="@AriaLabels.NodeRoleDescription"
      aria-label="@AriaLabel"
+     aria-describedby="@DescribedByWith(stateText)"
      @onkeydown="OnKeyDown"
      @onfocus="OnFocus"
      @onpointerdown="OnPointerDown"
@@ -33,42 +40,38 @@
         }
     </CascadingValue>
 </div>
+@if (!string.IsNullOrEmpty(stateText))
+{
+    @* Beside the node rather than in it, so it is no part of the node's own content; hidden, so it is read only
+       through aria-describedby, which reads hidden text. *@
+    <span id="@_stateId" hidden>@stateText</span>
+}
 
 @code {
     [Parameter, EditorRequired] public BlowNode Node { get; set; } = default!;
-    [Parameter] public RenderFragment<BlowNode>? Template { get; set; }
-    [Parameter] public EventCallback<PointerEventArgs> OnDragStart { get; set; }
 
-    /// <summary>Raised when the node is activated from the keyboard; the flag is "additive".</summary>
-    [Parameter] public EventCallback<bool> OnActivate { get; set; }
+    /// <summary>What the canvas tells every node alike: the template, its graph version, focus and stacking.</summary>
+    [Parameter, EditorRequired] public BlowNodeRenderSettings Settings { get; set; } = new();
 
-    /// <summary>
-    /// Raised when the node element takes focus. Left empty by the canvas unless something is
-    /// listening, so no focus listener is attached per node in the ordinary case.
-    /// </summary>
-    [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
+    /// <summary>The callbacks this node raises into its canvas.</summary>
+    [Parameter] public BlowNodeCallbacks Callbacks { get; set; } = BlowNodeCallbacks.None;
 
-    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
-    [Parameter] public EventCallback<MouseEventArgs> OnDoubleClick { get; set; }
-    [Parameter] public EventCallback<MouseEventArgs> OnContextMenu { get; set; }
-    [Parameter] public EventCallback<MouseEventArgs> OnMouseEnter { get; set; }
-    [Parameter] public EventCallback<MouseEventArgs> OnMouseMove { get; set; }
-    [Parameter] public EventCallback<MouseEventArgs> OnMouseLeave { get; set; }
+    private RenderFragment<BlowNode>? Template => Settings.Template;
+    private bool Focusable => Settings.Focusable;
+    private string? DescribedBy => Settings.DescribedBy;
+    private bool Elevate => Settings.Elevate;
+    private bool ElevateWhileDragging => Settings.ElevateWhileDragging;
+    private BlowAriaLabels AriaLabels => Settings.AriaLabels;
 
-    /// <summary>When false, suppresses the node's tab order (set by the canvas a11y flag).</summary>
-    [Parameter] public bool Focusable { get; set; } = true;
-
-    /// <summary>Raises the node above its peers while selected.</summary>
-    [Parameter] public bool Elevate { get; set; }
-
-    /// <summary>
-    /// Raises the node while it is being dragged, so it is never lost behind the nodes it is
-    /// being pulled across. Off only in manual z-index mode, where nothing is lifted for you.
-    /// </summary>
-    [Parameter] public bool ElevateWhileDragging { get; set; } = true;
-
-    /// <summary>The canvas's accessible-name strings, so a localized flow labels its nodes too.</summary>
-    [Parameter] public BlowAriaLabels AriaLabels { get; set; } = BlowAriaLabels.Default;
+    private EventCallback<PointerEventArgs> OnDragStart => Callbacks.DragStart;
+    private EventCallback<bool> OnActivate => Callbacks.Activate;
+    private EventCallback<FocusEventArgs> OnFocus => Callbacks.Focus;
+    private EventCallback<MouseEventArgs> OnClick => Callbacks.Click;
+    private EventCallback<MouseEventArgs> OnDoubleClick => Callbacks.DoubleClick;
+    private EventCallback<MouseEventArgs> OnContextMenu => Callbacks.ContextMenu;
+    private EventCallback<MouseEventArgs> OnMouseEnter => Callbacks.MouseEnter;
+    private EventCallback<MouseEventArgs> OnMouseMove => Callbacks.MouseMove;
+    private EventCallback<MouseEventArgs> OnMouseLeave => Callbacks.MouseLeave;
 
     /// <summary>
     /// Effective stacking order: an explicit <c>BlowNode.ZIndex</c> always wins, otherwise a
@@ -93,7 +96,10 @@
         OnMouseMove.HasDelegate ? OnMouseMove : default;
 
     private string? TabIndex => (Focusable && Node.Focusable) ? "0" : null;
-    private string AriaLabel => AriaLabels.NodeLabel(Node.AriaLabel ?? Node.Label ?? $"Node {Node.Id}");
+    // A blank label names nothing: the node is called by its id rather than by nothing at all.
+    private string AriaLabel => AriaLabels.NodeLabel(Named(Node.AriaLabel) ?? Named(Node.Label) ?? $"Node {Node.Id}");
+
+    private static string? Named(string? text) => string.IsNullOrWhiteSpace(text) ? null : text;
 
     private string CssClass
     {
@@ -104,6 +110,7 @@
             if (Node.Selected) sb.Append(" selected");
             if (Node.Dragging) sb.Append(" dragging");
             if (Node.Resizing) sb.Append(" resizing");
+            if (Node.Collapsed) sb.Append(" collapsed");
             // Not "nodrag": that is the canvas's escape-hatch class, and the guard behind it
             // swallows every press inside the element - selecting the node and its handles too.
             if (!Node.Draggable) sb.Append(" undraggable");
@@ -113,6 +120,74 @@
     }
 
     private BlowNodeContext _nodeContext = default!;
+
+    // ---- state and validation ----
+
+    private static int s_ids;
+
+    /// <summary>The id of the hidden element describing the node's state; unique on the page whatever the node's id.</summary>
+    private readonly string _stateId = $"bit-blow-state-{Interlocked.Increment(ref s_ids)}";
+
+    /// <summary>The state first, then the keyboard instructions.</summary>
+    private string? DescribedByWith(string? stateText)
+    {
+        if (TabIndex is null) return null;
+        if (string.IsNullOrEmpty(stateText)) return DescribedBy;
+        return DescribedBy is null ? _stateId : $"{_stateId} {DescribedBy}";
+    }
+
+    /// <summary>The most serious issue that marks the node: an error or a warning. Notes are not marked.</summary>
+    internal static BlowValidationSeverity? Severity(BlowNodeState? state)
+        => state is { Issues.Count: > 0 } s && s.Issues[0].Severity != BlowValidationSeverity.Info ? s.Issues[0].Severity : null;
+
+    /// <summary>The class a run status marks the node with: <c>bit-blow-run-running</c> and so on; none when idle.</summary>
+    private static string? RunClass(BlowNodeState? state) => state?.Run.Status switch
+    {
+        BlowRunStatus.Queued => " bit-blow-run-queued",
+        BlowRunStatus.Running => " bit-blow-run-running",
+        BlowRunStatus.Succeeded => " bit-blow-run-succeeded",
+        BlowRunStatus.Failed => " bit-blow-run-failed",
+        BlowRunStatus.Skipped => " bit-blow-run-skipped",
+        _ => null,
+    };
+
+    internal static string? SeverityClass(BlowValidationSeverity? severity) => severity switch
+    {
+        BlowValidationSeverity.Error => " bit-blow-error",
+        BlowValidationSeverity.Warning => " bit-blow-warning",
+        _ => null,
+    };
+
+    // ---- rendering only what changed ----
+
+    private Look _renderedLook;
+
+    /// <summary>
+    /// Everything the node's markup is drawn from: its geometry and the state the canvas maintains during a
+    /// gesture, and the settings it was handed - a new settings object whenever the canvas's graph version, or
+    /// anything else in it, changes. The callbacks are left out: which ones are wired up only changes when the
+    /// canvas's parameters do, and that changes the graph version too. The data is compared by reference: a node given
+    /// new data is drawn again, and one whose data was changed in place is drawn again when the canvas next is.
+    /// </summary>
+    private readonly record struct Look(
+        BlowXYPosition Position, double? Width, double? Height, BlowDimensions Measured,
+        bool Selected, bool Dragging, bool Resizing, bool Draggable, bool Connectable, bool Focusable, bool Collapsed,
+        string Type, string? Label, string? AriaLabel, string? Class, string? Style, int? ZIndex,
+        BlowSameReference Data, object? Ports, BlowPosition SourcePosition, BlowPosition TargetPosition,
+        object Settings);
+
+    private Look CurrentLook() => new(
+        Node.AbsolutePosition, Node.Width, Node.Height, Node.Measured,
+        Node.Selected, Node.Dragging, Node.Resizing, Node.Draggable, Node.Connectable, Node.Focusable, Node.Collapsed,
+        Node.Type, Node.Label, Node.AriaLabel, Node.Class, Node.Style, Node.ZIndex,
+        new(Node.Data), Node.Ports, Node.SourcePosition, Node.TargetPosition,
+        Settings);
+
+    /// <summary>
+    /// Skips the render when neither the canvas's graph version nor anything the node is drawn from has changed -
+    /// which is every node on every frame of a pan, and every node but the dragged ones on every frame of a drag.
+    /// </summary>
+    protected override bool ShouldRender() => CurrentLook() != _renderedLook;
 
     protected override void OnParametersSet()
     {
@@ -153,9 +228,19 @@
     }
 
     /// <summary>
-    /// Enter/Space selects the focused node. Arrow keys are deliberately left to bubble up to
-    /// the pane, which moves the whole selection.
+    /// Enter/Space selects the focused node, and the connection key starts a connection from it. Arrow keys are
+    /// deliberately left to bubble up to the pane, which moves the whole selection.
     /// </summary>
-    private Task OnKeyDown(KeyboardEventArgs e) =>
-        e.Key is "Enter" or " " ? OnActivate.InvokeAsync(e.ShiftKey) : Task.CompletedTask;
+    private Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key is "Enter" or " ") return OnActivate.InvokeAsync(e.ShiftKey);
+
+        if (Settings.ConnectionKey is { } key && !e.CtrlKey && !e.MetaKey && !e.AltKey
+            && string.Equals(e.Key, key, StringComparison.OrdinalIgnoreCase))
+        {
+            return Callbacks.Connect.InvokeAsync();
+        }
+
+        return Task.CompletedTask;
+    }
 }

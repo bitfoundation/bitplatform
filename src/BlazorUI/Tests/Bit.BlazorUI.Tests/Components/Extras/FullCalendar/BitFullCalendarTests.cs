@@ -19,9 +19,25 @@ public class BitFullCalendarTests : BunitTestContext
 {
     private const string AddButtonSelector = ".bit-bfc-header-right .bit-bfc-btn-primary";
 
-    private static List<BitFullCalendarEvent> Events()
+    // "Today" is read once per test, and every calendar the test renders reads the same day off a clock pinned to its
+    // noon. A test reading DateTime.Today and a calendar reading it again could otherwise fall on two sides of midnight,
+    // opening the calendar on another day than the one the test put its events on and asserts. A clock standing on a
+    // whole minute also keeps the now indicator's timer, which ticks on the next minute, from re-rendering mid-test.
+    private DateTime Today { get; } = DateTime.Today;
+
+    [TestInitialize]
+    public void PinTheClock()
     {
-        var today = DateTime.Today;
+        // Handed down the way an app hands its users' clock to every calendar, so no render below has to carry it.
+        Context.RenderTree.Add<CascadingValue<BitFullCalendarParams>>(parameters => parameters
+            .Add(p => p.Name, BitFullCalendarParams.ParamName)
+            .Add(p => p.IsFixed, true)
+            .Add(p => p.Value, new BitFullCalendarParams { TimeProvider = new FixedTimeProvider(Today.AddHours(12)) }));
+    }
+
+    private List<BitFullCalendarEvent> Events()
+    {
+        var today = Today;
         return
         [
             new() { Id = "1", Title = "Standup", Description = "Daily sync", StartDate = today.AddHours(9), EndDate = today.AddHours(10) }
@@ -594,7 +610,7 @@ public class BitFullCalendarTests : BunitTestContext
     public void BitFullCalendarShouldOpenOnABoundDateTheViewsAllow()
     {
         // Captured once, so a run crossing midnight still compares against the date it bound.
-        var expected = DateTime.Today.AddDays(40);
+        var expected = Today.AddDays(40);
         var date = expected;
 
         var component = RenderComponent<BitFullCalendar>(parameters =>
@@ -857,7 +873,7 @@ public class BitFullCalendarTests : BunitTestContext
         {
             parameters.Add(p => p.Events, Events());
             parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
-            parameters.Add(p => p.DefaultDate, DateTime.Today.AddDays(3));
+            parameters.Add(p => p.DefaultDate, Today.AddDays(3));
         });
 
         Assert.AreEqual(0, otherDay.FindAll(".bit-bfc-timeline").Count, "\"now\" only exists on today's column");
@@ -933,7 +949,7 @@ public class BitFullCalendarTests : BunitTestContext
             new BitFullCalendarSettings { ShowWeekNumbers = true },
             BitFullCalendarView.Week);
 
-        var weekNumber = BitFullCalendarHelpers.GetWeekNumberForRow(DateTime.Today, component.Instance.State.Culture);
+        var weekNumber = BitFullCalendarHelpers.GetWeekNumberForRow(Today, component.Instance.State.Culture);
         var cell = component.Find(".bit-bfc-week-header-time .bit-bfc-weeknum-cell");
 
         // The short form is what is seen; the spoken form travels as hidden text, since a role-less span's name is not read.
@@ -946,9 +962,9 @@ public class BitFullCalendarTests : BunitTestContext
 
     #region All-day events
 
-    private static List<BitFullCalendarEvent> AllDayEvents()
+    private List<BitFullCalendarEvent> AllDayEvents()
     {
-        var today = DateTime.Today;
+        var today = Today;
         return
         [
             new() { Id = "timed", Title = "Standup", StartDate = today.AddHours(9), EndDate = today.AddHours(10) },
@@ -988,7 +1004,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarShouldCarryTheEventCssClassOntoItsBadge()
     {
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -1007,7 +1023,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarShouldLockASingleEventWithoutLockingTheCalendar()
     {
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -1029,7 +1045,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarShouldRemoveTheResizeHandlesOfALockedEvent()
     {
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -1053,8 +1069,8 @@ public class BitFullCalendarTests : BunitTestContext
         {
             parameters.Add(p => p.Events, Events());
             parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
-            parameters.Add(p => p.MinDate, DateTime.Today);
-            parameters.Add(p => p.MaxDate, DateTime.Today.AddDays(1));
+            parameters.Add(p => p.MinDate, Today);
+            parameters.Add(p => p.MaxDate, Today.AddDays(1));
         });
 
         // aria-disabled rather than disabled, so the press that reaches the edge keeps the focus on the button.
@@ -1071,18 +1087,18 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarShouldPullABoundDateIntoTheAllowedWindow()
     {
-        var bound = DateTime.Today.AddDays(40);
+        var bound = Today.AddDays(40);
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.MinDate, DateTime.Today);
-            parameters.Add(p => p.MaxDate, DateTime.Today.AddDays(5));
+            parameters.Add(p => p.MinDate, Today);
+            parameters.Add(p => p.MaxDate, Today.AddDays(5));
             parameters.Add(p => p.Date, bound);
             parameters.Add(p => p.DateChanged, EventCallback.Factory.Create<DateTime>(this, d => bound = d));
         });
 
-        Assert.AreEqual(DateTime.Today.AddDays(5), component.Instance.State.SelectedDate);
-        Assert.AreEqual(DateTime.Today.AddDays(5), bound, "the corrected value is pushed back into the binding");
+        Assert.AreEqual(Today.AddDays(5), component.Instance.State.SelectedDate);
+        Assert.AreEqual(Today.AddDays(5), bound, "the corrected value is pushed back into the binding");
     }
 
     [TestMethod]
@@ -1091,8 +1107,8 @@ public class BitFullCalendarTests : BunitTestContext
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.MinDate, DateTime.Today);
-            parameters.Add(p => p.MaxDate, DateTime.Today.AddDays(2));
+            parameters.Add(p => p.MinDate, Today);
+            parameters.Add(p => p.MaxDate, Today.AddDays(2));
         });
 
         Assert.IsTrue(component.FindAll(".bit-bfc-month-cell.bit-bfc-out-of-range").Count > 0);
@@ -1105,7 +1121,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarShouldRenderTheConfiguredNumberOfMonthEventSlots()
     {
-        var today = DateTime.Today;
+        var today = Today;
         var events = Enumerable.Range(0, 5)
             .Select(i => new BitFullCalendarEvent
             {
@@ -1271,7 +1287,7 @@ public class BitFullCalendarTests : BunitTestContext
         Assert.AreEqual(start.AddDays(10), component.Instance.State.SelectedDate);
 
         component.InvokeAsync(() => component.Instance.GoToToday()).GetAwaiter().GetResult();
-        Assert.AreEqual(DateTime.Today, component.Instance.State.SelectedDate);
+        Assert.AreEqual(Today, component.Instance.State.SelectedDate);
     }
 
     [TestMethod]
@@ -1293,8 +1309,8 @@ public class BitFullCalendarTests : BunitTestContext
 
         var (start, end) = component.Instance.GetVisibleRange();
 
-        Assert.AreEqual(DateTime.Today, start);
-        Assert.AreEqual(DateTime.Today, end);
+        Assert.AreEqual(Today, start);
+        Assert.AreEqual(Today, end);
     }
 
     #endregion
@@ -1651,7 +1667,7 @@ public class BitFullCalendarTests : BunitTestContext
         BitFullCalendarView view = BitFullCalendarView.Day,
         BitFullCalendarSettings? settings = null)
     {
-        var today = DateTime.Today;
+        var today = owner.Today;
         return owner.RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -1674,8 +1690,8 @@ public class BitFullCalendarTests : BunitTestContext
 
         Assert.AreEqual(1, changes.Count);
         Assert.AreEqual(BitFullCalendarChangeSource.Drag, changes[0].Source);
-        Assert.AreEqual(DateTime.Today.AddHours(9).AddMinutes(30), changes[0].Event.StartDate);
-        Assert.AreEqual(DateTime.Today.AddHours(10).AddMinutes(30), changes[0].Event.EndDate);
+        Assert.AreEqual(Today.AddHours(9).AddMinutes(30), changes[0].Event.StartDate);
+        Assert.AreEqual(Today.AddHours(10).AddMinutes(30), changes[0].Event.EndDate);
     }
 
     [TestMethod]
@@ -1688,15 +1704,15 @@ public class BitFullCalendarTests : BunitTestContext
 
         Assert.AreEqual(1, changes.Count);
         Assert.AreEqual(BitFullCalendarChangeSource.Resize, changes[0].Source);
-        Assert.AreEqual(DateTime.Today.AddHours(9), changes[0].Event.StartDate, "a resize leaves the start alone");
-        Assert.AreEqual(DateTime.Today.AddHours(10).AddMinutes(30), changes[0].Event.EndDate);
+        Assert.AreEqual(Today.AddHours(9), changes[0].Event.StartDate, "a resize leaves the start alone");
+        Assert.AreEqual(Today.AddHours(10).AddMinutes(30), changes[0].Event.EndDate);
     }
 
     [TestMethod]
     public void BitFullCalendarShiftArrowShouldNotShrinkAnEventBelowOneSlot()
     {
         var changes = new List<BitFullCalendarChangeEventArgs>();
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -1717,7 +1733,7 @@ public class BitFullCalendarTests : BunitTestContext
     {
         var changes = new List<BitFullCalendarChangeEventArgs>();
         var refusals = new List<BitFullCalendarChangeRefusal>();
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -1745,7 +1761,7 @@ public class BitFullCalendarTests : BunitTestContext
 
     private IRenderedComponent<BitFullCalendar> RenderTwoOverlappingEvents(List<BitFullCalendarChangeEventArgs> changes, List<BitFullCalendarChangeRefusal> refusals, bool allowOverlap)
     {
-        var today = DateTime.Today;
+        var today = Today;
         return RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -1804,7 +1820,7 @@ public class BitFullCalendarTests : BunitTestContext
     public void BitFullCalendarDialogSaveOnChangingCancelsShouldRaiseNoRefusal()
     {
         var refusals = new List<BitFullCalendarChangeRefusal>();
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -1827,7 +1843,7 @@ public class BitFullCalendarTests : BunitTestContext
     public void BitFullCalendarKeyboardEditShouldDoNothingOnALockedEvent()
     {
         var changes = new List<BitFullCalendarChangeEventArgs>();
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -1852,7 +1868,7 @@ public class BitFullCalendarTests : BunitTestContext
         component.Find(".bit-bfc-event-badge").KeyDown(new KeyboardEventArgs { Key = "ArrowRight", AltKey = true });
 
         Assert.AreEqual(1, changes.Count);
-        Assert.AreEqual(DateTime.Today.AddDays(1).AddHours(9), changes[0].Event.StartDate);
+        Assert.AreEqual(Today.AddDays(1).AddHours(9), changes[0].Event.StartDate);
     }
 
     [TestMethod]
@@ -1916,8 +1932,8 @@ public class BitFullCalendarTests : BunitTestContext
         Slots(component)[3].MouseUp();
 
         Assert.AreEqual(1, drafts.Count);
-        Assert.AreEqual(DateTime.Today.AddHours(8), drafts[0]!.StartDate);
-        Assert.AreEqual(DateTime.Today.AddHours(10), drafts[0]!.EndDate);
+        Assert.AreEqual(Today.AddHours(8), drafts[0]!.StartDate);
+        Assert.AreEqual(Today.AddHours(10), drafts[0]!.EndDate);
     }
 
     [TestMethod]
@@ -1937,8 +1953,8 @@ public class BitFullCalendarTests : BunitTestContext
         Slots(component)[1].MouseUp();
 
         Assert.AreEqual(1, drafts.Count);
-        Assert.AreEqual(DateTime.Today.AddHours(8).AddMinutes(30), drafts[0]!.StartDate);
-        Assert.AreEqual(DateTime.Today.AddHours(10), drafts[0]!.EndDate);
+        Assert.AreEqual(Today.AddHours(8).AddMinutes(30), drafts[0]!.StartDate);
+        Assert.AreEqual(Today.AddHours(10), drafts[0]!.EndDate);
     }
 
     [TestMethod]
@@ -1961,7 +1977,7 @@ public class BitFullCalendarTests : BunitTestContext
         Slots(component)[0].Click();
 
         Assert.AreEqual(1, drafts.Count);
-        Assert.AreEqual(DateTime.Today.AddHours(8).AddMinutes(30), drafts[0]!.EndDate, "a click still covers one slot");
+        Assert.AreEqual(Today.AddHours(8).AddMinutes(30), drafts[0]!.EndDate, "a click still covers one slot");
     }
 
     [TestMethod]
@@ -2015,7 +2031,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarAgendaSearchShouldMatchAnAttendeeName()
     {
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -2045,7 +2061,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarAgendaShouldLabelAnAllDayEvent()
     {
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -2440,7 +2456,7 @@ public class BitFullCalendarTests : BunitTestContext
     public void BitFullCalendarAddDialogShouldRefuseAnOverlappingSaveWhenOverlapsAreDisallowed()
     {
         var changes = new List<BitFullCalendarChangeEventArgs>();
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -2828,7 +2844,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarShouldNotPutAClockRangeOnAnAllDayTooltip()
     {
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -2846,7 +2862,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarAgendaShouldListADayInClockOrder()
     {
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             // Supplied out of order, and with an all-day event that heads the date it covers.
@@ -2869,7 +2885,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarShouldPlaceAnEventBlockAgainstTheHourHeightVariable()
     {
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -2919,7 +2935,7 @@ public class BitFullCalendarTests : BunitTestContext
         {
             parameters.Add(p => p.Events, Events());
             parameters.Add(p => p.DefaultView, BitFullCalendarView.Week);
-            parameters.Add(p => p.DefaultDate, DateTime.Today.AddDays(30));
+            parameters.Add(p => p.DefaultDate, Today.AddDays(30));
         });
 
         Assert.AreEqual(0, anotherWeek.FindAll(".bit-bfc-today-col").Count);
@@ -2928,7 +2944,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarDetailsDialogShouldDescribeTheRepeatRuleOfAnOccurrence()
     {
-        var today = DateTime.Today;
+        var today = Today;
         var component = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events,
@@ -3005,4 +3021,11 @@ public class BitFullCalendarTests : BunitTestContext
     }
 
     #endregion
+
+    private sealed class FixedTimeProvider(DateTime localNow) : TimeProvider
+    {
+        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
+
+        public override DateTimeOffset GetUtcNow() => new(DateTime.SpecifyKind(localNow, DateTimeKind.Utc));
+    }
 }

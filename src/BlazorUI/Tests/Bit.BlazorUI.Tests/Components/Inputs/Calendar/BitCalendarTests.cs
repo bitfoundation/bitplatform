@@ -1591,6 +1591,9 @@ public class BitCalendarTests : BunitTestContext
             // The time picker reads the hour of the value in the TimeZone of the component, so the test pins
             // it rather than letting the machine's own zone decide which hour the grid is stepped from.
             parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            // A long delay keeps the press-and-hold spin out of the picture, so the press contributes exactly one
+            // step however long a slow machine takes between the pointerdown and the pointerup.
+            parameters.Add(p => p.ContinuousSpinDelay, 60_000);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
@@ -1643,6 +1646,8 @@ public class BitCalendarTests : BunitTestContext
             parameters.Add(p => p.MinuteStep, 15);
             parameters.Add(p => p.ShowTimePicker, true);
             parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            // A long delay keeps the press-and-hold spin out of the picture, so the press is exactly one step.
+            parameters.Add(p => p.ContinuousSpinDelay, 60_000);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
@@ -1803,6 +1808,11 @@ public class BitCalendarTests : BunitTestContext
     {
         var component = RenderComponent<BitCalendar>(parameters =>
         {
+            // Today is pinned rather than read off the clock: the calendar reads the clock once for the month it
+            // shows and again for the day it highlights, and a render straddling the midnight that ends a month
+            // would show one month and look for today in the next.
+            parameters.Add(p => p.Today, new DateTimeOffset(2026, 1, 15, 10, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
             parameters.Add(p => p.HighlightToday, highlightToday);
         });
 
@@ -2092,6 +2102,8 @@ public class BitCalendarTests : BunitTestContext
             parameters.Add(p => p.ShowTimePickerAsOverlay, true);
             parameters.Add(p => p.ShowMonthPicker, false);
             parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            // A long delay keeps the press-and-hold spin out of the picture, so the press is exactly one step.
+            parameters.Add(p => p.ContinuousSpinDelay, 60_000);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 

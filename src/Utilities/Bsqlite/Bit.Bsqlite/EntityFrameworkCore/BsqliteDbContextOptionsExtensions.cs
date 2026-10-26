@@ -1,4 +1,5 @@
 ﻿using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using Bit.Bsqlite.EntityFrameworkCore;
 using Bit.Bsqlite.Interop;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -102,6 +103,8 @@ public static class BsqliteDbContextOptionsExtensions
         return optionsBuilder;
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BsqliteDatabaseCreator))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BsqliteHistoryRepository))]
     private static void ReplaceSyncBoundServices(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.ReplaceService<IRelationalDatabaseCreator, BsqliteDatabaseCreator>();

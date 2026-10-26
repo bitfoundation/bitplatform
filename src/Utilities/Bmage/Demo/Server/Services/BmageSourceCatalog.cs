@@ -325,7 +325,8 @@ public static partial class BmageSourceCatalog
                 return new BmageSourceFileDto
                 {
                     Path = file.Key,
-                    Kind = file.Key.Contains("/Pages/", StringComparison.OrdinalIgnoreCase) ? "Demo page"
+                    Kind = file.Key.StartsWith("Samples/", StringComparison.OrdinalIgnoreCase) ? "Sample"
+                         : file.Key.Contains("/Pages/", StringComparison.OrdinalIgnoreCase) ? "Demo page"
                          : file.Key.StartsWith("Demo/Server/", StringComparison.OrdinalIgnoreCase) ? "Host"
                          : file.Key.StartsWith("Demo/Client/Layout/", StringComparison.OrdinalIgnoreCase) ? SiteChromeKind
                          : "Demo",
@@ -361,7 +362,9 @@ public static partial class BmageSourceCatalog
     {
         if (path.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
         {
-            return "The WebAssembly client's project file: the Bit.Bmage reference, and RunAOTCompilation switched on for a Release publish.";
+            return path.StartsWith("Samples/MAUI/", StringComparison.OrdinalIgnoreCase)
+                ? "The MAUI sample's project file: a Blazor Hybrid app for Android, iOS, Mac Catalyst and Windows over the shared sample pages."
+                : "The WebAssembly client's project file: the Bit.Bmage reference, and RunAOTCompilation switched on for a Release publish.";
         }
 
         var leadingComment = LeadingRazorCommentRegex().Match(content);

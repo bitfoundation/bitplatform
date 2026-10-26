@@ -20,13 +20,18 @@ public sealed partial class BrowserSession : IAsyncDisposable
         Page = page;
 
         page.Console += (_, message) => { if (message.Type == "error" && IsFavicon(message.Location) is false && IsFavicon(message.Text) is false) Errors.Add($"console: {message.Text}"); };
-        page.PageError += (_, error) => Errors.Add($"page: {error}");
+        page.PageError += (_, error) => { if (IsResizeObserverLoop(error) is false) Errors.Add($"page: {error}"); };
         page.Response += (_, response) => { if (response.Status >= 400 && IsFavicon(response.Url) is false) Errors.Add($"{response.Status}: {response.Url}"); };
     }
 
     // The icon an engine asks every page for whether it names one or not: none of the host pages does, and the 404 it gets
     // back (and the console line some engines log for it) says nothing about the trimming.
     private static bool IsFavicon(string? text) => text?.Contains("/favicon.ico", StringComparison.OrdinalIgnoreCase) is true;
+
+    // The notice an engine raises when a ResizeObserver's callback resizes what it observes and the rest of its notifications
+    // wait for the next frame. Nothing failed, though WebKit reports it as an uncaught error (Belemetry ignores it by default
+    // for the same reason), and it says nothing about the trimming.
+    private static bool IsResizeObserverLoop(string? text) => text?.Contains("ResizeObserver loop", StringComparison.Ordinal) is true;
 
     /// <summary>The engines a trimmed app is run in: every one Playwright drives.</summary>
     public static IEnumerable<object[]> Engines => [["chromium"], ["firefox"], ["webkit"]];

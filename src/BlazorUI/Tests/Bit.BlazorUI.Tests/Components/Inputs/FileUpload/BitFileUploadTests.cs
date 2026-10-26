@@ -707,10 +707,17 @@ public class BitFileUploadTests : BunitTestContext
 
         await com.InvokeAsync(() => com.Instance.Upload());
 
-        var failing = com.InvokeAsync(() => com.Instance.__HandleChunkUpload(0, 500, "boom"));
+        // the pause lands while the retry is still waiting out its delay: the two are made in one turn of the
+        // renderer's dispatcher, which is where that delay resumes, so it cannot run out in between. made one
+        // after the other from the test, a test thread held up for longer than the 300 ms delay would let the retry
+        // start the upload again first, and the test would pass without the pause ever meeting a pending retry.
+        Task failing = Task.CompletedTask;
+        await com.InvokeAsync(() =>
+        {
+            failing = com.Instance.__HandleChunkUpload(0, 500, "boom");
 
-        // the pause lands while the retry is still waiting out its delay.
-        await com.InvokeAsync(() => com.Instance.PauseUpload());
+            return com.Instance.PauseUpload();
+        });
         await failing;
 
         Assert.AreEqual(BitFileUploadStatus.Paused, com.Instance.Files[0].Status);

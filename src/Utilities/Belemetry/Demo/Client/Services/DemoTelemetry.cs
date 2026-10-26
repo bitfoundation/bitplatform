@@ -45,6 +45,10 @@ public static class DemoTelemetry
         options.Traces.Sources.Add(DemoDiagnostics.Name);
         options.Metrics.Meters.Add(DemoDiagnostics.Name);
 
+        // Belemetry's own health: what it dropped and why, and what became of its exports - the
+        // belemetry.records.* counters the ".NET instrumentation" page shows.
+        options.Metrics.Meters.Add("Bit.Belemetry");
+
         foreach (var url in SelfUrls) options.Browser.IgnoreUrls.Add(url);
 
         options.AddProcessor(new DemoNoiseFilter());

@@ -8,21 +8,30 @@
         Drop targets can be nested. <code>IsOver</code> is true for every target under the
         pointer, while <code>IsOverShallow</code> (React DnD's <code>isOver({ shallow: true })</code>)
         is true only for the innermost one. Drag the box over the nested squares to see the
-        difference.
+        difference. A drop reaches every target under the pointer, innermost first: each level's
+        <code>OnDrop</code> runs and publishes its name as the drop's <code>Result</code>, and the source's
+        <code>OnEnd</code> reads the result that won - an outer target's overrides an inner one's, React DnD's rule.
+        Make the targets greedy and an outer level first asks <code>Monitor.DidDrop()</code>: true once an inner level
+        took the drop, so it leaves it alone and the innermost result stands.
     </p>
 </div>
 
-<DemoCode />
-
 <div class="bb-demo">
+    <div class="bb-toolbar">
+        <label class="bb-check">
+            <input type="checkbox" @bind="_greedy" />
+            Greedy: an outer target ignores a drop an inner one took
+        </label>
+    </div>
+
     <BdndProvider>
-        <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("payload")" Context="d">
+        <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("payload")" OnBegin="Begin" OnEnd="End" Context="d">
             <div class="box" style="margin-bottom:1.5rem;opacity:@(d.IsDragging ? "0.4" : "1")">
                 Drag me into the nest
             </div>
         </BdndDraggable>
 
-        @RenderNest(0)
+        @Nest(0)
     </BdndProvider>
 
     <p class="demo-caption">
@@ -31,34 +40,70 @@
         <span style="display:inline-block;width:14px;height:14px;background:rgba(255,235,59,0.25);border:1px solid #999;"></span>
         = also over (ancestor)
     </p>
+
+    <h2 class="demo-result-title">The last drop</h2>
+    <ol class="nest-log">
+        @if (_log.Count == 0)
+        {
+            <li>Nothing dropped yet.</li>
+        }
+        @foreach (var line in _log)
+        {
+            <li>@line</li>
+        }
+    </ol>
 </div>
+
+<DemoCode />
 
 @code {
     private const int Depth = 3;
 
-    private RenderFragment RenderNest(int level) => builder =>
-    {
-        // recursive nested drop targets
-        var seq = 0;
-        builder.OpenComponent<BdndDropTarget<string>>(seq++);
-        builder.AddAttribute(seq++, "Accept", ItemTypes.Box);
-        builder.AddAttribute(seq++, "style", "display:contents");
-        builder.AddAttribute(seq++, "ChildContent",
-            (RenderFragment<BdndDropState<string>>)(t => childBuilder =>
-            {
-                childBuilder.OpenElement(0, "div");
-                childBuilder.AddAttribute(1, "class", "nest-box");
-                childBuilder.AddAttribute(2, "data-level", level);
-                childBuilder.AddAttribute(3, "style", NestStyle(level, t));
-                childBuilder.AddContent(4, $"level {level}");
-                if (level < Depth)
+    private bool _greedy;
+    private readonly List<string> _log = [];
+    private readonly string?[] _dropped = new string?[Depth + 1];
+
+    // Each level is a drop target with the next level inside it.
+    private RenderFragment Nest(int level) =>
+        @<BdndDropTarget TItem="string" Accept="@ItemTypes.Box" Label="@($"level {level}")" OnDrop="@(e => Drop(level, e))"
+                         style="display:contents" Context="t">
+            <div class="nest-box" data-level="@level" style="@NestStyle(level, t)">
+                @Caption(level)
+                @if (level < Depth)
                 {
-                    childBuilder.AddContent(5, RenderNest(level + 1));
+                    @Nest(level + 1)
                 }
-                childBuilder.CloseElement();
-            }));
-        builder.CloseComponent();
-    };
+            </div>
+        </BdndDropTarget>;
+
+    // "level 2", and once a drop reached it, what it did with the drop
+    private string Caption(int level) => _dropped[level] is { } dropped ? $"level {level} - {dropped}" : $"level {level}";
+
+    private void Begin(string? _)
+    {
+        _log.Clear();
+        Array.Clear(_dropped);
+    }
+
+    // Runs innermost first. Monitor.DidDrop() is true once a target inside this one took the drop.
+    private void Drop(int level, BdndDropEventArgs<string> e)
+    {
+        var nested = e.Monitor.DidDrop();
+        if (_greedy && nested)
+        {
+            _dropped[level] = "left to the inner level";
+            _log.Add($"OnDrop of level {level}: an inner level took the drop, so it does nothing.");
+            return;
+        }
+        _dropped[level] = nested ? "dropped (nested)" : "dropped";
+        e.Result = $"level {level}";
+        _log.Add($"OnDrop of level {level}: DidDrop() was {(nested ? "true" : "false")}; it sets Result to \"level {level}\".");
+    }
+
+    private void End(BdndDragEndContext<string> e) =>
+        _log.Add(e.DidDrop
+            ? $"OnEnd of the box: DidDrop is true, DropResult is \"{e.DropResult}\"."
+            : "OnEnd of the box: DidDrop is false - it was dropped on no level.");
 
     private static string NestStyle(int level, BdndDropState<string> t)
     {

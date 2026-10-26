@@ -41,6 +41,47 @@ public sealed class BormFieldContext
     /// <summary>Id of the validation message list, referenced by <see cref="DescribedBy"/>.</summary>
     public string ErrorId => ElementId + "_error";
 
+    /// <summary>
+    /// The field's label as the user reads it — translated (see <see cref="IBormSchemaLocalizer"/>), and
+    /// falling back to its name. Renderers show this rather than <see cref="BormFieldDefinition.Label"/>.
+    /// </summary>
+    public string Label => State.LabelOf(Field, Path) ?? Field.Name;
+
+    /// <summary>The field's help text, translated.</summary>
+    public string? HelpText => State.HelpOf(Field, Path);
+
+    /// <summary>The field's placeholder, translated.</summary>
+    public string? Placeholder => State.PlaceholderOf(Field, Path);
+
+    /// <summary>The text shown before the input, translated.</summary>
+    public string? Prefix => State.PrefixOf(Field, Path);
+
+    /// <summary>The text shown after the input, translated.</summary>
+    public string? Suffix => State.SuffixOf(Field, Path);
+
+    /// <summary>
+    /// The Blazor edit context the form provides (<c>BormView ProvideEditContext="true"</c>), mirroring
+    /// its validation — what a component built on <c>InputBase&lt;T&gt;</c> or a component library's input
+    /// reads its invalid state from. Null when the form provides none.
+    /// </summary>
+    public Microsoft.AspNetCore.Components.Forms.EditContext? EditContext => State.EditContextAdapter?.EditContext;
+
+    /// <summary>
+    /// The field's identity in an edit context: the object it belongs to and the member's name — the same
+    /// identifier <c>InputBase</c> works out from <see cref="ValueExpression{TValue}"/>.
+    /// </summary>
+    public Microsoft.AspNetCore.Components.Forms.FieldIdentifier FieldIdentifier
+        => State.EditContextAdapter?.FieldIdentifier(Path) ?? BormEditContextAdapter.Identify(State, Path);
+
+    /// <summary>
+    /// An expression reading the field's value, for a component that needs one to find its field —
+    /// <c>InputBase&lt;T&gt;.ValueExpression</c>, <c>ValidationMessage&lt;T&gt;.For</c>. Pass the
+    /// property's own type (or <c>object</c> for a dictionary-backed form).
+    /// </summary>
+    /// <exception cref="InvalidOperationException">The value is not of type <typeparamref name="TValue"/>.</exception>
+    public System.Linq.Expressions.Expression<Func<TValue>> ValueExpression<TValue>()
+        => BormEditContextAdapter.ValueExpression<TValue>(State, Path);
+
     /// <summary>Whether the field is disabled by a condition.</summary>
     public bool IsDisabled => State.IsDisabled(Field, Path);
 
@@ -73,7 +114,7 @@ public sealed class BormFieldContext
         List<(BormFieldDefinition, string)>? found = null;
         for (var path = BormPath.Parent(Path); path.Length > 0; path = BormPath.Parent(path))
         {
-            if (State.Definition.FindByPath(path) is { IsContainer: true } container)
+            if (State.FindField(path) is { IsContainer: true } container)
                 (found ??= []).Add((container, path));
         }
         return found?.ToArray() ?? [];
@@ -134,8 +175,28 @@ public sealed class BormFieldContext
     /// <summary>Resolves a piece of the library's own UI text through the registered message provider.</summary>
     public string Text(string key, params object?[] args) => State.Text(key, args);
 
-    /// <summary>The current value formatted for an HTML input.</summary>
-    public string StringValue => BormValueConverter.ToInputString(Value, Field.Type);
+    /// <summary>
+    /// The name the control posts its value under when the form is rendered to be posted (<c>BormView FormName</c>) -
+    /// <c>Model.Lines[0].Product</c>, which the page's <c>[SupplyParameterFromForm]</c> model binds - or null while it is not.
+    /// </summary>
+    public string? InputName => State.PostedName is { } model ? (model.Length == 0 ? Path : model + "." + Path) : null;
+
+    /// <summary>
+    /// The current value formatted for an HTML input. A posted form rendered on the server shows the text the model
+    /// refused rather than the value it kept, so the box holds what its message is about; in the browser the control
+    /// already holds that text, and the value it is given is left alone.
+    /// </summary>
+    public string StringValue => State.RendersStatically && State.RefusedEntry(Path) is { } refused
+        ? refused
+        : BormValueConverter.ToInputString(Value, Field.Type);
+
+    /// <summary>
+    /// The value as a text box shows it: <see cref="StringValue"/>, put back into its mask's shape when the
+    /// model holds only what filled the slots (<see cref="BormFieldDefinition.MaskStoresRaw"/>).
+    /// </summary>
+    public string DisplayText => Field.MaskStoresRaw && Field.ParsedMask is { } mask && mask.TryFormat(StringValue, out var shaped)
+        ? shaped
+        : StringValue;
 
     public bool BoolValue => Value switch
     {
@@ -164,7 +225,7 @@ public sealed class BormFieldContext
     {
         get
         {
-            var hasHelp = !string.IsNullOrEmpty(Field.HelpText);
+            var hasHelp = !string.IsNullOrEmpty(HelpText);
             var hasMessages = ShowMessages && Messages.Count > 0;
             if (!hasHelp && !hasMessages) return null;
 

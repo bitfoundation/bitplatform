@@ -6,6 +6,10 @@
     <array>
         <string>applinks:use-your-web-app-url-here.com</string>
     </array>
+    <key>keychain-access-groups</key>
+    <array>
+        <string>$(AppIdentifierPrefix)$(CFBundleIdentifier)</string>
+    </array>
     <!--#if (notification == true)-->
     <key>aps-environment</key>
     <string>development</string>

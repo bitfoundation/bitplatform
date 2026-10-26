@@ -24,4 +24,16 @@ public sealed record BaletteMatch(BaletteCommand Command, double Score, int[] Ti
 
     /// <summary>The name of the source the command came from, when <see cref="FromSource"/>.</summary>
     public string? SourceName { get; init; }
+
+    /// <summary>
+    /// The titles of the pages a nested command lives on, outermost first, when it is listed on the root page (see
+    /// <see cref="BaletteOptions.SearchNestedCommands"/>); empty otherwise. Rendered before the title: "Theme › Dark".
+    /// </summary>
+    public IReadOnlyList<string> Path { get; init; } = [];
+
+    /// <summary>True when the command was only found by allowing typos (see <see cref="BaletteOptions.TypoTolerance"/>).</summary>
+    public bool IsApproximate { get; init; }
+
+    /// <summary>The group of a nested command's outermost ancestor, which it is listed under when it has none of its own.</summary>
+    internal string? InheritedGroup { get; init; }
 }

@@ -128,6 +128,9 @@
   <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
     <value>MaxLengthAttribute doit avoir une valeur Length supérieure à zéro. Utilisez MaxLength() sans paramètres pour indiquer que la chaîne ou le tableau peut avoir la longueur maximale autorisée.</value>
   </data>
+  <data name="MaxLengthAttribute_ValidationError" xml:space="preserve">
+    <value>Le champ {0} doit être de type chaîne ou tableau avec une longueur maximale de « {1} ».</value>
+  </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>Le champ {0} doit être de type chaîne ou tableau avec une longueur minimale de « {1} ».</value>
   </data>
@@ -394,12 +397,6 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   </data>
   <data name="InvalidUserCredentials" xml:space="preserve">
     <value>Identifiants utilisateur non valides</value>
-  </data>
-  <data name="EmailAlreadyConfirmed" xml:space="preserve">
-    <value>Votre e-mail est déjà confirmé.</value>
-  </data>
-  <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
-    <value>Votre numéro de téléphone est déjà confirmé.</value>
   </data>
   <data name="Title" xml:space="preserve">
     <value>Titre</value>
@@ -1206,6 +1203,9 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   </data>
   <data name="AiChatPanelVoiceCallAssistantFailed" xml:space="preserve">
     <value>L'assistant n'a pas pu répondre. Réessayez.</value>
+  </data>
+  <data name="AiChatTooManyRequests" xml:space="preserve">
+    <value>Vous discutez trop vite. Veuillez patienter une minute et réessayer.</value>
   </data>
   <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
     <value>Laissez vos coordonnées et un conseiller vous recontactera.</value>
@@ -2083,5 +2083,17 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   </data>
     <data name="UploadImageAsIs" xml:space="preserve">
     <value>Envoyer telle quelle</value>
+  </data>
+    <data name="ResetPasswordTwoFactorCodeRequired" xml:space="preserve">
+    <value>L’authentification à deux facteurs est activée pour ce compte. Saisissez un code de votre application d’authentification ou l’un de vos codes de récupération.</value>
+  </data>
+    <data name="AccountAlreadyExistsShortText" xml:space="preserve">
+    <value>Vous avez déjà un compte Boilerplate avec ce numéro de téléphone. Si vous venez d’essayer de vous inscrire, connectez-vous plutôt.</value>
+  </data>
+    <data name="AddAnotherAccount" xml:space="preserve">
+    <value>Ajouter un autre compte</value>
+  </data>
+    <data name="SignOutOfAllAccounts" xml:space="preserve">
+    <value>Se déconnecter de tous les comptes de cet appareil</value>
   </data>
 </root>

@@ -41,14 +41,14 @@ source ~/.bashrc</CodeBox>
     <section class="section-card">
         <div class="section-card-txt">
             <BitText Typography="BitTypography.H5" Gutter>2. Install the bit CLI</BitText>
-            <CodeBox>dotnet tool install --global Bit.Cli --prerelease</CodeBox>
-            Or run it once without installing it: <code>dnx Bit.Cli --prerelease -- new</code>
+            <CodeBox>dotnet tool install --global Bit.Cli --version 10.7.0</CodeBox>
+            Or run it once without installing it: <code>dnx Bit.Cli --version 10.7.0 -- new</code>
             <br />
             <br />
             <BitText Typography="BitTypography.Subtitle1" Gutter><b>Why it's safe to run</b></BitText>
             The bit CLI installs tools and changes your machine, so it's made to be checked, not just trusted:
             <ul>
-                <li><b>Open source.</b> All of it is <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Cli" target="_blank" rel="noopener">on GitHub</a> under the MIT license.</li>
+                <li><b>Open source.</b> All of it is <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Toolings/Cli" target="_blank" rel="noopener">on GitHub</a> under the MIT license.</li>
                 <li><b>Built by GitHub Actions, never on someone's laptop.</b> <code>bit about</code> shows the commit and the run that built your copy.</li>
                 <li><b>Signed.</b> <code>bit.dll</code> carries bit foundation's code signature from Azure Artifact Signing, and on Windows <code>bit about</code> shows who signed it once Windows has checked the signature.</li>
                 <li><b>Attested.</b> GitHub keeps a signed record of the run that built each package and the <code>bit.dll</code> inside it, along with a list of every component they contain. <code>bit about</code> asks GitHub whether your exact file has one, and prints the <code>gh attestation verify</code> command that checks it yourself.</li>

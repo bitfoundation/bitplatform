@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -133,9 +132,20 @@ public partial class BitDialog : BitComponentBase
     /// </summary>
     /// <remarks>
     /// A Dialog that confirms something irreversible should open with the focus on the answer that does the
-    /// least damage, so a stray Enter or Space cannot carry the destructive one out. A button that is not
-    /// being shown is ignored, and the focus falls back to <see cref="AutoFocusSelector"/> or to the first
-    /// focusable element.
+    /// least damage, so a stray Enter or Space cannot carry the destructive one out.
+    /// <br />
+    /// The focus lands on the first of these that can take it: the button set here on the Dialog itself, the
+    /// element <see cref="AutoFocusSelector"/> names, an element the content marks with <c>data-autofocus</c>
+    /// or <c>autofocus</c>, the button a <see cref="BitParams"/> ancestor sets here for every Dialog under it,
+    /// the first focusable element, and the Dialog itself. A button cannot take it while it is not being
+    /// shown or while it is disabled - by <see cref="BitComponentBase.Disabled"/>, by
+    /// <see cref="IsOkButtonEnabled"/> or <see cref="IsCancelButtonEnabled"/>, and for the Cancel and close
+    /// buttons while an <see cref="OnOk"/> callback is being awaited - and is passed over for the next one.
+    /// <br />
+    /// One a <see cref="BitParams"/> ancestor sets is only a default for every Dialog under it, so it comes
+    /// after what a Dialog asks for itself; it still comes before the first focusable element, so a Dialog
+    /// whose own choice cannot be honored opens on the safe answer the app picked rather than on whichever
+    /// button happens to come first.
     /// </remarks>
     [Parameter] public BitDialogButton? AutoFocusButton { get; set; }
 
@@ -146,13 +156,20 @@ public partial class BitDialog : BitComponentBase
     /// <remarks>
     /// The first focusable element is rarely the wrong place to start, but it is when the Dialog opens with
     /// a link or a segmented control above the field the user came to fill in. The selector is matched
-    /// inside the Dialog only, and a selector that matches nothing visible falls back to the first focusable
-    /// element - so a Dialog whose content varies never opens with the focus nowhere.
-    /// <see cref="AutoFocusButton"/> takes precedence over this when both are set.
+    /// inside the Dialog only, and a selector that matches nothing visible is passed over for the rest of the
+    /// order <see cref="AutoFocusButton"/> lays out - so a Dialog whose content varies never opens with the
+    /// focus nowhere.
+    /// <br />
+    /// An <see cref="AutoFocusButton"/> set on the Dialog that can take the focus takes precedence over this,
+    /// while one a <see cref="BitParams"/> ancestor sets does not: a Dialog that names the field to start on
+    /// keeps it when an app makes the Cancel button every Dialog's default, and still opens on that Cancel
+    /// button rather than on the first focusable element when the field it names is not there.
     /// <br />
     /// An element inside the Dialog carrying a <c>data-autofocus</c> attribute is picked up without a
     /// selector at all, which is the one to reach for when what should be focused is decided by the content
-    /// rather than by the Dialog around it.
+    /// rather than by the Dialog around it. It comes after this selector and after an
+    /// <see cref="AutoFocusButton"/> set on the Dialog that can take the focus, and before one a
+    /// <see cref="BitParams"/> ancestor sets.
     /// </remarks>
     [Parameter] public string? AutoFocusSelector { get; set; }
 
@@ -785,7 +802,6 @@ public partial class BitDialog : BitComponentBase
         return base.OnInitializedAsync();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitDialogParams))]
     protected override void OnParametersSet()
     {
         // The cascade fills in what the dialog left unset before anything reads it: the classes, the size and
@@ -984,26 +1000,23 @@ public partial class BitDialog : BitComponentBase
     private ElementReference? ScrollerElementTarget => ScrollerElement
                                                         ?? (ScrollerSelector.HasValue() ? null : AppShellContainer);
 
-    // Puts the focus where the Dialog was asked to open it: on one of its own buttons where AutoFocusButton
-    // names one that is actually being shown, on what AutoFocusSelector points at next, and otherwise on the
-    // first focusable element it holds - which the JS side falls back from onto the Dialog itself when it
-    // holds nothing focusable.
+    // Puts the focus where the Dialog was asked to open it, the first of these that can take it: the button
+    // AutoFocusButton names on the Dialog itself, what AutoFocusSelector points at, an element the content
+    // marks with data-autofocus or autofocus, the button a BitParams ancestor names for every Dialog, the
+    // first focusable element, and the Dialog itself. The Dialog's own button is focused from here; the rest
+    // of the order is the JS side's, which is the only side that can see the content, so the cascaded button
+    // is handed to it as the fallback that comes after what the content asks for.
     private async Task FocusAutoTarget()
     {
-        // A disabled button is not a place the focus can land - the browser refuses it and leaves the focus
-        // where it was, which for a Dialog that has just opened is the page behind it - so a button that is
-        // not being shown and one that cannot be pressed fall back the same way. Each arm asks exactly what
-        // the markup asks when it decides whether to disable that button, since anything less names a button
-        // the browser will not take.
-        var pressable = Disabled is false && _isLoading is false;
+        // The cascade writes the button it supplies onto every Dialog that has not set one in its markup, so a
+        // value that is not set there and is the very one the cascade supplies is the cascade's - while one the
+        // Dialog was given any other way, by a derived class or by code, is its own. The cascaded button is read
+        // off the cascade rather than off the parameter, so it is still there to fall back on under a Dialog
+        // that has set its own.
+        var cascaded = CascadingParameters?.AutoFocusButton;
+        var own = HasNotBeenSet(nameof(AutoFocusButton)) && AutoFocusButton == cascaded ? null : AutoFocusButton;
 
-        var target = AutoFocusButton switch
-        {
-            BitDialogButton.Ok when pressable && ShowOkButton && IsOkButtonEnabled => _okButtonRef,
-            BitDialogButton.Cancel when pressable && ShowCancelButton && IsCancelButtonEnabled => _cancelButtonRef,
-            BitDialogButton.Close when pressable && ShowCloseButton => _closeButtonRef,
-            _ => (ElementReference?)null
-        };
+        var target = GetFocusableButton(own);
 
         try
         {
@@ -1013,12 +1026,35 @@ public partial class BitDialog : BitComponentBase
             }
             else
             {
-                await _js.BitUtilsFocusFirstElement(_containerId, AutoFocusSelector);
+                await _js.BitUtilsFocusFirstElement(_containerId, AutoFocusSelector, GetFocusableButton(cascaded));
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
         catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
     }
+
+    // The element of the named button where the focus can land on it. A disabled button is not such a place -
+    // the browser refuses it and leaves the focus where it was, which for a Dialog that has just opened is the
+    // page behind it - so a button that is not being shown and one that is disabled are passed over alike.
+    // Whether a button is disabled is read off the very properties the markup disables it by, so the two can
+    // never disagree about a button the browser will not take.
+    private ElementReference? GetFocusableButton(BitDialogButton? button) => button switch
+    {
+        BitDialogButton.Ok when ShowOkButton && IsOkButtonDisabled is false => _okButtonRef,
+        BitDialogButton.Cancel when ShowCancelButton && IsCancelButtonDisabled is false => _cancelButtonRef,
+        BitDialogButton.Close when ShowCloseButton && IsCloseButtonDisabled is false => _closeButtonRef,
+        _ => null
+    };
+
+    // The Ok button is not disabled while its callback is being awaited, only marked aria-disabled: it is the
+    // element the focus is on when it is pressed, and a button that turns disabled drops the focus onto the
+    // page behind the Dialog. The Cancel and close buttons are, since a press on either would answer a showing
+    // the Ok has already answered.
+    private bool IsOkButtonDisabled => Disabled || IsOkButtonEnabled is false;
+
+    private bool IsCancelButtonDisabled => Disabled || IsCancelButtonEnabled is false || _isLoading;
+
+    private bool IsCloseButtonDisabled => Disabled || _isLoading;
 
     private async Task SetupFocusTrap()
     {

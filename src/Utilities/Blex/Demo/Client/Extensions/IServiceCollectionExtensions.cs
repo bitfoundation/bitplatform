@@ -18,6 +18,7 @@ public static class IServiceCollectionExtensions
         // --- Site services (not part of Blex; they power the live panels) ----------------------
         services.AddScoped<ActionFeed>();
         services.AddScoped<DemoGuard>();
+        services.AddScoped<InventoryApi>();
 
         // OnError is captured on the singleton options object, so the sink it writes to must outlive
         // any single scope. In a Blazor Server app you would forward to ILogger instead.
@@ -39,6 +40,10 @@ public static class IServiceCollectionExtensions
             // Veto middleware: cancels actions while the demo's read-only guard is on.
             options.UseMiddleware<GuardMiddleware>();
 
+            // A typed filter: one action, named by its generated descriptor, handed the store and the payload as the
+            // decimal the action takes. Every other action passes it untouched.
+            options.UseFilter(AccountStore.Actions.Deposit, (account, amount) => amount is > 0 and <= 1000);
+
             // Display-only redaction: the settings store's Token never reaches the DevTools monitor.
             options.RedactDevToolsKeys("Token");
 
@@ -59,6 +64,10 @@ public static class IServiceCollectionExtensions
         services.AddBitBlexStore<SettingsStore>();
         services.AddBitBlexStore<OrdersStore>();
         services.AddBitBlexStore<NotificationsStore>();
+        services.AddBitBlexStore<WalletStore>();
+        services.AddBitBlexStore<LedgerStore>();
+        services.AddBitBlexStore<AccountStore>();
+        services.AddBitBlexStore<ProgressStore>();
 
         // Durable persistence for [BlexStoreAttribute(Persist = true)] stores, with debounced writes and a
         // versioned envelope so the shape can evolve without stranding visitors on old payloads.
@@ -85,9 +94,21 @@ public static class IServiceCollectionExtensions
             options.SyncAcrossTabs = true;
         });
 
+        // The server-state cache behind the queries page. One retry keeps the simulated failures quick to see, and an
+        // invalidation in one tab refetches the same keys in the site's other tabs.
+        services.AddBitBlexQueries(options =>
+        {
+            options.RetryCount = 1;
+            options.SyncAcrossTabs = true;
+        });
+
         // In-app undo/redo across every store. <BlexProvider> calls Start() once rehydration finishes.
         // No filter here: the docs demo is more useful when every action is its own step.
         services.AddBitBlexHistory(maxEntries: 50);
+
+        // ...and, beside it, an undo stack that covers the counter alone, for the history page's
+        // scoping demo. It starts recording when it is first resolved.
+        services.AddBitBlexHistory<CounterStore>(maxEntries: 50);
 
         return services;
     }

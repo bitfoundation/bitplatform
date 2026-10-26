@@ -196,6 +196,24 @@
   <data name="DefaultFromName" xml:space="preserve">
     <value>Boilerplate 应用</value>
   </data>
+  <data name="AccountAlreadyExistsEmailSubject" xml:space="preserve">
+    <value>Boilerplate - 您已有账户</value>
+  </data>
+  <data name="AccountAlreadyExistsTitle" xml:space="preserve">
+    <value>您好 {0}</value>
+  </data>
+  <data name="AccountAlreadyExistsSubtitle" xml:space="preserve">
+    <value>有人刚刚尝试使用您的电子邮件地址注册，但该地址已属于您的账户。</value>
+  </data>
+  <data name="AccountAlreadyExistsBody" xml:space="preserve">
+    <value>如果不是您本人操作，请忽略此邮件。</value>
+  </data>
+  <data name="AccountAlreadyExistsSignInLinkMessage" xml:space="preserve">
+    <value>如果是您本人，可以通过以下链接登录。</value>
+  </data>
+  <data name="AccountAlreadyExistsForgotPasswordLinkMessage" xml:space="preserve">
+    <value>如果您忘记了密码，可以通过以下链接重置。</value>
+  </data>
   <!--#if (multitenant == true) -->
   <data name="TenantInvitationEmailSubject" xml:space="preserve">
     <value>您已被邀请加入 {0}</value>

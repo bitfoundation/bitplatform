@@ -18,8 +18,10 @@
         Envelopes are posted to <code>{IngestionEndpoint}/v2.1/track</code>, with the ingestion endpoint read from the
         connection string - <code>https://dc.services.visualstudio.com</code> when the connection string has none. The
         body is a JSON array of envelopes with <code>Content-Type: application/json</code> (gzip-compressed with
-        <code>Compression = BelemetryCompression.Gzip</code>). With an <code>AccessTokenProvider</code>, every request also
-        carries <code>Authorization: Bearer</code> - and such an exporter is never handed to the browser script.
+        <code>Compression = BelemetryCompression.Gzip</code> - from the browser too, since the endpoint's CORS preflight
+        allows <code>Content-Encoding</code>; only the batches sent while the page unloads go uncompressed, because
+        compression is asynchronous). With an <code>AccessTokenProvider</code>, every request also carries
+        <code>Authorization: Bearer</code> - and such an exporter is never handed to the browser script.
     </p>
     <CodeSnippet Code="@ExporterCode" Language="C#" />
 </div>
@@ -104,7 +106,7 @@
                     <td><code>eventName == "browser.page_view"</code></td>
                     <td><code>PageView</code></td>
                     <td><code>pageViews</code></td>
-                    <td><code>name</code> (<code>page.title</code>, else <code>url.path</code>), <code>url</code>, <code>id</code></td>
+                    <td><code>name</code> (<code>page.title</code>, else <code>url.path</code>, else <code>url.full</code>), <code>url</code>, <code>id</code></td>
                 </tr>
                 <tr>
                     <td><code>eventName == "browser.web_vital"</code></td>

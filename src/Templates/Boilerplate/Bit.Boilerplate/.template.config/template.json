@@ -870,6 +870,7 @@
                         "src/Tests/Infrastructure/Components/BitOtpInputUtils.cs",
                         "src/Tests/Infrastructure/Components/BitSnackBarUtils.cs",
                         "src/Tests/Infrastructure/Components/AppMenuUtils.cs",
+                        "src/Tests/Infrastructure/TestImageFactory.cs",
                         "src/Tests/Features/Todo/OfflineTodoTests.cs",
                         "src/Tests/Features/Urls/ODataQueryFilterTests.cs",
                         "src/Tests/Features/Diagnostics/TelemetryScopeTests.cs",
@@ -882,6 +883,7 @@
                         "src/Tests/Features/TemplateConfig/PwaManifestShortcutTests.cs",
                         "src/Tests/Features/TemplateConfig/ThemeColorLiteralTests.cs",
                         "src/Tests/Features/TemplateConfig/HeadContentUsageTests.cs",
+                        "src/Tests/Features/TemplateConfig/PlatformDirectiveTests.cs",
                         "src/Tests/Features/Culture/CultureCookieParsingTests.cs",
                         "src/Tests/Features/Culture/CultureUrlRedirectionTests.cs",
                         "src/Tests/Features/Culture/ResxParityTests.cs",
@@ -897,6 +899,11 @@
                         "src/Tests/Features/Identity/MagicLinkReplayTests.cs",
                         "src/Tests/Features/Identity/TwoFactorAuthTests.cs",
                         "src/Tests/Features/Identity/TwoFactorAmrClaimTests.cs",
+                        "src/Tests/Features/Identity/IdentityCodeHardeningTests.cs",
+                        "src/Tests/Features/Identity/UserEnumerationTests.cs",
+                        "src/Tests/Features/Identity/SignInAsAnotherUserUITests.cs",
+                        "src/Tests/Features/Identity/SignInWhileSignedInTests.cs",
+                        "src/Tests/Features/Identity/DeviceAccountsTests.cs",
                         "src/Tests/Features/Identity/PrivilegedSessionTests.cs",
                         "src/Tests/Features/Identity/PrivilegedSessionTenantSwitchTests.cs",
                         "src/Tests/Features/Identity/UserManagementTenantScopingTests.cs",
@@ -959,6 +966,7 @@
                         "src/Tests/Features/Identity/RoleClaimGrantAllowListTests.cs",
                         "src/Tests/Features/Identity/WebAuthnCredentialOwnershipTests.cs",
                         "src/Tests/Features/Attachments/AttachmentReplacementTests.cs",
+                        "src/Tests/Features/Attachments/UploadFormatAllowListTests.cs",
                         "src/Tests/Features/Products/ProductImageLifecycleTests.cs",
                         "src/Tests/Features/Products/ProductCultureSafetyTests.cs",
                         "src/Tests/Features/Categories/CategoryDeleteGuardTests.cs",
@@ -1017,6 +1025,7 @@
                     "exclude": [
                         "src/Tests/Features/SignalR/ProfileRealtimeUpdateUITests.cs",
                         "src/Tests/Features/SignalR/SignalRInfiniteRetryPolicyTests.cs",
+                        "src/Tests/Features/SignalR/SessionRevocationTests.cs",
                         "src/Tests/Features/Diagnostics/DiagnosticReportSourcesTests.cs",
                         "src/Tests/Features/Mcp/GetCurrentDateTimeMcpIntegrationTests.cs",
                         "src/Tests/Features/Chatbot/SystemPromptContractTests.cs",
@@ -1035,8 +1044,15 @@
                         "src/Tests/Features/Chatbot/ChatbotMetricsTests.cs",
                         "src/Tests/Features/Chatbot/TestChatClient.cs",
                         "src/Tests/Features/Chatbot/SpeechHealthChecksTests.cs",
+                        "src/Tests/Features/Chatbot/ChatbotCostLimitsTests.cs",
                         "src/Tests/Features/SignalR/AzureSignalRHealthCheckTests.cs",
                         "src/Tests/Features/Attachments/AiChatImagesRetentionTests.cs"
+                    ]
+                },
+                {
+                    "condition": "(advancedTests != true || signalR != true || redis != true)",
+                    "exclude": [
+                        "src/Tests/Features/SignalR/SignalRRedisBackplaneTests.cs"
                     ]
                 },
                 {
@@ -1048,6 +1064,7 @@
                         "src/Tests/Features/PushNotification/PushSubscriptionsRetentionTests.cs",
                         "src/Tests/Features/PushNotification/PushNotificationsToggleUITests.cs",
                         "src/Tests/Features/PushNotification/PushNotificationHealthCheckTests.cs",
+                        "src/Tests/Features/PushNotification/PushEndpointAllowListTests.cs",
                         // Its subject is Diagnostic/SendTestPushNotification - the one anonymous POST that binds
                         // nothing but a route value, so a form body reaches AutoCsrfProtectionFilter intact.
                         "src/Tests/Features/Antiforgery/AntiforgeryFormPostTests.cs"
@@ -1094,6 +1111,7 @@
                         "src/Server/Boilerplate.Server.Api/Infrastructure/SignalR/**",
                         "src/Server/Boilerplate.Server.Api/Features/Chatbot/**",
                         "src/Server/Boilerplate.Server.Api/Features/Attachments/AiChatImagesRetentionJobRunner.cs",
+                        "src/Server/Boilerplate.Server.Api/Features/Identity/Configurations/UserSessionConfiguration.cs",
                         "src/Server/Boilerplate.Server.Api/Infrastructure/Extensions/IClientProxyExtensions.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanel.*",
                         "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanelCards/**",

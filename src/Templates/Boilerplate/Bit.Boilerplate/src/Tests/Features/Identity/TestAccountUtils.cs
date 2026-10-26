@@ -1,4 +1,7 @@
 //+:cnd:noEmit
+//#if (multitenant == true)
+using Boilerplate.Server.Api.Features.Tenants;
+//#endif
 
 namespace Boilerplate.Tests.Features.Identity;
 
@@ -19,8 +22,20 @@ public static class TestAccountUtils
     /// three steps the magic-link UI performs, driven through the API so no browser is needed. Returns the account's
     /// e-mail and id.
     /// </summary>
-    public static async Task<(string email, Guid userId)> CreateAndSignIn(
+    public static Task<(string email, Guid userId)> CreateAndSignIn(
         AppClient client, CancellationToken cancellationToken)
+    {
+        return CreateAccount(client, tokens => client.AuthManager.StoreTokens(tokens), cancellationToken);
+    }
+
+    public static Task<(string email, Guid userId)> CreateAndAddAccount(
+        AppClient client, CancellationToken cancellationToken)
+    {
+        return CreateAccount(client, tokens => client.AuthManager.CompleteSignIn(tokens, rememberMe: true), cancellationToken);
+    }
+
+    private static async Task<(string email, Guid userId)> CreateAccount(
+        AppClient client, Func<Shared.Features.Identity.Dtos.TokenResponseDto, Task> signIn, CancellationToken cancellationToken)
     {
         var identityController = client.GetController<IIdentityController>();
 
@@ -37,7 +52,7 @@ public static class TestAccountUtils
         // Confirming returns the token pair, exactly as ConfirmPage receives it; AuthManager is what persists it.
         var tokens = await identityController.ConfirmEmail(new() { Email = email, Token = captured.Token }, cancellationToken);
 
-        await client.AuthManager.StoreTokens(tokens);
+        await signIn(tokens);
 
         var userId = await ReadUserId(client.Server, email, cancellationToken);
 
@@ -85,9 +100,9 @@ public static class TestAccountUtils
         var userController = client.GetController<IUserController>();
 
         var tenants = await userController.GetTenants(cancellationToken);
-        Assert.IsNotEmpty(tenants, "A global admin should see every active tenant, and the template seeds one.");
+        Assert.Contains(tenant => tenant.Id == TenantConfiguration.FallbackTenantId, tenants, "A global admin should see every active tenant, the seeded one included.");
 
-        Assert.IsTrue(await client.AuthManager.SwitchTenant(tenants[0].Id, cancellationToken),
+        Assert.IsTrue(await client.AuthManager.SwitchTenant(TenantConfiguration.FallbackTenantId, cancellationToken),
             "Switching into the seeded tenant should succeed for a global admin.");
         //#endif
 

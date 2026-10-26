@@ -62,7 +62,12 @@ core because every host may need them and they add no dependency.
   JSON on purpose.
 - **The exporter must not instrument itself.** Every export runs inside `BelemetrySuppression.Begin()`, so the
   `System.Net.Http` activities it creates are not sampled. The JS fetch/XHR instrumentation ignores exporter URLs
-  and any request that already carries a `traceparent` header (in WASM, .NET's HttpClient has already traced it).
+  and any request that already carries a `traceparent` header (in WASM, .NET's HttpClient has already traced it - when
+  the app turns `HttpActivityPropagationSupport` on; the WebAssembly SDK turns it off, and then HttpClient's requests
+  carry no `traceparent` and the script records them as its own fetch spans).
+  In WASM the .NET sender also sets the fetch option `bitBelemetryExport: true` (`BelemetryHttpSender.MarkAsExport`,
+  through the `WebAssemblyFetchOptions` the runtime copies into fetch's init object); the fetch instrumentation skips
+  such a request whatever its URL, so a script a server started (Auto) does not trace the WebAssembly pipeline's exports.
 
 ## Contracts shared by C# and TypeScript
 
@@ -103,6 +108,11 @@ How consent works:
 - **After the decision**, held records the user granted are sent and the rest are dropped.
 - **Revoking a feature** purges its queued records. Revoking `Persistence` also clears stored requests, revoking
   `Sessions` clears the stored session, and revoking `UserTracking` clears the pseudo id and the user id.
+- **Other tabs** adopt a decision through the `storage` event of `bit-belemetry-consent` (`ConsentManager.adopt`), as if
+  it had been made there (released, purged, reported to .NET); a removed or unreadable entry changes nothing.
+- **.NET reads the grant back** after every `setConsent` (`BelemetryConsentService.SetAsync`), on every host: the
+  script reports a change only when its own grant changed, so a grant it refused (Global Privacy Control) would
+  otherwise stay granted in the WebAssembly or Hybrid pipeline.
 
 ### Storage keys (browser)
 
@@ -112,7 +122,7 @@ How consent works:
 | `bit-belemetry-session` | sessionStorage | `Sessions` | `{"id":"<32 hex>","start":<ms>,"last":<ms>}` |
 | `bit-belemetry-pseudo-id` | localStorage | `UserTracking` | 32 hex chars |
 | `bit-belemetry-user-id` | sessionStorage | `UserTracking` | authenticated id from `setUser` |
-| `bit-belemetry-queue` | localStorage | `Persistence` | `[{"id","exporter","url","contentType","body"(base64),"time"}]`, capped by `persistence.maxBytes` |
+| `bit-belemetry-queue` | localStorage | `Persistence` | `[{"id","exporter","url","contentType","body"(base64),"time"}]`, oldest first, capped by `persistence.maxBytes` |
 
 Persisted requests never carry headers (API keys), in the browser queue or in the .NET file store
 (`{LocalApplicationData}/bit-belemetry/{service.name}/*.blmreq`, `BelemetryHttpRequest` JSON without `headers`). The
@@ -141,34 +151,72 @@ idempotent: a second call only updates the consent defaults and the bridge.
   "features": 4095,                                      // instrumentations switched on by configuration
   "consent": { "default": 0, "persist": true, "honorGlobalPrivacyControl": true, "pendingLimit": 500 },
   "pageViews": { "trackHashChanges": false, "trackVisitTime": false },
-  "interactions": { "events": ["click"], "captureText": false, "maxTextLength": 64 },
+  "interactions": { "events": ["click"], "captureText": false, "maxTextLength": 64, "rageClicks": true },
   "performance": { "webVitals": true, "documentLoad": true, "resources": false, "longTasks": false },
   "dependencies": { "fetch": true, "xhr": true, "propagateTraceContextTo": ["same-origin"], "ignoreUrls": ["/_framework/", "/_blazor", "/_content/"] },
-  "errors": { "ignoreMessages": ["ResizeObserver loop"] },
+  "errors": { "ignoreMessages": ["ResizeObserver loop", "^Script error\\.?$"], "duplicateWindowMs": 5000, "maxPerMinute": 100 },
   "logs": { "captureConsole": false, "consoleLevels": ["error", "warn"] },
-  "privacy": { "redactQueryParameters": ["token","code","password","pwd","secret","key","apikey","api_key","auth","authorization","session","sid","sig","signature","email","access_token","id_token","refresh_token"],
-               "stripQueryString": false, "stripFragment": true, "scrubPatterns": true, "collectUserAgent": true, "blockedAttributes": [] },
+  "privacy": { "redactQueryParameters": ["token","code","password","pwd","secret","key","apikey","api_key","auth","authorization","session","sid","sig","signature","email","access_token","id_token","refresh_token",
+                                         "x-amz-signature","x-amz-credential","x-amz-security-token","x-goog-signature","x-goog-credential"],
+               "stripQueryString": false, "stripFragment": true, "scrubPatterns": true, "collectUserAgent": true, "blockedAttributes": [],
+               "redactedAttributes": ["password","passwd","pwd","secret","client_secret","token","access_token","refresh_token","id_token","apikey","api_key","x-api-key","authorization","proxy-authorization","cookie","set-cookie"] },
   "session": { "inactivityTimeoutMinutes": 30, "maxDurationMinutes": 1440 },
   "sampling": { "sessionRatio": 1.0 },
   "batch": { "maxQueueSize": 1024, "maxBatchSize": 100, "flushIntervalMs": 5000 },
   "persistence": { "enabled": true, "maxBytes": 1048576, "maxAgeHours": 48, "retryIntervalMs": 60000 },
+  "maxValueLength": 32768,                               // BelemetryOptions.MaxValueLength; 0 keeps strings whole
   "debug": false
 }
 ```
+
+Two rule sets are implemented on both sides and must stay in step (`Pipeline/BelemetryErrorLimiter.cs` +
+`BelemetryRateLimiter.cs` + `BelemetryValueLimit.cs`, and `Scripts/limits.ts`): the error limits (a signature of scope,
+`exception.type`, `exception.message` or the body, and the first two stack lines; a duplicate window from the last
+recorded occurrence; a token bucket of `maxPerMinute` per minute; 128 remembered signatures) and the value length cut
+(after privacy, never inside a surrogate pair). The .NET pipeline applies the error limits to its own records on
+WebAssembly and Hybrid only, never to relayed records (the script limited them) or on a server.
 
 Notes on the fields:
 - `propagateTraceContextTo` entries are `"same-origin"`, `"*"`, or a regex source matched against the absolute URL.
 - `ignoreUrls` and `ignoreMessages` are regex sources.
 - An exporter `endpoint` may be relative (`BrowserEndpoint = "/otlp"`); the script resolves it against the page URL,
   both to post and to recognize its own export requests.
+- `ignoreUrls` holds the .NET exporters' URLs only when the .NET pipeline runs in the page (WebAssembly; Hybrid too,
+  harmlessly): their exports go through fetch. A server lists none - its exports never touch the page, and it must not
+  publish internal collector addresses; a WebAssembly client's exports are recognized by their fetch option anyway
+  (see "The exporter must not instrument itself"). A repeated `start` appends its `ignoreUrls` (a WebAssembly client
+  starting the script a server rendered), and the HTTP tracer recompiles the list when it grows.
 - `signals` is the exporter's `BelemetrySignals` restricted to what the browser produces: traces 1, logs 2 (web vitals
   are log records). Absent or null means both. An exporter with neither is left out of the config.
 - `protocol` is never `grpc`: a page cannot speak it, so an OTLP exporter with `BelemetryOtlpProtocol.Grpc` is handed
   to the browser only when it has a `BrowserEndpoint`, as `http/protobuf` to that endpoint, and left out otherwise.
-- `blockedAttributes` are exact, case-sensitive attribute keys removed from every record and span event, before the
-  ids (`session.id`, ...) are added.
+- `headers` of an OTLP exporter are `BrowserHeaders` alone when a server renders the config (its `Headers` are server
+  configuration and must never be published in a page); in WebAssembly and Hybrid they are `Headers` with
+  `BrowserHeaders` on top (`BelemetryBrowserConfigFactory.BrowserHeaders`).
+- `blockedAttributes` are exact, case-sensitive attribute keys removed from every record and span event. A blocked id
+  (`session.id`, ...) is not added by the enrichment step either, and is removed from relayed records that carry it.
+- Privacy is one rule set on both sides (`BelemetryPrivacy.cs`, `privacy.ts`), applied per attribute in this order:
+  blocked keys are removed, an id included (the operator's explicit choice); the ids (`session.id`,
+  `enduser.pseudo.id`, `user.id`) are left alone by every other rule (consent governs them); a key in
+  `redactedAttributes` (whole key or last dot segment, case-insensitive; `prefix*`) gets
+  `REDACTED`; `server.address` and `user_agent.original` are not pattern-scrubbed; the URL attributes and `url.query`
+  get parameter redaction; every other string (and string array) is pattern-scrubbed in the order bearer, JWT,
+  e-mail, card, IPv4 - except IPv4 for a key named like a version (last segment `version`, or ending `_version` or
+  PascalCase `Version`). The card and IPv4 regexes only run with 13+ digits / 3+ dots (exact pre-checks), and a URL
+  without `?`, `#`, `@` or any pattern candidate is returned as is.
+- Retries differ per backend, on both sides (`IBelemetryHttpExporter.IsRetryable`, `transport.ts isRetryableFor`):
+  OTLP 429/502/503/504 only (the specification forbids the rest); Azure Monitor 408/429/439/500/502/503/504. A request
+  is Azure's when its exporter is `azureMonitor` (script) or `azuremonitor`, `azuremonitor1`, ... (.NET).
 - `retryIntervalMs` is `Persistence.RetryInterval` (non-positive falls back to 60000, floor 1000): how often the page
   resends its stored requests, besides on start and on the `online` event.
+- A resend pass is the same on both sides (`transport.ts resendPersisted`, `BelemetryExporterSet.RetryStoredAsync`):
+  oldest first, one attempt each; a request that fails holds back the rest of its URL's backlog for that pass, not
+  other URLs'; a partial success stores only what is left and does not hold anything back (the backend answered). The
+  script takes each stored request out of `localStorage` only while sending it, and puts it back when the page is
+  hidden if it is being sent without `keepalive` (`Transport.pageHidden`).
+- Once the page is unloading for good (a `pagehide` outside the back/forward cache), a `keepalive` request whose fetch
+  fails is not stored: Chromium fails the fetch of every keepalive request as its page unloads and sends them all the
+  same, so storing them would deliver each twice on the next visit. Offline, it is stored as before.
 - `service.instanceId` is null from `<BelemetryScript />`: a browser tab is its own instance, so the script
   generates a random `service.instance.id` per page load.
 
@@ -202,14 +250,20 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 | `trackEvent(name, attributes?)` | Custom event. A log record with `eventName = name` and feature `Events` |
 | `trackPageView(name?, url?, attributes?)` | Manual page view |
 | `trackException(type, message, stack?, attributes?)` | Manual exception, feature `Errors` |
+| `addProcessor(fn)` | `fn(record)` runs on every record at export (in `Pipeline.flush`, so one added after start still sees the first page view), after consent and privacy; `false` drops it, a throw skips it for that record. Returns the remover. Module-level: may be called before `start` |
+| `setAttributes(attributes or null)` | Global attributes merged into every record at `emit`, before privacy; a record's own win; a null value removes a key, `null` clears all; `session.id`, `enduser.pseudo.id`, `user.id` are refused (consent governs them) |
 | `flush()` | Returns a promise that resolves when the queued records have been handed to the transport |
 | `getContext()` | `{ consent, decided, sessionId, pseudoId, userId }` |
+| `getStats()` | `{ dropped: { <reason>: n }, requests: { delivered, rejected, kept, dropped }, queued, pending }` since load (`stats.ts`); reasons shared with the C# `belemetry.records.dropped` counter where both drop for the same cause |
 | `attachDotNet(dotNetRef, { relay: bool, unloadDrain: bool })` | Registers the .NET bridge (`BelemetryJsCallbacks`) |
 | `sendRequests(requests)` | Sends pre-serialized requests built by .NET in WASM (`[{exporter,url,contentType,contentEncoding,headers,body(base64)}]`) using keepalive fetch, retry and persistence |
 
 .NET `[JSInvokable]` callbacks (on the internal `BelemetryJsCallbacks` relay class):
 
-- `"Belemetry.Relay"` (async). Receives a `BelemetryRelayBatch`.
+- `"Belemetry.Relay"` (async). Receives a `BelemetryRelayBatch`. Ignored unless the transport is Relay. On a server
+  the payload is untrusted: a per-bridge (per-circuit) token bucket caps it (`BelemetryRelaySource`), features off in
+  the configuration are dropped, and the resource keeps the server's service identity without the server's host and
+  process attributes.
 - `"Belemetry.ContextChanged"`. Receives a `BelemetryJsContext` whenever consent, session or user changes.
 - `"Belemetry.DrainForUnload"` (synchronous, WASM only). Called on `pagehide` / `visibilitychange:hidden`. Returns
   the pending .NET records serialized as requests, which JS sends with `fetch(..., { keepalive: true })` because
@@ -219,14 +273,15 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 
 | Record | Shape |
 | --- | --- |
-| Page view | Log record, `eventName = "browser.page_view"`. Attributes: `url.full`, `url.path`, `page.title`, `page.referrer` (redacted), `browser.navigation.type` (`initial`/`push`/`replace`/`pop`/`hash`/`manual`) |
+| Page view | Log record, `eventName = "browser.page_view"`. Attributes: `url.full`, `url.path`, `page.title`, `page.referrer` (redacted), `browser.navigation.type` (`initial`/`push`/`replace`/`pop`/`hash`/`manual`/`restore`; `restore` is a `pageshow` with `persisted`, which starts a new visit without counting the time spent in the back/forward cache) |
 | Page visit time | Log record, `eventName = "browser.page_visit_time"`, only with `pageViews.trackVisitTime`. Emitted for the previous page when the next page view starts, and for the current page when it is hidden; the next visit starts when the page is shown again, so hidden time is counted nowhere and nothing twice. Attributes: `url.full`, `url.path`, `page.title`, `page.visit.duration` (ms, integer) |
+| Rage click | Log record, `eventName = "browser.rage_click"`, with `interactions.rageClicks`: once per burst of 3 clicks on one element within 1 s (from the burst's first click). The click's target attributes, `event.type = "rage_click"`, `interaction.click_count = 3` |
 | Click | Log record, `eventName = "browser.user_interaction"`. Attributes: `event.type`, `target.element`, `target.id`, `target.name` (`data-bit-belemetry-name`, `aria-label`, then `name`), `target.text` (only with `captureText`), `target.xpath`. Elements under `[data-bit-belemetry-ignore]` are skipped |
 | Web vital | Log record, `eventName = "browser.web_vital"`. Attributes: `web_vital.name` (`LCP`/`INP`/`CLS`/`FCP`/`TTFB`), `web_vital.value`, `web_vital.delta`, `web_vital.rating` (`good`/`needs-improvement`/`poor`), `web_vital.id`, `web_vital.navigation_type` |
 | Document load | Internal span `documentLoad`, with events `domInteractive`, `domContentLoadedEventEnd`, `loadEventEnd`, ... from `PerformanceNavigationTiming` |
 | Resource timing | Internal span `resourceFetch` with `url.full`, `http.response.body.size`, `network.protocol.name` |
 | Long task | Internal span `longtask`, feature `Performance` |
-| fetch/XHR | Client span `{METHOD}`. Attributes: `http.request.method`, `url.full`, `server.address`, `server.port`, `http.response.status_code`, `error.type`. Adds `traceparent` only for targets matched by `propagateTraceContextTo` |
+| fetch/XHR | Client span `{METHOD}` (`HTTP` for a method outside the conventions' list, with `http.request.method = _OTHER` and `http.request.method_original`). Attributes: `http.request.method`, `url.full`, `server.address`, `server.port`, `http.response.status_code`, `error.type` (`AbortError` keeps the status unset; `TimeoutError`, `NetworkError` and 4xx/5xx are errors). Adds `traceparent` only for targets matched by `propagateTraceContextTo` |
 | JS error | Log record, severity 17 (ERROR), `eventName = "exception"`. Attributes: `exception.type`, `exception.message`, `exception.stacktrace` |
 | Common (every record) | `session.id`. `enduser.pseudo.id` and `user.id` only with `UserTracking` |
 | Resource | `service.name`, `service.version`, `service.namespace`, `service.instance.id`, `deployment.environment.name`, `telemetry.sdk.name = "bit-belemetry"`, `telemetry.sdk.language = "webjs"`, `telemetry.sdk.version`, `browser.language`, `browser.mobile`, `browser.platform`, `browser.brands`, `user_agent.original` (if `collectUserAgent`) |
@@ -288,3 +343,4 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 | `Tests/Bit.Belemetry.Tests.E2E` | Real browser: page views, clicks, errors, web vitals, fetch + `traceparent`, consent gating, purge on revoke, and unload flush, against the harness hosts and a capturing OTLP/Azure receiver | `dotnet test` from that folder (needs `playwright.ps1 install chromium`) |
 | `Tests/Bit.Belemetry.Tests.Mcp` | The demo's MCP server | `dotnet test` from that folder |
 | `Tests/bit-belemetry-js` | The TS units (protobuf writer, OTLP JSON, Azure mapping, consent, privacy, session, sampling, queue), run under vitest + happy-dom | `npm test` from that folder |
+| `Tests/Bit.Belemetry.Benchmarks` | BenchmarkDotNet: the privacy rules, the synchronous recording paths (ILogger, Activity, Counter, Histogram) and the encoders. Not run by CI; see its README for the last numbers | `dotnet run -c Release -- --filter "*"` from that folder |

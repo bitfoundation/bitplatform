@@ -128,6 +128,9 @@
   <data name="MaxLengthAttribute_InvalidMaxLength" xml:space="preserve">
     <value>MaxLengthAttribute muss einen Längenwert haben, der größer als Null ist. Verwenden Sie MaxLength() ohne Parameter, um anzugeben, dass der String oder das Array die maximale zulässige Länge haben kann.</value>
   </data>
+  <data name="MaxLengthAttribute_ValidationError" xml:space="preserve">
+    <value>Das Feld {0} muss ein String- oder Array-Typ mit einer maximalen Länge von '{1}' sein.</value>
+  </data>
   <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
     <value>Das Feld {0} muss ein String- oder Array-Typ mit einer Mindestlänge von '{1}' sein.</value>
   </data>
@@ -394,12 +397,6 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   </data>
   <data name="InvalidUserCredentials" xml:space="preserve">
     <value>Ungültige Benutzerdaten</value>
-  </data>
-  <data name="EmailAlreadyConfirmed" xml:space="preserve">
-    <value>Ihre E-Mail ist bereits bestätigt.</value>
-  </data>
-  <data name="PhoneNumberAlreadyConfirmed" xml:space="preserve">
-    <value>Ihre Telefonnummer ist bereits bestätigt.</value>
   </data>
   <data name="Title" xml:space="preserve">
     <value>Titel</value>
@@ -1206,6 +1203,9 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   </data>
   <data name="AiChatPanelVoiceCallAssistantFailed" xml:space="preserve">
     <value>Der Assistent konnte nicht antworten. Versuchen Sie es erneut.</value>
+  </data>
+  <data name="AiChatTooManyRequests" xml:space="preserve">
+    <value>Sie chatten zu schnell. Bitte warten Sie eine Minute und versuchen Sie es erneut.</value>
   </data>
   <data name="AiChatHumanFollowUpPrompt" xml:space="preserve">
     <value>Hinterlassen Sie Ihre Kontaktdaten, und ein Mitarbeiter meldet sich bei Ihnen.</value>
@@ -2083,5 +2083,17 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   </data>
     <data name="UploadImageAsIs" xml:space="preserve">
     <value>Unverändert hochladen</value>
+  </data>
+    <data name="ResetPasswordTwoFactorCodeRequired" xml:space="preserve">
+    <value>Für dieses Konto ist die Zwei-Faktor-Authentifizierung aktiviert. Geben Sie einen Code aus Ihrer Authentifizierungs-App oder einen Ihrer Wiederherstellungscodes ein.</value>
+  </data>
+    <data name="AccountAlreadyExistsShortText" xml:space="preserve">
+    <value>Sie haben bereits ein Boilerplate-Konto mit dieser Telefonnummer. Falls Sie sich gerade registrieren wollten, melden Sie sich stattdessen an.</value>
+  </data>
+    <data name="AddAnotherAccount" xml:space="preserve">
+    <value>Weiteres Konto hinzufügen</value>
+  </data>
+    <data name="SignOutOfAllAccounts" xml:space="preserve">
+    <value>Von allen Konten auf diesem Gerät abmelden</value>
   </data>
 </root>

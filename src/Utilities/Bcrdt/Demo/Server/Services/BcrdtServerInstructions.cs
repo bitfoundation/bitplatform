@@ -15,11 +15,11 @@ public static class BcrdtServerInstructions
     /// <summary>
     /// The release the answers come from, so the text names it rather than claiming to be timeless:
     /// the version the four packages ship as on NuGet. It is written down here because no assembly
-    /// carries it - a Debug build stamps 1.0.0, a Release build the four-part 10.7.0.02 for 10.7.0-pre-02 -
+    /// carries it - a Debug build stamps 1.0.0, a Release build the four-part 1.2.0.03 for 1.2.0-pre-03 -
     /// and the build checks it against ReleaseVersion in Bit.Build.props (see the ReleaseVersionLiteral
     /// item in the .csproj), so a release cannot forget it.
     /// </summary>
-    public const string BcrdtVersion = "10.7.0-pre-02";
+    public const string BcrdtVersion = "10.7.0";
 
     public static readonly string Text = $"""
         Bit.Bcrdt is real-time collaborative editing for .NET and Blazor, written natively in C#: a YATA-based CRDT engine

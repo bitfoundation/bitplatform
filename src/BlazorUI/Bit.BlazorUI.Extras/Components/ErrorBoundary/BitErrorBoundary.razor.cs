@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Components.Routing;
+﻿using Microsoft.AspNetCore.Components.Routing;
 
 namespace Bit.BlazorUI;
 
@@ -483,7 +482,6 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IBitCascadeTarget, ID
         base.OnInitialized();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitErrorBoundaryParams))]
     protected override void OnParametersSet()
     {
         RestoreDroppedCascadeParameters();

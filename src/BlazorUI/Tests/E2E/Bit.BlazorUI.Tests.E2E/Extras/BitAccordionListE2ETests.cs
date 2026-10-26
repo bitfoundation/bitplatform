@@ -644,7 +644,7 @@ public class BitAccordionListE2ETests : E2ETestBase
         await Expect(panel).ToBeFocusedAsync();
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("acl-dur-0", "0s")]
     [DataRow("acl-dur-1500", "1.5s")]
     public async Task TransitionDuration_SetsTheExpandAnimation(string list, string duration)
@@ -978,7 +978,7 @@ public class BitAccordionListE2ETests : E2ETestBase
 
     // ---------- color & size ----------
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("primary", "pbg", "var(--bit-clr-bg-pri)")]
     [DataRow("secondary", "sbg", "var(--bit-clr-bg-sec)")]
     [DataRow("tertiary", "tbg", "var(--bit-clr-bg-ter)")]
@@ -995,7 +995,7 @@ public class BitAccordionListE2ETests : E2ETestBase
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("primary", "pbr", "var(--bit-clr-brd-pri)")]
     [DataRow("secondary", "sbr", "var(--bit-clr-brd-sec)")]
     [DataRow("tertiary", "tbr", "var(--bit-clr-brd-ter)")]
@@ -1152,7 +1152,7 @@ public class BitAccordionListE2ETests : E2ETestBase
 
     // ---------- RTL ----------
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("acl-rtl")]
     [DataRow("acl-rtl-inherited")]
     public async Task Rtl_TheItems_AreMirrored(string list)

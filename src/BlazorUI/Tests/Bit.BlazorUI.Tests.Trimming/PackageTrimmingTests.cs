@@ -83,6 +83,16 @@ public sealed partial class PackageTrimmingTests
 
         StringAssert.Contains(result.Output, "Bit.BlazorUI: Bit.BlazorUI/styles/bit.blazorui.css -> ");
 
+        if (shape == "web")
+        {
+            // The icon stylesheet and its font, cut down to the glyphs kept: the font on Node.js, installed from the
+            // package-lock.json the package ships beside its task (tasks/fonttools) - which, not found, would have the .NET cut
+            // stand in for it, and say why.
+            StringAssert.Contains(result.Output, "Bit.BlazorUI: Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css -> ");
+            StringAssert.Contains(result.Output, "Bit.BlazorUI: Bit.BlazorUI.Icons/fonts/FabMDL2.4.66.woff2 -> ");
+            Assert.IsFalse(result.Output.Contains("since Node.js"), $"The Node.js cut of the icon font failed:\n{Tail(result.Output)}");
+        }
+
         if (shape == "wasm")
         {
             // A standalone PWA's manifest is its own, which the SDK writes after the trimming, from the trimmed files - on
@@ -284,6 +294,7 @@ public sealed partial class PackageTrimmingTests
                     <Nullable>enable</Nullable>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <BitBlazorUITrimAssets>true</BitBlazorUITrimAssets>
+                    <BitBlazorUITrimIcons>{{(shape == "web" ? "true" : "false")}}</BitBlazorUITrimIcons>
                     <BitBlazorUILazyScripts>{{(shape == "web-lazy" ? "true" : "false")}}</BitBlazorUILazyScripts>
                   </PropertyGroup>
                   <ItemGroup>
@@ -313,6 +324,7 @@ public sealed partial class PackageTrimmingTests
               """
             : """
               <BitButton>Save</BitButton>
+              <BitIcon IconName="@BitIconName.Add" />
               <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="_items" />
 
               @code {

@@ -81,6 +81,8 @@ internal sealed class BlazeDbOrderedIndexStore<TRow, TIndexKey> : IBlazeDbIndexS
         _nulls.Clear();
     }
 
+    public int Count => _entries.Count + _nulls.Count;
+
     public void ValidateUnique(TRow row, long replacedSeq, string tableName)
     {
         if (!_definition.IsUnique)
@@ -141,19 +143,26 @@ internal sealed class BlazeDbOrderedIndexStore<TRow, TIndexKey> : IBlazeDbIndexS
     }
 
     /// <summary>
-    /// Rows whose indexed value lies in the inclusive range [from, to]. A null value is outside every
-    /// bounded range, matching a comparison against null in LINQ, so those rows are not returned.
+    /// Rows whose indexed value lies between the bounds, each inclusive unless flagged exclusive. A
+    /// null value is outside every bounded range, matching a comparison against null in LINQ, so those
+    /// rows are not returned.
     /// </summary>
-    public IEnumerable<TRow> Range(bool hasFrom, TIndexKey from, bool hasTo, TIndexKey to, bool descending)
+    public IEnumerable<TRow> Range(
+        bool hasFrom, TIndexKey from, bool fromExclusive,
+        bool hasTo, TIndexKey to, bool toExclusive,
+        bool descending)
     {
         if (_entries.Count == 0)
         {
             yield break;
         }
 
-        var lower = hasFrom ? new Entry(from, long.MinValue, default) : _entries.Min;
-        var upper = hasTo ? new Entry(to, long.MaxValue, default) : _entries.Max;
-        if (_definition.Comparer.Compare(lower.Key, upper.Key) > 0)
+        // Entries with equal values are ordered by sequence number, and no row has either extreme, so
+        // a bound paired with one extreme or the other lands just before or just after every entry
+        // that shares its value - which is all an inclusive or exclusive bound needs.
+        var lower = hasFrom ? new Entry(from, fromExclusive ? long.MaxValue : long.MinValue, default) : _entries.Min;
+        var upper = hasTo ? new Entry(to, toExclusive ? long.MinValue : long.MaxValue, default) : _entries.Max;
+        if (_entries.Comparer.Compare(lower, upper) > 0)
         {
             yield break;
         }
@@ -169,10 +178,10 @@ internal sealed class BlazeDbOrderedIndexStore<TRow, TIndexKey> : IBlazeDbIndexS
     public IEnumerable<TRow> LookupBoxed(object? key) =>
         // Nulls live outside the sorted set, so a range of [null, null] would find nothing; answer
         // from the bucket that holds them, the way the hash index does.
-        key is null ? _nulls.Values : Range(true, (TIndexKey)key, true, (TIndexKey)key, descending: false);
+        key is null ? _nulls.Values : Range(true, (TIndexKey)key, false, true, (TIndexKey)key, false, descending: false);
 
     public IEnumerable<TRow> RangeBoxed(bool hasFrom, object? from, bool hasTo, object? to, bool descending) =>
         hasFrom || hasTo
-            ? Range(hasFrom, hasFrom ? (TIndexKey)from! : default!, hasTo, hasTo ? (TIndexKey)to! : default!, descending)
+            ? Range(hasFrom, hasFrom ? (TIndexKey)from! : default!, false, hasTo, hasTo ? (TIndexKey)to! : default!, false, descending)
             : All(descending);
 }

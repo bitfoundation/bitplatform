@@ -41,6 +41,58 @@ public abstract record BinkElement
     /// <summary>Optional application-defined key/value metadata, preserved by serialization.</summary>
     public IReadOnlyDictionary<string, string>? Metadata { get; init; }
 
+    /// <summary>The deepest nesting of groups an element can belong to; deeper chains are refused.</summary>
+    public const int MaxGroupDepth = 32;
+
+    private readonly Guid[] _groupIds = [];
+
+    /// <summary>
+    /// The groups the element belongs to, innermost first and outermost last. Empty when it is in none.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A group is not an element: it is the set of elements that share a group id, so grouping and ungrouping are
+    /// ordinary replacements that undo, serialize and synchronize like any other edit, and the members keep their
+    /// own layers and stacking order. Selecting a member selects its outermost group;
+    /// <see cref="BinkDocument.GroupElements"/>, <see cref="BinkDocument.UngroupElements"/> and
+    /// <see cref="BinkDocumentQuery.ExpandToGroups"/> keep the nesting consistent.
+    /// </para>
+    /// <para>The list is copied on assignment, so a caller cannot change an element after creating it.</para>
+    /// </remarks>
+    /// <exception cref="ArgumentException">
+    /// The chain is deeper than <see cref="MaxGroupDepth"/>, holds <see cref="Guid.Empty"/>, or names a group twice.
+    /// </exception>
+    public IReadOnlyList<Guid> GroupIds
+    {
+        get => _groupIds;
+        init
+        {
+            if (value is null || value.Count == 0)
+            {
+                _groupIds = [];
+                return;
+            }
+            if (value.Count > MaxGroupDepth) throw new ArgumentException($"An element can be nested in at most {MaxGroupDepth} groups.", nameof(value));
+            Guid[] chain = [.. value];
+            // Refused rather than kept: a document could not save such a chain and read it back the same.
+            for (int i = 0; i < chain.Length; i++)
+            {
+                if (chain[i] == Guid.Empty) throw new ArgumentException("A group id cannot be empty.", nameof(value));
+                if (Array.IndexOf(chain, chain[i], 0, i) >= 0) throw new ArgumentException("An element cannot be in the same group twice.", nameof(value));
+            }
+            _groupIds = chain;
+        }
+    }
+
+    /// <summary>
+    /// Whether the element is locked: it is drawn and exported as usual, but tools cannot select, move or erase it.
+    /// An application unlocks it with <see cref="BinkDocument.SetLocked"/>.
+    /// </summary>
+    public bool IsLocked { get; init; }
+
+    /// <summary>Whether the element belongs to <paramref name="groupId"/>, directly or through a nested group.</summary>
+    public bool IsInGroup(Guid groupId) => Array.IndexOf(_groupIds, groupId) >= 0;
+
     /// <summary>Bounds in local coordinates, including stroke widths.</summary>
     public abstract BinkRect LocalBounds { get; }
 
@@ -50,8 +102,14 @@ public abstract record BinkElement
     /// <summary>A short type name for UI and accessibility ("Stroke", "Rectangle", ...).</summary>
     public abstract string TypeName { get; }
 
-    /// <summary>Whether the element can be selected and manipulated by users. Eraser strokes, for example, are not.</summary>
+    /// <summary>
+    /// Whether the element can be selected and manipulated by users. Eraser strokes, for example, are not. A
+    /// <see cref="IsLocked">locked</see> element may still report true here; <see cref="CanBeEdited"/> combines both.
+    /// </summary>
     public virtual bool IsSelectable => true;
+
+    /// <summary>Whether tools may select, move or erase the element: it is selectable and not locked.</summary>
+    public bool CanBeEdited => IsSelectable && !IsLocked;
 
     /// <summary>Draws the element in local coordinates.</summary>
     protected abstract void DrawCore(IBinkRenderContext context);
@@ -82,8 +140,27 @@ public abstract record BinkElement
     public bool HitTest(Vector2 point, float tolerance = 0f)
     {
         if (!Bounds.Inflate(tolerance).Contains(point)) return false;
+        if (!Transform.IsIdentity && !BinkGeometryMath.IsConformal(Transform)) return HitTestStretched(point, tolerance);
         if (!TryToLocal(point, out Vector2 local, out float scale)) return false;
         return HitTestCore(local, tolerance / scale);
+    }
+
+    /// <summary>
+    /// Hit test, in document coordinates, for a transform that stretches some directions more than others, such as
+    /// the one resizing by an edge handle leaves. Under it no single factor converts the tolerance into local units:
+    /// a document distance stands for a different local distance in each direction.
+    /// </summary>
+    /// <remarks>
+    /// The default tests in local units with the tolerance divided by the largest stretch, so nothing further than
+    /// the tolerance ever hits. Strokes, shapes and lines override it to measure their outline in the document.
+    /// </remarks>
+    /// <param name="point">Point in document coordinates.</param>
+    /// <param name="tolerance">Extra distance in document units that still counts as a hit.</param>
+    protected virtual bool HitTestStretched(Vector2 point, float tolerance)
+    {
+        if (!Matrix3x2.Invert(Transform, out Matrix3x2 inverse)) return false;
+        float stretch = BinkGeometryMath.MaxScale(Transform);
+        return HitTestCore(Vector2.Transform(point, inverse), stretch > BinkGeometryMath.Epsilon ? tolerance / stretch : tolerance);
     }
 
     /// <summary>

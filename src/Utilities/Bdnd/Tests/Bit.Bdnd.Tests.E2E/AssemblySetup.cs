@@ -18,6 +18,11 @@ public static class AssemblySetup
         // anything being wrong.
         Assertions.SetDefaultExpectTimeout(20_000);
 
+        // The Blazor Hybrid harness is built before anything runs - an incremental build when it is up to date - so
+        // its copy of the library is the current one, and no build rewrites the module under the running demo.
+        // A failed build is reported by the hybrid tests.
+        await HybridHarnessHost.PrepareAsync();
+
         // Started here rather than by the first test, so the boot is not charged to that test's time. Nothing
         // throws: a browser or a demo that is missing is reported by every test (see BdndTest).
         await PlaywrightSession.GetAsync();
@@ -26,6 +31,13 @@ public static class AssemblySetup
     [AssemblyCleanup]
     public static async Task CleanupAsync()
     {
-        await PlaywrightSession.StopAsync();
+        try
+        {
+            await PlaywrightSession.StopAsync();
+        }
+        finally
+        {
+            await HybridSession.StopAsync();
+        }
     }
 }

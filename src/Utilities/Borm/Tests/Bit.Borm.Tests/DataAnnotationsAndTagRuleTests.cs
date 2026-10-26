@@ -326,3 +326,28 @@ public class DataAnnotationsIntegrationTests
     public void A_null_state_is_rejected()
         => Assert.ThrowsExactly<ArgumentNullException>(() => ((BormState)null!).UseDataAnnotations());
 }
+
+/// <summary>
+/// <c>[Phone]</c> chose the telephone keyboard and nothing more: "not a phone!!" was saved as a phone number.
+/// </summary>
+[TestClass]
+public class PhoneAnnotationTests
+{
+    private sealed class Contact
+    {
+        [Phone] public string? Phone { get; set; }
+    }
+
+    [TestMethod]
+    [DataRow("not a phone!!", false)]
+    [DataRow("+31 (6) 1234-5678", true)]
+    [DataRow("555.123.4567 ext. 89", true)]
+    [DataRow("", true)] // nothing given is Required()'s business, as it is for every other rule
+    public async Task A_Phone_annotation_is_judged_as_the_attribute_judges_it(string value, bool valid)
+    {
+        var model = new Contact { Phone = value };
+        var state = new BormState(BormSchemaGenerator.Generate<Contact>(), new BormModelDataAccessor(model));
+
+        Assert.AreEqual(valid, await state.ValidateAsync());
+    }
+}

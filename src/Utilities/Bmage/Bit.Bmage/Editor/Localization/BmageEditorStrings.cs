@@ -29,6 +29,25 @@ public sealed record BmageEditorStrings
     public string Step { get; init; } = "Step number";
     public string Eraser { get; init; } = "Eraser";
     public string Pan { get; init; } = "Pan";
+    public string Brush { get; init; } = "Brush";
+    public string Eyedropper { get; init; } = "Pick a colour";
+    public string Fill { get; init; } = "Fill";
+    public string MagicEraser { get; init; } = "Magic eraser";
+    public string SelectRectangle { get; init; } = "Rectangle select";
+    public string SelectEllipse { get; init; } = "Ellipse select";
+    public string Lasso { get; init; } = "Lasso";
+    public string MagicWand { get; init; } = "Magic wand";
+    public string Selection { get; init; } = "Selection";
+    public string SelectAll { get; init; } = "Select all";
+    public string Deselect { get; init; } = "Deselect";
+    public string InvertSelection { get; init; } = "Invert selection";
+    public string ClearSelection { get; init; } = "Make transparent";
+    public string FillSelection { get; init; } = "Fill selection";
+    public string CropToSelection { get; init; } = "Crop to selection";
+    public string CopyToLayer { get; init; } = "Copy to layer";
+    public string NothingSelected { get; init; } = "The selection is empty.";
+    public string Compare { get; init; } = "Compare with the original";
+    public string ShowingOriginal { get; init; } = "Showing the original";
 
     // Panels
     public string Adjust { get; init; } = "Adjust";
@@ -54,6 +73,26 @@ public sealed record BmageEditorStrings
     public string Sharpen { get; init; } = "Sharpen";
     public string Blur { get; init; } = "Blur";
     public string Vignette { get; init; } = "Vignette";
+    public string Whites { get; init; } = "Whites";
+    public string Blacks { get; init; } = "Blacks";
+    public string Lightness { get; init; } = "Lightness";
+    public string Auto { get; init; } = "Auto";
+    public string AutoLevels { get; init; } = "Auto levels";
+    public string AutoWhiteBalance { get; init; } = "Auto white balance";
+    public string WhiteBalance { get; init; } = "White balance";
+    public string PickWhiteBalance { get; init; } = "Pick a neutral colour";
+    public string PickNeutralHint { get; init; } = "Click something in the image that should be grey or white.";
+    public string Histogram { get; init; } = "Histogram";
+    public string ColorMixer { get; init; } = "Colour mixer";
+    public string Band { get; init; } = "Colour";
+    public string Reds { get; init; } = "Reds";
+    public string Oranges { get; init; } = "Oranges";
+    public string Yellows { get; init; } = "Yellows";
+    public string Greens { get; init; } = "Greens";
+    public string Aquas { get; init; } = "Aquas";
+    public string Blues { get; init; } = "Blues";
+    public string Purples { get; init; } = "Purples";
+    public string Magentas { get; init; } = "Magentas";
 
     // Filters
     public string None { get; init; } = "None";
@@ -62,6 +101,10 @@ public sealed record BmageEditorStrings
     public string Invert { get; init; } = "Invert";
     public string Posterize { get; init; } = "Posterize";
     public string Threshold { get; init; } = "Threshold";
+    public string BlackAndWhite { get; init; } = "Black and white";
+    public string Duotone { get; init; } = "Duotone";
+    public string MotionBlur { get; init; } = "Motion blur";
+    public string Angle { get; init; } = "Angle";
 
     // Transform
     public string RotateLeft { get; init; } = "Rotate left";
@@ -75,6 +118,15 @@ public sealed record BmageEditorStrings
     public string Square { get; init; } = "Square";
     public string ApplyCrop { get; init; } = "Apply crop";
     public string CancelCrop { get; init; } = "Cancel crop";
+    public string Resize { get; init; } = "Resize";
+    public string KeepProportions { get; init; } = "Keep proportions";
+    public string Apply { get; init; } = "Apply";
+    public string CanvasSize { get; init; } = "Canvas size";
+    public string Anchor { get; init; } = "Anchor";
+    public string Background { get; init; } = "Background";
+    public string Transparent { get; init; } = "Transparent";
+    public string Trim { get; init; } = "Trim edges";
+    public string NothingToTrim { get; init; } = "There are no plain or transparent edges to trim.";
 
     // Actions
     public string Undo { get; init; } = "Undo";
@@ -87,6 +139,29 @@ public sealed record BmageEditorStrings
     public string Duplicate { get; init; } = "Duplicate";
     public string BringToFront { get; init; } = "Bring to front";
     public string SendToBack { get; init; } = "Send to back";
+    public string Show { get; init; } = "Show";
+    public string Hide { get; init; } = "Hide";
+    public string Annotations { get; init; } = "Annotations";
+    public string AddPaintLayer { get; init; } = "Add paint layer";
+    public string AddImageLayer { get; init; } = "Add image layer";
+    public string Paint { get; init; } = "Paint";
+    public string BlendMode { get; init; } = "Blend mode";
+    public string MoveUp { get; init; } = "Move up";
+    public string MoveDown { get; init; } = "Move down";
+    public string Group { get; init; } = "Group";
+    public string GroupWithLayerBelow { get; init; } = "Group with layer below";
+    public string MoveIntoGroupBelow { get; init; } = "Move into group below";
+    public string MoveOutOfGroup { get; init; } = "Move out of group";
+    public string Ungroup { get; init; } = "Ungroup";
+    public string ClipToLayerBelow { get; init; } = "Clip to layer below";
+    public string BlendGroupAsOne { get; init; } = "Blend the group as one";
+    public string GroupTooDeep { get; init; } = "Groups cannot be nested any deeper.";
+    public string Lock { get; init; } = "Lock";
+    public string Unlock { get; init; } = "Unlock";
+    public string NoPaintLayer { get; init; } = "There is no paint to erase yet. The eraser removes paint from a paint layer.";
+    public string RemoveLayer { get; init; } = "Remove layer";
+    public string ReorderLayers { get; init; } = "Reorder layers";
+    public string RestoreEdit { get; init; } = "Restore edit";
     public string Download { get; init; } = "Download";
     public string CopyToClipboard { get; init; } = "Copy to clipboard";
     public string ZoomIn { get; init; } = "Zoom in";
@@ -103,9 +178,13 @@ public sealed record BmageEditorStrings
     public string StrokeWidth { get; init; } = "Line width";
     public string Opacity { get; init; } = "Opacity";
     public string FontSize { get; init; } = "Text size";
+    public string Rotation { get; init; } = "Rotation";
     public string Dashed { get; init; } = "Dashed";
     public string Filled { get; init; } = "Filled";
     public string RedactionStyle { get; init; } = "Redaction style";
+    public string BrushSize { get; init; } = "Brush size";
+    public string Hardness { get; init; } = "Hardness";
+    public string Tolerance { get; init; } = "Tolerance";
     public string Solid { get; init; } = "Solid";
     public string Pixelate { get; init; } = "Pixelate";
 
@@ -119,6 +198,9 @@ public sealed record BmageEditorStrings
     public string RemoveMetadata { get; init; } = "Remove all";
     public string StripSensitiveMetadata { get; init; } = "Remove location and device";
     public string EstimatedSize { get; init; } = "Estimated size";
+    public string SaveProject { get; init; } = "Save project";
+    public string OpenProject { get; init; } = "Open project";
+    public string ProjectFailed { get; init; } = "The project could not be opened.";
 
     // Status and messages
     public string Loading { get; init; } = "Loading image";
@@ -155,4 +237,47 @@ public sealed record BmageEditorStrings
 
     /// <summary>Formats a percentage for display, e.g. "85%".</summary>
     public Func<double, string> FormatPercent { get; init; } = static value => $"{value * 100:0}%";
+
+    /// <summary>Announces a colour picked with the eyedropper, given as hex, e.g. "Picked #3A7BD5".</summary>
+    public Func<string, string> FormatPickedColor { get; init; } = static hex => $"Picked {hex}";
+
+    /// <summary>
+    /// Describes how much of the image the histogram shows clipped, as fractions of its pixels at pure black and pure
+    /// white, e.g. "0.4% black, 2.1% white".
+    /// </summary>
+    public Func<double, double, string> FormatClipping { get; init; } = static (black, white) => $"{black * 100:0.#}% black, {white * 100:0.#}% white";
+
+    /// <summary>
+    /// The name of an annotation's or a layer's kind - <see cref="Annotations.Annotation.Kind"/> or
+    /// <see cref="Layers.Layer.Kind"/>, such as "Rectangle" or "Paint" - wherever the panel or the history shows one.
+    /// </summary>
+    public Func<string, string> FormatKind { get; init; } = static kind => kind;
+
+    /// <summary>The history entry for a layer added from code, given its kind as <see cref="FormatKind"/> names it, e.g. "Add fill layer".</summary>
+    public Func<string, string> FormatAddLayer { get; init; } = static kind => $"Add {kind.ToLowerInvariant()} layer";
+
+    /// <summary>The history entry for a change to a layer, given the name the layer list shows for it, e.g. "Edit paint".</summary>
+    public Func<string, string> FormatEditLayer { get; init; } = static name => $"Edit {name.ToLowerInvariant()}";
+
+    /// <summary>The name of a blend mode in the layer panel.</summary>
+    public Func<Drawing.BlendMode, string> FormatBlendMode { get; init; } = static mode => mode switch
+    {
+        Drawing.BlendMode.SourceOver => "Normal",
+        Drawing.BlendMode.ColorDodge => "Colour dodge",
+        Drawing.BlendMode.ColorBurn => "Colour burn",
+        Drawing.BlendMode.HardLight => "Hard light",
+        Drawing.BlendMode.SoftLight => "Soft light",
+        Drawing.BlendMode.Color => "Colour",
+        _ => mode.ToString(),
+    };
+
+    /// <summary>The name of an anchor position in the canvas size controls.</summary>
+    public Func<Geometry.Anchor, string> FormatAnchor { get; init; } = static anchor => anchor switch
+    {
+        Geometry.Anchor.TopLeft => "Top left",
+        Geometry.Anchor.TopRight => "Top right",
+        Geometry.Anchor.BottomLeft => "Bottom left",
+        Geometry.Anchor.BottomRight => "Bottom right",
+        _ => anchor.ToString(),
+    };
 }

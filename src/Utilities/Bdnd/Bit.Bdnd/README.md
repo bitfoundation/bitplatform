@@ -52,14 +52,19 @@ No stylesheet to link: the script module, `_content/Bit.Bdnd/bit-bdnd.js`, is im
 - Drag handles that restrict where a drag can start (`BdndDragHandle`).
 - Nested drag sources and nested drop targets, with shallow `IsOverShallow` hover and innermost-first drops.
 - Drop results passed back to the source's `OnEnd`, and `DidDrop` to tell a drop from a cancel.
-- Native OS drags: dropped files, selected text, links and HTML (`BdndNativeTypes`).
+- Native OS drags: dropped files (streamed, folders expanded, filtered by type and count), selected text, links and HTML (`BdndNativeTypes`), and data of your own carried out of the page (`NativeData`).
+- Touch, pen and pointer drags through pointer events, with a press-and-hold that leaves swipes to scroll, a copy that follows the pointer (`PreviewAxis` keeps it on an axis) and auto-scrolling.
+- Keyboard dragging (Space/Enter, arrows - by row in a wrapping grid - Escape) with screen-reader announcements and instructions, translatable through `BdndAnnouncements`.
+- Insertion positions (`Edges`, `ClosestEdge`) and `BdndList` moves for sortable lists, grids, trees and virtualized lists; several items dragged as one.
+- `OnEnter` / `OnLeave` and `Disabled` on targets; `OnDragStart` / `OnDragEnd` on the provider for every drag.
+- Styling hooks on the host elements: `data-bit-bdnd-dragging`, `data-bit-bdnd-can-drop`, `data-bit-bdnd-over`, `data-bit-bdnd-over-shallow`.
 - Isolated drag contexts through nestable providers, and a read-only `IBdndMonitor` over the live drag state.
 - Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 8, 9 and 10.
 
 ## For AI agents
 
-The demo site hosts an MCP server at `https://bdnd.bitplatform.dev/mcp` (also served through
-`https://bitplatform.dev/mcp`) that answers from the shipped library: its API, its guide and the demo's working
+The demo site hosts an MCP server at `https://bdnd.bitplatform.dev/mcp`
+that answers from the shipped library: its API, its guide and the demo's working
 pages, and it can run a drag through the real components to show which targets accept it.
 
 ## Documentation

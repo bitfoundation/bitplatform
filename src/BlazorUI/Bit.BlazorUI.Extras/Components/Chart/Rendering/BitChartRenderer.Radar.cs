@@ -97,7 +97,7 @@ public sealed partial class BitChartRenderer
                 {
                     X = lx, Y = ly, Text = label, Fill = pl.Color,
                     FontSize = pl.Font.Size, FontFamily = pl.Font.Family, FontWeight = pl.Font.Weight,
-                    Anchor = anchor, Baseline = "central"
+                    Anchor = anchor, PhysicalAnchor = true, Baseline = "central"
                 });
             }
         }

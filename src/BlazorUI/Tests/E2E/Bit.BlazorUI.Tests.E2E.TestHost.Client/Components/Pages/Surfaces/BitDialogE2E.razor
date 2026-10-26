@@ -335,11 +335,46 @@
     <BitParams Parameters="_dialogParams">
         <button id="btn-casc-file-open" @onclick="() => _cascFileOpen = true">Delete file</button>
         <button id="btn-casc-folder-open" @onclick="() => _cascFolderOpen = true">Delete folder</button>
+        <button id="btn-casc-rename-open" @onclick="() => _cascRenameOpen = true">Rename</button>
+        <button id="btn-casc-share-open" @onclick="() => _cascShareOpen = true">Share</button>
+        <button id="btn-casc-name-open" @onclick="() => _cascNameOpen = true">New folder</button>
+        <label><input id="casc-name-shown" type="checkbox" @bind="_cascNameShown" /> Ask for a name</label>
+        <button id="btn-casc-trash-open" @onclick="() => _cascTrashOpen = true">Empty trash</button>
+        <button id="btn-casc-locked-open" @onclick="() => _cascLockedOpen = true">Delete locked file</button>
 
         <BitDialog Id="casc-file-dialog" @bind-IsOpen="_cascFileOpen" Title="Delete this file?" Message="It moves to the trash." />
 
         <BitDialog Id="casc-folder-dialog" @bind-IsOpen="_cascFolderOpen" OkText="Delete folder" Title="Delete this folder?"
                    Message="Everything inside it goes too." />
+
+        <BitDialog Id="casc-rename-dialog" @bind-IsOpen="_cascRenameOpen" OkText="Rename" Title="Rename this file">
+            <input id="casc-rename-input" value="report.pdf" data-autofocus />
+        </BitDialog>
+
+        <BitDialog Id="casc-share-dialog" @bind-IsOpen="_cascShareOpen" AutoFocusButton="BitDialogButton.Ok" OkText="Copy link"
+                   Title="Share this file">
+            <input id="casc-share-input" value="https://example.com/report.pdf" data-autofocus />
+        </BitDialog>
+
+        @* Names a field it only renders when asked to, under a link that is the first focusable element. *@
+        <BitDialog Id="casc-name-dialog" @bind-IsOpen="_cascNameOpen" AutoFocusSelector="#casc-name-input" OkText="Create"
+                   Title="New folder">
+            <a id="casc-name-help" href="#">Naming rules</a>
+            @if (_cascNameShown)
+            {
+                <input id="casc-name-input" value="Untitled" />
+            }
+        </BitDialog>
+
+        @* Names the close button, which the cascade does not show. *@
+        <BitDialog Id="casc-trash-dialog" @bind-IsOpen="_cascTrashOpen" AutoFocusButton="BitDialogButton.Close"
+                   OkText="Empty trash" Title="Empty the trash?" Message="Everything in it is gone for good." />
+
+        @* Names the Ok button, which it disables, under a link that is the first focusable element. *@
+        <BitDialog Id="casc-locked-dialog" @bind-IsOpen="_cascLockedOpen" AutoFocusButton="BitDialogButton.Ok"
+                   IsOkButtonEnabled="false" Title="This file is locked">
+            <a id="casc-locked-help" href="#">Who locked it?</a>
+        </BitDialog>
     </BitParams>
 </E2ESection>
 
@@ -565,12 +600,19 @@
 
     private bool _cascFileOpen;
     private bool _cascFolderOpen;
+    private bool _cascRenameOpen;
+    private bool _cascShareOpen;
+    private bool _cascNameOpen;
+    private bool _cascNameShown = true;
+    private bool _cascTrashOpen;
+    private bool _cascLockedOpen;
     private readonly BitDialogParams[] _dialogParams =
     [
         new()
         {
             OkText = "Delete",
             CancelText = "Keep",
+            AutoFocusButton = BitDialogButton.Cancel,
             ShowCloseButton = false,
             Position = BitPosition.TopCenter,
             Color = BitColor.Error,

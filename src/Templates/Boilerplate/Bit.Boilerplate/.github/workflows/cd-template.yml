@@ -40,7 +40,7 @@ jobs:
       - name: Install the bit CLI
         shell: pwsh
         run: |
-          dotnet tool install Bit.Cli --prerelease --tool-path "$env:RUNNER_TEMP/bit-cli"
+          dotnet tool install Bit.Cli --version 10.7.0 --tool-path "$env:RUNNER_TEMP/bit-cli"
           Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
 
       - name: Prepare this machine with bit setup
@@ -80,6 +80,17 @@ jobs:
         with:
           subject-name: server-bundle
           subject-digest: sha256:${{ steps.server_artifact.outputs.artifact-digest }}
+#if (api == "Integrated" && database != "Sqlite" && database != "Other")
+
+      - name: Create the database migrations bundle
+        run: dnx dotnet-ef@10.0.14 -- migrations bundle --project src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj --configuration Release --self-contained --target-runtime linux-x64 --output efbundle --verbose
+
+      - name: Upload migrations bundle
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: migrations-bundle
+          path: efbundle
+#endif
 
   deploy_api_blazor:
     name: deploy api + blazor
@@ -95,6 +106,29 @@ jobs:
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: server-bundle
+#if (api == "Integrated" && database != "Sqlite" && database != "Other")
+
+      - name: Retrieve migrations bundle
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: migrations-bundle
+
+      - name: Apply database migrations
+        env:
+#if (database == "SqlServer")
+          ConnectionStrings__mssqldb: ${{ secrets.DATABASE_CONNECTION_STRING }}
+#endif
+#if (database == "PostgreSQL")
+          ConnectionStrings__postgresdb: ${{ secrets.DATABASE_CONNECTION_STRING }}
+#endif
+#if (database == "MySql")
+          ConnectionStrings__mysqldb: ${{ secrets.DATABASE_CONNECTION_STRING }}
+#endif
+        run: |
+          chmod +x efbundle
+          ./efbundle
+          rm efbundle
+#endif
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -159,6 +193,17 @@ jobs:
         with:
           subject-name: api-bundle
           subject-digest: sha256:${{ steps.api_artifact.outputs.artifact-digest }}
+#if (database != "Sqlite" && database != "Other")
+
+      - name: Create the database migrations bundle
+        run: dnx dotnet-ef@10.0.14 -- migrations bundle --project src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj --configuration Release --self-contained --target-runtime linux-x64 --output efbundle --verbose
+
+      - name: Upload migrations bundle
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: migrations-bundle
+          path: efbundle
+#endif
 
   deploy_api:
     name: deploy api
@@ -174,6 +219,29 @@ jobs:
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: api-bundle
+#if (database != "Sqlite" && database != "Other")
+
+      - name: Retrieve migrations bundle
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: migrations-bundle
+
+      - name: Apply database migrations
+        env:
+#if (database == "SqlServer")
+          ConnectionStrings__mssqldb: ${{ secrets.DATABASE_CONNECTION_STRING }}
+#endif
+#if (database == "PostgreSQL")
+          ConnectionStrings__postgresdb: ${{ secrets.DATABASE_CONNECTION_STRING }}
+#endif
+#if (database == "MySql")
+          ConnectionStrings__mysqldb: ${{ secrets.DATABASE_CONNECTION_STRING }}
+#endif
+        run: |
+          chmod +x efbundle
+          ./efbundle
+          rm efbundle
+#endif
 
       - name: Deploy to Azure Web App
         id: deploy-api-to-webapp
@@ -209,7 +277,7 @@ jobs:
       - name: Install the bit CLI
         shell: pwsh
         run: |
-          dotnet tool install Bit.Cli --prerelease --tool-path "$env:RUNNER_TEMP/bit-cli"
+          dotnet tool install Bit.Cli --version 10.7.0 --tool-path "$env:RUNNER_TEMP/bit-cli"
           Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
 
       - name: Prepare this machine with bit setup
@@ -251,7 +319,7 @@ jobs:
         run: |
           cd src\Client\Boilerplate.Client.Windows\
           dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APP_VERSION }}" --self-contained -p:Environment=${{ inputs.ENV_NAME }}
-          dnx vpk@1.2.161 -- pack -u ${{ vars.APP_ID }} -v "${{ vars.APP_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle '${{ vars.APP_TITLE }}'
+          dnx vpk@1.3.39-g8d2844f -- pack -u ${{ vars.APP_ID }} -v "${{ vars.APP_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle '${{ vars.APP_TITLE }}'
 
       - name: Upload artifact
         id: artifact
@@ -290,7 +358,7 @@ jobs:
       - name: Install the bit CLI
         shell: pwsh
         run: |
-          dotnet tool install Bit.Cli --prerelease --tool-path "$env:RUNNER_TEMP/bit-cli"
+          dotnet tool install Bit.Cli --version 10.7.0 --tool-path "$env:RUNNER_TEMP/bit-cli"
           Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
 
       - name: Prepare this machine with bit setup
@@ -362,7 +430,7 @@ jobs:
       - name: Install the bit CLI
         shell: pwsh
         run: |
-          dotnet tool install Bit.Cli --prerelease --tool-path "$env:RUNNER_TEMP/bit-cli"
+          dotnet tool install Bit.Cli --version 10.7.0 --tool-path "$env:RUNNER_TEMP/bit-cli"
           Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
 
       - name: Prepare this machine with bit setup

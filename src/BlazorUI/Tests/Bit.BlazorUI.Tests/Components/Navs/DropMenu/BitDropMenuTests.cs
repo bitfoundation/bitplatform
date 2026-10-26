@@ -1363,14 +1363,19 @@ public class BitDropMenuTests : BunitTestContext
         });
 
         component.Find(".bit-drm").MouseEnter();
-        component.Find(".bit-drm").MouseLeave();
 
-        component.Find(".bit-drm-btn").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+        // The leave and the key are raised in one turn of the renderer, so the close delay cannot run out between
+        // them however long the test thread is held up; the leave's handler is then awaited, which is over only
+        // once the close it scheduled has been called off - or, had the key not called it off, carried out.
+        Task leave = Task.CompletedTask, keyDown = Task.CompletedTask;
+        await component.InvokeAsync(() =>
+        {
+            leave = component.Find(".bit-drm").MouseLeaveAsync(new MouseEventArgs());
+            keyDown = component.Find(".bit-drm-btn").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowDown" });
+        });
+        await Task.WhenAll(leave, keyDown);
 
-        // Nothing happening is what is asserted here, so the wait outlasts the close delay by a wide margin: the
-        // close the pointer leaving scheduled would take the callout away from under the focus that just went in.
-        await Task.Delay(hoverCloseDelay * 4);
-
+        // The close the pointer leaving scheduled would have taken the callout away from under the focus that just went in.
         Assert.AreEqual("true", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
     }
 
@@ -1894,7 +1899,7 @@ public class BitDropMenuTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDropMenuShouldKeepTheCalloutOpenWhileThePointerIsOnIt()
+    public async Task BitDropMenuShouldKeepTheCalloutOpenWhileThePointerIsOnIt()
     {
         Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isHoverDevice", _ => true).SetResult(true);
 
@@ -1908,9 +1913,17 @@ public class BitDropMenuTests : BunitTestContext
         component.Find(".bit-drm").MouseEnter();
         Assert.AreEqual("true", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
 
-        // The pointer moves off the button and onto the callout before the close delay is up.
-        component.Find(".bit-drm").MouseLeave();
-        component.Find(".bit-drm-cal").MouseEnter();
+        // The pointer moves off the button and onto the callout before the close delay is up. Both moves are raised
+        // in one turn of the renderer, so the delay cannot run out between them however long the test thread is held
+        // up, and the leave's handler is awaited, which is over only once the close it scheduled has been called off
+        // - or, had the callout not called it off, carried out.
+        Task leave = Task.CompletedTask, enter = Task.CompletedTask;
+        await component.InvokeAsync(() =>
+        {
+            leave = component.Find(".bit-drm").MouseLeaveAsync(new MouseEventArgs());
+            enter = component.Find(".bit-drm-cal").MouseEnterAsync(new MouseEventArgs());
+        });
+        await Task.WhenAll(leave, enter);
 
         Assert.AreEqual("true", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
     }
@@ -2051,12 +2064,16 @@ public class BitDropMenuTests : BunitTestContext
             parameters.Add(p => p.HoverOpenDelay, hoverOpenDelay);
         });
 
-        component.Find(".bit-drm").MouseEnter();
-        component.Find(".bit-drm").MouseLeave();
-
-        // Nothing happening is what is asserted here, so the wait has to outlast the open delay by enough
-        // of a margin that a menu which did open would have opened by the time the assertion runs.
-        await Task.Delay(hoverOpenDelay * 4);
+        // The enter and the leave are raised in one turn of the renderer, so the open delay cannot run out between
+        // them however long the test thread is held up; the enter's handler is then awaited, which is over only
+        // once the open it scheduled has been called off - or, had the leave not called it off, carried out.
+        Task enter = Task.CompletedTask, leave = Task.CompletedTask;
+        await component.InvokeAsync(() =>
+        {
+            enter = component.Find(".bit-drm").MouseEnterAsync(new MouseEventArgs());
+            leave = component.Find(".bit-drm").MouseLeaveAsync(new MouseEventArgs());
+        });
+        await Task.WhenAll(enter, leave);
 
         // The pointer was only passing over the button on its way somewhere else.
         Assert.AreEqual("false", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
@@ -2955,8 +2972,9 @@ public class BitDropMenuTests : BunitTestContext
         Assert.AreEqual("false", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
         Assert.AreEqual(1, CountKeyboardDisposals());
 
-        var invocations = Context.JSInterop.Invocations.Select(i => i.Identifier).ToList();
-        Assert.IsTrue(invocations.LastIndexOf("BitBlazorUI.Callouts.setupMenuKeyboard") < invocations.IndexOf("BitBlazorUI.Callouts.disposeKeyboard"));
+        // bUnit records the invocations grouped by identifier, not in call order, so the order is read off the counts:
+        // the two setups were all there before the Escape, and the release did not send another one.
+        Assert.AreEqual(2, KeyboardSetups().Count());
 
         takeOver.SetVoidResult();
 

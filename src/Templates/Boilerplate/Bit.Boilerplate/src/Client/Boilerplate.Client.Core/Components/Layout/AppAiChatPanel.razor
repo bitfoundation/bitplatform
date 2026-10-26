@@ -1,4 +1,5 @@
 @using Boilerplate.Shared.Features.Chatbot
+@using Boilerplate.Shared.Features.Attachments
 @inherits AppComponentBase
 
 <BitMediaQuery ScreenQuery="BitScreenQuery.LtSm" OnChange="isMatched => isSmallScreen = isMatched" />
@@ -232,11 +233,11 @@
                 <BitFileUpload @ref="attachmentUploadRef"
                                AutoReset
                                ShowPreview
-                               Accept="image/*"
+                               Accept="@ImageUploadContentTypes.Accept"
                                Class="composer"
                                Classes="@(new() { Dragging = "dragging" })"
                                MaxSize="1024 * 1024 * 10"
-                               AllowedExtensions="@(["image/*"])"
+                               AllowedExtensions="ImageUploadContentTypes.All"
                                OnFilesChange="HandleOnAttachmentChange"
                                OnInvalid="HandleOnAttachmentInvalid"
                                UploadUrlProvider="GetAttachmentUploadUrl"

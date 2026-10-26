@@ -6,6 +6,7 @@ using Bit.Bmage.Editing;
 using Bit.Bmage.Editor.Localization;
 using Bit.Bmage.Editor.Tools;
 using Bit.Bmage.Geometry;
+using Bit.Bmage.Layers;
 using Bit.Bmage.Operations;
 
 namespace Bit.Bmage.Editor.Components;
@@ -32,6 +33,9 @@ public sealed class BmageEditorContext
 
     /// <summary>Localised strings.</summary>
     public BmageEditorStrings Strings => _editor.Strings;
+
+    /// <summary>The editor's <see cref="BmageEditor.ExportOptions"/>: what a save button starts from.</summary>
+    public ImageExportOptions ExportOptions => _editor.ExportOptions;
 
     /// <summary>The live editing session, or null when no image is loaded.</summary>
     public ImageEditSession? Session => _editor.Session;
@@ -65,6 +69,9 @@ public sealed class BmageEditorContext
 
     /// <summary>Annotations in the document, in draw order.</summary>
     public IReadOnlyList<Annotation> Annotations => Document?.Annotations ?? [];
+
+    /// <summary>The document's layers, bottom first.</summary>
+    public IReadOnlyList<Layer> Layers => Document?.Layers ?? [];
 
     /// <summary>True when there is something to undo.</summary>
     public bool CanUndo => Session?.History.CanUndo ?? false;
@@ -148,6 +155,133 @@ public sealed class BmageEditorContext
     /// <summary>Selects an annotation, or clears the selection.</summary>
     public void SelectAnnotation(Guid? id) => _editor.SelectAnnotation(id);
 
+    /// <summary>
+    /// Adds a layer on top of the others: an image placed on the photo, a colour fill, or an adjustment layer, each with
+    /// a blend mode, an opacity and an optional mask. Coordinates are those of the edited image at full resolution.
+    /// </summary>
+    public Task AddLayerAsync(Layer layer, string? label = null)
+    {
+        ArgumentNullException.ThrowIfNull(layer);
+        return ApplyAsync(d => d.AddLayer(layer), label ?? Strings.FormatAddLayer(Strings.FormatKind(layer.Kind)));
+    }
+
+    /// <summary>
+    /// Replaces a layer, matched by id. Pass <paramref name="transient"/> while a control is being dragged, as for
+    /// <see cref="SetAdjustmentAsync"/>.
+    /// </summary>
+    public Task UpdateLayerAsync(Layer layer, bool transient = false)
+    {
+        ArgumentNullException.ThrowIfNull(layer);
+        return ApplyAsync(d => d.UpdateLayer(layer), Strings.FormatEditLayer(layer.Name ?? Strings.FormatKind(layer.Kind)), transient);
+    }
+
+    /// <summary>Removes a layer.</summary>
+    public Task RemoveLayerAsync(Guid id) => ApplyAsync(d => d.RemoveLayer(id), Strings.RemoveLayer);
+
+    /// <summary>Moves a layer to <paramref name="index"/> in the stack, 0 being the bottom.</summary>
+    public Task MoveLayerAsync(Guid id, int index) => ApplyAsync(d => d.MoveLayer(id, index), Strings.ReorderLayers);
+
+    /// <summary>The id of the layer selected in the layer panel, if any. Painting goes to it when it is a paint layer.</summary>
+    public Guid? ActiveLayerId => _editor.ActiveLayerId;
+
+    /// <summary>The layer selected in the layer panel, if any.</summary>
+    public Layer? ActiveLayer => ActiveLayerId is { } id ? Document?.FindLayer(id) : null;
+
+    /// <summary>Selects a layer, or clears the selection.</summary>
+    public void SelectLayer(Guid? id) => _editor.SelectLayer(id);
+
+    /// <summary>Duplicates a layer above itself and selects the copy.</summary>
+    public Task DuplicateLayerAsync(Guid id) => _editor.DuplicateLayerAsync(id);
+
+    /// <summary>Groups a layer with the one below it, or moves it into the group below it. See <see cref="BmageEditor.GroupWithLayerBelowAsync"/>.</summary>
+    public Task GroupWithLayerBelowAsync(Guid id) => _editor.GroupWithLayerBelowAsync(id);
+
+    /// <summary>Replaces a group by its layers.</summary>
+    public Task UngroupAsync(Guid id) => _editor.UngroupAsync(id);
+
+    /// <summary>Moves a layer out of its group, directly above it.</summary>
+    public Task MoveLayerOutOfGroupAsync(Guid id) => _editor.MoveLayerOutOfGroupAsync(id);
+
+    /// <summary>Adds an empty paint layer on top, selects it and picks the brush.</summary>
+    public Task AddPaintLayerAsync() => _editor.AddPaintLayerAsync();
+
+    /// <summary>Loads an image and places it as a layer in the middle of the image.</summary>
+    public Task AddImageLayerAsync(Input.ImageSource source) => _editor.AddImageLayerAsync(source);
+
+    /// <summary>The pixel selection, in output coordinates, or null when nothing is selected.</summary>
+    public Masks.Mask? Selection => _editor.Selection;
+
+    /// <summary>True when there is a pixel selection.</summary>
+    public bool HasSelection => _editor.Selection is not null;
+
+    /// <summary>Sets the pixel selection, or clears it with null.</summary>
+    public void SetSelection(Masks.Mask? selection) => _editor.SetSelection(selection);
+
+    /// <summary>Selects the whole image.</summary>
+    public void SelectAll() => _editor.SelectAll();
+
+    /// <summary>Clears the pixel selection.</summary>
+    public void Deselect() => _editor.SetSelection(null);
+
+    /// <summary>Selects everything that is not selected.</summary>
+    public void InvertSelection() => _editor.InvertSelection();
+
+    /// <summary>Makes the selected pixels transparent.</summary>
+    public Task ClearSelectionAsync() => _editor.ClearSelectionAsync();
+
+    /// <summary>Fills the selection with the fill colour, as a layer.</summary>
+    public Task FillSelectionAsync() => _editor.FillSelectionAsync();
+
+    /// <summary>Crops the image to the selection's bounds.</summary>
+    public Task CropToSelectionAsync() => _editor.CropToSelectionAsync();
+
+    /// <summary>Copies the selected pixels, as the image is composited, to a new image layer in the same place.</summary>
+    public Task CopySelectionToLayerAsync() => _editor.CopySelectionToLayerAsync();
+
+    /// <summary>True while the canvas shows the original instead of the edit.</summary>
+    public bool IsComparing => _editor.IsComparing;
+
+    /// <summary>Shows the original instead of the edit, or the edit again.</summary>
+    public Task SetCompareAsync(bool compare) => _editor.SetCompareAsync(compare);
+
+    /// <summary>Levels the image by up to 45 degrees; a later call replaces it, 0 removes it.</summary>
+    public Task SetStraightenAsync(double degrees, bool transient = false) => _editor.SetStraightenAsync(degrees, transient);
+
+    /// <summary>Resizes the image to exactly the given size.</summary>
+    public Task ResizeAsync(int width, int height) => _editor.ResizeAsync(width, height);
+
+    /// <summary>Sets the canvas size without scaling the image.</summary>
+    public Task SetCanvasSizeAsync(int width, int height, Geometry.Anchor anchor, Rgba32 background) => _editor.SetCanvasSizeAsync(width, height, anchor, background);
+
+    /// <summary>Crops away plain or transparent edges.</summary>
+    public Task TrimAsync() => _editor.TrimAsync();
+
+    /// <summary>Turns automatic white balance on or off.</summary>
+    public Task ToggleAutoWhiteBalanceAsync() => _editor.ToggleAutoWhiteBalanceAsync();
+
+    /// <summary>Turns automatic levels on or off.</summary>
+    public Task ToggleAutoLevelsAsync() => _editor.ToggleAutoLevelsAsync();
+
+    /// <summary>Makes the next eyedropper pick set the white balance.</summary>
+    public void PickWhiteBalance() => _editor.PickWhiteBalance();
+
+    /// <summary>True while the next eyedropper pick sets the white balance.</summary>
+    public bool IsPickingWhiteBalance => _editor.IsPickingWhiteBalance;
+
+    /// <summary>
+    /// Replaces the edit with a saved one, such as a document read back with
+    /// <see cref="Serialization.BmageJson.DeserializeDocument"/>, as one undoable step. The document must have been made
+    /// for an image of the size loaded now.
+    /// </summary>
+    /// <exception cref="ArgumentException">The document was made for an image of another size.</exception>
+    public Task RestoreDocumentAsync(ImageDocument document)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+        if (Session is { } session && document.SourceSize != session.SourceSize)
+            throw new ArgumentException($"The document was made for a {document.SourceSize.Width}x{document.SourceSize.Height} image, but a {session.SourceSize.Width}x{session.SourceSize.Height} one is loaded.", nameof(document));
+        return ApplyAsync(_ => document, Strings.RestoreEdit);
+    }
+
     /// <summary>Undoes the last edit.</summary>
     public void Undo() => _editor.Undo();
 
@@ -180,6 +314,15 @@ public sealed class BmageEditorContext
 
     /// <summary>Copies the result to the clipboard as PNG.</summary>
     public Task CopyToClipboardAsync() => _editor.CopyToClipboardAsync();
+
+    /// <summary>Downloads the original, the edit and its images as one project file.</summary>
+    public Task SaveProjectAsync(string fileName = "edit") => _editor.SaveProjectAsync(fileName);
+
+    /// <summary>Opens a project file, replacing the image and its history.</summary>
+    public Task OpenProjectAsync(System.IO.Stream stream) => _editor.OpenProjectAsync(stream);
+
+    /// <summary>Opens a project file the user picked, replacing the image and its history.</summary>
+    public Task OpenProjectAsync(Microsoft.AspNetCore.Components.Forms.IBrowserFile file) => _editor.OpenProjectAsync(file);
 
     /// <summary>Finds the current value of an adjustment in the pipeline, if present.</summary>
     public TOperation? FindAdjustment<TOperation>() where TOperation : class, IImageOperation

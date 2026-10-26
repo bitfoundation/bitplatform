@@ -26,6 +26,9 @@ public class BrouterSetupGuideTests
             ("InteractiveAuto", "auto"),
             ("standalone", "standalone-wasm"),
             ("standalone-webassembly", "standalone-wasm"),
+            ("MAUI", "hybrid"),
+            ("Blazor Hybrid", "hybrid"),
+            ("WinForms", "hybrid"),
         ];
 
         foreach (var (spelling, mode) in spellings)
@@ -43,7 +46,7 @@ public class BrouterSetupGuideTests
     [TestMethod]
     public void Anything_else_resolves_to_nothing_so_the_caller_can_be_told_what_does()
     {
-        Assert.IsNull(BrouterSetupGuide.Get("maui"));
+        Assert.IsNull(BrouterSetupGuide.Get("razor-pages"));
         Assert.IsNull(BrouterSetupGuide.Get(""));
         Assert.IsNull(BrouterSetupGuide.Get(null));
     }
@@ -93,5 +96,6 @@ public class BrouterSetupGuideTests
         StringAssert.Contains(BrouterSetupGuide.Get("auto")!, "both containers");
         StringAssert.Contains(BrouterSetupGuide.Get("server")!, "single (server) container");
         StringAssert.Contains(BrouterSetupGuide.Get("standalone-wasm")!, "One project, one DI container");
+        StringAssert.Contains(BrouterSetupGuide.Get("hybrid")!, "One app, one DI container");
     }
 }

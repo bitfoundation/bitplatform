@@ -14,6 +14,7 @@ public static class Pdf417Encoder
 {
     private const int TextCompactionLatch = 900;
     private const int ByteCompactionLatch = 901;
+    private const int ByteCompactionSixesLatch = 924;
     private const int PadCodeword = 900;
 
     /// <summary>Encodes text into a PDF417 module grid.</summary>
@@ -105,9 +106,9 @@ public static class Pdf417Encoder
             return codewords;
         }
 
-        codewords.Add(ByteCompactionLatch);
-
+        // 924 for a multiple of six bytes, every group packed; 901 otherwise, its last one to five bytes a codeword each.
         var bytes = System.Text.Encoding.Latin1.GetBytes(content);
+        codewords.Add(bytes.Length % 6 == 0 ? ByteCompactionSixesLatch : ByteCompactionLatch);
         var index = 0;
         while (index + 6 <= bytes.Length)
         {

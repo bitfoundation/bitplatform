@@ -5,9 +5,7 @@ on:
   workflow_call:
   pull_request:
     paths:
-    - 'src/Cli/**'
-    - 'src/Minifier/Bit.Minifier/MapDecoder.cs'
-    - 'src/Minifier/Bit.Minifier/Decode.cs'
+    - 'src/Toolings/Cli/**'
     - 'src/Templates/Boilerplate/Bit.Boilerplate/.template.config/template.json'
     - 'src/Templates/Boilerplate/Bit.Boilerplate/src/Client/Boilerplate.Client.Core/package.json'
     - 'src/Templates/Boilerplate/Bit.Boilerplate/src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj'
@@ -42,10 +40,10 @@ jobs:
         global-json-file: src/global.json
 
     - name: dotnet build
-      run: dotnet build src/Cli/Bit.Cli.slnx -p:EnforceCodeStyleInBuild=true
+      run: dotnet build src/Toolings/Cli/Bit.Cli.slnx -p:EnforceCodeStyleInBuild=true
 
     - name: dotnet test
-      working-directory: src/Cli/Tests/Bit.Cli.Tests
+      working-directory: src/Toolings/Cli/Tests/Bit.Cli.Tests
       run: dotnet test --no-build
 
     - name: Setup bit CLI

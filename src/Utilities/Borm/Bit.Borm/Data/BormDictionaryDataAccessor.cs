@@ -82,8 +82,11 @@ public sealed class BormDictionaryDataAccessor : IBormDataAccessor
         value = null;
         object? current = _root;
 
-        foreach (var seg in BormPath.Parse(path))
+        // Indexed, not foreach: through the interface, every read would box the list's enumerator.
+        var segments = BormPath.Parse(path);
+        for (var i = 0; i < segments.Count; i++)
         {
+            var seg = segments[i];
             if (seg.IsIndex)
             {
                 if (current is not IList list || seg.Index < 0 || seg.Index >= list.Count) return false;
@@ -304,10 +307,19 @@ public sealed class BormDictionaryDataAccessor : IBormDataAccessor
     private static string? ExistingKey(IDictionary<string, object?> dict, string name)
     {
         if (dict.ContainsKey(name)) return name;
+        // A dictionary that already ignores case has answered the question: a miss is a miss. Scanning
+        // its keys for another spelling made every new key cost a walk of all the others — quadratic
+        // over a form filled in from nothing, which is every dictionary-backed form when it opens.
+        if (dict is Dictionary<string, object?> { Comparer: var comparer } && IgnoresCase(comparer)) return null;
         foreach (var key in dict.Keys)
             if (KeyComparer.Equals(key, name)) return key;
         return null;
     }
+
+    private static bool IgnoresCase(IEqualityComparer<string> comparer)
+        => ReferenceEquals(comparer, StringComparer.OrdinalIgnoreCase)
+           || ReferenceEquals(comparer, StringComparer.InvariantCultureIgnoreCase)
+           || ReferenceEquals(comparer, StringComparer.CurrentCultureIgnoreCase);
 
     private static string? ExistingKey(IDictionary dict, string name)
     {

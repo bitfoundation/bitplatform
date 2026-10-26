@@ -13,7 +13,9 @@ dotnet add package Bit.Bmage
 
 In `Program.cs` of the project that runs in the browser. For a Blazor Web App using WebAssembly or Auto render modes,
 that is the client project. Register it in the server project as well whenever the server instantiates the same
-components: during prerendering (on by default) and for any component that uses Interactive Server.
+components: during prerendering (on by default) and for any component that uses Interactive Server. In a Blazor Hybrid
+app (MAUI, WPF, Windows Forms) there is one container: register it once, in `MauiProgram.cs` or its equivalent, next
+to `AddMauiBlazorWebView()` (see [Blazor Hybrid](browser-support.md#blazor-hybrid-maui-wpf-windows-forms)).
 
 ```csharp
 using Bit.Bmage;   // AddBitBmageServices and AddBitBmageHeadlessServices live here
@@ -48,11 +50,18 @@ builder.Services.AddBitBmageServices(options =>
 
     // Longest edge used for interactive editing; larger images edit through a proxy.
     options.MaxInteractiveDimension = 2048;
+
+    // Threads an operation may use: one by default. Environment.ProcessorCount uses every core, in the browser only
+    // when the app is built with threads.
+    options.MaxDegreeOfParallelism = null;
+
+    // Web Workers the browser codecs may use; 0 keeps decoding and encoding on the page's thread.
+    options.MaxCodecWorkers = null;
 });
 ```
 
 Services are registered as scoped. In WebAssembly that scope lasts for the whole application; in Server there is one
-scope per circuit, so browser state is never shared between users.
+scope per circuit, so browser state is never shared between users; in Blazor Hybrid there is one per BlazorWebView.
 
 ### Lazy loading Bmage on WebAssembly
 
@@ -81,7 +90,8 @@ startup.
 
 ## Add the stylesheet
 
-Only needed for the editor component (`BmageEditor`, `BmageDropZone`). Put it in `index.html` or `App.razor`:
+Only needed for the editor component (`BmageEditor`, `BmageDropZone`). Put it in `App.razor` of a Blazor Web App, or
+in `wwwroot/index.html` of a standalone WebAssembly or Blazor Hybrid app:
 
 ```html
 <link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" />

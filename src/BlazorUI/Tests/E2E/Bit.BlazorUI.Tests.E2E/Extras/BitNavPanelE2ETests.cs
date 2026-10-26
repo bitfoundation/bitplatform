@@ -643,7 +643,7 @@ public class BitNavPanelE2ETests : E2ETestBase
 
     // ---------- color, icons, size ----------
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("primary", "apri", "--bit-clr-pri")]
     [DataRow("secondary", "asec", "--bit-clr-sec")]
     [DataRow("tertiary", "ater", "--bit-clr-ter")]

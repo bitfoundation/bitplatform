@@ -50,16 +50,19 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                 // CloseBrowserPage.razor's `window.close()` does NOT work on iOS's in app browser.
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
+                    //-:cnd:noEmit
 #if iOS
                     if (UIKit.UIApplication.SharedApplication.KeyWindow?.RootViewController?.PresentedViewController is SafariServices.SFSafariViewController controller)
                     {
                         controller.DismissViewController(animated: true, completionHandler: null);
                     }
 #endif
+                    //+:cnd:noEmit
                 });
             }
             else if (AppPlatform.IsAndroid)
             {
+                //-:cnd:noEmit
 #if Android
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
@@ -68,6 +71,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                     Platform.AppContext.StartActivity(intent);
                 });
 #endif
+                //+:cnd:noEmit
             }
         }
 
@@ -186,6 +190,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                 {
                     staticFileStream = File.OpenRead(staticFilePath);
                 }
+                //-:cnd:noEmit
 #if Android
                 try
                 {
@@ -193,6 +198,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                 }
                 catch { /* Android's AssetManager.Open throws for every miss rather than returning null; the null check below turns that into a 404. */ }
 #endif
+                //+:cnd:noEmit
                 if (staticFileStream is null)
                 {
                     ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;

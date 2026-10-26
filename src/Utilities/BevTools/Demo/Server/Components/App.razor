@@ -16,6 +16,7 @@
     <meta property="og:site_name" content="Bit.BevTools" />
     <meta property="og:title" content="BevTools - in-app developer tools for Blazor" />
     <meta property="og:description" content="See why every component rendered, what each click cost, which request failed and which service is registered wrong - inside the running app, with no changes to its source." />
+    <meta property="og:image" content="https://bevtools.bitplatform.dev/icon-512.png" />
     <meta name="twitter:card" content="summary" />
 
     <ResourcePreloader />
@@ -29,11 +30,19 @@
     @* Synchronous on purpose: applies the light/dark theme before first paint. *@
     <script src="@Assets["theme.js"]"></script>
     <ImportMap />
-    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="icon" href="favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
     <HeadOutlet @rendermode="InteractiveAuto" />
 </head>
 
-<body>
+@* data-enhance-nav="false": a link followed before the runtime has started - the Blazor Server
+   circuit on a first visit, the WebAssembly runtime once it is cached - is a plain page load rather
+   than an enhanced one. Enhanced navigation fetches and merges the next page while the runtime is
+   still starting, and the router the runtime then attaches can render the address it read before
+   the merge - the URL says /getting-started and the page is the landing page. Once the app is
+   interactive its router handles every link itself and this attribute is not consulted. *@
+<body data-enhance-nav="false">
     @* InteractiveAuto, as the scenarios need: a first visit runs on a Blazor Server circuit (the
        Circuit page and the reconnect UI depend on it), and once the WebAssembly runtime is cached
        the same pages run in the browser, so both render paths can be inspected. *@
@@ -44,6 +53,8 @@
         <a href="." class="reload">Reload</a>
         <span class="dismiss">&#128473;</span>
     </div>
+    @* Before blazor.web.js, so it sees the circuit's socket: the Circuit page's "Drop the connection". *@
+    <script src="@Assets["js/connection.js"]"></script>
     <script src="@Assets["_framework/blazor.web.js"]"></script>
     <script src="@Assets["site.js"]"></script>
 </body>

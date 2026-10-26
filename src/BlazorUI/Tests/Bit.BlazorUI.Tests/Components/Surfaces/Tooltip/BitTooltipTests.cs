@@ -106,7 +106,7 @@ public class BitTooltipTests : BunitTestContext
     // the browser to read against the direction. The alignment of a tooltip beside its anchor runs top to bottom,
     // so Start and End are its Top and Bottom there. A physical alignment only means anything on its own axis, so
     // off it - like Center and the two combined values, which name no edge - it centers the tooltip.
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitPlacement.Top, BitPlacement.Center, "bit-ttp-top", "bit-ttp-ahc")]
     [DataRow(BitPlacement.Top, BitPlacement.Start, "bit-ttp-top", "bit-ttp-ast")]
     [DataRow(BitPlacement.Top, BitPlacement.End, "bit-ttp-top", "bit-ttp-aen")]
@@ -164,7 +164,7 @@ public class BitTooltipTests : BunitTestContext
 
     // The two sides that name no single edge are not meaningful for a tooltip, so they leave it where an
     // unset Placement would put it rather than dropping the placement class altogether.
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitPlacement.TopAndBottom)]
     [DataRow(BitPlacement.StartAndEnd)]
     public void BitTooltipShouldFallBackToTheTopForACombinedSide(BitPlacement side)
@@ -209,7 +209,7 @@ public class BitTooltipTests : BunitTestContext
 
 
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitColor.Primary, "bit-ttp-pri")]
     [DataRow(BitColor.Secondary, "bit-ttp-sec")]
     [DataRow(BitColor.Tertiary, "bit-ttp-ter")]
@@ -238,7 +238,7 @@ public class BitTooltipTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-ttp").ClassList.Contains(expectedClass));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitSize.Small, "bit-ttp-sm")]
     [DataRow(BitSize.Medium, "bit-ttp-md")]
     [DataRow(BitSize.Large, "bit-ttp-lg")]
@@ -568,14 +568,17 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.ShowDelay, 20);
+            // Long enough that the leave lands well inside it on a loaded machine too: a delay that runs out between
+            // the two events has its show either land before the leave (which proves nothing) or, already past its
+            // wait when the leave cancels it, land after it.
+            parameters.Add(p => p.ShowDelay, 200);
         });
 
         component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
         component.Find(".bit-ttp").TriggerEvent("onpointerleave", Mouse());
 
         // Well past the delay: a show that was not cancelled would have landed by now.
-        await Task.Delay(80);
+        await Task.Delay(500);
 
         Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
     }
@@ -586,7 +589,9 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.HideDelay, 20);
+            // Long enough that the pointer comes back well inside it on a loaded machine too (see the pending show
+            // above).
+            parameters.Add(p => p.HideDelay, 200);
         });
 
         component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
@@ -594,7 +599,56 @@ public class BitTooltipTests : BunitTestContext
         component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
 
         // Well past the delay: a hide that was not cancelled would have landed by now.
-        await Task.Delay(80);
+        await Task.Delay(500);
+
+        Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public async Task BitTooltipShouldNotShowWhenThePointerLeftOnceTheShowDelayHadRunOut()
+    {
+        // A delay can run out while its continuation still waits for the dispatcher - behind the very handler of the
+        // leave, here - and the leave then cancels a delay that is already over, which no longer stops it: the show it
+        // called off must not land anyway.
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.ShowDelay, 1);
+        });
+
+        await component.InvokeAsync(() =>
+        {
+            component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+            System.Threading.Thread.Sleep(100);
+            component.Find(".bit-ttp").TriggerEvent("onpointerleave", Mouse());
+        });
+
+        // Queued behind the continuation, so it has run by now.
+        await component.InvokeAsync(() => { });
+
+        Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
+    }
+
+    [TestMethod]
+    public async Task BitTooltipShouldNotHideWhenThePointerCameBackOnceTheHideDelayHadRunOut()
+    {
+        // The same as the show's: a hide whose delay ran out behind the handler of the enter that called it off.
+        var component = RenderComponent<BitTooltip>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Tip");
+            parameters.Add(p => p.HideDelay, 1);
+        });
+
+        component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+
+        await component.InvokeAsync(() =>
+        {
+            component.Find(".bit-ttp").TriggerEvent("onpointerleave", Mouse());
+            System.Threading.Thread.Sleep(100);
+            component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
+        });
+
+        await component.InvokeAsync(() => { });
 
         Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
     }
@@ -1456,7 +1510,9 @@ public class BitTooltipTests : BunitTestContext
     {
         var component = RenderComponent<BitTooltipGroupTest>(parameters =>
         {
-            parameters.Add(p => p.ShowDelay, 60);
+            // Long enough that the assertion below is not racing the delay it is there to prove (see
+            // BitTooltipShouldWaitOutTheShowDelay).
+            parameters.Add(p => p.ShowDelay, 200);
             parameters.Add(p => p.HideDelay, 0);
         });
 
@@ -1464,8 +1520,9 @@ public class BitTooltipTests : BunitTestContext
 
         Assert.IsFalse(component.Find("#first .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
 
-        component.WaitForAssertion(() =>
-            Assert.IsTrue(component.Find("#first .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis")));
+        component.WaitForAssertion(
+            () => Assert.IsTrue(component.Find("#first .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis")),
+            TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -1608,7 +1665,7 @@ public class BitTooltipTests : BunitTestContext
     // The direction is the stylesheet's to read (off :dir(), so a tooltip given none reads the way the page
     // around it does), never resolved into a side of the screen here: a right-to-left tooltip, a left-to-right
     // one and one given no direction at all carry the very same classes, logical values and physical ones alike.
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(BitPlacement.Start, BitPlacement.Center)]
     [DataRow(BitPlacement.End, BitPlacement.Top)]
     [DataRow(BitPlacement.Top, BitPlacement.Start)]
@@ -2230,7 +2287,8 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltipGroupTest>(parameters =>
         {
             parameters.Add(p => p.ShowDelay, 0);
-            parameters.Add(p => p.HideDelay, 60);
+            // Long enough that the assertion right after the leave is not racing the delay it is there to prove.
+            parameters.Add(p => p.HideDelay, 200);
         });
 
         component.Find("#first").TriggerEvent("onpointerenter", Mouse());
@@ -2239,8 +2297,9 @@ public class BitTooltipTests : BunitTestContext
         // The group's grace holds the tooltip while the pointer crosses into it.
         Assert.IsTrue(component.Find("#first .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
 
-        component.WaitForAssertion(() =>
-            Assert.IsFalse(component.Find("#first .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis")));
+        component.WaitForAssertion(
+            () => Assert.IsFalse(component.Find("#first .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis")),
+            TimeSpan.FromSeconds(5));
 
         // The third names a hide delay of zero, which the group does not fill in over.
         component.Find("#third").TriggerEvent("onpointerenter", Mouse());
@@ -2377,7 +2436,8 @@ public class BitTooltipTests : BunitTestContext
 
         Assert.IsFalse(component.Find("#cascaded .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
 
-        // The group around the third is nearer, so its tenth of a second is the one waited out.
+        // The group around the third is nearer, so its fifth of a second is the one waited out - long enough that
+        // the read right after the enter is not racing it on a loaded machine.
         component.Find("#grouped").TriggerEvent("onpointerenter", Mouse());
 
         Assert.IsFalse(component.Find("#grouped .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));

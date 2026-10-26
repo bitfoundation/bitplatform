@@ -49,7 +49,7 @@ public class BitBreadcrumbTests : BunitTestContext
 
         if (maxDisplayedItems > 0)
         {
-            Assert.AreEqual((uint)breadcrumbElements.Count, maxDisplayedItems);
+            Assert.AreEqual(maxDisplayedItems, (uint)breadcrumbElements.Count);
         }
         else
         {
@@ -77,7 +77,7 @@ public class BitBreadcrumbTests : BunitTestContext
 
         var breadcrumbElements = component.FindAll(".bit-brc ol.bit-brc-icn li a");
 
-        Assert.AreEqual((uint)breadcrumbElements.Count, maxDisplayedItems);
+        Assert.AreEqual(maxDisplayedItems, (uint)breadcrumbElements.Count);
 
         // The items that did not fit are the ones rendered in the overflow callout.
         var overflowElements = component.FindAll(".bit-brc-cal .bit-brc-ofi");
@@ -1941,7 +1941,7 @@ public class BitBreadcrumbTests : BunitTestContext
         var rootId = component.Find(".bit-brc").Id;
 
         Assert.AreEqual(rootId, toggle.Arguments[^2]);
-        Assert.AreNotEqual(component.Find(".bit-brc-obt").Id, rootId);
+        Assert.AreNotEqual(rootId, component.Find(".bit-brc-obt").Id);
         Assert.IsFalse((component.Find(".bit-brc-cal").GetAttribute("style") ?? "").Contains("--bit-Breadcrumb-"));
     }
 

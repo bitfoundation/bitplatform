@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <!-- The code under each demo page's replicas: what an application writes for the same feature, one participant
+         at a time. Built with the solution so a sample cannot fall behind the library's API, and referenced by
+         nothing - the client embeds the files' text for CodeSnippet to show and the server for its MCP index, so
+         no visitor downloads a sample's compiled code. -->
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.Bcrdt\Bit.Bcrdt.csproj" />
+    </ItemGroup>
+
+</Project>

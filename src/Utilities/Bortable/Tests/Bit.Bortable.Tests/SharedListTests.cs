@@ -450,27 +450,20 @@ public class SharedListTests : BortableTestContext
         Assert.AreEqual("Start:L1 End:L1", Sequence(log));
     }
 
-    [TestMethod]
-    public async Task AListNestedInsideTheDraggedItemRefusesIt()
-    {
-        List<string> left = ["A"], right = ["X"];
-        var (l1, l2) = RenderPair(left, right);
-
-        // The browser layer reports that the hovered list sits inside the dragged item (a nested list):
-        // accepting it would put the item inside itself.
-        WouldNest = true;
-        await AssertRefusedAsync(l1, l2, left, right);
-    }
-
-    /// <summary>Drags the first item of <paramref name="l1"/> over <paramref name="l2"/> and drops it there.</summary>
+    /// <summary>
+    /// Drags the first item of <paramref name="l1"/> over <paramref name="l2"/> and drops it there. The start does
+    /// not name <paramref name="l2"/> among the lists that take the drag, so the browser layer never routes to it;
+    /// a drop position sent for it anyway changes nothing.
+    /// </summary>
     private async Task AssertRefusedAsync<TTarget>(
         IRenderedComponent<Bortable<string>> l1, IRenderedComponent<Bortable<TTarget>> l2,
         List<string> left, List<TTarget> right)
     {
         var before = (Left: left.ToList(), Right: right.ToList());
 
-        await DragStartAsync(l1, left[0]);
-        await DragOverAsync(l2, 0);
+        var started = await DragStartAsync(l1, left[0]);
+        Assert.DoesNotContain(l2.Instance.Id, started!.Lists);
+        Assert.IsFalse(await DragOverAsync(l2, 0));
 
         Assert.IsNull(Placeholder(l2), "A refusing list must not preview the item.");
         Assert.IsFalse(HasClass(l1, left[0], Hidden), "The original must stay visible when no list takes it.");

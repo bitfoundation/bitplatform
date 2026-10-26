@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -710,7 +709,6 @@ public partial class BitModal : BitComponentBase
         base.OnInitialized();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitModalParams))]
     protected override void OnParametersSet()
     {
         ResetUnsetBaseParameters();

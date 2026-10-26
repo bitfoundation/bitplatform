@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO.Compression;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Text;
 
 namespace Bit.Belemetry;
 
@@ -12,22 +13,33 @@ namespace Bit.Belemetry;
 /// </summary>
 internal sealed class BelemetryHttpSender : IDisposable
 {
-    // OTLP spec retryable codes, plus 408 and Azure's 439 (daily quota) / 500.
+    // What the Azure Monitor ingestion endpoint asks to retry, its 439 (daily quota) and 500 included.
     private static readonly HashSet<int> _retryable = [408, 429, 439, 500, 502, 503, 504];
+
+    // The OTLP specification's list, which is shorter: "All other 4xx or 5xx response status codes MUST NOT be retried"
+    // - a collector answering 500 or 408 has said its last word on that payload.
+    private static readonly HashSet<int> _retryableOtlp = [429, 502, 503, 504];
 
     // The gRPC status codes the OTLP specification lists as retryable: CANCELLED, DEADLINE_EXCEEDED, RESOURCE_EXHAUSTED,
     // ABORTED, OUT_OF_RANGE, UNAVAILABLE and DATA_LOSS. Anything else is the server's final word.
     private static readonly HashSet<int> _retryableGrpc = [1, 4, 8, 10, 11, 14, 15];
     private static readonly TimeSpan _maxRetryAfter = TimeSpan.FromSeconds(30);
 
+    internal static readonly string UserAgent = "Bit.Belemetry/" + BelemetrySettings.SdkVersion;
+
     private readonly HttpClient _client;
     private readonly bool _ownsClient;
     private readonly Action<Exception?, string> _diagnostic;
+    private readonly Action<Exception?, string> _warning;
     private HttpClient? _grpcClient;
 
-    public BelemetryHttpSender(HttpMessageHandler? handler, Action<Exception?, string> diagnostic)
+    /// <param name="handler">The handler to send through; the platform default when null.</param>
+    /// <param name="diagnostic">Logs a diagnostic (Debug, or Information with <see cref="BelemetryOptions.Debug"/>).</param>
+    /// <param name="warning">Logs a warning: data the backend rejected. Defaults to <paramref name="diagnostic"/>.</param>
+    public BelemetryHttpSender(HttpMessageHandler? handler, Action<Exception?, string> diagnostic, Action<Exception?, string>? warning = null)
     {
         _diagnostic = diagnostic;
+        _warning = warning ?? diagnostic;
         _ownsClient = true;
         // A dedicated client: the app's HttpClient may carry a BaseAddress, auth handlers or its own telemetry, none of
         // which belongs on export traffic. Per-request timeouts are applied with a CancellationTokenSource instead.
@@ -59,10 +71,21 @@ internal sealed class BelemetryHttpSender : IDisposable
     internal TimeSpan[] Backoff { get; set; } = [TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(3)];
 
     /// <summary>Delivers <paramref name="request"/>, retrying transient failures in-process a couple of times.</summary>
-    public async Task<BelemetrySendOutcome> SendAsync(IBelemetryHttpExporter exporter, BelemetryHttpRequest request, bool retry, CancellationToken cancellationToken)
+    public async Task<BelemetrySendOutcome> SendAsync(IBelemetryHttpExporter exporter, BelemetryHttpRequest request, bool retry, CancellationToken cancellationToken) =>
+        (await SendWithResultAsync(exporter, request, retry, cancellationToken)).Outcome;
+
+    /// <summary>
+    /// Delivers <paramref name="request"/>, retrying transient failures in-process a couple of times, and says what
+    /// became of it: the outcome, what is still undelivered, and the records accepted and refused for good.
+    /// </summary>
+    public async Task<BelemetrySendResult> SendWithResultAsync(IBelemetryHttpExporter exporter, BelemetryHttpRequest request, bool retry, CancellationToken cancellationToken)
     {
         var attempts = retry ? Backoff.Length + 1 : 1;
         var grpc = IsGrpc(request);
+
+        // What the partial successes settled before the request was narrowed to the rest.
+        var delivered = 0;
+        var rejected = 0;
 
         for (var attempt = 0; attempt < attempts; attempt++)
         {
@@ -74,15 +97,22 @@ internal sealed class BelemetryHttpSender : IDisposable
                 timeout.CancelAfter(exporter.Timeout > TimeSpan.Zero ? exporter.Timeout : TimeSpan.FromSeconds(10));
 
                 using var message = await CreateMessageAsync(exporter, request, timeout.Token);
-                using var response = await Client(grpc).SendAsync(message, HttpCompletionOption.ResponseContentRead, timeout.Token);
+                // The headers only: a body is read by ReadBodyAsync, within MaxResponseBytes, instead of whole by HttpClient.
+                using var response = await Client(grpc).SendAsync(message, HttpCompletionOption.ResponseHeadersRead, timeout.Token);
                 var status = (int)response.StatusCode;
 
                 if (grpc && status == 200)
                 {
                     // gRPC answers 200 whatever happened; the verdict is the grpc-status trailer (or header, for a
-                    // trailers-only response). A missing status is a broken reply, worth one more try.
+                    // trailers-only response) - and trailers arrive after the body. A missing status is a broken reply,
+                    // worth one more try.
+                    var body = await ReadBodyAsync(response, timeout.Token);
                     var grpcStatus = GetGrpcStatus(response);
-                    if (grpcStatus == 0) return BelemetrySendOutcome.Delivered;
+                    if (grpcStatus == 0)
+                    {
+                        var refused = ReportPartialSuccess(exporter, request, null, Unframe(body));
+                        return new(BelemetrySendOutcome.Delivered, request, delivered + Math.Max(0, request.Count - refused), rejected + refused);
+                    }
 
                     if (grpcStatus is null || _retryableGrpc.Contains(grpcStatus.Value))
                     {
@@ -90,25 +120,44 @@ internal sealed class BelemetryHttpSender : IDisposable
                     }
                     else
                     {
-                        _diagnostic(null, $"{exporter.Name}: {request.Url} rejected the request with grpc-status {grpcStatus} ({GetGrpcMessage(response)}); it is dropped.");
-                        return BelemetrySendOutcome.Rejected;
+                        _warning(null, $"{exporter.Name}: {request.Url} rejected the request with grpc-status {grpcStatus} ({GetGrpcMessage(response)}); it is dropped.");
+                        return new(BelemetrySendOutcome.Rejected, request, delivered, rejected + request.Count);
                     }
                 }
                 else if (response.IsSuccessStatusCode)
                 {
                     var body = status == 200 || status == 206 ? await ReadBodyAsync(response, timeout.Token) : null;
-                    if (exporter.GetRetryForPartialSuccess(request, status, body) is { } partial)
+                    var contentType = response.Content.Headers.ContentType;
+                    var text = body is null || IsProtobuf(contentType?.MediaType) ? null : DecodeText(body, contentType?.CharSet);
+                    var partial = exporter.GetRetryForPartialSuccess(request, status, text, out var refused);
+                    refused = Math.Clamp(refused, 0, request.Count > 0 ? request.Count : int.MaxValue);
+                    if (refused > 0)
+                    {
+                        _warning(null, $"{exporter.Name}: {request.Url} accepted the request but rejected {refused.ToString(CultureInfo.InvariantCulture)} of its items for good; they are dropped.");
+                    }
+
+                    if (partial is not null)
                     {
                         _diagnostic(null, $"{exporter.Name}: partial success ({status}); retrying the rejected items.");
+
+                        // Retried right away, even on what would have been the last attempt: the accepted items are in,
+                        // and what is left is a smaller request that has not failed yet. Only while it shrinks, so a
+                        // server that keeps rejecting the same items cannot keep it going.
+                        if (attempt + 1 >= attempts && partial.Body.Length < request.Body.Length) attempts++;
+                        delivered += Math.Max(0, request.Count - partial.Count - refused);
+                        rejected += refused;
                         request = partial;
                         continue;
                     }
-                    return BelemetrySendOutcome.Delivered;
+
+                    refused += ReportPartialSuccess(exporter, request, contentType?.MediaType, body);
+                    return new(BelemetrySendOutcome.Delivered, request, delivered + Math.Max(0, request.Count - refused), rejected + refused);
                 }
-                else if (_retryable.Contains(status) is false)
+                else if (exporter.IsRetryable(status) is false)
                 {
-                    _diagnostic(null, $"{exporter.Name}: {request.Url} rejected the request with {status}; it is dropped.");
-                    return BelemetrySendOutcome.Rejected;
+                    // Data loss with a cause the app's owner can fix (a key, an endpoint, a quota): a warning.
+                    _warning(null, $"{exporter.Name}: {request.Url} rejected the request with {status}; it is dropped.");
+                    return new(BelemetrySendOutcome.Rejected, request, delivered, rejected + request.Count);
                 }
                 else
                 {
@@ -118,7 +167,7 @@ internal sealed class BelemetryHttpSender : IDisposable
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
-                return BelemetrySendOutcome.Failed;
+                return new(BelemetrySendOutcome.Failed, request, delivered, rejected);
             }
             catch (Exception ex)
             {
@@ -128,19 +177,20 @@ internal sealed class BelemetryHttpSender : IDisposable
 
             if (attempt + 1 < attempts)
             {
-                var delay = retryAfter is { } ra ? (ra > _maxRetryAfter ? _maxRetryAfter : ra) : Backoff[attempt];
+                var delay = retryAfter is { } ra ? (ra > _maxRetryAfter ? _maxRetryAfter : ra)
+                          : Backoff.Length == 0 ? TimeSpan.Zero : Backoff[Math.Min(attempt, Backoff.Length - 1)];
                 try
                 {
                     await Task.Delay(delay, cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {
-                    return BelemetrySendOutcome.Failed;
+                    return new(BelemetrySendOutcome.Failed, request, delivered, rejected);
                 }
             }
         }
 
-        return BelemetrySendOutcome.Failed;
+        return new(BelemetrySendOutcome.Failed, request, delivered, rejected);
     }
 
     private static async Task<HttpRequestMessage> CreateMessageAsync(IBelemetryHttpExporter exporter, BelemetryHttpRequest request, CancellationToken cancellationToken)
@@ -187,9 +237,35 @@ internal sealed class BelemetryHttpSender : IDisposable
             if (message.Headers.TryAddWithoutValidation(name, value) is false) content.Headers.TryAddWithoutValidation(name, value);
         }
 
+        // Identifies the exporter to the backend, as the OTLP exporter specification asks - except in the browser, where
+        // a page cannot set it, and trying would only add a header the collector's CORS policy has to allow.
+        if (OperatingSystem.IsBrowser() is false && message.Headers.UserAgent.Count == 0)
+        {
+            message.Headers.TryAddWithoutValidation("User-Agent", UserAgent);
+        }
+
+        if (OperatingSystem.IsBrowser()) MarkAsExport(message);
+
         await exporter.PrepareAsync(message, cancellationToken);
         return message;
     }
+
+    // Where the WebAssembly HttpClient handler takes the options it copies into fetch's init object (Blazor's
+    // SetBrowserRequestOption writes there too).
+    private static readonly HttpRequestOptionsKey<IDictionary<string, object>> _fetchOptions = new("WebAssemblyFetchOptions");
+
+    /// <summary>The fetch option that marks a .NET export in WebAssembly; the script's fetch instrumentation skips a request carrying it.</summary>
+    internal const string ExportFetchOption = "bitBelemetryExport";
+
+    /// <summary>
+    /// In WebAssembly the request goes through <c>fetch</c>, past the script's fetch instrumentation, which knows the
+    /// .NET exporters' URLs only from the configuration that started it - and a server's lists none, so in an Auto app
+    /// the script the server started would trace every export of the WebAssembly pipeline. The runtime copies the
+    /// option into fetch's init object as is: fetch ignores the key, and unlike a header it is nothing for the
+    /// collector's CORS policy to allow.
+    /// </summary>
+    internal static void MarkAsExport(HttpRequestMessage message) =>
+        message.Options.Set(_fetchOptions, new Dictionary<string, object>(StringComparer.Ordinal) { [ExportFetchOption] = true });
 
     internal static bool IsGrpc(BelemetryHttpRequest request) =>
         string.Equals(request.ContentType, BelemetryOtlpExporter.GrpcContentType, StringComparison.OrdinalIgnoreCase);
@@ -240,19 +316,89 @@ internal sealed class BelemetryHttpSender : IDisposable
         return output.ToArray();
     }
 
-    private static async Task<string?> ReadBodyAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    // The OTLP specification's recommended limit for a response: anything bigger is not a partial-success message.
+    internal const int MaxResponseBytes = 4 * 1024 * 1024;
+
+    /// <summary>
+    /// The response body, or null when there is none or it is over <see cref="MaxResponseBytes"/>. Read as it arrives
+    /// and abandoned at the limit: a broken collector streaming an endless body (no Content-Length) costs that much
+    /// memory at most.
+    /// </summary>
+    private static async Task<byte[]?> ReadBodyAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
         try
         {
-            if (response.Content.Headers.ContentLength is 0) return null;
-            var mediaType = response.Content.Headers.ContentType?.MediaType;
-            // Protobuf partial-success responses are not decoded: they only inform, they do not ask for a retry.
-            if (mediaType is not null && mediaType.Contains("protobuf", StringComparison.OrdinalIgnoreCase)) return null;
-            return await response.Content.ReadAsStringAsync(cancellationToken);
+            if (response.Content.Headers.ContentLength is 0 or > MaxResponseBytes) return null;
+
+            using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            using var body = new MemoryStream();
+            var chunk = new byte[16 * 1024];
+            int read;
+            while ((read = await stream.ReadAsync(chunk, cancellationToken)) > 0)
+            {
+                if (body.Length + read > MaxResponseBytes) return null;
+                body.Write(chunk, 0, read);
+            }
+
+            return body.Length == 0 ? null : body.ToArray();
         }
         catch
         {
             return null;
+        }
+    }
+
+    /// <summary>
+    /// The body as text, as <see cref="HttpContent.ReadAsStringAsync()"/> would give it: in the charset the response
+    /// names (UTF-8 when it names none, or one this runtime lacks), and without a byte order mark, which JSON parsing
+    /// fails on - a mark, when there is one, also tells the encoding.
+    /// </summary>
+    internal static string DecodeText(byte[] body, string? charset)
+    {
+        var encoding = Encoding.UTF8;
+        if (string.IsNullOrWhiteSpace(charset) is false)
+        {
+            try
+            {
+                encoding = Encoding.GetEncoding(charset.Trim().Trim('"'));
+            }
+            catch (Exception ex) when (ex is ArgumentException or NotSupportedException)
+            {
+                // Unknown here: UTF-8, which JSON is anyway.
+            }
+        }
+
+        using var reader = new StreamReader(new MemoryStream(body), encoding, detectEncodingFromByteOrderMarks: true);
+        return reader.ReadToEnd();
+    }
+
+    private static bool IsProtobuf(string? mediaType) => mediaType is not null && mediaType.Contains("protobuf", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>The message of an uncompressed gRPC frame; null for anything else.</summary>
+    internal static byte[]? Unframe(byte[]? body)
+    {
+        if (body is null || body.Length < 5 || body[0] != 0) return null;
+        var length = BinaryPrimitives.ReadUInt32BigEndian(body.AsSpan(1, 4));
+        return length <= body.Length - 5 ? body.AsSpan(5, (int)length).ToArray() : null;
+    }
+
+    /// <summary>
+    /// A partial success must not be retried (the server already decided), but it must not pass in silence either:
+    /// the records it rejected are gone. A warning, as it is data loss the app's owner can act on. Returns how many
+    /// records it rejected (0 when it does not say), which are not counted as delivered.
+    /// </summary>
+    private int ReportPartialSuccess(IBelemetryHttpExporter exporter, BelemetryHttpRequest request, string? mediaType, byte[]? body)
+    {
+        try
+        {
+            if (body is null || exporter.DescribePartialSuccess(mediaType, body, out var rejected) is not { } rejection) return 0;
+            _warning(null, $"{exporter.Name}: {request.Url} accepted the request but {rejection}.");
+            return (int)Math.Clamp(rejected, 0, request.Count > 0 ? request.Count : int.MaxValue);
+        }
+        catch
+        {
+            // Reporting must never turn a delivered request into a failed one, which would resend it.
+            return 0;
         }
     }
 
@@ -274,5 +420,9 @@ internal sealed class BelemetryHttpSender : IDisposable
         if (_grpcClient is { } grpcClient && grpcClient != _client) grpcClient.Dispose();
     }
 
+    /// <summary>Whether the Azure Monitor ingestion endpoint asks for a retry with <paramref name="status"/>.</summary>
     internal static bool IsRetryable(HttpStatusCode status) => _retryable.Contains((int)status);
+
+    /// <summary>Whether the OTLP specification allows retrying an OTLP/HTTP request answered with <paramref name="status"/>.</summary>
+    internal static bool IsOtlpRetryable(int status) => _retryableOtlp.Contains(status);
 }

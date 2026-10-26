@@ -450,7 +450,6 @@ public partial class BitBreadcrumb<[DynamicallyAccessedMembers(DynamicallyAccess
         return base.OnInitializedAsync();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitBreadcrumbParams))]
     protected override void OnParametersSet()
     {
         // The cascaded defaults go in first, so everything below (the collapsing settings above all) reads

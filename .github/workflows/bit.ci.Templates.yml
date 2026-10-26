@@ -10,8 +10,8 @@ on:
   pull_request:
     paths:
     - 'src/Templates/**'
-    - 'src/Minifier/**'
-    - 'src/Cli/**'
+    - 'src/Toolings/Minifier/**'
+    - 'src/Toolings/Cli/**'
     - '.github/actions/setup-bit-cli/**'
 
 env:

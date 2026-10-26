@@ -17,6 +17,9 @@
 /// </remarks>
 public sealed class BcrdtCollaborativeDocument : IAsyncDisposable
 {
+    /// <summary>How long closing waits for the connection to say goodbye before it moves on.</summary>
+    private static readonly TimeSpan DisconnectGracePeriod = TimeSpan.FromSeconds(2);
+
     private readonly List<IAsyncDisposable> _ownedAsync = [];
     private readonly List<IDisposable> _owned = [];
     private BcrdtUndoManager? _undo;
@@ -74,6 +77,23 @@ public sealed class BcrdtCollaborativeDocument : IAsyncDisposable
 
     /// <summary>Whether the document currently matches the peer's copy.</summary>
     public bool IsSynced => Sync?.IsSynced ?? false;
+
+    /// <summary>What the server allows this replica to do with the document.</summary>
+    /// <remarks>
+    /// <see cref="BcrdtDocumentAccess.ReadWrite"/> for a document with no connection, or until the server
+    /// says otherwise. See <see cref="BcrdtSyncProvider.Access"/>.
+    /// </remarks>
+    public BcrdtDocumentAccess Access => Sync?.Access ?? BcrdtDocumentAccess.ReadWrite;
+
+    /// <summary>
+    /// Whether the server has made this connection read-only, so local changes reach nobody else.
+    /// </summary>
+    /// <remarks>
+    /// The built-in editing components stop accepting input while this is true. Bind your own controls'
+    /// read-only state to it too: the engine itself does not refuse a local change, because a CRDT
+    /// replica always accepts its own writes - it is the server that does not take them.
+    /// </remarks>
+    public bool IsReadOnly => Access == BcrdtDocumentAccess.ReadOnly;
 
     /// <summary>This replica's session identity.</summary>
     public ulong ClientId => Crdt.ClientId;
@@ -194,7 +214,24 @@ public sealed class BcrdtCollaborativeDocument : IAsyncDisposable
 
         if (Sync is not null)
         {
-            await Attempt(() => Sync.DisconnectAsync()).ConfigureAwait(false);
+            // Bounded: disconnecting waits for the provider's synchronization context, and one that no
+            // longer runs posted work - an application shutting down - must not cost the store the
+            // writes flushed below.
+            using (var grace = new CancellationTokenSource(DisconnectGracePeriod))
+            {
+                try
+                {
+                    await Sync.DisconnectAsync(grace.Token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException) when (grace.IsCancellationRequested)
+                {
+                    // Out of time; disposing the provider below tears the connection down regardless.
+                }
+                catch (Exception ex)
+                {
+                    (failures ??= []).Add(ex);
+                }
+            }
             await Attempt(Sync.DisposeAsync).ConfigureAwait(false);
         }
 

@@ -238,7 +238,9 @@ public class BitCollapseBrowserTests : PerformanceTestBase
         return collapsed.Start ?? collapsed.T;
     }
 
-    // Clicks the button from inside the page and records the collapse on every frame from then on, for the given ms.
+    // Clicks the button from inside the page and records the collapse on every frame from then on, for the given ms after
+    // the collapse took its new state: the click goes to the server and back first, which on a loaded machine can take
+    // longer than the margin a window counted from the click would leave after the transition.
     private async Task<List<Sample>> ClickAndSample(string button, string root, string? content, double duration)
     {
         var json = await Page.EvaluateAsync<string>(@"async ([button, root, content, duration]) => {
@@ -269,11 +271,16 @@ public class BitCollapseBrowserTests : PerformanceTestBase
                 });
             };
             sample();
+            const initial = r.classList.contains('bit-col-col');
+            let changedAt = null;
             document.getElementById(button).click();
             await new Promise(resolve => {
                 const tick = () => {
                     sample();
-                    if (performance.now() - t0 < duration) requestAnimationFrame(tick); else resolve();
+                    const now = performance.now();
+                    if (changedAt === null && r.classList.contains('bit-col-col') !== initial) changedAt = now;
+                    const sampling = changedAt === null ? now - t0 < 10000 : now - changedAt < duration;
+                    if (sampling) requestAnimationFrame(tick); else resolve();
                 };
                 requestAnimationFrame(tick);
             });

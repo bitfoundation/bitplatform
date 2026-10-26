@@ -13,8 +13,6 @@
     </p>
 </div>
 
-<DemoCode />
-
 <BdndProvider>
     <BdndDropTarget TItem="DragBox" Accept="@ItemTypes.DragAroundBox"
                     style="display:contents" OnDrop="HandleDrop">
@@ -33,6 +31,8 @@
         </div>
     </BdndDropTarget>
 </BdndProvider>
+
+<DemoCode />
 
 @code {
     public class DragBox

@@ -89,9 +89,12 @@ builder.Services.AddBorm();</pre>
 
     <div class="bb-note">
         Supply a <code>State</code> instead of a <code>Definition</code> when the page wants to hold the state
-        itself - to wire up a validator, read its dirty fields or drive it from code. Every DOM id the form
-        renders starts with <code>borm_</code> and is derived from the field's path, so two forms on one page
-        that share field names each need their own <code>IdPrefix</code>.
+        itself - to wire up a validator, read its dirty fields or drive it from code - and dispose it with the page.
+        For one setting, <code>ConfigureState="s =&gt; s.ValidationTrigger = BormValidationTrigger.OnBlur"</code>
+        changes the state the view builds without taking it over. With no <code>Model</code>, the form binds to a
+        dictionary (<code>Data</code>) instead. Every DOM id the form renders starts with <code>borm_</code> and is
+        derived from the field's path, so two forms on one page that share field names each need their own
+        <code>IdPrefix</code>. Every parameter of the view is listed in the <a href="api-reference">API reference</a>.
     </div>
 </div>
 
@@ -99,8 +102,9 @@ builder.Services.AddBorm();</pre>
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Hosting models</h3>
     <p class="bb-card-desc">
         Borm has no JavaScript and no browser-only API, so it runs the same way under every Blazor hosting model.
-        A form prerenders as plain HTML and becomes interactive once the page does - give the page an interactive
-        render mode, since a form in static server rendering cannot respond to input.
+        A form prerenders as plain HTML and becomes interactive once the page does. A page with no interactive render
+        mode at all can still use one: give the <code>BormView</code> a <code>FormName</code> and it posts like any HTML
+        form and is judged on the server - see <a href="static-form">Forms without interactivity</a>.
     </p>
     <ul class="bb-detail-list">
         <li><strong>Blazor WebAssembly</strong> - <code>AddBorm()</code> in <code>Program.cs</code>, the stylesheet in <code>index.html</code>.</li>
@@ -115,8 +119,12 @@ builder.Services.AddBorm();</pre>
     <ul class="bb-detail-list">
         <li><a href="quickstart">From a C# type</a> - what the generator reads from a model and its attributes.</li>
         <li><a href="builder">Fluent builder + conditions</a> - typed, refactor-safe field configuration, and fields that show and hide.</li>
+        <li><a href="field-types">Every field type</a> - each built-in control, and the one line of builder that asks for it.</li>
         <li><a href="json-schema">JSON Schema</a> - a form from a document the server owns, and back out again.</li>
         <li><a href="validation">Validation modes</a> - when fields revalidate, the error summary, and async rules.</li>
+        <li><a href="saving">Saving &amp; server errors</a> - how a submit ends, and a server's errors put on their fields.</li>
+        <li><a href="theming">Theming &amp; accessibility</a> - the <code>--bit-borm-*</code> tokens, dark mode, and what the library does for every user.</li>
+        <li><a href="api-reference">API at a glance</a> - every <code>BormView</code> parameter and <code>BormState</code> member on one page.</li>
         <li><a href="mcp-server">MCP server</a> - point an AI agent at this site and it reads the library instead of guessing.</li>
     </ul>
 </div>

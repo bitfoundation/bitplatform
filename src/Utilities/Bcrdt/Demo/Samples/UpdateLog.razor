@@ -1,0 +1,54 @@
+﻿@* The updates a document produces, newest first. Every committed change produces exactly one update, whatever
+   it contained, and Changed hands it over with the origin of the transaction that made it. Place it inside a
+   BcrdtCollaborationScope, which cascades the open document. *@
+@using Bit.Bcrdt
+@using Bit.Bcrdt.Blazor
+@inherits BcrdtComponentBase
+
+<table>
+    <thead>
+        <tr><th>Size</th><th>Origin</th><th>Content</th></tr>
+    </thead>
+    <tbody>
+        @foreach ((int size, string origin, string preview) in _updates)
+        {
+            <tr><td>@size bytes</td><td>@origin</td><td>@preview</td></tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private readonly List<(int Size, string Origin, string Preview)> _updates = [];
+
+    [CascadingParameter] public BcrdtCollaborativeDocument Document { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        Document.Changed += Record;
+        TrackDisposable(new Unsubscriber(() => Document.Changed -= Record));
+    }
+
+    // Local edits - the editor's keystrokes included - carry no origin; an update that arrived from a peer
+    // carries its sync provider. That tag is how the provider avoids echoing a change back to its author,
+    // and how an undo stack leaves remote edits alone.
+    private void Record(BcrdtUpdateEventArgs change)
+    {
+        string origin = change.Origin switch
+        {
+            null => "local edit",
+            BcrdtSyncProvider => "received from a peer",
+            _ => change.Origin.GetType().Name,
+        };
+
+        string preview = Convert.ToHexString(change.Update.AsSpan(0, Math.Min(12, change.Update.Length)));
+        _updates.Insert(0, (change.Update.Length, origin, preview));
+        if (_updates.Count > 25) _updates.RemoveAt(_updates.Count - 1);
+
+        RequestRender();
+    }
+
+    private sealed class Unsubscriber(Action unsubscribe) : IDisposable
+    {
+        public void Dispose() => unsubscribe();
+    }
+}

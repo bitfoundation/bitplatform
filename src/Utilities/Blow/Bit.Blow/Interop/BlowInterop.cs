@@ -1,4 +1,5 @@
-﻿using Microsoft.JSInterop;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.JSInterop;
 
 namespace Bit.Blow;
 
@@ -18,8 +19,22 @@ internal sealed class BlowInterop : IAsyncDisposable
     public async ValueTask<BlowDomRect?> GetRectAsync(BlowElementReferenceLike el)
         => await (await _moduleTask.Value).InvokeAsync<BlowDomRect?>("getRect", el.Reference);
 
-    public async ValueTask<BlowMeasuredNode[]> MeasureNodesAsync(BlowElementReferenceLike viewport, double zoom)
-        => await (await _moduleTask.Value).InvokeAsync<BlowMeasuredNode[]>("measureNodes", viewport.Reference, zoom)
+    // InvokeAsync<T> preserves what System.Text.Json needs of T, but T is an array here and the element types are
+    // only ever built by System.Text.Json: without this the trimmer drops their constructors and every measurement
+    // fails to deserialize in trimmed (release) builds.
+    /// <param name="viewport">The flow's viewport element.</param>
+    /// <param name="zoom">The zoom, should the scale the viewport is drawn at not be measurable.</param>
+    /// <param name="changedOnly">
+    /// Only the nodes whose size or handles changed since the last report for this viewport, those not reported
+    /// before, and <paramref name="include"/>; every node when false.
+    /// </param>
+    /// <param name="include">Nodes to report with <paramref name="changedOnly"/> whether they changed or not.</param>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BlowMeasuredNode))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BlowMeasuredHandle))]
+    public async ValueTask<BlowMeasuredNode[]> MeasureNodesAsync(BlowElementReferenceLike viewport, double zoom,
+        bool changedOnly = false, IReadOnlyCollection<string>? include = null)
+        => await (await _moduleTask.Value).InvokeAsync<BlowMeasuredNode[]>("measureNodes", viewport.Reference, zoom,
+               changedOnly, include ?? [])
            ?? [];
 
     /// <summary>
@@ -42,6 +57,7 @@ internal sealed class BlowInterop : IAsyncDisposable
     /// Installs the nodrag/nopan/nowheel guards and the input policy on the pane. The returned
     /// reference must be disposed to remove them.
     /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BlowInputPolicy))]
     public async ValueTask<IJSObjectReference?> InstallInteractionGuardsAsync(
         object pane, string? noDragClass, string? noPanClass, string? noWheelClass, BlowInputPolicy policy)
         => await (await _moduleTask.Value).InvokeAsync<IJSObjectReference?>(
@@ -52,6 +68,28 @@ internal sealed class BlowInterop : IAsyncDisposable
 
     public async ValueTask ReleasePointerCaptureAsync(object element, long pointerId)
         => await (await _moduleTask.Value).InvokeVoidAsync("releasePointerCapture", element, pointerId);
+
+    /// <summary>True when the operating system asks applications to reduce motion.</summary>
+    public async ValueTask<bool> PrefersReducedMotionAsync()
+        => await (await _moduleTask.Value).InvokeAsync<bool>("prefersReducedMotion");
+
+    /// <summary>
+    /// Moves keyboard focus to one of the pane's own nodes or edges (<paramref name="kind"/> is <c>node</c> or
+    /// <c>edge</c>) - not one of a flow nested inside it. False when it is not in the page or would not take focus.
+    /// </summary>
+    public async ValueTask<bool> FocusElementAsync(object pane, string kind, string id)
+        => await (await _moduleTask.Value).InvokeAsync<bool>("focusElement", pane, kind, id);
+
+    /// <summary>
+    /// True when the pane's node <paramref name="nodeId"/> holds focus a pointer gave it rather than the keyboard
+    /// (it is not <c>:focus-visible</c>), or no longer holds focus at all.
+    /// </summary>
+    public async ValueTask<bool> IsPointerFocusAsync(object pane, string nodeId)
+        => await (await _moduleTask.Value).InvokeAsync<bool>("isPointerFocus", pane, nodeId);
+
+    /// <summary>Focuses the pane when focus has fallen to the page, as it does when the focused element is removed.</summary>
+    public async ValueTask KeepFocusAsync(object pane)
+        => await (await _moduleTask.Value).InvokeVoidAsync("keepFocus", pane);
 
     /// <summary>True when focus currently sits in a text input, textarea, select or contenteditable.</summary>
     public async ValueTask<bool> IsEditableFocusedAsync()
@@ -91,9 +129,13 @@ internal sealed class BlowInterop : IAsyncDisposable
 /// <param name="SelectAllKey">Whether Ctrl/Cmd+A selects the graph, and so must not also select the page's text.</param>
 /// <param name="ClipboardKeys">Whether Ctrl/Cmd+C, X, V and D are the flow's, and so must not also reach the browser (Ctrl+D bookmarks).</param>
 /// <param name="HistoryKeys">Whether Ctrl/Cmd+Z and Y undo and redo in the flow, and so must not also reach the browser.</param>
+/// <param name="DeleteKeys">
+/// The keys that delete the selection, one per line, or null when none does. They must not also reach the browser:
+/// Backspace goes back a page in some (WebKit among them), and the graph with it.
+/// </param>
 internal sealed record BlowInputPolicy(
     bool PreventScrolling, bool PanOnScroll, bool ZoomOnScroll, string? ZoomKey, string? PanKey, bool KeyboardA11y,
-    bool SelectAllKey, bool ClipboardKeys, bool HistoryKeys);
+    bool SelectAllKey, bool ClipboardKeys, bool HistoryKeys, string? DeleteKeys);
 
 /// <summary>Wrapper so we can pass an ElementReference without leaking the type around.</summary>
 internal readonly record struct BlowElementReferenceLike(object Reference);

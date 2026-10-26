@@ -13,13 +13,35 @@
     /// <summary>The preview to render; it receives the live drag state, offsets included.</summary>
     [Parameter] public RenderFragment<BdndDragLayerState<TItem>>? ChildContent { get; set; }
 
+    /// <summary>
+    /// The item type this layer draws. With <c>Accept</c> or <c>AcceptTypes</c> set, a drag of another type is no
+    /// drag to the layer - and its pointer moves are not sent to .NET for it, which on Blazor Server spares a message
+    /// over the circuit per move. Without either, the layer follows every drag.
+    /// </summary>
+    [Parameter] public string? Accept { get; set; }
+
+    /// <summary>More item types this layer draws (combined with <c>Accept</c>).</summary>
+    [Parameter] public IEnumerable<string>? AcceptTypes { get; set; }
+
+    private IDisposable? _following;
+    private string[]? _types; // null: every drag
+
     protected override void OnInitialized()
     {
         if (Manager is null)
             throw new InvalidOperationException(
                 $"{nameof(BdndDragLayer<TItem>)} must be placed inside a {nameof(BdndProvider)}.");
         Manager.StateChanged += OnChanged;
-        Manager.OffsetChanged += OnChanged;
+    }
+
+    protected override void OnParametersSet()
+    {
+        var types = BdndAcceptTypes.Of(Accept, AcceptTypes);
+        string[]? accepted = types.Length == 0 ? null : types;
+        if (_following is not null && (accepted ?? []).SequenceEqual(_types ?? [])) return;
+        _following?.Dispose();
+        _types = accepted;
+        _following = Manager!.FollowOffsets(accepted, OnChanged);
     }
 
     private void OnChanged() => InvokeAsync(StateHasChanged);
@@ -27,6 +49,11 @@
     private BdndDragLayerState<TItem> BuildState()
     {
         var m = Manager!.Monitor;
+        // a drag of a type the layer does not draw is no drag to it
+        if (_types is not null && (m.GetItemType() is not { } type || _types.Contains(type) is false))
+        {
+            return new BdndDragLayerState<TItem> { Monitor = m };
+        }
         return new BdndDragLayerState<TItem>
         {
             Monitor = m,
@@ -45,6 +72,6 @@
     {
         if (Manager is null) return;
         Manager.StateChanged -= OnChanged;
-        Manager.OffsetChanged -= OnChanged;
+        _following?.Dispose();
     }
 }

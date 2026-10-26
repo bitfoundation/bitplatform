@@ -9,63 +9,40 @@ using Microsoft.JSInterop;
 namespace Bit.Bortable.Tests;
 
 /// <summary>
-/// The shared set-up of the component tests. The sorting engine is C#, but it asks the browser layer
-/// (<c>bit-bortable.js</c>) where the pointer is: <c>dropIndex</c> for the insertion point, <c>itemIndexAt</c> for
-/// the item under the pointer in swap mode and <c>wouldNest</c> for drops into the dragged item's own subtree.
-/// bUnit has no layout, so this stands in for the module and lets each test say what the browser "measured".
-/// A drag then becomes a deterministic sequence of dragstart / dragover / drop events whose outcome is decided
-/// by the engine alone, which is exactly what these tests are about.
+/// The shared set-up of the component tests. The sorting engine is C#; the browser layer (<c>bit-bortable.js</c>)
+/// routes the input and hit-tests the lists where the pointer is, and calls a list through its bridge only when
+/// something changes: <c>Start</c> (a drag of the item with this key starts), <c>Over</c> (the pointer reached
+/// this drop position of this list) and <c>End</c> (the drag ended, and how). bUnit has no layout and runs no
+/// JavaScript, so these tests make those calls themselves, with the positions the browser would have measured.
+/// A drag then becomes a deterministic sequence of calls whose outcome is decided by the engine alone, which is
+/// exactly what these tests are about.
 /// </summary>
 public abstract class BortableTestContext : BunitContext
 {
     internal const string ModulePath = "./_content/Bit.Bortable/bit-bortable.js";
 
-    /// <summary>The data type <c>bit-bortable.js</c> marks the drags of a list with.</summary>
-    protected const string DragDataType = "application/x-bit-bortable";
-
     private const string ItemSelector = "[data-bortable-item]:not([data-bortable-placeholder])";
-
-    private readonly JSRuntimeInvocationHandler<int> _dropIndex;
-    private readonly JSRuntimeInvocationHandler<int> _itemIndexAt;
-    private readonly JSRuntimeInvocationHandler<bool> _wouldNest;
 
     protected BortableTestContext()
     {
-        // Loose, because the FLIP calls (capture, play, clear) and setHandle are fire-and-forget: the
-        // engine never reads their result, so they need no set-up of their own.
+        // Loose, because every call the component makes into the module (register, configure, the FLIP calls) is
+        // fire-and-forget: the engine never reads a result, so none needs a set-up of its own.
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddBitBortableServices();
 
         Module = JSInterop.SetupModule(ModulePath);
-        _dropIndex = Module.Setup<int>("dropIndex", _ => true);
-        _itemIndexAt = Module.Setup<int>("itemIndexAt", _ => true);
-        _wouldNest = Module.Setup<bool>("wouldNest", _ => true);
-
-        // A handler without a result never completes, which would leave the drag handler hanging. Start
-        // from "the pointer is over no item"; each dragover helper below sets the answer it needs.
-        _dropIndex.SetResult(-1);
-        _itemIndexAt.SetResult(-1);
-        _wouldNest.SetResult(false);
     }
 
-    /// <summary>The stand-in for <c>bit-bortable.js</c>, which also records every call made to it.</summary>
+    /// <summary>The stand-in for <c>bit-bortable.js</c>, which records every call made to it.</summary>
     protected BunitJSModuleInterop Module { get; }
-
-    /// <summary>The <c>dropIndex</c> calls made so far, with the arguments the component sent.</summary>
-    protected IReadOnlyList<JSRuntimeInvocation> DropIndexCalls => _dropIndex.Invocations["dropIndex"];
 
     /// <summary>The scoped drag coordinator every list of the test shares.</summary>
     internal BortableService Coordinator => Services.GetRequiredService<BortableService>();
 
-    /// <summary>What <c>wouldNest</c> answers: whether the hovered list sits inside the dragged item.</summary>
-    protected bool WouldNest { set => _wouldNest.SetResult(value); }
-
-    /// <summary>Makes the browser layer fail the way a dropped circuit does.</summary>
-    protected void DisconnectBrowserLayer()
-    {
-        _dropIndex.SetException(new JSDisconnectedException("The circuit is gone."));
-        _itemIndexAt.SetException(new JSDisconnectedException("The circuit is gone."));
-    }
+    /// <summary>The options a list last sent the browser layer (with <c>register</c> or <c>configure</c>).</summary>
+    internal BortableJsOptions? SentOptions<TItem>(IRenderedComponent<Bortable<TItem>> list)
+        => Module.Invocations.Where(i => i.Identifier is "register" or "configure")
+            .Select(i => i.Arguments[^1]).OfType<BortableJsOptions>().LastOrDefault(o => o.Id == list.Instance.Id);
 
     // ---- rendering ----
 
@@ -84,9 +61,8 @@ public abstract class BortableTestContext : BunitContext
             extra?.Invoke(p);
         });
 
-    // ---- the drag gestures ----
-    // Elements are looked up again for every event: each render hands out new event handler ids, so an
-    // element found before a re-render can no longer dispatch anything.
+    // ---- the drag, as the browser layer reports it ----
+    // Every call runs on the renderer's dispatcher, as the browser's calls into .NET do.
 
     protected static IElement Container<TItem>(IRenderedComponent<Bortable<TItem>> list)
         => list.Find("[data-bortable-list]");
@@ -95,42 +71,47 @@ public abstract class BortableTestContext : BunitContext
     protected static IElement ItemElement<TItem>(IRenderedComponent<Bortable<TItem>> list, string label)
         => list.FindAll(ItemSelector).Single(e => e.TextContent.Trim() == label);
 
-    protected static Task DragStartAsync<TItem>(IRenderedComponent<Bortable<TItem>> list, string label)
-        => ItemElement(list, label).DragStartAsync(ListDragStart());
+    /// <summary>The key the item labelled <paramref name="label"/> is rendered with, which the browser layer names it by.</summary>
+    protected static string KeyOf<TItem>(IRenderedComponent<Bortable<TItem>> list, string label)
+        => ItemElement(list, label).GetAttribute("data-bortable-key")
+           ?? throw new InvalidOperationException($"{label} has no key.");
 
-    /// <summary>
-    /// A dragstart the browser layer let a list start: it carries the list's drag data type. One without it is
-    /// the drag of something else inside an item (a link, an image, an element of the app's own).
-    /// </summary>
-    protected static DragEventArgs ListDragStart() => new() { DataTransfer = new DataTransfer { Types = [DragDataType] } };
+    /// <summary>The list with the id <paramref name="id"/> among the lists rendered inside <paramref name="root"/>.</summary>
+    protected static IRenderedComponent<Bortable<TItem>> ListById<TItem>(IRenderedComponent<Bortable<TItem>> root, string id)
+        => root.FindComponents<Bortable<TItem>>().Single(c => c.Instance.Id == id);
 
-    /// <summary>A dragover of <paramref name="list"/> for which the browser measured <paramref name="dropIndex"/>.</summary>
-    protected Task DragOverAsync<TItem>(IRenderedComponent<Bortable<TItem>> list, int dropIndex)
-        => DragOverAsync(Container(list), dropIndex);
+    internal static IBortableZone Zone<TItem>(IRenderedComponent<Bortable<TItem>> list) => list.Instance;
 
-    /// <summary>
-    /// A dragover of the list container <paramref name="list"/> for which the browser measured <paramref name="dropIndex"/>.
-    /// bUnit bubbles an event only through the markup of the component the element was found in, so a list
-    /// nested in another one is found through the outer one to let the event reach it.
-    /// </summary>
-    protected Task DragOverAsync(IElement list, int dropIndex)
-    {
-        _dropIndex.SetResult(dropIndex);
-        return list.DragOverAsync(new DragEventArgs { ClientX = 10, ClientY = 20 });
-    }
+    /// <summary>A drag of the item labelled <paramref name="label"/> starts; returns what the list answers the browser layer.</summary>
+    internal Task<BortableStartResult?> DragStartAsync<TItem>(IRenderedComponent<Bortable<TItem>> list, string label, string input = "mouse")
+        => StartByKeyAsync(list, KeyOf(list, label), input);
 
-    /// <summary>A swap-mode dragover of <paramref name="list"/> with the pointer over item <paramref name="itemIndex"/>.</summary>
-    protected Task HoverItemAsync<TItem>(IRenderedComponent<Bortable<TItem>> list, int itemIndex)
-    {
-        _itemIndexAt.SetResult(itemIndex);
-        return Container(list).DragOverAsync(new DragEventArgs { ClientX = 10, ClientY = 20 });
-    }
+    internal Task<BortableStartResult?> StartByKeyAsync<TItem>(IRenderedComponent<Bortable<TItem>> list, string key, string input = "mouse")
+        => Renderer.Dispatcher.InvokeAsync(() => Zone(list).StartAsync(key, input));
 
-    protected static Task DropAsync<TItem>(IRenderedComponent<Bortable<TItem>> list)
-        => Container(list).DropAsync(new DragEventArgs());
+    /// <summary>The pointer reached drop position <paramref name="dropIndex"/> of <paramref name="list"/>; returns whether a list changed.</summary>
+    protected async Task<bool> DragOverAsync<TItem>(IRenderedComponent<Bortable<TItem>> list, int dropIndex)
+        => await OverResultAsync(list, dropIndex) > 0;
 
-    protected static Task DragEndAsync<TItem>(IRenderedComponent<Bortable<TItem>> list, string label)
-        => ItemElement(list, label).DragEndAsync(new DragEventArgs());
+    /// <summary>What the list answers the browser layer for drop position <paramref name="dropIndex"/>: 1 changed, 0 unchanged, -1 refused.</summary>
+    protected Task<int> OverResultAsync<TItem>(IRenderedComponent<Bortable<TItem>> list, int dropIndex)
+        => Renderer.Dispatcher.InvokeAsync(() => Zone(list).OverAsync(dropIndex));
+
+    /// <summary>In swap mode: the pointer is over item <paramref name="itemIndex"/> of <paramref name="list"/> (<c>-1</c>: none).</summary>
+    protected Task<bool> HoverItemAsync<TItem>(IRenderedComponent<Bortable<TItem>> list, int itemIndex)
+        => DragOverAsync(list, itemIndex);
+
+    /// <summary>The item was released over <paramref name="list"/>, a list that takes the drag.</summary>
+    protected Task DropAsync<TItem>(IRenderedComponent<Bortable<TItem>> list)
+        => EndAsync(list, "drop");
+
+    /// <summary>The item was released outside every list (the browser reports only its dragend).</summary>
+    protected Task DragEndAsync<TItem>(IRenderedComponent<Bortable<TItem>> list, string label)
+        => EndAsync(list, "release");
+
+    /// <summary>The browser layer reports the end of the drag, through the bridge of <paramref name="list"/>.</summary>
+    protected Task EndAsync<TItem>(IRenderedComponent<Bortable<TItem>> list, string how)
+        => Renderer.Dispatcher.InvokeAsync(() => Zone(list).EndAsync(how));
 
     protected static Task ClickAsync<TItem>(IRenderedComponent<Bortable<TItem>> list, string label)
         => ItemElement(list, label).ClickAsync(new MouseEventArgs());
