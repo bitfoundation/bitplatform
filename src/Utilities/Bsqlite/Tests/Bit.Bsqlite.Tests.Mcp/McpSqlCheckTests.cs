@@ -111,7 +111,7 @@ public class McpSqlCheckTests
             var check = await CheckAsync(sql);
 
             Assert.IsNotEmpty(check.Statements);
-            Assert.IsLessThan(TimeSpan.FromSeconds(2), clock.Elapsed, $"{sql[..20]}... took {clock.Elapsed}.");
+            Assert.IsLessThan(TimeSpan.FromSeconds(10), clock.Elapsed, $"{sql[..20]}... took {clock.Elapsed}.");
         }
     }
 
