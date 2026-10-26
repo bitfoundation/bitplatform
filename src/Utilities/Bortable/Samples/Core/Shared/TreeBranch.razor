@@ -1,0 +1,26 @@
+﻿@* One level of the Tree page: a list whose every item renders a TreeBranch of its own, empty or not, so any entry can
+   take children. Every level shares the "tree" group, so entries move between branches; an entry is never dropped
+   inside itself. *@
+
+<Bortable Items="Items" TItem="TreeNode" Group="tree" SwapThreshold="0.65" AriaLabel="@AriaLabel"
+          ItemLabel="n => n.Name" ItemsChanged="() => OnTreeChanged.InvokeAsync()"
+          Class="list branch" ItemClass="item node">
+    <ItemTemplate Context="node">
+        <div class="node-name">@node.Name</div>
+        <TreeBranch Items="node.Children" AriaLabel="@($"Under {node.Name}")" OnTreeChanged="OnTreeChanged" />
+    </ItemTemplate>
+</Bortable>
+
+@code {
+    /// <summary>The entries of this level, changed in place as they are dragged.</summary>
+    [Parameter, EditorRequired]
+    public List<TreeNode> Items { get; set; } = [];
+
+    /// <summary>The list's accessible name, by which announcements name it.</summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>Raised when any list of the tree changed, so the page can show the new tree.</summary>
+    [Parameter]
+    public EventCallback OnTreeChanged { get; set; }
+}

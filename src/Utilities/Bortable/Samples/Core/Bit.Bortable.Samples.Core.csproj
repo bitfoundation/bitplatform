@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <!-- The pages every hosting sample (Server, WebAssembly, Auto, MAUI) renders. Nothing in here knows which host it
+         runs in, so running the same pages in each one shows the same lists wherever their C# runs: in the browser, on
+         the server at the other end of a circuit, or in-process behind a BlazorWebView. -->
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+        <ProjectReference Include="..\..\Bit.Bortable\Bit.Bortable.csproj" />
+    </ItemGroup>
+
+</Project>
