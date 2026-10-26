@@ -2,7 +2,6 @@
 
     <PropertyGroup>
         <TargetFramework>net11.0</TargetFramework>
-        <UseMonoRuntime>false</UseMonoRuntime>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
