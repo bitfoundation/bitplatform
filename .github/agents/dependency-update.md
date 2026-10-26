@@ -114,7 +114,9 @@ the build with `MAUIR0001` / `MissingMethodException: SKImageFilter.CreateMatrix
 ([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). 10.0.120 fixed it for .NET 10, and a .NET 10
 Boilerplate project takes develop's MAUI. On this branch MAUI can't stay behind for .NET 11: a MAUI built for an
 older preview doesn't compile against the newer preview's Android workload (CS1705 on `Java.Interop`). So MAUI
-follows the SDK here, and the app icons of the Boilerplate and the BlazorUI demo carry no drop shadow (their
+follows the MAUI manifest of the SDK's newest workload set (`Microsoft.NET.Workloads.<band>` on NuGet) here, which
+can stay on the previous release candidate when a new one ships, together with Android and iOS; then MAUI stays
+too. The app icons of the Boilerplate and the BlazorUI demo carry no drop shadow (their
 `<filter>`) until a .NET 11 MAUI builds an app with the Boilerplate's `appicon.svg` as its icon.
 
 **bit Boilerplate builds for .NET 10 and .NET 11.** Its `framework` option picks one; the template's own tree is
@@ -125,7 +127,9 @@ version in each of the two framework groups at the end of the file: the 11.x one
 the one `Microsoft.Extensions.Telemetry.Abstractions` turns the framework's logging generator off with, depending
 on import order, and the build fails with CS0757. Every other package takes one version for both. The few literals that differ per framework are switch
 symbols in `template.json` (the SDK and its `rollForward`, the dev container image, the `dotnet-ef` version, the
-runner image), so they move together with the files they replace.
+runner image), so they move together with the files they replace. A template line that came over from develop
+carries develop's .NET 10 value of such a literal, which no symbol maps, so look for the .NET 10 values in the
+template's files and give them the .NET 11 one.
 
 **`Xamarin.Firebase.Messaging` is held at 125.1.1.** 125.1.2 pulls `Xamarin.AndroidX.Fragment` 1.9.0
 (through `GooglePlayServices.Base` 118.10.1), which absorbed the ktx classes, while the rest of the
