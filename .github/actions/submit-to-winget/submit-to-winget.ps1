@@ -91,9 +91,10 @@ if ((Get-FileHash $wingetcreate -Algorithm SHA256).Hash -ne '24042BD37915805615E
 }
 
 $listed = $true
+$headers = @{ Authorization = "Bearer $env:WINGET_CREATE_GITHUB_TOKEN" }
 
 try {
-    Invoke-RestMethod "https://api.github.com/repos/microsoft/winget-pkgs/contents/manifests/$($publisher.Substring(0, 1).ToLowerInvariant())/$publisher/$package" -Headers @{ Authorization = "Bearer $env:WINGET_CREATE_GITHUB_TOKEN" } | Out-Null
+    Invoke-RestMethod "https://api.github.com/repos/microsoft/winget-pkgs/contents/manifests/$($publisher.Substring(0, 1).ToLowerInvariant())/$publisher/$package" -Headers $headers | Out-Null
 }
 catch {
     if ($_.Exception.Response.StatusCode -ne [Net.HttpStatusCode]::NotFound) {
@@ -107,6 +108,17 @@ if ($listed) {
     & $wingetcreate update $Id --version $Version --urls "$InstallerUrl|$Architecture" --submit --no-open
 }
 else {
+    $owner = (Invoke-RestMethod https://api.github.com/user -Headers $headers).login
+    $query = [uri]::EscapeDataString("repo:microsoft/winget-pkgs is:pr is:open author:$owner in:title `"New package: $Id version`"")
+    $waiting = (Invoke-RestMethod "https://api.github.com/search/issues?q=$query" -Headers $headers).items |
+        Where-Object { $_.title -like "New package: $Id version *" } |
+        Select-Object -First 1
+
+    if ($waiting) {
+        Write-Output "::notice::$Id is still waiting for its first review in $($waiting.html_url), so no new pull request is opened. Update that one to $Version, installer $InstallerUrl."
+        return
+    }
+
     New-Manifests $manifests
     & $wingetcreate submit $manifests --prtitle "New package: $Id version $Version" --no-open
 }
