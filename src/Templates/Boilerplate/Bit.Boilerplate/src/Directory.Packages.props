@@ -110,7 +110,6 @@
         <PackageVersion Include="Magick.NET-Q16-AnyCPU" Version="15.0.0" />
         <PackageVersion Include="FluentEmail.Smtp" Version="3.0.2" />
         <PackageVersion Include="FluentStorage" Version="8.0.24" />
-        <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="11.0.0-rc.2.26504.105" />
         <PackageVersion Include="Yarp.ReverseProxy" Version="2.3.0" />
         <PackageVersion Include="Microsoft.AspNetCore.OData" Version="9.5.0" />
         <PackageVersion Include="Microsoft.Identity.Web" Version="4.16.1" />
