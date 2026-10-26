@@ -23,16 +23,12 @@ public sealed class AccessibilityTests : BaletteTest
     private static Task UseLibraryDefaultsAsync(IPage page) => page.EvaluateAsync(
         "() => document.querySelectorAll('link[rel=stylesheet][href*=\"demo\"]').forEach(l => l.remove())");
 
+    /// <summary>Escape back to the root, which writes back the query the page was opened with, then a search for <paramref name="query"/>.</summary>
     private static async Task StepBackAndSearchAsync(IPage page, string restoredQuery, string query)
     {
         await page.Keyboard.PressAsync("Escape");
         await Assertions.Expect(Crumbs(page)).ToHaveCountAsync(0);
-        await Assertions.Expect(Input(page)).ToHaveValueAsync(restoredQuery);
-        for (var i = 0; i < restoredQuery.Length; i++)
-        {
-            await page.Keyboard.PressAsync("Backspace");
-        }
-        await TypeAsync(page, query);
+        await ReplaceQueryAsync(page, restoredQuery, query);
     }
 
     private async Task AuditEveryStateAsync(ColorScheme scheme, bool libraryDefaults)

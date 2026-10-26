@@ -65,7 +65,7 @@ public sealed class SearchFeatureTests : BaletteTest
         Assert.IsTrue(iconRight > inputRight, $"the icon ({iconRight}) is not right of the input ({inputRight})");
 
         // Back to English, so the page is left as it was found.
-        await Input(page).FillAsync("english");
+        await ReplaceQueryAsync(page, "persian", "english");
         await ExpectFirstItemAsync(page, "language:English");
         await page.Keyboard.PressAsync("Enter");
         await Assertions.Expect(page.Locator("html")).ToHaveAttributeAsync("dir", "ltr");
@@ -78,7 +78,7 @@ public sealed class SearchFeatureTests : BaletteTest
         await page.Keyboard.PressAsync("F2");
         await ExpectOpenAsync(page);
 
-        await Input(page).FillAsync("   ");
+        await ReplaceQueryAsync(page, "Acme Dashboard", "   ");
         await page.Keyboard.PressAsync("Enter");
         await Assertions.Expect(page.Locator("[data-balette='prompt-error']")).ToHaveTextAsync("A project needs a name.");
         await Assertions.Expect(Input(page)).ToHaveAttributeAsync("aria-invalid", "true");
@@ -94,7 +94,7 @@ public sealed class SearchFeatureTests : BaletteTest
         await Assertions.Expect(Prompt(page)).ToBeVisibleAsync();
         await Assertions.Expect(Input(page)).ToHaveValueAsync("admin");
 
-        await Input(page).FillAsync("Orion");
+        await ReplaceQueryAsync(page, "admin", "Orion");
         await page.Keyboard.PressAsync("Enter");
         await ExpectClosedAsync(page);
         await Assertions.Expect(page.Locator("main")).ToContainTextAsync("Project: Orion");

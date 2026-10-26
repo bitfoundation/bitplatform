@@ -205,6 +205,25 @@ public abstract class BaletteTest
     /// <summary>Types into the palette's input one key at a time, as a person would: every key is its own input event.</summary>
     protected static Task TypeAsync(IPage page, string text) => Input(page).PressSequentiallyAsync(text);
 
+    /// <summary>
+    /// Waits until the input reads <paramref name="current"/>, deletes it key by key and types <paramref name="text"/>.
+    /// Not FillAsync where the palette has just written the input itself - a page pushed or popped, a command's result
+    /// keeping it open: the palette then moves the caret to the end after the render (focusInput, on Blazor Server a
+    /// round trip later), and when that lands between fill's select-all and its typing, the text is appended to the old
+    /// one. Backspacing from the end does not mind when the caret comes. One Backspace per character and no more: one
+    /// on an empty query goes back a page.
+    /// </summary>
+    protected static async Task ReplaceQueryAsync(IPage page, string current, string text)
+    {
+        await Assertions.Expect(Input(page)).ToHaveValueAsync(current);
+        for (var i = 0; i < current.Length; i++)
+        {
+            await page.Keyboard.PressAsync("Backspace");
+        }
+
+        await TypeAsync(page, text);
+    }
+
     protected static Task ExpectFirstItemAsync(IPage page, string id) =>
         Assertions.Expect(Items(page).First).ToHaveAttributeAsync("data-value", id);
 
