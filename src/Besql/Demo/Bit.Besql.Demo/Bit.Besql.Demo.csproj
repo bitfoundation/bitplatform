@@ -17,10 +17,6 @@
              and open Nuget Package Manager Console, and select `Bit.Besql.Demo.Client` project as default project
              Then run either Add-Migration MigrationName -OutputDir Data\Migrations or
              Optimize-DbContext -OutputDir Data\CompiledModel commands. -->
-        <!-- Microsoft.EntityFrameworkCore.Tasks is deliberately absent. On EF 11 it stops being a package you
-             call on demand and becomes a publish step: it precompiles queries during publish and then fails,
-             because the DbContext lives in Bit.Besql.Demo.Client rather than in this startup project. The
-             Optimize-DbContext and Add-Migration commands described above come from Tools, which stays. -->
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="11.0.0-rc.3.26522.148">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

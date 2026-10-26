@@ -158,7 +158,6 @@ public partial class Program
             if (isKiosk)
             {
                 var webViewSettings = blazorWebView.WebView.CoreWebView2.Settings;
-                webViewSettings.AreDevToolsEnabled = false;
                 webViewSettings.AreDefaultContextMenusEnabled = false;
                 webViewSettings.AreBrowserAcceleratorKeysEnabled = false;
                 webViewSettings.IsZoomControlEnabled = false;

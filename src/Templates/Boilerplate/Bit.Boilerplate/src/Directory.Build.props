@@ -54,22 +54,11 @@
     <PropertyGroup>
         <LangVersion>14.0</LangVersion>
         <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-ios'))">15.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-mac'))">17.0</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-android'))">26.0</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows10'))">10.0.17763.0</SupportedOSPlatformVersion>
         <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows10'))">10.0.17763.0</TargetPlatformMinVersion>
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(framework)' == 'net11.0' OR '$(framework)' == '' ">
-        <!--/-:msbuild-conditional:noEmit -->
-        <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-mac'))">17.0</SupportedOSPlatformVersion>
-        <!--/+:msbuild-conditional:noEmit -->
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(framework)' == 'net10.0' ">
-        <!--/-:msbuild-conditional:noEmit -->
-        <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-mac'))">15.0</SupportedOSPlatformVersion>
-        <!--/+:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
     <ItemGroup>
