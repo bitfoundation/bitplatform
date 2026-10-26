@@ -232,6 +232,8 @@ custom.aprof
 
 .env
 .playwright-mcp/
+# A file Aspire on Podman can leave in the AppHost folder on Windows, where NUL is a reserved name.
+NUL
 
 *.keystore
 *.jks
