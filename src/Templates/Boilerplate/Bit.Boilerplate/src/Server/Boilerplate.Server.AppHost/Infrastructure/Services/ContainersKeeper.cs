@@ -33,8 +33,9 @@ internal sealed class ContainersKeeper(string stateDirectory, ResourceNotificati
     private static readonly TimeSpan heartbeatInterval = TimeSpan.FromSeconds(10);
 
     // How long the keeper waits for the runtime to stop the containers. A runtime that never answers (a hung Docker
-    // Desktop) would otherwise keep the keeper, and its "stopping" file, around for good. It must stay below the
-    // 2 minutes WaitWhileStopping waits, so a run that finds the keeper stopping waits for it instead of failing.
+    // Desktop) would otherwise keep the keeper, and its "stopping" file, around for good. The stop is then ended, and
+    // killed outright 5 seconds later if it ignores that, before the keeper clears its state. The two together must stay
+    // below the 2 minutes WaitWhileStopping waits, so a run that finds the keeper stopping waits for it instead of failing.
     private const int StopTimeoutSeconds = 90;
 
     // $1 = state directory, $2 = idle seconds, $3 = check interval seconds, $4 = container runtime (docker or podman),
@@ -52,9 +53,10 @@ internal sealed class ContainersKeeper(string stateDirectory, ResourceNotificati
             if [ -s containers ]; then
                 "$4" stop $(cat containers) > /dev/null 2>&1 &
                 stop=$!
-                waited=0
-                while kill -0 "$stop" 2> /dev/null && [ "$waited" -lt "$5" ]; do sleep 1; waited=$((waited + 1)); done
-                kill "$stop" 2> /dev/null
+                ( sleep "$5"; kill "$stop" 2> /dev/null; sleep 5; kill -9 "$stop" 2> /dev/null ) &
+                watchdog=$!
+                wait "$stop"
+                kill "$watchdog" 2> /dev/null
             fi
             rm -f process containers stopping
             exit 0
@@ -184,7 +186,7 @@ internal sealed class ContainersKeeper(string stateDirectory, ResourceNotificati
                 if (Test-Path containers) {
                     try {
                         $stop = Start-Process -FilePath '{{Quote(containerRuntime)}}' -ArgumentList (@('stop') + @(Get-Content containers)) -NoNewWindow -PassThru
-                        if (-not $stop.WaitForExit({{StopTimeoutSeconds * 1000}})) { $stop.Kill() }
+                        if (-not $stop.WaitForExit({{StopTimeoutSeconds * 1000}})) { $stop.Kill(); $stop.WaitForExit(5000) | Out-Null }
                     } catch { }
                 }
                 Remove-Item process, containers, stopping -Force -ErrorAction SilentlyContinue
