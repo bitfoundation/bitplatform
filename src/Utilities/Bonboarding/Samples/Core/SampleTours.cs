@@ -13,6 +13,12 @@ public static class SampleTours
     /// <summary>The checklist of the guidance page; the progress page ticks one of its items off.</summary>
     public const string ChecklistId = "getting-started";
 
+    /// <summary>The checklist item the progress page ticks off by being opened.</summary>
+    public const string ProgressItemId = "progress";
+
+    /// <summary>Raised by the guidance page when a draft is saved; one of the checklist's items waits for it.</summary>
+    public const string DraftSavedSignal = "draft-saved";
+
     /// <summary>The hint behind the beacon on the guidance page, stored like a one-step tour once it is read.</summary>
     public const string ExportHintId = "export-hint";
 

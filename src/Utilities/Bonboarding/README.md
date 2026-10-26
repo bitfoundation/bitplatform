@@ -106,8 +106,9 @@ dotnet build -t:Run -f net10.0-android src/Utilities/Bonboarding/Samples/Maui
 
 `Bit.Bonboarding.slnx` includes the MAUI sample, whose Android, iOS and Mac Catalyst (and, on Windows, Windows)
 targets need the `maui-*` workloads (`dotnet workload restore Samples/Maui/Bit.Bonboarding.Samples.Maui.csproj`
-from this folder); without them the solution build fails with `NETSDK1147`. Build the projects you need instead, or
-run a web sample.
+from this folder); without them the solution build fails with `NETSDK1147`. `Bit.Bonboarding.Web.slnf` is every
+other project and needs nothing but the SDK: it is what CI builds, and what to build and test from the command line
+(`dotnet build Bit.Bonboarding.Web.slnf`, `dotnet test --solution Bit.Bonboarding.Web.slnf -f net10.0`).
 
 ## How it fits together
 

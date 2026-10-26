@@ -56,11 +56,11 @@
                 IsComplete = async context => await BonboardingService.IsClosedAsync(SampleTours.ExportHintId, context.CancellationToken),
             },
             // Done, for good, when the application raises the signal.
-            new() { Id = "draft", Title = "Save a draft", CompleteOnSignal = "draft-saved" },
+            new() { Id = "draft", Title = "Save a draft", CompleteOnSignal = SampleTours.DraftSavedSignal },
             // Pressing it goes to the progress page, which ticks it off itself.
-            new() { Id = "progress", Title = "Look at what was stored", Route = "progress" },
+            new() { Id = SampleTours.ProgressItemId, Title = "Look at what was stored", Route = "progress" },
         },
     };
 
-    private Task SaveDraftAsync() => BonboardingService.SignalAsync("draft-saved");
+    private Task SaveDraftAsync() => BonboardingService.SignalAsync(SampleTours.DraftSavedSignal);
 }

@@ -6,8 +6,8 @@
 <h1>Workspace settings</h1>
 
 <p>
-    The middle of the workspace tour. Start it from here and the engine first navigates back to the
-    <a href="workspace">workspace</a>, where its first step belongs.
+    The middle of the workspace tour. The button below starts it over rather than resuming it, so the engine first
+    navigates back to the <a href="workspace">workspace</a>, where its first step belongs.
 </p>
 
 <div class="row">
@@ -32,5 +32,6 @@
 </section>
 
 @code {
-    private Task StartTourAsync() => BonboardingService.StartAsync(SampleTours.WorkspaceId);
+    // Resume = false: by default a start resumes at the stored step, which would keep the tour on this page.
+    private Task StartTourAsync() => BonboardingService.StartAsync(SampleTours.WorkspaceId, new() { Resume = false });
 }

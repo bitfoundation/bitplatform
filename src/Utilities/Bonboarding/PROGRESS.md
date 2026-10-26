@@ -13,6 +13,9 @@ maintainers, not user documentation: the README is the user guide.
   50 MCP tests). The net8.0 and net9.0 test runs cannot start on this machine because only the .NET 10 runtime is
   installed. That is an environment limit, not a code failure: CI (`bit.ci.Bonboarding.yml`) runs all three.
 - No browser-level tests exist. `bit-bonboarding.ts` never executes in any automated check.
+- Since `Samples` were added, `Bit.Bonboarding.slnx` also holds the MAUI sample, which needs the `maui-*` workloads
+  and cannot be built with `-f net10.0`. The solution-level commands in this file are run against
+  `Bit.Bonboarding.Web.slnf` (every project but the MAUI sample), as CI does.
 - Library: ~6.4k lines (C# engine, three components, 1.0k lines of TypeScript, 0.6k lines of CSS), net8/9/10,
   trimmable, no runtime dependency beyond `Microsoft.AspNetCore.Components.Web`.
 
