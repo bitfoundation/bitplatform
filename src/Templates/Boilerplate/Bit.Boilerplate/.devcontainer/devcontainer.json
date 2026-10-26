@@ -16,7 +16,6 @@
             "extensions": [
                 "ms-dotnettools.csharp",
                 "Anthropic.claude-code",
-                "ms-azuretools.vscode-docker",
                 "microsoft-aspire.aspire-vscode",
                 "ms-vscode-remote.remote-containers",
                 "ms-dotnettools.blazorwasm-companion",
