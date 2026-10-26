@@ -261,7 +261,13 @@ function Get-AndroidDevices {
     @((Invoke-Adb devices) -split "`n" | Select-Object -Skip 1 | Where-Object { $_ -match '^\S+\s+device\b' })
 }
 
-# Exactly one device, since adb and the E2E suite both address "the" device. With none, the first AVD is booted.
+function Get-AvdApiLevel([string] $avd) {
+    $config = Join-Path $env:USERPROFILE ".android\avd\$avd.avd\config.ini"
+    $sysdir = (Test-Path $config) ? (Select-String -Path $config -Pattern 'image\.sysdir\.1\s*=.*android-(\d+)' | Select-Object -First 1) : $null
+    return $sysdir ? [int] $sysdir.Matches[0].Groups[1].Value : 0
+}
+
+# Exactly one device, since adb and the E2E suite both address "the" device. With none, the AVD of the newest Android is booted.
 function Disable-AndroidSystemSheets {
     foreach ($setting in @{ autofill_service = 'null'; stylus_handwriting_enabled = '0' }.GetEnumerator()) {
         if ((Invoke-Adb shell settings get secure $setting.Key).Trim() -ne $setting.Value) {
@@ -286,7 +292,8 @@ function Initialize-AndroidDevice {
     $emulator = Join-Path $script:androidSdk 'emulator\emulator.exe'
 
     # Newer emulators mix INFO lines into -list-avds, while an AVD name has no spaces.
-    $avd = (& $emulator -list-avds 2>$null) | Where-Object { $_ -and $_ -notmatch '\s' } | Select-Object -First 1
+    $avd = (& $emulator -list-avds 2>$null) | Where-Object { $_ -and $_ -notmatch '\s' } |
+        Sort-Object { Get-AvdApiLevel $_ } -Descending | Select-Object -First 1
 
     if (-not $avd) {
         throw "No Android device is connected and $emulator lists no AVD to boot."
