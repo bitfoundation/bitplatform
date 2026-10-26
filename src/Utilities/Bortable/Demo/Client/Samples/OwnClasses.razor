@@ -1,0 +1,13 @@
+﻿@* A list with classes of its own for the drag states: GhostClass, ChosenClass and DragClass. *@
+
+<Bortable @bind-Items="_own" TItem="string" Id="styling-own" AriaLabel="Own classes"
+          GhostClass="my-ghost" ChosenClass="my-chosen" DragClass="my-drag" ForceFallback="true"
+          Class="demo-list" ItemClass="styling-item">
+    <ItemTemplate Context="item">@item</ItemTemplate>
+</Bortable>
+
+<p class="demo-order"><strong>Order:</strong> <span id="styling-own-order">@string.Join(", ", _own)</span></p>
+
+@code {
+    private IList<string> _own = new List<string> { "One", "Two", "Three", "Four" };
+}

@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    </PropertyGroup>
+
+    <!-- The camera's frames are decoded by C# pixel loops, which Blazor's IL interpreter runs about a hundred times slower
+         than code compiled ahead of time: fine for trying the sample, not for an app people scan with. Publish such an
+         app with RunAOTCompilation (see the performance section of the BbScanner README). -->
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.14" />
+        <ProjectReference Include="..\..\Core\Bit.BbScanner.Samples.Core.csproj" />
+    </ItemGroup>
+
+</Project>

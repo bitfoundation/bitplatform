@@ -1,0 +1,20 @@
+﻿@* Where this page is running. What BbScanner can do depends on it: the camera and the browser's image decoding need
+   the WebAssembly runtime, while BbBarcodeDecoder runs wherever .NET does. *@
+
+<dl class="facts">
+    <dt>Renderer</dt>
+    <dd>@RendererInfo.Name (@(RendererInfo.IsInteractive ? "interactive" : "prerendering"))</dd>
+    <dt>.NET runs on</dt>
+    <dd>@(OperatingSystem.IsBrowser() ? "the browser (WebAssembly)" : RuntimeInformation.OSDescription)</dd>
+    <dt>Runtime</dt>
+    <dd>@RuntimeInformation.FrameworkDescription</dd>
+    <dt>Camera scanning</dt>
+    <dd>@(OperatingSystem.IsBrowser() ? "available" : "not here: the scanner reports NotSupported off WebAssembly")</dd>
+    @ChildContent
+</dl>
+
+@code {
+    /// <summary>More facts, as dt/dd pairs.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

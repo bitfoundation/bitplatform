@@ -1,0 +1,254 @@
+﻿@page "/dataflow"
+@using System.Globalization
+
+<PageTitle>Dataflow - Blow samples</PageTitle>
+
+<h1>Dataflow</h1>
+
+<p>
+    A small calculator drawn with a <code>NodeTemplate</code>: each node declares its inputs and outputs in
+    <code>BlowNode.Ports</code>, with a data type, a connection limit and whether it must be connected. The canvas
+    enforces them while you connect - a text output does not fit a number input, an input takes one edge, and no edge
+    may close a cycle - and <code>BlowGraphValidator</code> marks what is still missing on the graph. The values flow
+    through in topological order, recomputed on this host after every edit.
+</p>
+
+<HostFacts />
+
+<div class="toolbar">
+    <button type="button" @onclick="AddNumberAsync">Add number</button>
+    <span class="muted" role="status">@_lastConnection</span>
+</div>
+
+<div class="flow">
+    <BlowCanvas @ref="_flow"
+                Class="dataflow"
+                Nodes="_nodes"
+                Edges="_edges"
+                FitViewOnInit="true"
+                PreventCycles="true"
+                DefaultEdgeType="BlowEdgeType.SmoothStep"
+                Validation="_validation"
+                OnConnectEnd="OnConnectEnd"
+                NodesChanged="_ => Recompute()"
+                EdgesChanged="_ => Recompute()">
+        <NodeTemplate Context="node">
+            <div class="df-node">
+                <div class="df-title">@node.Label</div>
+                @* nodrag hands presses back to the field, so clicking or selecting in it never drags the node. @bind
+                   writes the value the graph computes with back into the field after every change, at full precision
+                   (an emptied number field reads 0), so the field and the results never disagree. *@
+                @if (node.Data is NumberData number)
+                {
+                    <input class="nodrag df-input" type="number" @bind="number.Value" @bind:after="Recompute"
+                           aria-label="@($"Value of {node.Label}")" />
+                }
+                else if (node.Data is TextData text)
+                {
+                    <input class="nodrag df-input" @bind="text.Value" @bind:after="Recompute"
+                           aria-label="@($"Value of {node.Label}")" />
+                }
+                @foreach (var port in node.Ports ?? [])
+                {
+                    <div class="df-port @(port.Type == BlowHandleType.Source ? "df-out" : "df-in")">
+                        @* A BlowHandle with the port's Type and Id picks up its definition: the data type, the limit. *@
+                        <BlowHandle Type="port.Type" Id="@port.Id"
+                                    Position="@(port.Type == BlowHandleType.Source ? BlowPosition.Right : BlowPosition.Left)" />
+                        <span>@port.Label</span>
+                        @if (port.Data is double fallback)
+                        {
+                            <span class="muted">default @Format(fallback)</span>
+                        }
+                        @if (port.Type == BlowHandleType.Source || node.Type == "display")
+                        {
+                            <strong class="df-value">@Show(node.Id)</strong>
+                        }
+                    </div>
+                }
+            </div>
+        </NodeTemplate>
+        <ChildContent>
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </ChildContent>
+    </BlowCanvas>
+</div>
+
+<section>
+    <h2>Problems (@_validation.Issues.Count)</h2>
+    @if (_validation.Issues.Count == 0)
+    {
+        <p class="muted">The graph is complete: every required input is connected.</p>
+    }
+    else
+    {
+        <ul class="issues">
+            @foreach (var issue in _validation.Issues)
+            {
+                <li>
+                    <span class="badge @(issue.Severity == BlowValidationSeverity.Error ? "badge-error" : null)">@issue.Severity</span>
+                    @* Takes the user to the node: in view, selected and focused, so a screen reader reads it out. *@
+                    <button type="button" class="link" @onclick="() => GoToAsync(issue)">@issue.Message</button>
+                </li>
+            }
+        </ul>
+    }
+</section>
+
+@code {
+    private sealed class NumberData
+    {
+        public double Value { get; set; }
+    }
+
+    private sealed class TextData
+    {
+        public string Value { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Structure and ports: unconnected required inputs, full ports, and edges between incompatible types. Held per
+    /// page rather than shared: a validator is mutable, and on Server a static would be shared by every circuit.
+    /// </summary>
+    private readonly BlowGraphValidator _validator = BlowGraphValidator.CreateDefault();
+
+    private readonly List<BlowNode> _nodes =
+    [
+        Number("a", 3, new(0, 0)),
+        Number("b", 4, new(0, 170)),
+        Operator("add", "Add", new(250, 60)),
+        Operator("multiply", "Multiply", new(500, 60)),
+        Display("display", new(750, 80)),
+        new BlowNode
+        {
+            Id = "note", Type = "text", Label = "Text", Position = new(250, 290), Data = new TextData { Value = "seven" },
+            Ports = [Output("value", "text")],
+        },
+    ];
+
+    private readonly List<BlowEdge> _edges =
+    [
+        new BlowEdge { Id = "e1", Source = "a", SourceHandle = "value", Target = "add", TargetHandle = "a", Type = BlowEdgeType.SmoothStep },
+        new BlowEdge { Id = "e2", Source = "b", SourceHandle = "value", Target = "add", TargetHandle = "b", Type = BlowEdgeType.SmoothStep },
+        new BlowEdge { Id = "e3", Source = "add", SourceHandle = "result", Target = "multiply", TargetHandle = "a", Type = BlowEdgeType.SmoothStep },
+        new BlowEdge { Id = "e4", Source = "multiply", SourceHandle = "result", Target = "display", TargetHandle = "value", Type = BlowEdgeType.SmoothStep },
+    ];
+
+    private Dictionary<string, object?> _values = [];
+    private BlowValidationResult _validation = BlowValidationResult.Empty;
+    private string _lastConnection = "Drag from an output (right) to an input (left).";
+    private BlowCanvas? _flow;
+    private int _next = 1;
+
+    protected override void OnInitialized() => Recompute();
+
+    private static BlowPort Input(string id, string dataType) => new()
+    {
+        Id = id, Type = BlowHandleType.Target, Label = id, DataType = dataType, MaxConnections = 1, MinConnections = 1,
+    };
+
+    private static BlowPort Output(string id, string dataType) => new()
+    {
+        Id = id, Type = BlowHandleType.Source, Label = id, DataType = dataType,
+    };
+
+    private static BlowNode Number(string id, double value, BlowXYPosition at) => new()
+    {
+        Id = id, Type = "number", Label = "Number", Position = at, Data = new NumberData { Value = value },
+        Ports = [Output("value", "number")],
+    };
+
+    // The multiplier's b is optional: unwired, it multiplies by the default its port carries in Data.
+    private static BlowNode Operator(string id, string label, BlowXYPosition at)
+    {
+        var b = Input("b", "number");
+        if (id == "multiply")
+        {
+            b.MinConnections = 0;
+            b.Data = 2.0;
+        }
+
+        return new BlowNode { Id = id, Type = id, Label = label, Position = at, Ports = [Input("a", "number"), b, Output("result", "number")] };
+    }
+
+    private static BlowNode Display(string id, BlowXYPosition at) => new()
+    {
+        Id = id, Type = "display", Label = "Display", Position = at, Ports = [Input("value", "number")],
+    };
+
+    private async Task AddNumberAsync()
+    {
+        if (_flow is null)
+        {
+            return;
+        }
+
+        // Below everything already there, so a new node never lands on another one, then brought into view and focused.
+        // AddNodes raises NodesChanged, which recomputes the graph.
+        var node = Number($"number-{_next++}", 1, new(0, _nodes.Count == 0 ? 0 : _nodes.Max(n => n.GetRect().Bottom) + 40));
+        _flow.AddNodes(node);
+        await _flow.FocusNodeAsync(node.Id, durationMs: 300);
+    }
+
+    private void OnConnectEnd(BlowConnectEndInfo end)
+    {
+        _lastConnection = end.IsValid
+            ? "Connected."
+            : end.Rejection != BlowConnectionRejection.None
+                ? BlowAriaLabels.Default.ConnectionRejected(end.Rejection)
+                : end.IsDropped ? "Dropped on empty space: nothing connected." : "Cancelled.";
+    }
+
+    /// <summary>
+    /// Validates the graph and evaluates it. The topological order computes every node's inputs before the node itself.
+    /// Both are plain C# over the lists: on Server they run on the server, on WebAssembly in the browser.
+    /// </summary>
+    /// <remarks>
+    /// A deliberate copy of the demo's typed-ports example (Demo/Client/Pages/Examples/TypedPortsExample.razor), whose
+    /// page has to show all of its own source; together with the port factories and OnConnectEnd above, a fix to one
+    /// belongs in the other.
+    /// </remarks>
+    private void Recompute()
+    {
+        _validation = _validator.Validate(_nodes, _edges);
+
+        var graph = new BlowGraphIndex(_nodes, _edges);
+        _values = [];
+        foreach (var node in BlowGraphAlgorithms.TopologicalSort(graph).Order)
+        {
+            // The value on the wire into a port, or the port's default when nothing is wired to it.
+            object? In(string port)
+            {
+                var edge = graph.EdgesAt(node.Id, BlowHandleType.Target, port).FirstOrDefault();
+                return edge is null ? node.FindPort(BlowHandleType.Target, port)?.Data : _values.GetValueOrDefault(edge.Source);
+            }
+
+            _values[node.Id] = node.Type switch
+            {
+                "number" => ((NumberData)node.Data!).Value,
+                "text" => ((TextData)node.Data!).Value,
+                "add" when In("a") is double a && In("b") is double b => a + b,
+                "multiply" when In("a") is double a && In("b") is double b => a * b,
+                "display" => In("value"),
+                _ => null,
+            };
+        }
+    }
+
+    private string Show(string nodeId) => _values.GetValueOrDefault(nodeId) switch
+    {
+        null => "-",
+        double value => Format(value),
+        var other => other.ToString() ?? "-",
+    };
+
+    private static string Format(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
+
+    private async Task GoToAsync(BlowValidationIssue issue)
+    {
+        if (issue.NodeId is { } id && _flow is not null)
+        {
+            await _flow.FocusNodeAsync(id, select: true, durationMs: 300);
+        }
+    }
+}

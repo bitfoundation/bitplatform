@@ -1,0 +1,306 @@
+﻿@page "/examples/typed-ports"
+
+<PageTitle>Typed Ports · Blow</PageTitle>
+
+<ExampleScaffold Title="Typed Ports"
+                 Summary="A small dataflow editor on declared ports: each node lists its inputs and outputs in BlowNode.Ports, with a data type, a connection limit and whether it must be connected, and the canvas enforces them while you connect - saying why when it refuses. BlowGraphValidator reports what is still missing, on the graph and in the list under it, and the values flow through in topological order.">
+    <Toolbar>
+        <button class="btn btn-secondary" @onclick="AddNumber">Add number</button>
+        <button class="btn btn-secondary" @onclick="@(() => AddOperator("add"))">Add adder</button>
+        <button class="btn btn-secondary" @onclick="@(() => AddOperator("multiply"))">Add multiplier</button>
+        <label><input type="checkbox" @bind="_preventCycles" /> Prevent cycles</label>
+        <label><input type="checkbox" @bind="_numbersAsText" @bind:after="Recompute" /> Numbers into text inputs</label>
+        <input class="tp-search" type="search" placeholder="Find a node, Enter to go" aria-label="Find a node"
+               @bind="_query" @bind:event="oninput" @onkeydown="OnSearchKey" />
+        <span class="tp-found" aria-live="polite">@Found</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow"
+                    Class="typed-flow"
+                    Nodes="_nodes"
+                    Edges="_edges"
+                    FitViewOnInit="true"
+                    PreventCycles="_preventCycles"
+                    ConnectionTypeCompatibility="Compatibility"
+                    Validation="_validation"
+                    DefaultEdgeType="BlowEdgeType.SmoothStep"
+                    OnConnectEnd="OnConnectEnd"
+                    NodesChanged="_ => Recompute()"
+                    EdgesChanged="_ => Recompute()">
+            <NodeTemplate Context="node">
+                <div class="tp-node">
+                    <div class="tp-title">@node.Label</div>
+                    @if (node.Data is NumberData number)
+                    {
+                        <input class="nodrag tp-input" type="number" value="@number.Value"
+                               aria-label="@($"Value of {node.Label}")"
+                               @onchange="@(e => SetNumber(number, e.Value))" />
+                    }
+                    @if (node.Type == "display")
+                    {
+                        <div class="tp-display" aria-live="polite">@Show(node.Id)</div>
+                    }
+                    @foreach (var port in node.Ports ?? [])
+                    {
+                        <div class="tp-row @(port.Type == BlowHandleType.Source ? "tp-out" : "tp-in")">
+                            <BlowHandle Type="port.Type" Id="@port.Id"
+                                        Position="@(port.Type == BlowHandleType.Source ? BlowPosition.Right : BlowPosition.Left)" />
+                            <span>@port.Label</span>
+                            @if (port.Data is double fallback)
+                            {
+                                <span class="tp-default">default @fallback</span>
+                            }
+                            @if (port.Type == BlowHandleType.Source)
+                            {
+                                <span class="tp-value">@Show(node.Id)</span>
+                            }
+                        </div>
+                    }
+                </div>
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+    <Footer>
+        @* Under the canvas: as a panel in its corner the list of problems grew over the Display node. *@
+        <div class="tp-panel">
+            <strong>Last connection</strong>
+            <div class="tp-last">@_lastConnection</div>
+            <strong>Problems (@_validation.Issues.Count)</strong>
+            @if (_validation.Issues.Count == 0)
+            {
+                <div class="tp-ok">The graph is complete.</div>
+            }
+            @foreach (var issue in _validation.Issues)
+            {
+                <button class="tp-issue" @onclick="@(() => GoTo(issue))">@issue.Message</button>
+            }
+        </div>
+    </Footer>
+    <TryIt>
+        <li><strong>Drag</strong> from an output (right) to an input (left). Number ports are blue and text ports amber; while you drag, the inputs that would take the wire turn green.</li>
+        <li>Drag the lone <strong>Number</strong> (10) to the <strong>Display</strong>'s text input: refused, and <em>Last connection</em> under the canvas says the types are incompatible. Drag it to the <strong>Add</strong> node's <em>a</em>: refused too - that input takes one wire and has it.</li>
+        <li>Drag <strong>Add</strong>'s result into its own <em>b</em>: refused, since a node cannot feed itself. Add two adders and wire each one's result into the other: refused as a cycle while <strong>Prevent cycles</strong> is ticked; untick it and the loop is allowed, but the nodes on it show no value.</li>
+        <li>Wire <em>Number to text</em> into the Display: the problem list empties and the Display shows 7. Change a number's value and everything downstream follows. Click a problem in the list to go to its node.</li>
+        <li><strong>Add number</strong>, <strong>Add adder</strong> and <strong>Add multiplier</strong> add a node under the graph and take you to it. A multiplier's <em>b</em> is optional: unwired, it multiplies by its default, 1.</li>
+        <li>Tick <strong>Numbers into text inputs</strong> and a number can feed the Display directly. Untick it with such a wire in place: the wire stays, and the list reports its incompatible types.</li>
+        <li>From the keyboard: <strong>Tab</strong> to a node, press <strong>C</strong> to start a connection (again for its next port), <strong>Tab</strong> to another node and press <strong>Enter</strong>, or <strong>Escape</strong> to give up. Type in <strong>Find a node</strong> and press <strong>Enter</strong> to go to the best match.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>BlowNode.Ports</code> lists <code>BlowPort</code>s: <code>Id</code>, <code>Type</code>, <code>Label</code>, <code>DataType</code>, <code>MaxConnections</code>, <code>MinConnections</code> and <code>Data</code>. The <code>NodeTemplate</code> draws a <code>BlowHandle</code> with each port's <code>Type</code> and <code>Id</code>, and the handle picks the definition up; it renders the type as <code>data-port-type</code>, which the colours come from.</li>
+        <li>Types match by <code>BlowConnectionRules.AreTypesCompatible</code>: a port without a type, or <code>"*"</code>, takes anything; otherwise the comma-separated lists must share a type, ignoring case. A mismatch is refused as <code>IncompatibleTypes</code>.</li>
+        <li><code>ConnectionTypeCompatibility</code> on the canvas replaces that rule - here with one that also lets <code>"number"</code> flow into <code>"text"</code>. The validator gets the same function through <code>BlowValidationRules.Ports(typeCompatibility)</code>, so the two always agree.</li>
+        <li><code>MaxConnections = 1</code> on every input makes a second wire <code>TargetFull</code>. <code>PreventCycles</code> refuses a wire that closes a loop (<code>Cycle</code>); a wire into its own node is a <code>SelfConnection</code> either way.</li>
+        <li><code>MinConnections = 1</code> makes an input required. It is not enforced while you edit - a graph is built one wire at a time - but <code>BlowGraphValidator</code> reports it; the result goes to the canvas's <code>Validation</code> parameter, which marks the node and the port and has a screen reader read the problem with the node. The multiplier's <em>b</em> has <code>MinConnections = 0</code> and its default in <code>Data</code>, a payload the canvas never reads.</li>
+        <li><code>OnConnectEnd</code>'s <code>Rejection</code> fills <em>Last connection</em>, worded by <code>BlowAriaLabels.Default.ConnectionRejected</code> - the sentence the canvas announces. The values come from <code>BlowGraphAlgorithms.TopologicalSort</code>, so each node's inputs are worked out before it; <code>BlowGraphIndex.EdgesAt</code> finds the wire into a port.</li>
+        <li>The keyboard connection uses the canvas's <code>ConnectionKey</code> (<code>"c"</code> by default). <code>FindNodes(query)</code> ranks nodes by their label, id, type and ports, and <code>FocusNodeAsync(id, select, durationMs)</code> brings a node into view and gives it focus - as each <strong>Add</strong> button does after <code>AddNodes</code>.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .typed-flow .bit-blow-node { padding: 0; min-width: 150px; text-align: left; }
+    .tp-search { margin-left: .75rem; min-width: 200px; }
+    .tp-found { font-size: 12px; color: var(--bb-text-soft); }
+    .tp-node { padding: 6px 0; }
+    .tp-title { padding: 0 10px 4px; font-weight: 600; }
+    .tp-input { margin: 0 10px 4px; width: calc(100% - 20px); box-sizing: border-box; }
+    .tp-row { position: relative; padding: 2px 12px; display: flex; gap: 6px; font-size: 11px; }
+    .tp-out { justify-content: flex-end; }
+    .tp-value { font-weight: 600; min-width: 2em; text-align: right; }
+    .tp-default { color: var(--bit-blow-text-muted); }
+    .tp-display { margin: 0 10px 4px; padding: 4px 6px; font: 600 14px monospace; border-radius: 4px;
+                  background: var(--bit-blow-surface-muted); }
+    /* Handles take their colour from their data type, through the handle's own colour property, so the
+       canvas's valid and invalid colours still take over while a connection is dragged. */
+    .typed-flow .bit-blow-handle[data-port-type="number"] { --bit-blow-handle-bg: #2563eb; }
+    .typed-flow .bit-blow-handle[data-port-type="text"] { --bit-blow-handle-bg: #d97706; }
+    .tp-panel { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+    .tp-last { color: var(--bb-text-soft); margin-bottom: 6px; }
+    .tp-ok { color: var(--bb-text-soft); }
+    .tp-issue { text-align: left; border: none; background: none; padding: 2px 0; color: inherit; cursor: pointer;
+                text-decoration: underline dotted; font: inherit; }
+</style>
+
+@code {
+    private sealed class NumberData { public double Value { get; set; } }
+
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private bool _preventCycles = true;
+    private bool _numbersAsText;
+    private string _lastConnection = "Drag from an output (right) to an input (left).";
+    private BlowValidationResult _validation = BlowValidationResult.Empty;
+    private Dictionary<string, object?> _values = [];
+    private int _next = 1;
+    private string _query = "";
+
+    private string? Found => string.IsNullOrWhiteSpace(_query) || _flow is null
+        ? null
+        : _flow.FindNodes(_query).Count switch { 0 => "No match", 1 => "1 match", var n => $"{n} matches" };
+
+    private static readonly BlowGraphValidator Validator = BlowGraphValidator.CreateDefault();
+
+    // The validator for the lenient rule: the same checks, judging data types the way the canvas then does.
+    private static readonly BlowGraphValidator LenientValidator =
+        new(BlowValidationRules.Structure(), BlowValidationRules.Ports(typeCompatibility: NumbersAsText));
+
+    // Null keeps the built-in rule; otherwise a number may also flow into a text input.
+    private Func<string?, string?, bool>? Compatibility => _numbersAsText ? NumbersAsText : null;
+
+    private static bool NumbersAsText(string? source, string? target) =>
+        BlowConnectionRules.AreTypesCompatible(source, target)
+        || (string.Equals(source, "number", StringComparison.OrdinalIgnoreCase) && string.Equals(target, "text", StringComparison.OrdinalIgnoreCase));
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            Number("n1", 3, new(0, 0)),
+            Number("n2", 4, new(0, 140)),
+            Operator("op1", "add", new(240, 60)),
+            Format("fmt", new(480, 60)),
+            Display("out", new(720, 60)),
+            Number("n3", 10, new(240, 240)),
+        ];
+        _edges =
+        [
+            new() { Id = "e1", Source = "n1", SourceHandle = "value", Target = "op1", TargetHandle = "a", Type = BlowEdgeType.SmoothStep },
+            new() { Id = "e2", Source = "n2", SourceHandle = "value", Target = "op1", TargetHandle = "b", Type = BlowEdgeType.SmoothStep },
+            new() { Id = "e3", Source = "op1", SourceHandle = "result", Target = "fmt", TargetHandle = "value", Type = BlowEdgeType.SmoothStep },
+        ];
+        Recompute();
+    }
+
+    private static BlowPort Input(string id, string label, string type) => new()
+    {
+        Id = id, Type = BlowHandleType.Target, Label = label, DataType = type, MaxConnections = 1, MinConnections = 1,
+    };
+
+    private static BlowPort Output(string id, string label, string type) => new()
+    {
+        Id = id, Type = BlowHandleType.Source, Label = label, DataType = type,
+    };
+
+    private static BlowNode Number(string id, double value, BlowXYPosition at) => new()
+    {
+        Id = id, Type = "number", Label = "Number", Position = at, Data = new NumberData { Value = value },
+        Ports = [Output("value", "value", "number")],
+    };
+
+    // A multiplier's "b" is optional: unwired, it multiplies by the default its port carries in Data.
+    private static BlowNode Operator(string id, string kind, BlowXYPosition at) => new()
+    {
+        Id = id, Type = kind, Label = kind == "add" ? "Add" : "Multiply", Position = at,
+        Ports =
+        [
+            Input("a", "a", "number"),
+            kind == "multiply" ? Optional(Input("b", "b", "number"), 1.0) : Input("b", "b", "number"),
+            Output("result", "result", "number"),
+        ],
+    };
+
+    private static BlowPort Optional(BlowPort port, object fallback)
+    {
+        port.MinConnections = 0;
+        port.Data = fallback;
+        return port;
+    }
+
+    private static BlowNode Format(string id, BlowXYPosition at) => new()
+    {
+        Id = id, Type = "format", Label = "Number to text", Position = at,
+        Ports = [Input("value", "number", "number"), Output("text", "text", "text")],
+    };
+
+    private static BlowNode Display(string id, BlowXYPosition at) => new()
+    {
+        Id = id, Type = "display", Label = "Display", Position = at,
+        Ports = [Input("text", "text", "text")],
+    };
+
+    private Task AddNumber() => Add(Number($"n-new-{_next++}", 1, FreeSpot(0)));
+
+    private Task AddOperator(string kind) => Add(Operator($"op-new-{_next++}", kind, FreeSpot(240)));
+
+    // Below everything already there, so a new node never lands on another and hides its handles.
+    private BlowXYPosition FreeSpot(double x) => new(x, _nodes.Count == 0 ? 0 : _nodes.Max(n => n.GetRect().Bottom) + 30);
+
+    // And brought into view, with focus on it: below the graph is past the bottom of the view.
+    private async Task Add(BlowNode node)
+    {
+        _flow!.AddNodes(node);
+        await _flow.FocusNodeAsync(node.Id, durationMs: 300);
+    }
+
+    private void SetNumber(NumberData data, object? raw)
+    {
+        if (double.TryParse(raw?.ToString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var value))
+            data.Value = value;
+        Recompute();
+    }
+
+    private void OnConnectEnd(BlowConnectEndInfo end)
+    {
+        _lastConnection = end.IsValid
+            ? $"Connected from {end.Start.NodeId}."
+            : end.Rejection != BlowConnectionRejection.None
+                ? BlowAriaLabels.Default.ConnectionRejected(end.Rejection)
+                : end.IsDropped
+                    ? "Dropped on empty space."
+                    : "Cancelled.";
+    }
+
+    /// <summary>
+    /// Validates the graph and evaluates it. Evaluation follows the topological order, so every node's inputs
+    /// are computed before the node itself; nodes on a cycle (possible with cycle prevention off) stay empty.
+    /// </summary>
+    private void Recompute()
+    {
+        _validation = (_numbersAsText ? LenientValidator : Validator).Validate(_nodes, _edges);
+
+        var graph = new BlowGraphIndex(_nodes, _edges);
+        _values = [];
+        foreach (var node in BlowGraphAlgorithms.TopologicalSort(graph).Order)
+        {
+            // The value on the wire into a port, or the port's default when nothing is wired to it.
+            object? Input(string port)
+            {
+                var edge = graph.EdgesAt(node.Id, BlowHandleType.Target, port).FirstOrDefault();
+                return edge is null ? node.FindPort(BlowHandleType.Target, port)?.Data : _values.GetValueOrDefault(edge.Source);
+            }
+
+            _values[node.Id] = node.Type switch
+            {
+                "number" => ((NumberData)node.Data!).Value,
+                "add" when Input("a") is double a && Input("b") is double b => a + b,
+                "multiply" when Input("a") is double a && Input("b") is double b => a * b,
+                "format" when Input("value") is double v => v.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture),
+                "display" => Input("text"),
+                _ => null,
+            };
+        }
+    }
+
+    private string Show(string nodeId) => _values.GetValueOrDefault(nodeId) switch
+    {
+        null => "-",
+        double d => d.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture),
+        var other => other.ToString() ?? "-",
+    };
+
+    /// <summary>Takes the user to the node a problem is about - in view, selected and focused, so it is read out.</summary>
+    private async Task GoTo(BlowValidationIssue issue)
+    {
+        if (issue.NodeId is { } id && _flow is not null) await _flow.FocusNodeAsync(id, select: true, durationMs: 300);
+    }
+
+    private async Task OnSearchKey(KeyboardEventArgs e)
+    {
+        if (e.Key != "Enter" || _flow is null) return;
+        if (_flow.FindNodes(_query).FirstOrDefault() is { } best) await _flow.FocusNodeAsync(best.Id, select: true, durationMs: 300);
+    }
+}

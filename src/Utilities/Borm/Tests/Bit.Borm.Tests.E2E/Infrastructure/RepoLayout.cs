@@ -21,9 +21,13 @@ public static class RepoLayout
     /// The route of every page under <see cref="DemoPagesDirectory"/>, read from its <c>@page</c> directive, so a
     /// page added to the demo is swept without anyone having to list it here.
     /// </summary>
+    // A page that stays on the server ([ExcludeFromInteractiveRouting]) never turns interactive, which every other page
+    // must; the static rendering tests drive it instead.
     public static IReadOnlyList<string> DemoRoutes() =>
         [.. Directory.EnumerateFiles(DemoPagesDirectory(), "*.razor", SearchOption.AllDirectories)
-            .Select(file => System.Text.RegularExpressions.Regex.Match(File.ReadAllText(file), "@page\\s+\"([^\"]+)\""))
+            .Select(File.ReadAllText)
+            .Where(source => !source.Contains("[ExcludeFromInteractiveRouting]", StringComparison.Ordinal))
+            .Select(source => System.Text.RegularExpressions.Regex.Match(source, "@page\\s+\"([^\"]+)\""))
             .Where(match => match.Success)
             .Select(match => match.Groups[1].Value)
             .Order(StringComparer.Ordinal)];

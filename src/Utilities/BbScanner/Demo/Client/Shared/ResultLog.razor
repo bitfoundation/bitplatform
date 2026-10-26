@@ -42,6 +42,13 @@
                 </tbody>
             </table>
         </div>
+        <p class="bb-card-desc">
+            Each row is one <code>BbBarcodeResult</code>. <em>Position</em> is its <code>BoundingBox</code> in the
+            pixels of the frame it was read from: left, top · width×height. <em>Details</em> is its
+            <code>Metadata</code>, where the symbology carries any: the symbol version, the error correction
+            level (EC), how many codewords were repaired - a print quality signal - the ECI character set, GS1
+            data, a structured append part, the symbol's size and an EAN or UPC add-on.
+        </p>
     }
 </section>
 
@@ -66,7 +73,7 @@
             return "-";
         }
 
-        var parts = new List<string>(6);
+        var parts = new List<string>(8);
 
         if (metadata.SymbolVersion is not null)
         {
@@ -96,6 +103,16 @@
         if (metadata.StructuredAppendIndex is not null)
         {
             parts.Add($"part {metadata.StructuredAppendIndex + 1} of {metadata.StructuredAppendCount}");
+        }
+
+        if (metadata.Rows is not null && metadata.Columns is not null)
+        {
+            parts.Add($"{metadata.Rows} rows × {metadata.Columns} columns");
+        }
+
+        if (metadata.Extension is not null)
+        {
+            parts.Add($"add-on {metadata.Extension}");
         }
 
         return parts.Count == 0 ? "-" : string.Join(" · ", parts);

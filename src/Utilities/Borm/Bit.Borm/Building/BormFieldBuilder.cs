@@ -26,6 +26,12 @@ public sealed class BormFieldBuilder
     public BormFieldBuilder Group(string group) { _field.Group = group; return this; }
     public BormFieldBuilder Default(object? value) { _field.DefaultValue = value; return this; }
     public BormFieldBuilder ReadOnly(bool readOnly = true) { _field.ReadOnly = readOnly; return this; }
+
+    /// <summary>
+    /// Marks the value as one that must not outlive the page — left out of drafts and of snapshots that
+    /// exclude sensitive values. A password is sensitive without asking.
+    /// </summary>
+    public BormFieldBuilder Sensitive(bool sensitive = true) { _field.Sensitive = sensitive; return this; }
     public BormFieldBuilder Attr(string key, object? value) { _field.Attributes[key] = value; return this; }
     public BormFieldBuilder CustomRenderer(string key) { _field.CustomRenderer = key; _field.Type = BormFieldType.Custom; return this; }
 
@@ -100,6 +106,26 @@ public sealed class BormFieldBuilder
     // --- Type overrides ---
     public BormFieldBuilder As(BormFieldType type) { _field.Type = type; return this; }
     public BormFieldBuilder AsTextArea(int rows = 4) { _field.Type = BormFieldType.TextArea; _field.Attributes["rows"] = rows; return this; }
+
+    /// <summary>
+    /// Formatted text written in Markdown: a text area with a preview of the formatting beside a short guide to
+    /// it, and a review that shows it formatted. See <see cref="BormMarkdown"/> for what it understands and why
+    /// what it renders is safe. The preview follows the typing, a moment after the user pauses.
+    /// </summary>
+    public BormFieldBuilder AsMarkdown(int rows = 6)
+    {
+        _field.Type = BormFieldType.Markdown;
+        _field.Attributes["rows"] = rows;
+        _field.UpdateOn = BormUpdateTrigger.Input;
+        if (_field.DebounceMilliseconds == 0) _field.DebounceMilliseconds = 300;
+        return this;
+    }
+
+    /// <summary>
+    /// A handwritten signature, drawn with a mouse, a finger or a pen - or typed instead, by anyone who cannot
+    /// draw one. The value is an SVG image as a <c>data:</c> URL.
+    /// </summary>
+    public BormFieldBuilder AsSignature() { _field.Type = BormFieldType.Signature; return this; }
     public BormFieldBuilder AsEmail() => Email();
     public BormFieldBuilder AsPassword() { _field.Type = BormFieldType.Password; _field.Autocomplete ??= "current-password"; return this; }
     public BormFieldBuilder AsUrl() { _field.Type = BormFieldType.Url; return this; }
@@ -116,6 +142,19 @@ public sealed class BormFieldBuilder
         return this;
     }
     public BormFieldBuilder AsColor() { _field.Type = BormFieldType.Color; return this; }
+
+    /// <summary>
+    /// A month picker — a card's expiry, a billing period. A <c>DateOnly</c> or <c>DateTime</c> holds
+    /// the month's first day; with no CLR type the value is <c>yyyy-MM</c>. Browsers without a picker of
+    /// their own show a text box, where anything else typed is reported rather than stored.
+    /// </summary>
+    public BormFieldBuilder AsMonth() { _field.Type = BormFieldType.Month; return this; }
+
+    /// <summary>
+    /// An ISO 8601 week picker — a timesheet, a delivery slot. A <c>DateOnly</c> or <c>DateTime</c>
+    /// holds the week's Monday; with no CLR type the value is <c>yyyy-Www</c>.
+    /// </summary>
+    public BormFieldBuilder AsWeek() { _field.Type = BormFieldType.Week; return this; }
     public BormFieldBuilder AsRange() { _field.Type = BormFieldType.Range; return this; }
     public BormFieldBuilder AsRadio() { _field.Type = BormFieldType.Radio; return this; }
     public BormFieldBuilder AsMultiSelect() { _field.Type = BormFieldType.MultiSelect; return this; }
@@ -229,6 +268,54 @@ public sealed class BormFieldBuilder
     }
 
     /// <summary>
+    /// Makes the field a combobox that searches as the user types — a customer, a product, an address
+    /// out of more than any list could hold. <paramref name="search"/> is given what was typed in
+    /// <see cref="BormOptionsContext.SearchText"/> once it is <paramref name="minLength"/> characters
+    /// long and the user pauses for <paramref name="debounceMilliseconds"/>; a search the user has typed
+    /// past is cancelled, and its answer never lands. When the field opens holding a value, the search
+    /// is asked once with no text and that value in <see cref="BormOptionsContext.CurrentValue"/>, so it
+    /// can return the option the box should show.
+    /// </summary>
+    /// <param name="search">Returns the options matching the text (or the one option for the current value).</param>
+    /// <param name="minLength">How many characters have to be typed before a search runs.</param>
+    /// <param name="debounceMilliseconds">How long the user has to pause before it does.</param>
+    /// <param name="allowCustom">
+    /// Whether an answer that matches no result is accepted as it was typed. By default it is refused —
+    /// left in the box with a message, while the model keeps its last value — because a search field
+    /// stands for a record, and text that names none is not an answer.
+    /// </param>
+    /// <param name="dependsOn">Paths whose change empties the field and starts the search again.</param>
+    public BormFieldBuilder SearchFrom(BormOptionsProvider search, int minLength = 1, int debounceMilliseconds = 250,
+        bool allowCustom = false, params string[] dependsOn)
+    {
+        ArgumentNullException.ThrowIfNull(search);
+        ArgumentOutOfRangeException.ThrowIfNegative(minLength);
+        _field.Type = BormFieldType.Combobox;
+        _field.OptionsProvider = search;
+        _field.SearchMinLength = minLength;
+        _field.SearchDebounceMilliseconds = Math.Max(0, debounceMilliseconds);
+        foreach (var d in dependsOn) _field.OptionsDependencies.Add(d);
+        if (allowCustom) _field.RemoveValidators("oneOf");
+        else _field.AddValidator(new BormOneOfRule());
+        return this;
+    }
+
+    /// <summary>
+    /// <see cref="SearchFrom(BormOptionsProvider, int, int, bool, string[])"/>, projecting the items a
+    /// lookup returns: <c>SearchFrom(ctx =&gt; customers.SearchAsync(ctx.SearchText, ctx.CancellationToken), c =&gt; c.Id, c =&gt; c.Name)</c>.
+    /// </summary>
+    public BormFieldBuilder SearchFrom<TItem>(
+        Func<BormOptionsContext, ValueTask<IEnumerable<TItem>>> search,
+        Func<TItem, string> value,
+        Func<TItem, string> label,
+        int minLength = 1,
+        int debounceMilliseconds = 250,
+        bool allowCustom = false,
+        params string[] dependsOn)
+        => SearchFrom(async ctx => (await search(ctx)).Select(i => new BormSelectOption(value(i), label(i))).ToList(),
+            minLength, debounceMilliseconds, allowCustom, dependsOn);
+
+    /// <summary>
     /// Derives the field's value from the rest of the form — a line total, a full name, a price after
     /// discount. List <paramref name="dependsOn"/> paths so the value refreshes when they change;
     /// leave it empty to recompute on any change. Combine with <see cref="ReadOnly"/> when the user
@@ -242,9 +329,27 @@ public sealed class BormFieldBuilder
     }
 
     /// <summary>
+    /// Derives the field's value from an expression — <c>{Quantity} * {UnitPrice}</c>,
+    /// <c>{First} + ' ' + {Last}</c>, <c>sum({Lines[].Total})</c>. The dependencies are read from the
+    /// expression itself, so the value refreshes exactly when a field it names changes, and the
+    /// field is made read-only, since anything typed into it would be overwritten. Unlike a delegate,
+    /// an expression is plain text: it is exported to JSON Schema as <c>x-computed</c> and imported back.
+    /// </summary>
+    /// <exception cref="BormExpressionException">The text is not a valid expression.</exception>
+    public BormFieldBuilder Computed(string expression)
+    {
+        var parsed = BormExpression.Parse(expression);
+        _field.Computed = parsed.ToComputed();
+        _field.ComputedDependencies.Clear();
+        foreach (var d in parsed.Dependencies) _field.ComputedDependencies.Add(d);
+        _field.ReadOnly = true;
+        return this;
+    }
+
+    /// <summary>
     /// Runs when this field's value changes — the schema's own "and when this changes, do that".
     /// Clearing the city when the country changes, resetting a seat count when the plan does: the
-    /// things that fit neither <see cref="Computed"/> (which owns its field's value outright) nor
+    /// things that fit neither <see cref="Computed(BormComputedValue, string[])"/> (which owns its field's value outright) nor
     /// <see cref="OptionsFrom(BormOptionsProvider, string[])"/> (which reloads choices), because
     /// what the handler writes is still the user's to edit afterwards.
     /// </summary>
@@ -272,6 +377,30 @@ public sealed class BormFieldBuilder
     public BormFieldBuilder Normalize(BormValueNormalizer normalize)
     {
         _field.Normalize = normalize;
+        return this;
+    }
+
+    /// <summary>
+    /// Writes the value in a fixed shape - <c>Mask("(000) 000-0000")</c>, <c>Mask("AA00 0000 0000 0000 0000 00")</c>.
+    /// What the user types is put into it when they leave the box, and a value that does not fit is reported
+    /// with the shape to write it in. See <see cref="BormMask"/> for the notation.
+    /// </summary>
+    /// <param name="pattern"><c>0</c> a digit, <c>A</c> a letter (in capitals), <c>a</c> a letter, <c>*</c> either; <c>\</c> escapes; anything else is literal.</param>
+    /// <param name="storeRaw">Store only what filled the slots (<c>5551234567</c>); the box still shows it formatted.</param>
+    /// <param name="message">The message for a value that does not fit, instead of the provider's.</param>
+    /// <remarks>
+    /// The box is not rewritten as the user types: that needs script to keep the caret where it was, and a
+    /// box changing what is being typed into it reads badly to assistive technology. A mask of digits alone
+    /// asks a phone for its number pad.
+    /// </remarks>
+    public BormFieldBuilder Mask(string pattern, bool storeRaw = false, string? message = null)
+    {
+        var mask = new BormMask(pattern);
+        _field.Mask = pattern;
+        _field.MaskStoresRaw = storeRaw;
+        _field.RemoveValidators(BormMessageKeys.Mask);
+        _field.AddValidator(new BormMaskRule(mask, message));
+        if (mask.OnlyDigits) _field.InputMode ??= "numeric";
         return this;
     }
 
@@ -332,6 +461,10 @@ public sealed class BormFieldBuilder
     /// <inheritdoc cref="RequiredWhen(IBormCondition)" />
     public BormFieldBuilder RequiredWhen(string field, BormConditionOperator op, object? value = null)
         => RequiredWhen(new BormFieldCondition(field, op, value));
+
+    /// <summary>Makes the field required while an expression holds — <c>{Country} = 'US' and {Amount} &gt; 1000</c>.</summary>
+    /// <exception cref="BormExpressionException">The text is not a valid expression.</exception>
+    public BormFieldBuilder RequiredWhen(string expression) => RequiredWhen(new BormExpressionCondition(expression));
 
     public BormFieldBuilder MinLength(int min, string? message = null)
     {
@@ -486,6 +619,25 @@ public sealed class BormFieldBuilder
 
     private BormFileRule? CurrentFileRule() => _field.Validators.OfType<BormFileRule>().FirstOrDefault();
 
+    /// <summary>
+    /// Uploads each file as soon as it is chosen, through <paramref name="upload"/>, and stores what it returns -
+    /// an id, a URL - in place of the file: a string, or a list of them for a field taking several files.
+    /// </summary>
+    /// <remarks>
+    /// Each file is judged by <see cref="Accept"/> and <see cref="MaxFileSize"/> before anything is sent, and
+    /// shown with its progress, a Cancel button while it goes and Retry if it fails. A submit made while files
+    /// are on their way waits for them. Read the file through <see cref="BormUploadContext.OpenReadStream"/>
+    /// and the bar follows the bytes; honour <see cref="BormUploadContext.CancellationToken"/>, which a Cancel,
+    /// clearing the field or leaving the form sets. Uploaders are code, so they are not exported to JSON Schema.
+    /// </remarks>
+    public BormFieldBuilder UploadWith(BormFileUploader upload)
+    {
+        ArgumentNullException.ThrowIfNull(upload);
+        _field.Type = BormFieldType.File;
+        _field.Uploader = upload;
+        return this;
+    }
+
     public BormFieldBuilder Items(int? min = null, int? max = null, string? message = null)
     {
         _field.MinItems = min;
@@ -506,6 +658,22 @@ public sealed class BormFieldBuilder
     public BormFieldBuilder SeedMinItems(bool value = true)
     {
         _field.Attributes["seedMinItems"] = value;
+        return this;
+    }
+
+    /// <summary>
+    /// Shows a long list <paramref name="size"/> rows at a time, with a pager - for a list of hundreds or thousands of
+    /// rows that would otherwise all be on the page at once.
+    /// </summary>
+    /// <remarks>
+    /// Paged rather than virtualised: a virtualised list leaves the rows out of view out of the page, where neither
+    /// focus, nor the error summary, nor a screen reader can reach them. A page is always whole, and the pager says
+    /// how many rows on other pages need attention and takes the user to the first of them.
+    /// </remarks>
+    public BormFieldBuilder PageSize(int size)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(size, 1);
+        _field.PageSize = size;
         return this;
     }
 
@@ -530,6 +698,11 @@ public sealed class BormFieldBuilder
     /// <inheritdoc cref="When(IBormCondition, Action{BormFieldBuilder})" />
     public BormFieldBuilder When(string field, BormConditionOperator op, object? value, Action<BormFieldBuilder> configure)
         => When(new BormFieldCondition(field, op, value), configure);
+
+    /// <inheritdoc cref="When(IBormCondition, Action{BormFieldBuilder})" />
+    /// <exception cref="BormExpressionException"><paramref name="expression"/> is not a valid expression.</exception>
+    public BormFieldBuilder When(string expression, Action<BormFieldBuilder> configure)
+        => When(new BormExpressionCondition(expression), configure);
 
     /// <inheritdoc cref="When(IBormCondition, Action{BormFieldBuilder})" />
     public BormFieldBuilder When(Func<BormValidationContext, bool> condition, Action<BormFieldBuilder> configure)
@@ -566,6 +739,27 @@ public sealed class BormFieldBuilder
         return this;
     }
 
+    /// <summary>
+    /// Requires an expression to hold — <c>{End} &gt;= {Start}</c>, <c>len({Code}) = 6</c>. Paths resolve
+    /// against the object that owns the field, so on a repeater's row template the rule means that
+    /// row. Every other field the expression names is registered with <see cref="RevalidateOn"/>, so
+    /// correcting <em>that</em> field clears this one's message too.
+    /// </summary>
+    /// <remarks>
+    /// The rule fails only when the expression is false: while a value it compares is missing it has
+    /// nothing to say, and <see cref="Required"/> is what says a value is missing. Unlike a delegate it
+    /// is plain text, exported to JSON Schema as <c>x-rules</c> and imported back.
+    /// </remarks>
+    /// <exception cref="BormExpressionException"><paramref name="expression"/> is not a valid expression.</exception>
+    public BormFieldBuilder Must(string expression, string message, BormValidationSeverity severity = BormValidationSeverity.Error)
+    {
+        var rule = new BormExpressionRule(expression, message, severity);
+        _field.Validators.Add(rule);
+        foreach (var dependency in rule.Expression.Dependencies)
+            if (!string.Equals(dependency, _field.Name, StringComparison.OrdinalIgnoreCase)) RevalidateOn(dependency);
+        return this;
+    }
+
     // --- Conditional behaviour ---
     public BormFieldBuilder VisibleWhen(IBormCondition condition) { _field.VisibleWhen = condition; return this; }
 
@@ -575,6 +769,14 @@ public sealed class BormFieldBuilder
     public BormFieldBuilder VisibleWhen(Func<IBormDataReader, bool> predicate, params string[] dependencies)
         => VisibleWhen(new BormPredicateCondition(predicate, dependencies));
 
+    /// <summary>
+    /// Shows the field only while an expression holds — <c>{IsBusiness} and {Employees} &gt; 10</c>. The
+    /// fields it reads are taken from the expression, so it is re-evaluated exactly when one changes,
+    /// and it survives a round trip through JSON as a string in <c>x-visibleWhen</c>.
+    /// </summary>
+    /// <exception cref="BormExpressionException">The text is not a valid expression.</exception>
+    public BormFieldBuilder VisibleWhen(string expression) => VisibleWhen(new BormExpressionCondition(expression));
+
     public BormFieldBuilder DisabledWhen(IBormCondition condition) { _field.DisabledWhen = condition; return this; }
 
     public BormFieldBuilder DisabledWhen(string field, BormConditionOperator op, object? value = null)
@@ -582,6 +784,10 @@ public sealed class BormFieldBuilder
 
     public BormFieldBuilder DisabledWhen(Func<IBormDataReader, bool> predicate, params string[] dependencies)
         => DisabledWhen(new BormPredicateCondition(predicate, dependencies));
+
+    /// <summary>Disables the field while an expression holds.</summary>
+    /// <exception cref="BormExpressionException">The text is not a valid expression.</exception>
+    public BormFieldBuilder DisabledWhen(string expression) => DisabledWhen(new BormExpressionCondition(expression));
 
     /// <summary>
     /// Locks the field while <paramref name="condition"/> holds — an answer that is settled rather than
@@ -603,6 +809,10 @@ public sealed class BormFieldBuilder
     /// <inheritdoc cref="ReadOnlyWhen(IBormCondition)" />
     public BormFieldBuilder ReadOnlyWhen(Func<IBormDataReader, bool> predicate, params string[] dependencies)
         => ReadOnlyWhen(new BormPredicateCondition(predicate, dependencies));
+
+    /// <inheritdoc cref="ReadOnlyWhen(IBormCondition)" />
+    /// <exception cref="BormExpressionException">The text is not a valid expression.</exception>
+    public BormFieldBuilder ReadOnlyWhen(string expression) => ReadOnlyWhen(new BormExpressionCondition(expression));
 
     /// <summary>
     /// Clears the value as soon as the field becomes hidden, so an abandoned branch of the form does

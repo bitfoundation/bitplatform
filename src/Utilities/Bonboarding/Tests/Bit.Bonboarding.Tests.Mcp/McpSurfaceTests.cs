@@ -52,6 +52,7 @@ public class McpSurfaceTests
     {
         var info = McpTestHost.Client.ServerInfo;
 
+        Assert.IsNotNull(info);
         Assert.AreEqual("bit-bonboarding", info.Name);
         Assert.AreEqual("Bit.Bonboarding", info.Title);
         Assert.AreEqual(BonboardingServerInstructions.BonboardingVersion, info.Version);

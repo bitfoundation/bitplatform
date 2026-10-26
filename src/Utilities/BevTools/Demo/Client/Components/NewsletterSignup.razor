@@ -1,0 +1,28 @@
+﻿@namespace Bit.BevTools.Demo.Client.Components
+@using System.ComponentModel.DataAnnotations
+
+@* Planted problem 17: the model's attributes say an address is required and must be an email address, and the form
+   accepts anything - there is no <DataAnnotationsValidator /> inside it, so nothing checks them. *@
+<EditForm Model="_model" OnValidSubmit="Subscribe" FormName="newsletter">
+    <div class="bb-toolbar">
+        <label class="bb-field">Newsletter <InputText @bind-Value="_model.Email" placeholder="you@example.com" /></label>
+        <button type="submit" class="btn btn-secondary">Subscribe</button>
+    </div>
+</EditForm>
+@if (_subscribed is { } address)
+{
+    <p class="bb-note bb-note-success">Subscribed "@address" - even when it is empty: problem 17.</p>
+}
+
+@code {
+    private readonly NewsletterModel _model = new();
+    private string? _subscribed;
+
+    private void Subscribe() => _subscribed = _model.Email;
+
+    private sealed class NewsletterModel
+    {
+        [Required, EmailAddress]
+        public string Email { get; set; } = "";
+    }
+}

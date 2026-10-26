@@ -6,8 +6,9 @@
     <h1>Errors and permissions</h1>
     <p class="bb-subtitle">
         Camera failures are ordinary and expected: permission denied, no camera, camera already in
-        use. The component classifies each one so an application can respond without parsing message
-        text.
+        use - and an uploaded file may not be an image at all. The component classifies each one as a
+        <code>BbScannerErrorKind</code> so an application can respond without parsing message text, and
+        the permission can be checked before the browser ever asks.
     </p>
 </div>
 
@@ -50,6 +51,29 @@
                         To see a permission denial, block camera access for this site in the browser and
                         press <em>Start normally</em>.
                     </p>
+                    <div class="bb-toolbar">
+                        <button class="btn btn-secondary" type="button" id="check-permission" @onclick="CheckPermission">Check camera permission</button>
+                        @if (_permission is { } permission)
+                        {
+                            <output id="camera-permission">@permission</output>
+                        }
+                    </div>
+                    <p class="bb-card-desc">
+                        <code>GetCameraPermissionAsync</code> asks the browser what a start would do, without
+                        opening the camera or asking the user, so a page can explain why it needs the camera
+                        before the prompt appears, or say how to allow it once it has been refused. It returns a
+                        <code>BbCameraPermission</code>:
+                    </p>
+                    <dl class="bb-params">
+                        <dt>Prompt</dt>
+                        <dd>Starting will ask the user.</dd>
+                        <dt>Granted</dt>
+                        <dd>Starting will open the camera without asking.</dd>
+                        <dt>Denied</dt>
+                        <dd>Starting will fail with <code>PermissionDenied</code>; only the user, in the site settings, can change that.</dd>
+                        <dt>Unknown</dt>
+                        <dd>The browser will not say (an older Firefox, say); starting is the only way to find out.</dd>
+                    </dl>
                 </section>
 
                 <section class="scan-panel">
@@ -75,33 +99,60 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Error kinds</h3>
     <p class="bb-card-desc">
-        Every failure reaches <code>OnError</code> as a <code>BbScannerException</code> whose
-        <code>Kind</code> is one of these.
+        A camera failure reaches <code>OnError</code> as a <code>BbScannerException</code> whose
+        <code>Kind</code> is one of these, <code>Status</code> becomes <code>Faulted</code>, the camera is
+        released, and the scanner shows the message. <code>StartAsync</code> tries again. An image handed to
+        <code>ScanImageAsync</code> throws the exception instead, since that call returns its results.
     </p>
     <div class="bb-scroll">
         <table class="bb-table">
             <thead>
-                <tr><th>Kind</th><th>Meaning</th></tr>
+                <tr><th>Kind</th><th>Meaning</th><th>Suggested handling</th></tr>
             </thead>
             <tbody>
-                <tr><td class="bb-table-key">PermissionDenied</td><td>The user or a policy refused the camera.</td></tr>
-                <tr><td class="bb-table-key">NoCamera</td><td>No device matched the request.</td></tr>
-                <tr><td class="bb-table-key">CameraUnavailable</td><td>A device exists but is held by something else.</td></tr>
-                <tr><td class="bb-table-key">ConstraintsUnsatisfied</td><td>No camera can meet the requested constraints.</td></tr>
-                <tr><td class="bb-table-key">NotSupported</td><td>No camera API, or the page is not a secure context.</td></tr>
-                <tr><td class="bb-table-key">Unknown</td><td>Anything the browser did not classify.</td></tr>
+                <tr><td class="bb-table-key">PermissionDenied</td><td>The user or a policy refused the camera.</td><td>@Capitalised(Advice(BbScannerErrorKind.PermissionDenied))</td></tr>
+                <tr><td class="bb-table-key">NoCamera</td><td>No device matched the request.</td><td>@Capitalised(Advice(BbScannerErrorKind.NoCamera))</td></tr>
+                <tr><td class="bb-table-key">CameraUnavailable</td><td>A device exists but is held by something else, or it stopped delivering frames - unplugged, or claimed by another application.</td><td>@Capitalised(Advice(BbScannerErrorKind.CameraUnavailable))</td></tr>
+                <tr><td class="bb-table-key">ConstraintsUnsatisfied</td><td>No camera can meet the requested constraints - typically a <code>DeviceId</code> that is gone.</td><td>@Capitalised(Advice(BbScannerErrorKind.ConstraintsUnsatisfied))</td></tr>
+                <tr><td class="bb-table-key">NotSupported</td><td>No camera API, the page is not a secure context, or the component is not running on WebAssembly.</td><td>@Capitalised(Advice(BbScannerErrorKind.NotSupported))</td></tr>
+                <tr><td class="bb-table-key">InvalidImage</td><td>An image given to <code>ScanImageAsync</code> is not an image, is larger than <code>MaxImageFileSize</code>, decodes to too many pixels, or could not be decoded.</td><td>@Capitalised(Advice(BbScannerErrorKind.InvalidImage))</td></tr>
+                <tr><td class="bb-table-key">Unknown</td><td>Anything the browser did not classify, or a decoder that failed on frame after frame.</td><td>@Capitalised(Advice(BbScannerErrorKind.Unknown))</td></tr>
             </tbody>
         </table>
     </div>
+    <pre class="bb-code">&lt;<span class="k">BbScanner</span> OnError=<span class="s">"HandleError"</span> /&gt;
+
+<span class="k">@@code</span> {
+    <span class="k">private string</span>? _problem;
+
+    <span class="k">private void</span> HandleError(BbScannerException error) =&gt; _problem = error.Kind <span class="k">switch</span>
+    {
+        BbScannerErrorKind.PermissionDenied =&gt; <span class="s">"Allow the camera in your browser's site settings, then try again."</span>,
+        BbScannerErrorKind.NoCamera =&gt; <span class="s">"No camera found - scan a photo instead."</span>,
+        BbScannerErrorKind.CameraUnavailable =&gt; <span class="s">"Close other apps using the camera, then try again."</span>,
+        _ =&gt; error.Message,
+    };
+}</pre>
+    <p class="bb-card-desc">
+        The message the scanner itself shows can be translated, per kind, through
+        <code>BbScannerTexts.ErrorMessage</code> - see <a href="customize">customisation</a>; <code>OnError</code>
+        still receives the exception with its own message.
+    </p>
 </div>
 
 <div class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Secure context</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Secure context and frames</h3>
     <p class="bb-card-desc">
         Browsers only expose <code>getUserMedia</code> over HTTPS or on
         <code>localhost</code>. Served any other way the component reports
         <code>NotSupported</code> immediately, with a message that says exactly that,
-        instead of hanging on a permission prompt that will never appear.
+        instead of hanging on a permission prompt that will never appear. Still image scanning works
+        either way.
+    </p>
+    <p class="bb-card-desc">
+        A page inside a cross-origin <code>&lt;iframe&gt;</code> needs the camera delegated to it -
+        <code>&lt;iframe allow="camera"&gt;</code> - and a <code>Permissions-Policy</code> header that forbids the
+        camera makes every start fail with <code>PermissionDenied</code>.
     </p>
 </div>
 
@@ -109,6 +160,15 @@
     private BbScanner? _scanner;
     private BbScannerException? _error;
     private BbScannerStatus _status = BbScannerStatus.Idle;
+    private BbCameraPermission? _permission;
+
+    private async Task CheckPermission()
+    {
+        if (_scanner is not null)
+        {
+            _permission = await _scanner.GetCameraPermissionAsync();
+        }
+    }
     private string? _deviceId;
     private int _width = 1280;
     private int _height = 720;
@@ -153,7 +213,10 @@
         BbScannerErrorKind.CameraUnavailable => "ask the user to close other applications using the camera, then retry.",
         BbScannerErrorKind.ConstraintsUnsatisfied =>
             "drop the DeviceId and start again with Facing, since the requested camera is gone.",
-        BbScannerErrorKind.NotSupported => "serve over HTTPS, or hide the scanner entirely on this browser.",
+        BbScannerErrorKind.NotSupported => "serve over HTTPS, render the page on WebAssembly, or hide the scanner entirely on this browser.",
+        BbScannerErrorKind.InvalidImage => "tell the user which - too large, not an image, unreadable - and let them pick another.",
         _ => "log the inner exception and offer a retry.",
     };
+
+    private static string Capitalised(string advice) => char.ToUpperInvariant(advice[0]) + advice[1..];
 }

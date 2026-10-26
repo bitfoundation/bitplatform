@@ -1,6 +1,7 @@
 ﻿@inherits LayoutComponentBase
 @layout MainLayout
 @inject NavigationManager Nav
+@inject IJSRuntime JSRuntime
 @implements IDisposable
 
 @* The documentation shell - part of the site kit every Utilities demo shares (see wwwroot/app.css),
@@ -57,6 +58,13 @@
             <a href="@SiteInfo.ProjectUrl" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
             <a href="@SiteInfo.NuGetUrl" target="_blank" rel="noopener noreferrer">NuGet ↗</a>
         </div>
+
+        @if (_menuOpen)
+        {
+            @* As a drawer it covers the page, which is still there and still focusable: Tab past its last link comes
+               back to its close button, rather than going on to the "Hide docs" toggle and the form under the scrim. *@
+            <span class="bb-focus-sentinel" tabindex="0" @onfocus="() => _close.FocusAsync()"></span>
+        }
     </aside>
 
     <div class="bb-docs-main">
@@ -68,7 +76,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
                     <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
                 </svg>
-                @(_menuOpen ? "Hide" : "Browse") docs
+                <span class="bb-docs-menu-label">@(_menuOpen ? "Hide" : "Browse") docs</span>
             </button>
 
             <nav class="bb-crumbs" aria-label="Breadcrumb">
@@ -154,6 +162,7 @@
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
         Recompute();
+        if (_menuOpen) LockScroll(false);
         _menuOpen = false;
         _ = InvokeAsync(StateHasChanged);
     }
@@ -184,6 +193,7 @@
         _focusDrawerPending = _menuOpen;
         if (_menuOpen)
             Drawers?.Open(this);
+        LockScroll(_menuOpen);
     }
 
     /// <summary>The drawer's close button and the scrim: the drawer closes and focus returns to its toggle.</summary>
@@ -191,7 +201,14 @@
     {
         _menuOpen = false;
         _restorePending = true;
+        LockScroll(false);
     }
+
+    /// <summary>
+    /// Holds the page still while the drawer covers it, as the search palette does: a wheel turned over the scrim
+    /// scrolled the page behind it. Not awaited, for the same reason as there.
+    /// </summary>
+    private void LockScroll(bool locked) => _ = JSRuntime.InvokeVoidAsync("bitDemoSite.lockScroll", locked);
 
     /// <summary>
     /// Escape closes the narrow-width drawer, the way every other overlay on the site closes. The
@@ -205,6 +222,7 @@
         if (_menuOpen is false || args.Key != "Escape") return;
 
         _menuOpen = false;
+        LockScroll(false);
         // Once hidden, a panel that was holding focus hands it to <body> and the next Tab restarts
         // at the top of the page - hence the trip back to the button that opened it.
         _restorePending = true;

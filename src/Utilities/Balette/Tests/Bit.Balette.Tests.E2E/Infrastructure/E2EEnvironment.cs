@@ -25,13 +25,37 @@ public static class E2EEnvironment
     public static string? BaseUrl { get; } = Read("BALETTE_E2E_BASE_URL")?.TrimEnd('/');
 
     /// <summary>
+    /// <c>BALETTE_E2E_BROWSER</c>: the engine the suite drives - <c>chromium</c> (default), <c>firefox</c> or <c>webkit</c>,
+    /// each the build Playwright installed. The palette's browser layer leans on what engines implement differently
+    /// (the native dialog's top layer and focus, key events of other layouts, sticky headings, forced colours), so the
+    /// workflow runs the suite in all three.
+    /// </summary>
+    public static string Browser { get; } = Read("BALETTE_E2E_BROWSER")?.ToLowerInvariant() switch
+    {
+        null or "chromium" or "chrome" => "chromium",
+        "firefox" => "firefox",
+        "webkit" or "safari" => "webkit",
+        var other => throw new InvalidOperationException($"BALETTE_E2E_BROWSER is '{other}'; expected chromium, firefox or webkit."),
+    };
+
+    /// <summary>Whether the suite drives Chromium, the only engine with the DevTools protocol.</summary>
+    public static bool IsChromium => Browser == "chromium";
+
+    /// <summary>
     /// <c>BALETTE_E2E_CHANNEL</c>: e.g. chrome / msedge, to use an installed browser. Without it the suite
-    /// uses the Chromium Playwright installed and falls back to an installed Chrome, then Edge.
+    /// uses the Chromium Playwright installed and falls back to an installed Chrome, then Edge. Chromium only.
     /// </summary>
     public static string? Channel { get; } = Read("BALETTE_E2E_CHANNEL");
 
-    /// <summary><c>BALETTE_E2E_EXECUTABLE</c>: full path to a chromium-family executable.</summary>
+    /// <summary><c>BALETTE_E2E_EXECUTABLE</c>: full path to an executable of the engine <see cref="Browser"/> names.</summary>
     public static string? Executable { get; } = Read("BALETTE_E2E_EXECUTABLE");
+
+    /// <summary>
+    /// <c>BALETTE_E2E_RENDER_MODE</c>: <c>WebAssembly</c> (default), as the site is published, or <c>Server</c>, which runs
+    /// the same pages on a Blazor Server circuit - every key the palette handles then crosses the connection. A demo the
+    /// suite starts itself is started in that mode; an external one (<see cref="BaseUrl"/>) has to have been.
+    /// </summary>
+    public static string RenderMode { get; } = string.Equals(Read("BALETTE_E2E_RENDER_MODE"), "Server", StringComparison.OrdinalIgnoreCase) ? "Server" : "WebAssembly";
 
     /// <summary><c>BALETTE_E2E_HEADED=1</c>: show the browser.</summary>
     public static bool Headed { get; } = Read("BALETTE_E2E_HEADED") == "1";

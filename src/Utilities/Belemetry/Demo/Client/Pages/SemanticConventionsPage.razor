@@ -32,7 +32,7 @@
                 <tr><td><code>Performance</code></td><td>8</td><td>Web vitals (LCP, INP, CLS, FCP, TTFB), document-load span, resource timing, long tasks</td></tr>
                 <tr><td><code>Dependencies</code></td><td>16</td><td>Browser fetch/XHR client spans</td></tr>
                 <tr><td><code>Sessions</code></td><td>32</td><td>A session id that survives reloads (in <code>sessionStorage</code>). Without it, the session id lives in memory only</td></tr>
-                <tr><td><code>UserTracking</code></td><td>64</td><td><code>enduser.pseudo.id</code> (random id persisted in <code>localStorage</code>) and <code>user.id</code> (authenticated id from <code>SetUser</code>)</td></tr>
+                <tr><td><code>UserTracking</code></td><td>64</td><td><code>enduser.pseudo.id</code> (random id persisted in <code>localStorage</code>) and <code>user.id</code> (authenticated id from <code>SetUserAsync</code> / <code>setUser</code>)</td></tr>
                 <tr><td><code>Logs</code></td><td>128</td><td>.NET logs below Error; browser console capture below error</td></tr>
                 <tr><td><code>Traces</code></td><td>256</td><td>.NET <code>Activity</code> spans</td></tr>
                 <tr><td><code>Metrics</code></td><td>512</td><td>.NET <code>Meter</code> metrics</td></tr>
@@ -61,7 +61,8 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Browser records</h3>
     <p>
         Events are log records with an <code>eventName</code>, the way the OpenTelemetry Events API models them.
-        Spans use the OTLP span kinds (1 internal, 2 server, 3 client) and status codes (0 unset, 1 ok, 2 error),
+        Spans use the OTLP span kinds (1 internal, 2 server, 3 client, 4 producer, 5 consumer) and status codes
+        (0 unset, 1 ok, 2 error),
         and log severities use the OTLP <code>SeverityNumber</code>. Times are milliseconds since the Unix epoch,
         from <code>performance.timeOrigin + performance.now()</code>.
     </p>
@@ -73,7 +74,7 @@
             <tbody>
                 <tr>
                     <td>Page view</td>
-                    <td>Log record, <code>eventName = "browser.page_view"</code>. Attributes: <code>url.full</code>, <code>url.path</code>, <code>page.title</code>, <code>page.referrer</code> (redacted), <code>browser.navigation.type</code> (<code>initial</code>/<code>push</code>/<code>replace</code>/<code>pop</code>/<code>hash</code>/<code>manual</code>)</td>
+                    <td>Log record, <code>eventName = "browser.page_view"</code>. Attributes: <code>url.full</code>, <code>url.path</code>, <code>page.title</code>, <code>page.referrer</code> (redacted), <code>browser.navigation.type</code> (<code>initial</code>/<code>push</code>/<code>replace</code>/<code>pop</code>/<code>hash</code>/<code>manual</code>/<code>restore</code> - <code>restore</code> is a return from the back/forward cache, which fires no history event)</td>
                     <td><code>bit.belemetry.page_views</code></td>
                     <td>PageViews</td>
                 </tr>
@@ -90,8 +91,14 @@
                     <td>Interactions</td>
                 </tr>
                 <tr>
+                    <td>Rage click</td>
+                    <td>Log record, <code>eventName = "browser.rage_click"</code>, only with <code>TrackRageClicks</code> (on by default): once per burst of 3 clicks on one element within 1 s. The click's target attributes, <code>event.type = "rage_click"</code>, <code>interaction.click_count = 3</code></td>
+                    <td><code>bit.belemetry.interactions</code></td>
+                    <td>Interactions</td>
+                </tr>
+                <tr>
                     <td>Web vital</td>
-                    <td>Log record, <code>eventName = "browser.web_vital"</code>. Attributes: <code>web_vital.name</code> (<code>LCP</code>/<code>INP</code>/<code>CLS</code>/<code>FCP</code>/<code>TTFB</code>), <code>web_vital.value</code>, <code>web_vital.delta</code>, <code>web_vital.rating</code> (<code>good</code>/<code>needs-improvement</code>/<code>poor</code>), <code>web_vital.id</code>, <code>web_vital.navigation_type</code></td>
+                    <td>Log record, <code>eventName = "browser.web_vital"</code>. Attributes: <code>web_vital.name</code> (<code>LCP</code>/<code>INP</code>/<code>CLS</code>/<code>FCP</code>/<code>TTFB</code>), <code>web_vital.value</code>, <code>web_vital.delta</code>, <code>web_vital.rating</code> (<code>good</code>/<code>needs-improvement</code>/<code>poor</code>), <code>web_vital.id</code>, <code>web_vital.navigation_type</code>. A back/forward-cache restore starts a new generation under new ids, as Google's web-vitals library does: FCP and LCP from the restore to the next painted frame, CLS and INP from zero, navigation type <code>back-forward-cache</code></td>
                     <td><code>bit.belemetry.web_vitals</code></td>
                     <td>Performance</td>
                 </tr>
@@ -115,7 +122,7 @@
                 </tr>
                 <tr>
                     <td>fetch/XHR</td>
-                    <td>Client span <code>{METHOD}</code>. Attributes: <code>http.request.method</code>, <code>url.full</code>, <code>server.address</code>, <code>server.port</code>, <code>http.response.status_code</code>, <code>error.type</code>. Adds <code>traceparent</code> only for targets matched by <code>propagateTraceContextTo</code></td>
+                    <td>Client span <code>{METHOD}</code>. Attributes: <code>http.request.method</code>, <code>url.full</code>, <code>server.address</code>, <code>server.port</code>, <code>http.response.status_code</code>, <code>error.type</code>. A method outside the conventions' list is <code>_OTHER</code> (span name <code>HTTP</code>) with <code>http.request.method_original</code>. A request the app aborted keeps <code>error.type = AbortError</code> but no error status; <code>TimeoutError</code>, <code>NetworkError</code> and 4xx/5xx answers are errors. Adds <code>traceparent</code> only for targets matched by <code>propagateTraceContextTo</code></td>
                     <td><code>bit.belemetry.http</code></td>
                     <td>Dependencies</td>
                 </tr>
@@ -181,6 +188,22 @@
                 <tr>
                     <td><code>TrackEvent</code> / <code>TrackPageView</code> / <code>TrackException</code></td>
                     <td>The same records as their browser counterparts: an event log record, a <code>browser.page_view</code> log record, an <code>exception</code> log record</td>
+                </tr>
+                <tr>
+                    <td>ASP.NET Core request (server pipeline)</td>
+                    <td>Server span <code>{method} {route}</code>: <code>http.request.method</code>, <code>url.scheme</code>, <code>http.route</code>, <code>http.response.status_code</code>, <code>network.protocol.version</code>, <code>error.type</code>, plus <code>url.path</code>, <code>server.address</code> and <code>server.port</code> on .NET 10; a 5xx is an error</td>
+                </tr>
+                <tr>
+                    <td>EF Core command (<code>Bit.Belemetry.EntityFrameworkCore</code>)</td>
+                    <td>Client span named after the database: <code>db.system.name</code>, <code>db.namespace</code>, <code>server.address</code>, <code>server.port</code>, <code>efcore.command.source</code>, <code>db.query.text</code> (opt-in), <code>error.type</code></td>
+                </tr>
+                <tr>
+                    <td>Hangfire execution (<code>Bit.Belemetry.Hangfire</code>)</td>
+                    <td>Consumer span <code>JOB {Type}.{Method}</code>, parented to the enqueue's trace: <code>job.id</code>, <code>job.type</code>, <code>job.method</code>, <code>job.queue</code>, <code>job.created_at</code>, <code>error.type</code></td>
+                </tr>
+                <tr>
+                    <td>Belemetry's own health (the <code>Bit.Belemetry</code> meter)</td>
+                    <td>Counters <code>belemetry.records.dropped</code> (<code>belemetry.reason</code>, <code>belemetry.signal</code>) and <code>belemetry.records.exported</code> (<code>belemetry.exporter</code>, <code>belemetry.outcome</code>) - see <a href="/dotnet">.NET instrumentation</a></td>
                 </tr>
             </tbody>
         </table>
@@ -260,6 +283,33 @@
     <ul class="bb-detail-list">
         <li><code>propagateTraceContextTo</code> entries are <code>"same-origin"</code>, <code>"*"</code>, or a regex source matched against the absolute URL.</li>
         <li><code>ignoreUrls</code> and <code>ignoreMessages</code> are regex sources.</li>
+        <li>
+            An exporter's <code>endpoint</code> may be relative (<code>BrowserEndpoint = "/otlp"</code>): the script
+            resolves it against the page URL, both to post and to recognize its own export requests.
+        </li>
+        <li>
+            <code>headers</code> of an OTLP exporter are its <code>BrowserHeaders</code> alone when a server renders the
+            configuration - its <code>Headers</code> are server configuration and never published in a page; in
+            WebAssembly and Hybrid they are <code>Headers</code> with <code>BrowserHeaders</code> on top.
+        </li>
+        <li>
+            <code>protocol</code> is never <code>grpc</code>: a page cannot speak it, so a gRPC exporter reaches the
+            browser only through its <code>BrowserEndpoint</code>, as <code>http/protobuf</code>, and is left out without one.
+        </li>
+        <li>
+            <code>signals</code> is the exporter's <code>BelemetrySignals</code> restricted to what the browser produces:
+            traces 1, logs 2 (web vitals are log records). Absent means both; an exporter with neither is left out.
+            Exporters with <code>IncludeInBrowser = false</code> or an <code>AccessTokenProvider</code> are left out too.
+        </li>
+        <li>
+            <code>ignoreUrls</code> lists the .NET exporters' URLs only when the .NET pipeline runs in the page
+            (WebAssembly): a server lists none, since its exports never touch the page and it must not publish internal
+            collector addresses.
+        </li>
+        <li>
+            <code>service.instanceId</code> is null from <code>&lt;BelemetryScript /&gt;</code>: a browser tab is its own
+            instance, so the script generates a random <code>service.instance.id</code> per page load.
+        </li>
     </ul>
 </div>
 
@@ -290,18 +340,21 @@
           ],
           "features": 4095,                                      // instrumentations switched on by configuration
           "consent": { "default": 0, "persist": true, "honorGlobalPrivacyControl": true, "pendingLimit": 500 },
-          "pageViews": { "trackHashChanges": false },
-          "interactions": { "events": ["click"], "captureText": false, "maxTextLength": 64 },
+          "pageViews": { "trackHashChanges": false, "trackVisitTime": false },
+          "interactions": { "events": ["click"], "captureText": false, "maxTextLength": 64, "rageClicks": true },
           "performance": { "webVitals": true, "documentLoad": true, "resources": false, "longTasks": false },
           "dependencies": { "fetch": true, "xhr": true, "propagateTraceContextTo": ["same-origin"], "ignoreUrls": ["/_framework/", "/_blazor", "/_content/"] },
-          "errors": { "ignoreMessages": ["ResizeObserver loop"] },
+          "errors": { "ignoreMessages": ["ResizeObserver loop", "^Script error\\.?$"], "duplicateWindowMs": 5000, "maxPerMinute": 100 },
           "logs": { "captureConsole": false, "consoleLevels": ["error", "warn"] },
-          "privacy": { "redactQueryParameters": ["token","code","password","pwd","secret","key","apikey","api_key","auth","authorization","session","sid","sig","signature","email","access_token","id_token","refresh_token"],
-                       "stripQueryString": false, "stripFragment": true, "scrubPatterns": true, "collectUserAgent": true, "blockedAttributes": [] },
+          "privacy": { "redactQueryParameters": ["token","code","password","pwd","secret","key","apikey","api_key","auth","authorization","session","sid","sig","signature","email","access_token","id_token","refresh_token",
+                                                 "x-amz-signature","x-amz-credential","x-amz-security-token","x-goog-signature","x-goog-credential"],
+                       "stripQueryString": false, "stripFragment": true, "scrubPatterns": true, "collectUserAgent": true, "blockedAttributes": [],
+                       "redactedAttributes": ["password","passwd","pwd","secret","client_secret","token","access_token","refresh_token","id_token","apikey","api_key","x-api-key","authorization","proxy-authorization","cookie","set-cookie"] },
           "session": { "inactivityTimeoutMinutes": 30, "maxDurationMinutes": 1440 },
           "sampling": { "sessionRatio": 1.0 },
           "batch": { "maxQueueSize": 1024, "maxBatchSize": 100, "flushIntervalMs": 5000 },
           "persistence": { "enabled": true, "maxBytes": 1048576, "maxAgeHours": 48, "retryIntervalMs": 60000 },
+          "maxValueLength": 32768,                               // BelemetryOptions.MaxValueLength; 0 keeps strings whole
           "debug": false
         }
         """;

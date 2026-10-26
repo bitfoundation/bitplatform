@@ -192,7 +192,11 @@
                     {
                         _error = null;
                         _lastId = Math.Max(_lastId, feed.LastId);
-                        _records.InsertRange(0, feed.Records.OrderByDescending(r => r.Id));
+                        // Newest first by when it happened, not by when it arrived: the script and the .NET pipeline
+                        // flush on timers of their own, and what consent held arrives after newer records - the
+                        // event of a button pressed before the banner was answered would sink below them all.
+                        _records.AddRange(feed.Records);
+                        _records.Sort(NewestFirst);
                         if (_records.Count > 500) _records.RemoveRange(500, _records.Count - 500);
                     }
                 }
@@ -227,6 +231,9 @@
     }
 
     private void Clear() => _records.Clear();
+
+    private static int NewestFirst(TelemetryRecord a, TelemetryRecord b)
+        => b.Time != a.Time ? b.Time.CompareTo(a.Time) : b.Id.CompareTo(a.Id);
 
     private static string Short(string? id) => id is null ? "-" : id.Length > 12 ? id[..12] + "..." : id;
 

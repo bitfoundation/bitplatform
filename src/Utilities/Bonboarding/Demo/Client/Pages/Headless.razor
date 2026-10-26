@@ -1,4 +1,5 @@
 ﻿@page "/headless"
+@using System.Globalization
 @inject IBonboardingService BonboardingService
 
 <PageTitle>Headless UI · Bonboarding</PageTitle>
@@ -6,30 +7,17 @@
 <div class="bb-intro">
     <h1>Headless UI</h1>
     <p class="bb-subtitle">
-        When the default card is not what you want, replace it. The library still owns the popover element, so
-        measurement, collision-aware placement, focus management and dialog semantics keep working; you own
+        When the default card is not what you want, replace as much of it as you need. The library still owns the popover
+        element, so measurement, collision-aware placement, focus management and dialog semantics keep working; you own
         everything inside it.
     </p>
 </div>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A card the library did not draw</h3>
-
-    <div class="bb-demo">
-        <div class="bb-demo-bar">
-            <span class="bb-demo-label">Live</span>
-            <button type="button" class="btn btn-primary" @onclick="StartAsync">Run the custom-rendered tour</button>
-            <span class="bb-badge">Rendered by this page, not by the library</span>
-        </div>
-
-        <AppWindow />
-    </div>
-</section>
-
-<section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Three levels of customisation</h3>
+    <p>Reach for the smallest one that does the job.</p>
 
-    <div class="bb-scroll">
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Levels of customisation">
         <table class="bb-table">
             <thead>
                 <tr><th>Level</th><th>How</th><th>Use it when</th></tr>
@@ -37,17 +25,17 @@
             <tbody>
                 <tr>
                     <td class="bb-table-key">Restyle</td>
-                    <td><code>--bit-bonboarding-*</code> custom properties</td>
+                    <td><code>--bit-bonboarding-*</code> custom properties - see <a href="theming">theming</a></td>
                     <td>The layout is right, the colours are not.</td>
                 </tr>
                 <tr>
                     <td class="bb-table-key">Recompose</td>
-                    <td><code>BonboardingStepDefinition.Header</code>, <code>.Body</code>, <code>.Footer</code></td>
+                    <td>A step's <code>Header</code>, <code>Body</code> (its <code>ChildContent</code> in markup) and <code>Footer</code></td>
                     <td>One step needs a form, an image or a different set of buttons.</td>
                 </tr>
                 <tr>
                     <td class="bb-table-key">Replace</td>
-                    <td><code>BonboardingRoot.ChildContent</code>, or a tour or step <code>Template</code></td>
+                    <td><code>BonboardingRoot.ChildContent</code>, or a tour or step <code>Template</code>; <code>OverlayTemplate</code> and <code>WaitingTemplate</code></td>
                     <td>The card should look nothing like the default.</td>
                 </tr>
             </tbody>
@@ -56,42 +44,248 @@
 </section>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Replacing the card</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Recompose one step</h3>
     <p>
-        The tour above is drawn by a second <code>BonboardingRoot</code> on this page, handed the session it started and
-        given its own <code>ChildContent</code>. A single step can do the same with a template of its own, leaving the
-        rest of the tour on the default chrome. It is ordinary Razor.
+        In markup, a step's <code>ChildContent</code> is its body, with the default header and footer kept around it - the
+        common case. <code>Header</code> and <code>Footer</code> replace those regions one at a time. All three are ordinary
+        Razor, handed the step's render context. The first step below has a body of three buttons and no Next button:
+        picking a plan moves the tour on. The second has a header and a footer of its own.
     </p>
 
-    <pre class="bb-code">@Example</pre>
+    <div class="bb-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <button type="button" class="btn btn-primary" @onclick="StartRecomposedAsync">Run the recomposed tour</button>
+            @if (_plan is not null)
+            {
+                <span class="bb-badge">Plan picked: @_plan</span>
+            }
+        </div>
+
+        <AppWindow />
+    </div>
+
+    <div class="bb-note bb-note-warn">
+        Replacing the footer removes the close button along with everything else, so leave the user a way out - or keep
+        <code>CloseOnEscape</code> on, as it is by default.
+    </div>
+
+    <pre class="bb-code" tabindex="0">@RecomposeExample</pre>
 </section>
 
-@* A second, independently rendered host, driven by the session started below. Custom content
-   replaces the card entirely while the engine keeps positioning it. *@
-<BonboardingRoot Session="_session" Unstyled="true" PopoverClass="custom-shell">
-    <ChildContent>
-        <div class="custom-card">
-            <div class="custom-card-head">
-                <span class="custom-step">@context.Position / @context.Count</span>
-                <strong>@context.Title</strong>
-            </div>
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> A card the library did not draw</h3>
+    <p>
+        This tour is drawn by a second <code>BonboardingRoot</code> on this page, handed the session it started and given its
+        own <code>ChildContent</code> for the card, an <code>OverlayTemplate</code> for the dimming and a
+        <code>WaitingTemplate</code> for a step whose target is not there yet - the last step waits two seconds for an
+        element that never comes, then falls back to a centred card. <code>Unstyled="true"</code> drops the built-in card
+        classes so the page's CSS starts from nothing.
+    </p>
 
-            <p class="custom-body">@context.Description</p>
-
-            <div class="custom-actions">
-                <button type="button" class="btn" @onclick="context.CloseAsync">Close</button>
-                <span style="margin-inline-start:auto"></span>
-                @if (!context.IsFirst)
-                {
-                    <button type="button" class="btn" @onclick="context.PreviousAsync">@context.PreviousLabel</button>
-                }
-                <button type="button" class="btn btn-primary" data-bonboarding-autofocus @onclick="context.NextAsync">
-                    @context.NextLabel
-                </button>
-            </div>
+    <div class="bb-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <button type="button" class="btn btn-primary" @onclick="StartAsync">Run the custom-rendered tour</button>
+            <span class="bb-badge">Rendered by this page, not by the library</span>
         </div>
-    </ChildContent>
-</BonboardingRoot>
+    </div>
+
+    <ul class="bb-detail-list">
+        <li>
+            A host given an explicit <code>Session</code> <strong>claims</strong> it, and the layout's host stops drawing that
+            session; the claim is released when the host is disposed, so navigating away hands the session back. Render such
+            a host only once it has its session: a host without one is ambient, and draws whatever tour is active - beside
+            the layout's host.
+        </li>
+        <li>
+            <code>OverlayTemplate</code> replaces the visuals only. The pointer blockers that implement <code>Interaction</code>
+            are drawn separately and keep working, so a custom overlay does not have to reimplement click-through.
+        </li>
+        <li>
+            Mark the control that should take focus when a step appears with <code>data-bonboarding-autofocus</code>; otherwise
+            the first focusable control does, then the dialog itself. The dialog keeps its label, its focus trap and its
+            announcements whatever you put inside it - but its contents are yours: use real buttons and a sensible tab order.
+        </li>
+    </ul>
+
+    <pre class="bb-code" tabindex="0">@Example</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The render context</h3>
+    <p>
+        Every template - a step's header, body or footer, a step or tour <code>Template</code>, and the host's
+        <code>ChildContent</code>, <code>OverlayTemplate</code> and <code>WaitingTemplate</code> - receives a
+        <code>BonboardingStepRenderContext</code> as <code>context</code>. Templates are resolved most specific first: the
+        step's <code>Template</code>, then the tour's, then the host's <code>ChildContent</code>, then the default card.
+    </p>
+
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Render context members">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Member</th><th>What it is</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="bb-table-key"><code>Title</code>, <code>Description</code>, <code>ValidationMessage</code></td>
+                    <td>The step's text, already localised, and why <code>CanAdvance</code> last held the user, if it did.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key"><code>Position</code>, <code>Count</code>, <code>ProgressText</code></td>
+                    <td>1-based, counting only the steps that will be shown; <code>ProgressText</code> is "2 of 5", from the labels.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key"><code>IsFirst</code>, <code>IsLast</code>, <code>IsWaiting</code></td>
+                    <td>Where the step stands, and whether its target is still being waited for.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key"><code>NextLabel</code>, <code>PreviousLabel</code>, <code>SkipLabel</code>, <code>Labels</code></td>
+                    <td><code>NextLabel</code> already reads the done label on the last step.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key"><code>NextAsync</code>, <code>PreviousAsync</code>, <code>SkipAsync</code>, <code>CloseAsync</code>, <code>CompleteAsync</code>, <code>GoToAsync(id)</code></td>
+                    <td>Commands, as the default buttons use them.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key"><code>InvokeAsync(action)</code>, <code>IsRunning(action)</code></td>
+                    <td>Runs one of the step's <code>Actions</code>, and says whether its handler is still running (to show it busy).</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key"><code>TargetRect</code>, <code>Placement</code>, <code>Options</code></td>
+                    <td>The measured target, where the engine put the popover (side, alignment, arrow offset), and the step's resolved options.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key"><code>Session</code>, <code>Step</code>, <code>Index</code></td>
+                    <td>The running session, the step's definition (its <code>Data</code> and <code>Metadata</code> included), and its index in the tour.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> No host at all</h3>
+    <p>
+        Leave <code>BonboardingRoot</code> out and the library renders nothing: drive <code>IBonboardingService</code> and the
+        session yourself, draw whatever you like from <code>session.CurrentStep</code> and <code>session.TargetRect</code>, and
+        re-render on <code>session.Changed</code>. The trade-off is real: without the host nothing measures your popover, so
+        <code>session.Placement</code> stays empty and positioning is yours - though the placement engine is public and pure.
+        For almost every application, <code>Unstyled="true"</code> with your own <code>ChildContent</code> is the better trade.
+    </p>
+
+    <pre class="bb-code" tabindex="0">@NoHostExample</pre>
+
+    <p>
+        To see what the engine decides for a given target, popover and viewport without writing any code, ask the
+        <a href="/api/mcp/InspectBonboardingPlacement?targetX=1200&amp;targetY=20&amp;targetWidth=60&amp;targetHeight=30&amp;placement=Right" target="_blank" rel="noopener">MCP server's placement inspector</a>.
+    </p>
+</section>
+
+@* A tour declared in markup, with a step body and a header and footer of its own. It renders nothing
+   here; the BonboardingRoot beside the router draws it, with the default card around these regions. *@
+<BonboardingTour @ref="_recomposed" Id="recomposed" Title="Recomposed tour" Persist="false">
+
+    <BonboardingStep Id="plan"
+                     Anchor="new-project"
+                     Title="Choose a plan"
+                     Placement="BonboardingPlacement.Bottom"
+                     ShowNext="false">
+        <p class="recompose-text">This body is a piece of Razor with three buttons. Picking one moves the tour on.</p>
+        <div class="recompose-plans" role="group" aria-label="Plan">
+            @foreach (var plan in Plans)
+            {
+                <button type="button" class="bit-bonboarding-button bit-bonboarding-button-secondary" @onclick="() => PickPlanAsync(context, plan)">@plan</button>
+            }
+        </div>
+    </BonboardingStep>
+
+    <BonboardingStep Id="summary"
+                     Anchor="usage"
+                     Title="Your plan"
+                     Placement="BonboardingPlacement.Bottom">
+        <Header>
+            <div class="bit-bonboarding-header recompose-header">
+                <span class="bb-badge bb-badge-success">@(_plan ?? "No plan")</span>
+                <h2 class="bit-bonboarding-title">A header of its own</h2>
+            </div>
+        </Header>
+        <ChildContent>
+            <p class="recompose-text">The header and the footer of this step are the page's; the card around them is still the library's.</p>
+        </ChildContent>
+        <Footer>
+            <div class="bit-bonboarding-footer">
+                <span class="bit-bonboarding-progress-text">@context.ProgressText</span>
+                <div class="bit-bonboarding-footer-actions">
+                    <button type="button" class="bit-bonboarding-button bit-bonboarding-button-ghost" @onclick="context.PreviousAsync">@context.PreviousLabel</button>
+                    <button type="button" class="bit-bonboarding-button bit-bonboarding-button-primary" data-bonboarding-autofocus @onclick="context.NextAsync">@context.NextLabel</button>
+                </div>
+            </div>
+        </Footer>
+    </BonboardingStep>
+
+</BonboardingTour>
+
+@* A second, independently rendered host, driven by the session started below. Custom content
+   replaces the card, the overlay and the waiting state entirely while the engine keeps positioning it.
+   It is rendered only once it has a session to claim: a host without a Session is an ambient one,
+   which would draw every other tour on this page a second time, beside the layout's host. *@
+@if (_session is not null)
+{
+    <BonboardingRoot Session="_session" Unstyled="true" PopoverClass="custom-shell">
+        <ChildContent>
+            <div class="custom-card">
+                <div class="custom-card-head">
+                    <span class="custom-step">@context.Position / @context.Count</span>
+                    <strong>@context.Title</strong>
+                </div>
+
+                <p class="custom-body">@context.Description</p>
+
+                <div class="custom-actions">
+                    <button type="button" class="btn" @onclick="context.CloseAsync">Close</button>
+                    <span style="margin-inline-start:auto"></span>
+                    @if (!context.IsFirst)
+                    {
+                        <button type="button" class="btn" @onclick="context.PreviousAsync">@context.PreviousLabel</button>
+                    }
+                    <button type="button" class="btn btn-primary" data-bonboarding-autofocus @onclick="context.NextAsync">
+                        @context.NextLabel
+                    </button>
+                </div>
+            </div>
+        </ChildContent>
+
+        <OverlayTemplate>
+            @if (context.TargetRect is { } rect)
+            {
+                @* An SVG mask with a rounded hole. Numbers in markup are formatted invariantly, as the library's own are:
+                   a comma decimal separator would silently break the geometry. *@
+                <svg class="custom-overlay" aria-hidden="true">
+                    <defs>
+                        <mask id="custom-overlay-hole">
+                            <rect width="100%" height="100%" fill="white" />
+                            <rect x="@Px(rect.X - 8)" y="@Px(rect.Y - 8)" width="@Px(rect.Width + 16)" height="@Px(rect.Height + 16)" rx="16" fill="black" />
+                        </mask>
+                    </defs>
+                    <rect width="100%" height="100%" fill="rgba(30, 27, 75, 0.6)" mask="url(#custom-overlay-hole)" />
+                </svg>
+            }
+            else
+            {
+                <div class="custom-overlay custom-overlay-flat" aria-hidden="true"></div>
+            }
+        </OverlayTemplate>
+
+        <WaitingTemplate>
+            <div class="custom-card custom-waiting">
+                <span class="custom-step">Waiting</span>
+                <p class="custom-body">Looking for the next part of the page…</p>
+                <button type="button" class="btn" @onclick="context.CloseAsync">Close</button>
+            </div>
+        </WaitingTemplate>
+    </BonboardingRoot>
+}
 
 <style>
     .custom-shell {
@@ -124,10 +318,37 @@
     .custom-actions { display: flex; gap: 0.5rem; align-items: center; }
     .custom-card .btn { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.18); color: #e2e8f0; }
     .custom-card .btn-primary { background: #a5b4fc; border-color: #a5b4fc; color: #1e1b4b; }
+
+    .custom-overlay { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    .custom-overlay-flat { background: rgba(30, 27, 75, 0.6); }
+    .custom-waiting .custom-body { margin-top: 0.35rem; }
+
+    .recompose-text { margin: 0 0 0.75rem; }
+    .recompose-plans { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .recompose-header { align-items: center; }
 </style>
 
 @code {
+    private static readonly string[] Plans = ["Free", "Team", "Enterprise"];
+
     private IBonboardingTourSession? _session;
+    private BonboardingTour? _recomposed;
+    private string? _plan;
+
+    private static string Px(double value) => value.ToString("0.##", CultureInfo.InvariantCulture);
+
+    private Task StartRecomposedAsync()
+    {
+        _plan = null;
+        return _recomposed is null ? Task.CompletedTask : _recomposed.StartAsync();
+    }
+
+    private async Task PickPlanAsync(BonboardingStepRenderContext context, string plan)
+    {
+        _plan = plan;
+        StateHasChanged();
+        await context.NextAsync();
+    }
 
     private async Task StartAsync()
     {
@@ -143,7 +364,7 @@
                     Id = "create",
                     Target = BonboardingStepTarget.Anchor("new-project"),
                     Title = "Completely custom",
-                    Description = "This card is rendered by the page, not by the library.",
+                    Description = "This card - and the dimming around it - is rendered by the page, not by the library.",
                 },
                 new BonboardingStepDefinition
                 {
@@ -161,25 +382,110 @@
                     Description = "The element is a labelled dialog with a focus trap, whatever you put inside it.",
                     Placement = BonboardingPlacement.BottomEnd,
                 },
+                new BonboardingStepDefinition
+                {
+                    Id = "later",
+                    Target = BonboardingStepTarget.Css("#headless-never-rendered"),
+                    Title = "Waited for, then centred",
+                    Description = "The waiting card you just saw was this page's too. The target never came, so after two seconds the step fell back to a centred card.",
+                    WaitTimeout = TimeSpan.FromSeconds(2),
+                    WaitTimeoutBehavior = BonboardingMissingTargetBehavior.Center,
+                },
             },
         });
 
         StateHasChanged();
     }
 
-    private const string Example = """
-        <BonboardingRoot Unstyled="true" PopoverClass="my-card">
-            <ChildContent>
-                <h2>@context.Title</h2>
-                <p>@context.Description</p>
-                <button @onclick="context.PreviousAsync">@context.PreviousLabel</button>
-                <button @onclick="context.NextAsync">@context.NextLabel</button>
-            </ChildContent>
-        </BonboardingRoot>
+    private const string RecomposeExample = """
+        <BonboardingTour @ref="_tour" Id="recomposed">
 
-        @* Or just one step, leaving the rest of the tour on the default chrome: *@
-        <BonboardingStep Anchor="plan" Title="Choose a plan">
-            <MyPlanPicker OnPicked="context.NextAsync" />
-        </BonboardingStep>
+            @* ChildContent is the step's body; the default header and footer stay. *@
+            <BonboardingStep Id="plan" Anchor="new-project" Title="Choose a plan" ShowNext="false">
+                @foreach (var plan in Plans)
+                {
+                    <button @onclick="() => PickPlanAsync(context, plan)">@plan</button>
+                }
+            </BonboardingStep>
+
+            @* Header and Footer replace those regions one at a time. *@
+            <BonboardingStep Id="summary" Anchor="usage" Title="Your plan">
+                <Header>
+                    <div class="bit-bonboarding-header"><h2 class="bit-bonboarding-title">A header of its own</h2></div>
+                </Header>
+                <ChildContent>The card around these regions is still the library's.</ChildContent>
+                <Footer>
+                    <span>@context.ProgressText</span>
+                    <button @onclick="context.PreviousAsync">@context.PreviousLabel</button>
+                    <button data-bonboarding-autofocus @onclick="context.NextAsync">@context.NextLabel</button>
+                </Footer>
+            </BonboardingStep>
+
+        </BonboardingTour>
+
+        private async Task PickPlanAsync(BonboardingStepRenderContext context, string plan)
+        {
+            _plan = plan;
+            await context.NextAsync();
+        }
+
+        // In C#, the same regions are RenderFragment<BonboardingStepRenderContext> properties, and Template
+        // replaces the whole card for one step:
+        new BonboardingStepDefinition { Header = context => builder => { ... }, Body = ..., Footer = ..., Template = ... }
+        """;
+
+    private const string Example = """
+        @* This page: a second host that claims the session it started. Rendered only once there is one -
+           a host without a Session is an ambient host, and would draw the page's other tours a second time. *@
+        @if (_session is not null)
+        {
+            <BonboardingRoot Session="_session" Unstyled="true" PopoverClass="my-card">
+                <ChildContent>
+                    <h2>@context.Title</h2>
+                    <p>@context.Description</p>
+                    <button @onclick="context.CloseAsync">Close</button>
+                    <button @onclick="context.PreviousAsync">@context.PreviousLabel</button>
+                    <button data-bonboarding-autofocus @onclick="context.NextAsync">@context.NextLabel</button>
+                </ChildContent>
+
+                <OverlayTemplate>
+                    @if (context.TargetRect is { } rect)
+                    {
+                        <svg class="my-overlay">
+                            <mask id="hole">
+                                <rect width="100%" height="100%" fill="white" />
+                                <rect x="@Px(rect.X)" y="@Px(rect.Y)" width="@Px(rect.Width)" height="@Px(rect.Height)" rx="12" fill="black" />
+                            </mask>
+                            <rect width="100%" height="100%" fill="rgba(0,0,0,0.6)" mask="url(#hole)" />
+                        </svg>
+                    }
+                </OverlayTemplate>
+
+                <WaitingTemplate>Looking for the next part of the page…</WaitingTemplate>
+            </BonboardingRoot>
+        }
+
+        private async Task StartAsync()
+        {
+            _session = await BonboardingService.StartAsync(tour);
+            StateHasChanged();
+        }
+        """;
+
+    private const string NoHostExample = """
+        var result = BonboardingPlacementEngine.Place(new BonboardingPlacementRequest
+        {
+            Target = session.TargetRect!.Value.Inflate(8),
+            Popover = new BonboardingSize(320, 180),
+            Viewport = new BonboardingRect(0, 0, viewportWidth, viewportHeight),
+            Preferred = BonboardingPlacement.Bottom,
+            Offset = 12,
+            ViewportPadding = 16,
+            ArrowSize = 10,
+            CornerRadius = 12,
+            HasTarget = true,
+        });
+
+        // result.Popover is the rectangle to draw at; result.Side, result.Align and result.ArrowOffset place the arrow.
         """;
 }

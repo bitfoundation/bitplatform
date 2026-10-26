@@ -3,26 +3,59 @@
 <PageTitle>Default Nodes · Blow</PageTitle>
 
 <ExampleScaffold Title="Default Nodes"
-                 Summary="The three built-in node types: an input node (source handle only), a default node (both) and an output node (target handle only).">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
-        <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="24" Color="var(--bit-blow-border-subtle)" />
-        <BlowControls />
-        <BlowMiniMap />
-    </BlowCanvas>
+                 Summary="The four built-in node types, picked by BlowNode.Type with no template at all: input, default, output and group. Every node also carries a bit-blow-node-{Type} class, so any type - even one the canvas does not know - can be restyled with CSS alone.">
+    <Toolbar>
+        <label><input type="checkbox" checked="@_restyled" @onchange="e => _restyled = (bool)e.Value!" /> restyle each type with CSS</label>
+    </Toolbar>
+    <ChildContent>
+        @* The restyling rules are scoped to the dn-restyled class, which the checkbox puts on the canvas's root element. *@
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" Class="@(_restyled ? "dn-restyled" : null)">
+            <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="24" Color="var(--bit-blow-border-subtle)" />
+            <BlowControls />
+            <BlowMiniMap />
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li>Compare the handles: <strong>Input Node</strong> has a dot only at the bottom, <strong>Output Node</strong> only at the top, and the two nodes inside the group have both.</li>
+        <li><strong>Drag the group</strong> by its background or its label: the two nodes inside it move with it.</li>
+        <li><strong>Drag from a handle</strong> to connect two nodes: a connection always joins a source handle (bottom) to a target handle (top), so the group, which has neither, takes no part.</li>
+        <li>Tick <strong>restyle each type with CSS</strong>: the input and output nodes take a tint of their border colour, default nodes turn into pills, the node of an unknown type turns amber and the group gets a solid border - all from a few CSS rules on this page, with no change to the nodes.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>Type</code> selects the built-in renderer: <code>"input"</code>, <code>"default"</code> (the default value), <code>"output"</code> or <code>"group"</code>. Without a <code>NodeTemplate</code>, any other value - <code>"note"</code> here - is drawn like <code>"default"</code>.</li>
+        <li>The built-in nodes show <code>Label</code> - input, default and output nodes fall back to the id when there is none - and place their handles on <code>TargetPosition</code> (<code>Top</code> by default) and <code>SourcePosition</code> (<code>Bottom</code>).</li>
+        <li>A <code>"group"</code> node is translucent and dashed, with its label in the corner and no handles - the usual parent of a sub-flow. Its children name it in <code>ParentId</code>, and their <code>Position</code> is relative to its top-left corner. It needs an explicit <code>Width</code> and <code>Height</code>, as it has no content to size it.</li>
+        <li>Every node element carries <code>bit-blow-node</code> and <code>bit-blow-node-{Type}</code>, so <code>.bit-blow-node-output</code> or <code>.bit-blow-node-note</code> restyles one type. The rules here use the <code>--bit-blow-*</code> custom properties, so they follow the light and dark modes.</li>
+        <li>The canvas's <code>Class</code> parameter adds a class to its root element; the checkbox switches <code>dn-restyled</code> on and off, and every rule is scoped under it.</li>
+    </HowItWorks>
 </ExampleScaffold>
+
+<style>
+    /* Each node is restyled by its type's class alone. Specificity is one class above the stylesheet's own rules. */
+    .dn-restyled .bit-blow-node-input { border-width: 2px; background: color-mix(in srgb, var(--bit-blow-node-input-border) 16%, var(--bit-blow-node-bg)); }
+    .dn-restyled .bit-blow-node-output { border-width: 2px; background: color-mix(in srgb, var(--bit-blow-node-output-border) 16%, var(--bit-blow-node-bg)); }
+    .dn-restyled .bit-blow-node-default { border-radius: 999px; }
+    .dn-restyled .bit-blow-node-note { border-style: dashed; background: color-mix(in srgb, #f59e0b 22%, var(--bit-blow-node-bg)); }
+    .dn-restyled .bit-blow-node-group { border-style: solid; background: color-mix(in srgb, var(--bit-blow-group-border) 14%, transparent); }
+</style>
 
 @code {
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
+    private bool _restyled;
 
     protected override void OnInitialized()
     {
         _nodes =
         [
-            new BlowNode { Id = "1", Type = "input",   Label = "Input Node",   Position = new(250, 25) },
-            new BlowNode { Id = "2", Type = "default", Label = "Default Node", Position = new(150, 125) },
-            new BlowNode { Id = "3", Type = "default", Label = "Default Node", Position = new(350, 125) },
-            new BlowNode { Id = "4", Type = "output",  Label = "Output Node",  Position = new(250, 250) },
+            new BlowNode { Id = "1", Type = "input", Label = "Input Node", Position = new(250, 0) },
+
+            // The group comes before its children: they are positioned inside it, relative to its top-left corner.
+            new BlowNode { Id = "g", Type = "group", Label = "Group Node", Position = new(90, 90), Width = 420, Height = 110 },
+            new BlowNode { Id = "2", Type = "default", Label = "Default Node", Position = new(20, 45), ParentId = "g" },
+            new BlowNode { Id = "3", Type = "note", Label = "Any Other Type", Position = new(240, 45), ParentId = "g" },
+
+            new BlowNode { Id = "4", Type = "output", Label = "Output Node", Position = new(250, 260) },
         ];
 
         _edges =

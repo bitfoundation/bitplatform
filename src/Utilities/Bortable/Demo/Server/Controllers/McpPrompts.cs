@@ -65,7 +65,8 @@ public static class McpPrompts
             1. Call `SearchBortable` with the request above. It searches the guide, every public member, the setup guides,
                the theme and the demo's pages at once, and every hit tells you the exact follow-up call to make.
             2. Read the best hit in full with the call it hands you, before writing any code. When a demo page does what you
-               need, fetch it with `GetBortableSourceFile` and follow its shape.
+               need, fetch the sample it renders - a file of `Demo/Client/Samples` - with `GetBortableSourceFile` and
+               follow its shape.
             3. Call `GetBortableApi` for every Bortable type you are about to use, and match the member names, types and
                defaults exactly. There is one package and one namespace, `Bit.Bortable`: the component is `Bortable<TItem>`,
                and SortableJS's options (`group.pull`, `group.put`, `onEnd`, `toArray()`) are not this library's API - they

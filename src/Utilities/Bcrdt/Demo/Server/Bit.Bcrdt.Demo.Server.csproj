@@ -10,7 +10,7 @@
 
     <ItemGroup>
         <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.13" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.14" />
         <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
         <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.3.0" />
     </ItemGroup>
@@ -43,12 +43,19 @@
 
         <!-- Every demo page - each one is a set of real replicas merging for real - plus the replicas,
              transports and components they share and the client half of the hosting. The MCP page
-             describes this server rather than the library, and the not-found page teaches nothing
-             about collaboration. Nor does the site chrome: Layout\ and the DocsCatalog.cs that drives it
-             are the header, docs shell, search and footer every Utilities demo shares. -->
+             describes this server rather than the library, and the not-found page teaches nothing about
+             collaboration. Nor does the site chrome: Layout\ and the DocsCatalog.cs that drives it are the
+             header, docs shell, search and footer every Utilities demo shares, and CodeSnippet.razor with
+             its SyntaxHighlighter.cs only draws a sample's code - the code itself is in Demo\Samples. -->
         <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
-                          Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Layout\**;..\Client\DocsCatalog.cs;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor">
+                          Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Layout\**;..\Client\DocsCatalog.cs;..\Client\Components\CodeSnippet.razor;..\Client\Components\SyntaxHighlighter.cs;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor">
             <LogicalName>BcrdtSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+
+        <!-- The samples the pages show under their replicas: the same features as an application writes
+             them, one participant at a time. Their _Imports.razor only stands in for an application's own. -->
+        <EmbeddedResource Include="..\Samples\*.razor;..\Samples\*.cs" Exclude="..\Samples\_Imports.razor">
+            <LogicalName>BcrdtSource/Demo/Samples/%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
 
         <EmbeddedResource Include="Program.cs" LogicalName="BcrdtSource/Demo/Server/Program.cs" />
@@ -61,7 +68,7 @@
     </ItemGroup>
 
     <!-- BcrdtServerInstructions.BcrdtVersion is a hand-written copy of ReleaseVersion: the version the packages
-         ship as, which no assembly carries (a Debug build stamps 1.0.0, a Release build 10.7.0.04 for 10.7.0-pre-04).
+         ship as, which no assembly carries (a Debug build stamps 1.0.0, a Release build 1.2.0.03 for 1.2.0-pre-03).
          This project ships no package and does not import Bit.Build.props, so ReleaseVersion is read out of it
          here, and the build fails as Bit.Build.props's VerifyReleaseVersionLiterals does when the copy goes stale. -->
     <ItemGroup>

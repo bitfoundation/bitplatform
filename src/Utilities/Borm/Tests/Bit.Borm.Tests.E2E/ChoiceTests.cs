@@ -135,7 +135,8 @@ public sealed class ChoiceTests : BormTest
         await city.SelectOptionAsync("Bristol");
         await Expect(city).ToHaveValueAsync("Bristol");
 
-        // While the lookup runs the list says so and cannot be used; then it holds the new country's cities, and
+        // While the lookup runs the list says so - and stays in the tab order, so a Tab pressed straight after choosing
+        // the country lands on it; then it holds the new country's cities, and
         // the old selection - which does not exist there - is gone. The list is watched from before the change, so
         // the short loading state cannot slip between two polls.
         await city.EvaluateAsync(
@@ -143,7 +144,7 @@ public sealed class ChoiceTests : BormTest
             el => {
               window.__sawLoading = false;
               new MutationObserver(() => {
-                if (el.disabled && el.getAttribute('aria-busy') === 'true' && el.options[0]?.text === 'Loading…') window.__sawLoading = true;
+                if (!el.disabled && el.getAttribute('aria-busy') === 'true' && el.options[0]?.text === 'Loading…') window.__sawLoading = true;
               }).observe(el, { attributes: true, childList: true, subtree: true, characterData: true });
             }
             """);

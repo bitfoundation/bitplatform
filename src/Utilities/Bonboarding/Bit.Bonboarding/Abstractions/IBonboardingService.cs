@@ -77,6 +77,36 @@ public interface IBonboardingService
     /// <summary>Forgets a tour, so it can run again.</summary>
     Task ResetAsync(string tourId, CancellationToken cancellationToken = default);
 
-    /// <summary>Forgets every tour.</summary>
+    /// <summary>Forgets every tour, and every checklist's ticked items and dismissal.</summary>
     Task ResetAllAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Tells the running tours that something happened in the application, e.g. <c>"project-created"</c>. A step on
+    /// screen whose <see cref="BonboardingStepDefinition.AdvanceOnSignal"/> is that signal moves on (if its
+    /// <see cref="BonboardingStepDefinition.CanAdvance"/> agrees), and an item of a checklist on screen whose
+    /// <see cref="BonboardingChecklistItem.CompleteOnSignal"/> is that signal is ticked off for good. Signals are
+    /// compared ordinally and are not remembered: one raised while nothing waits for it does nothing. Returns true
+    /// when a tour moved on or an item was ticked off.
+    /// </summary>
+    Task<bool> SignalAsync(string signal, CancellationToken cancellationToken = default);
+
+    // ---- Checklists -------------------------------------------------------------
+
+    /// <summary>
+    /// Ticks a checklist item off (or, with <paramref name="done"/> false, back on), for good: the application's way of
+    /// saying the task is done. Stored in the <see cref="IBonboardingStore"/> next to the tours' records.
+    /// </summary>
+    Task SetChecklistItemAsync(string checklistId, string itemId, bool done = true, CancellationToken cancellationToken = default);
+
+    /// <summary>The items of a checklist ticked off with <see cref="SetChecklistItemAsync"/> (or a signal).</summary>
+    Task<IReadOnlyCollection<string>> GetCompletedChecklistItemsAsync(string checklistId, CancellationToken cancellationToken = default);
+
+    /// <summary>Hides a checklist for good, as its dismiss button does.</summary>
+    Task DismissChecklistAsync(string checklistId, CancellationToken cancellationToken = default);
+
+    /// <summary>True once the user dismissed the checklist.</summary>
+    Task<bool> IsChecklistDismissedAsync(string checklistId, CancellationToken cancellationToken = default);
+
+    /// <summary>Forgets a checklist's ticked items and its dismissal.</summary>
+    Task ResetChecklistAsync(string checklistId, CancellationToken cancellationToken = default);
 }

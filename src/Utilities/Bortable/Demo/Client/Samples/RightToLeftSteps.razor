@@ -1,0 +1,12 @@
+﻿@* A right-to-left list: dir="rtl", an attribute that is not a parameter, is rendered on the list as it is. *@
+
+<Bortable @bind-Items="_steps" TItem="string" Id="layout-rtl" AriaLabel="Steps" dir="rtl"
+          Class="demo-strip" ItemClass="demo-chip tinted" GhostClass="demo-ghost">
+    <ItemTemplate Context="step">@step</ItemTemplate>
+</Bortable>
+
+<p class="demo-order"><strong>Steps:</strong> <span id="layout-rtl-order">@string.Join(", ", _steps)</span></p>
+
+@code {
+    private IList<string> _steps = new List<string> { "Step 1", "Step 2", "Step 3", "Step 4", "Step 5" };
+}

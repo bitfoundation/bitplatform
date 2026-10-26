@@ -10,7 +10,10 @@ public sealed class BdndDragLayerState<TItem>
     /// <summary>The monitor of the provider the layer is in.</summary>
     public required IBdndMonitor Monitor { get; init; }
 
-    /// <summary>True while any drag of the provider is in progress.</summary>
+    /// <summary>
+    /// True while a drag of the provider is in progress - one of the types the layer draws, when it has
+    /// <c>Accept</c> or <c>AcceptTypes</c>.
+    /// </summary>
     public bool IsDragging { get; init; }
 
     /// <summary>The type of the item being dragged, or null.</summary>
@@ -33,4 +36,11 @@ public sealed class BdndDragLayerState<TItem>
 
     /// <summary>The projected top-left client offset of the source element: where to draw the preview.</summary>
     public BdndXYCoord? SourceClientOffset { get; init; }
+
+    /// <summary>
+    /// <see cref="SourceClientOffset"/> kept to <paramref name="axis"/>: a preview drawn there moves only up and down
+    /// (<see cref="BdndAxis.Vertical"/>) or sideways, from where the source was. Null while it is.
+    /// </summary>
+    public BdndXYCoord? SourceClientOffsetOn(BdndAxis axis) =>
+        SourceClientOffset is { } offset && InitialSourceClientOffset is { } origin ? offset.KeepTo(axis, origin) : SourceClientOffset;
 }

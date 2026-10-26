@@ -21,6 +21,36 @@
         asset, at <code>_content/Bit.Belemetry/bit-belemetry.js</code>.
     </p>
     <CodeSnippet Code="@InstallCode" Language="Shell" Expanded="true" />
+    <p>
+        Then import the namespace in <code>_Imports.razor</code> of every project whose components use it - the
+        server's, for <code>App.razor</code>, and the client's, for <code>Routes.razor</code> and the pages:
+    </p>
+    <CodeSnippet Code="@ImportsCode" Language="Razor" Expanded="true" />
+    <div class="bb-note bb-note-warn">
+        <p>
+            Without the <code>@@using</code>, <code>&lt;BelemetryScript /&gt;</code> compiles as an unknown HTML element -
+            only a warning, no error - the page renders it as an empty tag, and telemetry silently never starts. If
+            nothing arrives, view the page source and look for <code>bit-belemetry-config</code>.
+        </p>
+    </div>
+    <p>What it adds to the download, measured on a trimmed Release publish (brotli, as served):</p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th scope="col">Part</th><th scope="col">Size</th><th scope="col">Downloaded by</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>bit-belemetry.js</code> - the browser script</td><td>16 KB</td><td>Every page, in every render mode</td></tr>
+                <tr><td><code>Bit.Belemetry.wasm</code> - the .NET pipeline, both encoders, the bridge</td><td>107 KB</td><td>WebAssembly and Auto, with the rest of the app's assemblies</td></tr>
+                <tr><td><code>System.Diagnostics.DiagnosticSource.wasm</code></td><td>29 KB</td><td>The same, when the app did not already ship it</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        <code>System.Text.Json</code> and <code>System.Net.Http</code> are part of every Blazor WebAssembly app already.
+        The package is trimmable and AOT-compatible, and its own test suite fails on any trim or AOT warning raised
+        inside it.
+    </p>
 </div>
 
 <div class="bb-card">
@@ -51,7 +81,9 @@
                         Builds the browser script's configuration from <em>its</em> options and writes it
                         into the page with <code>&lt;BelemetryScript /&gt;</code> - so the exporters, the
                         consent defaults and every <code>options.Browser.*</code> setting the browser sees come
-                        from the server registration. Resolves <code>IBelemetry</code> and
+                        from the server registration. What it writes is public, so it never includes an
+                        exporter's <code>Headers</code> - only its <code>BrowserHeaders</code> (see
+                        <a href="/otlp">OTLP</a>). Resolves <code>IBelemetry</code> and
                         <code>IBelemetryConsent</code> during prerendering and for interactive Server
                         circuits. Collects the server's own .NET telemetry only if you opt in (below).
                     </td>
@@ -63,7 +95,11 @@
                         <code>Activity</code> and <code>Meter</code> records are collected and exported from
                         there, and flushed with <code>keepalive</code> when the page unloads. Its metrics rely on
                         <code>System.Diagnostics.Metrics</code>, which the WebAssembly SDK turns off by default and the
-                        Bit.Belemetry package turns back on (<code>MetricsSupport</code>).
+                        Bit.Belemetry package turns back on (<code>MetricsSupport</code>). <code>HttpClient</code>
+                        spans are a switch of their own that the package leaves off
+                        (<code>HttpActivityPropagationSupport</code>): off, its requests go out through the
+                        browser's <code>fetch</code> and the script records them as fetch spans - see
+                        <a href="/dotnet">.NET instrumentation</a>.
                     </td>
                 </tr>
             </tbody>
@@ -202,6 +238,11 @@
 @code {
     private const string InstallCode = """
         dotnet add package Bit.Belemetry
+        """;
+
+    private const string ImportsCode = """
+        @* Server/Components/_Imports.razor and Client/_Imports.razor *@
+        @using Bit.Belemetry
         """;
 
     private const string SharedCode = """

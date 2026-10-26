@@ -36,8 +36,9 @@ public static class SiteInfo
     /// <summary>What the library is, in the two or three sentences the footer has room for.</summary>
     public const string Tagline =
         "BbScanner is a barcode scanner for Blazor with the decoding written from scratch in C#: QR Code, " +
-        "Data Matrix, Code 128, Code 39, EAN, UPC and ITF, from the camera or from still images, with no " +
-        "barcode SDK and no JavaScript scanner library. This site is itself a Blazor WebAssembly app built on it.";
+        "Micro QR, Data Matrix, PDF417, Aztec, MaxiCode, Code 128, Code 39, Code 93, Codabar, EAN, UPC, ITF and " +
+        "GS1 DataBar, from the camera or from still images, with no barcode SDK and no JavaScript scanner " +
+        "library. This site is itself a Blazor WebAssembly app built on it.";
 
     public static readonly string[] Badges = ["MIT", "net8.0", "net9.0", "net10.0"];
 
@@ -96,30 +97,30 @@ public static class DocsCatalog
                 typeof(GettingStarted)),
             new("/samples", "Sample barcodes",
                 "One scannable example of every supported symbology, drawn as SVG and decoded in place without a camera.",
-                "samples qr data matrix code 128 code 39 ean-13 ean-8 upc-a upc-e itf pdf417 symbology generated svg self test",
+                "samples qr micro qr data matrix pdf417 aztec maxicode code 128 code 39 code 93 codabar ean-13 ean-8 upc-a upc-e itf gs1 databar limited expanded symbology generated svg self test",
                 typeof(Samples)),
         ]),
         new("Scanning",
         [
             new("/scan", "Live playground",
-                "Every parameter of BbScanner in one place - formats, frame rate, processing size, region, options and chrome - applied to the running camera.",
-                "playground parameters formats targetframerate maxprocessingsize region options bbscanneroptions showcontrols overlay fill",
+                "The scanner's parameters in one place - formats, capture, region, duplicates, symbols per frame, after-scan behaviour, options, feedback and chrome - applied to the running camera.",
+                "playground parameters formats targetframerate maxprocessingsize requestedwidth requestedheight region options bbscanneroptions maxsymbolsperframe afterscan feedback showcontrols controlscontent childcontent fill codabarstartstop requireeanextension",
                 typeof(Scan)),
             new("/lifecycle", "Lifecycle & duplicates",
-                "StartAsync, StopAsync, Pause and Resume driven from the page, and DuplicateSuppressionWindow tuned live.",
-                "lifecycle start stop pause resume autostart duplicate suppression window dispose camera release",
+                "StartAsync, StopAsync, Pause and Resume driven from the page, the status each one leads to, DuplicateSuppressionWindow, AfterScan, AcceptResult and background behaviour.",
+                "lifecycle status start stop pause resume autostart duplicate suppression window once per session InfiniteTimeSpan ResetDuplicateFilter AfterScan AcceptResult filter ReleaseCameraWhenHidden background feedback vibrate beep dispose camera release",
                 typeof(Lifecycle)),
             new("/camera", "Camera, torch & zoom",
-                "Enumerate the cameras, switch between them, and turn the torch and the zoom on where the hardware offers them.",
-                "camera device switch GetCamerasAsync SwitchCameraAsync torch flashlight SetTorchAsync zoom SetZoomAsync facing front rear",
+                "Enumerate the cameras, switch between them, turn the torch and the zoom on where the hardware offers them, and capture a full resolution frame.",
+                "camera device DeviceId switch GetCamerasAsync SwitchCameraAsync OnCameraChanged BbCameraInfo torch flashlight SetTorchAsync zoom SetZoomAsync facing front rear mirrored ScanCurrentFrameAsync capture full frame",
                 typeof(Camera)),
             new("/region", "Scan region",
                 "Aim the decoder at part of the frame with a normalized BbScanRegion; corner points still come back in frame pixels.",
-                "region BbScanRegion CenteredSquare crop aim mask corners bounding box normalized",
+                "region BbScanRegion CenteredSquare KeepSquare ForFrame crop aim mask corners bounding box normalized",
                 typeof(Region)),
             new("/image", "Image & file scanning",
-                "Scan a picked photo with the built-in file input, or hand DecodeImage pixels the application already has.",
-                "image file picker photo still OpenFilePickerAsync DecodeImage ForStillImages rgba upload",
+                "Scan a picked or dropped photo, an InputFile upload with ScanImageAsync, or pixels the application already has with DecodeImage and DecodeAllInImage.",
+                "image file picker photo still drag drop OpenFilePickerAsync ScanImageAsync InputFile DecodeImage DecodeAllInImage MaxImageFileSize MaxSymbolsPerFrame ForStillImages rgba upload InvalidImage",
                 typeof(Image)),
         ]),
         new("Advanced",
@@ -129,16 +130,16 @@ public static class DocsCatalog
                 "performance benchmark speed fps frame time milliseconds diagnostics MaxScanLines TryHarder DownsampleFactor",
                 typeof(Performance)),
             new("/customize", "Customisation",
-                "Restyle the scanner through its CSS custom properties, and replace the reticle and the messages with render fragments.",
-                "customise customize theme css custom properties overlay MessageTemplate reticle accent radius style accessibility rtl",
+                "Restyle the scanner through its CSS custom properties, replace the reticle and the messages with render fragments, and translate every text it shows.",
+                "customise customize theme css custom properties CssClass overlay MessageTemplate ControlsContent ChildContent reticle accent radius style Texts BbScannerTexts language translation localization accessibility rtl",
                 typeof(Customize)),
             new("/errors", "Errors & permissions",
-                "Permission denied, no camera, camera in use: every failure classified as a BbScannerErrorKind, with how to handle it.",
-                "errors permissions denied NotSupported NoCamera CameraUnavailable ConstraintsUnsatisfied BbScannerException OnError https secure context",
+                "Permission denied, no camera, camera in use, an image refused: every failure classified as a BbScannerErrorKind, with how to handle it, and the permission checked before asking.",
+                "errors permissions denied NotSupported NoCamera CameraUnavailable ConstraintsUnsatisfied InvalidImage BbScannerException OnError GetCameraPermissionAsync BbCameraPermission https secure context iframe",
                 typeof(Errors)),
             new("/api", "API reference",
-                "Every parameter, event, method and property of BbScanner, BbBarcodeResult, BbScannerOptions and the headless decoder.",
-                "api reference parameters events methods properties BbBarcodeResult BbScannerOptions BbBarcodeDecoder IBbRowDecoder IBbMatrixDecoder headless",
+                "Every parameter, event, method and property of BbScanner, its result, option, region, camera and diagnostics types, its enums and the headless decoder.",
+                "api reference parameters events methods properties BbBarcodeResult BbBarcodeResultMetadata BbScannerOptions BbScanRegion BbCameraInfo BbScanDiagnostics BbScannerTexts BbBarcodeDecoder enums IBbRowDecoder IBbMatrixDecoder headless",
                 typeof(Api)),
         ]),
         new("Tooling",

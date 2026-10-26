@@ -493,7 +493,7 @@
             "The browser posts to the collector from the page's origin, and the collector does not allow it.",
             "GetBelemetrySetupGuide"),
         new("An API key is in the page source",
-            "Exporter headers are part of the browser configuration unless the transport is Relay or the exporter is .NET-only.",
+            "A WebAssembly or Hybrid client's exporter headers ship to the device, and so does a server exporter's BrowserHeaders - a vendor's secret belongs in a collector, or behind the Relay transport.",
             "ReviewBelemetryConfiguration"),
     ];
 

@@ -22,6 +22,12 @@ public sealed class BonboardingStepRenderContext
     /// <summary>Localized description, or <see langword="null"/>.</summary>
     public string? Description { get; init; }
 
+    /// <summary>
+    /// Localized reason the user is held on the step (see <see cref="IBonboardingTourSession.ValidationMessage"/>), or
+    /// <see langword="null"/>. A custom template should render it with <c>role="alert"</c>, as the default one does.
+    /// </summary>
+    public string? ValidationMessage { get; init; }
+
     /// <summary>Labels in force, after tour overrides and localization.</summary>
     public BonboardingLabels Labels => Options.Labels;
 
@@ -83,4 +89,11 @@ public sealed class BonboardingStepRenderContext
 
     /// <summary>Runs a custom footer action.</summary>
     public Task InvokeAsync(BonboardingStepAction action) => Session.InvokeActionAsync(action);
+
+    /// <summary>
+    /// True while the handler of <paramref name="action"/> is running. A click on it in the meantime is
+    /// ignored, so a custom footer should render the button busy and disabled, as the default one does.
+    /// </summary>
+    public bool IsRunning(BonboardingStepAction action)
+        => Session is BonboardingTourSession session && session.IsActionRunning(action);
 }

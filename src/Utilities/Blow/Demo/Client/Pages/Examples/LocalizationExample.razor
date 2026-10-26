@@ -3,12 +3,13 @@
 <PageTitle>Localization · Blow</PageTitle>
 
 <ExampleScaffold Title="Localization"
-                 Summary="Every string the canvas reads out or labels itself with comes from one AriaLabels object, so a flow can be translated without reimplementing its accessibility. Switch language, then Tab to a node and press Enter - the live region below shows what a screen reader would hear. The starting pan and zoom come from DefaultViewport.">
+                 Summary="Every string the canvas reads out or labels itself with comes from one BlowAriaLabels object, and the control bar and the minimap take theirs as parameters, so a flow can be translated without reimplementing its accessibility. Switch language and use the flow from the keyboard: the panel shows what a screen reader hears.">
     <Toolbar>
         @foreach (var (code, name) in _languages)
         {
             <button class="btn @(code == _language ? "btn-primary" : "btn-secondary")"
-                    @onclick="@(() => _language = code)">
+                    aria-pressed="@((code == _language).ToString().ToLowerInvariant())"
+                    @onclick="@(() => SetLanguage(code))">
                 @name
             </button>
         }
@@ -17,12 +18,20 @@
         <BlowCanvas @ref="_flow"
                     Nodes="_nodes"
                     Edges="_edges"
-                    AriaLabels="Labels"
+                    AriaLabels="_labels"
+                    AriaLabel="@PaneName"
                     DefaultViewport="new BlowViewport(40, 20, 0.9)"
+                    NodesDraggable="_interactive"
+                    NodesConnectable="_interactive"
+                    ElementsSelectable="_interactive"
+                    dir="@(_language == "fa" ? "rtl" : "ltr")"
                     aria-roledescription="@RoleDescription">
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-            <BlowControls />
-            <BlowPanel Anchor="BlowPanelPosition.BottomRight">
+            <BlowControls ShowInteractive="true" @bind-Interactive="_interactive"
+                          AriaLabel="@Controls.Bar" ZoomInLabel="@Controls.ZoomIn" ZoomOutLabel="@Controls.ZoomOut"
+                          FitViewLabel="@Controls.FitView" LockLabel="@Controls.Lock" UnlockLabel="@Controls.Unlock" />
+            <BlowMiniMap AriaLabel="@MiniMap.Name" RoleDescription="@MiniMap.Role" KeyboardInstructions="@MiniMap.Keys" />
+            <BlowPanel Anchor="BlowPanelPosition.TopRight">
                 <div class="l10n-readout">
                     <strong>Announced</strong>
                     <div>@(_announced ?? "-")</div>
@@ -30,6 +39,24 @@
             </BlowPanel>
         </BlowCanvas>
     </ChildContent>
+    <TryIt>
+        <li>Pick <strong>English</strong>, <strong>Deutsch</strong> or <strong>فارسی</strong>. Persian also lays the text in the flow out right to left.</li>
+        <li><strong>Click the background</strong>, <strong>Tab</strong> to a node and press <strong>Enter</strong>: the panel shows the selection announced in that language. Move the node with the <strong>arrow keys</strong> and the move is announced too.</li>
+        <li>On Start, press <strong>C</strong> to start a connection, then <strong>Tab</strong> on: on Review you hear why it cannot connect - the two are already joined - and on Publish that <strong>Enter</strong> would connect. Press <strong>Enter</strong> there.</li>
+        <li><strong>Tab</strong> to the edge and press <strong>C</strong> to pick up its end, <strong>Tab</strong> to another node and press <strong>Enter</strong> to move it there.</li>
+        <li>Select something and press <strong>Delete</strong>: the deletion is announced with its counts.</li>
+        <li><strong>Hover</strong> the control bar's buttons for their translated tooltips, and press the <strong>lock</strong> button: dragging, connecting and selecting stop, and its tooltip offers to unlock.</li>
+        <li>With a screen reader on, each node is also read with its translated role ("Knoten"), its state ("Nicht verbunden.") and the keys it answers to; the minimap and the control bar are read by their translated names.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>AriaLabels</code> takes a <code>BlowAriaLabels</code>: role descriptions, names, states, every announcement and the keyboard instructions. A member left out keeps its English default (<code>BlowAriaLabels.Default</code>). The page builds a new set when the language changes rather than on every render, since the canvas redraws every node and edge whenever it is handed a different set.</li>
+        <li>The members are functions rather than format strings - <code>NodeSelected = name => $"{name} ausgewählt"</code> - so a translation can reorder or drop the values it is handed.</li>
+        <li>The panel sees what the live region gets because <code>Record</code> wraps each announcement function to copy its result there. <code>SelectionCleared</code> and the two "cancelled" messages are plain strings, so they reach the live region without passing through the panel.</li>
+        <li>The canvas's own <code>AriaLabel</code> is the app's to translate, and attributes it does not set itself - <code>aria-roledescription</code>, <code>dir</code> - pass straight through to its element.</li>
+        <li><code>BlowControls</code> takes <code>AriaLabel</code>, <code>ZoomInLabel</code>, <code>ZoomOutLabel</code>, <code>FitViewLabel</code>, <code>LockLabel</code> and <code>UnlockLabel</code>. The lock button shows with <code>ShowInteractive</code>, and <code>@@bind-Interactive</code> drives <code>NodesDraggable</code>, <code>NodesConnectable</code> and <code>ElementsSelectable</code>.</li>
+        <li><code>BlowMiniMap</code> takes <code>AriaLabel</code>, <code>RoleDescription</code> and <code>KeyboardInstructions</code>; left null, the instructions describe its keys in English.</li>
+        <li><code>DefaultViewport</code> sets the pan and zoom the flow opens at, where other examples fit the graph instead.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
@@ -49,7 +76,9 @@
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
     private string _language = "en";
+    private BlowAriaLabels _labels = BlowAriaLabels.Default;
     private string? _announced;
+    private bool _interactive = true;
 
     private readonly (string Code, string Name)[] _languages =
     [
@@ -64,8 +93,20 @@
         [
             new BlowNode { Id = "start", Label = "Start", Position = new(60, 60) },
             new BlowNode { Id = "review", Label = "Review", Position = new(60, 200) },
+            // Not connected yet, so there is a connection to make from the keyboard and a state of "not connected" to hear.
+            new BlowNode { Id = "publish", Label = "Publish", Position = new(300, 200) },
         ];
         _edges = [new BlowEdge { Id = "e", Source = "start", Target = "review", Label = "next" }];
+        _labels = LabelsFor(_language);
+    }
+
+    // Built when the language changes rather than read from a property on every render: the canvas compares the set
+    // by reference, and a new one each time would redraw every node and edge for nothing.
+    private void SetLanguage(string code)
+    {
+        if (code == _language) return;
+        _language = code;
+        _labels = LabelsFor(code);
     }
 
     // The canvas element's own attribute is passed straight through, so it is translated here.
@@ -78,7 +119,8 @@
 
     // The Func members are called rather than string-formatted, so a translation is free to
     // reorder or drop the values it is handed - which positional format strings cannot do.
-    private BlowAriaLabels Labels => _language switch
+    // This flow has no validation or run states, so a state is its selection and connections.
+    private BlowAriaLabels LabelsFor(string language) => language switch
     {
         "de" => Record(new BlowAriaLabels
         {
@@ -86,6 +128,9 @@
             EdgeRoleDescription = "Kante",
             NodeLabel = name => $"Knoten {name}",
             EdgeLabel = (s, t) => $"Kante von {s} nach {t}",
+            NodeState = s => (s.Node.Selected ? "Ausgewählt. " : "")
+                             + (s.Incoming + s.Outgoing == 0 ? "Nicht verbunden." : $"Verbindungen: {s.Incoming} eingehend, {s.Outgoing} ausgehend."),
+            EdgeState = s => s.Edge.Selected ? "Ausgewählt." : "",
             NodeSelected = name => $"{name} ausgewählt",
             NodeDeselected = name => $"{name} abgewählt",
             EdgeSelected = (s, t) => $"Kante {s} nach {t} ausgewählt",
@@ -93,6 +138,39 @@
             NodeMoved = (name, p) => $"{name} verschoben nach {p}",
             NodesMoved = count => $"{count} Knoten verschoben",
             Deleted = (n, e) => $"{n} Knoten und {e} Kanten gelöscht",
+            SelectionCleared = "Auswahl aufgehoben",
+            NodeCollapsed = (name, count) => $"{name} eingeklappt, {count} Knoten ausgeblendet",
+            NodeExpanded = (name, count) => $"{name} ausgeklappt, {count} Knoten eingeblendet",
+            Connected = (s, t) => $"{s} mit {t} verbunden",
+            Reconnected = (s, t) => $"Neu verbunden: {s} mit {t}",
+            ConnectionRejected = reason => reason switch
+            {
+                BlowConnectionRejection.NotConnectable => "Keine Verbindung möglich: Dieser Knoten nimmt keine Verbindungen an",
+                BlowConnectionRejection.SameHandleType => "Keine Verbindung möglich: Ein Ausgang muss mit einem Eingang verbunden werden",
+                BlowConnectionRejection.SelfConnection => "Ein Knoten kann nicht mit sich selbst verbunden werden",
+                BlowConnectionRejection.Duplicate => "Keine Verbindung möglich: Die beiden sind bereits verbunden",
+                BlowConnectionRejection.IncompatibleTypes => "Keine Verbindung möglich: Die Anschlüsse haben unverträgliche Typen",
+                BlowConnectionRejection.SourceFull => "Keine Verbindung möglich: Der Ausgang hat keine freien Verbindungen",
+                BlowConnectionRejection.TargetFull => "Keine Verbindung möglich: Der Eingang hat keine freien Verbindungen",
+                BlowConnectionRejection.Cycle => "Keine Verbindung möglich: Die Verbindung würde einen Zyklus bilden",
+                BlowConnectionRejection.MissingNode => "Keine Verbindung möglich: Der Knoten existiert nicht mehr",
+                _ => "Keine Verbindung möglich",
+            },
+            KeyboardConnectionStarted = (node, port, key) => $"Verbindung von {node}{(port is null ? "" : $", {port}")}. Zu einem anderen "
+                                                              + $"Knoten wechseln und mit Eingabe verbinden, {key} wählt einen anderen Anschluss, Escape bricht ab.",
+            KeyboardConnectionTarget = (node, port) => $"Eingabe verbindet mit {node}{(port is null ? "" : $", {port}")}.",
+            KeyboardConnectionCancelled = "Verbindung abgebrochen.",
+            KeyboardConnectionUnavailable = node => $"Von {node} kann keine Verbindung ausgehen.",
+            KeyboardReconnectionStarted = (edge, end, key) => $"Das Ende von {edge} an {end} wird verschoben. Zu einem anderen Knoten wechseln "
+                                                              + $"und mit Eingabe dort anhängen, {key} verschiebt stattdessen das andere Ende, Escape lässt die Kante, wie sie war.",
+            KeyboardReconnectionCancelled = "Verschieben abgebrochen. Die Kante ist unverändert.",
+            KeyboardReconnectionUnavailable = edge => $"{edge} kann nicht neu verbunden werden.",
+            KeyboardReconnectionInstructions = key => $"{key} verschiebt ihr Ende zu einem anderen Knoten.",
+            PaneInstructions = "Mit der Tabulatortaste zwischen den Knoten und Kanten des Diagramms wechseln.",
+            NodeInstructions = "Eingabe oder Leertaste wählt den Knoten aus, Umschalt mit Eingabe fügt ihn der Auswahl "
+                               + "hinzu, die Pfeiltasten verschieben die Auswahl, Entf löscht sie, Escape hebt sie auf.",
+            KeyboardConnectionInstructions = key => $"{key} beginnt eine Verbindung von ihm aus.",
+            EdgeInstructions = "Eingabe oder Leertaste wählt die Kante aus, Entf löscht sie, Escape hebt die Auswahl auf.",
         }),
 
         "fa" => Record(new BlowAriaLabels
@@ -101,6 +179,9 @@
             EdgeRoleDescription = "یال",
             NodeLabel = name => $"گره {name}",
             EdgeLabel = (s, t) => $"یال از {s} به {t}",
+            NodeState = s => (s.Node.Selected ? "انتخاب‌شده. " : "")
+                             + (s.Incoming + s.Outgoing == 0 ? "بدون اتصال." : $"اتصال‌ها: {s.Incoming} ورودی، {s.Outgoing} خروجی."),
+            EdgeState = s => s.Edge.Selected ? "انتخاب‌شده." : "",
             NodeSelected = name => $"{name} انتخاب شد",
             NodeDeselected = name => $"انتخاب {name} برداشته شد",
             EdgeSelected = (s, t) => $"یال {s} به {t} انتخاب شد",
@@ -108,6 +189,39 @@
             NodeMoved = (name, p) => $"{name} به {p} منتقل شد",
             NodesMoved = count => $"{count} گره منتقل شد",
             Deleted = (n, e) => $"{n} گره و {e} یال حذف شد",
+            SelectionCleared = "انتخاب لغو شد",
+            NodeCollapsed = (name, count) => $"{name} جمع شد، {count} گره پنهان شد",
+            NodeExpanded = (name, count) => $"{name} باز شد، {count} گره نمایان شد",
+            Connected = (s, t) => $"{s} به {t} وصل شد",
+            Reconnected = (s, t) => $"اتصال دوباره: {s} به {t}",
+            ConnectionRejected = reason => reason switch
+            {
+                BlowConnectionRejection.NotConnectable => "اتصال ممکن نیست: این گره اتصال نمی‌پذیرد",
+                BlowConnectionRejection.SameHandleType => "اتصال ممکن نیست: خروجی باید به ورودی وصل شود",
+                BlowConnectionRejection.SelfConnection => "گره را نمی‌توان به خودش وصل کرد",
+                BlowConnectionRejection.Duplicate => "اتصال ممکن نیست: این دو از پیش به هم وصل‌اند",
+                BlowConnectionRejection.IncompatibleTypes => "اتصال ممکن نیست: نوع داده‌ی دو درگاه با هم سازگار نیست",
+                BlowConnectionRejection.SourceFull => "اتصال ممکن نیست: خروجی اتصال آزادی ندارد",
+                BlowConnectionRejection.TargetFull => "اتصال ممکن نیست: ورودی اتصال آزادی ندارد",
+                BlowConnectionRejection.Cycle => "اتصال ممکن نیست: این اتصال یک چرخه می‌سازد",
+                BlowConnectionRejection.MissingNode => "اتصال ممکن نیست: گره دیگر وجود ندارد",
+                _ => "اتصال ممکن نیست",
+            },
+            KeyboardConnectionStarted = (node, port, key) => $"اتصال از {node}{(port is null ? "" : $"، {port}")}. به گره دیگری بروید و برای "
+                                                              + $"اتصال Enter را بزنید، {key} درگاه دیگری را برمی‌گزیند و Escape لغو می‌کند.",
+            KeyboardConnectionTarget = (node, port) => $"برای اتصال به {node}{(port is null ? "" : $"، {port}")} Enter را بزنید.",
+            KeyboardConnectionCancelled = "اتصال لغو شد.",
+            KeyboardConnectionUnavailable = node => $"از {node} هیچ اتصالی آغاز نمی‌شود.",
+            KeyboardReconnectionStarted = (edge, end, key) => $"جابه‌جایی سر {edge} در {end}. به گره دیگری بروید و برای وصل کردن آن Enter را "
+                                                              + $"بزنید، {key} سر دیگر را جابه‌جا می‌کند و Escape یال را دست‌نخورده می‌گذارد.",
+            KeyboardReconnectionCancelled = "جابه‌جایی لغو شد. یال تغییری نکرد.",
+            KeyboardReconnectionUnavailable = edge => $"{edge} را نمی‌توان دوباره وصل کرد.",
+            KeyboardReconnectionInstructions = key => $"{key} سر آن را به گره دیگری می‌برد.",
+            PaneInstructions = "برای جابه‌جایی میان گره‌ها و یال‌های نمودار کلید Tab را بزنید.",
+            NodeInstructions = "Enter یا فاصله گره را انتخاب می‌کند، Shift همراه Enter آن را به انتخاب می‌افزاید، "
+                               + "کلیدهای جهت انتخاب را جابه‌جا می‌کنند، Delete آن را حذف و Escape انتخاب را لغو می‌کند.",
+            KeyboardConnectionInstructions = key => $"{key} اتصالی را از آن آغاز می‌کند.",
+            EdgeInstructions = "Enter یا فاصله یال را انتخاب می‌کند، Delete آن را حذف و Escape انتخاب را لغو می‌کند.",
         }),
 
         _ => Record(BlowAriaLabels.Default),
@@ -123,6 +237,8 @@
         EdgeRoleDescription = labels.EdgeRoleDescription,
         NodeLabel = labels.NodeLabel,
         EdgeLabel = labels.EdgeLabel,
+        NodeState = labels.NodeState,
+        EdgeState = labels.EdgeState,
         NodeSelected = name => Show(labels.NodeSelected(name)),
         NodeDeselected = name => Show(labels.NodeDeselected(name)),
         EdgeSelected = (s, t) => Show(labels.EdgeSelected(s, t)),
@@ -130,6 +246,47 @@
         NodeMoved = (name, p) => Show(labels.NodeMoved(name, p)),
         NodesMoved = count => Show(labels.NodesMoved(count)),
         Deleted = (n, e) => Show(labels.Deleted(n, e)),
+        SelectionCleared = labels.SelectionCleared,
+        NodeCollapsed = (name, count) => Show(labels.NodeCollapsed(name, count)),
+        NodeExpanded = (name, count) => Show(labels.NodeExpanded(name, count)),
+        Connected = (s, t) => Show(labels.Connected(s, t)),
+        Reconnected = (s, t) => Show(labels.Reconnected(s, t)),
+        ConnectionRejected = reason => Show(labels.ConnectionRejected(reason)),
+        KeyboardConnectionStarted = (node, port, key) => Show(labels.KeyboardConnectionStarted(node, port, key)),
+        KeyboardConnectionTarget = (node, port) => Show(labels.KeyboardConnectionTarget(node, port)),
+        KeyboardConnectionCancelled = labels.KeyboardConnectionCancelled,
+        KeyboardConnectionUnavailable = node => Show(labels.KeyboardConnectionUnavailable(node)),
+        KeyboardReconnectionStarted = (edge, end, key) => Show(labels.KeyboardReconnectionStarted(edge, end, key)),
+        KeyboardReconnectionCancelled = labels.KeyboardReconnectionCancelled,
+        KeyboardReconnectionUnavailable = edge => Show(labels.KeyboardReconnectionUnavailable(edge)),
+        KeyboardReconnectionInstructions = labels.KeyboardReconnectionInstructions,
+        PaneInstructions = labels.PaneInstructions,
+        NodeInstructions = labels.NodeInstructions,
+        KeyboardConnectionInstructions = labels.KeyboardConnectionInstructions,
+        EdgeInstructions = labels.EdgeInstructions,
+    };
+
+    // The canvas's own name, which it reads out when it takes focus: not one of AriaLabels, since it is the app's to give.
+    private string PaneName => _language switch
+    {
+        "de" => "Flussdiagramm",
+        "fa" => "نمودار جریان",
+        _ => "Flow diagram",
+    };
+
+    private (string Bar, string ZoomIn, string ZoomOut, string FitView, string Lock, string Unlock) Controls => _language switch
+    {
+        "de" => ("Ansichtssteuerung", "Vergrößern", "Verkleinern", "Einpassen", "Bearbeitung sperren", "Bearbeitung entsperren"),
+        "fa" => ("کنترل‌های نما", "بزرگ‌نمایی", "کوچک‌نمایی", "نمایش کامل", "قفل کردن ویرایش", "باز کردن قفل ویرایش"),
+        _ => ("Flow controls", "Zoom in", "Zoom out", "Fit view", "Lock interaction", "Unlock interaction"),
+    };
+
+    // Null instructions keep the minimap's own English description of the keys it answers to.
+    private (string Name, string Role, string? Keys) MiniMap => _language switch
+    {
+        "de" => ("Übersichtskarte", "Übersichtskarte", "Pfeiltasten verschieben die Ansicht, Pos1 zeigt das ganze Diagramm."),
+        "fa" => ("نقشه‌ی کوچک", "نقشه‌ی کوچک", "کلیدهای جهت نما را جابه‌جا می‌کنند و Home کل نمودار را نشان می‌دهد."),
+        _ => ("Mini map", "mini map", null),
     };
 
     private string Show(string message)

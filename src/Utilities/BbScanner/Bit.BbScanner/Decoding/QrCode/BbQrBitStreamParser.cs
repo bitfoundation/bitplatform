@@ -259,6 +259,73 @@ public static class BbQrBitStreamParser
         return false;
     }
 
+    /// <summary>
+    /// The width of a Micro QR segment's character count, by mode - numeric, alphanumeric, byte, kanji - and version,
+    /// M1 to M4; zero where the version has no such mode.
+    /// </summary>
+    private static ReadOnlySpan<byte> MicroCountBits => [3, 4, 5, 6, 0, 3, 4, 5, 0, 0, 4, 5, 0, 0, 3, 4];
+
+    /// <summary>
+    /// Decodes the payload of a Micro QR symbol, M1 to M4: segments of the same modes as QR's but numeric, alphanumeric,
+    /// byte and kanji only, with mode indicators of no bits in M1 up to three in M4, shorter character counts, and a
+    /// terminator of three zero bits in M1 up to nine in M4. There is no ECI, FNC1 or structured append.
+    /// </summary>
+    /// <param name="bytes">Corrected data codewords; in M1 and M3 the last one's four bits are its high ones.</param>
+    /// <param name="microVersion">1 to 4.</param>
+    /// <param name="level">The error correction level, as reported: <c>Detection</c>, <c>L</c>, <c>M</c> or <c>Q</c>.</param>
+    /// <param name="errorsCorrected">Number of codewords the error correction stage repaired.</param>
+    /// <returns>The payload, or <see langword="null"/> when the bit stream is malformed.</returns>
+    internal static BbDecoderResult? DecodeMicro(byte[] bytes, int microVersion, string level, int errorsCorrected)
+    {
+        var bits = new BbBitSource(bytes);
+        var text = new StringBuilder(bytes.Length * 2);
+        var raw = new List<byte>(bytes.Length * 2);
+        var modeBits = microVersion - 1;
+        var terminator = (2 * microVersion) + 1;
+        while (true)
+        {
+            // What is left is the terminator, or the zero bits of a terminator cut short by the end of the symbol.
+            var peek = bits;
+            if (bits.Available < modeBits + 3 || !peek.TryReadBits(Math.Min(terminator, peek.Available), out var next) || next == 0)
+            {
+                break;
+            }
+
+            // M4's three mode bits can say 4 to 7, which name no mode.
+            var mode = modeBits == 0 ? 0 : bits.ReadBits(modeBits);
+            if (mode > 3)
+            {
+                return null;
+            }
+
+            var width = MicroCountBits[(4 * mode) + microVersion - 1];
+            if (width == 0 || bits.Available < width)
+            {
+                return null;
+            }
+
+            var count = bits.ReadBits(width);
+            var read = mode switch
+            {
+                0 => DecodeNumeric(ref bits, count, text, raw),
+                1 => DecodeAlphanumeric(ref bits, count, text, raw, isGs1: false),
+                2 => DecodeByte(ref bits, count, text, raw, BbCharacterSetEci.Latin1, sawExplicitEncoding: false),
+                _ => DecodeDoubleByte(ref bits, count, text, raw, kanji: true),
+            };
+            if (!read)
+            {
+                return null;
+            }
+        }
+
+        return new BbDecoderResult([.. raw], text.ToString())
+        {
+            SymbolVersion = "M" + (char)('0' + microVersion),
+            ErrorCorrectionLevel = level,
+            ErrorsCorrected = errorsCorrected,
+        };
+    }
+
     private static bool DecodeNumeric(ref BbBitSource bits, int count, StringBuilder text, List<byte> raw)
     {
         // Digits are packed three to ten bits, with four or seven bit tails.

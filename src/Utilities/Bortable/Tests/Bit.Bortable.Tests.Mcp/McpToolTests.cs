@@ -338,7 +338,7 @@ public class McpToolTests
         var index = await McpCall.TextAsync("GetBortableSourceFile");
 
         Assert.Contains("Demo/Client/Pages/Shared.razor", index);
-        Assert.Contains("Demo/Client/Pages/NestedList.razor", index);
+        Assert.Contains("Demo/Client/Samples/NestedList.razor", index);
         Assert.Contains(BortableSourceCatalog.ComponentCodePath, index);
         Assert.Contains(BortableSourceCatalog.ComponentMarkupPath, index);
         Assert.Contains(BortableSourceCatalog.StylesheetPath, index);
@@ -351,10 +351,13 @@ public class McpToolTests
     [TestMethod]
     public async Task A_source_file_comes_back_verbatim()
     {
-        var file = await McpCall.TextAsync("GetBortableSourceFile", new() { ["path"] = "Demo/Client/Pages/Shared.razor" });
+        var page = await McpCall.TextAsync("GetBortableSourceFile", new() { ["path"] = "Demo/Client/Pages/Shared.razor" });
+        var sample = await McpCall.TextAsync("GetBortableSourceFile", new() { ["path"] = "Demo/Client/Samples/GroupedLists.razor" });
 
-        Assert.Contains("<Bortable", file);
-        Assert.Contains("@page \"/shared\"", file);
+        // A page renders its samples, and each sample is a working list of its own.
+        Assert.Contains("@page \"/shared\"", page);
+        Assert.Contains("<GroupedLists />", page);
+        Assert.Contains("<Bortable", sample);
     }
 
     [TestMethod]

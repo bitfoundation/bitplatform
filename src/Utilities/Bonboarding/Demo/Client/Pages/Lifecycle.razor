@@ -1,0 +1,748 @@
+@page "/lifecycle"
+@implements IDisposable
+@inject IBonboardingService BonboardingService
+
+<PageTitle>Lifecycle &amp; orchestration · Bonboarding</PageTitle>
+
+<div class="bb-intro">
+    <h1>Lifecycle &amp; orchestration</h1>
+    <p class="bb-subtitle">
+        A running tour is a session you can drive: move it, pause it, resume it, or end it in one of several ways that
+        each mean something different. Tours that want the screen at the same time wait their turn, a user can ask to
+        be reminded later, every step has hooks for your own code, and a definition is checked before anyone sees it.
+    </p>
+</div>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Drive a tour from code</h3>
+    <p>
+        <code>StartAsync</code> returns the running <code>IBonboardingTourSession</code>. Its commands move the tour, its
+        properties say where it stands, and its <code>Changed</code> event fires on every change - the panel under the
+        product re-renders from it. This tour sets <code>Interaction = Free</code>, so the page stays usable while the
+        card is up and the buttons below can drive it, and <code>ShowOverlay = false</code>, so the target keeps its
+        spotlight ring without the page being dimmed.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <button type="button" class="btn btn-primary" @onclick="() => StartDrivenAsync(null)">Start the session</button>
+            <button type="button" class="btn btn-secondary" @onclick='() => StartDrivenAsync("metrics")'>Start at the third step</button>
+        </div>
+
+        <div class="bb-toolbar" role="group" aria-label="Session commands">
+            <button type="button" class="btn btn-secondary" @onclick="() => DriveAsync(s => s.PreviousAsync())">Previous</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => DriveAsync(s => s.NextAsync())">Next</button>
+            <button type="button" class="btn btn-secondary" @onclick='() => DriveAsync(s => s.GoToAsync("settings"))'>Go to "settings"</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => DriveAsync(s => s.PauseAsync())">Pause</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => DriveAsync(s => s.ResumeAsync())">Resume</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => DriveAsync(s => s.CancelAsync())">Cancel</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => DriveAsync(s => s.CompleteAsync())">Complete</button>
+        </div>
+
+        <AppWindow />
+
+        @if (_driven is { } session)
+        {
+            <dl class="bb-params">
+                <dt>Status</dt><dd>@session.Status</dd>
+                <dt>Current step</dt><dd>@(session.IsActive || session.Status == BonboardingTourStatus.Paused ? session.CurrentStep?.Id : "-")</dd>
+                <dt>Position</dt><dd>@session.DisplayPosition of @session.DisplayCount@(session.IsFirstStep ? " (first)" : session.IsLastStep ? " (last)" : null)</dd>
+                <dt>History</dt><dd>@(session.History.Count == 0 ? "-" : string.Join(" → ", session.History))</dd>
+                <dt>End reason</dt><dd>@(session.EndReason?.ToString() ?? "-")</dd>
+            </dl>
+        }
+        else
+        {
+            <p class="bb-muted">Start the session to see its state here.</p>
+        }
+    </div>
+
+    <p>The ways a tour can end are not interchangeable - each is remembered differently:</p>
+    <ul class="bb-detail-list">
+        <li><code>CompleteAsync</code> - finished: recorded as completed, and never offered again by <code>StartOnceAsync</code>.</li>
+        <li>
+            <code>SkipAsync</code> and <code>DismissAsync</code> - the user turned it down, with the Skip button, the close
+            button or Escape. It is not offered again either.
+        </li>
+        <li>
+            <code>CancelAsync</code> - interrupted, not refused: the progress is kept, <code>StartOnceAsync</code> offers the
+            tour again and <code>StartAsync</code> resumes it. Starting another tour cancels the running one.
+        </li>
+        <li><code>SnoozeAsync(duration)</code> - "remind me later": see <a href="lifecycle#remind-me-later">below</a>.</li>
+        <li><code>PauseAsync</code> and <code>ResumeAsync</code> - hide the card and keep the session exactly where it is; nothing ends.</li>
+    </ul>
+    <p>The <a href="events">events page</a> shows the record each ending leaves in the store.</p>
+
+    <pre class="bb-code" tabindex="0">@DriveExample</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> When two tours want the screen</h3>
+    <p>
+        Start the first tour, then use the buttons it points at to start another while it runs.
+        <code>BonboardingStartOptions.WhenBusy</code> decides what happens: <code>Replace</code> - the default, right for a
+        start the user asked for - cancels the running tour; <code>Queue</code> waits for it to end; <code>Skip</code> does
+        not start at all. Queued tours start one at a time, the highest <code>Priority</code> first, and are checked again
+        when their turn comes. Queue both, then finish the first tour and watch the order in the log.
+    </p>
+    <p>
+        A declarative tour's <code>AutoStart</code> always queues, so a page's own tour never takes the screen from a tour
+        the user is in the middle of.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <button type="button" class="btn btn-primary" @onclick="StartFirstAsync">Start the first tour</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => _queueLog.Clear()">Clear the queue log</button>
+        </div>
+
+        <div class="bb-toolbar" data-bonboarding-anchor="queue-controls">
+            <button type="button" class="btn btn-secondary" @onclick="() => StartAnotherAsync(BonboardingBusyBehavior.Replace, ReplacingTour)">Start another, replacing it</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => StartAnotherAsync(BonboardingBusyBehavior.Queue, LowPriorityTour)">Queue a priority 0 tour</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => StartAnotherAsync(BonboardingBusyBehavior.Queue, HighPriorityTour)">Queue a priority 5 tour</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => StartAnotherAsync(BonboardingBusyBehavior.Skip, ReplacingTour)">Start another only if nothing runs</button>
+        </div>
+
+        <div class="bb-log event-log" role="log" aria-label="Queue events">
+            @if (_queueLog.Count == 0)
+            {
+                <div class="bb-log-empty">Nothing yet. Start the first tour above.</div>
+            }
+            @foreach (var entry in _queueLog)
+            {
+                <div class="bb-log-line event-log-row">
+                    <span class="event-log-time">@entry.Time.ToString("HH:mm:ss.fff")</span>
+                    <span class="event-log-kind">@entry.Kind</span>
+                    <span>@entry.Detail</span>
+                </div>
+            }
+        </div>
+    </div>
+
+    <pre class="bb-code" tabindex="0">@QueueExample</pre>
+</section>
+
+<section class="bb-card" id="remind-me-later">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> "Remind me later"</h3>
+    <p>
+        <code>BonboardingStepAction.RemindMeLater</code> adds a button that snoozes the tour: the record keeps the user's
+        place and gets a <code>SnoozedUntil</code>. Until then <code>StartOnceAsync</code> and <code>AutoStart</code> pass
+        the tour over; afterwards it resumes where it was snoozed. A start the user asks for (<code>StartAsync</code>) is
+        never held back. Offer the announcement, press <strong>Remind me in 30 seconds</strong>, and offer it again.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <button type="button" class="btn btn-primary" @onclick="OfferAnnouncementAsync">Offer the announcement</button>
+            <button type="button" class="btn btn-secondary" @onclick="ShowAnnouncementAsync">Show it anyway</button>
+            <button type="button" class="btn btn-secondary" @onclick="ForgetAnnouncementAsync">Forget it</button>
+        </div>
+
+        @if (_announcementState is not null)
+        {
+            <div class="bb-note" role="status">@_announcementState</div>
+        }
+    </div>
+
+    <pre class="bb-code" tabindex="0">@SnoozeExample</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Hooks for your own code</h3>
+    <p>
+        Each step can run code before it is shown (<code>OnBeforeShow</code>, awaited - the place to load what it needs),
+        once it is on screen (<code>OnShown</code>) and before it is left (<code>OnBeforeLeave</code>); the tour has
+        <code>OnStarted</code>, <code>OnStepChanged</code> and <code>OnEnded</code>. Every hook is handed the session's
+        <code>State</code>, a dictionary shared by the whole tour, the application's services, and a cancellation token
+        that fires when the step is left. Throwing from a hook fails the tour cleanly; it never escapes as an unobserved
+        exception.
+    </p>
+    <p>
+        Here the first step waits a second in <code>OnBeforeShow</code> before its card appears. The second step's answer
+        is written to <code>State</code> by its action, and the third step's <code>When</code> reads it: conditions are
+        asked again on every transition, so an earlier step can unlock a later one - watch the progress count grow when
+        you press <strong>Connect</strong>.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <button type="button" class="btn btn-primary" @onclick="StartHookedAsync">Run the hooked tour</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => _hookLog.Clear()">Clear the hook log</button>
+        </div>
+
+        <div class="bb-log event-log" role="log" aria-label="Hook calls" data-bonboarding-anchor="hook-log">
+            @if (_hookLog.Count == 0)
+            {
+                <div class="bb-log-empty">Nothing yet. Run the tour above.</div>
+            }
+            @foreach (var entry in _hookLog)
+            {
+                <div class="bb-log-line event-log-row">
+                    <span class="event-log-time">@entry.Time.ToString("HH:mm:ss.fff")</span>
+                    <span class="event-log-kind">@entry.Kind</span>
+                    <span>@entry.Detail</span>
+                </div>
+            }
+        </div>
+    </div>
+
+    <pre class="bb-code" tabindex="0">@HooksExample</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Checking a definition</h3>
+    <p>
+        <code>StartAsync</code> checks a tour before anything is shown. <strong>Errors</strong> - two steps sharing an id,
+        an action that jumps to a step that does not exist - refuse the start with a <code>BonboardingException</code>
+        listing every one of them, because the tour could not work. <strong>Warnings</strong> - a step with no way forward,
+        an opacity outside 0 to 1 - are logged and the tour starts. <code>Validate()</code> returns the same list, so a
+        unit test catches a mistake before a user meets it.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <button type="button" class="btn btn-primary" @onclick="ValidateBrokenTour">Validate the broken tour</button>
+            <button type="button" class="btn btn-secondary" @onclick="StartBrokenTourAsync">Try to start it</button>
+        </div>
+
+        @if (_issues is not null)
+        {
+            <div class="bb-scroll" tabindex="0" role="region" aria-label="Validation issues">
+                <table class="bb-table">
+                    <thead>
+                        <tr><th>Severity</th><th>Code</th><th>Step</th><th>Message</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var issue in _issues)
+                        {
+                            <tr>
+                                <td><span class="bb-badge @(issue.Severity == BonboardingValidationSeverity.Error ? "bb-badge-danger" : "bb-badge-warn")">@issue.Severity</span></td>
+                                <td class="bb-table-key"><code>@issue.Code</code></td>
+                                <td>@(issue.StepId ?? "-")</td>
+                                <td>@issue.Message</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        @if (_startError is not null)
+        {
+            <div class="bb-note bb-note-danger" role="alert">
+                <strong>StartAsync refused the tour:</strong>
+                <pre class="bb-code" tabindex="0">@_startError</pre>
+            </div>
+        }
+    </div>
+
+    <pre class="bb-code" tabindex="0">@ValidateExample</pre>
+</section>
+
+@code {
+    private sealed record LogEntry(DateTime Time, string Kind, string Detail);
+
+    // ---- Driving a session ---------------------------------------------------
+
+    private IBonboardingTourSession? _driven;
+
+    private async Task StartDrivenAsync(string? startAt)
+    {
+        var session = await BonboardingService.StartAsync(new BonboardingTourDefinition
+        {
+            Id = "driven",
+            Title = "Driven tour",
+            Persist = false,
+            // The page stays usable, so the buttons above the product can drive the card.
+            Interaction = BonboardingInteractionMode.Free,
+            ShowOverlay = false,
+            Progress = BonboardingProgressStyle.Text,
+            Steps =
+            {
+                new BonboardingStepDefinition
+                {
+                    Id = "create",
+                    Target = BonboardingStepTarget.Anchor("new-project"),
+                    Title = "Driven from code",
+                    Description = "The buttons above the product call the session's commands. Try Pause, then Resume.",
+                    Placement = BonboardingPlacement.Bottom,
+                },
+                new BonboardingStepDefinition
+                {
+                    Id = "search",
+                    Target = BonboardingStepTarget.Anchor("search"),
+                    Title = "Second step",
+                    Description = "History records every step actually visited, in order.",
+                    Placement = BonboardingPlacement.Bottom,
+                },
+                new BonboardingStepDefinition
+                {
+                    Id = "metrics",
+                    Target = BonboardingStepTarget.Anchor("metrics"),
+                    Title = "Third step",
+                    Description = "StartAtStepId can begin a tour here instead of at the top.",
+                    Placement = BonboardingPlacement.Top,
+                },
+                new BonboardingStepDefinition
+                {
+                    Id = "settings",
+                    Target = BonboardingStepTarget.Anchor("settings"),
+                    Title = "Fourth step",
+                    Description = "GoToAsync jumps by id or by index; Back then returns to the step you jumped from.",
+                    Placement = BonboardingPlacement.BottomEnd,
+                },
+                new BonboardingStepDefinition
+                {
+                    Id = "account",
+                    Target = BonboardingStepTarget.Anchor("account"),
+                    Title = "Last step",
+                    Description = "Complete, Cancel, Skip and Dismiss each end the session differently.",
+                    Placement = BonboardingPlacement.BottomEnd,
+                },
+            },
+        }, new BonboardingStartOptions { StartAtStepId = startAt });
+
+        if (_driven is not null) _driven.Changed -= OnDrivenChanged;
+        _driven = session;
+        _driven.Changed += OnDrivenChanged;
+    }
+
+    private void OnDrivenChanged(object? sender, BonboardingTourSessionChangedEventArgs e) => InvokeAsync(StateHasChanged);
+
+    private Task DriveAsync(Func<IBonboardingTourSession, Task> command)
+        => _driven is { } session && (session.IsActive || session.Status == BonboardingTourStatus.Paused)
+            ? command(session)
+            : Task.CompletedTask;
+
+    // ---- Competing tours -------------------------------------------------------
+
+    private readonly List<LogEntry> _queueLog = [];
+
+    private static BonboardingTourDefinition QueueTour(string id, string title, string description, int priority = 0) => new()
+    {
+        Id = id,
+        Title = title,
+        Priority = priority,
+        Persist = false,
+        // The page stays usable, so the buttons this tour points at can start the next one.
+        Interaction = BonboardingInteractionMode.Free,
+        ShowOverlay = false,
+        Steps =
+        {
+            new BonboardingStepDefinition
+            {
+                Id = "only",
+                Target = BonboardingStepTarget.Anchor("queue-controls"),
+                Title = title,
+                Description = description,
+                Placement = BonboardingPlacement.Top,
+                DoneLabel = "Finish",
+            },
+        },
+    };
+
+    private static readonly BonboardingTourDefinition FirstTour = QueueTour(
+        "queue-first", "The first tour",
+        "While this card is up, use the buttons it points at to start another tour. Then press Finish and watch the log.");
+
+    private static readonly BonboardingTourDefinition ReplacingTour = QueueTour(
+        "queue-replacing", "A tour started with Replace",
+        "The first tour was cancelled, not dismissed: it is not recorded as turned down, so a tour that keeps its progress would be offered again and resume where it was.");
+
+    private static readonly BonboardingTourDefinition LowPriorityTour = QueueTour(
+        "queue-low", "The priority 0 tour",
+        "Queued with Priority 0, so it waited for every tour ahead of it - the priority 5 one included.");
+
+    private static readonly BonboardingTourDefinition HighPriorityTour = QueueTour(
+        "queue-high", "The priority 5 tour",
+        "Queued with Priority 5: when the running tour ended, it went before the priority 0 tour, whichever was queued first.",
+        priority: 5);
+
+    private static readonly HashSet<string> QueueTourIds = [FirstTour.Id, ReplacingTour.Id, LowPriorityTour.Id, HighPriorityTour.Id];
+
+    private Task StartFirstAsync() => BonboardingService.StartAsync(FirstTour);
+
+    private async Task StartAnotherAsync(BonboardingBusyBehavior whenBusy, BonboardingTourDefinition tour)
+    {
+        try
+        {
+            await BonboardingService.StartAsync(tour, new BonboardingStartOptions { WhenBusy = whenBusy });
+        }
+        catch (BonboardingException)
+        {
+            // WhenBusy = Skip while another tour runs: StartAsync says so, StartOnceAsync would return null.
+            _queueLog.Insert(0, new LogEntry(DateTime.Now, "Skipped", $"{tour.Title}: another tour is running, so it did not start"));
+        }
+    }
+
+    // ---- Snooze ------------------------------------------------------------------
+
+    private string? _announcementState;
+
+    private BonboardingTourDefinition Announcement => _announcement ??= new()
+    {
+        Id = "whats-new-demo",
+        Title = "What's new",
+        OverlayOpacity = 0.35,
+        Steps =
+        {
+            new BonboardingStepDefinition
+            {
+                Id = "news",
+                Title = "Three new things",
+                Description = "Saved views, bulk editing and a much faster search. Have a look, or be reminded later.",
+                DoneLabel = "Got it",
+                Actions = [BonboardingStepAction.RemindMeLater("Remind me in 30 seconds", TimeSpan.FromSeconds(30))],
+            },
+        },
+        OnEnded = async args =>
+        {
+            var record = await BonboardingService.GetRecordAsync(args.Session.Tour.Id);
+            _announcementState = args.Reason switch
+            {
+                BonboardingTourEndReason.Snoozed when record?.SnoozedUntil is { } until
+                    => $"Snoozed until {until.ToLocalTime():HH:mm:ss}. Until then, offering it does nothing; afterwards it is offered again.",
+                BonboardingTourEndReason.Completed => "Completed: StartOnceAsync will not offer it again.",
+                BonboardingTourEndReason.Cancelled => "Cancelled: interrupted rather than refused, so it will be offered again.",
+                _ => $"{args.Reason}: the user turned it down, so StartOnceAsync will not offer it again.",
+            };
+
+            await InvokeAsync(StateHasChanged);
+        },
+    };
+
+    private BonboardingTourDefinition? _announcement;
+
+    private async Task OfferAnnouncementAsync()
+    {
+        if (await BonboardingService.StartOnceAsync(Announcement) is not null)
+        {
+            _announcementState = "Offered: StartOnceAsync found no reason not to show it.";
+            return;
+        }
+
+        var record = await BonboardingService.GetRecordAsync(Announcement.Id);
+        _announcementState = record?.SnoozedUntil is { } until && until > DateTimeOffset.Now
+            ? $"Not offered: snoozed until {until.ToLocalTime():HH:mm:ss}."
+            : $"Not offered: already {(record?.Completed == true ? "completed" : "dismissed")}. Forget it to have it offered again.";
+    }
+
+    private async Task ShowAnnouncementAsync()
+    {
+        await BonboardingService.StartAsync(Announcement);
+        _announcementState = "Shown with StartAsync, which a snooze never holds back.";
+    }
+
+    private async Task ForgetAnnouncementAsync()
+    {
+        await BonboardingService.ResetAsync(Announcement.Id);
+        _announcementState = "Forgotten: the next offer shows it.";
+    }
+
+    // ---- Hooks -------------------------------------------------------------------
+
+    private readonly List<LogEntry> _hookLog = [];
+
+    private void LogHook(string hook, string detail)
+    {
+        _hookLog.Insert(0, new LogEntry(DateTime.Now, hook, detail));
+        if (_hookLog.Count > 40) _hookLog.RemoveRange(40, _hookLog.Count - 40);
+
+        // Hooks run on the engine's schedule, which may be a browser callback outside the renderer.
+        InvokeAsync(StateHasChanged);
+    }
+
+    private Task StartHookedAsync()
+    {
+        var tour = new BonboardingTourDefinition
+        {
+            Id = "hooked",
+            Title = "Hooked tour",
+            Persist = false,
+            Progress = BonboardingProgressStyle.Text,
+            OnStarted = ctx =>
+            {
+                LogHook("OnStarted", ctx.Tour.Id);
+                return ValueTask.CompletedTask;
+            },
+            OnStepChanged = args =>
+            {
+                LogHook("OnStepChanged", $"{args.PreviousStep?.Id ?? "-"} → {args.Step.Id} ({args.Reason})");
+                return ValueTask.CompletedTask;
+            },
+            OnEnded = args =>
+            {
+                LogHook("OnEnded", $"{args.Reason}, IsSuccess = {args.IsSuccess}");
+                return ValueTask.CompletedTask;
+            },
+            Steps =
+            {
+                new BonboardingStepDefinition
+                {
+                    Id = "load",
+                    Target = BonboardingStepTarget.Anchor("hook-log"),
+                    Title = "Loaded before it was shown",
+                    Description = "OnBeforeShow waited a second for this step's data, and the card appeared once it returned.",
+                    Placement = BonboardingPlacement.Top,
+                    OnBeforeShow = async ctx =>
+                    {
+                        LogHook("OnBeforeShow", "load: fetching the data this step needs…");
+                        await Task.Delay(1000, ctx.CancellationToken);
+                        ctx.State["loaded"] = DateTime.Now;
+                    },
+                },
+                new BonboardingStepDefinition
+                {
+                    Id = "connect",
+                    Target = BonboardingStepTarget.Anchor("hook-log"),
+                    Title = "Connect a repository?",
+                    Description = "Your answer is written to the session's State, and the next step reads it.",
+                    Placement = BonboardingPlacement.Top,
+                    ShowNext = false,
+                    Actions =
+                    [
+                        new BonboardingStepAction
+                        {
+                            Id = "connect",
+                            Label = "Connect",
+                            Style = BonboardingStepActionStyle.Primary,
+                            AutoFocus = true,
+                            OnClick = ctx =>
+                            {
+                                ctx.State["connected"] = true;
+                                LogHook("Action", "connect: State[\"connected\"] = true");
+                                return ValueTask.CompletedTask;
+                            },
+                            Effect = BonboardingStepActionEffect.Next,
+                        },
+                        new BonboardingStepAction
+                        {
+                            Id = "later",
+                            Label = "Not now",
+                            Style = BonboardingStepActionStyle.Ghost,
+                            Effect = BonboardingStepActionEffect.Next,
+                        },
+                    ],
+                },
+                new BonboardingStepDefinition
+                {
+                    Id = "deploy",
+                    Target = BonboardingStepTarget.Anchor("hook-log"),
+                    Title = "Deploy it",
+                    Description = "Shown only because you pressed Connect: this step's When reads what the previous step wrote.",
+                    Placement = BonboardingPlacement.Top,
+                    When = ctx => ValueTask.FromResult(ctx.State.ContainsKey("connected")),
+                },
+                new BonboardingStepDefinition
+                {
+                    Id = "finish",
+                    Title = "That is every hook",
+                    Description = "Finish, or close the card, and compare the reason OnEnded reports.",
+                    DoneLabel = "Finish",
+                },
+            },
+        };
+
+        // The same two hooks on every step, so the log shows where each one runs.
+        foreach (var step in tour.Steps)
+        {
+            step.OnShown = ctx =>
+            {
+                LogHook("OnShown", ctx.Step.Id);
+                return ValueTask.CompletedTask;
+            };
+            step.OnBeforeLeave = ctx =>
+            {
+                LogHook("OnBeforeLeave", ctx.Step.Id);
+                return ValueTask.CompletedTask;
+            };
+        }
+
+        return BonboardingService.StartAsync(tour);
+    }
+
+    // ---- Validation --------------------------------------------------------------
+
+    private IReadOnlyList<BonboardingValidationIssue>? _issues;
+    private string? _startError;
+
+    private static BonboardingTourDefinition BrokenTour() => new()
+    {
+        Id = "broken",
+        Persist = false,
+        Steps =
+        {
+            // A warning: Next is hidden and nothing else moves the tour on.
+            new BonboardingStepDefinition { Id = "intro", Title = "Welcome", ShowNext = false },
+            // An error: a second step with the same id.
+            new BonboardingStepDefinition { Id = "intro", Title = "A second step with the same id" },
+            // An error: a jump to a step that does not exist.
+            new BonboardingStepDefinition
+            {
+                Id = "pick",
+                Title = "Pick one",
+                Actions = [new BonboardingStepAction { Label = "Go", Effect = BonboardingStepActionEffect.GoTo, TargetStepId = "nowhere" }],
+            },
+            // A warning: an opacity is a fraction between 0 and 1.
+            new BonboardingStepDefinition { Id = "dim", Title = "Too dark", OverlayOpacity = 1.5 },
+        },
+    };
+
+    private void ValidateBrokenTour()
+    {
+        _issues = BrokenTour().Validate();
+        _startError = null;
+    }
+
+    private async Task StartBrokenTourAsync()
+    {
+        _issues = null;
+
+        try
+        {
+            await BonboardingService.StartAsync(BrokenTour());
+            _startError = null;
+        }
+        catch (BonboardingException ex)
+        {
+            _startError = ex.Message;
+        }
+    }
+
+    // ---- Wiring ------------------------------------------------------------------
+
+    protected override void OnInitialized() => BonboardingService.EventRaised += OnEvent;
+
+    private void OnEvent(object? sender, BonboardingEvent e)
+    {
+        // The queue demo's log: only the tour-level events of its own four tours.
+        if (!QueueTourIds.Contains(e.Tour.Id) || e.Kind is BonboardingEventKind.StepShown or BonboardingEventKind.StepLeft
+            or BonboardingEventKind.TargetResolved or BonboardingEventKind.TargetMissing) return;
+
+        _queueLog.Insert(0, new LogEntry(DateTime.Now, e.Kind.ToString(), e.Tour.Title ?? e.Tour.Id));
+        if (_queueLog.Count > 40) _queueLog.RemoveRange(40, _queueLog.Count - 40);
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        BonboardingService.EventRaised -= OnEvent;
+        if (_driven is not null) _driven.Changed -= OnDrivenChanged;
+    }
+
+    private const string DriveExample = """
+        var session = await BonboardingService.StartAsync(tour, new BonboardingStartOptions
+        {
+            StartAtStepId = "metrics",   // begin here instead of at the first step
+            Resume = false,              // ignore saved progress
+            State = new Dictionary<string, object?> { ["plan"] = "pro" },   // seeds session.State
+        });
+
+        // Changed fires on every change; e.Change says what: Step, Geometry and/or Ended.
+        session.Changed += (_, e) => InvokeAsync(StateHasChanged);
+
+        await session.NextAsync();
+        await session.PreviousAsync();       // follows the visit history, not the declaration order
+        await session.GoToAsync("settings"); // by id - or GoToAsync(3), by index
+        await session.PauseAsync();          // hide it, keep its place
+        await session.ResumeAsync();
+        await session.CancelAsync();         // interrupted: progress kept, offered again
+        await session.CompleteAsync();       // finished, recorded as completed
+        await session.RefreshAsync();        // re-measure after a layout change of your own
+
+        session.Status            // Idle, Running, Waiting, Paused, Completed, Skipped, Dismissed, Cancelled, Failed, Snoozed
+        session.CurrentStep       // the BonboardingStepDefinition on screen
+        session.DisplayPosition   // 1-based, counting only the steps that will be shown, of DisplayCount
+        session.History           // the ids of the steps actually visited
+        session.EndReason         // how it ended, once it has
+
+        await BonboardingService.StopAllAsync();   // cancel every running and queued tour
+        """;
+
+    private const string QueueExample = """
+        // A start the user asked for: replaces whatever runs (WhenBusy = Replace, the default).
+        await BonboardingService.StartAsync(helpTour);
+
+        // A start nobody asked for: wait for the running tour to end - or Skip, and do not start at all.
+        await BonboardingService.StartOnceAsync(featureTour, new BonboardingStartOptions
+        {
+            WhenBusy = BonboardingBusyBehavior.Queue,
+        });
+
+        // Among queued tours, the highest Priority goes first; equal priorities in the order they were queued.
+        new BonboardingTourDefinition { Id = "billing-changes", Priority = 5, ... }
+        <BonboardingTour Id="welcome" AutoStart="BonboardingAutoStart.Once" Priority="1"> ... </BonboardingTour>
+
+        // To run several at once - a tour and a persistent hint - opt out of all of it:
+        await BonboardingService.StartAsync(hint, new BonboardingStartOptions { StopOthers = false });
+        """;
+
+    private const string SnoozeExample = """
+        new BonboardingStepDefinition
+        {
+            Title = "Three new things",
+            DoneLabel = "Got it",
+            Actions = [BonboardingStepAction.RemindMeLater("Remind me in 30 seconds", TimeSpan.FromSeconds(30))],
+        }
+
+        var session = await BonboardingService.StartOnceAsync(tour);    // null while snoozed, completed or dismissed
+        var record = await BonboardingService.GetRecordAsync(tour.Id);  // record.SnoozedUntil, record.IsSnoozedAt(now)
+        await session.SnoozeAsync(TimeSpan.FromDays(3));                // the same, from code
+        """;
+
+    private const string HooksExample = """
+        new BonboardingTourDefinition
+        {
+            OnStarted = ctx => ...,
+            OnStepChanged = args => ...,   // args.Step, args.PreviousStep, args.Reason (Start, Next, Previous, Jump, Resume, Retarget)
+            OnEnded = args => ...,         // args.Reason, args.IsSuccess, args.LastStep, args.Error
+            Steps =
+            {
+                new BonboardingStepDefinition
+                {
+                    Id = "load",
+                    OnBeforeShow = async ctx => ctx.State["data"] = await LoadAsync(ctx.CancellationToken),
+                    OnShown = ctx => ...,
+                    OnBeforeLeave = ctx => ...,   // throwing here fails the tour; use CanAdvance to hold the user
+                },
+                new BonboardingStepDefinition
+                {
+                    Id = "connect",
+                    ShowNext = false,
+                    Actions =
+                    [
+                        new BonboardingStepAction
+                        {
+                            Label = "Connect",
+                            Style = BonboardingStepActionStyle.Primary,
+                            OnClick = ctx => { ctx.State["connected"] = true; return ValueTask.CompletedTask; },
+                            Effect = BonboardingStepActionEffect.Next,
+                        },
+                        new BonboardingStepAction { Label = "Not now", Style = BonboardingStepActionStyle.Ghost, Effect = BonboardingStepActionEffect.Next },
+                    ],
+                },
+                new BonboardingStepDefinition
+                {
+                    Id = "deploy",
+                    When = ctx => ValueTask.FromResult(ctx.State.ContainsKey("connected")),
+                },
+            },
+        }
+        """;
+
+    private const string ValidateExample = """
+        foreach (var issue in tour.Validate())
+            Console.WriteLine(issue);   // Error duplicate-step-id: Tour 'broken' has more than one step with the id 'intro'. ...
+
+        // In a unit test, so a mistake never reaches a user:
+        [TestMethod]
+        public void The_welcome_tour_is_well_formed()
+            => Assert.IsEmpty(WelcomeTour.Create().Validate());
+        """;
+}

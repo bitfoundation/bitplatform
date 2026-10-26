@@ -2,7 +2,7 @@
 
 @if (Session.IsEnabled && _interactive)
 {
-    <div class="bev-root" data-theme="@ThemeAttribute" @onkeydown="OnRootKeyDown">
+    <div class="bev-root" data-theme="@ThemeAttribute" data-bev-target="@Session.Browser.TargetId" @onkeydown="OnRootKeyDown">
         <link rel="stylesheet" href="_content/Bit.BevTools/bit-bevtools.css" />
         @if (!Ui.IsOpen)
         {
@@ -28,13 +28,24 @@
         else
         {
             <CascadingValue Value="this" IsFixed="true">
-                <div class="@PanelClass">
+                <div class="@PanelClass" role="region" aria-label="BevTools developer tools">
                     <div class="bev-header">
                         <span class="bev-title">BevTools</span>
-                        <div class="bev-tabs" role="tablist">
+                        @if (OtherTargets is { Count: > 0 } others)
+                        {
+                            @* A Web App page can run a circuit and WebAssembly at once; each runtime has its own panel. *@
+                            <span class="bev-runtimes" role="group" aria-label="BevTools runtimes on this page">
+                                <span class="bev-chip bev-info" title="This panel shows this runtime">@(Session.Platform ?? "this runtime")</span>
+                                @foreach (var other in others)
+                                {
+                                    <button type="button" class="bev-chip" title="Show the panel of @other.Label" @onclick="() => SwitchToAsync(other.Id)">⇄ @(other.Platform ?? other.Label)</button>
+                                }
+                            </span>
+                        }
+                        <div class="bev-tabs" role="tablist" aria-label="BevTools panels" @onkeydown="OnTabKeyDown">
                             @foreach (var (id, title) in BuiltInPanels)
                             {
-                                <button type="button" role="tab" id="bev-tab-@id" aria-selected="@(Ui.ActivePanelId == id ? "true" : "false")" aria-controls="bev-tabpanel" class="bev-tab @(Ui.ActivePanelId == id ? "bev-active" : "")" @onclick="() => ShowPanel(id)">
+                                <button type="button" role="tab" id="bev-tab-@id" aria-selected="@(Ui.ActivePanelId == id ? "true" : "false")" tabindex="@(Ui.ActivePanelId == id ? "0" : "-1")" aria-controls="bev-tabpanel" class="bev-tab @(Ui.ActivePanelId == id ? "bev-active" : "")" @onclick="() => ShowPanel(id)">
                                     @title
                                     @if (id == "errors" && Session.Errors.Count > 0)
                                     {
@@ -52,7 +63,7 @@
                             }
                             @foreach (var panel in ExtensionPanels)
                             {
-                                <button type="button" role="tab" id="bev-tab-@panel.Id" aria-selected="@(Ui.ActivePanelId == panel.Id ? "true" : "false")" aria-controls="bev-tabpanel" class="bev-tab @(Ui.ActivePanelId == panel.Id ? "bev-active" : "")" @onclick="() => ShowPanel(panel.Id)">@panel.Title</button>
+                                <button type="button" role="tab" id="bev-tab-@panel.Id" aria-selected="@(Ui.ActivePanelId == panel.Id ? "true" : "false")" tabindex="@(Ui.ActivePanelId == panel.Id ? "0" : "-1")" aria-controls="bev-tabpanel" class="bev-tab @(Ui.ActivePanelId == panel.Id ? "bev-active" : "")" @onclick="() => ShowPanel(panel.Id)">@panel.Title</button>
                             }
                         </div>
                         <div class="bev-tools">
@@ -61,11 +72,13 @@
                                 <input type="checkbox" checked="@Ui.LiveUpdates" aria-label="Live updates" @onchange="OnLiveChanged" /> live
                             </label>
                             <button type="button" title="Re-read captured data now" aria-label="Refresh captured data" @onclick="Refresh">↻ Refresh</button>
-                            <button type="button" title="Search or run a command (Ctrl+K)" @onclick="() => OpenPalette()">🔍 Search / &gt; command</button>
-                            <button type="button" title="Theme: @Ui.Theme" @onclick="SetTheme">◐</button>
-                            <button type="button" title="Dock: @Ui.Dock" @onclick="SetDock">@(Ui.Dock == BevToolsDock.Bottom ? "▭" : "▯")</button>
-                            <button type="button" title="Size: @Ui.Size" @onclick="SetSize">⤢</button>
-                            <button type="button" title="Close (@Options.Ui.ToggleShortcut)" @onclick="Toggle">✕</button>
+                            <button type="button" data-bev-pick-toggle class="@(Ui.Picking ? "bev-paused" : "")" title="Pick a component in the page: hover to outline it, click to inspect it (Esc cancels)" aria-label="Pick a component in the page" aria-pressed="@(Ui.Picking ? "true" : "false")" @onclick="TogglePickAsync">⌖ Pick</button>
+                            <button type="button" data-bev-palette-opener title="Search or run a command (Ctrl+K)" @onclick="() => OpenPalette()">🔍 Search / &gt; command</button>
+                            <button type="button" title="Open the companion window: every BevTools runtime of this page, outside the page, without BevTools' own UI rendering into the app" aria-label="Open the companion window" @onclick="OpenCompanionAsync"><span aria-hidden="true">⧉</span></button>
+                            <button type="button" title="Theme: @Ui.Theme" aria-label="Theme: @Ui.Theme. Change the theme" @onclick="SetTheme"><span aria-hidden="true">◐</span></button>
+                            <button type="button" title="Dock: @Ui.Dock" aria-label="Docked @(Ui.Dock == BevToolsDock.Bottom ? "at the bottom" : "on the right"). Move the panel" @onclick="SetDock"><span aria-hidden="true">@(Ui.Dock == BevToolsDock.Bottom ? "▭" : "▯")</span></button>
+                            <button type="button" title="Size: @Ui.Size" aria-label="Size: @Ui.Size. Change the panel size" @onclick="SetSize"><span aria-hidden="true">⤢</span></button>
+                            <button type="button" title="Close (@Options.Ui.ToggleShortcut)" aria-label="Close BevTools" @onclick="Toggle"><span aria-hidden="true">✕</span></button>
                         </div>
                     </div>
                     <div class="bev-body" id="bev-tabpanel" role="tabpanel" aria-labelledby="bev-tab-@Ui.ActivePanelId" style="position: relative;">
@@ -84,11 +97,14 @@
                             case "profiler": <BevProfilerPanel /> break;
                             case "timeline": <BevTimelinePanel /> break;
                             case "state": <BevStatePanel /> break;
+                            case "forms": <BevFormsPanel /> break;
+                            case "routing": <BevRoutingPanel /> break;
                             case "network": <BevNetworkPanel /> break;
                             case "interop": <BevInteropPanel /> break;
                             case "errors": <BevErrorsPanel /> break;
                             case "services": <BevServicesPanel /> break;
                             case "diagnostics": <BevDiagnosticsPanel /> break;
+                            case "runtime": <BevRuntimePanel /> break;
                             case "browser": <BevBrowserPanel /> break;
                             case "about": <BevAboutPanel /> break;
                             default:
@@ -109,10 +125,8 @@
                         {
                             <BevCommandPalette Initial="@_searchText" />
                         }
-                        @if (Ui.Notification is not null && DateTimeOffset.UtcNow - Ui.NotificationAt < TimeSpan.FromSeconds(4))
-                        {
-                            <div class="bev-notification">@Ui.Notification</div>
-                        }
+                        @* Always rendered, empty when there is nothing to say: a live region inserted together with its text is not announced. *@
+                        <div class="bev-notification" role="status" aria-live="polite">@(Ui.Notification is not null && DateTimeOffset.UtcNow - Ui.NotificationAt < BevToolsUiState.NotificationLifetime ? Ui.Notification : null)</div>
                     </div>
                 </div>
             </CascadingValue>

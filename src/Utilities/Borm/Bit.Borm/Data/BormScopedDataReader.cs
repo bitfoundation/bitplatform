@@ -60,6 +60,20 @@ public sealed class BormScopedDataReader : IBormDataReader
         return _inner.TryGetValue(path, out value);
     }
 
+    /// <summary>
+    /// Where a read of <paramref name="path"/> through <paramref name="data"/> actually lands: the
+    /// unscoped store and the absolute path that answers it — the scoped one when the owning object has
+    /// it, the root one otherwise. An expression walking every row of a list (<c>{Lines[].Total}</c>)
+    /// needs the absolute path of the list it found to read each row from.
+    /// </summary>
+    internal static (IBormDataReader Store, string Path) Resolve(IBormDataReader data, string path)
+    {
+        if (data is not BormScopedDataReader scoped || string.IsNullOrEmpty(path)) return (data, path);
+
+        var combined = BormPath.Combine(scoped._scope, path);
+        return scoped._inner.TryGetValue(combined, out _) ? (scoped._inner, combined) : (scoped._inner, path);
+    }
+
     /// <summary>Peels off an existing scope so scopes never nest into an unreadable chain.</summary>
     private static IBormDataReader Unwrap(IBormDataReader data)
         => data is BormScopedDataReader scoped ? scoped._inner : data;

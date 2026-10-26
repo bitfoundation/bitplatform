@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.14" />
+        <ProjectReference Include="..\Bit.BlazeDb.Samples.Auto.Client\Bit.BlazeDb.Samples.Auto.Client.csproj" />
+        <ProjectReference Include="..\..\Core\Bit.BlazeDb.Samples.Core.csproj" />
+    </ItemGroup>
+
+</Project>

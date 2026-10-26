@@ -1,0 +1,13 @@
+﻿<div class="item">
+    <span>@Name</span>
+    <span>@Count</span>
+    <button @onclick="OnIncrement">+1</button>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Name { get; set; } = "";
+
+    [Parameter] public int Count { get; set; }
+
+    [Parameter] public EventCallback OnIncrement { get; set; }
+}

@@ -35,6 +35,33 @@ public sealed class DemoPagesTests : BlowTest
                 $"{path} has {flows} flow(s) but never loaded bit-blow.js");
         }
 
+        // "View code" comes after the page's samples, outside their frames - a page with a toggle has a sample frame -
+        // and shows the page's own source, stripped of its routing directive and coloured.
+        var toggle = page.Locator(".demo-code__toggle");
+        if (await toggle.CountAsync() > 0)
+        {
+            Assert.IsTrue(await page.EvaluateAsync<bool>(
+                """
+                () => {
+                    const demos = [...document.querySelectorAll('.bb-demo')];
+                    return demos.length > 0 && [...document.querySelectorAll('.demo-code')].every(code => demos.every(demo => {
+                        const position = demo.compareDocumentPosition(code);
+                        return (position & Node.DOCUMENT_POSITION_FOLLOWING) && !(position & Node.DOCUMENT_POSITION_CONTAINED_BY);
+                    }));
+                }
+                """),
+                $"{path}: the code toggle is not under the sample");
+
+            await toggle.ClickAsync();
+            var code = page.Locator(".demo-code__pre > code");
+            await Expect(code).ToBeVisibleAsync();
+            var source = await code.TextContentAsync() ?? "";
+            Assert.IsTrue(source.Length > 100, $"{path} shows a source of only {source.Length} characters");
+            Assert.IsGreaterThan(0, await code.Locator("[class^='tok-']").CountAsync(), $"{path}: the source is not coloured");
+            Assert.DoesNotContain("@page", source, $"{path}: the snippet still carries the routing directive");
+            await toggle.ClickAsync();
+        }
+
         // Every enabled button of the page must run without throwing: a dead or broken control is a demo bug. The
         // page is the docs column (or the landing page), not the site chrome around it; the copy buttons the site
         // script hangs on its code blocks are that chrome too.
@@ -124,10 +151,20 @@ public sealed class DemoPagesTests : BlowTest
 
         await page.GetByRole(AriaRole.Button, new() { Name = "View code" }).ClickAsync();
 
-        var code = page.Locator(".demo-code__code");
+        var code = page.Locator(".demo-code__pre > code");
         await Expect(code).ToBeVisibleAsync();
         var source = await code.TextContentAsync() ?? "";
         StringAssert.Contains(source, "<BlowCanvas", "the snippet is not the page's markup");
         Assert.DoesNotContain("@page", source, "the snippet still carries the routing directive");
+        // coloured: the component tag, the keywords and the strings are tokens of their own
+        Assert.IsGreaterThan(0, await code.Locator(".tok-type", new() { HasText = "BlowCanvas" }).CountAsync(), "the component tag is not coloured");
+        Assert.IsGreaterThan(0, await code.Locator(".tok-key", new() { HasText = "private" }).CountAsync(), "the keywords are not coloured");
+        Assert.IsGreaterThan(0, await code.Locator(".tok-str").CountAsync(), "the strings are not coloured");
+
+        // Closing hides the source rather than dropping it, so that opening the panel again does not lex the page again.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Hide code" }).ClickAsync();
+        await Expect(code).ToBeHiddenAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = "View code" }).ClickAsync();
+        await Expect(code).ToBeVisibleAsync();
     }
 }

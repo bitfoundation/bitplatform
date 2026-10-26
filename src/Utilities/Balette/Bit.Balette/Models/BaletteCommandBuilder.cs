@@ -19,6 +19,7 @@ public sealed class BaletteCommandBuilder
     private string? _parent;
     private List<BaletteCommand>? _children;
     private Func<BaletteCommandContext, CancellationToken, Task<IReadOnlyList<BaletteCommand>>>? _childrenProvider;
+    private List<IBaletteSource>? _childSources;
     private string? _childrenPlaceholder;
     private bool _multiSelect;
     private List<BaletteCommand>? _actions;
@@ -64,6 +65,7 @@ public sealed class BaletteCommandBuilder
         _parent = c.Parent;
         _children = c.Children is null ? null : [.. c.Children];
         _childrenProvider = c.ChildrenProvider;
+        _childSources = c.ChildSources is null ? null : [.. c.ChildSources];
         _childrenPlaceholder = c.ChildrenPlaceholder;
         _multiSelect = c.MultiSelectChildren;
         _actions = c.Actions is null ? null : [.. c.Actions];
@@ -116,6 +118,20 @@ public sealed class BaletteCommandBuilder
     public BaletteCommandBuilder Children(IEnumerable<BaletteCommand> children) { (_children ??= []).AddRange(children); if (_kind == BaletteCommandKind.Action) { _kind = BaletteCommandKind.Page; } return this; }
     /// <summary>Loads the nested commands when the page opens, turning this command into a page.</summary>
     public BaletteCommandBuilder Children(Func<BaletteCommandContext, CancellationToken, Task<IReadOnlyList<BaletteCommand>>> provider, string? placeholder = null) { _childrenProvider = provider; _childrenPlaceholder = placeholder; if (_kind == BaletteCommandKind.Action) { _kind = BaletteCommandKind.Page; } return this; }
+    /// <summary>Searches <paramref name="source"/> as the user types on this command's page, turning it into a page.</summary>
+    public BaletteCommandBuilder Source(IBaletteSource source) { ArgumentNullException.ThrowIfNull(source); (_childSources ??= []).Add(source); if (_kind == BaletteCommandKind.Action) { _kind = BaletteCommandKind.Page; } return this; }
+    /// <summary>
+    /// Searches with <paramref name="search"/> as the user types on this command's page - from the moment it opens, as
+    /// <paramref name="minQueryLength"/> is 0 by default - and lists the results under <paramref name="name"/>.
+    /// </summary>
+    public BaletteCommandBuilder Source(string name, Func<string, CancellationToken, Task<IReadOnlyList<BaletteCommand>>> search, int minQueryLength = 0, int maxResults = 20, bool applyMatcher = false)
+        => Source(new BaletteDelegateSource(name, search, minQueryLength, maxResults, applyMatcher));
+    /// <summary>
+    /// Searches in pages on this command's page: <paramref name="searchPage"/> takes the query and the cursor of the page
+    /// to load (null for the first), and a page with a <see cref="BaletteSourcePage.NextCursor"/> gets a "Show more…" row.
+    /// </summary>
+    public BaletteCommandBuilder Source(string name, Func<string, string?, CancellationToken, Task<BaletteSourcePage>> searchPage, int minQueryLength = 0, int maxResults = 20)
+        => Source(new BaletteDelegateSource(name, (q, cursor, _, ct) => searchPage(q, cursor, ct), minQueryLength, maxResults));
     /// <summary>Sets the search box placeholder on this command's page.</summary>
     public BaletteCommandBuilder ChildrenPlaceholder(string? placeholder) { _childrenPlaceholder = placeholder; return this; }
     /// <summary>Makes the rows of this command's page checkboxes; <c>Ctrl+Enter</c> runs the handler with the checked ones.</summary>
@@ -174,6 +190,7 @@ public sealed class BaletteCommandBuilder
         Parent = _parent,
         Children = _children,
         ChildrenProvider = _childrenProvider,
+        ChildSources = _childSources,
         ChildrenPlaceholder = _childrenPlaceholder,
         MultiSelectChildren = _multiSelect,
         Actions = _actions,

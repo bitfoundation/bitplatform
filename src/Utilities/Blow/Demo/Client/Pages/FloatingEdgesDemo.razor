@@ -5,25 +5,25 @@
 <div class="bb-intro">
     <h1>Floating Edges</h1>
     <p class="bb-subtitle">
-        Uses the new <code>BlowGraphUtils.GetFloatingEdgeParams</code> helper (a port of React Flow's floating-edge
-        math) inside a custom <code>EdgeTemplate</code>. Each edge attaches to the point on a node's border that
-        faces the other node and re-anchors live as you drag. Every node is one big handle apart from a thin
-        rim you move it by, so with <code>BlowConnectionMode.Loose</code> you can connect from anywhere inside a
-        node to anywhere on another.
+        Edges that meet each node's border wherever it faces the other node, instead of a fixed handle, and slide
+        round it as you drag. An <code>EdgeTemplate</code> asks <code>BlowGraphUtils.GetFloatingEdgeParams</code>
+        for the two border points and sides and draws the path through them; with every node one big handle and
+        <code>BlowConnectionMode.Loose</code>, you connect from anywhere inside a node to anywhere on another.
     </p>
 </div>
 
-<DemoCode />
-
 <div class="bb-demo blow-demo bb-page-wide">
     <div class="bb-demo-bar example-toolbar">
-        <label>edge path:
-            <select @onchange="e => _edgeType = Enum.Parse<BlowEdgeType>(e.Value!.ToString()!)">
-                <option value="Straight">Straight</option>
-                <option value="Bezier" selected>Bezier</option>
-                <option value="SmoothStep">SmoothStep</option>
+        <label>
+            Edge path
+            <select @bind="_edgeType">
+                @foreach (var type in PathTypes)
+                {
+                    <option value="@type">@type</option>
+                }
             </select>
         </label>
+        <label><input type="checkbox" @bind="_showAnchors" /> Show anchor points</label>
     </div>
     <div class="demo-canvas">
         <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" ConnectionMode="BlowConnectionMode.Loose">
@@ -36,7 +36,16 @@
             </NodeTemplate>
 
             <EdgeTemplate Context="ctx">
-                <BlowBaseEdge Path="@FloatingPath(ctx.Edge)" StrokeWidth="@(ctx.Edge.Selected ? 3 : 1.5)" />
+                <BlowBaseEdge Path="@FloatingPath(ctx.Edge)" MarkerEnd="@ctx.MarkerEndUrl" StrokeWidth="@(ctx.Edge.Selected ? 3 : 1.5)" />
+                @if (_showAnchors)
+                {
+                    @foreach (var (point, side) in Anchors(ctx.Edge))
+                    {
+                        <circle class="fl-anchor" cx="@Inv(point.X)" cy="@Inv(point.Y)" r="4" />
+                        <BlowEdgeText X="point.X + SideOffset(side).X" Y="point.Y + SideOffset(side).Y"
+                                      Label="@side.ToString()" Class="fl-anchor-side" />
+                    }
+                }
             </EdgeTemplate>
 
             <ConnectionLineTemplate Context="c">
@@ -53,6 +62,28 @@
     </div>
 </div>
 
+<DemoCode />
+
+<DemoNotes>
+    <TryIt>
+        <li><strong>Drag a node</strong> round the centre one: each edge slides along both borders so it always leaves and arrives on the facing sides, arrowhead included.</li>
+        <li><strong>Press inside a node</strong> - within its dashed outline - and drag onto another node to connect them. The whole inner area is a handle, and the new edge floats like the others.</li>
+        <li><strong>Press the thin rim</strong> between the dashed outline and the node's edge to drag the node instead of connecting.</li>
+        <li>Pick another <strong>Edge path</strong>: the edges and the line drawn while you connect take that shape, still anchored to the borders.</li>
+        <li>Tick <strong>Show anchor points</strong> to mark where each edge meets a node, labelled with the side of the node it leaves through; drag a node and watch the sides change.</li>
+        <li><strong>Click</strong> an edge to select it - it thickens - and press <strong>Delete</strong> to remove it.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>EdgeTemplate</code> replaces the built-in edge. It receives a <code>BlowEdgeContext</code> and draws SVG; here a <code>BlowBaseEdge</code> with a path of the page's own, which keeps the library's wide hit area, selection styling and the edge's arrowhead (<code>MarkerEnd="@@ctx.MarkerEndUrl"</code>; <code>BlowEdge.MarkerEnd</code> is on by default).</li>
+        <li><code>BlowGraphUtils.GetFloatingEdgeParams(source, target)</code> returns the point on each node's border that faces the other and the side it is on. It is built from two public helpers, which the anchor points call one by one: <code>GetNodeIntersection(node, other)</code> - where the line between the two centres crosses the node's border - and <code>GetEdgePosition(node, point)</code> - which side that point is on. <code>BlowEdgeText</code> writes the side's name on a plate beside each point.</li>
+        <li><code>BlowEdgePath.Compute(type, sourceX, sourceY, sourceSide, targetX, targetY, targetSide)</code> turns the points and sides into an SVG path, the same geometry the built-in edges use; the <strong>Edge path</strong> select picks the <code>BlowEdgeType</code>.</li>
+        <li>The helpers meet each node's bounding box, which is why the nodes are rounded squares: on a circle the edges would stop short of it on the diagonals.</li>
+        <li>Each node has one <code>BlowHandle</code>, stretched over all but a 10-pixel rim with its <code>Style</code>. All the handles are sources, which only <code>ConnectionMode="BlowConnectionMode.Loose"</code> lets connect to one another.</li>
+        <li><code>ConnectionLineTemplate</code> draws the line while you connect in the chosen path type; <code>BlowMiniMap</code>'s <code>NodeColorFunc</code> paints each node its own colour on the map.</li>
+        <li>The node's <code>Class</code> (<code>fl-shell</code>) strips the default node chrome - padding, border, background, minimum width - so the template's square fills it edge to edge.</li>
+    </HowItWorks>
+</DemoNotes>
+
 <style>
     /* The node element keeps the library's default chrome - padding, border, white background,
        an 80px minimum width - unless told otherwise; this node draws its own, edge to edge. */
@@ -66,12 +97,20 @@
         width:100%; height:100%; box-sizing:border-box; border-radius:14px;
         border:2px solid rgba(0,0,0,0.15); font-weight:700; color:#fff; font-size:13px;
     }
+
+    /* Marks only: they must not take the press meant for the edge under them. */
+    .fl-anchor { fill:var(--bit-blow-surface); stroke:var(--bit-blow-text); stroke-width:1.5; pointer-events:none; }
+    .bit-blow-edges .bit-blow-edge-text.fl-anchor-side { pointer-events:none; }
 </style>
 
 @code {
+    private static readonly BlowEdgeType[] PathTypes =
+        [BlowEdgeType.Bezier, BlowEdgeType.SimpleBezier, BlowEdgeType.Straight, BlowEdgeType.Step, BlowEdgeType.SmoothStep];
+
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
     private BlowEdgeType _edgeType = BlowEdgeType.Bezier;
+    private bool _showAnchors;
 
     private static readonly string[] Palette = ["#6366f1", "#ef4444", "#16a34a", "#f59e0b", "#0ea5e9", "#a855f7"];
 
@@ -108,4 +147,30 @@
         var (src, srcPos, tgt, tgtPos) = BlowGraphUtils.GetFloatingEdgeParams(s, t);
         return BlowEdgePath.Compute(_edgeType, src.X, src.Y, srcPos, tgt.X, tgt.Y, tgtPos).Path;
     }
+
+    // The two halves of GetFloatingEdgeParams, one end at a time: the border point facing the other node, then
+    // the side of the node that point is on.
+    private IEnumerable<(BlowXYPosition Point, BlowPosition Side)> Anchors(BlowEdge edge)
+    {
+        var s = _nodes.FirstOrDefault(n => n.Id == edge.Source);
+        var t = _nodes.FirstOrDefault(n => n.Id == edge.Target);
+        if (s is null || t is null) yield break;
+
+        var from = BlowGraphUtils.GetNodeIntersection(s, t);
+        yield return (from, BlowGraphUtils.GetEdgePosition(s, from));
+
+        var to = BlowGraphUtils.GetNodeIntersection(t, s);
+        yield return (to, BlowGraphUtils.GetEdgePosition(t, to));
+    }
+
+    // The side's name sits just outside the node, off the side it names; BlowEdgeText centres it on that point.
+    private static BlowXYPosition SideOffset(BlowPosition side) => side switch
+    {
+        BlowPosition.Top => new(0, -14),
+        BlowPosition.Bottom => new(0, 14),
+        BlowPosition.Left => new(-26, 0),
+        _ => new(26, 0),
+    };
+
+    private static string Inv(double v) => v.ToString(System.Globalization.CultureInfo.InvariantCulture);
 }

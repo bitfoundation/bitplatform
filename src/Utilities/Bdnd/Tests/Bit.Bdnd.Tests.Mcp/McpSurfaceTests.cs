@@ -54,6 +54,7 @@ public class McpSurfaceTests
     {
         var info = McpTestHost.Client.ServerInfo;
 
+        Assert.IsNotNull(info);
         Assert.AreEqual("bit-bdnd", info.Name);
         Assert.AreEqual("Bit.Bdnd", info.Title);
         Assert.AreEqual(BdndServerInstructions.BdndVersion, info.Version);

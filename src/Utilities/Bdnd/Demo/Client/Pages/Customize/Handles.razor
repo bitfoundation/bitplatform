@@ -7,11 +7,14 @@
     <p class="bb-subtitle">
         With <code>UseHandle="true"</code> a draggable can only be picked up by a nested
         <code>&lt;BdndDragHandle&gt;</code>. The rest of the element stays interactive. Compare the two
-        boxes below: the first drags from anywhere, the second only from its grip.
+        boxes below: the first drags from anywhere, the second only from its grip. The preview stays whole: the
+        browser would picture only the element a drag starts from - the grip - and Bdnd hands it the whole box as
+        the drag image instead. The grip is also what the keyboard picks the box up from: a focusable button, named
+        after the box's <code>Label</code> and styled here through its <code>data-bit-bdnd-handle</code> attribute.
+        The third box drags from anywhere but its text field, where a press selects text as in any field - and text
+        selected there drags as text, not as the box.
     </p>
 </div>
-
-<DemoCode />
 
 <div class="bb-demo">
     <BdndProvider>
@@ -22,13 +25,20 @@
                 </div>
             </BdndDraggable>
 
-            <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("handle")"
+            <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("handle")" Label="The box with a grip"
                            UseHandle="true" Context="d">
                 <div class="box" style="opacity:@(d.IsDragging ? "0.4" : "1");width:13rem;display:flex;align-items:center;">
                     <BdndDragHandle>
                         <span class="handle">⠿</span>
                     </BdndDragHandle>
                     <span>Only the grip drags me</span>
+                </div>
+            </BdndDraggable>
+
+            <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("note")" Context="d">
+                <div class="box handles-note" style="opacity:@(d.IsDragging ? "0.4" : "1");width:13rem;">
+                    <span>Drag me, or edit my note</span>
+                    <input class="handles-note__field" aria-label="Note" value="Select this text" />
                 </div>
             </BdndDraggable>
         </div>
@@ -41,6 +51,8 @@
         </BdndDropTarget>
     </BdndProvider>
 </div>
+
+<DemoCode />
 
 @code {
     private string? _last;

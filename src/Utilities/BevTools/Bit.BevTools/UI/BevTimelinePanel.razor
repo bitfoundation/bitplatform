@@ -4,7 +4,7 @@
 <div class="bev-split">
     <div class="bev-left" style="flex-basis:58%">
         <div class="bev-toolbar">
-            <input type="text" placeholder='Filter: text, kind:render, component:12, severity:error, id:45' value="@Query" @oninput="OnQuery" />
+            <input type="text" aria-label="Filter timeline events" placeholder='Filter: text, kind:render, component:12, severity:error, id:45' @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput" />
             <button type="button" @onclick="() => Session.Timeline.Clear()" title="Clear timeline">Clear</button>
             <label><input type="checkbox" checked="@_showLanes" @onchange='e => { _showLanes = e.Value is true; OnParametersSet(); }' /> lanes</label>
             <span class="bev-muted bev-nowrap">@_events.Count / @_all.Length</span>
@@ -70,9 +70,21 @@
                         {
                             <dt>Component</dt><dd><button type="button" class="bev-link" @onclick="() => Host.SelectComponent(cid)">@s.ComponentName #@cid</button></dd>
                         }
-                        @if (s.Data is { Count: > 0 })
+                        @if (s.Data is { Count: > 0 } && Session.ValueAccess == BevValueAccess.Full)
                         {
                             <dt>Data</dt><dd><BevValueTree Root="s.Data" Name="data" Inspector="Session.Inspector" ChildrenOnly="true" /></dd>
+                        }
+                        else if (s.Data is { Count: > 0 })
+                        {
+                            @* Below Full access the bag is listed flat: BevTools' own metadata stays readable, nothing is expanded. *@
+                            <dt>Data</dt>
+                            <dd>
+                                @foreach (var (key, value) in s.Data)
+                                {
+                                    var node = Session.Inspector.DescribeMetadata(key, value);
+                                    <div class="bev-vt-row"><span class="bev-vt-name">@key:</span> <span class="bev-vt-value bev-k-@node.Kind.ToString().ToLowerInvariant()">@node.Display</span></div>
+                                }
+                            </dd>
                         }
                     </dl>
                     @if (s.Data?.TryGetValue("errorId", out var errorId) == true && errorId is long eid)
@@ -269,9 +281,9 @@
         _bars = bars;
     }
 
-    private void OnQuery(ChangeEventArgs e)
+    private void OnQuery(string? value)
     {
-        Ui.SetQuery("timeline", e.Value?.ToString());
+        Ui.SetQuery("timeline", value);
         OnParametersSet();
     }
 

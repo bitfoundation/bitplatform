@@ -280,4 +280,84 @@ public sealed class DemoRegressionTests : BinkTest
         await DrawStrokeAsync(page, (60, 60), (200, 100));
         Assert.AreEqual(1, await ElementCountAsync(page), "the unlocked layer does not take the stroke");
     }
+
+    [TestMethod]
+    public async Task The_landing_canvas_does_not_ask_for_a_desynchronized_context()
+    {
+        // Chromium on Windows shows a desynchronized canvas that is not fully opaque as solid black inside a frame that
+        // clips to rounded corners, which is where the landing page's sketch sits. What was asked for is recorded
+        // rather than what the browser granted: most platforms ignore the hint, and the test has to fail on them too.
+        var page = await (await NewContextAsync()).NewPageAsync();
+        await page.AddInitScriptAsync(
+            """
+            window.binkContextRequests = [];
+            const getContext = HTMLCanvasElement.prototype.getContext;
+            HTMLCanvasElement.prototype.getContext = function (type, attributes) {
+              if (this.dataset.binkLayer) window.binkContextRequests.push(!!(attributes && attributes.desynchronized));
+              return getContext.call(this, type, attributes);
+            };
+            """);
+        await GotoAsync(page, "/");
+        await WaitForCanvasAsync(page);
+
+        bool[] requests = await page.EvaluateAsync<bool[]>("() => window.binkContextRequests");
+        Assert.IsNotEmpty(requests, "no canvas layer asked for a context");
+        Assert.IsFalse(requests.Any(desynchronized => desynchronized), "a canvas layer asked for a desynchronized context");
+    }
+
+    [TestMethod]
+    public async Task The_landing_sketch_ink_follows_the_theme_without_a_filter()
+    {
+        var context = await NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize { Width = 1280, Height = 900 },
+            DeviceScaleFactor = 1,
+            ColorScheme = ColorScheme.Dark,
+        });
+        var page = await context.NewPageAsync();
+        await GotoAsync(page, "/");
+        await WaitForCanvasAsync(page);
+
+        // The ink is drawn in the theme's own text colour: inverting the canvas with a CSS filter turned every colour
+        // drawn on it into its complement, and cost a filter pass on every frame of the live stroke.
+        Assert.AreEqual("none", await page.Locator(".bink-hero-live canvas[data-bink-layer=\"overlay\"]").EvaluateAsync<string>("c => getComputedStyle(c).filter"));
+
+        await DrawStrokeAsync(page, (60, 60), (160, 120), (260, 70));
+        await WaitForInkAsync(page, light: true, "the dark theme's ink is not light");
+
+        // Ink already drawn takes the new theme's colour,
+        await page.EvaluateAsync("() => bitDemoTheme.toggle()");
+        await WaitForInkAsync(page, light: false, "the ink drawn in the dark theme stayed light in the light one");
+
+        // and so does ink that undo puts back as history recorded it: cleared in the light theme, it comes back in
+        // the dark one with the light theme's ink.
+        await Button(page, "Clear").ClickAsync();
+        await page.EvaluateAsync("() => bitDemoTheme.toggle()");
+        await Button(page, "Undo").ClickAsync();
+        await WaitForInkAsync(page, light: true, "the ink undo put back is in the other theme's colour");
+    }
+
+    /// <summary>Waits until the opaque pixels of the landing page's sketch are light, or dark.</summary>
+    private static Task WaitForInkAsync(IPage page, bool light, string failure) => WaitOrFailAsync(page.WaitForFunctionAsync(
+        """
+        light => {
+          const c = document.querySelector('.bink-hero-live canvas[data-bink-layer="document"]');
+          const d = c.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, c.width, c.height).data;
+          let sum = 0, n = 0;
+          for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200) { sum += d[i] + d[i + 1] + d[i + 2]; n++; }
+          return n > 100 && (light ? sum / (3 * n) > 200 : sum / (3 * n) < 60);
+        }
+        """, light, new PageWaitForFunctionOptions { Timeout = 10_000 }), failure);
+
+    private static async Task WaitOrFailAsync(Task wait, string failure)
+    {
+        try
+        {
+            await wait;
+        }
+        catch (PlaywrightException ex)
+        {
+            Assert.Fail($"{failure} ({ex.Message.Split('\n')[0]})");
+        }
+    }
 }

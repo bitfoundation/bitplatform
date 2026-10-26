@@ -12,19 +12,19 @@ namespace Bit.Bortable.Demo.Server.Services;
 /// that decides it at runtime rather than by a reading of the README.
 /// <para>
 /// The work is done by real <see cref="Bortable{TItem}"/> lists (see <see cref="BortableListHost"/>):
-/// each list is rendered with the parameters described, the drag is dispatched to the handlers they
-/// rendered - a click per item of a multi-drag selection, a dragstart on the item, a dragover on the
-/// target list, then a drop and the browser's trailing dragend, or a dragend alone for a release
-/// outside any list - and what comes back is what the component did: the lists before and after,
-/// ItemsChanged, every lifecycle event with its arguments, and the classes each step left on the
-/// markup. What this class adds is only the reading of it: whether each step was accepted, why a list
-/// refused, and what a refusal or a surprising outcome means in practice.
+/// each list is rendered with the parameters described, and the drag is put through them the way the
+/// browser layer puts it - a click per item of a multi-drag selection, then calls to the lists' bridges:
+/// the start of the drag, the drop position on the target list, and how the drag ended - and what comes
+/// back is what the component did: the lists before and after, ItemsChanged, every lifecycle event with
+/// its arguments, and the classes each step left on the markup. What this class adds is only the reading
+/// of it: whether each step was accepted, why a list refused, and what a refusal or a surprising outcome
+/// means in practice.
 /// </para>
 /// <para>
 /// One thing is stood in for: the browser's hit testing. Where the pointer is over a list is not
-/// something a list can be told in C#, so the lab answers <c>dropIndex</c> and <c>itemIndexAt</c> with
-/// the position the caller asked for. The thresholds and the direction only shape that answer, which is
-/// why they are not among the options - and why the pointer reaches its target in one dragover.
+/// something a list can be told in C#, so the lab sends the position the caller asked for. The thresholds
+/// and the direction only shape that position, which is why they are not among the options - and why the
+/// pointer reaches its target in one step.
 /// </para>
 /// </summary>
 public static class BortableDragLab
@@ -364,9 +364,9 @@ public static class BortableDragLab
         var notes = new List<string>();
         var view = await host.ReadAsync();
 
-        if (host.ModuleImports == 0)
+        if (host.ModuleImports == 0 || host.Registered.Count < lists.Length)
         {
-            notes.Add("No list imported the browser module, so every hit test answered -1. That is a fault in this lab.");
+            notes.Add("Not every list registered with the browser module, so the lab cannot reach them all. That is a fault in this lab.");
         }
 
         // ---- Select (multi-drag): one click per item, as a person would -----------------------
@@ -409,14 +409,18 @@ public static class BortableDragLab
         // ---- Pick the item up ---------------------------------------------------------------------
 
         var started = false;
+        string[] taking = [];
+        string[]? startCalls;
         {
             var step = ++host.Step;
             var wrapper = Wrapper(view, drag.From.Id, drag.Item)!;
 
-            await host.DispatchAsync(wrapper.DragStart, BortableListHost.ListDragStart());
+            // The browser layer starts a list's drag only from an item that renders draggable, as the browser
+            // itself starts a native drag only from one.
+            if (wrapper.Draggable && wrapper.Key is { } key) taking = await host.StartAsync(drag.From.Id, drag.Item, key) ?? [];
             var previous = view;
             view = await host.ReadAsync();
-            host.TakeBrowserCalls();
+            startCalls = host.TakeBrowserCalls();
 
             var start = host.Callbacks.FirstOrDefault(callback => callback.Step == step && callback.Event == "OnStart");
             started = start is not null;
@@ -441,7 +445,7 @@ public static class BortableDragLab
                 notes.AddRange(reasons);
             }
 
-            steps.Add(Step(step, "dragstart", $"'{drag.Item}' in '{drag.From.Id}'", null, started, outcome, Changed(previous, view)));
+            steps.Add(Step(step, "dragstart", $"'{drag.Item}' in '{drag.From.Id}'", startCalls, started, outcome, Changed(previous, view)));
         }
 
         var hovered = false;
@@ -457,36 +461,35 @@ public static class BortableDragLab
                 hovered = true;
 
                 var step = ++host.Step;
-                var target = view.Single(list => list.Id == drag.To.Id);
                 var targetItems = setupOf[drag.To.Id].Items;
 
-                int dropIndex = -1, itemIndex = -1;
+                int position;
                 string where;
 
                 if (drag.To.Swap)
                 {
                     // The swap partner's index among all of the list's items, hidden ones included -
-                    // which is what the real itemIndexAt counts.
-                    itemIndex = targetItems.IndexOf(drag.SwapWith!);
+                    // which is what the browser layer's itemIndexAt counts.
+                    position = targetItems.IndexOf(drag.SwapWith!);
                     where = $"over '{drag.SwapWith}' in '{drag.To.Id}'";
                 }
                 else if (drag.SameList)
                 {
-                    // dropIndex is a gap counted before the item leaves its place: landing past where
-                    // it was means the gap after the item it lands behind.
+                    // The browser layer's dropIndex is a gap counted before the item leaves its place:
+                    // landing past where it was means the gap after the item it lands behind.
                     var from = targetItems.IndexOf(drag.Item);
-                    dropIndex = drag.Index!.Value > from ? drag.Index.Value + 1 : drag.Index.Value;
+                    position = drag.Index!.Value > from ? drag.Index.Value + 1 : drag.Index.Value;
                     where = $"to index {drag.Index} of '{drag.To.Id}'";
                 }
                 else
                 {
-                    dropIndex = drag.Index!.Value;
+                    position = drag.Index!.Value;
                     where = $"to index {drag.Index} of '{drag.To.Id}'";
                 }
 
-                host.PointAt(target, dropIndex, itemIndex);
-
-                await host.DispatchAsync(target.DragOver, new DragEventArgs());
+                // The browser layer routes the pointer only to the lists that answered the start: over any other,
+                // it hands the position on to the list around it, and here there is none.
+                if (taking.Contains(drag.To.Id, StringComparer.Ordinal)) await host.OverAsync(drag.To.Id, position);
                 var previous = view;
                 view = await host.ReadAsync();
 
@@ -523,59 +526,44 @@ public static class BortableDragLab
             if (drag.Outside is false)
             {
                 var step = ++host.Step;
-                var target = view.Single(list => list.Id == drag.To.Id);
 
-                await host.DispatchAsync(target.Drop, new DragEventArgs());
+                // A drop on a list that does not take the drag is no drop at all to the browser layer: the
+                // browser reports only the dragend, as for a release outside every list.
+                var how = taking.Contains(drag.To.Id, StringComparer.Ordinal) ? "drop" : "release";
+                await host.EndAsync(drag.From.Id, how);
                 var previous = view;
                 view = await host.ReadAsync();
-                host.TakeBrowserCalls();
+                var calls = host.TakeBrowserCalls();
 
                 var ended = host.Callbacks.Any(callback => callback.Step == step && callback.Event == "OnEnd");
 
-                steps.Add(Step(step, "drop", $"list '{drag.To.Id}'", null, ended, Completion(host, step, drag, hovered, hoverAccepted), Changed(previous, view)));
+                steps.Add(Step(step, "drop", $"list '{drag.To.Id}'", calls, ended, Completion(host, step, drag, hovered, hoverAccepted), Changed(previous, view)));
 
-                // A browser follows a drop with a dragend on the element the drag started from - when
-                // that element is still on the page. An item that left its list with the drop was
-                // removed from it, and a removed element's dragend never reaches the list.
-                if (Wrapper(view, drag.From.Id, drag.Item) is { } source)
+                // A browser follows a drop with a dragend on the element the drag started from - when that
+                // element is still on the page (an item that left its list with the drop was removed from it).
+                // The browser layer has already told the list how the drag ended, so it ignores it.
+                if (Wrapper(view, drag.From.Id, drag.Item) is not null)
                 {
                     step = ++host.Step;
-
-                    await host.DispatchAsync(source.DragEnd, new DragEventArgs());
-                    previous = view;
-                    view = await host.ReadAsync();
-                    host.TakeBrowserCalls();
-
-                    var completed = host.Callbacks.Any(callback => callback.Step == step && callback.Event == "OnEnd");
-
-                    steps.Add(Step(step, "dragend", $"'{drag.Item}' in '{drag.From.Id}'", null, completed,
-                        completed
-                            ? Completion(host, step, drag, hovered, hoverAccepted)
-                            : "Nothing left to do: the drop already completed the drag. Whichever of drop and dragend comes first completes it.",
-                        Changed(previous, view)));
+                    steps.Add(Step(step, "dragend", $"'{drag.Item}' in '{drag.From.Id}'", null, false,
+                        "Nothing left to do: the drop already completed the drag. Whichever of drop and dragend comes first completes it.", null));
                 }
             }
             else
             {
                 var step = ++host.Step;
-                var source = Wrapper(view, drag.From.Id, drag.Item);
 
-                if (source is null)
-                {
-                    steps.Add(Step(step, "dragend", $"'{drag.Item}' in '{drag.From.Id}'", null, false, "The dragged item's element is no longer rendered, so its dragend reaches no list.", null));
-                }
-                else
-                {
-                    await host.DispatchAsync(source.DragEnd, new DragEventArgs());
-                    var previous = view;
-                    view = await host.ReadAsync();
-                    host.TakeBrowserCalls();
+                // Escape and a release where nothing takes the item look the same to a native drag (a dragend whose
+                // dropEffect is "none"), so the browser layer reports both as a release outside every list.
+                await host.EndAsync(drag.From.Id, "release");
+                var previous = view;
+                view = await host.ReadAsync();
+                var calls = host.TakeBrowserCalls();
 
-                    var ended = host.Callbacks.Any(callback => callback.Step == step && callback.Event == "OnEnd");
+                var ended = host.Callbacks.Any(callback => callback.Step == step && callback.Event == "OnEnd");
 
-                    steps.Add(Step(step, "dragend", $"'{drag.Item}' in '{drag.From.Id}', released {(drag.Release == "cancel" ? "with Escape" : "outside any list")}",
-                        null, ended, Completion(host, step, drag, hovered, hoverAccepted), Changed(previous, view)));
-                }
+                steps.Add(Step(step, "dragend", $"'{drag.Item}' in '{drag.From.Id}', released {(drag.Release == "cancel" ? "with Escape" : "outside any list")}",
+                    calls, ended, Completion(host, step, drag, hovered, hoverAccepted), Changed(previous, view)));
             }
         }
         else
@@ -907,7 +895,7 @@ public static class BortableDragLab
 
         if (host.Callbacks.Any(callback => callback.Event == "OnChange"))
         {
-            notes.Add("The lab answers the browser layer's hit tests (dropIndex, itemIndexAt) with the position asked for, so SwapThreshold, InvertSwap, InvertedSwapThreshold and Direction - which only shape that hit test - play no part, and the pointer reached its target in one dragover. A real pointer crossing several items raises OnChange once per item it passes.");
+            notes.Add("The lab stands in for the browser layer's hit test and sends the list the position asked for, so SwapThreshold, InvertSwap, InvertedSwapThreshold and Direction - which only shape that hit test - play no part, and the pointer reached its target in one step. A real pointer crossing several items raises OnChange once per item it passes.");
         }
     }
 

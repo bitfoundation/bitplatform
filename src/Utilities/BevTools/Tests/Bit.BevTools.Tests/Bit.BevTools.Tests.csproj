@@ -7,8 +7,10 @@
         <LangVersion>preview</LangVersion>
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
-        <!-- ASP0006: the scale fixtures generate repeated siblings on purpose, so their sequence numbers are computed. -->
-        <NoWarn>$(NoWarn);CS1591;ASP0006</NoWarn>
+        <!-- ASP0006: the scale fixtures generate repeated siblings on purpose, so their sequence numbers are computed.
+             BL0006: the leak tests run on a renderer of their own, which is a RenderTree type, so that no test framework
+             holds the components they check. -->
+        <NoWarn>$(NoWarn);CS1591;ASP0006;BL0006</NoWarn>
         <EnableMSTestRunner>true</EnableMSTestRunner>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <SignAssembly>true</SignAssembly>
@@ -17,13 +19,14 @@
 
     <ItemGroup>
         <PackageReference Include="MSTest" Version="4.5.1" />
-        <PackageReference Include="bunit" Version="2.12.5" />
+        <PackageReference Include="bunit" Version="2.13.3" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\Bit.BevTools\Bit.BevTools.csproj" />
         <ProjectReference Include="..\..\Bit.BevTools.Loader\Bit.BevTools.Loader.csproj" />
         <ProjectReference Include="..\..\Bit.BevTools.Server\Bit.BevTools.Server.csproj" />
+        <ProjectReference Include="..\..\Bit.BevTools.Cli\Bit.BevTools.Cli.csproj" />
     </ItemGroup>
 
 </Project>

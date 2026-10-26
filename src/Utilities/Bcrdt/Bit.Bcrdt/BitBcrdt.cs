@@ -72,6 +72,24 @@ public sealed class BcrdtCollaborationBuilder
     /// <summary>Stores documents in process memory, for tests and ephemeral sessions.</summary>
     public BcrdtCollaborationBuilder UseInMemoryStore() => UseStore(new BcrdtInMemoryDocumentStore());
 
+    /// <summary>
+    /// Stores documents in the browser's IndexedDB, so they - and the edits made offline - survive a
+    /// reload, a closed tab and a restarted browser. See <see cref="BcrdtIndexedDbDocumentStore"/>.
+    /// </summary>
+    /// <remarks>
+    /// Registered per scope, because it talks to the browser through the scope's
+    /// <see cref="Microsoft.JSInterop.IJSRuntime"/>: in WebAssembly that is the page's, in Blazor Server the
+    /// circuit's - which keeps each user's documents in their own browser.
+    /// </remarks>
+    /// <param name="databaseName">The IndexedDB database to use.</param>
+    public BcrdtCollaborationBuilder UseIndexedDbStore(string databaseName = BcrdtIndexedDbDocumentStore.DefaultDatabaseName)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(databaseName);
+        Services.TryAddScoped<IBcrdtDocumentStore>(provider =>
+            new BcrdtIndexedDbDocumentStore(provider.GetRequiredService<Microsoft.JSInterop.IJSRuntime>(), databaseName));
+        return this;
+    }
+
     private sealed class DelegateTransportFactory(Func<string, IBcrdtTransport> factory) : IBcrdtTransportFactory
     {
         public IBcrdtTransport Create(string documentId) => factory(documentId);
@@ -100,11 +118,11 @@ public static class BitBcrdt
     /// <para>
     /// One Server-specific consequence: a circuit outlives its browser tab by the circuit retention
     /// period, and its documents keep publishing presence until then, so a person who closed the tab
-    /// stays listed for minutes. To withdraw them as soon as the connection drops, register a
-    /// <c>CircuitHandler</c> that calls <see cref="BcrdtPresenceService.Suspend"/> on every open
-    /// document in <c>OnConnectionDownAsync</c> and <see cref="BcrdtPresenceService.Resume"/> in
-    /// <c>OnConnectionUpAsync</c>. It is not registered here because this package also runs in
-    /// WebAssembly, where circuits do not exist.
+    /// stays listed for minutes. To withdraw them as soon as the connection drops, also call
+    /// <c>AddBitBcrdtCircuitPresence</c> from <c>Bit.Bcrdt.Server</c>, whose circuit handler calls
+    /// <see cref="BcrdtPresenceService.Suspend"/> on every open document when the connection goes down
+    /// and <see cref="BcrdtPresenceService.Resume"/> when it comes back. It is not registered here
+    /// because this package also runs in WebAssembly, where circuits do not exist.
     /// </para>
     /// </remarks>
     public static IServiceCollection AddBitBcrdtServices(

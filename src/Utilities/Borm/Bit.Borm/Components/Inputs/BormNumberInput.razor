@@ -4,14 +4,14 @@
 @if (HasAffix)
 {
     <div class="bit-borm-affixed @(Context.HasError && Context.ShowMessages ? "bit-borm-affixed--invalid" : "")">
-        @if (!string.IsNullOrEmpty(Field.Prefix))
+        @if (!string.IsNullOrEmpty(Context.Prefix))
         {
-            <span class="bit-borm-affix bit-borm-affix--prefix" aria-hidden="true">@Field.Prefix</span>
+            <span class="bit-borm-affix bit-borm-affix--prefix" aria-hidden="true">@Context.Prefix</span>
         }
         @Control
-        @if (!string.IsNullOrEmpty(Field.Suffix))
+        @if (!string.IsNullOrEmpty(Context.Suffix))
         {
-            <span class="bit-borm-affix bit-borm-affix--suffix" aria-hidden="true">@Field.Suffix</span>
+            <span class="bit-borm-affix bit-borm-affix--suffix" aria-hidden="true">@Context.Suffix</span>
         }
     </div>
 }
@@ -21,29 +21,59 @@ else
 }
 
 @code {
+    // A field written as the user types is bound on input (see BormInputBase.OnTyped); one written on
+    // change keeps its value attribute, which does not change while the user types.
+    private RenderFragment Control => UpdatesOnInput ? LiveControl : CommittedControl;
+
     // Splat first: Blazor lets the last duplicate attribute win, so the renderer's own id and aria
     // wiring below always overrides what the schema supplied.
-    private RenderFragment Control => @<input @attributes="ExtraAttributes"
-                                              id="@Context.ElementId"
-                                              @ref="Element"
-                                              class="@CssClass"
-                                              type="number"
-                                              value="@Context.StringValue"
-                                              placeholder="@Field.Placeholder"
-                                              disabled="@Disabled"
-                                              readonly="@ReadOnly"
-                                              min="@MinAttribute"
-                                              max="@MaxAttribute"
-                                              step="@Step"
-                                              autocomplete="@Field.Autocomplete"
-                                              inputmode="@InputMode"
-                                              aria-required="@AriaRequired"
-                                              aria-invalid="@AriaInvalid"
-                                              aria-label="@AriaLabel"
-                                              aria-describedby="@DescribedBy"
-                                              @onchange="OnChange"
-                                              @oninput="InputHandler"
-                                              @onblur="OnBlur" />
+    private RenderFragment CommittedControl => @<input @attributes="ExtraAttributes"
+                                                       id="@Context.ElementId"
+                                                       name="@Context.InputName"
+                                                       @ref="Element"
+                                                       class="@CssClass"
+                                                       type="number"
+                                                       value="@Context.StringValue"
+                                                       placeholder="@Context.Placeholder"
+                                                       disabled="@Disabled"
+                                                       readonly="@ReadOnly"
+                                                       min="@MinAttribute"
+                                                       max="@MaxAttribute"
+                                                       step="@Step"
+                                                       autocomplete="@Field.Autocomplete"
+                                                       inputmode="@InputMode"
+                                                       aria-required="@AriaRequired"
+                                                       aria-invalid="@AriaInvalid"
+                                                       aria-label="@AriaLabel"
+                                                       aria-describedby="@DescribedBy"
+                                                       @onchange="OnChange"
+                                                       @oninput="InputHandler"
+                                                       @onblur="OnBlur" />
+    ;
+
+    private RenderFragment LiveControl => @<input @attributes="ExtraAttributes"
+                                                  id="@Context.ElementId"
+                                                  name="@Context.InputName"
+                                                  @ref="Element"
+                                                  class="@CssClass"
+                                                  type="number"
+                                                  @bind:get="LiveValue(Context.StringValue)"
+                                                  @bind:set="OnTyped"
+                                                  @bind:event="oninput"
+                                                  placeholder="@Context.Placeholder"
+                                                  disabled="@Disabled"
+                                                  readonly="@ReadOnly"
+                                                  min="@MinAttribute"
+                                                  max="@MaxAttribute"
+                                                  step="@Step"
+                                                  autocomplete="@Field.Autocomplete"
+                                                  inputmode="@InputMode"
+                                                  aria-required="@AriaRequired"
+                                                  aria-invalid="@AriaInvalid"
+                                                  aria-label="@AriaLabel"
+                                                  aria-describedby="@DescribedBy"
+                                                  @onchange="OnChange"
+                                                  @onblur="OnBlur" />
     ;
 
     // "any" lets the browser accept decimals; without it a step of 1 is assumed and 1.5 is rejected.
@@ -52,5 +82,5 @@ else
 
     private string InputMode => Field.InputMode ?? (Field.Type == BormFieldType.Integer ? "numeric" : "decimal");
 
-    private bool HasAffix => !string.IsNullOrEmpty(Field.Prefix) || !string.IsNullOrEmpty(Field.Suffix);
+    private bool HasAffix => !string.IsNullOrEmpty(Context.Prefix) || !string.IsNullOrEmpty(Context.Suffix);
 }

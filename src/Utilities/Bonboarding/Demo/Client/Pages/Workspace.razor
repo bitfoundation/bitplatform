@@ -17,8 +17,21 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A tour across two pages</h3>
     <p>
         The tour starts here, crosses to the settings page for two steps and comes back for the last one - the
-        navigation is the engine's, not this page's.
+        navigation is the engine's, not this page's. Things to try:
     </p>
+    <ol class="bb-detail-list">
+        <li>Run it and press Next: on the third step the engine navigates to the settings page, waits for it to render, and only then looks for the step's target.</li>
+        <li>
+            While the tour is on a settings step, press the browser's Back button to come back here. The tour holds its
+            place with nothing of it left on screen, so the whole site - the docs navigation included - is yours again,
+            and it resumes the moment you return to the settings page.
+        </li>
+        <li>
+            Reload the page part way through, then run the tour again: it resumes at the step you were on, because progress
+            is stored after every step and <code>StartAsync</code> resumes by default. Finish it and it starts from the top.
+        </li>
+        <li>Start it from the <a href="workspace/settings">settings page</a> instead: the engine navigates back here for the first step.</li>
+    </ol>
 
     <div class="bb-demo">
         <div class="bb-demo-bar">
@@ -27,23 +40,42 @@
             <a class="btn btn-secondary" href="workspace/settings">Go to settings manually</a>
         </div>
 
-        <div class="bb-note">
-            While the tour is on a settings step, try navigating back here with the docs navigation. The tour waits,
-            and resumes the moment you return.
-        </div>
-
         <AppWindow OnSettingsClick="GoToSettings" />
     </div>
+
+    <p>
+        The same tour is listed on the <a href="guidance">guidance page</a>'s tour list, which offers to resume it once
+        you have left it part way.
+    </p>
 </section>
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Giving a step a route</h3>
     <p>
-        The tour itself is plain data, defined once in C# and started from either page, which keeps its step ids
-        stable - what makes resuming across a reload work.
+        The tour itself is plain data, defined once in C# and started from either page. Give every step of a multi-page
+        tour an explicit <code>Id</code>: ids are what is stored, so they are what makes resuming across a reload work.
     </p>
+    <ul class="bb-detail-list">
+        <li>
+            A route is matched against the base-relative path, ignoring case, leading and trailing slashes, the query string and
+            the fragment: <code>"/settings/"</code>, <code>"settings"</code> and <code>"settings?tab=keys"</code> are one route.
+        </li>
+        <li>
+            A trailing <code>*</code> makes the route a constraint rather than a destination: the step waits until the user
+            is somewhere under it, and the engine does not navigate, since there is no single address to go to.
+        </li>
+        <li>
+            While a step waits for its route, the session is <code>Waiting</code> with <code>WaitReason = Route</code>, and
+            nothing is drawn - no overlay, no card - so the page stays fully usable. There is no timeout: a session waiting
+            on a route holds no observers and no timers, so waiting costs nothing.
+        </li>
+        <li>
+            <code>AutoNavigateToStepRoute = false</code>, set globally, turns navigation off entirely, so routes are only
+            ever constraints.
+        </li>
+    </ul>
 
-    <pre class="bb-code">@Example</pre>
+    <pre class="bb-code" tabindex="0">@Example</pre>
 </section>
 
 @code {
@@ -52,16 +84,36 @@
     private Task StartAsync() => BonboardingService.StartAsync(WorkspaceTour.Create());
 
     private const string Example = """
-        new BonboardingStepDefinition
+        public static class WorkspaceTour
         {
-            Id = "api-keys",
-            Route = "workspace/settings",        // navigate here first, then show the step
-            Target = BonboardingStepTarget.Anchor("api-keys"),
-            Title = "Your API keys",
+            public const string Id = "workspace";
+
+            public static BonboardingTourDefinition Create() => new()
+            {
+                Id = Id,
+                Version = 1,   // bump when an edit changes what a saved position means
+                Steps =
+                {
+                    new BonboardingStepDefinition { Id = "overview", Route = "workspace", Target = BonboardingStepTarget.Anchor("metrics"), ... },
+                    new BonboardingStepDefinition
+                    {
+                        Id = "api-keys",
+                        Route = "workspace/settings",   // navigate here first, then look for the target
+                        Target = BonboardingStepTarget.Anchor("api-keys"),
+                        Title = "API keys",
+                    },
+                    new BonboardingStepDefinition { Id = "back-home", Route = "workspace", ... },   // and back again
+                },
+            };
         }
 
-        // A trailing * makes the route a constraint rather than a destination:
-        // the step waits until the user is somewhere under /workspace, without navigating.
+        // Both pages:
+        <button @onclick="() => BonboardingService.StartAsync(WorkspaceTour.Create())">Run the multi-page tour</button>
+
+        // A constraint rather than a destination: wait until the user is somewhere under /workspace.
         new BonboardingStepDefinition { Route = "workspace/*", ... }
+
+        // Routes as constraints only, everywhere:
+        builder.Services.AddBitBonboardingServices(options => options.AutoNavigateToStepRoute = false);
         """;
 }

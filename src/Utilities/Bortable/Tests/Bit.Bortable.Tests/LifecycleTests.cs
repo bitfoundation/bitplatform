@@ -255,7 +255,7 @@ public class LifecycleTests : BortableTestContext
     }
 
     [TestMethod]
-    public async Task AListDisposedWhileTheBrowserMeasuresDoesNotBecomeTheDropTarget()
+    public async Task AListThatLeftThePageIgnoresALateDropPosition()
     {
         var l1 = RenderList(["A", "B"], "L1", p => p.Add(c => c.Group, "g"));
         var host = Render<Toggle>(p => p.AddChildContent<Bortable<string>>(l => l
@@ -266,19 +266,13 @@ public class LifecycleTests : BortableTestContext
         var l2 = host.FindComponent<Bortable<string>>();
 
         await DragStartAsync(l1, "A");
+        var bridgeOfL2 = Zone(l2);
 
-        // Registered last, so it is the one that answers the next dropIndex - and it has no answer yet: the
-        // dragover of L2 is left waiting on the browser, the way it waits on a round trip under Blazor Server.
-        var measuring = Module.Setup<int>("dropIndex", _ => true);
-        var dragOver = Container(l2).DragOverAsync(new DragEventArgs { ClientX = 10, ClientY = 20 });
-
-        // L2 leaves the page while the browser is still measuring, and only then does the answer arrive.
+        // L2 leaves the page while the browser's call naming it is still on its way (a round trip under Blazor Server).
         host.Render(p => p.Add(t => t.Show, false));
-        measuring.SetResult(0);
-        await dragOver;
+        Assert.AreEqual(-1, await Renderer.Dispatcher.InvokeAsync(() => bridgeOfL2.OverAsync(0)));
         await DropAsync(l1);
 
-        Assert.HasCount(1, measuring.Invocations["dropIndex"]);
         // Had the disposed L2 become the drop target, the drop would have moved A into a list nobody sees.
         Assert.AreEqual("A,B", Labels(l1));
         Assert.IsFalse(HasClass(l1, "A", "bit-bortable-hidden"));
@@ -298,43 +292,62 @@ public class LifecycleTests : BortableTestContext
     }
 
     [TestMethod]
-    public async Task ADisconnectedBrowserLayerTurnsTheDragIntoANoOp()
+    public async Task AnAbandonedDragDropsItsPendingPreviewAndKeepsWhatItAlreadyDid()
     {
-        List<string> items = ["A", "B"];
-        var list = RenderList(items);
+        List<string> left = ["A", "B", "C"], right = ["X"];
+        var log = new List<Raised<string>>();
+        var l1 = RenderList(left, "L1", p =>
+        {
+            p.Add(c => c.Group, "g");
+            Record(p, "L1", log);
+        });
+        var l2 = RenderList(right, "L2", p => p.Add(c => c.Group, "g"));
 
-        await DragStartAsync(list, "A");
-        // The circuit drops between two dragover events: the interop calls fail instead of answering.
-        // (Dispatched directly, as the DragOverAsync helper would set an answer again.)
-        DisconnectBrowserLayer();
-        await Container(list).DragOverAsync(new DragEventArgs());
-        await DropAsync(list);
+        await DragStartAsync(l1, "A");
+        await DragOverAsync(l1, 2);
+        await DragOverAsync(l2, 1);
+        // The browser lost the end of the drag (its element was removed, and no dragend ever came).
+        await EndAsync(l1, "abandon");
 
-        Assert.AreSequenceEqual(["A", "B"], items);
+        Assert.AreSequenceEqual(["B", "A", "C"], left);
+        Assert.AreSequenceEqual(["X"], right);
+        Assert.IsNull(Placeholder(l2));
+        Assert.IsFalse(HasClass(l1, "A", "bit-bortable-hidden"));
+        Assert.AreEqual("Start:L1 Change:L1 ItemsChanged:L1 Update:L1 Sort:L1 End:L1", Sequence(log));
         Assert.IsNull(Coordinator.Context);
     }
 
     [TestMethod]
-    public async Task UntilTheModuleIsImportedADragChangesNothing()
+    public async Task TheEndCanBeReportedThroughAnyListOfThePage()
     {
-        // Prerendered, or interactive but still waiting for the module: the import has not completed.
+        List<string> left = ["A"], right = ["X"];
+        var l1 = RenderList(left, "L1", p => p.Add(c => c.Group, "g"));
+        var l2 = RenderList(right, "L2", p => p.Add(c => c.Group, "g"));
+
+        await DragStartAsync(l1, "A");
+        await DragOverAsync(l2, 0);
+        // The browser layer falls back to another list's bridge when the source list's is gone.
+        await DropAsync(l2);
+
+        Assert.IsEmpty(left);
+        Assert.AreSequenceEqual(["A", "X"], right);
+    }
+
+    [TestMethod]
+    public void UntilTheModuleIsImportedTheListIsNotRegistered()
+    {
+        // Prerendered, or interactive but still waiting for the module: the import has not completed, so the
+        // browser layer does not know the list and routes no drag to it.
         using var pending = new BunitContext();
         pending.JSInterop.Mode = JSRuntimeMode.Loose;
         pending.Services.AddBitBortableServices();
         pending.JSInterop.AddInvocationHandler(new PendingImport());
-        List<string> items = ["A", "B"];
-        var list = pending.Render<Bortable<string>>(p => p
-            .Add(c => c.Items, items)
+        pending.Render<Bortable<string>>(p => p
+            .Add(c => c.Items, new List<string> { "A", "B" })
             .Add(c => c.ItemTemplate, i => $"<span>{i}</span>"));
 
-        // B, so that a module answering anything at all (loose mode would say 0) would move it.
-        await ItemElement(list, "B").DragStartAsync(ListDragStart());
-        await Container(list).DragOverAsync(new DragEventArgs());
-        await Container(list).DropAsync(new DragEventArgs());
-
         Assert.ContainsSingle(pending.JSInterop.Invocations["import"]);
-        Assert.AreSequenceEqual(["A", "B"], items);
-        Assert.IsNull(pending.Services.GetRequiredService<BortableService>().Context);
+        Assert.IsEmpty(pending.JSInterop.Invocations.Where(i => i.Identifier == "register"));
     }
 
     /// <summary>Answers the module import with a task that never completes.</summary>

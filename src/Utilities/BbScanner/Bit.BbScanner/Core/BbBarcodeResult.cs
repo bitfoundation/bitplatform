@@ -40,9 +40,10 @@ public sealed class BbBarcodeResult
     public DateTimeOffset Timestamp { get; }
 
     /// <summary>
-    /// Corner or locator points in frame pixel coordinates. Ordering is symbology specific:
-    /// matrix codes report corners clockwise from the top-left, linear codes report the two
-    /// ends of the scanned line. Empty when the decoder could not supply positions.
+    /// Where the symbol is, in frame pixel coordinates. Matrix codes report their four outer
+    /// corners clockwise from the symbol's own top-left, whichever way up it is held; linear
+    /// codes report the two ends of the scanned line. Empty when the decoder could not supply
+    /// positions.
     /// </summary>
     public IReadOnlyList<BbScanPoint> Corners { get; }
 

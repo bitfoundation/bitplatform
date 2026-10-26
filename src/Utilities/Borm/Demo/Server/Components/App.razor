@@ -18,6 +18,7 @@
     <meta property="og:site_name" content="Bit.Borm" />
     <meta property="og:title" content="Borm - schema-driven forms for Blazor" />
     <meta property="og:description" content="Describe a form once - from a C# type, a fluent builder or JSON Schema - and Borm renders it, validates it and keeps its state, with every decision made in C#." />
+    <meta property="og:image" content="https://borm.bitplatform.dev/icon-512.png" />
     <meta name="twitter:card" content="summary" />
 
     <ResourcePreloader />
@@ -35,8 +36,10 @@
     @* Synchronous on purpose: applies the light/dark theme before first paint. *@
     <script src="@Assets["theme.js"]"></script>
     <ImportMap />
+    <link rel="icon" href="favicon.ico" sizes="32x32" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+    <HeadOutlet @rendermode="PageRenderMode" />
 </head>
 
 @* data-enhance-nav="false": a link followed before the WebAssembly runtime has started is a plain
@@ -48,7 +51,7 @@
     @* InteractiveWebAssembly: validation, conditions and computed values run on every keystroke a
        field writes, and on WebAssembly none of them waits on a network round trip. The pages are still
        prerendered, so the first response carries the form. *@
-    <Routes @rendermode="InteractiveWebAssembly" />
+    <Routes @rendermode="PageRenderMode" />
     <div id="blazor-error-ui" data-nosnippet>
         An unhandled error has occurred.
         <a href="." class="reload">Reload</a>
@@ -59,3 +62,11 @@
 </body>
 
 </html>
+
+@code {
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+
+    // Every page runs on WebAssembly, except one marked [ExcludeFromInteractiveRouting]: the page that shows a Borm
+    // form posted with no interactivity at all, which has to be rendered on the server and stay there.
+    private IComponentRenderMode? PageRenderMode => HttpContext.AcceptsInteractiveRouting() ? InteractiveWebAssembly : null;
+}

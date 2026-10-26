@@ -1,0 +1,144 @@
+﻿@page "/examples/confirm-connection"
+
+<PageTitle>Confirm Connection · Blow</PageTitle>
+
+<ExampleScaffold Title="Confirm Connection"
+                 Summary="OnBeforeConnect has the last word on a connection the user has just made - an asynchronous check, such as asking a server whether they may. The edge is added, or a reconnected edge rewired, only if it answers yes, and OnConnectEnd then reports the outcome.">
+    <Toolbar>
+        <label>
+            Server
+            <select @bind="_answer">
+                <option value="approve">approves everything</option>
+                <option value="publish">refuses edges into Publish</option>
+                <option value="deny">refuses everything</option>
+            </select>
+        </label>
+        <label>
+            Latency
+            <input type="range" min="0" max="3000" step="250" @bind="_latency" @bind:event="oninput" />
+            @_latency ms
+        </label>
+        <label><input type="checkbox" @bind="_checkWhileDragging" /> Refuse edges into Publish while dragging</label>
+        <button class="btn btn-secondary" @onclick="Reset">Reset</button>
+        <span class="bb-muted" aria-live="polite">@(_pending == 0 ? "Server idle." : $"Waiting for {_pending} answer(s)...")</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    OnBeforeConnect="ConfirmAsync"
+                    IsValidConnection="DragRule"
+                    OnConnectEnd="OnConnectEnd"
+                    OnReconnectEnd="OnReconnectEnd">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+    <Footer>
+        @* Under the canvas: a log over it grew across the nodes as the answers came in. *@
+        <div class="cf-title">Events</div>
+        @if (_log.Count == 0)
+        {
+            <div class="cf-empty">Connect Draft to Archive and watch the server's answer arrive.</div>
+        }
+        @foreach (var entry in _log)
+        {
+            <div class="cf-row">@entry</div>
+        }
+    </Footer>
+    <TryIt>
+        <li><strong>Drag</strong> from Draft's handle to Archive's and let go: the line disappears at once, the toolbar says it is waiting, and after the <strong>Latency</strong> the server's answer arrives and the edge appears. The log under the canvas shows each step.</li>
+        <li>Set <strong>Server</strong> to <em>refuses everything</em> and connect again: no edge, and <code>OnConnectEnd</code> reports <code>IsValid = false</code> with <code>Rejection = RejectedByRule</code>.</li>
+        <li><strong>Click</strong> the Draft-to-Review edge to select it, then <strong>drag</strong> the dot at its Review end onto Archive or Publish: the server is asked about the rewired edge too, and a refusal leaves it where it was (<code>OnReconnectEnd</code> says <code>Rewired = false</code>).</li>
+        <li>Set <strong>Server</strong> to <em>refuses edges into Publish</em> and drag to Publish: its handle still turns green, because the server's rule cannot be seen until you let go. Tick <strong>Refuse edges into Publish while dragging</strong>: the same rule, now synchronous, turns the handle red, and a drop there is refused without asking the server.</li>
+        <li>Slide <strong>Latency</strong> to 3000 ms and draw the same connection twice before the first answer: both were allowed when you let go, but when the second answer arrives the edge exists, so the canvas checks again and refuses it as a <em>Duplicate</em>. <strong>Reset</strong> restores the graph and clears the log.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>OnBeforeConnect</code> is a <code>Func&lt;BlowConnection, Task&lt;bool&gt;&gt;</code>, called once when the user lets go on a handle that accepts the connection - after every synchronous rule has passed. Returning true adds the edge; false abandons it. This page stands in for a server with <code>Task.Delay</code>, and calls <code>StateHasChanged</code> itself, since a <code>Func</code> is not an <code>EventCallback</code>.</li>
+        <li>It confirms a reconnected edge the same way: the <code>BlowConnection</code> it receives is the edge's new wiring, and the edge is rewired only on true.</li>
+        <li>The line goes when the user lets go, not when the answer comes, so the next connection can be started while one is waiting. The graph may change meanwhile, so when the answer is yes the connection is checked against every rule again and dropped if it no longer passes.</li>
+        <li><code>OnConnectEnd</code> arrives after the answer: <code>IsValid</code> when the edge was made, otherwise a <code>Rejection</code> - <code>RejectedByRule</code> for a no, or the reason the second check failed. <code>OnReconnectEnd</code> follows with <code>Rewired</code>. An exception thrown by the confirmation reaches the renderer like one from an event handler.</li>
+        <li>Rules a connection must pass while it is dragged belong in <code>IsValidConnection</code>: it is synchronous because it runs for every handle on every frame of the drag, and its verdict colours the handles. <code>OnBeforeConnect</code> is for what only a slower authority can answer - a permission, a quota, a lock held by someone else.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .cf-title { font-weight: 600; margin-bottom: 4px; }
+    .cf-empty { color: var(--bb-text-soft); }
+    .cf-row { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; padding: 1px 0; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private readonly List<string> _log = [];
+    private string _answer = "approve";
+    private int _latency = 1000;
+    private bool _checkWhileDragging;
+    private int _pending;
+
+    // The same rule the server can apply, checked while dragging instead: null when the box is unticked.
+    private Func<BlowConnection, bool>? DragRule => _checkWhileDragging ? c => c.Target != "publish" : null;
+
+    protected override void OnInitialized() => Reset();
+
+    private void Reset()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "draft", Type = "input", Label = "Draft", Position = new(200, 0) },
+            new BlowNode { Id = "review", Label = "Review", Position = new(40, 130) },
+            new BlowNode { Id = "archive", Type = "output", Label = "Archive", Position = new(360, 130) },
+            new BlowNode { Id = "publish", Type = "output", Label = "Publish", Position = new(200, 260) },
+        ];
+        _edges = [new BlowEdge { Id = "e-draft-review", Source = "draft", Target = "review" }];
+        _log.Clear();
+    }
+
+    private async Task<bool> ConfirmAsync(BlowConnection connection)
+    {
+        // The answer is settled when the question is asked; the delay stands in for the round trip.
+        var approve = _answer switch
+        {
+            "deny" => false,
+            "publish" => connection.Target != "publish",
+            _ => true,
+        };
+        var latency = _latency;
+
+        _pending++;
+        Log($"OnBeforeConnect: asking about {Describe(connection)}, answer in {latency} ms");
+        StateHasChanged();
+
+        await Task.Delay(latency);
+
+        _pending--;
+        Log($"server: {(approve ? "yes" : "no")} to {Describe(connection)}");
+        StateHasChanged();
+        return approve;
+    }
+
+    private void OnConnectEnd(BlowConnectEndInfo end)
+    {
+        var outcome = end.IsValid
+            ? end.IsReconnect ? "the edge was rewired" : "the edge was added"
+            : end.Rejection switch
+            {
+                BlowConnectionRejection.None => "nothing was dropped on a handle, so the server was not asked",
+                BlowConnectionRejection.RejectedByRule => "refused by the server, or by IsValidConnection",
+                var other => $"refused: {other}",
+            };
+        Log($"OnConnectEnd: IsValid = {(end.IsValid ? "true" : "false")}, Rejection = {end.Rejection}, IsReconnect = {(end.IsReconnect ? "true" : "false")} - {outcome}");
+    }
+
+    private void OnReconnectEnd(BlowEdgeReconnectEnd end) =>
+        Log($"OnReconnectEnd: Rewired = {(end.Rewired ? "true" : "false")} for edge {end.Edge.Id}");
+
+    private string Describe(BlowConnection c) => $"{Name(c.Source)} → {Name(c.Target)}";
+
+    private string Name(string? nodeId) => _nodes.FirstOrDefault(n => n.Id == nodeId)?.Label ?? nodeId ?? "?";
+
+    private void Log(string message)
+    {
+        _log.Insert(0, message);
+        if (_log.Count > 14) _log.RemoveAt(_log.Count - 1);
+    }
+}

@@ -19,17 +19,35 @@ public sealed partial class BonboardingTour : ComponentBase, IAsyncDisposable
 
     [Inject] private IBonboardingService BonboardingService { get; set; } = default!;
 
+    [Inject] private TimeProvider Time { get; set; } = default!;
+
     /// <summary>Stable identifier, also used as the persistence key.</summary>
     [Parameter, EditorRequired] public required string Id { get; set; }
 
     /// <summary>Human-readable name, used as the dialog label when a step has no title.</summary>
     [Parameter] public string? Title { get; set; }
 
+    /// <summary>What the tour shows, for a list of tours a user can pick from.</summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>Gate evaluated before the tour starts; returning false keeps it from starting.</summary>
+    [Parameter] public Func<BonboardingTourContext, ValueTask<bool>>? CanStart { get; set; }
+
+    /// <summary>Arbitrary payload carried through to callbacks and analytics.</summary>
+    [Parameter] public object? Data { get; set; }
+
     /// <summary>Bump this after editing the steps to discard stale saved progress.</summary>
     [Parameter] public int Version { get; set; } = 1;
 
-    /// <summary>Whether the tour starts itself once its markup is on screen.</summary>
+    /// <summary>
+    /// Whether the tour starts itself once its markup is on screen. An automatic start never interrupts a tour the
+    /// user is taking: it queues behind it (see <see cref="BonboardingBusyBehavior.Queue"/>), and it passes over a
+    /// tour the user snoozed.
+    /// </summary>
     [Parameter] public BonboardingAutoStart AutoStart { get; set; } = BonboardingAutoStart.None;
+
+    /// <summary>Order among queued automatic starts; see <see cref="BonboardingTourDefinition.Priority"/>.</summary>
+    [Parameter] public int Priority { get; set; }
 
     /// <summary>The steps.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -50,6 +68,23 @@ public sealed partial class BonboardingTour : ComponentBase, IAsyncDisposable
     [Parameter] public bool? CloseOnOverlayClick { get; set; }
     [Parameter] public bool? Persist { get; set; }
     [Parameter] public BonboardingLabels? Labels { get; set; }
+    [Parameter] public bool? ShowNext { get; set; }
+    [Parameter] public double? Offset { get; set; }
+    [Parameter] public double? OverlayOpacity { get; set; }
+    [Parameter] public double? SpotlightPadding { get; set; }
+    [Parameter] public double? SpotlightRadius { get; set; }
+    [Parameter] public BonboardingSpotlightShape? SpotlightShape { get; set; }
+    [Parameter] public BonboardingScrollMode? Scroll { get; set; }
+    [Parameter] public BonboardingMissingTargetBehavior? MissingTarget { get; set; }
+    [Parameter] public TimeSpan? WaitTimeout { get; set; }
+    [Parameter] public BonboardingMissingTargetBehavior? WaitTimeoutBehavior { get; set; }
+    [Parameter] public TimeSpan? AnimationDuration { get; set; }
+    [Parameter] public int? ZIndex { get; set; }
+    [Parameter] public string? PopoverClass { get; set; }
+    [Parameter] public bool? KeyboardNavigation { get; set; }
+    [Parameter] public bool? TrapFocus { get; set; }
+    [Parameter] public bool? RestoreFocus { get; set; }
+    [Parameter] public bool? AutoFocus { get; set; }
 
     /// <summary>Replaces the popover contents for every step that has no template of its own.</summary>
     [Parameter] public RenderFragment<BonboardingStepRenderContext>? Template { get; set; }
@@ -99,21 +134,25 @@ public sealed partial class BonboardingTour : ComponentBase, IAsyncDisposable
 
         if (Definition.Steps.Count == 0) return;
 
-        if (AutoStart == BonboardingAutoStart.Once)
+        // Nobody asked for this start, so it waits for a tour already running rather than taking its place.
+        var options = new BonboardingStartOptions { WhenBusy = BonboardingBusyBehavior.Queue };
+
+        try
         {
-            await BonboardingService.StartOnceAsync(Definition);
+            if (AutoStart == BonboardingAutoStart.Once)
+            {
+                await BonboardingService.StartOnceAsync(Definition, options);
+            }
+            else if (await BonboardingService.GetRecordAsync(Id) is not { } record || !record.IsSnoozedAt(Time.GetUtcNow()))
+            {
+                await BonboardingService.StartAsync(Definition, options);
+            }
         }
-        else
+        catch (BonboardingException)
         {
-            try
-            {
-                await BonboardingService.StartAsync(Definition);
-            }
-            catch (BonboardingException)
-            {
-                // CanStart declined. An automatic start has no caller to report that to, and an
-                // exception escaping a lifecycle method would take the whole circuit down.
-            }
+            // CanStart declined, or the definition is invalid (the service has logged why). An automatic
+            // start has no caller to report that to, and an exception escaping a lifecycle method would
+            // take the whole circuit down.
         }
     }
 
@@ -169,6 +208,10 @@ public sealed partial class BonboardingTour : ComponentBase, IAsyncDisposable
 
         definition.Id = Id;
         definition.Title = Title;
+        definition.Description = Description;
+        definition.CanStart = CanStart;
+        definition.Data = Data;
+        definition.Priority = Priority;
         definition.Version = Version;
         definition.Persist = Persist;
         definition.Labels = Labels;
@@ -186,6 +229,23 @@ public sealed partial class BonboardingTour : ComponentBase, IAsyncDisposable
         definition.ShowPrevious = ShowPrevious;
         definition.CloseOnEscape = CloseOnEscape;
         definition.CloseOnOverlayClick = CloseOnOverlayClick;
+        definition.ShowNext = ShowNext;
+        definition.Offset = Offset;
+        definition.OverlayOpacity = OverlayOpacity;
+        definition.SpotlightPadding = SpotlightPadding;
+        definition.SpotlightRadius = SpotlightRadius;
+        definition.SpotlightShape = SpotlightShape;
+        definition.Scroll = Scroll;
+        definition.MissingTarget = MissingTarget;
+        definition.WaitTimeout = WaitTimeout;
+        definition.WaitTimeoutBehavior = WaitTimeoutBehavior;
+        definition.AnimationDuration = AnimationDuration;
+        definition.ZIndex = ZIndex;
+        definition.PopoverClass = PopoverClass;
+        definition.KeyboardNavigation = KeyboardNavigation;
+        definition.TrapFocus = TrapFocus;
+        definition.RestoreFocus = RestoreFocus;
+        definition.AutoFocus = AutoFocus;
 
         // Marshalled onto the renderer: the session can reach these from a browser callback or from
         // code running off the renderer, and an EventCallback re-renders the component that owns
@@ -234,22 +294,27 @@ public sealed partial class BonboardingTour : ComponentBase, IAsyncDisposable
         {
             BonboardingTourEndReason.Completed => session.CompleteAsync(cancellationToken),
             BonboardingTourEndReason.Skipped => session.SkipAsync(cancellationToken),
+            BonboardingTourEndReason.Snoozed => session.SnoozeAsync(BonboardingDefaults.SnoozeDuration, cancellationToken),
+            BonboardingTourEndReason.Cancelled => session.CancelAsync(cancellationToken),
             _ => session.DismissAsync(cancellationToken),
         };
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
-        if (_disposed) return ValueTask.CompletedTask;
+        if (_disposed) return;
         _disposed = true;
 
         // Leave a running session alone: the tour may legitimately outlive the markup that
         // declared it, for instance while navigating between the pages of a multi-page tour.
-        if (!IsLive)
-        {
-            BonboardingService.Unregister(Id);
-        }
+        if (IsLive) return;
 
-        return ValueTask.CompletedTask;
+        BonboardingService.Unregister(Id);
+
+        // An automatic start still waiting for its turn was for this page; the page is gone.
+        if (Session is { Status: BonboardingTourStatus.Idle } waiting)
+        {
+            await waiting.CancelAsync();
+        }
     }
 }

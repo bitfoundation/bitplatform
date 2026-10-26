@@ -13,9 +13,19 @@
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
   </PropertyGroup>
 
+  <!-- Every stage of the decoder is a C# pixel loop, and on Blazor's IL interpreter a 640x480 frame took 90 to 150 ms
+       in Chromium on a desktop where the same frame compiled ahead of time took under 2 ms (the README's performance
+       section has the measurements). The deployed site is therefore compiled ahead of time - but only on a Release
+       publish, the one place AOT applies anyway: it needs the wasm-tools workload and adds minutes to the build.
+       The CD workflow publishes the Server project, whose nested publish of this project carries
+       WasmBuildingForNestedPublish=true, as Bmage's demo does. Pass -p:RunAOTCompilation=false to publish without it. -->
+  <PropertyGroup Condition="'$(RunAOTCompilation)' == '' and '$(Configuration)' == 'Release' and ('$(_IsPublishing)' == 'true' or '$(WasmBuildingForNestedPublish)' == 'true')">
+    <RunAOTCompilation>true</RunAOTCompilation>
+  </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.13" />
-    <PackageReference Include="Bit.Minifier" Version="10.7.0-pre-04" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.14" />
+    <PackageReference Include="Bit.Minifier" Version="10.7.0" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>

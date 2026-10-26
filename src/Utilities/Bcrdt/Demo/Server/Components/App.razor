@@ -16,6 +16,7 @@
     <meta property="og:site_name" content="Bit.Bcrdt" />
     <meta property="og:title" content="Bcrdt - real-time collaboration for .NET and Blazor" />
     <meta property="og:description" content="A CRDT engine, sync, presence, offline-first persistence and selective undo, written in C# - no JavaScript CRDT library, no interop in the engine." />
+    <meta property="og:image" content="https://bcrdt.bitplatform.dev/icon-512.png" />
     <meta name="twitter:card" content="summary" />
 
     <ResourcePreloader />
@@ -29,7 +30,9 @@
     @* Synchronous on purpose: applies the light/dark theme before first paint. *@
     <script src="@Assets["theme.js"]"></script>
     <ImportMap />
+    <link rel="icon" href="favicon.ico" sizes="32x32" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
     <HeadOutlet @rendermode="InteractiveWebAssembly" />
 </head>
 

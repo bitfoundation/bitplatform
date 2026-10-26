@@ -28,10 +28,9 @@
         creates its own and shares it with the components inside it. In a Blazor Web App, register it in both
         <code>Program.cs</code> files - the pages are prerendered on the server before they run in the browser.
     </p>
-    <pre class="bb-code"><span class="c">// Program.cs - in every project that renders the components</span>
-builder.Services.AddBitBdndServices();</pre>
+    <CodeBlock Language="csharp" Code="@RegisterCode" />
     <p class="bb-card-desc">And the namespace, in <code>_Imports.razor</code>:</p>
-    <pre class="bb-code"><span class="k">@@using</span> Bit.Bdnd</pre>
+    <CodeBlock Code="@ImportsCode" />
     <div class="bb-note">
         There is no stylesheet to link and no script tag to add: the components import their module,
         <code>_content/Bit.Bdnd/bit-bdnd.js</code>, themselves the first time they need it.
@@ -47,51 +46,18 @@ builder.Services.AddBitBdndServices();</pre>
         <code>IsDragging</code> for a source, <code>IsOver</code> and <code>CanDrop</code> for a target - to
         render from.
     </p>
-    <pre class="bb-code">&lt;<span class="k">BdndProvider</span>&gt;
-    @@foreach (<span class="k">var</span> name <span class="k">in</span> _boxes)
-    {
-        &lt;<span class="k">BdndDraggable</span> TItem=<span class="s">"string"</span> Type=<span class="s">"box"</span> Item=<span class="s">"name"</span> Context=<span class="s">"drag"</span>&gt;
-            &lt;<span class="k">div</span> class=<span class="s">"box"</span> style=<span class="s">"opacity: @@(drag.IsDragging ? 0.4 : 1)"</span>&gt;
-                @@name
-            &lt;/<span class="k">div</span>&gt;
-        &lt;/<span class="k">BdndDraggable</span>&gt;
-    }
-
-    &lt;<span class="k">BdndDropTarget</span> TItem=<span class="s">"string"</span> Accept=<span class="s">"box"</span> OnDrop=<span class="s">"HandleDrop"</span> Context=<span class="s">"drop"</span>&gt;
-        &lt;<span class="k">div</span> class=<span class="s">"dustbin"</span>
-             style=<span class="s">"background: @@(drop.IsOver ? "#15803d" : "#1f2430")"</span>&gt;
-            @@(drop.IsOver ? <span class="s">"Release to drop"</span> : _label)
-        &lt;/<span class="k">div</span>&gt;
-    &lt;/<span class="k">BdndDropTarget</span>&gt;
-&lt;/<span class="k">BdndProvider</span>&gt;
-
-<span class="k">@@code</span> {
-    <span class="k">private readonly string</span>[] _boxes = [<span class="s">"Glass"</span>, <span class="s">"Banana"</span>, <span class="s">"Paper"</span>];
-    <span class="k">private string</span> _label = <span class="s">"Drag a box here"</span>;
-
-    <span class="k">private void</span> HandleDrop(BdndDropEventArgs&lt;<span class="k">string</span>&gt; e)
-        =&gt; _label = <span class="s">$"Dropped: {e.Item}"</span>;
-}</pre>
 
     <div class="bb-demo">
         <div class="bb-demo-bar"><span class="bb-demo-label">Live</span></div>
-        <BdndProvider>
-            <div class="row-wrap">
-                @foreach (var name in _boxes)
-                {
-                    <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="name" Context="drag">
-                        <div class="box" style="opacity:@(drag.IsDragging ? "0.4" : "1")">@name</div>
-                    </BdndDraggable>
-                }
-            </div>
+        <FirstDrop />
 
-            <BdndDropTarget TItem="string" Accept="@ItemTypes.Box" OnDrop="HandleDrop" Context="drop" style="display:contents">
-                <div class="dustbin" style="margin-top:1.5rem;background:@(drop.IsOver ? "#15803d" : "#1f2430")">
-                    @(drop.IsOver ? "Release to drop" : _label)
-                </div>
-            </BdndDropTarget>
-        </BdndProvider>
+        <p class="demo-caption">
+            Drag a box with the mouse, press and hold one with a finger, or <kbd>Tab</kbd> to it and press
+            <kbd>Space</kbd>, an arrow key and <kbd>Space</kbd> again: the same markup takes all three.
+        </p>
     </div>
+
+    <CodeBlock Code="@FirstDropCode" />
 
     <div class="bb-note">
         Three things make this work: the components sit inside one <code>BdndProvider</code>; the draggable's
@@ -128,8 +94,16 @@ builder.Services.AddBitBdndServices();</pre>
                     <td><code>IBdndMonitor</code>, a read-only view of the live drag state, on every collected state and callback argument as <code>Monitor</code>.</td>
                 </tr>
                 <tr>
-                    <td class="bb-table-key">Backend</td>
-                    <td>The browser's native HTML5 drag events, so files, text and links dragged in from outside the browser drop too.</td>
+                    <td class="bb-table-key">Callbacks</td>
+                    <td><code>OnBegin</code> and <code>OnEnd</code> on a source; <code>OnHover</code>, <code>OnEnter</code>, <code>OnLeave</code> and <code>OnDrop</code> on a target; <code>OnDragStart</code> and <code>OnDragEnd</code> on the provider for every drag. A target can publish a result from <code>OnDrop</code>, which the source's <code>OnEnd</code> receives with <code>DidDrop</code>.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Input</td>
+                    <td>The browser's own HTML5 drag and drop for the mouse - so files, text and links dragged in from outside the browser drop too - pointer events for touch and pen, and the keyboard (<kbd>Space</kbd>, the arrow keys, <kbd>Space</kbd>) for everyone. Every input runs the same callbacks.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Styling hooks</td>
+                    <td>Hosts carry <code>data-bit-bdnd-dragging</code>, <code>data-bit-bdnd-can-drop</code>, <code>data-bit-bdnd-over</code>, <code>data-bit-bdnd-over-shallow</code> and <code>data-bit-bdnd-edge</code> while a drag is in progress, so a stylesheet can follow it. Bdnd ships no stylesheet of its own.</td>
                 </tr>
             </tbody>
         </table>
@@ -140,16 +114,26 @@ builder.Services.AddBitBdndServices();</pre>
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Where to go next</h3>
     <div class="bb-try">
         <a href="tutorial" class="btn btn-outline">Allow only legal moves →</a>
-        <a href="sortable/simple" class="btn btn-outline">Reorder a list →</a>
+        <a href="sortable/indicators" class="btn btn-outline">Reorder a list →</a>
         <a href="drag-around/custom-layer" class="btn btn-outline">Draw your own preview →</a>
         <a href="customize/handles" class="btn btn-outline">Drag by a handle →</a>
+        <a href="customize/pointer" class="btn btn-outline">Drag on a touch screen →</a>
+        <a href="accessibility/keyboard" class="btn btn-outline">Drag with the keyboard →</a>
         <a href="other/native-files" class="btn btn-outline">Accept dropped files →</a>
+        <a href="other/drag-events" class="btn btn-outline">Watch every drag →</a>
     </div>
 </div>
 
 @code {
-    private readonly string[] _boxes = ["Glass", "Banana", "Paper"];
-    private string _label = "Drag a box here";
+    // The snippets the page shows, coloured by CodeBlock.
 
-    private void HandleDrop(BdndDropEventArgs<string> e) => _label = $"Dropped: {e.Item}";
+    private const string RegisterCode = """
+        // Program.cs - in every project that renders the components
+        builder.Services.AddBitBdndServices();
+        """;
+
+    private const string ImportsCode = "@using Bit.Bdnd";
+
+    // The live sample's own source, read at build time, so the code under the sample is the code that runs it.
+    private static readonly string FirstDropCode = DemoSources.Components["FirstDrop.razor"];
 }

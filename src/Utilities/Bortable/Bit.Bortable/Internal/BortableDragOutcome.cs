@@ -1,4 +1,4 @@
-namespace Bit.Bortable;
+﻿namespace Bit.Bortable;
 
 /// <summary>
 /// What a finished drag still has to tell the app. It is worked out while the drag handlers are serialized
@@ -18,4 +18,7 @@ internal sealed class BortableDragOutcome
 
     /// <summary>Whether the drag changed the source list.</summary>
     public bool SourceChanged { get; init; }
+
+    /// <summary>The drag whose outcome this is, kept to put its lists back should the destination refuse it.</summary>
+    public required BortableDragContext Context { get; init; }
 }

@@ -16,6 +16,13 @@ export function ping() {
     return performance.now();
 }
 
+// Constructed, read and written from .NET 10 (InvokeConstructorAsync, GetValueAsync, SetValueAsync).
+export class Tally {
+    constructor(start) {
+        this.count = start;
+    }
+}
+
 export function throwError() {
     throw new Error("Simulated JavaScript failure from interop.js");
 }

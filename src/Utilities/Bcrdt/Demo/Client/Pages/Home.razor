@@ -116,10 +116,19 @@
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> A merge you choose</h3>
                 <p class="bb-card-desc">
-                    A map entry is last-writer-wins, a nested text merges character by character - the field type you
-                    pick decides what happens when two people edit it at once.
+                    A map entry is last-writer-wins, a set keeps both people's additions, a nested text merges
+                    character by character - the field type you pick decides what happens when two people edit it at
+                    once.
                 </p>
                 <a href="form" class="btn btn-outline">Collaborative form →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Rich text</h3>
+                <p class="bb-card-desc">
+                    Bold, italic and any mark of your own, placed without moving a character, merged like any edit and
+                    read back as a Quill-style delta for the editor you bring.
+                </p>
+                <a href="rich-text" class="btn btn-outline">Rich text →</a>
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Conflicts, on purpose</h3>
@@ -138,10 +147,26 @@
                 <a href="undo" class="btn btn-outline">Collaborative undo →</a>
             </section>
             <section class="bb-card">
-                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Live, across tabs</h3>
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Version history</h3>
                 <p class="bb-card-desc">
-                    One replica per browser tab, through a SignalR hub or a WebSocket endpoint that only relays - no
-                    copy of the document lives on the server.
+                    A saved version is a snapshot of a few dozen bytes, not a copy: preview the document as it was, and
+                    restore it as an ordinary edit that merges with everyone else's.
+                </p>
+                <a href="history" class="btn btn-outline">Version history →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Internals, measured</h3>
+                <p class="bb-card-desc">
+                    State vectors, block counts, the size of every update, the deltas views patch from and the
+                    library's own metrics - the efficiency claims, checked rather than asserted.
+                </p>
+                <a href="internals" class="btn btn-outline">Internals →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Live, across tabs</h3>
+                <p class="bb-card-desc">
+                    One replica per browser tab, through a SignalR hub or a WebSocket endpoint, with a server-side
+                    copy that outlives every tab - and a read-only link the server enforces.
                 </p>
                 <a href="live" class="btn btn-outline">Live, across tabs →</a>
             </section>
@@ -176,11 +201,13 @@
                     <p>
                         <code>BcrdtHub</code> forwards each message to the other clients of a document without
                         decoding it, and holds no copy of it. The WebSocket endpoint does the same for the built-in
-                        WebSocket transport.
+                        WebSocket transport. Add a document host and the server keeps a stored replica of every
+                        document as well.
                     </p>
                     <a href="live">Live, across tabs →</a>
                 </div>
                 <pre class="bb-code">builder.Services.AddBitBcrdtHub();
+builder.Services.AddBitBcrdtDocumentHost(_ =&gt; <span class="k">new</span>() { Store = store });   <span class="c">// optional</span>
 <span class="c">// ...</span>
 app.MapHub&lt;BcrdtHub&gt;(<span class="s">"/hub/bcrdt"</span>);</pre>
             </div>
@@ -294,6 +321,33 @@ app.MapHub&lt;BcrdtHub&gt;(<span class="s">"/hub/bcrdt"</span>);</pre>
                     Nothing special. Local edits accumulate in the document, the sync provider reconnects with jittered
                     backoff, and the handshake sends each side what the other is missing - in both directions. There is no
                     outbound queue: the document is the queue, and it compacts itself.
+                </p>
+            </details>
+            <details>
+                <summary>Can the server keep the documents, and decide who may edit them?</summary>
+                <p>
+                    Yes, both. A <code>BcrdtDocumentHost</code> joins every room as one more peer, stores every change and
+                    hands the whole document to whoever joins, so a document outlives every tab that had it open. The
+                    relays ask your code, per connection and document, for no access, read-only or read-write - and drop
+                    every change a read-only connection sends. The document host can also check each change against
+                    rules of your own before anyone else receives it.
+                </p>
+            </details>
+            <details>
+                <summary>Does it do rich text and version history?</summary>
+                <p>
+                    Rich text, as the Quill model: a <code>BcrdtText</code> carries formatting marks and embeds and reads
+                    back as a delta - there is no ready-made rich-text editor component, so you bring the editor. Version
+                    history, as snapshots of a few dozen bytes that rebuild the document as it was, for documents that
+                    keep their deleted content.
+                </p>
+            </details>
+            <details>
+                <summary>Can it talk to Yjs?</summary>
+                <p>
+                    No. The algorithm is of the same family as Yjs's and the API will feel familiar, but the wire format
+                    is bit Bcrdt's own: a Bcrdt replica syncs with Bcrdt replicas, in every .NET process and browser
+                    tab, and with nothing else.
                 </p>
             </details>
             <details>

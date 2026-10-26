@@ -50,6 +50,7 @@ internal sealed class BelemetryAzureMonitorExporter : IBelemetryHttpExporter
             ContentType = "application/json",
             ContentEncoding = _options.Compression == BelemetryCompression.Gzip ? "gzip" : null,
             Body = body,
+            Count = count,
         };
     }
 
@@ -61,8 +62,18 @@ internal sealed class BelemetryAzureMonitorExporter : IBelemetryHttpExporter
         if (string.IsNullOrEmpty(token) is false) message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
     }
 
-    public BelemetryHttpRequest? GetRetryForPartialSuccess(BelemetryHttpRequest request, int statusCode, string? responseBody)
+    public bool IsRetryable(int statusCode) => BelemetryHttpSender.IsRetryable((System.Net.HttpStatusCode)statusCode);
+
+    // A 206 is settled item by item (GetRetryForPartialSuccess); a 200 accepted everything.
+    public string? DescribePartialSuccess(string? mediaType, ReadOnlySpan<byte> body, out long rejected)
     {
+        rejected = 0;
+        return null;
+    }
+
+    public BelemetryHttpRequest? GetRetryForPartialSuccess(BelemetryHttpRequest request, int statusCode, string? responseBody, out int rejected)
+    {
+        rejected = 0;
         if (statusCode != 206 || string.IsNullOrEmpty(responseBody)) return null;
 
         try
@@ -70,27 +81,30 @@ internal sealed class BelemetryAzureMonitorExporter : IBelemetryHttpExporter
             using var response = JsonDocument.Parse(responseBody);
             if (response.RootElement.TryGetProperty("errors", out var errors) is false || errors.ValueKind != JsonValueKind.Array) return null;
 
+            // The items listed with a status the endpoint asks to retry go again; the others are refused for good.
             var retryIndexes = new HashSet<int>();
+            var refused = new HashSet<int>();
             foreach (var error in errors.EnumerateArray())
             {
-                if (error.TryGetProperty("index", out var index) && error.TryGetProperty("statusCode", out var code)
-                    && BelemetryHttpSender.IsRetryable((System.Net.HttpStatusCode)code.GetInt32()))
-                {
-                    retryIndexes.Add(index.GetInt32());
-                }
+                if (error.TryGetProperty("index", out var index) is false || error.TryGetProperty("statusCode", out var code) is false) continue;
+                (BelemetryHttpSender.IsRetryable((System.Net.HttpStatusCode)code.GetInt32()) ? retryIndexes : refused).Add(index.GetInt32());
             }
 
+            rejected = refused.Count;
             if (retryIndexes.Count == 0) return null;
 
             using var original = JsonDocument.Parse(request.Body);
             var buffer = new System.Buffers.ArrayBufferWriter<byte>();
+            var count = 0;
             using (var writer = new Utf8JsonWriter(buffer))
             {
                 writer.WriteStartArray();
                 var i = 0;
                 foreach (var item in original.RootElement.EnumerateArray())
                 {
-                    if (retryIndexes.Contains(i++)) item.WriteTo(writer);
+                    if (retryIndexes.Contains(i++) is false) continue;
+                    item.WriteTo(writer);
+                    count++;
                 }
                 writer.WriteEndArray();
             }
@@ -103,10 +117,15 @@ internal sealed class BelemetryAzureMonitorExporter : IBelemetryHttpExporter
                 ContentEncoding = request.ContentEncoding,
                 Headers = request.Headers,
                 Body = buffer.WrittenSpan.ToArray(),
+                // Its age is the original's (a stored retry still expires on time), its records are only the retried ones.
+                Time = request.Time,
+                Count = count,
             };
         }
-        catch (JsonException)
+        catch (Exception ex) when (ex is JsonException or InvalidOperationException or FormatException)
         {
+            // Unreadable (an index or a status that is not a number, too): the accepted items are in, nothing to retry.
+            rejected = 0;
             return null;
         }
     }

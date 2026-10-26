@@ -249,13 +249,15 @@ public static partial class BcrdtSourceCatalog
     }
 
     /// <summary>
-    /// What a file is for: a demo page is a working collaborative feature to copy, the hosting files are
-    /// the wiring every app needs once, and the rest is the replicas, transports and components the pages
-    /// share.
+    /// What a file is for: a demo page is a working collaborative feature to copy, a sample is the code a
+    /// page shows under its replicas - the same feature as an application writes it, one participant at a
+    /// time - the hosting files are the wiring every app needs once, and the rest is the replicas,
+    /// transports and components the pages share.
     /// </summary>
     private static string KindOf(string path)
     {
         if (path.StartsWith("Demo/Client/Pages/", StringComparison.OrdinalIgnoreCase)) return "Page";
+        if (path.StartsWith("Demo/Samples/", StringComparison.OrdinalIgnoreCase)) return "Sample";
         if (path.StartsWith("Demo/Server/", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("Demo/Client/Extensions/", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("Demo/Client/Program.cs", StringComparison.OrdinalIgnoreCase) ||
@@ -268,9 +270,10 @@ public static partial class BcrdtSourceCatalog
     private static int KindOrder(string kind) => kind switch
     {
         "Page" => 0,
-        "Shared" => 1,
-        "Hosting" => 2,
-        _ => 3
+        "Sample" => 1,
+        "Shared" => 2,
+        "Hosting" => 3,
+        _ => 4
     };
 
     /// <summary>

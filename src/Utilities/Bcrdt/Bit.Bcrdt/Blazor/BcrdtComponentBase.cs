@@ -92,15 +92,21 @@ public abstract class BcrdtComponentBase : ComponentBase, IAsyncDisposable
         return Register(new Unsubscriber(() => presence.Changed -= Handler));
     }
 
-    /// <summary>Re-renders when the connection state changes.</summary>
+    /// <summary>Re-renders when the connection state or the access the server granted changes.</summary>
     /// <returns>The subscription; disposing it stops the tracking early.</returns>
     protected IDisposable Track(BcrdtSyncProvider sync)
     {
         ArgumentNullException.ThrowIfNull(sync);
 
         void Handler(BcrdtConnectionStatus _) => RequestRender();
+        void AccessHandler(BcrdtDocumentAccess _) => RequestRender();
         sync.StatusChanged += Handler;
-        return Register(new Unsubscriber(() => sync.StatusChanged -= Handler));
+        sync.AccessChanged += AccessHandler;
+        return Register(new Unsubscriber(() =>
+        {
+            sync.StatusChanged -= Handler;
+            sync.AccessChanged -= AccessHandler;
+        }));
     }
 
     /// <summary>Registers a resource to dispose with the component.</summary>

@@ -1,0 +1,120 @@
+﻿@page "/examples/state-machine"
+<PageTitle>State Machine · Blow</PageTitle>
+
+<ExampleScaffold Title="State Machine"
+                 Summary="A state machine drawn and driven on the canvas: states are nodes, transitions are labelled edges routed round the states in their way, and the toolbar fires the events the current state accepts. The current state is marked through RunStates and announced, and the transition just taken is animated.">
+    <Toolbar>
+        <span class="sm-current">In <strong>@Current.Label</strong>:</span>
+        @foreach (var edge in _edges.Where(e => e.Source == _current))
+        {
+            <button class="btn btn-secondary" @onclick="@(() => Fire(edge))">@edge.Label</button>
+        }
+        <button class="btn btn-secondary sm-reset" @onclick="Reset">Start over</button>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    AriaLabel="Loader state machine" RunStates="_states"
+                    DefaultEdgeOptions="NewTransition" OnConnect="OnConnect">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li>The toolbar shows the events the current state accepts. Press <strong>fetch</strong>, then <strong>resolve</strong> or <strong>reject</strong>: the ring moves to the new state, the edge just taken is animated, and a screen reader hears where the machine is now.</li>
+        <li>In Ready, <strong>refresh</strong> follows the loop that leaves Ready and comes straight back to it.</li>
+        <li><strong>Start over</strong> returns to Idle.</li>
+        <li><strong>Drag from</strong> a state's handle to another state to add a transition. It is named <em>event 1</em>, <em>event 2</em> and so on, routed like the others, and its button appears whenever the machine is in the state it leaves.</li>
+        <li>Click a transition and press <strong>Delete</strong>: its button is gone. The states themselves cannot be deleted.</li>
+        <li><strong>Drag</strong> a state across another's transitions: the routed edges find a new way round it.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>States are <code>BlowNode</code>s with <code>Deletable = false</code>, so the toolbar always has a current state to name. Transitions are <code>BlowEdge</code>s whose <code>Label</code> is the event and whose <code>Source</code> and <code>Target</code> are the states before and after it.</li>
+        <li>The toolbar lists the edges leaving the current state, one button each; firing one makes its <code>Target</code> the current state, sets <code>Animated</code> on that edge only, and calls <code>Announce</code> with the new state for screen readers.</li>
+        <li><code>RunStates</code> marks the current state with <code>new BlowRunState(BlowRunStatus.Running, "Current state")</code>: the running ring and the <code>bit-blow-run-running</code> class, read out with the node. Every other state has no entry, so it shows nothing.</li>
+        <li><code>BlowEdgeType.Routed</code> routes each edge round the nodes in its way and re-routes it when a node moves. An edge whose <code>Source</code> and <code>Target</code> are the same node is drawn as a loop. Ready and Error leave from the top and the bottom (<code>SourcePosition</code>), so the ways back do not share the ways there.</li>
+        <li><code>DefaultEdgeOptions</code> gives a transition drawn on the canvas the same routed shape and arrowhead, and <code>OnConnect</code> - raised once the new edge is in the list - gives it a name, so it has a label to show and a button to fire it.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .sm-current { font-size: 13px; }
+    .sm-reset { margin-left: auto; }
+</style>
+
+@code {
+    private static readonly BlowDefaultEdgeOptions NewTransition = new() { Type = BlowEdgeType.Routed, MarkerEnd = true };
+
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private readonly Dictionary<string, BlowRunState> _states = [];
+    private string _current = "idle";
+    private int _drawn;
+
+    private BlowNode Current => _nodes.First(n => n.Id == _current);
+
+    protected override void OnInitialized()
+    {
+        // States cannot be deleted: the toolbar always names the current one.
+        BlowNode State(string id, string label, double x, double y, BlowPosition source = BlowPosition.Right) => new()
+        {
+            Id = id, Label = label, Position = new(x, y), Width = 120, Height = 44,
+            SourcePosition = source, TargetPosition = BlowPosition.Left, Deletable = false,
+        };
+        BlowEdge Transition(string from, string to, string on) => new()
+        {
+            Id = $"{from}-{on}", Source = from, Target = to, Label = on, Type = BlowEdgeType.Routed, MarkerEnd = true,
+        };
+
+        _nodes =
+        [
+            State("idle", "Idle", 0, 120),
+            State("loading", "Loading", 260, 120),
+            // The transitions out of Ready and Error lead back: they leave over the top and under the bottom, so the
+            // way back does not share the way there and each label sits on a line of its own.
+            State("ready", "Ready", 560, 120, BlowPosition.Top),
+            State("error", "Error", 560, 300, BlowPosition.Bottom),
+        ];
+        _edges =
+        [
+            Transition("idle", "loading", "fetch"),
+            Transition("loading", "ready", "resolve"),
+            Transition("loading", "error", "reject"),
+            Transition("error", "loading", "retry"),
+            Transition("ready", "ready", "refresh"),
+            Transition("ready", "idle", "reset"),
+            Transition("error", "idle", "dismiss"),
+        ];
+        Mark();
+    }
+
+    private void Fire(BlowEdge transition)
+    {
+        foreach (var edge in _edges) edge.Animated = ReferenceEquals(edge, transition);
+        _current = transition.Target;
+        Mark();
+        _flow?.Announce($"{transition.Label}: now {Current.Label}.");
+    }
+
+    private void Reset()
+    {
+        foreach (var edge in _edges) edge.Animated = false;
+        _current = "idle";
+        Mark();
+        _flow?.Announce("Back to Idle.");
+    }
+
+    // A transition drawn on the canvas arrives without a name, and a button with no label fires nothing anyone can read.
+    private void OnConnect(BlowConnection connection)
+    {
+        if (_edges.LastOrDefault(e => e.Source == connection.Source && e.Target == connection.Target && e.Label is null) is { } edge)
+            edge.Label = $"event {++_drawn}";
+    }
+
+    /// <summary>The current state is the one "running"; the others show nothing.</summary>
+    private void Mark()
+    {
+        _states.Clear();
+        _states[_current] = new BlowRunState(BlowRunStatus.Running, "Current state");
+    }
+}

@@ -35,8 +35,8 @@ public class ScannerLifecycleTests : BbScannerTest
         await session.GoToAsync("scan");
         await session.WaitForStatusAsync(["scanning"]);
 
-        // Four symbols, blank frames between them, ten frames a second: two loops is generous.
-        await session.WaitForResultsAsync(4, timeoutMs: 90_000);
+        // Six symbols, blank frames between them, ten frames a second: two loops is generous.
+        await session.WaitForResultsAsync(6, timeoutMs: 90_000);
 
         var values = await session.ResultValuesAsync();
         var formats = await session.ResultFormatsAsync();
@@ -45,11 +45,15 @@ public class ScannerLifecycleTests : BbScannerTest
         Assert.Contains(FakeCameraVideo.DataMatrixPayload, values);
         Assert.Contains(FakeCameraVideo.Code128Payload, values);
         Assert.Contains(FakeCameraVideo.Ean13Payload, values);
+        Assert.Contains(FakeCameraVideo.Pdf417Payload, values);
+        Assert.Contains(FakeCameraVideo.AztecPayload, values);
 
         Assert.Contains("QrCode", formats);
         Assert.Contains("DataMatrix", formats);
         Assert.Contains("Code128", formats);
         Assert.Contains("Ean13", formats);
+        Assert.Contains("Pdf417", formats);
+        Assert.Contains("Aztec", formats);
     }
 
     [TestMethod]

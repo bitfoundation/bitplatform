@@ -16,9 +16,13 @@
 
    A tour picks its palette independently of the page around it - Theme = Light stays light on a
    dark site - so the light and the dark palettes are spelled out in full below, with the values of
-   the site kit's own two palettes, rather than through the --bb-* roles, which follow the site. */
+   the site kit's own two palettes, rather than through the --bb-* roles, which follow the site.
 
-.bit-bonboarding-root {
+   .bit-bonboarding-themed is the library's other theme scope: the beacons, checklists and tour lists
+   that render on the page itself rather than in the tour layer. */
+
+.bit-bonboarding-root,
+.bit-bonboarding-themed {
     --bit-bonboarding-surface: #FFFFFF;
     --bit-bonboarding-surface-subtle: #F5F5F5;
     --bit-bonboarding-text: #1A1A1A;
@@ -60,7 +64,9 @@
    application's stylesheet - a tour that left its theme unset while the site is dark. That second
    selector is the whole of "the tours follow the site's theme switch". */
 .bit-bonboarding-root[data-bonboarding-theme="dark"],
-:root[bit-theme="dark"] .bit-bonboarding-root[data-bonboarding-theme="system"] {
+.bit-bonboarding-themed[data-bonboarding-theme="dark"],
+:root[bit-theme="dark"] .bit-bonboarding-root[data-bonboarding-theme="system"],
+:root[bit-theme="dark"] .bit-bonboarding-themed[data-bonboarding-theme="system"] {
     --bit-bonboarding-surface: #15191E;
     --bit-bonboarding-surface-subtle: #22272C;
     --bit-bonboarding-text: #E6ECF2;
@@ -343,6 +349,29 @@
     box-shadow: var(--fl-shadow-4);
 }
 
+/* ---------- The dynamic page's replaced target ----------
+
+   A card that is rendered as a new element on the other side of its lane each time it is replaced,
+   so a step pointing at it has both a new node to re-bind to and a new place to follow it to. */
+.rerender-lane {
+    display: flex;
+    min-height: 9.5rem;
+    align-items: flex-start;
+}
+
+.rerender-card {
+    width: min(20rem, 100%);
+    margin-top: 0;
+}
+
+.rerender-card .bb-toolbar {
+    margin-bottom: 0;
+}
+
+.rerender-card-end {
+    margin-inline-start: auto;
+}
+
 /* ---------- The events page's live stream - the kit's .bb-log, one column per field ---------- */
 .event-log {
     max-height: 20rem;
@@ -374,5 +403,32 @@
 
     .event-log-kind {
         min-width: 0;
+    }
+}
+
+/* Links inside running text - lists, paragraphs and table cells of the docs: underlined, since colour alone
+   does not tell a link from the words around it (WCAG 1.4.1). The site kit leaves this to each page. */
+.bb-detail-list a,
+.bb-docs-content :is(p, td) a:not(.btn) {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+/* A live sample with a component beside it: a checklist next to the controls that tick it off. */
+.bb-demo-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
+    gap: 1rem;
+    align-items: start;
+}
+
+.bb-demo-split > .bb-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+@media (max-width: 48rem) {
+    .bb-demo-split {
+        grid-template-columns: minmax(0, 1fr);
     }
 }

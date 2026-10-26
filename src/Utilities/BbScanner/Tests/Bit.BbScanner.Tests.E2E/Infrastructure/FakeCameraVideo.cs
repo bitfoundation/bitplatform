@@ -28,9 +28,16 @@ public static class FakeCameraVideo
     /// <summary>Payload of the EAN-13 symbol in the standard clip.</summary>
     public const string Ean13Payload = "4006381333931";
 
+    /// <summary>Payload of the PDF417 symbol in the standard clip.</summary>
+    public const string Pdf417Payload = "E2E PDF417";
+
+    /// <summary>Payload of the Aztec symbol in the standard clip.</summary>
+    public const string AztecPayload = "E2E AZTEC BOARDING PASS";
+
     /// <summary>
-    /// Writes a looping clip that shows, in turn, a QR code, a Data Matrix, a Code 128 and an
-    /// EAN-13, with blank frames between them so that duplicate suppression is exercised too.
+    /// Writes a looping clip that shows, in turn, a QR code, a Data Matrix, a Code 128, an EAN-13,
+    /// a tilted PDF417 and a turned Aztec code, with blank frames between them so that duplicate
+    /// suppression is exercised too.
     /// </summary>
     /// <param name="path">File to write.</param>
     /// <param name="width">Frame width.</param>
@@ -45,13 +52,22 @@ public static class FakeCameraVideo
         using var c128 = SyntheticImage.FromLinear(LinearEncoders.Code128(Code128Payload), scale: 2, height: 120);
         using var ean = SyntheticImage.FromLinear(LinearEncoders.Ean13(Ean13Payload), scale: 3, height: 120);
 
+        // Tilted, so the browser test goes through the PDF417 locator rather than only the upright case; one
+        // data column at three pixels a module keeps it inside the scan region with its quiet zone.
+        using var pdf417Upright = SyntheticImage.FromMatrix(Pdf417Encoder.Encode(Pdf417Payload, columns: 1), scale: 3);
+        using var pdf417 = ImageTransforms.Rotate(pdf417Upright, 7, background: 235);
+
+        // Turned well off square, so the bullseye search and the orientation modules are exercised in the browser too.
+        using var aztecUpright = SyntheticImage.FromMatrix(AztecEncoder.Encode(AztecPayload, compact: true), scale: 5);
+        using var aztec = ImageTransforms.Rotate(aztecUpright, 33, background: 235);
+
         using var stream = File.Create(path);
         WriteHeader(stream, width, height);
 
         var frame = BbLuminanceBuffer.Rent(width, height);
         try
         {
-            foreach (var symbol in new[] { qr, dm, c128, ean })
+            foreach (var symbol in new[] { qr, dm, c128, ean, pdf417, aztec })
             {
                 for (var i = 0; i < framesPerSymbol; i++)
                 {

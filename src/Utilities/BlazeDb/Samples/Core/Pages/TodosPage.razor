@@ -1,0 +1,196 @@
+﻿@page "/todos"
+@implements IDisposable
+@inject SampleDatabase Database
+
+<PageTitle>Todos · BlazeDb samples</PageTitle>
+
+<h1>Todos</h1>
+
+<p>
+    The list is a live query: <code>todos.Watch(...)</code> runs it once and again after every commit to the table,
+    whoever made it - this page, another one, or on the Server host another browser window. Each filter is an index
+    lookup: the <code>Done</code> hash index, the <code>Category</code> one, or the compound <code>CategoryDone</code>
+    index when both are set; with neither, the rows come in the order of the <code>CreatedAt</code> ordered index.
+</p>
+
+@if (_view is null)
+{
+    <DatabasePending />
+}
+else
+{
+    var view = _view.Result;
+
+    <form class="row" @onsubmit="AddAsync">
+        <input id="new-title" @bind="_title" placeholder="What needs doing?" aria-label="Title" autocomplete="off" />
+        <select id="new-category" @bind="_newCategory" aria-label="Category">
+            @foreach (var category in SampleData.Categories)
+            {
+                <option value="@category">@category</option>
+            }
+        </select>
+        <button type="submit" class="btn" id="add">Add</button>
+    </form>
+
+    @* The counts are hash index probes: CountBy(index, value) for each status, CountBy(index) for every category. *@
+    <div class="row" role="group" aria-label="Status">
+        <button type="button" class="chip" id="status-all" aria-pressed="@Bool(_status is null)" @onclick="() => FilterAsync(null, _category)">All <span>@view.Total</span></button>
+        <button type="button" class="chip" id="status-open" aria-pressed="@Bool(_status is false)" @onclick="() => FilterAsync(false, _category)">Open <span>@view.Open</span></button>
+        <button type="button" class="chip" id="status-done" aria-pressed="@Bool(_status is true)" @onclick="() => FilterAsync(true, _category)">Done <span>@view.Done</span></button>
+    </div>
+
+    <div class="row" role="group" aria-label="Category">
+        <button type="button" class="chip" id="category-all" aria-pressed="@Bool(_category is null)" @onclick="() => FilterAsync(_status, null)">Any category</button>
+        @foreach (var (category, count) in view.Categories)
+        {
+            <button type="button" class="chip" data-category="@category" aria-pressed="@Bool(_category == category)" @onclick="() => FilterAsync(_status, category)">@category <span>@count</span></button>
+        }
+    </div>
+
+    <p class="muted">Read with <code id="source">@view.Source</code></p>
+
+    <ul class="todos" id="todos">
+        @foreach (var todo in view.Rows)
+        {
+            <li @key="todo.Id" class="@(todo.Done ? "done" : null)" data-title="@todo.Title">
+                <label>
+                    <input type="checkbox" checked="@todo.Done" @onchange="() => ToggleAsync(todo)" />
+                    <span class="title">@todo.Title</span>
+                </label>
+                <span class="tag">@todo.Category</span>
+                <time class="muted" datetime="@todo.CreatedAt.ToString("O")">@ViewerTime.Format(todo.CreatedAt, RendererInfo, "g")</time>
+                <button type="button" class="btn link" aria-label="Delete @todo.Title" @onclick="() => DeleteAsync(todo.Id)">Delete</button>
+            </li>
+        }
+    </ul>
+
+    @if (view.Rows.Count == 0)
+    {
+        <p class="muted" id="empty">Nothing matches.</p>
+    }
+
+    <div class="row">
+        <button type="button" class="btn" id="clear-done" disabled="@(view.Done == 0)" @onclick="ClearDoneAsync">Clear the done ones</button>
+        @if (_message is not null)
+        {
+            <span id="message" role="status">@_message</span>
+        }
+    </div>
+}
+
+@code {
+    private BlazeDbLiveQuery<TodoView>? _view;
+    private string _title = "";
+    private string _newCategory = SampleData.Categories[0];
+    private bool? _status;
+    private string? _category;
+    private string? _message;
+    private bool _disposed;
+
+    private sealed record TodoView(List<TodoItem> Rows, string Source, int Total, int Open, int Done, List<KeyValuePair<string, int>> Categories);
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Database.Unreachable is not null) return;
+
+        await Database.UseAsync(db =>
+        {
+            // Left while the database was opening, or on a server while waiting its turn: a live query started
+            // now would go on re-running - and re-rendering - for a page that is gone.
+            if (_disposed) return;
+
+            _view = db.GetTable(TodoItem.Table).Watch(Read);
+            _view.Changed += OnViewChanged;
+        });
+    }
+
+    // Runs now, and after every commit to the table on the thread that made it - on a server, possibly another
+    // circuit's, inside the lock its write took. It returns a materialized result: a lazy one would be enumerated
+    // later, against whatever the table holds by then.
+    private TodoView Read(BlazeDbTable<Guid, TodoItem> todos)
+    {
+        var (status, category) = (_status, _category);
+
+        var (rows, source) = (status, category) switch
+        {
+            ({ } done, { } c) => (todos.Lookup(TodoItem.Indexes.CategoryDone, (c, done)), $"Lookup(TodoItem.Indexes.CategoryDone, (\"{c}\", {Bool(done)}))"),
+            ({ } done, null) => (todos.Lookup(TodoItem.Indexes.Done, done), $"Lookup(TodoItem.Indexes.Done, {Bool(done)})"),
+            (null, { } c) => (todos.Lookup(TodoItem.Indexes.Category, c), $"Lookup(TodoItem.Indexes.Category, \"{c}\")"),
+            _ => (todos.OrderBy(TodoItem.Indexes.CreatedAt, descending: true), "OrderBy(TodoItem.Indexes.CreatedAt, descending: true)"),
+        };
+
+        // A hash lookup has no order of its own: its rows are sorted in memory, which is cheap for rows that are
+        // already objects. The ordered index needs no sort.
+        var list = status is null && category is null ? rows.ToList() : [.. rows.OrderByDescending(t => t.CreatedAt)];
+
+        return new(list,
+                   source,
+                   todos.Count,
+                   todos.CountBy(TodoItem.Indexes.Done, false),
+                   todos.CountBy(TodoItem.Indexes.Done, true),
+                   [.. todos.CountBy(TodoItem.Indexes.Category).OrderBy(c => c.Key, StringComparer.Ordinal)]);
+    }
+
+    private async Task AddAsync()
+    {
+        var title = _title.Trim();
+        if (title.Length == 0) return;
+
+        await Database.UseAsync(db => db.GetTable(TodoItem.Table).Insert(new TodoItem { Id = Guid.NewGuid(), Title = title, Category = _newCategory, CreatedAt = DateTime.UtcNow }));
+
+        _title = "";
+        _message = null;
+    }
+
+    // Optimistic concurrency: the new row is written only while the table still holds the one this list showed.
+    // If anything replaced or deleted it meanwhile - another window, on the Server host - nothing is written.
+    private async Task ToggleAsync(TodoItem shown)
+    {
+        var written = await Database.UseAsync(db => db.GetTable(TodoItem.Table).TryUpdate(shown with { Done = shown.Done is false }, comparisonValue: shown));
+
+        _message = written ? null : $"'{shown.Title}' was changed somewhere else first: the list shows it as it is now.";
+    }
+
+    private async Task DeleteAsync(Guid id)
+    {
+        await Database.UseAsync(db => db.GetTable(TodoItem.Table).Delete(id));
+        _message = null;
+    }
+
+    // One atomic bulk write - one commit, one log record, one notification - whose keys come straight from an index
+    // over the same table: DeleteMany reads them all before it deletes anything.
+    private async Task ClearDoneAsync()
+    {
+        var deleted = await Database.UseAsync(db =>
+        {
+            var todos = db.GetTable(TodoItem.Table);
+            return todos.DeleteMany(todos.Lookup(TodoItem.Indexes.Done, true).Select(t => t.Id));
+        });
+
+        _message = $"Deleted {deleted} in one commit.";
+    }
+
+    private async Task FilterAsync(bool? status, string? category)
+    {
+        (_status, _category) = (status, category);
+
+        // Re-runs the live query now, as a commit would, with the new filter.
+        await Database.UseAsync(_ => _view!.Refresh());
+    }
+
+    // Raised on the thread that committed - on a server, possibly another circuit's, inside the lock its write took.
+    // The re-render goes through this component's dispatcher from the thread pool: called right here, the
+    // dispatcher would render on that thread, keeping the writer - and everyone waiting for the lock - waiting too.
+    private void OnViewChanged(object? sender, EventArgs e) => _ = Task.Run(() => InvokeAsync(StateHasChanged));
+
+    private static string Bool(bool value) => value ? "true" : "false";
+
+    public void Dispose()
+    {
+        _disposed = true;
+        if (_view is null) return;
+
+        _view.Changed -= OnViewChanged;
+        _view.Dispose();
+    }
+}

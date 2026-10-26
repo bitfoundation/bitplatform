@@ -1,0 +1,31 @@
+﻿@namespace Bit.BevTools.Demo.Client.Components
+@inject ProductApi Api
+
+@* Intentional problem #11: the data is loaded in OnInitializedAsync, which runs twice with prerendering - once on the
+   server for the HTML, once more when the page becomes interactive - and nothing carries the first result over. *@
+<div class="bb-muted">
+    @if (_products is null)
+    {
+        <span>Counting products…</span>
+    }
+    else
+    {
+        <span>@_products.Count products in @_products.Select(p => p.Category).Distinct().Count() categories</span>
+    }
+</div>
+
+@code {
+    private List<Product>? _products;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _products = await Api.GetProductsAsync();
+        }
+        catch
+        {
+            _products = [];
+        }
+    }
+}

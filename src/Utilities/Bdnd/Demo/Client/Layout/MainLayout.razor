@@ -1,5 +1,7 @@
 ﻿@inherits LayoutComponentBase
+@implements IDisposable
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 @* The app shell - part of the site kit every Utilities demo shares (see wwwroot/app.css): a skip
    link, the sticky header, the content band, and the footer. The landing page renders straight
@@ -12,7 +14,7 @@
    data-interactive turns true once the page runs in the browser. Prerendered markup is on screen
    long before its event handlers are, which is what an E2E suite waits out with it. *@
 
-<div class="page" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")">
+<div class="page" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")" data-static="@(IsStatic ? "true" : null)">
     @* First in the tab order on purpose: a keyboard reader lands here before the navigation and
        can jump straight past the chrome to the page. The click itself is site.js's - it moves focus
        to <main>, which the router would not - so the href only has to be right for a link opened
@@ -23,7 +25,9 @@
     @* The header's menu and the docs layout's nav panel are both drawers over the page at narrow
        widths; this is how each one hears that the other opened. *@
     <CascadingValue Value="_drawers" IsFixed="true">
-        <Header />
+        @* An island of its own on a page that stays on the server (see IsStatic); part of the page's interactive tree
+           everywhere else. *@
+        <Header @rendermode="@(IsStatic ? RenderMode.InteractiveWebAssembly : null)" />
 
         <div class="bb-site-content">
             <main id="bb-main" tabindex="-1">
@@ -41,6 +45,14 @@
     private readonly Drawers _drawers = new();
 
     /// <summary>
+    /// Whether this page stays on the server - [ExcludeFromInteractiveRouting], rendered with no interactivity at all - rather
+    /// than being prerendered on its way to the browser. Every control in the shell is a Blazor handler, and on such a page
+    /// none of them ever ran: the search, the theme toggle, the menus, Back to top. The header comes to life there as an
+    /// island, and site.js works the docs drawer and Back to top for a page marked data-static.
+    /// </summary>
+    private bool IsStatic => AssignedRenderMode is null && !RendererInfo.IsInteractive;
+
+    /// <summary>
     /// Keeps the site's drawers - the header menu, the docs nav panel - to one open at a time: opening one
     /// closes the other, rather than stacking two scrims and two panels that each claim the page. The kit's
     /// drawers live in different components (one in the header, one in the docs layout), so they meet here.
@@ -52,4 +64,53 @@
 
         public void Open(object owner) => Opened?.Invoke(owner);
     }
+
+    private IDisposable? _navigation;
+    private bool _reloading;
+
+    // The site runs on WebAssembly except /hosting/server-check, which the server's App.razor serves with
+    // InteractiveServer. The render mode is picked when a page is loaded, and the interactive router would render
+    // the next page in whatever mode the current one has - so moving between the two loads the page afresh.
+    protected override void OnInitialized()
+    {
+        if (RendererInfo.IsInteractive is false) return;
+        if (WrongRenderer(Nav.Uri))
+        {
+            // already at the address: a reload (a forced load of the same address with a #fragment would only scroll)
+            _reloading = true;
+            _ = JS.InvokeVoidAsync("location.reload");
+            return;
+        }
+        _navigation = Nav.RegisterLocationChangingHandler(OnLocationChanging);
+    }
+
+    private ValueTask OnLocationChanging(LocationChangingContext context)
+    {
+        if (_reloading is false && WrongRenderer(context.TargetLocation))
+        {
+            context.PreventNavigation();
+            Reload(context.TargetLocation, replace: false);
+        }
+        return ValueTask.CompletedTask;
+    }
+
+    private void Reload(string uri, bool replace)
+    {
+        // The forced load goes through the location-changing handlers too; this one lets it pass. The page unloads
+        // right after, so the flag is never reset.
+        _reloading = true;
+        Nav.NavigateTo(uri, forceLoad: true, replace: replace);
+    }
+
+    private bool WrongRenderer(string uri)
+    {
+        var absolute = Nav.ToAbsoluteUri(uri).GetLeftPart(UriPartial.Path);
+        if (absolute.StartsWith(Nav.BaseUri, StringComparison.OrdinalIgnoreCase) is false) return false; // another site
+        var path = Nav.ToBaseRelativePath(absolute);
+        var serverPage = path.Equals("hosting/server-check", StringComparison.OrdinalIgnoreCase)
+                         || path.StartsWith("hosting/server-check/", StringComparison.OrdinalIgnoreCase);
+        return serverPage != (RendererInfo.Name == "Server");
+    }
+
+    public void Dispose() => _navigation?.Dispose();
 }

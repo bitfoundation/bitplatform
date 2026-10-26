@@ -1,7 +1,6 @@
 ﻿@page "/"
 @layout MainLayout
 @using System.Diagnostics
-@using Bit.BbScanner.TestKit
 
 <PageTitle>BbScanner - barcode scanning for Blazor, decoded in C#</PageTitle>
 
@@ -23,8 +22,8 @@
             </span>
             <h1>Barcode scanning for Blazor,<br /><span class="bb-hero-accent">decoded in C#.</span></h1>
             <p class="bb-hero-sub">
-                QR Code, Data Matrix, Code 128, Code 39, EAN-13, EAN-8, UPC-A, UPC-E and ITF - from the camera
-                or from still images. No barcode SDK and no JavaScript scanner library: the browser opens the
+                QR Code, Micro QR, Data Matrix, PDF417, Aztec, MaxiCode, Code 128, Code 39, Code 93, Codabar,
+                EAN-13, EAN-8, UPC-A, UPC-E, ITF and the GS1 DataBar family - from the camera or from still images. No barcode SDK and no JavaScript scanner library: the browser opens the
                 camera and copies pixels, and everything after that is managed code you can step into.
             </p>
             <pre class="bb-code bb-hero-install">dotnet add package Bit.BbScanner</pre>
@@ -86,7 +85,7 @@
     <section class="bb-proof">
         <div><strong>Decoding in C#</strong><span>no barcode SDK, no JavaScript scanner library</span></div>
         <div><strong>One copy per frame</strong><span>a <code>[JSImport]</code> memory view, no JSON or base64</span></div>
-        <div><strong>Nine symbologies</strong><span>read to specification, check digits verified</span></div>
+        <div><strong>Eighteen symbologies</strong><span>read to specification, check digits verified</span></div>
         <div><strong>Runs anywhere .NET runs</strong><span><code>BbBarcodeDecoder</code> needs no browser</span></div>
     </section>
 
@@ -128,10 +127,19 @@
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Photos and buffers</h3>
                 <p class="bb-card-desc">
-                    A built-in file picker for still images, and <code>DecodeImage</code> for pixels the
-                    application already has - tuned for one exhaustive attempt rather than fifteen a second.
+                    A built-in file picker and drop target for still images, <code>ScanImageAsync</code> for an
+                    upload the application already holds, and <code>DecodeImage</code> for raw pixels - tuned for
+                    one exhaustive attempt rather than fifteen a second, and never asking for the camera.
                 </p>
                 <a href="image" class="btn btn-outline">Image scanning →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Built for real workflows</h3>
+                <p class="bb-card-desc">
+                    Read one code and stop, pause for "scan another", count each value once for a stocktake, ignore
+                    every code but the one you expect, read a whole sheet of labels at once, and beep or vibrate on a scan.
+                </p>
+                <a href="lifecycle" class="btn btn-outline">Lifecycle &amp; duplicates →</a>
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Measured, not guessed</h3>
@@ -142,12 +150,22 @@
                 <a href="performance" class="btn btn-outline">Performance →</a>
             </section>
             <section class="bb-card">
-                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Yours to restyle</h3>
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Yours to restyle and translate</h3>
                 <p class="bb-card-desc">
-                    Every colour, radius and dimension is a CSS custom property, and the reticle and the messages
-                    are render fragments - with right-to-left, reduced motion and forced colours built in.
+                    Every colour, radius and dimension is a CSS custom property, the reticle and the messages are
+                    render fragments, and every text it shows or announces can be translated - with right-to-left,
+                    screen readers, reduced motion and forced colours built in.
                 </p>
                 <a href="customize" class="btn btn-outline">Customisation →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Failures you can act on</h3>
+                <p class="bb-card-desc">
+                    Permission refused, no camera, camera in use, no HTTPS, an image that is not one: every failure
+                    arrives as a classified <code>BbScannerException</code>, and the permission can be checked before
+                    the browser ever asks.
+                </p>
+                <a href="errors" class="btn btn-outline">Errors &amp; permissions →</a>
             </section>
         </div>
     </section>
@@ -288,16 +306,49 @@
                 <summary>How does it avoid misreads?</summary>
                 <p>
                     Misreading is treated as worse than missing: check digits and guard patterns are verified, a
-                    Reed-Solomon correction is only accepted when the corrected block re-verifies, and ITF, UPC-E and
-                    unchecked Code 39 results must repeat on a second scan line before they are reported.
+                    Reed-Solomon correction is only accepted when the corrected block re-verifies, and ITF, Codabar,
+                    UPC-E, the GS1 DataBar family and unchecked Code 39 results must repeat on a second scan line
+                    before they are reported. Narrowing <code>Formats</code> to what you expect, and
+                    <code>ItfLengths</code> to the lengths you use, closes the rest of the gap.
                 </p>
             </details>
             <details>
                 <summary>Does it read PDF417?</summary>
                 <p>
-                    PDF417 is implemented end to end except its symbol character table, which is specification data
-                    the library cannot derive. It ships a placeholder table, does not create the PDF417 reader while
-                    that is the case, and reads real symbols once the specification table is registered.
+                    Yes - the kind on driving licences, boarding passes and shipping labels. The library ships the
+                    specification's symbol character table, finds a symbol at any rotation before reading it row by
+                    row, and repairs damaged rows with the symbol's own error correction. Compact (truncated) PDF417,
+                    with its right row indicator dropped, reads too; MicroPDF417, a different symbology, is not read.
+                </p>
+            </details>
+            <details>
+                <summary>Does it read Aztec?</summary>
+                <p>
+                    Yes - the code on boarding passes and rail and transit tickets, compact and full range, at any
+                    rotation and seen at an angle. Its bullseye is found wherever it is in the frame, and a large symbol
+                    is fitted through its own reference grid. Mirrored symbols read too, and an Aztec Rune reads as its number.
+                </p>
+            </details>
+            <details>
+                <summary>Does it read MaxiCode and Micro QR?</summary>
+                <p>
+                    Yes. MaxiCode, the hexagonal code with a bullseye on parcels, is found by its rings at any angle and
+                    seen at a slant, and a carrier's structured message - postal code, country and class of service -
+                    comes back as the carrier writes it. Micro QR, the one-finder QR for small parts, reads in all four
+                    sizes and is only looked for when no QR code was, so it costs QR scanning nothing.
+                </p>
+            </details>
+            <details>
+                <summary>Does it read GS1 DataBar?</summary>
+                <p>
+                    Yes, the whole family. Omnidirectional, Truncated and their two-row Stacked forms - the small
+                    barcode on loose produce - and DataBar Limited, on packs too small for anything else, come back as
+                    the GS1 element string, <code>01</code> and fourteen digits. DataBar Expanded and Expanded Stacked,
+                    on weighed fresh food and coupons, come back as whatever element string they carry - a GTIN with its
+                    weight, price, batch or best-before date - with a group separator after each variable length element.
+                    A symbol too short, or turned too far, for one scan line to cross whole is pieced together from
+                    several. The linear part of a GS1 Composite symbol is not read, because the two-dimensional part
+                    that holds the rest of its data is not.
                 </p>
             </details>
         </div>

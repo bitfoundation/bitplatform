@@ -20,6 +20,7 @@ internal sealed class BelemetryInstrumentAggregator
     public BelemetryInstrumentAggregator(Instrument instrument, BelemetryMetricsOptions options, long startTimeUnixNano)
     {
         Instrument = instrument;
+        IsSelf = instrument.Meter.Name == BelemetrySelfTelemetry.MeterName;
         _cardinalityLimit = Math.Max(1, options.CardinalityLimit);
         _startTimeUnixNano = startTimeUnixNano;
         _lastCollectUnixNano = startTimeUnixNano;
@@ -62,6 +63,9 @@ internal sealed class BelemetryInstrumentAggregator
     }
 
     public Instrument Instrument { get; }
+
+    /// <summary>Whether this is one of Belemetry's own instruments (<see cref="BelemetrySelfTelemetry"/>).</summary>
+    public bool IsSelf { get; }
 
     public BelemetryMetricType Type { get; }
 
