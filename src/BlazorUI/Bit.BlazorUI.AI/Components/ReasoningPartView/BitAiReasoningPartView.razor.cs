@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiReasoningPartView is the collapsible panel that holds the reasoning of a model, rendered as Markdown.
@@ -72,7 +70,6 @@ public partial class BitAiReasoningPartView : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiReasoningPartViewParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

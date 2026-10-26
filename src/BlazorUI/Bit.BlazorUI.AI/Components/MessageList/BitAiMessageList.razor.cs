@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiMessageList is the scrolling transcript of a conversation: every message of it, laid out by role, with
@@ -218,7 +216,6 @@ public partial class BitAiMessageList : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiMessageListParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

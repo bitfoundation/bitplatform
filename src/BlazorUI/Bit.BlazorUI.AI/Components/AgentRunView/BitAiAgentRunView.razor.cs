@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiAgentRunView makes a multi-step agent run legible: what it is trying to do, which step it is on, what each step
@@ -114,7 +112,6 @@ public partial class BitAiAgentRunView : BitAiComponentBase
         base.OnInitialized();
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiAgentRunViewParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

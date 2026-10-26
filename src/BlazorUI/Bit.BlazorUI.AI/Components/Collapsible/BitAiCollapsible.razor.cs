@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiCollapsible is a disclosure panel with a real button header, so it is keyboard reachable and announced
@@ -80,7 +78,6 @@ public partial class BitAiCollapsible : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiCollapsibleParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

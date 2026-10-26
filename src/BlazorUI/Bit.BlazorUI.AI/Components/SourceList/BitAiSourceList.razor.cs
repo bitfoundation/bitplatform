@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiSourceList is the deduplicated list of the sources a message cited, each a <see cref="BitAiSourceCard"/>
@@ -74,7 +72,6 @@ public partial class BitAiSourceList : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiSourceListParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

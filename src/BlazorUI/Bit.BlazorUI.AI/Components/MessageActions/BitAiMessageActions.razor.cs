@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -110,7 +109,6 @@ public partial class BitAiMessageActions : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiMessageActionsParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

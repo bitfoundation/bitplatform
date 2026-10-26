@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiMessagePartView renders one part of a message with the view of its kind, and re-renders only when that part
@@ -101,7 +99,6 @@ public partial class BitAiMessagePartView : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiMessagePartViewParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

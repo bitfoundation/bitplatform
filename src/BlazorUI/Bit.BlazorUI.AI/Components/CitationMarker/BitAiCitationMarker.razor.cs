@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiCitationMarker is the small numbered chip that appears inline where a claim is attributed to a source.
@@ -63,7 +61,6 @@ public partial class BitAiCitationMarker : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiCitationMarkerParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

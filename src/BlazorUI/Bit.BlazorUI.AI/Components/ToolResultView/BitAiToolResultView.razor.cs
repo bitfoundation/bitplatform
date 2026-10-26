@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiToolResultView shows a tool result carried on its own (a <see cref="BitAiToolResultPart"/>) rather than on the
@@ -66,7 +64,6 @@ public partial class BitAiToolResultView : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiToolResultViewParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiCopyButton copies a text to the clipboard and confirms it: the glyph turns into a check mark, the name of the
@@ -89,7 +87,6 @@ public partial class BitAiCopyButton : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiCopyButtonParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

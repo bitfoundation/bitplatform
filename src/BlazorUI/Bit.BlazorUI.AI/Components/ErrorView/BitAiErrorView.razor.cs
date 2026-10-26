@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiErrorView shows an error the user can act on: what went wrong, a retry when retrying could help, and the
@@ -86,7 +84,6 @@ public partial class BitAiErrorView : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiErrorViewParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

@@ -192,6 +192,20 @@ public sealed class BitIconFontCutTests
     }
 
     [TestMethod]
+    [DataRow("Bit.BlazorUI.Extras", "fabric.mdl2.bit.blazoui.extras.scss", "bit-icon-ex")]
+    [DataRow("Bit.BlazorUI.AI", "fabric.mdl2.bit.blazoui.ai.scss", "bit-icon-ai")]
+    public void APackagesGlyphSubsetShouldOutrankTheIconStylesheetLinkedAfterIt(string package, string file, string glyphClass)
+    {
+        // Linked last, the icons' .bit-icon rule is as important as a package's own and would win by its order alone,
+        // drawing the package's glyphs from a font a publish may have cut down to the app's icons. The package's rule names
+        // its class twice to outrank it, and draws from the package's own font.
+        var stylesheet = SourceFiles.Read(package, "Styles", file);
+
+        CollectionAssert.AreEqual(new[] { FontFamilies(stylesheet, "@font-face").Single() }, FontFamilies(stylesheet, $".{glyphClass}.{glyphClass}"),
+                                  $"The .{glyphClass} rule does not outrank .bit-icon with the package's own font.");
+    }
+
+    [TestMethod]
     [DataRow(".bit-icon--Add::before{content:\"\\E710\"}", 0xE710)]
     [DataRow(".bit-icon--Add::before { content: \"\\e710 \" }", 0xE710)]
     [DataRow(".bit-icon--Add::before{content:\"\uE710\"}", 0xE710)]

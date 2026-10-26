@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiModelSelector is a model picker driven by the registered model catalog, its models grouped by family or
@@ -116,7 +114,6 @@ public partial class BitAiModelSelector : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiModelSelectorParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

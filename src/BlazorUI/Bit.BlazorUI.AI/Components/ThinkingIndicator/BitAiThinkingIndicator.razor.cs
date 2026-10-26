@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiThinkingIndicator is shown while the model is working but has produced nothing yet: three bouncing dots and
@@ -55,7 +53,6 @@ public partial class BitAiThinkingIndicator : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiThinkingIndicatorParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

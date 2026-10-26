@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiDataTable renders a JSON array of objects as a table, one row per object and one column per key.
@@ -61,7 +59,6 @@ public partial class BitAiDataTable : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiDataTableParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

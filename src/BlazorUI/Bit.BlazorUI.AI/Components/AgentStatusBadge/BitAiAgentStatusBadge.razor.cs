@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiAgentStatusBadge is a one-word summary of where an agent run stands, drawn as a <see cref="BitTag"/> and
@@ -61,7 +59,6 @@ public partial class BitAiAgentStatusBadge : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiAgentStatusBadgeParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

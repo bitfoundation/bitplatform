@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiToolApproval is the prompt shown when a tool call needs a human decision: allow once, allow always, or decline.
@@ -85,7 +83,6 @@ public partial class BitAiToolApproval : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiToolApprovalParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

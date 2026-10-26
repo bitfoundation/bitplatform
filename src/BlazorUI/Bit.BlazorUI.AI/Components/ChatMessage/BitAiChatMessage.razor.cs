@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiChatMessage is one message of a conversation, laid out by role: a user turn as a bubble at the end of the line,
@@ -119,7 +117,6 @@ public partial class BitAiChatMessage : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiChatMessageParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

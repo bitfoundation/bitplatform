@@ -11,7 +11,9 @@
     src: url('../fonts/FabMDL2.4.66.bit.BlazorUI.AI.woff2') format("woff2");
 }
 
-.bit-icon-ai {
+// The class twice: the icons' stylesheet, linked after this one, draws every .bit-icon from its own font as importantly,
+// and a publish may cut that font down to the icons an app lists - so this rule has to outrank it, not follow it.
+.bit-icon-ai.bit-icon-ai {
     font-style: normal;
     font-weight: normal;
     display: inline-block;

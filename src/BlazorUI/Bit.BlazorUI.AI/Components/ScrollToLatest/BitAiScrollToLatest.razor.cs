@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiScrollToLatest is the button that appears when the reader has scrolled away from the newest message of a
@@ -72,7 +70,6 @@ public partial class BitAiScrollToLatest : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiScrollToLatestParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiEmptyState is what an empty conversation shows: a glyph, a heading, a line under it, and example prompts the
@@ -92,7 +90,6 @@ public partial class BitAiEmptyState : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiEmptyStateParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

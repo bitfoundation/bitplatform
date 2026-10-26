@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiSourceCard shows one source a message cited - its number, its title and the site it comes from - on a
@@ -83,7 +81,6 @@ public partial class BitAiSourceCard : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiSourceCardParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

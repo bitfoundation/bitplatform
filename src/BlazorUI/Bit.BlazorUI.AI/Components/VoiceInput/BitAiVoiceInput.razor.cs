@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiVoiceInput is a dictation button: speech is turned into text by the speech API of the browser, with no round trip
@@ -170,7 +168,6 @@ public partial class BitAiVoiceInput : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiVoiceInputParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

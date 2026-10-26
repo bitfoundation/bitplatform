@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiStreamingMarkdown renders Markdown that is still being written, as a <see cref="BitAiMarkdownView"/> that
@@ -83,7 +81,6 @@ public partial class BitAiStreamingMarkdown : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiStreamingMarkdownParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiAttachmentChip shows one attachment as a chip: a thumbnail for an image and a glyph of its kind otherwise, its
@@ -64,7 +62,6 @@ public partial class BitAiAttachmentChip : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiAttachmentChipParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

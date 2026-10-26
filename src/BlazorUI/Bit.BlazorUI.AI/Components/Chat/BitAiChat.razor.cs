@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiChat is the whole chat surface in one component: the transcript, the composer, the empty state and the
@@ -243,7 +241,6 @@ public partial class BitAiChat : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiChatParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

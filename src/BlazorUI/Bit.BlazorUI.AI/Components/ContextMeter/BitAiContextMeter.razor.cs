@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiContextMeter shows how much of the context window of the model the conversation is using.
@@ -155,7 +153,6 @@ public partial class BitAiContextMeter : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiContextMeterParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

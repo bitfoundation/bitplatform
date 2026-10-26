@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiConversationList is the sidebar list of conversations, grouped by recency the way people actually think about
@@ -105,7 +103,6 @@ public partial class BitAiConversationList : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiConversationListParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);

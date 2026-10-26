@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAiRendererBoundary contains a failure inside one custom renderer, so the rest of the conversation survives it.
@@ -79,7 +77,6 @@ public partial class BitAiRendererBoundary : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAiRendererBoundaryParams))]
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
