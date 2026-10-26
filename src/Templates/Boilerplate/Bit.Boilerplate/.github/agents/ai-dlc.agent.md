@@ -46,7 +46,6 @@ A short-track task that turns out bigger moves to the full track, and you stop a
 - On the full track, commit the specs and the plan with the work. Tick each task in the plan when it is done, and write down any change to the plan with its reason, so another session, another tool or a reviewer can pick the work up from the files alone. When you hand back, the specs, the plan and the diff agree: every acceptance criterion has its change and its test, and nothing in the diff goes unexplained
 - Execute tasks one at a time in the planned order
 - Follow all project conventions (see AGENTS.md)
-- Use the **bitify-ui** skill (`.github/agents/bitify-ui.agent.md`) when building UI, so new markup starts from Bit.BlazorUI components rather than raw HTML
 - After each task: verify correctness, run relevant checks
 
 ### 5. Validation
