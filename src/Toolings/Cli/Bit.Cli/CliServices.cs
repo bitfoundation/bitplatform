@@ -36,6 +36,10 @@ public sealed class CliServices : IDisposable
 
     public SelfUpdate SelfUpdate { get; set; }
 
+    public Tools.AdministratorSession? Administrator { get; set; }
+
+    public bool AdministratorDeclined { get; set; }
+
     public bool NonInteractive { get; private set; }
 
     public bool IsInteractive => NonInteractive is false && HasTerminal;

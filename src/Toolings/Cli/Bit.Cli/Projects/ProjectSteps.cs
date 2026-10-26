@@ -140,17 +140,19 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     public async Task<StepResult> WorkloadsAsync(Action<string> progress, CancellationToken cancellationToken)
     {
+        var support = Templates.Platforms.BuildSupport(project.Platforms);
         var needed = Templates.Platforms.Workloads(project.Platforms, cli.Environment.Os);
         var list = await Dotnet(["workload", "list"], cancellationToken, progress, TimeSpan.FromMinutes(2));
         var installed = ParseInstalledWorkloads(list.Output);
         var missing = needed.Where(w => installed.Contains(w) is false).ToArray();
 
         if (list.Succeeded && missing.Length == 0)
-            return StepResult.Succeeded("Build tools already installed", string.Join(", ", needed));
+            return StepResult.Succeeded($"{support} is installed", string.Join(", ", needed));
 
         var toInstall = list.Succeeded ? missing : [.. needed];
         var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && dotnet workload install {string.Join(' ', toInstall)}";
-        var result = await Dotnet(["workload", "install", .. toInstall], cancellationToken, progress, TimeSpan.FromMinutes(60));
+        var administrator = cli.Environment.IsWindows && AdministratorNeeds.DotnetNeedsIt(cli) ? cli.Administrator : null;
+        var result = await Dotnet(["workload", "install", .. toInstall], cancellationToken, progress, TimeSpan.FromMinutes(60), administrator);
 
         if (result.Succeeded is false && cli.Environment.IsWindows is false && NeedsElevation(result.Output) && cli.Environment.IsElevated is false && cli.Runner.FindExecutable("sudo") is not null)
         {
@@ -169,11 +171,11 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             }
             else
             {
-                return StepResult.Warning("Build tools need sudo", string.Join(", ", toInstall), followUp.Replace("dotnet workload", "sudo dotnet workload", StringComparison.Ordinal));
+                return StepResult.Warning($"{support} needs sudo", string.Join(", ", toInstall), followUp.Replace("dotnet workload", "sudo dotnet workload", StringComparison.Ordinal));
             }
         }
 
-        return StepResult.FromProcess(result, "Installed build tools", "Couldn't install build tools", followUp, string.Join(", ", toInstall));
+        return StepResult.FromProcess(result, $"Installed {support}", $"Couldn't install {support}", followUp, string.Join(", ", toInstall));
     }
 
     public static IReadOnlySet<string> ParseInstalledWorkloads(string output)
@@ -202,10 +204,14 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
     {
         string[] arguments = ["build", Templates.Platforms.MauiProject(project.Name), "-t:InstallAndroidDependencies", "-f", $"{project.TargetFrameworkVersion}-android", "-p:AcceptAndroidSDKLicenses=True"];
         var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}";
-        var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(60));
+        var administrator = cli.Environment.IsWindows && AdministratorNeeds.AndroidSdkNeedsIt(cli.Environment) ? cli.Administrator : null;
+        var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(60), administrator);
 
-        if (result.Succeeded is false && cli.Environment.IsWindows && cli.Environment.IsElevated is false && NeedsElevation(result.Output))
+        if (result.Succeeded is false && administrator is null && cli.Environment.IsWindows && cli.Environment.IsElevated is false && NeedsElevation(result.Output))
         {
+            if (cli.AdministratorDeclined)
+                return StepResult.Warning("The Android SDK and Java weren't installed", "administrator permission was declined", followUp);
+
             if (ToolInstaller.CanRunAsAdministrator(cli) is false)
                 return StepResult.Warning("The Android SDK and Java need administrator rights", "run it in an elevated terminal", followUp);
 
@@ -1002,9 +1008,9 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         return Runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = arguments, WorkingDirectory = workingDirectory ?? project.Directory, Environment = GitWithoutAutoMaintenance, Timeout = TimeSpan.FromMinutes(5) }, cancellationToken);
     }
 
-    private Task<ProcessResult> Dotnet(string[] arguments, CancellationToken cancellationToken, Action<string>? progress, TimeSpan timeout)
+    private Task<ProcessResult> Dotnet(string[] arguments, CancellationToken cancellationToken, Action<string>? progress, TimeSpan timeout, AdministratorSession? administrator = null)
     {
-        return Runner.RunAsync(new ProcessSpec
+        var spec = new ProcessSpec
         {
             FileName = "dotnet",
             Arguments = arguments,
@@ -1012,7 +1018,9 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             OnOutputLine = progress,
             Timeout = timeout,
             Environment = new Dictionary<string, string?> { ["DOTNET_NOLOGO"] = "1", ["MSBUILDTERMINALLOGGER"] = "off" }
-        }, cancellationToken);
+        };
+
+        return administrator is null ? Runner.RunAsync(spec, cancellationToken) : administrator.RunAsync(spec, cancellationToken);
     }
 
     private static bool NeedsElevation(string output)

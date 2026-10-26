@@ -33,7 +33,21 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         {
             var adminActions = withActions.Select(c => c.Action!).Where(a => a.Elevation is Elevation.Admin).ToList();
 
-            if (adminActions.Count > 0)
+            if (adminActions.Count > 0 && cli.Administrator is { } administrator)
+            {
+                foreach (var action in adminActions)
+                {
+                    await RunActionAsync(action, useSudo: false, cancellationToken, administrator: administrator);
+                }
+            }
+            else if (adminActions.Count > 0 && cli.AdministratorDeclined)
+            {
+                foreach (var action in adminActions)
+                {
+                    steps.Add(action.ToolId, StepResult.Warning($"{action.Title} was skipped", "administrator permission was declined", string.Join(" && ", action.Commands.Select(c => c.CommandLine))));
+                }
+            }
+            else if (adminActions.Count > 0)
             {
                 await RunWindowsAdministratorBatchAsync(adminActions, cancellationToken);
             }
@@ -78,7 +92,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         RefreshPath();
     }
 
-    private async Task RunActionAsync(ToolAction action, bool useSudo, CancellationToken cancellationToken, Func<CancellationToken, Task<ToolStatus>>? detect = null)
+    private async Task RunActionAsync(ToolAction action, bool useSudo, CancellationToken cancellationToken, Func<CancellationToken, Task<ToolStatus>>? detect = null, AdministratorSession? administrator = null)
     {
         var interactive = action.Interactive || action.Commands.Any(c => c.Interactive);
 
@@ -95,7 +109,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
                     spec = spec with { FileName = "sudo", Arguments = ["-n", command.FileName, .. command.Arguments] };
                 }
 
-                last = await cli.Runner.RunAsync(spec, ct);
+                last = administrator is null ? await cli.Runner.RunAsync(spec, ct) : await administrator.RunAsync(spec, ct);
 
                 if (action.SuccessExitCodes.Contains(last.ExitCode) is false || last.NotFound || last.TimedOut)
                     break;

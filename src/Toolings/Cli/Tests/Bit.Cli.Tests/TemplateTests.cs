@@ -131,6 +131,14 @@ public class TemplateTests
     }
 
     [TestMethod]
+    public void BuildSupport_Should_NameWhatThePlatformsBuild()
+    {
+        Assert.AreEqual("WebAssembly build support", Platforms.BuildSupport([Platform.Web]));
+        Assert.AreEqual("WebAssembly and Android build support", Platforms.BuildSupport([Platform.Android, Platform.Web]));
+        Assert.AreEqual("WebAssembly, Android, iOS and Windows build support", Platforms.BuildSupport([Platform.Windows, Platform.Web, Platform.Ios, Platform.Android]));
+    }
+
+    [TestMethod]
     public void TheTemplate_Should_SayWhichNodeAndAspireItNeeds()
     {
         Assert.AreEqual(24, TemplateRequirements.Embedded.NodeMajor);
