@@ -1,0 +1,26 @@
+﻿@*
+    Tailwind-styled section switcher for the /tw demo pages.
+    Mirrors SectionSwitcher.razor but uses utility classes only.
+*@
+
+<div class="section-switcher-sticky mt-3 inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-white px-1.5 py-1 text-xs"
+     role="group" aria-label="Styling implementation">
+    <span class="px-2 font-medium text-zinc-500">Implementation:</span>
+    <NavLink class="rounded-full px-3 py-1 font-semibold text-zinc-500 hover:bg-zinc-100"
+             ActiveClass="bg-blue-600! text-white! hover:bg-blue-700!"
+             href="@Slug"
+             Match="NavLinkMatch.All">
+        CSS
+    </NavLink>
+    <NavLink class="rounded-full px-3 py-1 font-semibold text-zinc-500 hover:bg-zinc-100"
+             ActiveClass="bg-blue-600! text-white! hover:bg-blue-700!"
+             href="@($"tw/{Slug}")"
+             Match="NavLinkMatch.All">
+        Tailwind
+    </NavLink>
+</div>
+
+@code {
+    /// <summary>The component slug, e.g. <c>button</c> or <c>accordion</c>.</summary>
+    [Parameter, EditorRequired] public string Slug { get; set; } = string.Empty;
+}

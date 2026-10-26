@@ -1,0 +1,333 @@
+﻿@page "/tw/menu"
+
+<PageTitle>Menu — bit BlazorHeadlessUI · Tailwind</PageTitle>
+
+<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
+    <header class="mb-12">
+        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">Menu</h1>
+        <p class="mt-2 text-zinc-500">Accessible dropdown menu with keyboard navigation, typeahead, and zero visual opinion.</p>
+        <TwSectionSwitcher Slug="menu" />
+    </header>
+
+    <TwDemoBlock Title="Basic Menu" Code="@_basicCode">
+        <Description>Click or use arrow keys / Home / End / Space / Enter / typeahead.</Description>
+        <LiveContent>
+            <BitBhMenu class="relative inline-block">
+                <BitBhMenuButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                    <Template Context="b">
+                        Options
+                        <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+                    </Template>
+                </BitBhMenuButton>
+                <BitBhMenuItems class="absolute top-[calc(100%+0.25rem)] left-0 z-30 m-0 min-w-40 list-none rounded-lg border border-zinc-200 bg-white p-1 shadow-lg">
+                    <BitBhMenuItem OnClick='@(() => Log("Edit"))'      class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Edit">Edit</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Duplicate"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Duplicate">Duplicate</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Archive"))'   class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Archive">Archive</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Delete"))'    class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Delete">Delete</BitBhMenuItem>
+                </BitBhMenuItems>
+            </BitBhMenu>
+            <span class="text-sm text-zinc-500">Last action: <strong class="text-zinc-900">@(lastAction ?? "(none)")</strong></span>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Disabled Items" Code="@_disabledCode">
+        <Description><code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-disabled:</code> dims items; arrow keys and typeahead skip them.</Description>
+        <LiveContent>
+            <BitBhMenu class="relative inline-block">
+                <BitBhMenuButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                    <Template Context="b">
+                        Account
+                        <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+                    </Template>
+                </BitBhMenuButton>
+                <BitBhMenuItems class="absolute top-[calc(100%+0.25rem)] left-0 z-30 m-0 min-w-40 list-none rounded-lg border border-zinc-200 bg-white p-1 shadow-lg">
+                    <BitBhMenuItem OnClick='@(() => Log("Profile"))'  class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Profile">Profile</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Settings"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Settings">Settings</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Billing"))'  class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Billing" Disabled="true">Billing (unavailable)</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Sign out"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Sign out">Sign out</BitBhMenuItem>
+                </BitBhMenuItems>
+            </BitBhMenu>
+            <span class="text-sm text-zinc-500">Last action: <strong class="text-zinc-900">@(lastAction ?? "(none)")</strong></span>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Rich item content" Code="@_richCode">
+        <Description>Items can contain anything; provide <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Label</code> for typeahead.</Description>
+        <LiveContent>
+            <BitBhMenu class="relative inline-block">
+                <BitBhMenuButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                    <Template Context="b">
+                        File
+                        <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+                    </Template>
+                </BitBhMenuButton>
+                <BitBhMenuItems class="absolute top-[calc(100%+0.25rem)] left-0 z-30 m-0 min-w-64 list-none rounded-lg border border-zinc-200 bg-white p-1 shadow-lg">
+                    <BitBhMenuItem OnClick='@(() => Log("New file"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="New file">
+                        <span class="text-base flex-shrink-0">📄</span>
+                        <span class="flex flex-1 flex-col leading-tight">
+                            <strong class="text-sm">New file</strong>
+                            <span class="text-xs text-zinc-500">Create a blank document</span>
+                        </span>
+                        <span class="ml-auto text-xs text-zinc-500">⌘N</span>
+                    </BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Open"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Open">
+                        <span class="text-base flex-shrink-0">📂</span>
+                        <span class="flex flex-1 flex-col leading-tight">
+                            <strong class="text-sm">Open…</strong>
+                            <span class="text-xs text-zinc-500">Browse for a file</span>
+                        </span>
+                        <span class="ml-auto text-xs text-zinc-500">⌘O</span>
+                    </BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Save"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Save">
+                        <span class="text-base flex-shrink-0">💾</span>
+                        <span class="flex flex-1 flex-col leading-tight">
+                            <strong class="text-sm">Save</strong>
+                            <span class="text-xs text-zinc-500">Save the current document</span>
+                        </span>
+                        <span class="ml-auto text-xs text-zinc-500">⌘S</span>
+                    </BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Export"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Export" Disabled="true">
+                        <span class="text-base flex-shrink-0">📤</span>
+                        <span class="flex flex-1 flex-col leading-tight">
+                            <strong class="text-sm">Export</strong>
+                            <span class="text-xs text-zinc-500">Not available in this plan</span>
+                        </span>
+                    </BitBhMenuItem>
+                </BitBhMenuItems>
+            </BitBhMenu>
+            <span class="text-sm text-zinc-500">Last action: <strong class="text-zinc-900">@(lastAction ?? "(none)")</strong></span>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Sections and dividers" Code="@_sectionsCode">
+        <Description>Group items with plain <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">&lt;li&gt;</code> dividers and headings.</Description>
+        <LiveContent>
+            <BitBhMenu class="relative inline-block">
+                <BitBhMenuButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                    <Template Context="b">
+                        More
+                        <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+                    </Template>
+                </BitBhMenuButton>
+                <BitBhMenuItems class="absolute top-[calc(100%+0.25rem)] left-0 z-30 m-0 min-w-40 list-none rounded-lg border border-zinc-200 bg-white p-1 shadow-lg">
+                    <li class="px-2.5 pt-1.5 pb-0.5 text-xs font-semibold uppercase tracking-wider text-zinc-500" role="presentation">View</li>
+                    <BitBhMenuItem OnClick='@(() => Log("Zoom in"))'     class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Zoom in">Zoom in</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Zoom out"))'    class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Zoom out">Zoom out</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Full screen"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Full screen">Full screen</BitBhMenuItem>
+                    <li class="my-1 h-px bg-zinc-200" role="separator"></li>
+                    <li class="px-2.5 pt-1.5 pb-0.5 text-xs font-semibold uppercase tracking-wider text-zinc-500" role="presentation">Help</li>
+                    <BitBhMenuItem OnClick='@(() => Log("Documentation"))'    class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Documentation">Documentation</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Keyboard shortcuts"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Keyboard shortcuts">Keyboard shortcuts</BitBhMenuItem>
+                </BitBhMenuItems>
+            </BitBhMenu>
+            <span class="text-sm text-zinc-500">Last action: <strong class="text-zinc-900">@(lastAction ?? "(none)")</strong></span>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Anchor Positioning" Code="@_anchorCode">
+        <Description><code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Anchor</code> auto-positions and flips. <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">--button-width</code> matches trigger width.</Description>
+        <LiveContent>
+            <div class="flex flex-wrap items-start gap-6">
+                <BitBhMenu class="relative inline-block">
+                    <BitBhMenuButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                        <Template Context="b">
+                            Bottom Start
+                            <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+                        </Template>
+                    </BitBhMenuButton>
+                    <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })"
+                                 class="z-[9999] m-0 min-w-40 list-none rounded-lg border border-zinc-200 bg-white p-1 shadow-lg">
+                        <BitBhMenuItem OnClick='@(() => Log("Edit"))'      class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Edit">Edit</BitBhMenuItem>
+                        <BitBhMenuItem OnClick='@(() => Log("Duplicate"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Duplicate">Duplicate</BitBhMenuItem>
+                        <BitBhMenuItem OnClick='@(() => Log("Archive"))'   class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Archive">Archive</BitBhMenuItem>
+                    </BitBhMenuItems>
+                </BitBhMenu>
+
+                <BitBhMenu class="relative inline-block">
+                    <BitBhMenuButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                        <Template Context="b">
+                            Bottom End
+                            <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+                        </Template>
+                    </BitBhMenuButton>
+                    <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom end", Gap = 4 })"
+                                 class="z-[9999] m-0 min-w-40 list-none rounded-lg border border-zinc-200 bg-white p-1 shadow-lg">
+                        <BitBhMenuItem OnClick='@(() => Log("Cut"))'   class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Cut">Cut</BitBhMenuItem>
+                        <BitBhMenuItem OnClick='@(() => Log("Copy"))'  class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Copy">Copy</BitBhMenuItem>
+                        <BitBhMenuItem OnClick='@(() => Log("Paste"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Paste">Paste</BitBhMenuItem>
+                    </BitBhMenuItems>
+                </BitBhMenu>
+
+                <BitBhMenu class="relative inline-block">
+                    <BitBhMenuButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                        <Template Context="b">
+                            Match Width
+                            <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+                        </Template>
+                    </BitBhMenuButton>
+                    <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 4 })"
+                                 class="z-[9999] m-0 min-w-0 w-[var(--button-width)] list-none rounded-lg border border-zinc-200 bg-white p-1 shadow-lg">
+                        <BitBhMenuItem OnClick='@(() => Log("Option A"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Option A">Option A</BitBhMenuItem>
+                        <BitBhMenuItem OnClick='@(() => Log("Option B"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Option B">Option B</BitBhMenuItem>
+                        <BitBhMenuItem OnClick='@(() => Log("Option C"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Option C">Option C</BitBhMenuItem>
+                    </BitBhMenuItems>
+                </BitBhMenu>
+            </div>
+            <span class="text-sm text-zinc-500">Last action: <strong class="text-zinc-900">@(lastAction ?? "(none)")</strong></span>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Polymorphic items" Code="@_polymorphicCode">
+        <Description>Set <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">As="a"</code> for navigation links.</Description>
+        <LiveContent>
+            <BitBhMenu class="relative inline-block">
+                <BitBhMenuButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                    <Template Context="b">
+                        Navigate
+                        <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+                    </Template>
+                </BitBhMenuButton>
+                <BitBhMenuItems class="absolute top-[calc(100%+0.25rem)] left-0 z-30 m-0 min-w-40 list-none rounded-lg border border-zinc-200 bg-white p-1 shadow-lg">
+                    <BitBhMenuItem As="a" href="tw/button"     class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Button">Button</BitBhMenuItem>
+                    <BitBhMenuItem As="a" href="tw/switch"     class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Switch">Switch</BitBhMenuItem>
+                    <BitBhMenuItem As="a" href="tw/disclosure" class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Disclosure">Disclosure</BitBhMenuItem>
+                    <BitBhMenuItem As="a" href="tw/accordion"  class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Accordion">Accordion</BitBhMenuItem>
+                </BitBhMenuItems>
+            </BitBhMenu>
+        </LiveContent>
+    </TwDemoBlock>
+</div>
+
+@code {
+    private string? lastAction;
+
+    private void Log(string action) => lastAction = action;
+
+    private const string _basicCode = """
+<BitBhMenu class="relative inline-block">
+    <BitBhMenuButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+        <Template Context="b">
+            Options
+            <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+        </Template>
+    </BitBhMenuButton>
+    <BitBhMenuItems class="absolute top-[calc(100%+0.25rem)] left-0 z-30 m-0 min-w-40 list-none rounded-lg border border-zinc-200 bg-white p-1 shadow-lg">
+        <BitBhMenuItem OnClick='@(() => Log("Edit"))'      class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Edit">Edit</BitBhMenuItem>
+        <BitBhMenuItem OnClick='@(() => Log("Duplicate"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Duplicate">Duplicate</BitBhMenuItem>
+        <BitBhMenuItem OnClick='@(() => Log("Archive"))'   class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Archive">Archive</BitBhMenuItem>
+        <BitBhMenuItem OnClick='@(() => Log("Delete"))'    class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Delete">Delete</BitBhMenuItem>
+    </BitBhMenuItems>
+</BitBhMenu>
+
+@code {
+    private string? lastAction;
+    private void Log(string action) => lastAction = action;
+}
+""";
+
+    private const string _disabledCode = """
+<BitBhMenuItems class="absolute top-[calc(100%+0.25rem)] left-0 z-30 m-0 min-w-40 list-none rounded-lg border border-zinc-200 bg-white p-1 shadow-lg">
+    <BitBhMenuItem OnClick='@(() => Log("Profile"))'  class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Profile">Profile</BitBhMenuItem>
+    <BitBhMenuItem OnClick='@(() => Log("Settings"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Settings">Settings</BitBhMenuItem>
+    <BitBhMenuItem OnClick='@(() => Log("Billing"))'  class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Billing" Disabled="true">Billing (unavailable)</BitBhMenuItem>
+    <BitBhMenuItem OnClick='@(() => Log("Sign out"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Sign out">Sign out</BitBhMenuItem>
+</BitBhMenuItems>
+""";
+
+    private const string _richCode = """
+<BitBhMenuItems class="absolute top-[calc(100%+0.25rem)] left-0 z-30 m-0 min-w-64 list-none rounded-lg border border-zinc-200 bg-white p-1 shadow-lg">
+    <BitBhMenuItem OnClick='@(() => Log("New file"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700" Label="New file">
+        <span class="text-base flex-shrink-0">📄</span>
+        <span class="flex flex-1 flex-col leading-tight">
+            <strong class="text-sm">New file</strong>
+            <span class="text-xs text-zinc-500">Create a blank document</span>
+        </span>
+        <span class="ml-auto text-xs text-zinc-500">⌘N</span>
+    </BitBhMenuItem>
+    <BitBhMenuItem OnClick='@(() => Log("Open"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700" Label="Open">
+        <span class="text-base flex-shrink-0">📂</span>
+        <span class="flex flex-1 flex-col leading-tight">
+            <strong class="text-sm">Open…</strong>
+            <span class="text-xs text-zinc-500">Browse for a file</span>
+        </span>
+        <span class="ml-auto text-xs text-zinc-500">⌘O</span>
+    </BitBhMenuItem>
+    <BitBhMenuItem OnClick='@(() => Log("Save"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700" Label="Save">
+        <span class="text-base flex-shrink-0">💾</span>
+        <span class="flex flex-1 flex-col leading-tight">
+            <strong class="text-sm">Save</strong>
+            <span class="text-xs text-zinc-500">Save the current document</span>
+        </span>
+        <span class="ml-auto text-xs text-zinc-500">⌘S</span>
+    </BitBhMenuItem>
+    <BitBhMenuItem OnClick='@(() => Log("Export"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700 data-disabled:opacity-40 data-disabled:cursor-not-allowed" Label="Export" Disabled="true">
+        <span class="text-base flex-shrink-0">📤</span>
+        <span class="flex flex-1 flex-col leading-tight">
+            <strong class="text-sm">Export</strong>
+            <span class="text-xs text-zinc-500">Not available in this plan</span>
+        </span>
+    </BitBhMenuItem>
+</BitBhMenuItems>
+""";
+
+    private const string _sectionsCode = """
+<BitBhMenuItems class="absolute top-[calc(100%+0.25rem)] left-0 z-30 m-0 min-w-40 list-none rounded-lg border border-zinc-200 bg-white p-1 shadow-lg">
+    <li class="px-2.5 pt-1.5 pb-0.5 text-xs font-semibold uppercase tracking-wider text-zinc-500" role="presentation">View</li>
+    <BitBhMenuItem OnClick='@(() => Log("Zoom in"))'     class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700" Label="Zoom in">Zoom in</BitBhMenuItem>
+    <BitBhMenuItem OnClick='@(() => Log("Zoom out"))'    class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700" Label="Zoom out">Zoom out</BitBhMenuItem>
+    <BitBhMenuItem OnClick='@(() => Log("Full screen"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700" Label="Full screen">Full screen</BitBhMenuItem>
+    <li class="my-1 h-px bg-zinc-200" role="separator"></li>
+    <li class="px-2.5 pt-1.5 pb-0.5 text-xs font-semibold uppercase tracking-wider text-zinc-500" role="presentation">Help</li>
+    <BitBhMenuItem OnClick='@(() => Log("Documentation"))'      class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700" Label="Documentation">Documentation</BitBhMenuItem>
+    <BitBhMenuItem OnClick='@(() => Log("Keyboard shortcuts"))' class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700" Label="Keyboard shortcuts">Keyboard shortcuts</BitBhMenuItem>
+</BitBhMenuItems>
+""";
+
+    private const string _anchorCode = """
+<BitBhMenu class="relative inline-block">
+    <BitBhMenuButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+        <Template Context="b">
+            Bottom Start
+            <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+        </Template>
+    </BitBhMenuButton>
+    <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })"
+                 class="z-[9999] m-0 min-w-40 list-none rounded-lg border border-zinc-200 bg-white p-1 shadow-lg">
+        <BitBhMenuItem OnClick='@(() => Log("Edit"))' Label="Edit"
+                    class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700">Edit</BitBhMenuItem>
+        <BitBhMenuItem OnClick='@(() => Log("Duplicate"))' Label="Duplicate"
+                    class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700">Duplicate</BitBhMenuItem>
+        <BitBhMenuItem OnClick='@(() => Log("Archive"))' Label="Archive"
+                    class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700">Archive</BitBhMenuItem>
+    </BitBhMenuItems>
+</BitBhMenu>
+
+@* Match-width: BitBhMenuItems exposes --button-width which can be used in arbitrary values: *@
+<BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 4 })"
+             class="z-[9999] m-0 min-w-0 w-[var(--button-width)] list-none rounded-lg border border-zinc-200 bg-white p-1 shadow-lg">
+    <BitBhMenuItem OnClick='@(() => Log("Option A"))' Label="Option A"
+                class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700">Option A</BitBhMenuItem>
+    <BitBhMenuItem OnClick='@(() => Log("Option B"))' Label="Option B"
+                class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700">Option B</BitBhMenuItem>
+    <BitBhMenuItem OnClick='@(() => Log("Option C"))' Label="Option C"
+                class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700">Option C</BitBhMenuItem>
+</BitBhMenuItems>
+""";
+
+    private const string _polymorphicCode = """
+<BitBhMenu class="relative inline-block">
+    <BitBhMenuButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+        <Template Context="b">
+            Navigate
+            <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+        </Template>
+    </BitBhMenuButton>
+    <BitBhMenuItems class="absolute top-[calc(100%+0.25rem)] left-0 z-30 m-0 min-w-40 list-none rounded-lg border border-zinc-200 bg-white p-1 shadow-lg">
+        <BitBhMenuItem As="a" href="tw/button"     Label="Button"     class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700">Button</BitBhMenuItem>
+        <BitBhMenuItem As="a" href="tw/switch"     Label="Switch"     class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700">Switch</BitBhMenuItem>
+        <BitBhMenuItem As="a" href="tw/disclosure" Label="Disclosure" class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700">Disclosure</BitBhMenuItem>
+        <BitBhMenuItem As="a" href="tw/accordion"  Label="Accordion"  class="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm cursor-pointer text-zinc-900 list-none no-underline data-active:bg-blue-50 data-active:text-blue-700">Accordion</BitBhMenuItem>
+    </BitBhMenuItems>
+</BitBhMenu>
+""";
+}

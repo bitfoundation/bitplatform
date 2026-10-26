@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <Sdk Name="Microsoft.NET.Sdk.Razor" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <!-- Matches the referenced projects: Debug builds and runs the tests on the latest TFM only,
+             CI passes -p:BuildAllTfms=true to cover net9.0 and net8.0 as well. -->
+        <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' And '$(BuildAllTfms)' != 'true' ">net10.0</TargetFrameworks>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <LangVersion>14.0</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RollForward>Major</RollForward>
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+        <NoWarn>$(NoWarn);BL0005;CS1591</NoWarn>
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>..\..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MSTest" Version="4.5.1" />
+        <PackageReference Include="bunit" Version="2.13.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.BlazorHeadlessUI\Bit.BlazorHeadlessUI.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorHeadlessUI.Testing\Bit.BlazorHeadlessUI.Testing.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Bunit" />
+        <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+        <Using Include="Bit.BlazorHeadlessUI" />
+        <Using Include="Bit.BlazorHeadlessUI.Testing" />
+    </ItemGroup>
+
+</Project>

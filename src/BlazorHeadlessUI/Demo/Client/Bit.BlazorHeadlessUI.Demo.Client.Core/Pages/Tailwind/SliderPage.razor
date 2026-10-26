@@ -1,0 +1,298 @@
+﻿@page "/tw/slider"
+
+<PageTitle>Slider — bit BlazorHeadlessUI · Tailwind</PageTitle>
+
+<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
+    <header class="mb-12">
+        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">Slider</h1>
+        <p class="mt-2 text-zinc-500">Single-value and range sliders styled with Tailwind utilities. Thumbs and the range receive their positioning inline; you size and color the parts.</p>
+        <TwSectionSwitcher Slug="slider" />
+    </header>
+
+    <TwDemoBlock Title="Single value" Code="@_singleCode">
+        <Description>
+            Each <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhSliderThumb</code> is a <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">role="slider"</code>. Click or drag the track, or use arrows (± Step), PageUp / PageDown or Shift+arrows (± LargeStep), Home / End.
+            Because the root gets a <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">class</code>, it needs <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">relative</code> itself — thumbs are positioned against it.
+        </Description>
+        <LiveContent>
+            <div class="grid w-full gap-4">
+                <BitBhSlider @bind-Value="volume"
+                          class="relative flex h-5 w-full max-w-xs cursor-pointer touch-none select-none items-center">
+                    <BitBhSliderTrack class="h-1.5 rounded-full bg-zinc-200">
+                        <BitBhSliderRange class="inset-0 rounded-full bg-blue-600" />
+                    </BitBhSliderTrack>
+                    <BitBhSliderThumb aria-label="Volume"
+                                   class="top-1/2 -mt-2.5 block size-5 cursor-grab rounded-full border-2 border-blue-600 bg-white shadow outline-none transition-shadow hover:ring-4 hover:ring-blue-600/15 focus-visible:ring-4 focus-visible:ring-blue-600/35 data-dragging:cursor-grabbing data-dragging:ring-[6px] data-dragging:ring-blue-600/20" />
+                </BitBhSlider>
+                <p class="m-0 text-sm text-zinc-500">Volume: <strong class="font-semibold tabular-nums text-zinc-900">@volume</strong></p>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Range with two thumbs" Code="@_rangeCode">
+        <Description>
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">@@bind-Values</code> with one thumb per value; <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">MinStepsBetweenThumbs</code> keeps them apart and <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">ValueText</code> makes screen readers say "$200".
+        </Description>
+        <LiveContent>
+            <div class="grid w-full gap-4">
+                <BitBhSlider @bind-Values="price" Max="1000" Step="10" MinStepsBetweenThumbs="10"
+                          ValueText="@(v => $"${v:N0}")"
+                          class="relative flex h-5 w-full max-w-xs cursor-pointer touch-none select-none items-center">
+                    <BitBhSliderTrack class="h-1.5 rounded-full bg-zinc-200">
+                        <BitBhSliderRange class="inset-0 rounded-full bg-blue-600" />
+                    </BitBhSliderTrack>
+                    <BitBhSliderThumb aria-label="Minimum price"
+                                   class="top-1/2 -mt-2.5 block size-5 cursor-grab rounded-full border-2 border-blue-600 bg-white shadow outline-none transition-shadow hover:ring-4 hover:ring-blue-600/15 focus-visible:ring-4 focus-visible:ring-blue-600/35 data-dragging:cursor-grabbing data-dragging:ring-[6px] data-dragging:ring-blue-600/20" />
+                    <BitBhSliderThumb aria-label="Maximum price"
+                                   class="top-1/2 -mt-2.5 block size-5 cursor-grab rounded-full border-2 border-blue-600 bg-white shadow outline-none transition-shadow hover:ring-4 hover:ring-blue-600/15 focus-visible:ring-4 focus-visible:ring-blue-600/35 data-dragging:cursor-grabbing data-dragging:ring-[6px] data-dragging:ring-blue-600/20" />
+                </BitBhSlider>
+                <p class="m-0 text-sm text-zinc-500">Price: <strong class="font-semibold tabular-nums text-zinc-900">@($"${price[0]:N0} – ${price[1]:N0}")</strong></p>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Step, LargeStep and a thumb Template" Code="@_stepCode">
+        <Description>
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Step="0.5"</code> snaps to half degrees, <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">LargeStep="5"</code> sets the PageUp / PageDown jump.
+            The thumb's <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Template</code> receives its value for a bubble.
+        </Description>
+        <LiveContent>
+            <div class="grid w-full gap-4">
+                <BitBhSlider @bind-Value="temperature" Min="10" Max="30" Step="0.5" LargeStep="5"
+                          ValueText="@(v => $"{v:0.0} °C")"
+                          class="relative mt-9 flex h-5 w-full max-w-xs cursor-pointer touch-none select-none items-center">
+                    <BitBhSliderTrack class="h-1.5 rounded-full bg-zinc-200">
+                        <BitBhSliderRange class="inset-0 rounded-full bg-blue-600" />
+                    </BitBhSliderTrack>
+                    <BitBhSliderThumb aria-label="Thermostat"
+                                   class="top-1/2 -mt-2.5 block size-5 cursor-grab rounded-full border-2 border-blue-600 bg-white shadow outline-none transition-shadow hover:ring-4 hover:ring-blue-600/15 focus-visible:ring-4 focus-visible:ring-blue-600/35 data-dragging:cursor-grabbing data-dragging:ring-[6px] data-dragging:ring-blue-600/20">
+                        <Template Context="current">
+                            <span class="pointer-events-none absolute bottom-[calc(100%_+_0.5rem)] left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-zinc-900 px-1.5 py-0.5 text-xs font-semibold tabular-nums text-zinc-50">@current.ToString("0.0")°</span>
+                        </Template>
+                    </BitBhSliderThumb>
+                </BitBhSlider>
+                <p class="m-0 text-sm text-zinc-500">Target: <strong class="font-semibold tabular-nums text-zinc-900">@temperature.ToString("0.0") °C</strong></p>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Vertical orientation" Code="@_verticalCode">
+        <Description>
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Orientation="BitBhOrientation.Vertical"</code>: lay the root out as a column and center the thumb horizontally (<code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">left-1/2 -ml-2.5</code>). ↑ / → increase, ↓ / ← decrease.
+        </Description>
+        <LiveContent>
+            <div class="flex gap-8 px-3 py-2">
+                @foreach (var band in bands)
+                {
+                    <div class="grid justify-items-center gap-3">
+                        <BitBhSlider Orientation="BitBhOrientation.Vertical" Min="-12" Max="12"
+                                  DefaultValue="band.Gain" ValueText="@(v => $"{v:+0;-0;0} dB")"
+                                  class="relative flex h-40 w-5 cursor-pointer touch-none select-none flex-col items-center">
+                            <BitBhSliderTrack class="w-1.5 rounded-full bg-zinc-200">
+                                <BitBhSliderRange class="inset-0 rounded-full bg-blue-600" />
+                            </BitBhSliderTrack>
+                            <BitBhSliderThumb aria-label="@band.Name"
+                                           class="left-1/2 -ml-2.5 block size-5 cursor-grab rounded-full border-2 border-blue-600 bg-white shadow outline-none transition-shadow hover:ring-4 hover:ring-blue-600/15 focus-visible:ring-4 focus-visible:ring-blue-600/35 data-dragging:cursor-grabbing data-dragging:ring-[6px] data-dragging:ring-blue-600/20" />
+                        </BitBhSlider>
+                        <span class="text-xs font-medium text-zinc-600" aria-hidden="true">@band.Name</span>
+                    </div>
+                }
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="In a field, with OnValueCommit" Code="@_fieldCode">
+        <Description>
+            Inside <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhField</code> the thumb is labelled by <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhLabel</code> and described by <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhDescription</code>.
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">@@bind-Value</code> updates live; <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">OnValueCommit</code> fires on pointer up or per key press.
+        </Description>
+        <LiveContent>
+            <div class="grid w-full gap-4">
+                <BitBhField class="grid w-full max-w-xs gap-2.5">
+                    <BitBhLabel class="text-sm font-semibold text-zinc-900">Brightness</BitBhLabel>
+                    <BitBhSlider @bind-Value="brightness" OnValueCommit="v => committed = v[0]"
+                              ValueText="@(v => $"{v}%")"
+                              class="relative flex h-5 w-full cursor-pointer touch-none select-none items-center">
+                        <BitBhSliderTrack class="h-1.5 rounded-full bg-zinc-200">
+                            <BitBhSliderRange class="inset-0 rounded-full bg-blue-600" />
+                        </BitBhSliderTrack>
+                        <BitBhSliderThumb class="top-1/2 -mt-2.5 block size-5 cursor-grab rounded-full border-2 border-blue-600 bg-white shadow outline-none transition-shadow hover:ring-4 hover:ring-blue-600/15 focus-visible:ring-4 focus-visible:ring-blue-600/35 data-dragging:cursor-grabbing data-dragging:ring-[6px] data-dragging:ring-blue-600/20" />
+                    </BitBhSlider>
+                    <BitBhDescription class="m-0 text-xs text-zinc-500">Saved when you release the thumb or press a key.</BitBhDescription>
+                </BitBhField>
+                <p class="m-0 text-sm text-zinc-500">
+                    Live: <strong class="font-semibold tabular-nums text-zinc-900">@brightness%</strong> · Committed: <strong class="font-semibold tabular-nums text-zinc-900">@committed%</strong>
+                </p>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Disabled" Code="@_disabledCode">
+        <Description>
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Disabled="true"</code> ignores input, removes the thumbs from the tab order and adds <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-disabled</code> to every part. The range is uncontrolled via <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">DefaultValues</code>.
+        </Description>
+        <LiveContent>
+            <div class="grid w-full gap-4">
+                <BitBhSlider DefaultValue="40" Disabled="true"
+                          class="relative flex h-5 w-full max-w-xs cursor-pointer touch-none select-none items-center data-disabled:cursor-not-allowed data-disabled:opacity-50">
+                    <BitBhSliderTrack class="h-1.5 rounded-full bg-zinc-200">
+                        <BitBhSliderRange class="inset-0 rounded-full bg-blue-600 data-disabled:bg-zinc-400" />
+                    </BitBhSliderTrack>
+                    <BitBhSliderThumb aria-label="Locked volume"
+                                   class="top-1/2 -mt-2.5 block size-5 rounded-full border-2 border-blue-600 bg-white shadow outline-none data-disabled:cursor-not-allowed data-disabled:border-zinc-400 data-disabled:shadow-none" />
+                </BitBhSlider>
+
+                <BitBhSlider DefaultValues="@(new double[] { 20, 70 })" Disabled="true"
+                          class="relative flex h-5 w-full max-w-xs cursor-pointer touch-none select-none items-center data-disabled:cursor-not-allowed data-disabled:opacity-50">
+                    <BitBhSliderTrack class="h-1.5 rounded-full bg-zinc-200">
+                        <BitBhSliderRange class="inset-0 rounded-full bg-blue-600 data-disabled:bg-zinc-400" />
+                    </BitBhSliderTrack>
+                    <BitBhSliderThumb aria-label="Locked minimum"
+                                   class="top-1/2 -mt-2.5 block size-5 rounded-full border-2 border-blue-600 bg-white shadow outline-none data-disabled:cursor-not-allowed data-disabled:border-zinc-400 data-disabled:shadow-none" />
+                    <BitBhSliderThumb aria-label="Locked maximum"
+                                   class="top-1/2 -mt-2.5 block size-5 rounded-full border-2 border-blue-600 bg-white shadow outline-none data-disabled:cursor-not-allowed data-disabled:border-zinc-400 data-disabled:shadow-none" />
+                </BitBhSlider>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+</div>
+
+@code {
+    private double volume = 50;
+    private IReadOnlyList<double> price = [200, 600];
+    private double temperature = 21.5;
+    private readonly (string Name, double Gain)[] bands = [("Bass", 4), ("Mid", -2), ("Treble", 6)];
+    private double brightness = 70;
+    private double committed = 70;
+
+    private const string _singleCode = """
+<BitBhSlider @bind-Value="volume"
+          class="relative flex h-5 w-full max-w-xs cursor-pointer touch-none select-none items-center">
+    <BitBhSliderTrack class="h-1.5 rounded-full bg-zinc-200">
+        @* The range gets position:absolute + left/right inline; inset-0 fills the height. *@
+        <BitBhSliderRange class="inset-0 rounded-full bg-blue-600" />
+    </BitBhSliderTrack>
+    <BitBhSliderThumb aria-label="Volume"
+                   class="top-1/2 -mt-2.5 block size-5 cursor-grab rounded-full border-2 border-blue-600 bg-white shadow outline-none transition-shadow hover:ring-4 hover:ring-blue-600/15 focus-visible:ring-4 focus-visible:ring-blue-600/35 data-dragging:cursor-grabbing data-dragging:ring-[6px] data-dragging:ring-blue-600/20" />
+</BitBhSlider>
+
+<p class="m-0 text-sm text-zinc-500">Volume: <strong class="font-semibold tabular-nums text-zinc-900">@volume</strong></p>
+
+@code {
+    private double volume = 50;
+}
+""";
+
+    private const string _rangeCode = """
+<BitBhSlider @bind-Values="price" Max="1000" Step="10" MinStepsBetweenThumbs="10"
+          ValueText="@(v => $"${v:N0}")"
+          class="relative flex h-5 w-full max-w-xs cursor-pointer touch-none select-none items-center">
+    <BitBhSliderTrack class="h-1.5 rounded-full bg-zinc-200">
+        <BitBhSliderRange class="inset-0 rounded-full bg-blue-600" />
+    </BitBhSliderTrack>
+    <BitBhSliderThumb aria-label="Minimum price"
+                   class="top-1/2 -mt-2.5 block size-5 cursor-grab rounded-full border-2 border-blue-600 bg-white shadow outline-none transition-shadow hover:ring-4 hover:ring-blue-600/15 focus-visible:ring-4 focus-visible:ring-blue-600/35 data-dragging:cursor-grabbing data-dragging:ring-[6px] data-dragging:ring-blue-600/20" />
+    <BitBhSliderThumb aria-label="Maximum price"
+                   class="top-1/2 -mt-2.5 block size-5 cursor-grab rounded-full border-2 border-blue-600 bg-white shadow outline-none transition-shadow hover:ring-4 hover:ring-blue-600/15 focus-visible:ring-4 focus-visible:ring-blue-600/35 data-dragging:cursor-grabbing data-dragging:ring-[6px] data-dragging:ring-blue-600/20" />
+</BitBhSlider>
+
+<p class="m-0 text-sm text-zinc-500">Price: <strong class="font-semibold tabular-nums text-zinc-900">@($"${price[0]:N0} – ${price[1]:N0}")</strong></p>
+
+@code {
+    private IReadOnlyList<double> price = [200, 600];
+}
+""";
+
+    private const string _stepCode = """
+<BitBhSlider @bind-Value="temperature" Min="10" Max="30" Step="0.5" LargeStep="5"
+          ValueText="@(v => $"{v:0.0} °C")"
+          class="relative mt-9 flex h-5 w-full max-w-xs cursor-pointer touch-none select-none items-center">
+    <BitBhSliderTrack class="h-1.5 rounded-full bg-zinc-200">
+        <BitBhSliderRange class="inset-0 rounded-full bg-blue-600" />
+    </BitBhSliderTrack>
+    <BitBhSliderThumb aria-label="Thermostat"
+                   class="top-1/2 -mt-2.5 block size-5 cursor-grab rounded-full border-2 border-blue-600 bg-white shadow outline-none transition-shadow hover:ring-4 hover:ring-blue-600/15 focus-visible:ring-4 focus-visible:ring-blue-600/35 data-dragging:cursor-grabbing data-dragging:ring-[6px] data-dragging:ring-blue-600/20">
+        <Template Context="current">
+            <span class="pointer-events-none absolute bottom-[calc(100%_+_0.5rem)] left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-zinc-900 px-1.5 py-0.5 text-xs font-semibold tabular-nums text-zinc-50">@current.ToString("0.0")°</span>
+        </Template>
+    </BitBhSliderThumb>
+</BitBhSlider>
+
+<p class="m-0 text-sm text-zinc-500">Target: <strong class="font-semibold tabular-nums text-zinc-900">@temperature.ToString("0.0") °C</strong></p>
+
+@code {
+    private double temperature = 21.5;
+}
+""";
+
+    private const string _verticalCode = """
+<div class="flex gap-8 px-3 py-2">
+    @foreach (var band in bands)
+    {
+        <div class="grid justify-items-center gap-3">
+            <BitBhSlider Orientation="BitBhOrientation.Vertical" Min="-12" Max="12"
+                      DefaultValue="band.Gain" ValueText="@(v => $"{v:+0;-0;0} dB")"
+                      class="relative flex h-40 w-5 cursor-pointer touch-none select-none flex-col items-center">
+                <BitBhSliderTrack class="w-1.5 rounded-full bg-zinc-200">
+                    <BitBhSliderRange class="inset-0 rounded-full bg-blue-600" />
+                </BitBhSliderTrack>
+                <BitBhSliderThumb aria-label="@band.Name"
+                               class="left-1/2 -ml-2.5 block size-5 cursor-grab rounded-full border-2 border-blue-600 bg-white shadow outline-none transition-shadow hover:ring-4 hover:ring-blue-600/15 focus-visible:ring-4 focus-visible:ring-blue-600/35 data-dragging:cursor-grabbing data-dragging:ring-[6px] data-dragging:ring-blue-600/20" />
+            </BitBhSlider>
+            <span class="text-xs font-medium text-zinc-600" aria-hidden="true">@band.Name</span>
+        </div>
+    }
+</div>
+
+@code {
+    private readonly (string Name, double Gain)[] bands = [("Bass", 4), ("Mid", -2), ("Treble", 6)];
+}
+""";
+
+    private const string _fieldCode = """
+<BitBhField class="grid w-full max-w-xs gap-2.5">
+    <BitBhLabel class="text-sm font-semibold text-zinc-900">Brightness</BitBhLabel>
+    <BitBhSlider @bind-Value="brightness" OnValueCommit="v => committed = v[0]"
+              ValueText="@(v => $"{v}%")"
+              class="relative flex h-5 w-full cursor-pointer touch-none select-none items-center">
+        <BitBhSliderTrack class="h-1.5 rounded-full bg-zinc-200">
+            <BitBhSliderRange class="inset-0 rounded-full bg-blue-600" />
+        </BitBhSliderTrack>
+        @* No aria-label needed: the field's label names the thumb. *@
+        <BitBhSliderThumb class="top-1/2 -mt-2.5 block size-5 cursor-grab rounded-full border-2 border-blue-600 bg-white shadow outline-none transition-shadow hover:ring-4 hover:ring-blue-600/15 focus-visible:ring-4 focus-visible:ring-blue-600/35 data-dragging:cursor-grabbing data-dragging:ring-[6px] data-dragging:ring-blue-600/20" />
+    </BitBhSlider>
+    <BitBhDescription class="m-0 text-xs text-zinc-500">Saved when you release the thumb or press a key.</BitBhDescription>
+</BitBhField>
+
+<p class="m-0 text-sm text-zinc-500">
+    Live: <strong class="font-semibold tabular-nums text-zinc-900">@brightness%</strong> · Committed: <strong class="font-semibold tabular-nums text-zinc-900">@committed%</strong>
+</p>
+
+@code {
+    private double brightness = 70;
+    private double committed = 70;
+}
+""";
+
+    private const string _disabledCode = """
+<BitBhSlider DefaultValue="40" Disabled="true"
+          class="relative flex h-5 w-full max-w-xs cursor-pointer touch-none select-none items-center data-disabled:cursor-not-allowed data-disabled:opacity-50">
+    <BitBhSliderTrack class="h-1.5 rounded-full bg-zinc-200">
+        <BitBhSliderRange class="inset-0 rounded-full bg-blue-600 data-disabled:bg-zinc-400" />
+    </BitBhSliderTrack>
+    <BitBhSliderThumb aria-label="Locked volume"
+                   class="top-1/2 -mt-2.5 block size-5 rounded-full border-2 border-blue-600 bg-white shadow outline-none data-disabled:cursor-not-allowed data-disabled:border-zinc-400 data-disabled:shadow-none" />
+</BitBhSlider>
+
+<BitBhSlider DefaultValues="@(new double[] { 20, 70 })" Disabled="true"
+          class="relative flex h-5 w-full max-w-xs cursor-pointer touch-none select-none items-center data-disabled:cursor-not-allowed data-disabled:opacity-50">
+    <BitBhSliderTrack class="h-1.5 rounded-full bg-zinc-200">
+        <BitBhSliderRange class="inset-0 rounded-full bg-blue-600 data-disabled:bg-zinc-400" />
+    </BitBhSliderTrack>
+    <BitBhSliderThumb aria-label="Locked minimum"
+                   class="top-1/2 -mt-2.5 block size-5 rounded-full border-2 border-blue-600 bg-white shadow outline-none data-disabled:cursor-not-allowed data-disabled:border-zinc-400 data-disabled:shadow-none" />
+    <BitBhSliderThumb aria-label="Locked maximum"
+                   class="top-1/2 -mt-2.5 block size-5 rounded-full border-2 border-blue-600 bg-white shadow outline-none data-disabled:cursor-not-allowed data-disabled:border-zinc-400 data-disabled:shadow-none" />
+</BitBhSlider>
+""";
+}

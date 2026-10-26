@@ -155,6 +155,12 @@ jobs:
     uses: ./.github/workflows/brouter.demo.cd.yml
     secrets: inherit
 
+  blazorheadlessui_demo:
+    name: blazorheadlessui demo
+    if: inputs.server
+    uses: ./.github/workflows/blazorheadlessui.demo.cd.yml
+    secrets: inherit
+
   bswup_demo:
     name: bswup demo
     if: inputs.server

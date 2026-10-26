@@ -1,0 +1,58 @@
+﻿@inherits LayoutComponentBase
+@inject IJSRuntime JS
+
+<div class="page">
+    <header class="mobile-header">
+        <button class="mobile-menu-toggle" @onclick="ToggleSidebar" aria-label="Toggle navigation">
+            <span class="hamburger-icon" aria-hidden="true"></span>
+        </button>
+        <a class="mobile-brand" href="/">bit BlazorHeadlessUI</a>
+        <ThemeToggle Dark="_darkTheme" DarkChanged="SetThemeAsync" />
+    </header>
+
+    @if (_sidebarOpen)
+    {
+        <div class="sidebar-backdrop" @onclick="CloseSidebar"></div>
+    }
+
+    <aside class="sidebar @(_sidebarOpen ? "sidebar-open" : "")">
+        <NavMenu OnNavLinkClicked="CloseSidebar" DarkTheme="_darkTheme" DarkThemeChanged="SetThemeAsync" />
+    </aside>
+
+    <main class="content">
+        @Body
+    </main>
+</div>
+
+<BitBhPortalOutlet />
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+@code {
+    private bool _sidebarOpen;
+    private bool _darkTheme;
+
+    private void ToggleSidebar() => _sidebarOpen = !_sidebarOpen;
+    private void CloseSidebar() => _sidebarOpen = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // wwwroot/theme.js has already applied the theme before the first paint;
+        // pick it up so the switches report the right pressed state.
+        if (firstRender)
+        {
+            _darkTheme = await JS.InvokeAsync<string>("bitBhTheme.get") == "dark";
+            if (_darkTheme) StateHasChanged();
+        }
+    }
+
+    private async Task SetThemeAsync(bool dark)
+    {
+        _darkTheme = dark;
+        await JS.InvokeVoidAsync("bitBhTheme.set", dark ? "dark" : "light");
+    }
+}

@@ -1,0 +1,28 @@
+﻿@*
+    Light / dark theme switch, built on the library's own BitBhToggle
+    (aria-pressed = dark theme on). The sun / moon icon is chosen in CSS from
+    <html data-theme> so it is right from the first paint, before the circuit
+    is interactive and the pressed state has been read from the browser.
+*@
+
+<BitBhToggle class="theme-toggle"
+          Pressed="Dark"
+          PressedChanged="DarkChanged"
+          aria-label="Dark theme"
+          title="Toggle dark theme">
+    <svg class="theme-toggle-icon theme-toggle-sun" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+    </svg>
+    <svg class="theme-toggle-icon theme-toggle-moon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+</BitBhToggle>
+
+@code {
+    /// <summary>Whether the dark theme is active.</summary>
+    [Parameter] public bool Dark { get; set; }
+
+    /// <summary>Raised with the requested state when the visitor flips the switch.</summary>
+    [Parameter] public EventCallback<bool> DarkChanged { get; set; }
+}

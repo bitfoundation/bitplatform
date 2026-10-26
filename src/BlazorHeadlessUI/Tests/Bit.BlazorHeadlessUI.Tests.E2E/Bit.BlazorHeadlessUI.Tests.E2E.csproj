@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- Drives every page of the demo site in a real Chromium, through Playwright: axe-core over each page of both
+         styling sections, and the keyboard and focus flows only a browser can verify - see README.md. -->
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+        <!-- The repo's global.json mandates the Microsoft.Testing.Platform runner. EnableMSTestRunner
+             builds that test host into the assembly itself, and it only generates the entry point for
+             an executable project. -->
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Playwright itself, without a per-framework integration package: the suite manages the
+             browser, the contexts and the demo host from its own infrastructure. -->
+        <PackageReference Include="Microsoft.Playwright" Version="1.64.1" />
+        <!-- axe-core, the rules engine behind most automated accessibility audits, run inside the page under test
+             (Infrastructure/Axe.cs) - the script alone, without the Playwright integration's multi-page run. -->
+        <PackageReference Include="Deque.AxeCore.Commons" Version="4.14.0" />
+        <PackageReference Include="MSTest" Version="4.5.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- The demo's catalogue - the one list the site's navigation renders - so a page added to the demo is
+             audited without touching this suite. It depends on nothing but the BCL. -->
+        <Compile Include="..\..\Demo\Client\Bit.BlazorHeadlessUI.Demo.Client.Core\Shared\DemoSection.cs" Link="Demo\DemoSection.cs" />
+    </ItemGroup>
+
+    <!-- Deliberately no ProjectReference to the demo. The suite publishes Bit.BlazorHeadlessUI.Demo.Server the way
+         blazorheadlessui.demo.cd.yml does and runs that output as a separate process (Infrastructure/DemoHost.cs): only
+         a publish trims the WebAssembly client. A reference would also build the library and the client a second
+         time, into the same obj folders, on every test build. -->
+
+</Project>

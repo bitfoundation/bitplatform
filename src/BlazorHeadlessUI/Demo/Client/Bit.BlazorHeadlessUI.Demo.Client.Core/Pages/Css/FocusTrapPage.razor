@@ -1,0 +1,427 @@
+﻿@page "/focus-trap"
+
+<PageTitle>FocusTrap — bit BlazorHeadlessUI</PageTitle>
+
+<div class="demo-page">
+    <header class="demo-header">
+        <h1>FocusTrap</h1>
+        <p>A low-level component that traps keyboard focus within a container. Used internally by Dialog but also useful standalone for custom modal-like patterns.</p>
+        <SectionSwitcher Slug="focus-trap" />
+    </header>
+
+    <DemoBlock Title="Basic Focus Trap"
+               Code="@_basicCode"
+               Css="@_basicCss">
+        <Description>
+            Toggle the trap on and off. While active, pressing Tab and Shift+Tab cycles
+            through the focusable elements inside the container without escaping to the
+            rest of the page. Focus is automatically moved to the first focusable element
+            when the trap activates, and restored to the previously-focused element when
+            it deactivates.
+        </Description>
+        <LiveContent>
+            <BitBhButton OnClick="() => basicEnabled = !basicEnabled"
+                      class="@($"btn {(basicEnabled ? "btn-primary" : "")}")">
+                @(basicEnabled ? "Deactivate trap" : "Activate trap")
+            </BitBhButton>
+
+            <BitBhFocusTrap Enabled="basicEnabled" class="focus-trap-container">
+                <p class="focus-trap-label">
+                    Focus is @(basicEnabled ? "trapped" : "free") inside this box.
+                </p>
+                <input type="text" placeholder="First input" class="focus-trap-input" />
+                <input type="text" placeholder="Second input" class="focus-trap-input" />
+                <button class="btn" @onclick="() => basicEnabled = false">Close</button>
+            </BitBhFocusTrap>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Slide-over panel"
+               Code="@_slideOverCode"
+               Css="@_slideOverCss">
+        <Description>
+            A common use case: a slide-over panel that traps focus while visible.
+            The trap activates when the panel opens and deactivates when it closes,
+            returning focus to the trigger button.
+        </Description>
+        <LiveContent>
+            <BitBhButton OnClick="() => panelOpen = true" class="btn btn-primary">
+                Open panel
+            </BitBhButton>
+
+            @if (panelOpen)
+            {
+                <div class="slide-over-backdrop" @onclick="() => panelOpen = false"></div>
+                <BitBhFocusTrap Enabled="panelOpen" class="slide-over-panel">
+                    <h3 class="slide-over-title">Settings</h3>
+                    <p class="slide-over-description">
+                        Focus is trapped inside this panel. Try Tab and Shift+Tab.
+                    </p>
+
+                    <label class="slide-over-field">
+                        <span>Username</span>
+                        <input type="text" class="focus-trap-input" value="alice" />
+                    </label>
+
+                    <label class="slide-over-field">
+                        <span>Email</span>
+                        <input type="email" class="focus-trap-input" value="alice@example.com" />
+                    </label>
+
+                    <div class="slide-over-actions">
+                        <button class="btn" @onclick="() => panelOpen = false">Cancel</button>
+                        <button class="btn btn-primary" @onclick="() => panelOpen = false">Save</button>
+                    </div>
+                </BitBhFocusTrap>
+            }
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Multiple focusable regions"
+               Code="@_multiCode"
+               Css="@_multiCss">
+        <Description>
+            Demonstrates that only the active trap captures focus. Toggle between
+            two regions — only the enabled one traps Tab navigation.
+        </Description>
+        <LiveContent>
+            <div class="multi-controls">
+                <BitBhButton OnClick="ActivateRegionA"
+                          class="@($"btn {(regionA ? "btn-primary" : "")}")">
+                    Trap Region A
+                </BitBhButton>
+                <BitBhButton OnClick="ActivateRegionB"
+                          class="@($"btn {(regionB ? "btn-primary" : "")}")">
+                    Trap Region B
+                </BitBhButton>
+                <BitBhButton OnClick="DeactivateAll" class="btn">
+                    Release all
+                </BitBhButton>
+            </div>
+
+            <div class="multi-regions">
+                <BitBhFocusTrap Enabled="regionA" class="focus-trap-container">
+                    <strong>Region A</strong>
+                    <input type="text" placeholder="A — Field 1" class="focus-trap-input" />
+                    <input type="text" placeholder="A — Field 2" class="focus-trap-input" />
+                    <button class="btn">A — Action</button>
+                </BitBhFocusTrap>
+
+                <BitBhFocusTrap Enabled="regionB" class="focus-trap-container">
+                    <strong>Region B</strong>
+                    <input type="text" placeholder="B — Field 1" class="focus-trap-input" />
+                    <input type="text" placeholder="B — Field 2" class="focus-trap-input" />
+                    <button class="btn">B — Action</button>
+                </BitBhFocusTrap>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+</div>
+
+@code {
+    private bool basicEnabled;
+    private bool panelOpen;
+    private bool regionA;
+    private bool regionB;
+
+    private void ActivateRegionA()
+    {
+        regionA = true;
+        regionB = false;
+    }
+
+    private void ActivateRegionB()
+    {
+        regionA = false;
+        regionB = true;
+    }
+
+    private void DeactivateAll()
+    {
+        regionA = false;
+        regionB = false;
+    }
+
+    // ── Source snippets shown alongside each live demo ─────────────────────────
+
+    private const string _basicCode = """
+<BitBhButton OnClick="() => enabled = !enabled"
+          class="btn @(enabled ? "btn-primary" : "")">
+    @(enabled ? "Deactivate trap" : "Activate trap")
+</BitBhButton>
+
+<BitBhFocusTrap Enabled="enabled" class="focus-trap-container">
+    <p>Focus is @(enabled ? "trapped" : "free") inside this box.</p>
+    <input type="text" placeholder="First input" />
+    <input type="text" placeholder="Second input" />
+    <button class="btn" @onclick="() => enabled = false">Close</button>
+</BitBhFocusTrap>
+
+@code {
+    private bool enabled;
+}
+""";
+
+    private const string _slideOverCode = """
+<BitBhButton OnClick="() => panelOpen = true" class="btn btn-primary">
+    Open panel
+</BitBhButton>
+
+@if (panelOpen)
+{
+    <div class="slide-over-backdrop" @onclick="() => panelOpen = false"></div>
+    <BitBhFocusTrap Enabled="panelOpen" class="slide-over-panel">
+        <h3>Settings</h3>
+        <p>Focus is trapped inside this panel.</p>
+
+        <label>
+            <span>Username</span>
+            <input type="text" value="alice" />
+        </label>
+
+        <label>
+            <span>Email</span>
+            <input type="email" value="alice@example.com" />
+        </label>
+
+        <div class="slide-over-actions">
+            <button @onclick="() => panelOpen = false">Cancel</button>
+            <button @onclick="() => panelOpen = false">Save</button>
+        </div>
+    </BitBhFocusTrap>
+}
+
+@code {
+    private bool panelOpen;
+}
+""";
+
+    private const string _multiCode = """
+<BitBhButton OnClick="ActivateRegionA" class="btn">Trap Region A</BitBhButton>
+<BitBhButton OnClick="ActivateRegionB" class="btn">Trap Region B</BitBhButton>
+<BitBhButton OnClick="DeactivateAll" class="btn">Release all</BitBhButton>
+
+<BitBhFocusTrap Enabled="regionA" class="focus-trap-container">
+    <strong>Region A</strong>
+    <input type="text" placeholder="A — Field 1" />
+    <input type="text" placeholder="A — Field 2" />
+    <button class="btn">A — Action</button>
+</BitBhFocusTrap>
+
+<BitBhFocusTrap Enabled="regionB" class="focus-trap-container">
+    <strong>Region B</strong>
+    <input type="text" placeholder="B — Field 1" />
+    <input type="text" placeholder="B — Field 2" />
+    <button class="btn">B — Action</button>
+</BitBhFocusTrap>
+
+@code {
+    private bool regionA;
+    private bool regionB;
+
+    private void ActivateRegionA() { regionA = true; regionB = false; }
+    private void ActivateRegionB() { regionA = false; regionB = true; }
+    private void DeactivateAll() { regionA = false; regionB = false; }
+}
+""";
+
+    private const string _basicCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.focus-trap-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.25rem;
+    border: 2px dashed #d4d4d8;
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+}
+
+/* Active state via data-state attribute emitted by BitBhFocusTrap */
+.focus-trap-container[data-state="active"] {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+
+.focus-trap-label {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #52525b;
+}
+
+.focus-trap-input {
+    padding: 0.45rem 0.6rem;
+    border: 1px solid #d4d4d8;
+    border-radius: 0.4rem;
+    font-size: 0.9rem;
+}
+
+/* Toggle button */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    background: #fff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+.btn:hover { background: #f4f4f5; }
+
+.btn-primary {
+    color: #fff;
+    background: #2563eb;
+    border-color: #2563eb;
+}
+.btn-primary:hover { background: #1d4ed8; border-color: #1d4ed8; }
+""";
+
+    private const string _slideOverCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.slide-over-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 40;
+}
+
+.slide-over-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 22rem;
+    max-width: 90vw;
+    background: #fff;
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+    padding: 1.5rem;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.slide-over-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.slide-over-description {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #71717a;
+}
+
+.slide-over-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.slide-over-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-top: auto;
+}
+
+/* Inputs inside the panel */
+.focus-trap-input {
+    padding: 0.45rem 0.6rem;
+    border: 1px solid #d4d4d8;
+    border-radius: 0.4rem;
+    font-size: 0.9rem;
+}
+
+/* Trigger + action buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    background: #fff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+.btn:hover { background: #f4f4f5; }
+
+.btn-primary {
+    color: #fff;
+    background: #2563eb;
+    border-color: #2563eb;
+}
+.btn-primary:hover { background: #1d4ed8; border-color: #1d4ed8; }
+""";
+
+    private const string _multiCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.focus-trap-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.25rem;
+    border: 2px dashed #d4d4d8;
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+}
+
+/* Each region uses the same .focus-trap-container styles. The active one gets
+   highlighted via the data-state="active" attribute emitted by BitBhFocusTrap. */
+.focus-trap-container[data-state="active"] {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+
+.focus-trap-input {
+    padding: 0.45rem 0.6rem;
+    border: 1px solid #d4d4d8;
+    border-radius: 0.4rem;
+    font-size: 0.9rem;
+}
+
+/* Row of region toggle buttons */
+.multi-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.multi-regions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+/* Toggle buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    background: #fff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+.btn:hover { background: #f4f4f5; }
+
+.btn-primary {
+    color: #fff;
+    background: #2563eb;
+    border-color: #2563eb;
+}
+.btn-primary:hover { background: #1d4ed8; border-color: #1d4ed8; }
+""";
+}

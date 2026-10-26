@@ -24,6 +24,7 @@ on:
       - 'src/Utilities/Bonboarding/**'
       - 'src/Utilities/Bortable/**'
       - 'src/Brouter/**'
+      - 'src/BlazorHeadlessUI/**'
       - 'src/Bswup/**'
       - 'src/Butil/**'
       - 'src/Toolings/Cli/**'
@@ -155,6 +156,16 @@ jobs:
       run: dotnet build src/Brouter/Bit.Brouter.Generators/Bit.Brouter.Generators.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Brouter.Generators
       run: dotnet pack src/Brouter/Bit.Brouter.Generators/Bit.Brouter.Generators.csproj --output . --configuration Release
+
+    - name: dotnet build BlazorHeadlessUI
+      run: dotnet build src/BlazorHeadlessUI/Bit.BlazorHeadlessUI/Bit.BlazorHeadlessUI.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BlazorHeadlessUI
+      run: dotnet pack src/BlazorHeadlessUI/Bit.BlazorHeadlessUI/Bit.BlazorHeadlessUI.csproj --output . --configuration Release
+
+    - name: dotnet build BlazorHeadlessUI.Testing
+      run: dotnet build src/BlazorHeadlessUI/Bit.BlazorHeadlessUI.Testing/Bit.BlazorHeadlessUI.Testing.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BlazorHeadlessUI.Testing
+      run: dotnet pack src/BlazorHeadlessUI/Bit.BlazorHeadlessUI.Testing/Bit.BlazorHeadlessUI.Testing.csproj --output . --configuration Release
 
     - name: dotnet build Besql
       run: dotnet build src/Besql/Bit.Besql/Bit.Besql.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false

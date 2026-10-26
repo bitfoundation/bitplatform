@@ -1,0 +1,228 @@
+﻿@page "/tw/portal"
+
+<PageTitle>Portal — bit BlazorHeadlessUI · Tailwind</PageTitle>
+
+<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
+    <header class="mb-12">
+        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">Portal</h1>
+        <p class="mt-2 text-zinc-500">Renders children into a different part of the DOM tree.</p>
+        <TwSectionSwitcher Slug="portal" />
+    </header>
+
+    <TwDemoBlock Title="Basic Portal" Code="@_basicCode">
+        <Description>Toggle the portal. When enabled, the content escapes to the portal outlet.</Description>
+        <LiveContent>
+            <BitBhButton OnClick="() => basicEnabled = !basicEnabled"
+                      class="@(basicEnabled
+                          ? "inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-blue-700"
+                          : "inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100")">
+                @(basicEnabled ? "Disable portal" : "Enable portal")
+            </BitBhButton>
+            <div class="mt-4 h-32 overflow-hidden rounded-lg border-2 border-dashed border-zinc-300 p-4 relative">
+                <p class="text-sm text-zinc-500">This box has <code class="rounded bg-zinc-100 px-1 text-xs">overflow: hidden</code>.</p>
+                <BitBhPortal Enabled="basicEnabled">
+                    <div class="rounded-md border border-blue-600 bg-blue-50 px-4 py-3 text-sm">
+                        <p>I'm portalled content!</p>
+                        <p class="mt-1 text-xs">
+                            @(basicEnabled
+                                ? "✓ I'm rendered at the end of <body>, escaping the overflow box."
+                                : "I'm rendered in place (portal disabled).")
+                        </p>
+                    </div>
+                </BitBhPortal>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Tooltip escaping stacking context" Code="@_tooltipCode">
+        <Description>The portal moves the tooltip to body level so it's always visible.</Description>
+        <LiveContent>
+            <div class="overflow-hidden rounded-lg border-2 border-dashed border-zinc-300 p-4 relative z-[1]">
+                <p class="text-sm">This container has <code class="rounded bg-zinc-100 px-1 text-xs">overflow: hidden</code> and <code class="rounded bg-zinc-100 px-1 text-xs">z-index: 1</code>.</p>
+                <div class="mt-3 inline-block cursor-default rounded-md bg-zinc-100 px-3 py-2 text-sm"
+                     @onmouseenter="() => tooltipVisible = true"
+                     @onmouseleave="() => tooltipVisible = false">
+                    Hover me for a tooltip
+                </div>
+                @if (tooltipVisible)
+                {
+                    <BitBhPortal>
+                        <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] rounded-md bg-zinc-900 px-4 py-2 text-sm text-white shadow-lg">
+                            This tooltip escapes the stacking context via Portal!
+                        </div>
+                    </BitBhPortal>
+                }
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Portal Group (shared target)" Code="@_groupCode">
+        <Description><code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhPortalGroup</code> directs nested portals into a shared container.</Description>
+        <LiveContent>
+            <div class="flex gap-2 flex-wrap">
+                <BitBhButton OnClick="() => groupShowA = !groupShowA"
+                          class="@(groupShowA
+                              ? "inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-blue-700"
+                              : "inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100")">
+                    Toggle Portal A
+                </BitBhButton>
+                <BitBhButton OnClick="() => groupShowB = !groupShowB"
+                          class="@(groupShowB
+                              ? "inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-blue-700"
+                              : "inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100")">
+                    Toggle Portal B
+                </BitBhButton>
+            </div>
+            <BitBhPortalGroup class="mt-4 min-h-24 rounded-lg border-2 border-violet-300 bg-violet-50 p-4">
+                <p class="text-sm">Portal Group target container (portals land here):</p>
+                @if (groupShowA)
+                {
+                    <BitBhPortal>
+                        <div class="mt-2 rounded-md border border-blue-500 bg-blue-100 px-3 py-2 text-sm">Portal A content</div>
+                    </BitBhPortal>
+                }
+                @if (groupShowB)
+                {
+                    <BitBhPortal>
+                        <div class="mt-2 rounded-md border border-emerald-500 bg-emerald-100 px-3 py-2 text-sm">Portal B content</div>
+                    </BitBhPortal>
+                }
+            </BitBhPortalGroup>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Disabled portal (render in place)" Code="@_disabledCode">
+        <Description><code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Enabled="false"</code> renders in the natural position.</Description>
+        <LiveContent>
+            <div class="flex flex-col gap-3">
+                <label class="inline-flex items-center gap-2 text-sm cursor-pointer">
+                    <input type="checkbox" @bind="disabledPortalEnabled" />
+                    Portal enabled
+                </label>
+                <div class="h-32 overflow-hidden rounded-lg border-2 border-dashed border-zinc-300 p-4 relative">
+                    <p class="text-sm text-zinc-500">Container with <code class="rounded bg-zinc-100 px-1 text-xs">overflow: hidden</code>.</p>
+                    <BitBhPortal Enabled="disabledPortalEnabled">
+                        <div class="rounded-md border border-amber-500 bg-amber-100 px-4 py-3 text-sm">
+                            <p>@(disabledPortalEnabled ? "Portalled to body!" : "Rendered in place.")</p>
+                        </div>
+                    </BitBhPortal>
+                </div>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+</div>
+
+@code {
+    private bool basicEnabled = true;
+    private bool tooltipVisible;
+    private bool groupShowA;
+    private bool groupShowB;
+    private bool disabledPortalEnabled;
+
+    private const string _basicCode = """
+<BitBhButton OnClick="() => basicEnabled = !basicEnabled"
+          class="@(basicEnabled
+              ? "inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-blue-700"
+              : "inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100")">
+    @(basicEnabled ? "Disable portal" : "Enable portal")
+</BitBhButton>
+<div class="mt-4 h-32 overflow-hidden rounded-lg border-2 border-dashed border-zinc-300 p-4 relative">
+    <p class="text-sm text-zinc-500">This box has <code class="rounded bg-zinc-100 px-1 text-xs">overflow: hidden</code>.</p>
+    <BitBhPortal Enabled="basicEnabled">
+        <div class="rounded-md border border-blue-600 bg-blue-50 px-4 py-3 text-sm">
+            <p>I'm portalled content!</p>
+            <p class="mt-1 text-xs">
+                @(basicEnabled
+                    ? "✓ I'm rendered at the end of <body>, escaping the overflow box."
+                    : "I'm rendered in place (portal disabled).")
+            </p>
+        </div>
+    </BitBhPortal>
+</div>
+
+@code {
+    private bool basicEnabled = true;
+}
+""";
+
+    private const string _tooltipCode = """
+<div class="overflow-hidden rounded-lg border-2 border-dashed border-zinc-300 p-4 relative z-[1]">
+    <p class="text-sm">This container has <code class="rounded bg-zinc-100 px-1 text-xs">overflow: hidden</code> and <code class="rounded bg-zinc-100 px-1 text-xs">z-index: 1</code>.</p>
+    <div class="mt-3 inline-block cursor-default rounded-md bg-zinc-100 px-3 py-2 text-sm"
+         @onmouseenter="() => tooltipVisible = true"
+         @onmouseleave="() => tooltipVisible = false">
+        Hover me for a tooltip
+    </div>
+    @if (tooltipVisible)
+    {
+        <BitBhPortal>
+            <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] rounded-md bg-zinc-900 px-4 py-2 text-sm text-white shadow-lg">
+                This tooltip escapes the stacking context via Portal!
+            </div>
+        </BitBhPortal>
+    }
+</div>
+
+@code {
+    private bool tooltipVisible;
+}
+""";
+
+    private const string _groupCode = """
+<div class="flex gap-2 flex-wrap">
+    <BitBhButton OnClick="() => groupShowA = !groupShowA"
+              class="@(groupShowA
+                  ? "inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-blue-700"
+                  : "inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100")">
+        Toggle Portal A
+    </BitBhButton>
+    <BitBhButton OnClick="() => groupShowB = !groupShowB"
+              class="@(groupShowB
+                  ? "inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-blue-700"
+                  : "inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100")">
+        Toggle Portal B
+    </BitBhButton>
+</div>
+<BitBhPortalGroup class="mt-4 min-h-24 rounded-lg border-2 border-violet-300 bg-violet-50 p-4">
+    <p class="text-sm">Portal Group target container (portals land here):</p>
+    @if (groupShowA)
+    {
+        <BitBhPortal>
+            <div class="mt-2 rounded-md border border-blue-500 bg-blue-100 px-3 py-2 text-sm">Portal A content</div>
+        </BitBhPortal>
+    }
+    @if (groupShowB)
+    {
+        <BitBhPortal>
+            <div class="mt-2 rounded-md border border-emerald-500 bg-emerald-100 px-3 py-2 text-sm">Portal B content</div>
+        </BitBhPortal>
+    }
+</BitBhPortalGroup>
+
+@code {
+    private bool groupShowA;
+    private bool groupShowB;
+}
+""";
+
+    private const string _disabledCode = """
+<div class="flex flex-col gap-3">
+    <label class="inline-flex items-center gap-2 text-sm cursor-pointer">
+        <input type="checkbox" @bind="disabledPortalEnabled" />
+        Portal enabled
+    </label>
+    <div class="h-32 overflow-hidden rounded-lg border-2 border-dashed border-zinc-300 p-4 relative">
+        <p class="text-sm text-zinc-500">Container with <code class="rounded bg-zinc-100 px-1 text-xs">overflow: hidden</code>.</p>
+        <BitBhPortal Enabled="disabledPortalEnabled">
+            <div class="rounded-md border border-amber-500 bg-amber-100 px-4 py-3 text-sm">
+                <p>@(disabledPortalEnabled ? "Portalled to body!" : "Rendered in place.")</p>
+            </div>
+        </BitBhPortal>
+    </div>
+</div>
+
+@code {
+    private bool disabledPortalEnabled;
+}
+""";
+}

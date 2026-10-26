@@ -279,6 +279,10 @@ _book
 /src/Brouter/Bit.Brouter/Scripts/**/*.js
 /src/Brouter/Bit.Brouter/wwwroot/**/*.js
 
+/src/BlazorHeadlessUI/Bit.BlazorHeadlessUI/Scripts/**/*.js
+/src/BlazorHeadlessUI/Bit.BlazorHeadlessUI/wwwroot/**/*.js
+/src/BlazorHeadlessUI/Demo/Client/Bit.BlazorHeadlessUI.Demo.Client.Core/wwwroot/tailwind.css
+
 /src/Utilities/Bmotion/Bit.Bmotion/Scripts/**/*.js
 /src/Utilities/Bmotion/Bit.Bmotion/wwwroot/**/*.js
 

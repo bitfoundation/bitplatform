@@ -1,0 +1,200 @@
+﻿@inherits TestBase
+@attribute [TestClass]
+@using System.Globalization
+@using Microsoft.JSInterop
+
+@code {
+    private const string ModulePath = "./_content/Bit.BlazorHeadlessUI/bit-blazorheadlessui.js";
+
+    // Calls the components make on the runtime module, answered when the test says so.
+    private BunitJSModuleInterop Module => _module ??= LooseModule();
+    private BunitJSModuleInterop? _module;
+
+    private BunitJSModuleInterop LooseModule()
+    {
+        var module = JSInterop.SetupModule(ModulePath);
+        module.Mode = JSRuntimeMode.Loose;
+        return module;
+    }
+
+    private DotNetObjectReference<BitBhFloatingController> FloatingRef()
+        => (DotNetObjectReference<BitBhFloatingController>)JSInterop.Invocations["floating.open"].Last().Arguments[0]!;
+
+    private IEnumerable<object?> FirstArguments(string identifier)
+        => JSInterop.Invocations[identifier].Select(i => i.Arguments.Count > 0 ? i.Arguments[0] : null);
+
+    // A completed call resumes its caller through the renderer's queue, after the test's own code.
+    private async Task WaitForInvocationAsync(string identifier, object firstArgument)
+    {
+        for (var i = 0; i < 100 && FirstArguments(identifier).Contains(firstArgument) is false; i++)
+            await Task.Delay(10);
+        Assert.Contains(firstArgument, FirstArguments(identifier));
+    }
+
+    [TestMethod]
+    public async Task A_surface_disposed_while_it_opens_is_closed_once_the_open_returns()
+    {
+        var open = Module.Setup<int>("floating.open", _ => true);
+        Render(
+            @<BitBhDialog DefaultOpen="true">
+                <BitBhDialogPanel aria-label="Settings"><button>OK</button></BitBhDialogPanel>
+            </BitBhDialog>);
+
+        await DisposeComponentsAsync();
+        open.SetResult(7);
+
+        // A modal surface nobody closes keeps the page inert and its scroll locked.
+        await WaitForInvocationAsync("floating.close", 7);
+    }
+
+    [TestMethod]
+    public async Task A_declined_dismissal_answers_that_the_surface_stays_open()
+    {
+        var cancel = true;
+        var cut = Render(
+            @<BitBhPopover DefaultOpen="true" OnDismissRequest="r => r.Cancel = cancel">
+                <BitBhPopoverButton>Filters</BitBhPopoverButton>
+                <BitBhPopoverPanel aria-label="Filters">…</BitBhPopoverPanel>
+            </BitBhPopover>);
+
+        // The runtime keeps a layer that answered false dismissable, so the next outside press asks again.
+        Assert.IsFalse(await cut.InvokeAsync(() => FloatingRef().Value.OnLayerDismiss("outside")));
+        Assert.AreEqual("true", cut.Find("button").GetAttribute("aria-expanded"));
+
+        cancel = false;
+        Assert.IsTrue(await cut.InvokeAsync(() => FloatingRef().Value.OnLayerDismiss("outside")));
+        Assert.AreEqual("false", cut.Find("button").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public async Task A_surface_closed_with_its_parent_closes_its_owner_too()
+    {
+        var open = true;
+        var cut = Render(
+            @<BitBhPopover @bind-Open="open" OnDismissRequest="r => r.Cancel = true">
+                <BitBhPopoverButton>Share</BitBhPopoverButton>
+                <BitBhPopoverPanel aria-label="Share">…</BitBhPopoverPanel>
+            </BitBhPopover>);
+
+        // Closed by the runtime along with the surface it was opened from: a cancel cannot keep it open.
+        await cut.InvokeAsync(() => FloatingRef().Value.OnClosedByParent());
+
+        Assert.IsFalse(open);
+    }
+
+    [TestMethod]
+    public async Task A_hotkey_disposed_while_it_registers_unregisters_what_it_registered()
+    {
+        var register = Module.Setup<int>("hotkeys.register", _ => true);
+        Render(@<BitBhHotkey Keys="mod+k" />);
+
+        await DisposeComponentsAsync();
+        register.SetResult(5);
+
+        // Its listener would otherwise keep swallowing the shortcut page-wide.
+        await WaitForInvocationAsync("hotkeys.unregister", 5);
+    }
+
+    [TestMethod]
+    public async Task A_hotkey_changed_while_it_registers_drops_the_first_registration()
+    {
+        var register = Module.Setup<int>("hotkeys.register", _ => true);
+        var cut = Render(
+            @<Stateful T="string" Initial="@("mod+k")" Context="s">
+                <BitBhHotkey Keys="@(s.Value!)" />
+            </Stateful>);
+
+        await cut.InvokeAsync(() => cut.FindComponent<Stateful<string>>().Instance.Set("mod+j"));
+        register.SetResult(5);
+
+        // The first registration is replaced, never overwritten: its listener would keep firing.
+        await WaitForInvocationAsync("hotkeys.unregister", 5);
+    }
+
+    [TestMethod]
+    public async Task A_focus_scope_disabled_while_it_is_created_is_destroyed_once_it_exists()
+    {
+        var create = Module.Setup<int>("focus.createScope", _ => true);
+        var cut = Render(
+            @<Stateful T="bool" Initial="true" Context="s">
+                <BitBhFocusScope Enabled="s.Value" Trapped="true"><button>OK</button></BitBhFocusScope>
+            </Stateful>);
+
+        await cut.InvokeAsync(() => cut.FindComponent<Stateful<bool>>().Instance.Set(false));
+        create.SetResult(3);
+
+        // A trap left on the stack after Enabled went false would keep focus locked in.
+        await WaitForInvocationAsync("focus.destroyScope", 3);
+    }
+
+    [TestMethod]
+    public async Task A_portal_rendered_again_while_it_moves_moves_once()
+    {
+        var move = Module.Setup<int>("portal.move", _ => true);
+        var cut = Render(
+            @<Stateful T="int" Context="s">
+                <BitBhPortal><p>Toast @s.Value</p></BitBhPortal>
+            </Stateful>);
+
+        await cut.InvokeAsync(() => cut.FindComponent<Stateful<int>>().Instance.Set(1));
+        move.SetResult(9);
+        await cut.InvokeAsync(() => cut.FindComponent<Stateful<int>>().Instance.Set(2));
+
+        // A second move would leave a restore putting the content back into the portal root.
+        Assert.HasCount(1, JSInterop.Invocations["portal.move"]);
+    }
+
+    [TestMethod]
+    public void Roving_tabindex_is_markup_the_browser_reads_in_every_culture()
+    {
+        var culture = CultureInfo.CurrentCulture;
+        try
+        {
+            // fa-IR writes -1 as "‎−1" and ar-SA as "؜-1"; a browser ignores either as a tabindex.
+            CultureInfo.CurrentCulture = new CultureInfo("fa-IR");
+            var cut = Render(
+                @<BitBhTabGroup>
+                    <BitBhTabList aria-label="Account">
+                        <BitBhTab>Profile</BitBhTab>
+                        <BitBhTab>Billing</BitBhTab>
+                    </BitBhTabList>
+                    <BitBhTabPanels>
+                        <BitBhTabPanel>Profile settings</BitBhTabPanel>
+                        <BitBhTabPanel>Billing settings</BitBhTabPanel>
+                    </BitBhTabPanels>
+                </BitBhTabGroup>);
+
+            Assert.AreSequenceEqual(new[] { "0", "-1" }, cut.FindAll("[role=tab]").Select(t => t.GetAttribute("tabindex")));
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = culture;
+        }
+    }
+
+    [TestMethod]
+    public void A_consumer_handler_on_a_part_runs_besides_the_part_s_own()
+    {
+        var clicks = 0;
+        var cut = Render(
+            @<BitBhDisclosure>
+                <BitBhDisclosureButton @onclick="() => clicks++">Details</BitBhDisclosureButton>
+                <BitBhDisclosurePanel>More</BitBhDisclosurePanel>
+            </BitBhDisclosure>);
+
+        cut.Find("button").Click();
+
+        Assert.AreEqual(1, clicks);
+        Assert.AreEqual("true", cut.Find("button").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void A_disabled_generic_element_is_not_given_aria_disabled()
+    {
+        var cut = Render(@<BitBhDataInteractive Disabled="true">Card</BitBhDataInteractive>);
+        var element = cut.Find("[data-bit-bh-interactive]");
+
+        Assert.IsTrue(element.HasAttribute("data-disabled"));
+        Assert.IsNull(element.GetAttribute("aria-disabled"));
+    }
+}

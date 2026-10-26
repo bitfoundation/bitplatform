@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <!-- Matches Bit.BlazorHeadlessUI: Debug builds the latest TFM only, -p:BuildAllTfms=true builds all three. -->
+        <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' And '$(BuildAllTfms)' != 'true' ">net10.0</TargetFrameworks>
+        <RootNamespace>Bit.BlazorHeadlessUI.Testing</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <!-- Runs in test hosts, never in a trimmed or native AOT app, and bUnit itself is not AOT compatible. -->
+        <IsAotCompatible>false</IsAotCompatible>
+        <Description>Accessibility test tooling for Razor components, built on bUnit: a WAI-ARIA rule engine (roles, states, ID references, required owned elements and context, accessible names, focusable content in hidden subtrees, nested interactive controls ...), accessible-name and focus-order inspection, keyboard helpers and a recording live-region announcer. Framework-neutral, so it works with MSTest, xUnit or NUnit; first-class support for Bit.BlazorHeadlessUI.</Description>
+        <PackageDescription>$(Description)</PackageDescription>
+        <PackageTags>$(PackageTags);Blazor;bUnit;Accessibility;A11y;Aria;WCAG;Testing</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="bunit" Version="2.13.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.BlazorHeadlessUI\Bit.BlazorHeadlessUI.csproj" />
+    </ItemGroup>
+
+</Project>

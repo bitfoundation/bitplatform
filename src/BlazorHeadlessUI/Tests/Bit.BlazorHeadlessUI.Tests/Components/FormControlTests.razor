@@ -1,0 +1,473 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    [TestMethod]
+    public void Checkbox_toggles_on_click_and_renders_its_indicator()
+    {
+        var cut = Render(
+            @<BitBhCheckbox Name="terms" Value="yes" aria-label="Accept terms">
+                <BitBhCheckboxIndicator>✓</BitBhCheckboxIndicator>
+            </BitBhCheckbox>);
+
+        var box = cut.Find("[role=checkbox]");
+        Assert.AreEqual("false", box.GetAttribute("aria-checked"));
+        Assert.IsEmpty(cut.FindAll("input[type=hidden]"));
+        Assert.DoesNotContain("✓", cut.Markup);
+
+        box.Click();
+        Assert.AreEqual("true", cut.Find("[role=checkbox]").GetAttribute("aria-checked"));
+        Assert.AreEqual("yes", cut.Find("input[type=hidden][name=terms]").GetAttribute("value"));
+        Assert.Contains("✓", cut.Markup);
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Checkbox_ignores_Enter_and_non_button_checkbox_toggles_on_Space()
+    {
+        var cut = Render(@<BitBhCheckbox As="div" aria-label="Notify" />);
+        var box = cut.Find("[role=checkbox]");
+        Assert.AreEqual("0", box.GetAttribute("tabindex"));
+
+        box.Press("Enter");
+        Assert.AreEqual("false", cut.Find("[role=checkbox]").GetAttribute("aria-checked"));
+        cut.Find("[role=checkbox]").Press(" ");
+        Assert.AreEqual("true", cut.Find("[role=checkbox]").GetAttribute("aria-checked"));
+    }
+
+    [TestMethod]
+    public void Indeterminate_checkbox_reports_mixed()
+    {
+        var cut = Render(@<BitBhCheckbox Indeterminate="true" aria-label="All" />);
+        Assert.AreEqual("mixed", cut.Find("[role=checkbox]").GetAttribute("aria-checked"));
+    }
+
+    [TestMethod]
+    public void Disabled_checkbox_does_not_toggle()
+    {
+        var cut = Render(@<BitBhCheckbox Disabled="true" aria-label="Locked" />);
+        cut.Find("[role=checkbox]").Click();
+        Assert.AreEqual("false", cut.Find("[role=checkbox]").GetAttribute("aria-checked"));
+        Assert.IsTrue(cut.Find("[role=checkbox]").HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void Checkbox_group_collects_values_and_supports_select_all()
+    {
+        IReadOnlyCollection<string>? values = null;
+        var cut = Render(
+            @<BitBhCheckboxGroup DefaultValues="@(new[] { "cheese" })" OnValuesChange="v => values = v" aria-label="Toppings">
+                <BitBhCheckbox SelectAll="true">All</BitBhCheckbox>
+                <BitBhCheckbox Value="cheese">Cheese</BitBhCheckbox>
+                <BitBhCheckbox Value="olives">Olives</BitBhCheckbox>
+            </BitBhCheckboxGroup>);
+
+        Assert.AreEqual("group", cut.Find("[aria-label=Toppings]").GetAttribute("role"));
+        var boxes = cut.FindAll("[role=checkbox]");
+        Assert.AreEqual("mixed", boxes[0].GetAttribute("aria-checked"));
+        Assert.AreEqual("true", boxes[1].GetAttribute("aria-checked"));
+
+        boxes[2].Click();
+        Assert.AreSequenceEqual(new[] { "cheese", "olives" }, values!.OrderBy(v => v));
+        Assert.AreEqual("true", cut.FindAll("[role=checkbox]")[0].GetAttribute("aria-checked"));
+
+        cut.FindAll("[role=checkbox]")[0].Click();
+        Assert.IsEmpty(values!);
+        foreach (var b in cut.FindAll("[role=checkbox]")) Assert.AreEqual("false", b.GetAttribute("aria-checked"));
+
+        // From the unchecked state, select-all checks everything.
+        cut.FindAll("[role=checkbox]")[0].Click();
+        Assert.AreSequenceEqual(new[] { "cheese", "olives" }, values!.OrderBy(v => v));
+    }
+
+    [TestMethod]
+    public void Checkbox_template_receives_the_state()
+    {
+        var cut = Render(
+            @<BitBhCheckbox aria-label="Bold">
+                <Template Context="c">@(c.IsChecked ? "on" : "off")</Template>
+            </BitBhCheckbox>);
+        Assert.AreEqual("off", cut.Find("[role=checkbox]").TextContent);
+        cut.Find("[role=checkbox]").Click();
+        Assert.AreEqual("on", cut.Find("[role=checkbox]").TextContent);
+    }
+
+    [TestMethod]
+    public void Switch_thumb_follows_the_switch()
+    {
+        var cut = Render(@<BitBhSwitch aria-label="Sync"><BitBhSwitchThumb /></BitBhSwitch>);
+        Assert.AreEqual("unchecked", cut.Find("[role=switch] > *").GetAttribute("data-state"));
+        cut.Find("[role=switch]").Click();
+        Assert.AreEqual("checked", cut.Find("[role=switch] > *").GetAttribute("data-state"));
+    }
+
+    [TestMethod]
+    public void Switch_toggles_on_Enter_and_Space()
+    {
+        var cut = Render(
+            @<BitBhSwitch As="span" aria-label="Wi-Fi">
+                <BitBhSwitchThumb />
+            </BitBhSwitch>);
+        var sw = cut.Find("[role=switch]");
+        Assert.AreEqual("false", sw.GetAttribute("aria-checked"));
+        sw.Press("Enter");
+        Assert.AreEqual("true", cut.Find("[role=switch]").GetAttribute("aria-checked"));
+        cut.Find("[role=switch]").Press(" ");
+        Assert.AreEqual("false", cut.Find("[role=switch]").GetAttribute("aria-checked"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Switch_in_a_field_is_labelled_by_the_field_label()
+    {
+        var cut = Render(
+            @<BitBhField>
+                <BitBhLabel>Airplane mode</BitBhLabel>
+                <BitBhSwitch />
+            </BitBhField>);
+        Assert.AreEqual("Airplane mode", cut.Find("[role=switch]").AccessibleName());
+        cut.ShouldBeAccessible();
+    }
+
+    private RenderFragment Radios(Stateful<string> s) =>
+        @<BitBhRadioGroup Value="@s.Value" ValueChanged="s.Set" aria-label="Plan" Name="plan">
+            <BitBhRadio Value="free">Free</BitBhRadio>
+            <BitBhRadio Value="pro" Disabled="true">Pro</BitBhRadio>
+            <BitBhRadio Value="team">Team</BitBhRadio>
+        </BitBhRadioGroup>;
+
+    [TestMethod]
+    public void Radio_group_has_one_tab_stop_and_arrows_select()
+    {
+        var cut = Render(@<Stateful T="string" Context="s">@Radios(s)</Stateful>);
+        var radios = cut.FindAll("[role=radio]");
+        // Nothing checked: the first enabled radio is the tab stop.
+        Assert.AreEqual("0", radios[0].GetAttribute("tabindex"));
+        Assert.AreEqual("-1", radios[2].GetAttribute("tabindex"));
+
+        radios[0].Press("ArrowDown");
+        radios = cut.FindAll("[role=radio]");
+        Assert.AreEqual("true", radios[2].GetAttribute("aria-checked"));
+        Assert.AreEqual("0", radios[2].GetAttribute("tabindex"));
+        Assert.AreEqual("-1", radios[0].GetAttribute("tabindex"));
+        Assert.AreEqual("team", cut.Find("input[type=hidden][name=plan]").GetAttribute("value"));
+        Assert.AreEqual(radios[2].Id, this.LastFocusRequest());
+
+        // Wraps, skipping the disabled radio.
+        radios[2].Press("ArrowRight");
+        Assert.AreEqual("true", cut.FindAll("[role=radio]")[0].GetAttribute("aria-checked"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Radio_Space_checks_the_focused_radio()
+    {
+        var cut = Render(@<Stateful T="string" Context="s">@Radios(s)</Stateful>);
+        cut.FindAll("[role=radio]")[2].Click();
+        Assert.AreEqual("team", cut.FindComponent<Stateful<string>>().Instance.Value);
+        Assert.AreEqual("radiogroup", cut.Find("[aria-label=Plan]").GetAttribute("role"));
+    }
+
+    private sealed class Signup
+    {
+        [Range(typeof(bool), "true", "true", ErrorMessage = "You must accept the terms.")]
+        public bool Terms { get; set; }
+
+        [Required(ErrorMessage = "Pick a plan.")]
+        public string? Plan { get; set; }
+    }
+
+    [TestMethod]
+    public void EditForm_validation_flows_into_fields()
+    {
+        var model = new Signup();
+        var cut = Render(
+            @<EditForm Model="model">
+                <DataAnnotationsValidator />
+                <BitBhField>
+                    <BitBhLabel>Accept terms</BitBhLabel>
+                    <BitBhCheckbox @bind-Checked="model.Terms" />
+                    <BitBhErrorMessage />
+                </BitBhField>
+                <BitBhField>
+                    <BitBhLabel>Plan</BitBhLabel>
+                    <BitBhRadioGroup @bind-Value="model.Plan">
+                        <BitBhRadio Value="free">Free</BitBhRadio>
+                        <BitBhRadio Value="pro">Pro</BitBhRadio>
+                    </BitBhRadioGroup>
+                    <BitBhErrorMessage />
+                </BitBhField>
+                <button type="submit">Save</button>
+            </EditForm>);
+
+        Assert.IsNull(cut.Find("[role=checkbox]").GetAttribute("aria-invalid"));
+        cut.Find("form").Submit();
+
+        var box = cut.Find("[role=checkbox]");
+        Assert.AreEqual("true", box.GetAttribute("aria-invalid"));
+        Assert.Contains("You must accept the terms.", box.AccessibleDescription());
+        var group = cut.Find("[role=radiogroup]");
+        Assert.AreEqual("true", group.GetAttribute("aria-invalid"));
+        Assert.AreEqual("Plan", group.AccessibleName());
+        Assert.Contains("Pick a plan.", group.AccessibleDescription());
+
+        box.Click();
+        Assert.IsNull(cut.Find("[role=checkbox]").GetAttribute("aria-invalid"));
+        Assert.DoesNotContain("You must accept the terms.", cut.Markup);
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Field_wires_label_description_and_input()
+    {
+        var cut = Render(
+            @<BitBhField Required="true">
+                <BitBhLabel>Email</BitBhLabel>
+                <BitBhDescription>We never share it.</BitBhDescription>
+                <BitBhInput type="email" />
+            </BitBhField>);
+
+        var input = cut.Find("input");
+        Assert.AreEqual(input.Id, cut.Find("label").GetAttribute("for"));
+        Assert.AreEqual("Email", input.AccessibleName());
+        Assert.AreEqual("We never share it.", input.AccessibleDescription());
+        Assert.IsTrue(input.HasAttribute("required") || input.GetAttribute("aria-required") == "true");
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Disabled_fieldset_disables_its_fields()
+    {
+        var cut = Render(
+            @<BitBhFieldset Disabled="true">
+                <BitBhLegend>Shipping</BitBhLegend>
+                <BitBhField>
+                    <BitBhLabel>Street</BitBhLabel>
+                    <BitBhInput />
+                </BitBhField>
+            </BitBhFieldset>);
+        Assert.IsTrue(cut.Find("input").HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void Disabled_fieldset_disables_controls_placed_directly_in_it()
+    {
+        var cut = Render(
+            @<BitBhFieldset Disabled="true">
+                <BitBhLegend>Options</BitBhLegend>
+                <BitBhCheckbox aria-label="Checkbox" Name="checkbox" DefaultChecked="true" />
+                <BitBhSwitch aria-label="Switch" Name="switch" DefaultChecked="true" />
+                <BitBhRadioGroup aria-label="Radios" DefaultValue="x" Name="radios"><BitBhRadio Value="x">X</BitBhRadio></BitBhRadioGroup>
+                <BitBhCheckboxGroup aria-label="Boxes" DefaultValues="@(new[] { "j" })"><BitBhCheckbox Value="j" Name="boxes">J</BitBhCheckbox></BitBhCheckboxGroup>
+                <BitBhListbox TValue="string" DefaultValue="@("p")" Name="listbox">
+                    <BitBhListboxButton TValue="string" aria-label="Listbox" />
+                    <BitBhListboxOptions TValue="string"><BitBhListboxOption TValue="string" Value="@("p")">P</BitBhListboxOption></BitBhListboxOptions>
+                </BitBhListbox>
+                <BitBhCombobox TValue="string" DefaultValue="@("q")" Name="combobox">
+                    <BitBhComboboxInput TValue="string" aria-label="Combobox" />
+                    <BitBhComboboxOptions TValue="string" />
+                </BitBhCombobox>
+                <BitBhSlider DefaultValue="3" Name="slider"><BitBhSliderThumb aria-label="Slider" /></BitBhSlider>
+                <BitBhInput aria-label="Text" />
+            </BitBhFieldset>);
+
+        Assert.IsTrue(cut.Find("[aria-label=Checkbox]").HasAttribute("disabled"));
+        Assert.IsTrue(cut.Find("[aria-label=Switch]").HasAttribute("disabled"));
+        Assert.IsTrue(cut.Find("[role=radio]").HasAttribute("disabled"));
+        Assert.AreEqual("true", cut.Find("[aria-label=Radios]").GetAttribute("aria-disabled"));
+        Assert.IsTrue(cut.Find("[aria-label=Boxes] [role=checkbox]").HasAttribute("disabled"));
+        Assert.IsTrue(cut.Find("[aria-label=Listbox]").HasAttribute("disabled"));
+        Assert.IsTrue(cut.Find("[aria-label=Combobox]").HasAttribute("disabled"));
+        Assert.AreEqual("true", cut.Find("[aria-label=Slider]").GetAttribute("aria-disabled"));
+        Assert.AreEqual("-1", cut.Find("[aria-label=Slider]").GetAttribute("tabindex"));
+        Assert.IsTrue(cut.Find("[aria-label=Text]").HasAttribute("disabled"));
+        foreach (var label in new[] { "Checkbox", "Switch", "Listbox", "Combobox", "Text" })
+            Assert.IsTrue(cut.Find($"[aria-label={label}]").HasAttribute("data-disabled"), label);
+
+        // Like native controls in a disabled fieldset, none of them is posted.
+        Assert.IsEmpty(cut.FindAll("input[type=hidden]"));
+
+        cut.Find("[aria-label=Checkbox]").Click();
+        Assert.AreEqual("true", cut.Find("[aria-label=Checkbox]").GetAttribute("aria-checked"));
+    }
+
+    [TestMethod]
+    public void Disabled_controls_post_nothing()
+    {
+        var cut = Render(
+            @<div>
+                <BitBhCheckbox aria-label="Checkbox" Name="checkbox" DefaultChecked="true" Disabled="true" />
+                <BitBhSwitch aria-label="Switch" Name="switch" DefaultChecked="true" Disabled="true" />
+                <BitBhRadioGroup aria-label="Radios" DefaultValue="x" Name="radios" Disabled="true"><BitBhRadio Value="x">X</BitBhRadio></BitBhRadioGroup>
+                <BitBhCheckboxGroup aria-label="Boxes" DefaultValues="@(new[] { "j" })" Disabled="true"><BitBhCheckbox Value="j" Name="boxes">J</BitBhCheckbox></BitBhCheckboxGroup>
+            </div>);
+        Assert.IsEmpty(cut.FindAll("input[type=hidden]"));
+    }
+
+    [TestMethod]
+    public void Removed_checkboxes_leave_select_all()
+    {
+        IReadOnlyCollection<string>? values = null;
+        var cut = Render(
+            @<Stateful T="bool" Initial="true" Context="s">
+                <BitBhCheckboxGroup OnValuesChange="v => values = v" aria-label="Toppings">
+                    <BitBhCheckbox SelectAll="true">All</BitBhCheckbox>
+                    <BitBhCheckbox Value="cheese">Cheese</BitBhCheckbox>
+                    @if (s.Value)
+                    {
+                        <BitBhCheckbox Value="olives">Olives</BitBhCheckbox>
+                    }
+                </BitBhCheckboxGroup>
+            </Stateful>);
+
+        var host = cut.FindComponent<Stateful<bool>>().Instance;
+        cut.InvokeAsync(() => host.Set(false));
+        cut.FindAll("[role=checkbox]")[0].Click();
+        Assert.AreSequenceEqual(new[] { "cheese" }, values!);
+        Assert.AreEqual("true", cut.FindAll("[role=checkbox]")[0].GetAttribute("aria-checked"));
+    }
+
+    [TestMethod]
+    public void Indeterminate_checkbox_posts_only_when_checked()
+    {
+        var cut = Render(
+            @<div>
+                <BitBhCheckbox Indeterminate="true" Name="mixed" aria-label="Mixed" />
+                <BitBhCheckbox Indeterminate="true" DefaultChecked="true" Name="checked" aria-label="Checked" />
+            </div>);
+        Assert.IsEmpty(cut.FindAll("input[type=hidden][name=mixed]"));
+        Assert.ContainsSingle(cut.FindAll("input[type=hidden][name=checked]"));
+    }
+
+    [TestMethod]
+    public void Checkbox_group_in_a_field_is_labelled_through_aria_labelledby()
+    {
+        var cut = Render(
+            @<BitBhField>
+                <BitBhLabel>Toppings</BitBhLabel>
+                <BitBhCheckboxGroup>
+                    <BitBhCheckbox Value="cheese">Cheese</BitBhCheckbox>
+                    <BitBhCheckbox Value="olives">Olives</BitBhCheckbox>
+                </BitBhCheckboxGroup>
+            </BitBhField>);
+
+        // A group isn't labelable by <label for>: the label names it through aria-labelledby.
+        var label = cut.Find("label");
+        Assert.IsNull(label.GetAttribute("for"));
+        var group = cut.Find("[role=group]");
+        Assert.AreEqual(label.Id, group.GetAttribute("aria-labelledby"));
+        Assert.AreEqual("Toppings", group.AccessibleName());
+
+        // Its checkboxes keep their own ids and names.
+        var boxes = cut.FindAll("[role=checkbox]");
+        Assert.AreNotEqual(boxes[0].Id, boxes[1].Id);
+        Assert.AreEqual("Cheese", boxes[0].AccessibleName());
+        Assert.AreEqual("Olives", boxes[1].AccessibleName());
+        cut.ShouldBeAccessible();
+
+        // A click on the label focuses the first checkbox.
+        cut.Find("label").Click();
+        Assert.AreEqual(boxes[0].Id, this.LastFocusRequest());
+    }
+
+    [TestMethod]
+    public void Group_disabled_non_button_checkbox_leaves_the_tab_order()
+    {
+        var cut = Render(
+            @<BitBhCheckboxGroup Disabled="true" aria-label="Toppings">
+                <BitBhCheckbox As="div" Value="cheese">Cheese</BitBhCheckbox>
+            </BitBhCheckboxGroup>);
+        var box = cut.Find("[role=checkbox]");
+        Assert.AreEqual("-1", box.GetAttribute("tabindex"));
+        Assert.AreEqual("true", box.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void A_held_Space_does_not_toggle_again()
+    {
+        var cut = Render(
+            @<div>
+                <BitBhCheckbox As="div" aria-label="Notify" />
+                <BitBhSwitch As="span" aria-label="Sync" />
+            </div>);
+
+        cut.Find("[role=checkbox]").Press(" ");
+        cut.Find("[role=checkbox]").KeyDown(new KeyboardEventArgs { Key = " ", Repeat = true, Type = "keydown" });
+        Assert.AreEqual("true", cut.Find("[role=checkbox]").GetAttribute("aria-checked"));
+
+        cut.Find("[role=switch]").Press("Enter");
+        cut.Find("[role=switch]").KeyDown(new KeyboardEventArgs { Key = "Enter", Repeat = true, Type = "keydown" });
+        Assert.AreEqual("true", cut.Find("[role=switch]").GetAttribute("aria-checked"));
+    }
+
+    private sealed class Profile
+    {
+        [Required(ErrorMessage = "Enter a name.")]
+        public string? Name { get; set; }
+    }
+
+    [TestMethod]
+    public void Text_control_validates_once_an_async_ValueChanged_completed()
+    {
+        var model = new Profile();
+        var gate = new TaskCompletionSource();
+        var cut = Render(
+            @<EditForm Model="model">
+                <DataAnnotationsValidator />
+                <BitBhField>
+                    <BitBhLabel>Name</BitBhLabel>
+                    <BitBhInput Value="@model.Name" ValueExpression="() => model.Name"
+                                ValueChanged="async v => { await gate.Task; model.Name = v; }" />
+                    <BitBhErrorMessage />
+                </BitBhField>
+            </EditForm>);
+
+        cut.Find("form").Submit();
+        Assert.AreEqual("true", cut.Find("input").GetAttribute("aria-invalid"));
+
+        // The field is validated after the handler stored the value, not before.
+        cut.Find("input").Change("Ada");
+        gate.SetResult();
+        cut.WaitForAssertion(() => Assert.IsNull(cut.Find("input").GetAttribute("aria-invalid")));
+        Assert.DoesNotContain("Enter a name.", cut.Markup);
+    }
+
+    [TestMethod]
+    public void Validation_pushed_from_outside_reaches_the_field()
+    {
+        var model = new Profile { Name = "Ada" };
+        var context = new EditContext(model);
+        var cut = Render(
+            @<EditForm EditContext="context">
+                <BitBhField>
+                    <BitBhLabel>Name</BitBhLabel>
+                    <BitBhInput @bind-Value="model.Name" />
+                    <BitBhErrorMessage />
+                </BitBhField>
+                <BitBhField>
+                    <BitBhLabel>Plan</BitBhLabel>
+                    <BitBhRadioGroup @bind-Value="model.Name">
+                        <BitBhRadio Value="Ada">Ada</BitBhRadio>
+                    </BitBhRadioGroup>
+                    <BitBhErrorMessage />
+                </BitBhField>
+            </EditForm>);
+        Assert.DoesNotContain("Name is taken.", cut.Markup);
+
+        // An async validator reports later, through the EditContext only.
+        cut.InvokeAsync(() =>
+        {
+            var store = new ValidationMessageStore(context);
+            store.Add(context.Field(nameof(Profile.Name)), "Name is taken.");
+            context.NotifyValidationStateChanged();
+        });
+
+        var input = cut.Find("input");
+        Assert.AreEqual("true", input.GetAttribute("aria-invalid"));
+        Assert.Contains("Name is taken.", input.AccessibleDescription());
+        Assert.Contains("Name is taken.", cut.Find("[role=radiogroup]").AccessibleDescription());
+        Assert.AreEqual(2, cut.FindAll("[data-invalid]").Count(e => e.TagName == "DIV" && e.QuerySelector("label") is not null));
+    }
+}

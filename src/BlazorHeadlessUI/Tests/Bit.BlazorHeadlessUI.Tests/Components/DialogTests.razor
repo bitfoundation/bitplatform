@@ -1,0 +1,105 @@
+﻿@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    [TestMethod]
+    public void Closed_dialog_renders_nothing()
+    {
+        var cut = Render(@<BitBhDialog Open="false"><BitBhDialogPanel>Hi</BitBhDialogPanel></BitBhDialog>);
+        Assert.IsEmpty(cut.FindAll("[role=dialog]"));
+    }
+
+    [TestMethod]
+    public void Open_dialog_is_labelled_by_its_title_only_when_present()
+    {
+        var cut = Render(
+            @<BitBhDialog Open="true">
+                <BitBhDialogBackdrop />
+                <BitBhDialogPanel>
+                    <BitBhDialogTitle>Delete file</BitBhDialogTitle>
+                    <button>OK</button>
+                </BitBhDialogPanel>
+            </BitBhDialog>);
+
+        var dialog = cut.Find("[role=dialog]");
+        Assert.AreEqual("true", dialog.GetAttribute("aria-modal"));
+        Assert.AreEqual("Delete file", dialog.AccessibleName());
+        // No description rendered → no dangling aria-describedby.
+        Assert.IsNull(dialog.GetAttribute("aria-describedby"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Escape_and_backdrop_click_close_the_dialog()
+    {
+        var open = true;
+        var closed = 0;
+        var cut = Render(
+            @<BitBhDialog @bind-Open="open" OnClose="() => closed++">
+                <BitBhDialogBackdrop />
+                <BitBhDialogPanel aria-label="Settings"><button>OK</button></BitBhDialogPanel>
+            </BitBhDialog>);
+
+        cut.Find("[role=dialog]").Press("Escape");
+        Assert.IsFalse(open);
+        Assert.AreEqual(1, closed);
+
+        open = true;
+        cut.Render();
+        cut.Find("[aria-hidden=true]").Click();
+        Assert.IsFalse(open);
+    }
+
+    [TestMethod]
+    public void Dismissal_can_be_cancelled()
+    {
+        var open = true;
+        var cut = Render(
+            @<BitBhDialog @bind-Open="open" OnDismissRequest="r => r.Cancel = true">
+                <BitBhDialogPanel aria-label="Unsaved changes"><button>OK</button></BitBhDialogPanel>
+            </BitBhDialog>);
+        cut.Find("[role=dialog]").Press("Escape");
+        Assert.IsTrue(open);
+    }
+
+    [TestMethod]
+    public void CloseButton_closes_the_nearest_dialog()
+    {
+        var open = true;
+        var cut = Render(
+            @<BitBhDialog @bind-Open="open">
+                <BitBhDialogPanel aria-label="Info"><BitBhCloseButton>Close</BitBhCloseButton></BitBhDialogPanel>
+            </BitBhDialog>);
+        cut.Find("button").Click();
+        Assert.IsFalse(open);
+    }
+
+    [TestMethod]
+    public void Alert_dialog_has_its_role_and_opens_from_its_trigger()
+    {
+        var acted = false;
+        var cut = Render(
+            @<BitBhAlertDialog>
+                <BitBhAlertDialogTrigger>Delete account</BitBhAlertDialogTrigger>
+                <BitBhAlertDialogOverlay />
+                <BitBhAlertDialogContent>
+                    <BitBhAlertDialogTitle>Are you sure?</BitBhAlertDialogTitle>
+                    <BitBhAlertDialogDescription>This cannot be undone.</BitBhAlertDialogDescription>
+                    <BitBhAlertDialogCancel>Cancel</BitBhAlertDialogCancel>
+                    <BitBhAlertDialogAction OnClick="() => acted = true">Delete</BitBhAlertDialogAction>
+                </BitBhAlertDialogContent>
+            </BitBhAlertDialog>);
+
+        Assert.IsEmpty(cut.FindAll("[role=alertdialog]"));
+        cut.Find("button[aria-haspopup=dialog]").Click();
+
+        var dialog = cut.Find("[role=alertdialog]");
+        Assert.AreEqual("Are you sure?", dialog.AccessibleName());
+        Assert.AreEqual("This cannot be undone.", dialog.AccessibleDescription());
+        cut.ShouldBeAccessible();
+
+        cut.FindAll("[role=alertdialog] button")[1].Click();
+        Assert.IsTrue(acted);
+        Assert.AreEqual("false", cut.Find("button[aria-haspopup=dialog]").GetAttribute("aria-expanded"));
+    }
+}
