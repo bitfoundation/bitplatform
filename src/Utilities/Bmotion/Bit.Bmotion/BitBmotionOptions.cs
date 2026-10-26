@@ -32,4 +32,12 @@ public sealed class BitBmotionOptions
     /// A <see cref="Bmotion.Prerender"/> set on an element overrides this.
     /// </summary>
     public BmPrerenderMode Prerender { get; set; } = BmPrerenderMode.Initial;
+
+    /// <summary>
+    /// Whether an element playing its <c>Exit</c> is made <c>inert</c> for the length of it: nothing in a closing
+    /// dialog can be focused, clicked a second time or read out by a screen reader, and pointer events reach what is
+    /// behind it. A cancelled exit (the element re-enters) makes it interactive again. Defaults to <c>true</c>; set
+    /// <c>false</c> to keep exiting content interactive, as it was before.
+    /// </summary>
+    public bool InertWhileExiting { get; set; } = true;
 }

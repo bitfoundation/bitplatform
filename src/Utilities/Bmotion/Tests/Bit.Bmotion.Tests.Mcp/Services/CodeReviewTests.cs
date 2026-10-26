@@ -69,8 +69,15 @@ public class CodeReviewTests
             """,
 
         ["frame-loop-only-properties"] = """
-            <Bmotion Initial='Bm.To(height: "0px")' Animate='Bm.To(height: "320px")'>
-                <div class="drawer" />
+            <Bmotion Initial='Bm.To(d: "M 0 0 L 100 0")' Animate='Bm.To(d: "M 0 0 L 100 40")'>
+                <path class="wave" />
+            </Bmotion>
+            """,
+
+        ["frame-loop-only-transition"] = """
+            <Bmotion Animate="Bm.To(x: 100)"
+                     Transition="Bm.Tween(1, repeat: BmRepeat.Reverse())">
+                <div class="box" />
             </Bmotion>
             """,
 
@@ -202,9 +209,20 @@ public class CodeReviewTests
                 </Bmotion>
                 """,
 
+            // A length and a colour used to be reported here. The browser plays both now, on every
+            // runtime, so naming them would be a warning about code that works.
             ["frame-loop-only-properties"] = """
-                <Bmotion Initial="Bm.To(opacity: 0, y: 20)" Animate="Bm.To(opacity: 1, y: 0)">
-                    <div class="card" />
+                <Bmotion Initial='Bm.To(opacity: 0, height: "0px", backgroundColor: "#fff")'
+                         Animate='Bm.To(opacity: 1, height: "320px", backgroundColor: "#FD7F36")'>
+                    <div class="drawer" />
+                </Bmotion>
+                """,
+
+            // A mirror repeats forever as one recorded cycle the browser loops - nothing to report.
+            ["frame-loop-only-transition"] = """
+                <Bmotion Animate="Bm.To(x: 100)"
+                         Transition="Bm.Tween(1, repeat: BmRepeat.Mirror())">
+                    <div class="box" />
                 </Bmotion>
                 """,
 
@@ -288,7 +306,7 @@ public class CodeReviewTests
         // One markup, three mistakes at three severities: a self-closed Bmotion (Error), a spring
         // configured in both forms at once (Warning) and a frame-loop-only property (Suggestion).
         var code = """
-            <Bmotion Animate="Bm.To(height: "0px")" Transition="Bm.Spring(stiffness: 300, duration: 0.5)" />
+            <Bmotion Animate="Bm.To(d: "M 0 0 L 100 0")" Transition="Bm.Spring(stiffness: 300, duration: 0.5)" />
             """;
 
         var findings = BmotionCodeReview.Review(code).Findings;
@@ -322,11 +340,12 @@ public class CodeReviewTests
 
         // A Suggestion alone does not.
         var suggestion = BmotionCodeReview.Review("""
-            <Bmotion Initial='Bm.To(height: "0px")' Animate='Bm.To(height: "320px")'>
-                <div class="drawer" />
+            <Bmotion Initial='Bm.To(d: "M 0 0 L 100 0")' Animate='Bm.To(d: "M 0 0 L 100 40")'>
+                <path class="wave" />
             </Bmotion>
             """);
 
+        Assert.AreNotEqual(0, suggestion.Findings.Length, "The sample no longer provokes the Suggestion it is here for.");
         Assert.IsTrue(suggestion.Findings.All(finding => finding.Severity == "Suggestion"));
         Assert.IsTrue(suggestion.Passed);
     }
@@ -382,8 +401,8 @@ public class CodeReviewTests
     public void Review_TheSameFrameLoopProperty_IsReportedOnceRatherThanPerOccurrence()
     {
         var code = """
-            <Bmotion Initial='Bm.To(height: "0px")' Animate='Bm.To(height: "320px")'>
-                <div class="drawer" />
+            <Bmotion Initial='Bm.To(d: "M 0 0 L 100 0")' Animate='Bm.To(d: "M 0 0 L 100 40")'>
+                <path class="wave" />
             </Bmotion>
             """;
 
@@ -392,6 +411,104 @@ public class CodeReviewTests
             .ToArray();
 
         Assert.AreEqual(1, findings.Length, "The same property was reported for both ends of the animation.");
+    }
+
+    /// <summary>
+    /// Everything the old rule warned about that the browser now plays on every runtime - lengths,
+    /// colours, filters, shadows, layout properties - must stay quiet, or the review teaches an agent
+    /// to rewrite working animations into worse ones.
+    /// </summary>
+    [TestMethod]
+    public void Review_PropertiesTheBrowserPlays_AreNoLongerReportedAsFrameLoopOnly()
+    {
+        var code = """
+            <Bmotion Initial='Bm.To(width: "0px", top: "0px", filter: "blur(0px)", boxShadow: "0 0 0 rgba(0,0,0,0)")'
+                     Animate='Bm.To(width: "320px", top: "40px", filter: "blur(4px)", boxShadow: "0 8px 30px rgba(0,0,0,.2)")'>
+                <div class="card" />
+            </Bmotion>
+            """;
+
+        var reported = BmotionCodeReview.Review(code)
+            .Findings.Where(finding => finding.Rule.StartsWith("frame-loop-only", StringComparison.Ordinal))
+            .ToArray();
+
+        Assert.AreEqual(0, reported.Length, string.Join(" | ", reported.Select(finding => finding.Message)));
+    }
+
+    /// <summary>
+    /// A transition's OnUpdate needs a C# call every frame, which only the frame loop gives it. The
+    /// component's own OnUpdate parameter is different - the animations it reports on still play in
+    /// the browser - so it must not be mistaken for one.
+    /// </summary>
+    [TestMethod]
+    public void Review_ATransitionOnUpdate_IsReported_ButTheComponentsOwnOnUpdateIsNot()
+    {
+        var transition = """
+            <Bmotion Animate="Bm.To(x: 100)"
+                     Transition="new BmTween { Duration = 0.4, OnUpdate = v => { _progress = v; } }">
+                <div class="box" />
+            </Bmotion>
+            """;
+
+        var component = """
+            <Bmotion Animate="Bm.To(x: 100)" OnUpdate="OnFrame">
+                <div class="box" />
+            </Bmotion>
+            """;
+
+        var finding = BmotionCodeReview.Review(transition).Findings.SingleOrDefault(entry => entry.Rule == "frame-loop-only-transition");
+
+        Assert.IsNotNull(finding, "A transition OnUpdate was not reported.");
+        Assert.AreEqual(2, finding.Line);
+        StringAssert.Contains(finding.Message, "OnUpdate");
+
+        Assert.IsFalse(BmotionCodeReview.Review(component).Findings.Any(entry => entry.Rule == "frame-loop-only-transition"),
+                       "The component's OnUpdate parameter was reported as a transition callback.");
+    }
+
+    /// <summary>
+    /// A repeat with a count is recorded unrolled, and the engine records at most ten seconds - past
+    /// that only the frame loop plays it. A timeline has no such limit, so a long plain tween, or a
+    /// loop with no delay between iterations, is fine however long it runs.
+    /// </summary>
+    [TestMethod]
+    public void Review_ARepeatThatUnrollsPastTenSeconds_IsReported_ButALongTimelineIsNot()
+    {
+        var tooLong = """
+            <Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Tween(4, repeat: BmRepeat.Mirror(2))">
+                <div class="box" />
+            </Bmotion>
+            """;
+
+        var finding = BmotionCodeReview.Review(tooLong).Findings.SingleOrDefault(entry => entry.Rule == "frame-loop-only-transition");
+
+        Assert.IsNotNull(finding, "A 12-second recording was not reported.");
+        StringAssert.Contains(finding.Message, "12 seconds");
+
+        foreach (var fine in new[]
+        {
+            """<Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Tween(12)"><div /></Bmotion>""",
+            """<Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Tween(4, repeat: BmRepeat.Loop(5))"><div /></Bmotion>""",
+            """<Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Tween(1, repeat: BmRepeat.Reverse(2))"><div /></Bmotion>""",
+            """<Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Tween(4, repeat: BmRepeat.Mirror())"><div /></Bmotion>""",
+        })
+        {
+            Assert.IsFalse(BmotionCodeReview.Review(fine).Findings.Any(entry => entry.Rule == "frame-loop-only-transition"),
+                           $"Reported as frame-loop-only:\n{fine}");
+        }
+    }
+
+    [TestMethod]
+    [DataRow("BmRepeat.Reverse()")]
+    [DataRow("BmRepeat.Reverse(delay: 0.5)")]
+    [DataRow("BmRepeat.Reverse(-1)")]
+    [DataRow("BmRepeat.Reverse(count: -1, delay: 0.2)")]
+    public void Review_AnEndlessReverse_IsReportedHoweverItIsWritten(string repeat)
+    {
+        var code = $"""<Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Tween(1, repeat: {repeat})"><div /></Bmotion>""";
+
+        Assert.IsTrue(BmotionCodeReview.Review(code).Findings.Any(entry => entry.Rule == "frame-loop-only-transition"),
+                      $"'{repeat}' was not recognised as repeating forever.");
     }
 
     /// <summary>

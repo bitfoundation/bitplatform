@@ -8,9 +8,9 @@ namespace Bit.Bmotion.Demo.Server.Services;
 /// Render mode is the question an agent gets wrong most expensively here, and it fails silently
 /// twice over. In a Blazor Web App the services have to be registered in <b>both</b> DI containers,
 /// because the prerender pass instantiates the client's components on the server - miss one and the
-/// app throws at prerender, not at compile time. And on Blazor Server half the library degrades to
-/// instant state changes by design, so an animation an agent tested on WebAssembly can arrive
-/// working-but-motionless with nothing in the build output to say why.
+/// app throws at prerender, not at compile time. And on Blazor Server the few animations only the C#
+/// frame loop can play degrade to instant state changes by design, so an animation an agent tested
+/// on WebAssembly can arrive working-but-motionless with nothing in the build output to say why.
 /// </para>
 /// <para>
 /// Each guide therefore states the container list, the capability matrix for that mode, and the
@@ -183,13 +183,15 @@ public static class BmotionSetupGuide
 
         | Feature | Status |
         |---|---|
-        | Tweens and springs on transform + opacity | Full - offloaded to the browser compositor |
-        | Colour, dimension and keyframe-array animation | Full - C# per-frame loop |
-        | Drag, inertia, motion values, gestures | Full |
+        | Tweens and springs on transforms, opacity, colours, lengths, filters, shadows | Full - played by the browser as a two-keyframe Web Animation |
+        | Keyframe arrays, per-property transitions, mirrored repeats, repeat delays, arcs, inertia | Full - recorded by the engine and played by the browser |
+        | `Transition.OnUpdate`, a component's `OnUpdate`, SVG `d` morphs | Full - C# per-frame loop |
+        | Drag, motion values, gestures | Full |
         | Layout (FLIP) and shared-element transitions | Full |
         | Scroll timelines | Full |
 
-        Nothing degrades. Call `GetBmotionSetupGuide("server")` before assuming the same of a Server app.
+        Nothing degrades. A Server app plays almost all of this too, but not quite all of it: call
+        `GetBmotionSetupGuide("server")` before assuming the same of one.
         """;
 
     // -- InteractiveServer -----------------------------------------------------
@@ -198,9 +200,10 @@ public static class BmotionSetupGuide
         # Bit.Bmotion in a Blazor Web App - InteractiveServer
 
         **Read the capability table at the bottom before writing any animation for this mode.** Blazor
-        Server has no synchronous JS interop, so the per-frame engine cannot run. Animations the browser
-        compositor can own still play normally; everything else becomes an instant state change -
-        visibly, silently, and only at runtime.
+        Server has no synchronous JS interop, so the per-frame engine cannot run. The engine hands the
+        browser almost every animation instead - as a two-keyframe timeline, or as a recording of the
+        frames the frame loop would have drawn - and those play normally. The few it cannot hand over
+        become an instant state change - visibly, silently, and only at runtime.
         """;
 
     private const string ServerRegistration = """
@@ -232,24 +235,31 @@ public static class BmotionSetupGuide
 
         | Feature | Status on Blazor Server |
         |---|---|
-        | Tweens and zero-velocity springs on transform + opacity | **Full.** Pre-sampled in C# and handed to the Web Animations API over one async call |
-        | Enter, exit, hover, tap and variant animations on those properties | **Full** |
-        | Colour interpolation (backgroundColor, color, fill, ...) | **Jumps to the target** |
-        | Dimension and layout properties (width, height, top, ...) | **Jumps to the target** |
-        | Keyframe arrays, per-property transitions, arc paths | **Jumps to the target** |
-        | Drag | **Works**, a round trip behind the pointer: one position (and one `OnDrag`) per frame over async interop. A throw lands where its momentum would have come to rest |
-        | Inertia, `Transition.OnUpdate`, a component's `OnUpdate` | **Not available** - they need the per-frame loop (inertia lands on its resting point) |
+        | Tweens and zero-velocity springs on transforms, opacity, colours, same-unit lengths, filters, shadows, clip paths | **Full.** A two-keyframe Web Animation with the curve as its easing, handed over in one async call |
+        | Keyframe arrays, per-property transitions, mirrored repeats, repeat delays, arc paths, springs with velocity, inertia, gradients, custom properties | **Full.** Recorded by the engine at 60 Hz and played by the browser - more keyframes than a timeline, but no frame loop |
+        | Enter, exit, hover, tap and variant animations | **Full** |
+        | Drag | **Full.** The browser keeps the element under the pointer (the CSS `translate` property covers the round trip); one position, and one `OnDrag`, reach .NET per frame. A throw's momentum plays in the browser as a recording |
+        | `Transition.OnUpdate` | **Not available** - a per-frame callback needs the frame loop, so the animation lands at once |
+        | A component's `OnUpdate` | The animation plays in the browser, but `OnUpdate` is not called frame by frame |
+        | SVG `d`/`points` morphs | **Jumps to the target** - Web Animations cannot animate attributes |
+        | An endless `BmRepeat.Reverse`, per-property transitions with an endless repeat, a recording longer than 10 s | **Jumps to the target** |
         | Motion values bound to elements | **Each change is written** through async interop - no per-frame smoothing |
+        | Animating a motion value itself (`AnimateAsync` on a `BmValue`, a `Spring` follower) | **Settles at once** - it needs the per-frame loop |
         | Layout (FLIP) and shared-element transitions | **Full.** The bridge plays them as Web Animations |
 
         ## Writing for this mode
 
-        1. Animate `x`, `y`, `scale`, `rotate` and `opacity`. They cover most interface motion, and they
-           are exactly the properties the compositor can own.
-        2. Replace a `width`/`height` animation with `scale`, and a `top`/`left` animation with `x`/`y`.
-        3. Check any animation you are unsure about with `AnalyzeBmotionAnimation` - it runs the real
+        1. Animate what the design needs: colours, lengths, filters and keyframes all play here. Prefer
+           `x`, `y`, `scale`, `rotate` and `opacity` where they do the same job - the browser runs them
+           on its compositor, off the main thread, where a `width` or a `top` runs layout every frame.
+        2. Prefer a timeline to a recording when either would do. A recording is computed on the server
+           when the animation starts and sends more keyframes over the circuit (a few KB for a long
+           spring); a timeline is two keyframes whatever its length.
+        3. Keep out of what only the frame loop plays: `Transition.OnUpdate`, `d` morphs, an endless
+           `BmRepeat.Reverse` (use `BmRepeat.Mirror`), recordings longer than 10 seconds.
+        4. Check any animation you are unsure about with `AnalyzeBmotionAnimation` - it runs the real
            engine and reports which path it took, rather than guessing from this table.
-        4. Make the degradation visible to the reader rather than mysterious, by injecting the
+        5. Make the degradation visible to the reader rather than mysterious, by injecting the
            capability flags:
 
         ```razor
@@ -257,7 +267,7 @@ public static class BmotionSetupGuide
 
         @if (Caps.SupportsFrameLoop is false)
         {
-            <p>Colours change instantly here: this page is served over Blazor Server.</p>
+            <p>The icon changes shape instantly here: this page is served over Blazor Server.</p>
         }
         ```
         """;
@@ -304,11 +314,13 @@ public static class BmotionSetupGuide
 
         Design for the Server capability set, and treat everything beyond it as an enhancement:
 
-        1. Build the interface out of `x`, `y`, `scale`, `rotate` and `opacity` animations. Those play in
-           both modes, so the first visit and the second look the same.
-        2. Gate anything that needs the frame loop - inertia, colour and dimension animation, `OnUpdate` -
-           and anything that should feel immediate under the pointer, like drag, on the capability flag,
-           and give the Server path a static equivalent:
+        1. Almost every animation plays in both modes - the browser plays it, as a timeline or as a
+           recording, either way - so the first visit and the second look the same. Prefer `x`, `y`,
+           `scale`, `rotate` and `opacity` where they do the job: they run on the compositor.
+        2. Gate what only the frame loop plays - `Transition.OnUpdate`, SVG `d` morphs, an endless
+           `BmRepeat.Reverse` - and any `OnDrag` handler whose result must track the pointer frame by frame (it
+           runs a round trip behind on Server), on the capability flag, and give the Server path a static
+           equivalent:
 
         ```razor
         @inject BmotionCapabilities Caps
@@ -323,8 +335,8 @@ public static class BmotionSetupGuide
         }
         ```
 
-        3. Verify with `AnalyzeBmotionAnimation` before shipping: an animation it reports as running on
-           the C# frame loop is one that behaves differently on the user's first visit.
+        3. Verify with `AnalyzeBmotionAnimation` before shipping: an animation it reports as "Frame loop
+           only" is one that behaves differently on the user's first visit.
         """;
 
     // -- Standalone WebAssembly ------------------------------------------------
@@ -358,8 +370,9 @@ public static class BmotionSetupGuide
     private const string StandaloneCapabilities = """
         ## What works in this mode
 
-        Everything. Compositor-eligible animations offload to the Web Animations API and the rest run on
-        the C# per-frame loop over synchronous interop, which a standalone WebAssembly app always has.
+        Everything. The engine hands the browser what it can play - as a two-keyframe timeline or as a
+        recording - and runs the rest (per-frame `OnUpdate` callbacks, `d` morphs) on the C# per-frame
+        loop over synchronous interop, which a standalone WebAssembly app always has.
 
         ## Worth setting while you are here
 

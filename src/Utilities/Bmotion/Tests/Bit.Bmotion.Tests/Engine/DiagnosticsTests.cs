@@ -6,8 +6,8 @@ namespace Bit.Bmotion.Tests.Engine;
 [TestClass]
 public class DiagnosticsTests
 {
-    private static BmotionAnimationEngine NewEngine(bool inProcess = true)
-        => new(new FakeBmotionInterop { IsInProcess = inProcess });
+    private static BmotionAnimationEngine NewEngine(bool inProcess = true, bool webAnimations = true)
+        => new(new FakeBmotionInterop { IsInProcess = inProcess, WebAnimationsSupported = webAnimations });
 
     [TestMethod]
     public async Task GetDiagnostics_ReportsRegisteredElementsAndSeededValues()
@@ -28,9 +28,8 @@ public class DiagnosticsTests
     [TestMethod]
     public async Task GetDiagnostics_ShowsActiveDriversWhileAnimating()
     {
-        // In-process/WASM engine: color properties never offload to the compositor, so a rAF
-        // driver stays active on the engine and the diagnostics report it mid-animation.
-        await using var engine = NewEngine(inProcess: true);
+        // Without Web Animations the colour runs on the frame loop: a driver the diagnostics report mid-animation.
+        await using var engine = NewEngine(inProcess: true, webAnimations: false);
         engine.RegisterElement("el", null);
 
         await engine.AnimateToAsync("el",
@@ -41,6 +40,23 @@ public class DiagnosticsTests
         Assert.IsTrue(el.HasActiveAnimations);
         Assert.IsTrue(el.ActiveProperties.Contains("backgroundColor"));
         Assert.IsTrue(el.ActiveDriverCount >= 1);
+    }
+
+    [TestMethod]
+    public async Task GetDiagnostics_ShowsWhatTheBrowserIsAnimating()
+    {
+        // A colour the browser plays is just as live as one on the frame loop - the inspector must not show it idle.
+        await using var engine = NewEngine(inProcess: true);
+        engine.RegisterElement("el", new Dictionary<string, object?> { ["backgroundColor"] = "#000000" });
+
+        await engine.AnimateToAsync("el",
+            new Dictionary<string, object?> { ["backgroundColor"] = "#ff0000", ["x"] = 10.0 },
+            Bm.Tween(1.0).ToConfig());
+
+        var el = engine.GetDiagnostics().Single(d => d.Id == "el");
+        Assert.IsTrue(el.HasActiveAnimations);
+        Assert.AreEqual(0, el.ActiveDriverCount, "nothing runs on the frame loop");
+        CollectionAssert.AreEquivalent(new[] { "backgroundColor", "x" }, el.BrowserProperties.ToArray());
     }
 
     [TestMethod]

@@ -53,10 +53,8 @@ public sealed class ConfigTests : BmotionPageTest
         var samples = await SampleAsync("#reduced", 600);
 
         Assert.IsTrue(Snapped(samples, 100), "The transform animated under reduced motion.");
-        // The fade runs on the frame loop (a per-property transition the compositor can't take), so on
-        // Blazor Server it lands at once along with everything else that needs the loop.
-        if (FrameLoop)
-            Assert.IsTrue(samples.Any(s => s.Opacity is > 0.25 and < 0.95), "Opacity should still fade under reduced motion.");
+        // The fade keeps its transition and plays in the browser - on Blazor Server too.
+        Assert.IsTrue(samples.Any(s => s.Opacity is > 0.25 and < 0.95), "Opacity should still fade under reduced motion.");
         await WaitForStateAsync("#reduced", "s => Math.abs(s.opacity - 1) < 0.01");
     }
 
@@ -76,14 +74,27 @@ public sealed class ConfigTests : BmotionPageTest
         var srgb = SampleAsync("#srgb", 900);
         var oklab = await SampleAsync("#oklab", 900);
 
-        static int Green(string rgb) => int.Parse(rgb.Split(',')[1].Trim());
         await WaitForStateAsync("#oklab", "s => s.backgroundColor === 'rgb(0, 0, 255)'");
-        if (FrameLoop is false) return; // colours snap on Blazor Server
 
-        // Red to blue in sRGB never picks up green; through OKLab it does.
-        Assert.IsTrue((await srgb).All(s => Green(s.BackgroundColor) == 0), "sRGB interpolation picked up green.");
-        Assert.IsTrue(oklab.Any(s => Green(s.BackgroundColor) > 0), "OKLab interpolation went through sRGB's path.");
+        // Red to blue in sRGB never picks up green; through OKLab it does. The browser reports a colour it
+        // interpolates in OKLab in oklab() syntax, so every sample is read back as sRGB first.
+        var srgbGreens = await GreensAsync(await srgb);
+        var oklabGreens = await GreensAsync(oklab);
+        Assert.IsTrue(srgbGreens.All(g => g == 0), $"sRGB interpolation picked up green on {RunHost}.");
+        Assert.IsTrue(oklabGreens.Any(g => g > 0), $"OKLab interpolation went through sRGB's path on {RunHost}.");
     }
+
+    // Paints each CSS colour into a one-pixel canvas and reads back its sRGB green channel - whatever syntax (and
+    // colour space) the browser reported the colour in.
+    private async Task<int[]> GreensAsync(IEnumerable<MotionState> samples)
+        => await Page.EvaluateAsync<int[]>(
+            """
+            cs => {
+                const x = document.createElement('canvas').getContext('2d');
+                return cs.map(c => { x.clearRect(0, 0, 1, 1); x.fillStyle = c; x.fillRect(0, 0, 1, 1); return x.getImageData(0, 0, 1, 1).data[1]; });
+            }
+            """,
+            samples.Select(s => s.BackgroundColor).ToArray());
 }
 
 /// <summary>The same page with the OS asking for reduced motion (<c>prefers-reduced-motion: reduce</c>).</summary>

@@ -131,7 +131,45 @@
 </section>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> It still reads as a sentence</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Markup, styling and the finish</h3>
+    <p>
+        The container is a <code>span</code> unless <code>As</code> names another element, and it takes
+        <code>Class</code> and <code>Style</code> like any other. <code>UnitClass</code> goes on every animated
+        unit, which is the hook for styling the pieces themselves - each word below is a pill. The units take the
+        rest of the targets too: <code>WhileTap</code> presses the one word under the pointer, and
+        <code>Exit</code> plays when an enclosing presence component removes the text, on the same stagger as
+        the entrance. <code>OnComplete</code> fires once, when the last unit's entrance has landed - the moment
+        to reveal what the headline introduces. (This site is prerendered, and an entrance that played from the
+        served HTML ran before the runtime was there to report it, so the count starts with the next one.)
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card presence-stage">
+            <BmotionAnimatePresence IsPresent="_splitShown">
+                <BmotionSplitText As="p" Class="split-pills" UnitClass="split-pill"
+                                  Text="Tap a word, or take them all away"
+                                  By="BmSplitBy.Words"
+                                  Initial="Bm.To(opacity: 0, y: 16)"
+                                  Animate="Bm.To(opacity: 1, y: 0)"
+                                  Exit="Bm.To(opacity: 0, y: -16)"
+                                  WhileTap="Bm.To(scale: 0.85)"
+                                  Stagger="Bm.Stagger(0.06)"
+                                  Transition="Bm.Spring(bounce: 0.3, duration: 0.5)"
+                                  OnComplete="@(() => _landed++)" />
+            </BmotionAnimatePresence>
+            <span class="demo-label presence-count">OnComplete: @_landed</span>
+        </div>
+    </div>
+
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _splitShown = !_splitShown)">@(_splitShown ? "Take them away" : "Bring them back")</button>
+    </div>
+
+    <CodeSnippet Code="@_markupCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> It still reads as a sentence</h3>
     <p>
         Splitting text is the classic way to break it for everyone who is not looking at it: a
         screen reader handed forty one-character spans spells the headline out. By default the
@@ -139,7 +177,8 @@
         <code>aria-hidden</code>, so assistive technology reads the sentence once. Whitespace is
         rendered as whitespace rather than as units, and in <code>Chars</code> mode each word is
         wrapped in an inline-block of its own - so the text wraps between words, never mid-word,
-        and selecting it copies the original string back.
+        and selecting it copies the original string back. <code>Accessible="false"</code> drops the label and
+        the hiding, for text that an ancestor already labels.
     </p>
 
     <div class="demo-row">
@@ -167,6 +206,8 @@
     // Every sample keys off this counter so "Replay" remounts them and their enter animations run
     // again - the same trick the presence pages use, rather than a bespoke reset path per demo.
     private int _runId;
+    private bool _splitShown = true;
+    private int _landed;
 
     private void Replay() => _runId++;
 
@@ -269,6 +310,37 @@
                           Once="true"
                           Stagger="Bm.Stagger(0.08)"
                           Transition="Bm.Spring(bounce: 0.3, duration: 0.7)" />
+        """;
+
+    private const string _markupCode = """
+        @using Bit.Bmotion
+
+        <style>
+            .pill { padding: .15em .55em; border-radius: 999px; background: rgba(18,118,198,.12); }
+        </style>
+
+        @* As picks the container element; UnitClass styles every unit. Exit needs a presence
+           component around the text, and it plays on the same stagger as the entrance. *@
+        <BmotionAnimatePresence IsPresent="_shown">
+            <BmotionSplitText As="p" UnitClass="pill"
+                              Text="Tap a word, or take them all away"
+                              By="BmSplitBy.Words"
+                              Initial="Bm.To(opacity: 0, y: 16)"
+                              Animate="Bm.To(opacity: 1, y: 0)"
+                              Exit="Bm.To(opacity: 0, y: -16)"
+                              WhileTap="Bm.To(scale: 0.85)"
+                              Stagger="Bm.Stagger(0.06)"
+                              Transition="Bm.Spring(bounce: 0.3, duration: 0.5)"
+                              OnComplete="@(() => _landed++)" />
+        </BmotionAnimatePresence>
+
+        <button @onclick="@(() => _shown = !_shown)">Toggle</button>
+        <p>OnComplete has fired @_landed times</p>
+
+        @code {
+            private bool _shown = true;
+            private int _landed;   // once per entrance, when the last unit lands
+        }
         """;
 
     private const string _a11yCode = """

@@ -18,26 +18,42 @@
     <p>
         Wrap conditional content in <strong>BmotionAnimatePresence</strong> and give the child an
         <code>Exit</code> target. When <code>IsPresent</code> goes false the child plays that target
-        and is removed once it lands. <code>Mode</code> decides how an exit overlaps a re-entry:
-        <code>Sync</code> lets them run together, <code>Wait</code> holds the new content back until
-        the old one is gone.
+        and is removed once it lands. The exit can carry timing of its own - here a quick tween, where the
+        entrance springs, because leaving should take less time than arriving - and
+        <code>OnExitComplete</code> fires once it has finished and the content is gone, the moment to move focus
+        or release what it held. While it plays, the leaving element is <code>inert</code>
+        (<code>InertWhileExiting</code>, on by default), so nothing in it can be clicked or focused on its way
+        out.
+    </p>
+    <p>
+        <code>Mode</code> decides what happens when the content comes back before its exit has finished:
+        <code>Sync</code> (the default) turns the exit straight round into the entrance, and <code>Wait</code>
+        lets the exit finish first. Press <em>Remove</em> and then <em>Add</em> quickly, in each mode.
     </p>
 
     <div class="demo-row">
         <div class="demo-card presence-stage">
-            <BmotionAnimatePresence IsPresent="@_visible">
+            <BmotionAnimatePresence IsPresent="@_visible" Mode="_presenceMode" OnExitComplete="@(() => _exits++)">
                 <Bmotion Initial="Bm.To(opacity: 0, y: 40, scale: 0.8)"
                         Animate="Bm.To(opacity: 1, y: 0, scale: 1)"
-                        Exit="Bm.To(opacity: 0, y: -40, scale: 0.8)"
+                        Exit="Bm.To(opacity: 0, y: -40, scale: 0.8, transition: Bm.Tween(0.3, BmEase.In))"
                         Transition="Bm.Spring(stiffness: 220, damping: 18)">
                     <div class="box" />
                 </Bmotion>
             </BmotionAnimatePresence>
+            <span class="demo-label presence-count">OnExitComplete: @_exits</span>
         </div>
     </div>
 
     <div class="bb-toolbar">
         <button class="btn btn-primary" @onclick="@(() => _visible = !_visible)">@(_visible ? "Remove" : "Add")</button>
+        <div class="bb-segmented" role="group" aria-label="Presence mode">
+            @foreach (var mode in _presenceModes)
+            {
+                <button type="button" aria-pressed="@(_presenceMode == mode ? "true" : "false")"
+                        @onclick="@(() => _presenceMode = mode)">@mode</button>
+            }
+        </div>
     </div>
 
     <CodeSnippet Code="@_presenceCode" />
@@ -117,12 +133,13 @@
         rather than added or removed - paging, toasts, a wizard step. Change <code>Item</code> and
         the outgoing subtree plays its <code>Exit</code> first, still rendering the old item as it
         goes, because the content is a template <em>of</em> the item rather than a snapshot of it.
-        <code>Mode</code> defaults to <code>Wait</code> here; <code>Sync</code> overlaps the two.
+        <code>Mode</code> defaults to <code>Wait</code> here - the new page enters once the old one has gone -
+        and <code>Sync</code> plays the two at once, so the pages pass each other.
     </p>
 
     <div class="demo-row">
         <div class="demo-card presence-stage">
-            <BmotionPresenceSwitch Item="_page" Context="pageNumber">
+            <BmotionPresenceSwitch Item="_page" Mode="_switchMode" Context="pageNumber">
                 <Bmotion Initial="Bm.To(opacity: 0, x: 60)"
                         Animate="Bm.To(opacity: 1, x: 0)"
                         Exit="Bm.To(opacity: 0, x: -60)"
@@ -136,6 +153,13 @@
     <div class="bb-toolbar">
         <button class="btn btn-primary" @onclick="@(() => _page++)">Next page</button>
         <button class="btn btn-secondary" @onclick="@(() => _page = _page > 1 ? _page - 1 : 1)">Previous page</button>
+        <div class="bb-segmented" role="group" aria-label="Switch mode">
+            @foreach (var mode in _switchModes)
+            {
+                <button type="button" aria-pressed="@(_switchMode == mode ? "true" : "false")"
+                        @onclick="@(() => _switchMode = mode)">@mode</button>
+            }
+        </div>
     </div>
 
     <CodeSnippet Code="@_switchCode" />
@@ -143,8 +167,15 @@
 
 @code {
     private bool _visible = true;
+    private int _exits;
     private int _page = 1;
     private int _nextId = 4;
+
+    private static readonly BmPresenceMode[] _presenceModes = [BmPresenceMode.Sync, BmPresenceMode.Wait];
+    private BmPresenceMode _presenceMode = BmPresenceMode.Sync;
+
+    private static readonly BmPresenceMode[] _switchModes = [BmPresenceMode.Wait, BmPresenceMode.Sync];
+    private BmPresenceMode _switchMode = BmPresenceMode.Wait;
 
     private sealed record Item(int Id, string Label);
 
@@ -184,11 +215,14 @@
         </style>
 
         <div class="demo-card">
-            @* The child stays rendered until its Exit target lands, then is removed. *@
-            <BmotionAnimatePresence IsPresent="@_visible">
+            @* The child stays rendered until its Exit target lands, then is removed. The exit carries
+               its own, quicker transition; the entrance uses the component's spring. Mode: Sync (the
+               default) turns an exit round when the content comes back; Wait finishes it first. *@
+            <BmotionAnimatePresence IsPresent="@_visible" Mode="BmPresenceMode.Wait"
+                                    OnExitComplete="@(() => _exits++)">
                 <Bmotion Initial="Bm.To(opacity: 0, y: 40, scale: 0.8)"
                          Animate="Bm.To(opacity: 1, y: 0, scale: 1)"
-                         Exit="Bm.To(opacity: 0, y: -40, scale: 0.8)"
+                         Exit="Bm.To(opacity: 0, y: -40, scale: 0.8, transition: Bm.Tween(0.3, BmEase.In))"
                          Transition="Bm.Spring(stiffness: 220, damping: 18)">
                     <div class="box" />
                 </Bmotion>
@@ -198,10 +232,15 @@
         <button class="btn-bm" @onclick="@(() => _visible = !_visible)">
             @(_visible ? "Remove" : "Add")
         </button>
+        <p>Exits completed: @_exits</p>
 
         @code {
             private bool _visible = true;
+            private int _exits;
         }
+
+        @* Exiting content is made inert while it leaves. To keep it interactive instead:
+           builder.Services.AddBitBmotionServices(o => o.InertWhileExiting = false); *@
         """;
 
     private const string _listCode = """
@@ -233,6 +272,8 @@
                 </Bmotion>
             </BmotionPresenceGroup>
         </div>
+
+        <button @onclick="AddItem">Add item</button>
 
         @code {
             private int _nextId = 4;
@@ -287,7 +328,8 @@
 
         @* Content is replaced rather than added/removed: the outgoing subtree keeps
            rendering the OLD item while it exits, because the body is a template of the item. *@
-        <BmotionPresenceSwitch Item="_page" Context="pageNumber">
+        <BmotionPresenceSwitch Item="_page" Mode="BmPresenceMode.Sync" Context="pageNumber"
+                               OnExitComplete="@(() => _left++)">
             <Bmotion Initial="Bm.To(opacity: 0, x: 60)"
                      Animate="Bm.To(opacity: 1, x: 0)"
                      Exit="Bm.To(opacity: 0, x: -60)"
@@ -299,7 +341,10 @@
         <button @onclick="@(() => _page++)">Next page</button>
 
         @code {
-            private int _page = 1;   // Mode defaults to Wait; Sync overlaps exit and enter
+            // Mode defaults to Wait (exit, then enter); Sync plays them at once.
+            // OnExitComplete fires each time an outgoing item has finished leaving.
+            private int _page = 1;
+            private int _left;
         }
         """;
 }

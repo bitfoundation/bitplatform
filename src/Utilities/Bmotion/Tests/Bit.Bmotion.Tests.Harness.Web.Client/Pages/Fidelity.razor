@@ -1,0 +1,149 @@
+@page "/fidelity"
+
+@* How faithfully an animation follows what is really on screen: values the engine never set itself (a stylesheet
+   colour or width), values it is handed in syntax it has to parse (named colours), velocity carried from one
+   animation into the next, and overlays that must animate on every runtime, not only the one with a frame loop. *@
+
+<HarnessHeader Title="Fidelity" Ready="Ready" OnLog="BindLog" />
+
+<h2>Starting values from the stylesheet</h2>
+<section class="row">
+    @* Blue from the stylesheet, never from Bmotion: hovering must start from blue and leaving must bring blue back. *@
+    <Bmotion Animate="Bm.To(opacity: 1)"
+             WhileHover='Bm.To(backgroundColor: "rgb(255, 0, 0)")'
+             Transition="Bm.Tween(0.6, BmEase.Linear)"
+             OnAnimationStart='_ => Armed("css-hover")'
+             OnHoverEnd='() => Log("css-hover:end")'>
+        <div id="css-hover" class="box css-blue"></div>
+    </Bmotion>
+
+    @* A shadow from the stylesheet, which the page reports colour first and with its spread: hovering must grow it
+       from there, and leaving must shrink it back. *@
+    <Bmotion Animate="Bm.To(opacity: 1)"
+             WhileHover='Bm.To(boxShadow: "0 16px 32px rgba(0,0,0,.5)")'
+             Transition="Bm.Tween(0.6, BmEase.Linear)"
+             OnAnimationStart='_ => Armed("css-shadow")'
+             OnHoverEnd='() => Log("css-shadow:end")'>
+        <div id="css-shadow" class="box css-shadow"></div>
+    </Bmotion>
+
+    @* No filter at all (the page reports "none"): hovering must blur it gradually, not at once. *@
+    <Bmotion Animate="Bm.To(opacity: 1)"
+             WhileHover='Bm.To(filter: "blur(6px)")'
+             Transition="Bm.Tween(0.6, BmEase.Linear)"
+             OnAnimationStart='_ => Armed("css-filter")'>
+        <div id="css-filter" class="box"></div>
+    </Bmotion>
+
+    @* 100px wide from the stylesheet; the first Animate that names a width must animate from there. *@
+    <button id="widen" @onclick="() => Change(() => _wide = !_wide)">widen</button>
+    <Bmotion Animate='_wide ? Bm.To(width: "300px") : Bm.To(opacity: 1)'
+             Transition="Bm.Tween(0.6, BmEase.Linear)"
+             OnAnimationStart='_ => Armed("css-width")'>
+        <div id="css-width" class="box css-width"></div>
+    </Bmotion>
+</section>
+
+<h2>Sizes to and from auto</h2>
+<section>
+    @* Opens to its content's height and then follows it (a line added while open grows it); closes from the height
+       it has then, not from the one it opened to. *@
+    <button id="accordion-toggle" @onclick="() => Change(() => _open = !_open)">toggle</button>
+    <button id="accordion-grow" @onclick="() => Change(() => _lines++)">add line</button>
+    <Bmotion Initial='Bm.To(height: "0px")'
+             Animate='Bm.To(height: _open ? "auto" : "0px")'
+             Transition="Bm.Tween(0.6, BmEase.Linear)"
+             OnAnimationStart='_ => Armed("accordion")'
+             OnAnimationComplete='_ => Log(_open ? "accordion:opened" : "accordion:closed")'>
+        <div id="accordion" class="accordion">
+            @for (int i = 0; i < _lines; i++)
+            {
+                <p>line @i</p>
+            }
+        </div>
+    </Bmotion>
+</section>
+
+<h2>Colour syntax</h2>
+<section class="row">
+    <button id="recolor" @onclick="() => Change(() => _blue = !_blue)">recolor</button>
+    <Bmotion Initial='Bm.To(backgroundColor: "red")'
+             Animate='Bm.To(backgroundColor: _blue ? "blue" : "red")'
+             Transition="Bm.Tween(0.6, BmEase.Linear)"
+             OnAnimationStart='_ => Armed("named")'>
+        <div id="named" class="box"></div>
+    </Bmotion>
+
+    <button id="recolor-modern" @onclick="() => Change(() => _modern = !_modern)">recolor modern</button>
+    <Bmotion Initial='Bm.To(backgroundColor: "rgb(0 0 0 / 1)")'
+             Animate='Bm.To(backgroundColor: _modern ? "oklch(0.7 0.2 140)" : "rgb(0 0 0 / 1)")'
+             Transition="Bm.Tween(0.6, BmEase.Linear)"
+             OnAnimationStart='_ => Armed("modern")'>
+        <div id="modern" class="box"></div>
+    </Bmotion>
+</section>
+
+<h2>Overlays on every runtime</h2>
+<section class="row">
+    <Bmotion Animate="Bm.To(opacity: 1)"
+             WhileHover="Bm.To(scale: 1.5)"
+             Transition="Bm.Tween(0.8, BmEase.Linear)"
+             OnAnimationStart='_ => Armed("slow-hover")'>
+        <div id="slow-hover" class="box"></div>
+    </Bmotion>
+
+    @* Reduced motion keeps fades: the opacity must still animate while the move snaps. *@
+    <button id="reduced-toggle" @onclick="() => Change(() => _reducedOn = !_reducedOn)">reduced toggle</button>
+    <BmotionConfig ReduceMotion="true">
+        <Bmotion Animate="_reducedOn ? Bm.To(opacity: 0.2, x: 200) : Bm.To(opacity: 1, x: 0)"
+                 Transition="Bm.Tween(0.8, BmEase.Linear)"
+                 OnAnimationStart='_ => Armed("reduced")'>
+            <div id="reduced" class="box"></div>
+        </Bmotion>
+    </BmotionConfig>
+</section>
+
+<h2>Velocity handoff</h2>
+<section>
+    @* Sent right, then sent back while still moving fast: a spring carries its velocity into the new target, so the
+       element keeps travelling right for a moment before it turns round. *@
+    <button id="handoff-right" @onclick="() => Change(() => _right = true)">right</button>
+    <button id="handoff-left" @onclick="() => Change(() => _right = false)">left</button>
+    <Bmotion Animate="Bm.To(x: _right ? 300 : 0)"
+             Transition="Bm.Spring(stiffness: 20, damping: 4)"
+             OnAnimationStart='_ => Armed("handoff")'>
+        <div id="handoff" class="box"></div>
+    </Bmotion>
+</section>
+
+<h2>Keyboard on native controls</h2>
+<section class="row">
+    <Bmotion Animate="Bm.To(opacity: 1)"
+             WhileTap="Bm.To(scale: 0.9)"
+             OnAnimationStart='_ => Armed("native")'
+             OnTap='() => Log("native:tap")'>
+        <button id="native" @onclick='() => Log("native:click")'>native</button>
+    </Bmotion>
+</section>
+
+<h2>Touch</h2>
+<section class="row">
+    <Bmotion Animate="Bm.To(opacity: 1)"
+             WhileHover="Bm.To(scale: 1.3)"
+             WhileTap="Bm.To(scale: 0.9)"
+             OnAnimationStart='_ => Armed("touch")'
+             OnHoverStart='() => Log("touch:hover-start")'
+             OnTap='() => Log("touch:tap")'>
+        <div id="touch" class="box"></div>
+    </Bmotion>
+</section>
+
+@code {
+    private bool _wide;
+    private bool _blue;
+    private bool _modern;
+    private bool _reducedOn;
+    private bool _right;
+    private bool _open;
+    private int _lines = 4;
+}

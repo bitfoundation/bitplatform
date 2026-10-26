@@ -83,6 +83,15 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     [Parameter] public BmTransition? Transition { get; set; }
 
     /// <summary>
+    /// A ready-made animation (see <see cref="BmPresets"/>) supplying the targets, viewport options and transition
+    /// this element doesn't set itself - anything set on the component wins over the preset's:
+    /// <code>
+    /// &lt;Bmotion Preset="BmPresets.Slide(BmEdge.Bottom)" Transition="Bm.Spring(bounce: 0.3)"&gt;...&lt;/Bmotion&gt;
+    /// </code>
+    /// </summary>
+    [Parameter] public BmPreset? Preset { get; set; }
+
+    /// <summary>
     /// Drives <see cref="Animate"/> from <b>scroll position instead of time</b>, on the browser's
     /// native <c>ScrollTimeline</c>/<c>ViewTimeline</c> where available - so the animation runs off
     /// the main thread with no scroll handler and no per-frame interop:
@@ -229,6 +238,14 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     [Parameter] public bool DragDirectionLock { get; set; }
 
     /// <summary>
+    /// Scroll the nearest scrollable container - or the page - while the pointer is near its edge during a drag,
+    /// faster the closer it gets, and carry the element along: a drag down a list longer than its scroller. A drag
+    /// stays under the pointer through any scroll, this one or another. Default: false
+    /// (<see cref="BmotionReorderGroup{TItem}"/> turns it on for its items).
+    /// </summary>
+    [Parameter] public bool DragAutoScroll { get; set; }
+
+    /// <summary>
     /// Whether this element's pointer gestures (tap and pan) also reach gesture-enabled ancestors -
     /// the tap/pan counterpart of <see cref="DragPropagation"/>, and motion.dev's <c>propagate</c>.
     /// Default <c>true</c> (the platform's bubbling behaviour, and motion.dev's default for these
@@ -264,6 +281,15 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// the tab-underline / card-to-detail idiom. Namespace ids with <see cref="BmotionLayoutGroup"/>.
     /// </summary>
     [Parameter] public string? LayoutId { get; set; }
+
+    /// <summary>
+    /// When this element takes over a <see cref="LayoutId"/> from one that is still on screen on its way out (an
+    /// exit under <see cref="BmotionAnimatePresence"/>), the two crossfade as the layout animation plays - this one
+    /// fades in as it grows out of the other's box, the other travels onto this one's box as it fades out -
+    /// motion.dev's <c>layoutCrossfade</c>. The fade multiplies with the elements' own opacity (it is a
+    /// <c>filter: opacity()</c>), so an enter or exit fade of their own plays on underneath. Default: <c>true</c>.
+    /// </summary>
+    [Parameter] public bool LayoutCrossfade { get; set; } = true;
 
     /// <summary>
     /// Re-measures for a layout animation only when this value changes - motion.dev's
@@ -392,11 +418,23 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     // Rendering
     // ════════════════════════════════════════════════════════════════════════════
 
-    /// <summary>The animate target: an explicit <see cref="Animate"/> wins over <see cref="State"/>.</summary>
-    private BmTarget? EffectiveAnimate => Animate ?? (BmTarget?)State;
+    /// <summary>
+    /// The animate target: an explicit <see cref="Animate"/> wins over <see cref="State"/>, which wins over the
+    /// <see cref="Preset"/>'s.
+    /// </summary>
+    private BmTarget? EffectiveAnimate => Animate ?? (BmTarget?)State ?? Preset?.Animate;
 
-    /// <summary>The initial target: an explicit <see cref="Initial"/> wins over <see cref="InitialState"/>.</summary>
-    private BmTarget? EffectiveInitial => Initial ?? (BmTarget?)InitialState;
+    /// <summary>The initial target: an explicit <see cref="Initial"/> wins over <see cref="InitialState"/>, then the preset's.</summary>
+    private BmTarget? EffectiveInitial => Initial ?? (BmTarget?)InitialState ?? Preset?.Initial;
+
+    // Every other target and option the preset can supply: the component's own parameter wins.
+    private BmTarget? EffectiveExit => Exit ?? Preset?.Exit;
+    private BmTarget? EffectiveWhileHover => WhileHover ?? Preset?.WhileHover;
+    private BmTarget? EffectiveWhileTap => WhileTap ?? Preset?.WhileTap;
+    private BmTarget? EffectiveWhileFocus => WhileFocus ?? Preset?.WhileFocus;
+    private BmTarget? EffectiveWhileInView => WhileInView ?? Preset?.WhileInView;
+    private BmTransition? EffectiveTransition => Transition ?? Preset?.Transition;
+    private BmViewport? EffectiveViewport => Viewport ?? Preset?.Viewport;
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
@@ -426,15 +464,16 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             // an ancestor when this node defines Variants without its own local Initial variant.
             var initialTarget = EffectiveInitial;
             var initial = initialTarget?.IsVariant == true ? initialTarget.Variant : VariantCtx?.InitialVariant;
-            var stagger = Transition?.StaggerChildren ?? 0;
-            var childStagger = Transition?.ChildStagger;
-            var delayChildren = Transition?.DelayChildren ?? 0;
+            var transition = EffectiveTransition;
+            var stagger = transition?.StaggerChildren ?? 0;
+            var childStagger = transition?.ChildStagger;
+            var delayChildren = transition?.DelayChildren ?? 0;
             // when: beforeChildren - hold the children back until this element's own animation has
             // played. Expressed as extra child delay so the whole cascade (including the stagger)
             // shifts together, and derived from the transition so it stays correct when the
             // container's duration changes.
-            if (Transition is { When: BmWhen.BeforeChildren })
-                delayChildren += Transition.ToConfig().EstimatedDurationSeconds();
+            if (transition is { When: BmWhen.BeforeChildren })
+                delayChildren += transition.ToConfig().EstimatedDurationSeconds();
 
             // A cascaded context whose fields are mutated in place does NOT reliably notify
             // descendants (CascadingValue change-detection is reference-based). So when any cascaded
@@ -529,7 +568,12 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         {
             style = ResolveInitialProps()?.ToCssStyleString(TransformTemplate) ?? string.Empty;
         }
-        if (_isStaticRender && _prerenderMode != BmPrerenderMode.Initial && WhileInView != null) style += BuildNoScriptInView();
+        if (_isStaticRender && _prerenderMode != BmPrerenderMode.Initial && EffectiveWhileInView != null) style += BuildNoScriptInView();
+        if (!_initialized && WillCrossfadeIn())
+        {
+            style = style.Length == 0 || style.TrimEnd().EndsWith(';') ? style + CrossfadeHiddenStyle : $"{style};{CrossfadeHiddenStyle}";
+            _hiddenForCrossfade = true;
+        }
         return _initialStyleCache = style;
     }
     private string? _initialStyleCache;
@@ -699,7 +743,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             if (ResolveProps(EffectiveAnimate) is not { } props) return null;
             // An afterChildren wait is measured off children that haven't mounted when this renders,
             // so CSS can't time it: the element just renders at rest.
-            if (Transition is { When: BmWhen.AfterChildren } && Variants != null)
+            if (EffectiveTransition is { When: BmWhen.AfterChildren } && Variants != null)
                 return (props, InstantTransition(), InstantTransition());
             var normal = BuildNormalTransition(props);
             return (props, normal, BuildReducedTransition(normal));
@@ -752,7 +796,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// </summary>
     private string BuildNoScriptInView()
     {
-        if (ResolveProps(WhileInView) is not { } inView) return string.Empty;
+        if (ResolveProps(EffectiveWhileInView) is not { } inView) return string.Empty;
         var rest = _restPlan?.Settled
             ?? BmotionPrerenderCss.FirstFrames(ResolveInitialProps()?.ToJsDictionary() ?? new());
         var declarations = BmotionPrerenderCss.BuildNoScriptDeclarations(rest, inView.ToJsDictionary(), TransformTemplate);
@@ -812,7 +856,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         var props = VariantCtx?.ActiveVariant is string name
             ? Variants?.Get(name, Custom) ?? VariantCtx.Variants?.Get(name, Custom)
             : null;
-        var transition = props?.Transition ?? Transition ?? ConfigCtx?.DefaultTransition;
+        var transition = props?.Transition ?? EffectiveTransition ?? ConfigCtx?.DefaultTransition;
         // No transition anywhere means the engine's default tween, whose length is BmTween's default.
         if (transition is null) return new BmTween().Duration;
         var config = transition.ToConfig();
@@ -852,7 +896,12 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
             // FLIP: play layout animation after DOM settles
             if (snapshot is not null && measured is not null)
-                await PlayFlipAsync(snapshot, measured);
+            {
+                bool held = _layoutHeld;
+                _layoutHeld = false;
+                if (!await PlayFlipAsync(snapshot, measured) && held)
+                    try { await Interop.ReleaseLayoutHoldAsync(_id); } catch { /* the element is going */ }
+            }
 
             // If a re-render rewrote the inline style attribute (the consumer authored a dynamic
             // style on the animated element), Blazor will have wiped the engine's live
@@ -892,7 +941,13 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             // A popLayout exit pinned the element with position:absolute; put it back in the
             // layout flow now that the exit is cancelled (no-op when it was never popped).
             if (_initialized)
+            {
+                // Back, so no longer fading onto the element that took its LayoutId over.
+                await CancelCrossfadeOutAsync();
                 try { await Interop.UnpopLayoutAsync(_id); } catch { /* cosmetic restore only */ }
+                if (Options.InertWhileExiting)
+                    try { await Interop.SetInertAsync(_id, false); } catch { /* the element is being removed */ }
+            }
         }
 
         // FLIP: snapshot BEFORE re-render. Measuring forces a reflow, so LayoutDependency lets a
@@ -905,8 +960,22 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // earlier render this one follows holds the older layout, so it is kept.
         bool dependencyChanged = LayoutDependencyChanged();
         if (_initialized && Layout.Enabled && !_isExiting && dependencyChanged)
-            _layoutSnapshot ??= Interop.GetBoundingRectAsync(_id, MeasureOptions).AsTask();
+            _layoutSnapshot ??= MeasureBeforeRenderAsync().AsTask();
     }
+
+    // The snapshot before a re-render. Without synchronous interop (Blazor Server) the FLIP comes a round trip after
+    // the render, so the bridge also holds the element where it is through the render until then (and the FLIP, or
+    // a FLIP that doesn't play, lets go of it).
+    private ValueTask<BmotionBoundingRect?> MeasureBeforeRenderAsync()
+    {
+        if (Interop.IsInProcess) return Interop.GetBoundingRectAsync(_id, MeasureOptions);
+        _layoutHeld = true;
+        var anchor = LayoutAnchor.Sanitized();
+        return Interop.MeasureAndHoldLayoutAsync(_id, MeasureOptions,
+            translate: Layout.Mode != BmLayoutMode.Size, scale: Layout.Mode != BmLayoutMode.Position, anchor.X, anchor.Y);
+    }
+
+    private bool _layoutHeld;
 
     // Null (the default) means "no dependency declared": measure on every render, as before.
     private object? _prevLayoutDependency;
@@ -1152,9 +1221,14 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     internal async Task PlayExitAsync()
     {
         int generation = _exitGeneration;
-        var exitProps = ResolveProps(Exit);
+        var exitProps = ResolveProps(EffectiveExit);
         if (exitProps != null)
         {
+            // On its way out: nothing in it can be focused, pressed again or read out any more, and pointer events
+            // reach what is behind it. Set by the bridge rather than rendered, so static child content (one markup
+            // frame) isn't re-created mid-exit; not awaited, so on Blazor Server the exit doesn't start a round
+            // trip late (interop calls reach the browser in order).
+            if (Options.InertWhileExiting) _ = MakeInertAsync();
             // What the properties the exit takes over showed before it, for a re-entry to return
             // the ones its enter target doesn't mention (an exit-only x, say) - see RestorePreExit.
             // Kept from the first exit until a re-entry restores it: a second exit starting before
@@ -1169,11 +1243,20 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
                 try { await Interop.PopLayoutAsync(_id, x, y); }
                 catch { /* popping is cosmetic; the exit animation must still play */ }
             }
-            await Engine.AnimateToAwaitAsync(_id, exitProps.ToJsDictionary(), BuildEffectiveTransition(exitProps));
+            // A preset's exit can carry the preset's own timing (Pop, Modal, Toast leave faster than they came): a
+            // Transition set on the component wins over it, as everything set on the component wins over the preset.
+            var exitTransition = Exit is null && Transition is not null ? Transition : null;
+            await Engine.AnimateToAwaitAsync(_id, exitProps.ToJsDictionary(), BuildEffectiveTransition(exitProps, exitTransition));
         }
         // Re-entered while the exit played (OnParametersSetAsync cleared the flag and bumped the
         // generation): this exit was cancelled, and reporting it would count it towards the next one.
         if (_isExiting && generation == _exitGeneration) PresenceCtx?.NotifyExitComplete(this);
+    }
+
+    private async Task MakeInertAsync()
+    {
+        try { await Interop.SetInertAsync(_id, true); }
+        catch { /* the circuit is going or the element is gone: the exit plays regardless */ }
     }
 
     // The values captured as an exit started (PlayExitAsync), until the element re-enters or leaves.
@@ -1194,15 +1277,20 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             await Engine.AnimateToAsync(_id, restore, BuildEffectiveTransition());
     }
 
-    private async Task PlayFlipAsync(Task<BmotionBoundingRect?> snapshot, Task<BmotionBoundingRect?> measured)
+    // Whether a FLIP played.
+    private async Task<bool> PlayFlipAsync(Task<BmotionBoundingRect?> snapshot, Task<BmotionBoundingRect?> measured)
     {
         var snap = await snapshot;
         var cur = await measured;
-        if (snap == null || cur == null) return;
-        await PlayFlipFromAsync(snap, cur);
+        if (snap == null || cur == null) return false;
+        return (await PlayFlipFromAsync(snap, cur)).Played;
     }
 
-    private async Task PlayFlipFromAsync(BmotionBoundingRect snap, BmotionBoundingRect cur)
+    /// <summary>
+    /// FLIPs from <paramref name="snap"/> to <paramref name="cur"/>, crossfading with <paramref name="crossfadeWith"/>
+    /// when given (a LayoutId holder on its way out). Returns whether the FLIP and the crossfade played.
+    /// </summary>
+    private async Task<(bool Played, bool Crossfaded)> PlayFlipFromAsync(BmotionBoundingRect snap, BmotionBoundingRect cur, Bmotion? crossfadeWith = null)
     {
         // Position mode animates translation only, avoiding scale distortion on text/aspect-
         // ratio-sensitive content (motion.dev's layout="position"); Size mode is the mirror image -
@@ -1223,29 +1311,39 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         double sx = scaleToo && cur.Width > 0 ? snap.Width / cur.Width : 1;
         double sy = scaleToo && cur.Height > 0 ? snap.Height / cur.Height : 1;
 
-        if (Math.Abs(dx) < 0.5 && Math.Abs(dy) < 0.5 && Math.Abs(sx - 1) < 0.005 && Math.Abs(sy - 1) < 0.005)
-            return;
+        bool moves = !(Math.Abs(dx) < 0.5 && Math.Abs(dy) < 0.5 && Math.Abs(sx - 1) < 0.005 && Math.Abs(sy - 1) < 0.005);
+        if (!moves && crossfadeWith is null) return (false, false);
 
         var t = BuildEffectiveTransition();
         double dur = t?.Type == BmotionTransitionType.Spring ? 600 : (t?.Duration ?? 0.5) * 1000;
         string easing = t?.Type == BmotionTransitionType.Spring
             ? "cubic-bezier(0.14,1,0.34,1)"
             : BmEaseFunctions.ToCssString(t);
-        // The transform the element shows when the FLIP ends, compositor animations advanced by its length.
-        string? finalT = Engine.GetTransformStringAfter(_id, dur);
+        if (moves)
+        {
+            // The transform the element shows when the FLIP ends, compositor animations advanced by its length.
+            string? finalT = Engine.GetTransformStringAfter(_id, dur);
 
-        // Pause the engine's per-frame transform writes for the duration of the FLIP so the rAF
-        // loop and the WAAPI layout animation don't both write `transform` and tear each other.
-        Engine.SuspendTransformWrites(_id, dur);
-        // Rects measured while the FLIP transform is in flight would be skewed; pause registry
-        // recording until it settles.
-        _flipUntilMs = Environment.TickCount64 + (long)dur + 50;
+            // Pause the engine's per-frame transform writes for the duration of the FLIP so the rAF
+            // loop and the WAAPI layout animation don't both write `transform` and tear each other.
+            Engine.SuspendTransformWrites(_id, dur);
+            // Rects measured while the FLIP transform is in flight would be skewed; pause registry
+            // recording until it settles.
+            _flipUntilMs = Environment.TickCount64 + (long)dur + 50;
 
-        await OnLayoutAnimationStart.InvokeAsync();
-        // The ref is only handed over when someone is listening, so the common case costs no
-        // JS→.NET callback at the end of every layout animation.
-        await Interop.PlayWaapiFlipAsync(_id, dx, dy, sx, sy, dur, easing, finalT,
-            anchor.X, anchor.Y, OnLayoutAnimationComplete.HasDelegate ? _dotnet : null);
+            await OnLayoutAnimationStart.InvokeAsync();
+            // The ref is only handed over when someone is listening, so the common case costs no
+            // JS→.NET callback at the end of every layout animation.
+            await Interop.PlayWaapiFlipAsync(_id, dx, dy, sx, sy, dur, easing, finalT,
+                anchor.X, anchor.Y, OnLayoutAnimationComplete.HasDelegate ? _dotnet : null);
+        }
+
+        if (crossfadeWith is not { _disposed: false }) return (moves, false);
+        // The one leaving travels the other way, from its box onto this one's, over the same time and curve.
+        crossfadeWith._crossfadingOut = true;
+        await Interop.PlayLayoutCrossfadeAsync(_id, crossfadeWith._id, -dx, -dy,
+            sx > 0 ? 1 / sx : 1, sy > 0 ? 1 / sy : 1, dur, easing, anchor.X, anchor.Y);
+        return (moves, true);
     }
 
     /// <summary>Invoked by JS when a FLIP animation finishes or is superseded. Not for direct use.</summary>
@@ -1272,11 +1370,61 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         var layoutId = EffectiveLayoutId;
         if (layoutId is null) return;
         var cur = await Interop.GetBoundingRectAsync(_id, MeasureOptions);
-        if (cur == null) return;
-        var prev = LayoutRegistry.Get(layoutId);
+        if (cur == null)
+        {
+            await RevealIfHiddenForCrossfadeAsync();
+            return;
+        }
+        // The element that held the id until now, still here on its way out: this one grows out of where it is
+        // now - not where it was last recorded - and the two crossfade.
+        var leaving = WillCrossfadeIn() ? LayoutRegistry.HolderOf(layoutId) : null;
+        var prev = leaving is null ? null : await Interop.GetBoundingRectAsync(leaving._id, leaving.MeasureOptions);
+        if (prev is null || leaving is { _disposed: true }) leaving = null;
+        prev ??= LayoutRegistry.Get(layoutId);
         LayoutRegistry.Record(layoutId, cur);
-        if (prev != null)
-            await PlayFlipFromAsync(prev, cur);
+        LayoutRegistry.Hold(layoutId, this);
+        bool crossfaded = prev != null && (await PlayFlipFromAsync(prev, cur, leaving)).Crossfaded;
+        // The crossfade, when it played, took the hidden start over; otherwise it is shown now.
+        if (crossfaded) ForgetCrossfadeHiddenStyle();
+        else await RevealIfHiddenForCrossfadeAsync();
+    }
+
+    // Whether this element, mounting, takes its LayoutId over from one that is still on screen on its way out - and so
+    // crossfades in.
+    private bool WillCrossfadeIn()
+        => LayoutCrossfade && EffectiveLayoutId is { } layoutId
+           && LayoutRegistry.HolderOf(layoutId) is { _isExiting: true, _disposed: false } holder
+           && !ReferenceEquals(holder, this);
+
+    // An element that will crossfade in renders hidden: on Blazor Server its crossfade starts a few round trips after
+    // the first paint, and it would show at its new place, at full strength, until then. The bridge's crossfade (or
+    // its cancellation) clears it; the first render's cached style forgets it, so no later render brings it back.
+    private const string CrossfadeHiddenStyle = "filter:opacity(0);";
+    private bool _hiddenForCrossfade;
+
+    private void ForgetCrossfadeHiddenStyle()
+    {
+        if (!_hiddenForCrossfade) return;
+        _hiddenForCrossfade = false;
+        _initialStyleCache = _initialStyleCache?.Replace(CrossfadeHiddenStyle, string.Empty);
+    }
+
+    private async Task RevealIfHiddenForCrossfadeAsync()
+    {
+        if (!_hiddenForCrossfade) return;
+        ForgetCrossfadeHiddenStyle();
+        try { await Interop.CancelLayoutCrossfadeAsync(_id); } catch { /* the element is going */ }
+    }
+
+    // Set while this element, on its way out, crossfades onto the element that took its LayoutId over: a re-entry
+    // takes it back.
+    private bool _crossfadingOut;
+
+    private async Task CancelCrossfadeOutAsync()
+    {
+        if (!_crossfadingOut) return;
+        _crossfadingOut = false;
+        try { await Interop.CancelLayoutCrossfadeAsync(_id); } catch { /* the element is going */ }
     }
 
     private async Task RecordLayoutRectAsync()
@@ -1284,6 +1432,8 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         var layoutId = EffectiveLayoutId;
         if (layoutId is null) return;
         if (Environment.TickCount64 < _flipUntilMs) return;
+        // Another element has taken the id over (this one is on its way out): where this one is no longer counts.
+        if (LayoutRegistry.HolderOf(layoutId) is { } holder && !ReferenceEquals(holder, this)) return;
         var cur = await Interop.GetBoundingRectAsync(_id, MeasureOptions);
         if (cur != null) LayoutRegistry.Record(layoutId, cur);
     }
@@ -1360,7 +1510,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     [JSInvokable]
     public async Task OnPointerEnter()
     {
-        var props = ResolveProps(WhileHover);
+        var props = ResolveProps(EffectiveWhileHover);
         if (props != null)
             await Engine.ActivateGestureLayerAsync(_id, "hover", props.ToJsDictionary(), BuildEffectiveTransition(props));
         await OnHoverStart.InvokeAsync();
@@ -1380,7 +1530,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     [JSInvokable]
     public async Task OnPointerDown()
     {
-        var props = ResolveProps(WhileTap);
+        var props = ResolveProps(EffectiveWhileTap);
         if (props != null)
             await Engine.ActivateGestureLayerAsync(_id, "tap", props.ToJsDictionary(), BuildEffectiveTransition(props));
         await OnTapStart.InvokeAsync();
@@ -1405,7 +1555,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     [JSInvokable]
     public async Task OnFocusIn()
     {
-        var props = ResolveProps(WhileFocus);
+        var props = ResolveProps(EffectiveWhileFocus);
         if (props != null)
             await Engine.ActivateGestureLayerAsync(_id, "focus", props.ToJsDictionary(), BuildEffectiveTransition(props));
         await OnFocusStart.InvokeAsync();
@@ -1422,10 +1572,28 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     [JSInvokable]
     public async Task OnPointerDown_Drag()
     {
+        // Before the overlay: it must not take the transform over from the drag (see BeginDrag).
+        Engine.BeginDrag(_id);
         var props = ResolveProps(WhileDrag);
         if (props != null)
             await Engine.ActivateGestureLayerAsync(_id, "drag", props.ToJsDictionary(), BuildEffectiveTransition(props));
         await OnDragStart.InvokeAsync();
+    }
+
+    /// <summary>
+    /// Shows or hides the <see cref="WhileDrag"/> overlay without a pointer drag - an item a keyboard user has picked
+    /// up in a <see cref="BmotionReorderGroup{TItem}"/> lifts exactly as a dragged one does.
+    /// </summary>
+    internal async Task ShowDragOverlayAsync(bool show)
+    {
+        if (!show)
+        {
+            await Engine.DeactivateGestureLayerAsync(_id, "drag");
+            return;
+        }
+        var props = ResolveProps(WhileDrag);
+        if (props != null)
+            await Engine.ActivateGestureLayerAsync(_id, "drag", props.ToJsDictionary(), BuildEffectiveTransition(props));
     }
 
     /// <summary>
@@ -1521,14 +1689,14 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     {
         if (isIntersecting)
         {
-            var props = ResolveProps(WhileInView);
+            var props = ResolveProps(EffectiveWhileInView);
             if (props != null)
                 await Engine.ActivateGestureLayerAsync(_id, "inview", props.ToJsDictionary(), BuildEffectiveTransition(props));
             await OnViewportEnter.InvokeAsync();
         }
         else
         {
-            if (!(Viewport?.Once ?? Once))
+            if (!(EffectiveViewport?.Once ?? Once))
                 await Engine.DeactivateGestureLayerAsync(_id, "inview");
             await OnViewportLeave.InvokeAsync();
         }
@@ -1544,9 +1712,9 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     };
 
     private bool NeedsPathLength() =>
-        HasPathLength(EffectiveInitial) || HasPathLength(EffectiveAnimate) || HasPathLength(Exit) ||
-        HasPathLength(WhileHover) || HasPathLength(WhileTap) || HasPathLength(WhileFocus) ||
-        HasPathLength(WhileInView) || HasPathLength(WhileDrag);
+        HasPathLength(EffectiveInitial) || HasPathLength(EffectiveAnimate) || HasPathLength(EffectiveExit) ||
+        HasPathLength(EffectiveWhileHover) || HasPathLength(EffectiveWhileTap) || HasPathLength(EffectiveWhileFocus) ||
+        HasPathLength(EffectiveWhileInView) || HasPathLength(WhileDrag);
 
     // Resolve the effective props (direct or variant-referenced) so pathLength is detected
     // whether the target carries Props directly or points at a variant label.
@@ -1613,10 +1781,12 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         };
     }
 
-    // Under reduced motion we keep opacity and color animating (Motion's "user" semantics) while
-    // transform/layout/dimension changes snap instantly. These are the properties that survive.
+    // Under reduced motion we keep opacity, colour, filters and shadows animating (Motion's "user" semantics: they
+    // change how something looks, not where it is or how big) while transform/layout/dimension changes snap
+    // instantly. These are the properties that survive.
     private static readonly string[] _reducedRetainedProps =
-        ["opacity", "backgroundColor", "color", "borderColor", "outlineColor", "fill", "stroke"];
+        ["opacity", "backgroundColor", "color", "borderColor", "outlineColor", "fill", "stroke",
+         "filter", "backdropFilter", "boxShadow", "textShadow"];
 
     /// <summary>An instant (zero-duration) transition used when motion is reduced.</summary>
     private static BmotionTransitionConfig InstantTransition()
@@ -1654,7 +1824,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// </summary>
     private BmotionTransitionConfig? ApplyAfterChildren(BmotionTransitionConfig? config)
     {
-        if (Transition is not { When: BmWhen.AfterChildren }) return config;
+        if (EffectiveTransition is not { When: BmWhen.AfterChildren }) return config;
         if (_ownVariantCtx is null || ShouldReduceMotion()) return config;
         double wait = _ownVariantCtx.MaxChildFinishSeconds();
         if (wait <= 0) return config;
@@ -1669,7 +1839,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     {
         // Resolution order: an explicit transition (programmatic AnimateAsync) wins, then the one
         // embedded in the target, then the component's Transition, then the <BmotionConfig> default.
-        var t = explicitTransition ?? props?.Transition ?? Transition ?? ConfigCtx?.DefaultTransition;
+        var t = explicitTransition ?? props?.Transition ?? EffectiveTransition ?? ConfigCtx?.DefaultTransition;
         if (t == null) return null;
         // ToConfig returns a fresh instance (safe to mutate below) and inherits the global
         // <BmotionConfig> color space wherever this transition - or any per-property override -
@@ -1715,9 +1885,9 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     private Dictionary<string, object?> BuildEventFlags()
     {
         var d = new Dictionary<string, object?>();
-        if (WhileHover != null || OnHoverStart.HasDelegate || OnHoverEnd.HasDelegate) d["hover"] = true;
-        if (WhileTap != null || OnTapStart.HasDelegate || OnTap.HasDelegate || OnTapCancel.HasDelegate) d["tap"] = true;
-        if (WhileFocus != null || OnFocusStart.HasDelegate || OnFocusEnd.HasDelegate) d["focus"] = true;
+        if (EffectiveWhileHover != null || OnHoverStart.HasDelegate || OnHoverEnd.HasDelegate) d["hover"] = true;
+        if (EffectiveWhileTap != null || OnTapStart.HasDelegate || OnTap.HasDelegate || OnTapCancel.HasDelegate) d["tap"] = true;
+        if (EffectiveWhileFocus != null || OnFocusStart.HasDelegate || OnFocusEnd.HasDelegate) d["focus"] = true;
         if (OnPanStart.HasDelegate || OnPan.HasDelegate || OnPanEnd.HasDelegate) d["pan"] = true;
         // Only emitted when opting out, so the default flags dictionary (and its signature) is
         // unchanged for the overwhelmingly common propagating case.
@@ -1732,6 +1902,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             if (DragConstraints != null) d["dragConstraints"] = DragConstraints.ToJsObject();
             if (DragDirectionLock) d["dragDirectionLock"] = true;
             if (DragPropagation) d["dragPropagation"] = true;
+            if (DragAutoScroll) d["dragAutoScroll"] = true;
             if (!string.IsNullOrWhiteSpace(DragHandle)) d["dragHandle"] = DragHandle;
             if (!DragListener) d["dragListener"] = false;
             // Without synchronous interop (Blazor Server) the bridge reports drag positions through
@@ -1780,7 +1951,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // options). So if WhileInView is cleared while other viewport callbacks keep observation
         // alive, the signature is unchanged and the early-return below would skip reconciliation,
         // stranding an already-active in-view layer. Detect that transition explicitly and clear it.
-        bool whileInViewSet = WhileInView != null;
+        bool whileInViewSet = EffectiveWhileInView != null;
         if (_whileInViewSet && !whileInViewSet)
             await Engine.DeactivateGestureLayerAsync(_id, "inview");
         else if (!_whileInViewSet && whileInViewSet)
@@ -1803,18 +1974,18 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             await Engine.DeactivateGestureLayerAsync(_id, "inview");
             return;
         }
-        if (Viewport != null)
-            await Interop.ObserveViewportWithOptionsAsync(_id, _dotnet!, Viewport);
+        if (EffectiveViewport is { } viewport)
+            await Interop.ObserveViewportWithOptionsAsync(_id, _dotnet!, viewport);
         else
             await Interop.ObserveViewportAsync(_id, _dotnet!, Once);
     }
 
     private string? BuildViewportSignature()
     {
-        bool needed = WhileInView != null || OnViewportEnter.HasDelegate || OnViewportLeave.HasDelegate;
+        bool needed = EffectiveWhileInView != null || OnViewportEnter.HasDelegate || OnViewportLeave.HasDelegate;
         if (!needed) return null;
-        return Viewport != null
-            ? $"opt|{Viewport.Once}|{Viewport.Margin}|{Viewport.Amount}|{Viewport.Root}"
+        return EffectiveViewport is { } viewport
+            ? $"opt|{viewport.Once}|{viewport.Margin}|{viewport.Amount}|{viewport.Root}"
             : $"once|{Once}";
     }
 
@@ -1966,6 +2137,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         _valueSubscriptions.Clear();
         _attachedDragControls?.Detach(this);
         PresenceCtx?.Unregister(this);
+        if (EffectiveLayoutId is { } layoutId) LayoutRegistry.Release(layoutId, this);
         if (_variantChildIndex >= 0) VariantCtx?.UnregisterChild(_variantChildIndex);
         if (_timelineToken != 0)
         {

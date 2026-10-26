@@ -141,11 +141,11 @@ public sealed class BmotionScrollTracker : IAsyncDisposable
     // ── JS → C# callback ─────────────────────────────────────────────────────
 
     [JSInvokable]
-    public async Task OnScroll(BmScrollInfo info)
+    public Task OnScroll(BmScrollInfo info)
     {
         // info crosses the JS→C# boundary; guard against a null payload so the property reads below
         // don't throw a NullReferenceException inside the interop callback.
-        if (info is null) return;
+        if (info is null) return Task.CompletedTask;
         ProgressX = info.ProgressX;
         ProgressY = info.ProgressY;
         ScrollX   = info.ScrollX;
@@ -163,14 +163,20 @@ public sealed class BmotionScrollTracker : IAsyncDisposable
             // Keep the motion value consistent with TargetProgressValue's null → 0 convention
             // instead of leaving a stale last value when tracking reports no target.
             _targetProgressValue?.SetSync(0);
-        if (_onScroll != null)
-        {
-            // Guard the user callback so a faulting handler can't fault the JS-invokable flow
-            // (which would destabilise the interop bridge / host circuit). Log at debug so the
-            // failure is still diagnosable instead of vanishing silently.
-            try { await _onScroll(info); }
-            catch (Exception ex) { _logger?.LogDebug(ex, "Bmotion scroll callback threw; swallowed to keep the scroll bridge alive."); }
-        }
+        // Started, not awaited: the bridge sends the next position once this call returns (one at a time, so
+        // positions never queue up behind a Blazor Server round trip), and a slow handler mustn't hold the motion
+        // values above back. It runs synchronously up to its first await, as before.
+        if (_onScroll != null) _ = RunCallbackAsync(_onScroll, info);
+        return Task.CompletedTask;
+    }
+
+    private async Task RunCallbackAsync(Func<BmScrollInfo, Task> callback, BmScrollInfo info)
+    {
+        // Guard the user callback so a faulting handler can't fault the JS-invokable flow
+        // (which would destabilise the interop bridge / host circuit). Log at debug so the
+        // failure is still diagnosable instead of vanishing silently.
+        try { await callback(info); }
+        catch (Exception ex) { _logger?.LogDebug(ex, "Bmotion scroll callback threw; swallowed to keep the scroll bridge alive."); }
     }
 
     public async ValueTask DisposeAsync()

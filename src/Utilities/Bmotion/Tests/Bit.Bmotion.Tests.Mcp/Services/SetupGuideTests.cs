@@ -53,10 +53,36 @@ public class SetupGuideTests
 
         StringAssert.Contains(server, "Blazor Server");
         Assert.IsTrue(server.Contains("drag", StringComparison.OrdinalIgnoreCase),
-                      "The Server guide does not mention that drag is unavailable.");
-        Assert.IsTrue(server.Contains("compositor", StringComparison.OrdinalIgnoreCase) ||
-                      server.Contains("frame loop", StringComparison.OrdinalIgnoreCase),
+                      "The Server guide does not say how drag behaves there.");
+        Assert.IsTrue(server.Contains("frame loop", StringComparison.OrdinalIgnoreCase),
                       "The Server guide does not explain which animations survive.");
+
+        // What is left of the frame loop - the cases that still jump - has to be named.
+        StringAssert.Contains(server, "Transition.OnUpdate");
+        StringAssert.Contains(server, "`d`");
+        StringAssert.Contains(server, "BmRepeat.Reverse");
+    }
+
+    /// <summary>
+    /// The old rule had colours and lengths jumping on Blazor Server. The browser plays them there
+    /// now, as a timeline or a recording, and a guide that still said otherwise would send an agent
+    /// to rewrite animations that work.
+    /// </summary>
+    [TestMethod]
+    public void Get_TheServerGuide_SaysColoursLengthsAndKeyframesPlayInTheBrowser()
+    {
+        var server = BmotionSetupGuide.Get("server")!;
+
+        StringAssert.Contains(server, "two-keyframe Web Animation");
+        StringAssert.Contains(server, "Recorded by the engine");
+
+        foreach (var line in server.Split('\n').Where(line => line.Contains("Jumps to the target", StringComparison.Ordinal)))
+        {
+            Assert.IsFalse(line.Contains("colour", StringComparison.OrdinalIgnoreCase) ||
+                           line.Contains("width", StringComparison.OrdinalIgnoreCase) ||
+                           line.Contains("Keyframe arrays", StringComparison.OrdinalIgnoreCase),
+                           $"The Server guide still has this jumping: {line}");
+        }
     }
 
     [TestMethod]

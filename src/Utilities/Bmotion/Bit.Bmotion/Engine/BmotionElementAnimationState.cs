@@ -58,7 +58,9 @@ internal sealed class BmotionElementAnimationState
     private readonly Dictionary<string, IBmotionAnimationDriver> _activeAnims = new();
 
     // ── Gesture layer stack ────────────────────────────────────────────────────
-    private static readonly string[] GesturePriority = ["drag", "focus", "tap", "hover", "inview"];
+    // Highest first, as in motion.dev: a press shows over the hover it happens under, and both over a focus - which
+    // a keyboard tap always has, so a focus ranked above the press would hide WhileTap from every keyboard user.
+    private static readonly string[] GesturePriority = ["drag", "tap", "hover", "focus", "inview"];
     private readonly Dictionary<string, GestureLayer> _gestureLayers = new();
     // What each property a gesture took over showed before the first gesture touched it, for the
     // properties the resting target doesn't define (an Initial-only value, say): it is what they
@@ -87,6 +89,24 @@ internal sealed class BmotionElementAnimationState
     // ── Dirty flags for CSS build ─────────────────────────────────────────────
     private bool _transformDirty;
     private readonly HashSet<string> _dirtyProps = new();
+    // Properties whose inline declaration is removed on the next flush - values handed back to the stylesheet.
+    private readonly HashSet<string> _clearedProps = new();
+
+    // ── Velocity (for retargeting a spring mid-flight) ────────────────────────
+    // The last two values each numeric key showed, stamped with the element's clock: what a key's velocity is read
+    // from when a new animation takes it over mid-flight.
+    private readonly Dictionary<string, (double T0, double V0, double T1, double V1)> _samples = new(StringComparer.OrdinalIgnoreCase);
+    // Velocities (units/s) an interrupted animation handed over, stamped with when (Environment.TickCount64): the
+    // animation that replaces it inherits them, a much later one doesn't.
+    private readonly Dictionary<string, (double Velocity, long AtMs)> _handoff = new(StringComparer.OrdinalIgnoreCase);
+    private const long HandoffWindowMs = 100;
+
+    // ── Values borrowed from the stylesheet ───────────────────────────────────
+    // Keys whose value was read off the computed style rather than set by a target: a gesture that takes one hands
+    // it back to the stylesheet when it lets go (see GestureRequest.StylesheetKeys).
+    private readonly HashSet<string> _borrowed = new(StringComparer.Ordinal);
+    // Gesture origins that were borrowed when the first gesture captured them.
+    private readonly HashSet<string> _stylesheetOrigins = new(StringComparer.Ordinal);
 
     // Transform writes are paused while a WAAPI FLIP layout animation owns the element's
     // transform, so the rAF engine doesn't fight (and visually tear) the layout animation.
@@ -130,6 +150,12 @@ internal sealed class BmotionElementAnimationState
     /// </summary>
     internal bool ForceInstant;
 
+    /// <summary>
+    /// When set (a fork recording an animation, see <see cref="BmotionFrameRecorder"/>), Tick advances the drivers but
+    /// writes nothing: the recorder reads the values off the state and composes only the frames it keeps.
+    /// </summary>
+    internal bool Silent;
+
     // ═══════════════════════════════════════════════════════════════════════════
     // Tick - called every rAF frame
     // ═══════════════════════════════════════════════════════════════════════════
@@ -137,8 +163,8 @@ internal sealed class BmotionElementAnimationState
     public Dictionary<string, string>? Tick(double timestamp)
     {
         // Nothing to do only when there are no drivers, no drag, and no pending
-        // instant (SetInstant) changes still waiting to be emitted.
-        if (_activeAnims.Count == 0 && !_isDragging && !_transformDirty && _dirtyProps.Count == 0)
+        // instant (SetInstant) changes or released declarations still waiting to be emitted.
+        if (_activeAnims.Count == 0 && !_isDragging && !_transformDirty && _dirtyProps.Count == 0 && _clearedProps.Count == 0)
             return null;
 
         if (_isDragging) _transformDirty = true; // drag always refreshes transform
@@ -168,14 +194,27 @@ internal sealed class BmotionElementAnimationState
             foreach (var key in completed)
             {
                 _activeAnims.Remove(key);
+                SettleAuto(key);
                 NotePropFinished(key, interrupted: false); // natural completion
             }
 
-        if (!_transformDirty && _dirtyProps.Count == 0) return null;
+        if (Silent)
+        {
+            _transformDirty = false;
+            _dirtyProps.Clear();
+            _clearedProps.Clear();
+            return null;
+        }
+
+        if (!_transformDirty && _dirtyProps.Count == 0 && _clearedProps.Count == 0) return null;
 
         // ── Build CSS style update dict (reused buffer) ────────────────────────
         var updates = _updateBuffer;
         updates.Clear();
+
+        // An empty value removes the inline declaration, handing the property back to the stylesheet.
+        foreach (var prop in _clearedProps) updates[prop] = string.Empty;
+        _clearedProps.Clear();
 
         // While a FLIP layout animation owns the transform, hold transform writes back so the two
         // animators don't fight; the dirty flag is preserved so the latest transform is flushed
@@ -216,6 +255,7 @@ internal sealed class BmotionElementAnimationState
             else if (StringValues.TryGetValue(prop, out string? strVal))
             {
                 updates[prop] = strVal;
+                _showsAuto?.Remove(prop);
             }
         }
 
@@ -405,6 +445,7 @@ internal sealed class BmotionElementAnimationState
             // Cancel any in-flight driver for this property so the instant value is authoritative
             // and isn't overwritten on the next tick by an ongoing animation.
             CancelProp(key);
+            ForgetAuto(key);
             if (BmotionTransformComposer.IsTransformProp(key))
             {
                 if (TryConvertToDouble(value, out double tv))
@@ -452,6 +493,7 @@ internal sealed class BmotionElementAnimationState
         foreach (var driver in _activeAnims.Values)
             driver.Cancel();
         _activeAnims.Clear();
+        _autoFinals?.Clear();
         ResolveAllBatches(false); // cancelled, not completed
     }
 
@@ -477,6 +519,7 @@ internal sealed class BmotionElementAnimationState
             if (_activeAnims.TryGetValue(key, out current) && ReferenceEquals(current, driver))
             {
                 _activeAnims.Remove(key);
+                SettleAuto(key);
                 NotePropFinished(key, interrupted: false); // snapped to end value = natural completion
             }
         }
@@ -486,6 +529,9 @@ internal sealed class BmotionElementAnimationState
     {
         if (_activeAnims.TryGetValue(key, out var driver))
         {
+            ForgetAuto(key); // it stops short of the measured size, or something else takes it from there
+            // Whatever replaces this animation (a spring retargeted mid-flight) carries on with its velocity.
+            if (TrackedVelocity(key) is double velocity and not 0) _handoff[key] = (velocity, Environment.TickCount64);
             driver.Cancel();
             _activeAnims.Remove(key);
             NotePropFinished(key, interrupted: true); // cancelled / superseded
@@ -572,16 +618,39 @@ internal sealed class BmotionElementAnimationState
     {
         _baseValues = values;
         _baseTransition = transition;
+        // A resting target owns what it names: nothing it sets goes back to the stylesheet.
+        Claim(values.Keys);
     }
 
-    public void ActivateGestureLayer(string gesture, Dictionary<string, object?> values, BmotionTransitionConfig? transition)
+    /// <summary>
+    /// An animation the state asks the engine to play - a gesture taking its properties, or letting them go.
+    /// <paramref name="StylesheetKeys"/> are properties going back to a value borrowed from the stylesheet: the
+    /// engine re-reads what the stylesheet gives them now as their target, and hands them back to it (removing
+    /// their inline declaration) once the animation has finished.
+    /// </summary>
+    internal sealed record AnimationRequest(
+        Dictionary<string, object?> Values, BmotionTransitionConfig? Transition, IReadOnlyCollection<string>? StylesheetKeys = null);
+
+    /// <summary>
+    /// Activates a gesture layer and returns the animation that applies it, or <c>null</c> when a higher-priority
+    /// gesture holds the element (the layer applies once that one lets go).
+    /// </summary>
+    public AnimationRequest? ActivateGestureLayer(string gesture, Dictionary<string, object?> values, BmotionTransitionConfig? transition)
     {
         var added = new GestureLayer(values, transition);
         _gestureLayers[gesture] = added;
         foreach (var key in values.Keys)
         {
-            if (_baseValues?.ContainsKey(key) == true || _gestureOrigins.ContainsKey(key)) continue;
-            if (CurrentValue(key) is { } origin) _gestureOrigins[key] = origin;
+            if (_baseValues?.ContainsKey(key) == true || _gestureOrigins.ContainsKey(key) || _stylesheetOrigins.Contains(key)) continue;
+            // A value nothing has set yet is the stylesheet's: the gesture gives it back to the stylesheet (whatever
+            // it says by then) rather than to a captured copy.
+            if (CurrentValue(key) is not { } origin)
+            {
+                if (!BmotionTransformComposer.IsTransformProp(key) && !IsSyntheticKey(key)) _stylesheetOrigins.Add(key);
+                continue;
+            }
+            _gestureOrigins[key] = origin;
+            if (_borrowed.Contains(key)) _stylesheetOrigins.Add(key);
         }
 
         // Respect gesture priority: don't let a lower-priority gesture animate over a
@@ -593,18 +662,19 @@ internal sealed class BmotionElementAnimationState
             {
                 if (other == gesture) continue;
                 int otherPriority = Array.IndexOf(GesturePriority, other);
-                if (otherPriority >= 0 && otherPriority < newPriority) return; // higher-priority layer wins
+                if (otherPriority >= 0 && otherPriority < newPriority) return null; // higher-priority layer wins
             }
         }
 
         added.Applied = true;
-        AnimateTo(values, transition);
+        return new AnimationRequest(values, transition);
     }
 
-    public void DeactivateGestureLayer(string gesture)
+    /// <summary>Deactivates a gesture layer and returns the animation back to what remains, if anything moves.</summary>
+    public AnimationRequest? DeactivateGestureLayer(string gesture)
     {
         if (!_gestureLayers.Remove(gesture, out var removed))
-            return;
+            return null;
 
         // Only what the gesture changed moves back (motion.dev semantics): the properties the removed
         // layer set, plus those of any remaining layer a higher-priority one had kept from applying.
@@ -649,11 +719,20 @@ internal sealed class BmotionElementAnimationState
 
         // Any property the removed layer set but no remaining layer/base defines must animate
         // back to what it showed before the gesture - or, when that was never known, its identity
-        // value - otherwise it would stay stuck at the gesture value.
+        // value - otherwise it would stay stuck at the gesture value. One the stylesheet gave it goes
+        // back to the stylesheet (the origin is only the fallback if the stylesheet can't be read).
+        HashSet<string>? stylesheet = null;
         foreach (var key in removed.Values.Keys)
         {
             if (target.ContainsKey(key)) continue;
-            if (_gestureOrigins.Remove(key, out var origin))
+            if (_stylesheetOrigins.Remove(key))
+            {
+                // The engine fills in what the stylesheet gives the key now; the captured origin (if any) is only
+                // the fallback for when that can't be read.
+                target[key] = _gestureOrigins.Remove(key, out var fallback) ? fallback : null;
+                (stylesheet ??= new HashSet<string>(StringComparer.Ordinal)).Add(key);
+            }
+            else if (_gestureOrigins.Remove(key, out var origin))
                 target[key] = origin;
             else if (BmotionTransformComposer.IsTransformProp(key))
                 target[key] = DefaultTransformValue(key);
@@ -661,8 +740,163 @@ internal sealed class BmotionElementAnimationState
                 target[key] = DefaultNumericValue(key);
         }
 
-        if (target.Count > 0)
-            AnimateTo(target, transition);
+        return target.Count > 0 || stylesheet is not null ? new AnimationRequest(target, transition, stylesheet) : null;
+    }
+
+    /// <summary>Whether any gesture layer is still active for <paramref name="key"/>.</summary>
+    internal bool GestureHolds(string key)
+    {
+        foreach (var layer in _gestureLayers.Values)
+            if (layer.Values.ContainsKey(key)) return true;
+        return false;
+    }
+
+    // ── Values borrowed from the stylesheet ───────────────────────────────────
+
+    // Path drawing is composed from these into stroke-dash* - they have no computed value of their own to read.
+    private static bool IsSyntheticKey(string key) => key is "pathLength" or "pathOffset" or "pathSpacing";
+
+    /// <summary>
+    /// The keys among <paramref name="keys"/> whose starting value the engine has never seen - neither a target
+    /// set them nor did it read them - so an animation of them must first read them off the computed style rather
+    /// than start from a guess. Transform components are left out: the engine owns the element's transform.
+    /// </summary>
+    internal List<string>? UnknownKeys(IEnumerable<string> keys)
+    {
+        List<string>? unknown = null;
+        foreach (var key in keys)
+        {
+            if (BmotionTransformComposer.IsTransformProp(key) || IsSyntheticKey(key)) continue;
+            if (CurrentValue(key) is null) (unknown ??= new List<string>()).Add(key);
+        }
+        return unknown;
+    }
+
+    /// <summary>
+    /// Seeds the value the stylesheet gives <paramref name="key"/> - read off the computed style - as its current
+    /// value, without writing it (the element already shows it). The key stays borrowed until a target claims it.
+    /// </summary>
+    internal void SeedFromStylesheet(string key, string value)
+    {
+        if (CurrentValue(key) is not null || string.IsNullOrWhiteSpace(value)) return;
+        if (key == "opacity")
+        {
+            if (!BmotionCssFormat.TryParse(value, out double number)) return;
+            NumericValues[key] = number;
+        }
+        else
+        {
+            StringValues[key] = value.Trim();
+        }
+        _borrowed.Add(key);
+    }
+
+    /// <summary>Marks <paramref name="keys"/> as set by a target rather than borrowed from the stylesheet.</summary>
+    internal void Claim(IEnumerable<string> keys)
+    {
+        if (_borrowed.Count == 0) return;
+        foreach (var key in keys) _borrowed.Remove(key);
+    }
+
+    /// <summary>
+    /// Hands <paramref name="keys"/> back to the stylesheet once a gesture has let go of them: the engine forgets
+    /// its value (to read it afresh next time) and the inline declaration is removed on the next flush, so a later
+    /// stylesheet change applies. A key something has taken again in the meantime is left alone.
+    /// </summary>
+    internal bool ReleaseToStylesheet(IEnumerable<string> keys)
+    {
+        bool released = false;
+        foreach (var key in keys)
+        {
+            if (_activeAnims.ContainsKey(key) || GestureHolds(key) || PlanOwns(key)) continue;
+            if (_baseValues?.ContainsKey(key) == true) continue;
+            StringValues.Remove(key);
+            NumericValues.Remove(key);
+            _borrowed.Remove(key);
+            _dirtyProps.Remove(key);
+            _clearedProps.Add(key);
+            released = true;
+        }
+        return released;
+    }
+
+    // ── Sizes that land on "auto" ─────────────────────────────────────────────
+
+    // The width/height keys whose running animation plays to a measured natural size and then lands on "auto"
+    // itself, so the element follows its content again (as motion.dev does).
+    private HashSet<string>? _autoFinals;
+
+    /// <summary>Whether <paramref name="key"/> is a size that can animate to and from <c>"auto"</c>.</summary>
+    internal static bool IsAutoSizeKey(string key) => key is "width" or "height";
+
+    /// <summary>The <paramref name="keys"/> that are <c>"auto"</c> now: their size has to be measured to animate from it.</summary>
+    internal List<string>? AutoKeys(IEnumerable<string> keys)
+    {
+        List<string>? auto = null;
+        foreach (var key in keys)
+            if (IsAutoSizeKey(key) && StringValues.TryGetValue(key, out var value) && IsAuto(value))
+                (auto ??= new List<string>()).Add(key);
+        return auto;
+    }
+
+    internal static bool IsAuto(string? value) => string.Equals(value?.Trim(), "auto", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Takes the measured size of a key that is <c>"auto"</c> as its current value, without writing it (the element
+    /// already shows it), so an animation from it starts where the element is.
+    /// </summary>
+    internal void SeedMeasured(string key, string value)
+    {
+        if (!TryParseCssDimension(value.Trim(), out _, out _)) return;
+        StringValues[key] = value.Trim();
+        NumericValues.Remove(key);
+        (_showsAuto ??= new HashSet<string>(StringComparer.Ordinal)).Add(key);
+    }
+
+    // Sizes the page still shows as "auto" although the state holds their measured size: a browser animation can't
+    // start from what the page shows there (auto doesn't interpolate), so it is given the measured start.
+    private HashSet<string>? _showsAuto;
+
+    /// <summary>Whether the page shows <paramref name="key"/> as <c>"auto"</c> while the state holds its measured size.</summary>
+    internal bool ShowsAuto(string key) => _showsAuto?.Contains(key) == true;
+
+    /// <summary>The page is being given a value for <paramref name="key"/> (a browser animation of it started).</summary>
+    internal void StartWritten(string key) => _showsAuto?.Remove(key);
+
+    /// <summary>Lands <paramref name="key"/> on <c>"auto"</c> once its running animation arrives at the measured size.</summary>
+    internal void LandOnAuto(string key) => (_autoFinals ??= new HashSet<string>(StringComparer.Ordinal)).Add(key);
+
+    /// <summary>Forgets that <paramref name="key"/> was to land on <c>"auto"</c>: something else has taken it.</summary>
+    internal void ForgetAuto(string key) => _autoFinals?.Remove(key);
+
+    private void ForgetAuto(IEnumerable<string> keys)
+    {
+        if (_autoFinals is null) return;
+        foreach (var key in keys) _autoFinals.Remove(key);
+    }
+
+    // The animation of key arrived: when it was played to a natural size, "auto" is written over the measured one.
+    private bool SettleAuto(string key)
+    {
+        if (_autoFinals?.Remove(key) != true) return false;
+        StringValues[key] = "auto";
+        NumericValues.Remove(key);
+        _dirtyProps.Add(key);
+        return true;
+    }
+
+    /// <summary>
+    /// A copy of this element's values and pending velocity handoffs - the state an animation is recorded against,
+    /// tick by tick, without touching the element itself (see <see cref="BmotionFrameRecorder"/>).
+    /// </summary>
+    internal BmotionElementAnimationState ForkForRecording()
+    {
+        var fork = new BmotionElementAnimationState { TransformTemplate = TransformTemplate };
+        foreach (var (key, value) in Transforms) fork.Transforms[key] = value;
+        foreach (var (key, value) in NumericValues) fork.NumericValues[key] = value;
+        foreach (var (key, value) in StringValues) fork.StringValues[key] = value;
+        foreach (var (key, value) in _handoff) fork._handoff[key] = value;
+        return fork;
     }
 
     /// <summary>The value the element shows for <paramref name="key"/> now, when the engine knows it.</summary>
@@ -685,6 +919,16 @@ internal sealed class BmotionElementAnimationState
         Transforms["y"] = y;
         _isDragging = true;
         _transformDirty = true;
+    }
+
+    /// <summary>A drag starts: it owns the transform from the press on, before its first move arrives.</summary>
+    public void BeginDrag()
+    {
+        _isDragging = true;
+        _transformDirty = true;
+        // A layout animation that paused the transform writes has been cut short by the press (the bridge ends it):
+        // the drag's writes must reach the element from the first move, not once the FLIP would have ended.
+        _transformSuspendUntil = 0;
     }
 
     public void EndDrag() => _isDragging = false;
@@ -767,6 +1011,7 @@ internal sealed class BmotionElementAnimationState
             apply = v => { inner(v); onUpdate(v); };
         }
 
+        config = WithInheritedVelocity(key, config);
         IBmotionAnimationDriver driver = config.Type switch
         {
             BmotionTransitionType.Spring  => new BmotionSpringDriver(from, toValue, config, apply),
@@ -780,6 +1025,17 @@ internal sealed class BmotionElementAnimationState
     private void CreateColorDriver(string key, string toValue, BmotionTransitionConfig config)
     {
         string from = StringValues.GetValueOrDefault(key, "rgba(0,0,0,0)");
+        if (config.Type == BmotionTransitionType.Spring
+            && BmotionColorInterpolator.Parse(from) is { } fromChannels
+            && BmotionColorInterpolator.Parse(toValue) is { } toChannels)
+        {
+            // A spring shapes the colour's progress like any other value's (rather than falling back to a tween
+            // of the spring's unrelated Duration); at rest it lands on the authored colour itself.
+            var space = config.ColorSpace;
+            _activeAnims[key] = new BmotionSpringDriver(0, 1, config, p =>
+                ApplyString(key, p == 1 ? toValue : BmotionColorInterpolator.Lerp(fromChannels, toChannels, Math.Clamp(p, 0, 1), space)));
+            return;
+        }
         _activeAnims[key] = new BmotionColorTweenDriver(from, toValue, config, v => ApplyString(key, v));
     }
 
@@ -808,7 +1064,8 @@ internal sealed class BmotionElementAnimationState
         var mixes = new Func<double, string>[frames.Length - 1];
         for (int i = 0; i < frames.Length - 1; i++)
         {
-            if (BmotionStringMixer.TryCreateMix(frames[i], frames[i + 1]) is not { } mix)
+            var (from, to) = BmotionStringMixer.MixEnds(key, frames[i], frames[i + 1]);
+            if (BmotionStringMixer.TryCreateMix(from, to, key) is not { } mix)
                 return false;
             mixes[i] = mix;
         }
@@ -818,6 +1075,12 @@ internal sealed class BmotionElementAnimationState
 
         _activeAnims[key] = new BmotionNumericKeyframesDriver(indexTrack, config, v =>
         {
+            // On a frame, the authored frame itself ("none" rather than the neutral values it plays through).
+            if (v == Math.Floor(v) && v >= 0 && v <= frames.Length - 1)
+            {
+                ApplyString(key, frames[(int)v]);
+                return;
+            }
             int seg = Math.Clamp((int)Math.Floor(v), 0, mixes.Length - 1);
             ApplyString(key, mixes[seg](v - seg));
         });
@@ -830,11 +1093,13 @@ internal sealed class BmotionElementAnimationState
     {
         Transforms[key] = value;
         _transformDirty = true;
+        Sample(key, value);
     }
 
     private void ApplyNumeric(string key, double value)
     {
         NumericValues[key] = value;
+        Sample(key, value);
         // Keep the numeric/string stores mutually exclusive: Tick emits a prop from NumericValues
         // first, so a stale string entry for the same key would otherwise be masked (and vice versa).
         StringValues.Remove(key);
@@ -850,6 +1115,51 @@ internal sealed class BmotionElementAnimationState
         _dirtyProps.Add(key);
     }
 
+    // ── Velocity ──────────────────────────────────────────────────────────────
+
+    // Records a value a driver applied, on the element's clock, keeping the last two distinct instants.
+    private void Sample(string key, double value)
+    {
+        if (_samples.TryGetValue(key, out var s))
+            _samples[key] = _clock > s.T1 ? (s.T1, s.V1, _clock, value) : (s.T0, s.V0, s.T1, value);
+        else
+            _samples[key] = (_clock, value, _clock, value);
+    }
+
+    /// <summary>
+    /// The velocity (units per second of animation time) of the animation driving <paramref name="key"/> now, from
+    /// its last two frames; <c>null</c> when nothing animates the key.
+    /// </summary>
+    internal double? TrackedVelocity(string key)
+    {
+        if (!_activeAnims.ContainsKey(key) || !_samples.TryGetValue(key, out var s) || s.T1 <= s.T0) return null;
+        double velocity = (s.V1 - s.V0) / (s.T1 - s.T0) * 1000;
+        return double.IsFinite(velocity) ? velocity : null;
+    }
+
+    /// <summary>
+    /// The velocity the animation <paramref name="key"/> was just taken from handed over - an interrupted driver or
+    /// compositor animation - or 0 when there is none, or it was handed over too long ago to still be moving.
+    /// </summary>
+    internal double HandoffVelocity(string key)
+        => _handoff.TryGetValue(key, out var h) && Environment.TickCount64 - h.AtMs <= HandoffWindowMs ? h.Velocity : 0;
+
+    /// <summary>
+    /// What a spring starting on <paramref name="key"/> plays with: an authored velocity wins; otherwise one that
+    /// doesn't repeat inherits the velocity of the animation it replaces (motion.dev semantics), so retargeting a
+    /// moving element bends its path instead of stopping it dead.
+    /// </summary>
+    internal BmotionTransitionConfig WithInheritedVelocity(string key, BmotionTransitionConfig config)
+    {
+        if (config.Type != BmotionTransitionType.Spring || config.Velocity != 0) return config;
+        if (config.IsInfiniteRepeat || config.Repeat > 0) return config;
+        double velocity = HandoffVelocity(key);
+        if (velocity == 0) return config;
+        var inherited = config.Clone();
+        inherited.Velocity = velocity;
+        return inherited;
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private static readonly HashSet<string> _colorProps = new(StringComparer.OrdinalIgnoreCase)
@@ -858,8 +1168,19 @@ internal sealed class BmotionElementAnimationState
         "caretColor", "columnRuleColor", "textDecorationColor",
     };
 
-    private static bool IsColorProp(string key)
+    internal static bool IsColorProp(string key)
         => _colorProps.Contains(key) || key.EndsWith("color", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// The value an animation to <paramref name="value"/> comes to rest on: a keyframe sequence's last frame (a
+    /// <see cref="Bm.Current"/> wildcard there is skipped), a single value itself. Null when there is none.
+    /// </summary>
+    internal static object? RestingValueOf(object value) => value switch
+    {
+        double[] numbers => numbers.LastOrDefault(double.IsFinite) is var last && numbers.Any(double.IsFinite) ? last : null,
+        string[] strings => strings.Length > 0 ? strings[^1] : null,
+        _ => value,
+    };
 
     internal static double DefaultTransformValue(string key) =>
         key is "scale" or "scaleX" or "scaleY" ? 1.0 : 0.0;
@@ -928,12 +1249,18 @@ internal sealed class BmotionElementAnimationState
             _activeAnims[key] = new BmotionTweenDriver(fromNum, toNum, config,
                 v => ApplyString(key, BmotionCssFormat.Num(v) + toUnit));
         }
+        // A length whose ends are in different units ("100px" → "50%") goes through calc(), as CSS interpolates it.
+        else if (MixedLengthMix(fromRaw, toValue) is { } lengths)
+        {
+            _activeAnims[key] = CreateProgressDriver(config, p => ApplyString(key, lengths(p)));
+        }
         // Complex strings with a matching shape ("blur(0px)" → "blur(8px)", multi-part shadows,
         // matching gradients) interpolate token-wise via the string mixer, driven by an eased /
         // sprung progress track.
-        else if (BmotionStringMixer.TryCreateMix(fromRaw, toValue) is { } mix)
+        else if (BmotionStringMixer.TryCreateMix(BmotionStringMixer.MixEnds(key, fromRaw, toValue), key) is { } mix)
         {
-            _activeAnims[key] = CreateProgressDriver(config, p => ApplyString(key, mix(p)));
+            // At the end the authored string itself, not the mixer's re-serialisation of it.
+            _activeAnims[key] = CreateProgressDriver(config, p => ApplyString(key, p == 1 ? toValue : mix(p)));
         }
         else
         {
@@ -954,7 +1281,38 @@ internal sealed class BmotionElementAnimationState
             ? new BmotionSpringDriver(0, 1, config, apply)
             : new BmotionTweenDriver(0, 1, config, apply);
 
-    private static bool TryParseCssDimension(string value, out double number, out string unit)
+    // The units of a CSS <length-percentage>: what a length in one of them can interpolate with a length in another.
+    private static readonly HashSet<string> _lengthUnits = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "px", "%", "em", "rem", "ex", "rex", "ch", "rch", "cap", "rcap", "ic", "ric", "lh", "rlh",
+        "vw", "vh", "vi", "vb", "vmin", "vmax", "svw", "svh", "svi", "svb", "svmin", "svmax",
+        "lvw", "lvh", "lvi", "lvb", "lvmin", "lvmax", "dvw", "dvh", "dvi", "dvb", "dvmin", "dvmax",
+        "cqw", "cqh", "cqi", "cqb", "cqmin", "cqmax", "cm", "mm", "q", "in", "pt", "pc",
+    };
+
+    /// <summary>
+    /// A length whose two ends are in different units (<c>"100px"</c> → <c>"50%"</c>, <c>"2rem"</c> →
+    /// <c>"40vw"</c>), interpolated the way CSS does: <c>calc()</c> of both ends weighted by progress - exact in any
+    /// unit, with nothing to measure. The ends themselves are the authored strings; a spring's overshoot carries on
+    /// past them. <c>null</c> unless both ends are lengths or percentages (a bare <c>0</c> counts) in different units.
+    /// </summary>
+    internal static Func<double, string>? MixedLengthMix(string from, string to)
+    {
+        if (!TryParseLength(from, out double a, out string aUnit) || !TryParseLength(to, out double b, out string bUnit)) return null;
+        if (string.Equals(aUnit, bUnit, StringComparison.OrdinalIgnoreCase)) return null;
+        return p => p == 0 ? from
+            : p == 1 ? to
+            : $"calc({BmotionCssFormat.Num(a * (1 - p))}{aUnit} + {BmotionCssFormat.Num(b * p)}{bUnit})";
+
+        static bool TryParseLength(string value, out double number, out string unit)
+        {
+            if (!TryParseCssDimension(value.Trim(), out number, out unit) || !double.IsFinite(number)) return false;
+            if (unit.Length == 0 && number == 0) unit = "px";
+            return _lengthUnits.Contains(unit);
+        }
+    }
+
+    internal static bool TryParseCssDimension(string value, out double number, out string unit)
     {
         if (string.IsNullOrEmpty(value)) { number = 0; unit = ""; return false; }
         // Find the split between leading numeric part and trailing unit.
@@ -1019,10 +1377,14 @@ internal sealed class BmotionElementAnimationState
     internal sealed class WaapiPlan
     {
         public required int Token { get; init; }
-        public required long StartMs { get; init; }         // Environment.TickCount64 at start
+        // Environment.TickCount64 at start; moved back when the animation is played from the instant it took over.
+        public required long StartMs { get; set; }
         public required double DelayMs { get; init; }
         public required double DurationMs { get; init; }    // one iteration
         public required double[] Progress { get; init; }    // eased progress samples, uniform over DurationMs
+        // The exact curve, when the browser plays one the samples can't stand in for: a steps() staircase,
+        // which interpolating between samples would turn into ramps the browser never shows.
+        public Func<double, double>? Ease { get; init; }
         public required Dictionary<string, (double From, double To)> Values { get; init; }
         public required int Iterations { get; init; }       // -1 = infinite
         public required bool Mirror { get; init; }          // alternate direction per iteration
@@ -1031,7 +1393,45 @@ internal sealed class BmotionElementAnimationState
         // multi-keyframe animation. Null for a simple two-endpoint tween/spring. WAAPI warps the
         // timeline by the eased Progress and interpolates linearly between keyframes, so the C# mirror
         // reproduces the same value with KeyframeLerp(frames, easedProgress) - see RealizePlanValues.
+        // A recorded (sampled) animation is the same shape with a linear Progress: one frame per tick.
         public Dictionary<string, double[]>? Frames { get; init; }
+
+        /// <summary>
+        /// The string-valued keys (colours, lengths, filters, ...): the value each shows at a progress (the same
+        /// eased progress the numeric keys are sampled at), and the authored value it ends on.
+        /// </summary>
+        public Dictionary<string, StringTrack>? Strings { get; init; }
+
+        /// <summary>One string-valued key of a plan: <paramref name="At"/> maps progress to its value.</summary>
+        internal sealed record StringTrack(Func<double, string> At, string Final)
+        {
+            /// <summary>Whether the browser ends on something other than <see cref="Final"/> (a re-encoded colour), so it is written afterwards.</summary>
+            public bool RewriteFinal { get; init; }
+        }
+
+        /// <summary>Every key the plan animates, numeric and string.</summary>
+        public IEnumerable<string> Keys => Strings is null ? Values.Keys : Values.Keys.Concat(Strings.Keys);
+
+        /// <summary>Whether the plan animates <paramref name="key"/>.</summary>
+        public bool Owns(string key) => Values.ContainsKey(key) || Strings?.ContainsKey(key) == true;
+
+        /// <summary>The value string key <paramref name="key"/> shows <paramref name="playedMs"/> into the animation.</summary>
+        public string StringAt(string key, double playedMs)
+        {
+            var track = Strings![key];
+            if (!double.IsInfinity(TotalMs) && playedMs >= TotalMs) return track.Final;
+            return track.At(SampleAtPlayed(playedMs).Progress);
+        }
+
+        /// <summary>The velocity (units/s of animation time) numeric key <paramref name="key"/> moves at <paramref name="playedMs"/> in.</summary>
+        public double VelocityAt(string key, double playedMs)
+        {
+            const double h = 2;
+            double before = Math.Max(0, playedMs - h);
+            double span = playedMs + h - before;
+            double velocity = (ValueAt(key, playedMs + h) - ValueAt(key, before)) / span * 1000;
+            return double.IsFinite(velocity) ? velocity : 0;
+        }
 
         /// <summary>Linear interpolation across uniformly-spaced keyframes at eased progress <paramref name="p"/>.</summary>
         internal static double KeyframeLerp(double[] frames, double p)
@@ -1081,6 +1481,13 @@ internal sealed class BmotionElementAnimationState
             Rate = rate;
         }
 
+        /// <summary>Puts the playhead at <paramref name="playedMs"/> of animation time as of <paramref name="nowMs"/>.</summary>
+        public void SeekTo(long nowMs, double playedMs)
+        {
+            _playedBeforeMs = playedMs;
+            _rateSinceMs = nowMs;
+        }
+
         /// <summary>The whole animation's length in ms of animation time, delay included; infinity when it repeats forever.</summary>
         public double TotalMs => Iterations < 0 ? double.PositiveInfinity : DelayMs + (Math.Max(DurationMs, 1) * (Iterations + 1));
 
@@ -1097,7 +1504,7 @@ internal sealed class BmotionElementAnimationState
         /// <summary>Eased progress (may exceed [0,1] for springs) and velocity factor at elapsed wall time.</summary>
         public (double Progress, double VelocityPerMs) SampleAt(long nowMs) => SampleAtPlayed(PlayedMs(nowMs));
 
-        private (double Progress, double VelocityPerMs) SampleAtPlayed(double playedMs)
+        internal (double Progress, double VelocityPerMs) SampleAtPlayed(double playedMs)
         {
             double elapsed = playedMs - DelayMs;
             if (elapsed <= 0) return (Progress[0], 0);
@@ -1123,6 +1530,7 @@ internal sealed class BmotionElementAnimationState
 
         private double Sample(double local)
         {
+            if (Ease is not null) return Ease(Math.Clamp(local, 0, 1));
             if (Progress.Length == 1) return Progress[0];
             double pos = Math.Clamp(local, 0, 1) * (Progress.Length - 1);
             int i = (int)pos;
@@ -1136,12 +1544,39 @@ internal sealed class BmotionElementAnimationState
 
     internal bool HasWaapiPlans => _waapiPlans.Count > 0;
 
+    /// <summary>Moves every browser animation's mirror to <paramref name="playedMs"/> of animation time (a seek).</summary>
+    internal void SeekWaapiPlans(long nowMs, double playedMs)
+    {
+        foreach (var plan in _waapiPlans) plan.SeekTo(nowMs, playedMs);
+    }
+
+    /// <summary>
+    /// Forgets the velocities interrupted animations left behind, so what starts next starts from rest - an animation
+    /// replayed from part-way in (a seek) must not inherit the speed of the one it replaces.
+    /// </summary>
+    internal void ForgetVelocity()
+    {
+        _handoff.Clear();
+        _samples.Clear();
+    }
+
+    /// <summary>Every key a browser-played animation currently owns (diagnostics).</summary>
+    internal IEnumerable<string> WaapiPlanKeys => _waapiPlans.SelectMany(p => p.Keys).Distinct(StringComparer.OrdinalIgnoreCase);
+
     internal void AddWaapiPlan(WaapiPlan plan)
     {
         // Starting a compositor animation supersedes any rAF drivers on the same keys.
-        foreach (var key in plan.Values.Keys)
+        foreach (var key in plan.Keys)
             CancelProp(key);
         _waapiPlans.Add(plan);
+    }
+
+    /// <summary>Whether a browser-played animation currently owns <paramref name="key"/>.</summary>
+    internal bool PlanOwns(string key)
+    {
+        foreach (var plan in _waapiPlans)
+            if (plan.Owns(key)) return true;
+        return false;
     }
 
     /// <summary>True when any active rAF driver animates a transform component.</summary>
@@ -1183,13 +1618,15 @@ internal sealed class BmotionElementAnimationState
             // The plan was cancelled for some of its keys only (transform is one CSS property, so
             // animating y takes the compositor's x with it): the rest carry on where they were.
             if (continueOthers && keys != null) ContinuePlan(plan, keys, now);
+            else ForgetAuto(plan.Keys);
+            if (keys != null) ForgetAuto(keys);
         }
         return tokens;
 
         static bool PlanTouchesAny(WaapiPlan plan, IReadOnlyCollection<string> keys)
         {
             foreach (var key in keys)
-                if (plan.Values.ContainsKey(key)) return true;
+                if (plan.Owns(key)) return true;
             return false;
         }
     }
@@ -1205,18 +1642,26 @@ internal sealed class BmotionElementAnimationState
     {
         double played = plan.PlayedMs(nowMs);
         HashSet<string>? continued = null;
-        foreach (var key in plan.Values.Keys)
+        foreach (var key in plan.Keys)
         {
             if (interrupted.Contains(key)) continue;
+            bool isString = plan.Strings?.ContainsKey(key) == true;
             if (ForceInstant || double.IsInfinity(plan.TotalMs) is false && played >= plan.TotalMs)
             {
-                WriteRealizedValue(key, plan.ValueAt(key, double.MaxValue / 4), markDirty: true);
+                if (isString) WriteRealizedString(key, plan.Strings![key].Final, markDirty: true);
+                else WriteRealizedValue(key, plan.ValueAt(key, double.MaxValue / 4), markDirty: true);
+                SettleAuto(key);
                 continue;
             }
-            bool isTransform = BmotionTransformComposer.IsTransformProp(key);
             var k = key;
-            Action<double> apply = isTransform ? v => ApplyTransform(k, v) : v => ApplyNumeric(k, v);
-            _activeAnims[key] = new BmotionWaapiContinuationDriver(plan, key, played, apply);
+            if (isString)
+                _activeAnims[key] = new BmotionWaapiContinuationDriver(plan, key, played, applyString: v => ApplyString(k, v));
+            else
+            {
+                bool isTransform = BmotionTransformComposer.IsTransformProp(key);
+                Action<double> apply = isTransform ? v => ApplyTransform(k, v) : v => ApplyNumeric(k, v);
+                _activeAnims[key] = new BmotionWaapiContinuationDriver(plan, key, played, apply);
+            }
             (continued ??= new HashSet<string>()).Add(key);
         }
 
@@ -1264,7 +1709,10 @@ internal sealed class BmotionElementAnimationState
         foreach (var plan in _waapiPlans)
         {
             foreach (var (key, (_, to)) in plan.Values)
-                WriteRealizedValue(key, to, markDirty: true);
+                WriteRealizedValue(key, plan.Frames?.ContainsKey(key) == true ? plan.ValueAt(key, double.MaxValue / 4) : to, markDirty: true);
+            if (plan.Strings is { } strings)
+                foreach (var (key, track) in strings)
+                    WriteRealizedString(key, track.Final, markDirty: true);
             tokens.Add(plan.Token);
         }
         _waapiPlans.Clear();
@@ -1275,8 +1723,16 @@ internal sealed class BmotionElementAnimationState
     /// Completes a WAAPI plan that finished naturally: state settles on the target values.
     /// Returns false when the plan is gone already (superseded by an interruption).
     /// </summary>
-    internal bool TryCompleteWaapiPlan(int token)
+    internal bool TryCompleteWaapiPlan(int token) => TryCompleteWaapiPlan(token, out _);
+
+    /// <summary>
+    /// <see cref="TryCompleteWaapiPlan(int)"/>; <paramref name="rewrite"/> tells whether the state now differs from
+    /// what the browser committed - an authored value it re-encoded, a size that lands on <c>"auto"</c> - so it
+    /// has to be flushed.
+    /// </summary>
+    internal bool TryCompleteWaapiPlan(int token, out bool rewrite)
     {
+        rewrite = false;
         for (int i = 0; i < _waapiPlans.Count; i++)
         {
             if (_waapiPlans[i].Token != token) continue;
@@ -1284,13 +1740,23 @@ internal sealed class BmotionElementAnimationState
             _waapiPlans.RemoveAt(i);
             foreach (var (key, (_, to)) in plan.Values)
                 WriteRealizedValue(key, to, markDirty: false); // commitStyles already wrote the DOM
+            if (plan.Strings is { } strings)
+                foreach (var (key, track) in strings)
+                {
+                    // The browser committed what it interpolated; where that is a re-encoding of the authored
+                    // value (an oklch() target played as rgba()), the authored value is written over it.
+                    WriteRealizedString(key, track.Final, markDirty: track.RewriteFinal);
+                    rewrite |= track.RewriteFinal;
+                }
+            // A size played to its measured natural size lands on "auto" itself.
+            foreach (var key in plan.Keys) rewrite |= SettleAuto(key);
             return true;
         }
         return false;
     }
 
     /// <summary>Removes a plan realized at its current values (used when playback failed/cancelled).</summary>
-    internal bool TryRealizeWaapiPlan(int token, out double elapsedMs)
+    internal bool TryRealizeWaapiPlan(int token, out double elapsedMs, double neverStartedWithinMs = 0)
     {
         elapsedMs = 0;
         for (int i = 0; i < _waapiPlans.Count; i++)
@@ -1299,23 +1765,41 @@ internal sealed class BmotionElementAnimationState
             var plan = _waapiPlans[i];
             long now = Environment.TickCount64;
             elapsedMs = now - plan.StartMs;
-            RealizePlanValues(plan, now);
+            // Rejected before it could ever have played (within neverStartedWithinMs): nothing was shown, so the state
+            // goes back to the plan's first frame - not to where it would have got to by now, nor, for one that starts
+            // part-way in (a negative delay), to that point - and the replay that follows starts from there.
+            RealizePlanValues(plan, now, elapsedMs < neverStartedWithinMs ? plan.DelayMs : null);
             _waapiPlans.RemoveAt(i);
             return true;
         }
         return false;
     }
 
-    private void RealizePlanValues(WaapiPlan plan, long nowMs)
+    private void RealizePlanValues(WaapiPlan plan, long nowMs, double? atPlayedMs = null)
     {
-        var (progress, _) = plan.SampleAt(nowMs);
+        double played = atPlayedMs ?? plan.PlayedMs(nowMs);
+        var (progress, _) = plan.SampleAtPlayed(played);
         foreach (var (key, (from, to)) in plan.Values)
         {
             double value = plan.Frames != null && plan.Frames.TryGetValue(key, out var frames)
                 ? WaapiPlan.KeyframeLerp(frames, progress)
                 : from + (to - from) * progress;
             WriteRealizedValue(key, value, markDirty: true);
+            // Whatever takes the key over next (a retargeted spring) carries on at the speed the browser had it at -
+            // in animation time, the clock the replacing driver runs on too.
+            double velocity = plan.VelocityAt(key, played);
+            if (velocity != 0 && atPlayedMs is null) _handoff[key] = (velocity, nowMs); // one never shown left no motion
         }
+        if (plan.Strings is { } strings)
+            foreach (var key in strings.Keys)
+                WriteRealizedString(key, plan.StringAt(key, played), markDirty: true);
+    }
+
+    private void WriteRealizedString(string key, string value, bool markDirty)
+    {
+        StringValues[key] = value;
+        NumericValues.Remove(key);
+        if (markDirty) _dirtyProps.Add(key);
     }
 
     private void WriteRealizedValue(string key, double value, bool markDirty)

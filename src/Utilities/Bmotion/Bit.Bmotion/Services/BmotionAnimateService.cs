@@ -68,12 +68,11 @@ public sealed class BmotionAnimateService
         // Skip interop + engine registration when already cancelled (see Bmotion.AnimateAsync).
         if (cancellationToken.IsCancellationRequested) return CancelledControls();
         var ids = await _interop.ResolveOrRegisterBySelectorAsync(selector);
-        return WithCancellation(StartAnimations(ids, keyframes, transition, stagger), cancellationToken);
+        return WithCancellation(await StartAnimationsAsync(ids, keyframes, transition, stagger), cancellationToken);
     }
 
     // A resolved, no-op controls for a pre-cancelled call: no elements registered, already settled.
-    private BmAnimationControls CancelledControls()
-        => new(Array.Empty<string>(), _engine, Task.CompletedTask, static () => { });
+    private BmAnimationControls CancelledControls() => BmAnimationControls.Stopped(_engine);
 
     // Wires a CancellationToken to an in-flight animation: cancelling stops it (and resolves the
     // controls). The registration is disposed once the animation settles so it doesn't leak.
@@ -108,7 +107,7 @@ public sealed class BmotionAnimateService
         ArgumentNullException.ThrowIfNull(keyframes);
         if (cancellationToken.IsCancellationRequested) return CancelledControls();
         var id = await _interop.ResolveOrRegisterByRefAsync(elementReference);
-        return WithCancellation(StartAnimations([id], keyframes, transition, stagger: null), cancellationToken);
+        return WithCancellation(await StartAnimationsAsync([id], keyframes, transition, stagger: null), cancellationToken);
     }
 
     /// <summary>
@@ -225,27 +224,30 @@ public sealed class BmotionAnimateService
         // run. On Blazor Server there is no frame loop, so the gaps fall back to wall-clock timers
         // (playback control degrades along with everything else that needs the loop).
         bool onEngineClock = _engine.SupportsFrameLoop;
-        var cts = new CancellationTokenSource();
 
-        // One completion source per (segment, element): the scheduler fires the start, and this is
-        // what the caller's `await controls` is actually waiting on.
-        var segmentCompletions = new List<TaskCompletionSource<bool>>();
-        var scheduledStarts = new List<(double StartSeconds, Action Fire)>();
-
-        Task RunSegmentAsync(string id, Dictionary<string, object?> values, BmotionTransitionConfig config, double start)
+        // Where every element starts from (all the keys any segment animates on it): what a seek puts it back to
+        // before playing the timeline again from part-way in.
+        var elementIds = allIds.Distinct().ToArray();
+        Dictionary<string, object?>[] startValues;
+        try
         {
-            if (!onEngineClock) return RunSegmentOnWallClockAsync(id, values, config, start);
-
-            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            segmentCompletions.Add(tcs);
-            scheduledStarts.Add((start, () =>
-            {
-                // Fire-and-forget by design: the segment's own completion flows through `tcs`, and
-                // the scheduler tick (inside the rAF frame) must not await anything.
-                _ = AwaitSegmentAsync(id, values, config, tcs);
-            }));
-            return tcs.Task;
+            startValues = await Task.WhenAll(elementIds.Select(id => _engine.CaptureStartAsync(id,
+                starts.Where(s => s.ids.Contains(id)).SelectMany(s => s.values.Keys).Distinct().ToArray()).AsTask()));
         }
+        catch
+        {
+            foreach (var id in allIds)
+                _engine.UnregisterElement(id);
+            throw;
+        }
+
+        // One run of the timeline: its scheduler, its wall-clock timers, and one completion source per (segment,
+        // element) the scheduler hands out - what the caller's `await controls` is actually waiting on. A seek
+        // replaces the run with one starting part-way in.
+        BmotionSequenceScheduler? scheduler = null;
+        CancellationTokenSource? cts = null;
+        var segmentCompletions = new List<TaskCompletionSource<bool>>();
+        double timelineRate = 1;
 
         async Task AwaitSegmentAsync(string id, Dictionary<string, object?> values,
             BmotionTransitionConfig config, TaskCompletionSource<bool> tcs)
@@ -262,59 +264,125 @@ public sealed class BmotionAnimateService
         }
 
         async Task RunSegmentOnWallClockAsync(string id, Dictionary<string, object?> values,
-            BmotionTransitionConfig config, double start)
+            BmotionTransitionConfig config, double start, CancellationToken token)
         {
             try
             {
-                if (start > 0) await Task.Delay(TimeSpan.FromSeconds(start), cts.Token);
+                if (start > 0) await Task.Delay(TimeSpan.FromSeconds(start), token);
             }
             catch (OperationCanceledException)
             {
-                return; // sequence stopped/completed before this segment started
+                return; // sequence stopped/completed (or sought) before this segment started
             }
             await _engine.AnimateToAwaitAsync(id, values, config);
         }
 
-        var completionTasks = starts
-            .SelectMany(s => s.ids.Select(id => RunSegmentAsync(id, s.values, s.config, s.start)))
-            .ToArray();
-        var completion = Task.WhenAll(completionTasks);
-
-        BmotionSequenceScheduler? scheduler = null;
-        if (onEngineClock && scheduledStarts.Count > 0)
+        // Plays the timeline from `offset` seconds in. Segments over by then land on their end values (in order, so
+        // a later one on the same property wins), a segment under way starts part-way through, and the rest are
+        // scheduled for when the playhead reaches them.
+        async Task PlayFromAsync(double offset)
         {
-            scheduler = new BmotionSequenceScheduler(scheduledStarts);
-            _engine.AddScheduler(scheduler);
-            await _engine.EnsureLoopRunningAsync();
+            var run = new CancellationTokenSource();
+            cts = run;
+            var scheduledStarts = new List<(double StartSeconds, Action Fire)>();
+            var completionTasks = new List<Task>();
+            foreach (var (ids, values, config, start) in starts.OrderBy(s => s.start))
+                foreach (var id in ids)
+                {
+                    if (start + config.TotalSeconds() <= offset)
+                    {
+                        var rest = new Dictionary<string, object?>();
+                        foreach (var (key, value) in values)
+                            if (value is not null && BmotionElementAnimationState.RestingValueOf(value) is { } resting) rest[key] = resting;
+                        _engine.SetInstant(id, rest);
+                        continue;
+                    }
+                    var c = config;
+                    double wait = start - offset;
+                    if (wait < 0)
+                    {
+                        c = config.Clone();
+                        c.Delay += wait; // started -wait seconds ago
+                        wait = 0;
+                    }
+                    if (!onEngineClock)
+                    {
+                        completionTasks.Add(RunSegmentOnWallClockAsync(id, values, c, wait, run.Token));
+                        continue;
+                    }
+                    var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    segmentCompletions.Add(tcs);
+                    // Fire-and-forget by design: the segment's own completion flows through `tcs`, and the
+                    // scheduler tick (inside the rAF frame) must not await anything.
+                    scheduledStarts.Add((wait, () => _ = AwaitSegmentAsync(id, values, c, tcs)));
+                    completionTasks.Add(tcs.Task);
+                }
+
+            if (onEngineClock && scheduledStarts.Count > 0)
+            {
+                scheduler = new BmotionSequenceScheduler(scheduledStarts) { Rate = timelineRate };
+                _engine.AddScheduler(scheduler);
+                await _engine.EnsureLoopRunningAsync();
+            }
+            await Task.WhenAll(completionTasks);
         }
+
+        // Ends the current run: drops its not-yet-fired segments first, so nothing races into starting, and settles
+        // the completions of segments it will now never fire (false = superseded/stopped, not a natural finish).
+        void EndRun()
+        {
+            if (scheduler != null) _engine.RemoveScheduler(scheduler);
+            scheduler = null;
+            cts?.Cancel();
+            cts?.Dispose();
+            cts = null;
+            foreach (var pending in segmentCompletions) pending.TrySetResult(false);
+            segmentCompletions.Clear();
+        }
+
+        var completion = PlayFromAsync(0);
 
         var released = false;
         void Release()
         {
             if (released) return;
             released = true;
-            // Drop not-yet-fired segments first so a Stop() can't race one into starting.
-            if (scheduler != null) _engine.RemoveScheduler(scheduler);
-            cts.Cancel();
-            cts.Dispose();
-            // Segments the scheduler will now never fire would leave `await controls` hanging
-            // forever, so settle them here (false = superseded/stopped, not a natural finish).
-            foreach (var pending in segmentCompletions) pending.TrySetResult(false);
+            EndRun();
             foreach (var id in allIds)
                 _engine.UnregisterElement(id);
         }
 
-        var controls = new BmAnimationControls(allIds, _engine, completion, Release,
-            setTimelineRate: scheduler is null ? null : rate => scheduler.Rate = rate);
+        var playback = new BmotionPlayback
+        {
+            Duration = starts.Count == 0 ? 0 : starts.Max(s => s.start + s.config.TotalSeconds()),
+            PlayFrom = offset =>
+            {
+                EndRun();
+                for (int i = 0; i < elementIds.Length; i++) _engine.ResetForSeek(elementIds[i], startValues[i]);
+                return PlayFromAsync(offset);
+            },
+            Rearm = () =>
+            {
+                released = false;
+                foreach (var id in allIds)
+                    _engine.RegisterElement(id, null, programmatic: true);
+            },
+        };
 
-        _ = completion.OnCallerContext(_ => controls.OnCompletionSettled());
+        var controls = new BmAnimationControls(allIds, _engine, completion, Release,
+            setTimelineRate: rate =>
+            {
+                timelineRate = rate;
+                if (scheduler != null) scheduler.Rate = rate;
+            },
+            playback: playback);
 
         return WithCancellation(controls, cancellationToken);
     }
 
     // ────────────────────────────────────────────────────────────────────────────
 
-    private BmAnimationControls StartAnimations(
+    private async ValueTask<BmAnimationControls> StartAnimationsAsync(
         string[] elementIds,
         BmProps keyframes,
         BmTransition? transition,
@@ -342,15 +410,28 @@ public sealed class BmotionAnimateService
         foreach (var id in elementIds)
             _engine.RegisterElement(id, null, programmatic: true);
 
-        // Start all animations concurrently; collect their completion tasks. If task creation
-        // throws synchronously (e.g. a driver rejects the keyframes), release every element we
-        // already registered so they don't leak a refcount before the exception propagates.
-        Task[] completionTasks;
+        // Start all animations concurrently; collect their completion tasks. Each runs that many seconds in: 0 at
+        // first, the seek point when a seek plays it again (a negative delay starts an animation part-way through).
+        Task PlayFrom(double seconds) => Task.WhenAll(elementIds.Select((id, index) =>
+        {
+            var c = ConfigFor(index);
+            if (seconds > 0)
+            {
+                c = c.Clone();
+                c.Delay -= seconds;
+            }
+            return _engine.AnimateToAwaitAsync(id, values, c).AsTask();
+        }));
+
+        // Where every element starts from - what a seek puts it back to before playing it again - and the first run.
+        // If either throws (e.g. a driver rejects the keyframes), release every element we already registered so
+        // they don't leak a refcount before the exception propagates.
+        Dictionary<string, object?>[] starts;
+        Task completion;
         try
         {
-            completionTasks = elementIds
-                .Select((id, index) => _engine.AnimateToAwaitAsync(id, values, ConfigFor(index)).AsTask())
-                .ToArray();
+            starts = await Task.WhenAll(elementIds.Select(id => _engine.CaptureStartAsync(id, values.Keys).AsTask()));
+            completion = PlayFrom(0);
         }
         catch
         {
@@ -358,8 +439,6 @@ public sealed class BmotionAnimateService
                 _engine.UnregisterElement(id);
             throw;
         }
-
-        var completion = Task.WhenAll(completionTasks);
 
         // The controls own the single refcount release (idempotent). It fires whichever happens
         // first: natural completion, Stop(), or Complete(). This is what prevents an
@@ -373,10 +452,24 @@ public sealed class BmotionAnimateService
                 _engine.UnregisterElement(id);
         }
 
-        var controls = new BmAnimationControls(elementIds, _engine, completion, Release);
+        var playback = new BmotionPlayback
+        {
+            Duration = elementIds.Length == 0 ? 0 : elementIds.Select((_, index) => ConfigFor(index).TotalSeconds()).Max(),
+            // Every element's browser animations moved in place, or (anything else playing, or one already over) none.
+            TrySeekInPlace = seconds => Array.TrueForAll(elementIds, id => _engine.TrySeekBrowserAnimations(id, seconds * 1000)),
+            PlayFrom = seconds =>
+            {
+                for (int i = 0; i < elementIds.Length; i++) _engine.ResetForSeek(elementIds[i], starts[i]);
+                return PlayFrom(seconds);
+            },
+            Rearm = () =>
+            {
+                released = false;
+                foreach (var id in elementIds)
+                    _engine.RegisterElement(id, null, programmatic: true);
+            },
+        };
 
-        _ = completion.OnCallerContext(_ => controls.OnCompletionSettled());
-
-        return controls;
+        return new BmAnimationControls(elementIds, _engine, completion, Release, playback: playback);
     }
 }

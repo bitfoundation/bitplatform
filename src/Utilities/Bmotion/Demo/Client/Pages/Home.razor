@@ -241,10 +241,10 @@
             <details>
                 <summary>Which render modes does it work in?</summary>
                 <p>
-                    Blazor WebAssembly is fully supported. On Blazor Server the compositor path works, so enter, exit,
-                    hover, tap and variant animations on transform and opacity play normally; features that need the
-                    per-frame loop - inertia, colour and dimension interpolation - become instant changes. It targets
-                    .NET 8, 9 and 10.
+                    Blazor WebAssembly and Blazor Server play the same animations - the browser plays transforms,
+                    opacity, colours, sizes, filters, keyframes, springs and inertia on both. On Server, per-frame
+                    callbacks and SVG path morphs become instant changes and drag follows the pointer a round trip
+                    behind. It targets .NET 8, 9 and 10.
                 </p>
             </details>
             <details>
@@ -298,9 +298,10 @@
 
     private static readonly Feature[] _capabilities =
     [
-        new("Springs, tweens and inertia", "Stiffness and damping, or bounce and duration if that is how you think - plus the full easings.net family, per property if you want.", "springs", "Springs"),
-        new("Gestures", "WhileHover, WhileTap and WhileFocus overlay a state on the base animation and revert themselves. Tap is keyboard-accessible out of the box.", "gestures", "Gestures"),
+        new("Springs, tweens and inertia", "Stiffness and damping, or bounce and duration if that is how you think - plus the full easings.net family, and a different transition per property if you want.", "springs", "Springs"),
+        new("Gestures", "WhileHover, WhileTap, WhileFocus and WhileInView overlay a state on the base animation and revert themselves. Tap is keyboard-accessible out of the box.", "gestures", "Gestures"),
         new("Variants", "Name your states once, then switch a whole subtree to one of them and stagger the children into place - even from a per-element function.", "variants", "Variants"),
+        new("Presets", "Modal, drawer, toast, hover lift, shake, scroll reveal and more, packaged with their timing - one parameter each, composable with +.", "presets", "Presets"),
         new("Keyframes", "Sequences of values with their own offsets, per-segment easing and repeat behaviour, written as plain collection expressions.", "keyframes", "Keyframes"),
         new("Split text", "Headlines that assemble a character, a word or a line at a time - split in C#, so nothing re-splits on re-render and a screen reader still reads the sentence.", "split-text", "Split text"),
         new("AnimatePresence", "Exit animations that run before the element actually leaves the DOM - for one element, a keyed list, or content being replaced.", "presence", "AnimatePresence"),
@@ -308,7 +309,9 @@
         new("Layout animations", "FLIP the gap between two layouts, with border-radius correction and child counter-scaling handled for you.", "layout", "Layout"),
         new("Scroll and viewport", "Hand a scroll-linked animation to the browser's native scroll timelines - no handler, no interop - or scrub it yourself as a motion value, or trigger it the first time an element comes into view.", "scroll", "Scroll"),
         new("Programmatic control", "Animate by selector, interpolate a bare number, build a timeline with overlapping steps, then pause it and change its speed.", "programmatic", "Programmatic"),
-        new("SVG and motion paths", "Send an element along a path, draw a stroke on with pathLength, or morph one shape into another.", "motion-path", "Motion path"),
+        new("SVG and motion paths", "Send an element along a path, curve a straight move into an arc, draw a stroke on with pathLength, or morph one shape into another.", "motion-path", "Motion path"),
+        new("Colour and CSS", "Colours that mix in sRGB or perceptual OKLab, and the whole style surface beyond transforms - sizes, spacing, type, clipping and custom properties.", "css-props", "CSS props"),
+        new("View transitions", "The browser's View Transitions API around a Blazor state change, with typed transitions and the reduced-motion policy applied.", "view-transitions", "View transitions"),
         new("Accessibility and diagnostics", "prefers-reduced-motion that softens rather than deletes, keyboard-accessible taps, and an inspector that shows what the engine is doing.", "accessibility", "Accessibility"),
     ];
 }
