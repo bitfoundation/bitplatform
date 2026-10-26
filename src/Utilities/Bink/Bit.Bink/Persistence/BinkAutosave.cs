@@ -244,9 +244,9 @@ public sealed class BinkAutosave : IAsyncDisposable
 #pragma warning restore CA1031
         {
             LastError = ex;
-            SaveFailed?.Invoke(this, ex);
             // Tried again after the longest wait, or sooner when the next change comes.
             if (!_disposed) _timer.Change(MaxDelay, Timeout.InfiniteTimeSpan);
+            SaveFailed?.Invoke(this, ex);
             return;
         }
         finally
