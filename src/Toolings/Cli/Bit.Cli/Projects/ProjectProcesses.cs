@@ -13,7 +13,7 @@ public sealed record FreedFiles(IReadOnlyList<string> Stopped, IReadOnlyList<str
 
 public static class ProjectProcesses
 {
-    private static readonly HashSet<string> buildProcesses = new(["dotnet", "MSBuild", "VBCSCompiler"], StringComparer.OrdinalIgnoreCase);
+    private static readonly HashSet<string> buildProcesses = new(["dotnet", "MSBuild", "VBCSCompiler", "XamlCompiler"], StringComparer.OrdinalIgnoreCase);
 
     public static async Task StopAsync(CliServices cli, StepRunner steps, string folder, CancellationToken cancellationToken)
     {
@@ -54,18 +54,28 @@ public static class ProjectProcesses
     {
         var stopped = new List<string>();
         var holders = new List<string>();
+        var found = new List<(Process Process, string Name, int Id, bool Build)>();
 
         foreach (var id in ids)
         {
             if (id == Environment.ProcessId || TryGetProcess(id) is not { } process)
                 continue;
 
+            if (TryGetName(process) is { } name)
+            {
+                found.Add((process, name, id, stopBuildProcesses && (buildProcesses.Contains(name) || IsStartedByABuild(id))));
+            }
+            else
+            {
+                process.Dispose();
+            }
+        }
+
+        foreach (var (process, name, id, build) in found)
+        {
             using (process)
             {
-                if (TryGetName(process) is not { } name)
-                    continue;
-
-                if (stopBuildProcesses && buildProcesses.Contains(name) && Stop(process, name, id) is { Status: StepStatus.Succeeded })
+                if (build && Stop(process, name, id) is { Status: StepStatus.Succeeded })
                 {
                     cli.Log.Write($"stop {name} ({id}): {reason}");
                     stopped.Add($"{name} ({id})");
@@ -78,6 +88,17 @@ public static class ProjectProcesses
         }
 
         return new(stopped, holders);
+    }
+
+    private static bool IsStartedByABuild(int id)
+    {
+        if (OperatingSystem.IsWindows() is false || FolderHolders.ParentOf(id) is not { } parentId || TryGetProcess(parentId) is not { } parent)
+            return false;
+
+        using (parent)
+        {
+            return TryGetName(parent) is { } name && buildProcesses.Contains(name);
+        }
     }
 
     public static bool IsUnder(string path, string folder)
