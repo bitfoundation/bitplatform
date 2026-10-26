@@ -140,8 +140,8 @@ dotnet run --project src/Utilities/Bdnd/Demo/Server
 native file, text and link drops), hosted unchanged under [Server](Samples/Server/), [WASM](Samples/Wasm/) and
 [Auto](Samples/Auto/) so the same drags run, prerendered first, in each render mode - and under [MAUI](Samples/Maui/)
 (Android, iOS, Mac Catalyst and Windows), where a `BlazorWebView` runs them as a Blazor Hybrid app. Each host is also a
-minimal example of the wiring its platform needs: `AddBitBdndServices()` in every container that renders the pages,
-and nothing else.
+minimal example of the wiring its platform needs: `AddBitBdndServices()` in every container that renders the pages -
+called in each host's `Program.cs` (`MauiProgram.cs` in the MAUI app) - and nothing else.
 
 ## How it fits together
 

@@ -1,4 +1,5 @@
-﻿using Bit.Bdnd.Samples.Core;
+﻿using Bit.Bdnd;
+using Bit.Bdnd.Samples.Core;
 using Bit.Bdnd.Samples.Wasm.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,7 +10,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
 // The prerender pass creates the same pages on the server, so they need the same services here.
-builder.Services.AddCoreServices();
+builder.Services.AddBitBdndServices();
 
 var app = builder.Build();
 

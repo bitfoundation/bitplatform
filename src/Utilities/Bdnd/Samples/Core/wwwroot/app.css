@@ -217,13 +217,24 @@ dd {
 }
 
 .list {
-    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 1rem 0;
     border: 1px solid #e3e4e8;
     border-radius: 8px;
     background: #f7f8fa;
 }
 
-    .list[data-bit-bdnd-over-shallow] {
+/* The drop target under the heading: it reaches the list's sides and bottom, so the space below the last card takes
+   a drop whatever the height of the list beside it. */
+.cards {
+    flex: 1;
+    margin: 0 -1rem;
+    padding: 0 1rem 1rem;
+    border-radius: 0 0 8px 8px;
+}
+
+    .cards[data-bit-bdnd-over-shallow] {
         background: #eef2ff;
     }
 
@@ -267,7 +278,7 @@ dd {
     }
 
 @media (forced-colors: active) {
-    .bin[data-bit-bdnd-can-drop][data-bit-bdnd-over], .list[data-bit-bdnd-over-shallow] {
+    .bin[data-bit-bdnd-can-drop][data-bit-bdnd-over], .cards[data-bit-bdnd-over-shallow] {
         outline: 3px solid Highlight;
     }
 

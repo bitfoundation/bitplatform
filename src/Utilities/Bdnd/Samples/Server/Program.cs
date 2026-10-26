@@ -1,4 +1,5 @@
-﻿using Bit.Bdnd.Samples.Core;
+﻿using Bit.Bdnd;
+using Bit.Bdnd.Samples.Core;
 using Bit.Bdnd.Samples.Server.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,7 +10,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddCoreServices();
+// All Bdnd needs, in every container a sample page is created in: each BdndProvider creates the drag state of its own
+// subtree, and no browser API is called before a page is interactive, so prerendering is safe.
+builder.Services.AddBitBdndServices();
 
 var app = builder.Build();
 

@@ -18,7 +18,7 @@
         <dt>Renderer</dt>
         <dd id="renderer">@RendererInfo.Name</dd>
         <dt>Interactive</dt>
-        <dd id="interactive">@(RendererInfo.IsInteractive ? "yes" : "no, prerendered")</dd>
+        <dd id="interactive">@(RendererInfo.IsInteractive ? "yes" : AssignedRenderMode is null ? "no, rendered statically" : "no, prerendered")</dd>
     </dl>
     <p class="muted">
         Prerendered markup shows every draggable and drop target idle: they start working once the page is

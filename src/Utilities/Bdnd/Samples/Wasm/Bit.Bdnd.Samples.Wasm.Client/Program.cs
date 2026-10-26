@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+﻿using Bit.Bdnd;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-builder.Services.AddCoreServices();
+builder.Services.AddBitBdndServices();
 
 await builder.Build().RunAsync();

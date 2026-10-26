@@ -44,14 +44,16 @@
 </div>
 
 @code {
-    public sealed record Box(string Name, string Kind);
+    // The Id tells two boxes apart: a record compares by value, and @key and Remove would take two boxes of the same
+    // name and kind for one.
+    public sealed record Box(int Id, string Name, string Kind);
 
     public sealed record Bin(string Name, string[] Accepts)
     {
         public List<string> Contents { get; } = [];
     }
 
-    private static readonly Box[] AllBoxes = [new("Bottle", "glass"), new("Newspaper", "paper"), new("Banana", "food"), new("Jar", "glass")];
+    private static readonly Box[] AllBoxes = [new(1, "Bottle", "glass"), new(2, "Newspaper", "paper"), new(3, "Banana", "food"), new(4, "Jar", "glass")];
 
     private readonly Bin[] _bins = [new("Recycling", ["glass", "paper"]), new("Compost", ["food"])];
     private readonly List<Box> _boxes = [.. AllBoxes];

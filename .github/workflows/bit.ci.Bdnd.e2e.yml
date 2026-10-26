@@ -38,9 +38,8 @@ jobs:
       with:
         node-version: 24
 
-    - name: dotnet workload restore
-      run: cd src/Utilities/Bdnd && dotnet workload restore
-
+    # No dotnet workload restore: neither project below needs a workload, and a restore over Bit.Bdnd.slnx would
+    # install the Android workloads its MAUI sample needs.
     - name: Build the demo and the E2E suite
       run: |
         dotnet build src/Utilities/Bdnd/Demo/Server/Bit.Bdnd.Demo.Server.csproj -c Release

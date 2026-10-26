@@ -18,7 +18,7 @@ public static class MauiProgram
 
         // One app, one DI container: the BlazorWebView renders every component in this process, so
         // there is no second (client) container to register the Bdnd services in as well.
-        builder.Services.AddCoreServices();
+        builder.Services.AddBitBdndServices();
 
         return builder.Build();
     }

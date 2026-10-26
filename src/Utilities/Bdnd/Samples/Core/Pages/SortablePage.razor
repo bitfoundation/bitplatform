@@ -16,26 +16,29 @@
     <div class="board">
         @foreach (var list in _lists)
         {
-            @* The list is a drop target too: a drop below its cards, or on an empty list, puts the card at its end. *@
-            <BdndDropTarget TItem="Card" Accept="card" Tag="section" Label="@($"the end of {list.Name}")" class="list"
-                            OnDrop="@(e => DropAtEnd(e, list))" Context="listDrop">
+            <section class="list">
                 <h2>@list.Name</h2>
-                @for (var i = 0; i < list.Cards.Count; i++)
-                {
-                    var index = i;
-                    var card = list.Cards[i];
-                    <BdndDropTarget TItem="Card" Accept="card" Edges="BdndEdges.Vertical" Label="@card.Title" class="slot"
-                                    OnDrop="@(e => DropOn(e, list, index))" @key="card" Context="slot">
-                        <BdndDraggable TItem="Card" Type="card" Item="card" Label="@card.Title" class="item" Context="drag">
-                            @card.Title
-                        </BdndDraggable>
-                    </BdndDropTarget>
-                }
-                @if (list.Cards.Count == 0)
-                {
-                    <p class="muted">Drop cards here</p>
-                }
-            </BdndDropTarget>
+                @* The cards sit in a drop target too: a drop below them, or on an empty list, puts the card at its end.
+                   The heading stays outside it, so a drop above the first card is never taken for one below the last. *@
+                <BdndDropTarget TItem="Card" Accept="card" Label="@($"the end of {list.Name}")" class="cards"
+                                OnDrop="@(e => DropAtEnd(e, list))" Context="listDrop">
+                    @for (var i = 0; i < list.Cards.Count; i++)
+                    {
+                        var index = i;
+                        var card = list.Cards[i];
+                        <BdndDropTarget TItem="Card" Accept="card" Edges="BdndEdges.Vertical" Label="@card.Title" class="slot"
+                                        OnDrop="@(e => DropOn(e, list, index))" @key="card" Context="slot">
+                            <BdndDraggable TItem="Card" Type="card" Item="card" Label="@card.Title" class="item" Context="drag">
+                                @card.Title
+                            </BdndDraggable>
+                        </BdndDropTarget>
+                    }
+                    @if (list.Cards.Count == 0)
+                    {
+                        <p class="muted">Drop cards here</p>
+                    }
+                </BdndDropTarget>
+            </section>
         }
     </div>
 </BdndProvider>
@@ -43,14 +46,16 @@
 <p id="order" class="muted">@string.Join(" | ", _lists.Select(l => $"{l.Name}: {string.Join(", ", l.Cards.Select(c => c.Title))}"))</p>
 
 @code {
-    public sealed record Card(string Title);
+    // The Id tells two cards apart: a record compares by value, and @key and Find would take two cards of the same
+    // title for one.
+    public sealed record Card(int Id, string Title);
 
     private sealed record CardList(string Name, List<Card> Cards);
 
     private readonly CardList[] _lists =
     [
-        new("Backlog", [new("Write the docs"), new("Review the PR"), new("Fix the build"), new("Plan the sprint")]),
-        new("Done", [new("Ship the release")]),
+        new("Backlog", [new(1, "Write the docs"), new(2, "Review the PR"), new(3, "Fix the build"), new(4, "Plan the sprint")]),
+        new("Done", [new(5, "Ship the release")]),
     ];
 
     // Dropped on a card: before or after it, as the edge says.
@@ -61,8 +66,8 @@
         BdndList.Move(from.Cards, fromIndex, list.Cards, BdndList.InsertionIndex(index, e.ClosestEdge));
     }
 
-    // Dropped on the list itself: at its end - unless one of its cards took the drop already, since drops reach the
-    // innermost target first.
+    // Dropped on the list's cards rather than on one of them: at its end - unless one of its cards took the drop
+    // already, since drops reach the innermost target first.
     private void DropAtEnd(BdndDropEventArgs<Card> e, CardList list)
     {
         if (e.Monitor.DidDrop() || e.Item is not { } card || Find(card) is not (CardList from, int fromIndex)) return;

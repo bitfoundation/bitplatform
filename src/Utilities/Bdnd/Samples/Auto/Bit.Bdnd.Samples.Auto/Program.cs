@@ -1,4 +1,5 @@
-﻿using Bit.Bdnd.Samples.Auto.Components;
+﻿using Bit.Bdnd;
+using Bit.Bdnd.Samples.Auto.Components;
 using Bit.Bdnd.Samples.Core;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,7 +13,7 @@ builder.Services.AddRazorComponents()
 
 // The pages run here while prerendering and while the first visit is on Interactive Server,
 // so they need the same services the WebAssembly client registers.
-builder.Services.AddCoreServices();
+builder.Services.AddBitBdndServices();
 
 var app = builder.Build();
 

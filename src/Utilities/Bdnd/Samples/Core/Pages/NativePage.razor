@@ -46,14 +46,17 @@
 @code {
     private const int MaxFiles = 5;
     private const int Shown = 120;
-    private static readonly string[] TextFiles = ["text/plain"];
+    // Many text files report another MIME type than text/plain (text/csv, application/json), or none at all (.md and
+    // .log on Windows), so their extensions are listed too. With an extension listed, a drag is no longer refused
+    // while it hovers: the drop leaves the other files out.
+    private static readonly string[] TextFiles = ["text/*", ".txt", ".md", ".log", ".csv", ".json"];
     private static readonly string[] TextTypes = [BdndNativeTypes.Text, BdndNativeTypes.Url];
 
     private List<string> _results = [];
     private int _drops;
 
-    // Only the first characters of each file are read: a file past the read limit, or gone from the page, fails on
-    // its own and is reported as such.
+    // Only the first characters of each file are read, so a file of any size is opened: the read stops long before
+    // its end. A file gone from the page fails on its own and is reported as such.
     private async Task ReadFiles(BdndNativeDropEventArgs e)
     {
         var drop = ++_drops;
@@ -62,12 +65,15 @@
         {
             try
             {
-                await using var stream = await file.OpenReadStreamAsync();
-                using var reader = new StreamReader(stream);
+                await using var stream = await file.OpenReadStreamAsync(maxAllowedSize: file.Size);
+                // leaveOpen: the await using above releases the stream, awaiting the release of its JS reference
+                using var reader = new StreamReader(stream, leaveOpen: true);
                 // one character more than shown tells a longer file (the stream reads asynchronously only)
                 var buffer = new char[Shown + 1];
                 var read = await reader.ReadBlockAsync(buffer, 0, buffer.Length);
-                var text = new string(buffer, 0, Math.Min(read, Shown)).ReplaceLineEndings(" ");
+                // an emoji is two UTF-16 chars: cut before it rather than between them
+                var length = read > Shown && char.IsHighSurrogate(buffer[Shown - 1]) ? Shown - 1 : Math.Min(read, Shown);
+                var text = new string(buffer, 0, length).ReplaceLineEndings(" ");
                 results.Add($"{file.Name} ({file.Size:N0} bytes): {text}{(read > Shown ? "…" : "")}");
             }
             catch (Exception ex) when (ex is IOException or InvalidOperationException or TimeoutException or JSException or OperationCanceledException)
