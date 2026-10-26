@@ -196,11 +196,17 @@ public sealed class BitIconFontCutTests
     [DataRow("Bit.BlazorUI.AI", "fabric.mdl2.bit.blazoui.ai.scss", "bit-icon-ai")]
     public void APackagesGlyphSubsetShouldOutrankTheIconStylesheetLinkedAfterIt(string package, string file, string glyphClass)
     {
-        // Linked last, the icons' .bit-icon rule is as important as a package's own and would win by its order alone,
-        // drawing the package's glyphs from a font a publish may have cut down to the app's icons. The package's rule names
-        // its class twice to outrank it, and draws from the package's own font.
+        // Linked last, the icons' one-class .bit-icon rule draws from its font importantly and would win by its order alone,
+        // drawing the package's glyphs from a font a publish may have cut down to the app's icons. The package's font names
+        // its class twice to outrank it, and is important too, or the icons' would win whatever the weight. The font alone:
+        // the rest of the glyph stays as weighty as a class of the app's own, which still restyles it.
         var stylesheet = SourceFiles.Read(package, "Styles", file);
+        var icons = SourceFiles.Read("Bit.BlazorUI.Icons", "Styles", "fabric.mdl2.icons.scss");
+        var outranking = Declarations(stylesheet, $".{glyphClass}.{glyphClass}");
 
+        StringAssert.EndsWith(Declarations(icons, ".bit-icon")["font-family"], "!important", "The icons' .bit-icon rule no longer draws from its font importantly.");
+        CollectionAssert.AreEqual(new[] { "font-family" }, outranking.Keys.ToArray(), $"The .{glyphClass}.{glyphClass} rule outranks the app's classes in more than the font.");
+        StringAssert.EndsWith(outranking["font-family"], "!important", $"The .{glyphClass}.{glyphClass} rule is outranked by the important .bit-icon rule whatever its weight.");
         CollectionAssert.AreEqual(new[] { FontFamilies(stylesheet, "@font-face").Single() }, FontFamilies(stylesheet, $".{glyphClass}.{glyphClass}"),
                                   $"The .{glyphClass} rule does not outrank .bit-icon with the package's own font.");
     }
@@ -239,6 +245,17 @@ public sealed class BitIconFontCutTests
         var match = Regex.Match(stylesheet, $@"{Regex.Escape(selector)}\s*\{{[^}}]*?font-family:\s*(?<families>[^;!}}]+)");
         Assert.IsTrue(match.Success, $"No {selector} rule with a font-family.");
         return [.. match.Groups["families"].Value.Split(',').Select(f => f.Trim().Trim('\'', '"'))];
+    }
+
+    // The declarations, by property, of the top-level rule of a stylesheet for exactly that selector: ".bit-icon" is not
+    // ".bit-icon.bit-icon" or ".x .bit-icon".
+    private static Dictionary<string, string> Declarations(string stylesheet, string selector)
+    {
+        var match = Regex.Match(stylesheet, $@"(?m)^{Regex.Escape(selector)}\s*\{{(?<body>[^}}]*)\}}");
+        Assert.IsTrue(match.Success, $"No {selector} rule.");
+        return match.Groups["body"].Value.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                                         .Select(d => d.Split(':', 2))
+                                         .ToDictionary(d => d[0].Trim(), d => d[1].Trim());
     }
 
     // One point, on the curve at the origin: the header, its end point, no instructions, one flag (on curve, x and y the same).

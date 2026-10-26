@@ -11,7 +11,12 @@
 public partial class BitAiDataTable : BitAiComponentBase
 {
     private readonly List<string> _columns = [];
+    private readonly HashSet<string> _columnNames = new(StringComparer.Ordinal);
     private JsonElement[] _rows = [];
+    // The value the table was last built from. Blazor takes a JsonElement for changed on every render of the parent, so
+    // the table is built again only when Rows is another element: the struct's own equality holds for the same element of
+    // the same document, and a document never changes once parsed.
+    private JsonElement _builtFrom;
 
 
 
@@ -63,23 +68,28 @@ public partial class BitAiDataTable : BitAiComponentBase
     {
         CascadingParameters?.UpdateParameters(this);
 
-        _columns.Clear();
-
-        if (Rows.ValueKind is not JsonValueKind.Array)
+        if (Rows.Equals(_builtFrom) is false)
         {
-            _rows = [];
-        }
-        else
-        {
-            _rows = Rows.EnumerateArray().ToArray();
+            _builtFrom = Rows;
+            _columns.Clear();
+            _columnNames.Clear();
 
-            foreach (var row in _rows)
+            if (Rows.ValueKind is not JsonValueKind.Array)
             {
-                if (row.ValueKind is not JsonValueKind.Object) continue;
+                _rows = [];
+            }
+            else
+            {
+                _rows = Rows.EnumerateArray().ToArray();
 
-                foreach (var property in row.EnumerateObject())
+                foreach (var row in _rows)
                 {
-                    if (_columns.Contains(property.Name, StringComparer.Ordinal) is false) _columns.Add(property.Name);
+                    if (row.ValueKind is not JsonValueKind.Object) continue;
+
+                    foreach (var property in row.EnumerateObject())
+                    {
+                        if (_columnNames.Add(property.Name)) _columns.Add(property.Name);
+                    }
                 }
             }
         }

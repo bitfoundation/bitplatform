@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
@@ -168,6 +169,26 @@ public class BitAiToolCallViewTests : BitAiTestBase
         Assert.AreEqual("get_weather", component.Find(".weather-card").TextContent);
         Assert.IsEmpty(component.FindAll(".bit-aitcv-hdr"));
         Assert.IsTrue(component.Find(".bit-aitcv").ClassList.Contains("bit-aitcv-cst"));
+    }
+
+    // A card given no message hands its renderer the same stand-in on every render, so a renderer keyed on the message
+    // keeps its state.
+    [TestMethod]
+    public void ARegisteredToolRendererIsHandedTheSameMessageOnEveryRenderOfACardGivenNone()
+    {
+        var messages = new List<BitAiMessage>();
+        Renderers.RegisterTool("get_weather", context =>
+        {
+            messages.Add(context.Message);
+            return _ => { };
+        });
+
+        var call = new BitAiToolCallPart("c1", "get_weather");
+        var component = RenderComponent<BitAiToolCallView>(p => p.Add(c => c.Call, call));
+        component.Render(p => p.Add(c => c.Call, call));
+
+        Assert.HasCount(2, messages);
+        Assert.AreSame(messages[0], messages[1]);
     }
 
     [TestMethod]

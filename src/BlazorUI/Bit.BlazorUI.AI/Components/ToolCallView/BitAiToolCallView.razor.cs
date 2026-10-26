@@ -46,6 +46,9 @@ public partial class BitAiToolCallView : BitAiComponentBase
     private ElementReference _header;
     private string? _stateClasses;
     private RenderFragment? _custom;
+    // The message a registered renderer is handed while the card is given none, made once so the renderer sees the same
+    // one on every render rather than a new id each time.
+    private BitAiMessage? _fallbackMessage;
     private BitAiToolCallPart? _subscribed;
     private BitAiToolCallStatus _lastStatus = BitAiToolCallStatus.Streaming;
 
@@ -129,7 +132,7 @@ public partial class BitAiToolCallView : BitAiComponentBase
         }
 
         _custom = Renderers.FindTool(Call.ToolName)
-                           ?.Invoke(new BitAiToolCallContext(Call, Message ?? new BitAiMessage(BitAiRole.Assistant), Session));
+                           ?.Invoke(new BitAiToolCallContext(Call, Message ?? (_fallbackMessage ??= new(BitAiRole.Assistant)), Session));
 
         if (_initialized is false)
         {

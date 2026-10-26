@@ -86,6 +86,26 @@ public class BitAiStructuredDataViewTests : BitAiTestBase
         Assert.IsEmpty(view.FindAll("dt"));
     }
 
+    // A view given no message hands its renderer the same stand-in on every render, so a renderer keyed on the message
+    // keeps its state.
+    [TestMethod]
+    public void ARegisteredSchemaRendererIsHandedTheSameMessageOnEveryRenderOfAViewGivenNone()
+    {
+        var messages = new List<BitAiMessage>();
+        Renderers.RegisterStructured("invoice", context =>
+        {
+            messages.Add(context.Message);
+            return _ => { };
+        });
+
+        var part = new BitAiStructuredDataPart(Json("""{"total":10}"""), "invoice");
+        var view = RenderComponent<BitAiStructuredDataView>(p => p.Add(c => c.Part, part));
+        view.Render(p => p.Add(c => c.Part, part));
+
+        Assert.HasCount(2, messages);
+        Assert.AreSame(messages[0], messages[1]);
+    }
+
     [TestMethod]
     public void PartialStructuredDataFillsInAsItArrives()
     {

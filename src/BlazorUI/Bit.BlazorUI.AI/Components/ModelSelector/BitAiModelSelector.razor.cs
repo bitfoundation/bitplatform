@@ -16,6 +16,9 @@ public partial class BitAiModelSelector : BitAiComponentBase
     private BitAiModel? _selected;
     private List<BitAiModel> _models = [];
     private List<BitDropdownItem<string>> _items = [];
+    // What the items were last built from. A parent re-rendering - a chat streaming its answer, say - hands the same
+    // models again, and items built anew would be a change of Items to the dropdown each time.
+    private (IReadOnlyList<BitAiModel>? Source, int Count, IBitAiModelCatalog? Catalog, bool ShowDeprecated, BitAiModelCapabilities Required, BitAiStrings? Strings) _builtFor;
 
 
 
@@ -66,6 +69,11 @@ public partial class BitAiModelSelector : BitAiComponentBase
     /// <summary>
     /// The models to offer, in place of those of the catalog, for a host that filters them by entitlement.
     /// </summary>
+    /// <remarks>
+    /// The options are built again when another list is handed in or the one handed in changes its count, the way the
+    /// <c>Items</c> of a <see cref="BitDropdown{TItem, TValue}"/> are read: a model replaced in place shows once the list
+    /// is handed in anew. The same goes for the models of the catalog.
+    /// </remarks>
     [Parameter] public IReadOnlyList<BitAiModel>? Models { get; set; }
 
     /// <summary>
@@ -131,32 +139,11 @@ public partial class BitAiModelSelector : BitAiComponentBase
         var catalog = Catalog ?? _services.GetService(typeof(IBitAiModelCatalog)) as IBitAiModelCatalog;
         var source = Models ?? catalog?.Models ?? [];
 
-        _models = source.Where(m => ShowDeprecated || m.IsDeprecated is false)
-                        .Where(m => m.Supports(RequiredCapabilities))
-                        .ToList();
-
-        // A header is only worth drawing when at least one model has a group to go under; the ones that have none are
-        // then gathered under a header of their own rather than left looking like members of the group above them.
-        var grouped = _models.Any(m => GroupLabel(m, catalog) is { Length: > 0 });
-
-        _items = [];
-        foreach (var group in _models.GroupBy(m => grouped ? GroupLabel(m, catalog) ?? Strings.OtherModels : null))
+        var builtFor = (source, source.Count, catalog, ShowDeprecated, RequiredCapabilities, Strings);
+        if (builtFor != _builtFor)
         {
-            if (group.Key is { Length: > 0 } label)
-            {
-                _items.Add(new() { ItemType = BitDropdownItemType.Header, Text = label });
-            }
-
-            foreach (var model in group)
-            {
-                _items.Add(new()
-                {
-                    Text = model.IsDeprecated ? Strings.ModelDeprecated(model.Name) : model.Name,
-                    Value = model.ModelId,
-                    Title = model.Description,
-                    IconName = model.Icon,
-                });
-            }
+            _builtFor = builtFor;
+            BuildItems(source, catalog);
         }
 
         _selected = _models.FirstOrDefault(m => m.ModelId == ModelId)
@@ -200,6 +187,39 @@ public partial class BitAiModelSelector : BitAiComponentBase
         if (_selected is not null)
         {
             await OnModelSelected.InvokeAsync(_selected);
+        }
+    }
+
+    private void BuildItems(IReadOnlyList<BitAiModel> source, IBitAiModelCatalog? catalog)
+    {
+        _models = source.Where(m => ShowDeprecated || m.IsDeprecated is false)
+                        .Where(m => m.Supports(RequiredCapabilities))
+                        .ToList();
+
+        var labelled = _models.Select(m => (Model: m, Label: GroupLabel(m, catalog))).ToList();
+
+        // A header is only worth drawing when at least one model has a group to go under; the ones that have none are
+        // then gathered under a header of their own rather than left looking like members of the group above them.
+        var grouped = labelled.Any(m => m.Label is { Length: > 0 });
+
+        _items = [];
+        foreach (var group in labelled.GroupBy(m => grouped ? m.Label ?? Strings.OtherModels : null, m => m.Model))
+        {
+            if (group.Key is { Length: > 0 } label)
+            {
+                _items.Add(new() { ItemType = BitDropdownItemType.Header, Text = label });
+            }
+
+            foreach (var model in group)
+            {
+                _items.Add(new()
+                {
+                    Text = model.IsDeprecated ? Strings.ModelDeprecated(model.Name) : model.Name,
+                    Value = model.ModelId,
+                    Title = model.Description,
+                    IconName = model.Icon,
+                });
+            }
         }
     }
 

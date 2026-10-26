@@ -16,6 +16,9 @@ namespace Bit.BlazorUI;
 public partial class BitAiStructuredDataView : BitAiComponentBase
 {
     private RenderFragment? _custom;
+    // The message a registered renderer is handed while the view is given none, made once so the renderer sees the same
+    // one on every render rather than a new id each time.
+    private BitAiMessage? _fallbackMessage;
 
 
 
@@ -74,7 +77,7 @@ public partial class BitAiStructuredDataView : BitAiComponentBase
         CascadingParameters?.UpdateParameters(this);
 
         _custom = Renderers.FindStructured(Part.SchemaName)
-                          ?.Invoke(new BitAiStructuredDataContext(Part, Message ?? new BitAiMessage(BitAiRole.Assistant)));
+                          ?.Invoke(new BitAiStructuredDataContext(Part, Message ?? (_fallbackMessage ??= new(BitAiRole.Assistant))));
 
         base.OnParametersSet();
     }

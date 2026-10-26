@@ -84,6 +84,21 @@ public class BitAiDataTableTests : BitAiTestBase
         Assert.AreEqual(2, table.FindAll("tbody tr").Count);
     }
 
+    // The table is built again only for another element, and another element of the same document is one.
+    [TestMethod]
+    public void BitAiDataTableShouldFollowAnotherArrayOfTheSameDocument()
+    {
+        var document = Json("""{"first":[{"a":1}],"second":[{"b":2},{"c":3}]}""");
+        var table = RenderComponent<BitAiDataTable>(p => p.Add(c => c.Rows, document.GetProperty("first")));
+
+        table.Render(p => p.Add(c => c.Rows, document.GetProperty("first")));
+        CollectionAssert.AreEqual(new[] { "A" }, table.FindAll("th").Select(h => h.TextContent).ToArray());
+
+        table.Render(p => p.Add(c => c.Rows, document.GetProperty("second")));
+        CollectionAssert.AreEqual(new[] { "B", "C" }, table.FindAll("th").Select(h => h.TextContent).ToArray());
+        Assert.AreEqual(2, table.FindAll("tbody tr").Count);
+    }
+
     [TestMethod]
     public void BitAiDataTableShouldRenderTheRootAndItsParts()
     {

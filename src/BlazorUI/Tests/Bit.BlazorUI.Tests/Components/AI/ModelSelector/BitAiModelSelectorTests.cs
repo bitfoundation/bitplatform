@@ -160,6 +160,30 @@ public class BitAiModelSelectorTests : BitAiTestBase
         CollectionAssert.AreEqual(new[] { "One", "Two" }, OptionTexts(picker).ToArray());
     }
 
+    // A dropdown handed new items is a dropdown whose items changed: the picker builds them again only when what they are
+    // built from changes, not on every render of its parent.
+    [TestMethod]
+    public void TheOptionsAreBuiltAgainOnlyWhenWhatTheyAreBuiltFromChanges()
+    {
+        IReadOnlyList<BitAiModel> models = [Alpha, Beta, Old];
+        var picker = RenderComponent<BitAiModelSelector>(p => p.Add(c => c.Models, models));
+        object? Items() => picker.FindComponent<BitDropdown<BitDropdownItem<string>, string>>().Instance.Items;
+        var first = Items();
+
+        picker.Render(p => p.Add(c => c.Models, models).Add(c => c.ModelId, "beta"));
+        Assert.AreSame(first, Items());
+        Assert.AreEqual("beta", SelectedValue(picker));
+
+        picker.Render(p => p.Add(c => c.Models, models).Add(c => c.ShowDeprecated, true));
+        Assert.AreNotSame(first, Items());
+        Assert.Contains("Old (deprecated)", OptionTexts(picker));
+
+        var shown = Items();
+        picker.Render(p => p.Add(c => c.Models, [Alpha]).Add(c => c.ShowDeprecated, true));
+        Assert.AreNotSame(shown, Items());
+        CollectionAssert.AreEqual(new[] { "Alpha" }, OptionTexts(picker).ToArray());
+    }
+
     [TestMethod]
     public void TheSelectionIsAnnouncedOnceNotOnEveryRender()
     {
