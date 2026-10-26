@@ -34,6 +34,8 @@ public sealed class CliConsole(IAnsiConsole output, IAnsiConsole error)
 
     public string BulletSymbol => Unicode ? "◆" : "*";
 
+    public ConsoleTitle Title { get; set; } = ConsoleTitle.None;
+
     public static CliConsole Create()
     {
         return new CliConsole(
@@ -95,18 +97,26 @@ public sealed class CliConsole(IAnsiConsole output, IAnsiConsole error)
             return await work(_ => { });
 
         T result = default!;
+        Title.Working(title);
 
-        await Out.Status()
-            .Spinner(Unicode ? Spinner.Known.Dots : Spinner.Known.Line)
-            .SpinnerStyle(new Style(Color.Blue))
-            .StartAsync(Markup.Escape(title), async context =>
-            {
-                result = await work(line =>
+        try
+        {
+            await Out.Status()
+                .Spinner(Unicode ? Spinner.Known.Dots : Spinner.Known.Line)
+                .SpinnerStyle(new Style(Color.Blue))
+                .StartAsync(Markup.Escape(title), async context =>
                 {
-                    var text = Truncate(line.Trim(), Math.Max(10, Width - title.Length - 10));
-                    context.Status($"{Markup.Escape(title)} [grey]{Markup.Escape(text)}[/]");
+                    result = await work(line =>
+                    {
+                        var text = Truncate(line.Trim(), Math.Max(10, Width - title.Length - 10));
+                        context.Status($"{Markup.Escape(title)} [grey]{Markup.Escape(text)}[/]");
+                    });
                 });
-            });
+        }
+        finally
+        {
+            Title.Idle();
+        }
 
         return result;
     }

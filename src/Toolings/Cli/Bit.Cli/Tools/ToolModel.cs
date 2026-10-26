@@ -133,6 +133,8 @@ public sealed record ToolAction
 
 public sealed record PartialSuccess(int ExitCode, string Detail, string Hint);
 
+public sealed record AdministratorRun(bool Declined, IReadOnlyDictionary<string, int> ExitCodes, string Log);
+
 public sealed class ToolContext(CliEnvironment environment, IProcessRunner runner, ToolNeeds needs, PackageManagers packageManagers)
 {
     public CliEnvironment Environment { get; } = environment;

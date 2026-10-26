@@ -80,6 +80,9 @@ public static class CliApp
             services.Settings.Save();
         }
 
+        using var title = new ConsoleTitle(isMeta is false && console.IsInteractive && Console.IsOutputRedirected is false && environment.IsCI is false, console.Unicode, $"bit {commandName}");
+        console.Title = title;
+
         var exitCode = ExitFailed;
 
         try

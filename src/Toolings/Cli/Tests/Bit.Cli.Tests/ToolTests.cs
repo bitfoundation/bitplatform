@@ -598,6 +598,25 @@ public class ToolTests
         StringAssert.Contains(script, "Start-BitWatchdog 1800");
         StringAssert.Contains(script, "$cancelPath = 'C:\\Temp\\cancel'");
         StringAssert.Contains(script, "Set-Content -LiteralPath 'C:\\Temp\\results.json'");
+        Assert.IsFalse(script.Contains("Push-Location", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void TheAdministratorScript_Should_RunACommandInItsWorkingDirectory()
+    {
+        var action = new ToolAction
+        {
+            ToolId = "android",
+            Title = "Install the Android SDK and Java",
+            Commands = [new ProcessSpec { FileName = "dotnet", Arguments = ["build", "-t:InstallAndroidDependencies"], WorkingDirectory = @"C:\Projects\Contoso's" }]
+        };
+
+        var script = ToolInstaller.BuildWindowsScript([action], @"C:\Temp\install.log", @"C:\Temp\results.json", @"C:\Temp\cancel");
+        var push = script.IndexOf("Push-Location -LiteralPath 'C:\\Projects\\Contoso''s'", StringComparison.Ordinal);
+        var run = script.IndexOf("& 'dotnet' 'build' '-t:InstallAndroidDependencies'", StringComparison.Ordinal);
+        var pop = script.IndexOf("Pop-Location", StringComparison.Ordinal);
+
+        Assert.IsTrue(push >= 0 && push < run && run < pop, script);
     }
 
     [TestMethod]

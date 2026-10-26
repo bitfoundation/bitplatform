@@ -201,10 +201,32 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
     public async Task<StepResult> AndroidDependenciesAsync(Action<string> progress, CancellationToken cancellationToken)
     {
         string[] arguments = ["build", Templates.Platforms.MauiProject(project.Name), "-t:InstallAndroidDependencies", "-f", $"{project.TargetFrameworkVersion}-android", "-p:AcceptAndroidSDKLicenses=True"];
+        var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}";
         var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(60));
 
-        return StepResult.FromProcess(result, "Installed the Android SDK and Java", "Couldn't install the Android SDK and Java",
-            $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}");
+        if (result.Succeeded is false && cli.Environment.IsWindows && cli.Environment.IsElevated is false && NeedsElevation(result.Output))
+        {
+            if (ToolInstaller.CanRunAsAdministrator(cli) is false)
+                return StepResult.Warning("The Android SDK and Java need administrator rights", "run it in an elevated terminal", followUp);
+
+            var install = new ToolAction
+            {
+                ToolId = "android",
+                Title = "Install the Android SDK and Java",
+                Commands = [new ProcessSpec { FileName = "dotnet", Arguments = arguments, WorkingDirectory = project.Directory, Timeout = TimeSpan.FromMinutes(60) }]
+            };
+
+            var elevated = await ToolInstaller.RunAsAdministratorAsync(cli, [install], progress, cancellationToken);
+
+            if (elevated.Declined)
+                return StepResult.Warning("The Android SDK and Java weren't installed", "administrator permission was declined", followUp);
+
+            return elevated.ExitCodes.TryGetValue(install.ToolId, out var exitCode) && exitCode == 0
+                ? StepResult.Succeeded("Installed the Android SDK and Java", "as administrator")
+                : StepResult.Failed("Couldn't install the Android SDK and Java", "as administrator", followUp, hint: ToolInstaller.AdministratorOutput(elevated.Log, install.Title));
+        }
+
+        return StepResult.FromProcess(result, "Installed the Android SDK and Java", "Couldn't install the Android SDK and Java", followUp);
     }
 
     public async Task<StepResult> XcodeAsync(Action<string> progress, CancellationToken cancellationToken)
