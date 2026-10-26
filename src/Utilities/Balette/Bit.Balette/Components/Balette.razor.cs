@@ -59,6 +59,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     private CancellationTokenSource? _debounceCts;
     private CancellationTokenSource? _executeCts;
     private CancellationTokenSource? _toastCts;
+    private CancellationTokenSource? _autoCloseCts;
     private bool _executing;
     private bool _busy;
     private string? _runningId;
@@ -414,6 +415,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         _debounceCts?.Cancel();
         _executeCts?.Cancel();
         _toastCts?.Cancel();
+        CancelAutoClose();
         CancelPageLoads();
 
         try
@@ -539,6 +541,8 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
     private async Task OpenCoreAsync(string? query, string? pageCommandId)
     {
+        CancelAutoClose();
+
         if (Inline)
         {
             // Always open: only the query or the page changes, and the input takes the focus.
@@ -630,6 +634,8 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
     private async Task CloseCoreAsync()
     {
+        CancelAutoClose();
+
         if (!_isOpen)
         {
             return;
@@ -736,6 +742,8 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     /// <summary>After a key typed into the input: the binding has already put its text in <see cref="_query"/>.</summary>
     private async Task OnInputAsync()
     {
+        CancelAutoClose();
+
         if (_handle is null || _lastSearchCost < SlowSearchThreshold)
         {
             await OnQueryUpdatedAsync();
@@ -786,6 +794,16 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         {
             return;
         }
+
+        // Esc while a toast's close is pending is the close it was waiting for, not a step back from the page the
+        // command ran on. Any other key means the palette is in use again.
+        if (key == "Escape" && _autoCloseCts is not null)
+        {
+            await CloseCoreAsync();
+            return;
+        }
+
+        CancelAutoClose();
 
         // Navigation acts on the results of everything typed so far.
         if (_inputPending)
@@ -1069,6 +1087,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
     private void PushPage(BalettePageFrame frame)
     {
+        CancelAutoClose();
         _pages.Add(frame);
         _announcePage = true;
         _query = frame.Prompt?.InitialValue ?? string.Empty;
@@ -1095,6 +1114,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             return;
         }
 
+        CancelAutoClose();
         var frame = _pages[^1];
         _pages.RemoveAt(_pages.Count - 1);
         _announcePage = true;
@@ -1425,6 +1445,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             return;
         }
 
+        CancelAutoClose();
         var cts = _executeCts = new CancellationTokenSource();
         var startPage = CurrentPage;
         var ctx = CreateContext(cmd, promptValue, cts.Token, selected);
@@ -1558,7 +1579,22 @@ public partial class Balette : ComponentBase, IAsyncDisposable
                     // Long enough to read a short confirmation before the palette goes away. Rendered first: run
                     // from the keyboard, nothing else renders until the whole flow - the close included - is over.
                     StateHasChanged();
-                    await Task.Delay(900);
+
+                    // Anything done in the palette meanwhile - closing and reopening it, typing, a key, another command,
+                    // another page - calls the close off: it would close the palette under the user (or, inline, reset it).
+                    _autoCloseCts?.Cancel();
+                    var autoClose = _autoCloseCts = new CancellationTokenSource();
+                    try
+                    {
+                        await Task.Delay(900, autoClose.Token);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Whatever called it off renders what it changed; the palette may be gone altogether.
+                        return;
+                    }
+
+                    _autoCloseCts = null;
                     await CloseCoreAsync();
                 }
 
@@ -1641,6 +1677,13 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
     private BaletteCommandContext CreateContext(BaletteCommand cmd, string? promptValue, CancellationToken ct, IReadOnlyList<BaletteCommand>? selected = null)
         => new(cmd, _effectiveQuery, _mode?.Prefix, promptValue, selected ?? [], Services, Navigation, Service, ct);
+
+    /// <summary>Calls off the close a toast scheduled (see <see cref="ApplyResultAsync"/>): the user is using the palette again.</summary>
+    private void CancelAutoClose()
+    {
+        _autoCloseCts?.Cancel();
+        _autoCloseCts = null;
+    }
 
     private void ShowToast(string? message, bool sticky = false, bool error = false)
     {

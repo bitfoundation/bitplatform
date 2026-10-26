@@ -185,6 +185,65 @@ public class BaletteFlowTests : BunitContext
     }
 
     [TestMethod]
+    public async Task A_toast_does_not_close_the_palette_reopened_before_its_close()
+    {
+        _service.Register(BaletteCmd.Action("Copy link", _ => Task.FromResult(BaletteCommandResult.Toast("Link copied"))));
+        var cut = Render<Balette>();
+        await cut.InvokeAsync(() => _service.OpenAsync());
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll("[data-balette=item]")));
+
+        var run = cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
+        cut.WaitForAssertion(() => Assert.Contains("Link copied", cut.Find("[data-balette=toast]").TextContent));
+
+        // Esc and Ctrl+K inside the toast's close delay: the close it scheduled belongs to the palette that was dismissed.
+        await cut.InvokeAsync(() => _service.CloseAsync());
+        await cut.InvokeAsync(() => _service.OpenAsync());
+        await run;
+
+        Assert.IsTrue(_service.IsOpen);
+        Assert.AreEqual("true", cut.Find("dialog").GetAttribute("data-open"));
+    }
+
+    [TestMethod]
+    public async Task Esc_while_a_toast_waits_to_close_closes_rather_than_going_back_a_page()
+    {
+        _service.Register(BaletteCmd.New("Rename…").Handler(_ => Task.FromResult(BaletteCommandResult.Prompt(
+            "New name", _ => Task.FromResult(BaletteCommandResult.Toast("Renamed")), initialValue: "Apollo"))));
+        var cut = Render<Balette>();
+        await cut.InvokeAsync(() => _service.OpenAsync());
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll("[data-balette=item]")));
+        await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
+        cut.WaitForAssertion(() => Assert.Contains("New name", cut.Find("[data-balette=prompt]").TextContent));
+
+        var run = cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
+        cut.WaitForAssertion(() => Assert.Contains("Renamed", cut.Find("[data-balette=toast]").TextContent));
+
+        await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Escape", false, false, false, false));
+        await run;
+
+        Assert.IsFalse(_service.IsOpen);
+        Assert.AreEqual("false", cut.Find("dialog").GetAttribute("data-open"));
+    }
+
+    [TestMethod]
+    public async Task A_toast_does_not_close_the_palette_while_the_user_types()
+    {
+        _service.Register(BaletteCmd.Action("Copy link", _ => Task.FromResult(BaletteCommandResult.Toast("Link copied"))));
+        var cut = Render<Balette>();
+        await cut.InvokeAsync(() => _service.OpenAsync());
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll("[data-balette=item]")));
+
+        var run = cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
+        cut.WaitForAssertion(() => Assert.Contains("Link copied", cut.Find("[data-balette=toast]").TextContent));
+
+        await cut.InvokeAsync(() => cut.Find("[data-balette=input]").Input("cop"));
+        await run;
+
+        Assert.IsTrue(_service.IsOpen);
+        Assert.AreEqual("cop", cut.Find("[data-balette=input]").GetAttribute("value"));
+    }
+
+    [TestMethod]
     public async Task A_command_that_keeps_the_palette_open_asks_for_no_focus_while_it_is_closed()
     {
         var toggled = 0;

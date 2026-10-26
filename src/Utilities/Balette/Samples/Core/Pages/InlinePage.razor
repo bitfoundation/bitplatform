@@ -1,5 +1,4 @@
 ﻿@page "/inline"
-@inject SampleState State
 
 <PageTitle>Inline · Balette samples</PageTitle>
 
@@ -15,7 +14,6 @@
     <Balette Inline="true"
              IncludeRegisteredCommands="false"
              Commands="_settings"
-             Theme="@State.Theme"
              Density="compact"
              Placeholder="Search settings…"
              aria-label="Settings" />

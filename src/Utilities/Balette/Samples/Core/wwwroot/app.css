@@ -1,5 +1,6 @@
 ﻿/* Minimal styling for the Balette samples - just enough to keep the pages readable in light and dark.
-   The palette itself is styled by _content/Bit.Balette/bit-balette.css; its Theme follows the same choice. */
+   The palette itself is styled by _content/Bit.Balette/bit-balette.css. Both follow <html data-theme>
+   (auto, light or dark), which the layout sets from the Theme command. */
 
 * {
     box-sizing: border-box;
@@ -26,18 +27,18 @@ body {
     color-scheme: light;
 }
 
-    .app[data-theme="dark"] {
-        --fg: #e8e9ed;
-        --fg-muted: #a3a6b1;
-        --bg: #16171b;
-        --bg-subtle: #24262c;
-        --border: #34363e;
-        --accent: #8aa6ff;
-        color-scheme: dark;
-    }
+:root[data-theme="dark"] .app {
+    --fg: #e8e9ed;
+    --fg-muted: #a3a6b1;
+    --bg: #16171b;
+    --bg-subtle: #24262c;
+    --border: #34363e;
+    --accent: #8aa6ff;
+    color-scheme: dark;
+}
 
 @media (prefers-color-scheme: dark) {
-    .app[data-theme="auto"] {
+    :root:not([data-theme="light"]) .app {
         --fg: #e8e9ed;
         --fg-muted: #a3a6b1;
         --bg: #16171b;

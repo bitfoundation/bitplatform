@@ -501,7 +501,7 @@ A handler returns a `BaletteCommandResult` that says what happens next:
 | `BaletteCommandResult.Reset` | Clear the query and return to the root page, staying open. |
 | `BaletteCommandResult.Page(title, commands, placeholder, multiSelect, onSubmit)` | Push a page listing `commands`. |
 | `BaletteCommandResult.Prompt(title, onSubmit, placeholder, initialValue)` | Ask for free text, then run `onSubmit` with it. |
-| `BaletteCommandResult.Toast(message, keepOpen)` | Show a message in the footer; closes shortly afterwards unless `keepOpen`. |
+| `BaletteCommandResult.Toast(message, keepOpen)` | Show a message in the footer; closes shortly afterwards unless `keepOpen`, or unless the palette is used again meanwhile. |
 | `BaletteCommandResult.Error(message)` | Show an error, announced assertively, and stay where the palette is - on a prompt, so the value can be corrected. |
 
 ### The context

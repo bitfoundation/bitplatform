@@ -1,9 +1,9 @@
 ﻿@inherits LayoutComponentBase
 @implements IDisposable
 @inject SampleState State
+@inject IJSRuntime JS
 
-@* data-theme carries the Theme command's choice to app.css, so the page follows the palette. *@
-<div class="app" data-theme="@State.Theme">
+<div class="app">
     <nav class="topbar">
         <NavLink href="" Match="NavLinkMatch.All" class="brand">Balette samples</NavLink>
         <NavLink href="commands">Commands</NavLink>
@@ -32,7 +32,7 @@
    once it is interactive. *@
 <BaletteCommands Commands="_appCommands" />
 
-<Balette Theme="@State.Theme" Density="@(State.Compact ? "compact" : "comfortable")">
+<Balette Density="@(State.Compact ? "compact" : "comfortable")">
     @* Declarative commands, next to the markup that owns them. *@
     <BaletteGroup Heading="Help">
         <BaletteItem Id="help.docs" Title="Read the documentation" Keywords="docs readme guide"
@@ -44,11 +44,22 @@
 
 @code {
     private IReadOnlyList<BaletteCommand> _appCommands = [];
+    private string? _appliedTheme;
 
     protected override void OnInitialized()
     {
         _appCommands = BuildCommands();
         State.Changed += OnStateChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_appliedTheme == State.Theme) return;
+
+        // The theme goes on <html data-theme>, where the palette's stylesheet and app.css both look for it. The
+        // palette's Theme parameter would style the dialog only, not the trigger and the sequence hint outside it.
+        _appliedTheme = State.Theme;
+        await JS.InvokeVoidAsync("document.documentElement.setAttribute", "data-theme", State.Theme);
     }
 
     private BaletteCommand[] BuildCommands() =>
