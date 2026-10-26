@@ -14,7 +14,7 @@
     <ItemGroup>
         <PackageReference Include="MSTest" Version="4.5.1" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.13" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.14" />
     </ItemGroup>
 
     <ItemGroup>
