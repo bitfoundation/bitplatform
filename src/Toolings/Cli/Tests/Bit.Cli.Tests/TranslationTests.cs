@@ -119,6 +119,20 @@ public class TranslationTests
     }
 
     [TestMethod]
+    public async Task AFailedBatch_Should_KeepTheBatchesTranslatedBeforeIt()
+    {
+        using var host = CreateProject(Enumerable.Range(0, TranslationRun.BatchSize + 50).ToDictionary(i => $"Key{i}", i => $"Text {i}"));
+        var client = new FakeTranslationClient { ShortBatch = 2 };
+
+        var exitCode = await new TranslationRun(host.Services, _ => client).RunAsync(new TranslateRequest(null, ["fa"], false, false), CancellationToken.None);
+
+        Assert.AreEqual(CliApp.ExitFailed, exitCode, host.Output);
+        Assert.HasCount(2, client.Batches);
+        Assert.HasCount(TranslationRun.BatchSize, ResxCatalog.Read(Path.Combine(host.WorkingDirectory, "src", "Strings.fa.resx")));
+        StringAssert.Contains(host.FlatOutput, $"Translated {TranslationRun.BatchSize} keys in 2 requests");
+    }
+
+    [TestMethod]
     public async Task Check_Should_FailWithoutCallingAModel()
     {
         using var host = CreateProject(new() { ["Hello"] = "Hello" });
@@ -261,6 +275,8 @@ public class TranslationTests
 
         public int BreakPlaceholders { get; set; }
 
+        public int ShortBatch { get; set; }
+
         public Task<TranslationOutput> TranslateAsync(TranslationBatch batch, CancellationToken cancellationToken)
         {
             Batches.Add(batch);
@@ -275,6 +291,11 @@ public class TranslationTests
 
                 return $"{batch.Target.Name}:{v}";
             }).ToList();
+
+            if (Batches.Count == ShortBatch)
+            {
+                translations.RemoveAt(translations.Count - 1);
+            }
 
             return Task.FromResult(new TranslationOutput(translations, 10, 20));
         }

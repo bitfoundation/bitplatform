@@ -104,12 +104,6 @@ public sealed class TranslationRun(CliServices cli, Func<ResxTranslatorSettings,
                 try
                 {
                     var (translations, skipped) = await TranslateAsync(client, item, progress, ct);
-
-                    if (translations.Count > 0)
-                    {
-                        ResxCatalog.Write(item.Pair, translations);
-                    }
-
                     var detail = $"+{translations.Count} key{(translations.Count == 1 ? "" : "s")}";
 
                     return skipped == 0
@@ -149,48 +143,59 @@ public sealed class TranslationRun(CliServices cli, Func<ResxTranslatorSettings,
         var batches = item.Missing.Chunk(BatchSize).ToList();
         var skipped = 0;
 
-        for (var index = 0; index < batches.Count; index++)
+        try
         {
-            progress($"batch {index + 1} of {batches.Count}");
-
-            var batch = batches[index];
-            var result = await TranslateBatchAsync(client, item, [.. batch.Select(kvp => kvp.Value)], reminder: false, cancellationToken);
-            var retry = new List<int>();
-
-            for (var i = 0; i < batch.Length; i++)
+            for (var index = 0; index < batches.Count; index++)
             {
-                if (ChatTranslationClient.PlaceholdersMatch(batch[i].Value, result[i]))
-                {
-                    translations[batch[i].Key] = result[i];
-                }
-                else
-                {
-                    retry.Add(i);
-                }
-            }
+                progress($"batch {index + 1} of {batches.Count}");
 
-            if (retry.Count > 0)
-            {
-                progress($"batch {index + 1} of {batches.Count}, retrying {retry.Count} with placeholder problems");
-                var second = await TranslateBatchAsync(client, item, [.. retry.Select(i => batch[i].Value)], reminder: true, cancellationToken);
+                var batch = batches[index];
+                var result = await TranslateBatchAsync(client, item, [.. batch.Select(kvp => kvp.Value)], reminder: false, cancellationToken);
+                var retry = new List<int>();
 
-                for (var r = 0; r < retry.Count; r++)
+                for (var i = 0; i < batch.Length; i++)
                 {
-                    var original = batch[retry[r]];
-
-                    if (ChatTranslationClient.PlaceholdersMatch(original.Value, second[r]))
+                    if (ChatTranslationClient.PlaceholdersMatch(batch[i].Value, result[i]))
                     {
-                        translations[original.Key] = second[r];
+                        translations[batch[i].Key] = result[i];
                     }
                     else
                     {
-                        skipped++;
+                        retry.Add(i);
+                    }
+                }
+
+                if (retry.Count > 0)
+                {
+                    progress($"batch {index + 1} of {batches.Count}, retrying {retry.Count} with placeholder problems");
+                    var second = await TranslateBatchAsync(client, item, [.. retry.Select(i => batch[i].Value)], reminder: true, cancellationToken);
+
+                    for (var r = 0; r < retry.Count; r++)
+                    {
+                        var original = batch[retry[r]];
+
+                        if (ChatTranslationClient.PlaceholdersMatch(original.Value, second[r]))
+                        {
+                            translations[original.Key] = second[r];
+                        }
+                        else
+                        {
+                            skipped++;
+                        }
                     }
                 }
             }
         }
+        finally
+        {
+            if (translations.Count > 0)
+            {
+                ResxCatalog.Write(item.Pair, translations);
+            }
 
-        Interlocked.Add(ref translatedKeys, translations.Count);
+            Interlocked.Add(ref translatedKeys, translations.Count);
+        }
+
         return (translations, skipped);
     }
 
