@@ -581,6 +581,8 @@ public static partial class ToolCatalog
 
         private const string SignOutAndIn = "Sign out and back in so your user can run docker without sudo.";
 
+        private static readonly string[] DockerScriptDistributions = ["centos", "fedora", "rhel", "rocky"];
+
         public override string Id => "docker";
 
         public override string Name => "Docker or Podman";
@@ -660,6 +662,7 @@ public static partial class ToolCatalog
                     ? winget with { Commands = [.. winget.Commands, .. PodmanMachine(PodmanInstallPath(context), init: true)] }
                     : null,
                 HostOs.MacOS => Colima(context),
+                _ when context.PackageManagers is { Apt: null, Dnf: not null, Distribution: { } distribution } && DockerScriptDistributions.Contains(distribution) is false => null,
                 _ when context.PackageManagers.Apt is not null || context.PackageManagers.Dnf is not null => new ToolAction
                 {
                     ToolId = Id,
@@ -673,7 +676,9 @@ public static partial class ToolCatalog
                         PackageManagers.Sudo("systemctl", "enable", "--now", "docker")
                     ]
                 },
-                _ => context.PackageManagers.LinuxInstall(Id, "Install Docker", "docker.io docker-buildx", "docker docker-buildx", "docker docker-buildx")
+                _ => context.PackageManagers.LinuxInstall(Id, "Install Docker", "docker.io docker-buildx", "docker docker-buildx", "docker docker-buildx", SignOutAndIn) is { } install
+                    ? install with { Commands = [.. install.Commands, JoinDockerGroup(context), PackageManagers.Sudo("systemctl", "enable", "--now", "docker")] }
+                    : null
             };
         }
 

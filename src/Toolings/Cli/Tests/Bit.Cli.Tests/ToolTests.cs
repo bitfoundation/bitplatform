@@ -135,6 +135,31 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task DockerOnLinux_Should_BeReadyToUseOrLeftToTheDocs()
+    {
+        using var host = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["USER"] = "jane" });
+        AllInstalled(host.Runner);
+        host.Runner.NotFound("docker");
+        host.Runner.Executables["pacman"] = "/usr/bin/pacman";
+        var needs = new ToolNeeds { Aspire = true };
+
+        async Task<ToolCheck> DockerOn(string? distribution) => (await ToolCatalog.CheckAsync(new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner) with { Distribution = distribution }), CancellationToken.None)).Single(c => c.Tool.Id == "docker");
+
+        var arch = (await DockerOn("arch")).Action!;
+        CollectionAssert.AreEqual(new[] { "pacman -Syu --noconfirm --needed docker docker-buildx", "usermod -aG docker jane", "systemctl enable --now docker" }, arch.Commands.Select(c => c.CommandLine).ToArray(), "A stale package database fails the download, and the daemon has to run for the user.");
+        Assert.AreEqual("Sign out and back in so your user can run docker without sudo.", arch.AfterInstall);
+
+        host.Runner.Executables.Remove("pacman");
+        host.Runner.Executables["dnf"] = "/usr/bin/dnf";
+
+        Assert.AreEqual("Install Docker Engine", (await DockerOn("rocky")).Action!.Title);
+
+        var alma = await DockerOn("almalinux");
+        Assert.IsNull(alma.Action, "get.docker.com rejects AlmaLinux and Amazon Linux.");
+        Assert.AreEqual("https://docs.docker.com/engine/install/", alma.Manual);
+    }
+
+    [TestMethod]
     public async Task Podman_Should_CountAsTheContainerRuntime()
     {
         using var host = new TestHost(HostOs.Windows);
