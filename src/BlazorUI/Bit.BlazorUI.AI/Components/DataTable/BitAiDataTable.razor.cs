@@ -13,10 +13,10 @@ public partial class BitAiDataTable : BitAiComponentBase
     private readonly List<string> _columns = [];
     private readonly HashSet<string> _columnNames = new(StringComparer.Ordinal);
     private JsonElement[] _rows = [];
-    // The value the table was last built from. Blazor takes a JsonElement for changed on every render of the parent, so
-    // the table is built again only when Rows is another element: the struct's own equality holds for the same element of
-    // the same document, and a document never changes once parsed.
+    // The value the table was last built from, and its kind as it was read then. Blazor takes a JsonElement for changed on
+    // every render of the parent, so the table is built again only when Rows is another element (see IsBuiltFrom).
     private JsonElement _builtFrom;
+    private JsonValueKind _builtKind;
 
 
 
@@ -68,9 +68,10 @@ public partial class BitAiDataTable : BitAiComponentBase
     {
         CascadingParameters?.UpdateParameters(this);
 
-        if (Rows.Equals(_builtFrom) is false)
+        if (IsBuiltFrom(Rows) is false)
         {
             _builtFrom = Rows;
+            _builtKind = Rows.ValueKind;
             _columns.Clear();
             _columnNames.Clear();
 
@@ -98,6 +99,22 @@ public partial class BitAiDataTable : BitAiComponentBase
     }
 
 
+
+    // Whether the table was built from this very element. JsonElement defines no equality of its own - its static
+    // DeepEquals walks the contents - so Equals falls to ValueType.Equals, which compares the two private fields of the
+    // struct, the document and the index into it, through reflection: the same element of the same document, which is
+    // what is wanted, since a document never changes once parsed. The kinds are compared first, which settles no rows at
+    // all (the default element) and rows of another kind without it. The kind of the element built from is the one read
+    // then, as its document may have been disposed of since.
+    private bool IsBuiltFrom(JsonElement rows)
+    {
+        var kind = rows.ValueKind;
+
+        if (kind != _builtKind) return false;
+        if (kind is JsonValueKind.Undefined) return true;
+
+        return rows.Equals(_builtFrom);
+    }
 
     private static string Cell(JsonElement row, string column)
     {

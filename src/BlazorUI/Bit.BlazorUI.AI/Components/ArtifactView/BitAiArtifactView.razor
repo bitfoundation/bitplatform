@@ -151,13 +151,13 @@
                     style="@Styles?.Frame"
                     class="bit-aiatv-frm @Classes?.Frame"></iframe>
         }
-        else if (kind == BitAiArtifactKind.Json && BitAiPartialJson.TryParse(content) is { } json)
+        else if (kind == BitAiArtifactKind.Json && ParsedJson(content) is { } json)
         {
             <div style="@Styles?.Content" class="bit-aiatv-jsn @Classes?.Content">
                 <BitAiJsonView Value="json" />
             </div>
         }
-        else if (kind == BitAiArtifactKind.Table && LooksLikeJson(content) && BitAiPartialJson.TryParse(content) is { } rows)
+        else if (kind == BitAiArtifactKind.Table && LooksLikeJson(content) && ParsedJson(content) is { } rows)
         {
             if (rows.ValueKind is JsonValueKind.Array)
             {

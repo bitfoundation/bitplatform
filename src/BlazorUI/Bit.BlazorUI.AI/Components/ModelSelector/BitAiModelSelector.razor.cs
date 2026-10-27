@@ -16,9 +16,6 @@ public partial class BitAiModelSelector : BitAiComponentBase
     private BitAiModel? _selected;
     private List<BitAiModel> _models = [];
     private List<BitDropdownItem<string>> _items = [];
-    // What the items were last built from. A parent re-rendering - a chat streaming its answer, say - hands the same
-    // models again, and items built anew would be a change of Items to the dropdown each time.
-    private (IReadOnlyList<BitAiModel>? Source, int Count, IBitAiModelCatalog? Catalog, bool ShowDeprecated, BitAiModelCapabilities Required, BitAiStrings? Strings) _builtFor;
 
 
 
@@ -70,9 +67,8 @@ public partial class BitAiModelSelector : BitAiComponentBase
     /// The models to offer, in place of those of the catalog, for a host that filters them by entitlement.
     /// </summary>
     /// <remarks>
-    /// The options are built again when another list is handed in or the one handed in changes its count, the way the
-    /// <c>Items</c> of a <see cref="BitDropdown{TItem, TValue}"/> are read: a model replaced in place shows once the list
-    /// is handed in anew. The same goes for the models of the catalog.
+    /// The options follow the list as it is on each render, a model replaced in place included, and so do those of the
+    /// catalog.
     /// </remarks>
     [Parameter] public IReadOnlyList<BitAiModel>? Models { get; set; }
 
@@ -139,12 +135,7 @@ public partial class BitAiModelSelector : BitAiComponentBase
         var catalog = Catalog ?? _services.GetService(typeof(IBitAiModelCatalog)) as IBitAiModelCatalog;
         var source = Models ?? catalog?.Models ?? [];
 
-        var builtFor = (source, source.Count, catalog, ShowDeprecated, RequiredCapabilities, Strings);
-        if (builtFor != _builtFor)
-        {
-            _builtFor = builtFor;
-            BuildItems(source, catalog);
-        }
+        BuildItems(source, catalog);
 
         _selected = _models.FirstOrDefault(m => m.ModelId == ModelId)
                     ?? _models.FirstOrDefault(m => m.ModelId == catalog?.DefaultModel?.ModelId)
@@ -190,6 +181,10 @@ public partial class BitAiModelSelector : BitAiComponentBase
         }
     }
 
+    // The options are built on every render, from the models as they are now and the strings as they read now: a model
+    // replaced in place of another, or strings that follow the culture, show at once. A parent re-rendering - a chat
+    // streaming its answer, say - mostly hands the same models again though, and items built anew would be a change of
+    // Items to the dropdown each time, so the dropdown keeps the items it has while they read the same.
     private void BuildItems(IReadOnlyList<BitAiModel> source, IBitAiModelCatalog? catalog)
     {
         _models = source.Where(m => ShowDeprecated || m.IsDeprecated is false)
@@ -202,17 +197,17 @@ public partial class BitAiModelSelector : BitAiComponentBase
         // then gathered under a header of their own rather than left looking like members of the group above them.
         var grouped = labelled.Any(m => m.Label is { Length: > 0 });
 
-        _items = [];
+        List<BitDropdownItem<string>> items = [];
         foreach (var group in labelled.GroupBy(m => grouped ? m.Label ?? Strings.OtherModels : null, m => m.Model))
         {
             if (group.Key is { Length: > 0 } label)
             {
-                _items.Add(new() { ItemType = BitDropdownItemType.Header, Text = label });
+                items.Add(new() { ItemType = BitDropdownItemType.Header, Text = label });
             }
 
             foreach (var model in group)
             {
-                _items.Add(new()
+                items.Add(new()
                 {
                     Text = model.IsDeprecated ? Strings.ModelDeprecated(model.Name) : model.Name,
                     Value = model.ModelId,
@@ -221,6 +216,31 @@ public partial class BitAiModelSelector : BitAiComponentBase
                 });
             }
         }
+
+        if (ReadTheSame(items, _items) is false)
+        {
+            _items = items;
+        }
+    }
+
+    // Whether two lists of options show the same: every option of one is the same kind, value, text, tooltip and icon as
+    // the one of the other at its place.
+    private static bool ReadTheSame(List<BitDropdownItem<string>> items, List<BitDropdownItem<string>> others)
+    {
+        if (items.Count != others.Count) return false;
+
+        for (var i = 0; i < items.Count; i++)
+        {
+            var (item, other) = (items[i], others[i]);
+
+            if (item.ItemType != other.ItemType ||
+                item.Value != other.Value ||
+                item.Text != other.Text ||
+                item.Title != other.Title ||
+                item.IconName != other.IconName) return false;
+        }
+
+        return true;
     }
 
     private static string? GroupLabel(BitAiModel model, IBitAiModelCatalog? catalog)

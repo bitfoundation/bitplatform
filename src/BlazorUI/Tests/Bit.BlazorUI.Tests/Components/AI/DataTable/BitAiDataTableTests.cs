@@ -99,6 +99,21 @@ public class BitAiDataTableTests : BitAiTestBase
         Assert.AreEqual(2, table.FindAll("tbody tr").Count);
     }
 
+    // Telling the rows handed in from the ones built from reads nothing of the latter, whose document the host may have
+    // disposed of by the time it hands in another.
+    [TestMethod]
+    public void BitAiDataTableShouldFollowAnotherDocumentOnceTheOldOneIsDisposed()
+    {
+        var old = JsonDocument.Parse("""[{"a":1}]""");
+        var table = RenderComponent<BitAiDataTable>(p => p.Add(c => c.Rows, old.RootElement));
+        old.Dispose();
+
+        using var next = JsonDocument.Parse("""[{"b":2}]""");
+        table.Render(p => p.Add(c => c.Rows, next.RootElement));
+
+        CollectionAssert.AreEqual(new[] { "B" }, table.FindAll("th").Select(h => h.TextContent).ToArray());
+    }
+
     [TestMethod]
     public void BitAiDataTableShouldRenderTheRootAndItsParts()
     {

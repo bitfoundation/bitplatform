@@ -239,6 +239,24 @@ public sealed class BitIconFontCutTests
         if (expected.HasValue) Assert.AreEqual(expected.Value, codepoint);
     }
 
+    // The reading of a rule the stylesheet tests above lean on: a comment is no declaration, and the // of an address in
+    // a value is no comment.
+    [TestMethod]
+    public void ARulesDeclarationsShouldBeReadPastItsComments()
+    {
+        var declarations = Declarations("""
+            .x {
+                // the font
+                font-family: "x" !important; // drawn importantly
+                /* a; b: c */ src: url(//cdn.example/x.woff2);
+            }
+            """, ".x");
+
+        CollectionAssert.AreEqual(new[] { "font-family", "src" }, declarations.Keys.ToArray());
+        Assert.AreEqual("\"x\" !important", declarations["font-family"]);
+        Assert.AreEqual("url(//cdn.example/x.woff2)", declarations["src"]);
+    }
+
     // The families the first rule of a stylesheet for the selector lists, in order.
     private static List<string> FontFamilies(string stylesheet, string selector)
     {
@@ -248,14 +266,28 @@ public sealed class BitIconFontCutTests
     }
 
     // The declarations, by property, of the top-level rule of a stylesheet for exactly that selector: ".bit-icon" is not
-    // ".bit-icon.bit-icon" or ".x .bit-icon".
+    // ".bit-icon.bit-icon" or ".x .bit-icon". Its comments are left out - a /* */ one, and a // one that starts a line or
+    // follows a declaration, not the // of an address in a value - and a property declared twice is the last one written.
+    // A rule that nests a block, or holds something that is not a declaration, fails naming the selector rather than with
+    // whatever reading it ran into.
     private static Dictionary<string, string> Declarations(string stylesheet, string selector)
     {
         var match = Regex.Match(stylesheet, $@"(?m)^{Regex.Escape(selector)}\s*\{{(?<body>[^}}]*)\}}");
         Assert.IsTrue(match.Success, $"No {selector} rule.");
-        return match.Groups["body"].Value.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
-                                         .Select(d => d.Split(':', 2))
-                                         .ToDictionary(d => d[0].Trim(), d => d[1].Trim());
+
+        var body = Regex.Replace(match.Groups["body"].Value, @"/\*.*?\*/", string.Empty, RegexOptions.Singleline);
+        body = Regex.Replace(body, @"(?m)(?:^|(?<=;))[ \t]*//[^\n]*", string.Empty);
+        Assert.IsFalse(body.Contains('{'), $"The {selector} rule nests a block, which its declarations are not read past.");
+
+        var declarations = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var declaration in body.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+        {
+            var parts = declaration.Split(':', 2, StringSplitOptions.TrimEntries);
+            Assert.IsTrue(parts is [{ Length: > 0 }, _], $"The {selector} rule holds \"{declaration}\", which is not a declaration.");
+            declarations[parts[0]] = parts[1];
+        }
+
+        return declarations;
     }
 
     // One point, on the curve at the origin: the header, its end point, no instructions, one flag (on curve, x and y the same).

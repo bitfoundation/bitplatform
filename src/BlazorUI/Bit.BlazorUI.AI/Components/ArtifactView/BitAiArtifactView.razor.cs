@@ -32,6 +32,7 @@ public partial class BitAiArtifactView : BitAiComponentBase
     private BitButton? _expandButton;
     private DotNetObjectReference<BitAiArtifactView>? _dotnetObj;
     private (string Page, string Document)? _frameDocument;
+    private (string Content, JsonElement? Value)? _parsedJson;
     private int? _selectedVersion;
     private BitAiArtifact? _subscribed;
     private bool _watchingEscape;
@@ -278,6 +279,20 @@ public partial class BitAiArtifactView : BitAiComponentBase
     private const string FrameEscapeScript =
         "<script>addEventListener('keydown',function(e){if(e.key==='Escape'&&!e.defaultPrevented&&!e.isComposing&&e.keyCode!==229" +
         "&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey)parent.postMessage({bitAiArtifactView:'escape'},'*')})</script>";
+
+    // The JSON a JSON or a table artifact is shown from, kept for the content it was parsed from, as the frame's document
+    // is: a panel rendered again - on every tick while the reply streams on - parses the content anew only once it has
+    // changed, and hands the tree or the table the same element meanwhile, which is what tells the table it has nothing
+    // to build again (see BitAiDataTable).
+    private JsonElement? ParsedJson(string content)
+    {
+        if (_parsedJson is { } parsed && ReferenceEquals(parsed.Content, content)) return parsed.Value;
+
+        var value = BitAiPartialJson.TryParse(content);
+        _parsedJson = (content, value);
+
+        return value;
+    }
 
     // The glyph beside the title, by the kind of the artifact, from this package's own icon font (none of them is in the
     // core's). Whole class names, which are what keeps each glyph in a trimmed icon stylesheet.

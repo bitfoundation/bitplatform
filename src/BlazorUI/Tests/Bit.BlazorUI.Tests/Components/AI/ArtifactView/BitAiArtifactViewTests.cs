@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -94,6 +95,27 @@ public class BitAiArtifactViewTests : BitAiTestBase
         var view = RenderArtifact(Completed(BitAiArtifactKind.Table, "People", """[{"name":"Ada"}]"""));
 
         Assert.HasCount(1, view.FindComponents<BitAiDataTable>());
+    }
+
+    // A panel rendered again - on every tick while the reply streams on - parses its content anew only once it has
+    // changed: the table is handed the same rows meanwhile, which is what tells it it has nothing to build again.
+    [TestMethod]
+    public void AJsonTableIsParsedAgainOnlyForNewContent()
+    {
+        var conversation = new BitAiConversation();
+        var artifact = conversation.GetOrAddArtifact("a1", BitAiArtifactKind.Table, "People");
+        artifact.Append("""[{"name":"Ada"}""");
+        var view = RenderArtifact(artifact);
+        JsonElement Rows() => view.FindComponent<BitAiDataTable>().Instance.Rows;
+        var first = Rows();
+
+        view.Render(p => p.Add(c => c.Artifact, artifact));
+        Assert.IsTrue(first.Equals(Rows()));
+
+        artifact.Append(""",{"name":"Grace"}]""");
+        view.Render(p => p.Add(c => c.Artifact, artifact));
+        Assert.IsFalse(first.Equals(Rows()));
+        Assert.HasCount(2, view.FindAll(".bit-aidtb tbody tr"));
     }
 
     [TestMethod]

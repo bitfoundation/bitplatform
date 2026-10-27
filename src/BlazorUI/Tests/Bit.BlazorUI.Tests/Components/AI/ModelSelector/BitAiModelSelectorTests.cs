@@ -160,10 +160,10 @@ public class BitAiModelSelectorTests : BitAiTestBase
         CollectionAssert.AreEqual(new[] { "One", "Two" }, OptionTexts(picker).ToArray());
     }
 
-    // A dropdown handed new items is a dropdown whose items changed: the picker builds them again only when what they are
-    // built from changes, not on every render of its parent.
+    // A dropdown handed new items is a dropdown whose items changed: the picker hands it new ones only when they read
+    // differently, not on every render of its parent.
     [TestMethod]
-    public void TheOptionsAreBuiltAgainOnlyWhenWhatTheyAreBuiltFromChanges()
+    public void TheDropdownIsHandedNewOptionsOnlyWhenTheyReadDifferently()
     {
         IReadOnlyList<BitAiModel> models = [Alpha, Beta, Old];
         var picker = RenderComponent<BitAiModelSelector>(p => p.Add(c => c.Models, models));
@@ -182,6 +182,50 @@ public class BitAiModelSelectorTests : BitAiTestBase
         picker.Render(p => p.Add(c => c.Models, [Alpha]).Add(c => c.ShowDeprecated, true));
         Assert.AreNotSame(shown, Items());
         CollectionAssert.AreEqual(new[] { "Alpha" }, OptionTexts(picker).ToArray());
+    }
+
+    // A host that keeps one list and replaces a model in it, leaving its count as it was, has the new model offered and
+    // selected - not the one it replaced announced over the value it bound.
+    [TestMethod]
+    public void AModelReplacedInPlaceIsOffered()
+    {
+        var bound = new List<string>();
+        var models = new List<BitAiModel> { Alpha, Beta };
+        var picker = RenderComponent<BitAiModelSelector>(p => p
+            .Add(c => c.Models, models)
+            .Add(c => c.ModelId, "alpha")
+            .Add(c => c.ModelIdChanged, id => bound.Add(id)));
+
+        var gamma = new BitAiModel("gamma", "Gamma") { Family = "A series" };
+        models[0] = gamma;
+        picker.Render(p => p.Add(c => c.Models, models).Add(c => c.ModelId, "gamma"));
+
+        CollectionAssert.AreEqual(new[] { "Gamma", "Beta" }, OptionTexts(picker).ToArray());
+        Assert.AreSame(gamma, picker.Instance.Selected);
+        Assert.IsEmpty(bound);
+    }
+
+    // Strings that read the culture, or a localizer, as they are asked are new text in the same object: the options are
+    // labelled with what they read now, as the rest of the chat is.
+    [TestMethod]
+    public void TheOptionsFollowStringsThatReadDifferentlyNow()
+    {
+        var strings = new SwitchableStrings();
+        var loose = new BitAiModel("delta", "Delta");
+        var picker = RenderComponent<BitAiModelSelector>(p => p
+            .Add(c => c.Models, [Alpha, Old, loose])
+            .Add(c => c.ShowDeprecated, true)
+            .Add(c => c.ModelId, "alpha")
+            .Add(c => c.CascadedOptions, BitAiUiOptions.Default with { Strings = strings }));
+
+        Assert.Contains("Old (deprecated)", OptionTexts(picker));
+        Assert.Contains("Other", picker.FindAll(".bit-drp-ihd").Select(g => g.TextContent.Trim()).ToList());
+
+        strings.German = true;
+        picker.Render(p => p.Add(c => c.ModelId, "alpha"));
+
+        Assert.Contains("Old (veraltet)", OptionTexts(picker));
+        Assert.Contains("Andere", picker.FindAll(".bit-drp-ihd").Select(g => g.TextContent.Trim()).ToList());
     }
 
     [TestMethod]
@@ -257,6 +301,15 @@ public class BitAiModelSelectorTests : BitAiTestBase
 
         Assert.IsEmpty(picker.FindAll(".bit-aimds"));
         Assert.IsEmpty(picker.FindAll(".bit-drp"));
+    }
+
+    private sealed class SwitchableStrings : BitAiStrings
+    {
+        public bool German { get; set; }
+
+        public override string OtherModels => German ? "Andere" : "Other";
+
+        public override string ModelDeprecated(string name) => German ? $"{name} (veraltet)" : $"{name} (deprecated)";
     }
 
     private sealed class TestCatalog(IReadOnlyList<BitAiModel> models, BitAiModel? defaultModel) : IBitAiModelCatalog
