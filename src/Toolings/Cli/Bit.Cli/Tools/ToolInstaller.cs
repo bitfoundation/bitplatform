@@ -106,7 +106,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
 
                 if (useSudo)
                 {
-                    spec = spec with { FileName = "sudo", Arguments = ["-n", command.FileName, .. command.Arguments] };
+                    spec = spec.WithSudo();
                 }
 
                 last = administrator is null ? await cli.Runner.RunAsync(spec, ct) : await administrator.RunAsync(spec, ct);

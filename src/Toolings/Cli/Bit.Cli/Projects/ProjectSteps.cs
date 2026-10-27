@@ -175,12 +175,11 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             {
                 result = await Runner.RunAsync(new ProcessSpec
                 {
-                    FileName = "sudo",
-                    Arguments = ["-n", "dotnet", "workload", "install", .. toInstall],
+                    FileName = "dotnet",
+                    Arguments = ["workload", "install", .. toInstall],
                     WorkingDirectory = project.Directory,
-                    OnOutputLine = progress,
-                    Timeout = TimeSpan.FromMinutes(60)
-                }, cancellationToken);
+                    OnOutputLine = progress
+                }.WithSudo(), cancellationToken);
             }
             else
             {
@@ -725,7 +724,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             if (Runner.FindExecutable("sudo") is null || (await Runner.RunAsync(new ProcessSpec { FileName = "sudo", Arguments = ["-n", "true"], Timeout = TimeSpan.FromSeconds(10) }, cancellationToken)).Succeeded is false)
                 return StepResult.Warning(title, "its system libraries need sudo", followUp);
 
-            dependencies = dependencies with { FileName = "sudo", Arguments = ["-n", driver.Node, .. dependencies.Arguments] };
+            dependencies = dependencies.WithSudo();
         }
 
         var installed = await Runner.RunAsync(dependencies, cancellationToken);
