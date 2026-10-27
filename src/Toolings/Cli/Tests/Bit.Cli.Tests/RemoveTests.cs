@@ -7,6 +7,8 @@ namespace Bit.Cli.Tests;
 [TestClass]
 public class RemoveTests
 {
+    private const string TerminalFolderVariable = "BIT_CLI_TESTS_TERMINAL_FOLDER";
+
     [TestMethod]
     public async Task Remove_Should_ChangeNothingWhenTheAnswerIsNo()
     {
@@ -210,6 +212,53 @@ public class RemoveTests
         finally
         {
             Stop(terminal);
+        }
+    }
+
+    [TestMethod]
+    public async Task Remove_Should_NotWaitForTheTerminalItRunsIn()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        if (Environment.GetEnvironmentVariable(TerminalFolderVariable) is { Length: > 0 } folder)
+        {
+            using var inTerminal = new TestHost(HostOs.Windows, prompter: new ScriptedPrompter());
+            inTerminal.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
+
+            Assert.AreEqual(0, await inTerminal.RunAsync("remove", folder, "--yes"), inTerminal.Output);
+            StringAssert.Contains(inTerminal.FlatOutput, "this terminal is still in it");
+            StringAssert.Contains(inTerminal.FlatOutput, "stays, empty, while this terminal is in it. Run cd .., then delete the folder.");
+            return;
+        }
+
+        using var host = new TestHost(HostOs.Windows);
+        var project = CreateProject(host);
+        var tests = Path.ChangeExtension(typeof(RemoveTests).Assembly.Location, ".exe");
+
+        using var terminal = Process.Start(new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "cmd.exe"), $"/c cd /d \"{project}\" && \"{tests}\" --filter FullyQualifiedName~{nameof(Remove_Should_NotWaitForTheTerminalItRunsIn)}")
+        {
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            CreateNoWindow = true,
+            Environment = { [TerminalFolderVariable] = project }
+        })!;
+
+        var output = terminal.StandardOutput.ReadToEndAsync();
+
+        try
+        {
+            Assert.IsTrue(terminal.WaitForExit(TimeSpan.FromMinutes(1)), "bit remove still waits for the terminal it runs in.");
+            Assert.AreEqual(0, terminal.ExitCode, await output);
+            Assert.IsEmpty(Directory.EnumerateFileSystemEntries(project));
+        }
+        finally
+        {
+            if (terminal.HasExited is false)
+            {
+                terminal.Kill(entireProcessTree: true);
+                terminal.WaitForExit();
+            }
         }
     }
 

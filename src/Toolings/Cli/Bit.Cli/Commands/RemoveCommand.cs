@@ -57,6 +57,7 @@ public static class RemoveCommand
 
             var steps = new StepRunner(cli);
             var onlyEmptyFoldersLeft = false;
+            var terminalInFolder = false;
             IReadOnlyList<string> inFolder = [];
 
             var stoppedBuilds = await ProjectProcesses.StopAsync(cli, steps, folder, cancellationToken);
@@ -90,6 +91,12 @@ public static class RemoveCommand
                 }
 
                 onlyEmptyFoldersLeft = emptyFoldersLeft;
+                terminalInFolder = emptyFoldersLeft && OperatingSystem.IsWindows() && FolderHolders.AncestorIsIn(folder);
+
+                if (terminalInFolder)
+                {
+                    inFolder = [.. inFolder, "this terminal"];
+                }
 
                 foreach (var failure in failures)
                 {
@@ -111,7 +118,7 @@ public static class RemoveCommand
                     : StepResult.Succeeded("Deleted the project folder", after);
             }, token), cancellationToken);
 
-            if (onlyEmptyFoldersLeft && cli.IsInteractive)
+            if (onlyEmptyFoldersLeft && terminalInFolder is false && cli.IsInteractive)
             {
                 onlyEmptyFoldersLeft = await WaitForTheFolderAsync(cli, folder, inFolder, cancellationToken) is false;
             }
@@ -135,7 +142,8 @@ public static class RemoveCommand
 
             if (onlyEmptyFoldersLeft)
             {
-                cli.Console.Out.MarkupLine($"    [grey]{Markup.Escape(folder)} stays, empty, while {Markup.Escape(Describe(inFolder))} {(inFolder.Count > 1 ? "are" : "is")} in it. Close {(inFolder.Count > 1 ? "them" : "it")}, then delete the folder.[/]");
+                var leave = terminalInFolder && inFolder.Count == 1 ? "Run cd .." : $"Close {(inFolder.Count > 1 ? "them" : "it")}";
+                cli.Console.Out.MarkupLine($"    [grey]{Markup.Escape(folder)} stays, empty, while {Markup.Escape(Describe(inFolder))} {(inFolder.Count > 1 ? "are" : "is")} in it. {leave}, then delete the folder.[/]");
             }
 
             return CliApp.ExitOk;

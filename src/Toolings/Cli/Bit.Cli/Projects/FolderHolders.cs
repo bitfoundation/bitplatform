@@ -48,6 +48,26 @@ public static class FolderHolders
         return (current is not null && IsAt(current, root)) || (Read(id, CommandLineOffset) is { } commandLine && ProjectProcesses.Mentions(commandLine, root, current));
     }
 
+    public static bool AncestorIsIn(string folder)
+    {
+        if (Environment.Is64BitProcess is false)
+            return false;
+
+        var root = Path.TrimEndingDirectorySeparator(folder);
+        var seen = new HashSet<int>();
+        var id = Environment.ProcessId;
+
+        while (ParentOf(id) is { } parent && seen.Add(parent))
+        {
+            if (IsIn(parent, root))
+                return true;
+
+            id = parent;
+        }
+
+        return false;
+    }
+
     private static bool IsIn(int id, string root)
     {
         return Read(id, CurrentDirectoryOffset) is { } current && IsAt(current, root);
