@@ -243,53 +243,74 @@ offered to a server, so a page on the circuit cannot quietly open a file the who
 
 ## Projects created from the bit Boilerplate template
 
-A project created with `--offlineDb` registers its `AppOfflineDbContext` with Bit.Besql in
-`Client.Core/Infrastructure/Extensions/IClientCoreServiceCollectionExtensions.cs`, and runs it in the browser, on devices,
-and on the server when the app runs in Blazor Server mode. Moving it over:
+The template itself runs on Bsqlite. A project created with `--offlineDb` from an earlier version registers its
+`AppOfflineDbContext` with Bit.Besql in `Client.Core/Infrastructure/Extensions/IClientCoreServiceCollectionExtensions.cs`,
+and runs it in the browser, on devices, and on the server when the app runs in Blazor Server mode or prerenders. Moving
+it over is what the template did:
 
 1. In `Directory.Packages.props` and `Client.Core.csproj`, replace `Bit.Besql` with `Bit.Bsqlite`. Keep
-   `Microsoft.EntityFrameworkCore.Sqlite`: the Blazor Server registration (step 5 of this list) uses it, and it brings the
-   native SQLite the MAUI and Windows apps open their files with.
-2. In `Client.Web/wwwroot/index.html`, remove the `bit-besql.js` script.
-3. In `Client.Web.csproj`, remove `WasmBuildNative`, and let `WasmStripILAfterAOT` and `Bit.Minifier` apply as they do
-   without an offline database. Keep the `System.Private.Xml.wasm` lazy load that `offlineDb` turned on: the registration
-   in step 4 loads it with `BeforeFirstOpen`, through the `LazyAssemblyLoader` that `Client.Core` already registers.
-4. Replace `AddBesqlDbContextFactory<AppOfflineDbContext>` with Bsqlite's registration. The template's database is
-   `App_Data/AppOffline.db` in the browser's `bit-Besql` cache, and
-   `{local application data}/AC87AA5B-4B37-4E52-8468-2D5DF24AF256/App_Data/AppOffline.db` on devices:
+   `Microsoft.EntityFrameworkCore.Sqlite`: the server registration (step 4) uses it, and it brings the native SQLite the
+   MAUI and Windows apps open their files with.
+2. Remove the `bit-besql.js` script from `Client.Web/wwwroot/index.html` and from `Server.Web/Components/App.razor`.
+3. In `Client.Web.csproj`, remove `WasmBuildNative`. Keep the `System.Private.Xml.wasm` lazy load that `offlineDb` turned
+   on: the registration in step 4 loads it with `BeforeFirstOpen`, through the `LazyAssemblyLoader` that `Client.Core`
+   already registers.
+4. Replace `AddBesqlDbContextFactory<AppOfflineDbContext>` with two registrations: Bsqlite where the app runs on the
+   user's device - the browser and Blazor Hybrid - and a plain SQLite file where it runs on the server - Blazor Server,
+   prerendering, the Docker image's `/container_volume`, and `dotnet ef`, whose `migrations add` and `dbcontext optimize`
+   build the context from `Server.Web`'s services:
 
    ```csharp
-   services.AddBitBsqliteServices(sqlite => sqlite
-       .AddStorageProvider<BsqliteCacheStorageProvider>()
-       .AddStorageProvider<BsqliteOpfsStorageProvider>()
-       .AddStorageProvider<BsqliteIndexedDbStorageProvider>()
-       .UseStorage(s => s.Prefer(BsqliteCacheStorageProvider.ProviderName))
-       .ConfigureFileSystemStorage(o => o.RootDirectory = Path.Combine(
-           Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-           "AC87AA5B-4B37-4E52-8468-2D5DF24AF256"))
-       .BeforeFirstOpen((sp, ct) => sp.GetRequiredService<LazyAssemblyLoader>()
-           .LoadAssembliesAsync(["System.Private.Xml.wasm"]))
-       .AddDatabase("App_Data/AppOffline.db"));
-
-   services.AddBitBsqliteDbContext<AppOfflineDbContext>(options =>
+   if (AppPlatform.IsBlazorHybridOrBrowser)
    {
-       options.Schema = BsqliteSchemaStrategy.None;
-       options.Configure = (sp, builder) => builder
-           .EnableSensitiveDataLogging(AppEnvironment.IsDevelopment())
-           .EnableDetailedErrors(AppEnvironment.IsDevelopment());
-       options.OnFirstUse = async (db, ct) =>
+       services.AddBitBsqliteServices(sqlite => sqlite
+           .AddStorageProvider<BsqliteOpfsStorageProvider>()
+           .AddStorageProvider<BsqliteIndexedDbStorageProvider>()
+           .AddStorageProvider<BsqliteInMemoryStorageProvider>()
+           .UseStorage(storage => storage
+               .Prefer(BsqliteOpfsStorageProvider.ProviderName)
+               .Fallback(BsqliteIndexedDbStorageProvider.ProviderName)
+               .Fallback(BsqliteInMemoryStorageProvider.ProviderName)
+               .AllowNonPersistentFallback())
+           .BeforeFirstOpen(async (sp, _) =>
+           {
+               if (AppPlatform.IsBrowser)
+               {
+                   await sp.GetRequiredService<LazyAssemblyLoader>().LoadAssembliesAsync(["System.Private.Xml.wasm"]);
+               }
+           })
+           .AddDatabase("AppOffline.db"));
+
+       services.AddBitBsqliteDbContext<AppOfflineDbContext>(options =>
        {
-           // The template's "has not been optimized" check goes here, before migrating.
-           await db.Database.MigrateAsync(ct);
-       };
-   });
+           options.Schema = BsqliteSchemaStrategy.None; // InitializeAsync migrates, once it has checked the compiled model.
+           options.Configure = (_, builder) => builder
+               .EnableSensitiveDataLogging(AppEnvironment.IsDevelopment())
+               .EnableDetailedErrors(AppEnvironment.IsDevelopment());
+           options.OnFirstUse = (db, ct) => db.InitializeAsync(ct);
+       });
+   }
+   else
+   {
+       services.AddDbContextFactory<AppOfflineDbContext, AppOfflineDbContextFactory>(builder =>
+       {
+           // ... the server path of Bit.Besql's registration, UseSqlite on App_Data/AppOffline.db ...
+       }, ServiceLifetime.Scoped);
+   }
    ```
 
-5. Blazor Server mode - including the Docker image's `/container_volume` - is the [Blazor Server](#blazor-server) case:
-   keep a plain `AddDbContextFactory<AppOfflineDbContext>(o => o.UseSqlite(...))` for that host, or run the offline pages
-   on WebAssembly.
-6. In `AppDiagnosticModal.razor.Utils.cs`, remove the `ConfigureSqliteJournalMode()` call that follows
+   `AppOfflineDbContext.InitializeAsync` holds what Bit.Besql's `dbContextInitializer` did - the "has not been optimized"
+   check, then `Database.MigrateAsync` - and `AppOfflineDbContextFactory` runs it once before handing out the first
+   context on the server, the way Bit.Besql's factory did.
+5. In `AppDiagnosticModal.razor.Utils.cs`, remove the `ConfigureSqliteJournalMode()` call that follows
    `EnsureDeletedAsync()`.
 
+The template starts on Bsqlite's defaults, so it does not read what Bit.Besql left behind: `App_Data/AppOffline.db` in the
+browser's `bit-Besql` cache, and `{local application data}/AC87AA5B-4B37-4E52-8468-2D5DF24AF256/App_Data/AppOffline.db`
+on devices. Everything the server has comes back on the next pull; only changes not yet pushed stay behind. To keep them,
+register `BsqliteCacheStorageProvider` first, point `ConfigureFileSystemStorage` at that folder and name the database
+`App_Data/AppOffline.db`, as [Keep your users' data](#4-keep-your-users-data) describes.
+
 `SyncService` and the Todo page already use the async EF API, and CommunityToolkit.Datasync's offline context reads and
-writes through async EF calls only, so neither needs changing.
+writes through async EF calls only, so neither needs changing. The page's and `SyncService`'s contexts share the
+session's connection, and take turns at it: see [Concurrent contexts](getting-started.md#concurrent-contexts).

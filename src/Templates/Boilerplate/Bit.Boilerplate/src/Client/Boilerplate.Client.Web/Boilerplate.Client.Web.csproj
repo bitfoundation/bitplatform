@@ -11,7 +11,6 @@
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
         <!--/+:msbuild-conditional:noEmit -->
         <WasmStripILAfterAOT Condition=" '$(offlineDb)' == 'false'">true</WasmStripILAfterAOT>
-        <WasmBuildNative Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">true</WasmBuildNative>
         <!--/-:msbuild-conditional:noEmit -->
 
         <WasmApplicationEnvironmentName>$(Environment)</WasmApplicationEnvironmentName>
@@ -46,6 +45,7 @@
 
     <!--/+:msbuild-conditional:noEmit -->
     <ItemGroup Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == '' ">
+        <!-- Needed only once the offline database opens, which loads it (See IClientCoreServiceCollectionExtensions). -->
         <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
     </ItemGroup>
     <!--/-:msbuild-conditional:noEmit -->

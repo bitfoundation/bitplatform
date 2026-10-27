@@ -94,6 +94,16 @@ With more than one database registered, name the one a context belongs to: `AddB
 
 Use the async EF API throughout: `ToListAsync`, `SaveChangesAsync`, `MigrateAsync`. Synchronous members throw `BsqliteSynchronousApiNotSupportedException` naming the async overload, because the engine runs in a worker the main thread cannot wait on. Blazor Hybrid keeps the same rule, so code written once runs in both - and its UI thread never waits on the disk either.
 
+### Concurrent contexts
+
+Every context of a session shares its one connection - one SQLite connection in the worker - and every statement is a round trip, so two contexts' operations interleave: a page saving while a sync service pulls, say. They take turns the way two SQLite connections over one file do:
+
+- A transaction - `BeginTransactionAsync`, or the one EF wraps around a `SaveChangesAsync` that writes more than one row - keeps every other context's statements and transactions waiting until it commits or rolls back. They neither join it nor roll back with it.
+- The wait lasts at most the command's `CommandTimeout` (`Database.SetCommandTimeout`), and `BsqliteConnection.DefaultTimeout` for a `BeginTransactionAsync` - 30 seconds each by default, as with Microsoft.Data.Sqlite's busy timeout - and then fails with `BsqliteConcurrencyException` ("database is locked").
+- So code holding a transaction must not wait on another context: that context waits on the transaction, and the wait ends only with the timeout. Finish the transaction first, or use the context that holds it.
+
+ADO.NET commands on the connection itself keep ADO.NET's rule: one that leaves `Transaction` unset runs inside the connection's open transaction.
+
 ### Without the factory
 
 ```csharp

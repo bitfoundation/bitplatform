@@ -80,6 +80,7 @@ interface Session {
     changes: { tables: Set<string>; committed: boolean };
     stmtReadonly: (stmt: number) => number;
     lastInsertRowId: (db: number) => bigint;
+    bindZeroBlob: (stmt: number, index: number, length: number) => number;
 }
 
 /** What `open` is asked for, as the host posts it. */
@@ -232,6 +233,7 @@ async function open({ databaseName, requiredBuild, vfs, limits, foreignKeys, onO
     });
 
     const stmtReadonly = module.cwrap('sqlite3_stmt_readonly', 'number', ['number']);
+    const bindZeroBlob = module.cwrap('sqlite3_bind_zeroblob', 'number', ['number', 'number', 'number']);
     const lastInsertRowId = (db: number) => {
         const lo32 = module.ccall('sqlite3_last_insert_rowid', 'number', ['number'], [db]);
         const hi32 = module.getTempRet0();
@@ -253,6 +255,7 @@ async function open({ databaseName, requiredBuild, vfs, limits, foreignKeys, onO
         changes,
         stmtReadonly,
         lastInsertRowId,
+        bindZeroBlob,
     };
 
     // SQLite defaults foreign keys OFF, and Microsoft.Data.Sqlite turns them ON for every connection
@@ -478,7 +481,7 @@ async function runRequest(current: Session, request: BatchRequest, sink: RowSink
     try {
         for (const stmt of prepared.statements) {
             try {
-                bind(sqlite3, stmt, request.parameters ?? []);
+                bind(current, stmt, request.parameters ?? []);
                 const columnCount = sqlite3.column_count(stmt);
                 const producesRows = columnCount > 0;
 
@@ -793,8 +796,14 @@ function rejectUnsupportedSql(sql: unknown): void {
  * NULL, which turns a misspelled parameter name into wrong results instead of an error. Names are
  * matched with or without their sigil, because ADO.NET callers write `p0` as often as `@p0`, and a
  * statement using positional `?` markers reports no name at all and is matched by position.
+ *
+ * An empty blob is bound with `sqlite3_bind_zeroblob`: wa-sqlite's `bind_blob` copies the bytes into
+ * `sqlite3_malloc(0)`, which is a NULL pointer, and SQLite binds a blob at a NULL pointer as NULL - so
+ * an empty `byte[]`, such as a row version not yet assigned, would fail a NOT NULL column it satisfies
+ * everywhere else.
  */
-function bind(sqlite3: SQLiteAPI, stmt: number, parameters: ReadonlyArray<{ name: string; type: number; value: unknown }>): void {
+function bind(session: Session, stmt: number, parameters: ReadonlyArray<{ name: string; type: number; value: unknown }>): void {
+    const { sqlite3 } = session;
     const count = sqlite3.bind_parameter_count(stmt);
     if (count === 0) {
         return;
@@ -815,7 +824,17 @@ function bind(sqlite3: SQLiteAPI, stmt: number, parameters: ReadonlyArray<{ name
                 + `${parameters.map(p => p.name).join(', ') || '(none)'}.`);
         }
 
-        sqlite3.bind(stmt, i, decodeParameter(parameter));
+        const value = decodeParameter(parameter);
+        if (value instanceof Uint8Array && value.byteLength === 0) {
+            const rc = session.bindZeroBlob(stmt, i, 0);
+            if (rc !== SQLite.SQLITE_OK) {
+                throw new Error(`Binding an empty blob to parameter ${declared ?? `#${i}`} failed with SQLite result code ${rc}.`);
+            }
+
+            continue;
+        }
+
+        sqlite3.bind(stmt, i, value);
     }
 }
 

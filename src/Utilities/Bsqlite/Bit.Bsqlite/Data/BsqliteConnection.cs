@@ -15,9 +15,16 @@ namespace Bit.Bsqlite.Data;
 public sealed class BsqliteConnection : DbConnection
 {
     private readonly IBsqliteTransport _transport;
+    private readonly BsqliteTransactionGate _gate;
     private readonly HashSet<string> _pendingTables = new(StringComparer.OrdinalIgnoreCase);
     private readonly string _database;
     private readonly string _connectionString;
+
+    /// <summary>
+    /// The transaction the code running here began, so a second <c>BeginTransactionAsync</c> from
+    /// the same code is refused rather than left waiting for a transaction only it can end.
+    /// </summary>
+    private readonly AsyncLocal<BsqliteTransaction?> _begunInThisFlow = new();
     private ConnectionState _state = ConnectionState.Closed;
     private bool _disposed;
 
@@ -27,6 +34,7 @@ public sealed class BsqliteConnection : DbConnection
         ArgumentException.ThrowIfNullOrWhiteSpace(databaseName);
 
         _transport = transport;
+        _gate = BsqliteTransactionGate.For(transport);
         _database = databaseName;
         _connectionString = $"Data Source={databaseName}";
 
@@ -47,6 +55,14 @@ public sealed class BsqliteConnection : DbConnection
     public BsqliteRuntimeLimits RuntimeLimits { get; init; } = BsqliteRuntimeLimits.Unrestricted;
 
     /// <summary>
+    /// How long, in seconds, <c>BeginTransactionAsync</c> - and <see cref="ExecuteBatchAsync(IReadOnlyList{BsqliteCommandRequest}, CancellationToken)"/> -
+    /// waits for a transaction another context holds on this database before giving up with
+    /// <see cref="BsqliteConcurrencyException"/>; 0 waits as long as it takes. 30 by default, as
+    /// with Microsoft.Data.Sqlite. Commands wait for their own <c>CommandTimeout</c>.
+    /// </summary>
+    public int DefaultTimeout { get; set; } = 30;
+
+    /// <summary>
     /// The rowid of the most recent successful <c>INSERT</c> executed through this connection, as
     /// SQLite's <c>last_insert_rowid()</c> reports it after the last command completed.
     /// </summary>
@@ -64,7 +80,7 @@ public sealed class BsqliteConnection : DbConnection
     /// </summary>
     /// <remarks>
     /// The command layer does not need this: it reports its own writes through
-    /// <see cref="ExecuteBatchAsync"/>, and writes from other tabs arrive through the transport.
+    /// <see cref="ExecuteBatchAsync(IReadOnlyList{BsqliteCommandRequest}, CancellationToken)"/>, and writes from other tabs arrive through the transport.
     /// </remarks>
     public void NotifyTablesChanged(IEnumerable<string> tables)
     {
@@ -218,11 +234,27 @@ public sealed class BsqliteConnection : DbConnection
         => throw BsqliteSynchronousApiNotSupportedException.ForMember(
             nameof(BeginTransaction), nameof(BeginTransactionAsync));
 
-    protected override async ValueTask<DbTransaction> BeginDbTransactionAsync(
+    /// <summary>
+    /// Begins a transaction once no other one is open on this database, waiting for it at most
+    /// <see cref="DefaultTimeout"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A transaction another context holds is waited for, the way a second SQLite connection waits
+    /// for the file lock: every context of a session shares this connection, and EF begins one
+    /// around any <c>SaveChangesAsync</c> that writes more than one row.
+    /// </para>
+    /// <para>
+    /// A second begin from the code that holds the transaction is refused at once instead, since
+    /// SQLite does not nest transactions and waiting would never end. Not async itself, so the
+    /// transaction is recorded in the caller's flow - an <c>await</c> would keep it to this method.
+    /// </para>
+    /// </remarks>
+    protected override ValueTask<DbTransaction> BeginDbTransactionAsync(
         IsolationLevel isolationLevel,
         CancellationToken cancellationToken)
     {
-        if (CurrentTransaction is not null)
+        if (CurrentTransaction is { } active && ReferenceEquals(_begunInThisFlow.Value, active))
         {
             throw new InvalidOperationException(
                 "A transaction is already active on this connection. SQLite does not nest "
@@ -230,7 +262,28 @@ public sealed class BsqliteConnection : DbConnection
         }
 
         var transaction = new BsqliteTransaction(this, isolationLevel);
-        await transaction.BeginAsync(cancellationToken).ConfigureAwait(false);
+        _begunInThisFlow.Value = transaction;
+        return BeginCoreAsync(transaction, cancellationToken);
+    }
+
+    private async ValueTask<DbTransaction> BeginCoreAsync(
+        BsqliteTransaction transaction,
+        CancellationToken cancellationToken)
+    {
+        // Before waiting: a begin cancelled up front sends nothing and takes no turn.
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var turn = await _gate.EnterAsync(DefaultTimeout, _database, cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await transaction.BeginAsync(turn, cancellationToken).ConfigureAwait(false);
+        }
+        catch
+        {
+            turn.Dispose();
+            throw;
+        }
+
         CurrentTransaction = transaction;
         return transaction;
     }
@@ -251,9 +304,36 @@ public sealed class BsqliteConnection : DbConnection
     /// Runs a batch of requests in one transport round trip and returns one result per request.
     /// This is the lowest-level execution path; commands and batches are built on it.
     /// </summary>
-    public async Task<IReadOnlyList<BsqliteCommandResult>> ExecuteBatchAsync(
+    /// <remarks>
+    /// With a <see cref="BsqliteTransaction"/> open on this connection the batch runs inside it.
+    /// Otherwise it waits, at most <see cref="DefaultTimeout"/>, for a transaction another
+    /// connection over the same transport holds.
+    /// </remarks>
+    public Task<IReadOnlyList<BsqliteCommandResult>> ExecuteBatchAsync(
         IReadOnlyList<BsqliteCommandRequest> batch,
         CancellationToken cancellationToken = default)
+        => ExecuteBatchAsync(batch, transaction: null, explicitEnlistment: false, DefaultTimeout, cancellationToken);
+
+    /// <summary>
+    /// Runs <paramref name="batch"/> inside the open transaction it belongs to, or on a turn of its
+    /// own once no transaction is open.
+    /// </summary>
+    /// <param name="batch">The requests.</param>
+    /// <param name="transaction">The transaction the command or batch was given, if any.</param>
+    /// <param name="explicitEnlistment">
+    /// Whether <paramref name="transaction"/> says everything: true for EF Core's commands, which
+    /// name the transaction of their context whenever it has one, so a command without one comes
+    /// from a context that is not in the open transaction and waits for it to end. False for ADO.NET
+    /// code, whose commands join the connection's open transaction unless told otherwise.
+    /// </param>
+    /// <param name="timeoutSeconds">How long to wait for another context's transaction; 0 is no limit.</param>
+    /// <param name="cancellationToken">Stops the wait, and the wait for the result.</param>
+    internal async Task<IReadOnlyList<BsqliteCommandResult>> ExecuteBatchAsync(
+        IReadOnlyList<BsqliteCommandRequest> batch,
+        DbTransaction? transaction,
+        bool explicitEnlistment,
+        int timeoutSeconds,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(batch);
 
@@ -265,6 +345,28 @@ public sealed class BsqliteConnection : DbConnection
             BsqliteFeatureGuards.EnsureSupported(batch[i].CommandText, RuntimeLimits);
         }
 
+        var active = CurrentTransaction;
+        if (transaction is not null && !ReferenceEquals(transaction, active))
+        {
+            throw new InvalidOperationException(
+                "The command's transaction is not the one open on its connection: it has already been "
+                + "committed or rolled back, or it belongs to another connection.");
+        }
+
+        if (active is not null && (transaction is not null || !explicitEnlistment))
+        {
+            // The open transaction holds the turn already.
+            return await ExecuteOnTransportAsync(batch, cancellationToken).ConfigureAwait(false);
+        }
+
+        using var turn = await _gate.EnterAsync(timeoutSeconds, _database, cancellationToken).ConfigureAwait(false);
+        return await ExecuteOnTransportAsync(batch, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<IReadOnlyList<BsqliteCommandResult>> ExecuteOnTransportAsync(
+        IReadOnlyList<BsqliteCommandRequest> batch,
+        CancellationToken cancellationToken)
+    {
         IReadOnlyList<BsqliteCommandResult> results;
         try
         {
@@ -323,7 +425,10 @@ public sealed class BsqliteConnection : DbConnection
             ? await locks.AcquireLockAsync(name, cancellationToken).ConfigureAwait(false)
             : null;
 
-    /// <summary>Runs a statement that returns nothing, bypassing command plumbing.</summary>
+    /// <summary>
+    /// Runs a statement that returns nothing, bypassing command plumbing - and turns: only a
+    /// transaction's own statements come here, and the transaction holds the turn.
+    /// </summary>
     internal async Task ExecuteInternalAsync(string sql, CancellationToken cancellationToken)
     {
         BsqliteFeatureGuards.EnsureSupported(sql, RuntimeLimits);

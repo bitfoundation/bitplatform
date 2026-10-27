@@ -54,6 +54,15 @@ public static class BsqliteDbContextOptionsExtensions
         // EF Core 10 reads new SqliteConnection().ServerVersion while compiling queries.
         // That requires a PCL provider; WASM has no e_sqlite3 bundle.
         BsqlitePcl.EnsureInitialized();
+
+        // A compiled model (dotnet ef dbcontext optimize) builds itself on a thread of its own, with a larger stack,
+        // unless this switch is on - and Blazor WebAssembly cannot start a thread, so the model's type initializer
+        // throws PlatformNotSupportedException. The generated code reads the switch when the model is first used,
+        // which is after this. https://github.com/dotnet/efcore/issues/31751
+        if (OperatingSystem.IsBrowser())
+        {
+            AppContext.SetSwitch("Microsoft.EntityFrameworkCore.Issue31751", true);
+        }
         optionsBuilder.UseSqlite(connection, contextOwnsConnection, sqliteOptionsAction);
         ReplaceSyncBoundServices(optionsBuilder);
 
@@ -65,6 +74,10 @@ public static class BsqliteDbContextOptionsExtensions
         if (connection is BsqliteConnection)
         {
             optionsBuilder.ConfigureWarnings(w => w.Ignore(SqliteEventId.UnexpectedConnectionTypeWarning));
+
+            // Contexts of a session share the connection; this keeps each one out of the others'
+            // transactions. See BsqliteCommandEnlistmentInterceptor.
+            optionsBuilder.AddInterceptors(BsqliteCommandEnlistmentInterceptor.Instance);
         }
 
         return optionsBuilder;

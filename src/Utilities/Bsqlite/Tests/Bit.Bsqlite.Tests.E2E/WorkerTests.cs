@@ -334,6 +334,24 @@ public sealed class WorkerTests : BsqliteTest
         CollectionAssert.AreEqual(bytes, result.Rows[0][0].GetProperty("blob").EnumerateArray().Select(b => b.GetByte()).ToArray());
     }
 
+    /// <summary>
+    /// An empty <c>byte[]</c> is a blob, not NULL - an entity's row version before the server assigns one, say,
+    /// in a NOT NULL column. wa-sqlite's bind_blob copies into sqlite3_malloc(0), which is NULL, and SQLite binds
+    /// a blob at NULL as NULL.
+    /// </summary>
+    [TestMethod]
+    public async Task Value_round_tripping_keeps_an_empty_blob_a_blob()
+    {
+        await OpenAsync();
+
+        await ExecAsync(Page, "CREATE TABLE blobs (b BLOB NOT NULL)");
+        await ExecAsync(Page, "INSERT INTO blobs (b) VALUES (@b)", WireParameter.Blob("@b"));
+
+        var result = await QueryAsync(Page, "SELECT typeof(b), length(b) FROM blobs");
+
+        AssertJson.AreEqual("""[["blob", 0]]""", result.Rows);
+    }
+
     // ---------------------------------------------------------------------------------------------
     // request serialization
     // ---------------------------------------------------------------------------------------------

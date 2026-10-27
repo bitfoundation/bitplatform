@@ -378,7 +378,7 @@ For client-side databases:
 
 **DbContext Location:** [`/src/Client/Boilerplate.Client.Core/Infrastructure/Data/AppOfflineDbContext.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Data/AppOfflineDbContext.cs)
 
-**Technology:** [bit Besql](https://bitplatform.dev/besql) - EF Core SQLite for Blazor
+**Technology:** [bit Bsqlite](https://bsqlite.bitplatform.dev) - EF Core SQLite for Blazor, in the browser (OPFS or IndexedDB) and in Blazor Hybrid (a file on the device). Blazor Server and pre-rendering use a plain SQLite file on the server instead.
 
 ```csharp
 public partial class AppOfflineDbContext(DbContextOptions<AppOfflineDbContext> options) : OfflineDbContext(options)
@@ -389,13 +389,18 @@ public partial class AppOfflineDbContext(DbContextOptions<AppOfflineDbContext> o
 
 ### How Migrations Are Applied
 
-Migrations are **automatically applied** when the application starts on the client:
+Migrations are **automatically applied** the first time the app creates an `AppOfflineDbContext`:
 
-**File:** [`/src/Client/Boilerplate.Client.Core/Infrastructure/Extensions/IClientCoreServiceCollectionExtensions.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Extensions/IClientCoreServiceCollectionExtensions.cs)
+**File:** [`/src/Client/Boilerplate.Client.Core/Infrastructure/Data/AppOfflineDbContext.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Data/AppOfflineDbContext.cs)
 ```csharp
-dbContextInitializer: async (sp, dbContext) => 
-    await Task.Run(async () => await dbContext.Database.MigrateAsync())
+public async Task InitializeAsync(CancellationToken cancellationToken)
+{
+    // ... throws outside Development when the compiled model has not been generated ...
+    await Database.MigrateAsync(cancellationToken);
+}
 ```
+
+[`IClientCoreServiceCollectionExtensions.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Extensions/IClientCoreServiceCollectionExtensions.cs) runs it from Bsqlite's `OnFirstUse` in the browser and in Blazor Hybrid, and [`AppOfflineDbContextFactory`](/src/Client/Boilerplate.Client.Core/Infrastructure/Data/AppOfflineDbContextFactory.cs) runs it on the server.
 
 This ensures:
 - First-time users get the initial schema

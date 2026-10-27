@@ -132,6 +132,73 @@ public sealed class BsqliteTransactionTests
     }
 
     /// <summary>
+    /// Two connections over one transport are one SQLite connection in the engine, so a statement
+    /// from the second would run inside the first one's transaction - and roll back with it. It
+    /// waits for the transaction to end instead, as it would for a second connection's file lock.
+    /// </summary>
+    [TestMethod]
+    public async Task AnotherConnectionsCommand_WaitsForTheTransaction_AndOutlivesItsRollback()
+    {
+        await using var transport = new BsqliteInProcessTransport();
+        await using var first = new BsqliteConnection(transport, "tx.db");
+        await using var second = new BsqliteConnection(transport, "tx.db");
+        await first.OpenAsync(Ct);
+        await second.OpenAsync(Ct);
+        await ExecuteAsync(first, "CREATE TABLE product (id INTEGER PRIMARY KEY, name TEXT)");
+
+        await using (var transaction = await first.BeginTransactionAsync(Ct))
+        {
+            await ExecuteAsync(first, "INSERT INTO product (name) VALUES ('Ghost')");
+
+            var insert = ExecuteAsync(second, "INSERT INTO product (name) VALUES ('Kept')");
+            await Task.Delay(100, Ct);
+            Assert.IsFalse(insert.IsCompleted);
+
+            await transaction.RollbackAsync(Ct);
+            await insert;
+        }
+
+        Assert.AreEqual(1L, await CountAsync(first));
+    }
+
+    [TestMethod]
+    public async Task ABeginOnTheSameConnection_FromOtherCode_WaitsForTheTransaction()
+    {
+        await using var transport = new BsqliteInProcessTransport();
+        await using var connection = new BsqliteConnection(transport, "tx.db");
+        await connection.OpenAsync(Ct);
+
+        // Begun in a flow of its own - another context sharing the session's connection, say - so
+        // this method is not the code holding it, which would be refused at once instead.
+        var transaction = await BeginInItsOwnFlowAsync(connection);
+
+        var begin = connection.BeginTransactionAsync(Ct).AsTask();
+        await Task.Delay(100, Ct);
+        Assert.IsFalse(begin.IsCompleted);
+
+        await transaction.CommitAsync(Ct);
+        await using var next = await begin;
+        await next.CommitAsync(Ct);
+    }
+
+    [TestMethod]
+    public async Task ABeginOnTheSameConnection_FromTheCodeHoldingTheTransaction_IsRefused()
+    {
+        await using var transport = new BsqliteInProcessTransport();
+        await using var connection = new BsqliteConnection(transport, "tx.db");
+        await connection.OpenAsync(Ct);
+
+        await using var transaction = await connection.BeginTransactionAsync(Ct);
+
+        // Including from work it started: waiting there would wait on the transaction's own holder.
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(
+            () => Task.Run(async () => await connection.BeginTransactionAsync(Ct), Ct));
+    }
+
+    private async Task<System.Data.Common.DbTransaction> BeginInItsOwnFlowAsync(BsqliteConnection connection)
+        => await connection.BeginTransactionAsync(Ct);
+
+    /// <summary>
     /// Runs every batch, then - for the statement it watches - cancels the caller's token and stops
     /// waiting on it, which is what Blazor interop does when a token fires after the call went out.
     /// </summary>

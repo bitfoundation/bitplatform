@@ -1,23 +1,14 @@
-## bit entity framework core sqlite [bit Besql](https://bitplatform.dev/besql)
+## bit entity framework core sqlite [bit Bsqlite](https://bsqlite.bitplatform.dev)
 
-How to use `Bit.Besql`:
+`AppOfflineDbContext` is a regular `Microsoft.EntityFrameworkCore.Sqlite` context, used through [IDbContextFactory](https://learn.microsoft.com/en-us/aspnet/core/blazor/blazor-ef-core?view=aspnetcore-10.0#new-dbcontext-instances). Where its database lives depends on where the app runs (See `IClientCoreServiceCollectionExtensions`):
 
-The usage of `Bit.Besql` is exactly the same as the regular usage of `Microsoft.EntityFrameworkCore.Sqlite` with [IDbContextFactory](https://learn.microsoft.com/en-us/aspnet/core/blazor/blazor-ef-core?view=aspnetcore-10.0#new-dbcontext-instances).
+- **Blazor WebAssembly:** `Bit.Bsqlite` runs SQLite in a dedicated worker and keeps `AppOffline.db` on OPFS, falling back to IndexedDB, then to memory when the browser has neither.
+- **Blazor Hybrid (Android, iOS, Windows and macOS):** `Bit.Bsqlite` keeps `AppOffline.db` as a SQLite file in the app's own folder under local application data.
+- **Blazor Server and pre-rendering:** the database is a plain SQLite file on the server, `App_Data/AppOffline.db` (`/container_volume/App_Data/AppOffline.db` in Docker), created by `AppOfflineDbContextFactory`.
 
-In order to download sqlite db file from browser cache storage in blazor WebAssembly run the followings in browser console:
-```js
-const cache = await caches.open('bit-Besql');
-const resp = await cache.match('/data/cache/App_Data/AppOffline.db');
-const blob = await resp.blob();
-const urlToDownload = URL.createObjectURL(blob);
-const a = document.createElement('a');
-a.href = urlToDownload;
-a.download = 'AppOffline.db';
-a.click();
-URL.revokeObjectURL(urlToDownload);
+Use the async EF Core API only (`ToListAsync`, `SaveChangesAsync`, ...): in the browser the database is in a worker the UI thread cannot wait for, so `Bit.Bsqlite` throws for the synchronous members, and does so in Blazor Hybrid too so that the same code runs everywhere.
 
-https://inloop.github.io/sqlite-viewer/
-```
+In order to download the database from the browser in Blazor WebAssembly, export it with `BsqliteDatabase.ExportAsync()` (inject `BsqliteDatabase`), which returns a consistent SQLite file you can save with `FileSaveService`, then open it with a viewer such as https://inloop.github.io/sqlite-viewer/
 
 **Migration**
 
@@ -33,7 +24,7 @@ dnx dotnet-ef@10.0.14 -- migrations add YourMigrationName --context AppOfflineDb
 
 *Note*: If you encounter any problem in running these commands, first make sure that the solution builds successfully.
 
-*Note*: You may not run `Update-Database` command, because client app should programmatically create database and tables on every device that runs the app using `DbContext.Database.MigrateAsync()` code.
+*Note*: You may not run `Update-Database` command, because client app should programmatically create database and tables on every device that runs the app using `DbContext.Database.MigrateAsync()` code (See `AppOfflineDbContext.InitializeAsync`).
 
 *Compiled Models (required before publishing):*
 
