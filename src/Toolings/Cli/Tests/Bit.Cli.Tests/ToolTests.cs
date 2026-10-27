@@ -72,6 +72,32 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task AnAspireCliThatIsntADotnetTool_Should_UpdateItself()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        var needs = new ToolNeeds { Aspire = true, AspireVersion = new Version(13, 6, 0) };
+        var script = Path.Combine(host.Home, ".aspire", "bin", "aspire");
+        host.Runner.On("aspire", "--version", 0, "13.5.2+5b4c1f0");
+
+        host.Runner.Executables["aspire"] = Path.Combine(host.Home, ".dotnet", "tools", "aspire");
+        CollectionAssert.AreEqual(new[] { "tool", "update", "--global", "Aspire.Cli", "--version", "13.6.0" }, (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "aspire").Action!.Commands.Single().Arguments.ToArray());
+
+        host.Runner.Executables["aspire"] = script;
+        var aspire = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "aspire");
+
+        Assert.AreEqual(script, aspire.Action!.Commands.Single().FileName, "dotnet tool update would leave the aspire that comes first on PATH as it is.");
+        CollectionAssert.AreEqual(new[] { "update", "--self", "--channel", "stable" }, aspire.Action.Commands.Single().Arguments.ToArray());
+
+        var steps = new StepRunner(host.Services);
+        await new ToolInstaller(host.Services, steps).InstallAsync([aspire], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
+
+        var result = steps.Reports.Single(r => r.Id == "aspire").Result;
+        Assert.AreEqual(StepStatus.Warning, result.Status, "The aspire on PATH didn't change.");
+        Assert.AreEqual("still 13.5.2, the AppHost uses Aspire 13.6.0", result.Detail);
+    }
+
+    [TestMethod]
     public async Task Docker_Should_TellNotRunningFromMissing()
     {
         using var host = new TestHost(HostOs.Linux);

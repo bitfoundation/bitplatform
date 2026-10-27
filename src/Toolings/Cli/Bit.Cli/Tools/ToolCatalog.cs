@@ -767,12 +767,16 @@ public static partial class ToolCatalog
             var wanted = context.Needs.AspireVersion?.ToString();
             var outdated = status.State is ToolState.Outdated;
             string[] version = wanted is null ? [] : ["--version", wanted];
+            var aspire = outdated ? context.Runner.FindExecutable("aspire") : null;
+            var dotnetTools = Path.Combine(context.Environment.HomeDirectory, ".dotnet", "tools");
 
             return new ToolAction
             {
                 ToolId = Id,
                 Title = outdated ? $"Update the Aspire CLI to {wanted}" : wanted is null ? "Install the Aspire CLI" : $"Install the Aspire CLI {wanted}",
-                Commands = [new ProcessSpec { FileName = "dotnet", Arguments = ["tool", outdated ? "update" : "install", "--global", "Aspire.Cli", .. version], Timeout = TimeSpan.FromMinutes(10) }]
+                Commands = [aspire is not null && string.Equals(Path.GetDirectoryName(aspire), dotnetTools, StringComparison.OrdinalIgnoreCase) is false
+                    ? new ProcessSpec { FileName = aspire, Arguments = ["update", "--self", "--channel", "stable"], Timeout = TimeSpan.FromMinutes(10) }
+                    : new ProcessSpec { FileName = "dotnet", Arguments = ["tool", outdated ? "update" : "install", "--global", "Aspire.Cli", .. version], Timeout = TimeSpan.FromMinutes(10) }]
             };
         }
 
