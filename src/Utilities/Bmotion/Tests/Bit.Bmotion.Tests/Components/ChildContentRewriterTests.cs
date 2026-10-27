@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 // Frame inspection intentionally uses the same framework-internal RenderTree APIs as the
 // rewriter under test (see the note in BmotionChildContentRewriter).
@@ -347,6 +349,25 @@ public class ChildContentRewriterTests
     }
 
     [TestMethod]
+    public async Task Rerender_AnAuthorAttributeAppearingOrGoing_LeavesTheInjectedStyleAlone()
+    {
+        // The engine animates the element's inline style from JS, so the render tree's style is the initial one long
+        // after the first render: writing it again snaps the element back. A bool attribute set to false (or a null
+        // one) has no frame at all, so toggling it changes which attributes the diff has to line up.
+        var renderer = new EditRecorder();
+        var component = new ToggledAttribute();
+        var id = renderer.Attach(component);
+        await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRoot(id));
+
+        foreach (var expected in new[] { "set inert", "remove inert" })
+        {
+            renderer.Edits.Clear();
+            await renderer.Dispatcher.InvokeAsync(component.Toggle);
+            CollectionAssert.AreEqual(new[] { expected }, renderer.Edits, string.Join(", ", renderer.Edits));
+        }
+    }
+
+    [TestMethod]
     public void Render_PreservesMarkupAndText()
     {
         var (frames, count, _) = Rewrite(b =>
@@ -371,5 +392,52 @@ public class ChildContentRewriterTests
     private sealed class DummyComponent : ComponentBase
     {
         [Parameter] public int Value { get; set; }
+    }
+
+    private sealed class ToggledAttribute : ComponentBase
+    {
+        private bool _inert;
+
+        public void Toggle()
+        {
+            _inert = _inert is false;
+            StateHasChanged();
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+            => BmotionChildContentRewriter.Render(builder, b =>
+            {
+                b.OpenElement(0, "ul");
+                b.AddAttribute(1, "class", "tiles");
+                b.AddAttribute(2, "inert", _inert);
+                b.CloseElement();
+            }, DefaultPlan);
+    }
+
+    /// <summary>A renderer that records the attribute edits each render sends to the DOM.</summary>
+    private sealed class EditRecorder() : Renderer(new ServiceCollection().BuildServiceProvider(), NullLoggerFactory.Instance)
+    {
+        public List<string> Edits { get; } = new();
+
+        public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
+
+        public int Attach(IComponent component) => AssignRootComponentId(component);
+
+        public Task RenderRoot(int componentId) => RenderRootComponentAsync(componentId);
+
+        protected override void HandleException(Exception exception) => throw exception;
+
+        protected override Task UpdateDisplayAsync(in RenderBatch batch)
+        {
+            for (var i = 0; i < batch.UpdatedComponents.Count; i++)
+                foreach (var edit in batch.UpdatedComponents.Array[i].Edits)
+                {
+                    if (edit.Type == RenderTreeEditType.SetAttribute)
+                        Edits.Add("set " + batch.ReferenceFrames.Array[edit.ReferenceFrameIndex].AttributeName);
+                    else if (edit.Type == RenderTreeEditType.RemoveAttribute)
+                        Edits.Add("remove " + edit.RemovedAttributeName);
+                }
+            return Task.CompletedTask;
+        }
     }
 }

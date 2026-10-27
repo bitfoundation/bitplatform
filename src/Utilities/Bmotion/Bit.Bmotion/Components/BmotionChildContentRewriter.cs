@@ -177,22 +177,26 @@ internal static class BmotionChildContentRewriter
 
         var injection = plan(element.ElementName, authorId, authorStyle);
 
-        for (var k = start; k < attrEnd; k++)
-        {
-            ref var attr = ref frames[k];
-            if (string.Equals(attr.AttributeName, "id", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(attr.AttributeName, "style", StringComparison.OrdinalIgnoreCase))
-                continue; // replaced by the injected values below
-            o.AddAttribute(attr.Sequence, attr.AttributeName, attr.AttributeValue);
-        }
-
-        // Attribute diffing is name-based, so reusing the element's sequence number is safe.
+        // The injected attributes go first, at the element's own sequence number - below every attribute authored on
+        // it - so the run stays in ascending sequence order. Blazor diffs attributes as a merge-join on sequence
+        // numbers: placed after the author's, an author attribute appearing or going (a false bool or a null value
+        // has no frame) would read as the id and style being removed and added again, and adding the style again
+        // writes the initial style over whatever the engine has animated the element to since.
         o.AddAttribute(element.Sequence, "id", injection.Id);
         var mergedStyle = MergeStyles(injection.MotionStyle, authorStyle);
         if (!string.IsNullOrEmpty(mergedStyle))
             o.AddAttribute(element.Sequence, "style", mergedStyle);
         if (injection.AddPathLength && !authorPathLength)
             o.AddAttribute(element.Sequence, "pathLength", "1");
+
+        for (var k = start; k < attrEnd; k++)
+        {
+            ref var attr = ref frames[k];
+            if (string.Equals(attr.AttributeName, "id", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(attr.AttributeName, "style", StringComparison.OrdinalIgnoreCase))
+                continue; // replaced by the injected values above
+            o.AddAttribute(attr.Sequence, attr.AttributeName, attr.AttributeValue);
+        }
 
         return attrEnd;
     }

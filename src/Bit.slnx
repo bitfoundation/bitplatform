@@ -144,6 +144,25 @@
     <Project Path="Utilities/Bmotion/Demo/Client/Bit.Bmotion.Demo.Client.csproj" />
     <Project Path="Utilities/Bmotion/Demo/Server/Bit.Bmotion.Demo.Server.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Bmotion/Samples/">
+    <Project Path="Utilities/Bmotion/Samples/Maui/Bit.Bmotion.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Utilities/Bmotion/Samples/Auto/">
+    <Project Path="Utilities/Bmotion/Samples/Auto/Bit.Bmotion.Samples.Auto/Bit.Bmotion.Samples.Auto.csproj" />
+    <Project Path="Utilities/Bmotion/Samples/Auto/Bit.Bmotion.Samples.Auto.Client/Bit.Bmotion.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bmotion/Samples/Core/">
+    <Project Path="Utilities/Bmotion/Samples/Core/Bit.Bmotion.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bmotion/Samples/Server/">
+    <Project Path="Utilities/Bmotion/Samples/Server/Bit.Bmotion.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Utilities/Bmotion/Samples/Wasm/">
+    <Project Path="Utilities/Bmotion/Samples/Wasm/Bit.Bmotion.Samples.Wasm/Bit.Bmotion.Samples.Wasm.csproj" />
+    <Project Path="Utilities/Bmotion/Samples/Wasm/Bit.Bmotion.Samples.Wasm.Client/Bit.Bmotion.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Bmotion/Tests/">
     <Project Path="Utilities/Bmotion/Tests/Bit.Bmotion.Tests/Bit.Bmotion.Tests.csproj" />
     <Project Path="Utilities/Bmotion/Tests/Bit.Bmotion.Tests.E2E/Bit.Bmotion.Tests.E2E.csproj" />

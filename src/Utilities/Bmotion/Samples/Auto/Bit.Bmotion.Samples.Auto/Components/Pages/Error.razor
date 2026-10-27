@@ -1,0 +1,14 @@
+﻿@page "/Error"
+@attribute [ExcludeFromInteractiveRouting]
+
+<PageTitle>Error</PageTitle>
+
+<h1>Error</h1>
+<p>An error occurred while processing your request.</p>
+
+@if (string.IsNullOrEmpty(RequestId) is false)
+{
+    <p><strong>Request ID:</strong> <code>@RequestId</code></p>
+}
+
+<a href="" class="btn">Back to the samples</a>
