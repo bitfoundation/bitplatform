@@ -278,6 +278,35 @@ public class AotProfileTests
         StringAssert.Contains(host.FlatOutput, "Used the app 1 page, 1 step");
     }
 
+    [TestMethod]
+    public async Task ABrowserThatIsStarting_Should_BeStoppedWhenTheRunIsCanceled()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost();
+        var held = Path.Combine(host.Root, "held.txt");
+        var browser = Path.Combine(host.Root, "chrome.cmd");
+        File.WriteAllText(browser, $"@ping -n 600 127.0.0.1 > \"{held}\"\r\n");
+        using var cancel = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() => Chromium.LaunchAsync(browser, host.Services.Log, cancel.Token));
+
+        for (var i = 0; i < 50 && File.Exists(held); i++)
+        {
+            try
+            {
+                File.Delete(held);
+            }
+            catch (IOException)
+            {
+                await Task.Delay(100);
+            }
+        }
+
+        Assert.IsFalse(File.Exists(held), "The browser still runs.");
+    }
+
     private static void PublishesAStaticApp(TestHost host)
     {
         host.Runner.On("dotnet", "publish", spec =>
