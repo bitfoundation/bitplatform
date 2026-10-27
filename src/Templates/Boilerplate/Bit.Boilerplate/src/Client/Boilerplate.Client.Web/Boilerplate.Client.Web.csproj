@@ -54,6 +54,18 @@
     <ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' AND '$(PublishAot)' != 'true' ">
         <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.wasm" />
         <BlazorWebAssemblyLazyLoad Condition=" '$(Environment)' != 'Development' " Include="Bit.BevTools.wasm" />
+        <!--#if (signalR == true)-->
+        <BlazorWebAssemblyLazyLoad Include="Microsoft.AspNetCore.SignalR.Client.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Microsoft.AspNetCore.SignalR.Common.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Microsoft.AspNetCore.SignalR.Protocols.Json.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Microsoft.AspNetCore.Http.Connections.Client.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Microsoft.AspNetCore.Http.Connections.Common.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Microsoft.AspNetCore.Connections.Abstractions.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Microsoft.Extensions.Features.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Net.WebSockets.Client.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Net.WebSockets.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Net.ServerSentEvents.wasm" />
+        <!--#endif-->
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" BeforeTargets="ResolveScopedCssInputs" Condition=" '$(DesignTimeBuild)' != 'true' ">

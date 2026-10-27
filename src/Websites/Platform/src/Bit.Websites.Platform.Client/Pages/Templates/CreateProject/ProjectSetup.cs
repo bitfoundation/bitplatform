@@ -18,7 +18,7 @@ public class ProjectSetup
     public bool Notification { get; set; } = true;
     public bool Cloudflare { get; set; } = true;
     public bool Redis { get; set; }
-    public bool SignalR { get; set; }
+    public bool SignalR { get; set; } = true;
     public bool OfflineDb { get; set; }
     public bool Sentry { get; set; }
     public bool AppInsights { get; set; }
@@ -138,7 +138,6 @@ public class ProjectSetup
     {
         Database = "PostgreSQL",
         FilesStorage = "S3",
-        Redis = true,
-        SignalR = true
+        Redis = true
     };
 }
