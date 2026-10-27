@@ -5,8 +5,16 @@ public static class FolderRemover
     public static (IReadOnlyList<PathFailure> Failures, bool OnlyEmptyFoldersLeft) Delete(string folder)
     {
         var failures = new List<PathFailure>();
+        var root = new DirectoryInfo(folder);
 
-        DeleteTree(new DirectoryInfo(folder), failures);
+        if (root.Exists && root.Attributes.HasFlag(FileAttributes.ReparsePoint))
+        {
+            TryDelete(root, failures);
+        }
+        else
+        {
+            DeleteTree(root, failures);
+        }
 
         if (Directory.Exists(folder) is false)
             return ([], false);

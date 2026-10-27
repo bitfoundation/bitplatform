@@ -55,7 +55,7 @@ public sealed class TemplateDiff(CliServices cli)
             options[option] = value;
         }
 
-        var output = Path.GetFullPath(request.Output ?? Path.Combine(Path.GetTempPath(), "bit-diff", $"{name}-{from}-{to}"), cli.Environment.CurrentDirectory);
+        var output = Path.GetFullPath(request.Output ?? Path.Combine(cli.Environment.BitDirectory, "diff", $"{name}-{from}-{to}"), cli.Environment.CurrentDirectory);
 
         if (Directory.Exists(output) && Directory.EnumerateFileSystemEntries(output).Any())
         {

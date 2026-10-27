@@ -112,11 +112,11 @@ bit diff 10.6.2 10.7.0
 bit diff --template-package ../bitplatform/src/Templates/Boilerplate/Bit.Boilerplate
 ```
 
-- It creates the project with each version, the old one first, into one git repository in the temp folder, so the second commit is exactly the upgrade, and writes it as `bit-diff.patch` in that repository too. Your project isn't touched.
+- It creates the project with each version, the old one first, into one git repository in your home folder, so the second commit is exactly the upgrade, and writes it as `bit-diff.patch` in that repository too. Your project isn't touched.
 - In a project, it takes the name, the version and the options from the project's `bit.json`, where the template records them. Pass `from`, `to`, `--name` or any option of `bit new` to change them. `to` defaults to this bit's own version.
 - An option a version doesn't have is left out for that version, and said so.
 - What the template picks at random on every run, like ports, GUIDs, dates and the seeded accounts' password, differs between the two, and so does what `bit new` adds after creating a project.
-- The repository goes to `<temp>/bit-diff/<name>-<from>-<to>`, or `-o <folder>`. Delete it with `bit remove <folder> --yes` when you're done.
+- The repository goes to `~/.bitplatform/diff/<name>-<from>-<to>`, or `-o <folder>`. Delete it with `bit remove <folder> --yes` when you're done.
 
 The project's `upgrade` skill, for the AI coding tools, runs it and applies the changes to your code.
 
@@ -302,7 +302,7 @@ Collect the profile in the job that publishes the app, right before the AOT publ
 - **A private GitHub repository**, only with `--github-repo`, on the account you sign in with. The GitHub CLI keeps that sign-in, and git uses it to push.
 - **Trust entries**, only for the folder `bit new` created or the one you pass to `bit trust`: `projects` in `~/.claude.json`, `trustedFolders` in `~/.copilot/config.json`, `[projects]` in `~/.codex/config.toml`, `~/.gemini/trustedFolders.json`, and VS Code's trust store in `~/.vscode-shared/sharedStorage/state.vscdb` (only while VS Code isn't running). Each file keeps everything else in it. To undo, delete the entry, or use each tool's own trust settings.
 - **bit itself**, when a newer version is out: a copy for the run in `~/.bitplatform/cli`, then `dotnet tool update --global Bit.Cli` once the run ends.
-- **Its own folder**, `~/.bitplatform`: `settings.json`, the template cache, logs, and telemetry not sent yet.
+- **Its own folder**, `~/.bitplatform`: `settings.json`, the template cache, logs, telemetry not sent yet, and the repositories `bit diff` creates.
 
 ## Telemetry
 
