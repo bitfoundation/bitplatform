@@ -38,7 +38,7 @@ public static class SiteInfo
         "targets, custom drag layers and drag handles on the browser's HTML5 drag-and-drop API, with the drag " +
         "state in C#. This site is itself a Blazor app built on it.";
 
-    public static readonly string[] Badges = ["MIT", "net8.0", "net9.0", "net10.0"];
+    public static readonly string[] Badges = ["MIT", "net10.0", "net11.0"];
 
     /// <summary>Words the search palette suggests when a query finds nothing.</summary>
     public static readonly string[] SearchHints = ["dustbin", "sortable", "handle", "nesting", "files"];

@@ -481,12 +481,7 @@ public class LoaderTests : BunitContext
         var activator = scope.ServiceProvider.GetRequiredService<IComponentActivator>();
         Assert.IsInstanceOfType<BevToolsComponentActivator>(activator);
 
-#if NET9_0_OR_GREATER
         Assert.IsNotNull(((ConstructorInjected)activator.CreateInstance(typeof(ConstructorInjected))).Service);
-#else
-        // .NET 8's own activator has no constructor injection: such a component fails without BevTools too.
-        Assert.ThrowsExactly<MissingMethodException>(() => activator.CreateInstance(typeof(ConstructorInjected)));
-#endif
     }
 
     [TestMethod]

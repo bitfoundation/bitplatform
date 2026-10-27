@@ -245,7 +245,6 @@ internal sealed class BelemetryInstrumentAggregator
 
     private static double[]? AdvisedBounds(Instrument instrument)
     {
-#if NET9_0_OR_GREATER
         return instrument switch
         {
             Histogram<double> h => h.Advice?.HistogramBucketBoundaries?.ToArray(),
@@ -254,9 +253,6 @@ internal sealed class BelemetryInstrumentAggregator
             Histogram<int> h => h.Advice?.HistogramBucketBoundaries?.Select(x => (double)x).ToArray(),
             _ => null,
         };
-#else
-        return null;
-#endif
     }
 
     private sealed class PointState(BelemetryAttributes attributes, int boundsLength)

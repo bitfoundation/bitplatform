@@ -1,5 +1,4 @@
-﻿#if NET9_0_OR_GREATER
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Bit.Besql;
 
@@ -16,4 +15,3 @@ public class NoopMigrationsDatabaseLock(IHistoryRepository historyRepository) : 
         return ValueTask.CompletedTask;
     }
 }
-#endif

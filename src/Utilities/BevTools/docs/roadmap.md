@@ -89,8 +89,6 @@ groups (14); `BevSessionCheck` and the `bevtools` tool for CI (15). See progress
 - Senders across an await in a service: a request a service sends after awaiting something of its own has no component
   on its stack. Naming it needs the component carried with the execution context from where BevTools sees it start
   (a lifecycle method, an event), which the framework exposes for events but not for lifecycle methods.
-- Renders per page by route template on .NET 8 and 9, where a navigation is named by its concrete path
-  (`/products/1`, `/products/2` are two rows).
 - The profiler's batch views in the companion and the extension: they need the retained samples in a protocol answer
   of their own, asked for by batch.
 - Publishing `Bit.BevTools.Cli`: it packs as a .NET tool (verified locally) but is in no release workflow yet.

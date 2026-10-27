@@ -52,7 +52,7 @@ order a user makes is the order your code reads back.
   `OnRemove`, `OnUpdate`, `OnSort`, `OnChange`), which also say how the drag was made and whether it was
   cancelled.
 - **Generic and strongly typed**: `Bortable<TItem>`.
-- Works on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, on .NET 8, 9 and 10, and is
+- Works on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, on .NET 10 and 11, and is
   trimming and AOT friendly.
 
 ## Quick start
@@ -91,7 +91,7 @@ The full walkthrough is in [getting started](#getting-started).
 
 ## Requirements
 
-- .NET 8, .NET 9 or .NET 10
+- .NET 10 or .NET 11
 - Blazor WebAssembly, Blazor Server, Blazor Web App (any interactive render mode) or Blazor Hybrid
 - Any evergreen browser: the mouse uses HTML5 drag and drop, a finger or a pen pointer events, so touch screens work
   whether or not their browser drags natively

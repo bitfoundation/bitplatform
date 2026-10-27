@@ -1,6 +1,6 @@
 ﻿# Bit.BevTools
 
-Developer tools for Blazor (WebAssembly, Server, Interactive Auto, static SSR; net8.0/9.0/10.0): component tree with
+Developer tools for Blazor (WebAssembly, Server, Interactive Auto, static SSR; net10.0/11.0): component tree with
 event wiring, lifecycle and render modes, render profiler, timeline, state (authentication included), routing, network
 with WebSocket/SignalR traffic, JS interop, errors, DI inspector, circuit, runtime and prerendering diagnostics, rules,
 session and trace export. Three frontends read one protocol: the in-app panel, the companion window and the browser
@@ -24,15 +24,14 @@ measured overhead - keep all of them accurate when behaviour changes.
 | `Bit.BevTools.Extension/` | Manifest V3 browser extension (Chromium, Firefox): the companion in a DevTools panel over `inspectedWindow.eval`; no permissions, no content script. `node build.mjs` assembles `dist/` |
 | `Demo/` | Blazor Web App (Interactive Auto, `Server` + `Client`) whose `/problems` page lists real, deliberately planted problems to diagnose |
 | `Samples/` | One small app per host, all rendering the pages of `Samples/Core` with `<BevToolsPanel />` in its `Routes.razor`: `Server`, `Wasm`, `Auto` (each with its `.Client`) and `MAUI` (Blazor Hybrid). Each host's `Program.cs` (`MauiProgram.cs`) owns its BevTools registration, so the setups can be compared; they show the recommended one, not the demo's always-on one |
-| `Tests/Bit.BevTools.Tests` | MSTest + bUnit on net8.0, net9.0 and net10.0 |
+| `Tests/Bit.BevTools.Tests` | MSTest + bUnit on net10.0 and net11.0 |
 | `Tests/bit-bevtools-js` | vitest suite for the built bundles: the bridge and hub (node), the companion (happy-dom) and the extension source |
 | `Tests/Bit.BevTools.Benchmarks` | Overhead harness: the same workload through a real renderer with and without BevTools |
 
 ## Principles that every change must respect
 
 1. **Never fake data.** If something cannot be observed reliably, show that it cannot (see `CapabilityReport`), do
-   not approximate it. Every number in the UI has a documented source. That includes the runtime: what needs .NET 10
-   says "Requires .NET 10" on .NET 8 and 9 (`CapabilityReport.FrameworkInstrumentationExists`), never "not observed yet".
+   not approximate it. Every number in the UI has a documented source.
 2. **Never observe yourself.** BevTools' own components, events, interop calls and WebSocket
    reports must not appear as application activity, nor work BevTools does through application code
    (`SessionResolver.BeginBevToolsWork`, e.g. asking the `AuthenticationStateProvider`). `PanelInteractionTests.BevTools_own_ui_never_appears_as_application_activity` guards this. Ownership is
@@ -69,10 +68,7 @@ starts with a BOM). Comments explain *why* a thing is shaped the way it is, not 
 - **Prefixed public types**: `BevTools*` for the types that are the tool itself (`BevToolsSession`, `BevToolsPanel`,
   `IBevToolsExtension`), `Bev*` for the rest (`BevComponentRecord`, `BevDiagnostic`, `BevFmt`), and razor components
   too, since the Razor SDK makes them public. A consumer importing `Bit.BevTools` must never get a bare common name.
-- **Multi-targeting**: APIs newer than .NET 8 go behind `NET9_0_OR_GREATER` (`RendererInfo`, `AssignedRenderMode`) or
-  `NET10_0_OR_GREATER` (`AddComponentsTracing`/`AddComponentsMetrics`), with a fallback that is reported, not hidden.
-  C# 14 binds `array.Reverse()` to the void span overload below .NET 10; `Internal/ArrayReverseExtensions.cs` restores
-  the LINQ meaning there, so keep calling it on the store snapshots as usual.
+- **Multi-targeting**: APIs newer than .NET 10 go behind `NET11_0_OR_GREATER`, with a fallback that is reported, not hidden.
 
 ## Tests
 
@@ -81,13 +77,12 @@ Every behaviour has a test at the level where it can fail for real:
 - unit tests for stores, inspection, redaction, rules and matching;
 - bUnit tests through a real renderer for instrumentation (hierarchy, causes, batches, diffs, disposal, JS wrapping);
 - bUnit tests that click the BevTools UI itself (`PanelInteractionTests`, `ProfilerTests`); set the renderer with
-  `this.UseRenderer("Server")` (a no-op on .NET 8, where the panel infers it);
+  `this.UseRenderer("Server")`;
 - vitest tests for the browser bridge, the hub, the companion and the extension source (`Tests/bit-bevtools-js`),
   against the built bundles.
 
 A test that asserts on the exact activity, meter and tag names of `Microsoft.AspNetCore.Components` is deliberate: a
-framework rename should break a test, not silently degrade every render cause to *StateHasChanged*. Those tests exist
-only on .NET 10 (`#if NET10_0_OR_GREATER`), next to their counterpart asserting what earlier runtimes report. Tests
+framework rename should break a test, not silently degrade every render cause to *StateHasChanged*. Tests
 share process-wide state (the activity/meter listeners, the session resolver), so the assembly runs them sequentially,
 and a test that needs that state in a particular shape sets it up itself (`ActivityObserver.MarkBatchMetricsObserved`)
 instead of relying on whichever test ran before it.

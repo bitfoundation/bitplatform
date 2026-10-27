@@ -86,7 +86,7 @@ usable on a server.
 - **Fast where it counts**: a pan or zoom re-renders no node, edge or handle; a drag re-renders only what moved.
   Benchmarks are in the repository.
 - **Theming** through `--bit-blow-*` CSS custom properties, with light, dark and system colour modes.
-- Works on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, on .NET 8, 9 and 10.
+- Works on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, on .NET 10 and 11.
 
 ## Quick start
 
@@ -120,7 +120,7 @@ the first time it needs it. The full walkthrough is in [getting started](#gettin
 
 ## Requirements
 
-- .NET 8, .NET 9 or .NET 10
+- .NET 10 or .NET 11
 - Blazor WebAssembly, Blazor Server, Blazor Web App or Blazor Hybrid
 
 ## The demo
@@ -250,7 +250,7 @@ WebAssembly app or a Blazor Hybrid app it is `wwwroot/index.html`:
 <link rel="stylesheet" href="_content/Bit.Blow/bit-blow.css" />
 ```
 
-On .NET 9 and later, `href="@Assets["_content/Bit.Blow/bit-blow.css"]"` in `App.razor` serves the fingerprinted
+`href="@Assets["_content/Bit.Blow/bit-blow.css"]"` in `App.razor` serves the fingerprinted
 copy. The link is required: the library does not inject its stylesheet, so leaving it out gives an unstyled
 canvas rather than an error. Put your own overrides after it.
 

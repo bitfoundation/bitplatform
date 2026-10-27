@@ -252,12 +252,11 @@ public static partial class ButilSetupGuide
     /// <c>Program.cs</c> and <c>.csproj</c> that exist only because the pages are not in the host.
     /// </summary>
     private const string WebAppHostNotes = """
-        Three more things in the host are particular to it. Its `Program.cs` calls
+        Two more things in the host are particular to it. Its `Program.cs` calls
         `.AddAdditionalAssemblies(typeof(Routes).Assembly)` - with the `using Bit.Butil.Samples.Core;` that needs - because
         the pages live in that class library rather than in the host, and that call is what maps their `@page`
         endpoints. An app whose `Routes.razor` sits next to its `App.razor` leaves both out: passing the host's own
-        assembly in a second time fails at startup with "Assembly already defined". `app.MapStaticAssets()` arrived in
-        .NET 9; on .NET 8 that line is `app.UseStaticFiles()`, ahead of `app.UseAntiforgery()`. And the host `.csproj`
+        assembly in a second time fails at startup with "Assembly already defined". And the host `.csproj`
         has no `<BitButilTrimScripts>`: the build logic that acts on it comes with the NuGet package, which a
         `ProjectReference` does not bring, so here it would do nothing. In your host `.csproj` it goes where the block
         above puts it.

@@ -74,7 +74,7 @@ global using Bit.BlazeDb.Querying;  // BlazeDbQuery, BlazeDbBound
 
 ## Requirements
 
-- .NET 8, .NET 9 or .NET 10. `Bit.BlazeDb.EntityFrameworkCore` targets EF Core 8, 9 and 10 respectively.
+- .NET 10 or .NET 11. `Bit.BlazeDb.EntityFrameworkCore` targets EF Core 10 and 11 respectively.
 - Blazor WebAssembly - standalone, or a Blazor Web App's `.Client` project - for the browser backends.
   The engine itself has no browser dependency: it runs in any .NET process, with the file or in-memory
   backend.
@@ -930,7 +930,7 @@ From the repository's `src` folder:
 
 ```bash
 dotnet build Utilities/BlazeDb/Bit.BlazeDb.slnx
-dotnet test --project Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests        # engine and EF Core provider, net8.0/net9.0/net10.0
+dotnet test --project Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests        # engine and EF Core provider, net10.0/net11.0
 dotnet test --project Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.Mcp    # the demo's MCP server
 dotnet run --project Utilities/BlazeDb/Demo/Server                     # the demo site
 ```

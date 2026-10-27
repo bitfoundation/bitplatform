@@ -121,9 +121,9 @@ websites - is checked. Every command prints what it checked and exits non-zero o
 | `windows [-Force]` | Opens each Windows app that is behind and taps its version, which updates it and restarts it. |
 | `e2e [-Stage <stages>] [-Filter <filter>] [-PrereleasePackages]` | Signs the global admin in once, then runs the E2E suite stage by stage like `RunTests.bat` - skipping the mac's stages when its Playwright server is down or on another version - keeping each stage's log and TRX. With `-PrereleasePackages`, it builds the suite with the Bit packages of the newest Prerelease nuget packages run. |
 | `mcp [-McpVersion <x.y.z>] [-Tool <name> -Arguments <json>] [-AllLibraries]` | One `tools/list` or `tools/call` on `https://bitplatform.dev/mcp`. `-AllLibraries` lists every bit library's tools, as the website's chat does; without it BlazorUI's and Butil's are the only library tools listed. |
-| `devcontainer [-Sha <sha> [-PrereleasePackages]] [-Keep]` | Creates a project with `bit new`, brings its dev container up with the devcontainers CLI and runs `bit doctor` in it, with bit and the template from that commit or from nuget.org. Then removes the container, its volumes and its image, and keeps the logs. |
-| `aspire [-Sha <sha> [-PrereleasePackages]] [-Keep]` | Creates a project with `bit new` the same way and runs its Aspire app host three times with `dotnet run`: the second run must reuse the first one's containers, they must stop once the app host has sat idle for its idle time, and the third run must bring them back on the same volumes. Then removes the project, its containers and their volumes, and keeps the logs. |
-| `agents [-Sha <sha> [-PrereleasePackages]] [-Scenario <ids>] [-Model <models>] [-Long] [-Keep]` | Creates a project with `bit new` as users get it and hands each scenario of `agent-scenarios.json` to a headless Claude Code that sees nothing but a copy of that project, then checks which skills it read, which tools it called and which files it changed after each turn. Keeps the transcripts and final messages. |
+| `devcontainer [-Sha <sha> [-PrereleasePackages]] [-Framework <tfm>] [-Keep]` | Creates a project with `bit new`, for the template's default .NET or the one `-Framework` names, brings its dev container up with the devcontainers CLI and runs `bit doctor` in it, with bit and the template from that commit or from nuget.org. Then removes the container, its volumes and its image, and keeps the logs. |
+| `aspire [-Sha <sha> [-PrereleasePackages]] [-Framework <tfm>] [-Keep]` | Creates a project with `bit new` the same way and runs its Aspire app host three times with `dotnet run`: the second run must reuse the first one's containers, they must stop once the app host has sat idle for its idle time, and the third run must bring them back on the same volumes. Then removes the project, its containers and their volumes, and keeps the logs. |
+| `agents [-Sha <sha> [-PrereleasePackages]] [-Framework <tfm>] [-Scenario <ids>] [-Model <models>] [-Long] [-Keep]` | Creates a project with `bit new` as users get it and hands each scenario of `agent-scenarios.json` to a headless Claude Code that sees nothing but a copy of that project, then checks which skills it read, which tools it called and which files it changed after each turn. Keeps the transcripts and final messages. |
 
 ## 1. The CI run
 
@@ -365,7 +365,8 @@ Triage every failure:
    tell flaky from broken. A stage's console log counts every failed attempt of a test that retries, its TRX only
    the last one: a test the TRX shows passed failed once and passed on its retry. Compare a failure only with earlier
    runs against a deployment from the same branch: the demos run whichever branch the last CD built, and the
-   branches differ in their .NET.
+   branches differ in their .NET. On one branch the demos can differ too: each demo's CD names the `--framework` it
+   builds with, so a failure in one app and not another may be the .NET version rather than the app.
 2. Read the server's side. The demo backends run on this machine and log to the Windows **Application** event log,
    source `.NET Runtime`. How much gets there is each site's own `Logging` section in its server-owned
    `appsettings.json` under `C:\inetpub\<site>`: the Boilerplate backends log from Information up, the platform
@@ -394,9 +395,9 @@ no `Content-Length`, was compressed again on the way. Compare the libraries' ass
 with a publish of the commit the expected sizes were measured on. The service worker's own scripts, its asset list
 included, report no size to Playwright, so the total leaves them out.
 
-Two failures on .NET 11 are known gaps of third-party libraries; report them as known and don't triage them: the
-template's MySQL provider doesn't work there (All CI keeps its MySQL job off), and CommunityToolkit.Datasync doesn't
-sync, so the offline Todo test that waits for an item added offline to reach the server fails every time. Check them
+Two gaps of third-party libraries on .NET 11 are known: the template's MySQL provider doesn't work there, and
+CommunityToolkit.Datasync doesn't sync. That is why All CI's MySQL job and the offline Todo demo build .NET 10
+projects. A .NET 11 project that uses either fails by design: report it as known and don't triage it. Check them
 again once those libraries support .NET 11.
 
 **A fix is proven only by the next CD.** The suite tests the deployed build, so a fix to the template or to a demo
@@ -533,8 +534,10 @@ alive for its idle time. `aspire` checks that the way a developer meets it:
 - `-Sha` and `-PrereleasePackages` work as for `devcontainer`. With `-PrereleasePackages` the project restores into a
   packages folder of its own, since this machine's cache may hold nuget.org's build of the same version; without it
   the Bit packages come from nuget.org at the version the template asks for. The project's `global.json` asks for
-  the repository's SDK, which needs the workloads the template's clients build with (`wasm-tools`): an SDK that
-  Visual Studio installed brings only its own.
+  the SDK of its .NET version, which needs the workloads the template's clients build with (`wasm-tools`): an SDK
+  that Visual Studio installed brings only its own.
+- Without `-Framework`, both `aspire` and `devcontainer` create a project for the template's default .NET. When a
+  change touches what differs between the .NET versions, run `aspire` once with each.
 - It takes about half an hour, most of it the idle wait, and a few GB of Docker's memory while the app runs.
   Start it in the background as soon as its packages exist and this machine has several GB free, and never next to
   `devcontainer` or the Android stage. A second run can start once the first is in its idle wait. Its containers

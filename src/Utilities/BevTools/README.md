@@ -12,9 +12,9 @@ It runs in three places, all reading the same data through the same redaction: *
 of a page at once (a Server circuit and WebAssembly side by side) and opens exported sessions offline, and as a
 **browser extension** that adds a *Blazor* panel to the browser's DevTools.
 
-> Targets **.NET 8, 9 and 10** · Blazor WebAssembly, Blazor Server, Interactive Auto and static SSR. The richest
+> Targets **.NET 10 and 11** · Blazor WebAssembly, Blazor Server, Interactive Auto and static SSR. The richest
 > answers (UI-event render causes, handler durations, render-diff and lifecycle timings) come from the framework's own
-> diagnostics, which arrived in **.NET 10**; on .NET 8 and 9 those rows say so instead of showing nothing.
+> diagnostics.
 
 ---
 
@@ -261,8 +261,7 @@ How the information is obtained, in short:
   ActivitySource and meters (.NET 10). `AddBitBevToolsServices` registers them through the public
   `ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing/AddComponentsMetrics`, because outside
   server-side rendering the framework does not register them itself — without that, WebAssembly could not answer
-  *why did this render?* at all. Turn it off with `options.UseFrameworkInstrumentation = false`. On .NET 8 and 9 there
-  is nothing to register, and those capabilities are reported as needing .NET 10.
+  *why did this render?* at all. Turn it off with `options.UseFrameworkInstrumentation = false`.
 * **HTTP**: `IHttpMessageHandlerBuilderFilter` (all `IHttpClientFactory` clients). Bodies are never captured.
 * **JS interop**: `IJSRuntime` injected into components is wrapped on the first render (calls made earlier, from
   `OnInitialized`, are not attributed); `IJSRuntime` is *not* decorated in DI because the framework casts it to its
@@ -408,7 +407,7 @@ Bit.BevTools.Cli              the bevtools .NET tool for CI: an export's finding
 Demo                          Blazor Web App (Interactive Auto, Server + Client) with a "Problems to diagnose" index
 Samples                       the same pages (Core) in every host, each with its own BevTools setup in Program.cs:
                               Server, Wasm (+ Client), Auto (+ Client) and MAUI (Blazor Hybrid)
-Tests/Bit.BevTools.Tests      MSTest + bUnit on net8.0/net9.0/net10.0: instrumentation, tree, rendering, timeline,
+Tests/Bit.BevTools.Tests      MSTest + bUnit on net10.0/net11.0: instrumentation, tree, rendering, timeline,
                               state, network, interop, diagnostics, DI graph, concurrency, overhead, memory bounds,
                               scale, panel interaction, framework-diagnostics attribution, extensibility, forced-render
                               detection, capture control, profiler baseline/grouping, export, value safety, routing,

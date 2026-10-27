@@ -12,16 +12,8 @@ builder.Services.AddBrouterHarness();
 
 var app = builder.Build();
 
-#if NET9_0_OR_GREATER
 app.UseAntiforgery();
 app.MapStaticAssets();
-#else
-app.UseStaticFiles();
-// Explicitly after the static files: WebApplication otherwise matches endpoints first, the catch-all
-// page claims /_content/... and UseStaticFiles steps aside for a request that already has an endpoint.
-app.UseRouting();
-app.UseAntiforgery();
-#endif
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()

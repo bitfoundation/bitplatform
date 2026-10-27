@@ -10,8 +10,7 @@
 /// <remarks>
 /// <para>
 /// <b>When to name this type instead.</b> Extension members are a C# 14 feature on BOTH sides: a
-/// consumer compiling at an older language version - which is the default for a <c>net8.0</c> or
-/// <c>net9.0</c> app, the two other frameworks this package targets - cannot even read one
+/// consumer that lowers its <c>LangVersion</c> below 14 cannot even read one
 /// (<c>error CS9202: Feature 'extensions' is not available in C# 12.0</c>). And because an extension
 /// member is a property rather than a <c>const</c>, it cannot be a <c>case</c> label, an attribute
 /// argument or a default parameter value at any language version. Both cases read the token from

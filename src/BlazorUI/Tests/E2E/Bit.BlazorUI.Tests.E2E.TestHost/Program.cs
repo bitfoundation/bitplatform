@@ -31,10 +31,8 @@ if (app.Environment.IsDevelopment() is false)
 app.UseStaticFiles();
 app.UseAntiforgery();
 
-#if NET9_0_OR_GREATER
 // The framework scripts and the WebAssembly client's boot resources are endpoints of their own since .NET 9.
 app.MapStaticAssets();
-#endif
 
 app.MapRazorComponents<Bit.BlazorUI.Tests.E2E.TestHost.Components.App>()
     .AddInteractiveServerRenderMode()

@@ -105,7 +105,7 @@ Then render a `BormView` with a `Definition` and a `Model`, as above. The full w
 
 ## Requirements
 
-- .NET 8, .NET 9 or .NET 10
+- .NET 10 or .NET 11
 - Blazor WebAssembly, Blazor Server, Blazor Web App or Blazor Hybrid
 - `FluentValidation` 12 only when the optional `Bit.Borm.FluentValidation` package is used
 
@@ -1846,7 +1846,7 @@ Give the view a `FormName`, and bind the page's model from the post:
 
 ```razor
 @page "/apply"
-@attribute [ExcludeFromInteractiveRouting]      @* .NET 9+: this page stays static in an interactive app *@
+@attribute [ExcludeFromInteractiveRouting]      @* This page stays static in an interactive app *@
 
 <BormView Definition="_definition" Model="Model" FormName="apply" OnValidSubmit="SaveAsync" />
 
@@ -1872,9 +1872,7 @@ another (an accordion is the browser's own and still opens); a repeater's rows a
 included, without add, remove or move buttons. Conditions are judged when the page is rendered, so a field that
 depends on another appears after the post that answered it. A box left unticked posts nothing and binds as `false`, so
 a `bool` whose default is `true` cannot be turned off without script; a file, a signature and a search lookup need an
-interactive page. Telling a static render from a prerender needs .NET 9 or later; on .NET 8 a named form still posts,
-but keeps its interactive shape - only the step and the page of rows on screen are posted - so give a form meant to
-work there without script a single step and no `PageSize`.
+interactive page.
 - **Blazor Hybrid**: register `AddBorm()` in `MauiProgram.cs` and link the stylesheet from `wwwroot/index.html`.
 
 ### Trimming

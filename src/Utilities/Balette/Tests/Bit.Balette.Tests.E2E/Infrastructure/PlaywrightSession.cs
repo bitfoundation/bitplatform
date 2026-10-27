@@ -68,8 +68,8 @@ public static class PlaywrightSession
         {
             playwright.Dispose();
             return Session.Fail(E2EEnvironment.IsChromium
-                ? "no Chromium-based browser could be launched. Run 'pwsh bin/<configuration>/net10.0/playwright.ps1 install chromium', or install Chrome or Edge."
-                : $"{E2EEnvironment.Browser} could not be launched. Run 'pwsh bin/<configuration>/net10.0/playwright.ps1 install {E2EEnvironment.Browser}'.");
+                ? "no Chromium-based browser could be launched. Run 'pwsh bin/<configuration>/net11.0/playwright.ps1 install chromium', or install Chrome or Edge."
+                : $"{E2EEnvironment.Browser} could not be launched. Run 'pwsh bin/<configuration>/net11.0/playwright.ps1 install {E2EEnvironment.Browser}'.");
         }
 
         try

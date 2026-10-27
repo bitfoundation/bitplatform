@@ -1,9 +1,7 @@
 ﻿using Bit.Besql;
 using Microsoft.EntityFrameworkCore;
-#if NET9_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore.Migrations;
-#endif
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
@@ -11,9 +9,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class IServiceCollectionBesqlExtentions
 {
-#if NET9_0_OR_GREATER
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BesqlHistoryRepository))]
-#endif
     public static IServiceCollection AddBesqlDbContextFactory<TDbContext>(this IServiceCollection services,
         Action<IServiceProvider, DbContextOptionsBuilder>? optionsAction = null,
         Func<IServiceProvider, TDbContext, Task>? dbContextInitializer = null,
@@ -41,9 +37,7 @@ public static class IServiceCollectionBesqlExtentions
             services.AddDbContextFactory<TDbContext, BesqlDbContextFactory<TDbContext>>((serviceProvider, options) =>
             {
                 options.AddInterceptors(serviceProvider.GetRequiredService<BesqlDbContextInterceptor>());
-#if NET9_0_OR_GREATER
                 options.ReplaceService<IHistoryRepository, BesqlHistoryRepository>();
-#endif
                 optionsAction.Invoke(serviceProvider, options);
             }, lifetime: lifetime);
         }
@@ -52,9 +46,7 @@ public static class IServiceCollectionBesqlExtentions
             services.TryAddSingleton<IBitBesqlStorage, BitBesqlNoopStoage>();
             services.AddDbContextFactory<TDbContext, DbContextFactoryBase<TDbContext>>((serviceProvider, options) =>
             {
-#if NET9_0_OR_GREATER
                 options.ReplaceService<IHistoryRepository, BesqlHistoryRepository>();
-#endif
                 optionsAction.Invoke(serviceProvider, options);
             }, lifetime: lifetime);
         }

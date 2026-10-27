@@ -33,9 +33,7 @@ public static class BitBlazorUIScripts
     /// project ends up here as an <see cref="AppContext"/> switch. A feature switch, so a trimmed publish can treat it as a
     /// constant; the runtime override is what keeps <see cref="UseLazyScripts"/> working there regardless.
     /// </summary>
-#if NET9_0_OR_GREATER
     [System.Diagnostics.CodeAnalysis.FeatureSwitchDefinition(LazyScriptsSwitchName)]
-#endif
     internal static bool LazyScriptsFeature => AppContext.TryGetSwitch(LazyScriptsSwitchName, out var enabled) && enabled;
 
     // Read once: AppContext.TryGetSwitch takes a lock, and the mode is asked for on every interop call of the packages,

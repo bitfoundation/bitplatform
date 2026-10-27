@@ -23,7 +23,7 @@ var open = await db.Orders.Where(o => o.Status == OrderStatus.Open).ToListAsync(
 That query runs in a dedicated worker in the browser: SQLite 3.53 (via [wa-sqlite](https://github.com/rhashimoto/wa-sqlite)
 1.1.2), the stock EF Core SQLite provider, and a storage backend chosen and remembered per database.
 
-> Targets **.NET 8, 9, and 10** with the matching EF Core · Runs on **Blazor WebAssembly**, and in a **Blazor Web App** on
+> Targets **.NET 10 and 11** with the matching EF Core · Runs on **Blazor WebAssembly**, and in a **Blazor Web App** on
 > **Interactive WebAssembly** or **Interactive Auto** once the page runs on WebAssembly. Prerendered pages render on the
 > server and open their database once interactive.
 
@@ -151,10 +151,6 @@ live.Changed += (_, rows) => InvokeAsync(StateHasChanged);
 
 Every service that reaches the browser, or holds a database session, is registered as scoped: one for the whole
 application on WebAssembly, and one per circuit or request on a server, so nothing is ever shared between users.
-
-EF Core's own feature set follows the target framework. The SQLite provider translates `SUM` over a `decimal` from EF
-Core 9 on and `ORDER BY` a `decimal` from EF Core 10 on; an application on .NET 8 gets the same `NotSupportedException`
-from those queries in the browser as from the stock provider on its server.
 
 ## What this release does not claim
 

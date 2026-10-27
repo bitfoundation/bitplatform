@@ -258,10 +258,9 @@ public static partial class BcrdtSetupGuide
            app.Services.GetRequiredService<BcrdtDocumentHost>() }`.
         5. Add `@using Bit.Bcrdt` and `@using Bit.Bcrdt.Blazor` to `_Imports.razor`.
         6. Open a document with `<BcrdtCollaborationScope DocumentId="..." User="...">`, which opens it, cascades it and
-           releases it - and on .NET 9 and later waits until the page is interactive by itself - or with
+           releases it - and waits until the page is interactive by itself - or with
            `IBcrdtCollaborationService.OpenAsync` paired with `CloseAsync`, and then only once the component
-           is interactive wherever pages are prerendered: `RendererInfo.IsInteractive` on .NET 9 and later,
-           `OnAfterRenderAsync` on .NET 8.
+           is interactive wherever pages are prerendered: `RendererInfo.IsInteractive`.
         7. Derive your own collaborative components from `BcrdtComponentBase` and `Track` what they render, so a change from
            anyone re-renders them, coalesced onto a frame. There is no script tag to add: `BcrdtTextArea` imports its small
            caret module from `_content/Bit.Bcrdt/bit-bcrdt.js` itself.

@@ -3,14 +3,14 @@
 Create [bit platform](https://bitplatform.dev) projects that are ready to run on Windows, macOS and Linux, translate `.resx` files with an LLM, decode stack traces minified by Bit.Minifier, and write the profiles that compile Blazor WebAssembly apps ahead of time.
 
 ```bash
-dotnet tool install --global Bit.Cli --version 10.7.0
+dotnet tool install --global Bit.Cli --version 11.0.0-pre-15
 bit new MyApp
 ```
 
 Or run it without installing anything:
 
 ```bash
-dnx Bit.Cli --version 10.7.0 -- new MyApp
+dnx Bit.Cli --version 11.0.0-pre-15 -- new MyApp
 ```
 
 It needs a .NET 10 SDK or later. `dnx` asks once before it downloads the package.
@@ -49,6 +49,7 @@ Every option of the bit Boilerplate template works the same way:
 
 | Option | Values | Default |
 |---|---|---|
+| `--framework` | `net10.0`, `net11.0` | `net10.0` |
 | `--database` | `Sqlite`, `SqlServer`, `PostgreSQL`, `MySql`, `Other` | `Sqlite` |
 | `--filesStorage` | `Local`, `S3`, `AzureBlobStorage`, `Other` | `Local` |
 | `--api` | `Integrated`, `Standalone` | `Integrated` |
@@ -115,6 +116,7 @@ bit diff --template-package ../bitplatform/src/Templates/Boilerplate/Bit.Boilerp
 - It creates the project with each version, the old one first, into one git repository in your home folder, so the second commit is exactly the upgrade, and writes it as `bit-diff.patch` in that repository too. Your project isn't touched.
 - In a project, it takes the name, the version and the options from the project's `bit.json`, where the template records them. Pass `from`, `to`, `--name` or any option of `bit new` to change them. `to` defaults to this bit's own version.
 - An option a version doesn't have is left out for that version, and said so.
+- Both sides get the project's own .NET version. `--framework` gives only the newer side another one, so `bit diff --framework net11.0` shows what moving a .NET 10 project to .NET 11 changes.
 - What the template picks at random on every run, like ports, GUIDs, dates and the seeded accounts' password, differs between the two, and so does what `bit new` adds after creating a project.
 - The repository goes to `~/.bitplatform/diff/<name>-<from>-<to>`, or `-o <folder>`. Delete it with `bit remove <folder> --yes` when you're done.
 
@@ -125,7 +127,7 @@ The project's `upgrade` skill, for the AI coding tools, runs it and applies the 
 `bit new` and `bit setup` prepare CI machines too, so a pipeline needs no steps of its own for Node.js, workloads, Playwright or the development certificate. The pipelines bit Boilerplate ships install bit once per job and run it before they publish:
 
 ```bash
-dotnet tool install --global Bit.Cli --version 10.7.0
+dotnet tool install --global Bit.Cli --version 11.0.0-pre-15
 bit setup --platforms android --no-browsers --yes
 ```
 
@@ -243,7 +245,7 @@ In a pipeline:
 
 ```yaml
 - name: Install the bit CLI
-  run: dotnet tool install --global Bit.Cli --version 10.7.0
+  run: dotnet tool install --global Bit.Cli --version 11.0.0-pre-15
 
 - name: Translate .resx files
   env:
@@ -348,5 +350,5 @@ gh attestation verify ~/.dotnet/tools/.store/bit.cli/<version>/bit.cli/<version>
 
 | Before | Now |
 |---|---|
-| `dnx Bit.ResxTranslator` | `dnx Bit.Cli --version 10.7.0 -- translate`, or `bit translate` |
-| `dnx Bit.Minifier.Cli --decode map trace` | `dnx Bit.Cli --version 10.7.0 -- decode map trace`, or `bit decode map trace` |
+| `dnx Bit.ResxTranslator` | `dnx Bit.Cli --version 11.0.0-pre-15 -- translate`, or `bit translate` |
+| `dnx Bit.Minifier.Cli --decode map trace` | `dnx Bit.Cli --version 11.0.0-pre-15 -- decode map trace`, or `bit decode map trace` |

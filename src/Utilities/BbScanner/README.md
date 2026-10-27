@@ -80,7 +80,7 @@ automatically by the package's Blazor initializer. The full walkthrough is in [g
 
 ## Requirements
 
-- .NET 8, .NET 9 or .NET 10
+- .NET 10 or .NET 11
 - Blazor WebAssembly for camera scanning: a standalone WebAssembly app, or the WebAssembly pages of a Blazor Web App.
   Under Blazor Server and Blazor Hybrid the component reports `NotSupported`, and `BbBarcodeDecoder` decodes
   pixels in-process instead - see [hosting models](#hosting-models).

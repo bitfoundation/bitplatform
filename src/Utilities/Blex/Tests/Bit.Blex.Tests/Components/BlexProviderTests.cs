@@ -21,9 +21,7 @@ public class BlexProviderTests : BunitContext
     {
         Services.AddBitBlexServices(o => o.OnError = _errors.Add);
         Services.AddBitBlexStore<CounterStore>();
-#if NET9_0_OR_GREATER
         SetRendererInfo(new RendererInfo("Server", isInteractive: true));
-#endif
     }
 
     private IRenderedComponent<BlexProvider> RenderProvider()

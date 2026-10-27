@@ -76,7 +76,7 @@ The full walkthrough is in [getting started](#getting-started) and [installation
 
 ## Requirements
 
-- .NET 8, .NET 9 or .NET 10
+- .NET 10 or .NET 11
 - Blazor Server, Blazor WebAssembly, or Blazor Web App (Server, WebAssembly or Auto)
 
 ## The demo
@@ -378,7 +378,7 @@ await BonboardingService.StartOnceAsync(tour);
 dotnet add package Bit.Bonboarding
 ```
 
-Targets .NET 8, .NET 9 and .NET 10.
+Targets .NET 10 and .NET 11.
 
 ### 1. Register the services
 

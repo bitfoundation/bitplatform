@@ -45,8 +45,7 @@ public abstract class PrerenderedWebModeTests : WebModeTests
 
         var response = await GotoAsync("/nope/deeper");
 
-        // Only .NET 10 gives a router a way to set the status (NavigationManager.NotFound).
-        Assert.AreEqual(E2EEnvironment.FrameworkHasNotFound(Framework) ? 404 : 200, response!.Status);
+        Assert.AreEqual(404, response!.Status);
         await Expect(Page.Locator("#not-found")).ToHaveAttributeAsync("data-path", "/nope/deeper");
 
         await WaitForInteractiveAsync();

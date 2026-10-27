@@ -14,10 +14,8 @@ public class BbScannerTests : BunitContext
     public BbScannerTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-#if NET9_0_OR_GREATER
         // What a prerender looks like: the markup is produced on a renderer that is not interactive.
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));
-#endif
     }
 
     [TestMethod]
@@ -41,8 +39,6 @@ public class BbScannerTests : BunitContext
     public void A_scanner_that_has_not_started_is_idle_and_offers_to_start()
     {
         var scanner = RenderPrerendered();
-
-        if (OnNet8()) return;
 
         Assert.AreEqual(BbScannerStatus.Idle, scanner.Instance.Status);
         Assert.AreEqual("idle", scanner.Find(".bit-bbscanner").GetAttribute("data-status"));
@@ -113,9 +109,7 @@ public class BbScannerTests : BunitContext
     [TestMethod]
     public void An_interactive_renderer_that_is_not_webassembly_reports_not_supported()
     {
-#if NET9_0_OR_GREATER
         SetRendererInfo(new RendererInfo("Server", isInteractive: true));
-#endif
         BbScannerException? error = null;
         var statuses = new List<BbScannerStatus>();
 
@@ -129,9 +123,7 @@ public class BbScannerTests : BunitContext
         Assert.Contains("WebAssembly", error.Message);
         CollectionAssert.Contains(statuses, BbScannerStatus.Faulted);
         Assert.Contains("WebAssembly", scanner.Find(".bit-bbscanner__message--error").TextContent);
-#if NET9_0_OR_GREATER
         Assert.Contains("Server", error.Message, "The message names the renderer the scanner is stuck on.");
-#endif
     }
 
     [TestMethod]
@@ -274,17 +266,4 @@ public class BbScannerTests : BunitContext
             builder.Add(p => p.AutoStart, false);
             parameters?.Invoke(builder);
         });
-
-    /// <summary>
-    /// .NET 8 has no RendererInfo, and so no way to tell a prerender from an interactive render: bUnit runs
-    /// OnAfterRender, which a real prerender never does, and the scanner reports NotSupported straight away.
-    /// </summary>
-    private static bool OnNet8()
-    {
-#if NET9_0_OR_GREATER
-        return false;
-#else
-        return true;
-#endif
-    }
 }

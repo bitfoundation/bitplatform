@@ -168,12 +168,10 @@ internal static class BevRoutingReader
         var page = live.Where(r => r.Type == pageType).OrderByDescending(r => r.LastRenderAt ?? r.CreatedAt).FirstOrDefault();
         string? template = null;
         var inferred = false;
-#if NET10_0_OR_GREATER
         template = routeData.Template;
-#endif
         if (template is null && routes.FirstOrDefault(r => r.PageType == pageType.FullName) is { Templates.Count: 1 } single)
         {
-            // Before .NET 10 RouteData does not carry the template that matched; a page with one @page has only one.
+            // When RouteData does not carry the template that matched, a page with one @page has only one.
             template = single.Templates[0];
             inferred = true;
         }

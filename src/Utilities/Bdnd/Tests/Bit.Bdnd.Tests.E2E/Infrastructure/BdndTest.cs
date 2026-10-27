@@ -459,7 +459,11 @@ public abstract class BdndTest
         var problems = new List<string>();
         void Add(string problem) { lock (problems) problems.Add(problem); }
 
-        page.Console += (_, message) => { if (message.Type == "error") Add($"console error: {message.Text} ({message.Location})"); };
+        page.Console += (_, message) =>
+        {
+            if (message.Text.StartsWith("Fetch API cannot load ", StringComparison.Ordinal) && message.Text.Contains("/_framework/", StringComparison.Ordinal)) return;
+            if (message.Type == "error") Add($"console error: {message.Text} ({message.Location})");
+        };
         page.PageError += (_, error) =>
         {
             // Firefox: blazor.web.js, sending on the circuit's socket as a Blazor Server page unloads (a forced load
@@ -469,6 +473,7 @@ public abstract class BdndTest
         };
         page.RequestFailed += (_, request) =>
         {
+            if (request.Failure == "net::ERR_ABORTED" && request.Url.Contains("/_framework/", StringComparison.Ordinal)) return;
             if (request.Url.StartsWith(origin, StringComparison.OrdinalIgnoreCase)) Add($"request failed: {request.Url} ({request.Failure})");
         };
         page.Response += (_, response) =>

@@ -55,7 +55,6 @@ public class BevTrackingJSRuntime : IJSRuntime
         }
     }
 
-#if NET10_0_OR_GREATER
     // .NET 10 added these to IJSRuntime as default interface members that throw NotImplementedException. A wrapper
     // that left them to the defaults would break working application code the moment BevTools patched it in.
     public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object?[]? args) => InvokeConstructorAsync(identifier, CancellationToken.None, args);
@@ -78,7 +77,6 @@ public class BevTrackingJSRuntime : IJSRuntime
         value = UnwrapValue(value);
         return TrackVoidAsync("set " + identifier, [value], isModule: false, () => Inner.SetValueAsync(identifier, value, cancellationToken));
     }
-#endif
 
     /// <summary>Records one asynchronous call made through <paramref name="call"/>, wrapping a returned object reference.</summary>
     internal async ValueTask<TValue> TrackAsync<TValue>(string identifier, object?[]? args, bool isModule, Func<ValueTask<TValue>> call)
@@ -278,7 +276,6 @@ public sealed class BevTrackingInProcessJSRuntime : BevTrackingJSRuntime, IJSInP
         }
     }
 
-#if NET10_0_OR_GREATER
     public IJSInProcessObjectReference InvokeConstructor(string identifier, params object?[]? args)
     {
         args = Unwrap(args);
@@ -292,7 +289,6 @@ public sealed class BevTrackingInProcessJSRuntime : BevTrackingJSRuntime, IJSInP
         value = UnwrapValue(value);
         TrackVoid("set " + identifier, [value], isModule: false, () => _inner.SetValue(identifier, value));
     }
-#endif
 }
 
 public class BevTrackingJSObjectReference : IJSObjectReference
@@ -326,7 +322,6 @@ public class BevTrackingJSObjectReference : IJSObjectReference
         }
     }
 
-#if NET10_0_OR_GREATER
     public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object?[]? args) => InvokeConstructorAsync(identifier, CancellationToken.None, args);
 
     public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
@@ -347,7 +342,6 @@ public class BevTrackingJSObjectReference : IJSObjectReference
         value = BevTrackingJSRuntime.UnwrapValue(value);
         return Runtime.TrackVoidAsync("set module." + identifier, [value], isModule: true, () => Inner.SetValueAsync(identifier, value, cancellationToken));
     }
-#endif
 
     public ValueTask DisposeAsync() => Inner.DisposeAsync();
 }
@@ -378,7 +372,6 @@ public sealed class BevTrackingInProcessJSObjectReference : BevTrackingJSObjectR
         }
     }
 
-#if NET10_0_OR_GREATER
     public IJSInProcessObjectReference InvokeConstructor(string identifier, params object?[]? args)
     {
         args = BevTrackingJSRuntime.Unwrap(args);
@@ -392,7 +385,6 @@ public sealed class BevTrackingInProcessJSObjectReference : BevTrackingJSObjectR
         value = BevTrackingJSRuntime.UnwrapValue(value);
         Runtime.TrackVoid("set module." + identifier, [value], isModule: true, () => _inner.SetValue(identifier, value));
     }
-#endif
 
     public void Dispose() => _inner.Dispose();
 }

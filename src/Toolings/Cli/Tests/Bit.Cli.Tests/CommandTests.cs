@@ -289,7 +289,7 @@ public class CommandTests
     public void Decode_Should_FindTheNewestMapUnderObj()
     {
         using var host = new TestHost();
-        var older = Path.Combine(Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "obj", "Release", "net9.0")).FullName, "bit-minifier.map");
+        var older = Path.Combine(Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "obj", "Release", "net10.0")).FullName, "bit-minifier.map");
         var newer = Path.Combine(Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "src", "App", "obj", "Release", "net10.0")).FullName, "bit-minifier.map");
         File.WriteAllText(older, "");
         File.WriteAllText(newer, "");

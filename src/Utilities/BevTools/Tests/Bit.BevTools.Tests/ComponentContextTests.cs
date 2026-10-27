@@ -36,7 +36,6 @@ public class ComponentContextTests : BunitContext
         return Render<BevToolsPanel>();
     }
 
-#if NET9_0_OR_GREATER
     /// <summary>
     /// An interactive renderer answers every component it runs with its own mode, and bUnit, like the prerendering
     /// renderer, answers a child with its parent's: only the component the mode was assigned to starts a subtree.
@@ -59,7 +58,6 @@ public class ComponentContextTests : BunitContext
         Assert.DoesNotContain("assigned here", inspector, StringComparison.Ordinal);
         Assert.ContainsSingle(r => r.TextContent.Contains('⚡'), panel.FindAll(".bev-tree-row"));
     }
-#endif
 
     /// <summary>
     /// <c>&lt;CascadingValue&gt;&lt;CascadingChild /&gt;&lt;/CascadingValue&gt;</c>: the renderer's parent is the

@@ -2392,7 +2392,7 @@ public sealed class BormState : IDisposable
         Func<BormState, Task>? onInvalid = null)
         => SubmitAsync(onValid is null ? null : (state, _) => onValid(state), onInvalid is null ? null : (state, _) => onInvalid(state));
 
-    // For a compiler that does not read the priority - C# 12, the default for .NET 8: SubmitAsync(null) fits this one
+    // For a compiler that does not read the priority - older than C# 13: SubmitAsync(null) fits this one
     // with no parameter left to its default, which settles it there too.
     /// <inheritdoc cref="SubmitAsync(Func{BormState, Task}, Func{BormState, Task})"/>
     [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]

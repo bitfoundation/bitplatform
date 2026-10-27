@@ -61,7 +61,7 @@ await BonboardingService.StartOnceAsync(tour); // skipped if the user already fi
   reduced motion and forced colors.
 - Theming through CSS variables, per-step templates, or a fully headless popover.
 - Analytics-grade events and pluggable persistence and localization.
-- Blazor Server, WebAssembly and Web App (including prerendering) on .NET 8, 9 and 10.
+- Blazor Server, WebAssembly and Web App (including prerendering) on .NET 10 and 11.
 
 ## For AI agents
 
