@@ -33,15 +33,29 @@ public static class RenameCommand
                 return cli.UsageError("not-a-project", $"{folder} isn't a bit Boilerplate project folder (no *.Web.slnf or *.slnx). Run bit rename in the project's folder.");
             }
 
-            if (ProjectName.Validate(newName) is { } nameError)
+            var typeNames = TypeNames.FromFolder(folder);
+
+            if (ProjectName.Validate(newName, typeNames) is { } nameError)
             {
-                return cli.UsageError("name-invalid", $"{nameError} Try: bit rename {ProjectName.Suggest(newName)}");
+                return cli.UsageError("name-invalid", $"{nameError} Try: bit rename {ProjectName.Suggest(newName, typeNames)}");
             }
 
             if (string.Equals(oldName, newName, StringComparison.Ordinal))
             {
                 cli.Console.Out.MarkupLine($"The project is already named [bold]{Markup.Escape(oldName)}[/].");
                 return CliApp.ExitOk;
+            }
+
+            if (TypeNames.FindFile(folder, oldName) is { } typeFile)
+            {
+                return cli.UsageError("name-is-a-type", $"The project's name, {oldName}, is also the name of a type in its code, as in {Path.GetRelativePath(folder, typeFile)}, so bit rename can't tell which {oldName} to change. Rename that type first, or create the project again with bit new and another name.");
+            }
+
+            var renamer = new ProjectRenamer(oldName, newName);
+
+            if (ProjectContext.ReadAppId(folder, oldName) is { } appId && ProjectName.IsValidAppId(appId) && ProjectName.IsValidAppId(renamer.Replace(appId)) is false)
+            {
+                return cli.UsageError("app-id-invalid", $"The rename would give the native apps the app id {renamer.Replace(appId)}, and each part of an app id must start with a Latin letter. Use Latin letters in the name, or set <ApplicationId> in {Platforms.MauiProject(oldName)} first.");
             }
 
             var inGit = false;
@@ -75,7 +89,6 @@ public static class RenameCommand
             cli.Console.Out.MarkupLine($"Renaming [bold]{Markup.Escape(oldName)}[/] to [bold]{Markup.Escape(newName)}[/] [grey]in {Markup.Escape(folder)}[/]");
 
             var steps = new StepRunner(cli);
-            var renamer = new ProjectRenamer(oldName, newName);
             var changedFiles = 0;
             var renamedFiles = 0;
             var renamedFolders = 0;

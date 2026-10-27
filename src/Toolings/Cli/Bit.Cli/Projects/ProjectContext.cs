@@ -92,6 +92,20 @@ public sealed partial class ProjectContext
         return solution is null ? null : Path.GetFileNameWithoutExtension(solution);
     }
 
+    public static string? ReadAppId(string directory, string name)
+    {
+        var maui = Path.Combine(directory, Templates.Platforms.MauiProject(name));
+
+        try
+        {
+            return File.Exists(maui) && AppIdRegex().Match(File.ReadAllText(maui)) is { Success: true } match ? match.Groups["id"].Value.Trim() : null;
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
     private string? ReadDatabaseFromProject()
     {
         var api = Path.Combine(ServerApiDirectory, $"{Name}.Server.Api.csproj");
@@ -158,6 +172,9 @@ public sealed partial class ProjectContext
 
     [GeneratedRegex(@"<TargetFramework>(?<tfm>net\d+\.\d+)</TargetFramework>")]
     private static partial Regex TargetFrameworkRegex();
+
+    [GeneratedRegex(@"<ApplicationId>(?<id>[^<]*)</ApplicationId>")]
+    private static partial Regex AppIdRegex();
 
     [GeneratedRegex(@"<WasmBuildNative[^>]*>\s*true\s*</WasmBuildNative>", RegexOptions.IgnoreCase)]
     private static partial Regex NativeWebAssemblyRegex();

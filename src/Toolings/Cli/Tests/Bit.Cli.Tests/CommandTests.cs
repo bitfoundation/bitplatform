@@ -200,6 +200,19 @@ public class CommandTests
     }
 
     [TestMethod]
+    public async Task Setup_Should_RefuseAnAppIdTheNativeAppsCantHave()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var folder = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "Shop")).FullName;
+        File.WriteAllText(Path.Combine(folder, "Shop.Web.slnf"), "{}");
+        File.WriteAllText(Path.Combine(Directory.CreateDirectory(Path.Combine(folder, "src", "Client", "Shop.Client.Maui")).FullName, "Shop.Client.Maui.csproj"), "<Project>\n  <PropertyGroup>\n    <ApplicationId>com.companyname.</ApplicationId>\n  </PropertyGroup>\n</Project>\n");
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("setup", folder, "--platforms", "android", "--yes"), host.Output);
+        StringAssert.Contains(host.FlatOutput, "the app id com.companyname.,");
+        Assert.IsEmpty(host.Runner.Calls);
+    }
+
+    [TestMethod]
     public async Task Decode_Should_RunTheBitMinifierThatWroteTheMap()
     {
         using var host = new TestHost();

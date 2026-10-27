@@ -53,4 +53,15 @@
         <AssemblyMetadata Include="BitCliTelemetryConnectionString" Value="$(BitCliTelemetryConnectionString)" />
     </ItemGroup>
 
+    <Target Name="EmbedTemplateTypeNames" BeforeTargets="AssignTargetPaths">
+        <ItemGroup>
+            <_TemplateCodeFile Include="../../../Templates/Boilerplate/Bit.Boilerplate/src/**/*.cs;../../../Templates/Boilerplate/Bit.Boilerplate/src/**/*.razor" Exclude="../../../Templates/Boilerplate/Bit.Boilerplate/src/**/bin/**;../../../Templates/Boilerplate/Bit.Boilerplate/src/**/obj/**;../../../Templates/Boilerplate/Bit.Boilerplate/src/**/node_modules/**" />
+        </ItemGroup>
+        <WriteLinesToFile File="$(IntermediateOutputPath)template-types.txt" Lines="@(_TemplateCodeFile->'%(Filename)%(Extension)'->Distinct())" Overwrite="true" WriteOnlyWhenDifferent="true" />
+        <ItemGroup>
+            <EmbeddedResource Include="$(IntermediateOutputPath)template-types.txt" LogicalName="Bit.Cli.template-types.txt" />
+            <FileWrites Include="$(IntermediateOutputPath)template-types.txt" />
+        </ItemGroup>
+    </Target>
+
 </Project>

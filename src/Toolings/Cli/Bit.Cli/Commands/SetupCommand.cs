@@ -55,6 +55,11 @@ public static class SetupCommand
                 platforms = NewWorkflow.AskPlatforms(cli, platforms);
             }
 
+            if (Platforms.BuildsSolution(platforms) && ProjectContext.ReadAppId(directory, name) is { } appId && ProjectName.IsValidAppId(appId) is false)
+            {
+                return cli.UsageError("app-id-invalid", $"{Platforms.MauiProject(name)} gives the native apps the app id {appId}, and each part of an app id must start with a Latin letter and have only Latin letters, digits and underscores. Set a valid <ApplicationId> there, or leave the native apps out of --platforms.");
+            }
+
             var context = new ProjectContext { Name = name, Directory = directory, Platforms = platforms, BuildProperties = properties };
             var aspire = Directory.Exists(context.AppHostDirectory);
             var requirements = TemplateRequirements.FromProject(directory, name);

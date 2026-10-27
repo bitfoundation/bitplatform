@@ -1,4 +1,5 @@
-﻿using Bit.Cli.Infrastructure;
+﻿using System.IO.Compression;
+using Bit.Cli.Infrastructure;
 using Bit.Cli.Telemetry;
 using Bit.Cli.Templates;
 using Bit.Cli.Tests.Infrastructure;
@@ -126,6 +127,53 @@ public class TemplateTests
         StringAssert.Contains(host.Output, "com.companyname.");
 
         Assert.AreEqual(0, await host.RunAsync("new", "فروشگاه", "--dry-run", "--yes"), host.Output);
+    }
+
+    [TestMethod]
+    public async Task ANameThatIsATypeOfTheTemplate_Should_BeRefused()
+    {
+        using var host = new TestHost();
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", "App", "--dry-run", "--yes"), host.Output);
+        StringAssert.Contains(host.FlatOutput, "'App' is also the name of a type");
+        StringAssert.Contains(host.FlatOutput, "bit new MyApp");
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", "Contoso.Program", "--dry-run", "--yes"), host.Output);
+        StringAssert.Contains(host.FlatOutput, "bit new Contoso.MyProgram");
+    }
+
+    [TestMethod]
+    [DataRow("AdminPanel")]
+    [DataRow("Contoso.Shop")]
+    [DataRow("SalesModule")]
+    [DataRow("TodoSample")]
+    [DataRow("MyCompany.TestProject")]
+    public void TheDemosNames_Should_NotClashWithTheTemplatesTypes(string name)
+    {
+        Assert.IsNull(ProjectName.Validate(name, TypeNames.Template));
+    }
+
+    [TestMethod]
+    public void TheTemplatesTypes_Should_ComeFromItsFileNames()
+    {
+        CollectionAssert.IsSubsetOf(new[] { "App", "Program", "AppDbContext" }, TypeNames.Template.ToArray());
+        Assert.IsFalse(TypeNames.Template.Contains("Boilerplate"));
+        Assert.AreEqual("App", TypeNames.Of("App.razor.cs"));
+        Assert.AreEqual("App", TypeNames.Of("App.xaml.cs"));
+        Assert.IsNull(TypeNames.Of("App.razor.scss"));
+    }
+
+    [TestMethod]
+    public void ATemplatePackage_Should_GiveItsOwnTypes()
+    {
+        using var host = new TestHost();
+        var folder = Path.Combine(host.WorkingDirectory, "template");
+        File.WriteAllText(Path.Combine(Directory.CreateDirectory(Path.Combine(folder, "src", "Shop")).FullName, "Shop.razor"), "");
+        var package = Path.Combine(host.WorkingDirectory, "template.nupkg");
+        ZipFile.CreateFromDirectory(folder, package);
+
+        Assert.IsTrue(TypeNames.FromPackage(folder).Contains("Shop"));
+        Assert.IsTrue(TypeNames.FromPackage(package).Contains("Shop"));
     }
 
     [TestMethod]
