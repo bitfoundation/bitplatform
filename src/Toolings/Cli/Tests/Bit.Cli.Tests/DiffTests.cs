@@ -63,6 +63,17 @@ public class DiffTests
     }
 
     [TestMethod]
+    public async Task AnOptionDiffDoesntHave_Should_StopBeforeItCreatesAnything()
+    {
+        using var host = new Infrastructure.TestHost(HostOs.Linux);
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("diff", "--yes", "--name", "Shop"), host.Output);
+        StringAssert.Contains(host.FlatOutput, "'--yes' isn't a bit Boilerplate version");
+        Assert.IsEmpty(host.Runner.Calls);
+        Assert.IsFalse(Directory.Exists(Path.Combine(host.Environment.BitDirectory, "diff")));
+    }
+
+    [TestMethod]
     public void FolderRemover_Should_RemoveALinkedFolderButNotWhatItLinksTo()
     {
         using var host = new Infrastructure.TestHost();

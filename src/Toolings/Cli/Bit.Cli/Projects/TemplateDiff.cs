@@ -42,6 +42,12 @@ public sealed class TemplateDiff(CliServices cli)
         if (from is null)
             return cli.UsageError("version-unknown", $"{directory} has no bit.json that says which bit Boilerplate version made the project. Pass it: bit diff <from> [to].");
 
+        foreach (var version in new[] { from, request.To })
+        {
+            if (version is not null && TemplateSource.IsVersion(version) is false)
+                return cli.UsageError("not-a-version", $"'{version}' isn't a bit Boilerplate version, such as {BuildInfo.Version}.");
+        }
+
         if (string.Equals(from, to, StringComparison.OrdinalIgnoreCase) && request.TemplatePackage is null)
         {
             cli.Console.Out.MarkupLine($"  [green]{Markup.Escape(name)} is already on bit Boilerplate {Markup.Escape(to)}.[/]");
