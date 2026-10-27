@@ -114,6 +114,27 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task DockerTheUserCantReach_Should_GetTheUserIntoTheDockerGroup()
+    {
+        using var host = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["USER"] = "jane" });
+        AllInstalled(host.Runner);
+        host.Runner.Executables["sudo"] = "/usr/bin/sudo";
+        host.Runner.On("docker", "version", 1, "permission denied while trying to connect to the docker API at unix:///var/run/docker.sock");
+        var needs = new ToolNeeds { Aspire = true, ContainersRequired = true };
+        var docker = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "docker");
+
+        Assert.AreEqual("Enable Docker for your user", docker.Action!.Title, "Starting Docker doesn't let the user reach it.");
+        Assert.AreEqual("usermod -aG docker jane", docker.Action.Commands.Single().CommandLine);
+
+        var steps = new StepRunner(host.Services);
+        await new ToolInstaller(host.Services, steps).InstallAsync([docker], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
+
+        var result = steps.Reports.Single(r => r.Id == "docker").Result;
+        Assert.AreEqual(StepStatus.Warning, result.Status);
+        Assert.AreEqual("Sign out and back in so your user can run docker without sudo.", result.Detail);
+    }
+
+    [TestMethod]
     public async Task Podman_Should_CountAsTheContainerRuntime()
     {
         using var host = new TestHost(HostOs.Windows);

@@ -577,6 +577,10 @@ public static partial class ToolCatalog
 
         private const string PodmanMachineStopped = "Podman's machine isn't running";
 
+        private const string DockerWithoutAccess = "your user can't reach it";
+
+        private const string SignOutAndIn = "Sign out and back in so your user can run docker without sudo.";
+
         public override string Id => "docker";
 
         public override string Name => "Docker or Podman";
@@ -611,6 +615,9 @@ public static partial class ToolCatalog
                     return new ToolStatus(ToolState.NotRunning, null, (await context.RunAsync(podman, ["machine", "inspect"], cancellationToken)).Succeeded ? PodmanMachineStopped : PodmanWithoutMachine);
             }
 
+            if (context.Environment.IsLinux && server.Output.Contains("permission denied", StringComparison.OrdinalIgnoreCase))
+                return new ToolStatus(ToolState.NotRunning, null, DockerWithoutAccess);
+
             var client = await context.RunAsync("docker", ["--version"], cancellationToken);
             return client.Succeeded ? new ToolStatus(ToolState.NotRunning, ParseVersion(client.Output)?.ToString(), "installed, but not running") : ToolStatus.Missing();
         }
@@ -640,6 +647,8 @@ public static partial class ToolCatalog
                     HostOs.MacOS when Directory.Exists("/Applications/Docker.app")
                         => new ToolAction { ToolId = Id, Title = "Start Docker Desktop", Commands = [new ProcessSpec { FileName = "open", Arguments = ["-a", "Docker"] }] },
                     HostOs.MacOS => Colima(context),
+                    HostOs.Linux when status.Detail is DockerWithoutAccess
+                        => new ToolAction { ToolId = Id, Title = "Enable Docker for your user", Elevation = Elevation.Sudo, AfterInstall = SignOutAndIn, Commands = [JoinDockerGroup(context)] },
                     HostOs.Linux => new ToolAction { ToolId = Id, Title = "Start Docker", Elevation = Elevation.Sudo, Commands = [PackageManagers.Sudo("systemctl", "start", "docker")] },
                     _ => null
                 };
@@ -656,11 +665,11 @@ public static partial class ToolCatalog
                     ToolId = Id,
                     Title = "Install Docker Engine",
                     Elevation = Elevation.Sudo,
-                    AfterInstall = "Sign out and back in so your user can run docker without sudo.",
+                    AfterInstall = SignOutAndIn,
                     Commands =
                     [
                         PackageManagers.Sudo("sh", "-c", "curl -fsSL https://get.docker.com | sh"),
-                        PackageManagers.Sudo("usermod", "-aG", "docker", context.Environment.GetVariable("USER") ?? Environment.UserName),
+                        JoinDockerGroup(context),
                         PackageManagers.Sudo("systemctl", "enable", "--now", "docker")
                     ]
                 },
@@ -674,6 +683,8 @@ public static partial class ToolCatalog
             HostOs.MacOS => "https://github.com/abiosoft/colima#installation",
             _ => "https://docs.docker.com/engine/install/"
         };
+
+        private static ProcessSpec JoinDockerGroup(ToolContext context) => PackageManagers.Sudo("usermod", "-aG", "docker", context.Environment.GetVariable("USER") ?? Environment.UserName);
 
         private static IReadOnlyList<ProcessSpec> PodmanMachine(string podman, bool init)
         {
