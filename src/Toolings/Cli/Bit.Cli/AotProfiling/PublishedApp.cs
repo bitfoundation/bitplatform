@@ -25,8 +25,6 @@ public sealed class PublishedApp : IAsyncDisposable
 
     public bool IsStatic => server is null;
 
-    public string Framework => Path.Combine(WebRoot, "_framework");
-
     public static string? FindServer(string publishFolder)
     {
         return Directory.EnumerateFiles(publishFolder, "*.runtimeconfig.json")

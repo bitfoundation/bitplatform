@@ -82,6 +82,17 @@ public sealed class AotProfileRun(CliServices cli)
             if (origin is not null && PublishedApp.FindServer(publish) is not null)
                 cli.Console.StepHint("--origin is for apps without a server; this one runs its own.");
 
+            var framework = Path.Combine(publish, "wwwroot", "_framework");
+            var assemblies = (Directory.Exists(framework) ? Directory.EnumerateFiles(framework, "*.dll") : [])
+                .Select(path => (Path: path, Name: AssemblyMethods.ReadName(path)))
+                .Where(a => a.Name is not null)
+                .ToList();
+
+            if (request.Include.FirstOrDefault(name => assemblies.Any(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase)) is false) is { } unknown)
+            {
+                return cli.UsageError("include-unknown", $"--include {unknown}: the app has no assembly by that name.");
+            }
+
             stopwatch.Restart();
             await using var app = await PublishedApp.StartAsync(publish, origin, cli.Log, cancellationToken);
             await using var chromium = await Chromium.LaunchAsync(browser, cli.Log, cancellationToken);
@@ -131,23 +142,8 @@ public sealed class AotProfileRun(CliServices cli)
 
             var profile = AotProfile.Read(data);
             var collected = profile.Methods.Count;
-            var assemblies = Directory.EnumerateFiles(app.Framework, "*.dll")
-                .Select(path => (Path: path, Name: AssemblyMethods.ReadName(path)))
-                .Where(a => a.Name is not null)
-                .ToList();
-
             var unmanaged = assemblies.Sum(a => profile.AddRange(AssemblyMethods.Read(a.Path, unmanagedCallersOnly: true)));
-            var included = 0;
-
-            foreach (var name in request.Include)
-            {
-                if (assemblies.FirstOrDefault(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase)) is not { Path: { } path })
-                {
-                    return cli.UsageError("include-unknown", $"--include {name}: the app has no assembly by that name.");
-                }
-
-                included += profile.AddRange(AssemblyMethods.Read(path, unmanagedCallersOnly: false));
-            }
+            var included = request.Include.Sum(name => profile.AddRange(AssemblyMethods.Read(assemblies.First(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase)).Path, unmanagedCallersOnly: false)));
 
             Directory.CreateDirectory(Path.GetDirectoryName(output)!);
             await File.WriteAllBytesAsync(output, profile.ToArray(), cancellationToken);

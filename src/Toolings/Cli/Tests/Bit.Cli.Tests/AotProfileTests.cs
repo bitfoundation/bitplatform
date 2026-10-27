@@ -219,6 +219,31 @@ public class AotProfileTests
         Assert.IsEmpty(host.Runner.Calls);
     }
 
+    [TestMethod]
+    public async Task AnUnknownInclude_Should_BeRefusedBeforeTheAppIsUsed()
+    {
+        using var host = new TestHost();
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "App.Client.csproj"), "<Project />");
+        var browser = Path.Combine(host.Root, "chrome.exe");
+        File.WriteAllText(browser, "");
+        PublishesAStaticApp(host);
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("aot-profile", "--browser", browser, "--include", "Bit.Cli.Tests", "--include", "Bit.Bmage"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "--include Bit.Bmage: the app has no assembly by that name.");
+    }
+
+    private static void PublishesAStaticApp(TestHost host)
+    {
+        host.Runner.On("dotnet", "publish", spec =>
+        {
+            var framework = Directory.CreateDirectory(Path.Combine(spec.Arguments[spec.Arguments.ToList().IndexOf("-o") + 1], "wwwroot", "_framework")).FullName;
+            File.WriteAllText(Path.Combine(framework, "..", "index.html"), "<html></html>");
+            File.Copy(typeof(AotProfileTests).Assembly.Location, Path.Combine(framework, "Bit.Cli.Tests.dll"));
+            return new ProcessResult { ExitCode = 0 };
+        });
+    }
+
     private sealed class MonoProfileWriter
     {
         private readonly MemoryStream stream = new();
