@@ -265,6 +265,10 @@ public sealed class VsCodeTrust : TrustWriter
 
     protected override TrustOutcome TrustInstalled(TrustContext context, string folder)
     {
+        if (IdeLocator.FindVsCode(context.Environment, context.Runner)?.Executable.Replace('\\', '/') is { } code
+            && (code.Contains("/remote-cli/", StringComparison.Ordinal) || (context.Environment.IsLinux && code.StartsWith("/mnt/", StringComparison.Ordinal))))
+            return new TrustOutcome(Name, TrustResultKind.Skipped, "VS Code keeps the trust of remote folders where its window runs");
+
         if (context.IsVsCodeRunning())
             return new TrustOutcome(Name, TrustResultKind.Skipped, "VS Code is running, so its trust store was left alone");
 

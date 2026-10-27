@@ -228,6 +228,21 @@ public class TrustTests
     }
 
     [TestMethod]
+    public void VsCode_Should_LeaveARemoteFoldersTrustToItsWindow()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var remoteCli = Path.Combine(host.Root, ".vscode-server", "bin", "f1e2d3c4", "bin", "remote-cli", "code");
+        Directory.CreateDirectory(Path.GetDirectoryName(remoteCli)!);
+        File.WriteAllText(remoteCli, "");
+        host.Runner.Executables["code"] = remoteCli;
+
+        var outcome = new VsCodeTrust().Trust(new TrustContext(host.Environment, host.Runner) { IsVsCodeRunning = () => false }, ProjectFolder(host));
+
+        Assert.AreEqual(TrustResultKind.Skipped, outcome.Kind, "In WSL, a dev container or over SSH, VS Code reads trust from the machine with its window.");
+        Assert.IsFalse(File.Exists(VsCodeTrust.SharedStore(host.Environment)));
+    }
+
+    [TestMethod]
     public void VsCode_Should_NotTouchTheStoreWhileItRuns()
     {
         using var host = new TestHost();
