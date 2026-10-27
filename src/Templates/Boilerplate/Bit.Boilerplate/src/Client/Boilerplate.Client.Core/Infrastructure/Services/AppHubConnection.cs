@@ -45,10 +45,19 @@ public partial class AppHubConnection : IAsyncDisposable
     public bool IsHubException(Exception exception) => connection?.IsHubException(exception) is true;
 
     // Never connects sooner than 5 seconds after the app started, so SignalR stays out of the app's startup.
-    public async Task StartAsync(CancellationToken cancellationToken = default)
+    // False when the connection was already up or being opened by another call, so it may carry an older access token.
+    public async Task<bool> StartAsync(CancellationToken cancellationToken = default)
     {
         await startupDelay.WaitAsync(cancellationToken);
+
+        if (starting is { IsCompleted: false } || IsConnected)
+        {
+            await Connect().WaitAsync(cancellationToken);
+            return false;
+        }
+
         await Connect().WaitAsync(cancellationToken);
+        return true;
     }
 
     public async Task InvokeAsync(string methodName, object? arg1, CancellationToken cancellationToken = default)
@@ -208,7 +217,7 @@ public partial class AppHubConnection : IAsyncDisposable
 
         public bool IsConnected => hubConnection.State is HubConnectionState.Connected;
 
-        public string? ConnectionId => hubConnection.ConnectionId;
+        public string? ConnectionId => IsConnected ? hubConnection.ConnectionId : null;
 
         // HubException is in a lazy assembly. Mono never retries a reference it failed to resolve, and inlining this before the load would resolve it.
         [MethodImpl(MethodImplOptions.NoInlining)]

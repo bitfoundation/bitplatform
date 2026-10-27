@@ -78,7 +78,7 @@ public partial class DiagnosticReport
         //#if (signalR == true)
         try
         {
-            signalRConnectionId = hubConnection.IsConnected ? hubConnection.ConnectionId : null;
+            signalRConnectionId = hubConnection.ConnectionId;
         }
         catch (Exception exp)
         {

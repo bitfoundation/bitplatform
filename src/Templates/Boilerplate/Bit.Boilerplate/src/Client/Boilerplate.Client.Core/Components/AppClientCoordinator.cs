@@ -428,9 +428,8 @@ public partial class AppClientCoordinator : AppComponentBase
     {
         try
         {
-            if (hubConnection.IsConnected is false)
+            if (hubConnection.IsConnected is false && await hubConnection.StartAsync(CurrentCancellationToken))
             {
-                await hubConnection.StartAsync(CurrentCancellationToken);
                 await HubConnectionConnected(null);
             }
             else
