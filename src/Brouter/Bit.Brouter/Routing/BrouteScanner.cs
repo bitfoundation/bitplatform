@@ -73,6 +73,8 @@ internal static class BrouteScanner
         {
             types = ex.Types;
         }
+        // Mono on WebAssembly throws one of these instead, when a type's base type or interface is in an assembly
+        // that isn't loaded yet (a BlazorWebAssemblyLazyLoad one, for example).
         catch (Exception ex) when (ex is FileNotFoundException or TypeLoadException)
         {
             types = GetLoadableTypes(assembly.ManifestModule);
@@ -97,6 +99,7 @@ internal static class BrouteScanner
         }
     }
 
+    // Mono resolves a type's interfaces only when it is first asked about them, so a type GetLoadableTypes returned can still fail here.
     private static bool IsComponent(Type type)
     {
         try
@@ -109,6 +112,7 @@ internal static class BrouteScanner
         }
     }
 
+    // Resolves the TypeDef rows one by one, so one type that can't be loaded doesn't hide the rest. Row 1 is <Module>.
     [RequiresUnreferencedCode("See Discover.")]
     internal static Type?[] GetLoadableTypes(Module module)
     {
