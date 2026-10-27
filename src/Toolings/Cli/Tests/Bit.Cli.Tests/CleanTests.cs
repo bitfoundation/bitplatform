@@ -36,6 +36,19 @@ public class CleanTests
     }
 
     [TestMethod]
+    public async Task Clean_Should_SayWhichBuildFoldersTheScriptLeft()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var folder = CreateProject(host, "Clean.sh");
+        var obj = Directory.CreateDirectory(Path.Combine(folder, "src", "Contoso.Server.Api", "obj")).FullName;
+
+        await host.RunAsync("clean", folder);
+
+        StringAssert.Contains(host.FlatOutput, "Some build folders are still there");
+        StringAssert.Contains(host.FlatOutput, obj);
+    }
+
+    [TestMethod]
     public async Task Clean_Should_NeedTheProjectsScript()
     {
         using var host = new TestHost(HostOs.Linux);
