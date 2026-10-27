@@ -220,6 +220,20 @@ public static class RemoveCommand
             losses.Add(count == 1 ? "Its branch has 1 commit that isn't pushed." : $"Its branch has {count} commits that aren't pushed.");
         }
 
+        var others = await Git(cli, folder, ["rev-list", "--count", "--branches", "--not", "--remotes", "HEAD"], cancellationToken);
+
+        if (others.Succeeded && int.TryParse(others.Output.Trim(), out var otherCount) && otherCount > 0)
+        {
+            losses.Add(otherCount == 1 ? "Other branches have 1 commit that isn't pushed." : $"Other branches have {otherCount} commits that aren't pushed.");
+        }
+
+        var stashes = await Git(cli, folder, ["stash", "list"], cancellationToken);
+
+        if (stashes.Succeeded && string.IsNullOrWhiteSpace(stashes.Output) is false)
+        {
+            losses.Add("It has stashed changes.");
+        }
+
         return losses;
     }
 

@@ -62,13 +62,13 @@ public class RemoveTests
         var folder = CreateProject(host);
         host.Runner.On("git", "rev-parse", 0, folder.Replace('\\', '/'));
         host.Runner.On("git", "status --porcelain", 0, "?? notes.txt\n");
-        host.Runner.On("git", "rev-list --count", 0, "2\n");
+        host.Runner.On("git", "rev-list --count @{u}", 0, "2\n");
 
         Assert.AreEqual(0, await host.RunAsync("remove", folder));
         Assert.AreEqual($"It has changes that aren't committed.\nIts branch has 2 commits that aren't pushed.\nDelete {folder} and everything in it?", prompter.Prompts[^1].Question);
 
         host.Runner.On("git", "status --porcelain", 0, "");
-        host.Runner.On("git", "rev-list --count", 128, "fatal: no upstream configured for branch 'develop'");
+        host.Runner.On("git", "rev-list --count @{u}", 128, "fatal: no upstream configured for branch 'develop'");
 
         Assert.AreEqual(0, await host.RunAsync("remove", folder));
         Assert.AreEqual($"Its branch has no upstream, so its commits may exist only here.\nDelete {folder} and everything in it?", prompter.Prompts[^1].Question);
@@ -84,6 +84,23 @@ public class RemoveTests
         Assert.AreEqual(0, await host.RunAsync("remove", folder));
         Assert.AreEqual($"Delete {folder} and everything in it?", prompter.Prompts[^1].Question);
         Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "rev-list"));
+        Assert.IsTrue(File.Exists(Path.Combine(folder, "Contoso.Web.slnf")));
+    }
+
+    [TestMethod]
+    public async Task Remove_Should_SayWhatOtherBranchesAndStashesWouldLose()
+    {
+        var prompter = new ScriptedPrompter().On("Delete", false);
+        using var host = new TestHost(HostOs.Linux, prompter: prompter);
+        var folder = CreateProject(host);
+        host.Runner.On("git", "rev-parse", 0, folder.Replace('\\', '/'));
+        host.Runner.On("git", "rev-list --count @{u}", 0, "0\n");
+        host.Runner.On("git", "rev-list --count --branches", 0, "3\n");
+        host.Runner.On("git", "stash list", 0, "stash@{0}: WIP on develop: 1a2b3c4 Add the cart\n");
+
+        Assert.AreEqual(0, await host.RunAsync("remove", folder));
+
+        Assert.AreEqual($"Other branches have 3 commits that aren't pushed.\nIt has stashed changes.\nDelete {folder} and everything in it?", prompter.Prompts.Single().Question);
         Assert.IsTrue(File.Exists(Path.Combine(folder, "Contoso.Web.slnf")));
     }
 
