@@ -490,6 +490,28 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public async Task DotnetRun_Should_BuildAgainAfterTheMigrationAddedFiles()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.OnAsync("dotnet", "run", async (_, ct) =>
+        {
+            await Task.Delay(Timeout.Infinite, ct);
+            return new ProcessResult { ExitCode = 0 };
+        });
+        var project = CreateFakeProject(host, "Contoso");
+        WriteServerWeb(project, "http://localhost:5030");
+        var steps = new ProjectSteps(host.Services, project) { AliveProbe = (_, _) => Task.FromResult(true) };
+
+        Assert.AreEqual(StepStatus.Succeeded, (await steps.MigrationAsync(_ => { }, CancellationToken.None)).Status);
+        var result = await steps.DotnetRunAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
+        CollectionAssert.DoesNotContain(host.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() is "run").Arguments.ToArray(), "--no-build", "The build from before the migration has no Initial migration in it.");
+
+        await steps.Running!.StopAsync(false);
+    }
+
+    [TestMethod]
     public async Task DotnetRun_Should_ReportAServerThatExits()
     {
         using var host = new TestHost(HostOs.Linux);

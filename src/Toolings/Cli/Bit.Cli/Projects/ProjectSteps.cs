@@ -49,6 +49,8 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     private IEnumerable<string> BuildProperties => project.BuildProperties.Select(p => $"-p:{p}");
 
+    private bool migrationAdded;
+
     public Task<StepResult> AppCertificateAsync(Action<string> progress, CancellationToken cancellationToken)
     {
         if (System.IO.Directory.Exists(project.ServerApiDirectory) is false)
@@ -331,6 +333,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         if (result.Succeeded is false)
             return StepResult.FromProcess(result, "", "Couldn't add the initial migration", followUp);
 
+        migrationAdded = true;
         var committed = await CommitPathAsync(migrations, "Add the Initial EF Core migration", cancellationToken);
         return StepResult.Succeeded("Added the Initial migration", $"{project.Database}{(committed is null ? "" : ", committed")}");
     }
@@ -438,7 +441,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             var run = RunUntilStoppedAsync(new ProcessSpec
             {
                 FileName = "dotnet",
-                Arguments = ["run", "--project", server, "--no-build", .. project.BuildProperties.Select(p => $"--property:{p}")],
+                Arguments = ["run", "--project", server, .. migrationAdded ? Array.Empty<string>() : ["--no-build"], .. project.BuildProperties.Select(p => $"--property:{p}")],
                 WorkingDirectory = project.Directory,
                 Environment = new Dictionary<string, string?> { ["DOTNET_NOLOGO"] = "1" }
             }, running.Token);
