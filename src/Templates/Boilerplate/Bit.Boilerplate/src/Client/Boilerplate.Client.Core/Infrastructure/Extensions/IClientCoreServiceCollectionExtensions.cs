@@ -8,9 +8,6 @@ using Boilerplate.Client.Core;
 using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
-//#if (signalR == true)
-using Microsoft.AspNetCore.Http.Connections;
-//#endif
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -165,45 +162,7 @@ public static partial class IClientCoreServiceCollectionExtensions
 
             //#if (signalR == true)
             services.AddScoped<IRetryPolicy, SignalRInfiniteRetryPolicy>();
-            services.AddSessioned(sp =>
-            {
-                var authManager = sp.GetRequiredService<AuthManager>();
-                var authTokenProvider = sp.GetRequiredService<IAuthTokenProvider>();
-                var absoluteServerAddressProvider = sp.GetRequiredService<AbsoluteServerAddressProvider>();
-
-                // The X-Origin is already has been set while Client.Web, Client.Maui, Client.Windows and Server.Web
-                var xOrigin = sp.GetRequiredService<HttpClient>().DefaultRequestHeaders.Single(h => h.Key is "X-Origin").Value.Single();
-
-                var hubConnection = new HubConnectionBuilder()
-                    .WithStatefulReconnect()
-                    .AddJsonProtocol(options =>
-                    {
-                        foreach (var chain in sp.GetRequiredService<JsonSerializerOptions>().TypeInfoResolverChain)
-                        {
-                            options.PayloadSerializerOptions.TypeInfoResolverChain.Add(chain);
-                        }
-                    })
-                    .WithAutomaticReconnect(sp.GetRequiredService<IRetryPolicy>())
-                    .WithUrl(new Uri(absoluteServerAddressProvider.GetAddress(), "app-hub?origin=" + Uri.EscapeDataString(xOrigin)), options =>
-                    {
-                        //#if (redis == true)
-                        options.SkipNegotiation = true; // No negotiate request, so no sticky sessions behind the Redis backplane.
-                        //#else
-                        options.SkipNegotiation = false; // Required for Azure SignalR.
-                        //#endif
-                        options.Transports = HttpTransportType.WebSockets;
-                        // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
-                        // WebSockets should be enabled on services like IIS or Cloudflare CDN, offering significantly better performance.
-                        options.HttpMessageHandlerFactory = httpClientHandler => sp.GetRequiredService<HttpMessageHandlersChainFactory>().Invoke(httpClientHandler);
-                        options.AccessTokenProvider = async () =>
-                        {
-                            return await authManager.GetFreshAccessToken(requestedBy: nameof(HubConnection),
-                                ignoreTransientException: true); // ignoreTransientException: If the client is disconnected and the access token is expired, this code will execute repeatedly every few seconds, causing an annoying error message to be displayed to the user.
-                        };
-                    })
-                    .Build();
-                return hubConnection;
-            });
+            services.AddSessioned<AppHubConnection>();
             //#endif
 
             return services;
