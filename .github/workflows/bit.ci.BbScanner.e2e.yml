@@ -1,7 +1,8 @@
 name: bit platform CI - BbScanner E2E
 
 # The demo app in Chromium whose camera is a generated video file: continuous scanning of six symbologies, the
-# camera lifecycle, permissions, keyboard and layout, and every demo page, against the Release build that ships.
+# camera lifecycle, permissions, keyboard and layout, and every demo page, against the Release build that ships - and
+# the Blazor Server sample, where the same scanner runs on a circuit.
 # It takes far longer than the build-and-unit pipeline (bit.ci.BbScanner.yml), so it runs only when started by
 # hand. See src/Utilities/BbScanner/Tests/Bit.BbScanner.Tests.E2E/README.md for what the suite proves and how to run it
 # locally.
@@ -47,6 +48,11 @@ jobs:
     # every build and fails only there.
     - name: Publish the demo
       run: dotnet publish src/Utilities/BbScanner/Demo/Server/Bit.BbScanner.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
+
+    # The Blazor Server tests boot the sample from its build output themselves: on a circuit .NET runs on the server,
+    # so there is no trimmed or ahead of time compiled client for a publish to produce.
+    - name: Build the Blazor Server sample
+      run: dotnet build src/Utilities/BbScanner/Samples/Server/Bit.BbScanner.Samples.Server.csproj -c Release
 
     - name: Build the E2E suite
       run: dotnet build src/Utilities/BbScanner/Tests/Bit.BbScanner.Tests.E2E/Bit.BbScanner.Tests.E2E.csproj -c Release

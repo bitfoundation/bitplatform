@@ -4,7 +4,8 @@ A barcode scanner for Blazor, with the decoding written from scratch in C#.
 
 No barcode SDK, no JavaScript scanner library and no runtime dependency beyond `Microsoft.AspNetCore.Components.Web`.
 The browser opens the camera and copies pixels; everything after that - luminance conversion, binarization, detection,
-Reed-Solomon correction and bit stream parsing - is managed code you can step into.
+Reed-Solomon correction and bit stream parsing - is managed code you can step into. It runs in every Blazor hosting
+model: WebAssembly, Server, Auto and Hybrid (MAUI, WPF and Windows Forms).
 
 ```razor
 <BbScanner Formats="BbBarcodeFormat.QrCode | BbBarcodeFormat.Ean13"
@@ -24,7 +25,7 @@ shipping label, the MaxiCode on a parcel, the Data Matrix or Micro QR on a part,
 Aztec code on a boarding pass or a rail ticket, the ITF-14 of a carton, the GS1 DataBar on a pack of loose produce and
 the DataBar Expanded that carries a pack of meat's weight and price.
 From the camera continuously, from a photo the user picks, or from pixels the application already has - in the
-browser or on a server.
+browser, on a server or in a native app.
 
 ## Highlights
 
@@ -32,8 +33,11 @@ browser or on a server.
   (including GS1-128), Code 39, Code 93, Codabar, EAN-13, EAN-8, UPC-A, UPC-E (with EAN-2 and EAN-5 add-ons), ITF, GS1
   DataBar (including its stacked forms), DataBar Limited and DataBar Expanded (including Expanded Stacked) - checked
   against symbols written by an independent encoder, not only against the library's own test encoders.
-- **One copy per frame.** JavaScript writes the frame straight into managed memory through a `[JSImport]` memory
-  view: no JSON, no base64, no second buffer.
+- **Every hosting model.** The same component scans under Blazor WebAssembly, Blazor Server, Auto and Blazor Hybrid.
+  The camera is always the page's; where .NET runs elsewhere - on a server, or natively behind a WebView - the page
+  sends each frame as the luminance of the region being searched, and the decoder runs where .NET does.
+- **One copy per frame on WebAssembly.** JavaScript writes the frame straight into managed memory through a
+  `[JSImport]` memory view: no JSON, no base64, no second buffer.
 - **No garbage per frame.** Buffers, bit planes, detectors and scan lines are reused across frames, so a frame
   with no barcode in it allocates nothing on the linear path.
 - **Misreading is treated as worse than missing**: check digits, guard patterns and repeated reads are verified
@@ -63,7 +67,7 @@ Add the namespace to `_Imports.razor`:
 @using Bit.BbScanner
 ```
 
-Put a scanner on a page rendered with `InteractiveWebAssembly` (or in a standalone Blazor WebAssembly app):
+Put a scanner on an interactive page - any render mode, or a standalone WebAssembly or Hybrid app:
 
 ```razor
 <BbScanner OnScan="r => _last = r" />
@@ -81,11 +85,11 @@ automatically by the package's Blazor initializer. The full walkthrough is in [g
 ## Requirements
 
 - .NET 8, .NET 9 or .NET 10
-- Blazor WebAssembly for camera scanning: a standalone WebAssembly app, or the WebAssembly pages of a Blazor Web App.
-  Under Blazor Server and Blazor Hybrid the component reports `NotSupported`, and `BbBarcodeDecoder` decodes
-  pixels in-process instead - see [hosting models](#hosting-models).
-- A secure context: the page served over HTTPS, or from `localhost`.
-- For camera scanning in production, the WebAssembly client compiled ahead of time (`RunAOTCompilation`): on
+- An interactive render mode: Blazor WebAssembly, Blazor Server, Auto, or Blazor Hybrid. Prerendered, the scanner is
+  inert markup until the page becomes interactive - see [hosting models](#hosting-models).
+- A secure context: the page served over HTTPS, or from `localhost`. A `BlazorWebView` is one.
+- In a Blazor Hybrid app, the platform's camera permission - see [Blazor Hybrid](#blazor-hybrid).
+- For camera scanning on WebAssembly in production, the client compiled ahead of time (`RunAOTCompilation`): on
   Blazor's default interpreter a frame costs about a hundred times more - see [performance](#performance).
 
 ## The demo
@@ -97,20 +101,26 @@ in-browser decoder benchmark, customisation and error handling.
 [`Samples`](Samples/) is the hosting harness rather than the docs: one shared [Core](Samples/Core/) project of
 pages (the live camera, still images, and the decoder reading every symbology in-process), hosted unchanged under
 [Server](Samples/Server/), [WASM](Samples/Wasm/), [Auto](Samples/Auto/) and [MAUI](Samples/Maui/) (Blazor Hybrid on
-Android, iOS, macOS and Windows), so each [hosting model](#hosting-models) can be seen doing what it can: the camera
-under WebAssembly, `NotSupported` from the component under Server and MAUI, and `BbBarcodeDecoder` everywhere.
+Android, iOS, macOS and Windows), so each [hosting model](#hosting-models) can be seen doing the same things: the
+camera, still images, and `BbBarcodeDecoder` in-process.
 
 ## How it fits together
 
 ```text
-Browser                          | Managed
+Browser (or WebView)             | Managed (in the browser, on a server, or in the app)
 ---------------------------------+---------------------------------------------------------
 getUserMedia -> <video>          |
 WebGL: scale + luminance shader  |
   (2D canvas: scale, RGBA)       |
         |                        |
-        +-- JSImport MemoryView -+--> byte[] (reused, one per session)
-                                 |        |
+        +-- WebAssembly ---------+--> byte[] (reused, one per session)
+        |   JSImport MemoryView, |        |
+        |   the whole frame      |        |
+        |                        |        |
+        +-- Server, Hybrid ------+--------+
+            the searched region  |        |
+            as luminance, in     |        |
+            30 KB slices         |        |
                                  |        +- BbPixelConverter       luminance as is; RGBA -> luminance, optional subsample
                                  |        +- BbHybridBinarizer      8x8 adaptive blocks, noise floor   (matrix codes)
                                  |        |  BbAdaptiveRowBinarizer per-segment thresholds            (linear codes)
@@ -129,7 +139,7 @@ every other public type is prefixed `Bb`.
 | Part | Contents |
 | --- | --- |
 | The component | `BbScanner`: parameters, rendering, the camera lifecycle, the frame loop, overlays. |
-| The bridge | The complete JavaScript surface, all `[JSImport]`: opening the camera and copying frames. |
+| The bridges | One JavaScript module - opening the camera and copying frames - reached through `[JSImport]` on WebAssembly and through `IJSRuntime` everywhere else. |
 | The pipeline | `BbBarcodeDecoder`: frame budget, scratch state, duplicate suppression, diagnostics. |
 | Imaging | Luminance planes, bit planes and binarizers. |
 | Decoding | One reader per symbology, plus the shared algorithms (Reed-Solomon, grid sampling, perspective). |
@@ -180,8 +190,9 @@ library's own decoder and returns the `BbBarcodeResult` it produced. Every tool 
 dotnet add package Bit.BbScanner
 ```
 
-In a Blazor Web App, add the package to the .Client project: the scanner runs in the browser, so its assembly has
-to be downloaded there. Then add the namespace to `_Imports.razor`:
+Add the package to the project that holds the pages with a scanner: in a Blazor Web App, the .Client project for
+pages rendered with `InteractiveWebAssembly` or `InteractiveAuto` (the server project references it), and the server
+project for pages rendered with `InteractiveServer`. Then add the namespace to `_Imports.razor`:
 
 ```razor
 @using Bit.BbScanner
@@ -222,8 +233,9 @@ also works - the injection then stands down.
 ```
 
 The camera starts as soon as the component is ready (`AutoStart` is on by default); the browser asks for
-permission the first time. The scanner prerenders safely on the server and starts once WebAssembly takes over. In a
-standalone Blazor WebAssembly app leave the `@rendermode` line out: everything there already runs on WebAssembly.
+permission the first time. The scanner prerenders safely on the server and starts once the page is interactive.
+`InteractiveServer` and `InteractiveAuto` work as well - WebAssembly is the fastest of them, since the frames never
+leave the browser. In a standalone WebAssembly app or a Blazor Hybrid app leave the `@rendermode` line out.
 
 ### Where to go next
 
@@ -419,8 +431,10 @@ refused, as is one larger than `MaxImageFileSize` (32 MB by default), and an ima
 An image the application already holds goes to `ScanImageAsync`: the bytes of a PNG, JPEG, WebP or any format the
 browser decodes, from a `Stream` or from memory. It is decoded in the browser exactly like a picked file, under the
 same limits, and returns every symbol in it rather than raising `OnScan`; a refused or undecodable image throws a
-`BbScannerException` of kind `InvalidImage`. Off WebAssembly it throws `NotSupported` before reading a byte of the
-stream, so an upload to a Server app does not cross the circuit only to be refused. With Blazor's `InputFile`:
+`BbScannerException` of kind `InvalidImage`. Under Blazor Server the browser is across the network, so a stream the
+server holds is sent there and its luminance comes back: an `InputFile` upload crosses the network twice, where a file
+chosen through the built-in picker is decoded where it was chosen and sent once. While the page is not interactive
+yet - prerendering - it throws `NotSupported` before reading a byte of the stream. With Blazor's `InputFile`:
 
 ```razor
 @* Only images: the camera never starts, and no permission is asked for. *@
@@ -644,34 +658,82 @@ is not affected by later edits.
 
 ## Hosting models
 
-Camera scanning runs in the browser: the component reads frames through `[JSImport]` memory views, which only exist
-on the WebAssembly runtime. Where it runs decides what is available.
+The camera is always the page's: only the browser - or, in a Blazor Hybrid app, the WebView - can open it. What the
+hosting model decides is how far .NET is from it, and so how a frame reaches the decoder. The component, its
+parameters and its events are the same in every one of them, and so is everything it shows.
+
+| | Where the decoder runs | How a frame gets there |
+| --- | --- | --- |
+| Blazor WebAssembly | In the browser | Copied once, by the browser, into managed memory through a `[JSImport]` memory view |
+| Blazor Server | On the server | The searched region's luminance, streamed over the circuit |
+| Blazor Hybrid | Natively, in the app | The searched region's luminance, streamed over the WebView's message channel |
 
 ### Blazor WebAssembly
 
-The model the scanner is built for. The component, the frame loop and the decoder all run in the browser, and every
-frame crosses from JavaScript into managed memory exactly once. In a standalone WebAssembly app nothing else is
-needed: put `<BbScanner />` on a page.
+The fastest of them. The component, the frame loop and the decoder all run in the browser, and every frame crosses
+from JavaScript into managed memory exactly once. In a standalone WebAssembly app nothing else is needed: put
+`<BbScanner />` on a page. Compile the client ahead of time for production - see [performance](#performance).
 
 ### Blazor Web App
 
-Put the package and the pages that hold a scanner in the .Client project, and render them with
-`InteractiveWebAssembly`. The server prerenders those pages - the scanner renders its markup and stays inert - and
-the camera starts once WebAssembly takes over. With `InteractiveAuto` the first visit renders on the server, where
-the scanner cannot reach the camera, so give the scanning pages `@rendermode InteractiveWebAssembly` explicitly;
-the rest of the app can stay on Auto.
+Any of the interactive render modes works, per page or for the whole app. Reference the package from the project
+whose pages hold a scanner: the .Client project for `InteractiveWebAssembly` and `InteractiveAuto` pages, the server
+project for `InteractiveServer` ones. The server prerenders the pages - the scanner renders its markup and stays inert
+- and the camera starts once the page is interactive. Under `InteractiveAuto` the first visit runs on a circuit, as
+under Blazor Server, and later ones in the browser, with nothing on the page changing between the two.
 
 ### Blazor Server
 
-Under interactive server rendering the component reports `BbScannerErrorKind.NotSupported` - with a message saying
-which renderer it is on - rather than showing a Start button that quietly does nothing. Either render the scanning
-page with `InteractiveWebAssembly`, or decode on the server: `BbBarcodeDecoder` decodes an uploaded image in-process
-once your own code has turned it into pixels (see [using the decoder without Blazor](#using-the-decoder-without-blazor)).
+The component runs on the circuit and reaches the page's JavaScript through `IJSRuntime`. On every tick of the frame
+loop it asks the page, in one call, what changed and whether a new frame is in; when one is, the page reads it, cuts
+it down to the luminance of the [scan region](#scan-region) - a byte a pixel - and the server reads that back in
+slices of 30 KB, several at once, and decodes it. A 640x360 frame searched through `BbScanRegion.CenteredSquare(0.7)`
+is about 63 KB, where the RGBA frame would be 900 KB; the whole frame, searched in full, is 230 KB. A slice fits in one
+message, so the circuit's 32 KB limit on a message from the page (`HubOptions.MaximumReceiveMessageSize`) does not need
+raising, and each is an ordinary call with a timeout of its own, so one lost to a reconnecting circuit is simply asked
+for again.
+
+What that means for an application:
+
+- **Each scanner costs the server what decoding costs anywhere** - a few hundred microseconds to a couple of
+  milliseconds a frame (see [on .NET](#on-net)) - for as long as it is scanning. A paused or stopped scanner decodes
+  nothing.
+- **The frame rate is set by the connection as much as by `TargetFrameRate`.** A frame takes a poll and its slices, a
+  few round trips, and the loop waits for one before asking for the next, so a slow connection lowers the rate rather
+  than queueing frames. Aim with a `Region`, which is what cuts a frame down most, and on a slow link lower
+  `MaxProcessingSize` (to 480, say) or `TargetFrameRate` (to 8).
+- **A camera the circuit leaves behind is closed by the page.** The page keeps a watchdog on the camera it opened:
+  when the server has not asked for a frame for 20 seconds - a circuit that dropped for good, a server that went away
+  - it closes the camera itself, since nothing on the server can any more. A circuit that reconnects carries on; if
+  the watchdog closed the camera meanwhile, the scanner opens it again, as it does for a phone that ended it in the
+  background. The frame loop waits on the application's handlers - `OnScan` among them - so one that holds it for
+  longer than that, waiting on a dialog say, has the camera closed and opened again too: show the dialog without
+  awaiting it in the handler, or pause the scanner first.
+- **Still images are decoded in the browser.** The built-in picker and a dropped file are decoded where they were
+  chosen and only their luminance is sent; `ScanImageAsync` sends a stream the server holds to the browser first.
 
 ### Blazor Hybrid
 
-In a MAUI, WPF or Windows Forms `BlazorWebView` the component reports `NotSupported` as well. Use the platform's own
-camera API and feed its frames to `BbBarcodeDecoder`, which runs in-process.
+In a MAUI, WPF or Windows Forms `BlazorWebView` the WebView opens the camera, sends each frame's searched region over
+its message channel the way a Server page sends it over the circuit, and the frame loop and the decoder run natively
+in the app, at full .NET speed. Nothing crosses a network, so the size of a frame matters far less than on a circuit.
+
+The WebView needs the platform's permission to open the camera, which a web page never does:
+
+- **Android**: declare `android.permission.CAMERA` in `AndroidManifest.xml`, and grant the WebView's request for the
+  camera. Android hands every `getUserMedia` to the app as `WebChromeClient.OnPermissionRequest`, and the answer of
+  the client `BlazorWebView` installs is a refusal, which the scanner reports as `PermissionDenied`. A client that
+  wraps it, asks for the CAMERA runtime permission and grants `PermissionRequest.ResourceVideoCapture` once the user
+  has allowed it is in the MAUI sample:
+  [`CameraWebChromeClient`](Samples/Maui/Platforms/Android/CameraWebChromeClient.cs), installed in
+  [`MainPage.xaml.cs`](Samples/Maui/MainPage.xaml.cs).
+- **iOS and Mac Catalyst**: `NSCameraUsageDescription` in `Info.plist`, and on Mac Catalyst, with App Sandbox on, the
+  `com.apple.security.device.camera` entitlement. `BlazorWebView` already plays video inline. WKWebView offers the
+  camera to a page from iOS 14.3.
+- **Windows**: WebView2 asks the user itself; a packaged app declares `<DeviceCapability Name="webcam" />` in
+  `Package.appxmanifest`.
+
+A WebView that exposes no camera API to the page is reported as `NotSupported`, like a browser that has none.
 
 ## Errors and permissions
 
@@ -684,7 +746,7 @@ Camera failures are ordinary and expected, so the component classifies each one 
 | `NoCamera` | No device matched the request. | Fall back to image scanning or manual entry. |
 | `CameraUnavailable` | A device exists but is held by something else, or stopped delivering frames. | Ask the user to close other applications using the camera, then retry. |
 | `ConstraintsUnsatisfied` | No camera can meet the requested constraints - typically a `DeviceId` that is gone. | Drop the `DeviceId` and start again with `Facing`. |
-| `NotSupported` | No camera API, the page is not a secure context, or the component is not running on WebAssembly. | Serve over HTTPS, render the page on WebAssembly, or hide the scanner. |
+| `NotSupported` | The page - the browser, or a Hybrid app's WebView - exposes no camera API, the page is not a secure context, or the scanner's script could not be loaded. | Serve over HTTPS, check that static web assets are served, or hide the scanner. |
 | `InvalidImage` | An image given to `ScanImageAsync` is not an image, is larger than `MaxImageFileSize`, decodes to too many pixels, or could not be decoded. | Tell the user which; the built-in picker shows the same reasons as a notice. |
 | `Unknown` | Anything the browser did not classify. | Log the inner exception and offer a retry. |
 
@@ -708,18 +770,21 @@ A page inside a cross-origin `<iframe>` needs the camera delegated to it - `<ifr
 
 ## Privacy and security
 
-- **Everything happens on the device.** Frames are copied from the video element into the application's own
-  WebAssembly memory and decoded there; still images are decoded by the browser and then by the same decoder. The
-  library makes no network request of its own - the only files it loads are its script and its stylesheet, from the
-  application's own `_content/Bit.BbScanner/` - and it has no telemetry. Nothing is uploaded, and a value read is
-  only ever handed to the application's `OnScan`.
+- **Frames go where the application runs, and nowhere else.** On WebAssembly frames are copied from the video
+  element into the application's own WebAssembly memory and decoded there, and in a Blazor Hybrid app they go to the
+  app itself: either way nothing leaves the device. Under Blazor Server the application runs on the server, so that is
+  where frames are decoded: the searched region of each frame, in grayscale, crosses the circuit to the server - as
+  everything a Server app shows and reads does - and a still image chosen through the picker is decoded in the browser
+  and its grayscale sent the same way. The library makes no network request of its own - the only files it loads are
+  its script and its stylesheet, from the application's own `_content/Bit.BbScanner/` - and it has no telemetry. A
+  value read is only ever handed to the application's `OnScan`.
 - **Nothing is recorded or kept.** The camera stream is never recorded. Frames pass through buffers that are reused
   from one frame to the next - the frame itself and the decoder's grayscale, masked and thresholded copies of it, its
   block statistics and its scan lines - and when the camera closes (a stop, a fault, a page hidden with
   `ReleaseCameraWhenHidden`, disposal) every one of them is zeroed, not just let go of, since freed memory keeps its
   contents until it is reused. The browser-side readback array is zeroed and its canvas emptied, and the WebGL context
-  that drew the frame is released. Buffers the decoder hands back to .NET's shared array pools go back cleared, so no
-  other code in the application can rent a frame. A picked or captured still image is zeroed as soon as it has been
+  that drew the frame is released, as is the region copy a Server or Hybrid page sends. Buffers the decoder hands back
+  to .NET's shared array pools go back cleared, so no other code in the application can rent a frame. A picked or captured still image is zeroed as soon as it has been
   decoded, in the browser and in .NET; one handed over as encoded bytes (`ScanImageAsync`) waits in the browser as
   a Blob, which cannot be overwritten, and is released once decoded. The decoder keeps no history of values beyond
   the duplicate filter, which holds values, not images: it is cleared on every start the application asks for, and by
@@ -742,6 +807,8 @@ A page inside a cross-origin `<iframe>` needs the camera delegated to it - `<ifr
   positioned with inline `style` attributes, so `style-src` (or `style-src-attr`) has to allow `'unsafe-inline'`.
 - **Secure contexts only.** The camera is only offered to pages served over HTTPS or from `localhost`; elsewhere the
   scanner says so instead of waiting for a prompt that will never come. Still image scanning works either way.
+- **No camera outlives its application.** A camera opened for a Blazor Server circuit is closed by the page once the
+  server stops asking for frames, so a server that goes away does not leave the camera light on.
 
 ## What it reads, and what it does not
 
@@ -863,6 +930,20 @@ Either way, the scanner keeps the browser's work to what only the browser can do
 
 The demo's performance page runs the frame benchmark in your own browser.
 
+### Over a circuit, or a WebView
+
+Under Blazor Server and Blazor Hybrid the decoder runs on .NET proper, at the speeds measured below, and the cost
+that is new is getting the frame there. The page does what it can to make that small before it sends anything: the
+GPU scales the frame and converts it to luminance, and the page cuts out the searched region, so a 640x360 frame is
+230 KB searched in full and about 63 KB through `BbScanRegion.CenteredSquare(0.7)`. A tick is one call to ask what
+changed and whether a frame is in, and the frame's slices when there is one; the loop asks for the next only
+once the last is decoded, so a frame never waits in a queue, and a slow connection lowers the frame rate instead of
+the freshness of what is decoded.
+
+On a circuit, then, `Region` matters more than anywhere else - it is proportional to what crosses the network - and
+`MaxProcessingSize` and `TargetFrameRate` are the controls for a slow link. On a LAN, or in a Hybrid app, where the
+round trips are short, the defaults are fine.
+
 ### On .NET
 
 Measured with BenchmarkDotNet on .NET 10, x64, 640x480 grayscale frames with the symbol centred: the decoder's own
@@ -942,12 +1023,19 @@ listens. The benchmark suite is in `Tests/Bit.BbScanner.Benchmarks`.
 
 ### Design decisions
 
-- **One copy per frame.** `[JSImport]` with a `JSType.MemoryView` parameter hands JavaScript a view straight onto
-  the managed buffer. No JSON, no base64, no intermediate array.
+- **One component, two ways into the page.** The camera only exists in the page, so the component reaches it through
+  a bridge chosen for where it runs: `[JSImport]` on WebAssembly, `IJSRuntime` under Blazor Server and Blazor Hybrid.
+  Both call the same JavaScript module, and everything above the bridge - the frame loop, the lifecycle, the
+  rendering - is one code path.
+- **One copy per frame on WebAssembly.** `[JSImport]` with a `JSType.MemoryView` parameter hands JavaScript a view
+  straight onto the managed buffer. No JSON, no base64, no intermediate array.
+- **Less to send where frames travel.** Under Server and Hybrid the page sends the luminance of the searched region
+  only, in slices a circuit message each, and everything the loop needs to know on a tick in one call.
 - **The browser downsamples, and converts.** Frames are scaled to `MaxProcessingSize` by the GPU before they cross the
   boundary, and arrive as luminance, so the expensive stages never see pixels - or colour channels - they do not need.
-- **Backpressure by construction.** The frame loop asks for the *latest* frame on a timer and gets zero back when
-  nothing new has arrived. A slow decode misses ticks rather than building a queue of stale frames.
+- **Backpressure by construction.** The frame loop asks for the *latest* frame on a timer and gets nothing back when
+  nothing new has arrived. A slow decode, or a slow connection, misses ticks rather than building a queue of stale
+  frames.
 - **Renders are rare.** Frames never enter the render tree.
 - **Detection proposes, decoding disposes.** Both matrix detectors offer several candidate grids - with and without
   the alignment pattern, at neighbouring dimensions, from several patches of ink - and the first one that actually
@@ -1015,7 +1103,7 @@ Samples/Server, Wasm, Auto, Maui  the same pages in each hosting model
 Tests/Bit.BbScanner.TestKit       encoders, image helpers and the sample catalog, shared by the tests, the benchmarks, the demo and the samples
 Tests/Bit.BbScanner.Tests         unit, round-trip and image robustness tests
 Tests/Bit.BbScanner.Tests.Mcp     the MCP server, over the wire
-Tests/Bit.BbScanner.Tests.E2E     browser tests: a real page, a real camera stream
+Tests/Bit.BbScanner.Tests.E2E     browser tests: a real page, a real camera stream, on WebAssembly and on a circuit
 Tests/Bit.BbScanner.Benchmarks    BenchmarkDotNet suites
 ```
 
@@ -1060,7 +1148,11 @@ What the tests cover:
 - Reed-Solomon is checked over both fields by damaging codewords and requiring exact recovery.
 - The pipeline is checked for zero allocations across repeated empty frames.
 
+The component tests drive the Server and Hybrid path end to end without a browser, against a fake of the page that
+answers the module's calls and streams frames: the camera opening, regions cut out and results reported in the
+frame's coordinates, a camera lost or closed by the watchdog, and the errors a page reports.
+
 `Tests/Bit.BbScanner.Tests.E2E` runs the demo in Chromium whose camera is a generated video file, so the whole stack
 is exercised: the WebAssembly runtime, the JavaScript module, a real `MediaStream`, the frame loop and the decoder.
-Only the sensor is synthetic. Its [README](Tests/Bit.BbScanner.Tests.E2E/README.md) says what it covers and how to
-run it.
+It runs the Blazor Server sample the same way, on a real circuit, the watchdog included. Only the sensor is
+synthetic. Its [README](Tests/Bit.BbScanner.Tests.E2E/README.md) says what it covers and how to run it.

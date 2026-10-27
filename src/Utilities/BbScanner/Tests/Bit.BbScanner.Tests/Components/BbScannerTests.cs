@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Components;
 namespace Bit.BbScanner.Tests.Components;
 
 /// <summary>
-/// The component outside a browser, the way it meets a server: prerendered markup that waits for WebAssembly, the
-/// parameters that shape that markup, and the honest failure an interactive renderer that is not WebAssembly gets
-/// instead of a Start button that quietly does nothing. The camera itself is the E2E suite's to prove.
+/// The component the way a prerender meets it: markup that waits for the component to become interactive, and the
+/// parameters that shape that markup. <see cref="BbScannerRemoteTests"/> covers it once interactive outside
+/// WebAssembly; the camera itself is the E2E suite's to prove.
 /// </summary>
 [TestClass]
 public class BbScannerTests : BunitContext
@@ -111,33 +111,11 @@ public class BbScannerTests : BunitContext
     }
 
     [TestMethod]
-    public void An_interactive_renderer_that_is_not_webassembly_reports_not_supported()
-    {
-#if NET9_0_OR_GREATER
-        SetRendererInfo(new RendererInfo("Server", isInteractive: true));
-#endif
-        BbScannerException? error = null;
-        var statuses = new List<BbScannerStatus>();
-
-        var scanner = Render<BbScanner>(parameters => parameters
-            .Add(p => p.OnError, e => error = e)
-            .Add(p => p.OnStatusChanged, s => statuses.Add(s)));
-
-        Assert.AreEqual(BbScannerStatus.Faulted, scanner.Instance.Status);
-        Assert.IsNotNull(error);
-        Assert.AreEqual(BbScannerErrorKind.NotSupported, error.Kind);
-        Assert.Contains("WebAssembly", error.Message);
-        CollectionAssert.Contains(statuses, BbScannerStatus.Faulted);
-        Assert.Contains("WebAssembly", scanner.Find(".bit-bbscanner__message--error").TextContent);
-#if NET9_0_OR_GREATER
-        Assert.Contains("Server", error.Message, "The message names the renderer the scanner is stuck on.");
-#endif
-    }
-
-    [TestMethod]
-    public async Task Starting_outside_a_browser_does_nothing_rather_than_throwing()
+    public async Task Starting_while_prerendering_does_nothing_rather_than_throwing()
     {
         var scanner = RenderPrerendered();
+        if (OnNet8()) return;
+
         var before = scanner.Instance.Status;
 
         await scanner.InvokeAsync(() => scanner.Instance.StartAsync());
@@ -188,9 +166,10 @@ public class BbScannerTests : BunitContext
     }
 
     [TestMethod]
-    public async Task Scanning_an_encoded_image_outside_a_browser_says_it_cannot()
+    public async Task Scanning_an_encoded_image_while_prerendering_says_it_cannot()
     {
         var scanner = RenderPrerendered();
+        if (OnNet8()) return;
 
         var error = await Assert.ThrowsExactlyAsync<BbScannerException>(() =>
             scanner.InvokeAsync(() => scanner.Instance.ScanImageAsync(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, "image/png")));
@@ -200,9 +179,11 @@ public class BbScannerTests : BunitContext
     }
 
     [TestMethod]
-    public async Task An_image_stream_is_not_read_outside_a_browser()
+    public async Task An_image_stream_is_not_read_while_prerendering()
     {
         var scanner = RenderPrerendered();
+        if (OnNet8()) return;
+
         using var stream = new MemoryStream(new byte[4096]);
 
         var error = await Assert.ThrowsExactlyAsync<BbScannerException>(() =>
@@ -277,7 +258,8 @@ public class BbScannerTests : BunitContext
 
     /// <summary>
     /// .NET 8 has no RendererInfo, and so no way to tell a prerender from an interactive render: bUnit runs
-    /// OnAfterRender, which a real prerender never does, and the scanner reports NotSupported straight away.
+    /// OnAfterRender, which a real prerender never does, and the scanner goes on to reach the page - bUnit's, which
+    /// offers no camera API, so it reports NotSupported straight away.
     /// </summary>
     private static bool OnNet8()
     {

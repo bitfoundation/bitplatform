@@ -3,10 +3,10 @@ using Bit.BbScanner.Samples.Server.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// The pages run here, on the server, and only their markup reaches the browser. BbScanner reads the camera through the
-// WebAssembly runtime, which this host does not have, so the scanner reports NotSupported - saying which renderer it
-// is on - instead of offering a Start button that does nothing. BbBarcodeDecoder runs here in-process (the decoder
-// page), which is how a Server app decodes images it has turned into pixels.
+// The pages run here, on the server, and only their markup reaches the browser. BbScanner opens the camera in the
+// browser, which cuts each frame down to the luminance of the searched region and streams it over the circuit; the
+// frame loop and the decoder run here. The page closes a camera the circuit leaves behind. BbBarcodeDecoder runs here
+// in-process too (the decoder page).
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 

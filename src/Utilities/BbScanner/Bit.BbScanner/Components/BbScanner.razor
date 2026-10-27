@@ -124,7 +124,9 @@
 
             @if (EnableFileScanning)
             {
-                <button type="button" class="bit-bbscanner__button" @onclick="OpenFilePickerAsync">@T.ScanImageButton</button>
+                @* Opened by the page's own click handler rather than a round trip through .NET: a browser opens a file
+                   picker only while the click is fresh, and under Blazor Server the round trip crosses a network. *@
+                <button type="button" class="bit-bbscanner__button" data-bit-bbscanner-pick="@_fileInputId" @onclick="OnPickClickedAsync">@T.ScanImageButton</button>
             }
 
             @ControlsContent

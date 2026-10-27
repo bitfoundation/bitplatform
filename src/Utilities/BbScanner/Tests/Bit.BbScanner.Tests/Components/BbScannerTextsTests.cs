@@ -1,5 +1,7 @@
 ﻿using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 
 namespace Bit.BbScanner.Tests.Components;
 
@@ -22,6 +24,9 @@ public class BbScannerTextsTests : BunitContext
     public BbScannerTextsTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
+
+        // A page that offers no camera API, which an interactive scanner reports as NotSupported.
+        Services.AddSingleton<IJSRuntime>(new FakeScannerPage { Capabilities = 2 });
 #if NET9_0_OR_GREATER
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));
 #endif
@@ -39,8 +44,8 @@ public class BbScannerTextsTests : BunitContext
         Assert.Contains("Escanear imagen", controls);
         Assert.DoesNotContain("Scan image", controls);
 
-        // .NET 8 cannot tell a prerender from an interactive render, so there the scanner has already reported that
-        // it cannot run here, which is a status of its own.
+        // .NET 8 cannot tell a prerender from an interactive render, so there the scanner has already reached the page
+        // and reported that it offers no camera API, which is a status of its own.
         Assert.Contains(OnNet8() ? "Fallo" : "Listo", scanner.Find(".bit-bbscanner__status").TextContent);
     }
 
@@ -69,7 +74,7 @@ public class BbScannerTextsTests : BunitContext
         Assert.AreEqual("El escáner no está disponible aquí.", scanner.Find(".bit-bbscanner__message--error").TextContent.Trim());
         Assert.AreEqual("El escáner no está disponible aquí.", scanner.Find("[role=alert]").TextContent);
         Assert.IsNotNull(error);
-        Assert.Contains("WebAssembly", error.Message, "OnError receives the exception with its message untouched.");
+        Assert.Contains("camera API", error.Message, "OnError receives the exception with its message untouched.");
     }
 
     [TestMethod]

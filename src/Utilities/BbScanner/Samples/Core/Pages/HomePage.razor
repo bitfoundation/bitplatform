@@ -5,10 +5,11 @@
 <h1>BbScanner samples</h1>
 
 <p>
-    The same pages run in every Blazor hosting model: Server, WebAssembly, Auto and MAUI (Blazor Hybrid). The camera
-    is read through the WebAssembly runtime, so under Server and MAUI the scanner below reports
-    <code>NotSupported</code> - the expected outcome there, not a failure - while the <NavLink href="decoder">decoder</NavLink>
-    reads barcodes on every host.
+    The same pages run in every Blazor hosting model: Server, WebAssembly, Auto and MAUI (Blazor Hybrid), and the
+    scanner below opens the camera in each. The camera is always the page's - the browser's, or the WebView's - and
+    what differs is where .NET runs: on WebAssembly the frames are decoded in the browser, on a Server circuit the page
+    sends each frame's searched region to the server, and in a MAUI app to the app itself. The
+    <NavLink href="decoder">decoder</NavLink> reads barcodes in-process on every host.
 </p>
 
 <section>

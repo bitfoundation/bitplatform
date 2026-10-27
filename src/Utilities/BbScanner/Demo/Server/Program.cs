@@ -1,6 +1,8 @@
 ﻿// The host of the demo: a Blazor Web App that prerenders the client's pages and then runs them in the
-// browser on WebAssembly (InteractiveWebAssembly), the only render mode where BbScanner can reach the camera:
-// its frames cross from JavaScript into managed memory through [JSImport] memory views.
+// browser on WebAssembly (InteractiveWebAssembly). BbScanner works under every interactive render mode; this
+// one suits a docs site whose pages need nothing from a server once they have loaded, and it is the scanner's
+// fastest path: each frame crosses from JavaScript into managed memory once, through a [JSImport] memory view,
+// and is decoded in the browser. Blazor Server, InteractiveAuto and Blazor Hybrid are shown by the Samples.
 
 using Bit.BbScanner.Demo.Server.Components;
 using Bit.BbScanner.Demo.Server.Controllers;

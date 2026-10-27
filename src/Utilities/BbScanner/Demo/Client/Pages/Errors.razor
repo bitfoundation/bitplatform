@@ -72,7 +72,7 @@
                         <dt>Denied</dt>
                         <dd>Starting will fail with <code>PermissionDenied</code>; only the user, in the site settings, can change that.</dd>
                         <dt>Unknown</dt>
-                        <dd>The browser will not say (an older Firefox, say); starting is the only way to find out.</dd>
+                        <dd>The browser will not say (an older Firefox, or a WebView without the Permissions API), or the page is not interactive yet; starting is the only way to find out.</dd>
                     </dl>
                 </section>
 
@@ -114,7 +114,7 @@
                 <tr><td class="bb-table-key">NoCamera</td><td>No device matched the request.</td><td>@Capitalised(Advice(BbScannerErrorKind.NoCamera))</td></tr>
                 <tr><td class="bb-table-key">CameraUnavailable</td><td>A device exists but is held by something else, or it stopped delivering frames - unplugged, or claimed by another application.</td><td>@Capitalised(Advice(BbScannerErrorKind.CameraUnavailable))</td></tr>
                 <tr><td class="bb-table-key">ConstraintsUnsatisfied</td><td>No camera can meet the requested constraints - typically a <code>DeviceId</code> that is gone.</td><td>@Capitalised(Advice(BbScannerErrorKind.ConstraintsUnsatisfied))</td></tr>
-                <tr><td class="bb-table-key">NotSupported</td><td>No camera API, the page is not a secure context, or the component is not running on WebAssembly.</td><td>@Capitalised(Advice(BbScannerErrorKind.NotSupported))</td></tr>
+                <tr><td class="bb-table-key">NotSupported</td><td>The page has no camera API (some WebViews), is not a secure context, or could not load the component's JavaScript module.</td><td>@Capitalised(Advice(BbScannerErrorKind.NotSupported))</td></tr>
                 <tr><td class="bb-table-key">InvalidImage</td><td>An image given to <code>ScanImageAsync</code> is not an image, is larger than <code>MaxImageFileSize</code>, decodes to too many pixels, or could not be decoded.</td><td>@Capitalised(Advice(BbScannerErrorKind.InvalidImage))</td></tr>
                 <tr><td class="bb-table-key">Unknown</td><td>Anything the browser did not classify, or a decoder that failed on frame after frame.</td><td>@Capitalised(Advice(BbScannerErrorKind.Unknown))</td></tr>
             </tbody>
@@ -148,6 +148,13 @@
         <code>NotSupported</code> immediately, with a message that says exactly that,
         instead of hanging on a permission prompt that will never appear. Still image scanning works
         either way.
+    </p>
+    <p class="bb-card-desc">
+        The render mode makes no difference: under Blazor Server and in a Blazor Hybrid app the page opens
+        the camera just as it does on WebAssembly, and a <code>BlazorWebView</code> is a secure context
+        already. A WebView that exposes no camera API at all - <code>getUserMedia</code> in WKWebView needs
+        iOS 14.3 or later - is reported as <code>NotSupported</code> too. On Android the app has to grant the
+        page the camera, or every start ends in <code>PermissionDenied</code>.
     </p>
     <p class="bb-card-desc">
         A page inside a cross-origin <code>&lt;iframe&gt;</code> needs the camera delegated to it -
@@ -213,7 +220,7 @@
         BbScannerErrorKind.CameraUnavailable => "ask the user to close other applications using the camera, then retry.",
         BbScannerErrorKind.ConstraintsUnsatisfied =>
             "drop the DeviceId and start again with Facing, since the requested camera is gone.",
-        BbScannerErrorKind.NotSupported => "serve over HTTPS, render the page on WebAssembly, or hide the scanner entirely on this browser.",
+        BbScannerErrorKind.NotSupported => "serve over HTTPS, or hide the scanner entirely on a browser or WebView that offers no camera.",
         BbScannerErrorKind.InvalidImage => "tell the user which - too large, not an image, unreadable - and let them pick another.",
         _ => "log the inner exception and offer a retry.",
     };

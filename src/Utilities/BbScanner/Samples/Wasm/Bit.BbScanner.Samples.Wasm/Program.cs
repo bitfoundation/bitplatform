@@ -3,7 +3,7 @@ using Bit.BbScanner.Samples.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// This host only prerenders the pages; they run on WebAssembly in the browser, the model BbScanner is built for: the
+// This host only prerenders the pages; they run on WebAssembly in the browser, BbScanner's fastest hosting model: the
 // camera's frames are copied straight into managed memory and decoded there. A prerendered scanner renders its markup
 // and stays inert until WebAssembly takes over.
 builder.Services.AddRazorComponents()

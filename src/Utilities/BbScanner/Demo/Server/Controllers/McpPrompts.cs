@@ -34,17 +34,19 @@ public static class McpPrompts
             1. If the render mode is 'unknown', determine it from the project first: look for
                AddInteractiveServerComponents / AddInteractiveWebAssemblyComponents in Program.cs, for a separate
                .Client project, and for a MAUI/WPF/Windows Forms BlazorWebView host, then continue with what you find.
-            2. Call `GetBbScannerSetupGuide` with that render mode and follow it. Camera scanning runs on WebAssembly
-               only: in a Blazor Web App the package and the pages with a scanner belong in the .Client project and
-               are rendered with InteractiveWebAssembly. Under Server or Hybrid rendering the component reports
-               NotSupported - say so rather than wiring it up anyway.
+            2. Call `GetBbScannerSetupGuide` with that render mode and follow it. Camera scanning works in every
+               interactive render mode: in a Blazor Web App the package belongs in the project the scanning pages render
+               in - the server project for InteractiveServer, the .Client project for InteractiveWebAssembly or
+               InteractiveAuto. A Blazor Hybrid app also has to let the WebView have the camera on each platform
+               (Android needs a WebChromeClient that grants it) - the guide lists what to add.
             3. Do NOT register services or link a stylesheet: Bit.BbScanner has no services, and its Blazor initializer
                injects `_content/Bit.BbScanner/bit-bbscanner.css` itself. Inventing an `AddBbScanner...` call is the most
                common mistake.
             4. Add `@using Bit.BbScanner` to `_Imports.razor`.
             5. Set `Formats` to the symbologies the app needs (call `GetBbScannerFormats` for the names) and handle
                both `OnScan` and `OnError`.
-            6. Remember the camera needs a secure context: HTTPS, or localhost while developing.
+            6. Remember the camera needs a secure context: HTTPS, or localhost while developing (a BlazorWebView is one
+               already).
             7. Build the app and fix what the compiler says.
 
             Show me the diff for each file you change, and say which project the scanner pages live in and why.
@@ -95,13 +97,18 @@ public static class McpPrompts
 
             Work in this order:
 
-            1. Check the setup against `GetBbScannerSetupGuide` for this render mode first: the scanner on a page
-               rendered with InteractiveWebAssembly (or in a standalone WebAssembly app), served over HTTPS or from
-               localhost, with no invented service registration. Read `OnError`: the `BbScannerException.Kind` says
-               whether the cause is NotSupported, PermissionDenied, NoCamera, CameraUnavailable or ConstraintsUnsatisfied.
-            2. Call `SearchBbScanner` with the symptom, and read the guide section it points to - "Hosting models"
-               covers NotSupported, "Errors and permissions" the camera failures, "What it reads, and what it does not"
-               the symbols that are never read, "Performance" a slow page, "PDF417 status" PDF417.
+            1. Check the setup against `GetBbScannerSetupGuide` for this render mode first: the scanner on an
+               interactive page (a statically rendered one stays inert), served over HTTPS or from localhost, with no
+               invented service registration, and - in a Blazor Hybrid app - the camera permission each platform needs.
+               Read `OnError`: the `BbScannerException.Kind` says whether the cause is NotSupported, PermissionDenied,
+               NoCamera, CameraUnavailable or ConstraintsUnsatisfied. NotSupported is never the render mode itself: the
+               page has no camera API (`navigator.mediaDevices.getUserMedia` is missing, as in some WebViews), is not a
+               secure context, or could not load the component's JavaScript module. On Android, a WebView whose app does
+               not grant the page the camera ends in PermissionDenied.
+            2. Call `SearchBbScanner` with the symptom, and read the guide section it points to - "Errors and
+               permissions" covers NotSupported and the camera failures, "Hosting models" the wiring per render mode,
+               "What it reads, and what it does not" the symbols that are never read, "Performance" a slow page,
+               "PDF417 status" PDF417.
             3. For a symbol that is not read or is read wrongly, reproduce it with `InspectBbScannerSymbol` - the same
                payload, module size, rotation and blur - and compare the live and the still image attempts; check the
                symbology's options with `GetBbScannerFormats`.

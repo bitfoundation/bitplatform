@@ -55,7 +55,7 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBbScannerSetupGuide), Title = "Setup guide for one render mode", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets the complete wiring needed to add Bit.BbScanner to a Blazor app in one render mode: 'wasm' (InteractiveWebAssembly, which is how this demo is built and comes with its real files), 'standalone-wasm', 'auto' (InteractiveAuto), 'server' (InteractiveServer) or 'hybrid' (MAUI, WPF, Windows Forms). Call this before writing setup code - there are no services to register and the stylesheet injects itself, but camera scanning runs on WebAssembly only, so where the component may live, and what to do instead under Server or Hybrid rendering, differ per render mode.")]
+    [Description("Gets the complete wiring needed to add Bit.BbScanner to a Blazor app in one render mode: 'wasm' (InteractiveWebAssembly, which is how this demo is built and comes with its real files), 'standalone-wasm', 'auto' (InteractiveAuto), 'server' (InteractiveServer) or 'hybrid' (MAUI, WPF, Windows Forms). Call this before writing setup code - there are no services to register and the stylesheet injects itself, but although camera scanning works in every interactive render mode, which project the package belongs in, how camera frames reach the decoder and what the host has to allow (HTTPS, a Hybrid platform's camera permission) differ per render mode.")]
     public string GetBbScannerSetupGuide(
         // Declared rather than merely described: the values then sit in the JSON schema itself,
         // where a model cannot pass another one past them, and a client offers them as completions.

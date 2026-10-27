@@ -1,8 +1,8 @@
 ﻿namespace Bit.BbScanner.Tests.E2E.Infrastructure;
 
 /// <summary>
-/// Finds the demo server from the test binary's location by walking up, so a run does not depend on
-/// the working directory the shell, the IDE or the test runner picked.
+/// Finds the demo server and the Blazor Server sample from the test binary's location by walking up, so a run does not
+/// depend on the working directory the shell, the IDE or the test runner picked.
 /// </summary>
 public static class RepoLayout
 {
@@ -12,6 +12,13 @@ public static class RepoLayout
 
     public static string DemoServerAssembly(string configuration) =>
         Path.Combine(Path.GetDirectoryName(DemoServerProject())!, "bin", configuration, "net10.0", $"{DemoServerName}.dll");
+
+    public const string ServerSampleName = "Bit.BbScanner.Samples.Server";
+
+    public static string ServerSampleProject() => FindUpward(Path.Combine("Samples", "Server", $"{ServerSampleName}.csproj"));
+
+    public static string ServerSampleAssembly(string configuration) =>
+        Path.Combine(Path.GetDirectoryName(ServerSampleProject())!, "bin", configuration, "net10.0", $"{ServerSampleName}.dll");
 
     private static string FindUpward(string relativePath)
     {

@@ -8,11 +8,11 @@ namespace Bit.BbScanner.Demo.Server.Services;
 /// hosting model, and - where the demo is that render mode - the demo's real hosting files.
 /// <para>
 /// BbScanner needs less wiring than most libraries - no services, and a stylesheet that injects itself -
-/// which is exactly why an agent gets it wrong: it registers services that do not exist, links the
-/// stylesheet a second time, or puts the scanner on a page that is not rendered on WebAssembly, where
-/// it reports NotSupported instead of opening the camera. What does differ per render mode is whether
-/// the camera can be reached at all, and so where the component has to live; the guide's hosting
-/// section, quoted verbatim, says so in the library's own words.
+/// which is exactly why an agent gets it wrong: it registers services that do not exist, or links the
+/// stylesheet a second time. What does differ per render mode is where .NET runs, and so which project
+/// the package belongs in, how camera frames reach the decoder and what the host has to allow - the
+/// camera permission of each BlazorWebView platform, say; the guide's hosting section, quoted verbatim,
+/// says so in the library's own words.
 /// </para>
 /// </summary>
 public static partial class BbScannerSetupGuide
@@ -57,7 +57,7 @@ public static partial class BbScannerSetupGuide
             "wasm" => new Mode(
                 "Blazor Web App - InteractiveWebAssembly",
                 """
-                The model the scanner is built for: the component, the frame loop and the decoder all run in the browser,
+                The fastest of the render modes: the component, the frame loop and the decoder all run in the browser,
                 and every camera frame crosses from JavaScript into managed memory exactly once, through a `[JSImport]`
                 memory view. The component must live in the .Client project so its assembly is downloaded to the browser;
                 the server prerenders the same page, where the scanner renders its markup and starts the camera once
@@ -81,10 +81,14 @@ public static partial class BbScannerSetupGuide
             "auto" => new Mode(
                 "Blazor Web App - InteractiveAuto",
                 """
-                The first visit renders on the server while the WebAssembly runtime downloads, and a scanner rendered on
-                the server cannot reach the camera: it reports `BbScannerErrorKind.NotSupported`. Render the pages that
-                hold a scanner with `@rendermode InteractiveWebAssembly` - they can sit in an otherwise InteractiveAuto
-                app - and put them in the .Client project. The rest of the wiring is the WebAssembly setup below; the
+                The first visit runs on a circuit while the WebAssembly runtime downloads, later visits in the browser,
+                and the scanner works on both: on the circuit its frames are decoded on the server, as under
+                InteractiveServer, and once the runtime is cached the same page decodes them in the browser, with
+                nothing in the page changing. Put the package and the scanning pages in the .Client project, which the
+                server project references; no page needs `@rendermode InteractiveWebAssembly` of its own, though one
+                that has it keeps every frame in the browser. The server registers `AddInteractiveServerComponents()`
+                and `AddInteractiveWebAssemblyComponents()`, and maps both `AddInteractiveServerRenderMode()` and
+                `AddInteractiveWebAssemblyRenderMode()`; the rest of the wiring is the WebAssembly setup below - the
                 demo uses InteractiveWebAssembly throughout.
                 """,
                 ["Blazor Web App", "Blazor Server"],
@@ -94,12 +98,13 @@ public static partial class BbScannerSetupGuide
             "server" => new Mode(
                 "Blazor Web App - InteractiveServer",
                 """
-                Camera scanning is not available: the component reads frames through `[JSImport]` memory views, which
-                only exist on WebAssembly, so under interactive server rendering it reports
-                `BbScannerErrorKind.NotSupported` rather than pretending to scan. Two ways forward: render just the
-                scanning page with `InteractiveWebAssembly` (a .Client project is all it takes), or decode on the server -
-                `BbBarcodeDecoder` has no dependency on Blazor or JavaScript, so an uploaded image, once your own code has
-                turned it into pixels, decodes in-process.
+                The component, its frame loop and the decoder run on the server, and the page does the part only a page
+                can: it opens the camera, cuts each frame down to the luminance - one byte a pixel - of the searched
+                `Region`, and the component reads that back in byte array slices of 30 KB, several at once. Each slice
+                fits in one message, so SignalR's 32 KB `MaximumReceiveMessageSize` can stay as it is. A 640x360 frame
+                searched through `BbScanRegion.CenteredSquare(0.7)` is about 63 KB, against about 900 KB of RGBA. Each
+                tick costs one round trip to poll plus the slices of a frame, and every active scanner costs server CPU
+                to decode. Reference `Bit.BbScanner` from the server project, where the pages render.
                 """,
                 ["Blazor Server", "Using the decoder without Blazor"],
                 ServerFiles,
@@ -108,11 +113,14 @@ public static partial class BbScannerSetupGuide
             "hybrid" => new Mode(
                 "Blazor Hybrid (MAUI, WPF, Windows Forms)",
                 """
-                The component's camera path is WebAssembly-only, so in a BlazorWebView it reports `NotSupported`. The
-                decoder is plain .NET and runs in-process: feed `BbBarcodeDecoder` the frames of the platform's own camera
-                API (or a picked photo) as pixels.
+                .NET runs natively in the app's process and the BlazorWebView is the page: the WebView opens the camera,
+                cuts each frame down to the luminance of the searched `Region` and sends it to the component, whose
+                frame loop and decoder run in-process at native speed - no network is involved. Nothing changes in the
+                Razor; what each platform adds is permission to use the camera, below. A BlazorWebView is a secure
+                context already, and a WebView that exposes no camera API at all (`getUserMedia` in WKWebView needs
+                iOS 14.3 or later) makes the scanner report `NotSupported`.
                 """,
-                ["Blazor Hybrid", "Using the decoder without Blazor"],
+                ["Blazor Hybrid"],
                 HybridFiles,
                 IncludeDemo: false),
 
@@ -165,34 +173,61 @@ public static partial class BbScannerSetupGuide
         ## Checklist
 
         1. `dotnet add package Bit.BbScanner` - one package, everything under the `Bit.BbScanner` namespace. In a Blazor
-           Web App with an interactive client, add it to the .Client project.
+           Web App, add it to the project the scanning pages render in: the server project for InteractiveServer, the
+           .Client project for InteractiveWebAssembly or InteractiveAuto (the server project references it).
         2. Add `@using Bit.BbScanner` to `_Imports.razor`.
         3. There are NO services to register - do not look for an `AddBbScanner...` method, there is none.
         4. There is no stylesheet to add: `_content/Bit.BbScanner/bit-bbscanner.css` is injected by the package's Blazor
            initializer. Linking it yourself also works (the injection then stands down); never link it twice under
            another path.
-        5. Render the scanner on WebAssembly. On a statically rendered page `<BbScanner>` is inert markup; during
-           prerendering it is inert until WebAssembly takes over, and then starts by itself. Under Server or Hybrid
-           rendering it reports `NotSupported`.
+        5. Render the scanner in an interactive render mode - WebAssembly, Server, Auto and a BlazorWebView all open the
+           camera. On a statically rendered page `<BbScanner>` is inert markup; during prerendering it is inert until
+           the page turns interactive, and then starts by itself.
         6. Serve the app over HTTPS or from `localhost`: browsers only expose the camera to a secure context, and the
-           scanner reports `NotSupported` with that reason when the page is not one.
+           scanner reports `NotSupported` with that reason when the page is not one. A BlazorWebView is one already.
         7. Narrow `Formats` to the symbologies the app needs, handle `OnScan`, and handle `OnError` - a denied
            permission arrives there as `BbScannerErrorKind.PermissionDenied`, a missing camera as `NoCamera`.
-        8. Publish the WebAssembly client compiled ahead of time: `<RunAOTCompilation>true</RunAOTCompilation>` in the
-           project that runs in the browser (the .Client project of a Blazor Web App), for Release, with the `wasm-tools`
-           workload installed. On Blazor's default IL interpreter the decoder is about a hundred times slower - a camera
-           frame takes around 100 ms instead of 1 to 2, and blocks the page while it does - so an app that scans with the
-           camera, above all on phones, should not ship without it. See the guide's "Performance" section.
+        8. On WebAssembly, publish the client compiled ahead of time: `<RunAOTCompilation>true</RunAOTCompilation>` in
+           the project that runs in the browser (the .Client project of a Blazor Web App), for Release, with the
+           `wasm-tools` workload installed. On Blazor's default IL interpreter the decoder is about a hundred times
+           slower - a camera frame takes around 100 ms instead of 1 to 2, and blocks the page while it does - so an app
+           that scans with the camera there, above all on phones, should not ship without it. Under Server and Hybrid
+           the decoder runs on the server's or the app's own .NET runtime, where this does not apply. See the guide's
+           "Performance" section.
         """;
 
     private const string ServerFiles = """
         ## The files
 
-        ### `Components/Pages/Scan.razor` in the .Client project - the scanning page on WebAssembly
+        ### `Program.cs`
+
+        ```csharp
+        var builder = WebApplication.CreateBuilder(args);
+
+        builder.Services.AddRazorComponents()
+            .AddInteractiveServerComponents();
+
+        // Nothing to register for BbScanner.
+
+        var app = builder.Build();
+
+        app.UseHttpsRedirection();
+        app.UseAntiforgery();
+
+        // .NET 9 and later; on .NET 8, app.UseStaticFiles() before UseAntiforgery.
+        app.MapStaticAssets();
+
+        app.MapRazorComponents<App>()
+            .AddInteractiveServerRenderMode();
+
+        app.Run();
+        ```
+
+        ### `Components/Pages/Scan.razor`
 
         ```razor
         @page "/scan"
-        @rendermode InteractiveWebAssembly
+        @rendermode InteractiveServer
 
         <BbScanner Formats="BbBarcodeFormat.QrCode | BbBarcodeFormat.Ean13"
                    Region="BbScanRegion.CenteredSquare(0.7)"
@@ -203,7 +238,31 @@ public static partial class BbScannerSetupGuide
         }
         ```
 
-        ### Or decode on the server
+        The `Region` is what keeps the stream small: only the pixels inside it cross the network. On a slow link lower
+        `TargetFrameRate` (to 8, say) and `MaxProcessingSize` (to 480, say) as well. The frame rate limits itself
+        anyway - a tick waits for the previous frame - so a slow link gets fewer frames, never a queue of them.
+
+        ### When the circuit drops
+
+        The page keeps a watchdog on the camera it opened: if the server stops polling for 20 seconds - the circuit
+        dropped for good, or the server is gone - the page closes the camera. A circuit that reconnects within that time
+        carries on; if the watchdog closed the camera meanwhile, the scanner reopens it as soon as the page answers
+        again, as an interruption rather than an error. A frame call with no answer after 10 seconds is given up and
+        tried again on the next tick.
+
+        ### Still images
+
+        `ScanImageAsync`, the built-in *Scan image* button and dropping a file on the scanner work here too, and the
+        page always decodes the image, with the browser's image decoders and EXIF orientation. A stream the server
+        holds - an `InputFile` upload, say - is sent to the browser and comes back as luminance, so an upload crosses
+        the network twice; the built-in picker sends the file once. That button opens the picker in the page's own
+        click handler, while `OpenFilePickerAsync()` called from your own button reaches the page a round trip after
+        the click, which a strict browser may not treat as a user gesture.
+
+        ### Pixels the server already has
+
+        `BbBarcodeDecoder` has no dependency on Blazor or JavaScript, so an image your own code has turned into pixels
+        decodes in-process, with no page involved:
 
         ```csharp
         // rgba: the image as packed RGBA pixels, produced by whichever image library the app already uses.
@@ -262,14 +321,109 @@ public static partial class BbScannerSetupGuide
     private const string HybridFiles = """
         ## The files
 
-        ### Decoding a frame the app captured itself
+        `@using Bit.BbScanner` in `_Imports.razor` and `<BbScanner>` on a page, as anywhere else; there is nothing to
+        register beside `AddMauiBlazorWebView()` (or its WPF or Windows Forms counterpart). The rest is the camera
+        permission, platform by platform.
+
+        ### Android - `Platforms/Android/AndroidManifest.xml`
+
+        ```xml
+        <uses-permission android:name="android.permission.CAMERA" />
+        ```
+
+        ### Android - `Platforms/Android/CameraWebChromeClient.cs`
+
+        Android hands every `getUserMedia` call to the app as `WebChromeClient.OnPermissionRequest`, and BlazorWebView's
+        own client refuses it, which the scanner reports as `PermissionDenied`. This client grants the page the camera
+        once the user has granted the app the CAMERA runtime permission, and wraps BlazorWebView's client rather than
+        replacing it, so the file chooser every `<input type="file">` goes through keeps working.
 
         ```csharp
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions { Formats = BbBarcodeFormat.QrCode });
+        using Android.Webkit;
+        using AndroidWebView = Android.Webkit.WebView;
+        using Message = Android.OS.Message;
 
-        // One decoder per scanning session: it owns the scratch state a frame needs and is not thread safe.
-        var result = decoder.Decode(pixels, width, height, BbPixelFormat.Bgra32);
+        public class CameraWebChromeClient(WebChromeClient? blazorWebChromeClient) : WebChromeClient
+        {
+            public override void OnPermissionRequest(PermissionRequest? request)
+            {
+                if (request is null) return;
+
+                var resources = request.GetResources() ?? [];
+                if (resources is not [PermissionRequest.ResourceVideoCapture])
+                {
+                    request.Deny();
+                    return;
+                }
+
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    var status = await Permissions.CheckStatusAsync<Permissions.Camera>();
+                    if (status != PermissionStatus.Granted)
+                    {
+                        status = await Permissions.RequestAsync<Permissions.Camera>();
+                    }
+
+                    if (status == PermissionStatus.Granted) request.Grant(resources);
+                    else request.Deny();
+                });
+            }
+
+            public override bool OnShowFileChooser(AndroidWebView? view, IValueCallback? filePathCallback, FileChooserParams? fileChooserParams)
+                => blazorWebChromeClient?.OnShowFileChooser(view, filePathCallback, fileChooserParams)
+                    ?? base.OnShowFileChooser(view, filePathCallback, fileChooserParams);
+
+            public override bool OnCreateWindow(AndroidWebView? view, bool isDialog, bool isUserGesture, Message? resultMsg)
+                => blazorWebChromeClient?.OnCreateWindow(view, isDialog, isUserGesture, resultMsg)
+                    ?? base.OnCreateWindow(view, isDialog, isUserGesture, resultMsg);
+        }
         ```
+
+        ### Android - installing it in `MainPage.xaml.cs`
+
+        With `BlazorWebViewInitialized="OnBlazorWebViewInitialized"` on the `<BlazorWebView>` in `MainPage.xaml`, and
+        the body below compiled for Android only (inside `#if ANDROID` in a MAUI project):
+
+        ```csharp
+        private void OnBlazorWebViewInitialized(object? sender, BlazorWebViewInitializedEventArgs e)
+        {
+            // BlazorWebView's own client can only be read back from Android 8 (API 26).
+            if (OperatingSystem.IsAndroidVersionAtLeast(26) && e.WebView.WebChromeClient is not CameraWebChromeClient)
+            {
+                e.WebView.SetWebChromeClient(new CameraWebChromeClient(e.WebView.WebChromeClient));
+            }
+        }
+        ```
+
+        ### iOS and Mac Catalyst - `Info.plist`
+
+        ```xml
+        <key>NSCameraUsageDescription</key>
+        <string>Point the camera at a barcode to scan it.</string>
+        ```
+
+        A Mac Catalyst app in the App Sandbox also needs the camera entitlement, in `Entitlements.plist`:
+
+        ```xml
+        <key>com.apple.security.device.camera</key>
+        <true/>
+        ```
+
+        MAUI's BlazorWebView already sets `AllowsInlineMediaPlayback`. `getUserMedia` in WKWebView needs iOS 14.3 or
+        later.
+
+        ### Windows - `Platforms/Windows/Package.appxmanifest`
+
+        WebView2 asks the user with a permission prompt of its own, in WPF and Windows Forms as in MAUI. A packaged app
+        also declares the webcam:
+
+        ```xml
+        <Capabilities>
+            <DeviceCapability Name="webcam" />
+        </Capabilities>
+        ```
+
+        All of it, working, is the MAUI sample in `src/Utilities/BbScanner/Samples/Maui` of the bitplatform repository.
         """;
 
     private const string Next = """
