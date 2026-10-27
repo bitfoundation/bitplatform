@@ -790,9 +790,7 @@ function Invoke-E2EStages {
                 $env:ANDROID_HOME = $script:androidSdk
                 $env:PATH = "$(Join-Path $script:androidSdk 'platform-tools');$env:PATH"
 
-                if ((Get-AndroidDevices).Count -eq 1) {
-                    Disable-AndroidSystemSheets
-                }
+                Initialize-AndroidDevice
             }
 
             $testFilter = "TestCategory=$($settings.Category)" + $(if ($Filter) { "&$Filter" })
