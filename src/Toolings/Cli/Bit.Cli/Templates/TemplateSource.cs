@@ -54,7 +54,7 @@ public sealed partial class TemplateSource(CliEnvironment environment, IProcessR
 
         version ??= BuildInfo.Version;
 
-        if (VersionRegex().IsMatch(version) is false)
+        if (IsVersion(version) is false)
             return (null, new ProcessResult { ExitCode = -1, Output = $"'{version}' isn't a bit Boilerplate version." });
 
         var hive = Path.Combine(TemplatesDirectory, version);
@@ -92,6 +92,8 @@ public sealed partial class TemplateSource(CliEnvironment environment, IProcessR
             Timeout = TimeSpan.FromMinutes(10)
         }, cancellationToken);
     }
+
+    public static bool IsVersion(string version) => VersionRegex().IsMatch(version);
 
     public static TemplateManifest? ReadManifest(string packagePath)
     {
