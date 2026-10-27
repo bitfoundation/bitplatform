@@ -80,7 +80,7 @@ public static class RenameCommand
             var renamedFiles = 0;
             var renamedFolders = 0;
 
-            await ProjectProcesses.StopAsync(cli, steps, folder, cancellationToken);
+            var stoppedBuilds = await ProjectProcesses.StopAsync(cli, steps, folder, cancellationToken);
 
             await steps.RunAsync("rename-clean", "Deleting bin, obj and .vs folders", (_, token) => Task.Run(() =>
             {
@@ -89,7 +89,7 @@ public static class RenameCommand
 
                 if (failures.Count > 0)
                 {
-                    freed = ProjectProcesses.Free(cli, failures.Select(f => f.Path));
+                    freed = ProjectProcesses.Free(cli, failures.Select(f => f.Path), stoppedBuilds: stoppedBuilds);
 
                     if (freed.Stopped.Count > 0)
                     {

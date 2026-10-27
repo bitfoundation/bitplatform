@@ -93,6 +93,35 @@ public class CleanTests
         Assert.IsFalse(ProjectProcesses.IsUnder("/home/me/Shopping/bin/Shop", "/home/me/Shop"));
     }
 
+    [TestMethod]
+    public void Mentions_Should_MatchTheFolderAndPathsInsideIt()
+    {
+        Assert.IsTrue(ProjectProcesses.Mentions(@"""dotnet"" watch --project C:\Projects\Shop\src\Server\Shop.Server.AppHost\Shop.Server.AppHost.csproj --", @"C:\Projects\Shop"));
+        Assert.IsTrue(ProjectProcesses.Mentions(@"aspire.exe run --apphost ""c:\projects\shop""", @"C:\Projects\Shop\"));
+        Assert.IsTrue(ProjectProcesses.Mentions(@"dotnet build C:\Projects\Shop", @"C:\Projects\Shop"));
+        Assert.IsTrue(ProjectProcesses.Mentions("dotnet run --project /home/me/Shop/src/Shop.csproj", "/home/me/Shop"));
+
+        Assert.IsFalse(ProjectProcesses.Mentions(@"dotnet build C:\Projects\Shop2\Shop2.slnx", @"C:\Projects\Shop"));
+        Assert.IsFalse(ProjectProcesses.Mentions(@"dotnet build C:\Projects\Shop.slnx C:\Projects\Shopping", @"C:\Projects\Shop"));
+        Assert.IsFalse(ProjectProcesses.Mentions("dotnet build-server shutdown", ""));
+    }
+
+    [TestMethod]
+    public void Mentions_Should_ResolveRelativePathsAndKeepQuotedPathsWhole()
+    {
+        var projects = Path.Combine(Path.GetTempPath(), "Projects");
+        var shop = Path.Combine(projects, "Shop");
+
+        Assert.IsTrue(ProjectProcesses.Mentions($"dotnet watch --project {Path.Combine("Shop", "src", "Shop.Server.AppHost.csproj")}", shop, projects));
+        Assert.IsTrue(ProjectProcesses.Mentions($"dotnet build {Path.Combine("..", "Shop", "Shop.slnx")}", shop, Path.Combine(projects, "Other")));
+        Assert.IsTrue(ProjectProcesses.Mentions($"dotnet build -p:OutDir=\"{Path.Combine(shop, "bin")}\"", shop, projects));
+        Assert.IsTrue(ProjectProcesses.Mentions("dotnet build Shop", shop, projects));
+
+        Assert.IsFalse(ProjectProcesses.Mentions($"dotnet watch --project \"{Path.Combine(projects, "Shop New", "src", "Shop.Server.AppHost.csproj")}\"", shop, projects));
+        Assert.IsFalse(ProjectProcesses.Mentions($"dotnet watch --project {Path.Combine("Shop", "src", "Shop.Server.AppHost.csproj")}", shop, Path.Combine(projects, "Other")));
+        Assert.IsFalse(ProjectProcesses.Mentions("aspire ps --follow --format json", shop, projects));
+    }
+
     private static void AssertRanOnlyTheScript(TestHost host, string folder, string fileName, string arguments)
     {
         var call = host.Runner.Calls.Single();
