@@ -641,7 +641,7 @@ public static partial class ToolCatalog
                     {
                         ToolId = Id,
                         Title = "Start Docker Desktop",
-                        Commands = [new ProcessSpec { FileName = "cmd.exe", Arguments = ["/c", "start", "", desktop] }],
+                        Commands = [new ProcessSpec { FileName = "powershell.exe", Arguments = ["-NoProfile", "-NonInteractive", "-Command", $"Start-Process -FilePath '{desktop.Replace("'", "''", StringComparison.Ordinal)}'"] }],
                         AfterInstall = "Docker Desktop is starting; accept its terms if it asks."
                     },
                     HostOs.MacOS when context.Runner.FindExecutable("colima") is { } colima

@@ -114,6 +114,32 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task StartingDockerDesktop_Should_NotWaitForItToQuit()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost(HostOs.Windows);
+        AllInstalled(host.Runner);
+        host.Runner.On("docker", "version", 1, "error during connect");
+        var desktop = Path.Combine(host.Environment.GetVariable("ProgramFiles")!, "Docker", "Docker", "Docker Desktop.exe");
+        Directory.CreateDirectory(Path.GetDirectoryName(desktop)!);
+        File.WriteAllText(desktop, "");
+        var start = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker").Action!;
+        var app = Path.Combine(host.Root, "long-running-app.cmd");
+        File.WriteAllText(app, "@ping -n 6 127.0.0.1 >nul & exit\r\n");
+        var command = start.Commands.Single();
+        using var guard = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+        var result = await new ProcessRunner(host.Environment, CliLog.None).RunAsync(command with { Arguments = [.. command.Arguments.SkipLast(1), command.Arguments[^1].Replace(desktop, app, StringComparison.Ordinal)], Interactive = start.Interactive || command.Interactive }, guard.Token);
+
+        Assert.AreEqual("Start Docker Desktop", start.Title);
+        Assert.IsTrue(result.Succeeded, result.Output);
+        Assert.IsLessThan(4.0, stopwatch.Elapsed.TotalSeconds, "Docker Desktop keeps what bit reads open until it quits.");
+    }
+
+    [TestMethod]
     public async Task DockerTheUserCantReach_Should_GetTheUserIntoTheDockerGroup()
     {
         using var host = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["USER"] = "jane" });
