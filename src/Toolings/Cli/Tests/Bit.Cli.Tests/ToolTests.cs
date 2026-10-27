@@ -350,18 +350,56 @@ public class ToolTests
         using var linux = new TestHost(HostOs.Linux);
         AllInstalled(linux.Runner);
         linux.Runner.On("dotnet", "--version", 145);
-        linux.Runner.Executables["dotnet"] = "/usr/lib/dotnet/dotnet";
+        var systemRoot = DotnetRoot(Path.Combine(linux.Root, "usr", "lib", "dotnet"));
+        linux.Runner.Executables["dotnet"] = Path.Combine(systemRoot, "dotnet");
         var system = (await CheckAsync(linux, new ToolNeeds { Sdk = sdk })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
 
         Assert.AreEqual(Elevation.Sudo, system.Elevation);
         StringAssert.Contains(system.Commands[0].CommandLine, "https://dot.net/v1/dotnet-install.sh");
-        StringAssert.Contains(system.Commands[0].CommandLine, "--version '11.0.100-rc.1.26425.128' --install-dir '/usr/lib/dotnet'");
+        StringAssert.Contains(system.Commands[0].CommandLine, $"--version '11.0.100-rc.1.26425.128' --install-dir '{systemRoot}'");
 
-        linux.Runner.Executables["dotnet"] = Path.Combine(linux.Home, ".dotnet", "dotnet");
+        linux.Runner.Executables["dotnet"] = Path.Combine(DotnetRoot(Path.Combine(linux.Home, ".dotnet")), "dotnet");
         var user = (await CheckAsync(linux, new ToolNeeds { Sdk = sdk })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
 
         Assert.AreEqual(Elevation.None, user.Elevation);
         StringAssert.Contains(user.Commands[0].CommandLine, $"--install-dir '{Path.Combine(linux.Home, ".dotnet")}'");
+    }
+
+    [TestMethod]
+    public async Task TheSdk_Should_GoOnlyWhereDotnetLooksForIt()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.On("dotnet", "--version", 145);
+        var needs = new ToolNeeds { Sdk = new SdkRequirement("10.0.100") };
+        var shims = Directory.CreateDirectory(Path.Combine(host.Root, "asdf", "shims")).FullName;
+        File.WriteAllText(Path.Combine(shims, "dotnet"), "");
+        host.Runner.Executables["dotnet"] = Path.Combine(shims, "dotnet");
+
+        Assert.IsNull((await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Action, "A version manager's shim folder isn't a dotnet root.");
+
+        var root = DotnetRoot(Path.Combine(host.Root, "usr", "lib", "dotnet"));
+        var bin = Directory.CreateDirectory(Path.Combine(host.Root, "usr", "bin")).FullName;
+        var snap = Directory.CreateDirectory(Path.Combine(host.Root, "snap", "bin")).FullName;
+        File.WriteAllText(Path.Combine(root, "dotnet"), "");
+        File.WriteAllText(Path.Combine(bin, "snap"), "");
+
+        try
+        {
+            File.CreateSymbolicLink(Path.Combine(bin, "dotnet"), Path.Combine(root, "dotnet"));
+            File.CreateSymbolicLink(Path.Combine(snap, "dotnet-sdk.dotnet"), Path.Combine(bin, "snap"));
+            File.CreateSymbolicLink(Path.Combine(snap, "dotnet"), "dotnet-sdk.dotnet");
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            return;
+        }
+
+        host.Runner.Executables["dotnet"] = Path.Combine(snap, "dotnet");
+        Assert.IsNull((await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Action, "The snap's links end at the snap program, whose folder isn't a dotnet root.");
+
+        host.Runner.Executables["dotnet"] = Path.Combine(bin, "dotnet");
+        StringAssert.Contains((await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Action!.Commands[0].CommandLine, $"--install-dir '{root}'");
     }
 
     [TestMethod]
@@ -927,6 +965,12 @@ public class ToolTests
     {
         var context = new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner));
         return await ToolCatalog.CheckAsync(context, CancellationToken.None);
+    }
+
+    private static string DotnetRoot(string directory)
+    {
+        Directory.CreateDirectory(Path.Combine(directory, "host", "fxr"));
+        return directory;
     }
 
     private static string NuGetSources(string name, string state, string url = "https://api.nuget.org/v3/index.json")

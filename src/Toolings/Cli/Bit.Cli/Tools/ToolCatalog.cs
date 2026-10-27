@@ -114,19 +114,26 @@ public static partial class ToolCatalog
 
     public static string? DotnetRoot(IProcessRunner runner)
     {
-        if (runner.FindExecutable("dotnet") is not { } muxer)
-            return null;
+        var muxer = runner.FindExecutable("dotnet");
 
-        try
+        for (var links = 0; muxer is not null && links < 10; links++)
         {
-            muxer = File.ResolveLinkTarget(muxer, returnFinalTarget: true)?.FullName ?? muxer;
-        }
-        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
-        {
+            var separator = muxer.LastIndexOfAny(['/', '\\']);
+
+            if (separator > 0 && Directory.Exists(Path.Combine(muxer[..separator], "host", "fxr")))
+                return muxer[..separator];
+
+            try
+            {
+                muxer = File.ResolveLinkTarget(muxer, returnFinalTarget: false)?.FullName;
+            }
+            catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+            {
+                return null;
+            }
         }
 
-        var separator = muxer.LastIndexOfAny(['/', '\\']);
-        return separator > 0 ? muxer[..separator] : null;
+        return null;
     }
 
     [GeneratedRegex(@"^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$")]
