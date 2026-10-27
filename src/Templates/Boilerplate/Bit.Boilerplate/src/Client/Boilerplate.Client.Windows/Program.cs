@@ -23,6 +23,12 @@ public partial class Program
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HeadOutlet))]
     public static void Main(string[] args)
     {
+        //-:cnd:noEmit
+#if Development
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+#endif
+        //+:cnd:noEmit
+
         VelopackApp.Build().Run();
 
         Application.ThreadException += (_, e) => LogException(e.Exception, reportedBy: nameof(Application.ThreadException));
