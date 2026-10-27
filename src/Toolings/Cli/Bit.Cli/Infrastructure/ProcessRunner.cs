@@ -22,7 +22,7 @@ public sealed record ProcessSpec
 
     public string CommandLine => string.Join(' ', new[] { FileName }.Concat(Arguments).Select(Quote));
 
-    public ProcessSpec WithSudo() => this with { FileName = "sudo", Arguments = ["-n", FileName, .. Arguments], Timeout = null };
+    public ProcessSpec WithSudo(IProcessRunner runner) => this with { FileName = "sudo", Arguments = ["-n", runner.FindExecutable(FileName) ?? FileName, .. Arguments], Timeout = null };
 
     public static string Quote(string value)
     {

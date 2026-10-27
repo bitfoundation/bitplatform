@@ -181,7 +181,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
                     Arguments = ["workload", "install", .. toInstall],
                     WorkingDirectory = project.Directory,
                     OnOutputLine = progress
-                }.WithSudo(), cancellationToken);
+                }.WithSudo(Runner), cancellationToken);
             }
             else
             {
@@ -740,7 +740,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             if (Runner.FindExecutable("sudo") is null || (await Runner.RunAsync(new ProcessSpec { FileName = "sudo", Arguments = ["-n", "true"], Timeout = TimeSpan.FromSeconds(10) }, cancellationToken)).Succeeded is false)
                 return StepResult.Warning(title, "its system libraries need sudo", followUp);
 
-            dependencies = dependencies.WithSudo();
+            dependencies = dependencies.WithSudo(Runner);
         }
 
         var installed = await Runner.RunAsync(dependencies, cancellationToken);

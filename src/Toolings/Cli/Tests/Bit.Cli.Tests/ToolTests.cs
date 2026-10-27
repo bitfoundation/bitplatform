@@ -352,6 +352,22 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task SudoCommands_Should_RunTheExecutableBitFinds()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.Executables["apt-get"] = "/usr/bin/apt-get";
+        host.Runner.Executables["sudo"] = "/usr/bin/sudo";
+        host.Runner.NotFound("git");
+        var needs = new ToolNeeds();
+        var git = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "git");
+
+        await new ToolInstaller(host.Services, new StepRunner(host.Services)).InstallAsync([git], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
+
+        CollectionAssert.AreEqual(new[] { "-n", "/usr/bin/apt-get", "install", "-y", "git" }, host.Runner.Calls.Last(c => c.FileName is "sudo").Arguments.ToArray());
+    }
+
+    [TestMethod]
     public async Task NodeFromAVersionManager_Should_BeUpdatedThroughIt()
     {
         using var host = new TestHost(HostOs.Linux);

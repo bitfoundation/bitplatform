@@ -635,6 +635,23 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public async Task AWorkloadInstallRetriedWithSudo_Should_RunTheDotnetOnThePath()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var project = CreateFakeProject(host, "Contoso");
+        host.Runner.Executables["dotnet"] = "/opt/dotnet/dotnet";
+        host.Runner.Executables["sudo"] = "/usr/bin/sudo";
+        host.Runner.On("dotnet", "workload list", 0, "Installed Workload Id\n---\n");
+        host.Runner.On("dotnet", "workload install", 1, "Inadequate permissions. Run the command with elevated privileges.");
+
+        var result = await new ProjectSteps(host.Services, project).WorkloadsAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
+        Assert.AreEqual("sudo", host.Runner.Calls.Last().FileName);
+        CollectionAssert.AreEqual(new[] { "-n", "/opt/dotnet/dotnet", "workload", "install", "wasm-tools" }, host.Runner.Calls.Last().Arguments.ToArray(), "sudo's secure_path may not have the user's dotnet, or may have another one.");
+    }
+
+    [TestMethod]
     public async Task ANativeApp_Should_BuildTheWholeSolutionWithWhatItNeeds()
     {
         using var host = new TestHost(HostOs.Windows);
