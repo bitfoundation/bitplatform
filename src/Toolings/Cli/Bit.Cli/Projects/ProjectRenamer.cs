@@ -147,13 +147,13 @@ public sealed class ProjectRenamer
         var files = 0;
         var folders = 0;
         var failures = new List<PathFailure>();
-        var entries = Entries(new DirectoryInfo(root)).OrderByDescending(e => e.FullName.Count(c => c == Path.DirectorySeparatorChar)).ToList();
+        var entries = Entries(new DirectoryInfo(root)).OrderBy(ProjectNameSource).ThenByDescending(e => e.FullName.Count(c => c == Path.DirectorySeparatorChar)).ToList();
 
         foreach (var entry in entries)
         {
             var newName = Replace(entry.Name);
 
-            if (string.Equals(newName, entry.Name, StringComparison.Ordinal))
+            if (string.Equals(newName, entry.Name, StringComparison.Ordinal) || (ProjectNameSource(entry) > 0 && failures.Count > 0))
                 continue;
 
             var source = entry.FullName;
@@ -281,6 +281,13 @@ public sealed class ProjectRenamer
     }
 
     private static bool IsWordCharacter(char c) => char.IsLetterOrDigit(c) || c is '_';
+
+    private static int ProjectNameSource(FileSystemInfo entry)
+    {
+        return entry.Name.EndsWith(".Web.slnf", StringComparison.OrdinalIgnoreCase) ? 2
+            : entry.Name.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase) ? 1
+            : 0;
+    }
 
     private static IEnumerable<FileSystemInfo> Entries(DirectoryInfo folder)
     {

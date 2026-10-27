@@ -80,6 +80,28 @@ public class RenameTests
     }
 
     [TestMethod]
+    public async Task Rename_Should_KeepTheOldNameUntilEverythingIsRenamed()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var folder = CreateProject(host);
+        host.Runner.On("git", "rev-parse", 0, folder);
+        host.Runner.On("git", "status --porcelain", 0, "");
+        var blocker = Directory.CreateDirectory(Path.Combine(folder, "src", "Server", "Contoso.Shop.Server.Api")).FullName;
+
+        Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("rename", "Contoso.Shop", folder), host.Output);
+        Assert.AreEqual("Old", ProjectContext.FindProjectName(folder));
+        Assert.IsTrue(File.Exists(Path.Combine(folder, "Old.slnx")));
+
+        Directory.Delete(blocker);
+
+        Assert.AreEqual(0, await host.RunAsync("rename", "Contoso.Shop", folder), host.Output);
+        Assert.AreEqual("Contoso.Shop", ProjectContext.FindProjectName(folder));
+        Assert.IsTrue(File.Exists(Path.Combine(folder, "Contoso.Shop.slnx")));
+        Assert.IsTrue(File.Exists(Path.Combine(folder, "src", "Server", "Contoso.Shop.Server.Api", "Contoso.Shop.Server.Api.csproj")));
+        Assert.IsFalse(Directory.Exists(Path.Combine(folder, "src", "Server", "Old.Server.Api")));
+    }
+
+    [TestMethod]
     public async Task Rename_Should_RefuseAGitRepositoryWithChanges()
     {
         using var host = new TestHost();
