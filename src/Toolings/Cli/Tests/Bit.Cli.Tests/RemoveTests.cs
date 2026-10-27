@@ -102,6 +102,21 @@ public class RemoveTests
     }
 
     [TestMethod]
+    public async Task Remove_Should_FinishWhatAFailedRunLeft()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var folder = CreateProject(host);
+        host.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
+        File.Delete(Path.Combine(folder, "Contoso.slnx"));
+        File.Delete(Path.Combine(folder, "Contoso.Web.slnf"));
+
+        Assert.AreEqual(0, await host.RunAsync("remove", folder, "--yes"), host.Output);
+
+        Assert.IsFalse(Directory.Exists(folder));
+        StringAssert.Contains(host.FlatOutput, "Removed Contoso");
+    }
+
+    [TestMethod]
     public async Task Remove_Should_KeepTheEmptyFolderATerminalIsIn()
     {
         if (OperatingSystem.IsWindows() is false)

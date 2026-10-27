@@ -24,7 +24,7 @@ public static class RemoveCommand
         {
             var cli = services();
             var folder = Path.TrimEndingDirectorySeparator(Path.GetFullPath(parseResult.GetValue(pathArgument) ?? ".", cli.Environment.CurrentDirectory));
-            var name = Directory.Exists(folder) ? ProjectContext.FindProjectName(folder) : null;
+            var name = Directory.Exists(folder) ? ProjectContext.FindProjectName(folder) ?? ClientCoreName(folder) : null;
 
             if (string.IsNullOrEmpty(name) || IsProjectRoot(folder, name) is false)
             {
@@ -175,6 +175,13 @@ public static class RemoveCommand
     private static bool IsProjectRoot(string folder, string name)
     {
         return File.Exists(Path.Combine(folder, $"{name}.Web.slnf")) || Directory.Exists(Path.Combine(folder, "src", "Client", $"{name}.Client.Core"));
+    }
+
+    private static string? ClientCoreName(string folder)
+    {
+        var client = Path.Combine(folder, "src", "Client");
+
+        return Directory.Exists(client) && Directory.GetDirectories(client, "*.Client.Core") is [var only] ? Path.GetFileName(only)[..^".Client.Core".Length] : null;
     }
 
     private static async Task<List<string>> FindLossesAsync(CliServices cli, string folder, CancellationToken cancellationToken)
