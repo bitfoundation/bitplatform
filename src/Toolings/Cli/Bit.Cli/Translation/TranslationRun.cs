@@ -110,14 +110,18 @@ public sealed class TranslationRun(CliServices cli, Func<ResxTranslatorSettings,
                         ? StepResult.Succeeded($"Translated {name}", detail)
                         : StepResult.Warning($"Translated {name}", $"{detail}, {skipped} kept out: their placeholders didn't match", "bit translate");
                 }
-                catch (ClientResultException exp)
+                catch (Exception exp) when (LastTry(exp) is ClientResultException { Status: > 0 } answer)
                 {
-                    cli.Telemetry.SetTag(TelemetryFields.HttpStatus, exp.Status);
-                    return StepResult.Failed($"Couldn't translate {name}", $"the model endpoint answered {exp.Status}", "bit translate", resultCode: $"translate.http.{exp.Status}", hint: exp.Message.Split('\n')[0]);
+                    cli.Telemetry.SetTag(TelemetryFields.HttpStatus, answer.Status);
+                    return StepResult.Failed($"Couldn't translate {name}", $"the model endpoint answered {answer.Status}", "bit translate", resultCode: $"translate.http.{answer.Status}", hint: answer.Message.Split('\n')[0]);
                 }
-                catch (HttpRequestException exp)
+                catch (Exception exp) when (LastTry(exp) is ClientResultException or HttpRequestException)
                 {
-                    return StepResult.Failed($"Couldn't translate {name}", "the model endpoint couldn't be reached", "bit translate", resultCode: "translate.network", hint: exp.Message);
+                    return StepResult.Failed($"Couldn't translate {name}", "the model endpoint couldn't be reached", "bit translate", resultCode: "translate.network", hint: LastTry(exp).Message);
+                }
+                catch (Exception exp) when (LastTry(exp) is TaskCanceledException && ct.IsCancellationRequested is false)
+                {
+                    return StepResult.Failed($"Couldn't translate {name}", "the model endpoint didn't answer in time", "bit translate", resultCode: "translate.timeout", hint: LastTry(exp).Message);
                 }
                 catch (InvalidOperationException exp)
                 {
@@ -212,4 +216,6 @@ public sealed class TranslationRun(CliServices cli, Func<ResxTranslatorSettings,
 
         return output.Translations;
     }
+
+    private static Exception LastTry(Exception exception) => exception is AggregateException { InnerExceptions: [.., var last] } ? last : exception;
 }

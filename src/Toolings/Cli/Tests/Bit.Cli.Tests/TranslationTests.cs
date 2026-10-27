@@ -1,4 +1,6 @@
 ﻿using System.Globalization;
+using System.Net;
+using System.Net.Sockets;
 using System.Text.Json;
 using Bit.Cli.Tests.Infrastructure;
 using Bit.Cli.Translation;
@@ -244,6 +246,22 @@ public class TranslationTests
         StringAssert.Contains(chat.LastSystemPrompt, "فارسی");
         Assert.AreEqual(0F, chat.LastOptions!.Temperature);
         Assert.IsNotNull(chat.LastOptions.ResponseFormat);
+    }
+
+    [TestMethod]
+    public async Task AnUnreachableEndpoint_Should_BeReportedAsOne()
+    {
+        var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+        listener.Stop();
+
+        using var host = CreateProject(new() { ["Hello"] = "Hello" }, Config.Replace("https://api.openai.com/v1", $"http://127.0.0.1:{port}/v1", StringComparison.Ordinal));
+
+        var exitCode = await new TranslationRun(host.Services).RunAsync(new TranslateRequest(null, ["fa"], false, false), CancellationToken.None);
+
+        Assert.AreEqual(CliApp.ExitFailed, exitCode, host.Output);
+        StringAssert.Contains(host.FlatOutput, "Couldn't translate Strings.fa.resx the model endpoint couldn't be reached");
     }
 
     private static TestHost CreateProject(Dictionary<string, string> strings, string config = Config)
