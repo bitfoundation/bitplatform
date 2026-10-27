@@ -576,6 +576,38 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public async Task AspireStart_Should_SayWhenItCouldntStopTheProject()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["aspire"] = "aspire";
+        host.Runner.On("aspire", "stop", 1, "Failed to stop the AppHost.");
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+
+        var result = await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status, result.Detail);
+        Assert.AreEqual("Started the project with Aspire, but couldn't stop it", result.Title);
+        StringAssert.Contains(result.FollowUp, "aspire stop");
+        Assert.AreEqual(1, host.Runner.Calls.Count(c => c.Arguments.FirstOrDefault() is "stop"));
+    }
+
+    [TestMethod]
+    public async Task AspireStart_Should_StopWhatAFailedStartLeftRunning()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["aspire"] = "aspire";
+        host.Runner.On("aspire", "start", 1, "The AppHost didn't start in time.");
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+
+        var result = await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status);
+        CollectionAssert.AreEqual(new[] { "stop", "--apphost", project.AppHostDirectory, "--non-interactive" }, host.Runner.Calls.Last().Arguments.ToArray());
+    }
+
+    [TestMethod]
     public void TheProjectContext_Should_ReadTheGeneratedProject()
     {
         using var host = new TestHost();

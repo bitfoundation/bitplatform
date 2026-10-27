@@ -371,12 +371,16 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             : null;
 
         var start = await Aspire(["start", "--apphost", project.AppHostDirectory, "--non-interactive", "--format", "Json"], progress, TimeSpan.FromMinutes(30), cancellationToken, startTimeout);
+        var stop = AspireSpec(["stop", "--apphost", project.AppHostDirectory, "--non-interactive"], _ => { }, TimeSpan.FromMinutes(5));
 
         if (start.Succeeded is false)
+        {
+            await Runner.RunAsync(stop with { OnOutputLine = progress }, CancellationToken.None);
             return StepResult.FromProcess(start, "", failed, followUp) with { Status = StepStatus.Warning };
+        }
 
-        var stop = AspireSpec(["stop", "--apphost", project.AppHostDirectory, "--non-interactive"], _ => { }, TimeSpan.FromMinutes(5));
         var keep = false;
+        ProcessResult? stopped = null;
 
         try
         {
@@ -387,7 +391,13 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             }
 
             if (keepRunning is false)
-                return StepResult.Succeeded("Started and stopped the project with Aspire", "its images and builds are ready, so the IDE starts it fast");
+            {
+                stopped = await Runner.RunAsync(stop with { OnOutputLine = progress }, CancellationToken.None);
+                var result = StepResult.FromProcess(stopped, "Started and stopped the project with Aspire", "Started the project with Aspire, but couldn't stop it",
+                    $"cd {ProcessSpec.Quote(project.Directory)} && aspire stop", "its images and builds are ready, so the IDE starts it fast");
+
+                return stopped.Succeeded ? result : result with { Status = StepStatus.Warning };
+            }
 
             Running = new RunningProject
             {
@@ -410,7 +420,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         }
         finally
         {
-            if (keep is false)
+            if (keep is false && stopped is null)
             {
                 await Runner.RunAsync(stop with { OnOutputLine = progress }, CancellationToken.None);
             }
