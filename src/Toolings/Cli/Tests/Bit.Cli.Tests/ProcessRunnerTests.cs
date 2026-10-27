@@ -99,4 +99,34 @@ public class ProcessRunnerTests
     {
         Assert.AreEqual(expected, ProcessSpec.Quote(value));
     }
+
+    [TestMethod]
+    public async Task ShellQuote_Should_GiveTheUsersShellBackEveryCharacter()
+    {
+        string[] values = ["plain", "with space", "it's", "a\"b", "$HOME, `date` and $(date)", @"C:\Program Files\dotnet", "!bang", "'quoted'", "a,b", "@splat", "user@example.com"];
+        var os = OperatingSystem.IsWindows() ? HostOs.Windows : HostOs.Linux;
+        var line = "echo " + string.Join(' ', values.Select(v => ProcessSpec.ShellQuote(v, os)));
+        var shell = OperatingSystem.IsWindows()
+            ? new ProcessSpec { FileName = "powershell.exe", Arguments = ["-NoProfile", "-NonInteractive", "-Command", "[System.Management.Automation.Language.Parser]::ParseInput($env:LINE, [ref]$null, [ref]$null).EndBlock.Statements[0].PipelineElements[0].CommandElements | Select-Object -Skip 1 | ForEach-Object { if ($_ -is [System.Management.Automation.Language.StringConstantExpressionAst]) { $_.Value } else { 'expanded ' + $_.Extent.Text } }"] }
+            : new ProcessSpec { FileName = "/bin/sh", Arguments = ["-c", "eval \"set -- $LINE\"; shift; for word in \"$@\"; do printf '%s\\n' \"$word\"; done"] };
+
+        var words = await new ProcessRunner(CliEnvironment.FromProcess(), CliLog.None).RunAsync(shell with { Environment = new Dictionary<string, string?> { ["LINE"] = line } });
+
+        CollectionAssert.AreEqual(values, words.OutputLines.ToArray(), line);
+    }
+
+    [TestMethod]
+    public async Task AProgramWhosePathNeedsQuotes_Should_StillRunInPowerShell()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        var spec = new ProcessSpec { FileName = @"C:\Users\John Doe\podman.exe", Arguments = ["machine", "start"] };
+        var line = spec.ShellCommandLine(HostOs.Windows);
+        var parse = new ProcessSpec { FileName = "powershell.exe", Arguments = ["-NoProfile", "-NonInteractive", "-Command", "$errors = $null; $ast = [System.Management.Automation.Language.Parser]::ParseInput($env:LINE, [ref]$null, [ref]$errors); $errors.Count; $ast.EndBlock.Statements[0].PipelineElements[0].CommandElements[0].Value"], Environment = new Dictionary<string, string?> { ["LINE"] = line } };
+
+        var result = await new ProcessRunner(CliEnvironment.FromProcess(), CliLog.None).RunAsync(parse);
+
+        CollectionAssert.AreEqual(new[] { "0", spec.FileName }, result.OutputLines.ToArray(), line);
+    }
 }

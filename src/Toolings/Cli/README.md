@@ -19,7 +19,7 @@ It needs a .NET 10 SDK or later. `dnx` asks once before it downloads the package
 
 `bit new` creates a project from [bit Boilerplate](https://bitplatform.dev/templates) and gets it ready, so the first run works:
 
-1. Takes the project name and options from its arguments. The [create project page](https://bitplatform.dev/templates/create-project) builds the whole command. When a newer bit is out, the run continues with it, see [Staying up to date](#staying-up-to-date).
+1. Takes the project name and options from its arguments. The [create project page](https://bitplatform.dev/templates/create-project) builds the whole command. A name that is also the name of a type in bit Boilerplate's code, like `App` or `Program`, is refused, because its namespace would hide that type and the project wouldn't build. When a newer bit is out, the run continues with it, see [Staying up to date](#staying-up-to-date).
 2. Checks this machine, lists what the project needs and is missing, and installs what you tick: the .NET SDK the template's `global.json` pins, nuget.org as a package source when it's missing or disabled, Node.js, a container runtime that is free for commercial use (Podman on Windows, Colima with the docker CLI on macOS, Docker Engine on Linux; a Docker you already have is used as it is), WSL and the Windows Virtual Machine Platform that Podman runs on, Git, the Aspire CLI, the HTTPS development certificate, VS Code, the GitHub CLI when you ask for a GitHub repository, Windows long paths, and for native apps the Windows Hypervisor Platform the Android emulator uses and Windows developer mode, plus Python 3 on Linux when the offline database's native WebAssembly build needs it. Things already installed aren't shown, and neither is anything that doesn't apply to your operating system. A project that runs without its containers, such as one with SQLite and no Redis, still gets them, but a restart they ask for is a note, not a warning. The development certificate is trusted first, because Windows and macOS ask you to confirm it, so once that and the administrator prompt are answered you can leave it to finish. On Windows that one prompt, right after the plan, also covers the build support and the Android SDK when their folders need administrator rights. The versions come from the project: the .NET SDK from `global.json`, Node.js from `engines.node` in Client.Core's `package.json`, and the Aspire CLI from the AppHost's Aspire version, so an older Aspire CLI is updated to it. When nvm, fnm or Volta manages Node.js, Node.js is installed or updated through it, so the version it picks is the one that runs. On macOS with a native app, it also checks that Xcode is the one the project's .NET for iOS asks for.
 3. Warns, only when it's sure, about hardware that makes development slow: virtualization turned off in the BIOS or UEFI while the project's containers or the Android emulator need it, less than 15 GB of memory, or a project drive that is a hard disk rather than an SSD. Drives are judged only when they're internal and on real hardware; USB drives, virtual disks and virtual machines are left alone.
 4. Creates the project, with a development certificate of its own, and keeps only its `.slnx`: the `.sln` the template also ships for older Visual Studio versions is removed.
@@ -100,7 +100,7 @@ bit setup
 bit setup --platforms android
 ```
 
-It installs missing tools, build support and packages, builds, installs Playwright's Chromium for the UI tests, installs the VS Code extensions the project recommends when VS Code is installed, and starts the project the way `bit new` does.
+With a native platform, it first checks that the app id in Client.Maui's project file is one the native apps can have. It installs missing tools, build support and packages, builds, installs Playwright's Chromium for the UI tests, installs the VS Code extensions the project recommends when VS Code is installed, and starts the project the way `bit new` does.
 
 ## bit diff
 
@@ -112,11 +112,11 @@ bit diff 10.6.2 10.7.0
 bit diff --template-package ../bitplatform/src/Templates/Boilerplate/Bit.Boilerplate
 ```
 
-- It creates the project with each version, the old one first, into one git repository in the temp folder, so the second commit is exactly the upgrade, and writes it as `bit-diff.patch` in that repository too. Your project isn't touched.
+- It creates the project with each version, the old one first, into one git repository in your home folder, so the second commit is exactly the upgrade, and writes it as `bit-diff.patch` in that repository too. Your project isn't touched.
 - In a project, it takes the name, the version and the options from the project's `bit.json`, where the template records them. Pass `from`, `to`, `--name` or any option of `bit new` to change them. `to` defaults to this bit's own version.
 - An option a version doesn't have is left out for that version, and said so.
 - What the template picks at random on every run, like ports, GUIDs, dates and the seeded accounts' password, differs between the two, and so does what `bit new` adds after creating a project.
-- The repository goes to `<temp>/bit-diff/<name>-<from>-<to>`, or `-o <folder>`. Delete it with `bit remove <folder> --yes` when you're done.
+- The repository goes to `~/.bitplatform/diff/<name>-<from>-<to>`, or `-o <folder>`. Delete it with `bit remove <folder> --yes` when you're done.
 
 The project's `upgrade` skill, for the AI coding tools, runs it and applies the changes to your code.
 
@@ -185,7 +185,8 @@ Renames the project everywhere its name appears: files, folders, namespaces, the
 
 - In a git repository it needs your changes committed or stashed first, so you can review the rename with `git diff` and undo it with `git checkout`. Outside git it asks first, or needs `--yes`.
 - Stops the same apps `bit clean` stops, and deletes `bin`, `obj` and `.vs`, which hold the old name. A build process that holds one of their files is stopped and the deletion retried, like `bit clean` does.
-- For a project named `MyApp`, it replaces `MyApp`, `myapp` as in `com.companyname.myapp`, and for a name with dots the same name with underscores. A match counts only where the name starts a word and isn't followed by a lowercase letter, so `MyAppDb` and `MyApp.Server` change while `TheMyApp` and `MyApps` don't.
+- For a project named `MyApp`, it replaces `MyApp` where a name starts with it, as in `MyApp.Server`, `Projects.MyApp_Server_Api` and the database name `MyAppDb`, and `myapp` in the app id `com.companyname.myapp` and in names like `myapp-e2e`; for a name with dots, also the same name with underscores. `TheMyApp`, `MyApps`, `MyAppService`, a `myapp` variable and a later part of a dotted name, like the `App` of `Microsoft.AspNetCore.App`, stay as they are.
+- Refuses a new name that is also the name of a type in the project's code, like `App`, and a project whose own name is one, since it can't tell the two apart. Rename that type first. It also refuses a name that would leave the native apps with an invalid app id.
 - Skips `.git`, `node_modules` and binary files. Every file keeps its encoding and line endings.
 - Leaves the project's own folder named as it was, since your terminal is usually in it. Rename it after closing the editors and terminals that use it.
 
@@ -302,7 +303,7 @@ Collect the profile in the job that publishes the app, right before the AOT publ
 - **A private GitHub repository**, only with `--github-repo`, on the account you sign in with. The GitHub CLI keeps that sign-in, and git uses it to push.
 - **Trust entries**, only for the folder `bit new` created or the one you pass to `bit trust`: `projects` in `~/.claude.json`, `trustedFolders` in `~/.copilot/config.json`, `[projects]` in `~/.codex/config.toml`, `~/.gemini/trustedFolders.json`, and VS Code's trust store in `~/.vscode-shared/sharedStorage/state.vscdb` (only while VS Code isn't running). Each file keeps everything else in it. To undo, delete the entry, or use each tool's own trust settings.
 - **bit itself**, when a newer version is out: a copy for the run in `~/.bitplatform/cli`, then `dotnet tool update --global Bit.Cli` once the run ends.
-- **Its own folder**, `~/.bitplatform`: `settings.json`, the template cache, logs, and telemetry not sent yet.
+- **Its own folder**, `~/.bitplatform`: `settings.json`, the template cache, logs, telemetry not sent yet, and the repositories `bit diff` creates.
 
 ## Telemetry
 

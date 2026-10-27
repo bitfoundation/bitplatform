@@ -82,6 +82,17 @@ public sealed class AotProfileRun(CliServices cli)
             if (origin is not null && PublishedApp.FindServer(publish) is not null)
                 cli.Console.StepHint("--origin is for apps without a server; this one runs its own.");
 
+            var framework = Path.Combine(publish, "wwwroot", "_framework");
+            var assemblies = (Directory.Exists(framework) ? Directory.EnumerateFiles(framework, "*.dll") : [])
+                .Select(path => (Path: path, Name: AssemblyMethods.ReadName(path)))
+                .Where(a => a.Name is not null)
+                .ToList();
+
+            if (request.Include.FirstOrDefault(name => assemblies.Any(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase)) is false) is { } unknown)
+            {
+                return cli.UsageError("include-unknown", $"--include {unknown}: the app has no assembly by that name.");
+            }
+
             stopwatch.Restart();
             await using var app = await PublishedApp.StartAsync(publish, origin, cli.Log, cancellationToken);
             await using var chromium = await Chromium.LaunchAsync(browser, cli.Log, cancellationToken);
@@ -90,7 +101,9 @@ public sealed class AotProfileRun(CliServices cli)
             await collector.StartAsync(cancellationToken);
 
             var skipped = new HashSet<string>(StringComparer.Ordinal);
+            var reloads = 0;
             IReadOnlyList<string> visited = [];
+            IReadOnlyList<string> steps = [];
             byte[] data;
 
             while (true)
@@ -98,11 +111,12 @@ public sealed class AotProfileRun(CliServices cli)
                 try
                 {
                     visited = await cli.Console.RunWithStatusAsync($"Using the app at {app.Origin}", progress => collector.VisitAsync(request.StartPath, Math.Max(1, request.MaxPages), skipped, progress, cancellationToken));
+                    steps = [.. request.Steps.Where(step => skipped.Contains(step) is false)];
 
-                    if (request.Steps.Count > 0)
+                    if (steps.Count > 0)
                         await collector.RunStepAsync(request.StartPath, cancellationToken);
 
-                    foreach (var step in request.Steps)
+                    foreach (var step in steps)
                     {
                         if (await collector.RunStepAsync(step, cancellationToken) is false)
                             cli.Console.StepWarning($"--step {step}: nothing on the page matches it.");
@@ -111,14 +125,15 @@ public sealed class AotProfileRun(CliServices cli)
                     data = await collector.WriteAsync(cancellationToken);
                     break;
                 }
-                catch (AppReloadedException reload) when (skipped.Count < MaxReloads)
+                catch (AppReloadedException reload) when (reloads < MaxReloads)
                 {
+                    reloads++;
                     cli.Console.StepWarning($"{reload.Path} reloads the app, which starts the profile over. Using the app again without it.");
                     skipped.Add(reload.Path);
                 }
             }
 
-            cli.Console.Step(StepStatus.Succeeded, "Used the app", $"{visited.Count} page{(visited.Count == 1 ? "" : "s")}{(request.Steps.Count > 0 ? $", {request.Steps.Count} step{(request.Steps.Count == 1 ? "" : "s")}" : "")}", stopwatch.Elapsed);
+            cli.Console.Step(StepStatus.Succeeded, "Used the app", $"{visited.Count} page{(visited.Count == 1 ? "" : "s")}{(steps.Count > 0 ? $", {steps.Count} step{(steps.Count == 1 ? "" : "s")}" : "")}", stopwatch.Elapsed);
             cli.Console.StepHint(string.Join(" ", visited));
 
             if (collector.WrittenEarly)
@@ -131,23 +146,8 @@ public sealed class AotProfileRun(CliServices cli)
 
             var profile = AotProfile.Read(data);
             var collected = profile.Methods.Count;
-            var assemblies = Directory.EnumerateFiles(app.Framework, "*.dll")
-                .Select(path => (Path: path, Name: AssemblyMethods.ReadName(path)))
-                .Where(a => a.Name is not null)
-                .ToList();
-
             var unmanaged = assemblies.Sum(a => profile.AddRange(AssemblyMethods.Read(a.Path, unmanagedCallersOnly: true)));
-            var included = 0;
-
-            foreach (var name in request.Include)
-            {
-                if (assemblies.FirstOrDefault(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase)) is not { Path: { } path })
-                {
-                    return cli.UsageError("include-unknown", $"--include {name}: the app has no assembly by that name.");
-                }
-
-                included += profile.AddRange(AssemblyMethods.Read(path, unmanagedCallersOnly: false));
-            }
+            var included = request.Include.Sum(name => profile.AddRange(AssemblyMethods.Read(assemblies.First(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase)).Path, unmanagedCallersOnly: false)));
 
             Directory.CreateDirectory(Path.GetDirectoryName(output)!);
             await File.WriteAllBytesAsync(output, profile.ToArray(), cancellationToken);

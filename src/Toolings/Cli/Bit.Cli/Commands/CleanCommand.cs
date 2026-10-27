@@ -54,7 +54,7 @@ public static class CleanCommand
 
             var result = await RunScriptAsync("clean", $"Running {script}");
 
-            if (cli.Environment.IsWindows && ProjectRenamer.FindBuildFolders(folder) is { Count: > 0 } left)
+            if (ProjectRenamer.FindBuildFolders(folder) is { Count: > 0 } left)
             {
                 var freed = ProjectProcesses.Free(cli, left, stoppedBuilds: stoppedBuilds);
 
@@ -69,6 +69,11 @@ public static class CleanCommand
                 {
                     var shown = string.Join('\n', left.Take(5)) + (freed.InUseBy is { } holders ? $"\n{holders}" : "");
                     steps.Add("clean-left", StepResult.Warning("Some build folders are still there", $"{left.Count} folder{(left.Count == 1 ? "" : "s")}", hint: shown));
+
+                    foreach (var line in shown.Split('\n'))
+                    {
+                        cli.Console.UnwrappedLine("      " + line);
+                    }
                 }
             }
 

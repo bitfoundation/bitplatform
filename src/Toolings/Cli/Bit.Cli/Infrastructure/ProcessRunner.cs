@@ -22,15 +22,31 @@ public sealed record ProcessSpec
 
     public string CommandLine => string.Join(' ', new[] { FileName }.Concat(Arguments).Select(Quote));
 
-    public ProcessSpec WithSudo() => this with { FileName = "sudo", Arguments = ["-n", FileName, .. Arguments], Timeout = null };
+    public string ShellCommandLine(HostOs os)
+    {
+        var line = string.Join(' ', new[] { FileName }.Concat(Arguments).Select(a => ShellQuote(a, os)));
+        return os is HostOs.Windows && line[0] is '"' or '\'' ? "& " + line : line;
+    }
+
+    public ProcessSpec WithSudo(IProcessRunner runner) => this with { FileName = "sudo", Arguments = ["-n", runner.FindExecutable(FileName) ?? FileName, .. Arguments], Timeout = null };
 
     public static string Quote(string value)
     {
-        if (value.Length > 0 && value.All(c => char.IsLetterOrDigit(c) || c is '-' or '_' or '.' or '/' or '\\' or ':' or '=' or ',' or '@' or '+'))
+        if (IsPlain(value))
             return value;
 
         return $"\"{value.Replace("\"", "\\\"", StringComparison.Ordinal)}\"";
     }
+
+    public static string ShellQuote(string value, HostOs os) => os switch
+    {
+        HostOs.Windows when value.IndexOfAny(['$', '`', '"', ',', '@']) < 0 => Quote(value),
+        HostOs.Windows => $"'{value.Replace("'", "''", StringComparison.Ordinal)}'",
+        _ when IsPlain(value) && value.Contains('\\') is false => value,
+        _ => $"'{value.Replace("'", "'\\''", StringComparison.Ordinal)}'"
+    };
+
+    private static bool IsPlain(string value) => value.Length > 0 && value.All(c => char.IsLetterOrDigit(c) || c is '-' or '_' or '.' or '/' or '\\' or ':' or '=' or ',' or '@' or '+');
 }
 
 public sealed record ProcessResult

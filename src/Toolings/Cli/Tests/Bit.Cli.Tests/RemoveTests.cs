@@ -7,6 +7,8 @@ namespace Bit.Cli.Tests;
 [TestClass]
 public class RemoveTests
 {
+    private const string TerminalFolderVariable = "BIT_CLI_TESTS_TERMINAL_FOLDER";
+
     [TestMethod]
     public async Task Remove_Should_ChangeNothingWhenTheAnswerIsNo()
     {
@@ -60,13 +62,13 @@ public class RemoveTests
         var folder = CreateProject(host);
         host.Runner.On("git", "rev-parse", 0, folder.Replace('\\', '/'));
         host.Runner.On("git", "status --porcelain", 0, "?? notes.txt\n");
-        host.Runner.On("git", "rev-list --count", 0, "2\n");
+        host.Runner.On("git", "rev-list --count @{u}", 0, "2\n");
 
         Assert.AreEqual(0, await host.RunAsync("remove", folder));
         Assert.AreEqual($"It has changes that aren't committed.\nIts branch has 2 commits that aren't pushed.\nDelete {folder} and everything in it?", prompter.Prompts[^1].Question);
 
         host.Runner.On("git", "status --porcelain", 0, "");
-        host.Runner.On("git", "rev-list --count", 128, "fatal: no upstream configured for branch 'develop'");
+        host.Runner.On("git", "rev-list --count @{u}", 128, "fatal: no upstream configured for branch 'develop'");
 
         Assert.AreEqual(0, await host.RunAsync("remove", folder));
         Assert.AreEqual($"Its branch has no upstream, so its commits may exist only here.\nDelete {folder} and everything in it?", prompter.Prompts[^1].Question);
@@ -86,6 +88,23 @@ public class RemoveTests
     }
 
     [TestMethod]
+    public async Task Remove_Should_SayWhatOtherBranchesAndStashesWouldLose()
+    {
+        var prompter = new ScriptedPrompter().On("Delete", false);
+        using var host = new TestHost(HostOs.Linux, prompter: prompter);
+        var folder = CreateProject(host);
+        host.Runner.On("git", "rev-parse", 0, folder.Replace('\\', '/'));
+        host.Runner.On("git", "rev-list --count @{u}", 0, "0\n");
+        host.Runner.On("git", "rev-list --count --branches", 0, "3\n");
+        host.Runner.On("git", "stash list", 0, "stash@{0}: WIP on develop: 1a2b3c4 Add the cart\n");
+
+        Assert.AreEqual(0, await host.RunAsync("remove", folder));
+
+        Assert.AreEqual($"Other branches have 3 commits that aren't pushed.\nIt has stashed changes.\nDelete {folder} and everything in it?", prompter.Prompts.Single().Question);
+        Assert.IsTrue(File.Exists(Path.Combine(folder, "Contoso.Web.slnf")));
+    }
+
+    [TestMethod]
     public async Task Remove_Should_RequireAProjectFolder()
     {
         using var host = new TestHost(HostOs.Linux);
@@ -99,6 +118,21 @@ public class RemoveTests
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("remove", host.WorkingDirectory, "--yes"));
         Assert.IsTrue(File.Exists(solution));
         Assert.IsEmpty(host.Runner.Calls);
+    }
+
+    [TestMethod]
+    public async Task Remove_Should_FinishWhatAFailedRunLeft()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var folder = CreateProject(host);
+        host.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
+        File.Delete(Path.Combine(folder, "Contoso.slnx"));
+        File.Delete(Path.Combine(folder, "Contoso.Web.slnf"));
+
+        Assert.AreEqual(0, await host.RunAsync("remove", folder, "--yes"), host.Output);
+
+        Assert.IsFalse(Directory.Exists(folder));
+        StringAssert.Contains(host.FlatOutput, "Removed Contoso");
     }
 
     [TestMethod]
@@ -195,6 +229,53 @@ public class RemoveTests
         finally
         {
             Stop(terminal);
+        }
+    }
+
+    [TestMethod]
+    public async Task Remove_Should_NotWaitForTheTerminalItRunsIn()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        if (Environment.GetEnvironmentVariable(TerminalFolderVariable) is { Length: > 0 } folder)
+        {
+            using var inTerminal = new TestHost(HostOs.Windows, prompter: new ScriptedPrompter());
+            inTerminal.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
+
+            Assert.AreEqual(0, await inTerminal.RunAsync("remove", folder, "--yes"), inTerminal.Output);
+            StringAssert.Contains(inTerminal.FlatOutput, "this terminal is still in it");
+            StringAssert.Contains(inTerminal.FlatOutput, $"stays, empty, while this terminal is in it. Run cd {ProcessSpec.ShellQuote(Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(folder))!, HostOs.Windows)}, then delete the folder.");
+            return;
+        }
+
+        using var host = new TestHost(HostOs.Windows);
+        var project = CreateProject(host);
+        var tests = Path.ChangeExtension(typeof(RemoveTests).Assembly.Location, ".exe");
+
+        using var terminal = Process.Start(new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "cmd.exe"), $"/c cd /d \"{project}\" && \"{tests}\" --filter FullyQualifiedName~{nameof(Remove_Should_NotWaitForTheTerminalItRunsIn)}")
+        {
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            CreateNoWindow = true,
+            Environment = { [TerminalFolderVariable] = project }
+        })!;
+
+        var output = terminal.StandardOutput.ReadToEndAsync();
+
+        try
+        {
+            Assert.IsTrue(terminal.WaitForExit(TimeSpan.FromMinutes(1)), "bit remove still waits for the terminal it runs in.");
+            Assert.AreEqual(0, terminal.ExitCode, await output);
+            Assert.IsEmpty(Directory.EnumerateFileSystemEntries(project));
+        }
+        finally
+        {
+            if (terminal.HasExited is false)
+            {
+                terminal.Kill(entireProcessTree: true);
+                terminal.WaitForExit();
+            }
         }
     }
 

@@ -48,6 +48,8 @@ public sealed partial class CliConsole(IAnsiConsole output, IAnsiConsole error)
 
     public void Text(string text) => Out.WriteLine(text);
 
+    public void UnwrappedLine(string text) => Out.Profile.Out.Writer.WriteLine(text);
+
     public void Dim(string text) => Out.MarkupLine($"[grey]{Markup.Escape(text)}[/]");
 
     public void Warn(string text) => Out.MarkupLine($"[yellow]{WarnSymbol}[/] {Markup.Escape(text)}");

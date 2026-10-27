@@ -49,6 +49,8 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     private IEnumerable<string> BuildProperties => project.BuildProperties.Select(p => $"-p:{p}");
 
+    private bool migrationAdded;
+
     public Task<StepResult> AppCertificateAsync(Action<string> progress, CancellationToken cancellationToken)
     {
         if (System.IO.Directory.Exists(project.ServerApiDirectory) is false)
@@ -179,7 +181,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
                     Arguments = ["workload", "install", .. toInstall],
                     WorkingDirectory = project.Directory,
                     OnOutputLine = progress
-                }.WithSudo(), cancellationToken);
+                }.WithSudo(Runner), cancellationToken);
             }
             else
             {
@@ -331,6 +333,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         if (result.Succeeded is false)
             return StepResult.FromProcess(result, "", "Couldn't add the initial migration", followUp);
 
+        migrationAdded = true;
         var committed = await CommitPathAsync(migrations, "Add the Initial EF Core migration", cancellationToken);
         return StepResult.Succeeded("Added the Initial migration", $"{project.Database}{(committed is null ? "" : ", committed")}");
     }
@@ -367,13 +370,22 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             ? new Dictionary<string, string?> { ["ASPIRE_CLI_START_TIMEOUT"] = "1200" }
             : null;
 
+        var runningBefore = await AppHostMayBeRunningAsync(cancellationToken);
         var start = await Aspire(["start", "--apphost", project.AppHostDirectory, "--non-interactive", "--format", "Json"], progress, TimeSpan.FromMinutes(30), cancellationToken, startTimeout);
+        var stop = AspireSpec(["stop", "--apphost", project.AppHostDirectory, "--non-interactive"], _ => { }, TimeSpan.FromMinutes(5));
 
         if (start.Succeeded is false)
-            return StepResult.FromProcess(start, "", failed, followUp) with { Status = StepStatus.Warning };
+        {
+            if (runningBefore is false)
+            {
+                await Runner.RunAsync(stop with { OnOutputLine = progress }, CancellationToken.None);
+            }
 
-        var stop = AspireSpec(["stop", "--apphost", project.AppHostDirectory, "--non-interactive"], _ => { }, TimeSpan.FromMinutes(5));
+            return StepResult.FromProcess(start, "", failed, followUp) with { Status = StepStatus.Warning };
+        }
+
         var keep = false;
+        ProcessResult? stopped = null;
 
         try
         {
@@ -384,7 +396,13 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             }
 
             if (keepRunning is false)
-                return StepResult.Succeeded("Started and stopped the project with Aspire", "its images and builds are ready, so the IDE starts it fast");
+            {
+                stopped = await Runner.RunAsync(stop with { OnOutputLine = progress }, CancellationToken.None);
+                var result = StepResult.FromProcess(stopped, "Started and stopped the project with Aspire", "Started the project with Aspire, but couldn't stop it",
+                    $"cd {ProcessSpec.Quote(project.Directory)} && aspire stop", "its images and builds are ready, so the IDE starts it fast");
+
+                return stopped.Succeeded ? result : result with { Status = StepStatus.Warning };
+            }
 
             Running = new RunningProject
             {
@@ -407,7 +425,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         }
         finally
         {
-            if (keep is false)
+            if (keep is false && stopped is null)
             {
                 await Runner.RunAsync(stop with { OnOutputLine = progress }, CancellationToken.None);
             }
@@ -438,7 +456,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             var run = RunUntilStoppedAsync(new ProcessSpec
             {
                 FileName = "dotnet",
-                Arguments = ["run", "--project", server, "--no-build", .. project.BuildProperties.Select(p => $"--property:{p}")],
+                Arguments = ["run", "--project", server, .. migrationAdded ? Array.Empty<string>() : ["--no-build"], .. project.BuildProperties.Select(p => $"--property:{p}")],
                 WorkingDirectory = project.Directory,
                 Environment = new Dictionary<string, string?> { ["DOTNET_NOLOGO"] = "1" }
             }, running.Token);
@@ -667,6 +685,32 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         return Runner.RunAsync(AspireSpec(arguments, progress, timeout, environment), cancellationToken);
     }
 
+    private async Task<bool> AppHostMayBeRunningAsync(CancellationToken cancellationToken)
+    {
+        var ps = await Runner.RunAsync(AspireSpec(["ps", "--format", "Json", "--non-interactive"], _ => { }, TimeSpan.FromMinutes(1)), cancellationToken);
+
+        if (ps.Succeeded is false)
+            return true;
+
+        try
+        {
+            using var document = JsonDocument.Parse(string.IsNullOrWhiteSpace(ps.Output) ? "[]" : ps.Output);
+            return Strings(document.RootElement).Any(value => value.StartsWith(project.AppHostDirectory, StringComparison.OrdinalIgnoreCase));
+        }
+        catch (JsonException)
+        {
+            return true;
+        }
+
+        static IEnumerable<string> Strings(JsonElement element) => element.ValueKind switch
+        {
+            JsonValueKind.String => [element.GetString()!],
+            JsonValueKind.Array => element.EnumerateArray().SelectMany(Strings),
+            JsonValueKind.Object => element.EnumerateObject().SelectMany(property => Strings(property.Value)),
+            _ => []
+        };
+    }
+
     private ProcessSpec AspireSpec(string[] arguments, Action<string> progress, TimeSpan timeout, IReadOnlyDictionary<string, string?>? environment = null)
     {
         return new ProcessSpec { FileName = "aspire", Arguments = arguments, WorkingDirectory = project.Directory, Environment = environment, OnOutputLine = progress, Timeout = timeout };
@@ -716,6 +760,9 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         if (cli.Environment.IsLinux is false)
             return StepResult.Succeeded(title, detail);
 
+        if (Runner.FindExecutable("apt-get") is null)
+            return StepResult.Succeeded(title, detail, "Playwright installs the browsers' system libraries only with apt-get; if the UI tests can't start a browser, install them with your package manager.");
+
         var dependencies = install with { Arguments = [driver.Cli, "install-deps", .. browsers], OnOutputLine = progress };
         var followUp = "sudo " + dependencies.CommandLine;
 
@@ -724,7 +771,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             if (Runner.FindExecutable("sudo") is null || (await Runner.RunAsync(new ProcessSpec { FileName = "sudo", Arguments = ["-n", "true"], Timeout = TimeSpan.FromSeconds(10) }, cancellationToken)).Succeeded is false)
                 return StepResult.Warning(title, "its system libraries need sudo", followUp);
 
-            dependencies = dependencies.WithSudo();
+            dependencies = dependencies.WithSudo(Runner);
         }
 
         var installed = await Runner.RunAsync(dependencies, cancellationToken);
@@ -904,7 +951,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         var login = Runner.RunAsync(new ProcessSpec
         {
             FileName = "gh",
-            Arguments = ["auth", "login", "--web", "--git-protocol", "https", "--hostname", "github.com"],
+            Arguments = ["auth", "login", "--web", "--clipboard", "--git-protocol", "https", "--hostname", "github.com"],
             WorkingDirectory = project.Directory,
             Timeout = TimeSpan.FromMinutes(15),
             OnOutputLine = line =>
@@ -912,7 +959,8 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
                 if (OneTimeCodeRegex().Match(line) is not { Success: true } code || Interlocked.Exchange(ref codeShown, 1) is 1)
                     return;
 
-                cli.Console.Out.MarkupLine($"    Enter [bold]{code.Value}[/] [grey](copied to the clipboard)[/] at {GitHubDevicePage}, which opens in your browser.");
+                var copied = line.Contains("copied to clipboard", StringComparison.OrdinalIgnoreCase) ? " [grey](copied to the clipboard)[/]" : "";
+                cli.Console.Out.MarkupLine($"    Enter [bold]{code.Value}[/]{copied} at {GitHubDevicePage}, which opens in your browser.");
                 cli.Console.Out.MarkupLine("    [grey]Press Esc to skip signing in; bit goes on without the GitHub repo.[/]");
                 ProjectRun.OpenInBrowser(cli, GitHubDevicePage);
             }
@@ -1015,7 +1063,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             WorkingDirectory = project.Directory,
             OnOutputLine = progress,
             Timeout = timeout,
-            Environment = new Dictionary<string, string?> { ["DOTNET_NOLOGO"] = "1", ["MSBUILDTERMINALLOGGER"] = "off" }
+            Environment = new Dictionary<string, string?> { ["DOTNET_NOLOGO"] = "1", ["MSBUILDTERMINALLOGGER"] = "off", ["DOTNET_CLI_UI_LANGUAGE"] = "en" }
         };
 
         return administrator is null ? Runner.RunAsync(spec, cancellationToken) : administrator.RunAsync(spec, cancellationToken);

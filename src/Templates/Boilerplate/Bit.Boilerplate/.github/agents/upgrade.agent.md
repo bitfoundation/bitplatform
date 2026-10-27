@@ -19,7 +19,7 @@ The work is yours to judge. Ask the user only what the code can't answer and wha
 
 ## 2. Get the upstream changes
 
-- Run `bit diff` from the project folder, with the from and to versions when they aren't the defaults and with any option whose recorded value no longer matches the project. It only reads the project's `bit.json`; it creates the project with each version in a temporary folder of its own, into one git repository, so the second commit is exactly what the template changed for a project with this name and these options, and it writes that commit as a patch file there too. Its output says where.
+- Run `bit diff` from the project folder, with the from and to versions when they aren't the defaults and with any option whose recorded value no longer matches the project. It only reads the project's `bit.json`; it creates the project with each version in a folder of its own under bit's folder in the user's home, into one git repository, so the second commit is exactly what the template changed for a project with this name and these options, and it writes that commit as a patch file there too. Its output says where.
 - Some differences come from generating a project, not from the upgrade, and stay as they are in this project: everything the template picks at random on every run, such as ports, GUIDs like the user secrets id, dates and the seeded accounts' password, plus the app certificate, the formatting `bit new` applies, and EF Core migrations, which neither version has.
 - Read the whole change set before touching anything: which areas it touches, which files are new, deleted or renamed, and which changes belong together, such as a package bump and the code that needs it.
 
