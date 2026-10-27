@@ -897,6 +897,24 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public async Task Workloads_Should_SeeThatTheyNeedSudoWhateverTheMachinesLanguage()
+    {
+        using var host = new TestHost(HostOs.MacOS, new Dictionary<string, string> { ["LANG"] = "de_DE.UTF-8" });
+        host.Runner.Executables["sudo"] = "/usr/bin/sudo";
+        host.Runner.On("dotnet", "workload install", spec => new ProcessResult
+        {
+            ExitCode = 1,
+            Output = spec.Environment?.GetValueOrDefault("DOTNET_CLI_UI_LANGUAGE") is "en"
+                ? "Inadequate permissions. Run the command with elevated privileges."
+                : "Unzureichende Berechtigungen. Führen Sie den Befehl mit erhöhten Rechten aus."
+        });
+
+        await new ProjectSteps(host.Services, CreateFakeProject(host, "Contoso")).WorkloadsAsync(_ => { }, CancellationToken.None);
+
+        Assert.IsTrue(host.Runner.Calls.Any(c => c.FileName is "sudo"), string.Join(Environment.NewLine, host.Runner.Calls.Select(c => c.CommandLine)));
+    }
+
+    [TestMethod]
     public async Task BuildProperties_Should_ReachTheRestoreAndTheBuildButNotTheBrowsers()
     {
         using var host = new TestHost(HostOs.Linux);

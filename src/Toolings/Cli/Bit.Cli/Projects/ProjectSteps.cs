@@ -1028,7 +1028,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             WorkingDirectory = project.Directory,
             OnOutputLine = progress,
             Timeout = timeout,
-            Environment = new Dictionary<string, string?> { ["DOTNET_NOLOGO"] = "1", ["MSBUILDTERMINALLOGGER"] = "off" }
+            Environment = new Dictionary<string, string?> { ["DOTNET_NOLOGO"] = "1", ["MSBUILDTERMINALLOGGER"] = "off", ["DOTNET_CLI_UI_LANGUAGE"] = "en" }
         };
 
         return administrator is null ? Runner.RunAsync(spec, cancellationToken) : administrator.RunAsync(spec, cancellationToken);
