@@ -2,6 +2,8 @@
   "project": "AgentsApp",
   "options": [
     "--aspire",
+    "false",
+    "--signalR",
     "false"
   ],
   "author": {

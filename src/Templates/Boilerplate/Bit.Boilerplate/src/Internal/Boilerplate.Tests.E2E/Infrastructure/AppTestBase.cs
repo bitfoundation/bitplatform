@@ -223,6 +223,30 @@ public abstract class AppTestBase : AppPageTest
         await BitOtpInputUtils.FillOtpInputs(page, token);
 
         await Expect(page).Not.ToHaveURLAsync(new Regex("sign-in", RegexOptions.IgnoreCase));
+
+        await WaitUntilSessionsHoldASignalRConnection(email, sessions: 1);
+    }
+
+    protected async Task WaitUntilSessionsHoldASignalRConnection(string email, int sessions)
+    {
+        var globalApiClient = await DeployedApiClientProvider.GetGlobalApiClient(TestContext.CancellationToken);
+        var deadline = DateTimeOffset.UtcNow + TimeSpan.FromMinutes(1);
+
+        while (true)
+        {
+            await using var dbContext = await globalApiClient.DbContextFactory!.CreateDbContextAsync(TestContext.CancellationToken);
+
+            var connectedSessions = await dbContext.UserSessions.IgnoreQueryFilters()
+                .CountAsync(session => session.User!.NormalizedEmail == email.ToUpperInvariant() && session.SignalRConnectionId != null, TestContext.CancellationToken);
+
+            if (connectedSessions >= sessions)
+                return;
+
+            if (DateTimeOffset.UtcNow > deadline)
+                Assert.Fail($"A minute after signing in, {connectedSessions} of {email}'s {sessions} sessions hold a SignalR connection.");
+
+            await Task.Delay(TimeSpan.FromSeconds(1), TestContext.CancellationToken);
+        }
     }
 
     /// <summary>

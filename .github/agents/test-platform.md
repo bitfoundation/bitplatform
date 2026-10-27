@@ -91,15 +91,15 @@ until the report. Then go in this order:
    (`gh run watch <run-id> -R bitfoundation/bitplatform --exit-status`) before anything that takes its packages.
 2. `APP_VERSION`, then All CI and All CD together, both with the chosen `prerelease_packages`. All CI's inputs name
    its jobs and default to on, except `e2e` (the E2E suites), which is off; `-f <job>=false` leaves one out and
-   `-f e2e=true` adds the E2E suites. After a prerelease run that published a new version, start them only once
-   nuget.org lists that version for every `Bit.*` package the template takes, which can be half an hour later: the
-   library demos and their jobs take `Bit.Minifier` and `Bit.BlazorES2019` from nuget.org even with
-   `prerelease_packages`, and fail with NU1102 until then.
-3. While they run: step 1 as CI jobs fail.
-4. Once CD is done: step 2, then steps 3 and 4, with step 6 in the background next to the web stages of step 3.
-   Step 7 needs no CD and is light: do it while CI and CD run. Step 8 needs no CD either: start it in the background
-   while they run, never next to step 5 or the Android stage.
-5. Step 5 last, on its own.
+   `-f e2e=true` adds the E2E suites. After a prerelease run that published a new version, start them once nuget.org
+   lists that version for `Bit.Minifier` and `Bit.BlazorES2019`: the library demos and their jobs take those two from
+   nuget.org even with `prerelease_packages`, and fail with NU1102 until then. Every other package comes from the
+   run's artifact, so don't wait for the rest, which nuget.org can list half an hour later.
+3. While they run: step 1 as CI jobs fail, and steps 5 and 6, which need no CD: start each as soon as its packages
+   exist, one at a time, whenever this machine has several GB free (check before each, since the CD deploys here
+   too). Step 7 needs no CD and is light: do it while CI and CD run. Step 8 needs no CD either: start it in the
+   background while they run, never next to step 5 or the Android stage.
+4. Once CD is done: step 2, then steps 3 and 4.
 
 Every CD job builds with `-p:Version=$APP_VERSION`, so a complete rollout shows that version everywhere: as
 `<APP_VERSION>+<sha>` in the ProductVersion of the IIS assemblies and the Windows executables, as `versionName` on
@@ -384,6 +384,9 @@ Triage every failure:
    flaky. Fix the first two at their cause, as in step 1. In the Android and Windows stages, a request the app makes
    through its own HttpClient runs in .NET, not in the WebView, so it never shows in the page's network events: a
    test that waits for one there times out although the request went through, and has to wait on the page instead.
+   The apps open their SignalR connection only a few seconds after they start, so a push sent before that reaches no
+   one, and a connection that opens after the security stamp changed is refused and signs the app out: a test that
+   depends on either waits until its sessions hold a SignalR connection first.
 
 A download size that grew is broken down by file before it is called growth. The published `.br` of each file sits
 next to it in `C:\inetpub\<site>\wwwroot`, and that is what has to arrive: a response larger than it, or chunked with
@@ -488,9 +491,9 @@ devcontainers CLI brings its container up, and `bit doctor` runs inside it.
   aside, and maps every `Bit.*` to it: a template that already uses library changes nuget.org's build of its version
   doesn't have compiles against them.
 - It's heavy: a few GB in Docker's VM and about ten minutes, most of them for the container's image and the
-  restore, then about half an hour for the Aspire check below. Run it on its own, after the E2E suite, never next to
-  it. Run earlier, it waits for the CD's deploy jobs to be done, as `aspire` does: its image build next to them left
-  this machine under 3 GB of free memory.
+  restore, then about half an hour for the Aspire check below. Run it on its own, never next to the E2E suite or
+  `aspire`, and only with several GB free: its image build next to the CD's deploy jobs once left this machine under
+  3 GB of free memory.
 - Done means every `bit setup` step passed, `bit doctor` exits with 0, with VS Code not needed inside a container,
   and the Aspire check below passes. `bit doctor`'s memory warning describes Docker's VM, not this machine,
   and is expected. So is a `bit setup` warning that the web app didn't get healthy, when the machine was busy: Aspire
@@ -533,8 +536,9 @@ alive for its idle time. `aspire` checks that the way a developer meets it:
   the repository's SDK, which needs the workloads the template's clients build with (`wasm-tools`): an SDK that
   Visual Studio installed brings only its own.
 - It takes about half an hour, most of it the idle wait, and a few GB of Docker's memory while the app runs.
-  Start it in the background once the CD's deploy jobs are done, and never next to `devcontainer` or the Android
-  stage. Its containers hold that memory, and Docker's VM keeps it for a while after they stop: IIS sites
+  Start it in the background as soon as its packages exist and this machine has several GB free, and never next to
+  `devcontainer` or the Android stage. A second run can start once the first is in its idle wait. Its containers
+  hold that memory, and Docker's VM keeps it for a while after they stop: IIS sites
   deployed next to them took minutes to start, and one never did ("Managed server didn't initialize after 120000
   ms" in the Application log), which a CD reports as a failed health check.
 - `-Keep` leaves the project and its containers for a closer look. Remove them by hand afterwards, with only the
