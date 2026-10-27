@@ -168,6 +168,31 @@ public class ValueUtilityTests
     }
 
     [TestMethod]
+    public void Velocity_OfASourceAlreadyMoving_SettlesOnceItStops_WithNoFurtherChange()
+    {
+        // A velocity made while its source moves starts at the source's speed; the source can stop before it changes
+        // again, leaving no change to schedule the check that brings the velocity back to zero.
+        var context = new ManualSynchronizationContext();
+        var source = Bm.Value(0.0);
+        long now = 0;
+        source.TimeSource = () => now;
+        ChangeUnder(context, () =>
+        {
+            now = 0; source.SetSync(0);
+            now = 16; source.SetSync(40);
+            now = 32; source.SetSync(80);
+        });
+
+        var velocity = ManualSynchronizationContext.RunUnder(context, () => Bm.Velocity(source));
+        Assert.AreEqual(2500, velocity.Value, 1e-6);
+
+        now = 10_000;
+        var settled = SpinWait.SpinUntil(() => { context.Pump(); return velocity.Value == 0; }, TimeSpan.FromSeconds(2));
+
+        Assert.IsTrue(settled, $"velocity still {velocity.Value} after the source stopped");
+    }
+
+    [TestMethod]
     public void Velocity_DoesNotSettle_WhileTheSourceKeepsChanging()
     {
         var context = new ManualSynchronizationContext();

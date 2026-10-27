@@ -181,7 +181,8 @@ public sealed class BmotionAnimateService
             if (!_engine.TryRetargetDetached(follower, following, target))
             {
                 var config = template.ToConfig();
-                config.Velocity = follower.GetVelocity(); // carry momentum into the new spring
+                // Carry momentum into the new spring, unless the caller set the velocity it starts with (as AnimateAsync).
+                if (config.Velocity == 0) config.Velocity = follower.GetVelocity();
                 following = _engine.StartDetached(follower, follower.Value, target, config, v => follower.SetSync(v));
             }
             // Fire-and-forget loop start on every change, a retarget's included, so a start that failed is tried again

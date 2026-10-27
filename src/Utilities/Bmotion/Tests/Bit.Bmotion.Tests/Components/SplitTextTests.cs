@@ -140,7 +140,6 @@ public class SplitTextTests
     [DataRow("h1")]
     [DataRow("h2")]
     [DataRow("h6")]
-    [DataRow("a")]
     [DataRow("button")]
     [DataRow("li")]
     [DataRow("label")]
@@ -182,6 +181,36 @@ public class SplitTextTests
             .Add(p => p.Animate, Bm.To(opacity: 1)));
 
         Assert.AreEqual("text", cut.Find($"{tag}[aria-label]").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void Accessible_KeepsTheLinkRoleOfAnAnchorWithAnHref()
+    {
+        // The href, like any attribute the component has no parameter for, lands on the container - and makes it a link,
+        // which its label names.
+        using var ctx = new BmotionTestContext();
+        var cut = ctx.Render<BmotionSplitText>(ps => ps
+            .Add(p => p.Text, "ab cd")
+            .Add(p => p.As, "a")
+            .AddUnmatched("href", "/about")
+            .Add(p => p.Animate, Bm.To(opacity: 1)));
+
+        var root = cut.Find("a[aria-label]");
+        Assert.AreEqual("/about", root.GetAttribute("href"));
+        Assert.IsNull(root.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void Accessible_GivesAnAnchorWithoutAnHrefTheTextRole()
+    {
+        // An anchor with no href is no link but a generic container, which may not be named either.
+        using var ctx = new BmotionTestContext();
+        var cut = ctx.Render<BmotionSplitText>(ps => ps
+            .Add(p => p.Text, "ab")
+            .Add(p => p.As, "a")
+            .Add(p => p.Animate, Bm.To(opacity: 1)));
+
+        Assert.AreEqual("text", cut.Find("a[aria-label]").GetAttribute("role"));
     }
 
     [TestMethod]

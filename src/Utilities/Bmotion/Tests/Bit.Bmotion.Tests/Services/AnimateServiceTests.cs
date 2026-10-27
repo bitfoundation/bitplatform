@@ -309,6 +309,37 @@ public class AnimateServiceTests
     }
 
     [TestMethod]
+    public async Task Spring_RetargetedFromInsideTheApplyThatLandsIt_GoesOnToTheNewTarget()
+    {
+        // A subscriber of the follower can change its source the moment the follower lands: the spring that was about
+        // to finish is pointed at the new target from inside that apply, and must not finish on the old one.
+        var (service, engine, _) = Create();
+        await using var __ = engine;
+        var source = Bm.Value(0.0);
+        var follower = service.Spring(source, new BmSpring { Stiffness = 300, Damping = 30 });
+        follower.Subscribe(v => { if (v == 100) source.SetSync(200); });
+
+        source.SetSync(100);
+        RunFrames(engine, 0, 6000);
+
+        Assert.AreEqual(200, follower.Value, 1e-6);
+    }
+
+    [TestMethod]
+    public async Task Spring_StartsWithTheVelocityTheCallerSet()
+    {
+        var (service, engine, _) = Create();
+        await using var __ = engine;
+        var source = Bm.Value(0.0);
+        var follower = service.Spring(source, new BmSpring { Stiffness = 300, Damping = 30, Velocity = -2000 });
+
+        source.SetSync(100);
+        RunFrames(engine, 0, 16);
+
+        Assert.IsTrue(follower.Value < 0, $"the follower went to {follower.Value} instead of first moving away from its target");
+    }
+
+    [TestMethod]
     public async Task Spring_SupersedesAnAnimationOfTheFollowerItself_RatherThanRedirectingIt()
     {
         // An animation someone started on the follower has a caller awaiting where it lands: a change of the source

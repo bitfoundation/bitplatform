@@ -29,6 +29,8 @@ internal sealed class BmVelocitySettle : IDisposable
         _velocity = new(velocity);
         // One check at a time: a change while one is scheduled only moves the moment that check looks for.
         _subscription = source.Subscribe(_ => { if (!_scheduled) Schedule(); });
+        // A source already moving starts the velocity off its speed, and may stop before it changes again.
+        if (velocity.Value != 0) Schedule();
     }
 
     // A millisecond past the moment, so the check finds the source still rather than on the boundary.

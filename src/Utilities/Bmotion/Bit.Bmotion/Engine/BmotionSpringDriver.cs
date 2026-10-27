@@ -181,7 +181,11 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
 
         if (Math.Abs(_vel) < _restSpeed && Math.Abs(_pos - _target) < _restDelta)
         {
-            _apply(_target);
+            double target = _target;
+            _apply(target);
+            // A subscriber of the value can retarget the spring from inside that apply (a source it feeds changing):
+            // it is not done then, but heads for the new target from where it is.
+            if (_target != target) return false;
 
             if (_isInfinite || _iteration < _repeat)
             {
