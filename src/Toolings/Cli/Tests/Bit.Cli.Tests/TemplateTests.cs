@@ -68,7 +68,7 @@ public class TemplateTests
     }
 
     [TestMethod]
-    public void OnlyNonDefaultValues_Should_ReachTheCommandLines()
+    public void OnlyNonDefaultValues_Should_ReachTheCommandLineTokens()
     {
         var selection = new TemplateSelection(TemplateManifest.Embedded);
         selection.Set("database", "Sqlite");
@@ -76,8 +76,20 @@ public class TemplateTests
         selection.Set("redis", "true");
         selection.Set("aspire", "false");
 
-        CollectionAssert.AreEqual(new[] { "--module", "Admin", "--aspire", "false", "--redis", "true" }, selection.ToTemplateArguments().ToArray());
         CollectionAssert.AreEqual(new[] { "--module", "Admin", "--aspire", "false", "--redis" }, selection.ToCommandLineTokens().ToArray());
+    }
+
+    [TestMethod]
+    public void EveryValueTheUserSets_Should_ReachDotnetNew()
+    {
+        var selection = new TemplateSelection(TemplateManifest.Embedded);
+        selection.Set("database", "Sqlite");
+        selection.Set("module", "Admin");
+        selection.Set("redis", "true");
+        selection.Set("aspire", "false");
+
+        CollectionAssert.AreEqual(new[] { "--database", "Sqlite", "--module", "Admin", "--aspire", "false", "--redis", "true" }, selection.ToTemplateArguments().ToArray(),
+            "With --template-version, the version bit creates the project with can have other defaults.");
     }
 
     [TestMethod]
