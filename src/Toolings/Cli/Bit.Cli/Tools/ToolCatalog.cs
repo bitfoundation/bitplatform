@@ -130,7 +130,7 @@ public static partial class ToolCatalog
     }
 
     [GeneratedRegex(@"^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$")]
-    private static partial Regex SdkVersionRegex();
+    internal static partial Regex SdkVersionRegex();
 
     private sealed class DotnetSdkTool : Tool
     {

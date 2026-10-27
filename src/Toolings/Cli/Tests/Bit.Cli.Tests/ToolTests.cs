@@ -306,6 +306,15 @@ public class ToolTests
     }
 
     [TestMethod]
+    public void AGlobalJsonVersion_Should_BeAnSdkVersionAndNothingElse()
+    {
+        Assert.IsNull(SdkRequirement.FromGlobalJson("{ \"sdk\": { \"version\": \"1.2' || touch /tmp/pwned || '\" } }"), "It would reach a script that runs with sudo.");
+        Assert.IsNull(SdkRequirement.FromGlobalJson("{ \"sdk\": { \"version\": \"10;echo INJECTED;#.0.100\" } }"), "It would reach a script that runs as administrator.");
+        Assert.IsNull(SdkRequirement.FromGlobalJson("{ \"sdk\": { \"version\": \"10.0\" } }"));
+        Assert.IsNotNull(SdkRequirement.FromGlobalJson("{ \"sdk\": { \"version\": \"10.0.100\" } }"));
+    }
+
+    [TestMethod]
     public void TheEmbeddedTemplate_Should_CarryTheSdkOfTheTemplatesGlobalJson()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
