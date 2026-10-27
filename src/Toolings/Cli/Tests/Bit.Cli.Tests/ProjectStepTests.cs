@@ -320,7 +320,7 @@ public class ProjectStepTests
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
         var aspire = host.Runner.Calls.Where(c => c.FileName is "aspire").Select(c => string.Join(' ', c.Arguments.Take(2))).ToArray();
-        CollectionAssert.AreEqual(new[] { "doctor --format", "start --apphost", "wait serverweb", "wait serverapi", "stop --apphost" }, aspire);
+        CollectionAssert.AreEqual(new[] { "doctor --format", "ps --format", "start --apphost", "wait serverweb", "wait serverapi", "stop --apphost" }, aspire);
     }
 
     [TestMethod]
@@ -573,6 +573,22 @@ public class ProjectStepTests
         Assert.AreEqual(StepStatus.Warning, result.Status);
         Assert.AreEqual("Aspire started, serverweb didn't get healthy", result.Title);
         CollectionAssert.AreEqual(new[] { "stop", "--apphost", project.AppHostDirectory, "--non-interactive" }, host.Runner.Calls.Last().Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task AspireStart_Should_LeaveAnAppHostThatWasAlreadyRunning()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["aspire"] = "aspire";
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+        host.Runner.On("aspire", "ps", 0, $$"""[{ "appHostPath": {{System.Text.Json.JsonSerializer.Serialize(Path.Combine(project.AppHostDirectory, "Contoso.Server.AppHost.csproj"))}} }]""");
+        host.Runner.On("aspire", "start", 1, "The configuration is invalid.");
+
+        var result = await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status);
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() == "stop"), string.Join("\n", host.Runner.Calls.Select(c => c.CommandLine)));
     }
 
     [TestMethod]

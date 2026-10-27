@@ -117,7 +117,7 @@ public sealed class Chromium : IAsyncDisposable
             {
                 if (process.HasExited || waited.Elapsed > TimeSpan.FromSeconds(60))
                 {
-                    Kill(process);
+                    await StopAsync(process, userDataDirectory);
                     string output;
                     lock (errors) output = errors.ToString().Trim();
                     throw new DevToolsException($"{Path.GetFileName(executable)} didn't open its DevTools port. {output}");
@@ -131,12 +131,12 @@ public sealed class Chromium : IAsyncDisposable
         }
         catch (OperationCanceledException)
         {
-            Kill(process);
+            await StopAsync(process, userDataDirectory);
             throw;
         }
         catch (WebSocketException exp)
         {
-            Kill(process);
+            await StopAsync(process, userDataDirectory);
             throw new DevToolsException($"{Path.GetFileName(executable)} didn't answer on its DevTools port. {exp.Message}");
         }
     }
@@ -174,6 +174,12 @@ public sealed class Chromium : IAsyncDisposable
 
         Kill(process);
         await Connection.DisposeAsync();
+        await StopAsync(process, userDataDirectory);
+    }
+
+    private static async Task StopAsync(Process process, string userDataDirectory)
+    {
+        Kill(process);
         process.Dispose();
 
         for (var attempt = 0; attempt < 10 && Directory.Exists(userDataDirectory); attempt++)

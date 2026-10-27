@@ -142,7 +142,7 @@ public static class RemoveCommand
 
             if (onlyEmptyFoldersLeft)
             {
-                var leave = terminalInFolder && inFolder.Count == 1 ? "Run cd .." : $"Close {(inFolder.Count > 1 ? "them" : "it")}";
+                var leave = terminalInFolder && inFolder.Count == 1 ? $"Run cd {ProcessSpec.ShellQuote(Path.GetDirectoryName(folder)!, cli.Environment.Os)}" : $"Close {(inFolder.Count > 1 ? "them" : "it")}";
                 cli.Console.Out.MarkupLine($"    [grey]{Markup.Escape(folder)} stays, empty, while {Markup.Escape(Describe(inFolder))} {(inFolder.Count > 1 ? "are" : "is")} in it. {leave}, then delete the folder.[/]");
             }
 

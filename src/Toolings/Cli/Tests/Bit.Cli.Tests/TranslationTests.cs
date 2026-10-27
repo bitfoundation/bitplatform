@@ -56,6 +56,28 @@ public class TranslationTests
     }
 
     [TestMethod]
+    public void AFolderBitCantRead_Should_NotHideTheOtherResxFiles()
+    {
+        if (OperatingSystem.IsWindows())
+            return;
+
+        using var host = CreateProject(new() { ["Hello"] = "Hello" });
+        var locked = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "src", "Locked")).FullName;
+        File.SetUnixFileMode(locked, UnixFileMode.None);
+
+        try
+        {
+            var settings = ResxTranslatorSettings.Load(Path.Combine(host.WorkingDirectory, ResxTranslatorSettings.FileName), new Dictionary<string, string>());
+
+            Assert.IsNotEmpty(ResxCatalog.FindBaseFiles(settings));
+        }
+        finally
+        {
+            File.SetUnixFileMode(locked, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        }
+    }
+
+    [TestMethod]
     public void Plan_Should_FindOnlyMissingKeys()
     {
         using var host = CreateProject(new() { ["Hello"] = "Hello", ["Bye"] = "Bye {0}" });

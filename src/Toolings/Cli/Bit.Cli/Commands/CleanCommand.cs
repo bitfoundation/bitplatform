@@ -69,7 +69,11 @@ public static class CleanCommand
                 {
                     var shown = string.Join('\n', left.Take(5)) + (freed.InUseBy is { } holders ? $"\n{holders}" : "");
                     steps.Add("clean-left", StepResult.Warning("Some build folders are still there", $"{left.Count} folder{(left.Count == 1 ? "" : "s")}", hint: shown));
-                    cli.Console.StepHint(shown);
+
+                    foreach (var line in shown.Split('\n'))
+                    {
+                        cli.Console.UnwrappedLine("      " + line);
+                    }
                 }
             }
 

@@ -245,7 +245,7 @@ public class RemoveTests
 
             Assert.AreEqual(0, await inTerminal.RunAsync("remove", folder, "--yes"), inTerminal.Output);
             StringAssert.Contains(inTerminal.FlatOutput, "this terminal is still in it");
-            StringAssert.Contains(inTerminal.FlatOutput, "stays, empty, while this terminal is in it. Run cd .., then delete the folder.");
+            StringAssert.Contains(inTerminal.FlatOutput, $"stays, empty, while this terminal is in it. Run cd {ProcessSpec.ShellQuote(Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(folder))!, HostOs.Windows)}, then delete the folder.");
             return;
         }
 

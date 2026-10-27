@@ -6,9 +6,9 @@ public static class AtomicFile
 {
     private static readonly UTF8Encoding utf8NoBom = new(false);
 
-    public static void WriteAllText(string path, string content)
+    public static void WriteAllText(string path, string content, bool followLinks = false)
     {
-        if (new FileInfo(path) is { LinkTarget: not null } link)
+        if (followLinks && new FileInfo(path) is { LinkTarget: not null } link)
         {
             path = link.ResolveLinkTarget(returnFinalTarget: true)!.FullName;
         }
@@ -17,13 +17,25 @@ public static class AtomicFile
         Directory.CreateDirectory(directory);
 
         var temporary = Path.Combine(directory, $".{Path.GetFileName(path)}.{Guid.NewGuid():N}.tmp");
-        File.WriteAllText(temporary, content, utf8NoBom);
+        var options = new FileStreamOptions { Mode = FileMode.CreateNew, Access = FileAccess.Write };
+        UnixFileMode? mode = null;
+
+        if ((OperatingSystem.IsLinux() || OperatingSystem.IsMacOS()) && File.Exists(path))
+        {
+            mode = File.GetUnixFileMode(path);
+            options.UnixCreateMode = mode;
+        }
 
         try
         {
-            if ((OperatingSystem.IsLinux() || OperatingSystem.IsMacOS()) && File.Exists(path))
+            using (var writer = new StreamWriter(temporary, utf8NoBom, options))
             {
-                File.SetUnixFileMode(temporary, File.GetUnixFileMode(path));
+                writer.Write(content);
+            }
+
+            if ((OperatingSystem.IsLinux() || OperatingSystem.IsMacOS()) && mode is { } unixMode)
+            {
+                File.SetUnixFileMode(temporary, unixMode);
             }
 
             File.Move(temporary, path, overwrite: true);

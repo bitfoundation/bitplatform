@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.IO.Enumeration;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Microsoft.Extensions.FileSystemGlobbing;
@@ -11,6 +12,8 @@ public sealed record ResxWork(ResxPair Pair, IReadOnlyDictionary<string, string>
 
 public static partial class ResxCatalog
 {
+    private static readonly HashSet<string> skippedFolders = new(StringComparer.OrdinalIgnoreCase) { "bin", "obj", "node_modules" };
+
     public static IReadOnlyList<string> FindBaseFiles(ResxTranslatorSettings settings, Action<string>? warn = null)
     {
         return [.. settings.ResxPaths
@@ -116,13 +119,17 @@ public static partial class ResxCatalog
             return [];
         }
 
+        var files = new FileSystemEnumerable<string>(fullDirectory, (ref FileSystemEntry entry) => entry.ToFullPath(), new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true })
+        {
+            ShouldIncludePredicate = (ref FileSystemEntry entry) => entry.IsDirectory is false && entry.FileName.EndsWith(".resx", StringComparison.OrdinalIgnoreCase),
+            ShouldRecursePredicate = (ref FileSystemEntry entry) => skippedFolders.Contains(entry.FileName.ToString()) is false
+        };
+
         return new Matcher()
             .AddInclude(normalized)
-            .AddExclude("**/bin/**")
-            .AddExclude("**/obj/**")
-            .AddExclude("**/node_modules/**")
-            .GetResultsInFullPath(root)
-            .Where(path => path.EndsWith(".resx", StringComparison.OrdinalIgnoreCase));
+            .Match(root, files)
+            .Files
+            .Select(match => Path.GetFullPath(Path.Combine(root, match.Path)));
     }
 
     public static bool IsCultureSpecific(string path)

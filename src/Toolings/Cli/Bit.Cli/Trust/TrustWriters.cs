@@ -85,7 +85,7 @@ public abstract class TrustWriter
 
     protected static void WriteJson(string path, JsonNode node)
     {
-        AtomicFile.WriteAllText(path, node.ToJsonString(indented) + System.Environment.NewLine);
+        AtomicFile.WriteAllText(path, node.ToJsonString(indented) + System.Environment.NewLine, followLinks: true);
     }
 }
 
@@ -214,7 +214,7 @@ public sealed class CodexTrust : TrustWriter
         var updated = $"{text}{separator}{(text.Length == 0 ? "" : System.Environment.NewLine)}[projects.{tableKey}]{System.Environment.NewLine}trust_level = \"trusted\"{System.Environment.NewLine}";
 
         TomlSerializer.Deserialize<TomlTable>(updated);
-        AtomicFile.WriteAllText(path, updated);
+        AtomicFile.WriteAllText(path, updated, followLinks: true);
         return new TrustOutcome(Name, TrustResultKind.Trusted, path);
     }
 }

@@ -40,7 +40,7 @@ public class CleanTests
     {
         using var host = new TestHost(HostOs.Linux);
         var folder = CreateProject(host, "Clean.sh");
-        var obj = Directory.CreateDirectory(Path.Combine(folder, "src", "Contoso.Server.Api", "obj")).FullName;
+        var obj = Directory.CreateDirectory(Path.Combine(folder, "src", "Contoso.Server.Api.With.A.Name.Long.Enough.To.Pass.The.Width.Of.A.Terminal", "obj")).FullName;
 
         await host.RunAsync("clean", folder);
 

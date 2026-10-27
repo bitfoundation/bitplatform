@@ -22,7 +22,11 @@ public sealed record ProcessSpec
 
     public string CommandLine => string.Join(' ', new[] { FileName }.Concat(Arguments).Select(Quote));
 
-    public string ShellCommandLine(HostOs os) => string.Join(' ', new[] { FileName }.Concat(Arguments).Select(a => ShellQuote(a, os)));
+    public string ShellCommandLine(HostOs os)
+    {
+        var line = string.Join(' ', new[] { FileName }.Concat(Arguments).Select(a => ShellQuote(a, os)));
+        return os is HostOs.Windows && line[0] is '"' or '\'' ? "& " + line : line;
+    }
 
     public ProcessSpec WithSudo(IProcessRunner runner) => this with { FileName = "sudo", Arguments = ["-n", runner.FindExecutable(FileName) ?? FileName, .. Arguments], Timeout = null };
 
@@ -36,7 +40,7 @@ public sealed record ProcessSpec
 
     public static string ShellQuote(string value, HostOs os) => os switch
     {
-        HostOs.Windows when value.IndexOfAny(['$', '`', '"']) < 0 => Quote(value),
+        HostOs.Windows when value.IndexOfAny(['$', '`', '"', ',', '@']) < 0 => Quote(value),
         HostOs.Windows => $"'{value.Replace("'", "''", StringComparison.Ordinal)}'",
         _ when IsPlain(value) && value.Contains('\\') is false => value,
         _ => $"'{value.Replace("'", "'\\''", StringComparison.Ordinal)}'"

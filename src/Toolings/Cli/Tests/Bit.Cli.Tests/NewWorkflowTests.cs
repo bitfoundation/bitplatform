@@ -114,6 +114,59 @@ public class NewWorkflowTests
     }
 
     [TestMethod]
+    public async Task ATemplateVersionThatIsntOne_Should_NeverBecomeAFolderPath()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var outside = Directory.CreateDirectory(Path.Combine(host.Root, "outside")).FullName;
+        File.WriteAllText(Path.Combine(outside, "keep.txt"), "mine");
+        var version = Path.GetRelativePath(Path.Combine(host.Environment.BitDirectory, "templates"), outside);
+
+        var (package, result) = await new TemplateSource(host.Environment, host.Runner).EnsureInstalledAsync(version, null, null, CancellationToken.None);
+
+        Assert.IsNull(package);
+        StringAssert.Contains(result.Output, "isn't a bit Boilerplate version");
+        Assert.IsTrue(File.Exists(Path.Combine(outside, "keep.txt")));
+        Assert.IsEmpty(host.Runner.Calls);
+    }
+
+    [TestMethod]
+    public async Task ATemplateAnOlderBitInstalled_Should_BeUsedWithoutDownloadingItAgain()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var hive = Path.Combine(host.Environment.BitDirectory, "templates", "10.7.0");
+        var installed = Path.Combine(Directory.CreateDirectory(Path.Combine(hive, "packages")).FullName, "Bit.Boilerplate.10.7.0.nupkg");
+        File.Copy(FakeTemplatePackage(host), installed);
+        File.WriteAllText(Path.Combine(hive, "packages.json"), $$"""{"Packages":[{"MountPointUri":{{System.Text.Json.JsonSerializer.Serialize(installed)}}}]}""");
+
+        var (package, _) = await new TemplateSource(host.Environment, host.Runner).EnsureInstalledAsync("10.7.0", null, null, CancellationToken.None);
+
+        Assert.AreEqual(installed, package?.PackagePath);
+        Assert.IsEmpty(host.Runner.Calls, Calls(host));
+    }
+
+    [TestMethod]
+    public async Task TwoBitsInstallingTheSameTemplate_Should_DownloadItOnce()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var complete = FakeTemplatePackage(host);
+        host.Runner.OnAsync("dotnet", "new install", async (spec, token) =>
+        {
+            await Task.Delay(TimeSpan.FromSeconds(1), token);
+            var arguments = spec.Arguments.ToList();
+            var hivePackages = Directory.CreateDirectory(Path.Combine(arguments[arguments.IndexOf("--debug:custom-hive") + 1], "packages")).FullName;
+            File.Copy(complete, Path.Combine(hivePackages, "Bit.Boilerplate.10.7.0.nupkg"));
+            return new ProcessResult { ExitCode = 0 };
+        });
+
+        var results = await Task.WhenAll(
+            Task.Run(() => new TemplateSource(host.Environment, host.Runner).EnsureInstalledAsync("10.7.0", null, null, CancellationToken.None)),
+            Task.Run(() => new TemplateSource(host.Environment, host.Runner).EnsureInstalledAsync("10.7.0", null, null, CancellationToken.None)));
+
+        Assert.IsTrue(results.All(r => r.Package is not null), Calls(host));
+        Assert.AreEqual(1, host.Runner.Calls.Count(c => c.Arguments.Take(2).SequenceEqual(["new", "install"])), Calls(host));
+    }
+
+    [TestMethod]
     public async Task ATemplateFolder_Should_BeInstalledFromTheFolderOnce()
     {
         using var host = new TestHost(HostOs.Linux);

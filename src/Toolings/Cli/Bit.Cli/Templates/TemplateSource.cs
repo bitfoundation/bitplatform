@@ -1,6 +1,7 @@
 ﻿using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Bit.Cli.Infrastructure;
 
@@ -8,7 +9,7 @@ namespace Bit.Cli.Templates;
 
 public sealed record TemplatePackage(string Version, string PackagePath, string HiveDirectory);
 
-public sealed class TemplateSource(CliEnvironment environment, IProcessRunner runner)
+public sealed partial class TemplateSource(CliEnvironment environment, IProcessRunner runner)
 {
     public const string PackageId = "Bit.Boilerplate";
 
@@ -31,6 +32,11 @@ public sealed class TemplateSource(CliEnvironment environment, IProcessRunner ru
             var changed = isFolder ? File.GetLastWriteTimeUtc(Path.Combine(fullPath, ".template.config", "template.json")) : File.GetLastWriteTimeUtc(fullPath);
             var stamp = $"{fullPath}|{changed.Ticks}";
             var localHive = Path.Combine(TemplatesDirectory, "local-" + Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(stamp)))[..12]);
+            using var localLock = await LockAsync(localHive, cancellationToken);
+
+            if (localLock is null)
+                return (null, LockTimedOut);
+
             var alreadyInstalled = File.Exists(Path.Combine(localHive, InstalledMarker));
             var localResult = alreadyInstalled
                 ? new ProcessResult { ExitCode = 0, Output = "Already installed." }
@@ -47,11 +53,23 @@ public sealed class TemplateSource(CliEnvironment environment, IProcessRunner ru
         }
 
         version ??= BuildInfo.Version;
-        var hive = Path.Combine(TemplatesDirectory, version);
-        var cached = File.Exists(Path.Combine(hive, InstalledMarker)) ? FindPackage(hive) : null;
 
-        if (cached is not null)
+        if (VersionRegex().IsMatch(version) is false)
+            return (null, new ProcessResult { ExitCode = -1, Output = $"'{version}' isn't a bit Boilerplate version." });
+
+        var hive = Path.Combine(TemplatesDirectory, version);
+        using var hiveLock = await LockAsync(hive, cancellationToken);
+
+        if (hiveLock is null)
+            return (null, LockTimedOut);
+
+        var cached = FindPackage(hive);
+
+        if (cached is not null && (File.Exists(Path.Combine(hive, InstalledMarker)) || IsCompleteInstall(hive, cached)))
+        {
+            File.WriteAllText(Path.Combine(hive, InstalledMarker), cached);
             return (new TemplatePackage(version, cached, hive), new ProcessResult { ExitCode = 0, Output = "Already installed." });
+        }
 
         var result = await InstallAsync($"{PackageId}::{version}", hive, onOutput, cancellationToken);
         var installed = FindPackage(hive);
@@ -148,6 +166,40 @@ public sealed class TemplateSource(CliEnvironment environment, IProcessRunner ru
             : null;
     }
 
+    private static ProcessResult LockTimedOut => new() { ExitCode = -1, Output = "Another bit has been installing this template for 10 minutes." };
+
+    private async Task<FileStream?> LockAsync(string hive, CancellationToken cancellationToken)
+    {
+        Directory.CreateDirectory(TemplatesDirectory);
+
+        for (var attempt = 0; attempt < 600; attempt++)
+        {
+            try
+            {
+                return new FileStream(hive + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            }
+            catch (IOException)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+            }
+        }
+
+        return null;
+    }
+
+    private static bool IsCompleteInstall(string hive, string package)
+    {
+        try
+        {
+            var registry = Path.Combine(hive, "packages.json");
+            return File.Exists(registry) && File.ReadAllText(registry).Contains(Path.GetFileName(package), StringComparison.OrdinalIgnoreCase) && ReadEntry(package, ".nuspec") is not null;
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
+
     private Task<ProcessResult> InstallAsync(string package, string hive, Action<string>? onOutput, CancellationToken cancellationToken)
     {
         try
@@ -172,4 +224,7 @@ public sealed class TemplateSource(CliEnvironment environment, IProcessRunner ru
             Timeout = TimeSpan.FromMinutes(5)
         }, cancellationToken);
     }
+
+    [GeneratedRegex(@"^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$")]
+    private static partial Regex VersionRegex();
 }

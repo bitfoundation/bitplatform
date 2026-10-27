@@ -370,12 +370,17 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             ? new Dictionary<string, string?> { ["ASPIRE_CLI_START_TIMEOUT"] = "1200" }
             : null;
 
+        var runningBefore = await AppHostMayBeRunningAsync(cancellationToken);
         var start = await Aspire(["start", "--apphost", project.AppHostDirectory, "--non-interactive", "--format", "Json"], progress, TimeSpan.FromMinutes(30), cancellationToken, startTimeout);
         var stop = AspireSpec(["stop", "--apphost", project.AppHostDirectory, "--non-interactive"], _ => { }, TimeSpan.FromMinutes(5));
 
         if (start.Succeeded is false)
         {
-            await Runner.RunAsync(stop with { OnOutputLine = progress }, CancellationToken.None);
+            if (runningBefore is false)
+            {
+                await Runner.RunAsync(stop with { OnOutputLine = progress }, CancellationToken.None);
+            }
+
             return StepResult.FromProcess(start, "", failed, followUp) with { Status = StepStatus.Warning };
         }
 
@@ -678,6 +683,32 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
     private Task<ProcessResult> Aspire(string[] arguments, Action<string> progress, TimeSpan timeout, CancellationToken cancellationToken, IReadOnlyDictionary<string, string?>? environment = null)
     {
         return Runner.RunAsync(AspireSpec(arguments, progress, timeout, environment), cancellationToken);
+    }
+
+    private async Task<bool> AppHostMayBeRunningAsync(CancellationToken cancellationToken)
+    {
+        var ps = await Runner.RunAsync(AspireSpec(["ps", "--format", "Json", "--non-interactive"], _ => { }, TimeSpan.FromMinutes(1)), cancellationToken);
+
+        if (ps.Succeeded is false)
+            return true;
+
+        try
+        {
+            using var document = JsonDocument.Parse(string.IsNullOrWhiteSpace(ps.Output) ? "[]" : ps.Output);
+            return Strings(document.RootElement).Any(value => value.StartsWith(project.AppHostDirectory, StringComparison.OrdinalIgnoreCase));
+        }
+        catch (JsonException)
+        {
+            return true;
+        }
+
+        static IEnumerable<string> Strings(JsonElement element) => element.ValueKind switch
+        {
+            JsonValueKind.String => [element.GetString()!],
+            JsonValueKind.Array => element.EnumerateArray().SelectMany(Strings),
+            JsonValueKind.Object => element.EnumerateObject().SelectMany(property => Strings(property.Value)),
+            _ => []
+        };
     }
 
     private ProcessSpec AspireSpec(string[] arguments, Action<string> progress, TimeSpan timeout, IReadOnlyDictionary<string, string?>? environment = null)

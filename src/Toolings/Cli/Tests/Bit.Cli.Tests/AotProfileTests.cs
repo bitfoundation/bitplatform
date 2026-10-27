@@ -286,8 +286,9 @@ public class AotProfileTests
 
         using var host = new TestHost();
         var held = Path.Combine(host.Root, "held.txt");
+        var arguments = Path.Combine(host.Root, "arguments.txt");
         var browser = Path.Combine(host.Root, "chrome.cmd");
-        File.WriteAllText(browser, $"@ping -n 600 127.0.0.1 > \"{held}\"\r\n");
+        File.WriteAllText(browser, $"@echo %*> \"{arguments}\"\r\n@ping -n 600 127.0.0.1 > \"{held}\"\r\n");
         using var cancel = new CancellationTokenSource(TimeSpan.FromSeconds(2));
 
         await Assert.ThrowsAsync<OperationCanceledException>(() => Chromium.LaunchAsync(browser, host.Services.Log, cancel.Token));
@@ -305,6 +306,8 @@ public class AotProfileTests
         }
 
         Assert.IsFalse(File.Exists(held), "The browser still runs.");
+        var userDataDirectory = System.Text.RegularExpressions.Regex.Match(File.ReadAllText(arguments), @"--user-data-dir=(\S+)").Groups[1].Value;
+        Assert.IsFalse(Directory.Exists(userDataDirectory), userDataDirectory);
     }
 
     private static void PublishesAStaticApp(TestHost host)

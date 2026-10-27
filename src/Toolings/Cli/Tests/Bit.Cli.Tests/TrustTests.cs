@@ -52,6 +52,30 @@ public class TrustTests
     }
 
     [TestMethod]
+    public void AtomicFile_Should_WriteThroughALinkOnlyWhenAskedTo()
+    {
+        using var host = new TestHost();
+        var outside = Path.Combine(Directory.CreateDirectory(Path.Combine(host.Root, "outside")).FullName, "notes.txt");
+        var link = Path.Combine(host.WorkingDirectory, "AppStrings.fa.resx");
+        File.WriteAllText(outside, "mine");
+
+        try
+        {
+            File.CreateSymbolicLink(link, outside);
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            return;
+        }
+
+        AtomicFile.WriteAllText(link, "translated");
+
+        Assert.AreEqual("mine", File.ReadAllText(outside));
+        Assert.IsNull(new FileInfo(link).LinkTarget);
+        Assert.AreEqual("translated", File.ReadAllText(link));
+    }
+
+    [TestMethod]
     public void ClaudeCode_Should_KeepItsConfigsLinkAndPermissions()
     {
         using var host = new TestHost();
