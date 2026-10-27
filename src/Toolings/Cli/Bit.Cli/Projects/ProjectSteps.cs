@@ -729,6 +729,9 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         if (cli.Environment.IsLinux is false)
             return StepResult.Succeeded(title, detail);
 
+        if (Runner.FindExecutable("apt-get") is null)
+            return StepResult.Succeeded(title, detail, "Playwright installs the browsers' system libraries only with apt-get; if the UI tests can't start a browser, install them with your package manager.");
+
         var dependencies = install with { Arguments = [driver.Cli, "install-deps", .. browsers], OnOutputLine = progress };
         var followUp = "sudo " + dependencies.CommandLine;
 

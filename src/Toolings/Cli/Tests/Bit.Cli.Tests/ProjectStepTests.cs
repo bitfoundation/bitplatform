@@ -840,6 +840,7 @@ public class ProjectStepTests
     {
         using var ci = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["GITHUB_ACTIONS"] = "true" });
         ci.Runner.Executables["sudo"] = "/usr/bin/sudo";
+        ci.Runner.Executables["apt-get"] = "/usr/bin/apt-get";
         var project = CreateFakeProject(ci, "Contoso");
         var playwright = Directory.CreateDirectory(Path.Combine(project.Directory, "src", "Tests", "bin", "Debug", "net10.0", ".playwright")).FullName;
         Directory.CreateDirectory(Path.Combine(playwright, "package"));
@@ -857,6 +858,25 @@ public class ProjectStepTests
         Assert.IsNotNull(ci.Runner.Calls.First().Timeout);
         Assert.AreEqual("sudo", ci.Runner.Calls.Last().FileName);
         Assert.IsNull(ci.Runner.Calls.Last().Timeout);
+    }
+
+    [TestMethod]
+    public async Task Playwright_Should_LeaveTheSystemLibrariesToALinuxWithoutAptGet()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["sudo"] = "/usr/bin/sudo";
+        host.Runner.Executables["dnf"] = "/usr/bin/dnf";
+        var project = CreateFakeProject(host, "Contoso");
+        var playwright = Directory.CreateDirectory(Path.Combine(project.Directory, "src", "Tests", "bin", "Debug", "net10.0", ".playwright")).FullName;
+        Directory.CreateDirectory(Path.Combine(playwright, "package"));
+        File.WriteAllText(Path.Combine(playwright, "package", "cli.js"), "");
+        File.WriteAllText(Path.Combine(Directory.CreateDirectory(Path.Combine(playwright, "node", "linux-x64")).FullName, "node"), "");
+
+        var result = await new ProjectSteps(host.Services, project).PlaywrightAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail + result.FollowUp);
+        Assert.IsNull(result.FollowUp);
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.Contains("install-deps")), "Playwright's install-deps runs only apt-get.");
     }
 
     [TestMethod]
