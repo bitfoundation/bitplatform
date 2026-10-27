@@ -13,11 +13,14 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
 
     public async Task InstallAsync(IReadOnlyList<ToolCheck> selected, ToolContext context, CancellationToken cancellationToken)
     {
-        var withActions = selected.Where(c => c.Action is not null).ToList();
+        var afterHomebrew = context.Environment.IsMacOS && context.PackageManagers.Brew is null && selected.Any(c => c.Tool.Id is "homebrew" && c.Action is not null);
+        var withActions = selected.Where(c => c.Action is not null || afterHomebrew).ToList();
 
-        foreach (var manual in selected.Where(c => c.Action is null))
+        void InstallYourself(ToolCheck manual) => steps.Add(manual.Tool.Id, StepResult.Warning($"Install {manual.Tool.Name} yourself", manual.Manual ?? "bit can't install it on this machine", manual.Manual));
+
+        foreach (var manual in selected.Where(c => c.Action is null && afterHomebrew is false))
         {
-            steps.Add(manual.Tool.Id, StepResult.Warning($"Install {manual.Tool.Name} yourself", manual.Manual ?? "bit can't install it on this machine", manual.Manual));
+            InstallYourself(manual);
         }
 
         if (withActions.Count == 0)
@@ -60,8 +63,8 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         else
         {
             var ordered = withActions.OrderByDescending(c => c.Tool.Id is "homebrew").ToList();
-            var anySudo = ordered.Any(c => c.Action!.Elevation is Elevation.Sudo);
-            var sudoReady = anySudo is false || await PrepareSudoAsync(ordered.Select(c => c.Action!).Where(a => a.Elevation is Elevation.Sudo).ToList(), cancellationToken);
+            var anySudo = ordered.Any(c => c.Action?.Elevation is Elevation.Sudo);
+            var sudoReady = anySudo is false || await PrepareSudoAsync(ordered.Select(c => c.Action).OfType<ToolAction>().Where(a => a.Elevation is Elevation.Sudo).ToList(), cancellationToken);
             using var sudoDone = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             var sudoKeptAlive = anySudo && sudoReady && cli.Environment.IsElevated is false ? KeepSudoAliveAsync(sudoDone.Token) : Task.CompletedTask;
 
@@ -69,13 +72,19 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
             {
                 foreach (var check in ordered)
                 {
-                    var action = check.Action!;
+                    var action = check.Action;
 
-                    if (check.Tool.Id is not "homebrew" && context.Environment.IsMacOS && cli.Runner.FindExecutable("brew") is null)
+                    if (check.Tool.Id is not "homebrew" && context.Environment.IsMacOS && context.PackageManagers.Brew is null)
                     {
                         RefreshPath();
                         var replanned = check.Tool.PlanInstall(new ToolContext(context.Environment, context.Runner, context.Needs, PackageManagers.Detect(context.Environment, context.Runner)), check.Status);
                         action = replanned ?? action;
+                    }
+
+                    if (action is null)
+                    {
+                        InstallYourself(check);
+                        continue;
                     }
 
                     if (action.Elevation is Elevation.Sudo && sudoReady is false)

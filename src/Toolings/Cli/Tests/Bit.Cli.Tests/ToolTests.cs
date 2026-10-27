@@ -229,6 +229,32 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task ToolsThatOnlyLackedHomebrew_Should_BeInstalledAfterIt()
+    {
+        using var host = new TestHost(HostOs.MacOS);
+        host.Runner.NotFound("node");
+        host.Runner.On("git", "--version", 0, "git version 2.47.1");
+        host.Runner.On("bash", "-c", _ =>
+        {
+            host.Runner.Executables["brew"] = "/opt/homebrew/bin/brew";
+            return new ProcessResult { ExitCode = 0 };
+        });
+
+        var context = new ToolContext(host.Environment, host.Runner, new ToolNeeds(), new PackageManagers { HasSudo = true });
+        var checks = await ToolCatalog.CheckAsync(context, CancellationToken.None);
+        var node = checks.Single(c => c.Tool.Id == "node");
+        var steps = new StepRunner(host.Services);
+
+        Assert.IsNull(node.Action);
+
+        await new ToolInstaller(host.Services, steps).InstallAsync([checks.Single(c => c.Tool.Id == "homebrew"), node], context, CancellationToken.None);
+
+        var reports = string.Join(" | ", steps.Reports.Select(r => $"{r.Id}: {r.Result.Status} {r.Result.Title}"));
+        Assert.IsTrue(host.Runner.Calls.Any(c => c.FileName == "/opt/homebrew/bin/brew" && c.Arguments.SequenceEqual(["install", "node"])), reports);
+        Assert.IsFalse(steps.Reports.Any(r => r.Result.Title == "Install Node.js yourself"), reports);
+    }
+
+    [TestMethod]
     public async Task Homebrew_Should_RunTheInstallerItDownloads()
     {
         if (OperatingSystem.IsWindows())
