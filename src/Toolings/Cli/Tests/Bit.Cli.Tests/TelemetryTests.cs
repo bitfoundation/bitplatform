@@ -185,6 +185,19 @@ public class TelemetryTests
     }
 
     [TestMethod]
+    [DataRow(@"C:\Users\me\.dotnet\tools\.store\bit.cli\1.6.2\bit.cli\1.6.2\tools\net10.0\any\", "tool")]
+    [DataRow("/home/me/.dotnet/tools/.store/bit.cli/1.6.2/bit.cli/1.6.2/tools/net10.0/any/", "tool")]
+    [DataRow("/home/me/.bitplatform/cli/1.7.0/.store/bit.cli/1.7.0/bit.cli/1.7.0/tools/net10.0/any/", "tool")]
+    [DataRow("/home/me/bin/.store/bit.cli/1.6.2/bit.cli/1.6.2/tools/net10.0/any/", "tool-path")]
+    [DataRow(@"C:\tools\.store\bit.cli\1.6.2\bit.cli\1.6.2\tools\net10.0\any\", "tool-path")]
+    [DataRow("/home/me/.nuget/packages/bit.cli/1.6.2/tools/net10.0/any/", "dnx")]
+    [DataRow("/home/me/src/bitplatform/src/Toolings/Cli/Bit.Cli/bin/Debug/net10.0/", "local")]
+    public void TheInstallMethod_Should_TellAGlobalToolFromAToolPathInstall(string baseDirectory, string expected)
+    {
+        Assert.AreEqual(expected, CliTelemetry.InstallMethod(baseDirectory));
+    }
+
+    [TestMethod]
     public async Task AUsageError_Should_SayWhichCheckFailedWithoutItsMessage()
     {
         const string canary = "Canary7f3a1c";
