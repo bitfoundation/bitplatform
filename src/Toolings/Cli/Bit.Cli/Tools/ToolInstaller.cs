@@ -60,32 +60,43 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         else
         {
             var ordered = withActions.OrderByDescending(c => c.Tool.Id is "homebrew").ToList();
-            var sudoReady = ordered.Any(c => c.Action!.Elevation is Elevation.Sudo) is false || await PrepareSudoAsync(ordered.Select(c => c.Action!).Where(a => a.Elevation is Elevation.Sudo).ToList(), cancellationToken);
+            var anySudo = ordered.Any(c => c.Action!.Elevation is Elevation.Sudo);
+            var sudoReady = anySudo is false || await PrepareSudoAsync(ordered.Select(c => c.Action!).Where(a => a.Elevation is Elevation.Sudo).ToList(), cancellationToken);
+            using var sudoDone = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var sudoKeptAlive = anySudo && sudoReady && cli.Environment.IsElevated is false ? KeepSudoAliveAsync(sudoDone.Token) : Task.CompletedTask;
 
-            foreach (var check in ordered)
+            try
             {
-                var action = check.Action!;
-
-                if (check.Tool.Id is not "homebrew" && context.Environment.IsMacOS && cli.Runner.FindExecutable("brew") is null)
+                foreach (var check in ordered)
                 {
-                    RefreshPath();
-                    var replanned = check.Tool.PlanInstall(new ToolContext(context.Environment, context.Runner, context.Needs, PackageManagers.Detect(context.Environment, context.Runner)), check.Status);
-                    action = replanned ?? action;
-                }
+                    var action = check.Action!;
 
-                if (action.Elevation is Elevation.Sudo && sudoReady is false)
-                {
-                    var commands = string.Join(" && ", action.Commands.Select(c => "sudo " + c.CommandLine));
-                    steps.Add(action.ToolId, StepResult.Warning($"{action.Title} needs sudo", "run it yourself", commands, commands));
-                    continue;
-                }
+                    if (check.Tool.Id is not "homebrew" && context.Environment.IsMacOS && cli.Runner.FindExecutable("brew") is null)
+                    {
+                        RefreshPath();
+                        var replanned = check.Tool.PlanInstall(new ToolContext(context.Environment, context.Runner, context.Needs, PackageManagers.Detect(context.Environment, context.Runner)), check.Status);
+                        action = replanned ?? action;
+                    }
 
-                await RunActionAsync(action, useSudo: action.Elevation is Elevation.Sudo && cli.Environment.IsElevated is false, cancellationToken, ct => check.Tool.DetectAsync(context, ct));
+                    if (action.Elevation is Elevation.Sudo && sudoReady is false)
+                    {
+                        var commands = string.Join(" && ", action.Commands.Select(c => "sudo " + c.CommandLine));
+                        steps.Add(action.ToolId, StepResult.Warning($"{action.Title} needs sudo", "run it yourself", commands, commands));
+                        continue;
+                    }
 
-                if (action.ToolId is "homebrew")
-                {
-                    RefreshPath();
+                    await RunActionAsync(action, useSudo: action.Elevation is Elevation.Sudo && cli.Environment.IsElevated is false, cancellationToken, ct => check.Tool.DetectAsync(context, ct));
+
+                    if (action.ToolId is "homebrew")
+                    {
+                        RefreshPath();
+                    }
                 }
+            }
+            finally
+            {
+                await sudoDone.CancelAsync();
+                await sudoKeptAlive;
             }
         }
 
@@ -184,6 +195,21 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         var authenticated = await cli.Runner.RunAsync(new ProcessSpec { FileName = "sudo", Arguments = ["-v"], Interactive = true }, cancellationToken);
         cli.Console.Out.WriteLine();
         return authenticated.Succeeded;
+    }
+
+    private async Task KeepSudoAliveAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            while (true)
+            {
+                await Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
+                await cli.Runner.RunAsync(new ProcessSpec { FileName = "sudo", Arguments = ["-n", "-v"], Timeout = TimeSpan.FromSeconds(10) }, cancellationToken);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
     }
 
     private async Task RunWindowsAdministratorBatchAsync(IReadOnlyList<ToolAction> actions, CancellationToken cancellationToken)
