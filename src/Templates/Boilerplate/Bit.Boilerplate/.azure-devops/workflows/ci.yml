@@ -30,7 +30,7 @@ jobs:
 
   - pwsh: |
       Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
-      dotnet tool install Bit.Cli --version 11.0.0-pre-14 --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --version 11.0.0-pre-15 --tool-path "$(Agent.ToolsDirectory)/bit-cli"
     displayName: 'Install the bit CLI'
 
   - script: bit setup --platforms android --no-browsers --yes -p:EnforceCodeStyleInBuild=true
@@ -51,7 +51,7 @@ jobs:
 
   - pwsh: |
       Write-Host "##vso[task.prependpath]$(Agent.ToolsDirectory)/bit-cli"
-      dotnet tool install Bit.Cli --version 11.0.0-pre-14 --tool-path "$(Agent.ToolsDirectory)/bit-cli"
+      dotnet tool install Bit.Cli --version 11.0.0-pre-15 --tool-path "$(Agent.ToolsDirectory)/bit-cli"
     displayName: 'Install the bit CLI'
 
   - script: bit setup --yes

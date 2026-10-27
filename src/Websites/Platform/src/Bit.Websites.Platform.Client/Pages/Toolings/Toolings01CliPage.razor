@@ -15,9 +15,9 @@
         With the bit CLI it's one command. <code>bit new</code> creates a bit Boilerplate project, installs what your machine is missing,
         builds it, starts it and opens it in your editor, ready for you and your AI assistant to work on.
     </BitText>
-    <CodeBox>dotnet tool install --global Bit.Cli --version 11.0.0-pre-14
+    <CodeBox>dotnet tool install --global Bit.Cli --version 11.0.0-pre-15
 bit new MyApp</CodeBox>
-    Or run it once without installing it: <code>dnx Bit.Cli --version 11.0.0-pre-14 -- new MyApp</code>
+    Or run it once without installing it: <code>dnx Bit.Cli --version 11.0.0-pre-15 -- new MyApp</code>
     <br />
     <br />
 
@@ -96,7 +96,7 @@ bit new Contoso.Shop --dry-run</CodeBox>
             <BitText Typography="BitTypography.H5" Gutter>In CI</BitText>
             <code>bit new</code> and <code>bit setup</code> prepare CI machines too, so a pipeline needs no steps of its own for Node.js, build tools, Playwright or the development certificate.
             The pipelines bit Boilerplate ships install bit once per job and let it build:
-            <CodeBox>dotnet tool install --global Bit.Cli --version 11.0.0-pre-14
+            <CodeBox>dotnet tool install --global Bit.Cli --version 11.0.0-pre-15
 bit setup --platforms android --no-browsers --yes</CodeBox>
             In CI it installs what a build and its tests need, and leaves alone what only a developer's machine needs, such as containers and the Aspire CLI.
         </div>
