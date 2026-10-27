@@ -185,7 +185,7 @@ Renames the project everywhere its name appears: files, folders, namespaces, the
 
 - In a git repository it needs your changes committed or stashed first, so you can review the rename with `git diff` and undo it with `git checkout`. Outside git it asks first, or needs `--yes`.
 - Stops the same apps `bit clean` stops, and deletes `bin`, `obj` and `.vs`, which hold the old name. A build process that holds one of their files is stopped and the deletion retried, like `bit clean` does.
-- For a project named `MyApp`, it replaces `MyApp`, `myapp` as in `com.companyname.myapp`, and for a name with dots the same name with underscores. A match counts only where the name starts a word and isn't followed by a lowercase letter, so `MyAppDb` and `MyApp.Server` change while `TheMyApp` and `MyApps` don't.
+- For a project named `MyApp`, it replaces `MyApp` where a name starts with it, as in `MyApp.Server`, `Projects.MyApp_Server_Api` and the database name `MyAppDb`, and `myapp` in the app id `com.companyname.myapp` and in names like `myapp-e2e`; for a name with dots, also the same name with underscores. `TheMyApp`, `MyApps`, `MyAppService`, a `myapp` variable and a later part of a dotted name, like the `App` of `Microsoft.AspNetCore.App`, stay as they are.
 - Skips `.git`, `node_modules` and binary files. Every file keeps its encoding and line endings.
 - Leaves the project's own folder named as it was, since your terminal is usually in it. Rename it after closing the editors and terminals that use it.
 

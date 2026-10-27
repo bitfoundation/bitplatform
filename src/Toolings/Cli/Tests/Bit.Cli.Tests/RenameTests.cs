@@ -167,6 +167,31 @@ public class RenameTests
         Assert.AreSame(text, growing.Replace(text));
     }
 
+    [TestMethod]
+    public void Replace_Should_LeaveTheNamesACommonWordIsPartOf()
+    {
+        var app = new ProjectRenamer("App", "Contoso.Shop");
+
+        Assert.AreEqual("<FrameworkReference Include=\"Microsoft.AspNetCore.App\" />", app.Replace("<FrameworkReference Include=\"Microsoft.AspNetCore.App\" />"));
+        Assert.AreEqual("var app = builder.Build(); AppDomain.CurrentDomain AppDbContext Contoso.ShopDb.db Contoso.ShopJobDb.db <ApplicationId>com.companyname.contoso.shop</ApplicationId>",
+            app.Replace("var app = builder.Build(); AppDomain.CurrentDomain AppDbContext AppDb.db AppJobDb.db <ApplicationId>com.companyname.app</ApplicationId>"));
+
+        var web = new ProjectRenamer("Web", "Contoso");
+
+        Assert.AreEqual("<Project Sdk=\"Microsoft.NET.Sdk.Web\">", web.Replace("<Project Sdk=\"Microsoft.NET.Sdk.Web\">"));
+        Assert.AreEqual("Contoso.Web.slnf src/Server/Contoso.Server.Web Microsoft.AspNetCore.Components.WebAssembly WebAssemblyHostBuilder _framework/blazor.web.js",
+            web.Replace("Web.Web.slnf src/Server/Web.Server.Web Microsoft.AspNetCore.Components.WebAssembly WebAssemblyHostBuilder _framework/blazor.web.js"));
+
+        var test = new ProjectRenamer("Test", "Contoso");
+
+        Assert.AreEqual("[TestMethod] Microsoft.NET.Test.Sdk dotnet test test@bitplatform.dev /iPad/.test(agent) contoso-e2e Projects.Contoso_Server_Api",
+            test.Replace("[TestMethod] Microsoft.NET.Test.Sdk dotnet test test@bitplatform.dev /iPad/.test(agent) test-e2e Projects.Test_Server_Api"));
+
+        var lowercase = new ProjectRenamer("shop", "Contoso");
+
+        Assert.AreEqual("Contoso.Server.Api com.companyname.contoso contoso-e2e", lowercase.Replace("shop.Server.Api com.companyname.shop shop-e2e"));
+    }
+
     private static string CreateProject(TestHost host)
     {
         var folder = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "Old")).FullName;
