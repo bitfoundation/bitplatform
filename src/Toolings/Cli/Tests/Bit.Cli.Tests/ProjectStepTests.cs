@@ -800,6 +800,9 @@ public class ProjectStepTests
         Assert.AreEqual("Installed Playwright's browsers", result.Title);
         CollectionAssert.AreEqual(new[] { cliScript, "install" }, ci.Runner.Calls.First().Arguments.ToArray());
         CollectionAssert.AreEqual(new[] { "-n", Path.Combine(nodeDirectory, "node"), cliScript, "install-deps" }, ci.Runner.Calls.Last().Arguments.ToArray());
+        Assert.IsNotNull(ci.Runner.Calls.First().Timeout);
+        Assert.AreEqual("sudo", ci.Runner.Calls.Last().FileName);
+        Assert.IsNull(ci.Runner.Calls.Last().Timeout);
     }
 
     [TestMethod]

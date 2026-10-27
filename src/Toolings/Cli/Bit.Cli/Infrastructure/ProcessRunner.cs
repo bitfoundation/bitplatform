@@ -22,6 +22,8 @@ public sealed record ProcessSpec
 
     public string CommandLine => string.Join(' ', new[] { FileName }.Concat(Arguments).Select(Quote));
 
+    public ProcessSpec WithSudo() => this with { FileName = "sudo", Arguments = ["-n", FileName, .. Arguments], Timeout = null };
+
     public static string Quote(string value)
     {
         if (value.Length > 0 && value.All(c => char.IsLetterOrDigit(c) || c is '-' or '_' or '.' or '/' or '\\' or ':' or '=' or ',' or '@' or '+'))
