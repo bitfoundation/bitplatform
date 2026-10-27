@@ -55,8 +55,11 @@
     </ItemGroup>
 
     <Target Name="EmbedTemplateTypeNames" BeforeTargets="AssignTargetPaths">
+        <PropertyGroup>
+            <_TemplateSource>$([MSBuild]::NormalizeDirectory($(MSBuildThisFileDirectory), '..', '..', '..', 'Templates', 'Boilerplate', 'Bit.Boilerplate', 'src'))</_TemplateSource>
+        </PropertyGroup>
         <ItemGroup>
-            <_TemplateCodeFile Include="../../../Templates/Boilerplate/Bit.Boilerplate/src/**/*.cs;../../../Templates/Boilerplate/Bit.Boilerplate/src/**/*.razor" Exclude="../../../Templates/Boilerplate/Bit.Boilerplate/src/**/bin/**;../../../Templates/Boilerplate/Bit.Boilerplate/src/**/obj/**;../../../Templates/Boilerplate/Bit.Boilerplate/src/**/node_modules/**" />
+            <_TemplateCodeFile Include="$(_TemplateSource)**/*.cs;$(_TemplateSource)**/*.razor" Exclude="$(_TemplateSource)**/bin/**;$(_TemplateSource)**/obj/**;$(_TemplateSource)**/node_modules/**" />
         </ItemGroup>
         <WriteLinesToFile File="$(IntermediateOutputPath)template-types.txt" Lines="@(_TemplateCodeFile->'%(Filename)%(Extension)'->Distinct())" Overwrite="true" WriteOnlyWhenDifferent="true" />
         <ItemGroup>
