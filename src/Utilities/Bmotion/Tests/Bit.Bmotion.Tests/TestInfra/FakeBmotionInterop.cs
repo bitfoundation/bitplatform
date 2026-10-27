@@ -46,6 +46,14 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
         return PrerenderedAnimationElapsedMs;
     }
 
+    /// <summary>
+    /// What <see cref="GetWaapiPlayedMs"/> answers: how far the browser has really played an offloaded animation.
+    /// Null (the default) is "can't tell", which leaves the engine on its own clock.
+    /// </summary>
+    public Func<string, int, double?>? WaapiPlayedMs { get; set; }
+
+    public double? GetWaapiPlayedMs(string elementId, int token) => WaapiPlayedMs?.Invoke(elementId, token);
+
     /// <summary>Value returned by <see cref="PrefersReducedMotionAsync"/>.</summary>
     public bool PrefersReducedMotion { get; set; }
 

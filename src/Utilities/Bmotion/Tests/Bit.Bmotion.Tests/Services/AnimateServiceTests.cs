@@ -272,6 +272,43 @@ public class AnimateServiceTests
     }
 
     [TestMethod]
+    public async Task Spring_KeepsUp_WithASourceThatChangesMoreOftenThanFrames()
+    {
+        // A source can change several times between two frames - a scroll position or a pointer the browser reports
+        // faster than it draws. Each change has to move the follower's target, not restart its spring from a standstill:
+        // restarted before it could ever take a step, the follower would sit still for as long as the source moved.
+        var (service, engine, _) = Create();
+        await using var __ = engine;
+        var source = Bm.Value(0.0);
+        var follower = service.Spring(source, new BmSpring { Stiffness = 300, Damping = 30 });
+
+        for (int frame = 0; frame < 30; frame++)
+        {
+            for (int change = 0; change < 3; change++) source.SetSync(source.Value + 10);
+            engine.ComputeFrame(frame * 16.0);
+        }
+
+        Assert.IsTrue(follower.Value > 300, $"the follower got to {follower.Value} while its source got to {source.Value}");
+    }
+
+    [TestMethod]
+    public async Task Spring_Retargeted_StillSettlesExactlyOnTheLastTarget()
+    {
+        var (service, engine, _) = Create();
+        await using var __ = engine;
+        var source = Bm.Value(0.0);
+        var follower = service.Spring(source, new BmSpring { Stiffness = 300, Damping = 30 });
+
+        // A wide first move, then a short one: the second target, not the first one's scale, decides when it rests.
+        source.SetSync(3000);
+        RunFrames(engine, 0, 100);
+        source.SetSync(1);
+        RunFrames(engine, 116, 6000);
+
+        Assert.AreEqual(1, follower.Value, 1e-9);
+    }
+
+    [TestMethod]
     public async Task Spring_WithoutAFrameLoop_TracksTheSourceDirectly()
     {
         var (service, engine, _) = Create(inProcess: false);

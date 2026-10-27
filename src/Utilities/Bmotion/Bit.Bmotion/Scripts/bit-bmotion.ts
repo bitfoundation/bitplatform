@@ -1508,6 +1508,32 @@ export function waapiStartTime(now: number, frameTime: number | null, continues:
     return frameTime !== null && now - frameTime > LATE_START_MS ? null : now;
 }
 
+/**
+ * How far an offloaded animation has played, in ms of its own time (its delay included), as of <c>now</c>
+ * (performance.now()) - not as of the frame the timeline last stood at, which inside a long task is well behind: the
+ * moment the engine reads it is the moment the animation taking over starts from (waapiStartTime). One that is held on
+ * its first keyframe (a late start), paused, playing at rate 0 or not started yet is where its current time says.
+ */
+export function waapiPlayedAt(now: number, startTime: number | null, paused: boolean, currentTime: number | null, rate: number): number {
+    if (paused || startTime === null || rate === 0) return currentTime ?? 0;
+    return Math.max(0, (now - startTime) * rate);
+}
+
+/**
+ * How far the browser has really played an offloaded animation (waapiPlayedAt), or null when there is no such
+ * animation. The engine's own clock for it starts when it built it, which a late start (waapiStartTime) can leave
+ * well ahead of what the element shows - an element's first animation after the page loads usually lands in a task
+ * that long - so before it reads the values an animation taking over starts from, it asks here (synchronously, so on
+ * WebAssembly only).
+ */
+export function waapiPlayedMs(elementId: string, token: string): number | null {
+    const anim = _waapiAnims.get(elementId)?.get(token);
+    if (!anim) return null;
+    const start = anim.startTime, current = anim.currentTime;
+    return waapiPlayedAt(performance.now(), start === null ? null : Number(start), anim.playState === 'paused',
+        current === null ? null : Number(current), anim.playbackRate);
+}
+
 // The new animations the current task has started - one task as long as the timeline's time hasn't moved - and
 // whether it has turned out long.
 let _taskFrame: number | null = null;

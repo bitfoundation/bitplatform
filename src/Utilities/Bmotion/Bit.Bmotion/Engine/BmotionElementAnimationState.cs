@@ -1544,6 +1544,24 @@ internal sealed class BmotionElementAnimationState
 
     internal bool HasWaapiPlans => _waapiPlans.Count > 0;
 
+    /// <summary>
+    /// Reads how far the browser has really played an offloaded animation, by its token - null where that can't
+    /// be read synchronously (Blazor Server) or the animation is gone. Set by the engine.
+    /// </summary>
+    internal Func<int, double?>? BrowserPlayedMs { get; init; }
+
+    /// <summary>
+    /// Puts <paramref name="plan"/>'s playhead where the browser's is. A plan's own clock starts when the engine built
+    /// it, and the browser can start the animation well after that: a task that runs long holds a new animation on its
+    /// first keyframe until the frame that shows it (the bridge's waapiStartTime), and an element's first animation
+    /// after a page loads usually lands in one. Read off the engine's clock then, an interrupted animation would hand
+    /// over values it never reached, and the one taking over would start ahead of what is on screen.
+    /// </summary>
+    private void SyncPlayhead(WaapiPlan plan, long nowMs)
+    {
+        if (BrowserPlayedMs?.Invoke(plan.Token) is double played && double.IsFinite(played)) plan.SeekTo(nowMs, played);
+    }
+
     /// <summary>Moves every browser animation's mirror to <paramref name="playedMs"/> of animation time (a seek).</summary>
     internal void SeekWaapiPlans(long nowMs, double playedMs)
     {
@@ -1612,6 +1630,7 @@ internal sealed class BmotionElementAnimationState
                 || PlanTouchesAny(plan, keys);
             if (!overlaps) continue;
 
+            SyncPlayhead(plan, now);
             RealizePlanValues(plan, now);
             _waapiPlans.RemoveAt(i);
             (tokens ??= new List<int>()).Add(plan.Token);
@@ -1684,10 +1703,13 @@ internal sealed class BmotionElementAnimationState
         long now = Environment.TickCount64;
         var target = new Dictionary<string, double>(Transforms, StringComparer.OrdinalIgnoreCase);
         foreach (var plan in _waapiPlans)
+        {
+            SyncPlayhead(plan, now);
             foreach (var key in plan.Values.Keys)
                 if (BmotionTransformComposer.IsTransformProp(key))
                     // The plan's clock runs at its rate; afterMs of wall time is afterMs × rate of animation time.
                     target[key] = plan.ValueAt(key, plan.PlayedMs(now) + (afterMs * plan.Rate));
+        }
         return target;
     }
 

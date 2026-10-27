@@ -61,6 +61,80 @@ public partial class BrowserPlaybackTests
     }
 
     [TestMethod]
+    public async Task ASpringOnAColour_PlaysItsCurveHeldWithinTheTwoColours()
+    {
+        // The frame loop holds a colour between its ends while a spring overshoots them; a browser handed the
+        // spring's own curve would carry it past the target (blue → orange through "more orange than orange").
+        var (engine, interop) = NewEngine();
+        await using var _ = engine;
+        engine.RegisterElement("el", Values(("backgroundColor", "#1276C6")));
+
+        await engine.AnimateToAsync("el", Values(("backgroundColor", "#FD7F36")), Bm.Spring(stiffness: 300, damping: 10).ToConfig());
+
+        Assert.AreEqual(2, Keyframes(interop).Length, "still the timeline shape");
+        var easing = (string)Timing(interop)["easing"]!;
+        StringAssert.StartsWith(easing, "linear(");
+        var progress = Regex.Matches(easing, @"-?\d+(\.\d+)?").Select(m => double.Parse(m.Value, CultureInfo.InvariantCulture)).ToArray();
+        Assert.IsTrue(progress.All(p => p is >= 0 and <= 1), $"the curve leaves 0..1: {easing}");
+        Assert.AreEqual(1, progress.Max(), "and still reaches the target");
+    }
+
+    [TestMethod]
+    public async Task ASpringOnAColourAndAMove_IsRecorded_TheMoveOvershootingAndTheColourHeld()
+    {
+        // One timing easing can't hold the colour and let the move overshoot, so the animation is recorded - which
+        // plays exactly what the frame loop draws for each.
+        var (engine, interop) = NewEngine();
+        await using var _ = engine;
+        engine.RegisterElement("el", Values(("backgroundColor", "rgb(100, 0, 0)")));
+
+        await engine.AnimateToAsync("el", Values(("x", 100.0), ("backgroundColor", "rgb(200, 0, 0)")), Bm.Spring(stiffness: 300, damping: 10).ToConfig());
+
+        var kf = Keyframes(interop);
+        Assert.AreEqual("linear", Timing(interop)["easing"], "recorded");
+        Assert.IsTrue(kf.Max(WebAnimationKeyframes.TranslateX) > 100, "the move overshoots, as the spring does");
+        var reds = kf.Where(k => k.ContainsKey("backgroundColor"))
+            .Select(k => int.Parse(Regex.Match((string)k["backgroundColor"], @"rgba?\((\d+)").Groups[1].Value, CultureInfo.InvariantCulture))
+            .ToArray();
+        Assert.IsTrue(reds.Length > 2 && reds.All(r => r is >= 100 and <= 200), $"the colour leaves its two ends: {string.Join(", ", reds)}");
+    }
+
+    [TestMethod]
+    [DataRow(0.0, 0.0, DisplayName = "held on its first keyframe")]
+    [DataRow(150.0, 15.0, DisplayName = "started late")]
+    public async Task ARetarget_StartsWhereTheBrowserHasReallyGot_NotWhereTheEnginesClockSays(double browserPlayedMs, double expectedX)
+    {
+        // A task that runs long - an element's first animation after the page loads, say - holds the new Web Animation
+        // on its first keyframe until the frame that shows it, while the engine's clock for it started when it built
+        // it. Retargeted by its clock, the element would jump ahead to where it never got.
+        var (engine, interop) = NewEngine();
+        await using var _ = engine;
+        engine.RegisterElement("el");
+        interop.WaapiPlayedMs = (_, _) => browserPlayedMs;
+
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
+        await Task.Delay(400);   // by the engine's clock: 40px along
+        await engine.AnimateToAsync("el", Values(("x", -100.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
+
+        Assert.AreEqual(expectedX, WebAnimationKeyframes.TranslateX(Keyframes(interop)[0]), 0.5,
+            "the retarget starts from what the element shows");
+    }
+
+    [TestMethod]
+    public async Task ARetarget_WithoutTheBrowsersPlayhead_FallsBackToTheEnginesClock()
+    {
+        var (engine, interop) = NewEngine();
+        await using var _ = engine;
+        engine.RegisterElement("el");
+
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
+        await Task.Delay(400);
+        await engine.AnimateToAsync("el", Values(("x", -100.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
+
+        Assert.IsTrue(WebAnimationKeyframes.TranslateX(Keyframes(interop)[0]) > 30, "the plan's own clock, as before");
+    }
+
+    [TestMethod]
     public async Task PerPropertyTransitions_AreRecorded_FrameByFrame()
     {
         var (engine, interop) = NewEngine();

@@ -113,6 +113,45 @@ public class ValueUtilityTests
     }
 
     [TestMethod]
+    public void Velocity_SettlesToZero_OnceTheSourceStopsChanging()
+    {
+        // A scroll that stops sends no "zero" event: the last change is the last thing the source reports.
+        // The velocity must not hold that speed forever (a scroll-driven skew would stay leaning).
+        var source = Bm.Value(0.0);
+        long now = 0;
+        source.TimeSource = () => now;
+        var velocity = Bm.Velocity(source);
+
+        now = 0; source.SetSync(0);
+        now = 16; source.SetSync(40);
+        now = 32; source.SetSync(80);
+        Assert.AreEqual(2500, velocity.Value, 1e-6);
+
+        now = 10_000;   // long still - the settle check that the last change scheduled finds it so
+        var settled = SpinWait.SpinUntil(() => velocity.Value == 0, TimeSpan.FromSeconds(2));
+
+        Assert.IsTrue(settled, $"velocity still {velocity.Value} after the source stopped");
+    }
+
+    [TestMethod]
+    public void Velocity_DoesNotSettle_WhileTheSourceKeepsChanging()
+    {
+        var source = Bm.Value(0.0);
+        long now = 0;
+        source.TimeSource = () => now;
+        var velocity = Bm.Velocity(source);
+
+        for (int i = 0; i <= 20; i++)
+        {
+            now = i * 16;
+            source.SetSync(i * 40.0);
+            Thread.Sleep(5);   // well inside the window a 16 ms pace allows
+        }
+
+        Assert.AreEqual(2500, velocity.Value, 1e-6);
+    }
+
+    [TestMethod]
     public void Velocity_RejectsNullSource()
     {
         Assert.ThrowsExactly<ArgumentNullException>(() => Bm.Velocity(null!));

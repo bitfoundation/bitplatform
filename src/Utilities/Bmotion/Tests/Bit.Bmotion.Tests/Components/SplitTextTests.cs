@@ -137,6 +137,44 @@ public class SplitTextTests
     }
 
     [TestMethod]
+    [DataRow("h1")]
+    [DataRow("h2")]
+    [DataRow("h6")]
+    [DataRow("a")]
+    [DataRow("button")]
+    public void Accessible_KeepsTheRoleOfAContainerThatCanBeNamed(string tag)
+    {
+        // A heading named by its aria-label stays a heading - in the headings list, at its level - where
+        // role="text" would turn it into plain text. The same goes for a link or a button.
+        using var ctx = new BmotionTestContext();
+        var cut = ctx.Render<BmotionSplitText>(ps => ps
+            .Add(p => p.Text, "ab cd")
+            .Add(p => p.As, tag)
+            .Add(p => p.Animate, Bm.To(opacity: 1)));
+
+        var root = cut.Find($"{tag}[aria-label]");
+        Assert.AreEqual("ab cd", root.GetAttribute("aria-label"));
+        Assert.IsNull(root.GetAttribute("role"));
+        Assert.AreEqual(2, cut.FindAll("span[aria-hidden='true']").Count);
+    }
+
+    [TestMethod]
+    [DataRow("div")]
+    [DataRow("p")]
+    public void Accessible_GivesAContainerThatCannotBeNamedTheTextRole(string tag)
+    {
+        // A generic container or a paragraph may not carry an aria-label of its own (ARIA prohibits naming
+        // them), so the label is only read when role="text" makes the run a single text node.
+        using var ctx = new BmotionTestContext();
+        var cut = ctx.Render<BmotionSplitText>(ps => ps
+            .Add(p => p.Text, "ab")
+            .Add(p => p.As, tag)
+            .Add(p => p.Animate, Bm.To(opacity: 1)));
+
+        Assert.AreEqual("text", cut.Find($"{tag}[aria-label]").GetAttribute("role"));
+    }
+
+    [TestMethod]
     public void Accessible_False_OmitsTheAriaWiring()
     {
         using var ctx = new BmotionTestContext();

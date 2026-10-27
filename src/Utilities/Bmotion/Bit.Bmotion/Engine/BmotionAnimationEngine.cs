@@ -145,6 +145,10 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
                     // Without synchronous interop (Blazor Server) there is no rAF loop: animations
                     // either offload to the browser compositor (WAAPI) or collapse to instant sets.
                     ForceInstant = !_interop.IsInProcess,
+                    // With it, the browser can be asked where an offloaded animation has really got to before
+                    // anything is read off it. Without it, the animation that takes over starts from what the
+                    // page shows instead (TryBuildTimelineAsync), so the engine's clock is never shown.
+                    BrowserPlayedMs = _interop.IsInProcess ? token => _interop.GetWaapiPlayedMs(elementId, token) : null,
                 };
             }
             _elements[elementId] = state;
@@ -1205,6 +1209,16 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         if (config.Type == BmotionTransitionType.Spring && !linearSupported) return null;
         if (BmotionBrowserTiming.SampleProgress(config) is not { } sampled) return null;
         var (samples, durationMs) = sampled;
+        // The frame loop holds a colour between its two ends while a spring overshoots them (CreateColorDriver); the
+        // browser would carry it along the curve, past the target. Colours alone play the curve held within its ends.
+        // Beside values that do overshoot, one timing easing can't serve both, and the recording plays what the frame
+        // loop draws for each.
+        if (config.Type == BmotionTransitionType.Spring && BmotionBrowserTiming.Overshoots(samples)
+            && strings.Keys.Any(BmotionElementAnimationState.IsColorProp))
+        {
+            if (numeric.Count > 0 || !strings.Keys.All(BmotionElementAnimationState.IsColorProp)) return null;
+            samples = BmotionBrowserTiming.HeldWithinEnds(samples);
+        }
         // Without linear() support, a curve CSS can't express (elastic/bounce) runs exactly on the frame loop
         // instead of shipping a wrong easing.
         if (BmotionBrowserTiming.ChooseEasing(config, samples, linearSupported, preferKeyword: false) is not { } easing) return null;
@@ -1804,6 +1818,14 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         scheduler.Cancel();
         _schedulers.Remove(scheduler);
     }
+
+    /// <summary>
+    /// Moves the target of the detached spring running for <paramref name="key"/> to <paramref name="to"/>, keeping its
+    /// position, velocity and clock (<see cref="BmotionSpringDriver.TryRetarget"/>). False when no spring is running for
+    /// it - none was started, it has settled, or it is a tween or repeats - and the caller starts a new one instead.
+    /// </summary>
+    internal bool TryRetargetDetached(object key, double to)
+        => _detachedAnims.TryGetValue(key, out var anim) && anim.Driver is BmotionSpringDriver spring && spring.TryRetarget(to);
 
     /// <summary>Cancels the detached animation for <paramref name="key"/>, if any (resolves its task with false).</summary>
     internal void CancelDetached(object key)

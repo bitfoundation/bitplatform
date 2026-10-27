@@ -174,8 +174,11 @@ public sealed class BmotionAnimateService
                 return;
             }
 
+            // A spring still chasing the last target is pointed at this one: it keeps its position, its momentum and its
+            // clock, so a source that changes several times between two frames still lets it move on every frame.
+            if (_engine.TryRetargetDetached(follower, target)) return;
             var config = template.ToConfig();
-            config.Velocity = follower.GetVelocity(); // carry momentum across retargets
+            config.Velocity = follower.GetVelocity(); // carry momentum into the new spring
             _engine.StartDetached(follower, follower.Value, target, config, v => follower.SetSync(v));
             // Fire-and-forget loop start: a failure here surfaces on the next awaited animation.
             _ = EnsureLoopSafeAsync();

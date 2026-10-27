@@ -148,6 +148,24 @@ public class PrerenderCssTests
     }
 
     [TestMethod]
+    public void Spring_OnAColour_HoldsTheColourWithinItsEnds_WhileTheMoveOvershoots()
+    {
+        // Each property is its own CSS animation, so the colour's curve can be held within 0..1 - as the frame loop
+        // holds it - while the transform plays the spring's overshoot.
+        var plan = Compile(Bm.To(x: 0, backgroundColor: "#1276C6"), Bm.To(x: 100, backgroundColor: "#FD7F36"),
+            Bm.Spring(stiffness: 300, damping: 10));
+
+        static double[] Progress(string easing) => System.Text.RegularExpressions.Regex.Matches(easing, @"-?\d+(\.\d+)?")
+            .Select(m => double.Parse(m.Value, System.Globalization.CultureInfo.InvariantCulture)).ToArray();
+        var colour = Progress(plan.Tracks.Single(t => t.CssProperty == "background-color").Full!.Easing);
+        var move = Progress(plan.Tracks.Single(t => t.CssProperty == "transform").Full!.Easing);
+
+        Assert.IsTrue(colour.All(p => p is >= 0 and <= 1), "the colour's curve leaves 0..1");
+        Assert.AreEqual(1, colour.Max());
+        Assert.IsTrue(move.Max() > 1, "the move still overshoots");
+    }
+
+    [TestMethod]
     public void SharedSpringEasing_IsDeclaredOnce()
     {
         var plan = Compile(Bm.To(opacity: 0, x: 0), Bm.To(opacity: 1, x: 100), Bm.Spring(stiffness: 300, damping: 20), withReduced: true);

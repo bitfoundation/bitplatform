@@ -469,7 +469,7 @@ nothing to re-split on re-render and nothing for a script to undo:
 | `Transition` | `BmTransition?` | Timing for every unit; each unit's stagger offset is added to its delay |
 | `Stagger` | `BmStagger?` | The cascade across units. Default `Bm.Stagger(0.03)` |
 | `As` / `Class` / `Style` / `UnitClass` | `string?` | The container element/styling and the per-unit class |
-| `Accessible` | `bool` | Default `true`: `aria-label` on the container, `aria-hidden` on the units |
+| `Accessible` | `bool` | Default `true`: `aria-label` on the container, `aria-hidden` on the units, and `role="text"` on a generic container (a heading, link or button keeps its own role) |
 | `OnComplete` | `EventCallback` | Fires once the last unit finishes |
 
 The split is **not** a bag of one-character spans: whitespace is rendered as whitespace rather than
@@ -1125,13 +1125,13 @@ A reactive value graph, fully composable and bindable to elements:
 var x = Bm.Value(0.0);
 x.Subscribe(v => Console.WriteLine(v));
 x.SetSync(100);
-x.GetVelocity();                                  // units/sec
+x.GetVelocity();                                  // units/sec; 0 once x has stopped changing
 x.Jump(0);                                        // set without feeding physics
 
 var angle = x.Transform([0, 200], [0, 360]);      // range mapping
 var raw   = x.Transform([0, 200], [0, 360], clamp: false);  // extrapolate past the ends
 var label = x.Transform(v => $"{v:0}px");         // arbitrary derivation (useTransform)
-var speed = Bm.Velocity(x);                       // units/sec as its own value (useVelocity)
+var speed = Bm.Velocity(x);                       // units/sec as its own value (useVelocity), back to 0 when x stops
 var smooth = Motion.Spring(x, Bm.Spring(stiffness: 120));  // spring follower (useSpring)
 
 await Motion.AnimateAsync(x, 200, Bm.Spring());   // animate the value itself

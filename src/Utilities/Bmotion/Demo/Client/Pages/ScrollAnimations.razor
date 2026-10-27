@@ -2,6 +2,7 @@
 @inject BmotionScrollTracker Scroll
 @inject BmotionScrollTracker TargetScroll
 @inject BmotionScrollTracker RailScroll
+@inject BmotionAnimateService Motion
 @implements IAsyncDisposable
 
 <PageTitle>Scroll animations · Bmotion</PageTitle>
@@ -183,9 +184,11 @@
         Some effects follow how fast the page is moving rather than where it is: a list that leans into a fast
         scroll, a blur that only shows at speed. <strong>Bm.Velocity</strong> derives a motion value that carries
         another one's velocity, in units per second - here the window tracker's <code>ScrollYValue</code>, in
-        pixels - and <code>Transform</code> maps that speed onto a skew, clamped at &plusmn;12&deg;. The tracker
-        also exposes <code>ScrollXValue</code> and the two progress values the same way. Scroll quickly, up and
-        down.
+        pixels - and <code>Transform</code> maps that speed onto a skew, clamped at &plusmn;12&deg;. The velocity
+        comes back to 0 a moment after the scroll stops (once the source has gone a few of its own update
+        intervals without changing), and <code>Motion.Spring</code> follows it, so the lean eases back upright
+        instead of snapping there - motion.dev's <code>useSpring(useVelocity(scrollY))</code>. The tracker also
+        exposes <code>ScrollXValue</code> and the two progress values the same way. Scroll quickly, up and down.
     </p>
 
     <div class="demo-row">
@@ -197,7 +200,7 @@
                     <div class="inview-band from-left">leans</div>
                 </div>
             </Bmotion>
-            <span class="demo-label">skewY = Bm.Velocity(Scroll.ScrollYValue).Transform([-3000, 0, 3000], [-12, 0, 12])</span>
+            <span class="demo-label">skewY = Motion.Spring(Bm.Velocity(Scroll.ScrollYValue)).Transform([-3000, 0, 3000], [-12, 0, 12])</span>
         </div>
     </div>
 
@@ -301,6 +304,7 @@
     private Dictionary<string, BmValue<double>> _barValues = default!;
     private Dictionary<string, BmValue<double>> _boxValues = default!;
     private Dictionary<string, BmValue<double>> _skewValues = default!;
+    private BmValue<double>? _leanSpring;
     private Dictionary<string, BmValue<double>> _targetValues = default!;
     private Dictionary<string, BmValue<string>> _filterValue = default!;
 
@@ -315,8 +319,10 @@
         _barValues = new() { ["scaleX"] = Scroll.ProgressYValue };
         _boxValues = new() { ["rotate"] = Scroll.ProgressYValue.Transform([0, 1], [0, 360]) };
 
-        // How fast the page scrolls, in px/s, mapped onto a lean - clamped, so a fling tops out at 12deg.
-        _skewValues = new() { ["skewY"] = Bm.Velocity(Scroll.ScrollYValue).Transform([-3000, 0, 3000], [-12, 0, 12]) };
+        // How fast the page scrolls, in px/s, mapped onto a lean - clamped, so a fling tops out at 12deg - and
+        // followed through a spring, so the lean eases back once the scroll stops and the velocity returns to 0.
+        _leanSpring = Motion.Spring(Bm.Velocity(Scroll.ScrollYValue), Bm.Spring(stiffness: 400, damping: 50));
+        _skewValues = new() { ["skewY"] = _leanSpring.Transform([-3000, 0, 3000], [-12, 0, 12]) };
 
         // A second tracker, because this one measures one element's journey rather than the
         // window's - the two subscriptions are independent and each owns its own listener.
@@ -366,6 +372,7 @@
 
     public async ValueTask DisposeAsync()
     {
+        _leanSpring?.Dispose();
         await Scroll.DisposeAsync();
         await TargetScroll.DisposeAsync();
         await RailScroll.DisposeAsync();
@@ -413,6 +420,7 @@
     private const string _velocityCode = """
         @using Bit.Bmotion
         @inject BmotionScrollTracker Scroll
+        @inject BmotionAnimateService Motion
         @implements IAsyncDisposable
 
         <Bmotion Values="_skewValues">
@@ -421,13 +429,16 @@
 
         @code {
             private Dictionary<string, BmValue<double>> _skewValues = default!;
+            private BmValue<double>? _lean;
 
             protected override void OnInitialized()
             {
                 // Bm.Velocity derives the speed of another motion value, in its units per second -
-                // here pixels of window scroll. Transform clamps it onto ±12 degrees of skew.
+                // here pixels of window scroll - and comes back to 0 shortly after the scroll stops.
+                // The spring follower eases that return; Transform clamps it onto ±12 degrees of skew.
                 var speed = Bm.Velocity(Scroll.ScrollYValue);
-                _skewValues = new() { ["skewY"] = speed.Transform([-3000, 0, 3000], [-12, 0, 12]) };
+                _lean = Motion.Spring(speed, Bm.Spring(stiffness: 400, damping: 50));
+                _skewValues = new() { ["skewY"] = _lean.Transform([-3000, 0, 3000], [-12, 0, 12]) };
             }
 
             // The motion values only move while the tracker is observing.
@@ -436,7 +447,11 @@
                 if (firstRender) await Scroll.ObserveAsync(_ => Task.CompletedTask);
             }
 
-            public ValueTask DisposeAsync() => Scroll.DisposeAsync();
+            public async ValueTask DisposeAsync()
+            {
+                _lean?.Dispose();   // the follower runs its spring until it is disposed
+                await Scroll.DisposeAsync();
+            }
         }
         """;
 

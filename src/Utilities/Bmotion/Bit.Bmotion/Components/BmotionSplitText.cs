@@ -24,8 +24,10 @@ namespace Bit.Bmotion;
 /// <para>
 /// <b>Accessibility:</b> by default the container carries the full text as an <c>aria-label</c> and
 /// every split unit is <c>aria-hidden</c>, so assistive technology reads the sentence once instead
-/// of spelling it out. Set <see cref="Accessible"/> to <c>false</c> to opt out (e.g. when the text
-/// is already labelled by an ancestor).
+/// of spelling it out. A generic container (the default <c>span</c>, a <c>div</c>, a <c>p</c>, …) also
+/// gets <c>role="text"</c>, which is what makes its label read; a heading, link or button
+/// (<c>As="h1"</c>…) keeps its own role, which its label names. Set <see cref="Accessible"/> to
+/// <c>false</c> to opt out (e.g. when the text is already labelled by an ancestor).
 /// </para>
 /// <para>
 /// Every unit is a real animated element, so <see cref="BmSplitBy.Chars"/> on a long paragraph
@@ -93,7 +95,8 @@ public sealed class BmotionSplitText : ComponentBase
 
     /// <summary>
     /// Adds <c>aria-label</c> to the container and <c>aria-hidden</c> to the split units so the
-    /// text is announced once as a sentence. Default <c>true</c>.
+    /// text is announced once as a sentence - with <c>role="text"</c> on a generic container, so the
+    /// label is read; a heading, link or button keeps its own role. Default <c>true</c>.
     /// </summary>
     [Parameter] public bool Accessible { get; set; } = true;
 
@@ -142,7 +145,9 @@ public sealed class BmotionSplitText : ComponentBase
             builder.AddAttribute(3, "aria-label", Text);
             // A bare span with aria-label is not reliably announced; role="text" makes the
             // container a single accessible text node instead of a bag of hidden fragments.
-            builder.AddAttribute(4, "role", "text");
+            // A container whose own role takes a name - a heading, a link, a button - keeps that
+            // role instead: the label names it, and a heading stays a heading in the page's outline.
+            if (!_namedContainers.Contains(As)) builder.AddAttribute(4, "role", "text");
         }
 
         // In Chars mode the characters of one word live inside a nowrap inline-block, so the word
@@ -230,6 +235,13 @@ public sealed class BmotionSplitText : ComponentBase
     }
 
     private static readonly BmStagger _defaultStagger = new(0.03);
+
+    // The containers a screen reader announces in their own role, named by their aria-label: the label needs no
+    // role="text" to be read there, and the role - which role="text" would replace - is what the reader navigates by.
+    private static readonly HashSet<string> _namedContainers = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "h1", "h2", "h3", "h4", "h5", "h6", "a", "button",
+    };
 
     /// <summary>The index of the unit that finishes last: the one with the longest stagger delay.</summary>
     private int LastToFinish(BmStagger stagger)
