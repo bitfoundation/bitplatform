@@ -85,7 +85,8 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
                         continue;
                     }
 
-                    await RunActionAsync(action, useSudo: action.Elevation is Elevation.Sudo && cli.Environment.IsElevated is false, cancellationToken, ct => check.Tool.DetectAsync(context, ct));
+                    await RunActionAsync(action, useSudo: action.Elevation is Elevation.Sudo && cli.Environment.IsElevated is false, cancellationToken,
+                        ct => check.Tool.DetectAsync(new ToolContext(context.Environment, context.Runner, context.Needs, PackageManagers.Detect(context.Environment, context.Runner)), ct));
 
                     if (action.ToolId is "homebrew")
                     {
@@ -135,8 +136,16 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
                 cli.Environment.PrependToPath([directory]);
             }
 
-            if (succeeded && detect is not null && action.InstalledExecutables is [var installed, ..] && File.Exists(installed)
-                && cli.Runner.FindExecutable(Path.GetFileName(installed)) is { } older && older != installed && (await detect(ct)).IsSatisfied is false)
+            ToolStatus? after = null;
+
+            if (succeeded && detect is not null && action.AfterInstall is null)
+            {
+                RefreshPath();
+                after = await detect(ct);
+            }
+
+            if (after is { IsSatisfied: false } && action.InstalledExecutables is [var installed, ..] && File.Exists(installed)
+                && cli.Runner.FindExecutable(Path.GetFileName(installed)) is { } older && older != installed)
             {
                 var links = Path.Combine(cli.Environment.BitDirectory, "bin", action.ToolId);
                 Directory.CreateDirectory(links);
@@ -154,6 +163,9 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
                 return StepResult.Warning(done, $"{older} comes first on PATH",
                     hint: $"This run uses {installed}. Remove {older}, or put {Path.GetDirectoryName(installed)} before {Path.GetDirectoryName(older)} in PATH, so your own builds use it too.");
             }
+
+            if (after is { State: ToolState.Missing or ToolState.Outdated })
+                return StepResult.Warning(done, after.State is ToolState.Missing ? "still not found" : $"still {after.Version ?? "too old"}, {after.Detail}");
 
             if (succeeded)
                 return action.AfterInstall is null || action.Optional

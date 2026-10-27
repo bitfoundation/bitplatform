@@ -439,6 +439,52 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task NodeSource_Should_FailWhenItsSetupScriptCantBeDownloaded()
+    {
+        if (OperatingSystem.IsWindows())
+            return;
+
+        using var host = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["PATH"] = "/usr/bin:/bin" });
+        AllInstalled(host.Runner);
+        host.Runner.Executables["apt-get"] = "/usr/bin/apt-get";
+        host.Runner.NotFound("node");
+        var setup = (await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "node").Action!.Commands[0];
+        var bin = Directory.CreateDirectory(Path.Combine(host.Root, "bin")).FullName;
+        var curl = Path.Combine(bin, "curl");
+        File.WriteAllText(curl, "#!/bin/sh\necho 'curl: (6) Could not resolve host: deb.nodesource.com' >&2\nexit 6\n");
+        File.SetUnixFileMode(curl, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+
+        var result = await new ProcessRunner(host.Environment, CliLog.None).RunAsync(setup with { Environment = new Dictionary<string, string?> { ["PATH"] = $"{bin}:/usr/bin:/bin" } });
+
+        Assert.IsFalse(result.Succeeded, "apt-get would install the distribution's own, older Node.js next.");
+    }
+
+    [TestMethod]
+    public async Task AnInstallThatLeavesAnOldNode_Should_SaySo()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.Executables["apt-get"] = "/usr/bin/apt-get";
+        host.Runner.Executables["sudo"] = "/usr/bin/sudo";
+        host.Runner.NotFound("node");
+        host.Runner.On("sudo", "-n /usr/bin/apt-get install", _ =>
+        {
+            host.Runner.On("node", "--version", 0, "v12.22.9");
+            return new ProcessResult { ExitCode = 0 };
+        });
+
+        var needs = new ToolNeeds { NodeMajor = 24 };
+        var node = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "node");
+        var steps = new StepRunner(host.Services);
+
+        await new ToolInstaller(host.Services, steps).InstallAsync([node], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
+
+        var result = steps.Reports.Single(r => r.Id == "node").Result;
+        Assert.AreEqual(StepStatus.Warning, result.Status, result.Detail);
+        Assert.AreEqual("still 12.22.9, 24 or later is needed", result.Detail);
+    }
+
+    [TestMethod]
     public async Task NodeFromAVersionManager_Should_BeUpdatedThroughIt()
     {
         using var host = new TestHost(HostOs.Linux);

@@ -390,7 +390,7 @@ public static partial class ToolCatalog
                     Elevation = Elevation.Sudo,
                     Commands =
                     [
-                        PackageManagers.Sudo("bash", "-c", "curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -"),
+                        PackageManagers.Sudo("bash", "-c", "set -o pipefail; curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -"),
                         PackageManagers.Sudo("apt-get", "install", "-y", "nodejs")
                     ],
                     InstalledExecutables = PackageExecutables
