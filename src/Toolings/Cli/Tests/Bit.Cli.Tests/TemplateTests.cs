@@ -117,6 +117,18 @@ public class TemplateTests
     }
 
     [TestMethod]
+    public async Task ANativeApp_Should_NeedANameThatGivesItAnAppId()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.AllToolsInstalled();
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", "فروشگاه", "--platforms", "android", "--dry-run", "--yes"), host.Output);
+        StringAssert.Contains(host.Output, "com.companyname.");
+
+        Assert.AreEqual(0, await host.RunAsync("new", "فروشگاه", "--dry-run", "--yes"), host.Output);
+    }
+
+    [TestMethod]
     [DataRow("my-app", "MyApp")]
     [DataRow("contoso shop", "ContosoShop")]
     [DataRow("contoso.shop", "Contoso.Shop")]

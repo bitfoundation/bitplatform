@@ -60,6 +60,9 @@ public sealed partial class NewWorkflow(CliServices cli)
         if (platformError is not null)
             return cli.UsageError("platforms-invalid", platformError);
 
+        if (Platforms.BuildsSolution(platforms) && ProjectName.ValidateAppId(name) is { } appIdError)
+            return cli.UsageError("app-id-invalid", appIdError);
+
         if (request.PropertyError is not null)
             return cli.UsageError("properties-invalid", request.PropertyError);
 

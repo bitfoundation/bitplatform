@@ -50,6 +50,15 @@ public static class ProjectName
         return null;
     }
 
+    public static string? ValidateAppId(string name)
+    {
+        var appId = string.Concat(name.ToLowerInvariant().Where(c => c is (>= 'a' and <= 'z') or (>= '0' and <= '9') or '_' or '.'));
+
+        return appId.Split('.').All(part => part.Length > 0 && part[0] is >= 'a' and <= 'z')
+            ? null
+            : $"'{name}' would give the native apps the app id com.companyname.{appId}, and each part of an app id must start with a Latin letter. Use Latin letters in the name, or leave the native apps out of --platforms.";
+    }
+
     public static string Suggest(string? input)
     {
         var segments = new List<string>();
