@@ -47,7 +47,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
             {
                 foreach (var action in adminActions)
                 {
-                    steps.Add(action.ToolId, StepResult.Warning($"{action.Title} was skipped", "administrator permission was declined", string.Join(" && ", action.Commands.Select(c => c.CommandLine))));
+                    steps.Add(action.ToolId, StepResult.Warning($"{action.Title} was skipped", "administrator permission was declined", string.Join(" && ", action.Commands.Select(c => c.ShellCommandLine(cli.Environment.Os)))));
                 }
             }
             else if (adminActions.Count > 0)
@@ -89,7 +89,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
 
                     if (action.Elevation is Elevation.Sudo && sudoReady is false)
                     {
-                        var commands = string.Join(" && ", action.Commands.Select(c => "sudo " + c.CommandLine));
+                        var commands = string.Join(" && ", action.Commands.Select(c => "sudo " + c.ShellCommandLine(cli.Environment.Os)));
                         steps.Add(action.ToolId, StepResult.Warning($"{action.Title} needs sudo", "run it yourself", commands, commands));
                         continue;
                     }
@@ -184,7 +184,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
             if (action.Partial is { } partial && last is { NotFound: false, TimedOut: false } && last.ExitCode == partial.ExitCode)
                 return StepResult.Succeeded(done, partial.Detail, partial.Hint);
 
-            var failed = StepResult.FromProcess(last ?? new ProcessResult { ExitCode = -1 }, done, $"Couldn't {char.ToLowerInvariant(action.Title[0])}{action.Title[1..]}", string.Join(" && ", action.Commands.Select(c => (useSudo ? "sudo " : "") + c.CommandLine)));
+            var failed = StepResult.FromProcess(last ?? new ProcessResult { ExitCode = -1 }, done, $"Couldn't {char.ToLowerInvariant(action.Title[0])}{action.Title[1..]}", string.Join(" && ", action.Commands.Select(c => (useSudo ? "sudo " : "") + c.ShellCommandLine(cli.Environment.Os))));
             return action.Optional ? failed with { Status = StepStatus.Warning } : failed;
         }, cancellationToken, needsTerminal: interactive);
     }
@@ -210,7 +210,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
 
         foreach (var command in actions.SelectMany(a => a.Commands))
         {
-            cli.Console.Out.MarkupLine($"  [grey]sudo {Markup.Escape(command.CommandLine)}[/]");
+            cli.Console.Out.MarkupLine($"  [grey]sudo {Markup.Escape(command.ShellCommandLine(cli.Environment.Os))}[/]");
         }
 
         var authenticated = await cli.Runner.RunAsync(new ProcessSpec { FileName = "sudo", Arguments = ["-v"], Interactive = true }, cancellationToken);
@@ -239,7 +239,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         {
             foreach (var action in actions)
             {
-                var commands = string.Join(" && ", action.Commands.Select(c => c.CommandLine));
+                var commands = string.Join(" && ", action.Commands.Select(c => c.ShellCommandLine(cli.Environment.Os)));
                 steps.Add(action.ToolId, StepResult.Warning($"{action.Title} needs administrator rights", "run it in an elevated terminal", commands, commands));
             }
 
@@ -251,7 +251,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         foreach (var action in actions)
         {
             var done = DoneTitle(action.Title);
-            var followUp = string.Join(" && ", action.Commands.Select(c => c.CommandLine));
+            var followUp = string.Join(" && ", action.Commands.Select(c => c.ShellCommandLine(cli.Environment.Os)));
 
             if (declined)
             {

@@ -490,6 +490,30 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task TheCommandsBitAsksUsersToRun_Should_ReachTheirShellIntact()
+    {
+        using var host = new TestHost(OperatingSystem.IsWindows() ? HostOs.Windows : HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.On("dotnet", "--version", 145);
+        host.Runner.Executables["dotnet"] = Path.Combine(DotnetRoot(Path.Combine(host.Root, "dotnet")), "dotnet");
+        var context = new ToolContext(host.Environment, host.Runner, new ToolNeeds { Sdk = new SdkRequirement("10.0.100") }, PackageManagers.Detect(host.Environment, host.Runner));
+        var sdk = (await ToolCatalog.CheckAsync(context, CancellationToken.None)).Single(c => c.Tool.Id == "dotnet-sdk");
+        var steps = new StepRunner(host.Services);
+
+        await new ToolInstaller(host.Services, steps).InstallAsync([sdk], context, CancellationToken.None);
+
+        var followUp = steps.Reports.Single().Result.FollowUp;
+        var command = sdk.Action!.Commands.Single();
+        var shell = OperatingSystem.IsWindows()
+            ? new ProcessSpec { FileName = "powershell.exe", Arguments = ["-NoProfile", "-NonInteractive", "-Command", "[System.Management.Automation.Language.Parser]::ParseInput($env:FOLLOW_UP, [ref]$null, [ref]$null).EndBlock.Statements[0].PipelineElements[0].CommandElements | ForEach-Object { if ($_ -is [System.Management.Automation.Language.StringConstantExpressionAst]) { $_.Value } elseif ($_ -is [System.Management.Automation.Language.CommandParameterAst]) { $_.Extent.Text } else { 'expanded ' + $_.Extent.Text } }"] }
+            : new ProcessSpec { FileName = "/bin/sh", Arguments = ["-c", "eval \"set -- $FOLLOW_UP\"; for word in \"$@\"; do printf '%s\\n' \"$word\"; done"] };
+        var words = await new ProcessRunner(CliEnvironment.FromProcess(), CliLog.None).RunAsync(shell with { Environment = new Dictionary<string, string?> { ["FOLLOW_UP"] = followUp } });
+        string[] expected = OperatingSystem.IsWindows() ? [command.FileName, .. command.Arguments] : ["sudo", command.FileName, .. command.Arguments];
+
+        CollectionAssert.AreEqual(expected, words.OutputLines.ToArray(), followUp);
+    }
+
+    [TestMethod]
     public async Task TheSdk_Should_GoOnlyWhereDotnetLooksForIt()
     {
         using var host = new TestHost(HostOs.Linux);
