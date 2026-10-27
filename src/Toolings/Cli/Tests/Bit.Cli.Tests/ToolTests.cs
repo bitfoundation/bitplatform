@@ -131,6 +131,30 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task Homebrew_Should_RunTheInstallerItDownloads()
+    {
+        if (OperatingSystem.IsWindows())
+            return;
+
+        using var host = new TestHost(HostOs.MacOS);
+        var install = ToolCatalog.Find("homebrew")!.PlanInstall(new ToolContext(host.Environment, host.Runner, new ToolNeeds(), new PackageManagers()), ToolStatus.Missing())!.Commands.Single();
+        var bin = Directory.CreateDirectory(Path.Combine(host.Root, "bin")).FullName;
+        var curl = Path.Combine(bin, "curl");
+        var runner = new ProcessRunner(host.Environment, CliLog.None);
+        var spec = install with { Interactive = false, Environment = new Dictionary<string, string?> { ["PATH"] = $"{bin}:/usr/bin:/bin" } };
+
+        File.WriteAllText(curl, "#!/bin/sh\nprintf '#!/bin/bash\\necho installed by the downloaded script\\n'\n");
+        File.SetUnixFileMode(curl, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        var installed = await runner.RunAsync(spec);
+
+        Assert.IsTrue(installed.Succeeded, installed.Output);
+        StringAssert.Contains(installed.Output, "installed by the downloaded script");
+
+        File.WriteAllText(curl, "#!/bin/sh\nexit 22\n");
+        Assert.IsFalse((await runner.RunAsync(spec)).Succeeded, "A download that fails fails the step.");
+    }
+
+    [TestMethod]
     public async Task DockerAndTheAspireCli_Should_BeNeededOnlyWithAspire()
     {
         using var host = new TestHost(HostOs.Linux);

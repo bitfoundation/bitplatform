@@ -500,7 +500,7 @@ public static partial class ToolCatalog
             ToolId = Id,
             Title = "Install Homebrew",
             Interactive = true,
-            Commands = [new ProcessSpec { FileName = "/bin/bash", Arguments = ["-c", "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"], Interactive = true }]
+            Commands = [new ProcessSpec { FileName = "/bin/bash", Arguments = ["-c", "script=\"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\" && /bin/bash -c \"$script\""], Interactive = true }]
         };
 
         public override string? ManualInstructions(ToolContext context) => "https://brew.sh";
