@@ -206,8 +206,11 @@ public class BitBhCombobox<TValue> : BitBhComponentBase, IDisposable
     private TValue? CurrentValue => IsProvided(nameof(Value)) ? Value : _value;
     private bool HasSingleValue => IsProvided(nameof(Value)) ? Value is not null : _hasValue;
 
-    /// <summary>Whether Escape with the list closed clears the input (the APG second Escape).</summary>
-    internal bool ClearsOnEscape => !IsDisabled && !Multiple && (HasSingleValue || _query.Length > 0);
+    /// <summary>
+    /// Whether Escape with the list closed clears something (the APG second Escape): the selection of a
+    /// nullable combobox, or a leftover query. Otherwise the press is left to an enclosing dialog / popover.
+    /// </summary>
+    internal bool ClearsOnEscape => !IsDisabled && !Multiple && ((Nullable && HasSingleValue) || _query.Length > 0);
 
     private IReadOnlyCollection<TValue> CurrentValues => IsProvided(nameof(Values))
         ? Values as IReadOnlyCollection<TValue> ?? Values?.ToArray() ?? []

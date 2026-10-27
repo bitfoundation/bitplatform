@@ -111,7 +111,8 @@ public class BitBhSortable<TItem> : BitBhComponentBase, IAsyncDisposable
 
     protected override string DefaultTag => "ul";
 
-    private IReadOnlyList<TItem> Display => _preview ?? (IReadOnlyList<TItem>)Items.ToList();
+    // The keyboard grab's preview order, else Items itself: read on every render and keydown, so not copied.
+    private IList<TItem> Display => _preview ?? Items;
 
     internal string InstructionsId => $"{ComponentId}-instructions";
 

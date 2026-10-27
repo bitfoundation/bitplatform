@@ -77,6 +77,7 @@ public sealed class BitBhCollection<TItem> where TItem : class, IBitBhCollection
     public void Unregister(TItem item)
     {
         if (!_items.Remove(item)) return;
+        _domText?.Remove(item.ItemId);
         _version++;
         // Removal never changes the relative order of the remaining items.
         if (_syncedVersion == _version - 1) _syncedVersion = _version;
@@ -130,40 +131,54 @@ public sealed class BitBhCollection<TItem> where TItem : class, IBitBhCollection
 
     private async Task SyncOnceAsync(BitBhInterop interop)
     {
+        var target = _version;
+        var entries = await interop.CollectionOrderAsync(Key);
+        var changed = false;
+        if (entries is { Length: > 0 })
         {
-            var target = _version;
-            var entries = await interop.CollectionOrderAsync(Key);
-            if (entries is { Length: > 0 })
+            var rank = new Dictionary<string, int>(entries.Length, StringComparer.Ordinal);
+            // Rebuilt from what the page shows now, so the texts of members that left (a combobox re-filtered
+            // on every keystroke) are not kept for the component's lifetime.
+            var texts = new Dictionary<string, string>(entries.Length, StringComparer.Ordinal);
+            for (var i = 0; i < entries.Length; i++)
             {
-                var rank = new Dictionary<string, int>(entries.Length, StringComparer.Ordinal);
-                _domText ??= new Dictionary<string, string>(StringComparer.Ordinal);
-                for (var i = 0; i < entries.Length; i++)
-                {
-                    if (entries[i] is not { Length: > 0 } entry || string.IsNullOrEmpty(entry[0])) continue;
-                    rank.TryAdd(entry[0], i);
-                    if (entry.Length > 1) _domText[entry[0]] = entry[1];
-                }
-
-                var ordered = _items
-                    .Select((item, index) => (item, index))
-                    .OrderBy(x => rank.TryGetValue(x.item.ItemId, out var r) ? r : int.MaxValue)
-                    .ThenBy(x => x.index)
-                    .Select(x => x.item)
-                    .ToList();
-
-                if (!ordered.SequenceEqual(_items))
-                {
-                    var unchangedMembership = target == _version;
-                    _items.Clear();
-                    _items.AddRange(ordered);
-                    _version++;
-                    if (unchangedMembership) target = _version;
-                }
+                if (entries[i] is not { Length: > 0 } entry || string.IsNullOrEmpty(entry[0])) continue;
+                rank.TryAdd(entry[0], i);
+                if (entry.Length > 1) texts[entry[0]] = entry[1];
             }
-            _syncedVersion = target;
-            // Rendered texts (typeahead / labels) are fresh now even when the order held.
-            if (entries is { Length: > 0 }) Changed?.Invoke();
+            changed = SameTexts(_domText, texts) is false;
+            _domText = texts;
+
+            var ordered = _items
+                .Select((item, index) => (item, index))
+                .OrderBy(x => rank.TryGetValue(x.item.ItemId, out var r) ? r : int.MaxValue)
+                .ThenBy(x => x.index)
+                .Select(x => x.item)
+                .ToList();
+
+            if (!ordered.SequenceEqual(_items))
+            {
+                var unchangedMembership = target == _version;
+                _items.Clear();
+                _items.AddRange(ordered);
+                _version++;
+                if (unchangedMembership) target = _version;
+                changed = true;
+            }
         }
+        _syncedVersion = target;
+        // Members re-render for a new order or new rendered texts (typeahead / labels), not for a sync that
+        // found both as they were.
+        if (changed) Changed?.Invoke();
+    }
+
+    private static bool SameTexts(Dictionary<string, string>? current, Dictionary<string, string> next)
+    {
+        if ((current?.Count ?? 0) != next.Count) return false;
+        foreach (var (id, text) in next)
+            if (current!.TryGetValue(id, out var known) is false || string.Equals(known, text, StringComparison.Ordinal) is false)
+                return false;
+        return true;
     }
 
     // ── Navigation ───────────────────────────────────────────────────────────

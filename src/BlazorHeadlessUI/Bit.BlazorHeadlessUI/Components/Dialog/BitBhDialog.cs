@@ -39,7 +39,7 @@ public class BitBhDialog : BitBhComponentBase, IAsyncDisposable
     private bool _open;
     private bool _hasTitle;
     private bool _hasDescription;
-    private ElementReference? _initialFocus;
+    private Func<ElementReference>? _initialFocus;
     private bool _panelDismissOnEscape = true;
     private BitBhFloatingScope? _scope;
 
@@ -150,7 +150,9 @@ public class BitBhDialog : BitBhComponentBase, IAsyncDisposable
         {
             Trap = Modal,
             AutoFocus = "first",
-            AutoFocusElement = _initialFocus,
+            // Read now, after the render: an element inside the panel captures its reference while the panel
+            // renders, after the panel registered.
+            AutoFocusElement = _initialFocus?.Invoke(),
             RestoreFocus = true,
             ReturnFocusElement = ReturnFocus,
         },
@@ -226,7 +228,7 @@ public class BitBhDialog : BitBhComponentBase, IAsyncDisposable
         StateHasChanged();
     }
 
-    private void RegisterPanel(ElementReference? initialFocus, bool dismissOnEscape)
+    private void RegisterPanel(Func<ElementReference>? initialFocus, bool dismissOnEscape)
     {
         _initialFocus = initialFocus;
         _panelDismissOnEscape = dismissOnEscape;

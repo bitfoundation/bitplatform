@@ -138,7 +138,9 @@ public abstract class BitBhCheckableBase : BitBhComponentBase, IDisposable
         builder.AddMultipleAttributes(20, GetFinalAttributes());
         builder.AddAttribute(30, "onclick",
             On<MouseEventArgs>("onclick", HandleClick));
-        if (!IsNativeButton || !EnterToggles)
+        // A native button toggles on Space by itself (a click) and its Enter is suppressed by the runtime
+        // (data-bit-bh-keys): a .NET handler would only cost a round trip per key.
+        if (!IsNativeButton)
             builder.AddAttribute(31, "onkeydown",
                 On<KeyboardEventArgs>("onkeydown", HandleKeyDown));
         builder.AddElementReferenceCapture(40, CaptureElement);
@@ -196,7 +198,7 @@ public abstract class BitBhCheckableBase : BitBhComponentBase, IDisposable
     {
         // A held key repeats: the state would flip back and forth.
         if (IsDisabled || e.Repeat) return Task.CompletedTask;
-        if (!IsNativeButton && (e.Key == " " || (e.Key == "Enter" && EnterToggles)))
+        if (e.Key == " " || (e.Key == "Enter" && EnterToggles))
             return ToggleAsync();
         return Task.CompletedTask;
     }

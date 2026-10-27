@@ -217,13 +217,23 @@ public sealed class BitBhFloatingController : IAsyncDisposable
                     var req = request();
                     _selfRef ??= DotNetObjectReference.Create(this);
                     _sentAnchor = AnchorKey(req);
-                    var handle = await _interop.FloatingOpenAsync(_selfRef, req.ContentId, req.ToJs());
+                    var opened = await _interop.FloatingTryOpenAsync(_selfRef, req.ContentId, req.ToJs());
                     if (_disposed)
                     {
                         // Disposed while the open was in flight: DisposeAsync saw no handle to close, and a
                         // modal surface left open keeps the rest of the page inert and its scroll locked.
-                        await _interop.FloatingCloseAsync(handle, restoreFocus: true, waitForExit: false);
+                        await _interop.FloatingCloseAsync(opened ?? 0, restoreFocus: true, waitForExit: false);
                         return;
+                    }
+                    if (opened is not { } handle)
+                    {
+                        // The call failed (a circuit that dropped, a JS error such as an invalid portal target):
+                        // no layer, focus scope, modal isolation or positioning exists. Counting the surface open
+                        // would reveal it without any of them until it is closed and reopened; it stays closed -
+                        // script-revealed content hidden - and the owner's next render tries again. No render
+                        // is requested here: a failure that repeats would loop.
+                        _phase = Phase.Closed;
+                        break;
                     }
                     Handle = handle;
                     _phase = Phase.Open;

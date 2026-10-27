@@ -47,9 +47,14 @@ public class BitBhFocusScope : BitBhComponentBase, IAsyncDisposable
     [Parameter]
     public bool RestoreFocus { get; set; } = true;
 
-    /// <summary>Element to focus on activation (defaults to <c>[data-bit-bh-autofocus]</c> or the first tabbable element).</summary>
+    /// <summary>
+    /// Element to focus on activation (defaults to <c>[data-bit-bh-autofocus]</c> or the first tabbable element),
+    /// e.g. <c>InitialFocus="() =&gt; nameInput"</c>. A function, called when the scope activates after a render:
+    /// an element inside the scope only gets its reference while the scope's content renders, after the scope's
+    /// parameters were set.
+    /// </summary>
     [Parameter]
-    public ElementReference? InitialFocus { get; set; }
+    public Func<ElementReference>? InitialFocus { get; set; }
 
     /// <summary>Element to focus on deactivation (defaults to the element focused before activation).</summary>
     [Parameter]
@@ -84,7 +89,7 @@ public class BitBhFocusScope : BitBhComponentBase, IAsyncDisposable
                         Loop = Loop,
                         AutoFocus = AutoFocus ? "first" : "none",
                         // AutoFocus off focuses nothing, InitialFocus included.
-                        AutoFocusElement = AutoFocus ? InitialFocus : null,
+                        AutoFocusElement = AutoFocus ? InitialFocus?.Invoke() : null,
                         RestoreFocus = RestoreFocus,
                         ReturnFocusElement = ReturnFocus,
                     });

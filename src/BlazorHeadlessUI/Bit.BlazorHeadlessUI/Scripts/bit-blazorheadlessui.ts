@@ -1481,8 +1481,12 @@ function createRuntime() {
 
     function hotkeyMatches(e: KeyboardEvent, hk: ReturnType<typeof parseHotkey>) {
         if ((e.key || '').toLowerCase() !== hk.key && (e.code || '').toLowerCase() !== `key${hk.key}`) return false;
+        // Shift counts unless the combo names a symbol typed with it on some layout ("?" is Shift+/ on a US
+        // keyboard, a digit is shifted on AZERTY): there the produced key already tells the combos apart. A
+        // letter only changes case, which is compared away, so "mod+k" must not also fire on Mod+Shift+K.
+        const shiftMatters = hk.key.length > 1 || hk.mods.has('shift') || hk.key.toUpperCase() !== hk.key;
         return e.ctrlKey === hk.mods.has('ctrl') && e.metaKey === hk.mods.has('meta')
-            && e.altKey === hk.mods.has('alt') && (hk.key.length > 1 || hk.mods.has('shift') ? e.shiftKey === hk.mods.has('shift') : true);
+            && e.altKey === hk.mods.has('alt') && (!shiftMatters || e.shiftKey === hk.mods.has('shift'));
     }
 
     function isEditable(el: EventTarget | null) {

@@ -407,4 +407,49 @@
         open.SetResult(1);
         cut.WaitForAssertion(() => Assert.ContainsSingle(JSInterop.Invocations.Where(i => i.Identifier == "dom.scrollIntoView")));
     }
+    [TestMethod]
+    public void Escape_with_nothing_to_clear_reaches_an_enclosing_dialog()
+    {
+        var open = true;
+        var cut = Render(
+            @<BitBhDialog @bind-Open="open">
+                <BitBhDialogPanel aria-label="Pick a number">
+                    <BitBhCombobox TValue="int" DefaultValue="2">
+                        <BitBhComboboxInput TValue="int" aria-label="Number" />
+                        <BitBhComboboxOptions TValue="int">
+                            <BitBhComboboxOption TValue="int" Value="2">2</BitBhComboboxOption>
+                        </BitBhComboboxOptions>
+                    </BitBhCombobox>
+                </BitBhDialogPanel>
+            </BitBhDialog>);
+
+        // Not nullable: the closed input keeps its value, so Escape clears nothing and must close the dialog.
+        cut.Find("[aria-label=Number]").Press("Escape");
+        Assert.IsFalse(open);
+    }
+
+    [TestMethod]
+    public void Escape_that_clears_a_nullable_combobox_stays_in_it()
+    {
+        var open = true;
+        var cut = Render(
+            @<BitBhDialog @bind-Open="open">
+                <BitBhDialogPanel aria-label="Pick a number">
+                    <BitBhCombobox TValue="int" DefaultValue="2" Nullable="true">
+                        <BitBhComboboxInput TValue="int" aria-label="Number" />
+                        <BitBhComboboxOptions TValue="int">
+                            <BitBhComboboxOption TValue="int" Value="2">2</BitBhComboboxOption>
+                        </BitBhComboboxOptions>
+                    </BitBhCombobox>
+                </BitBhDialogPanel>
+            </BitBhDialog>);
+
+        cut.Find("[aria-label=Number]").Press("Escape");
+        Assert.IsTrue(open);
+        Assert.AreEqual("", cut.Find("[aria-label=Number]").GetAttribute("value"));
+
+        // Cleared: the next Escape is the dialog's.
+        cut.Find("[aria-label=Number]").Press("Escape");
+        Assert.IsFalse(open);
+    }
 }

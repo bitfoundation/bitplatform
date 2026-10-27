@@ -223,6 +223,27 @@ public sealed class KeyboardTests : DemoTest
     }
 
     [TestMethod]
+    public async Task A_letter_shortcut_without_Shift_leaves_the_shifted_letter_alone()
+    {
+        var page = await OpenDemoAsync("/command");
+
+        // The letter's case is compared away, so Shift has to be part of the match: "mod+k" must not also take
+        // Ctrl+Shift+K. A shortcut that matches calls preventDefault on the keydown, synchronously.
+        Assert.IsFalse(await ShortcutTakesAsync(page, shift: true), "Ctrl+Shift+K was taken by the Ctrl+K shortcut");
+        Assert.IsTrue(await ShortcutTakesAsync(page, shift: false), "Ctrl+K was not taken");
+        await Expect(page.Locator("[role=dialog]")).ToBeVisibleAsync();
+    }
+
+    private static Task<bool> ShortcutTakesAsync(IPage page, bool shift)
+        => page.EvaluateAsync<bool>("""
+            shift => {
+                const e = new KeyboardEvent('keydown', { key: shift ? 'K' : 'k', code: 'KeyK', ctrlKey: true, shiftKey: shift, bubbles: true, cancelable: true });
+                document.body.dispatchEvent(e);
+                return e.defaultPrevented;
+            }
+            """, shift);
+
+    [TestMethod]
     public async Task Slider_arrow_keys_change_the_value_and_Home_End_jump()
     {
         var page = await OpenDemoAsync("/slider");

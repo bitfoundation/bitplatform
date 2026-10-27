@@ -492,4 +492,16 @@
         cut.FindAll("[role=checkbox]")[0].Click();
         Assert.AreSequenceEqual(new[] { "c" }, values!);
     }
+    [TestMethod]
+    public void Native_button_checkbox_leaves_its_keys_to_the_browser()
+    {
+        var cut = Render(@<BitBhCheckbox aria-label="Terms" />);
+        var box = cut.Find("[role=checkbox]");
+
+        // Space clicks a native button and the runtime keeps Enter from clicking it: a .NET keydown handler would
+        // do nothing but cost a round trip per key on Blazor Server.
+        Assert.IsFalse(box.HasAttribute("blazor:onkeydown"));
+        Assert.AreEqual("Enter", box.GetAttribute("data-bit-bh-keys"));
+        Assert.IsTrue(cut.Find("[role=checkbox]").HasAttribute("blazor:onclick"));
+    }
 }

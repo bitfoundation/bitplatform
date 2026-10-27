@@ -58,17 +58,25 @@ public sealed class BitBhInterop : IAsyncDisposable, IDisposable
     }
 
     private async ValueTask<T> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] T>(string identifier, params object?[] args)
+        => (await TryInvokeAsync<T>(identifier, args)).Result;
+
+    /// <summary>
+    /// Like <see cref="InvokeAsync{T}"/>, but tells a call that failed (a disconnected circuit, a JS error, a
+    /// disposed runtime) from one the runtime answered, default value included.
+    /// </summary>
+    private async ValueTask<(bool Answered, T Result)> TryInvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] T>(string identifier, params object?[] args)
     {
-        if (_disposed) return default!;
+        if (_disposed) return (false, default!);
         try
         {
             var module = await Module;
-            if (module is null) return default!;
-            return await module.InvokeAsync<T>(identifier, args);
+            // No module to call (a test double of the JS runtime): nothing failed, there is just no browser.
+            if (module is null) return (true, default!);
+            return (true, await module.InvokeAsync<T>(identifier, args));
         }
         catch (Exception ex) when (IsBenign(ex, identifier))
         {
-            return default!;
+            return (false, default!);
         }
     }
 
@@ -119,6 +127,16 @@ public sealed class BitBhInterop : IAsyncDisposable, IDisposable
     /// <summary>Opens a floating surface (popover, menu, dialog …). Returns a handle, or 0 when unavailable.</summary>
     public ValueTask<int> FloatingOpenAsync(object? dotNetRef, string contentId, IDictionary<string, object?> options)
         => InvokeAsync<int>("floating.open", dotNetRef, contentId, options);
+
+    /// <summary>
+    /// Opens a floating surface. Returns its handle (0 when the runtime found no content element or there is
+    /// no browser), or null when the call failed - a disconnected circuit, a JS error - and nothing was set up.
+    /// </summary>
+    internal async ValueTask<int?> FloatingTryOpenAsync(object? dotNetRef, string contentId, IDictionary<string, object?> options)
+    {
+        var (answered, handle) = await TryInvokeAsync<int>("floating.open", dotNetRef, contentId, options);
+        return answered ? handle : null;
+    }
 
     /// <summary>Re-applies positioning / branch ids for an open surface.</summary>
     public ValueTask FloatingUpdateAsync(int handle, IDictionary<string, object?>? options = null)

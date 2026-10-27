@@ -14,7 +14,7 @@ public sealed class BitBhDialogContext : IBitBhCloseContext
     private readonly Func<BitBhDismissReason, Task> _dismissAsync;
     private readonly Action<bool> _registerTitle;
     private readonly Action<bool> _registerDescription;
-    private readonly Action<ElementReference?, bool> _registerPanel;
+    private readonly Action<Func<ElementReference>?, bool> _registerPanel;
 
     internal BitBhDialogContext(
         bool isOpen,
@@ -27,7 +27,7 @@ public sealed class BitBhDialogContext : IBitBhCloseContext
         Func<BitBhDismissReason, Task> dismissAsync,
         Action<bool> registerTitle,
         Action<bool> registerDescription,
-        Action<ElementReference?, bool> registerPanel)
+        Action<Func<ElementReference>?, bool> registerPanel)
     {
         IsOpen = isOpen;
         BaseId = baseId;
@@ -77,7 +77,7 @@ public sealed class BitBhDialogContext : IBitBhCloseContext
 
     internal void RegisterTitle(bool present) => _registerTitle(present);
     internal void RegisterDescription(bool present) => _registerDescription(present);
-    internal void RegisterPanel(ElementReference? initialFocus, bool dismissOnEscape) => _registerPanel(initialFocus, dismissOnEscape);
+    internal void RegisterPanel(Func<ElementReference>? initialFocus, bool dismissOnEscape) => _registerPanel(initialFocus, dismissOnEscape);
 }
 
 /// <summary>

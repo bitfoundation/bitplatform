@@ -270,4 +270,42 @@
         var options = (IDictionary<string, object?>)JSInterop.Invocations["floating.update"].Last().Arguments[1]!;
         Assert.AreEqual("top start", ((IDictionary<string, object?>)options["anchor"]!)["to"]);
     }
+    [TestMethod]
+    public async Task A_surface_whose_open_failed_stays_hidden_and_opens_on_the_next_render()
+    {
+        Module.Setup<int>("floating.open", _ => true).SetException(new JSException("'#missing>' is not a valid selector."));
+        var cut = Render(
+            @<Stateful T="int" Context="s">
+                <BitBhDialog DefaultOpen="true">
+                    <BitBhDialogPanel aria-label="Settings"><button>OK</button></BitBhDialogPanel>
+                </BitBhDialog>
+            </Stateful>);
+
+        // Nothing was set up - no focus trap, no inert page, no Escape: the dialog is not revealed without them.
+        Assert.HasCount(1, JSInterop.Invocations["floating.open"]);
+        Assert.IsTrue(cut.Find("[role=dialog]").ParentElement!.HasAttribute("hidden"));
+
+        Module.Setup<int>("floating.open", _ => true).SetResult(4);
+        await cut.InvokeAsync(() => cut.FindComponent<Stateful<int>>().Instance.Set(1));
+
+        cut.WaitForAssertion(() => Assert.HasCount(2, JSInterop.Invocations["floating.open"]));
+        cut.WaitForAssertion(() => Assert.IsFalse(cut.Find("[role=dialog]").ParentElement!.HasAttribute("hidden")));
+    }
+
+    private ElementReference _name;
+
+    [TestMethod]
+    public void A_focus_scope_reads_InitialFocus_once_its_content_rendered()
+    {
+        Render(
+            @<BitBhFocusScope InitialFocus="() => _name">
+                <button>Cancel</button>
+                <input @ref="_name" aria-label="Name" />
+            </BitBhFocusScope>);
+
+        var options = (IDictionary<string, object?>)JSInterop.Invocations["focus.createScope"].Last().Arguments[1]!;
+        var autoFocus = (ElementReference)options["autoFocus"]!;
+        Assert.IsNotNull(autoFocus.Id);
+        Assert.AreEqual(_name.Id, autoFocus.Id);
+    }
 }

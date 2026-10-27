@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorHeadlessUI.Tests.Core;
+﻿using Microsoft.JSInterop;
+
+namespace Bit.BlazorHeadlessUI.Tests.Core;
 
 [TestClass]
 public class FilterTests
@@ -104,4 +106,87 @@ public class TypeaheadTests
     [DataRow("a", false, true, false)]
     public void Typeahead_keys(string key, bool ctrl, bool alt, bool expected)
         => Assert.AreEqual(expected, BitBhTypeahead.IsTypeaheadKey(key, ctrl, alt));
+}
+
+[TestClass]
+public class CollectionTests
+{
+    private sealed class Item(string id) : IBitBhCollectionItem
+    {
+        public string ItemId => id;
+        public bool IsItemDisabled => false;
+        public string? ItemText => null;
+    }
+
+    /// <summary>A JS runtime whose module answers <c>collection.order</c> with what the test put on the "page".</summary>
+    private sealed class Page : IJSRuntime, IJSObjectReference
+    {
+        public string[][] Order { get; set; } = [];
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
+            => identifier switch
+            {
+                "import" => ValueTask.FromResult((TValue)(object)this),
+                "collection.order" => ValueTask.FromResult((TValue)(object)Order),
+                _ => ValueTask.FromResult(default(TValue)!),
+            };
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+            => InvokeAsync<TValue>(identifier, args);
+
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+
+    [TestMethod]
+    public async Task Rendered_texts_of_items_that_left_are_dropped()
+    {
+        var page = new Page();
+        var interop = new BitBhInterop(page);
+        var collection = new BitBhCollection<Item>("options");
+        Item a = new("a"), b = new("b"), c = new("c");
+
+        collection.Register(a);
+        collection.Register(b);
+        page.Order = [["a", "Apple"], ["b", "Banana"]];
+        await collection.EnsureOrderAsync(interop);
+        Assert.AreEqual("Apple", collection.GetRenderedText("a"));
+
+        // A combobox re-filtered on every keystroke replaces its options: the texts of the old ones go with them.
+        collection.Unregister(a);
+        Assert.IsNull(collection.GetRenderedText("a"));
+
+        collection.Register(c);
+        page.Order = [["b", "Banana"], ["c", "Cherry"]];
+        await collection.EnsureOrderAsync(interop);
+        Assert.AreEqual("Banana", collection.GetRenderedText("b"));
+        Assert.AreEqual("Cherry", collection.GetRenderedText("c"));
+    }
+
+    [TestMethod]
+    public async Task A_sync_that_finds_order_and_texts_as_they_were_raises_no_change()
+    {
+        var page = new Page();
+        var interop = new BitBhInterop(page);
+        var collection = new BitBhCollection<Item>("options");
+        var changes = 0;
+        collection.Changed += () => changes++;
+
+        collection.Register(new("a"));
+        collection.Register(new("b"));
+        page.Order = [["a", "Apple"], ["b", "Banana"]];
+        await collection.EnsureOrderAsync(interop);
+        Assert.AreEqual(3, changes, "two registrations and the texts the sync read");
+
+        // A member the page does not show yet: the sync finds the order and the texts unchanged.
+        collection.Register(new("c"));
+        await collection.EnsureOrderAsync(interop);
+        Assert.AreEqual(4, changes, "only the registration");
+
+        // A new order is a change.
+        page.Order = [["b", "Banana"], ["a", "Apple"], ["c", "Cherry"]];
+        collection.Register(new("d"));
+        await collection.EnsureOrderAsync(interop);
+        Assert.AreEqual(6, changes, "the registration and the new order");
+        Assert.AreSequenceEqual(new[] { "b", "a", "c", "d" }, collection.Items.Select(i => i.ItemId).ToArray());
+    }
 }

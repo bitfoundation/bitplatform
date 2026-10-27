@@ -15,12 +15,20 @@ public class BitBhDialogPanel : BitBhComponentBase
     private BitBhDialogContext? DialogContext { get; set; }
 
     /// <summary>
-    /// Optional element to receive focus when the dialog opens. When omitted the
-    /// first element marked <c>data-bit-bh-autofocus</c>, else the first focusable
-    /// element, else the panel itself is focused.
+    /// Optional element to receive focus when the dialog opens, e.g.
+    /// <c>InitialFocus="() =&gt; confirmButton"</c>. When omitted the first element
+    /// marked <c>data-bit-bh-autofocus</c>, else the first focusable element, else
+    /// the panel itself is focused.
+    /// <para>
+    /// A function rather than an <see cref="ElementReference"/>: an element inside the
+    /// panel only gets its reference while the panel renders - after the panel's
+    /// parameters were set - and gets a new one on every open, since the content is
+    /// removed while the dialog is closed. The function is called once the open
+    /// dialog has rendered.
+    /// </para>
     /// </summary>
     [Parameter]
-    public ElementReference? InitialFocus { get; set; }
+    public Func<ElementReference>? InitialFocus { get; set; }
 
     /// <summary>
     /// When true (the default), Escape closes the dialog. Set to <c>false</c>
