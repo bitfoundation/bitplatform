@@ -917,7 +917,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         var login = Runner.RunAsync(new ProcessSpec
         {
             FileName = "gh",
-            Arguments = ["auth", "login", "--web", "--git-protocol", "https", "--hostname", "github.com"],
+            Arguments = ["auth", "login", "--web", "--clipboard", "--git-protocol", "https", "--hostname", "github.com"],
             WorkingDirectory = project.Directory,
             Timeout = TimeSpan.FromMinutes(15),
             OnOutputLine = line =>
@@ -925,7 +925,8 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
                 if (OneTimeCodeRegex().Match(line) is not { Success: true } code || Interlocked.Exchange(ref codeShown, 1) is 1)
                     return;
 
-                cli.Console.Out.MarkupLine($"    Enter [bold]{code.Value}[/] [grey](copied to the clipboard)[/] at {GitHubDevicePage}, which opens in your browser.");
+                var copied = line.Contains("copied to clipboard", StringComparison.OrdinalIgnoreCase) ? " [grey](copied to the clipboard)[/]" : "";
+                cli.Console.Out.MarkupLine($"    Enter [bold]{code.Value}[/]{copied} at {GitHubDevicePage}, which opens in your browser.");
                 cli.Console.Out.MarkupLine("    [grey]Press Esc to skip signing in; bit goes on without the GitHub repo.[/]");
                 ProjectRun.OpenInBrowser(cli, GitHubDevicePage);
             }

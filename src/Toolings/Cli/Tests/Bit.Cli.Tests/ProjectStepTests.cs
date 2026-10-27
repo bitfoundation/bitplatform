@@ -987,7 +987,7 @@ public class ProjectStepTests
         var result = await new ProjectSteps(host.Services, project).GitHubSignInAsync(_ => { }, CancellationToken.None);
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status);
-        CollectionAssert.AreEqual(new[] { "auth setup-git --hostname github.com --force", "auth login --web --git-protocol https --hostname github.com" },
+        CollectionAssert.AreEqual(new[] { "auth setup-git --hostname github.com --force", "auth login --web --clipboard --git-protocol https --hostname github.com" },
             host.Runner.Calls.Where(c => c.FileName is "gh").Select(c => string.Join(' ', c.Arguments)).ToArray());
     }
 
@@ -1020,9 +1020,26 @@ public class ProjectStepTests
         Assert.AreEqual(StepStatus.Warning, result.Status);
         Assert.AreEqual("Skipped signing in to GitHub", result.Title);
         Assert.IsTrue(stopped, "Skipping stops gh's sign-in.");
-        StringAssert.Contains(host.FlatOutput, "Enter AB12-CD34");
+        StringAssert.Contains(host.FlatOutput, "Enter AB12-CD34 (copied to the clipboard)");
         StringAssert.Contains(host.FlatOutput, "Press Esc to skip");
         CollectionAssert.AreEqual(new[] { "https://github.com/login/device" }, host.Runner.Detached.SelectMany(d => d.Arguments).Where(a => a.StartsWith("https", StringComparison.Ordinal)).ToArray());
+    }
+
+    [TestMethod]
+    public async Task GitHubSignIn_Should_SayTheCodeIsCopiedOnlyWhenGhCopiedIt()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var project = CreateFakeProject(host, "Contoso");
+        host.Runner.Executables["gh"] = "/usr/bin/gh";
+        host.Runner.On("gh", "auth login", spec =>
+        {
+            spec.OnOutputLine?.Invoke("! First copy your one-time code: AB12-CD34");
+            return new ProcessResult { ExitCode = 0 };
+        });
+
+        await new ProjectSteps(host.Services, project).GitHubSignInAsync(_ => { }, CancellationToken.None);
+
+        StringAssert.Contains(host.FlatOutput, "Enter AB12-CD34 at https://github.com/login/device");
     }
 
     [TestMethod]
