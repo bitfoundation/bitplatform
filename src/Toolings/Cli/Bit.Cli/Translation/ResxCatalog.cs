@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Bit.Cli.Translation;
 
@@ -106,22 +107,8 @@ public static partial class ResxCatalog
 
     private static IEnumerable<string> Find(string root, string pattern, Action<string>? warn)
     {
-        var normalized = pattern.TrimStart('/', '\\').Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
-        string directory;
-        bool recursive;
-
-        if (normalized.Contains("**", StringComparison.Ordinal))
-        {
-            directory = normalized[..normalized.IndexOf("**", StringComparison.Ordinal)];
-            recursive = true;
-        }
-        else
-        {
-            directory = Path.GetDirectoryName(normalized) ?? "";
-            recursive = false;
-        }
-
-        var fullDirectory = Path.Combine(root, directory);
+        var normalized = pattern.TrimStart('/', '\\').Replace('\\', '/');
+        var fullDirectory = Path.Combine([root, .. normalized.Split('/')[..^1].TakeWhile(segment => segment.Contains('*') is false)]);
 
         if (Directory.Exists(fullDirectory) is false)
         {
@@ -129,16 +116,13 @@ public static partial class ResxCatalog
             return [];
         }
 
-        var filePattern = Path.GetFileName(normalized) is { Length: > 0 } name && name.Contains('*') ? name : "*.resx";
-
-        return Directory.EnumerateFiles(fullDirectory, filePattern, new EnumerationOptions
-        {
-            RecurseSubdirectories = recursive,
-            IgnoreInaccessible = true
-        }).Where(path => path.EndsWith(".resx", StringComparison.OrdinalIgnoreCase)
-            && path.Replace('\\', '/').Contains("/bin/", StringComparison.OrdinalIgnoreCase) is false
-            && path.Replace('\\', '/').Contains("/obj/", StringComparison.OrdinalIgnoreCase) is false
-            && path.Replace('\\', '/').Contains("/node_modules/", StringComparison.OrdinalIgnoreCase) is false);
+        return new Matcher()
+            .AddInclude(normalized)
+            .AddExclude("**/bin/**")
+            .AddExclude("**/obj/**")
+            .AddExclude("**/node_modules/**")
+            .GetResultsInFullPath(root)
+            .Where(path => path.EndsWith(".resx", StringComparison.OrdinalIgnoreCase));
     }
 
     public static bool IsCultureSpecific(string path)

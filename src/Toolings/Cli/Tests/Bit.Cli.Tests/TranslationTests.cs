@@ -35,6 +35,25 @@ public class TranslationTests
     }
 
     [TestMethod]
+    [DataRow("/src/Shared/Resources/AppStrings.resx", "AppStrings.resx")]
+    [DataRow("/src/**/AppStrings.resx", "AppStrings.resx")]
+    [DataRow("/src/**/Resources/AppStrings.resx", "AppStrings.resx")]
+    [DataRow("/src/*/Resources/*.resx", "AppStrings.resx,IdentityStrings.resx")]
+    [DataRow("src/**/*.resx", "AppStrings.resx,BitBlazorUIStrings.resx,IdentityStrings.resx,Strings.resx")]
+    public void ResxPaths_Should_MatchOnlyWhatTheGlobNames(string pattern, string expected)
+    {
+        using var host = CreateProject(new() { ["Hello"] = "Hello" }, Config.Replace("/src/**/*.resx", pattern, StringComparison.Ordinal));
+        WriteResx(Path.Combine(host.WorkingDirectory, "src", "Shared", "Resources", "AppStrings.resx"), new() { ["Hello"] = "Hello" });
+        WriteResx(Path.Combine(host.WorkingDirectory, "src", "Shared", "Resources", "IdentityStrings.resx"), new() { ["Hello"] = "Hello" });
+        WriteResx(Path.Combine(host.WorkingDirectory, "src", "Shared", "Other", "BitBlazorUIStrings.resx"), new() { ["Hello"] = "Hello" });
+
+        var settings = ResxTranslatorSettings.Load(Path.Combine(host.WorkingDirectory, ResxTranslatorSettings.FileName), new Dictionary<string, string>());
+        var files = ResxCatalog.FindBaseFiles(settings).Select(Path.GetFileName).ToArray();
+
+        CollectionAssert.AreEquivalent(expected.Split(','), files, string.Join(", ", files));
+    }
+
+    [TestMethod]
     public void Plan_Should_FindOnlyMissingKeys()
     {
         using var host = CreateProject(new() { ["Hello"] = "Hello", ["Bye"] = "Bye {0}" });
