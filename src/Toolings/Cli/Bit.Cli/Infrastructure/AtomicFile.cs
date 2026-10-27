@@ -8,6 +8,11 @@ public static class AtomicFile
 
     public static void WriteAllText(string path, string content)
     {
+        if (new FileInfo(path) is { LinkTarget: not null } link)
+        {
+            path = link.ResolveLinkTarget(returnFinalTarget: true)!.FullName;
+        }
+
         var directory = Path.GetDirectoryName(Path.GetFullPath(path))!;
         Directory.CreateDirectory(directory);
 
@@ -16,6 +21,11 @@ public static class AtomicFile
 
         try
         {
+            if ((OperatingSystem.IsLinux() || OperatingSystem.IsMacOS()) && File.Exists(path))
+            {
+                File.SetUnixFileMode(temporary, File.GetUnixFileMode(path));
+            }
+
             File.Move(temporary, path, overwrite: true);
         }
         catch

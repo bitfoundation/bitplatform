@@ -52,6 +52,40 @@ public class TrustTests
     }
 
     [TestMethod]
+    public void ClaudeCode_Should_KeepItsConfigsLinkAndPermissions()
+    {
+        using var host = new TestHost();
+        var dotfiles = Directory.CreateDirectory(Path.Combine(host.Root, "dotfiles")).FullName;
+        var target = Path.Combine(dotfiles, ".claude.json");
+        var config = Path.Combine(host.Home, ".claude.json");
+        File.WriteAllText(target, """{ "userID": "abc" }""");
+
+        try
+        {
+            File.CreateSymbolicLink(config, target);
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            return;
+        }
+
+        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+        {
+            File.SetUnixFileMode(target, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        }
+
+        Assert.AreEqual(TrustResultKind.Trusted, new ClaudeCodeTrust().Trust(new TrustContext(host.Environment, host.Runner), ProjectFolder(host)).Kind);
+
+        Assert.IsNotNull(new FileInfo(config).LinkTarget, "A dotfiles repository keeps tracking the file.");
+        StringAssert.Contains(File.ReadAllText(target), "hasTrustDialogAccepted");
+
+        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+        {
+            Assert.AreEqual(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(target), "It holds MCP servers' tokens.");
+        }
+    }
+
+    [TestMethod]
     public void ClaudeCode_Should_KeyAWindowsFolderTheWayClaudeCodeLooksItUp()
     {
         using var windows = new TestHost(HostOs.Windows);
