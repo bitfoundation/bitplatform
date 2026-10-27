@@ -90,6 +90,30 @@ public class NewWorkflowTests
     }
 
     [TestMethod]
+    public async Task AnInterruptedTemplateDownload_Should_BeDownloadedAgain()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var complete = FakeTemplatePackage(host);
+        var packages = Directory.CreateDirectory(Path.Combine(host.Environment.BitDirectory, "templates", "10.7.0", "packages")).FullName;
+        File.WriteAllBytes(Path.Combine(packages, "Bit.Boilerplate.10.7.0.nupkg"), [0x50, 0x4B, 0x03, 0x04]);
+        host.Runner.On("dotnet", "new install", spec =>
+        {
+            var arguments = spec.Arguments.ToList();
+            var hivePackages = Directory.CreateDirectory(Path.Combine(arguments[arguments.IndexOf("--debug:custom-hive") + 1], "packages")).FullName;
+            File.Copy(complete, Path.Combine(hivePackages, "Bit.Boilerplate.10.7.0.nupkg"));
+            return new ProcessResult { ExitCode = 0 };
+        });
+
+        var source = new TemplateSource(host.Environment, host.Runner);
+        var (package, _) = await source.EnsureInstalledAsync("10.7.0", null, null, CancellationToken.None);
+        var (again, _) = await source.EnsureInstalledAsync("10.7.0", null, null, CancellationToken.None);
+
+        Assert.IsNotNull(TemplateSource.ReadManifest(package!.PackagePath), "A half-written package was taken as installed.");
+        Assert.AreEqual(package.PackagePath, again?.PackagePath);
+        Assert.AreEqual(1, host.Runner.Calls.Count(c => c.Arguments.Take(2).SequenceEqual(["new", "install"])), Calls(host));
+    }
+
+    [TestMethod]
     public async Task ATemplateFolder_Should_BeInstalledFromTheFolderOnce()
     {
         using var host = new TestHost(HostOs.Linux);

@@ -14,7 +14,7 @@ public sealed class TemplateSource(CliEnvironment environment, IProcessRunner ru
 
     public const string FolderVersion = "local";
 
-    private const string FolderMarker = "folder.txt";
+    private const string InstalledMarker = "installed.txt";
 
     private string TemplatesDirectory => Path.Combine(environment.BitDirectory, "templates");
 
@@ -31,14 +31,14 @@ public sealed class TemplateSource(CliEnvironment environment, IProcessRunner ru
             var changed = isFolder ? File.GetLastWriteTimeUtc(Path.Combine(fullPath, ".template.config", "template.json")) : File.GetLastWriteTimeUtc(fullPath);
             var stamp = $"{fullPath}|{changed.Ticks}";
             var localHive = Path.Combine(TemplatesDirectory, "local-" + Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(stamp)))[..12]);
-            var alreadyInstalled = isFolder ? File.Exists(Path.Combine(localHive, FolderMarker)) : FindPackage(localHive) is not null;
+            var alreadyInstalled = File.Exists(Path.Combine(localHive, InstalledMarker));
             var localResult = alreadyInstalled
                 ? new ProcessResult { ExitCode = 0, Output = "Already installed." }
                 : await InstallAsync(fullPath, localHive, onOutput, cancellationToken);
 
-            if (isFolder && alreadyInstalled is false && localResult.Succeeded)
+            if (alreadyInstalled is false && localResult.Succeeded)
             {
-                File.WriteAllText(Path.Combine(localHive, FolderMarker), fullPath);
+                File.WriteAllText(Path.Combine(localHive, InstalledMarker), fullPath);
             }
 
             return localResult.Succeeded
@@ -48,7 +48,7 @@ public sealed class TemplateSource(CliEnvironment environment, IProcessRunner ru
 
         version ??= BuildInfo.Version;
         var hive = Path.Combine(TemplatesDirectory, version);
-        var cached = FindPackage(hive);
+        var cached = File.Exists(Path.Combine(hive, InstalledMarker)) ? FindPackage(hive) : null;
 
         if (cached is not null)
             return (new TemplatePackage(version, cached, hive), new ProcessResult { ExitCode = 0, Output = "Already installed." });
@@ -56,9 +56,11 @@ public sealed class TemplateSource(CliEnvironment environment, IProcessRunner ru
         var result = await InstallAsync($"{PackageId}::{version}", hive, onOutput, cancellationToken);
         var installed = FindPackage(hive);
 
-        return result.Succeeded && installed is not null
-            ? (new TemplatePackage(version, installed, hive), result)
-            : (null, result);
+        if (result.Succeeded is false || installed is null)
+            return (null, result);
+
+        File.WriteAllText(Path.Combine(hive, InstalledMarker), installed);
+        return (new TemplatePackage(version, installed, hive), result);
     }
 
     public Task<ProcessResult> CreateAsync(TemplatePackage package, TemplateManifest manifest, string name, string outputDirectory, IEnumerable<string> templateArguments, Action<string>? onOutput, CancellationToken cancellationToken)
@@ -148,6 +150,17 @@ public sealed class TemplateSource(CliEnvironment environment, IProcessRunner ru
 
     private Task<ProcessResult> InstallAsync(string package, string hive, Action<string>? onOutput, CancellationToken cancellationToken)
     {
+        try
+        {
+            if (Directory.Exists(hive))
+            {
+                Directory.Delete(hive, recursive: true);
+            }
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+        }
+
         Directory.CreateDirectory(hive);
 
         return runner.RunAsync(new ProcessSpec
