@@ -113,14 +113,18 @@ public static partial class BbScannerSetupGuide
             "hybrid" => new Mode(
                 "Blazor Hybrid (MAUI, WPF, Windows Forms)",
                 """
-                .NET runs natively in the app's process and the BlazorWebView is the page: the WebView opens the camera,
-                cuts each frame down to the luminance of the searched `Region` and sends it to the component, whose
-                frame loop and decoder run in-process at native speed - no network is involved. Nothing changes in the
-                Razor; what each platform adds is permission to use the camera, below. A BlazorWebView is a secure
-                context already, and a WebView that exposes no camera API at all (`getUserMedia` in WKWebView needs
-                iOS 14.3 or later) makes the scanner report `NotSupported`.
+                .NET runs natively in the app's process, so in a .NET MAUI app the scanner can use the device's own
+                camera: the `Bit.BbScanner.Maui` package opens it through CameraX on Android, AVFoundation on iOS and
+                Mac Catalyst and MediaCapture on Windows, and its frames go straight to the decoder in-process, at the
+                camera's own resolution, never crossing into the page. The preview is drawn natively behind the
+                BlazorWebView, where the scanner is, by a `BbScannerHost` the BlazorWebView is wrapped in; the page
+                draws the scanner's overlays and controls over it as usual. Nothing changes in the Razor, except that
+                the scanner belongs in the page itself rather than in a dialog over other content: only its own
+                ancestors are made transparent for the preview to show through. In WPF or
+                Windows Forms - or a MAUI app without the package - the scanner opens the WebView's camera instead,
+                which WebView2 asks the user for itself.
                 """,
-                ["Blazor Hybrid"],
+                ["Blazor Hybrid: .NET MAUI", "Blazor Hybrid: WPF and Windows Forms"],
                 HybridFiles,
                 IncludeDemo: false),
 
@@ -176,7 +180,9 @@ public static partial class BbScannerSetupGuide
            Web App, add it to the project the scanning pages render in: the server project for InteractiveServer, the
            .Client project for InteractiveWebAssembly or InteractiveAuto (the server project references it).
         2. Add `@using Bit.BbScanner` to `_Imports.razor`.
-        3. There are NO services to register - do not look for an `AddBbScanner...` method, there is none.
+        3. There are NO services to register - do not look for an `AddBbScanner...` method, there is none. The one setup
+           call there is belongs to a .NET MAUI app that scans with the device's own camera: `builder.UseBbScanner()`,
+           from the `Bit.BbScanner.Maui` package - see the hybrid guide.
         4. There is no stylesheet to add: `_content/Bit.BbScanner/bit-bbscanner.css` is injected by the package's Blazor
            initializer. Linking it yourself also works (the injection then stands down); never link it twice under
            another path.
@@ -321,9 +327,43 @@ public static partial class BbScannerSetupGuide
     private const string HybridFiles = """
         ## The files
 
-        `@using Bit.BbScanner` in `_Imports.razor` and `<BbScanner>` on a page, as anywhere else; there is nothing to
-        register beside `AddMauiBlazorWebView()` (or its WPF or Windows Forms counterpart). The rest is the camera
+        `@using Bit.BbScanner` in `_Imports.razor` and `<BbScanner>` on a page, as anywhere else. For a .NET MAUI app,
+        add the `Bit.BbScanner.Maui` package to the app project; the rest is three lines of setup and the camera
         permission, platform by platform.
+
+        ### `MauiProgram.cs`
+
+        ```csharp
+        var builder = MauiApp.CreateBuilder();
+        builder.UseMauiApp<App>();
+
+        // The device's own camera for every scanner in the app.
+        builder.UseBbScanner();
+
+        builder.Services.AddMauiBlazorWebView();
+        ```
+
+        ### `MainPage.xaml`
+
+        ```xml
+        <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                     xmlns:bb="clr-namespace:Bit.BbScanner;assembly=Bit.BbScanner.Maui"
+                     x:Class="MyApp.MainPage">
+
+            <!-- Draws the camera's preview behind the BlazorWebView, where the scanner is. -->
+            <bb:BbScannerHost>
+                <BlazorWebView HostPage="wwwroot/index.html">
+                    <BlazorWebView.RootComponents>
+                        <RootComponent Selector="#app" ComponentType="{x:Type local:Routes}" />
+                    </BlazorWebView.RootComponents>
+                </BlazorWebView>
+            </bb:BbScannerHost>
+        </ContentPage>
+        ```
+
+        While a camera is open the scanner and the elements above it in the page paint no background, so the preview
+        shows through, and the host paints the page's own background colour behind the WebView instead.
 
         ### Android - `Platforms/Android/AndroidManifest.xml`
 
@@ -331,69 +371,7 @@ public static partial class BbScannerSetupGuide
         <uses-permission android:name="android.permission.CAMERA" />
         ```
 
-        ### Android - `Platforms/Android/CameraWebChromeClient.cs`
-
-        Android hands every `getUserMedia` call to the app as `WebChromeClient.OnPermissionRequest`, and BlazorWebView's
-        own client refuses it, which the scanner reports as `PermissionDenied`. This client grants the page the camera
-        once the user has granted the app the CAMERA runtime permission, and wraps BlazorWebView's client rather than
-        replacing it, so the file chooser every `<input type="file">` goes through keeps working.
-
-        ```csharp
-        using Android.Webkit;
-        using AndroidWebView = Android.Webkit.WebView;
-        using Message = Android.OS.Message;
-
-        public class CameraWebChromeClient(WebChromeClient? blazorWebChromeClient) : WebChromeClient
-        {
-            public override void OnPermissionRequest(PermissionRequest? request)
-            {
-                if (request is null) return;
-
-                var resources = request.GetResources() ?? [];
-                if (resources is not [PermissionRequest.ResourceVideoCapture])
-                {
-                    request.Deny();
-                    return;
-                }
-
-                MainThread.BeginInvokeOnMainThread(async () =>
-                {
-                    var status = await Permissions.CheckStatusAsync<Permissions.Camera>();
-                    if (status != PermissionStatus.Granted)
-                    {
-                        status = await Permissions.RequestAsync<Permissions.Camera>();
-                    }
-
-                    if (status == PermissionStatus.Granted) request.Grant(resources);
-                    else request.Deny();
-                });
-            }
-
-            public override bool OnShowFileChooser(AndroidWebView? view, IValueCallback? filePathCallback, FileChooserParams? fileChooserParams)
-                => blazorWebChromeClient?.OnShowFileChooser(view, filePathCallback, fileChooserParams)
-                    ?? base.OnShowFileChooser(view, filePathCallback, fileChooserParams);
-
-            public override bool OnCreateWindow(AndroidWebView? view, bool isDialog, bool isUserGesture, Message? resultMsg)
-                => blazorWebChromeClient?.OnCreateWindow(view, isDialog, isUserGesture, resultMsg)
-                    ?? base.OnCreateWindow(view, isDialog, isUserGesture, resultMsg);
-        }
-        ```
-
-        ### Android - installing it in `MainPage.xaml.cs`
-
-        With `BlazorWebViewInitialized="OnBlazorWebViewInitialized"` on the `<BlazorWebView>` in `MainPage.xaml`, and
-        the body below compiled for Android only (inside `#if ANDROID` in a MAUI project):
-
-        ```csharp
-        private void OnBlazorWebViewInitialized(object? sender, BlazorWebViewInitializedEventArgs e)
-        {
-            // BlazorWebView's own client can only be read back from Android 8 (API 26).
-            if (OperatingSystem.IsAndroidVersionAtLeast(26) && e.WebView.WebChromeClient is not CameraWebChromeClient)
-            {
-                e.WebView.SetWebChromeClient(new CameraWebChromeClient(e.WebView.WebChromeClient));
-            }
-        }
-        ```
+        The runtime permission is asked for the first time a scanner starts.
 
         ### iOS and Mac Catalyst - `Info.plist`
 
@@ -409,19 +387,20 @@ public static partial class BbScannerSetupGuide
         <true/>
         ```
 
-        MAUI's BlazorWebView already sets `AllowsInlineMediaPlayback`. `getUserMedia` in WKWebView needs iOS 14.3 or
-        later.
-
         ### Windows - `Platforms/Windows/Package.appxmanifest`
-
-        WebView2 asks the user with a permission prompt of its own, in WPF and Windows Forms as in MAUI. A packaged app
-        also declares the webcam:
 
         ```xml
         <Capabilities>
             <DeviceCapability Name="webcam" />
         </Capabilities>
         ```
+
+        A camera turned off for the app in Windows' privacy settings is reported as `PermissionDenied`.
+
+        ### WPF and Windows Forms
+
+        Nothing beyond `AddWpfBlazorWebView()` / `AddWindowsFormsBlazorWebView()`: the scanner opens WebView2's camera,
+        which asks the user itself, and the frames travel over the WebView's message channel to the decoder in the app.
 
         All of it, working, is the MAUI sample in `src/Utilities/BbScanner/Samples/Maui` of the bitplatform repository.
         """;

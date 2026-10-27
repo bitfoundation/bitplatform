@@ -49,7 +49,8 @@ public static class BbScannerServerInstructions
         - Camera scanning works in every interactive render mode - WebAssembly, Server, Auto and Hybrid. Call
           `GetBbScannerSetupGuide` before writing wiring: there are no services to register and the stylesheet injects
           itself, but the project the package belongs in differs per render mode, the page must be served over HTTPS or
-          from localhost, and a Blazor Hybrid app has to let the WebView have the camera on each platform.
+          from localhost, and a .NET MAUI app uses the device's own camera through the `Bit.BbScanner.Maui` package -
+          `builder.UseBbScanner()`, the BlazorWebView wrapped in a `BbScannerHost`, and each platform's camera permission.
         - To see the `BbBarcodeResult` a payload produces - its text, raw bytes, corners, metadata and timings - or to
           check whether a symbol survives rotation or blur, call `InspectBbScannerSymbol`: it runs the library's own decoder.
 

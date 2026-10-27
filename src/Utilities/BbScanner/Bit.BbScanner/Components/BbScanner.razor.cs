@@ -84,6 +84,15 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
 
     /// <summary>The way into the page's JavaScript, made for where the component runs on its first use.</summary>
     private BbScannerBridge? _bridge;
+
+    /// <summary>The decoder a frame is being decoded with on another thread, which nothing may dispose meanwhile.</summary>
+    private BbBarcodeDecoder? _decodingDecoder;
+
+    /// <summary>A decoder retired while <see cref="_decodingDecoder"/>, disposed once its decode is done.</summary>
+    private BbBarcodeDecoder? _retiredWhileDecoding;
+
+    /// <summary>Set when the camera closed while a frame was being decoded on another thread: the decoder forgets it after.</summary>
+    private bool _forgetWhileDecoding;
     private BbBarcodeDecoder? _decoder;
     private string? _decoderSignature;
     private Exception? _optionsError;
@@ -366,6 +375,10 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// <summary>How the page is reached where .NET does not run in it: Blazor Server and Blazor Hybrid.</summary>
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
+
+    /// <summary>Where an <see cref="IBbCameraSource"/> is found, when the app registered one.</summary>
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
 
     /// <summary>Current lifecycle state.</summary>
     public BbScannerStatus Status => _status;
@@ -655,9 +668,10 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
             if (!IsStale(version))
             {
                 // The browser may have attached a stream before failing, so release the session
-                // rather than trusting the rejection to have cleaned up after itself.
+                // rather than trusting the rejection to have cleaned up after itself. A native camera's failure
+                // arrives classified already.
                 await ReleaseCameraAsync().ConfigureAwait(true);
-                await FailAsync(BbScannerException.FromBrowserError(ex)).ConfigureAwait(true);
+                await FailAsync(ex as BbScannerException ?? BbScannerException.FromBrowserError(ex)).ConfigureAwait(true);
             }
 
             return;
@@ -1276,6 +1290,24 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         }
     }
 
+    /// <summary>The quick look and then the exhaustive pass, with options built beforehand, for a thread of its own.</summary>
+    private static IReadOnlyList<BbBarcodeResult> DecodeStillImage(
+        byte[] pixels, int width, int height, BbPixelFormat format, int maxSymbols, BbScannerOptions? quickOptions, BbScannerOptions stillOptions)
+    {
+        if (quickOptions is not null)
+        {
+            using var quick = new BbBarcodeDecoder(quickOptions);
+            var found = quick.DecodeAll(pixels, width, height, format, 1, suppressDuplicates: false);
+            if (found.Count > 0)
+            {
+                return found;
+            }
+        }
+
+        using var decoder = new BbBarcodeDecoder(stillOptions);
+        return decoder.DecodeAll(pixels, width, height, format, maxSymbols, suppressDuplicates: false);
+    }
+
     /// <summary>Decodes a still image with the still image settings.</summary>
     private IReadOnlyList<BbBarcodeResult> DecodeStill(byte[] pixels, int width, int height, BbPixelFormat format, int maxSymbols)
     {
@@ -1299,6 +1331,15 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     {
         try
         {
+            // In a Blazor Hybrid app the dispatcher is the app's UI thread, which a large photograph would hold for a
+            // noticeable while: the decoders here are this image's own, so they can run anywhere.
+            if (_bridge?.DecodesOffThread == true)
+            {
+                var quickOptions = maxSymbols == 1 ? BuildQuickStillImageOptions() : null;
+                var stillOptions = BuildStillImageOptions();
+                return await Task.Run(() => DecodeStillImage(pixels, width, height, format, maxSymbols, quickOptions, stillOptions)).ConfigureAwait(true);
+            }
+
             if (maxSymbols == 1)
             {
                 using var quick = new BbBarcodeDecoder(BuildQuickStillImageOptions());
@@ -1483,6 +1524,13 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
             return true;
         }
 
+        // A frame of the loop before this one - stopped and started again meanwhile - still decoding on another thread
+        // reads the frame buffer: the next frame waits for it.
+        if (_decodingDecoder is not null)
+        {
+            return true;
+        }
+
         // The size the page is told to read frames at changed, and it has not been told yet. One that changed again
         // while the page was being told leaves the page a size behind, and the frame waits for the next tick.
         await ApplyProcessingSizeAsync().ConfigureAwait(true);
@@ -1544,55 +1592,40 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
             return true;
         }
 
+        // A remote page sends the searched region as luminance. Otherwise the frame is whole: the grayscale plane, a byte
+        // a pixel, from the GPU path or a native camera, and RGBA from the 2D canvas.
         var pixels = width * height;
-        var frame = buffer.AsSpan(0, written);
+        var remote = bridge.IsRemote;
+        if (remote ? written != region.Width * region.Height : written != pixels && written < pixels * 4)
+        {
+            return true;
+        }
+
+        var format = remote || written == pixels ? BbPixelFormat.Gray8 : BbPixelFormat.Rgba32;
+        var maxSymbols = MaxSymbolsPerFrame;
 
         // Every decoded frame is returned, duplicates included, so the highlight can
         // follow a symbol held in view; suppression is applied below, before reporting.
         // One symbol a frame, the default, takes the cheaper single result path.
-        BbBarcodeResult? result = null;
-        IReadOnlyList<BbBarcodeResult>? results = null;
+        BbBarcodeResult? result;
+        IReadOnlyList<BbBarcodeResult>? results;
         try
         {
-            if (bridge.IsRemote)
-            {
-                if (written != region.Width * region.Height)
-                {
-                    return true;
-                }
-
-                if (MaxSymbolsPerFrame > 1)
-                {
-                    results = decoder.DecodeAllRegion(frame, BbPixelFormat.Gray8, region, width, height, MaxSymbolsPerFrame, suppressDuplicates: false);
-                }
-                else
-                {
-                    result = decoder.DecodeRegion(frame, BbPixelFormat.Gray8, region, width, height, suppressDuplicates: false);
-                }
-            }
-            else
-            {
-                // The GPU path hands back the grayscale plane, a byte a pixel; the 2D canvas the frame as RGBA.
-                var format = written == pixels ? BbPixelFormat.Gray8 : BbPixelFormat.Rgba32;
-                if (written != pixels && written < pixels * 4)
-                {
-                    return true;
-                }
-
-                if (MaxSymbolsPerFrame > 1)
-                {
-                    results = decoder.DecodeAll(frame, width, height, format, MaxSymbolsPerFrame, suppressDuplicates: false);
-                }
-                else
-                {
-                    result = decoder.Decode(frame, width, height, format, suppressDuplicates: false);
-                }
-            }
+            (result, results) = bridge.DecodesOffThread
+                ? await DecodeOffThreadAsync(decoder, () => DecodeFrame(decoder, buffer, written, format, remote, region, width, height, maxSymbols)).ConfigureAwait(true)
+                : DecodeFrame(decoder, buffer, written, format, remote, region, width, height, maxSymbols);
 
             _consecutiveDecodeFailures = 0;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
+            // A decoder retired under a decode on another thread, or a scanner stopped meanwhile, says nothing about the
+            // decoder there is now.
+            if (IsStale(version) || !ReferenceEquals(decoder, _decoder))
+            {
+                return !IsStale(version);
+            }
+
             // One frame the decoder trips over is skipped; the next frame is a different
             // image. Only a decoder that fails frame after frame ends the session.
             if (++_consecutiveDecodeFailures < MaxConsecutiveDecodeFailures)
@@ -1608,6 +1641,13 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
             return false;
         }
 
+        // Stopped, or given another decoder, while the frame was decoded on another thread: what it found is the old
+        // decoder's, for a session that may be gone.
+        if (IsStale(version) || !ReferenceEquals(decoder, _decoder))
+        {
+            return !IsStale(version);
+        }
+
         _lastDiagnostics = decoder.LastFrame;
         await ReportDiagnosticsAsync().ConfigureAwait(true);
 
@@ -1620,6 +1660,57 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
 
         await ReportLiveAsync(result, results, version).ConfigureAwait(true);
         return !IsStale(version);
+    }
+
+    /// <summary>Decodes one live frame: the searched region a remote page sent, or a whole frame.</summary>
+    private static (BbBarcodeResult? Single, IReadOnlyList<BbBarcodeResult>? All) DecodeFrame(
+        BbBarcodeDecoder decoder, byte[] buffer, int written, BbPixelFormat format, bool remote,
+        (int X, int Y, int Width, int Height) region, int width, int height, int maxSymbols)
+    {
+        var frame = buffer.AsSpan(0, written);
+        if (remote)
+        {
+            return maxSymbols > 1
+                ? (null, decoder.DecodeAllRegion(frame, format, region, width, height, maxSymbols, suppressDuplicates: false))
+                : (decoder.DecodeRegion(frame, format, region, width, height, suppressDuplicates: false), null);
+        }
+
+        return maxSymbols > 1
+            ? (null, decoder.DecodeAll(frame, width, height, format, maxSymbols, suppressDuplicates: false))
+            : (decoder.Decode(frame, width, height, format, suppressDuplicates: false), null);
+    }
+
+    /// <summary>
+    /// Runs a decode on the thread pool, keeping <paramref name="decoder"/> alive for it: a decoder retired meanwhile -
+    /// the formats changed, or the scanner was disposed - is disposed once the decode is done rather than under it, and
+    /// one told to forget its image forgets it then.
+    /// </summary>
+    private async Task<T> DecodeOffThreadAsync<T>(BbBarcodeDecoder decoder, Func<T> decode)
+    {
+        _decodingDecoder = decoder;
+        try
+        {
+            return await Task.Run(decode).ConfigureAwait(true);
+        }
+        finally
+        {
+            if (ReferenceEquals(_decodingDecoder, decoder))
+            {
+                _decodingDecoder = null;
+            }
+
+            if (_retiredWhileDecoding is { } retired)
+            {
+                _retiredWhileDecoding = null;
+                retired.Dispose();
+            }
+            else if (_forgetWhileDecoding)
+            {
+                decoder.ForgetImage();
+            }
+
+            _forgetWhileDecoding = false;
+        }
     }
 
     /// <summary>
@@ -1874,7 +1965,14 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         // The buffers are kept for the next start, but not the picture in them: once the camera is closed, nothing
         // holds on to the last thing it saw - not the frame, and not the decoder's copies and measurements of it.
         Array.Clear(_frameBuffer);
-        _decoder?.ForgetImage();
+        if (_decoder is not null && ReferenceEquals(_decoder, _decodingDecoder))
+        {
+            _forgetWhileDecoding = true;
+        }
+        else
+        {
+            _decoder?.ForgetImage();
+        }
     }
 
     /// <summary>
@@ -1990,7 +2088,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         }
 #endif
 
-        var bridge = _bridge ??= BbScannerBridge.Create(JSRuntime);
+        var bridge = _bridge ??= BbScannerBridge.Create(JSRuntime, Services.GetService(typeof(IBbCameraSource)) as IBbCameraSource, InWebView());
         if (bridge.IsLoaded)
         {
             return true;
@@ -2021,6 +2119,22 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
 
             return false;
         }
+    }
+
+    /// <summary>
+    /// Whether the component runs in a BlazorWebView - a Blazor Hybrid app - where the page is in the same process,
+    /// behind the WebView, rather than across a network.
+    /// </summary>
+    private bool InWebView()
+    {
+#if NET9_0_OR_GREATER
+        if (RendererInfo.Name == "WebView")
+        {
+            return true;
+        }
+#endif
+        // .NET 8 has no RendererInfo; its WebView runtime says the same by name.
+        return JSRuntime.GetType().Name.Contains("WebView", StringComparison.Ordinal);
     }
 
     /// <summary>Builds a decoder from the current parameters; throws when the options are invalid.</summary>
@@ -2071,7 +2185,16 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
 
         _retiredFramesDecoded += _decoder.FramesDecoded;
         _retiredFramesWithSymbol += _decoder.FramesWithSymbol;
-        _decoder.Dispose();
+        if (ReferenceEquals(_decoder, _decodingDecoder))
+        {
+            // Decoding a frame on another thread: disposed once it is done.
+            _retiredWhileDecoding = _decoder;
+        }
+        else
+        {
+            _decoder.Dispose();
+        }
+
         _decoder = null;
     }
 

@@ -225,16 +225,19 @@ public class McpToolTests
     }
 
     [TestMethod]
-    public async Task The_hybrid_mode_sets_up_the_camera_permission_on_each_platform()
+    public async Task The_hybrid_mode_sets_up_the_device_camera_and_its_permission_on_each_platform()
     {
         var guide = await McpCall.TextAsync("GetBbScannerSetupGuide", new() { ["renderMode"] = "hybrid" });
 
+        Assert.Contains("Bit.BbScanner.Maui", guide);
+        Assert.Contains("builder.UseBbScanner();", guide);
+        Assert.Contains("<bb:BbScannerHost>", guide);
         Assert.Contains("android.permission.CAMERA", guide);
-        Assert.Contains("PermissionRequest.ResourceVideoCapture", guide);
         Assert.Contains("NSCameraUsageDescription", guide);
         Assert.Contains("com.apple.security.device.camera", guide);
         Assert.Contains("<DeviceCapability Name=\"webcam\" />", guide);
-        Assert.Contains("#### Blazor Hybrid", guide, "The quoted guide section should be demoted under 'From the guide'.");
+        Assert.Contains("#### Blazor Hybrid: .NET MAUI", guide, "The quoted guide section should be demoted under 'From the guide'.");
+        Assert.Contains("#### Blazor Hybrid: WPF and Windows Forms", guide);
     }
 
     [TestMethod]

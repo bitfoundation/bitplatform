@@ -10,9 +10,11 @@
      role="region"
      aria-label="@AriaLabel">
 
+    @* A transparent poster: an Android WebView paints a play button over a video element with nothing to play. *@
     <video id="@_videoElementId"
            class="bit-bbscanner__video"
            data-mirrored="@(_mirrored ? "true" : "false")"
+           poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
            playsinline
            muted
            autoplay

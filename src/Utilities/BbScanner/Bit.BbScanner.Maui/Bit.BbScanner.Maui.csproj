@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('linux'))">net10.0-android</TargetFrameworks>
+        <UseMaui>true</UseMaui>
+        <SingleProject>true</SingleProject>
+        <RootNamespace>Bit.BbScanner.Maui</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <!-- The camera's frames are copied out of the platform's buffers through pointers. -->
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <EnableDefaultCssItems>false</EnableDefaultCssItems>
+        <Description>The device's own camera for Bit.BbScanner in a .NET MAUI Blazor Hybrid app: CameraX on Android, AVFoundation on iOS and Mac Catalyst, MediaCapture on Windows. Frames go from the camera straight to the decoder, in the app's process and at the camera's own resolution, and the camera's native preview is drawn behind the BlazorWebView, under the scanner's overlays.</Description>
+        <PackageTags>Bit;Blazor;BlazorHybrid;Maui;Barcode;QrCode;Scanner;Camera;CameraX;AVFoundation;MediaCapture</PackageTags>
+
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+        <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.120" />
+        <!-- For BlazorWebView's type only: the app references it in full, and its build assets - blazor.webview.js
+             among them - would otherwise be the library's static web assets too, and clash with the app's. -->
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.120" ExcludeAssets="build;buildTransitive" />
+    </ItemGroup>
+
+    <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+        <PackageReference Include="Xamarin.AndroidX.Camera.Camera2" Version="1.5.1" />
+        <PackageReference Include="Xamarin.AndroidX.Camera.Lifecycle" Version="1.5.1" />
+        <PackageReference Include="Xamarin.AndroidX.Camera.View" Version="1.5.1" />
+    </ItemGroup>
+
+    <!-- iOS and Mac Catalyst share AVFoundation: their code lives in Platforms/Apple, which the single project
+         conventions leave out of every platform unless told otherwise. -->
+    <ItemGroup>
+        <MauiPlatformSpecificFolder Include="Platforms\Apple\" TargetPlatformIdentifiers="ios;maccatalyst" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.BbScanner\Bit.BbScanner.csproj" />
+    </ItemGroup>
+
+</Project>

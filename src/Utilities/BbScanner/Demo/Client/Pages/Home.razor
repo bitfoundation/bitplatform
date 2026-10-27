@@ -292,9 +292,9 @@
                     All the interactive ones, on .NET 8, 9 and 10: a standalone Blazor WebAssembly app, Blazor Server,
                     the <code>InteractiveServer</code>, <code>InteractiveWebAssembly</code> and <code>InteractiveAuto</code>
                     pages of a Blazor Web App, and a Blazor Hybrid app's <code>BlazorWebView</code> in MAUI, WPF or
-                    Windows Forms. The page always opens the camera; on WebAssembly the frames are decoded in the browser,
-                    while under Server and Hybrid the page sends the scan region's luminance to .NET on the server or in
-                    the app.
+                    Windows Forms. On WebAssembly the frames are decoded in the browser; under Server the page sends the
+                    scan region's luminance to the server; in a MAUI app <code>Bit.BbScanner.Maui</code> opens the
+                    device's own camera and its frames go straight to the decoder in the app.
                 </p>
             </details>
             <details>
@@ -303,7 +303,8 @@
                     Browsers only expose the camera in a secure context - a page served over HTTPS, or from
                     <code>localhost</code>. Anywhere else the component reports <code>NotSupported</code> straight away,
                     with a message that says so, rather than waiting on a prompt that will never appear. The render mode
-                    makes no difference here; in a Blazor Hybrid app the platform has to allow the camera as well.
+                    makes no difference here; in a Blazor Hybrid app the platform has to allow the camera as well, and
+                    asks the user itself.
                 </p>
             </details>
             <details>

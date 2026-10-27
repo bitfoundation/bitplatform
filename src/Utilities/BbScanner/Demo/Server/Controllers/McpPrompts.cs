@@ -37,10 +37,12 @@ public static class McpPrompts
             2. Call `GetBbScannerSetupGuide` with that render mode and follow it. Camera scanning works in every
                interactive render mode: in a Blazor Web App the package belongs in the project the scanning pages render
                in - the server project for InteractiveServer, the .Client project for InteractiveWebAssembly or
-               InteractiveAuto. A Blazor Hybrid app also has to let the WebView have the camera on each platform
-               (Android needs a WebChromeClient that grants it) - the guide lists what to add.
-            3. Do NOT register services or link a stylesheet: Bit.BbScanner has no services, and its Blazor initializer
-               injects `_content/Bit.BbScanner/bit-bbscanner.css` itself. Inventing an `AddBbScanner...` call is the most
+               InteractiveAuto. A .NET MAUI app scans with the device's own camera through the `Bit.BbScanner.Maui`
+               package - `builder.UseBbScanner()`, the BlazorWebView wrapped in a `BbScannerHost`, and the camera
+               permission on each platform - the guide lists what to add.
+            3. Do NOT register services or link a stylesheet: Bit.BbScanner has no services - only a MAUI app's
+               `builder.UseBbScanner()` from Bit.BbScanner.Maui - and its Blazor initializer injects
+               `_content/Bit.BbScanner/bit-bbscanner.css` itself. Inventing an `AddBbScanner...` call is the most
                common mistake.
             4. Add `@using Bit.BbScanner` to `_Imports.razor`.
             5. Set `Formats` to the symbologies the app needs (call `GetBbScannerFormats` for the names) and handle
@@ -103,8 +105,9 @@ public static class McpPrompts
                Read `OnError`: the `BbScannerException.Kind` says whether the cause is NotSupported, PermissionDenied,
                NoCamera, CameraUnavailable or ConstraintsUnsatisfied. NotSupported is never the render mode itself: the
                page has no camera API (`navigator.mediaDevices.getUserMedia` is missing, as in some WebViews), is not a
-               secure context, or could not load the component's JavaScript module. On Android, a WebView whose app does
-               not grant the page the camera ends in PermissionDenied.
+               secure context, or could not load the component's JavaScript module. In a MAUI app, a scanner that never
+               shows its preview usually means the BlazorWebView is not wrapped in a `BbScannerHost` (NotSupported says
+               so), and PermissionDenied that the platform's camera permission is not declared or was refused.
             2. Call `SearchBbScanner` with the symptom, and read the guide section it points to - "Errors and
                permissions" covers NotSupported and the camera failures, "Hosting models" the wiring per render mode,
                "What it reads, and what it does not" the symbols that are never read, "Performance" a slow page,

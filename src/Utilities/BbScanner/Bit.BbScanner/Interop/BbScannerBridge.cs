@@ -48,15 +48,34 @@ internal abstract class BbScannerBridge : IAsyncDisposable
     /// <summary>Returned by the frame grab, and by reading a prepared image, when the buffer is too small.</summary>
     internal const int FrameBufferTooSmall = -1;
 
-    /// <summary>The bridge for where the component runs: the browser itself, or a process that reaches it through <paramref name="jsRuntime"/>.</summary>
-    public static BbScannerBridge Create(IJSRuntime jsRuntime)
-        => OperatingSystem.IsBrowser() ? new BbScannerWasmBridge() : new BbScannerJsRuntimeBridge(jsRuntime);
+    /// <summary>
+    /// The bridge for where the component runs: the browser itself; a process that reaches it through
+    /// <paramref name="jsRuntime"/> - across a network, or in the same process behind a WebView when
+    /// <paramref name="inWebView"/>; or, there, the platform's own camera when <paramref name="cameraSource"/> supplies
+    /// one.
+    /// </summary>
+    public static BbScannerBridge Create(IJSRuntime jsRuntime, IBbCameraSource? cameraSource, bool inWebView)
+    {
+        if (OperatingSystem.IsBrowser())
+        {
+            return new BbScannerWasmBridge();
+        }
+
+        var page = new BbScannerJsRuntimeBridge(jsRuntime, local: inWebView);
+        return cameraSource is { IsSupported: true } ? new BbScannerNativeBridge(page, cameraSource) : page;
+    }
 
     /// <summary>
     /// Whether pixels cross a process or a network to reach .NET. Frames then arrive as the luminance of the searched
     /// region only, and prepared images as luminance, so that a fraction of the bytes make the trip.
     /// </summary>
     public abstract bool IsRemote { get; }
+
+    /// <summary>
+    /// Whether frames are decoded on a thread of their own rather than on the component's dispatcher - which in a
+    /// Blazor Hybrid app is the app's UI thread, where a decode would hold up everything the app draws.
+    /// </summary>
+    public virtual bool DecodesOffThread => false;
 
     /// <summary>Whether the module is loaded, so that the other members are safe to call.</summary>
     public abstract bool IsLoaded { get; }

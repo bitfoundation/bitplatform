@@ -65,6 +65,17 @@ internal sealed class FakeScannerPage : IJSRuntime, IJSObjectReference
     /// <summary>Images readied for reading, by request.</summary>
     private readonly ConcurrentDictionary<int, byte[]> _prepared = new();
 
+    /// <summary>What attachNativePreview was handed to report placements to: a DotNetObjectReference.</summary>
+    public object? PreviewReceiver { get; private set; }
+
+    /// <summary>Reports a placement of the video element, as the page does on an animation frame, in a 400 by 800 viewport.</summary>
+    public void Place(double x, double y, double width, double height, bool visible = true)
+    {
+        var receiver = PreviewReceiver ?? throw new InvalidOperationException("No native preview is attached.");
+        var value = receiver.GetType().GetProperty("Value")!.GetValue(receiver)!;
+        value.GetType().GetMethod("Place")!.Invoke(value, [x, y, width, height, 12.0, visible, "rgb(255, 255, 255)", 0.0, 0.0, 400.0, 800.0]);
+    }
+
     /// <summary>Makes the next call of <paramref name="identifier"/> throw <paramref name="exception"/>.</summary>
     public void FailNext(string identifier, Exception exception) => Faults.GetOrAdd(identifier, _ => new()).Enqueue(exception);
 
@@ -108,6 +119,8 @@ internal sealed class FakeScannerPage : IJSRuntime, IJSObjectReference
             "poll" => Poll(),
             "grabFrameData" => GrabFrameData((int)args[1]!, (int)args[2]!, (int)args[3]!, (int)args[4]!),
             "readData" => ReadData((int)args[1]!, (int)args[2]!, (int)args[3]!),
+            "attachNativePreview" => AttachPreview(args[2]),
+            "detachNativePreview" => AttachPreview(null),
             "stageImagePart" => StageImagePart((byte[])args[3]!),
             "prepareStagedParts" => PrepareStagedParts((int)args[1]!, (int)args[2]!),
             "readPreparedData" => _prepared.TryGetValue((int)args[1]!, out var prepared) ? prepared.Length : 0,
@@ -172,6 +185,12 @@ internal sealed class FakeScannerPage : IJSRuntime, IJSObjectReference
         }
 
         return flags;
+    }
+
+    private object? AttachPreview(object? receiver)
+    {
+        PreviewReceiver = receiver;
+        return null;
     }
 
     private int GrabFrameData(int x, int y, int width, int height)

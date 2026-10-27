@@ -28,11 +28,16 @@ namespace Bit.BbScanner;
 /// by asking the page what it has open.
 /// </para>
 /// <para>
-/// The camera this opens is guarded by a watchdog in the page, which closes it once .NET stops asking for frames - a
-/// circuit that dropped for good leaves no one behind to close it otherwise.
+/// Under Blazor Server the camera this opens is guarded by a watchdog in the page, which closes it once .NET stops
+/// asking for frames - a circuit that dropped for good leaves no one behind to close it otherwise.
+/// </para>
+/// <para>
+/// In a Blazor Hybrid app the page is <paramref name="local"/>: behind a WebView, in the app's own process, with no
+/// circuit to lose and no limit on a message. There the page's camera needs no watchdog, since the page and .NET go away
+/// together, and slices are large, since each call costs a trip through the WebView however small it is.
 /// </para>
 /// </remarks>
-internal sealed class BbScannerJsRuntimeBridge(IJSRuntime jsRuntime) : BbScannerBridge
+internal sealed class BbScannerJsRuntimeBridge(IJSRuntime jsRuntime, bool local = false) : BbScannerBridge
 {
     /// <summary>
     /// The module path, resolved by the browser against the document's base URI, as every Blazor host serves static web
@@ -48,6 +53,9 @@ internal sealed class BbScannerJsRuntimeBridge(IJSRuntime jsRuntime) : BbScanner
 
     /// <summary>The most bytes of an encoded image sent to the page in one call.</summary>
     internal const int PartBytes = 256 * 1024;
+
+    /// <summary>The most bytes read from, or sent to, a page behind a WebView in one call: a frame or two at a time.</summary>
+    internal const int LocalSliceBytes = 1024 * 1024;
 
     /// <summary>readData's key for the latest frame; any other key is a prepared image's request.</summary>
     private const int FrameData = -1;
@@ -76,6 +84,12 @@ internal sealed class BbScannerJsRuntimeBridge(IJSRuntime jsRuntime) : BbScanner
     private bool _disposed;
 
     public override bool IsRemote => true;
+
+    /// <summary>The slice size in force: under a circuit's message limit, or a WebView's frame at a time.</summary>
+    private int Slice => local ? LocalSliceBytes : SliceBytes;
+
+    /// <summary>The part size in force.</summary>
+    private int Part => local ? LocalSliceBytes : PartBytes;
 
     public override bool IsLoaded => _module is not null && !_disposed;
 
@@ -137,7 +151,7 @@ internal sealed class BbScannerJsRuntimeBridge(IJSRuntime jsRuntime) : BbScanner
         try
         {
             return await Module.InvokeAsync<string?>(
-                "start", StartTimeout, sessionId, videoElementId, deviceId, requestedWidth, requestedHeight, facingMode, WatchdogMilliseconds)
+                "start", StartTimeout, sessionId, videoElementId, deviceId, requestedWidth, requestedHeight, facingMode, local ? 0 : WatchdogMilliseconds)
                 .ConfigureAwait(false) ?? "";
         }
         catch (OperationCanceledException)
@@ -208,10 +222,11 @@ internal sealed class BbScannerJsRuntimeBridge(IJSRuntime jsRuntime) : BbScanner
     public override async ValueTask<int> PrepareImageAsync(string sessionId, int requestId, ReadOnlyMemory<byte> image, string? contentType, int maxDimension, double maxBytes)
     {
         var module = Module;
-        var count = (image.Length + PartBytes - 1) / PartBytes;
+        var size = Part;
+        var count = (image.Length + size - 1) / size;
         await ForEachInFlightAsync(count, async index =>
         {
-            var part = image.Slice(index * PartBytes, Math.Min(PartBytes, image.Length - (index * PartBytes)));
+            var part = image.Slice(index * size, Math.Min(size, image.Length - (index * size)));
 
             // A byte[] is what crosses as binary rather than as JSON, and it has to be exactly the part.
             var bytes = MemoryMarshal.TryGetArray(part, out var segment) && segment.Offset == 0 && segment.Count == segment.Array!.Length
@@ -263,6 +278,17 @@ internal sealed class BbScannerJsRuntimeBridge(IJSRuntime jsRuntime) : BbScanner
     public override async ValueTask ReleasePreparedAsync(string sessionId, int requestId)
         => await Module.InvokeVoidAsync("releasePrepared", CallTimeout, sessionId, requestId).ConfigureAwait(false);
 
+    /// <summary>
+    /// Has the page show a native camera's preview through itself where the video element is, and report where that
+    /// is to <paramref name="receiver"/> whenever it moves.
+    /// </summary>
+    public async ValueTask AttachNativePreviewAsync(string sessionId, string videoElementId, DotNetObjectReference<BbNativePreviewReceiver> receiver)
+        => await Module.InvokeVoidAsync("attachNativePreview", CallTimeout, sessionId, videoElementId, receiver).ConfigureAwait(false);
+
+    /// <summary>Puts the page back as it was before <see cref="AttachNativePreviewAsync"/>.</summary>
+    public async ValueTask DetachNativePreviewAsync(string sessionId)
+        => await Module.InvokeVoidAsync("detachNativePreview", CallTimeout, sessionId).ConfigureAwait(false);
+
     // OperationCanceledException rather than TaskCanceledException alone: a call the runtime gives up on throws the
     // latter, but not everything that times out on the way does.
     public override bool IsInteropFailure(Exception exception)
@@ -296,10 +322,11 @@ internal sealed class BbScannerJsRuntimeBridge(IJSRuntime jsRuntime) : BbScanner
     private async Task<bool> ReadAsync(string sessionId, int key, byte[] buffer, int length)
     {
         var module = Module;
-        return await ForEachInFlightAsync((length + SliceBytes - 1) / SliceBytes, async index =>
+        var size = Slice;
+        return await ForEachInFlightAsync((length + size - 1) / size, async index =>
         {
-            var offset = index * SliceBytes;
-            var count = Math.Min(SliceBytes, length - offset);
+            var offset = index * size;
+            var count = Math.Min(size, length - offset);
             var slice = await module.InvokeAsync<byte[]>("readData", CallTimeout, sessionId, key, offset, count).ConfigureAwait(false);
             if (slice is null || slice.Length != count)
             {

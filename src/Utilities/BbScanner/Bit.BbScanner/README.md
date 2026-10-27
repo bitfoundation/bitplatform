@@ -38,8 +38,9 @@ No services to register and no stylesheet to reference: the package's Blazor ini
 
 Camera scanning runs in every Blazor hosting model - WebAssembly, Server, Auto and Hybrid (MAUI, WPF and Windows
 Forms) - and needs a secure context (HTTPS or `localhost`). On WebAssembly the frames are decoded in the browser;
-under Server and Hybrid the page sends each frame's searched region, as luminance, to where .NET runs, and a camera a
-Server circuit leaves behind is closed by the page. A Hybrid app needs the platform's camera permission. On
+under Server the page sends each frame's searched region, as luminance, to the server, and a camera a circuit leaves
+behind is closed by the page. A .NET MAUI app adds [Bit.BbScanner.Maui](https://www.nuget.org/packages/Bit.BbScanner.Maui)
+for the device's own camera - CameraX, AVFoundation, MediaCapture - whose frames go straight to the decoder. On
 WebAssembly, publish the client compiled ahead of time (`<RunAOTCompilation>true</RunAOTCompilation>`): on Blazor's
 default interpreter a 640x480 frame took about 100 ms in Chromium on a desktop, compiled about 1 ms. The decoder
 itself runs anywhere .NET runs:

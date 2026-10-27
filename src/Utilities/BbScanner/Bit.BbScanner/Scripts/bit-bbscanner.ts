@@ -145,6 +145,32 @@ interface Session {
     // Set when the watchdog closed the camera, so that a .NET that comes back reports it as an interruption and opens
     // the camera again, instead of a fault.
     released: boolean;
+    // A native camera's preview, which the page shows through itself where the video element is (Bit.BbScanner.Maui).
+    nativePreview: NativePreview | null;
+}
+
+// What a DotNetObjectReference arrives as through IJSRuntime.
+interface DotNetReceiver {
+    invokeMethodAsync(method: string, ...args: unknown[]): Promise<unknown>;
+}
+
+interface NativePreview {
+    video: HTMLElement;
+    root: HTMLElement;
+    receiver: DotNetReceiver;
+    frame: number;
+    last: string;
+    backdrop: string;
+    // The ancestors made transparent, with their own inline background as it was, to put back.
+    cleared: ClearedBackground[];
+}
+
+interface ClearedBackground {
+    element: HTMLElement;
+    color: string;
+    colorPriority: string;
+    image: string;
+    imagePriority: string;
 }
 
 interface DropListeners {
@@ -232,6 +258,7 @@ function getSession(id: string): Session {
             watchdogTimer: 0,
             lastContact: 0,
             released: false,
+            nativePreview: null,
         };
         state.sessions.set(id, session);
     }
@@ -1148,6 +1175,7 @@ export function dispose(sessionId: string): void {
     releaseStream(session);
     releaseReadback(session);
     detachRoot(session);
+    detachPreview(session);
     session.prepared.forEach(wipe);
     session.prepared.clear();
     session.staged.clear();
@@ -1704,6 +1732,147 @@ export async function queryCameraPermission(): Promise<string> {
     } catch {
         return '';
     }
+}
+
+/** Whether a computed colour paints anything: not transparent, nor of zero alpha. */
+function isColour(color: string): boolean {
+    return !!color && !/^(transparent|rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*0\s*\))$/.test(color);
+}
+
+/** Whether a computed background paints anything. */
+function paints(style: CSSStyleDeclaration): boolean {
+    return style.backgroundImage !== 'none' || isColour(style.backgroundColor);
+}
+
+/**
+ * Shows a native camera's preview through the page - Bit.BbScanner.Maui draws it behind the WebView - where the
+ * scanner's video element is, and reports where that is to receiver's Place whenever it moves, resizes, shows or hides:
+ * on every animation frame, the page posting only what changed.
+ *
+ * Nothing the page paints may cover the preview, so the scanner and every element above it in the tree are made
+ * transparent while it shows, and put back afterwards. The page's own background colour - the outermost one painted -
+ * is reported along with the placement, for what is behind the WebView to be painted the same colour, so the page
+ * around the scanner looks as it did.
+ */
+export function attachNativePreview(sessionId: string, videoElementId: string, receiver: DotNetReceiver): void {
+    const session = getSession(sessionId);
+    const video = document.getElementById(videoElementId);
+
+    // A camera switched to another: the page is already showing a preview through itself, and stays as it is rather
+    // than flash its backgrounds back for the moment between the two.
+    if (video && session.nativePreview?.video === video) {
+        session.nativePreview.receiver = receiver;
+        session.nativePreview.last = '';
+        return;
+    }
+
+    detachPreview(session);
+    if (!video) {
+        return;
+    }
+
+    const root = (video.closest('.bit-bbscanner') as HTMLElement | null) ?? video.parentElement ?? video;
+    root.setAttribute('data-native-preview', 'true');
+
+    const cleared: ClearedBackground[] = [];
+    let backdrop: string | null = null;
+    for (let element = root.parentElement; element; element = element.parentElement) {
+        const style = getComputedStyle(element);
+        if (!paints(style)) {
+            continue;
+        }
+
+        if (isColour(style.backgroundColor)) {
+            backdrop = style.backgroundColor;
+        }
+
+        cleared.push({
+            element,
+            color: element.style.getPropertyValue('background-color'),
+            colorPriority: element.style.getPropertyPriority('background-color'),
+            image: element.style.getPropertyValue('background-image'),
+            imagePriority: element.style.getPropertyPriority('background-image'),
+        });
+        element.style.setProperty('background-color', 'transparent', 'important');
+        element.style.setProperty('background-image', 'none', 'important');
+    }
+
+    // A page that paints no background of its own shows the WebView's canvas, which is white.
+    const preview: NativePreview = { video, root, receiver, frame: 0, last: '', backdrop: backdrop ?? 'rgb(255, 255, 255)', cleared };
+    session.nativePreview = preview;
+
+    const step = (): void => {
+        if (session.nativePreview !== preview) {
+            return;
+        }
+
+        const rect = video.getBoundingClientRect();
+        const clip = clipOf(video);
+        const radius = parseFloat(getComputedStyle(root).borderTopLeftRadius) || 0;
+        const visible = video.isConnected && rect.width > 0 && rect.height > 0 && clip[2] > 0 && clip[3] > 0;
+        const placement = [rect.left, rect.top, rect.width, rect.height, radius, visible, preview.backdrop, ...clip];
+        const key = placement.join('|');
+        if (key !== preview.last) {
+            preview.last = key;
+            void preview.receiver.invokeMethodAsync('Place', ...placement).catch(() => undefined);
+        }
+
+        preview.frame = requestAnimationFrame(step);
+    };
+
+    step();
+}
+
+/**
+ * The part of the viewport an element shows in: the viewport, cut down by every element above it that clips what
+ * overflows it. A native preview drawn behind the page is clipped to it, so a scanner partly scrolled out of a panel
+ * shows only inside the panel.
+ */
+function clipOf(element: HTMLElement): [number, number, number, number] {
+    let left = 0;
+    let top = 0;
+    let right = window.innerWidth;
+    let bottom = window.innerHeight;
+    for (let ancestor = element.parentElement; ancestor && ancestor !== document.documentElement; ancestor = ancestor.parentElement) {
+        const style = getComputedStyle(ancestor);
+        if (style.overflowX === 'visible' && style.overflowY === 'visible') {
+            continue;
+        }
+
+        const rect = ancestor.getBoundingClientRect();
+        left = Math.max(left, rect.left);
+        top = Math.max(top, rect.top);
+        right = Math.min(right, rect.right);
+        bottom = Math.min(bottom, rect.bottom);
+    }
+
+    return [left, top, Math.max(0, right - left), Math.max(0, bottom - top)];
+}
+
+/** Takes a native camera's preview out of the page, putting back what attachNativePreview made transparent. */
+export function detachNativePreview(sessionId: string): void {
+    const session = state.sessions.get(sessionId);
+    if (session) {
+        detachPreview(session);
+    }
+}
+
+function detachPreview(session: Session): void {
+    const preview = session.nativePreview;
+    if (!preview) {
+        return;
+    }
+
+    session.nativePreview = null;
+    cancelAnimationFrame(preview.frame);
+    preview.root.removeAttribute('data-native-preview');
+    for (const cleared of preview.cleared) {
+        cleared.element.style.setProperty('background-color', cleared.color, cleared.colorPriority);
+        cleared.element.style.setProperty('background-image', cleared.image, cleared.imagePriority);
+    }
+
+    // The default placement: the page has taken the preview out.
+    void preview.receiver.invokeMethodAsync('Place', 0, 0, 0, 0, 0, false, null, 0, 0, 0, 0).catch(() => undefined);
 }
 
 /** Clicks an element by id, used to open the hidden file picker from managed code. */

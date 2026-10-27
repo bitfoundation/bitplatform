@@ -1,5 +1,7 @@
-﻿@* Where this page is running. BbScanner works the same on every host; what changes is where its frames are decoded:
-   in the browser on WebAssembly, and wherever .NET runs otherwise, the page sending each frame across. *@
+﻿@* Where this page is running. BbScanner works the same on every host; what changes is where its frames come from and
+   where they are decoded: in the browser on WebAssembly; on the server from the page on a Server circuit; in the app
+   from the device's own camera in a MAUI app, which registers one. *@
+@inject IServiceProvider Services
 
 <dl class="facts">
     <dt>Renderer</dt>
@@ -9,7 +11,7 @@
     <dt>Runtime</dt>
     <dd>@RuntimeInformation.FrameworkDescription</dd>
     <dt>Camera frames</dt>
-    <dd>@(OperatingSystem.IsBrowser() ? "decoded in the browser, copied straight into WebAssembly memory" : "sent by the page as the luminance of the searched region, decoded here")</dd>
+    <dd>@Frames()</dd>
     @ChildContent
 </dl>
 
@@ -17,4 +19,16 @@
     /// <summary>More facts, as dt/dd pairs.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    private string Frames()
+    {
+        if (OperatingSystem.IsBrowser())
+        {
+            return "from the browser's camera, copied straight into WebAssembly memory and decoded there";
+        }
+
+        return Services.GetService(typeof(IBbCameraSource)) is IBbCameraSource { IsSupported: true }
+            ? "from the device's own camera, straight to the decoder here; the page only draws the overlays"
+            : "from the page's camera, as the luminance of the searched region, decoded here";
+    }
 }

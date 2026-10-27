@@ -34,8 +34,9 @@ browser, on a server or in a native app.
   DataBar (including its stacked forms), DataBar Limited and DataBar Expanded (including Expanded Stacked) - checked
   against symbols written by an independent encoder, not only against the library's own test encoders.
 - **Every hosting model.** The same component scans under Blazor WebAssembly, Blazor Server, Auto and Blazor Hybrid.
-  The camera is always the page's; where .NET runs elsewhere - on a server, or natively behind a WebView - the page
-  sends each frame as the luminance of the region being searched, and the decoder runs where .NET does.
+  In a .NET MAUI app `Bit.BbScanner.Maui` opens the device's own camera - CameraX, AVFoundation, MediaCapture - and
+  its frames go straight to the decoder in the app; under Blazor Server the page sends each frame as the luminance of
+  the region being searched, and the server decodes it.
 - **One copy per frame on WebAssembly.** JavaScript writes the frame straight into managed memory through a
   `[JSImport]` memory view: no JSON, no base64, no second buffer.
 - **No garbage per frame.** Buffers, bit planes, detectors and scan lines are reused across frames, so a frame
@@ -80,7 +81,9 @@ Put a scanner on an interactive page - any render mode, or a standalone WebAssem
 ```
 
 There are no services to register and no stylesheet to reference: the stylesheet the component needs is injected
-automatically by the package's Blazor initializer. The full walkthrough is in [getting started](#getting-started).
+automatically by the package's Blazor initializer. A .NET MAUI app adds `Bit.BbScanner.Maui` and one call for the
+device's own camera - see [Blazor Hybrid](#blazor-hybrid-net-maui). The full walkthrough is in
+[getting started](#getting-started).
 
 ## Requirements
 
@@ -88,7 +91,8 @@ automatically by the package's Blazor initializer. The full walkthrough is in [g
 - An interactive render mode: Blazor WebAssembly, Blazor Server, Auto, or Blazor Hybrid. Prerendered, the scanner is
   inert markup until the page becomes interactive - see [hosting models](#hosting-models).
 - A secure context: the page served over HTTPS, or from `localhost`. A `BlazorWebView` is one.
-- In a Blazor Hybrid app, the platform's camera permission - see [Blazor Hybrid](#blazor-hybrid).
+- In a .NET MAUI app, `Bit.BbScanner.Maui` for the device's own camera, and the platform's camera permission - see
+  [Blazor Hybrid](#blazor-hybrid-net-maui).
 - For camera scanning on WebAssembly in production, the client compiled ahead of time (`RunAOTCompilation`): on
   Blazor's default interpreter a frame costs about a hundred times more - see [performance](#performance).
 
@@ -201,7 +205,9 @@ project for pages rendered with `InteractiveServer`. Then add the namespace to `
 That is the whole setup. There is no service registration, no script tag, no stylesheet link and no
 initialisation call: the package's Blazor initializer adds `_content/Bit.BbScanner/bit-bbscanner.css` to the page,
 and the component imports its own JavaScript module the first time it renders. Linking the stylesheet yourself
-also works - the injection then stands down.
+also works - the injection then stands down. The one exception is a .NET MAUI app that scans with the device's own
+camera: it adds `Bit.BbScanner.Maui`, calls `builder.UseBbScanner()` and wraps its BlazorWebView in a
+`BbScannerHost` - see [Blazor Hybrid](#blazor-hybrid-net-maui).
 
 ### A first scanner
 
@@ -658,15 +664,16 @@ is not affected by later edits.
 
 ## Hosting models
 
-The camera is always the page's: only the browser - or, in a Blazor Hybrid app, the WebView - can open it. What the
-hosting model decides is how far .NET is from it, and so how a frame reaches the decoder. The component, its
-parameters and its events are the same in every one of them, and so is everything it shows.
+What the hosting model decides is where .NET runs relative to the camera, and so how a frame reaches the decoder. In
+a browser the camera can only be the page's; in a Blazor Hybrid app it can be the device's own, which .NET opens
+itself. The component, its parameters and its events are the same everywhere, and so is everything it shows.
 
 | | Where the decoder runs | How a frame gets there |
 | --- | --- | --- |
 | Blazor WebAssembly | In the browser | Copied once, by the browser, into managed memory through a `[JSImport]` memory view |
-| Blazor Server | On the server | The searched region's luminance, streamed over the circuit |
-| Blazor Hybrid | Natively, in the app | The searched region's luminance, streamed over the WebView's message channel |
+| Blazor Server | On the server | The searched region's luminance, read from the page over the circuit |
+| .NET MAUI, with `Bit.BbScanner.Maui` | Natively, in the app | From the device's camera - CameraX, AVFoundation, MediaCapture - straight to the decoder; the page only hosts the overlays |
+| Other BlazorWebViews (WPF, Windows Forms) | Natively, in the app | The searched region's luminance, read from the WebView's camera over its message channel |
 
 ### Blazor WebAssembly
 
@@ -712,28 +719,72 @@ What that means for an application:
 - **Still images are decoded in the browser.** The built-in picker and a dropped file are decoded where they were
   chosen and only their luminance is sent; `ScanImageAsync` sends a stream the server holds to the browser first.
 
-### Blazor Hybrid
+### Blazor Hybrid: .NET MAUI
 
-In a MAUI, WPF or Windows Forms `BlazorWebView` the WebView opens the camera, sends each frame's searched region over
-its message channel the way a Server page sends it over the circuit, and the frame loop and the decoder run natively
-in the app, at full .NET speed. Nothing crosses a network, so the size of a frame matters far less than on a circuit.
+A Blazor Hybrid app is not a web page: .NET runs natively on the device, and can open the camera itself. The
+`Bit.BbScanner.Maui` package does, through each platform's own camera API - CameraX on Android, AVFoundation on iOS
+and Mac Catalyst, MediaCapture on Windows - and hands the scanner its frames in the app's own process: the luminance
+plane, a byte a pixel, upright, at the camera's own resolution and scaled by the scanner to `MaxProcessingSize`. No
+frame crosses into the page or back, the decoder runs at full native speed on a thread of its own, and the
+platform's own lifecycle handling applies - the camera closes while the app is in the background and opens again when
+it returns, and the platform's own permission prompt is the one the user sees.
 
-The WebView needs the platform's permission to open the camera, which a web page never does:
+```bash
+dotnet add package Bit.BbScanner.Maui
+```
 
-- **Android**: declare `android.permission.CAMERA` in `AndroidManifest.xml`, and grant the WebView's request for the
-  camera. Android hands every `getUserMedia` to the app as `WebChromeClient.OnPermissionRequest`, and the answer of
-  the client `BlazorWebView` installs is a refusal, which the scanner reports as `PermissionDenied`. A client that
-  wraps it, asks for the CAMERA runtime permission and grants `PermissionRequest.ResourceVideoCapture` once the user
-  has allowed it is in the MAUI sample:
-  [`CameraWebChromeClient`](Samples/Maui/Platforms/Android/CameraWebChromeClient.cs), installed in
-  [`MainPage.xaml.cs`](Samples/Maui/MainPage.xaml.cs).
+```csharp
+// MauiProgram.cs
+builder.UseMauiApp<App>()
+       .UseBbScanner();
+```
+
+```xml
+<!-- MainPage.xaml: xmlns:bb="clr-namespace:Bit.BbScanner;assembly=Bit.BbScanner.Maui" -->
+<bb:BbScannerHost>
+    <BlazorWebView HostPage="wwwroot/index.html">
+        ...
+    </BlazorWebView>
+</bb:BbScannerHost>
+```
+
+The Razor does not change: `<BbScanner>` on a page is the same component, and finds the device's camera registered.
+
+**The preview.** A native camera's preview cannot be drawn inside a web page, so the `BbScannerHost` draws it behind
+the WebView, where the scanner's video element is, and the page lets it show through, with the scanner's reticle,
+mask, highlights and controls drawn over it as usual. While a camera is open the scanner and every element above it in
+the page paint no background, the WebView is transparent, and the host paints the page's own background colour behind
+it, so the page around the scanner looks as it did - except that an element above the scanner with a colour of its own,
+a card it sits in say, shows the page's colour instead until the camera closes. The page reports where the scanner is
+on every animation frame it moves on, and the preview follows; while the page scrolls it lags by a frame or so. The
+preview is cut to whatever clips the scanner in the page, a scrolling panel say.
+
+Only the scanner's own ancestors are made transparent, so anything else the page paints under the scanner covers the
+preview - the page content and the backdrop beneath a dialog the scanner is in, for one. Put the scanner in the page
+itself rather than over other content. Without a `BbScannerHost` loaded the scanner opens the WebView's camera
+instead; with more than one, a camera draws in the one loaded last.
+
+**Permissions.** Each platform asks the user itself, once the app declares that it uses the camera:
+
+- **Android**: `<uses-permission android:name="android.permission.CAMERA" />` in `AndroidManifest.xml`; the runtime
+  permission is asked for the first time a scanner starts.
 - **iOS and Mac Catalyst**: `NSCameraUsageDescription` in `Info.plist`, and on Mac Catalyst, with App Sandbox on, the
-  `com.apple.security.device.camera` entitlement. `BlazorWebView` already plays video inline. WKWebView offers the
-  camera to a page from iOS 14.3.
-- **Windows**: WebView2 asks the user itself; a packaged app declares `<DeviceCapability Name="webcam" />` in
-  `Package.appxmanifest`.
+  `com.apple.security.device.camera` entitlement.
+- **Windows**: `<DeviceCapability Name="webcam" />` in `Package.appxmanifest`; a camera turned off in Windows' privacy
+  settings is reported as `PermissionDenied`.
 
-A WebView that exposes no camera API to the page is reported as `NotSupported`, like a browser that has none.
+The [MAUI sample](Samples/Maui/) is set up this way on all four.
+
+### Blazor Hybrid: WPF and Windows Forms
+
+Without a camera of the platform's own registered - in a WPF or Windows Forms `BlazorWebView`, or a MAUI app without
+`Bit.BbScanner.Maui` - the scanner opens the WebView's camera, as it would a browser's, and the WebView sends each
+frame's searched region over its message channel, the way a Server page sends it over the circuit, in large slices
+since nothing crosses a network. WebView2 asks the user for the camera itself. A WebView that exposes no camera API to
+the page is reported as `NotSupported`, like a browser that has none.
+
+Any host can supply its own camera the same way `Bit.BbScanner.Maui` does: register an `IBbCameraSource`, whose
+sessions hand over luminance frames and draw their own preview where the scanner says its video element is.
 
 ## Errors and permissions
 
@@ -771,8 +822,8 @@ A page inside a cross-origin `<iframe>` needs the camera delegated to it - `<ifr
 ## Privacy and security
 
 - **Frames go where the application runs, and nowhere else.** On WebAssembly frames are copied from the video
-  element into the application's own WebAssembly memory and decoded there, and in a Blazor Hybrid app they go to the
-  app itself: either way nothing leaves the device. Under Blazor Server the application runs on the server, so that is
+  element into the application's own WebAssembly memory and decoded there, and in a Blazor Hybrid app they go from
+  the camera to the app itself: either way nothing leaves the device. Under Blazor Server the application runs on the server, so that is
   where frames are decoded: the searched region of each frame, in grayscale, crosses the circuit to the server - as
   everything a Server app shows and reads does - and a still image chosen through the picker is decoded in the browser
   and its grayscale sent the same way. The library makes no network request of its own - the only files it loads are
@@ -930,10 +981,18 @@ Either way, the scanner keeps the browser's work to what only the browser can do
 
 The demo's performance page runs the frame benchmark in your own browser.
 
+### In a MAUI app
+
+With `Bit.BbScanner.Maui` a frame costs what it costs to copy the camera's luminance plane out of the platform's
+buffer and scale it to `MaxProcessingSize` - a millisecond or two - and then what the decoder costs on .NET, measured
+below. Nothing crosses the WebView, and the decode runs on a thread of its own rather than the app's UI thread, which
+is where a BlazorWebView's components run. As everywhere, publish the app in Release: a Debug build of a MAUI app
+runs on the interpreter, where a frame costs a hundred times more.
+
 ### Over a circuit, or a WebView
 
-Under Blazor Server and Blazor Hybrid the decoder runs on .NET proper, at the speeds measured below, and the cost
-that is new is getting the frame there. The page does what it can to make that small before it sends anything: the
+Under Blazor Server, and in a BlazorWebView without a camera of the platform's own, the decoder runs on .NET proper,
+at the speeds measured below, and the cost that is new is getting the frame there. The page does what it can to make that small before it sends anything: the
 GPU scales the frame and converts it to luminance, and the page cuts out the searched region, so a 640x360 frame is
 230 KB searched in full and about 63 KB through `BbScanRegion.CenteredSquare(0.7)`. A tick is one call to ask what
 changed and whether a frame is in, and the frame's slices when there is one; the loop asks for the next only
@@ -1023,10 +1082,10 @@ listens. The benchmark suite is in `Tests/Bit.BbScanner.Benchmarks`.
 
 ### Design decisions
 
-- **One component, two ways into the page.** The camera only exists in the page, so the component reaches it through
-  a bridge chosen for where it runs: `[JSImport]` on WebAssembly, `IJSRuntime` under Blazor Server and Blazor Hybrid.
-  Both call the same JavaScript module, and everything above the bridge - the frame loop, the lifecycle, the
-  rendering - is one code path.
+- **One component, three ways to a camera.** The component reaches the camera through a bridge chosen for where it
+  runs: `[JSImport]` on WebAssembly, `IJSRuntime` under Blazor Server and in a plain BlazorWebView, and an
+  `IBbCameraSource` - the device's own camera - where the app registered one. Everything above the bridge - the frame
+  loop, the lifecycle, the rendering - is one code path.
 - **One copy per frame on WebAssembly.** `[JSImport]` with a `JSType.MemoryView` parameter hands JavaScript a view
   straight onto the managed buffer. No JSON, no base64, no intermediate array.
 - **Less to send where frames travel.** Under Server and Hybrid the page sends the luminance of the searched region
@@ -1096,6 +1155,7 @@ what perspective takes off one side, so the stop that is clearly best aligned wi
 
 ```text
 Bit.BbScanner                     the library
+Bit.BbScanner.Maui                the device's own camera for .NET MAUI apps
 Demo/Client                       the demo's pages, run on WebAssembly
 Demo/Server                       the demo's host, and the MCP server
 Samples/Core                      the samples' shared pages
@@ -1148,9 +1208,12 @@ What the tests cover:
 - Reed-Solomon is checked over both fields by damaging codewords and requiring exact recovery.
 - The pipeline is checked for zero allocations across repeated empty frames.
 
-The component tests drive the Server and Hybrid path end to end without a browser, against a fake of the page that
-answers the module's calls and streams frames: the camera opening, regions cut out and results reported in the
-frame's coordinates, a camera lost or closed by the watchdog, and the errors a page reports.
+The component tests drive the Server and Hybrid paths end to end without a browser, against a fake of the page that
+answers the module's calls and reads frames back, and a fake platform camera: the camera opening, regions cut out
+and results reported in the frame's coordinates, a camera lost or closed by the watchdog, a native camera turned,
+backgrounded and lost, frames decoded on another thread while the decoder is replaced, and the errors each reports.
+`Bit.BbScanner.Maui` has been run on an Android emulator; on iOS, Mac Catalyst and Windows it is built, not yet
+run by any test.
 
 `Tests/Bit.BbScanner.Tests.E2E` runs the demo in Chromium whose camera is a generated video file, so the whole stack
 is exercised: the WebAssembly runtime, the JavaScript module, a real `MediaStream`, the frame loop and the decoder.

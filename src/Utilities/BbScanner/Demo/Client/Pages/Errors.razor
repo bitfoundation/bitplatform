@@ -150,11 +150,12 @@
         either way.
     </p>
     <p class="bb-card-desc">
-        The render mode makes no difference: under Blazor Server and in a Blazor Hybrid app the page opens
-        the camera just as it does on WebAssembly, and a <code>BlazorWebView</code> is a secure context
-        already. A WebView that exposes no camera API at all - <code>getUserMedia</code> in WKWebView needs
-        iOS 14.3 or later - is reported as <code>NotSupported</code> too. On Android the app has to grant the
-        page the camera, or every start ends in <code>PermissionDenied</code>.
+        The render mode makes no difference: under Blazor Server the page opens the camera just as it does on
+        WebAssembly. In a .NET MAUI app with <code>Bit.BbScanner.Maui</code> the device's own camera is opened
+        instead, and the platform asks for it: a permission the app does not declare, or the user refuses, ends
+        in <code>PermissionDenied</code>, and a BlazorWebView not wrapped in a <code>BbScannerHost</code> in
+        <code>NotSupported</code>. Elsewhere a <code>BlazorWebView</code> is a secure context already, and one
+        that exposes no camera API at all is reported as <code>NotSupported</code> too.
     </p>
     <p class="bb-card-desc">
         A page inside a cross-origin <code>&lt;iframe&gt;</code> needs the camera delegated to it -
