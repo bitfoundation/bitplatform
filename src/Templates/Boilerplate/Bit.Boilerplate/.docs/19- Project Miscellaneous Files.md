@@ -628,7 +628,7 @@ editorconfig
 Hangfire
 rendermode
 sqlite
-Bsqlite
+Besql
 appsettings
 Butil
 webauthn

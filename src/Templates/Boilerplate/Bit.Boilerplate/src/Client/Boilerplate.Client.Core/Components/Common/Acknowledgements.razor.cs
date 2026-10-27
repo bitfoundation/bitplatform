@@ -78,7 +78,6 @@ public partial class Acknowledgements
         //#endif
         //#if (offlineDb == true)
         new("Community Toolkit Datasync", "https://github.com/CommunityToolkit/Datasync", "https://github.com/CommunityToolkit/Datasync", "MIT"),
-        new("wa-sqlite", "https://github.com/rhashimoto/wa-sqlite", "https://github.com/rhashimoto/wa-sqlite", "MIT"),
         //#endif
         new("SQLite", "https://sqlite.org", "https://github.com/sqlite/sqlite", "Public Domain"),
         new("Microsoft.Identity.Web", "https://github.com/AzureAD/microsoft-identity-web", "https://github.com/AzureAD/microsoft-identity-web", "MIT"),

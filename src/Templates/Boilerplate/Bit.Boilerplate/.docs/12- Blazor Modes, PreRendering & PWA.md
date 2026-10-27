@@ -76,6 +76,7 @@ When you modify the structure, scripts, stylesheets, or metadata in `App.razor`,
 
 <!-- Core application scripts -->
 <script src="_content/Bit.Butil/bit-butil.js"></script>
+<script src="_content/Bit.Besql/bit-besql.js"></script>
 <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></script>
 <script src="_content/Boilerplate.Client.Core/scripts/app.js"></script>
 <script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></script>
@@ -206,7 +207,7 @@ The service worker has **four different modes** to match your app's PreRendering
 - Subsequent visits work completely offline
 
 **Recommended for:**
-- Offline-first apps with local database (SQLite on OPFS or IndexedDB via Bit.Bsqlite)
+- Offline-first apps with local database (IndexedDB, SQLite via Bit.Besql)
 - Apps that MUST work without network connectivity
 - Field service apps, medical apps
 - Apps where guaranteed offline navigation is critical

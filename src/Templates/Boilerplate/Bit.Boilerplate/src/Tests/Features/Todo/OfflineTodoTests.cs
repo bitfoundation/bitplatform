@@ -66,11 +66,6 @@ public partial class OfflineTodoTests : AppPageTest
         // The field being on screen is not the app being ready for it, and the first thing this page is asked to do
         // happens while the browser is offline - where a value dropped by hydration cannot be diagnosed from the result.
         await Page.WaitForBlazorInteractive();
-
-        // Nor is it the offline database being open: its first open downloads the SQLite engine and its storage, which
-        // the test server's development build leaves to the network rather than to the service worker's cache. The list
-        // replaces the loading indicator once the page has opened the database and pulled from the server.
-        await Expect(Page.Locator(".todo-list")).ToBeVisibleAsync();
     }
 
     private async Task AddTodoItem(string title)

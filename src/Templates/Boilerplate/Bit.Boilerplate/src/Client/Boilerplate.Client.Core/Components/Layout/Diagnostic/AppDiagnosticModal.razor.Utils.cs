@@ -109,8 +109,8 @@ public partial class AppDiagnosticModal
         try
         {
             await using var dbContext = await dbContextFactory.CreateDbContextAsync(CurrentCancellationToken);
-            // The offline db lives outside the storages cleared above: on OPFS or in IndexedDB in the browser, and in a file in Blazor Hybrid.
-            await dbContext.Database.EnsureDeletedAsync(CurrentCancellationToken);
+            await dbContext.Database.EnsureDeletedAsync(CurrentCancellationToken); // Blazor Hybrid stores the db outside webview's storage.
+            await dbContext.Database.ConfigureSqliteJournalMode();
             await dbContext.Database.MigrateAsync(CurrentCancellationToken);
         }
         catch (Exception exp)

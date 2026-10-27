@@ -11,12 +11,6 @@ using Microsoft.AspNetCore.Components.WebAssembly.Services;
 //#if (signalR == true)
 using Microsoft.AspNetCore.Http.Connections;
 //#endif
-//#if (offlineDb == true)
-using Bit.Bsqlite.Storage.Opfs;
-using Bit.Bsqlite.Storage.InMemory;
-using Bit.Bsqlite.Storage.IndexedDb;
-using Bit.Bsqlite.EntityFrameworkCore;
-//#endif
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -126,55 +120,36 @@ public static partial class IClientCoreServiceCollectionExtensions
             });
 
             //#if (offlineDb == true)
-            if (AppPlatform.IsBlazorHybridOrBrowser)
+            services.AddBesqlDbContextFactory<AppOfflineDbContext>((sp, optionsBuilder) =>
             {
-                // The offline database lives on the user's device: in the browser on OPFS (falling back to IndexedDB, then to memory),
-                // and in Blazor Hybrid in a SQLite file of the app's own. See Boilerplate.Client.Core/Infrastructure/Data/README.md
-                services.AddBitBsqliteServices(sqlite => sqlite
-                    .AddStorageProvider<BsqliteOpfsStorageProvider>()
-                    .AddStorageProvider<BsqliteIndexedDbStorageProvider>()
-                    .AddStorageProvider<BsqliteInMemoryStorageProvider>()
-                    .UseStorage(storage => storage
-                        .Prefer(BsqliteOpfsStorageProvider.ProviderName)
-                        .Fallback(BsqliteIndexedDbStorageProvider.ProviderName)
-                        .Fallback(BsqliteInMemoryStorageProvider.ProviderName)
-                        .AllowNonPersistentFallback())
-                    .BeforeFirstOpen(async (sp, _) =>
-                    {
-                        // Opening a database needs System.Private.Xml.wasm, which Boilerplate.Client.Web.csproj lazy loads.
-                        if (AppPlatform.IsBrowser)
-                        {
-                            await sp.GetRequiredService<LazyAssemblyLoader>().LoadAssembliesAsync(["System.Private.Xml.wasm"]);
-                        }
-                    })
-                    .AddDatabase("AppOffline.db"));
+                var isRunningInsideDocker = Directory.Exists("/container_volume"); // Blazor Server - Docker (It's supposed to be a mounted volume named /container_volume)
+                var dirPath = isRunningInsideDocker ? "/container_volume"
+                                                    : AppPlatform.IsBlazorHybrid ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AC87AA5B-4B37-4E52-8468-2D5DF24AF256")
+                                                    : Directory.GetCurrentDirectory(); // Blazor server (Non docker Linux, macOS or Windows) OR Blazor WASM
 
-                services.AddBitBsqliteDbContext<AppOfflineDbContext>(options =>
+                dirPath = Path.Combine(dirPath, "App_Data");
+
+                Directory.CreateDirectory(dirPath);
+
+                var dbPath = Path.Combine(dirPath, "AppOffline.db");
+
+                optionsBuilder.UseSqlite($"Data Source={dbPath}", dbOptions =>
                 {
-                    options.Schema = BsqliteSchemaStrategy.None; // InitializeAsync migrates, once it has checked the compiled model.
-                    options.Configure = (_, optionsBuilder) => optionsBuilder
-                        .EnableSensitiveDataLogging(AppEnvironment.IsDevelopment())
-                        .EnableDetailedErrors(AppEnvironment.IsDevelopment());
-                    options.OnFirstUse = (dbContext, cancellationToken) => dbContext.InitializeAsync(cancellationToken);
+
                 });
+
+                optionsBuilder.EnableSensitiveDataLogging(AppEnvironment.IsDevelopment())
+                        .EnableDetailedErrors(AppEnvironment.IsDevelopment());
+
             }
-            else
+            , dbContextInitializer: async (_, dbContext) =>
             {
-                // Blazor Server, pre-rendering and the design-time tools (dotnet ef) run on the server, where Bsqlite does not:
-                // it keeps a user's database on their device. Here the offline database is a plain SQLite file on the server instead.
-                services.AddDbContextFactory<AppOfflineDbContext, AppOfflineDbContextFactory>(optionsBuilder =>
-                {
-                    var isRunningInsideDocker = Directory.Exists("/container_volume"); // It's supposed to be a mounted volume named /container_volume
-                    var dirPath = Path.Combine(isRunningInsideDocker ? "/container_volume" : Directory.GetCurrentDirectory(), "App_Data");
+                if (AppEnvironment.IsDevelopment() is false && dbContext.Model.GetType() == typeof(EntityFrameworkCore.Metadata.RuntimeModel))
+                    throw new InvalidOperationException("AppOfflineDbContext has not been optimized. Run 'dnx dotnet-ef@10.0.14 -- dbcontext optimize --context AppOfflineDbContext' before publishing, and re-run it after every model or migration change. See Boilerplate.Client.Core/Infrastructure/Data/README.md.");
 
-                    Directory.CreateDirectory(dirPath);
-
-                    optionsBuilder.UseSqlite($"Data Source={Path.Combine(dirPath, "AppOffline.db")}");
-
-                    optionsBuilder.EnableSensitiveDataLogging(AppEnvironment.IsDevelopment())
-                            .EnableDetailedErrors(AppEnvironment.IsDevelopment());
-                }, ServiceLifetime.Scoped);
+                await Task.Run(async () => await dbContext.Database.MigrateAsync());
             }
+            , lifetime: ServiceLifetime.Scoped);
             services.AddScoped<SyncService>();
             //#endif
 
