@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Reflection;
 
 namespace Bit.Brouter;
@@ -72,11 +73,15 @@ internal static class BrouteScanner
         {
             types = ex.Types;
         }
+        catch (Exception ex) when (ex is FileNotFoundException or TypeLoadException)
+        {
+            types = GetLoadableTypes(assembly.ManifestModule);
+        }
 
         foreach (var type in types)
         {
             if (type is null || type.IsClass is false || type.IsAbstract) continue;
-            if (typeof(IComponent).IsAssignableFrom(type) is false) continue;
+            if (IsComponent(type) is false) continue;
 
             // inherit: false - a base component's [Route] should not silently spawn routes for every
             // derived component. This matches the built-in Router, which reads route attributes declared
@@ -88,6 +93,39 @@ internal static class BrouteScanner
             {
                 var template = ((RouteAttribute)attribute).Template;
                 results.Add(new DiscoveredRoute(NormalizeTemplate(template), type));
+            }
+        }
+    }
+
+    private static bool IsComponent(Type type)
+    {
+        try
+        {
+            return typeof(IComponent).IsAssignableFrom(type);
+        }
+        catch (Exception ex) when (ex is FileNotFoundException or TypeLoadException)
+        {
+            return false;
+        }
+    }
+
+    [RequiresUnreferencedCode("See Discover.")]
+    internal static Type?[] GetLoadableTypes(Module module)
+    {
+        var types = new List<Type?>();
+
+        for (var row = 2; ; row++)
+        {
+            try
+            {
+                types.Add(module.ResolveType(0x02000000 | row));
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return [.. types];
+            }
+            catch (Exception ex) when (ex is FileNotFoundException or TypeLoadException)
+            {
             }
         }
     }
