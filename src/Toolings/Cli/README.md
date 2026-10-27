@@ -61,7 +61,7 @@ Every option of the bit Boilerplate template works the same way:
 | `--notification` | `true`, `false` | `true` |
 | `--cloudflare` | `true`, `false` | `true` |
 | `--redis` | `true`, `false` | `false` |
-| `--signalR` | `true`, `false` | `false` |
+| `--signalR` | `true`, `false` | `true` |
 | `--offlineDb` | `true`, `false` | `false` |
 | `--sentry` | `true`, `false` | `false` |
 | `--appInsights` | `true`, `false` | `false` |

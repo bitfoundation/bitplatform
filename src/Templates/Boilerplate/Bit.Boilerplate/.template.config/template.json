@@ -240,7 +240,7 @@
             "type": "parameter",
             "datatype": "bool",
             "replaces": "bit-option-signalR",
-            "defaultValue": "false",
+            "defaultValue": "true",
             "description": "Adds SignalR sample."
         },
         "offlineDb": {

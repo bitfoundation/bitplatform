@@ -7,7 +7,7 @@ public partial class Templates04CreateProjectPage
 {
     private const int QuestionCount = 17;
 
-    private static readonly ProjectSetup pageDefaults = new() { SignalR = true, Captcha = "reCaptcha" };
+    private static readonly ProjectSetup pageDefaults = new() { Captcha = "reCaptcha" };
     private static readonly ProjectSetup realProduct = WithPageDefaults(ProjectSetup.RealProduct());
     private static readonly ProjectSetup testDrive = WithPageDefaults(new ProjectSetup { Sample = true });
 
@@ -196,7 +196,6 @@ public partial class Templates04CreateProjectPage
 
     private static ProjectSetup WithPageDefaults(ProjectSetup preset)
     {
-        preset.SignalR = pageDefaults.SignalR;
         preset.Captcha = pageDefaults.Captcha;
         return preset;
     }
