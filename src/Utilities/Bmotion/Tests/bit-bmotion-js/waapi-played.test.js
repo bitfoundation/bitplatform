@@ -29,4 +29,9 @@ describe('waapiPlayedAt', () => {
     it('never reads before the start', () => {
         expect(waapiPlayedAt(990, 1000, false, null, 1)).toBe(0);
     });
+
+    it('reads one the frame that first shows it will restart as not started', () => {
+        // Started early in a task that then ran long: its start time says 300ms in, but nothing of it has been shown.
+        expect(waapiPlayedAt(1300, 1000, false, null, 1, true)).toBe(0);
+    });
 });

@@ -110,7 +110,7 @@ public partial class BrowserPlaybackTests
         var (engine, interop) = NewEngine();
         await using var _ = engine;
         engine.RegisterElement("el");
-        interop.WaapiPlayedMs = (_, _) => browserPlayedMs;
+        interop.WaapiPlayhead = (_, _) => (browserPlayedMs, false);
 
         await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
         await Task.Delay(400);   // by the engine's clock: 40px along
@@ -118,6 +118,66 @@ public partial class BrowserPlaybackTests
 
         Assert.AreEqual(expectedX, WebAnimationKeyframes.TranslateX(Keyframes(interop)[0]), 0.5,
             "the retarget starts from what the element shows");
+    }
+
+    [TestMethod]
+    public async Task TheBrowsersPlayhead_IsAskedFor_OnlyUntilItsStartIsFinal()
+    {
+        // Once the browser has fixed when an animation started, the engine's clock is corrected that once and runs on
+        // its own from there: nothing that reads it later goes back to the browser.
+        var (engine, interop) = NewEngine();
+        await using var _ = engine;
+        engine.RegisterElement("el");
+        bool final = false;
+        interop.WaapiPlayhead = (_, _) => (100, final);
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
+        var state = engine.GetState("el")!;
+        int reads = interop.WaapiPlayheadReads;
+
+        state.TransformsAfter(0);
+        state.TransformsAfter(0);
+        Assert.AreEqual(reads + 2, interop.WaapiPlayheadReads, "asked while the start may still move");
+
+        final = true;
+        state.TransformsAfter(0);
+        double x = state.TransformsAfter(0)["x"];
+        Assert.AreEqual(reads + 3, interop.WaapiPlayheadReads, "and once more, when the browser says the start is final");
+        Assert.AreEqual(10, x, 2, "the clock carries on from where the browser was");
+    }
+
+    [TestMethod]
+    public async Task WhereTheTransformWillBe_AsksOnlyAboutTheAnimationsThatMoveIt()
+    {
+        var (engine, interop) = NewEngine();
+        await using var _ = engine;
+        engine.RegisterElement("el");
+        interop.WaapiPlayhead = (_, _) => (0, false);
+        await engine.AnimateToAsync("el", Values(("opacity", 0.5)), Bm.Tween(1).ToConfig());
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
+        Assert.AreEqual(2, interop.ArgsOf("playWaapiAnimation").Count, "two animations in the browser");
+        int reads = interop.WaapiPlayheadReads;
+
+        engine.GetState("el")!.TransformsAfter(100);
+
+        Assert.AreEqual(reads + 1, interop.WaapiPlayheadReads, "the opacity animation has nothing to say about it");
+    }
+
+    [TestMethod]
+    public async Task ASeek_DoesNotAskWhereAnAnimationOfTheKeysItPutsBackHadGot()
+    {
+        var (engine, interop) = NewEngine();
+        await using var _ = engine;
+        engine.RegisterElement("el", Values(("opacity", 1.0)));
+        interop.WaapiPlayhead = (_, _) => (500, false);
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
+        await engine.AnimateToAsync("el", Values(("opacity", 0.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
+        int reads = interop.WaapiPlayheadReads;
+
+        engine.ResetForSeek("el", Values(("x", 0.0)));
+
+        Assert.AreEqual(reads + 1, interop.WaapiPlayheadReads, "only the opacity animation, which the seek leaves where it got to");
+        Assert.AreEqual(0, engine.GetState("el")!.Transforms["x"], 1e-9);
+        Assert.AreEqual(0.5, (double)engine.GetState("el")!.CurrentValue("opacity")!, 0.01);
     }
 
     [TestMethod]

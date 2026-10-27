@@ -142,10 +142,16 @@ public class SplitTextTests
     [DataRow("h6")]
     [DataRow("a")]
     [DataRow("button")]
+    [DataRow("li")]
+    [DataRow("label")]
+    [DataRow("summary")]
+    [DataRow("figcaption")]
+    [DataRow("blockquote")]
     public void Accessible_KeepsTheRoleOfAContainerThatCanBeNamed(string tag)
     {
         // A heading named by its aria-label stays a heading - in the headings list, at its level - where
-        // role="text" would turn it into plain text. The same goes for a link or a button.
+        // role="text" would turn it into plain text. The same goes for a link or a button, and for any
+        // element with a role of its own: a list item stays one of its list's items.
         using var ctx = new BmotionTestContext();
         var cut = ctx.Render<BmotionSplitText>(ps => ps
             .Add(p => p.Text, "ab cd")
@@ -159,8 +165,12 @@ public class SplitTextTests
     }
 
     [TestMethod]
+    [DataRow("span")]
     [DataRow("div")]
     [DataRow("p")]
+    [DataRow("strong")]
+    [DataRow("em")]
+    [DataRow("code")]
     public void Accessible_GivesAContainerThatCannotBeNamedTheTextRole(string tag)
     {
         // A generic container or a paragraph may not carry an aria-label of its own (ARIA prohibits naming

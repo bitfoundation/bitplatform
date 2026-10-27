@@ -309,6 +309,45 @@ public class AnimateServiceTests
     }
 
     [TestMethod]
+    public async Task Spring_SupersedesAnAnimationOfTheFollowerItself_RatherThanRedirectingIt()
+    {
+        // An animation someone started on the follower has a caller awaiting where it lands: a change of the source
+        // replaces it, as any new animation of the value would, instead of pointing it somewhere else unannounced.
+        var (service, engine, _) = Create();
+        await using var __ = engine;
+        var source = Bm.Value(0.0);
+        var follower = service.Spring(source, new BmSpring { Stiffness = 300, Damping = 30 });
+        source.SetSync(100);
+        RunFrames(engine, 0, 48);
+
+        var animation = service.AnimateAsync(follower, 500, Bm.Spring());
+        RunFrames(engine, 64, 112);
+        source.SetSync(200);
+
+        await animation.WaitAsync(Timeout);   // superseded: settled without another frame
+        RunFrames(engine, 128, 6000);
+        Assert.AreEqual(200, follower.Value, 1e-6, "and the follower follows its source again");
+    }
+
+    [TestMethod]
+    public async Task Spring_TriesTheFrameLoopAgain_OnTheNextChange_WhenItFailedToStart()
+    {
+        // The loop start is fire-and-forget. One that failed is tried again by the next change of the source - a
+        // change that only points the spring the first one started at a new target included.
+        var (service, engine, interop) = Create();
+        await using var __ = engine;
+        interop.RafLoopStartFailures = 1;
+        var source = Bm.Value(0.0);
+        service.Spring(source, new BmSpring { Stiffness = 300, Damping = 30 });
+
+        source.SetSync(100);
+        Assert.AreEqual(0, interop.CountOf("startRafLoop"), "the first start failed");
+        source.SetSync(200);
+
+        Assert.AreEqual(1, interop.CountOf("startRafLoop"));
+    }
+
+    [TestMethod]
     public async Task Spring_WithoutAFrameLoop_TracksTheSourceDirectly()
     {
         var (service, engine, _) = Create(inProcess: false);

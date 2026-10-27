@@ -1411,8 +1411,7 @@ export function playWaapiAnimation(elementId: string, token: string, keyframes: 
     if (typeof timing.playbackRate === 'number') anim.playbackRate = timing.playbackRate;
     // Started the moment the engine sampled its starting point rather than on the next frame - unless this task has
     // run so long that the moment is gone (waapiStartTime), and then on its first frame, with the rest of the task's.
-    const frame = document.timeline?.currentTime;
-    const frameTime = frame == null ? null : Number(frame);
+    const frameTime = _frameTime();
     const start = waapiStartTime(performance.now(), frameTime, !!timing.continues, _interruptedAt.get(elementId));
     _interruptedAt.delete(elementId);
     try {
@@ -1472,7 +1471,11 @@ export function commitStylesChecked(anim: Animation): void {
 export function seekWaapiAnimations(elementId: string, playedMs: number): void {
     const map = _waapiAnims.get(elementId);
     if (!map) return;
-    for (const anim of map.values()) anim.currentTime = playedMs;
+    for (const anim of map.values()) {
+        anim.currentTime = playedMs;
+        // Placed by the seek, not restarted on the frame that first shows it.
+        _movingToFrame.delete(anim);
+    }
 }
 
 export function setWaapiPlaybackRate(elementId: string, rate: number): void {
@@ -1512,26 +1515,53 @@ export function waapiStartTime(now: number, frameTime: number | null, continues:
  * How far an offloaded animation has played, in ms of its own time (its delay included), as of <c>now</c>
  * (performance.now()) - not as of the frame the timeline last stood at, which inside a long task is well behind: the
  * moment the engine reads it is the moment the animation taking over starts from (waapiStartTime). One that is held on
- * its first keyframe (a late start), paused, playing at rate 0 or not started yet is where its current time says.
+ * its first keyframe (a late start), paused, playing at rate 0 or not started yet is where its current time says. One
+ * that <c>restarts</c> on the frame that first shows it (started early in a task that then ran long, _startWithTask)
+ * has shown nothing yet, whatever its start time says.
  */
-export function waapiPlayedAt(now: number, startTime: number | null, paused: boolean, currentTime: number | null, rate: number): number {
+export function waapiPlayedAt(now: number, startTime: number | null, paused: boolean, currentTime: number | null, rate: number, restarts = false): number {
+    if (restarts) return 0;
     if (paused || startTime === null || rate === 0) return currentTime ?? 0;
     return Math.max(0, (now - startTime) * rate);
 }
 
 /**
- * How far the browser has really played an offloaded animation (waapiPlayedAt), or null when there is no such
- * animation. The engine's own clock for it starts when it built it, which a late start (waapiStartTime) can leave
- * well ahead of what the element shows - an element's first animation after the page loads usually lands in a task
- * that long - so before it reads the values an animation taking over starts from, it asks here (synchronously, so on
- * WebAssembly only).
+ * Where the browser has really got with an offloaded animation, as <c>[playedMs, final]</c> (waapiPlayedAt), or null
+ * when there is no such animation. <c>final</c> is 1 once nothing will move the animation's start any more, and 0 while
+ * something can: held for the frame that first shows it, pending, or started by a task that may yet run long
+ * (_startWithTask). The engine's own clock for an animation starts when it built it, which a late start can leave well
+ * ahead of what the element shows - an element's first animation after the page loads usually lands in a task that
+ * long - so it asks here (synchronously, so on WebAssembly only) until the start is final, and corrects its clock then.
  */
-export function waapiPlayedMs(elementId: string, token: string): number | null {
+export function waapiPlayhead(elementId: string, token: string): [number, number] | null {
     const anim = _waapiAnims.get(elementId)?.get(token);
     if (!anim) return null;
+    // Cancelled, and not yet off the books (the rejection of its finished promise takes it off): a cancelled animation
+    // reads as never started, so it answers with where it was cancelled.
+    if (anim.playState === 'idle') {
+        const at = _cancelledAt.get(anim);
+        return at === undefined ? null : [at, 1];
+    }
+    return [_playedOf(anim), _startFinal(anim) ? 1 : 0];
+}
+
+function _playedOf(anim: Animation): number {
     const start = anim.startTime, current = anim.currentTime;
     return waapiPlayedAt(performance.now(), start === null ? null : Number(start), anim.playState === 'paused',
-        current === null ? null : Number(current), anim.playbackRate);
+        current === null ? null : Number(current), anim.playbackRate, _movingToFrame.has(anim));
+}
+
+/** Whether nothing will move the animation's start any more (waapiPlayhead). */
+function _startFinal(anim: Animation): boolean {
+    if (anim.pending || _heldLate.has(anim) || _movingToFrame.has(anim)) return false;
+    // Started by the task still running, which may yet run long and move it to the frame that first shows it.
+    return !(_taskAnims.includes(anim) && _frameTime() === _taskFrame);
+}
+
+/** The document timeline's time - the last frame's, which stands still inside a task - or null without one. */
+function _frameTime(): number | null {
+    const frame = document.timeline?.currentTime;
+    return frame == null ? null : Number(frame);
 }
 
 // The new animations the current task has started - one task as long as the timeline's time hasn't moved - and
@@ -1540,8 +1570,19 @@ let _taskFrame: number | null = null;
 let _taskAnims: Animation[] = [];
 let _taskLate = false;
 
-// The late animations held on their first keyframe until the frame that shows them (_startWithTask).
+// The late animations held on their first keyframe until the frame that shows them, and the early ones of a task that
+// turned out long, which that frame restarts (_startWithTask).
 const _heldLate = new WeakSet<Animation>();
+const _movingToFrame = new WeakSet<Animation>();
+
+// Where each animation the engine cancelled had got to: a drag's start cancels the element's animations and then asks
+// the engine where the element is, which asks here (waapiPlayhead) before the cancellations are off the books.
+const _cancelledAt = new WeakMap<Animation, number>();
+
+function _cancelNoting(anim: Animation): void {
+    _cancelledAt.set(anim, _playedOf(anim));
+    anim.cancel();
+}
 
 /**
  * A task that turns out long (waapiStartTime) starts every new animation it created on the frame that first shows
@@ -1566,12 +1607,13 @@ function _startWithTask(anim: Animation, frameTime: number, late: boolean): void
     if (_taskLate) return;
     _taskLate = true;
     const anims = _taskAnims;
+    for (const a of anims) if (!_heldLate.has(a)) _movingToFrame.add(a);
     requestAnimationFrame(() => {
         const at = performance.now();
         for (const a of anims) {
             try {
                 if (_heldLate.delete(a)) { if (a.playState === 'paused') a.play(); }
-                else if (a.playState === 'running') a.startTime = at;
+                else if (_movingToFrame.delete(a) && a.playState === 'running') a.startTime = at;
             } catch { /* gone */ }
         }
     });
@@ -1583,7 +1625,7 @@ export function cancelWaapiAnimation(elementId: string, token: string, commit: b
     if (!anim) return;
     if (commit) _interruptedAt.set(elementId, performance.now());
     if (commit) { try { commitStylesChecked(anim); } catch { /* detached element */ } }
-    anim.cancel(); // rejects anim.finished → cleanup runs in playWaapiAnimation's handler
+    _cancelNoting(anim); // rejects anim.finished → cleanup runs in playWaapiAnimation's handler
 }
 
 function _cancelWaapiForElement(elementId: string, commit: boolean): void {
@@ -1591,7 +1633,7 @@ function _cancelWaapiForElement(elementId: string, commit: boolean): void {
     if (!map) return;
     for (const anim of [...map.values()]) {
         if (commit) { try { commitStylesChecked(anim); } catch { } }
-        anim.cancel();
+        _cancelNoting(anim);
     }
 }
 

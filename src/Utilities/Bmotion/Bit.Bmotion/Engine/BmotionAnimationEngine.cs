@@ -145,10 +145,11 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
                     // Without synchronous interop (Blazor Server) there is no rAF loop: animations
                     // either offload to the browser compositor (WAAPI) or collapse to instant sets.
                     ForceInstant = !_interop.IsInProcess,
-                    // With it, the browser can be asked where an offloaded animation has really got to before
-                    // anything is read off it. Without it, the animation that takes over starts from what the
-                    // page shows instead (TryBuildTimelineAsync), so the engine's clock is never shown.
-                    BrowserPlayedMs = _interop.IsInProcess ? token => _interop.GetWaapiPlayedMs(elementId, token) : null,
+                    // With it, an offloaded animation's clock follows the browser's until the browser's start is
+                    // final (WaapiPlan.PlayedMs). Without it, the animation that takes over starts from what the
+                    // page shows instead (TryBuildTimelineAsync); a stop or a drag lands on the engine's clock,
+                    // ahead of the browser by however long the start took to reach it.
+                    ReadBrowserPlayhead = _interop.IsInProcess ? token => _interop.GetWaapiPlayhead(elementId, token) : null,
                 };
             }
             _elements[elementId] = state;
@@ -392,7 +393,8 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     internal void ResetForSeek(string elementId, Dictionary<string, object?> start)
     {
         if (!_elements.TryGetValue(elementId, out var state)) return;
-        var tokens = state.RealizeWaapiPlans(null);
+        // A browser animation on nothing but keys start puts back is dropped without working out where it had got to.
+        var tokens = state.RealizeWaapiPlans(null, overwritten: start);
         if (tokens != null) CancelWaapiTokens(elementId, tokens, commit: false);
         state.CancelAll();
         state.SetInstant(start);
@@ -1784,9 +1786,10 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     /// <summary>
     /// Starts a driver that isn't attached to a DOM element; <paramref name="apply"/> receives
     /// each interpolated value (typically forwarding into a <see cref="BmValue{T}"/>).
-    /// Supersedes any detached animation already running for <paramref name="key"/>.
+    /// Supersedes any detached animation already running for <paramref name="key"/>. Returns the driver started,
+    /// which <see cref="TryRetargetDetached"/> takes to tell it from one someone else started on the same key since.
     /// </summary>
-    internal void StartDetached(
+    internal IBmotionAnimationDriver StartDetached(
         object key, double from, double to, BmotionTransitionConfig config,
         Action<double> apply, TaskCompletionSource<bool>? tcs = null)
     {
@@ -1798,6 +1801,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             _ => new BmotionTweenDriver(from, to, config, apply),
         };
         _detachedAnims[key] = new DetachedAnim(driver, tcs);
+        return driver;
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -1820,12 +1824,16 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     }
 
     /// <summary>
-    /// Moves the target of the detached spring running for <paramref name="key"/> to <paramref name="to"/>, keeping its
-    /// position, velocity and clock (<see cref="BmotionSpringDriver.TryRetarget"/>). False when no spring is running for
-    /// it - none was started, it has settled, or it is a tween or repeats - and the caller starts a new one instead.
+    /// Moves the target of <paramref name="started"/>, the detached spring the caller started for <paramref name="key"/>,
+    /// to <paramref name="to"/>, keeping its position, velocity and clock (<see cref="BmotionSpringDriver.TryRetarget"/>).
+    /// False when that spring is no longer running - it has settled, or something else has taken the key since (an
+    /// animation of its own, with a caller awaiting where it lands) - or it is no spring, or repeats; the caller starts
+    /// a new one instead.
     /// </summary>
-    internal bool TryRetargetDetached(object key, double to)
-        => _detachedAnims.TryGetValue(key, out var anim) && anim.Driver is BmotionSpringDriver spring && spring.TryRetarget(to);
+    internal bool TryRetargetDetached(object key, IBmotionAnimationDriver? started, double to)
+        => started is BmotionSpringDriver spring
+            && _detachedAnims.TryGetValue(key, out var anim) && ReferenceEquals(anim.Driver, spring)
+            && spring.TryRetarget(to);
 
     /// <summary>Cancels the detached animation for <paramref name="key"/>, if any (resolves its task with false).</summary>
     internal void CancelDetached(object key)

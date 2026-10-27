@@ -177,7 +177,8 @@
         container carries the whole string as its <code>aria-label</code> and every unit is
         <code>aria-hidden</code>, so assistive technology reads the sentence once. A generic container (the
         default <code>span</code>, a <code>div</code>, a <code>p</code>) also gets <code>role="text"</code>, which is
-        what has its label read; a heading, link or button keeps its own role, and the label names it. Whitespace is
+        what has its label read; any other element - a heading, a link, a button, a list item, a table cell - keeps
+        its own role, and the label names it. Whitespace is
         rendered as whitespace rather than as units, and in <code>Chars</code> mode each word is
         wrapped in an inline-block of its own - so the text wraps between words, never mid-word,
         and selecting it copies the original string back. <code>Accessible="false"</code> drops the label and

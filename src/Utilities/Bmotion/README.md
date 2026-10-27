@@ -469,7 +469,7 @@ nothing to re-split on re-render and nothing for a script to undo:
 | `Transition` | `BmTransition?` | Timing for every unit; each unit's stagger offset is added to its delay |
 | `Stagger` | `BmStagger?` | The cascade across units. Default `Bm.Stagger(0.03)` |
 | `As` / `Class` / `Style` / `UnitClass` | `string?` | The container element/styling and the per-unit class |
-| `Accessible` | `bool` | Default `true`: `aria-label` on the container, `aria-hidden` on the units, and `role="text"` on a generic container (a heading, link or button keeps its own role) |
+| `Accessible` | `bool` | Default `true`: `aria-label` on the container, `aria-hidden` on the units, and `role="text"` on a generic container (a heading, link, button, list item, table cell, … keeps its own role) |
 | `OnComplete` | `EventCallback` | Fires once the last unit finishes |
 
 The split is **not** a bag of one-character spans: whitespace is rendered as whitespace rather than

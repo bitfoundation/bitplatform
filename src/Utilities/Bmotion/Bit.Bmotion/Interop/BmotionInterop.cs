@@ -83,16 +83,22 @@ public sealed class BmotionInterop : IBmotionInterop
     }
 
     /// <summary>
-    /// How far the browser has really played the offloaded animation <paramref name="token"/> on
-    /// <paramref name="elementId"/>, in ms of animation time, as of now (the bridge's <c>waapiPlayedMs</c>).
-    /// Synchronous, so WebAssembly only; <c>null</c> elsewhere, before the bridge has loaded (nothing it
-    /// plays can exist yet), and when no such animation is playing.
+    /// Where the browser has really got with the offloaded animation <paramref name="token"/> on
+    /// <paramref name="elementId"/> - how far it has played, in ms of animation time, as of now, and whether
+    /// its start is final (the bridge's <c>waapiPlayhead</c>). Synchronous, so WebAssembly only; <c>null</c>
+    /// elsewhere, before the bridge has loaded (nothing it plays can exist yet), and when no such animation
+    /// is playing.
     /// </summary>
-    public double? GetWaapiPlayedMs(string elementId, int token)
+    public (double PlayedMs, bool Final)? GetWaapiPlayhead(string elementId, int token)
     {
         if (!_moduleTask.IsValueCreated || _moduleTask.Value is not { IsCompletedSuccessfully: true } loaded) return null;
         if (loaded.Result is not IJSInProcessObjectReference module) return null;
-        try { return module.Invoke<double?>("waapiPlayedMs", elementId, token); }
+        try
+        {
+            return module.Invoke<double[]?>("waapiPlayhead", elementId, token) is [var played, var final] && double.IsFinite(played)
+                ? (played, final != 0)
+                : null;
+        }
         catch { return null; }   // a bridge that can't answer leaves the engine on its own clock
     }
 

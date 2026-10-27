@@ -1467,11 +1467,34 @@ internal sealed class BmotionElementAnimationState
         /// <summary>Set when an interruption handed the plan's remaining keys (and <see cref="Completion"/>) to rAF drivers.</summary>
         public bool HandedOff { get; set; }
 
+        /// <summary>
+        /// Asks the browser where it has really got with the animation (<see cref="IBmotionInterop.GetWaapiPlayhead"/>).
+        /// Null where it can't be asked (Blazor Server), and once the browser has said the animation's start is final.
+        /// </summary>
+        public Func<(double PlayedMs, bool Final)?>? BrowserPlayhead { get; set; }
+
         /// <summary>How far into the animation (delay included) playback is, in ms of animation time.</summary>
         public double PlayedMs(long nowMs)
         {
+            FollowBrowser(nowMs);
             if (_rateSinceMs < 0) _rateSinceMs = StartMs;
             return _playedBeforeMs + (Math.Max(0, nowMs - _rateSinceMs) * Rate);
+        }
+
+        /// <summary>
+        /// Puts the playhead where the browser's is while the browser may still move the animation's start. The plan's
+        /// clock starts when the engine built it, and the browser can start the animation well after that: a task that
+        /// runs long holds a new animation on its first keyframe until the frame that shows it (the bridge's
+        /// waapiStartTime), and an element's first animation after a page loads usually lands in one. Read off the
+        /// engine's clock then, an interrupted animation would hand over values it never reached, and the one taking over
+        /// would start ahead of what is on screen. Once the start is final the clock is right from then on, and runs on
+        /// its own: the correction is made here, once, for every reader of the clock.
+        /// </summary>
+        private void FollowBrowser(long nowMs)
+        {
+            if (BrowserPlayhead?.Invoke() is not { } playhead) return;
+            SeekTo(nowMs, playhead.PlayedMs);
+            if (playhead.Final) BrowserPlayhead = null;
         }
 
         public void SetRate(long nowMs, double rate)
@@ -1545,22 +1568,11 @@ internal sealed class BmotionElementAnimationState
     internal bool HasWaapiPlans => _waapiPlans.Count > 0;
 
     /// <summary>
-    /// Reads how far the browser has really played an offloaded animation, by its token - null where that can't
-    /// be read synchronously (Blazor Server) or the animation is gone. Set by the engine.
+    /// Reads where the browser has really got with an offloaded animation, by its token - null where that can't be
+    /// read synchronously (Blazor Server) or the animation is gone. Set by the engine; each plan asks through it
+    /// (<see cref="WaapiPlan.BrowserPlayhead"/>) until the browser's start for it is final.
     /// </summary>
-    internal Func<int, double?>? BrowserPlayedMs { get; init; }
-
-    /// <summary>
-    /// Puts <paramref name="plan"/>'s playhead where the browser's is. A plan's own clock starts when the engine built
-    /// it, and the browser can start the animation well after that: a task that runs long holds a new animation on its
-    /// first keyframe until the frame that shows it (the bridge's waapiStartTime), and an element's first animation
-    /// after a page loads usually lands in one. Read off the engine's clock then, an interrupted animation would hand
-    /// over values it never reached, and the one taking over would start ahead of what is on screen.
-    /// </summary>
-    private void SyncPlayhead(WaapiPlan plan, long nowMs)
-    {
-        if (BrowserPlayedMs?.Invoke(plan.Token) is double played && double.IsFinite(played)) plan.SeekTo(nowMs, played);
-    }
+    internal Func<int, (double PlayedMs, bool Final)?>? ReadBrowserPlayhead { get; init; }
 
     /// <summary>Moves every browser animation's mirror to <paramref name="playedMs"/> of animation time (a seek).</summary>
     internal void SeekWaapiPlans(long nowMs, double playedMs)
@@ -1586,6 +1598,7 @@ internal sealed class BmotionElementAnimationState
         // Starting a compositor animation supersedes any rAF drivers on the same keys.
         foreach (var key in plan.Keys)
             CancelProp(key);
+        if (ReadBrowserPlayhead is { } read) plan.BrowserPlayhead = () => read(plan.Token);
         _waapiPlans.Add(plan);
     }
 
@@ -1610,8 +1623,11 @@ internal sealed class BmotionElementAnimationState
     /// plan that overlaps <paramref name="keys"/>. Because <c>transform</c> is a single CSS
     /// property, a plan touching any transform component overlaps a key set touching any other.
     /// Pass <c>null</c> to realize all plans. Returns the removed plans' tokens (for JS cancel).
+    /// <paramref name="overwritten"/> names keys the caller writes straight afterwards: a plan that animates
+    /// nothing else is dropped without working out where it has got to.
     /// </summary>
-    internal List<int>? RealizeWaapiPlans(IReadOnlyCollection<string>? keys, bool continueOthers = false)
+    internal List<int>? RealizeWaapiPlans(
+        IReadOnlyCollection<string>? keys, bool continueOthers = false, IReadOnlyDictionary<string, object?>? overwritten = null)
     {
         if (_waapiPlans.Count == 0) return null;
 
@@ -1630,13 +1646,14 @@ internal sealed class BmotionElementAnimationState
                 || PlanTouchesAny(plan, keys);
             if (!overlaps) continue;
 
-            SyncPlayhead(plan, now);
-            RealizePlanValues(plan, now);
             _waapiPlans.RemoveAt(i);
             (tokens ??= new List<int>()).Add(plan.Token);
+            bool realize = overwritten is null || !plan.Keys.All(overwritten.ContainsKey);
+            double played = realize ? plan.PlayedMs(now) : 0;
+            if (realize) RealizePlanValues(plan, now, played);
             // The plan was cancelled for some of its keys only (transform is one CSS property, so
             // animating y takes the compositor's x with it): the rest carry on where they were.
-            if (continueOthers && keys != null) ContinuePlan(plan, keys, now);
+            if (realize && continueOthers && keys != null) ContinuePlan(plan, keys, played);
             else ForgetAuto(plan.Keys);
             if (keys != null) ForgetAuto(keys);
         }
@@ -1657,9 +1674,8 @@ internal sealed class BmotionElementAnimationState
     /// superseded, so it settles as superseded (false), as a batch with a superseded key does.
     /// Without a frame loop nothing can carry them, so they land on their targets at once instead.
     /// </summary>
-    private void ContinuePlan(WaapiPlan plan, IReadOnlyCollection<string> interrupted, long nowMs)
+    private void ContinuePlan(WaapiPlan plan, IReadOnlyCollection<string> interrupted, double played)
     {
-        double played = plan.PlayedMs(nowMs);
         HashSet<string>? continued = null;
         foreach (var key in plan.Keys)
         {
@@ -1704,11 +1720,11 @@ internal sealed class BmotionElementAnimationState
         var target = new Dictionary<string, double>(Transforms, StringComparer.OrdinalIgnoreCase);
         foreach (var plan in _waapiPlans)
         {
-            SyncPlayhead(plan, now);
+            if (!plan.AnimatesTransform) continue;
+            // The plan's clock runs at its rate; afterMs of wall time is afterMs × rate of animation time.
+            double at = plan.PlayedMs(now) + (afterMs * plan.Rate);
             foreach (var key in plan.Values.Keys)
-                if (BmotionTransformComposer.IsTransformProp(key))
-                    // The plan's clock runs at its rate; afterMs of wall time is afterMs × rate of animation time.
-                    target[key] = plan.ValueAt(key, plan.PlayedMs(now) + (afterMs * plan.Rate));
+                if (BmotionTransformComposer.IsTransformProp(key)) target[key] = plan.ValueAt(key, at);
         }
         return target;
     }
@@ -1790,16 +1806,17 @@ internal sealed class BmotionElementAnimationState
             // Rejected before it could ever have played (within neverStartedWithinMs): nothing was shown, so the state
             // goes back to the plan's first frame - not to where it would have got to by now, nor, for one that starts
             // part-way in (a negative delay), to that point - and the replay that follows starts from there.
-            RealizePlanValues(plan, now, elapsedMs < neverStartedWithinMs ? plan.DelayMs : null);
+            bool shown = elapsedMs >= neverStartedWithinMs;
+            RealizePlanValues(plan, now, shown ? plan.PlayedMs(now) : plan.DelayMs, shown);
             _waapiPlans.RemoveAt(i);
             return true;
         }
         return false;
     }
 
-    private void RealizePlanValues(WaapiPlan plan, long nowMs, double? atPlayedMs = null)
+    /// <summary>Writes what <paramref name="plan"/> shows <paramref name="played"/> ms in; one never <paramref name="shown"/> leaves no motion behind.</summary>
+    private void RealizePlanValues(WaapiPlan plan, long nowMs, double played, bool shown = true)
     {
-        double played = atPlayedMs ?? plan.PlayedMs(nowMs);
         var (progress, _) = plan.SampleAtPlayed(played);
         foreach (var (key, (from, to)) in plan.Values)
         {
@@ -1810,7 +1827,7 @@ internal sealed class BmotionElementAnimationState
             // Whatever takes the key over next (a retargeted spring) carries on at the speed the browser had it at -
             // in animation time, the clock the replacing driver runs on too.
             double velocity = plan.VelocityAt(key, played);
-            if (velocity != 0 && atPlayedMs is null) _handoff[key] = (velocity, nowMs); // one never shown left no motion
+            if (velocity != 0 && shown) _handoff[key] = (velocity, nowMs);
         }
         if (plan.Strings is { } strings)
             foreach (var key in strings.Keys)

@@ -62,10 +62,14 @@ public class BmValue<T> : IDisposable
     /// (motion.dev's <c>getVelocity</c>, which goes to 0 after 30 ms, for a value updated every frame).
     /// </summary>
     public double GetVelocity()
-        => _velocityPerSec != 0 && TimeSource() - _lastSetMs > StaleAfterMs ? 0 : _velocityPerSec;
+        => _velocityPerSec != 0 && MsUntilStill() < 0 ? 0 : _velocityPerSec;
 
-    /// <summary>How long after its last change the value's velocity still counts as current, in ms.</summary>
-    internal long StaleAfterMs => Math.Clamp(StaleIntervals * _lastIntervalMs, MinStaleMs, MaxStaleMs);
+    /// <summary>
+    /// How much longer the velocity of the last change still counts as current, in ms by <see cref="TimeSource"/>:
+    /// negative once the value counts as standing still.
+    /// </summary>
+    internal long MsUntilStill()
+        => Math.Clamp(StaleIntervals * _lastIntervalMs, MinStaleMs, MaxStaleMs) - (TimeSource() - _lastSetMs);
 
     /// <summary>
     /// Sets the value and notifies subscribers, but resets velocity to zero - use for

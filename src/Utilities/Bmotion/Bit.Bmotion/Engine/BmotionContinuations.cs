@@ -20,6 +20,18 @@ internal static class BmotionContinuations
     internal static Task OnCallerContext<T>(this Task<T> task, Func<Task<T>, Task> continuation)
         => task.ContinueWith(continuation, CancellationToken.None, TaskContinuationOptions.None, CallerScheduler()).Unwrap();
 
+    /// <summary>
+    /// Runs <paramref name="work"/> on the caller's context once <paramref name="delayMs"/> have passed. False, with
+    /// nothing scheduled, on a thread there is no coming back to: one with no synchronization context, off WebAssembly
+    /// (whose one thread is the caller's) - a timer's thread there would race whatever the caller does meanwhile.
+    /// </summary>
+    internal static bool AfterDelayOnCallerContext(long delayMs, Action work)
+    {
+        if (SynchronizationContext.Current is null && !OperatingSystem.IsBrowser()) return false;
+        _ = Task.Delay(TimeSpan.FromMilliseconds(Math.Max(delayMs, 1))).OnCallerContext(_ => work());
+        return true;
+    }
+
     private static TaskScheduler CallerScheduler()
         => SynchronizationContext.Current is null
             ? TaskScheduler.Default
