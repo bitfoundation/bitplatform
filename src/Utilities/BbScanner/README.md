@@ -835,9 +835,12 @@ A page inside a cross-origin `<iframe>` needs the camera delegated to it - `<ifr
   `ReleaseCameraWhenHidden`, disposal) every one of them is zeroed, not just let go of, since freed memory keeps its
   contents until it is reused. The browser-side readback array is zeroed and its canvas emptied, and the WebGL context
   that drew the frame is released, as is the region copy a Server or Hybrid page sends. Buffers the decoder hands back
-  to .NET's shared array pools go back cleared, so no other code in the application can rent a frame. A picked or captured still image is zeroed as soon as it has been
-  decoded, in the browser and in .NET; one handed over as encoded bytes (`ScanImageAsync`) waits in the browser as
-  a Blob, which cannot be overwritten, and is released once decoded. The decoder keeps no history of values beyond
+  to .NET's shared array pools go back cleared, so no other code in the application can rent a frame. A picked or
+  captured still image is zeroed as soon as it has been decoded, in the browser and in .NET; one handed over as
+  encoded bytes (`ScanImageAsync`) waits in the browser as a Blob, which cannot be overwritten, and is released once
+  decoded. Under Blazor Server and Hybrid a still image's grayscale, like a frame's region, crosses in slices, and
+  those are not zeroed: each is a temporary copy made for one call, in the page by `readData` and in .NET by the
+  interop that receives it, and is let go of once copied rather than cleared. The decoder keeps no history of values beyond
   the duplicate filter, which holds values, not images: it is cleared on every start the application asks for, and by
   `ResetDuplicateFilter`. A camera the browser ended in the background and the scanner reopened carries on the same
   session, as `Resume` does: under an infinite `DuplicateSuppressionWindow` nothing is reported twice across it.

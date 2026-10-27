@@ -79,7 +79,8 @@
                         <code>maxSymbols</code>, 16 by default) instead of raising <code>OnScan</code>. A refused or
                         unreadable image throws an <code>InvalidImage</code> error, shown under the scanner. Under
                         Blazor Server the bytes travel to the browser to be decoded and come back as luminance, so an
-                        upload crosses the network twice; the built-in picker sends the file once.
+                        upload crosses the network twice; with the built-in picker the browser decodes the file and
+                        sends only the prepared luminance to the server.
                     </p>
                     <InputFile id="scan-image-input" accept="image/*" OnChange="ScanUploadAsync" />
                 </section>

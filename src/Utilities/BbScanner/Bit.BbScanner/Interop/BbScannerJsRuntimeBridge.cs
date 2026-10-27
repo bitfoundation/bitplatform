@@ -224,17 +224,34 @@ internal sealed class BbScannerJsRuntimeBridge(IJSRuntime jsRuntime, bool local 
         var module = Module;
         var size = Part;
         var count = (image.Length + size - 1) / size;
-        await ForEachInFlightAsync(count, async index =>
+        try
         {
-            var part = image.Slice(index * size, Math.Min(size, image.Length - (index * size)));
+            await ForEachInFlightAsync(count, async index =>
+            {
+                var part = image.Slice(index * size, Math.Min(size, image.Length - (index * size)));
 
-            // A byte[] is what crosses as binary rather than as JSON, and it has to be exactly the part.
-            var bytes = MemoryMarshal.TryGetArray(part, out var segment) && segment.Offset == 0 && segment.Count == segment.Array!.Length
-                ? segment.Array
-                : part.ToArray();
-            await module.InvokeVoidAsync("stageImagePart", CallTimeout, sessionId, requestId, index, bytes).ConfigureAwait(false);
-            return true;
-        }).ConfigureAwait(false);
+                // A byte[] is what crosses as binary rather than as JSON, and it has to be exactly the part.
+                var bytes = MemoryMarshal.TryGetArray(part, out var segment) && segment.Offset == 0 && segment.Count == segment.Array!.Length
+                    ? segment.Array
+                    : part.ToArray();
+                await module.InvokeVoidAsync("stageImagePart", CallTimeout, sessionId, requestId, index, bytes).ConfigureAwait(false);
+                return true;
+            }).ConfigureAwait(false);
+        }
+        catch
+        {
+            // The parts that did arrive would wait in the page until the session closes.
+            try
+            {
+                await ReleasePreparedAsync(sessionId, requestId).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (IsInteropFailure(ex))
+            {
+                // Gone with the page; whatever made the staging fail is the error worth reporting.
+            }
+
+            throw;
+        }
 
         return await module.InvokeAsync<int>("prepareStagedParts", sessionId, requestId, count, contentType, maxDimension, maxBytes).ConfigureAwait(false);
     }

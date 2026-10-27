@@ -1516,10 +1516,19 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
             return false;
         }
 
-        // Nothing new since the last grab is the usual answer between camera frames, and costs nothing more. This is
-        // also the backpressure mechanism: a slow decode simply misses ticks and the next grab returns the newest frame
-        // rather than a queued stale one.
-        if (_status == BbScannerStatus.Paused || (state & BbScannerBridge.PollFrame) == 0)
+        // The size the page is told to read frames at changed, and it has not been told yet. It is told whether or not a
+        // frame is waiting: a page that was never told has nothing to read frames into, and reports none until it is.
+        await ApplyProcessingSizeAsync().ConfigureAwait(true);
+        if (IsStale(version))
+        {
+            return false;
+        }
+
+        // One that changed again while the page was being told leaves the page a size behind, and the frame waits for
+        // the next tick. Nothing new since the last grab is the usual answer between camera frames, and costs nothing
+        // more. This is also the backpressure mechanism: a slow decode simply misses ticks and the next grab returns the
+        // newest frame rather than a queued stale one.
+        if (_configurePending || _status == BbScannerStatus.Paused || (state & BbScannerBridge.PollFrame) == 0)
         {
             return true;
         }
@@ -1527,14 +1536,6 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         // A frame of the loop before this one - stopped and started again meanwhile - still decoding on another thread
         // reads the frame buffer: the next frame waits for it.
         if (_decodingDecoder is not null)
-        {
-            return true;
-        }
-
-        // The size the page is told to read frames at changed, and it has not been told yet. One that changed again
-        // while the page was being told leaves the page a size behind, and the frame waits for the next tick.
-        await ApplyProcessingSizeAsync().ConfigureAwait(true);
-        if (_configurePending)
         {
             return true;
         }
