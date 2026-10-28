@@ -18,7 +18,7 @@ and against the Server, Wasm and Auto hosting samples (`Samples/`) as they ship,
 From inside `src` (so `src/global.json` selects the test runner):
 
 ```powershell
-dotnet test --project Tests\Bit.Butil.Tests.Hosting\Bit.Butil.Tests.Hosting.csproj            # net8.0, net9.0 and net10.0
+dotnet test --project Tests\Bit.Butil.Tests.Hosting\Bit.Butil.Tests.Hosting.csproj            # net10.0 and net11.0
 dotnet test --project Tests\Bit.Butil.Tests.Hosting\Bit.Butil.Tests.Hosting.csproj -f net10.0 # one framework
 ```
 

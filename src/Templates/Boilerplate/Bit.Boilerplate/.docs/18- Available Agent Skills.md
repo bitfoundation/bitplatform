@@ -187,7 +187,7 @@ Everything lives in the one skill file; it brings no scripts or tools of its own
 
 **Canonical file**: `.github/agents/upgrade.agent.md`
 
-**What it does**: Brings a newer bit Boilerplate version into the project. `bit diff` creates the project with the version it came from and with the newer one into one git repository in a temporary folder, so the second commit is exactly what the template changed for a project with this name and these options. The skill carries each of those changes into the codebase, keeping what the team changed, adds the database migrations the changes need, and updates the version `bit.json` and the MCP server configurations record.
+**What it does**: Brings a newer bit Boilerplate version into the project. `bit diff` creates the project with the version it came from and with the newer one into one git repository in bit's own folder in the user's home, so the second commit is exactly what the template changed for a project with this name and these options. The skill carries each of those changes into the codebase, keeping what the team changed, adds the database migrations the changes need, and updates the version `bit.json` and the MCP server configurations record.
 
 **When to use it**: When a newer bit Boilerplate is out and the project should get its fixes, features and dependency updates.
 

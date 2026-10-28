@@ -17,11 +17,7 @@ builder.Services.AddBitBdndServices();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseWebAssemblyDebugging();
-}
-else
+if (app.Environment.IsDevelopment() is false)
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();

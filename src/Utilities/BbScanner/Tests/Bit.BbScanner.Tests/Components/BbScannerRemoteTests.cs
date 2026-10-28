@@ -47,12 +47,8 @@ public class BbScannerRemoteTests : BunitContext
         CollectionAssert.Contains(statuses, BbScannerStatus.Scanning);
         Assert.AreEqual("./_content/Bit.BbScanner/bit-bbscanner.js", _page.ImportedPath);
         Assert.AreEqual((FrameWidth, FrameHeight), _page.Configured);
-#if NET9_0_OR_GREATER
         // A page across a network keeps a watchdog on the camera it opened; one behind a WebView goes away with .NET.
         Assert.AreEqual(renderer == "WebView" ? 0 : 20_000, _page.Last("start")[6]);
-#else
-        Assert.AreEqual(20_000, _page.Last("start")[6], "A page across a process keeps a watchdog on the camera it opened.");
-#endif
     }
 
     [TestMethod]
@@ -335,14 +331,7 @@ public class BbScannerRemoteTests : BunitContext
     }
 
     private void Interactive(string renderer)
-    {
-#if NET9_0_OR_GREATER
-        SetRendererInfo(new RendererInfo(renderer, isInteractive: true));
-#else
-        // .NET 8 has no RendererInfo: every render bUnit makes is an interactive one.
-        _ = renderer;
-#endif
-    }
+        => SetRendererInfo(new RendererInfo(renderer, isInteractive: true));
 
     /// <summary>A light frame of the configured size with a QR code centred on the given point.</summary>
     private static byte[] FrameWithQrCode(string text, int centreX, int centreY)

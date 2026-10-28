@@ -21,7 +21,7 @@ absence of errors.
 
 | Project | What it is |
 |---|---|
-| `Bit.Bswup.Tests.Harness` | Razor class library: the pages every host renders, `harness.js` (records every Bswup message, counts document loads) and `harness-extra.json` (a precached asset the suites fault). net8.0 / net9.0 / net10.0. |
+| `Bit.Bswup.Tests.Harness` | Razor class library: the pages every host renders, `harness.js` (records every Bswup message, counts document loads) and `harness-extra.json` (a precached asset the suites fault). net10.0 / net11.0. |
 | `Bit.Bswup.Tests.Harness.Web.Client` | The WebAssembly client of the Blazor Web App; generates the root app's `service-worker-assets.js`. |
 | `Bit.Bswup.Tests.Harness.Wasm` | A standalone WebAssembly app (`index.html`, a hand-written `bitBswupHandler`), served under `/standalone/`. |
 | `Bit.Bswup.Tests.Harness.Web` | One ASP.NET Core host for both apps, the Blazor Web App in the render mode picked with `--BswupHarness:Mode=`: `wasm`, `wasm-noprerender`, `auto`, `server`. Also the test-controlled server side of a deployment (see below). |
@@ -94,7 +94,7 @@ or `dotnet run --project Tests/Bit.Bswup.Tests.Harness.Web -- --BswupHarness:Mod
 
 | Variable | Effect |
 |---|---|
-| `BSWUP_E2E_FRAMEWORK` | Target framework of the harness host: `net10.0` (default), `net9.0`, `net8.0`. |
+| `BSWUP_E2E_FRAMEWORK` | Target framework of the harness host: `net11.0` (default), `net10.0`. |
 | `BSWUP_E2E_CONFIGURATION` | Build configuration of the host; defaults to the test assembly's. |
 | `BSWUP_E2E_SKIP_BUILD=1` | Do not build the host before the run. |
 | `BSWUP_E2E_PUBLISHED_HOST` | Run a `dotnet publish` output of the host instead of the build output. |

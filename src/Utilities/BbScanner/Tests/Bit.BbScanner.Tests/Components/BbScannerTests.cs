@@ -14,10 +14,8 @@ public class BbScannerTests : BunitContext
     public BbScannerTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-#if NET9_0_OR_GREATER
         // What a prerender looks like: the markup is produced on a renderer that is not interactive.
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));
-#endif
     }
 
     [TestMethod]
@@ -41,8 +39,6 @@ public class BbScannerTests : BunitContext
     public void A_scanner_that_has_not_started_is_idle_and_offers_to_start()
     {
         var scanner = RenderPrerendered();
-
-        if (OnNet8()) return;
 
         Assert.AreEqual(BbScannerStatus.Idle, scanner.Instance.Status);
         Assert.AreEqual("idle", scanner.Find(".bit-bbscanner").GetAttribute("data-status"));
@@ -114,7 +110,6 @@ public class BbScannerTests : BunitContext
     public async Task Starting_while_prerendering_does_nothing_rather_than_throwing()
     {
         var scanner = RenderPrerendered();
-        if (OnNet8()) return;
 
         var before = scanner.Instance.Status;
 
@@ -169,7 +164,6 @@ public class BbScannerTests : BunitContext
     public async Task Scanning_an_encoded_image_while_prerendering_says_it_cannot()
     {
         var scanner = RenderPrerendered();
-        if (OnNet8()) return;
 
         var error = await Assert.ThrowsExactlyAsync<BbScannerException>(() =>
             scanner.InvokeAsync(() => scanner.Instance.ScanImageAsync(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, "image/png")));
@@ -182,7 +176,6 @@ public class BbScannerTests : BunitContext
     public async Task An_image_stream_is_not_read_while_prerendering()
     {
         var scanner = RenderPrerendered();
-        if (OnNet8()) return;
 
         using var stream = new MemoryStream(new byte[4096]);
 
@@ -255,18 +248,4 @@ public class BbScannerTests : BunitContext
             builder.Add(p => p.AutoStart, false);
             parameters?.Invoke(builder);
         });
-
-    /// <summary>
-    /// .NET 8 has no RendererInfo, and so no way to tell a prerender from an interactive render: bUnit runs
-    /// OnAfterRender, which a real prerender never does, and the scanner goes on to reach the page - bUnit's, which
-    /// offers no camera API, so it reports NotSupported straight away.
-    /// </summary>
-    private static bool OnNet8()
-    {
-#if NET9_0_OR_GREATER
-        return false;
-#else
-        return true;
-#endif
-    }
 }

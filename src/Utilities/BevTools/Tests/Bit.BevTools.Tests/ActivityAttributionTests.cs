@@ -22,9 +22,6 @@ public class ActivityAttributionTests : BunitContext
 
     private BevToolsSession Session => Services.GetRequiredService<BevToolsSession>();
 
-    // The framework's ActivitySource and meters arrived in .NET 10; on earlier runtimes there is nothing to observe,
-    // and the report has to say so instead of claiming the data is merely pending.
-#if NET10_0_OR_GREATER
     [TestMethod]
     public void AddBitBevToolsServices_registers_the_framework_activity_source_and_meters()
     {
@@ -33,20 +30,6 @@ public class ActivityAttributionTests : BunitContext
         Assert.Contains(d => d.ServiceType.FullName == "Microsoft.AspNetCore.Components.ComponentsActivitySource", services);
         Assert.Contains(d => d.ServiceType.FullName == "Microsoft.AspNetCore.Components.ComponentsMetrics", services);
     }
-#else
-    [TestMethod]
-    public void Before_net10_nothing_is_registered_and_the_capability_report_says_why()
-    {
-        var services = new ServiceCollection();
-        services.AddBitBevToolsServices(o => o.Enabled = true);
-        Assert.DoesNotContain(d => d.ServiceType.FullName == "Microsoft.AspNetCore.Components.ComponentsActivitySource", services);
-
-        Render<ClickableComponent>();
-        var uiEvents = Session.Capabilities.Single(c => c.Name == "Render cause: UI event");
-        Assert.AreEqual(BevCapabilityStatus.RequiresRuntimeSupport, uiEvents.Status);
-        Assert.StartsWith("Requires .NET 10", uiEvents.Explanation, StringComparison.Ordinal);
-    }
-#endif
 
     [TestMethod]
     public void Framework_instrumentation_can_be_turned_off()
@@ -60,7 +43,6 @@ public class ActivityAttributionTests : BunitContext
         Assert.DoesNotContain(d => d.ServiceType.FullName == "Microsoft.AspNetCore.Components.ComponentsActivitySource", services);
     }
 
-#if NET10_0_OR_GREATER
     [TestMethod]
     public void Ui_event_is_recorded_with_component_type_attribute_and_method()
     {
@@ -127,7 +109,6 @@ public class ActivityAttributionTests : BunitContext
         Assert.IsTrue(Session.TypeMetrics.TryGetValue(typeof(ClickableComponent).FullName!, out var metrics));
         Assert.IsTrue(metrics!.ParameterUpdates > 0);
     }
-#endif
 
     [TestMethod]
     public void Lifecycle_metrics_of_same_named_components_in_different_namespaces_stay_apart()

@@ -24,7 +24,7 @@ public static class RemoveCommand
         {
             var cli = services();
             var folder = Path.TrimEndingDirectorySeparator(Path.GetFullPath(parseResult.GetValue(pathArgument) ?? ".", cli.Environment.CurrentDirectory));
-            var name = Directory.Exists(folder) ? ProjectContext.FindProjectName(folder) : null;
+            var name = Directory.Exists(folder) ? ProjectContext.FindProjectName(folder) ?? ClientCoreName(folder) : null;
 
             if (string.IsNullOrEmpty(name) || IsProjectRoot(folder, name) is false)
             {
@@ -57,9 +57,10 @@ public static class RemoveCommand
 
             var steps = new StepRunner(cli);
             var onlyEmptyFoldersLeft = false;
+            var terminalInFolder = false;
             IReadOnlyList<string> inFolder = [];
 
-            await ProjectProcesses.StopAsync(cli, steps, folder, cancellationToken);
+            var stoppedBuilds = await ProjectProcesses.StopAsync(cli, steps, folder, cancellationToken);
             LeaveFolder(folder);
 
             var result = await steps.RunAsync("remove", "Deleting the project folder", (_, token) => Task.Run(() =>
@@ -69,7 +70,7 @@ public static class RemoveCommand
 
                 if (failures.Count > 0)
                 {
-                    freed = ProjectProcesses.Free(cli, failures.Select(f => f.Path));
+                    freed = ProjectProcesses.Free(cli, failures.Select(f => f.Path), stoppedBuilds: stoppedBuilds);
 
                     if (freed.Stopped.Count > 0)
                     {
@@ -79,7 +80,7 @@ public static class RemoveCommand
 
                 if (emptyFoldersLeft)
                 {
-                    var inIt = ProjectProcesses.FreeFolder(cli, folder);
+                    var inIt = ProjectProcesses.FreeFolder(cli, folder, stoppedBuilds);
                     freed = freed with { Stopped = [.. freed.Stopped, .. inIt.Stopped] };
                     inFolder = inIt.Holders;
 
@@ -90,6 +91,12 @@ public static class RemoveCommand
                 }
 
                 onlyEmptyFoldersLeft = emptyFoldersLeft;
+                terminalInFolder = emptyFoldersLeft && OperatingSystem.IsWindows() && FolderHolders.AncestorIsIn(folder);
+
+                if (terminalInFolder)
+                {
+                    inFolder = [.. inFolder, "this terminal"];
+                }
 
                 foreach (var failure in failures)
                 {
@@ -111,7 +118,7 @@ public static class RemoveCommand
                     : StepResult.Succeeded("Deleted the project folder", after);
             }, token), cancellationToken);
 
-            if (onlyEmptyFoldersLeft && cli.IsInteractive)
+            if (onlyEmptyFoldersLeft && terminalInFolder is false && cli.IsInteractive)
             {
                 onlyEmptyFoldersLeft = await WaitForTheFolderAsync(cli, folder, inFolder, cancellationToken) is false;
             }
@@ -135,7 +142,8 @@ public static class RemoveCommand
 
             if (onlyEmptyFoldersLeft)
             {
-                cli.Console.Out.MarkupLine($"    [grey]{Markup.Escape(folder)} stays, empty, while {Markup.Escape(Describe(inFolder))} {(inFolder.Count > 1 ? "are" : "is")} in it. Close {(inFolder.Count > 1 ? "them" : "it")}, then delete the folder.[/]");
+                var leave = terminalInFolder && inFolder.Count == 1 ? $"Run cd {ProcessSpec.ShellQuote(Path.GetDirectoryName(folder)!, cli.Environment.Os)}" : $"Close {(inFolder.Count > 1 ? "them" : "it")}";
+                cli.Console.Out.MarkupLine($"    [grey]{Markup.Escape(folder)} stays, empty, while {Markup.Escape(Describe(inFolder))} {(inFolder.Count > 1 ? "are" : "is")} in it. {leave}, then delete the folder.[/]");
             }
 
             return CliApp.ExitOk;
@@ -177,6 +185,13 @@ public static class RemoveCommand
         return File.Exists(Path.Combine(folder, $"{name}.Web.slnf")) || Directory.Exists(Path.Combine(folder, "src", "Client", $"{name}.Client.Core"));
     }
 
+    private static string? ClientCoreName(string folder)
+    {
+        var client = Path.Combine(folder, "src", "Client");
+
+        return Directory.Exists(client) && Directory.GetDirectories(client, "*.Client.Core") is [var only] ? Path.GetFileName(only)[..^".Client.Core".Length] : null;
+    }
+
     private static async Task<List<string>> FindLossesAsync(CliServices cli, string folder, CancellationToken cancellationToken)
     {
         var losses = new List<string>();
@@ -203,6 +218,20 @@ public static class RemoveCommand
         else if (int.TryParse(ahead.Output.Trim(), out var count) && count > 0)
         {
             losses.Add(count == 1 ? "Its branch has 1 commit that isn't pushed." : $"Its branch has {count} commits that aren't pushed.");
+        }
+
+        var others = await Git(cli, folder, ["rev-list", "--count", "--branches", "--not", "--remotes", "HEAD"], cancellationToken);
+
+        if (others.Succeeded && int.TryParse(others.Output.Trim(), out var otherCount) && otherCount > 0)
+        {
+            losses.Add(otherCount == 1 ? "Other branches have 1 commit that isn't pushed." : $"Other branches have {otherCount} commits that aren't pushed.");
+        }
+
+        var stashes = await Git(cli, folder, ["stash", "list"], cancellationToken);
+
+        if (stashes.Succeeded && string.IsNullOrWhiteSpace(stashes.Output) is false)
+        {
+            losses.Add("It has stashed changes.");
         }
 
         return losses;

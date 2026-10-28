@@ -146,7 +146,6 @@ public class AppModelTests : BunitContext
         StringAssert.Contains(finding.Diagnostic.Suggestion, "PersistentState");
     }
 
-#if NET9_0_OR_GREATER
     [TestMethod]
     public void The_prerendering_panel_hands_its_summary_to_the_interactive_one()
     {
@@ -163,7 +162,6 @@ public class AppModelTests : BunitContext
         Assert.IsTrue(summary.Components >= 2);
         Assert.Contains(r => r.Url == "https://localhost/api/products", summary.Requests);
     }
-#endif
 
     [TestMethod]
     public void A_performance_trace_nests_renders_in_their_batch_and_links_causes()

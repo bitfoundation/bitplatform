@@ -3,7 +3,7 @@
     <Import Project="../../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
         <RootNamespace>Bit.Bsqlite</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <!-- Static assets only; no Razor components, so no need to scan for them. -->
@@ -25,34 +25,26 @@
              the upper bound keeps a major-version package that targets a newer TFM out.
 
              Sqlite.Core rather than the full Sqlite package: WebAssembly must not pull in a native
-             e_sqlite3. Desktop tests get a real engine through Bit.Bsqlite.Testing's Microsoft.Data.Sqlite.
-
-             The net8.0 floor is 8.0.11 rather than 8.0.0: EF Core 8.0.0 brings Microsoft.Extensions.Caching.Memory
-             8.0.0, which has a known high severity vulnerability (GHSA-qj66-m88j-hmgj) that NuGet audit reports
-             on every restore; 8.0.11 is the first EF Core 8 that depends on the patched 8.0.1. -->
-
-        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="[8.0.11,9.0.0)" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.JSInterop" Version="[8.0.0,9.0.0)" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0,9.0.0)" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[8.0.0,9.0.0)" />
-
-        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="[9.0.0,10.0.0)" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.JSInterop" Version="[9.0.0,10.0.0)" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0,10.0.0)" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[9.0.0,10.0.0)" />
-
+             e_sqlite3. Desktop tests get a real engine through Bit.Bsqlite.Testing's Microsoft.Data.Sqlite. -->
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="[10.0.0,11.0.0)" />
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.JSInterop" Version="[10.0.0,11.0.0)" />
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.Extensions.Logging.Abstractions" Version="[10.0.0,11.0.0)" />
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[10.0.0,11.0.0)" />
+
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="[11.0.0-rc.1.26425.128,12.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.JSInterop" Version="[11.0.0-rc.1.26425.128,12.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.Extensions.Logging.Abstractions" Version="[11.0.0-rc.1.26425.128,12.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[11.0.0-rc.1.26425.128,12.0.0)" />
     </ItemGroup>
 
     <ItemGroup>
         <!-- EntityFrameworkCore/BsqlitePclProvider implements SQLitePCLRaw's ISQLite3Provider, whose member list grows
              within 2.x. A provider compiled against an older core fails to load
-             once a newer one is resolved, so every target framework compiles against the newest 2.x the EF Core
-             providers accept, rather than the 2.1.6/2.1.10/2.1.11 each EF Core band would pick on its own. -->
-        <PackageReference Include="SQLitePCLRaw.core" Version="[2.1.13,3.0.0)" />
+             once a newer one is resolved, so every target framework compiles against the newest version its EF Core
+             providers accept (2.x below net11.0, 3.x on net11.0), rather than the 2.1.6/2.1.10/2.1.11 each EF Core
+             band would pick on its own. -->
+        <PackageReference Condition="'$(TargetFramework)' != 'net11.0'" Include="SQLitePCLRaw.core" Version="[2.1.13,3.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="SQLitePCLRaw.core" Version="[3.0.5,4.0.0)" />
     </ItemGroup>
 
     <ItemGroup>

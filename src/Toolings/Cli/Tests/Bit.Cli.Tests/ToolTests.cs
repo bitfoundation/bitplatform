@@ -72,6 +72,32 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task AnAspireCliThatIsntADotnetTool_Should_UpdateItself()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        var needs = new ToolNeeds { Aspire = true, AspireVersion = new Version(13, 6, 0) };
+        var script = Path.Combine(host.Home, ".aspire", "bin", "aspire");
+        host.Runner.On("aspire", "--version", 0, "13.5.2+5b4c1f0");
+
+        host.Runner.Executables["aspire"] = Path.Combine(host.Home, ".dotnet", "tools", "aspire");
+        CollectionAssert.AreEqual(new[] { "tool", "update", "--global", "Aspire.Cli", "--version", "13.6.0" }, (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "aspire").Action!.Commands.Single().Arguments.ToArray());
+
+        host.Runner.Executables["aspire"] = script;
+        var aspire = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "aspire");
+
+        Assert.AreEqual(script, aspire.Action!.Commands.Single().FileName, "dotnet tool update would leave the aspire that comes first on PATH as it is.");
+        CollectionAssert.AreEqual(new[] { "update", "--self", "--channel", "stable" }, aspire.Action.Commands.Single().Arguments.ToArray());
+
+        var steps = new StepRunner(host.Services);
+        await new ToolInstaller(host.Services, steps).InstallAsync([aspire], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
+
+        var result = steps.Reports.Single(r => r.Id == "aspire").Result;
+        Assert.AreEqual(StepStatus.Warning, result.Status, "The aspire on PATH didn't change.");
+        Assert.AreEqual("still 13.5.2, the AppHost uses Aspire 13.6.0", result.Detail);
+    }
+
+    [TestMethod]
     public async Task Docker_Should_TellNotRunningFromMissing()
     {
         using var host = new TestHost(HostOs.Linux);
@@ -85,6 +111,78 @@ public class ToolTests
         host.Runner.NotFound("docker");
         var missing = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker");
         Assert.AreEqual(ToolState.Missing, missing.Status.State);
+    }
+
+    [TestMethod]
+    public async Task StartingDockerDesktop_Should_NotWaitForItToQuit()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost(HostOs.Windows);
+        AllInstalled(host.Runner);
+        host.Runner.On("docker", "version", 1, "error during connect");
+        var desktop = Path.Combine(host.Environment.GetVariable("ProgramFiles")!, "Docker", "Docker", "Docker Desktop.exe");
+        Directory.CreateDirectory(Path.GetDirectoryName(desktop)!);
+        File.WriteAllText(desktop, "");
+        var start = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker").Action!;
+        var app = Path.Combine(host.Root, "long-running-app.cmd");
+        File.WriteAllText(app, "@ping -n 6 127.0.0.1 >nul & exit\r\n");
+        var command = start.Commands.Single();
+        using var guard = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+        var result = await new ProcessRunner(host.Environment, CliLog.None).RunAsync(command with { Arguments = [.. command.Arguments.SkipLast(1), command.Arguments[^1].Replace(desktop, app, StringComparison.Ordinal)], Interactive = start.Interactive || command.Interactive }, guard.Token);
+
+        Assert.AreEqual("Start Docker Desktop", start.Title);
+        Assert.IsTrue(result.Succeeded, result.Output);
+        Assert.IsLessThan(4.0, stopwatch.Elapsed.TotalSeconds, "Docker Desktop keeps what bit reads open until it quits.");
+    }
+
+    [TestMethod]
+    public async Task DockerTheUserCantReach_Should_GetTheUserIntoTheDockerGroup()
+    {
+        using var host = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["USER"] = "jane" });
+        AllInstalled(host.Runner);
+        host.Runner.Executables["sudo"] = "/usr/bin/sudo";
+        host.Runner.On("docker", "version", 1, "permission denied while trying to connect to the docker API at unix:///var/run/docker.sock");
+        var needs = new ToolNeeds { Aspire = true, ContainersRequired = true };
+        var docker = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "docker");
+
+        Assert.AreEqual("Enable Docker for your user", docker.Action!.Title, "Starting Docker doesn't let the user reach it.");
+        Assert.AreEqual("usermod -aG docker jane", docker.Action.Commands.Single().CommandLine);
+
+        var steps = new StepRunner(host.Services);
+        await new ToolInstaller(host.Services, steps).InstallAsync([docker], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
+
+        var result = steps.Reports.Single(r => r.Id == "docker").Result;
+        Assert.AreEqual(StepStatus.Warning, result.Status);
+        Assert.AreEqual("Sign out and back in so your user can run docker without sudo.", result.Detail);
+    }
+
+    [TestMethod]
+    public async Task DockerOnLinux_Should_BeReadyToUseOrLeftToTheDocs()
+    {
+        using var host = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["USER"] = "jane" });
+        AllInstalled(host.Runner);
+        host.Runner.NotFound("docker");
+        host.Runner.Executables["pacman"] = "/usr/bin/pacman";
+        var needs = new ToolNeeds { Aspire = true };
+
+        async Task<ToolCheck> DockerOn(string? distribution) => (await ToolCatalog.CheckAsync(new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner) with { Distribution = distribution }), CancellationToken.None)).Single(c => c.Tool.Id == "docker");
+
+        var arch = (await DockerOn("arch")).Action!;
+        CollectionAssert.AreEqual(new[] { "pacman -Syu --noconfirm --needed docker docker-buildx", "usermod -aG docker jane", "systemctl enable --now docker" }, arch.Commands.Select(c => c.CommandLine).ToArray(), "A stale package database fails the download, and the daemon has to run for the user.");
+        Assert.AreEqual("Sign out and back in so your user can run docker without sudo.", arch.AfterInstall);
+
+        host.Runner.Executables.Remove("pacman");
+        host.Runner.Executables["dnf"] = "/usr/bin/dnf";
+
+        Assert.AreEqual("Install Docker Engine", (await DockerOn("rocky")).Action!.Title);
+
+        var alma = await DockerOn("almalinux");
+        Assert.IsNull(alma.Action, "get.docker.com rejects AlmaLinux and Amazon Linux.");
+        Assert.AreEqual("https://docs.docker.com/engine/install/", alma.Manual);
     }
 
     [TestMethod]
@@ -128,6 +226,56 @@ public class ToolTests
         host.Runner.On("docker", "--version", 0, "Docker version 28.5.1");
         host.Runner.Executables["colima"] = "/opt/homebrew/bin/colima";
         Assert.AreEqual("Start Colima", (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker").Action!.Title);
+    }
+
+    [TestMethod]
+    public async Task ToolsThatOnlyLackedHomebrew_Should_BeInstalledAfterIt()
+    {
+        using var host = new TestHost(HostOs.MacOS);
+        host.Runner.NotFound("node");
+        host.Runner.On("git", "--version", 0, "git version 2.47.1");
+        host.Runner.On("bash", "-c", _ =>
+        {
+            host.Runner.Executables["brew"] = "/opt/homebrew/bin/brew";
+            return new ProcessResult { ExitCode = 0 };
+        });
+
+        var context = new ToolContext(host.Environment, host.Runner, new ToolNeeds(), new PackageManagers { HasSudo = true });
+        var checks = await ToolCatalog.CheckAsync(context, CancellationToken.None);
+        var node = checks.Single(c => c.Tool.Id == "node");
+        var steps = new StepRunner(host.Services);
+
+        Assert.IsNull(node.Action);
+
+        await new ToolInstaller(host.Services, steps).InstallAsync([checks.Single(c => c.Tool.Id == "homebrew"), node], context, CancellationToken.None);
+
+        var reports = string.Join(" | ", steps.Reports.Select(r => $"{r.Id}: {r.Result.Status} {r.Result.Title}"));
+        Assert.IsTrue(host.Runner.Calls.Any(c => c.FileName == "/opt/homebrew/bin/brew" && c.Arguments.SequenceEqual(["install", "node"])), reports);
+        Assert.IsFalse(steps.Reports.Any(r => r.Result.Title == "Install Node.js yourself"), reports);
+    }
+
+    [TestMethod]
+    public async Task Homebrew_Should_RunTheInstallerItDownloads()
+    {
+        if (OperatingSystem.IsWindows())
+            return;
+
+        using var host = new TestHost(HostOs.MacOS);
+        var install = ToolCatalog.Find("homebrew")!.PlanInstall(new ToolContext(host.Environment, host.Runner, new ToolNeeds(), new PackageManagers()), ToolStatus.Missing())!.Commands.Single();
+        var bin = Directory.CreateDirectory(Path.Combine(host.Root, "bin")).FullName;
+        var curl = Path.Combine(bin, "curl");
+        var runner = new ProcessRunner(host.Environment, CliLog.None);
+        var spec = install with { Interactive = false, Environment = new Dictionary<string, string?> { ["PATH"] = $"{bin}:/usr/bin:/bin" } };
+
+        File.WriteAllText(curl, "#!/bin/sh\nprintf '#!/bin/bash\\necho installed by the downloaded script\\n'\n");
+        File.SetUnixFileMode(curl, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        var installed = await runner.RunAsync(spec);
+
+        Assert.IsTrue(installed.Succeeded, installed.Output);
+        StringAssert.Contains(installed.Output, "installed by the downloaded script");
+
+        File.WriteAllText(curl, "#!/bin/sh\nexit 22\n");
+        Assert.IsFalse((await runner.RunAsync(spec)).Succeeded, "A download that fails fails the step.");
     }
 
     [TestMethod]
@@ -282,6 +430,15 @@ public class ToolTests
     }
 
     [TestMethod]
+    public void AGlobalJsonVersion_Should_BeAnSdkVersionAndNothingElse()
+    {
+        Assert.IsNull(SdkRequirement.FromGlobalJson("{ \"sdk\": { \"version\": \"1.2' || touch /tmp/pwned || '\" } }"), "It would reach a script that runs with sudo.");
+        Assert.IsNull(SdkRequirement.FromGlobalJson("{ \"sdk\": { \"version\": \"10;echo INJECTED;#.0.100\" } }"), "It would reach a script that runs as administrator.");
+        Assert.IsNull(SdkRequirement.FromGlobalJson("{ \"sdk\": { \"version\": \"10.0\" } }"));
+        Assert.IsNotNull(SdkRequirement.FromGlobalJson("{ \"sdk\": { \"version\": \"10.0.100\" } }"));
+    }
+
+    [TestMethod]
     public void TheEmbeddedTemplate_Should_CarryTheSdkOfTheTemplatesGlobalJson()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
@@ -296,6 +453,20 @@ public class ToolTests
 
         Assert.IsNotNull(expected);
         Assert.AreEqual(expected, TemplateRequirements.Embedded.Sdk);
+    }
+
+    [TestMethod]
+    public void TheSdk_Should_FollowTheChosenFramework()
+    {
+        var net10 = new TemplateSelection(TemplateManifest.Embedded);
+        var net11 = new TemplateSelection(TemplateManifest.Embedded);
+        Assert.IsNull(net10.Set("framework", "net10.0"));
+        Assert.IsNull(net11.Set("framework", "net11.0"));
+
+        Assert.AreEqual(TemplateRequirements.Embedded.Sdk, TemplateRequirements.Embedded.For(net11).Sdk);
+        Assert.AreEqual("10.0", TemplateRequirements.Embedded.For(net10).Sdk?.Channel);
+        Assert.IsFalse(TemplateRequirements.Embedded.For(net10).Sdk?.Pinned);
+        Assert.AreEqual(TemplateRequirements.Embedded.For(net10).Sdk, TemplateRequirements.Embedded.For(new TemplateSelection(TemplateManifest.Embedded)).Sdk);
     }
 
     [TestMethod]
@@ -317,18 +488,80 @@ public class ToolTests
         using var linux = new TestHost(HostOs.Linux);
         AllInstalled(linux.Runner);
         linux.Runner.On("dotnet", "--version", 145);
-        linux.Runner.Executables["dotnet"] = "/usr/lib/dotnet/dotnet";
+        var systemRoot = DotnetRoot(Path.Combine(linux.Root, "usr", "lib", "dotnet"));
+        linux.Runner.Executables["dotnet"] = Path.Combine(systemRoot, "dotnet");
         var system = (await CheckAsync(linux, new ToolNeeds { Sdk = sdk })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
 
         Assert.AreEqual(Elevation.Sudo, system.Elevation);
         StringAssert.Contains(system.Commands[0].CommandLine, "https://dot.net/v1/dotnet-install.sh");
-        StringAssert.Contains(system.Commands[0].CommandLine, "--version '11.0.100-rc.1.26425.128' --install-dir '/usr/lib/dotnet'");
+        StringAssert.Contains(system.Commands[0].CommandLine, $"--version '11.0.100-rc.1.26425.128' --install-dir '{systemRoot}'");
 
-        linux.Runner.Executables["dotnet"] = Path.Combine(linux.Home, ".dotnet", "dotnet");
+        linux.Runner.Executables["dotnet"] = Path.Combine(DotnetRoot(Path.Combine(linux.Home, ".dotnet")), "dotnet");
         var user = (await CheckAsync(linux, new ToolNeeds { Sdk = sdk })).Single(c => c.Tool.Id == "dotnet-sdk").Action!;
 
         Assert.AreEqual(Elevation.None, user.Elevation);
         StringAssert.Contains(user.Commands[0].CommandLine, $"--install-dir '{Path.Combine(linux.Home, ".dotnet")}'");
+    }
+
+    [TestMethod]
+    public async Task TheCommandsBitAsksUsersToRun_Should_ReachTheirShellIntact()
+    {
+        using var host = new TestHost(OperatingSystem.IsWindows() ? HostOs.Windows : HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.On("dotnet", "--version", 145);
+        host.Runner.Executables["dotnet"] = Path.Combine(DotnetRoot(Path.Combine(host.Root, "dotnet")), "dotnet");
+        var context = new ToolContext(host.Environment, host.Runner, new ToolNeeds { Sdk = new SdkRequirement("10.0.100") }, PackageManagers.Detect(host.Environment, host.Runner));
+        var sdk = (await ToolCatalog.CheckAsync(context, CancellationToken.None)).Single(c => c.Tool.Id == "dotnet-sdk");
+        var steps = new StepRunner(host.Services);
+
+        await new ToolInstaller(host.Services, steps).InstallAsync([sdk], context, CancellationToken.None);
+
+        var followUp = steps.Reports.Single().Result.FollowUp;
+        var command = sdk.Action!.Commands.Single();
+        var shell = OperatingSystem.IsWindows()
+            ? new ProcessSpec { FileName = "powershell.exe", Arguments = ["-NoProfile", "-NonInteractive", "-Command", "[System.Management.Automation.Language.Parser]::ParseInput($env:FOLLOW_UP, [ref]$null, [ref]$null).EndBlock.Statements[0].PipelineElements[0].CommandElements | ForEach-Object { if ($_ -is [System.Management.Automation.Language.StringConstantExpressionAst]) { $_.Value } elseif ($_ -is [System.Management.Automation.Language.CommandParameterAst]) { $_.Extent.Text } else { 'expanded ' + $_.Extent.Text } }"] }
+            : new ProcessSpec { FileName = "/bin/sh", Arguments = ["-c", "eval \"set -- $FOLLOW_UP\"; for word in \"$@\"; do printf '%s\\n' \"$word\"; done"] };
+        var words = await new ProcessRunner(CliEnvironment.FromProcess(), CliLog.None).RunAsync(shell with { Environment = new Dictionary<string, string?> { ["FOLLOW_UP"] = followUp } });
+        string[] expected = OperatingSystem.IsWindows() ? [command.FileName, .. command.Arguments] : ["sudo", command.FileName, .. command.Arguments];
+
+        CollectionAssert.AreEqual(expected, words.OutputLines.ToArray(), followUp);
+    }
+
+    [TestMethod]
+    public async Task TheSdk_Should_GoOnlyWhereDotnetLooksForIt()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.On("dotnet", "--version", 145);
+        var needs = new ToolNeeds { Sdk = new SdkRequirement("10.0.100") };
+        var shims = Directory.CreateDirectory(Path.Combine(host.Root, "asdf", "shims")).FullName;
+        File.WriteAllText(Path.Combine(shims, "dotnet"), "");
+        host.Runner.Executables["dotnet"] = Path.Combine(shims, "dotnet");
+
+        Assert.IsNull((await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Action, "A version manager's shim folder isn't a dotnet root.");
+
+        var root = DotnetRoot(Path.Combine(host.Root, "usr", "lib", "dotnet"));
+        var bin = Directory.CreateDirectory(Path.Combine(host.Root, "usr", "bin")).FullName;
+        var snap = Directory.CreateDirectory(Path.Combine(host.Root, "snap", "bin")).FullName;
+        File.WriteAllText(Path.Combine(root, "dotnet"), "");
+        File.WriteAllText(Path.Combine(bin, "snap"), "");
+
+        try
+        {
+            File.CreateSymbolicLink(Path.Combine(bin, "dotnet"), Path.Combine(root, "dotnet"));
+            File.CreateSymbolicLink(Path.Combine(snap, "dotnet-sdk.dotnet"), Path.Combine(bin, "snap"));
+            File.CreateSymbolicLink(Path.Combine(snap, "dotnet"), "dotnet-sdk.dotnet");
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            return;
+        }
+
+        host.Runner.Executables["dotnet"] = Path.Combine(snap, "dotnet");
+        Assert.IsNull((await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Action, "The snap's links end at the snap program, whose folder isn't a dotnet root.");
+
+        host.Runner.Executables["dotnet"] = Path.Combine(bin, "dotnet");
+        StringAssert.Contains((await CheckAsync(host, needs)).Single(c => c.Tool.Id == "dotnet-sdk").Action!.Commands[0].CommandLine, $"--install-dir '{root}'");
     }
 
     [TestMethod]
@@ -349,6 +582,68 @@ public class ToolTests
         StringAssert.Contains(node.Commands[0].CommandLine, "deb.nodesource.com");
         CollectionAssert.AreEqual(new[] { "/usr/bin/node", "/usr/bin/npm", "/usr/bin/npx" }, node.InstalledExecutables.ToArray());
         Assert.AreEqual("apt-get install -y git", git.Commands[1].CommandLine);
+    }
+
+    [TestMethod]
+    public async Task SudoCommands_Should_RunTheExecutableBitFinds()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.Executables["apt-get"] = "/usr/bin/apt-get";
+        host.Runner.Executables["sudo"] = "/usr/bin/sudo";
+        host.Runner.NotFound("git");
+        var needs = new ToolNeeds();
+        var git = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "git");
+
+        await new ToolInstaller(host.Services, new StepRunner(host.Services)).InstallAsync([git], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
+
+        CollectionAssert.AreEqual(new[] { "-n", "/usr/bin/apt-get", "install", "-y", "git" }, host.Runner.Calls.Last(c => c.FileName is "sudo").Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task NodeSource_Should_FailWhenItsSetupScriptCantBeDownloaded()
+    {
+        if (OperatingSystem.IsWindows())
+            return;
+
+        using var host = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["PATH"] = "/usr/bin:/bin" });
+        AllInstalled(host.Runner);
+        host.Runner.Executables["apt-get"] = "/usr/bin/apt-get";
+        host.Runner.NotFound("node");
+        var setup = (await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "node").Action!.Commands[0];
+        var bin = Directory.CreateDirectory(Path.Combine(host.Root, "bin")).FullName;
+        var curl = Path.Combine(bin, "curl");
+        File.WriteAllText(curl, "#!/bin/sh\necho 'curl: (6) Could not resolve host: deb.nodesource.com' >&2\nexit 6\n");
+        File.SetUnixFileMode(curl, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+
+        var result = await new ProcessRunner(host.Environment, CliLog.None).RunAsync(setup with { Environment = new Dictionary<string, string?> { ["PATH"] = $"{bin}:/usr/bin:/bin" } });
+
+        Assert.IsFalse(result.Succeeded, "apt-get would install the distribution's own, older Node.js next.");
+    }
+
+    [TestMethod]
+    public async Task AnInstallThatLeavesAnOldNode_Should_SaySo()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.Executables["apt-get"] = "/usr/bin/apt-get";
+        host.Runner.Executables["sudo"] = "/usr/bin/sudo";
+        host.Runner.NotFound("node");
+        host.Runner.On("sudo", "-n /usr/bin/apt-get install", _ =>
+        {
+            host.Runner.On("node", "--version", 0, "v12.22.9");
+            return new ProcessResult { ExitCode = 0 };
+        });
+
+        var needs = new ToolNeeds { NodeMajor = 24 };
+        var node = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "node");
+        var steps = new StepRunner(host.Services);
+
+        await new ToolInstaller(host.Services, steps).InstallAsync([node], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
+
+        var result = steps.Reports.Single(r => r.Id == "node").Result;
+        Assert.AreEqual(StepStatus.Warning, result.Status, result.Detail);
+        Assert.AreEqual("still 12.22.9, 24 or later is needed", result.Detail);
     }
 
     [TestMethod]
@@ -878,6 +1173,12 @@ public class ToolTests
     {
         var context = new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner));
         return await ToolCatalog.CheckAsync(context, CancellationToken.None);
+    }
+
+    private static string DotnetRoot(string directory)
+    {
+        Directory.CreateDirectory(Path.Combine(directory, "host", "fxr"));
+        return directory;
     }
 
     private static string NuGetSources(string name, string state, string url = "https://api.nuget.org/v3/index.json")

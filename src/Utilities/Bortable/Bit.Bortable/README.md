@@ -56,7 +56,7 @@ module, `_content/Bit.Bortable/bit-bortable.js`, is imported by the component on
 - `@bind-Items` and the SortableJS lifecycle events: `OnStart`, `OnEnd`, `OnAdd`, `OnRemove`, `OnUpdate`, `OnSort`
   and `OnChange`.
 - Theming of the drag states through `--bit-bortable-*` CSS custom properties.
-- Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 8, 9 and 10.
+- Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 10 and 11.
 
 ## For AI agents
 

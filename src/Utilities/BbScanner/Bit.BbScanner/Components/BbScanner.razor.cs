@@ -2096,12 +2096,10 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
             return false;
         }
 
-#if NET9_0_OR_GREATER
         if (!RendererInfo.IsInteractive)
         {
             return false;
         }
-#endif
 
         var bridge = _bridge ??= BbScannerBridge.Create(JSRuntime, Services.GetService(typeof(IBbCameraSource)) as IBbCameraSource, InWebView());
         if (bridge.IsLoaded)
@@ -2114,14 +2112,6 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
             await bridge.LoadAsync().ConfigureAwait(true);
             return !_disposed;
         }
-#if !NET9_0_OR_GREATER
-        catch (InvalidOperationException) when (!OperatingSystem.IsBrowser())
-        {
-            // .NET 8 cannot tell a prerender from an interactive render up front: its prerendering runtime refuses
-            // every call instead, which says the same thing.
-            return false;
-        }
-#endif
         catch (Exception ex)
         {
             if (!_disposed)
@@ -2140,17 +2130,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// Whether the component runs in a BlazorWebView - a Blazor Hybrid app - where the page is in the same process,
     /// behind the WebView, rather than across a network.
     /// </summary>
-    private bool InWebView()
-    {
-#if NET9_0_OR_GREATER
-        if (RendererInfo.Name == "WebView")
-        {
-            return true;
-        }
-#endif
-        // .NET 8 has no RendererInfo; its WebView runtime says the same by name.
-        return JSRuntime.GetType().Name.Contains("WebView", StringComparison.Ordinal);
-    }
+    private bool InWebView() => RendererInfo.Name == "WebView";
 
     /// <summary>Builds a decoder from the current parameters; throws when the options are invalid.</summary>
     private BbBarcodeDecoder CreateDecoder()

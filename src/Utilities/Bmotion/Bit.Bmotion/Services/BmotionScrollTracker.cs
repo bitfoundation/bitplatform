@@ -126,9 +126,21 @@ public sealed class BmotionScrollTracker : IAsyncDisposable
             await _interop.UnobserveScrollAsync(existing);
         _subscriptionKeys.Clear();
 
+        // Disposed while the old subscriptions were being removed: there is nothing to observe for any more.
+        if (_disposed) return;
+
         _onScroll = onChange;
         var key = await _interop.ObserveScrollAsync(options.ContainerId, Dotnet, options.ToJsObject());
-        if (key != null) _subscriptionKeys.Add(key);
+        if (key == null) return;
+        // Disposed while the subscription was being set up (the owning component went away within the round trip):
+        // DisposeAsync found no key to remove, so remove this one here, or the JS listener outlives the tracker and
+        // keeps calling back into its disposed reference.
+        if (_disposed)
+        {
+            await _interop.UnobserveScrollAsync(key);
+            return;
+        }
+        _subscriptionKeys.Add(key);
     }
 
     /// <summary>Synchronous overload.</summary>

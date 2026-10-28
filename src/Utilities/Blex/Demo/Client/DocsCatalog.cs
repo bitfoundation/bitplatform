@@ -38,7 +38,7 @@ public static class SiteInfo
         "field and one [BlexAction] method, with effects, persistence, undo/redo and Redux DevTools time-travel " +
         "built in. This site is itself a Blex app.";
 
-    public static readonly string[] Badges = ["MIT", "net8.0", "net9.0", "net10.0"];
+    public static readonly string[] Badges = ["MIT", "net10.0", "net11.0"];
 
     /// <summary>Words the search palette suggests when a query finds nothing.</summary>
     public static readonly string[] SearchHints = ["effect", "persist", "selector", "undo", "devtools"];

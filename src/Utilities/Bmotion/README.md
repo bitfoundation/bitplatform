@@ -4,7 +4,7 @@ A Blazor-native animation library inspired by [Motion](https://motion.dev) (Fram
 
 **Hybrid engine:** the animation math runs in C#, and the browser plays whatever it can reproduce exactly. A tween or spring between two values goes to the **Web Animations API** as a two-keyframe timeline. Anything the browser can't express directly is recorded frame by frame in C#, against a copy of the element's state, and handed over as keyframes. That covers per-property transitions, springs that carry velocity into a retarget, arcs, inertia, keyframe sequences and mirrored loops. Either way it plays off the main thread with no per-frame interop. The C# frame loop keeps only what the browser can't own: per-frame callbacks (`OnUpdate`/`OnFrame`), SVG `d`/`points` morphs, motion-value bindings and drag.
 
-> Targets **.NET 8, 9, and 10** · **Blazor WebAssembly** and **Blazor Server** play the same animations. Transforms, opacity, colours (any CSS colour syntax), sizes (to and from `auto` too), filters, shadows, keyframes, springs, inertia and arcs all animate on both. On Server, what needs the per-frame loop (`OnUpdate`/`OnFrame` callbacks, SVG `d`/`points` morphs) lands on its target at once and logs a warning once. Drag there stays under the pointer: the browser shows it until .NET catches up, and `OnDrag` runs once per frame, a round trip behind.
+> Targets **.NET 10 and 11** · **Blazor WebAssembly** and **Blazor Server** play the same animations. Transforms, opacity, colours (any CSS colour syntax), sizes (to and from `auto` too), filters, shadows, keyframes, springs, inertia and arcs all animate on both. On Server, what needs the per-frame loop (`OnUpdate`/`OnFrame` callbacks, SVG `d`/`points` morphs) lands on its target at once and logs a warning once. Drag there stays under the pointer: the browser shows it until .NET catches up, and `OnDrag` runs once per frame, a round trip behind.
 
 ---
 
@@ -1265,6 +1265,26 @@ How `Animate` works, and what it covers:
 See the `Demo` samples app for runnable examples of basic animations, gestures, springs,
 drag, variants & stagger, keyframes, enter/exit transitions, presence switching, layout
 (FLIP) animations, scroll-linked motion values and programmatic control.
+
+[`Samples`](Samples/) is the hosting harness rather than the docs: one shared [Core](Samples/Core/) project of
+pages (gestures and drag, presence, layout and reorder, the programmatic API, and scroll), hosted unchanged under
+[Server](Samples/Server/), [WASM](Samples/Wasm/), [Auto](Samples/Auto/) and [MAUI](Samples/Maui/) (Blazor Hybrid on
+Android, iOS, macOS and Windows). The bar on every page names the renderer it is on, and the home, Gestures and
+Programmatic pages say whether the engine has its per-frame loop there. It does on WebAssembly. On Server and in the
+MAUI app interop is asynchronous, so the browser plays nearly everything and what needs the loop lands on its target
+at once. The web hosts prerender every page with `BmPrerenderMode.Animate`.
+
+```bash
+dotnet run --project src/Utilities/Bmotion/Samples/Server
+dotnet run --project src/Utilities/Bmotion/Samples/Wasm/Bit.Bmotion.Samples.Wasm
+dotnet run --project src/Utilities/Bmotion/Samples/Auto/Bit.Bmotion.Samples.Auto
+dotnet build -t:Run -f net10.0-android src/Utilities/Bmotion/Samples/Maui
+```
+
+`Bit.Bmotion.slnx` includes the MAUI sample, whose Android, iOS and Mac Catalyst (and, on Windows, Windows) targets
+need the `maui-*` workloads - `dotnet workload restore` from `src/Utilities/Bmotion` installs them. Without them the
+solution build fails with `NETSDK1147`; the library, the demo, the tests and the web samples still build as projects
+of their own.
 
 ---
 

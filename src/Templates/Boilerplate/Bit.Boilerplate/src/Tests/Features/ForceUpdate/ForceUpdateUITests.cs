@@ -11,7 +11,7 @@ public partial class ForceUpdateUITests : AppPageTest
     /// <c>ForceUpdateMiddleware</c> with a <c>ClientNotSupportedException</c>. The client turns that into a persistent
     /// <c>FORCE_UPDATE</c> message (See <c>ExceptionDelegatingHandler</c>), which <c>ForceUpdateSnackBar</c> shows.
     /// <para>
-    /// SignalR is off by default, so an anonymous home-page load makes no internal API call on its own. We therefore
+    /// SignalR may be off and doesn't connect in the first 5 seconds, so an anonymous home-page load makes no internal API call on its own. We therefore
     /// trigger one the same way a real user would: requesting a magic link on the Sign in page fires an internal POST,
     /// which the middleware rejects - so instead of the OTP panel, the force update panel appears.
     /// </para>

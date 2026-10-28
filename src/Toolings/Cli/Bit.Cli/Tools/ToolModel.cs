@@ -59,7 +59,7 @@ public sealed record SdkRequirement(string Version, string? RollForward = null, 
         {
             using var document = JsonDocument.Parse(json, new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
 
-            if (document.RootElement.TryGetProperty("sdk", out var sdk) is false || sdk.TryGetProperty("version", out var version) is false || version.GetString() is not { } text || ToolCatalog.ParseVersion(text) is null)
+            if (document.RootElement.TryGetProperty("sdk", out var sdk) is false || sdk.TryGetProperty("version", out var version) is false || version.GetString() is not { } text || ToolCatalog.SdkVersionRegex().IsMatch(text) is false)
                 return null;
 
             var rollForward = sdk.TryGetProperty("rollForward", out var roll) && roll.ValueKind is JsonValueKind.String ? roll.GetString() : null;

@@ -60,7 +60,6 @@ public class TriggerOwnershipTests : BunitContext
     }
 
     // UI events and navigations are the framework's HandleEvent and Navigate activities, which .NET 10 introduced.
-#if NET10_0_OR_GREATER
     [TestMethod]
     public async Task A_timer_started_by_a_click_is_not_attributed_to_that_click()
     {
@@ -172,7 +171,6 @@ public class TriggerOwnershipTests : BunitContext
         Assert.IsNull(tick.TriggerEventId);
         Assert.IsNull(BatchEventOf(tick).ParentEventId);
     }
-#endif
 
     /// <summary>A live clock started by a button: the timer captures the execution context, and with it the click.</summary>
     public sealed class TimerOnClick : ComponentBase, IDisposable

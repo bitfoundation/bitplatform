@@ -67,7 +67,7 @@ internal sealed class BsqliteDbContextFactory<[DynamicallyAccessedMembers(Dynami
 {
     /// <summary>
     /// The cross-tab lock the first-use step runs under. Not the migrator's own lock, which
-    /// <c>MigrateAsync</c> takes inside it on EF Core 9 and later: a Web Lock is not re-entrant.
+    /// <c>MigrateAsync</c> takes inside it: a Web Lock is not re-entrant.
     /// </summary>
     internal const string FirstUseLockName = "ef-first-use";
 
@@ -151,8 +151,7 @@ internal sealed class BsqliteDbContextFactory<[DynamicallyAccessedMembers(Dynami
         }
 
         // Every tab prepares its own session over the same file. Without this, two tabs opening at
-        // once would both seed an empty database, and - on EF Core 8, whose migrator takes no lock -
-        // both apply the same pending migration.
+        // once would both seed an empty database.
         await using var exclusive = await session.Connection
             .TryAcquireLockAsync(FirstUseLockName, cancellationToken)
             .ConfigureAwait(false);

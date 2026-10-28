@@ -27,6 +27,7 @@
     agents    Creates a project with bit new, then hands each scenario of agent-scenarios.json to a headless Claude Code
               that sees nothing but that project, in a copy of its own, and checks what it did: which skills it read,
               which tools it called and which files it changed after each turn. -Sha and -Keep as above.
+              All three create the project for the template's default .NET version unless -Framework names another.
 
     What is deployed where is read from those CD workflows and from the E2E suite's DeployedApps.cs and
     RunTests.bat rather than repeated here, so this script follows them.
@@ -105,7 +106,11 @@ param(
     # agents: runs one scenario of the lab that -Lab names; the command starts these itself.
     [switch] $Worker,
 
-    [string] $Lab
+    [string] $Lab,
+
+    # devcontainer, aspire, agents: the project's --framework; the template's default when omitted.
+    [ValidateSet('net10.0', 'net11.0')]
+    [string] $Framework
 )
 
 $ErrorActionPreference = 'Stop'
@@ -790,9 +795,7 @@ function Invoke-E2EStages {
                 $env:ANDROID_HOME = $script:androidSdk
                 $env:PATH = "$(Join-Path $script:androidSdk 'platform-tools');$env:PATH"
 
-                if ((Get-AndroidDevices).Count -eq 1) {
-                    Disable-AndroidSystemSheets
-                }
+                Initialize-AndroidDevice
             }
 
             $testFilter = "TestCategory=$($settings.Category)" + $(if ($Filter) { "&$Filter" })
@@ -967,7 +970,7 @@ function Install-BitUnderTest([string] $lab) {
     }
     else {
         Write-Host 'Installing bit from nuget.org...'
-        dotnet tool install Bit.Cli --tool-path $tools --version 10.7.0 | Out-Null
+        dotnet tool install Bit.Cli --tool-path $tools --version 11.0.0-pre-15 | Out-Null
     }
 
     if ($LASTEXITCODE -ne 0) {
@@ -1040,10 +1043,11 @@ function New-BitProject([string] $lab, $bit, [string] $name, [string[]] $options
     Push-Location $lab
 
     $templateArguments = $bit.TemplateArguments
+    $frameworkArguments = $Framework ? @('--framework', $Framework) : @()
 
     try {
         $setupArguments = $setup ? @('--no-tools', '--no-workloads', '--ide', 'none') : @('--no-setup')
-        & $bit.Path new $name --yes --no-open --no-trust @setupArguments @options @templateArguments *> (Join-Path $lab 'new.log')
+        & $bit.Path new $name --yes --no-open --no-trust @setupArguments @options @frameworkArguments @templateArguments *> (Join-Path $lab 'new.log')
         $newExitCode = $LASTEXITCODE
     }
     finally {

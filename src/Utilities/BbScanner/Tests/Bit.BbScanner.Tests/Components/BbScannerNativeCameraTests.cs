@@ -25,9 +25,7 @@ public class BbScannerNativeCameraTests : BunitContext
     {
         Services.AddSingleton<IJSRuntime>(_page);
         Services.AddSingleton<IBbCameraSource>(_camera);
-#if NET9_0_OR_GREATER
         SetRendererInfo(new RendererInfo("WebView", isInteractive: true));
-#endif
     }
 
     [TestMethod]
@@ -283,9 +281,7 @@ public class BbScannerNativeCameraTests : BunitContext
         WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
         Assert.AreEqual(1, _page.Count("start"));
         Assert.IsEmpty(_camera.Requests);
-#if NET9_0_OR_GREATER
         Assert.AreEqual(0, _page.Last("start")[6], "A page behind a WebView needs no watchdog.");
-#endif
     }
 
     private static void WaitUntil(Action assertion)

@@ -1,12 +1,19 @@
 //+:cnd:noEmit
 using Boilerplate.Client.Core;
 using Microsoft.Extensions.Options;
+//#if (framework == 'net11.0')
+using Boilerplate.Client.Windows.Infrastructure.Services;
+//#endif
 
 namespace Boilerplate.Client.Windows;
 
 public class ClientWindowsSettings : ClientCoreSettings
 {
     public WindowsUpdateOptions? WindowsUpdate { get; set; }
+    //#if (framework == 'net11.0')
+
+    public KioskOptions? Kiosk { get; set; }
+    //#endif
 }
 
 [OptionsValidator]
@@ -20,3 +27,23 @@ public partial class WindowsUpdateOptions
 
     public string? FilesUrl { get; set; }
 }
+//#if (framework == 'net11.0')
+
+/// <summary>
+/// Options of the .NET 11 <see cref="System.Windows.Forms.KioskModeManager"/> and of <see cref="WindowsKioskGuard"/>.
+/// </summary>
+public partial class KioskOptions
+{
+    /// <summary>
+    /// Starts the app full screen, above the taskbar, and locks it there: neither F11 nor Escape leaves it, the
+    /// window cannot be closed, the key combinations that reach the desktop are swallowed and the browser's own
+    /// menus, dev tools, zoom and shortcuts are off. When off, F11 still toggles full screen and Escape leaves it.
+    /// </summary>
+    public bool Enabled { get; set; }
+
+    /// <summary>
+    /// Keeps the display and the machine awake for as long as the app runs.
+    /// </summary>
+    public bool PreventSleep { get; set; }
+}
+//#endif

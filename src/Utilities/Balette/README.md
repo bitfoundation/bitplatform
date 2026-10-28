@@ -61,7 +61,7 @@ natively for Blazor.
 - **Failures handled**: a handler or a page loader that throws is logged and reported in the palette, never ends a
   Blazor Server circuit, and a page that failed to load offers a retry.
 - **Theming through CSS variables**, light and dark, eight templates, or a fully unstyled mode.
-- Works on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, on .NET 8, 9 and 10, and is
+- Works on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, on .NET 10 and 11, and is
   trimming and AOT friendly.
 
 ## Quick start
@@ -99,7 +99,7 @@ The full walkthrough is in [getting started](#getting-started).
 
 ## Requirements
 
-- .NET 8, .NET 9 or .NET 10
+- .NET 10 or .NET 11
 - Blazor WebAssembly, Blazor Server, Blazor Web App (any interactive render mode) or Blazor Hybrid
 - A browser with the `<dialog>` element - every evergreen browser since 2022
 

@@ -12,7 +12,7 @@
             (under <code>analyzers/dotnet/cs</code>), so it adds nothing to your app's output - but NuGet
             does not flow analyzers to projects that only get a package transitively, so reference
             <code>Bit.Blex</code> directly from every project that declares stores. Every runtime package
-            targets <code>net8.0</code>, <code>net9.0</code> and <code>net10.0</code>.
+            targets <code>net10.0</code> and <code>net11.0</code>.
         </p>
 
         <CodeBlock Code="@Install" Language="bash" Title="Add the packages" />
@@ -164,7 +164,7 @@
     <div class="bb-card">
         <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Requirements</h2>
         <ul class="bb-detail-list">
-            <li><strong>.NET 8, 9 or 10</strong> for <code>Bit.Blex</code>, <code>Bit.Blex.Maui</code> and <code>Bit.Blex.Testing</code> - each ships <code>net8.0</code>, <code>net9.0</code> and <code>net10.0</code> builds.</li>
+            <li><strong>.NET 10 or 11</strong> for <code>Bit.Blex</code>, <code>Bit.Blex.Maui</code> and <code>Bit.Blex.Testing</code> - each ships <code>net10.0</code> and <code>net11.0</code> builds.</li>
             <li><strong>netstandard2.0</strong> for the generator, as Roslyn analyzers require.</li>
             <li>Nullable reference types are supported and expected; generated code is annotated.</li>
         </ul>
@@ -218,7 +218,7 @@
 
     private const string CsprojSample = """
         <ItemGroup>
-          <PackageReference Include="Bit.Blex" Version="10.7.0" />
+          <PackageReference Include="Bit.Blex" Version="11.0.0-pre-15" />
         </ItemGroup>
         """;
 

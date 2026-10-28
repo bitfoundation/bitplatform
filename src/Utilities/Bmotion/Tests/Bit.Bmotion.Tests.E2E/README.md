@@ -72,7 +72,7 @@ any page listed on `/`; `?mode=<mode>` overrides the render mode of one request.
 | Variable | Effect |
 | --- | --- |
 | `BMOTION_E2E_HOST` | The render mode of the run - see above. A name that is not one of them fails the run. |
-| `BMOTION_E2E_FRAMEWORK` | Target framework of the harness host: `net10.0` (default), `net9.0`, `net8.0`. |
+| `BMOTION_E2E_FRAMEWORK` | Target framework of the harness host: `net11.0` (default), `net10.0`. |
 | `BMOTION_E2E_CONFIGURATION` | Build configuration of the harness host; defaults to the test assembly's. |
 | `BMOTION_E2E_SKIP_BUILD` | `1`: the harness host was built beforehand (as CI does); do not rebuild it. |
 | `BMOTION_E2E_PUBLISHED_HOST` | A `dotnet publish` output of the harness host to run instead of the build output. |

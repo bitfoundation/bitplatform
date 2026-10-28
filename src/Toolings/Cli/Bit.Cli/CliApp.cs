@@ -88,7 +88,7 @@ public static class CliApp
 
         try
         {
-            exitCode = await parseResult.InvokeAsync(new InvocationConfiguration { EnableDefaultExceptionHandler = false });
+            exitCode = await parseResult.InvokeAsync(new InvocationConfiguration { EnableDefaultExceptionHandler = false, ProcessTerminationTimeout = TimeSpan.FromSeconds(10) });
             return exitCode;
         }
         catch (OperationCanceledException)

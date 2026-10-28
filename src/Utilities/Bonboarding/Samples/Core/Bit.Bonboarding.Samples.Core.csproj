@@ -4,7 +4,7 @@
          where these components run (see each host's Program.cs or MauiProgram.cs); the tours, the hints, the checklist
          and the stored progress behave the same in all of them. -->
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net11.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsPackable>false</IsPackable>

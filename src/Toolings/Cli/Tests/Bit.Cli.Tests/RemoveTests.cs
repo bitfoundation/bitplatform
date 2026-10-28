@@ -7,6 +7,8 @@ namespace Bit.Cli.Tests;
 [TestClass]
 public class RemoveTests
 {
+    private const string TerminalFolderVariable = "BIT_CLI_TESTS_TERMINAL_FOLDER";
+
     [TestMethod]
     public async Task Remove_Should_ChangeNothingWhenTheAnswerIsNo()
     {
@@ -60,13 +62,13 @@ public class RemoveTests
         var folder = CreateProject(host);
         host.Runner.On("git", "rev-parse", 0, folder.Replace('\\', '/'));
         host.Runner.On("git", "status --porcelain", 0, "?? notes.txt\n");
-        host.Runner.On("git", "rev-list --count", 0, "2\n");
+        host.Runner.On("git", "rev-list --count @{u}", 0, "2\n");
 
         Assert.AreEqual(0, await host.RunAsync("remove", folder));
         Assert.AreEqual($"It has changes that aren't committed.\nIts branch has 2 commits that aren't pushed.\nDelete {folder} and everything in it?", prompter.Prompts[^1].Question);
 
         host.Runner.On("git", "status --porcelain", 0, "");
-        host.Runner.On("git", "rev-list --count", 128, "fatal: no upstream configured for branch 'develop'");
+        host.Runner.On("git", "rev-list --count @{u}", 128, "fatal: no upstream configured for branch 'develop'");
 
         Assert.AreEqual(0, await host.RunAsync("remove", folder));
         Assert.AreEqual($"Its branch has no upstream, so its commits may exist only here.\nDelete {folder} and everything in it?", prompter.Prompts[^1].Question);
@@ -86,6 +88,23 @@ public class RemoveTests
     }
 
     [TestMethod]
+    public async Task Remove_Should_SayWhatOtherBranchesAndStashesWouldLose()
+    {
+        var prompter = new ScriptedPrompter().On("Delete", false);
+        using var host = new TestHost(HostOs.Linux, prompter: prompter);
+        var folder = CreateProject(host);
+        host.Runner.On("git", "rev-parse", 0, folder.Replace('\\', '/'));
+        host.Runner.On("git", "rev-list --count @{u}", 0, "0\n");
+        host.Runner.On("git", "rev-list --count --branches", 0, "3\n");
+        host.Runner.On("git", "stash list", 0, "stash@{0}: WIP on develop: 1a2b3c4 Add the cart\n");
+
+        Assert.AreEqual(0, await host.RunAsync("remove", folder));
+
+        Assert.AreEqual($"Other branches have 3 commits that aren't pushed.\nIt has stashed changes.\nDelete {folder} and everything in it?", prompter.Prompts.Single().Question);
+        Assert.IsTrue(File.Exists(Path.Combine(folder, "Contoso.Web.slnf")));
+    }
+
+    [TestMethod]
     public async Task Remove_Should_RequireAProjectFolder()
     {
         using var host = new TestHost(HostOs.Linux);
@@ -99,6 +118,21 @@ public class RemoveTests
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("remove", host.WorkingDirectory, "--yes"));
         Assert.IsTrue(File.Exists(solution));
         Assert.IsEmpty(host.Runner.Calls);
+    }
+
+    [TestMethod]
+    public async Task Remove_Should_FinishWhatAFailedRunLeft()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var folder = CreateProject(host);
+        host.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
+        File.Delete(Path.Combine(folder, "Contoso.slnx"));
+        File.Delete(Path.Combine(folder, "Contoso.Web.slnf"));
+
+        Assert.AreEqual(0, await host.RunAsync("remove", folder, "--yes"), host.Output);
+
+        Assert.IsFalse(Directory.Exists(folder));
+        StringAssert.Contains(host.FlatOutput, "Removed Contoso");
     }
 
     [TestMethod]
@@ -152,7 +186,7 @@ public class RemoveTests
 
             Assert.IsFalse(Directory.Exists(folder));
             Assert.IsTrue(node.WaitForExit(TimeSpan.FromSeconds(10)));
-            StringAssert.Contains(host.FlatOutput, $"after stopping MSBuild ({node.Id})");
+            StringAssert.Contains(host.FlatOutput, $"Stopped MSBuild process {node.Id}");
         }
         finally
         {
@@ -199,6 +233,53 @@ public class RemoveTests
     }
 
     [TestMethod]
+    public async Task Remove_Should_NotWaitForTheTerminalItRunsIn()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        if (Environment.GetEnvironmentVariable(TerminalFolderVariable) is { Length: > 0 } folder)
+        {
+            using var inTerminal = new TestHost(HostOs.Windows, prompter: new ScriptedPrompter());
+            inTerminal.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
+
+            Assert.AreEqual(0, await inTerminal.RunAsync("remove", folder, "--yes"), inTerminal.Output);
+            StringAssert.Contains(inTerminal.FlatOutput, "this terminal is still in it");
+            StringAssert.Contains(inTerminal.FlatOutput, $"stays, empty, while this terminal is in it. Run cd {ProcessSpec.ShellQuote(Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(folder))!, HostOs.Windows)}, then delete the folder.");
+            return;
+        }
+
+        using var host = new TestHost(HostOs.Windows);
+        var project = CreateProject(host);
+        var tests = Path.ChangeExtension(typeof(RemoveTests).Assembly.Location, ".exe");
+
+        using var terminal = Process.Start(new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "cmd.exe"), $"/c cd /d \"{project}\" && \"{tests}\" --filter FullyQualifiedName~{nameof(Remove_Should_NotWaitForTheTerminalItRunsIn)}")
+        {
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            CreateNoWindow = true,
+            Environment = { [TerminalFolderVariable] = project }
+        })!;
+
+        var output = terminal.StandardOutput.ReadToEndAsync();
+
+        try
+        {
+            Assert.IsTrue(terminal.WaitForExit(TimeSpan.FromMinutes(1)), "bit remove still waits for the terminal it runs in.");
+            Assert.AreEqual(0, terminal.ExitCode, await output);
+            Assert.IsEmpty(Directory.EnumerateFileSystemEntries(project));
+        }
+        finally
+        {
+            if (terminal.HasExited is false)
+            {
+                terminal.Kill(entireProcessTree: true);
+                terminal.WaitForExit();
+            }
+        }
+    }
+
+    [TestMethod]
     [DataRow("dotnet")]
     [DataRow("XamlCompiler")]
     public async Task Remove_Should_StopOnlyTheBuildProcessThatHoldsAFile(string name)
@@ -220,7 +301,7 @@ public class RemoveTests
 
             Assert.IsFalse(Directory.Exists(folder));
             Assert.IsTrue(holder.WaitForExit(TimeSpan.FromSeconds(10)));
-            StringAssert.Contains(host.FlatOutput, $"after stopping {name} ({holder.Id})");
+            StringAssert.Contains(host.FlatOutput, $"Stopped {name} process {holder.Id}");
         }
         finally
         {
@@ -229,7 +310,9 @@ public class RemoveTests
     }
 
     [TestMethod]
-    public async Task Remove_Should_StopWhatABuildStartedWhenItHoldsAFile()
+    [DataRow(1)]
+    [DataRow(2)]
+    public async Task Remove_Should_StopWhatABuildStartedWhenItHoldsAFile(int depth)
     {
         if (OperatingSystem.IsWindows() is false)
             return;
@@ -240,7 +323,7 @@ public class RemoveTests
         var buildProcess = Path.Combine(Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "sdk")).FullName, "dotnet.exe");
         File.Copy(Path.Combine(Environment.SystemDirectory, "cmd.exe"), buildProcess);
 
-        using var build = HoldFile(buildProcess, Path.Combine(folder, "src", "Client", "Contoso.Client.Core", "bin", "Contoso.Client.Core.dll"), byAChild: true);
+        using var build = HoldFile(buildProcess, Path.Combine(folder, "src", "Client", "Contoso.Client.Core", "bin", "Contoso.Client.Core.dll"), depth);
 
         try
         {
@@ -283,10 +366,61 @@ public class RemoveTests
         }
     }
 
-    private static Process HoldFile(string shell, string file, bool byAChild = false)
+    [TestMethod]
+    public async Task Remove_Should_StopWhatRunsTheProjectFromItsCommandLineOrItsFolder()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost(HostOs.Windows);
+        var folder = CreateProject(host);
+        host.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
+        var sdk = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "sdk")).FullName;
+        var appHost = Directory.CreateDirectory(Path.Combine(folder, "src", "Server", "Contoso.Server.AppHost")).FullName;
+        File.Copy(Path.Combine(Environment.SystemDirectory, "cmd.exe"), Path.Combine(sdk, "aspire.exe"));
+        File.Copy(Path.Combine(Environment.SystemDirectory, "cmd.exe"), Path.Combine(sdk, "dotnet.exe"));
+
+        using var aspire = Process.Start(new ProcessStartInfo(Path.Combine(sdk, "aspire.exe"), $"/k rem run --apphost \"{Path.Combine(appHost, "Contoso.Server.AppHost.csproj")}\"") { WorkingDirectory = host.WorkingDirectory, UseShellExecute = false, RedirectStandardInput = true, RedirectStandardOutput = true, CreateNoWindow = true })!;
+        using var watch = Process.Start(new ProcessStartInfo(Path.Combine(sdk, "dotnet.exe"), "/k rem watch") { WorkingDirectory = appHost, UseShellExecute = false, RedirectStandardInput = true, RedirectStandardOutput = true, CreateNoWindow = true })!;
+
+        try
+        {
+            Assert.AreEqual(0, await host.RunAsync("remove", folder, "--yes"), host.Output);
+
+            Assert.IsFalse(Directory.Exists(folder));
+            Assert.IsTrue(aspire.WaitForExit(TimeSpan.FromSeconds(10)));
+            Assert.IsTrue(watch.WaitForExit(TimeSpan.FromSeconds(10)));
+            StringAssert.Contains(host.FlatOutput, $"Stopped aspire process {aspire.Id}");
+            StringAssert.Contains(host.FlatOutput, $"Stopped dotnet process {watch.Id}");
+        }
+        finally
+        {
+            Stop(aspire);
+            Stop(watch);
+        }
+    }
+
+    [TestMethod]
+    public async Task Remove_Should_DeleteAFileWhoseNameWindowsReadsAsADevice()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost(HostOs.Windows);
+        var folder = CreateProject(host);
+        host.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
+        var knownHosts = Path.Combine(Directory.CreateDirectory(Path.Combine(folder, "src", "Tests", "bin", "Debug", "net10.0")).FullName, "NUL");
+        File.WriteAllText($@"\\?\{knownHosts}", "[127.0.0.1]:52045 ssh-ed25519 AAAA");
+
+        Assert.AreEqual(0, await host.RunAsync("remove", folder, "--yes"), host.Output);
+
+        Assert.IsFalse(Directory.Exists(folder));
+    }
+
+    private static Process HoldFile(string shell, string file, int depth = 0)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(file)!);
-        var arguments = byAChild ? $"/c cmd /c pause ^> \"{file}\"" : $"/c pause > \"{file}\"";
+        var arguments = $"/c {string.Concat(Enumerable.Repeat("cmd /c ", depth))}pause {new string('^', (1 << depth) - 1)}> \"{file}\"";
         var process = Process.Start(new ProcessStartInfo(shell, arguments) { UseShellExecute = false, RedirectStandardInput = true, RedirectStandardOutput = true, CreateNoWindow = true })!;
 
         for (var i = 0; i < 50 && File.Exists(file) is false; i++)

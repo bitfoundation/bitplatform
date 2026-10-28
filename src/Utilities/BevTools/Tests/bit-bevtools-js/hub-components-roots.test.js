@@ -317,13 +317,13 @@ describe('what BevTools\' own interaction sends over a circuit', () => {
 });
 
 describe('symbols for a runtime without files (WebAssembly)', () => {
-    it('fetches the PDB the runtime lists for this build, fingerprinted or not, and nothing else', async () => {
+    it('fetches the PDB the runtime lists for this build, and nothing else', async () => {
         const hub = await loadHub();
         const fetched = [];
         const options = [];
         globalThis.fetch = async (url, init) => { fetched.push(String(url)); options.push(init); return { ok: true, arrayBuffer: async () => new Uint8Array([1, 2, 3]).buffer }; };
 
-        // .NET 9+: a list of resources with fingerprinted names and resolved URLs.
+        // A list of resources with fingerprinted names and resolved URLs.
         window.Blazor = { runtime: { getConfig: () => ({ resources: { pdb: [{ virtualPath: 'App.pdb', name: 'App.abc123.pdb', resolvedUrl: 'http://localhost/_framework/App.abc123.pdb', integrity: 'sha256-abc' }] } }) } };
         expect(Array.from(await hub.fetchPdb('App'))).toEqual([1, 2, 3]);
         expect(fetched).toEqual(['http://localhost/_framework/App.abc123.pdb']);
@@ -331,12 +331,6 @@ describe('symbols for a runtime without files (WebAssembly)', () => {
         expect(options[0]).toEqual({ integrity: 'sha256-abc', cache: 'no-cache' });
         expect(await hub.fetchPdb('Other'), 'not listed: no request').toBeNull();
         expect(fetched).toHaveLength(1);
-
-        // .NET 8: a map of plain names.
-        window.Blazor = { runtime: { getConfig: () => ({ resources: { pdb: { 'App.pdb': 'sha256-x' } } }) } };
-        expect(await hub.fetchPdb('App')).not.toBeNull();
-        expect(fetched[1]).toMatch(/\/_framework\/App\.pdb$/);
-        expect(options[1].integrity).toBe('sha256-x');
 
         // A failed download is not "no symbols": it throws, so the panel can ask again.
         globalThis.fetch = async () => ({ ok: false, status: 503 });

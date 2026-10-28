@@ -52,6 +52,64 @@ public class TrustTests
     }
 
     [TestMethod]
+    public void AtomicFile_Should_WriteThroughALinkOnlyWhenAskedTo()
+    {
+        using var host = new TestHost();
+        var outside = Path.Combine(Directory.CreateDirectory(Path.Combine(host.Root, "outside")).FullName, "notes.txt");
+        var link = Path.Combine(host.WorkingDirectory, "AppStrings.fa.resx");
+        File.WriteAllText(outside, "mine");
+
+        try
+        {
+            File.CreateSymbolicLink(link, outside);
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            return;
+        }
+
+        AtomicFile.WriteAllText(link, "translated");
+
+        Assert.AreEqual("mine", File.ReadAllText(outside));
+        Assert.IsNull(new FileInfo(link).LinkTarget);
+        Assert.AreEqual("translated", File.ReadAllText(link));
+    }
+
+    [TestMethod]
+    public void ClaudeCode_Should_KeepItsConfigsLinkAndPermissions()
+    {
+        using var host = new TestHost();
+        var dotfiles = Directory.CreateDirectory(Path.Combine(host.Root, "dotfiles")).FullName;
+        var target = Path.Combine(dotfiles, ".claude.json");
+        var config = Path.Combine(host.Home, ".claude.json");
+        File.WriteAllText(target, """{ "userID": "abc" }""");
+
+        try
+        {
+            File.CreateSymbolicLink(config, target);
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            return;
+        }
+
+        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+        {
+            File.SetUnixFileMode(target, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        }
+
+        Assert.AreEqual(TrustResultKind.Trusted, new ClaudeCodeTrust().Trust(new TrustContext(host.Environment, host.Runner), ProjectFolder(host)).Kind);
+
+        Assert.IsNotNull(new FileInfo(config).LinkTarget, "A dotfiles repository keeps tracking the file.");
+        StringAssert.Contains(File.ReadAllText(target), "hasTrustDialogAccepted");
+
+        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+        {
+            Assert.AreEqual(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(target), "It holds MCP servers' tokens.");
+        }
+    }
+
+    [TestMethod]
     public void ClaudeCode_Should_KeyAWindowsFolderTheWayClaudeCodeLooksItUp()
     {
         using var windows = new TestHost(HostOs.Windows);
@@ -191,6 +249,21 @@ public class TrustTests
 
         Assert.AreEqual(TrustResultKind.Skipped, outcome.Kind);
         Assert.AreEqual(value, ReadStore(store));
+    }
+
+    [TestMethod]
+    public void VsCode_Should_LeaveARemoteFoldersTrustToItsWindow()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var remoteCli = Path.Combine(host.Root, ".vscode-server", "bin", "f1e2d3c4", "bin", "remote-cli", "code");
+        Directory.CreateDirectory(Path.GetDirectoryName(remoteCli)!);
+        File.WriteAllText(remoteCli, "");
+        host.Runner.Executables["code"] = remoteCli;
+
+        var outcome = new VsCodeTrust().Trust(new TrustContext(host.Environment, host.Runner) { IsVsCodeRunning = () => false }, ProjectFolder(host));
+
+        Assert.AreEqual(TrustResultKind.Skipped, outcome.Kind, "In WSL, a dev container or over SSH, VS Code reads trust from the machine with its window.");
+        Assert.IsFalse(File.Exists(VsCodeTrust.SharedStore(host.Environment)));
     }
 
     [TestMethod]

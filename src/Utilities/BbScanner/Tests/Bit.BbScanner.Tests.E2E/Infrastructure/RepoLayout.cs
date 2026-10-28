@@ -11,7 +11,7 @@ public static class RepoLayout
     public static string DemoServerProject() => FindUpward(Path.Combine("Demo", "Server", $"{DemoServerName}.csproj"));
 
     public static string DemoServerAssembly(string configuration) =>
-        Path.Combine(Path.GetDirectoryName(DemoServerProject())!, "bin", configuration, "net10.0", $"{DemoServerName}.dll");
+        Path.Combine(Path.GetDirectoryName(DemoServerProject())!, "bin", configuration, "net11.0", $"{DemoServerName}.dll");
 
     public const string ServerSampleName = "Bit.BbScanner.Samples.Server";
 

@@ -61,7 +61,7 @@ Pick what pointer input does with `Tool` (`BinkDrawTool`, `BinkEraserTool`, `Bin
 - Retained rendering: the browser keeps every path it has drawn, so redrawing a large page costs a few numbers per
   element, over WebAssembly and over a Blazor Server circuit alike.
 - A labelled, keyboard-operable canvas with a live text summary for screen readers.
-- Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 8, 9 and 10.
+- Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 10 and 11.
 
 ## For AI agents
 

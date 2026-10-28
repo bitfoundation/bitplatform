@@ -66,7 +66,7 @@ var result = decoder.Decode(rgbaPixels, width, height, BbPixelFormat.Rgba32);
   `BbScannerTexts`, with right-to-left, reduced motion and forced colours support, and an optional vibration or beep.
 - A camera the phone ends when the page goes into the background is reopened when it returns; `ReleaseCameraWhenHidden`
   closes it whenever the page is hidden.
-- .NET 8, 9 and 10.
+- .NET 10 and 11.
 
 ## For AI agents
 

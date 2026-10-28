@@ -109,7 +109,7 @@ Dependencies point strictly downward. The engine knows nothing about transports,
 touches the components that ship beside it; the components know nothing about transports; the relays never decode a
 message.
 
-All four target .NET 8, 9 and 10.
+All four target .NET 10 and 11.
 
 ---
 
@@ -233,8 +233,7 @@ tag to add: the one small module `BcrdtTextArea` needs (`_content/Bit.Bcrdt/bit-
 Where a page is prerendered and then becomes interactive, a document must be opened only once the component is
 interactive (`RendererInfo.IsInteractive`) - a document opened while prerendering belongs to a request that is
 already over, and a browser store cannot be reached at all. `BcrdtCollaborationScope` does this by itself and shows
-`LoadingContent` while prerendering - on .NET 8, where there is no `RendererInfo`, by waiting for its first render in
-the browser. Give it `ErrorContent` to show a document that cannot be opened instead of failing the page.
+`LoadingContent` while prerendering. Give it `ErrorContent` to show a document that cannot be opened instead of failing the page.
 
 `BcrdtTextArea` turns read-only - still showing everyone else's changes - when its `ReadOnly` parameter says so, or
 when the server granted the cascaded document's connection read-only access. If its small browser module cannot be
@@ -1315,8 +1314,7 @@ Changes since the previous release that an application may notice:
 - **`BcrdtHub.OnDisconnectedAsync` is overridden.** A subclass overriding it must call the base implementation.
 - **`BcrdtUndoManagerOptions.MaxStackItems` defaults to 100.** Set it to zero for the previous unbounded stacks.
 - **Collaborative types nest at most 128 levels.** Deeper nesting throws locally and is dropped when it arrives.
-- **`BcrdtCollaborationScope` does not open documents while prerendering.** On .NET 8 it opens them after its first
-  interactive render.
+- **`BcrdtCollaborationScope` does not open documents while prerendering.**
 - **`EncodeStateAsUpdate` includes updates a replica is still waiting to place**, as Yjs does.
 - **The browser module's exports changed.** It is internal to the components; the unused `getSelection`,
   `setSelection`, `setValuePreservingSelection`, `focus` and `measureCaret` are gone.

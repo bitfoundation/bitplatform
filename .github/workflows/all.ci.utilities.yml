@@ -23,7 +23,7 @@ jobs:
   build_nuget_packages:
     name: build utilities nuget packages locally
     if: ${{ inputs.nuget_packages }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
     - name: Checkout source code

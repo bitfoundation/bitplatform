@@ -111,21 +111,34 @@ public sealed class Chromium : IAsyncDisposable
         var waited = Stopwatch.StartNew();
         string? endpoint;
 
-        while ((endpoint = ReadEndpoint(portFile)) is null)
+        try
         {
-            if (process.HasExited || waited.Elapsed > TimeSpan.FromSeconds(60))
+            while ((endpoint = ReadEndpoint(portFile)) is null)
             {
-                Kill(process);
-                string output;
-                lock (errors) output = errors.ToString().Trim();
-                throw new DevToolsException($"{Path.GetFileName(executable)} didn't open its DevTools port. {output}");
+                if (process.HasExited || waited.Elapsed > TimeSpan.FromSeconds(60))
+                {
+                    await StopAsync(process, userDataDirectory);
+                    string output;
+                    lock (errors) output = errors.ToString().Trim();
+                    throw new DevToolsException($"{Path.GetFileName(executable)} didn't open its DevTools port. {output}");
+                }
+
+                await Task.Delay(100, cancellationToken);
             }
 
-            await Task.Delay(100, cancellationToken);
+            var connection = await DevToolsConnection.ConnectAsync(new Uri(endpoint), cancellationToken);
+            return new Chromium(process, userDataDirectory, connection);
         }
-
-        var connection = await DevToolsConnection.ConnectAsync(new Uri(endpoint), cancellationToken);
-        return new Chromium(process, userDataDirectory, connection);
+        catch (OperationCanceledException)
+        {
+            await StopAsync(process, userDataDirectory);
+            throw;
+        }
+        catch (WebSocketException exp)
+        {
+            await StopAsync(process, userDataDirectory);
+            throw new DevToolsException($"{Path.GetFileName(executable)} didn't answer on its DevTools port. {exp.Message}");
+        }
     }
 
     private static string? ReadEndpoint(string portFile)
@@ -161,6 +174,12 @@ public sealed class Chromium : IAsyncDisposable
 
         Kill(process);
         await Connection.DisposeAsync();
+        await StopAsync(process, userDataDirectory);
+    }
+
+    private static async Task StopAsync(Process process, string userDataDirectory)
+    {
+        Kill(process);
         process.Dispose();
 
         for (var attempt = 0; attempt < 10 && Directory.Exists(userDataDirectory); attempt++)

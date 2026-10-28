@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net11.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.14" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="11.0.0-rc.3.26522.148" />
         <ProjectReference Include="..\..\..\Bit.Bcrdt.Server\Bit.Bcrdt.Server.csproj" />
         <ProjectReference Include="..\Bit.Bcrdt.Samples.Auto.Client\Bit.Bcrdt.Samples.Auto.Client.csproj" />
         <ProjectReference Include="..\..\Core\Bit.Bcrdt.Samples.Core.csproj" />

@@ -43,7 +43,20 @@ public static partial class Program
 
         var host = builder.Build();
 
+        //#if (framework == 'net11.0')
+        foreach (var startupValidator in host.Services.GetServices<IAsyncStartupValidator>())
+        {
+            await startupValidator.ValidateAsync();
+        }
+        //#else
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
         host.Services.GetService<IStartupValidator>()?.Validate();
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
+        //#endif
 
         AppDomain.CurrentDomain.UnhandledException += (_, e) => LogException(e.ExceptionObject, reportedBy: nameof(AppDomain.UnhandledException), host);
         TaskScheduler.UnobservedTaskException += (_, e) =>

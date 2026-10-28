@@ -1,0 +1,16 @@
+﻿@inject BmotionCapabilities Capabilities
+
+@* Where this page is running. The animation maths runs in C# wherever the components do; what the host decides is
+   whether that C# can talk to the page synchronously, once a frame, or only asynchronously. Without that the browser
+   plays every animation it can reproduce exactly - nearly all of them - and only what needs the per-frame loop
+   (per-frame callbacks, SVG d/points morphs, numbers animated in C#) lands on its target at once. *@
+
+<dl class="facts">
+    <dt>Renderer</dt>
+    <dd id="renderer">@RendererInfo.Name (@(RendererInfo.IsInteractive ? "interactive" : "prerendering"))</dd>
+    <dt>.NET runs on</dt>
+    <dd>@(OperatingSystem.IsBrowser() ? "the browser (WebAssembly)" : RuntimeInformation.OSDescription)</dd>
+    <dt>Per-frame loop</dt>
+    <dd id="frame-loop" data-frame-loop="@(Capabilities.IsPrerendering ? null : Capabilities.SupportsFrameLoop ? "true" : "false")">@FrameLoop</dd>
+    @ChildContent
+</dl>

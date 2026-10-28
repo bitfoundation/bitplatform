@@ -137,7 +137,7 @@
         <code>System.Net.Http</code>, <code>Microsoft.AspNetCore.Components*</code> and <code>System.Runtime</code>,
         with the same trailing-<code>*</code> patterns. Counters and up-down counters become sums, histograms become
         explicit-bucket histograms (<code>HistogramBoundaries</code>; empty by default, which means the OpenTelemetry
-        defaults, unless the instrument advises its own on .NET 9+), and gauges keep their last value.
+        defaults, unless the instrument advises its own), and gauges keep their last value.
     </p>
     <p>
         Metrics are collected and exported every <code>ExportInterval</code> (60 s; 10 s in this demo) with

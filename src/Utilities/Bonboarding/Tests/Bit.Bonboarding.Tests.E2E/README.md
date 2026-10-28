@@ -88,5 +88,5 @@ dotnet build src/Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests.E2E/Bit.Bonbo
 cd src/Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests.E2E && BONBOARDING_E2E_BASE_URL=http://127.0.0.1:5000 dotnet test -c Release --no-build
 ```
 
-The pull-request pipeline, `bit.ci.Bonboarding.yml`, runs the build, engine, component and MCP tests on .NET 8, 9
-and 10.
+The pull-request pipeline, `bit.ci.Bonboarding.yml`, runs the build, engine, component and MCP tests on .NET 10
+and 11.

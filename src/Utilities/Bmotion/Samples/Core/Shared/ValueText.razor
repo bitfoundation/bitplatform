@@ -1,0 +1,33 @@
+﻿@implements IDisposable
+
+@* A motion value as text. A component of its own, so a value that changes once a frame re-renders only this text, not
+   the page around it. *@
+<span @attributes="Attributes">@Value.Value.ToString(Format, CultureInfo.InvariantCulture)</span>
+
+@code {
+    /// <summary>The value to show.</summary>
+    [Parameter, EditorRequired]
+    public BmValue<double> Value { get; set; } = default!;
+
+    /// <summary>How to format it, in the invariant culture.</summary>
+    [Parameter]
+    public string? Format { get; set; }
+
+    /// <summary>Attributes for the span.</summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? Attributes { get; set; }
+
+    private BmValue<double>? _subscribed;
+    private IDisposable? _subscription;
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(Value, _subscribed)) return;
+
+        _subscription?.Dispose();
+        _subscribed = Value;
+        _subscription = Value.Subscribe(_ => StateHasChanged());
+    }
+
+    public void Dispose() => _subscription?.Dispose();
+}

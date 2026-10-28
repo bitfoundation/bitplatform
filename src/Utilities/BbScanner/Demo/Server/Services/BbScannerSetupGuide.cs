@@ -220,7 +220,6 @@ public static partial class BbScannerSetupGuide
         app.UseHttpsRedirection();
         app.UseAntiforgery();
 
-        // .NET 9 and later; on .NET 8, app.UseStaticFiles() before UseAntiforgery.
         app.MapStaticAssets();
 
         app.MapRazorComponents<App>()

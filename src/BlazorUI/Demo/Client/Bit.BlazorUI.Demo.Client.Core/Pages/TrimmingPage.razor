@@ -13,7 +13,7 @@
 
     <Badges>
         <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Publish only" />
-        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text=".NET 8, 9 and 10" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text=".NET 10 and 11" />
         <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Core, Extras, Legacy, Icons" />
     </Badges>
 
@@ -454,8 +454,7 @@ Bit.BlazorUI: _content/Bit.BlazorUI.Legacy/pdf.js/ -> left out (2 files): nothin
                     <BitText Element="p">
                         The property drops the bundles from the app's static web assets and turns the mode on at runtime,
                         through the <code>Bit.BlazorUI.LazyScripts</code> runtime switch and a one-line module initializer
-                        compiled into the project (runtime switches only reach a .NET 9 WebAssembly app and later; the
-                        initializer is what makes it hold on .NET 8, and needs C# 9 or later). Without the property, the
+                        compiled into the project (which needs C# 9 or later). Without the property, the
                         modules, the boot modules and the initializers are dropped instead, so a bundle-mode app carries
                         none of them.
                     </BitText>
@@ -592,7 +591,7 @@ var lazy = BitBlazorUIScripts.LazyScriptsEnabled;</CodeBox>
                 <ul>
                     <li>The trimmed bundle keeps the package asset's base and relative path, so it is served where the full one was and the tags stay as they are.</li>
                     <li>Its fingerprint and integrity are computed from the trimmed content, and its compressed <code>.br</code> / <code>.gz</code> copies are derived from it - the full bundle's leave with it.</li>
-                    <li>On .NET 9 and later its endpoints carry the label <code>_content/Bit.BlazorUI/...</code>, so <code>@@Assets["_content/Bit.BlazorUI/scripts/bit.blazorui.js"]</code> and <code>&lt;ImportMap /&gt;</code> resolve to the trimmed file; the publish fails rather than leave a lookup pointing nowhere.</li>
+                    <li>Its endpoints carry the label <code>_content/Bit.BlazorUI/...</code>, so <code>@@Assets["_content/Bit.BlazorUI/scripts/bit.blazorui.js"]</code> and <code>&lt;ImportMap /&gt;</code> resolve to the trimmed file; the publish fails rather than leave a lookup pointing nowhere.</li>
                     <li>A standalone WebAssembly app computes its service-worker asset manifest after the swap, and the trimming leaves it to the SDK. A Blazor Web App's client writes its own before the server trims - under its own base path, if it has one - so the server rewrites it: the files the publish leaves out drop off the list, the trimmed bundles' hashes replace the full ones', and a new manifest version in the service worker script makes an installed app update to the trimmed files.</li>
                     <li>The cache busting of <BitLink Href="/getting-started#cache-busting">Getting started</BitLink> works unchanged.</li>
                 </ul>

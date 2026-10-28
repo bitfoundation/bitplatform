@@ -23,16 +23,12 @@ public class PrerenderTests
     private static void UseStaticRender(BmotionTestContext ctx)
     {
         ctx.Interop.IsPrerendering = true;
-#if NET9_0_OR_GREATER
         ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
-#endif
     }
 
     private static void UseInteractiveRender(BmotionTestContext ctx)
     {
-#if NET9_0_OR_GREATER
         ctx.SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
-#endif
     }
 
     private static IRenderedComponent<Bmotion> RenderFadeUp(BmotionTestContext ctx, Action<ComponentParameterCollectionBuilder<Bmotion>>? extra = null)
@@ -58,9 +54,7 @@ public class PrerenderTests
     /// <summary>Marks the element as part of an interactive island, which the prerendering pass persists entries for.</summary>
     private static void InInteractiveIsland(ComponentParameterCollectionBuilder<Bmotion> ps)
     {
-#if NET9_0_OR_GREATER
         ps.SetAssignedRenderMode(RenderMode.InteractiveWebAssembly);
-#endif
     }
 
     /// <summary>What the prerendering pass persists for elements resting at <paramref name="settledStyle"/>, whose markup carried <paramref name="ids"/>.</summary>
@@ -251,7 +245,6 @@ public class PrerenderTests
         Assert.AreEqual("other", second);
     }
 
-#if NET9_0_OR_GREATER
     [TestMethod]
     public void Static_OutsideAnyInteractiveIsland_PersistsNothing()
     {
@@ -268,7 +261,6 @@ public class PrerenderTests
         var signature = BmotionPrerenderState.Signature(BmPrerenderMode.Final, "opacity:1;");
         Assert.IsFalse(state.TryTake<int>(BmotionPrerenderState.CountKey(signature), out _));
     }
-#endif
 
     [TestMethod]
     public void Static_InitialMode_PersistsNothing()

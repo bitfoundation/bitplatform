@@ -704,7 +704,6 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// </summary>
     private bool MayBecomeInteractive()
     {
-#if NET9_0_OR_GREATER
         try
         {
             return AssignedRenderMode is not null;
@@ -713,13 +712,11 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         {
             // A renderer that reports no render mode (a test renderer, say): assume it might.
         }
-#endif
         return true;
     }
 
     private bool DetectStaticRender()
     {
-#if NET9_0_OR_GREATER
         try
         {
             return !RendererInfo.IsInteractive;
@@ -728,7 +725,6 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         {
             // A renderer that reports no renderer info (a test renderer, say): ask the JS runtime.
         }
-#endif
         return Interop.IsPrerendering;
     }
 

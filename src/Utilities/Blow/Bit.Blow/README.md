@@ -81,7 +81,7 @@ Give nodes your own markup with `NodeTemplate` and `BlowHandle`, and edges with 
   read by screen readers, reduced motion, high contrast and localizable strings.
 - `OnError` diagnostics for malformed graphs instead of exceptions.
 - Theming through `--bit-blow-*` CSS custom properties, with light, dark and system colour modes.
-- Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 8, 9 and 10.
+- Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 10 and 11.
 
 ## For AI agents
 

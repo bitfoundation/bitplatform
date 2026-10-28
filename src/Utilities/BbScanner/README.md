@@ -87,7 +87,7 @@ device's own camera - see [Blazor Hybrid](#blazor-hybrid-net-maui). The full wal
 
 ## Requirements
 
-- .NET 8, .NET 9 or .NET 10
+- .NET 10 or .NET 11
 - An interactive render mode: Blazor WebAssembly, Blazor Server, Auto, or Blazor Hybrid. Prerendered, the scanner is
   inert markup until the page becomes interactive - see [hosting models](#hosting-models).
 - A secure context: the page served over HTTPS, or from `localhost`. A `BlazorWebView` is one.

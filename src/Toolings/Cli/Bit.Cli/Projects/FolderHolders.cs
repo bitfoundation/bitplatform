@@ -13,6 +13,7 @@ public static class FolderHolders
     private const int ProcessQueryLimitedInformation = 0x1000;
     private const int ProcessParametersOffset = 0x20;
     private const int CurrentDirectoryOffset = 0x38;
+    private const int CommandLineOffset = 0x70;
 
     public static IReadOnlyList<int> Find(string folder)
     {
@@ -26,9 +27,7 @@ public static class FolderHolders
         {
             using (process)
             {
-                if (process.Id != Environment.ProcessId
-                    && CurrentDirectoryOf(process.Id) is { } current
-                    && (string.Equals(Path.TrimEndingDirectorySeparator(current), root, StringComparison.OrdinalIgnoreCase) || ProjectProcesses.IsUnder(current, root)))
+                if (process.Id != Environment.ProcessId && IsIn(process.Id, root))
                 {
                     ids.Add(process.Id);
                 }
@@ -36,6 +35,47 @@ public static class FolderHolders
         }
 
         return ids;
+    }
+
+    public static bool Runs(int id, string folder)
+    {
+        if (Environment.Is64BitProcess is false)
+            return false;
+
+        var root = Path.TrimEndingDirectorySeparator(folder);
+        var current = Read(id, CurrentDirectoryOffset);
+
+        return (current is not null && IsAt(current, root)) || (Read(id, CommandLineOffset) is { } commandLine && ProjectProcesses.Mentions(commandLine, root, current));
+    }
+
+    public static bool AncestorIsIn(string folder)
+    {
+        if (Environment.Is64BitProcess is false)
+            return false;
+
+        var root = Path.TrimEndingDirectorySeparator(folder);
+        var seen = new HashSet<int>();
+        var id = Environment.ProcessId;
+
+        while (ParentOf(id) is { } parent && seen.Add(parent))
+        {
+            if (IsIn(parent, root))
+                return true;
+
+            id = parent;
+        }
+
+        return false;
+    }
+
+    private static bool IsIn(int id, string root)
+    {
+        return Read(id, CurrentDirectoryOffset) is { } current && IsAt(current, root);
+    }
+
+    private static bool IsAt(string current, string root)
+    {
+        return string.Equals(Path.TrimEndingDirectorySeparator(current), root, StringComparison.OrdinalIgnoreCase) || ProjectProcesses.IsUnder(current, root);
     }
 
     public static int? ParentOf(int id)
@@ -57,7 +97,7 @@ public static class FolderHolders
         }
     }
 
-    private static string? CurrentDirectoryOf(int id)
+    private static string? Read(int id, int parameterOffset)
     {
         var handle = OpenProcess(ProcessQueryInformation | ProcessVmRead, false, id);
 
@@ -76,13 +116,13 @@ public static class FolderHolders
             if (ReadProcessMemory(handle, info.PebBaseAddress + ProcessParametersOffset, parameters, parameters.Length, out _) is false)
                 return null;
 
-            var currentDirectory = new byte[16];
+            var text = new byte[16];
 
-            if (ReadProcessMemory(handle, (nint)BitConverter.ToInt64(parameters) + CurrentDirectoryOffset, currentDirectory, currentDirectory.Length, out _) is false)
+            if (ReadProcessMemory(handle, (nint)BitConverter.ToInt64(parameters) + parameterOffset, text, text.Length, out _) is false)
                 return null;
 
-            var length = BitConverter.ToUInt16(currentDirectory, 0);
-            var buffer = (nint)BitConverter.ToInt64(currentDirectory, 8);
+            var length = BitConverter.ToUInt16(text, 0);
+            var buffer = (nint)BitConverter.ToInt64(text, 8);
 
             if (length == 0 || buffer == 0)
                 return null;

@@ -16,6 +16,157 @@
     "sourceName": "Boilerplate",
     "preferNameDirectory": true,
     "symbols": {
+        "framework": {
+            "displayName": ".NET version",
+            "type": "parameter",
+            "datatype": "choice",
+            "replaces": "net11.0",
+            "defaultValue": "net10.0",
+            "choices": [
+                {
+                    "choice": "net10.0",
+                    "description": ".NET 10 (LTS)"
+                },
+                {
+                    "choice": "net11.0",
+                    "description": ".NET 11"
+                }
+            ],
+            "description": "The .NET version the project targets."
+        },
+        "sdkVersion": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "\"version\": \"11.0.100-rc.3.26522.148\"",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(framework == 'net10.0')",
+                        "value": "\"version\": \"10.0.100\""
+                    },
+                    {
+                        "condition": "",
+                        "value": "\"version\": \"11.0.100-rc.3.26522.148\""
+                    }
+                ]
+            }
+        },
+        "sdkRollForward": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "\"rollForward\": \"disable\"",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(framework == 'net10.0')",
+                        "value": "\"rollForward\": \"latestFeature\""
+                    },
+                    {
+                        "condition": "",
+                        "value": "\"rollForward\": \"disable\""
+                    }
+                ]
+            }
+        },
+        "devContainerImage": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "mcr.microsoft.com/dotnet/sdk:11.0.100-rc.3",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(framework == 'net10.0')",
+                        "value": "mcr.microsoft.com/dotnet/sdk:10.0.403"
+                    },
+                    {
+                        "condition": "",
+                        "value": "mcr.microsoft.com/dotnet/sdk:11.0.100-rc.3"
+                    }
+                ]
+            }
+        },
+        "efToolVersion": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "dotnet-ef@11.0.0-rc.2.26504.105",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(framework == 'net10.0')",
+                        "value": "dotnet-ef@10.0.14"
+                    },
+                    {
+                        "condition": "",
+                        "value": "dotnet-ef@11.0.0-rc.2.26504.105"
+                    }
+                ]
+            }
+        },
+        "xcodeVersion": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "xcode-version: '27.0'",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(framework == 'net10.0')",
+                        "value": "xcode-version: '27.1'"
+                    },
+                    {
+                        "condition": "",
+                        "value": "xcode-version: '27.0'"
+                    }
+                ]
+            }
+        },
+        "runnerImage": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "ubuntu-26.04",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(framework == 'net10.0')",
+                        "value": "ubuntu-24.04"
+                    },
+                    {
+                        "condition": "",
+                        "value": "ubuntu-26.04"
+                    }
+                ]
+            }
+        },
+        "aspNetCoreVersionName": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "ASP.NET Core 11.0",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(framework == 'net10.0')",
+                        "value": "ASP.NET Core 10.0"
+                    },
+                    {
+                        "condition": "",
+                        "value": "ASP.NET Core 11.0"
+                    }
+                ]
+            }
+        },
         "helpUrl": {
             "displayName": "More info at",
             "type": "parameter",
@@ -240,7 +391,7 @@
             "type": "parameter",
             "datatype": "bool",
             "replaces": "bit-option-signalR",
-            "defaultValue": "false",
+            "defaultValue": "true",
             "description": "Adds SignalR sample."
         },
         "offlineDb": {
@@ -1117,7 +1268,8 @@
                         "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanel.*",
                         "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanelCards/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/SystemPromptsPage.*",
-                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/SignalRInfiniteRetryPolicy.cs"
+                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/SignalRInfiniteRetryPolicy.cs",
+                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AppHubConnection.cs"
                     ]
                 },
                 {
@@ -1255,6 +1407,12 @@
                     "exclude": [
                         "src/Client/Boilerplate.Client.Core/Components/Pages/AppPageBase.BrouterLifecycles.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Common/AppPageData.BrouterLifecycles.cs"
+                    ]
+                },
+                {
+                    "condition": "(framework != 'net11.0')",
+                    "exclude": [
+                        "src/Client/Boilerplate.Client.Windows/Infrastructure/Services/WindowsKioskGuard.cs"
                     ]
                 }
             ]

@@ -41,8 +41,10 @@ public sealed partial class NewWorkflow(CliServices cli)
         if (name is null)
             return cli.UsageError("name-missing", $"Pass the project name: bit new <name>. {CreateProjectPage} builds the whole command.");
 
-        if (ProjectName.Validate(name) is { } nameError)
-            return cli.UsageError("name-invalid", $"{nameError} Try: bit new {ProjectName.Suggest(name)}");
+        var typeNames = request.TemplatePackage is null ? TypeNames.Template : TypeNames.FromPackage(Path.GetFullPath(request.TemplatePackage, cli.Environment.CurrentDirectory));
+
+        if (ProjectName.Validate(name, typeNames) is { } nameError)
+            return cli.UsageError("name-invalid", $"{nameError} Try: bit new {ProjectName.Suggest(name, typeNames)}");
 
         if (request.GitHubRepo && string.Equals(selection["pipeline"], "GitHub", StringComparison.OrdinalIgnoreCase) is false)
             return cli.UsageError("github-repo-needs-github", "--github-repo needs the GitHub pipeline (--pipeline GitHub).");
@@ -60,11 +62,14 @@ public sealed partial class NewWorkflow(CliServices cli)
         if (platformError is not null)
             return cli.UsageError("platforms-invalid", platformError);
 
+        if (Platforms.BuildsSolution(platforms) && ProjectName.ValidateAppId(name) is { } appIdError)
+            return cli.UsageError("app-id-invalid", appIdError);
+
         if (request.PropertyError is not null)
             return cli.UsageError("properties-invalid", request.PropertyError);
 
         var ide = request.NoOpen ? IdeLocator.None : request.Ide;
-        var requirements = request.TemplatePackage is null ? TemplateRequirements.Embedded : TemplateRequirements.FromPackage(Path.GetFullPath(request.TemplatePackage, cli.Environment.CurrentDirectory));
+        var requirements = (request.TemplatePackage is null ? TemplateRequirements.Embedded : TemplateRequirements.FromPackage(Path.GetFullPath(request.TemplatePackage, cli.Environment.CurrentDirectory))).For(selection);
         var needs = new ToolNeeds { Aspire = selection.Aspire, Containers = selection.AspireContainers(), ContainersRequired = selection.NeedsContainers, NativeWebAssembly = selection.IsTrue("offlineDb"), GitHubRepo = request.GitHubRepo, Platforms = platforms, Ide = ide, Sdk = requirements.Sdk, NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
         var hardware = request.NoSetup ? null : ProbeHardwareAsync(cli, directory, cancellationToken);
         var selectedTools = request.NoTools ? [] : await ChooseToolsAsync(cli, needs, request.Tools, request.ToolsGiven, interactive, hardware, cancellationToken);
