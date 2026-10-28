@@ -30,7 +30,7 @@ public partial class BitMapDemo
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Content floated above the map, such as custom controls. Only its children take the pointer, each sized to its content from the top-start corner.",
+            Description = "Content floated above the map, such as custom controls. Only its children take the pointer, each sized to its content from the top-start corner. That corner is often where the provider draws its zoom buttons (the top-left on Leaflet, OpenLayers and ArcGIS, the top-right - top-start in a right-to-left map - on MapLibre, Mapbox and Azure Maps), and the provider's controls draw above this content, so move a child to a free corner with margin-inline-start: auto or absolute insets, or turn the provider's control off (ZoomControl, or ShowNavigationControl on MapLibre and Mapbox).",
         },
         new()
         {

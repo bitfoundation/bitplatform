@@ -131,7 +131,12 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// Optional content rendered above the map canvas (overlays, custom controls, etc.).
     /// Each direct child is sized to its content from the top-start corner, unless positioned
     /// absolutely, and only the children take the pointer, so the map stays draggable around them.
-    /// Keep them clear of the corners the provider's controls and attribution occupy.
+    /// That corner is often where the provider draws its zoom buttons - the top-left on Leaflet,
+    /// OpenLayers and ArcGIS, the top-right (top-start in a right-to-left map) on MapLibre, Mapbox and
+    /// Azure Maps - and the provider's controls and attribution draw above this content, so a child left
+    /// there sits under them. Move it to a corner the provider leaves free (margin-inline-start: auto
+    /// takes a child to the end side, absolute insets anywhere), or turn the provider's control off
+    /// (ZoomControl, or ShowNavigationControl on MapLibre and Mapbox).
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 

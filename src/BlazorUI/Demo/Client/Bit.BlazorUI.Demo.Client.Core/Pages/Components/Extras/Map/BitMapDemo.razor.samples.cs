@@ -523,6 +523,8 @@ private void BuildInteractionProvider()
             @ref=""controlsMapRef""
             Provider=""@controlsProvider""
             OnFullscreenChanged=""v => isFullscreen = v"">
+        @* The overlay starts at the top-start corner, under Leaflet's zoom buttons -
+           margin-inline-start:auto moves the toolbar to the side Leaflet leaves free. *@
         <div role=""toolbar"" aria-label=""Map controls""
              style=""display:flex;flex-flow:column;gap:0.25rem;margin:0.75rem;margin-inline-start:auto;padding:0.25rem;border-radius:0.5rem;background:var(--bit-clr-bg-pri);box-shadow:var(--bit-shd-popup)"">
             <BitButton IconOnly IconName=""@BitIconName.Add"" Size=""BitSize.Small"" AriaLabel=""Zoom in"" Title=""Zoom in"" OnClick=""async () => await controlsMapRef.ZoomIn()"" />
