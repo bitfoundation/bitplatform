@@ -277,6 +277,147 @@
             };
         }
 
+        /**
+         * The marker payload fields each part of a marker is built from, which a provider updating a marker where it
+         * stands compares (markerChanged) to tell what to build again - named once, so a field added to a part is
+         * not missed by one provider.
+         */
+        static readonly markerIconFields = ['iconUrl', 'iconWidth', 'iconHeight', 'iconAnchorX', 'iconAnchorY'];
+        static readonly markerPopupFields = ['popupHtml', 'popupText'];
+        static readonly markerTooltipFields = ['tooltipHtml', 'tooltipText', 'tooltipPermanent', 'tooltipDirection'];
+
+        /**
+         * Replaces a provider's marker set with a new one: a marker missing from the new set is removed, and every
+         * other one is handed to `upsert` - the provider's addMarker, which updates a marker it already has where it
+         * stands. Tearing the whole set down instead would replace the element of every marker that stayed, and with
+         * it the keyboard focus, an open popup or tooltip, and the second click of a double-click.
+         *
+         * A set built from scratch stacks, and is tabbed through, in the order of its list, while a marker updated
+         * where it stands keeps the place it had - so `order` is handed the ids in list order, to put the markers
+         * back in it. A duplicate id is the marker its last occurrence describes, and stands where that one does.
+         */
+        static syncMarkers(current: { [markerId: string]: any }, markerIds: string[], markers: any[],
+                           remove: (markerId: string) => void, upsert: (markerId: string, opts: any) => void,
+                           order?: (markerIds: string[]) => void) {
+            const length = Math.min(markerIds?.length ?? 0, markers?.length ?? 0);
+            const next = new Set<string>();
+            for (let i = 0; i < length; i++) next.add(markerIds[i]);
+            for (const markerId of Object.keys(current)) {
+                if (!next.has(markerId)) remove(markerId);
+            }
+            for (let i = 0; i < length; i++) upsert(markerIds[i], markers[i]);
+            if (!order) return;
+
+            const ordered: string[] = [];
+            const seen = new Set<string>();
+            for (let i = length - 1; i >= 0; i--) {
+                if (seen.has(markerIds[i])) continue;
+                seen.add(markerIds[i]);
+                ordered.push(markerIds[i]);
+            }
+            order(ordered.reverse());
+        }
+
+        /**
+         * Puts marker elements in the order given, which is the order they stack in and are tabbed through. Only the
+         * ones out of place are moved, as few as will do, and never the one with the keyboard focus: moving an
+         * element takes the focus off it.
+         */
+        static orderElements(elements: (Element | null | undefined)[]) {
+            const byParent = new Map<Node, Element[]>();
+            for (const element of elements) {
+                const parent = element?.parentNode;
+                if (!element || !parent) continue;
+                const siblings = byParent.get(parent);
+                if (siblings) siblings.push(element);
+                else byParent.set(parent, [element]);
+            }
+            const focused = document.activeElement;
+            byParent.forEach((wanted, parent) => {
+                const index = new Map<Node, number>();
+                parent.childNodes.forEach((child, i) => index.set(child, i));
+                const at = wanted.map(element => index.get(element)!);
+                if (at.every((position, k) => k === 0 || at[k - 1] < position)) return;
+
+                const pinned = focused ? wanted.findIndex(element => element.contains(focused)) : -1;
+                const keep = BitMapHelpers._longestInOrder(at, pinned);
+                const firstKept = wanted[keep.indexOf(true)];
+                for (let k = 0; k < wanted.length; k++) {
+                    if (keep[k]) continue;
+                    // Right after the one before it, which is in its place by now - or, for the first, ahead of the
+                    // first one that stays.
+                    const before = k > 0 ? wanted[k - 1].nextSibling : firstKept;
+                    if (before !== wanted[k]) parent.insertBefore(wanted[k], before);
+                }
+            });
+        }
+
+        /**
+         * Which of a run of positions to leave where they are, so the rest can be moved into order around them: the
+         * longest increasing subsequence, found by patience sorting. With a `pinned` one, it is the longest among the
+         * positions in order with that one, which then joins it.
+         */
+        private static _longestInOrder(at: number[], pinned: number): boolean[] {
+            const candidates: number[] = [];
+            for (let k = 0; k < at.length; k++) {
+                if (pinned < 0 || (k < pinned && at[k] < at[pinned]) || (k > pinned && at[k] > at[pinned])) candidates.push(k);
+            }
+            // For each length of run, the candidate that ends one with the lowest position; and what comes before each.
+            const tails: number[] = [];
+            const previous: number[] = [];
+            for (let c = 0; c < candidates.length; c++) {
+                const position = at[candidates[c]];
+                let low = 0, high = tails.length;
+                while (low < high) {
+                    const middle = (low + high) >> 1;
+                    if (at[candidates[tails[middle]]] < position) low = middle + 1;
+                    else high = middle;
+                }
+                previous[c] = low > 0 ? tails[low - 1] : -1;
+                tails[low] = c;
+            }
+            const keep = new Array<boolean>(at.length).fill(false);
+            for (let c = tails.length > 0 ? tails[tails.length - 1] : -1; c >= 0; c = previous[c]) keep[candidates[c]] = true;
+            if (pinned >= 0) keep[pinned] = true;
+            return keep;
+        }
+
+        /** Whether any of the given fields differs between two marker payloads. */
+        static markerChanged(previous: any, next: any, ...fields: string[]): boolean {
+            return fields.some(field => previous?.[field] !== next?.[field]);
+        }
+
+        /**
+         * Runs `action` with one option of a library's object set to `value`, then puts it back as it was. A library
+         * often keeps its defaults on the prototype of its options, so an option that was never set is deleted again
+         * rather than set to what it read as.
+         */
+        static withOption<T>(options: any, key: string, value: any, action: () => T): T {
+            if (!options) return action();
+            const own = Object.prototype.hasOwnProperty.call(options, key);
+            const previous = options[key];
+            options[key] = value;
+            try {
+                return action();
+            } finally {
+                if (own) options[key] = previous;
+                else delete options[key];
+            }
+        }
+
+        /**
+         * Whether the pointer is over an element or it has the keyboard focus - which is when the hover tooltip of
+         * a marker is showing, and so when a tooltip that has to be built again is opened again.
+         */
+        static isEngaged(element: Element | null | undefined): boolean {
+            if (!element) return false;
+            try {
+                return element === document.activeElement || element.matches(':hover');
+            } catch {
+                return false;
+            }
+        }
+
         /** Split a subdomains option ("abc" or "a,b,c") into its individual values. */
         static readSubdomains(subdomains: string | undefined): string[] {
             const raw = (subdomains ?? 'abc').trim();

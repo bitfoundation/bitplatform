@@ -26,6 +26,12 @@
         </div>
         <button id="btn-ol-zoom-in" @onclick="@(async () => await _olMap.ZoomIn(animate: false))">ZoomIn</button>
         <button id="btn-ol-project" @onclick="ProjectBigBen">Project Big Ben</button>
+        @* Big Ben updated where it stands, through AddMarker: pressed by a click dispatched to the button, which leaves
+           the pointer where it is. *@
+        <button id="btn-ol-give" @onclick="@(() => UpdateOlBigBen(_olBigBen with { PopupText = "The clock tower", TooltipText = "Big Ben's tooltip" }))">Give Big Ben a popup and a tooltip</button>
+        <button id="btn-ol-retooltip" @onclick="@(() => UpdateOlBigBen(_olBigBen with { TooltipText = "Big Ben's new tooltip" }))">Give Big Ben a new tooltip</button>
+        <button id="btn-ol-pan-away" @onclick="@(async () => await _olMap.PanBy(900, 0, animate: false))">Pan away from Big Ben</button>
+        <button id="btn-ol-move" @onclick="@(() => UpdateOlBigBen(_olBigBen with { Position = new(51.5007, -0.1256), PopupText = "The clock tower, moved" }))">Move Big Ben</button>
         <span id="ol-projected">@(_olProjected ?? "none")</span>
         <span id="ol-state">@(_olState ?? "none")</span>
         <span id="ol-marker">@(_olMarker ?? "none")</span>
@@ -45,6 +51,8 @@
                     @bind-Zoom="_glZoom" />
         </div>
         <button id="btn-gl-zoom-in" @onclick="@(async () => await _glMap.ZoomIn(animate: false))">ZoomIn</button>
+        <button id="btn-gl-sync-reversed" @onclick="@(async () => await _glMap.SyncMarkers([.. _markers.Reverse()]))">SyncMarkers reversed</button>
+        <button id="btn-gl-move-tower" @onclick="@(async () => await _glMap.AddMarker(_markers.Last() with { Position = new(51.5055, -0.0854), Alt = "Tower Bridge, moved" }))">Move Tower Bridge</button>
         <span id="gl-state">@(_glState ?? "none")</span>
         <span id="gl-marker">@(_glMarker ?? "none")</span>
         <span id="gl-marker-double">@(_glMarkerDouble ?? "none")</span>
@@ -165,6 +173,9 @@
     private int _olMapDoubleClicks;
     private double? _olZoom = 13;
     private string? _olProjected;
+    private BitMapMarker _olBigBen = new() { Id = "big-ben", Position = new(51.5007, -0.1246), Alt = "Big Ben" };
+
+    private async Task UpdateOlBigBen(BitMapMarker bigBen) => await _olMap.AddMarker(_olBigBen = bigBen);
 
     private BitMap<BitMapLibreMapProvider> _glMap = default!;
     private string? _glState;

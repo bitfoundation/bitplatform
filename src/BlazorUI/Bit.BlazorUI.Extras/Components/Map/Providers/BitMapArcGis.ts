@@ -25,8 +25,13 @@
             doubleClickZoom: boolean,
             /** Whether a marker's double-click is the marker's: only while OnMarkerDoubleClick has a handler. */
             markerDoubleClick: boolean,
+            /** The marker the view's popup was last opened for - the one it shows while it is visible. */
+            popupMarkerId?: string | null,
             dragHandlersWired?: boolean,
         } } = {};
+
+        /** What each marker's graphic was last built from, which an update compares against (_updateMarker). */
+        private static _built = new WeakMap<object, any>();
 
         public static async init(id: string, canvasId: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
             element = await BitMapHelpers.resolveMapCanvas(canvasId, element);
@@ -247,31 +252,21 @@
             opts = BitMapHelpers.withDefaultIcon(id, opts);
             const s = BitMapArcGis._require(id);
             const esri = s.esri;
-            // A picture symbol is centred on its point; the offsets move the icon's anchor - a pin's tip by
-            // default - onto the coordinate instead, as on every other provider. Pixels, not ArcGIS' points.
-            const w = opts.iconWidth || 32, h = opts.iconHeight || 32;
-            const [ax, ay] = BitMapHelpers.readIconAnchor(opts, w, h);
-            const sym = new esri.PictureMarkerSymbol({
-                url: BitMapArcGis._base64DataUri(opts.iconUrl),
-                width: `${w}px`,
-                height: `${h}px`,
-                xoffset: `${w / 2 - ax}px`,
-                yoffset: `${ay - h / 2}px`,
-            });
-            const graphic = new esri.Graphic({
-                geometry: new esri.Point({ longitude: opts.lng, latitude: opts.lat }),
-                symbol: sym,
-                attributes: {
-                    markerId, popupHtml: opts.popupHtml || '', popupText: opts.popupText || '',
-                    title: opts.title || '', draggable: !!opts.draggable,
-                    // Where the icon is drawn around its point, for the hit test a double-click needs (_markerAt).
-                    bmIconBox: [w, h, ax, ay],
-                },
-            });
+            // A marker already on the map is updated where it stands rather than replaced, as on every provider:
+            // taking the graphic off the layer and putting a new one on would make it flicker.
             const existing = s.markers[markerId];
-            if (existing) try { s.markerLayer.remove(existing); } catch { /* ignore */ }
-            s.markerLayer.add(graphic);
-            s.markers[markerId] = graphic;
+            if (existing) {
+                BitMapArcGis._updateMarker(s, markerId, existing, opts);
+            } else {
+                const graphic = new esri.Graphic({
+                    geometry: new esri.Point({ longitude: opts.lng, latitude: opts.lat }),
+                    symbol: BitMapArcGis._markerSymbol(esri, opts),
+                    attributes: BitMapArcGis._markerAttributes(markerId, opts),
+                });
+                BitMapArcGis._built.set(graphic, opts);
+                s.markerLayer.add(graphic);
+                s.markers[markerId] = graphic;
+            }
 
             if (opts.draggable) {
                 BitMapArcGis._ensureDragHandlers(s);
@@ -295,10 +290,17 @@
         public static syncMarkers(id: string, markerIds: string[], markers: any[]) {
             const s = BitMapArcGis._maps[id];
             if (!s) return;
-            s.markerLayer.removeAll();
-            s.markers = {};
-            const len = Math.min(markerIds?.length ?? 0, markers?.length ?? 0);
-            for (let i = 0; i < len; i++) BitMapArcGis.addMarker(id, markerIds[i], markers[i]);
+            BitMapHelpers.syncMarkers(s.markers, markerIds, markers,
+                markerId => BitMapArcGis.removeMarker(id, markerId),
+                (markerId, opts) => BitMapArcGis.addMarker(id, markerId, opts),
+                ids => {
+                    // A layer draws its graphics in the order of its collection, the last on top.
+                    const graphics = s.markerLayer.graphics;
+                    ids.forEach((markerId, k) => {
+                        const g = s.markers[markerId];
+                        if (g && graphics.getItemAt(k) !== g) graphics.reorder(g, k);
+                    });
+                });
         }
 
         /** Makes a marker's double-click the marker's (OnMarkerDoubleClick) or leaves it the map's. */
@@ -318,16 +320,7 @@
             const s = BitMapArcGis._maps[id];
             if (!s) return;
             const g = s.markers[markerId];
-            if (!g) return;
-            const html = g.attributes?.popupHtml;
-            const text = g.attributes?.popupText;
-            if (html) {
-                BitMapArcGis._openPopup(s.view, { content: html, title: g.attributes?.title || '', location: g.geometry });
-            } else if (text) {
-                const el = document.createElement('span');
-                el.textContent = text;
-                BitMapArcGis._openPopup(s.view, { content: el, title: g.attributes?.title || '', location: g.geometry });
-            }
+            if (g) BitMapArcGis._openMarkerPopup(s, g);
         }
 
         /** Closes the view's popup, if it is open. Returns whether it was. */
@@ -365,6 +358,88 @@
         private static _openPopup(view: any, options: any) {
             if (typeof view.openPopup === 'function') view.openPopup(options);
             else view.popup?.open?.(options);
+        }
+
+        /** Opens the view's popup on a marker, when the marker has something to show in one. */
+        private static _openMarkerPopup(s: any, g: any) {
+            const a = g.attributes;
+            const content = BitMapArcGis._popupContent(a);
+            if (!content) return;
+            BitMapArcGis._openPopup(s.view, { content, title: a.title || '', location: g.geometry });
+            s.popupMarkerId = a.markerId;
+        }
+
+        /** What a marker's popup shows, or null when it has nothing to: PopupText goes in as text, never as markup. */
+        private static _popupContent(a: any): string | HTMLElement | null {
+            if (a?.popupHtml) return a.popupHtml;
+            if (!a?.popupText) return null;
+            const el = document.createElement('span');
+            el.textContent = a.popupText;
+            return el;
+        }
+
+        /**
+         * A picture symbol is centred on its point; the offsets move the icon's anchor - a pin's tip by
+         * default - onto the coordinate instead, as on every other provider. Pixels, not ArcGIS' points.
+         */
+        private static _markerSymbol(esri: any, opts: any): any {
+            const w = opts.iconWidth || 32, h = opts.iconHeight || 32;
+            const [ax, ay] = BitMapHelpers.readIconAnchor(opts, w, h);
+            return new esri.PictureMarkerSymbol({
+                url: BitMapArcGis._base64DataUri(opts.iconUrl),
+                width: `${w}px`,
+                height: `${h}px`,
+                xoffset: `${w / 2 - ax}px`,
+                yoffset: `${ay - h / 2}px`,
+            });
+        }
+
+        private static _markerAttributes(markerId: string, opts: any): any {
+            const w = opts.iconWidth || 32, h = opts.iconHeight || 32;
+            const [ax, ay] = BitMapHelpers.readIconAnchor(opts, w, h);
+            return {
+                markerId, popupHtml: opts.popupHtml || '', popupText: opts.popupText || '',
+                title: opts.title || '', draggable: !!opts.draggable,
+                // Where the icon is drawn around its point, for the hit test a double-click needs (_markerAt).
+                bmIconBox: [w, h, ax, ay],
+            };
+        }
+
+        /**
+         * Brings a marker's graphic in line with a new payload without replacing it (see addMarker), touching only
+         * what changed - a new symbol is a new image for the layer to draw.
+         */
+        private static _updateMarker(s: any, markerId: string, g: any, opts: any) {
+            const was = BitMapArcGis._built.get(g);
+            BitMapArcGis._built.set(g, opts);
+            const changed = (...fields: string[]) => BitMapHelpers.markerChanged(was, opts, ...fields);
+
+            // Measured against where the marker is rather than the last payload: a drag or setMarkerPosition moves a
+            // marker without one.
+            const moved = g.geometry?.latitude !== opts.lat || g.geometry?.longitude !== opts.lng;
+            if (moved) g.geometry = new s.esri.Point({ longitude: opts.lng, latitude: opts.lat });
+            const iconChanged = changed(...BitMapHelpers.markerIconFields);
+            if (iconChanged) g.symbol = BitMapArcGis._markerSymbol(s.esri, opts);
+            const popupChanged = changed(...BitMapHelpers.markerPopupFields, 'title');
+            if (iconChanged || popupChanged || changed('draggable')) g.attributes = BitMapArcGis._markerAttributes(markerId, opts);
+
+            // The view's popup open on this marker was opened with what it said and where it was then, so it follows:
+            // to where it went, with what it now says - or away, when it has nothing left to say.
+            const popup = s.view.popup;
+            if (s.popupMarkerId !== markerId || !popup?.visible || (!moved && !popupChanged)) return;
+            const content = BitMapArcGis._popupContent(g.attributes);
+            if (!content) {
+                if (typeof s.view.closePopup === 'function') s.view.closePopup();
+                else popup.close?.();
+                return;
+            }
+            try {
+                if (popupChanged) {
+                    popup.content = content;
+                    popup.title = g.attributes.title || '';
+                }
+                if (moved) popup.location = g.geometry;
+            } catch { /* ignore */ }
         }
 
         public static addPolyline(id: string, layerId: string, latlngs: BitMapLL[], style: any) {
@@ -867,13 +942,7 @@
                         if (a.markerId && s.markers[a.markerId]) {
                             hit = true;
                             dn()?.invokeMethodAsync('OnMarkerClick', a.markerId);
-                            if (a.popupHtml) {
-                                BitMapArcGis._openPopup(view, { content: a.popupHtml, title: a.title || '', location: g.geometry });
-                            } else if (a.popupText) {
-                                const el = document.createElement('span');
-                                el.textContent = a.popupText;
-                                BitMapArcGis._openPopup(view, { content: el, title: a.title || '', location: g.geometry });
-                            }
+                            BitMapArcGis._openMarkerPopup(s, g);
                             break;
                         }
                         if (a._bmKind === 'geojson' && a._bmLayerId && s.geoJsonLayers[a._bmLayerId]) {

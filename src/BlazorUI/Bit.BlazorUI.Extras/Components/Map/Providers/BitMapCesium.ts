@@ -40,6 +40,9 @@
             cameraAltitude: number,
         } } = {};
 
+        /** What each marker's entity was last built from, which an update compares against (_updateMarker). */
+        private static _built = new WeakMap<object, any>();
+
         public static async init(id: string, canvasId: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
             element = await BitMapHelpers.resolveMapCanvas(canvasId, element);
             await BitMapHelpers.waitForGlobal('Cesium', () => typeof (globalThis as any).Cesium?.Viewer === 'function');
@@ -454,36 +457,23 @@
             opts = BitMapHelpers.withDefaultIcon(id, opts);
             const s = BitMapCesium._require(id);
             const Cesium = s.Cesium;
+            // A marker already on the map is updated where it stands rather than replaced, as on every provider:
+            // removing the entity would deselect it, and close the InfoBox showing its description.
             const existing = s.markers[markerId];
-            if (existing) try { s.viewer.entities.remove(existing); } catch { /* ignore */ }
-            // Drawn from its bottom centre, then shifted so the icon's anchor - a pin's tip by default - is
-            // what sits on the coordinate, as on every other provider.
-            const w = opts.iconWidth || 32, h = opts.iconHeight || 32;
-            const [ax, ay] = BitMapHelpers.readIconAnchor(opts, w, h);
-            const billboard = {
-                image: opts.iconUrl,
-                width: w,
-                height: h,
-                verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-                pixelOffset: new Cesium.Cartesian2(w / 2 - ax, h - ay),
-            };
-            // description is rendered as HTML in Cesium's InfoBox.
-            // popupText is escaped to prevent XSS; popupHtml is passed raw (caller's responsibility).
-            let description: string | undefined;
-            if (opts.popupHtml) {
-                description = opts.popupHtml;
-            } else if (opts.popupText) {
-                description = String(opts.popupText).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            if (existing) {
+                BitMapCesium._updateMarker(s, existing, opts);
+                return;
             }
             const ent = s.viewer.entities.add({
                 id: `bm-marker-${id}-${markerId}`,
                 position: Cesium.Cartesian3.fromDegrees(opts.lng, opts.lat),
-                billboard,
-                label: opts.title ? { text: opts.title, font: '12px sans-serif', pixelOffset: new Cesium.Cartesian2(0, -50) } : undefined,
-                description: description,
+                billboard: BitMapCesium._billboard(Cesium, opts),
+                label: BitMapCesium._label(Cesium, opts),
+                description: BitMapCesium._description(opts),
                 _bmMarkerId: markerId,
                 _bmDraggable: !!opts.draggable,
             });
+            BitMapCesium._built.set(ent, opts);
             s.markers[markerId] = ent;
         }
 
@@ -504,10 +494,9 @@
         public static syncMarkers(id: string, markerIds: string[], markers: any[]) {
             const s = BitMapCesium._maps[id];
             if (!s) return;
-            for (const k in s.markers) s.viewer.entities.remove(s.markers[k]);
-            s.markers = {};
-            const len = Math.min(markerIds?.length ?? 0, markers?.length ?? 0);
-            for (let i = 0; i < len; i++) BitMapCesium.addMarker(id, markerIds[i], markers[i]);
+            BitMapHelpers.syncMarkers(s.markers, markerIds, markers,
+                markerId => BitMapCesium.removeMarker(id, markerId),
+                (markerId, opts) => BitMapCesium.addMarker(id, markerId, opts));
         }
 
         /** Makes a marker's double-click the marker's (OnMarkerDoubleClick) or leaves it the map's. */
@@ -722,6 +711,59 @@
                 const existing = ents.getById ? ents.getById(entId) : null;
                 if (existing) ents.remove(existing);
             } catch { /* ignore */ }
+        }
+
+        /**
+         * Brings a marker's entity in line with a new payload without replacing it (see addMarker), touching only what
+         * changed: each graphics object assigned anew is one Cesium builds its primitive again for.
+         */
+        private static _updateMarker(s: any, ent: any, opts: any) {
+            const Cesium = s.Cesium;
+            const was = BitMapCesium._built.get(ent);
+            BitMapCesium._built.set(ent, opts);
+            const changed = (...fields: string[]) => BitMapHelpers.markerChanged(was, opts, ...fields);
+
+            // Measured against where the marker is rather than the last payload: a drag or setMarkerPosition moves a
+            // marker without one.
+            const position = Cesium.Cartesian3.fromDegrees(opts.lng, opts.lat);
+            let at: any;
+            try { at = ent.position?.getValue(s.viewer.clock.currentTime); } catch { /* read as moved */ }
+            if (!at || !Cesium.Cartesian3.equals(at, position)) ent.position = position;
+            if (changed(...BitMapHelpers.markerIconFields)) ent.billboard = BitMapCesium._billboard(Cesium, opts);
+            if (changed('title')) ent.label = BitMapCesium._label(Cesium, opts);
+            // The InfoBox showing it reads the description as it changes.
+            if (changed(...BitMapHelpers.markerPopupFields)) ent.description = BitMapCesium._description(opts);
+            if (changed('draggable')) ent._bmDraggable = !!opts.draggable;
+        }
+
+        /**
+         * Drawn from its bottom centre, then shifted so the icon's anchor - a pin's tip by default - is
+         * what sits on the coordinate, as on every other provider.
+         */
+        private static _billboard(Cesium: any, opts: any): any {
+            const w = opts.iconWidth || 32, h = opts.iconHeight || 32;
+            const [ax, ay] = BitMapHelpers.readIconAnchor(opts, w, h);
+            return {
+                image: opts.iconUrl,
+                width: w,
+                height: h,
+                verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                pixelOffset: new Cesium.Cartesian2(w / 2 - ax, h - ay),
+            };
+        }
+
+        private static _label(Cesium: any, opts: any): any {
+            return opts.title ? { text: opts.title, font: '12px sans-serif', pixelOffset: new Cesium.Cartesian2(0, -50) } : undefined;
+        }
+
+        /**
+         * description is rendered as HTML in Cesium's InfoBox.
+         * popupText is escaped to prevent XSS; popupHtml is passed raw (caller's responsibility).
+         */
+        private static _description(opts: any): string | undefined {
+            if (opts.popupHtml) return opts.popupHtml;
+            if (opts.popupText) return String(opts.popupText).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            return undefined;
         }
 
         private static _color(Cesium: any, hex: string, alpha: number) {

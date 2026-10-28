@@ -1,10 +1,25 @@
 ﻿namespace BitBlazorUI {
 
+    type GlMarker = {
+        marker: any;
+        /** The hover tooltip: a second Popup, added on hover and removed on leave (see _createTooltip). */
+        tooltip?: any;
+        /** What the marker was last built from, which an update compares against (_updateMarker). */
+        opts: any;
+        /**
+         * Where the marker was last put (_moveTo) or dropped. An update measures a payload against this rather than
+         * the position the library reports, which it rewrites to the copy of the world nearest the centre - so a
+         * marker viewed across the antimeridian, or one past ±180, would read as moved on every update.
+         */
+        lat: number;
+        lng: number;
+    };
+
     type GlState = {
         gl: any;            // global namespace (maplibregl or mapboxgl)
         map: any;
         dotnetObj: DotNetObject | null | undefined;
-        markers: { [id: string]: { marker: any, tooltip?: any } };
+        markers: { [id: string]: GlMarker };
         vectorCatalog: { [id: string]: { sourceId: string, layerIds: string[], handlers: { layerId: string, handler: any }[] } };
         tileOverlayCatalog: { [id: string]: { sourceId: string, layerId: string } };
         navControl: any;
@@ -321,67 +336,34 @@
         public static addMarker(provider: string, id: string, markerId: string, opts: any) {
             opts = BitMapHelpers.withDefaultIcon(id, opts);
             const s = BitMapGlBase._require(provider, id);
+            // A marker already on the map is updated where it stands rather than replaced: a new one would come
+            // with a new element, which takes the keyboard focus, an open popup or tooltip, and the second click
+            // of a double-click with the old one.
+            const existing = s.markers[markerId];
+            if (existing) {
+                BitMapGlBase._updateMarker(s, existing, opts);
+                return;
+            }
             const gl = s.gl;
-            const lat = opts.lat, lng = opts.lng;
-            const draggable = !!opts.draggable;
 
-            // Every marker has an icon by now - its own, or the default pin withDefaultIcon drew.
-            const w = opts.iconWidth || 32;
-            const h = opts.iconHeight || 32;
             const el = document.createElement('div');
-            el.style.width = `${w}px`;
-            el.style.height = `${h}px`;
-            // Quoted: an unquoted url() ends at the first parenthesis or space in the address.
-            el.style.backgroundImage = `url("${String(opts.iconUrl).replace(/["\\]/g, c => '%' + c.charCodeAt(0).toString(16))}")`;
+            BitMapGlBase._applyIcon(el, opts);
             el.style.backgroundSize = 'contain';
             el.style.cursor = 'pointer';
-            // A GL marker built from a custom element is centred on the coordinate, where
-            // Leaflet anchors the image's bottom-centre. Translate the anchor into the offset
-            // that reproduces it, so the same marker lands in the same place on every backend.
-            const [ax, ay] = BitMapHelpers.readIconAnchor(opts, w, h);
-            const offset: [number, number] = [Math.round(w / 2) - ax, Math.round(h / 2) - ay];
-            const marker = new gl.Marker({ element: el, draggable, offset }).setLngLat([lng, lat]).addTo(s.map);
+            const marker = new gl.Marker({ element: el, draggable: !!opts.draggable, offset: BitMapGlBase._iconOffset(opts) })
+                .setLngLat([opts.lng, opts.lat]).addTo(s.map);
+            const row: GlMarker = { marker, opts, lat: opts.lat, lng: opts.lng };
 
-            // PopupHtml takes precedence; PopupText uses safe setText to avoid XSS. The popup's tip
-            // sits on the edge of the icon facing it, however large the icon is, rather than over it.
-            const popupOffset = BitMapHelpers.popupOffsets(opts, w, h);
-            if (opts.popupHtml) {
-                marker.setPopup(new gl.Popup({ offset: popupOffset }).setHTML(String(opts.popupHtml)));
-            } else if (opts.popupText) {
-                marker.setPopup(new gl.Popup({ offset: popupOffset }).setText(String(opts.popupText)));
-            }
             const element = marker.getElement();
             if (element) {
                 // What tells a double-click the map hears apart as this marker's (_markerIdOf).
                 element._bmMarkerId = markerId;
-                if (opts.title) element.setAttribute('title', opts.title);
-                // GL markers are anonymous <div>s, so without a label a screen reader reads a
-                // row of identical, meaningless entries.
-                const accessibleName = opts.alt || opts.title;
-                if (opts.focusable !== false) {
-                    // A GL marker is an anonymous <div>: not focusable, not activatable, and
-                    // unlabelled. Give it the three things a button has so a keyboard user can
-                    // reach it and a screen reader can name it.
-                    element.tabIndex = 0;
-                    element.setAttribute('role', 'button');
-                    if (accessibleName) element.setAttribute('aria-label', accessibleName);
-                    element.addEventListener('keydown', (ev: KeyboardEvent) => {
-                        if (ev.key !== 'Enter' && ev.key !== ' ' && ev.key !== 'Spacebar') return;
-                        ev.preventDefault();
-                        if (s.isDisposed) return;
-                        s.dotnetObj?.invokeMethodAsync('OnMarkerClick', markerId);
-                        if (typeof marker.togglePopup === 'function' && marker.getPopup()) marker.togglePopup();
-                    });
-                } else if (accessibleName) {
-                    element.setAttribute('aria-label', accessibleName);
-                    element.setAttribute('role', 'img');
-                }
+                // Labelled before the popup is set: the library makes the element a tab stop for its popup
+                // unless it already is one, and takes that tabindex away again as the popup goes.
+                BitMapGlBase._applyLabel(element, opts, null);
             }
-            if (opts.opacity != null && opts.opacity !== 1) {
-                // setOpacity exists on MapLibre 4+/Mapbox 3+; fall back to the element for older builds.
-                if (typeof marker.setOpacity === 'function') marker.setOpacity(String(opts.opacity));
-                else if (element) element.style.opacity = String(opts.opacity);
-            }
+            BitMapGlBase._syncPopup(s, row, null);
+            if (opts.opacity != null && opts.opacity !== 1) BitMapGlBase._setOpacity(marker, opts.opacity);
 
             // Read s.dotnetObj at dispatch time rather than capturing it: dispose() nulls
             // the field, and a stale capture would invoke a released .NET reference.
@@ -396,19 +378,35 @@
                 s.dotnetObj?.invokeMethodAsync('OnMarkerClick', markerId);
                 if (marker.getPopup()) marker.togglePopup();
             });
-            if (draggable) {
-                marker.on('dragend', () => {
-                    if (s.isDisposed) return;
-                    const p = marker.getLngLat();
-                    s.dotnetObj?.invokeMethodAsync('OnMarkerDragEnd', markerId, { lat: p.lat, lng: p.lng });
-                });
-            }
+            // These read the row at dispatch time as well: an update can make the marker focusable, give it a
+            // tooltip or make that tooltip permanent, and none of them builds the element again.
+            element?.addEventListener('keydown', (ev: KeyboardEvent) => {
+                if (row.opts.focusable === false) return;
+                if (ev.key !== 'Enter' && ev.key !== ' ' && ev.key !== 'Spacebar') return;
+                ev.preventDefault();
+                if (s.isDisposed) return;
+                s.dotnetObj?.invokeMethodAsync('OnMarkerClick', markerId);
+                if (typeof marker.togglePopup === 'function' && marker.getPopup()) marker.togglePopup();
+            });
+            // The tooltip opens on focus as well as on hover: the marker is a keyboard tab stop, and a
+            // label a keyboard user cannot reach is not much of a label.
+            const show = () => { if (!row.opts.tooltipPermanent) BitMapGlBase._showTooltip(s, row); };
+            const hide = () => { if (!row.opts.tooltipPermanent) BitMapGlBase._hideTooltip(row); };
+            element?.addEventListener('mouseenter', show);
+            element?.addEventListener('mouseleave', hide);
+            element?.addEventListener('focus', show);
+            element?.addEventListener('blur', hide);
+            // Only a draggable marker raises it, and an update can make one draggable.
+            marker.on('dragend', () => {
+                const p = marker.getLngLat();
+                row.lat = p.lat;
+                row.lng = p.lng;
+                if (s.isDisposed) return;
+                s.dotnetObj?.invokeMethodAsync('OnMarkerDragEnd', markerId, { lat: p.lat, lng: p.lng });
+            });
 
-            const tooltip = BitMapGlBase._attachTooltip(s, marker, opts);
-
-            const existing = s.markers[markerId];
-            if (existing) BitMapGlBase._destroyMarker(existing);
-            s.markers[markerId] = { marker, tooltip };
+            BitMapGlBase._syncTooltip(s, row, null);
+            s.markers[markerId] = row;
         }
 
         public static removeMarker(provider: string, id: string, markerId: string) {
@@ -428,10 +426,10 @@
         public static syncMarkers(provider: string, id: string, markerIds: string[], markers: any[]) {
             const s = BitMapGlBase._store(provider)[id];
             if (!s) return;
-            for (const key in s.markers) BitMapGlBase._destroyMarker(s.markers[key]);
-            s.markers = {};
-            const len = Math.min(markerIds?.length ?? 0, markers?.length ?? 0);
-            for (let i = 0; i < len; i++) BitMapGlBase.addMarker(provider, id, markerIds[i], markers[i]);
+            BitMapHelpers.syncMarkers(s.markers, markerIds, markers,
+                markerId => BitMapGlBase.removeMarker(provider, id, markerId),
+                (markerId, opts) => BitMapGlBase.addMarker(provider, id, markerId, opts),
+                ids => BitMapHelpers.orderElements(ids.map(markerId => s.markers[markerId]?.marker.getElement())));
         }
 
         /** Makes a marker's double-click the marker's (OnMarkerDoubleClick) or leaves it the map's. */
@@ -444,10 +442,7 @@
             const s = BitMapGlBase._store(provider)[id];
             if (!s) return;
             const row = s.markers[markerId];
-            if (!row) return;
-            row.marker.setLngLat([lng, lat]);
-            // A permanent tooltip is positioned independently of its marker, so it has to follow.
-            if (row.tooltip) try { row.tooltip.setLngLat([lng, lat]); } catch { /* ignore */ }
+            if (row) BitMapGlBase._moveTo(row, lat, lng);
         }
 
         public static openMarkerPopup(provider: string, id: string, markerId: string) {
@@ -638,23 +633,137 @@
         }
 
         /**
-         * Gives a GL marker the hover tooltip Leaflet has natively, built from a second Popup that
-         * is added on hover and removed on leave.
-         *
-         * It also opens on focus, not only on hover: the marker is a keyboard tab stop, and a
-         * label a keyboard user cannot reach is not much of a label.
+         * Brings a marker on the map in line with a new payload without replacing it (see addMarker), touching only
+         * what changed. The element is the marker's own <div>, so a new icon is drawn into it.
          */
-        private static _attachTooltip(s: GlState, marker: any, opts: any): any {
-            const html = opts.tooltipHtml;
-            const text = opts.tooltipText;
-            if (!html && !text) return undefined;
+        private static _updateMarker(s: GlState, row: GlMarker, opts: any) {
+            const was = row.opts;
+            row.opts = opts;
+            const changed = (...fields: string[]) => BitMapHelpers.markerChanged(was, opts, ...fields);
+            const marker = row.marker;
+            const element = marker.getElement();
 
-            const gl = s.gl;
+            // Measured against where the marker is rather than the last payload: a drag or setMarkerPosition moves a
+            // marker without one.
+            if (row.lat !== opts.lat || row.lng !== opts.lng) BitMapGlBase._moveTo(row, opts.lat, opts.lng);
+            const iconChanged = changed(...BitMapHelpers.markerIconFields);
+            if (iconChanged) {
+                if (element) BitMapGlBase._applyIcon(element, opts);
+                marker.setOffset?.(BitMapGlBase._iconOffset(opts));
+            }
+            if (element && changed('title', 'alt', 'focusable')) BitMapGlBase._applyLabel(element, opts, was);
+            if (changed('opacity')) BitMapGlBase._setOpacity(marker, opts.opacity ?? 1);
+            if (changed('draggable')) marker.setDraggable?.(!!opts.draggable);
+            // The popup and the tooltip point from the edge of the icon, so a new icon moves them too.
+            if (iconChanged || changed(...BitMapHelpers.markerPopupFields)) BitMapGlBase._syncPopup(s, row, was);
+            if (iconChanged || changed(...BitMapHelpers.markerTooltipFields)) BitMapGlBase._syncTooltip(s, row, was);
+        }
+
+        /** Moves a marker, and its tooltip with it: that is a popup of its own, positioned independently of the marker. */
+        private static _moveTo(row: GlMarker, lat: number, lng: number) {
+            row.lat = lat;
+            row.lng = lng;
+            row.marker.setLngLat([lng, lat]);
+            if (row.tooltip) try { row.tooltip.setLngLat([lng, lat]); } catch { /* ignore */ }
+        }
+
+        /** Draws a marker's icon into its element. Every marker has one by now - its own, or the default pin withDefaultIcon drew. */
+        private static _applyIcon(element: HTMLElement, opts: any) {
+            element.style.width = `${opts.iconWidth || 32}px`;
+            element.style.height = `${opts.iconHeight || 32}px`;
+            // Quoted: an unquoted url() ends at the first parenthesis or space in the address.
+            element.style.backgroundImage = `url("${String(opts.iconUrl).replace(/["\\]/g, c => '%' + c.charCodeAt(0).toString(16))}")`;
+        }
+
+        /**
+         * A GL marker built from a custom element is centred on the coordinate, where
+         * Leaflet anchors the image's bottom-centre. Translate the anchor into the offset
+         * that reproduces it, so the same marker lands in the same place on every backend.
+         */
+        private static _iconOffset(opts: any): [number, number] {
+            const w = opts.iconWidth || 32;
+            const h = opts.iconHeight || 32;
+            const [ax, ay] = BitMapHelpers.readIconAnchor(opts, w, h);
+            return [Math.round(w / 2) - ax, Math.round(h / 2) - ay];
+        }
+
+        /**
+         * A marker element's hover label, and what a screen reader and the keyboard make of it. A label is only
+         * taken away when the previous payload had one, so a marker built without one keeps what the library gave it.
+         */
+        private static _applyLabel(element: HTMLElement, opts: any, was: any) {
+            if (opts.title) element.setAttribute('title', opts.title);
+            else if (was?.title) element.removeAttribute('title');
+            // GL markers are anonymous <div>s, so without a label a screen reader reads a
+            // row of identical, meaningless entries.
+            const accessibleName = opts.alt || opts.title;
+            if (accessibleName) element.setAttribute('aria-label', accessibleName);
+            else if (was?.alt || was?.title) element.removeAttribute('aria-label');
+            if (opts.focusable !== false) {
+                // A GL marker is an anonymous <div>: not focusable, not activatable, and
+                // unlabelled. Give it the three things a button has so a keyboard user can
+                // reach it and a screen reader can name it.
+                element.tabIndex = 0;
+                element.setAttribute('role', 'button');
+            } else {
+                // Not a tab stop, whatever the library made of it for a popup.
+                element.removeAttribute('tabindex');
+                if (accessibleName) element.setAttribute('role', 'img');
+                else element.removeAttribute('role');
+            }
+        }
+
+        /**
+         * Gives a marker its popup, or the one it has new content - which keeps an open popup open. PopupHtml takes
+         * precedence; PopupText uses safe setText to avoid XSS. The popup's tip sits on the edge of the icon facing
+         * it, however large the icon is, rather than over it.
+         */
+        private static _syncPopup(s: GlState, row: GlMarker, was: any) {
+            const opts = row.opts, marker = row.marker;
+            const popup = marker.getPopup();
+            const offset = BitMapHelpers.popupOffsets(opts, opts.iconWidth || 32, opts.iconHeight || 32);
+            if (popup && (opts.popupHtml || opts.popupText)) {
+                if (BitMapHelpers.markerChanged(was, opts, ...BitMapHelpers.markerPopupFields)) BitMapGlBase._replaceContent(popup, opts.popupHtml, opts.popupText);
+                popup.setOffset?.(offset);
+                return;
+            }
+            if (popup) {
+                marker.setPopup(null);
+            } else if (opts.popupHtml || opts.popupText) {
+                const next = new s.gl.Popup({ offset });
+                BitMapGlBase._setContent(next, opts.popupHtml, opts.popupText);
+                marker.setPopup(next);
+            } else {
+                return;
+            }
+            // Setting or dropping a popup rewrites the element's tabindex and role, so the marker's own go back on.
+            const element = marker.getElement();
+            if (element) BitMapGlBase._applyLabel(element, opts, opts);
+        }
+
+        /**
+         * Gives a GL marker the hover tooltip Leaflet has natively, built from a second Popup that is added on hover
+         * and removed on leave (see addMarker), or the one it has new content. Its anchor and offset are fixed as it
+         * is built, so a change to those builds it again - and opens it again while the marker is hovered or focused.
+         */
+        private static _syncTooltip(s: GlState, row: GlMarker, was: any) {
+            const opts = row.opts;
+            const hasContent = !!(opts.tooltipHtml || opts.tooltipText);
+            if (row.tooltip && hasContent && !BitMapHelpers.markerChanged(was, opts,
+                'tooltipPermanent', 'tooltipDirection', 'iconWidth', 'iconHeight', 'iconAnchorX', 'iconAnchorY')) {
+                BitMapGlBase._setContent(row.tooltip, opts.tooltipHtml, opts.tooltipText);
+                return;
+            }
+            BitMapGlBase._hideTooltip(row);
+            row.tooltip = hasContent ? BitMapGlBase._createTooltip(s, opts) : undefined;
+            if (opts.tooltipPermanent || BitMapHelpers.isEngaged(row.marker.getElement())) BitMapGlBase._showTooltip(s, row);
+        }
+
+        private static _createTooltip(s: GlState, opts: any): any {
             // A GL anchor names the side of the popup that touches the point, the opposite of the side of the
             // marker TooltipPlacement names: a tooltip above the marker is one anchored at its bottom.
             const anchors: { [direction: string]: string } = { top: 'bottom', bottom: 'top', left: 'right', right: 'left', center: 'center' };
-            const direction = anchors[opts.tooltipDirection];
-            const tooltip = new gl.Popup({
+            const tooltip = new s.gl.Popup({
                 closeButton: false,
                 closeOnClick: false,
                 focusAfterOpen: false,
@@ -663,30 +772,43 @@
                 offset: BitMapHelpers.popupOffsets(opts, opts.iconWidth || 32, opts.iconHeight || 32),
                 className: 'bit-map-gl-tooltip',
                 // 'auto' is spelled as "let the library decide", which is the absent option.
-                anchor: direction,
+                anchor: anchors[opts.tooltipDirection],
             });
-            if (html) tooltip.setHTML(String(html));
-            else tooltip.setText(String(text));
-
-            const show = () => {
-                if (s.isDisposed) return;
-                try { tooltip.setLngLat(marker.getLngLat()).addTo(s.map); } catch { /* ignore */ }
-            };
-            const hide = () => { try { tooltip.remove(); } catch { /* ignore */ } };
-
-            if (opts.tooltipPermanent) {
-                show();
-            } else {
-                const element = marker.getElement();
-                if (element) {
-                    element.addEventListener('mouseenter', show);
-                    element.addEventListener('mouseleave', hide);
-                    element.addEventListener('focus', show);
-                    element.addEventListener('blur', hide);
-                }
-            }
-
+            BitMapGlBase._setContent(tooltip, opts.tooltipHtml, opts.tooltipText);
             return tooltip;
+        }
+
+        private static _showTooltip(s: GlState, row: GlMarker) {
+            if (s.isDisposed || !row.tooltip) return;
+            try { row.tooltip.setLngLat(row.marker.getLngLat()).addTo(s.map); } catch { /* ignore */ }
+        }
+
+        private static _hideTooltip(row: GlMarker) {
+            if (row.tooltip) try { row.tooltip.remove(); } catch { /* ignore */ }
+        }
+
+        /** HTML takes precedence; text goes through setText, which is safe from XSS. */
+        private static _setContent(popup: any, html: any, text: any) {
+            if (html) popup.setHTML(String(html));
+            else popup.setText(String(text));
+        }
+
+        /**
+         * New content for a popup that may be open. The library moves the focus into an open popup whenever its
+         * content is set, as it does when one opens - which an update must not do, as it would take the focus off
+         * the marker that has it. focusAfterOpen is what it checks, so it is off for the duration.
+         */
+        private static _replaceContent(popup: any, html: any, text: any) {
+            BitMapHelpers.withOption(popup.options, 'focusAfterOpen', false, () => BitMapGlBase._setContent(popup, html, text));
+        }
+
+        private static _setOpacity(marker: any, opacity: number) {
+            // setOpacity exists on MapLibre 4+/Mapbox 3+; fall back to the element for older builds.
+            if (typeof marker.setOpacity === 'function') marker.setOpacity(String(opacity));
+            else {
+                const element = marker.getElement();
+                if (element) element.style.opacity = String(opacity);
+            }
         }
 
         private static _require(provider: string, id: string): GlState {

@@ -23,8 +23,14 @@
             layers: { [k: string]: any }, tileOverlays: { [k: string]: any },
             scaleLine: any, zIndexCounter: number,
             markerSource: any, markerLayer: any,
+            /** The last place handed out in the order the markers are drawn in (_orderMarkers). */
+            markerOrder: number,
             popupOverlay: any, popupElement: HTMLElement, popupContentElement: HTMLElement,
+            /** The marker feature the popup was last opened for - the one it shows while it is not hidden. */
+            popupFeature: any,
             tooltipOverlay: any, tooltipElement: HTMLElement,
+            /** The marker feature the tooltip shows, while it shows one. */
+            tooltipFeature: any,
             translateInteraction: any,
             tileUrl: string, tileMaxZoom: number, tileAttribution: string, tileOpacity: number,
             scaleEnabled: boolean, scaleImperial: boolean,
@@ -93,7 +99,12 @@
             });
 
             const markerSource = new ol.VectorSource();
-            const markerLayer = new ol.VectorLayer({ source: markerSource, zIndex: 900 });
+            // Drawn in the order each marker was given its place in (_orderMarkers) - the order of the list they
+            // came in, as a set built from scratch would be, where OpenLayers' own is the order they were created in.
+            const markerLayer = new ol.VectorLayer({
+                source: markerSource, zIndex: 900,
+                renderOrder: (a: any, b: any) => (a._bmOrder ?? 0) - (b._bmOrder ?? 0),
+            });
             map.addLayer(markerLayer);
 
             // Create popup overlay element. Styles live in BitMap.scss
@@ -168,8 +179,11 @@
                 scaleLine: null as any,
                 zIndexCounter: 100,
                 markerSource, markerLayer,
+                markerOrder: 0,
                 popupOverlay, popupElement, popupContentElement: popupContent,
+                popupFeature: null as any,
                 tooltipOverlay, tooltipElement,
+                tooltipFeature: null as any,
                 translateInteraction: null as any,
                 tileUrl, tileMaxZoom, tileAttribution, tileOpacity,
                 scaleEnabled, scaleImperial,
@@ -412,19 +426,23 @@
             opts = BitMapHelpers.withDefaultIcon(id, opts);
             const s = BitMapOpenLayers._require(id);
             const ol = s.ol;
+            // A marker already on the map is updated where it stands rather than replaced, as on every provider:
+            // the popup open on it is the one of that feature, and is kept in step with it.
+            const existing = s.markers[markerId];
+            if (existing) {
+                BitMapOpenLayers._updateMarker(s, existing, opts);
+                return;
+            }
             const f = new ol.Feature({
                 geometry: new ol.Point(ol.fromLonLat([opts.lng, opts.lat])),
-                markerId, popupHtml: opts.popupHtml || '', popupText: opts.popupText || '', title: opts.title || '',
-                tooltipHtml: opts.tooltipHtml || '', tooltipText: opts.tooltipText || '',
-                draggable: !!opts.draggable,
-                // Where the popup and the tooltip point from: the top of this marker's own icon, so they
-                // open above it rather than over it, however tall it is.
-                popupOffset: BitMapHelpers.popupOffsets(opts, opts.iconWidth || 32, opts.iconHeight || 32)['bottom'],
+                markerId, ...BitMapOpenLayers._markerProperties(opts),
             });
             f.setId(markerId);
             f.setStyle(BitMapOpenLayers._markerStyle(ol, opts));
-            const existing = s.markers[markerId];
-            if (existing) try { s.markerSource.removeFeature(existing); } catch { /* ignore */ }
+            // What the marker was last built from, which an update compares against (_updateMarker).
+            f._bmOpts = opts;
+            // On top of the markers already there.
+            f._bmOrder = ++s.markerOrder;
             s.markerSource.addFeature(f);
             s.markers[markerId] = f;
         }
@@ -446,10 +464,10 @@
         public static syncMarkers(id: string, markerIds: string[], markers: any[]) {
             const s = BitMapOpenLayers._maps[id];
             if (!s) return;
-            s.markerSource.clear();
-            s.markers = {};
-            const len = Math.min(markerIds?.length ?? 0, markers?.length ?? 0);
-            for (let i = 0; i < len; i++) BitMapOpenLayers.addMarker(id, markerIds[i], markers[i]);
+            BitMapHelpers.syncMarkers(s.markers, markerIds, markers,
+                markerId => BitMapOpenLayers.removeMarker(id, markerId),
+                (markerId, opts) => BitMapOpenLayers.addMarker(id, markerId, opts),
+                ids => BitMapOpenLayers._orderMarkers(s, ids));
         }
 
         /** Makes a marker's double-click the marker's (OnMarkerDoubleClick) or leaves it the map's. */
@@ -695,6 +713,67 @@
             }
         }
 
+        /** Brings a marker's feature in line with a new payload without replacing it (see addMarker). */
+        private static _updateMarker(s: any, f: any, opts: any) {
+            const was = f._bmOpts;
+            f._bmOpts = opts;
+            const changed = (...fields: string[]) => BitMapHelpers.markerChanged(was, opts, ...fields);
+
+            // Measured against where the marker is rather than the last payload: a drag or setMarkerPosition moves a
+            // marker without one.
+            const geometry = f.getGeometry();
+            const coords = s.ol.fromLonLat([opts.lng, opts.lat]);
+            const at = geometry.getCoordinates();
+            const moved = at[0] !== coords[0] || at[1] !== coords[1];
+            if (moved) geometry.setCoordinates(coords);
+            const iconChanged = changed(...BitMapHelpers.markerIconFields);
+            if (iconChanged) f.setStyle(BitMapOpenLayers._markerStyle(s.ol, opts));
+            f.setProperties(BitMapOpenLayers._markerProperties(opts));
+
+            // The tooltip showing for this marker follows it as well, until the pointer next moves.
+            if (s.tooltipFeature === f && (moved || iconChanged || changed(...BitMapHelpers.markerTooltipFields))) {
+                if (!BitMapOpenLayers._showTooltipForFeature(s, f)) BitMapOpenLayers._hideTooltip(s);
+            }
+
+            // The popup open on this marker follows it: to where it went, with what it now says - or away, when it
+            // has nothing left to say. Its content is only written again when it changed, which keeps what is going
+            // on inside it, and it does not pan the map to itself (autoPan): that is spent as it opens, and doing it
+            // on every update would pull the map back to the popup each time, fighting a user who has dragged
+            // elsewhere.
+            if (s.popupFeature !== f || s.popupElement.classList.contains('bit-map-ol-popup--hidden')) return;
+            if (!opts.popupHtml && !opts.popupText) {
+                s.popupOverlay.setPosition(undefined);
+                s.popupElement.classList.add('bit-map-ol-popup--hidden');
+                return;
+            }
+            if (changed(...BitMapHelpers.markerPopupFields)) BitMapOpenLayers._writePopup(s, f);
+            if (moved || iconChanged) BitMapHelpers.withOption(s.popupOverlay, 'autoPan', false, () => BitMapOpenLayers._placePopup(s, f));
+        }
+
+        /**
+         * Gives each marker its place in the order they are drawn in - the order of their list - when they are not in
+         * it already. The places handed out keep counting up, so a marker added later still goes on top.
+         */
+        private static _orderMarkers(s: any, markerIds: string[]) {
+            const features = markerIds.map(markerId => s.markers[markerId]).filter(Boolean);
+            if (features.every((f: any, k: number) => k === 0 || features[k - 1]._bmOrder < f._bmOrder)) return;
+            for (const f of features) f._bmOrder = ++s.markerOrder;
+            // The order is read as the layer is drawn again, which a change to a feature's own field does not ask for.
+            s.markerLayer.changed();
+        }
+
+        /** What the popup, the tooltip and the drag interaction read off a marker's feature. */
+        private static _markerProperties(opts: any) {
+            return {
+                popupHtml: opts.popupHtml || '', popupText: opts.popupText || '', title: opts.title || '',
+                tooltipHtml: opts.tooltipHtml || '', tooltipText: opts.tooltipText || '',
+                draggable: !!opts.draggable,
+                // Where the popup and the tooltip point from: the top of this marker's own icon, so they
+                // open above it rather than over it, however tall it is.
+                popupOffset: BitMapHelpers.popupOffsets(opts, opts.iconWidth || 32, opts.iconHeight || 32)['bottom'],
+            };
+        }
+
         /** Every marker has an icon by now - its own, or the default pin BitMapHelpers.withDefaultIcon drew. */
         private static _markerStyle(ol: any, opts: any) {
             // The anchor as fractions of the icon, which hold whatever the image's natural size is: OpenLayers'
@@ -783,19 +862,27 @@
             const [dx, dy] = feature.get('popupOffset') ?? [0, -14];
             s.tooltipOverlay.setOffset([dx, dy - 6]);
             s.tooltipOverlay.setPosition(feature.getGeometry().getCoordinates());
+            s.tooltipFeature = feature;
             return true;
         }
 
         private static _hideTooltip(s: any) {
             s.tooltipOverlay.setPosition(undefined);
             s.tooltipElement.classList.add('bit-map-ol-tooltip--hidden');
+            s.tooltipFeature = null;
         }
 
         private static _showPopupForFeature(s: any, feature: any) {
+            if (!feature.get('popupHtml') && !feature.get('popupText')) return;
+            BitMapOpenLayers._writePopup(s, feature);
+            s.popupFeature = feature;
+            s.popupElement.classList.remove('bit-map-ol-popup--hidden');
+            BitMapOpenLayers._placePopup(s, feature);
+        }
+
+        private static _writePopup(s: any, feature: any) {
             const html = feature.get('popupHtml') || '';
             const text = feature.get('popupText') || '';
-            if (!html && !text) return;
-
             const contentEl = s.popupContentElement;
             // popupHtml is rendered raw to match every other BitMap provider's contract
             // (Leaflet's bindPopup, Mapbox/MapLibre setHTML, ArcGis popup.open, Cesium
@@ -807,12 +894,13 @@
             } else {
                 contentEl.textContent = text;
             }
+        }
 
-            const coords = feature.getGeometry().getCoordinates();
-            s.popupElement.classList.remove('bit-map-ol-popup--hidden');
+        /** Puts the popup on the marker it shows, pointing from the top of its icon. */
+        private static _placePopup(s: any, feature: any) {
             const [dx, dy] = feature.get('popupOffset') ?? [0, -12];
             s.popupOverlay.setOffset([dx, dy - 8]);
-            s.popupOverlay.setPosition(coords);
+            s.popupOverlay.setPosition(feature.getGeometry().getCoordinates());
         }
 
         private static _wireEvents(s: any) {
