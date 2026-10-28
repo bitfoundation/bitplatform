@@ -15,14 +15,47 @@ namespace Bit.BbScanner.Demo.Server.Services;
 /// </summary>
 public static class BbScannerSearchIndex
 {
-    private sealed record Entry(string Kind, string Title, string? Context, string Tool, string Body, string Boosted, int Weight = ReferenceWeight)
+    /// <param name="Name">
+    /// What the entry is called, when that is less than its title: a member's own name, without the
+    /// name of the type it is a member of. The type's name says where the member lives, which every
+    /// other member of the type shares - counted as the member's name, "qr" would name every member
+    /// of every type of the QR decoder, and every question with "QR" in it would be answered with
+    /// them. In the title it still counts, as any other word of a title does that is not a name.
+    /// </param>
+    private sealed record Entry(string Kind, string Title, string? Context, string Tool, string Body, string Boosted, int Weight = ReferenceWeight, string? Name = null)
     {
         /// <summary>
-        /// The title split into words, camel-case humps included, so "TryVerticalLines" is found by
+        /// The name split into words, camel-case humps included, so "TryVerticalLines" is found by
         /// "vertical lines" - and so a query word only counts as a title hit when it IS one of those
         /// words, rather than merely appearing inside one ("can" inside "Scanner").
         /// </summary>
-        public string[] TitleWords { get; } = SplitWords(Title);
+        public string[] TitleWords { get; } = SplitWords(Name ?? Title);
+
+        /// <summary>
+        /// The stems of <see cref="TitleWords"/>, which is what a term is matched against: "using" has to
+        /// find the section called "Using the component", "decoding" the method called Decode, and nobody
+        /// phrases a question in the number or tense the heading happens to use. Worked out once here
+        /// rather than for every term against every entry of every search.
+        /// </summary>
+        public HashSet<string> TitleStems { get; } = [.. SplitWords(Name ?? Title).Select(Stem)];
+    }
+
+    /// <summary>
+    /// A word of the query, and the stems it is matched by: its own, and that of the word BbScanner
+    /// uses for the same thing if it has one in <see cref="_synonyms"/>.
+    /// </summary>
+    private readonly record struct Term(string Word, string[] Stems);
+
+    /// <summary>How one term matched one entry.</summary>
+    private readonly record struct Match(bool IsTitleWord, int InTitle, int InBoosted, int InBody)
+    {
+        public bool Found => IsTitleWord || InTitle + InBoosted + InBody > 0;
+
+        public bool Named => IsTitleWord || InTitle + InBoosted > 0;
+
+        // A term in a name is worth far more than the same term buried in prose: someone asking
+        // for "SimulatePressure" wants the option, not the paragraphs that happen to mention it.
+        public int Points => (IsTitleWord ? 12 : 0) + InTitle * 3 + InBoosted * 5 + Math.Min(InBody, MaxBodyScore);
     }
 
     private const int MaxTerms = 16;
@@ -49,7 +82,26 @@ public static class BbScannerSearchIndex
     /// </summary>
     private const int MaxBodyScore = 8;
 
+    /// <summary>
+    /// The most entries a term can be found in and still single out the one a question is about. Past
+    /// it the term is common to a whole subsystem - "qr" is in a hundred entries, the QR decoder's
+    /// types and the prose of many more, "scan" in three hundred - and the more entries it is in, the
+    /// less it says about which of them is the answer. So its weight falls (<see cref="WeightOf"/>), and
+    /// the rarer words of a question decide what it is about: "eci qr" is about ECI, not the QR decoder,
+    /// and "read a barcode from a photo" about photos rather than everything that reads.
+    /// </summary>
+    private const int DistinctiveSpread = 12;
+
     private static readonly Lazy<Entry[]> _entries = new(Build);
+
+    /// <summary>
+    /// The one- and two-letter words that name something here: "QR", the "8" of EAN-8, the "E" of UPC-E,
+    /// the "H" of an error correction level. The tokenizer drops a word that short unless it is one of
+    /// these or holds a digit ("1D", "39"), because the rest ("a", "in", "do") match everything - and
+    /// dropped, "scan a QR code" is a search for "scan code" and "code 39" one for "code".
+    /// </summary>
+    private static readonly Lazy<HashSet<string>> _shortNames = new(() =>
+        new(_entries.Value.SelectMany(entry => entry.TitleWords).Where(word => word.Length <= 2), StringComparer.OrdinalIgnoreCase));
 
     /// <summary>
     /// The words every entry in this index carries because of what the index is about. They
@@ -64,8 +116,31 @@ public static class BbScannerSearchIndex
     /// </summary>
     private static readonly HashSet<string> _ambientWords = new(StringComparer.OrdinalIgnoreCase)
     {
-        "bbscanner", "bit", "blazor", "library", "barcode", "barcodes"
+        "bbscanner", "bb", "bit", "blazor", "library", "barcode", "barcodes"
     };
+
+    /// <summary>
+    /// The words a caller uses for something BbScanner calls otherwise, and the word BbScanner uses,
+    /// by <see cref="SynonymKey"/>. A query word finds what the library's word finds as well as what
+    /// it finds itself, ranked and quoted in the snippets as that word is: "flashlight" finds every
+    /// entry about the torch, with "torch" in the snippet that says why.
+    /// <para>
+    /// Only a word that means nothing else here belongs in this table: "crop" is <c>BbBitMatrix.Crop</c>
+    /// as much as anything about framing, "light" the light modules of an inverted symbol as much as
+    /// the torch, and "file" a source file as much as an image, so they are searched for as themselves.
+    /// </para>
+    /// </summary>
+    private static readonly Dictionary<string, string> _synonyms = new (string Word, string Means)[]
+    {
+        ("flashlight", "torch"),
+        ("flash", "torch"),
+        ("lamp", "torch"),
+        ("photo", "image"),
+        ("photograph", "image"),
+        ("picture", "image"),
+        ("gallery", "picker"),
+        ("webcam", "camera"),
+    }.ToDictionary(synonym => SynonymKey(synonym.Word), synonym => Stem(synonym.Means), StringComparer.Ordinal);
 
     private static readonly HashSet<string> _metaSections = new(StringComparer.OrdinalIgnoreCase) { "Documentation", "MCP server" };
 
@@ -74,14 +149,20 @@ public static class BbScannerSearchIndex
         "how", "the", "and", "for", "with", "from", "that", "this", "what", "when", "where", "which",
         "does", "did", "are", "was", "you", "your", "than", "then", "its", "but", "any", "some",
         "please", "help", "about", "into", "way", "make", "want", "need", "would", "should", "could",
-        "there", "here", "have", "has", "get", "got", "let", "one", "two", "per", "via", "onto"
+        "there", "here", "have", "has", "get", "got", "let", "one", "two", "per", "via", "onto",
+        // A pronoun names nothing - and "them" is the stem of "theme".
+        "them", "they", "their", "these", "those",
+        // The short ones that are also the hump of some member's name ("On" of OnScan, "Is" of
+        // IsTorchOn), which would otherwise pass for a short name.
+        "a", "an", "as", "at", "be", "by", "do", "go", "i", "if", "in", "is", "it", "me", "my", "no",
+        "of", "on", "or", "so", "to", "up", "us", "we"
     };
 
     public static BbScannerSearchResultDto Search(string? query, int limit)
     {
-        var terms = Tokenize(query);
+        var words = Tokenize(query);
 
-        if (terms.Length == 0)
+        if (words.Length == 0)
         {
             // Nothing was left to search by, which is a different failure from "searched and found
             // nothing" - and the fix is on the caller's side, so it has to be said rather than
@@ -90,14 +171,22 @@ public static class BbScannerSearchIndex
             {
                 Terms = [],
                 Hits = [],
-                Message = "The query held no word longer than two letters that was not a filler word, so there was " +
+                Message = "The query held nothing but filler words and words too short to search by, so there was " +
                           "nothing to rank by. Search for the thing itself - 'qr', 'torch', 'scan image file' - " +
                           "rather than for a sentence."
             };
         }
 
-        var ranked = _entries.Value
-            .Select(entry => (Entry: entry, Score: Score(entry, terms)))
+        Term[] terms = [.. words.Select(ToTerm)];
+        string[] stems = [.. terms.SelectMany(term => term.Stems)];
+
+        // Every term against every entry, once: how many entries a term is found in is its weight,
+        // which every entry's score needs before any of them can be worked out.
+        var matches = _entries.Value.Select(entry => (Entry: entry, Matches: terms.Select(term => MatchOf(entry, term)).ToArray())).ToArray();
+        double[] weights = [.. terms.Select((_, i) => WeightOf(matches.Count(candidate => candidate.Matches[i].Found)))];
+
+        var ranked = matches
+            .Select(candidate => (candidate.Entry, Score: Score(candidate.Entry, candidate.Matches, weights)))
             .Where(hit => hit.Score > 0)
             .OrderByDescending(hit => hit.Score)
             .ThenBy(hit => hit.Entry.Title, StringComparer.OrdinalIgnoreCase)
@@ -116,7 +205,7 @@ public static class BbScannerSearchIndex
             Title = hit.Entry.Title,
             Context = hit.Entry.Context,
             Tool = hit.Entry.Tool,
-            Snippet = Snippet(SnippetSource(hit.Entry, terms), terms)
+            Snippet = Snippet(SnippetSource(hit.Entry, stems), stems)
         }).ToArray();
 
         if (hits.Length > 0)
@@ -134,24 +223,36 @@ public static class BbScannerSearchIndex
         // A search that found nothing is where an agent is most likely to conclude the library has
         // no such feature and hand-roll one. Whatever came closest is named instead, so the next
         // call is a better query rather than a worse decision.
-        var nearby = Suggest(terms);
+        var nearby = Suggest(words);
 
+        // No list of other words to try: a word worth listing is one the index has, and a query with
+        // a word the index has in it never gets this far.
         return new BbScannerSearchResultDto
         {
-            Terms = terms,
+            Terms = words,
             Hits = [],
             Message = nearby.Length > 0
-                ? $"Nothing matched {string.Join(" + ", terms)}. The closest names are listed in didYouMean - " +
+                ? $"Nothing matched {string.Join(" + ", words)}. The closest names are listed in didYouMean - " +
                    "search for one of those, or for a single word out of this query."
-                : $"Nothing matched {string.Join(" + ", terms)}. Try one word rather than several, or call " +
+                : $"Nothing matched {string.Join(" + ", words)}. Try one word rather than several, or call " +
                    "GetBbScannerGuideSection or GetBbScannerApi with no argument at all for the index of what " +
-                   "there is. A concept BbScanner does not name is often the same idea under another word - " +
-                   "'read' or 'detect' is decoding, a 'photo', 'upload' or 'file' is still image scanning (DecodeImage, " +
-                   "OpenFilePickerAsync), a 'flashlight' is the torch, 'aim' or 'crop' is the scan region, '1D' is a linear " +
-                   "and '2D' a matrix symbology, 'repeat' is duplicate suppression, a 'theme' or 'colour' is a CSS custom property.",
+                   "there is: a concept BbScanner does not name is often there under another word.",
             DidYouMean = nearby.Length > 0 ? nearby : null
         };
     }
+
+    /// <summary>A word of the query as it is matched: by its stem, and by its synonym's if it has one.</summary>
+    private static Term ToTerm(string word) =>
+        new(word, _synonyms.TryGetValue(SynonymKey(word), out var means) ? [Stem(word), means] : [Stem(word)]);
+
+    /// <summary>
+    /// The weight of a term found in <paramref name="spread"/> entries: whole up to
+    /// <see cref="DistinctiveSpread"/>, and falling with the square root of the spread past it.
+    /// In proportion it would fall so far that a common word could no longer settle anything between
+    /// the entries a rare one found - "qr version metadata" would rank the entries about metadata
+    /// above the version of the QR symbol that was read.
+    /// </summary>
+    private static double WeightOf(int spread) => spread > DistinctiveSpread ? Math.Sqrt((double)DistinctiveSpread / spread) : 1;
 
     /// <summary>
     /// The first <paramref name="take"/> hits, with every query word that names something kept in
@@ -159,9 +260,11 @@ public static class BbScannerSearchIndex
     /// AND a camera control - and the one with more material behind it would otherwise fill every
     /// place, leaving the caller to conclude the other has no answer. So for each word that is the
     /// name of some entry yet names none of the top hits, the best entry it does name takes the place
-    /// of the lowest-ranked hit that is not itself there for that reason. The order stays the ranking's.
+    /// of the lowest-ranked hit that is not itself there for that reason - nor the only hit in view
+    /// that another word names, which would only hand that word's place to this one. The order stays
+    /// the ranking's.
     /// </summary>
-    private static (Entry Entry, int Score)[] Cover((Entry Entry, int Score)[] ranked, string[] terms, int take)
+    private static (Entry Entry, double Score)[] Cover((Entry Entry, double Score)[] ranked, Term[] terms, int take)
     {
         var top = ranked.Take(take).ToList();
         if (top.Count < take || terms.Length < 2) return [.. top];
@@ -170,13 +273,14 @@ public static class BbScannerSearchIndex
 
         foreach (var term in terms)
         {
-            if (top.Any(hit => hit.Entry.TitleWords.Any(word => Equivalent(word, term)))) continue;
+            if (top.Any(hit => Names(hit.Entry, term))) continue;
 
-            var best = ranked.Skip(take).FirstOrDefault(hit => hit.Entry.TitleWords.Any(word => Equivalent(word, term)));
+            var best = ranked.Skip(take).FirstOrDefault(hit => Names(hit.Entry, term));
             if (best.Entry is null) continue;
 
-            var replace = top.FindLastIndex(hit => kept.Contains(hit.Entry) is false);
-            if (replace < 0) break;
+            var replace = top.FindLastIndex(hit => kept.Contains(hit.Entry) is false
+                                                   && terms.Any(other => Names(hit.Entry, other) && top.Count(next => Names(next.Entry, other)) == 1) is false);
+            if (replace < 0) continue;
 
             top[replace] = best;
             kept.Add(best.Entry);
@@ -184,6 +288,8 @@ public static class BbScannerSearchIndex
 
         return [.. top.OrderByDescending(hit => hit.Score).ThenBy(hit => hit.Entry.Title, StringComparer.OrdinalIgnoreCase)];
     }
+
+    private static bool Names(Entry entry, Term term) => term.Stems.Any(entry.TitleStems.Contains);
 
     /// <summary>
     /// The titles that nearly matched: an entry whose name merely begins with one of the query's
@@ -204,31 +310,32 @@ public static class BbScannerSearchIndex
             .Take(MaxSuggestions)];
     }
 
-    private static int Score(Entry entry, string[] terms)
+    private static Match MatchOf(Entry entry, Term term)
     {
-        var score = 0;
-        var matched = 0;
-        var named = 0;
+        var isTitleWord = Names(entry, term);
 
-        foreach (var term in terms)
+        // Text is counted by the singular, which a plural query word would otherwise never find
+        // inside: "scans" has to count the "Scan" of OnScan, and "cameras" every "camera".
+        return new Match(isTitleWord,
+            isTitleWord ? 0 : Count(entry.Title, term.Stems),
+            Count(entry.Boosted, term.Stems),
+            Count(entry.Body, term.Stems));
+    }
+
+    private static double Score(Entry entry, Match[] matches, double[] weights)
+    {
+        var score = 0d;
+        var matched = 0d;
+        var named = 0d;
+
+        for (var i = 0; i < matches.Length; i++)
         {
-            var isTitleWord = entry.TitleWords.Any(word => Equivalent(word, term));
+            if (matches[i].Found is false) continue;
 
-            // Text is counted by the singular, which a plural query word would otherwise never find
-            // inside: "scans" has to count the "Scan" of OnScan, and "cameras" every "camera".
-            var stem = Stem(term);
-            var inTitle = isTitleWord ? 0 : Count(entry.Title, stem);
-            var inBoosted = Count(entry.Boosted, stem);
-            var inBody = Count(entry.Body, stem);
+            matched += weights[i];
+            if (matches[i].Named) named += weights[i];
 
-            if (isTitleWord is false && inTitle + inBoosted + inBody == 0) continue;
-
-            matched++;
-            if (isTitleWord || inTitle + inBoosted > 0) named++;
-
-            // A term in a name is worth far more than the same term buried in prose: someone asking
-            // for "SimulatePressure" wants the option, not the paragraphs that happen to mention it.
-            score += (isTitleWord ? 12 : 0) + inTitle * 3 + inBoosted * 5 + Math.Min(inBody, MaxBodyScore);
+            score += weights[i] * matches[i].Points;
         }
 
         // Every term matching is the strongest signal a hit is the right one - and a term the entry is
@@ -237,17 +344,6 @@ public static class BbScannerSearchIndex
         // words. The weight is what keeps a worked example from outranking the reference that answers
         // the question.
         return matched == 0 ? 0 : score * (matched + named) * entry.Weight;
-    }
-
-    /// <summary>
-    /// Same word, whatever form it is in - "using" has to find the section called "Using the component",
-    /// "symbology" the one about symbologies, and nobody phrases a question in the number or tense the
-    /// heading happens to use.
-    /// </summary>
-    private static bool Equivalent(string word, string term)
-    {
-        return string.Equals(word, term, StringComparison.OrdinalIgnoreCase)
-            || string.Equals(Stem(word), Stem(term), StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -269,26 +365,47 @@ public static class BbScannerSearchIndex
     }
 
     /// <summary>
-    /// How often a term starts a word of the text. Only the start of a word counts - the start of the
-    /// text, a letter after a non-letter, or a capital after a lower-case letter, so "file" counts in
-    /// "OpenFilePickerAsync" - because inside a word a term is a different word: "can" is inside every
-    /// "Scanner", and counting it there turns "can it read" into a search for the library's name.
-    /// The end of the word stays open, so a stem still finds its longer forms ("sav" in "saving").
+    /// A word as <see cref="_synonyms"/> is keyed: its stem, with the y back that an -ies plural loses -
+    /// "galleries" stems to "galleri", and has to reach the synonym of "gallery" all the same.
     /// </summary>
+    private static string SynonymKey(string word)
+    {
+        var stem = Stem(word);
+
+        return stem.EndsWith('i') ? $"{stem[..^1]}y" : stem;
+    }
+
+    private static int Count(string text, string[] stems) => stems.Sum(stem => Count(text, stem));
+
+    /// <summary>How often a term is a word of the text, as <see cref="IndexOfWord"/> finds one.</summary>
     private static int Count(string text, string term)
     {
-        if (text.Length == 0) return 0;
-
         var count = 0;
-        var index = text.IndexOf(term, StringComparison.OrdinalIgnoreCase);
 
-        while (index >= 0)
-        {
-            if (StartsWord(text, index)) count++;
-            index = text.IndexOf(term, index + term.Length, StringComparison.OrdinalIgnoreCase);
-        }
+        for (var at = IndexOfWord(text, term, 0); at >= 0; at = IndexOfWord(text, term, at + term.Length)) count++;
 
         return count;
+    }
+
+    /// <summary>
+    /// Where the term next starts a word of the text, or -1. Only the start of a word counts - the start
+    /// of the text, a letter after a non-letter, or a capital after a lower-case letter, so "file" counts
+    /// in "OpenFilePickerAsync" - because inside a word a term is a different word: "can" is inside every
+    /// "Scanner", and counting it there turns "can it read" into a search for the library's name.
+    /// The end of the word stays open, so a stem still finds its longer forms ("sav" in "saving") -
+    /// except after a term of one or two letters, which has no longer forms and is the start of
+    /// hundreds of other words: "e" begins "each", "ec" "economy". That one has to be the whole word.
+    /// </summary>
+    private static int IndexOfWord(string text, string term, int from)
+    {
+        var at = text.IndexOf(term, from, StringComparison.OrdinalIgnoreCase);
+
+        while (at >= 0 && (StartsWord(text, at) is false || (term.Length <= 2 && EndsWord(text, at + term.Length) is false)))
+        {
+            at = text.IndexOf(term, at + term.Length, StringComparison.OrdinalIgnoreCase);
+        }
+
+        return at;
     }
 
     private static bool StartsWord(string text, int index)
@@ -300,59 +417,34 @@ public static class BbScannerSearchIndex
         return char.IsLetterOrDigit(previous) is false || (char.IsUpper(text[index]) && char.IsLower(previous));
     }
 
+    private static bool EndsWord(string text, int end)
+    {
+        if (end == text.Length) return true;
+
+        var next = text[end];
+
+        return char.IsLetterOrDigit(next) is false || (char.IsUpper(next) && char.IsLower(text[end - 1]));
+    }
+
     /// <summary>
     /// The text a hit's snippet is cut from: its body, unless a term starts a word only in the
     /// boosted text - an API member found through its signature, say, "can" in
     /// <c>CancellationToken cancellationToken</c> - in which case the snippet shows the signature,
     /// so that whatever was counted for the score is what the caller sees.
     /// </summary>
-    private static string SnippetSource(Entry entry, string[] terms) =>
-        HasWordStart(entry.Body, terms) || !HasWordStart(entry.Boosted, terms) ? entry.Body : entry.Boosted;
+    private static string SnippetSource(Entry entry, string[] stems) =>
+        HasWord(entry.Body, stems) || !HasWord(entry.Boosted, stems) ? entry.Body : entry.Boosted;
 
-    private static bool HasWordStart(string text, string[] terms)
-    {
-        foreach (var term in terms)
-        {
-            var at = text.IndexOf(term, StringComparison.OrdinalIgnoreCase);
-            while (at >= 0)
-            {
-                if (StartsWord(text, at))
-                {
-                    return true;
-                }
+    private static bool HasWord(string text, string[] stems) => stems.Any(stem => IndexOfWord(text, stem, 0) >= 0);
 
-                at = text.IndexOf(term, at + term.Length, StringComparison.OrdinalIgnoreCase);
-            }
-        }
-
-        return false;
-    }
-
-    private static string Snippet(string body, string[] terms)
+    private static string Snippet(string body, string[] stems)
     {
         if (body.Length == 0) return string.Empty;
 
-        var index = -1;
-        foreach (var term in terms)
-        {
-            index = body.IndexOf(term, StringComparison.OrdinalIgnoreCase);
-            if (index >= 0) break;
-        }
-
-        if (index < 0) index = 0;
-
-        // The same word starts the snippet that was counted for the score, not "can" inside "BbScanner".
-        foreach (var term in terms)
-        {
-            var at = body.IndexOf(term, StringComparison.OrdinalIgnoreCase);
-            while (at >= 0 && StartsWord(body, at) is false) at = body.IndexOf(term, at + term.Length, StringComparison.OrdinalIgnoreCase);
-
-            if (at >= 0)
-            {
-                index = at;
-                break;
-            }
-        }
+        // The same word starts the snippet that was counted for the score, not "can" inside "BbScanner" -
+        // and only failing that wherever a term is at all.
+        var index = stems.Select(stem => IndexOfWord(body, stem, 0)).FirstOrDefault(at => at >= 0, -1);
+        if (index < 0) index = stems.Select(stem => body.IndexOf(stem, StringComparison.OrdinalIgnoreCase)).FirstOrDefault(at => at >= 0, 0);
 
         // A snippet is a reason to make the follow-up call, not a substitute for making it: enough
         // of the surrounding text to tell the right hit from the wrong one, and no more. Every extra
@@ -400,10 +492,11 @@ public static class BbScannerSearchIndex
 
         string[] terms = [.. query.Split(['.', ',', ';', ':', '?', '!', '"', '\'', '(', ')', '[', ']', '{', '}', '/', '\\', '<', '>', '-', '_', ' ', '\t', '\n', '\r'],
                               StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            // One- and two-letter words ("a", "in", "do") match everything and rank nothing - and
-            // the words a question is phrased with do worse than nothing: "how do I read a barcode FROM
-            // a photo" would otherwise score a section whose heading merely contains "from".
-            .Where(term => term.Length > 2 && _stopWords.Contains(term) is false)
+            // One- and two-letter words ("a", "in", "do") match everything and rank nothing, unless they
+            // are a name or a number (_shortNames) - and the words a question is phrased with do worse
+            // than nothing: "how do I read a barcode FROM a photo" would otherwise score a section whose
+            // heading merely contains "from".
+            .Where(term => (term.Length > 2 || term.Any(char.IsDigit) || _shortNames.Value.Contains(term)) && _stopWords.Contains(term) is false)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             // Every term is counted in every entry's body, so the work is terms x corpus. No question
             // is phrased in more words than this, while a pasted file as a query would scan for hours.
@@ -449,7 +542,8 @@ public static class BbScannerSearchIndex
                 entries.Add(new Entry($"API {member.Kind.ToLowerInvariant()}", $"{type.Name}.{member.Name}", type.Name,
                     $"GetBbScannerApi(typeName: \"{type.Name}\")",
                     string.Join(' ', overloads.Select(o => $"{o.Summary} {o.Remarks}".Trim())).Trim(),
-                    string.Join(' ', overloads.Select(o => $"{o.Type} {o.Signature}".Trim())).Trim()));
+                    string.Join(' ', overloads.Select(o => $"{o.Type} {o.Signature}".Trim())).Trim(),
+                    Name: member.Name));
             }
         }
 
@@ -460,9 +554,13 @@ public static class BbScannerSearchIndex
 
         foreach (var format in BbScannerFormatCatalog.Formats)
         {
+            // The family is said in the body, under the name of it a caller who does not know the words
+            // "linear" and "matrix" asks for it by, so that "1D barcodes" finds the barcodes as well as the
+            // table - which, naming it, still ranks first.
             entries.Add(new Entry("Symbology", format.Title, format.Family,
                 $"GetBbScannerFormats(format: \"{format.Name}\")",
-                $"{format.Summary} {format.Status}: {format.Notes} Options: {string.Join(", ", format.Options.Select(option => option.Name))}.",
+                $"{format.Family} ({(format.Family == "Matrix" ? "2D" : "1D")}) symbology. {format.Summary} {format.Status}: {format.Notes} " +
+                $"Options: {string.Join(", ", format.Options.Select(option => option.Name))}.",
                 $"symbology format {format.Name} {format.Title.Replace('-', ' ')}"));
         }
 
