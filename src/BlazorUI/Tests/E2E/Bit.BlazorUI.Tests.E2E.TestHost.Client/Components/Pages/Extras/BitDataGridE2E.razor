@@ -170,9 +170,9 @@
 <E2ESection Id="wrap-header" Title="Wrapped header titles">
     <label>Width of the first two columns <input id="wrap-header-width" type="number" step="any" @bind="_wrapHeaderWidth" @bind:event="oninput" /></label>
     @* The header of #13963: a template laying a Persian title out beside an icon in a flex row of its own, on a sortable
-       column and on the same column unsortable, so the two differ only by the sort hint of the first. The last column's
-       one-word title is wider than its column. *@
-    <BitDataGrid Id="grid-wrap-header" Items="@_basic.Take(2).ToList()" WrapCellText="true" Dir="BitDir.Rtl">
+       column and on the same column unsortable, so the two differ only by the sort hint of the first. The last two
+       columns hold a one-word title wider than its column, one the grid writes and one a template's element holds. *@
+    <BitDataGrid Id="grid-wrap-header" Items="@_wrapHeaderItems" WrapCellText="true" Dir="BitDir.Rtl">
         <BitDataGridColumn ColumnId="Sortable" Property="p => p.Stock" Width="@WrapHeaderWidth">
             <HeaderTemplate>@WrapHeaderTemplate</HeaderTemplate>
         </BitDataGridColumn>
@@ -180,6 +180,9 @@
             <HeaderTemplate>@WrapHeaderTemplate</HeaderTemplate>
         </BitDataGridColumn>
         <BitDataGridColumn Property="p => p.Name" Title="Unfinished" Sortable="false" Width="60px" />
+        <BitDataGridColumn ColumnId="Word" Property="p => p.Name" Sortable="false" Width="60px">
+            <HeaderTemplate><span class="wrap-header-word">Unfinished</span></HeaderTemplate>
+        </BitDataGridColumn>
     </BitDataGrid>
 </E2ESection>
 
@@ -404,6 +407,8 @@
 
     private readonly List<Product> _basic = Products();
     private readonly List<Product> _emptyItems = [];
+    // Kept, not taken afresh on each render: the grid reloads whenever its Items reference changes.
+    private readonly List<Product> _wrapHeaderItems = Products().Take(2).ToList();
     private readonly List<Product> _many = Enumerable.Range(1, 40).Select(i => new Product { Id = i, Name = $"Item {i:00}" }).ToList();
     private readonly List<Product> _long =
     [

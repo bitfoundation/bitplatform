@@ -96,33 +96,38 @@ public class BitDataGridStylesheetTests
         StringAssert.Contains(stylesheet, "@media (forced-colors: active)");
     }
 
-    // The hint of an unsorted header hangs past its title instead of taking room of its own: laid out like the arrow it
-    // previews, it narrowed every sortable title by its width and the gap even while invisible, so a wrapped title
-    // broke before it had to (#13963).
+    // The hint of an unsorted header is laid out like the arrow it previews, holding its room while hidden. With no room
+    // of its own it would be clipped by a label its title filled, leave a fitted column no room for the arrow, spill
+    // over the group toggle and the cell's padding, and the first sort would reflow the header.
     [TestMethod]
-    public void BitDataGridShouldLetTheSortHintTakeNoRoomOfItsOwn()
+    public void BitDataGridShouldLetTheSortHintHoldTheRoomOfTheArrow()
     {
         var stylesheet = SourceFiles.ReadStylesheet("Bit.BlazorUI.Extras", "Components", "DataGrid", "BitDataGrid.scss");
-
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-dtg-htext {"), "gap: $dtg-htext-gap;");
 
         var hint = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-dtg-sortable:not([aria-sort]) > .bit-dtg-htext::after {");
-        StringAssert.Contains(hint, "width: 0;");
-        StringAssert.Contains(hint, "padding-inline-start: $dtg-htext-gap;");
-        StringAssert.Contains(hint, "margin-inline: calc(-1 * #{$dtg-htext-gap});");
-        Assert.IsFalse(hint.Contains("display: none"), "Hidden from the layout, the hint would move the title as it shows.");
+        StringAssert.Contains(hint, "font-size: $tg-fs-2xs;");
+        StringAssert.Contains(hint, "opacity: 0;");
+        foreach (var property in new[] { "width", "margin", "padding", "position", "display" })
+        {
+            Assert.IsFalse(Regex.IsMatch(hint, $@"(^|[\s;{{]){property}(-[a-z-]+)?\s*:"), $"The hint sets {property}, which would lay it out unlike the arrow it previews.");
+        }
     }
 
-    // A wrapped title the grid writes may still break a word wider than the room its column gives it, but the elements
-    // of a HeaderTemplate keep their words whole: anywhere let a title laid out beside an icon break in the middle of a
-    // word to save its flex row a few pixels (#13963).
+    // A wrapped header breaks a word only once it alone is wider than its line, and a HeaderTemplate's content inherits
+    // that rule rather than undoing another: anywhere let a title laid out beside an icon break in the middle of a word
+    // to save its flex row a few pixels (#13963). The title the grid writes shrinks to its room as it always has, and an
+    // element of a template is held to the label's width, so a word wider than the column still breaks inside it.
     [TestMethod]
-    public void BitDataGridShouldKeepTheWordsOfAWrappedHeaderTemplateWhole()
+    public void BitDataGridShouldKeepTheWordsOfAWrappedHeaderWholeUnlessWiderThanTheColumn()
     {
         var stylesheet = SourceFiles.ReadStylesheet("Bit.BlazorUI.Extras", "Components", "DataGrid", "BitDataGrid.scss");
 
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-dtg-hcell-wrap .bit-dtg-htext {"), "overflow-wrap: anywhere;");
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n:where(.bit-dtg-hcell-wrap .bit-dtg-htext > *) {"), "overflow-wrap: break-word;");
+        var label = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-dtg-hcell-wrap .bit-dtg-htext {");
+        StringAssert.Contains(label, "overflow-wrap: break-word;");
+        Assert.IsFalse(label.Contains("anywhere"), "A template's content would inherit anywhere.");
+
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-dtg-hcell-wrap .bit-dtg-htitle {"), "min-width: 0;");
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n:where(.bit-dtg-hcell-wrap .bit-dtg-htext > *) {"), "max-width: 100%;");
     }
 
     // The primary button's label is the on-color of its fill, Canvas under a forced palette, which Chromium's Canvas

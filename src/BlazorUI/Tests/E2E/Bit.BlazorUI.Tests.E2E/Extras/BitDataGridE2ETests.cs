@@ -573,27 +573,42 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         }
         """;
 
-    // The hint of an unsorted column hangs past its title instead of taking room of its own (#13963), so an
-    // end-aligned title ends where its label does - over the end of the column's values - rather than the width of
-    // an invisible arrow and its gap before it.
+    // Whether an element's content overflows its box, which a label clips outside a wrapped header.
+    private const string OverflowsScript = "el => el.scrollWidth > el.clientWidth";
+
+    // The hint of an unsorted column is laid out like the arrow it previews: hovered, it shows inside its label even
+    // where the title is end-aligned (hung past the title instead, the label clipped it there), and sorting the column
+    // puts the arrow in its place without moving the title.
     [TestMethod]
-    public async Task Sorting_TheHiddenSortHint_TakesNoRoomFromTheTitle()
+    public async Task Sorting_TheSortHint_ShowsInsideTheLabelAndHoldsTheRoomOfTheArrow()
     {
         await OpenAsync(Url);
 
         var header = HeaderCell("grid-basic", 1);
+        var label = HeaderButton("grid-basic", "ID");
         await Expect(header).ToHaveClassAsync(HasClass("bit-dtg-sortable"));
         await Expect(header).ToHaveClassAsync(HasClass("bit-dtg-end"));
         await Expect(header).Not.ToHaveAttributeAsync("aria-sort", new Regex(".*"));
 
-        var text = await HeaderButton("grid-basic", "ID").EvaluateAsync<double[]>(LabelTextScript);
-        Assert.AreEqual(text[4], text[1], 1, "The end-aligned title of an unsorted column does not end at the end of its label.");
+        await label.HoverAsync();
+        await UntilAsync(async () => await label.EvaluateAsync<string>("el => getComputedStyle(el, '::after').opacity") == "1",
+                         "The hovered header does not show its sort hint.");
+        Assert.IsFalse(await label.EvaluateAsync<bool>(OverflowsScript), "The label clips the sort hint of its end-aligned title.");
+        var box = await BoxAsync(label);
+        var unsorted = await BoxAsync(label.Locator(".bit-dtg-htitle"));
+        Assert.IsTrue(box.X + box.Width - (unsorted.X + unsorted.Width) > 4, "The end-aligned title leaves its sort hint no room in the label.");
+
+        await label.ClickAsync();
+        await Expect(header).ToHaveAttributeAsync("aria-sort", "ascending");
+        var sorted = await BoxAsync(label.Locator(".bit-dtg-htitle"));
+        Assert.AreEqual(unsorted.X, sorted.X, 0.5, "Sorting the column moved its title.");
+        Assert.IsFalse(await label.EvaluateAsync<bool>(OverflowsScript), "The label clips the sort arrow of its end-aligned title.");
     }
 
-    // The header of #13963, right to left: a template laying a title out beside an icon keeps the title on one line as
-    // long as the two fit the column - the sort hint of a sortable column takes none of that room - and keeps its word
-    // whole when they run a few pixels short, overflowing into the cell's padding instead. A title the grid writes
-    // itself still breaks a word wider than its column, inside the column.
+    // The header of #13963, right to left: a template laying a title out beside an icon keeps the title on one line and
+    // its word whole, both where the two fit the column and where they run a few pixels short - the sort hint of the
+    // sortable column follows them into the cell's padding rather than squeezing the title. A one-word title wider than
+    // its column, whether the grid writes it or an element of a template holds it, breaks inside the column.
     [TestMethod]
     public async Task Wrap_AWrappedHeaderTitle_BreaksOnlyAWordWiderThanItsRoom()
     {
@@ -641,9 +656,12 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         await ExpectTheTitleWholeAsync("where the title and the icon run a few pixels short");
 
         // A one-word title wider than its column breaks, and every line of it stays inside the label.
-        var text = await HeaderCell(id, 3).Locator(".bit-dtg-htext").EvaluateAsync<double[]>(LabelTextScript);
-        Assert.IsTrue(text[2] > text[5] * 1.5, $"The title wider than its column did not wrap ({text[2]}px tall, lines of {text[5]}px).");
-        Assert.IsTrue(text[0] >= text[3] - 0.5 && text[1] <= text[4] + 0.5, "The title wider than its column overflows its label.");
+        foreach (var (ariaColIndex, name) in new[] { (3, "title"), (4, "template's title") })
+        {
+            var text = await HeaderCell(id, ariaColIndex).Locator(".bit-dtg-htext").EvaluateAsync<double[]>(LabelTextScript);
+            Assert.IsTrue(text[2] > text[5] * 1.5, $"The {name} wider than its column did not wrap ({text[2]}px tall, lines of {text[5]}px).");
+            Assert.IsTrue(text[0] >= text[3] - 0.5 && text[1] <= text[4] + 0.5, $"The {name} wider than its column overflows its label.");
+        }
     }
 
     [TestMethod]

@@ -259,7 +259,9 @@
                                         }
                                         else
                                         {
-                                            @column.DisplayTitle
+                                            @* An element of its own, so a wrapped header can let the title shrink and
+                                               break without a HeaderTemplate's content inheriting the same. *@
+                                            <span class="bit-dtg-htitle">@column.DisplayTitle</span>
                                         }
                                         @if (sort is not null)
                                         {

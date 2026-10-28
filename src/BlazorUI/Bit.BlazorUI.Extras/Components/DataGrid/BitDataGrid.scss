@@ -279,21 +279,28 @@ $dtg-private-properties:
     overflow: visible;
 }
 
-/* The title the grid writes itself is the label's own text, a flex item that anywhere lets shrink to the room the
-   column gives it: its lines break between words, and a word is broken only once it alone is wider than that room. */
+/* A wrapped header breaks its lines between words, and a word only once it alone is wider than its line. Everything
+   in the label inherits that, a HeaderTemplate's content too: anywhere, which this once was, also let a flex item
+   shrink below its longest word, so a title a template lays out beside an icon in a flex row of its own broke that
+   word in the middle whenever the row ran a few pixels short (#13963). */
 .bit-dtg-hcell-wrap .bit-dtg-htext {
     white-space: normal;
     overflow: visible;
     text-overflow: clip;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
 }
 
-/* A HeaderTemplate's elements keep their words whole. Inheriting anywhere, a title the template lays out beside an
-   icon in a flex row of its own would shrink below its longest word whenever the row ran a few pixels short, and break
-   that word in the middle where the row could have overflowed into the cell's padding; break-word breaks only a word
-   wider than the line it is laid out on. Of no weight, so a class of the template's own decides otherwise. */
+/* The title the grid writes itself shrinks to whatever room its column leaves it beside the sort arrow, and wraps
+   there. */
+.bit-dtg-hcell-wrap .bit-dtg-htitle {
+    min-width: 0;
+}
+
+/* An element of a HeaderTemplate keeps the width its content needs unless that is wider than the whole label: it is
+   held to the label's width, and a word wider than that breaks inside the column rather than spilling out of it. Of
+   no weight, so a class of the template's own decides otherwise. */
 :where(.bit-dtg-hcell-wrap .bit-dtg-htext > *) {
-    overflow-wrap: break-word;
+    max-width: 100%;
 }
 
 .bit-dtg-bordered .bit-dtg-cell,
@@ -426,12 +433,10 @@ $dtg-private-properties:
     cursor: pointer;
 }
 
-$dtg-htext-gap: spacing(0.5);
-
 .bit-dtg-htext {
     display: inline-flex;
     align-items: center;
-    gap: $dtg-htext-gap;
+    gap: spacing(0.5);
     flex: 1;
     /* Flex items default to min-width:auto, which refuses to shrink below their content size and
        breaks the ellipsis on long labels in narrow columns; allow shrinking so the text can clip. */
@@ -469,16 +474,11 @@ button.bit-dtg-htext {
 /* An unsorted sortable header shows which way its first click sorts, but only under the pointer or the focus, so the
    affordance is discoverable without every title carrying an arrow. Generated content with an empty alternative: it
    is no part of the header's text or its accessible name (a browser without the syntax drops the hint altogether).
-   It hangs past the end of the title instead of taking room of its own: a flex item no wider than its padding, whose
-   margins give back that padding and the gap before it, so the arrow is drawn a gap after the title and nothing in
-   the row moves when it fades in. Laid out like the arrow it previews, the hidden hint cost every unsorted header its
-   width and the gap: a wrapped title broke before it had to, and an end-aligned or centered one stood off the edge or
-   the axis its values line up on. */
+   It is laid out like the arrow it previews, so it holds that arrow's room while it is hidden: it shows inside the
+   label however the title is aligned, a fitted column leaves the arrow room, and nothing in the header moves when
+   the column is sorted. */
 .bit-dtg-sortable:not([aria-sort]) > .bit-dtg-htext::after {
     content: "▲" / "";
-    width: 0;
-    padding-inline-start: $dtg-htext-gap;
-    margin-inline: calc(-1 * #{$dtg-htext-gap});
     font-size: $tg-fs-2xs;
     color: $clr-fg-sec;
     opacity: 0;
