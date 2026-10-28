@@ -7,7 +7,8 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// Drives BitMap at /e2e/map in a real browser on the Leaflet provider, which ships inside the package and here draws
 /// its tiles from one image of the host, so nothing leaves the machine: the chrome (a named, described, focusable
 /// region with its instructions), the load states and OnReady, the zoom control, markers with their names, popups,
-/// tooltips, icons, dragging and every marker method, the MarkerPopupTemplate dialog, clustering, the two-way
+/// tooltips, icons, dragging and every marker method, markers updated where they stand (their element, focus, open
+/// popup, tooltip and order kept), the MarkerPopupTemplate dialog, clustering, the two-way
 /// Center and Zoom and every camera method, the pointer and wheel, map clicks, keyboard panning and zooming with
 /// announcements and EscapeToExit, the marker list, vector layers and tile overlays, ChildContent and cooperative
 /// gestures, Disabled, Style/Class/Styles/Classes and the --bit-Map-* variables, BitParams, RTL, a provider that fails
@@ -251,6 +252,135 @@ public class BitMapE2ETests : E2ETestBase
         {
             await Expect(Marker("map-markers", name)).ToBeInViewportAsync();
         }
+    }
+
+    [TestMethod]
+    public async Task MarkerUpdates_KeepTheElementItsFocusAndItsOpenPopup()
+    {
+        await OpenAsync(Route);
+        await ReadyAsync("map-updates");
+
+        var alpha = Marker("map-updates", "Alpha");
+        await Page.EvaluateAsync("el => window.__alpha = el", await alpha.ElementHandleAsync());
+        await alpha.FocusAsync();
+        await Page.Keyboard.PressAsync("Enter");
+        var popup = Canvas("map-updates").Locator(".leaflet-popup-content");
+        await Expect(popup).ToHaveTextAsync("Alpha one");
+        await Expect(alpha).ToBeFocusedAsync();
+
+        // A new title and popup text: the marker keeps its element, the focus stays on it, and its popup stays open
+        // with the new text in it.
+        await Page.Locator("#btn-upd-restyle").DispatchEventAsync("click");
+        await Expect(popup).ToHaveTextAsync("Alpha two");
+        await Expect(alpha).ToHaveAttributeAsync("title", "Alpha, restyled");
+        await Expect(alpha).ToBeFocusedAsync();
+        Assert.IsTrue(await alpha.EvaluateAsync<bool>("el => el === window.__alpha"));
+    }
+
+    [TestMethod]
+    public async Task MarkerUpdates_DroppingThePopupClosesTheOpenOne()
+    {
+        await OpenAsync(Route);
+        await ReadyAsync("map-updates");
+
+        var alpha = Marker("map-updates", "Alpha");
+        var popup = Canvas("map-updates").Locator(".leaflet-popup");
+        await alpha.ClickAsync();
+        await Expect(popup).ToHaveCountAsync(1);
+
+        await Page.Locator("#btn-upd-drop-popup").DispatchEventAsync("click");
+        await Expect(popup).ToHaveCountAsync(0);
+
+        // The marker has no popup left for a click to open either.
+        await alpha.ClickAsync();
+        await UpdatesPingAsync();
+        await Expect(popup).ToHaveCountAsync(0);
+    }
+
+    [TestMethod]
+    public async Task MarkerUpdates_ATooltipBoundAgainOpensAndClosesAsItIsNow()
+    {
+        await OpenAsync(Route);
+        await ReadyAsync("map-updates");
+
+        var alpha = Marker("map-updates", "Alpha");
+        var tooltip = Canvas("map-updates").Locator(".leaflet-tooltip");
+        await alpha.FocusAsync();
+        await Expect(tooltip).ToHaveTextAsync("Alpha tip");
+        await alpha.BlurAsync();
+        await Expect(tooltip).ToHaveCountAsync(0);
+
+        // Made permanent, it stays open whatever the focus does - no listener of the hover tooltip it was is left to
+        // close it.
+        await Page.Locator("#btn-upd-tooltip-permanent").DispatchEventAsync("click");
+        await Expect(tooltip).ToHaveTextAsync("Alpha tip");
+        await alpha.FocusAsync();
+        await alpha.BlurAsync();
+        await UpdatesPingAsync();
+        await Expect(tooltip).ToHaveTextAsync("Alpha tip");
+
+        // Taken away, nothing opens on focus, nothing throws for the tooltip that is gone, and nothing points at it.
+        await Page.Locator("#btn-upd-drop-tooltip").DispatchEventAsync("click");
+        await Expect(tooltip).ToHaveCountAsync(0);
+        await alpha.FocusAsync();
+        await alpha.BlurAsync();
+        await UpdatesPingAsync();
+        await Expect(tooltip).ToHaveCountAsync(0);
+        await Expect(alpha).Not.ToHaveAttributeAsync("aria-describedby", new Regex(".*"));
+    }
+
+    [TestMethod]
+    public async Task MarkerUpdates_AMovedMarkerDoesNotPanTheMapBackToItsOpenPopup()
+    {
+        await OpenAsync(Route);
+        await ReadyAsync("map-updates");
+
+        var alpha = Marker("map-updates", "Alpha");
+        var popup = Canvas("map-updates").Locator(".leaflet-popup");
+        await alpha.ClickAsync();
+        await Expect(popup).ToHaveCountAsync(1);
+
+        // The user goes elsewhere, leaving the popup out of sight.
+        const string paneTransform = "() => document.querySelector('#map-updates-canvas .leaflet-map-pane').style.transform";
+        var before = await Page.EvaluateAsync<string>(paneTransform);
+        await Page.Locator("#btn-upd-pan-away").DispatchEventAsync("click");
+        await Page.WaitForFunctionAsync($"before => ({paneTransform})() !== before", before);
+        var away = await Page.EvaluateAsync<string>(paneTransform);
+
+        // The marker moves, its popup open along with it, and the map stays where the user took it.
+        var popupAt = await popup.EvaluateAsync<string>("el => el.style.transform");
+        await Page.Locator("#btn-upd-move").DispatchEventAsync("click");
+        await Page.WaitForFunctionAsync("before => document.querySelector('#map-updates-canvas .leaflet-popup').style.transform !== before", popupAt);
+        // Well past the quarter of a second Leaflet's pan to a popup takes.
+        await Page.WaitForTimeoutAsync(600);
+        Assert.AreEqual(away, await Page.EvaluateAsync<string>(paneTransform));
+        await Expect(popup).ToHaveCountAsync(1);
+    }
+
+    [TestMethod]
+    public async Task MarkerUpdates_SyncMarkersKeepsTheMarkersItKeepsAndPutsThemInItsOrder()
+    {
+        await OpenAsync(Route);
+        await ReadyAsync("map-updates");
+
+        const string alts = "() => [...document.querySelectorAll('#map-updates-canvas img.leaflet-marker-icon')].map(e => e.alt).join(',')";
+        Assert.AreEqual("Alpha,Bravo,Charlie", await Page.EvaluateAsync<string>(alts));
+        await Page.EvaluateAsync("() => window.__markers = [...document.querySelectorAll('#map-updates-canvas img.leaflet-marker-icon')]");
+
+        // The same three the other way round: each keeps its element, the focused one keeps the focus, and the
+        // keyboard reaches them in the new order.
+        var bravo = Marker("map-updates", "Bravo");
+        await bravo.FocusAsync();
+        await Page.Locator("#btn-upd-sync-reversed").DispatchEventAsync("click");
+        await Page.WaitForFunctionAsync($"() => ({alts})() === 'Charlie,Bravo,Alpha'");
+        Assert.IsTrue(await Page.EvaluateAsync<bool>("() => window.__markers.every(e => e.isConnected)"));
+        await Expect(bravo).ToBeFocusedAsync();
+
+        // A set that drops two of them and brings one: only those two are taken off.
+        await Page.Locator("#btn-upd-sync-replace").DispatchEventAsync("click");
+        await Page.WaitForFunctionAsync($"() => ({alts})() === 'Bravo,Delta'");
+        Assert.IsTrue(await bravo.EvaluateAsync<bool>("el => el === window.__markers[1]"));
+        await Expect(bravo).ToBeFocusedAsync();
     }
 
     [TestMethod]
@@ -845,6 +975,14 @@ public class BitMapE2ETests : E2ETestBase
         await Expect(Canvas(id)).Not.ToHaveAttributeAsync("aria-busy", new Regex(".*"));
     }
 
+    // A round trip of the page's own: once it has been rendered, so has every update the map was handed before it.
+    private async Task UpdatesPingAsync()
+    {
+        var pings = int.Parse(await Page.Locator("#updates-pings").InnerTextAsync(), CultureInfo.InvariantCulture);
+        await Page.Locator("#btn-upd-ping").DispatchEventAsync("click");
+        await Expect(Page.Locator("#updates-pings")).ToHaveTextAsync((pings + 1).ToString(CultureInfo.InvariantCulture));
+    }
+
     private ILocator Markers(string id) => Page.Locator($"#{id}-canvas img.leaflet-marker-icon");
 
     private ILocator Marker(string id, string alt) => Page.Locator($"#{id}-canvas img.leaflet-marker-icon[alt=\"{alt}\"]");
@@ -860,7 +998,8 @@ public class BitMapE2ETests : E2ETestBase
 
 /// <summary>
 /// Drives BitMap at /e2e/map/providers on the other providers that need no key, OpenLayers and MapLibre, whose
-/// libraries come from a CDN: the same chrome, markers, zoom and keyboard as on Leaflet, against the host's own tiles.
+/// libraries come from a CDN: the same chrome, markers, zoom and keyboard as on Leaflet, and the same markers updated
+/// where they stand, against the host's own tiles.
 /// ArcGIS, loaded on its own demand, covers the marker double-click its synchronous hit test decides.
 /// Without the network the libraries cannot load, and the tests say so as inconclusive rather than failing.
 /// </summary>
@@ -984,6 +1123,89 @@ public class BitMapProvidersE2ETests : E2ETestBase
         await Page.Mouse.DblClickAsync(box.X + 300, box.Y + 330);
         await Expect(Page.Locator("#gl-map-double-clicks")).ToHaveTextAsync("1");
         await Expect(Page.Locator("#gl-zoom")).ToHaveTextAsync("14.0");
+    }
+
+    [TestMethod]
+    public async Task OpenLayers_AnUpdatedMarkerTakesItsTooltipAndOpenPopupAlongWithoutPanning()
+    {
+        AllowConsoleErrors = true;
+
+        await OpenAsync(Route);
+        await Page.Locator("#btn-load").ClickAsync();
+        await Expect(Page.Locator("#ol-state")).ToHaveTextAsync(new Regex("^(Ready|Failed)$"), new() { Timeout = 60000 });
+        if (await Page.Locator("#ol-state").InnerTextAsync() == "Failed") Assert.Inconclusive("OpenLayers could not be loaded from its CDN.");
+
+        var canvas = Page.Locator("#map-ol-canvas");
+        await canvas.ScrollIntoViewIfNeededAsync();
+        await Page.Locator("#btn-ol-give").DispatchEventAsync("click");
+        await PingAsync();
+        await Page.Locator("#btn-ol-project").ClickAsync();
+        await Expect(Page.Locator("#ol-projected")).ToHaveTextAsync(new Regex(@"^\d+,\d+$"));
+        var xy = (await Page.Locator("#ol-projected").InnerTextAsync()).Split(',').Select(v => float.Parse(v, CultureInfo.InvariantCulture)).ToArray();
+        // The buttons below the map scrolled it part of the way out of sight as they were pressed.
+        await canvas.ScrollIntoViewIfNeededAsync();
+        var box = (await canvas.BoundingBoxAsync())!;
+
+        // The tooltip under the pointer says what the marker now says, without the pointer having to move.
+        await Page.Mouse.MoveAsync(box.X + xy[0], box.Y + xy[1] - 12);
+        var tooltip = canvas.Locator(".bit-map-ol-tooltip");
+        await Expect(tooltip).ToHaveTextAsync("Big Ben's tooltip");
+        await Page.Locator("#btn-ol-retooltip").DispatchEventAsync("click");
+        await Expect(tooltip).ToHaveTextAsync("Big Ben's new tooltip");
+
+        // The popup open on it goes where it goes and says what it now says, but leaves the map where the user took it.
+        await Page.Mouse.ClickAsync(box.X + xy[0], box.Y + xy[1] - 12);
+        await Expect(canvas.Locator(".bit-map-ol-popup__content")).ToHaveTextAsync("The clock tower");
+        const string popupOutOfSight = """
+            () => {
+                const p = document.querySelector('#map-ol-canvas .bit-map-ol-popup').getBoundingClientRect();
+                const c = document.querySelector('#map-ol-canvas').getBoundingClientRect();
+                return p.right < c.left || p.left > c.right;
+            }
+            """;
+        await Page.Locator("#btn-ol-pan-away").DispatchEventAsync("click");
+        await Page.WaitForFunctionAsync(popupOutOfSight);
+        await Page.Locator("#btn-ol-move").DispatchEventAsync("click");
+        await Expect(canvas.Locator(".bit-map-ol-popup__content")).ToHaveTextAsync("The clock tower, moved");
+        // Well past the second OpenLayers' pan to a popup takes.
+        await Page.WaitForTimeoutAsync(1500);
+        Assert.IsTrue(await Page.EvaluateAsync<bool>(popupOutOfSight));
+        await Expect(canvas.Locator(".bit-map-ol-popup")).Not.ToHaveClassAsync(HasClass("bit-map-ol-popup--hidden"));
+    }
+
+    [TestMethod]
+    public async Task MapLibre_AnUpdateKeepsEachMarkersElementItsFocusAndTheListsOrder()
+    {
+        AllowConsoleErrors = true;
+
+        await OpenAsync(Route);
+        await Page.Locator("#btn-load").ClickAsync();
+        await Expect(Page.Locator("#gl-state")).ToHaveTextAsync(new Regex("^(Ready|Failed|Unsupported)$"), new() { Timeout = 60000 });
+        var state = await Page.Locator("#gl-state").InnerTextAsync();
+        if (state == "Unsupported") Assert.Inconclusive("This browser has no WebGL for MapLibre.");
+        if (state == "Failed") Assert.Inconclusive("MapLibre could not be loaded from its CDN.");
+
+        var canvas = Page.Locator("#map-gl-canvas");
+        const string labels = "() => [...document.querySelectorAll('#map-gl-canvas .maplibregl-marker')].map(e => e.getAttribute('aria-label')).join('|')";
+        Assert.AreEqual("Big Ben|Tower Bridge", await Page.EvaluateAsync<string>(labels));
+        await Page.EvaluateAsync("() => window.__glMarkers = [...document.querySelectorAll('#map-gl-canvas .maplibregl-marker')]");
+
+        // The other way round: each marker keeps its element and Tower Bridge the focus, and the keyboard reaches
+        // them in the new order.
+        var tower = canvas.Locator(".maplibregl-marker[aria-label='Tower Bridge']");
+        await tower.FocusAsync();
+        await Page.Locator("#btn-gl-sync-reversed").DispatchEventAsync("click");
+        await Page.WaitForFunctionAsync($"() => ({labels})() === 'Tower Bridge|Big Ben'");
+        Assert.IsTrue(await Page.EvaluateAsync<bool>("() => window.__glMarkers.every(e => e.isConnected)"));
+        await Expect(tower).ToBeFocusedAsync();
+
+        // Moved and renamed where it stands: the same element, still focused, drawn somewhere else.
+        var at = await tower.EvaluateAsync<string>("el => el.style.transform");
+        await Page.Locator("#btn-gl-move-tower").DispatchEventAsync("click");
+        var moved = canvas.Locator(".maplibregl-marker[aria-label='Tower Bridge, moved']");
+        await Expect(moved).ToBeFocusedAsync();
+        Assert.IsTrue(await moved.EvaluateAsync<bool>("el => el === window.__glMarkers[1]"));
+        Assert.AreNotEqual(at, await moved.EvaluateAsync<string>("el => el.style.transform"));
     }
 
     [TestMethod]

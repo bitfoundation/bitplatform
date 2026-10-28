@@ -51,6 +51,26 @@
     <span id="fit-zoom">@(_fitZoom ?? "none")</span>
 </E2ESection>
 
+@* A marker that keeps its id is updated where it stands. The buttons are pressed by a click dispatched to them, which
+   leaves the keyboard focus where it is - on a marker, when that is what a test is checking. *@
+<E2ESection Id="marker-updates" Title="Marker updates">
+    <div class="map-box">
+        <BitMap @ref="_updatesMap" TMapProvider="BitLeafletMapProvider" Id="map-updates" Provider="_updatesProvider"
+                Markers="_updateMarkers" />
+    </div>
+    <button id="btn-upd-restyle" @onclick="@(() => UpdateAlpha(_alpha with { Title = "Alpha, restyled", PopupText = "Alpha two" }))">Restyle Alpha</button>
+    <button id="btn-upd-move" @onclick="@(() => UpdateAlpha(_alpha with { Position = new(_alpha.Position.Latitude, _alpha.Position.Longitude - 0.001) }))">Move Alpha</button>
+    <button id="btn-upd-drop-popup" @onclick="@(() => UpdateAlpha(_alpha with { PopupText = null }))">Drop Alpha's popup</button>
+    <button id="btn-upd-tooltip-permanent" @onclick="@(() => UpdateAlpha(_alpha with { TooltipPermanent = true }))">Make Alpha's tooltip permanent</button>
+    <button id="btn-upd-drop-tooltip" @onclick="@(() => UpdateAlpha(_alpha with { TooltipText = null, TooltipPermanent = false }))">Drop Alpha's tooltip</button>
+    @* Within the map's own width: Leaflet resets the view for a longer pan rather than moving the map's pane. *@
+    <button id="btn-upd-pan-away" @onclick="@(async () => await _updatesMap.PanBy(500, 0, animate: false))">Pan away from Alpha</button>
+    <button id="btn-upd-sync-reversed" @onclick="@(async () => await _updatesMap.SyncMarkers([_charlie, _bravo, _alpha]))">SyncMarkers(Charlie, Bravo, Alpha)</button>
+    <button id="btn-upd-sync-replace" @onclick="SyncBravoAndDelta">SyncMarkers(Bravo, Delta)</button>
+    <button id="btn-upd-ping" @onclick="() => _updatesPings++">Ping</button>
+    <span id="updates-pings">@_updatesPings</span>
+</E2ESection>
+
 <E2ESection Id="popup" Title="Popup template">
     <div class="map-box">
         <BitMap @ref="_popupMap" TMapProvider="BitLeafletMapProvider" Id="map-popup" Provider="_popupProvider"
@@ -321,6 +341,7 @@
 
     private readonly BitLeafletMapProvider _basicProvider = Leaflet();
     private readonly BitLeafletMapProvider _markersProvider = Leaflet();
+    private readonly BitLeafletMapProvider _updatesProvider = Leaflet();
     private readonly BitLeafletMapProvider _popupProvider = Leaflet(48.8606, 2.3376, 14);
     private readonly BitLeafletMapProvider _clusterProvider = Leaflet();
     private readonly BitLeafletMapProvider _cameraProvider = Leaflet();
@@ -388,6 +409,13 @@
     private bool _closed;
     private string? _fitZoom;
 
+    private BitMap<BitLeafletMapProvider> _updatesMap = default!;
+    private BitMapMarker _alpha = new() { Id = "alpha", Position = new(51.505, -0.1), Alt = "Alpha", PopupText = "Alpha one", TooltipText = "Alpha tip" };
+    private readonly BitMapMarker _bravo = new() { Id = "bravo", Position = new(51.505, -0.09), Alt = "Bravo" };
+    private readonly BitMapMarker _charlie = new() { Id = "charlie", Position = new(51.505, -0.08), Alt = "Charlie" };
+    private IEnumerable<BitMapMarker> _updateMarkers = [];
+    private int _updatesPings;
+
     private BitMap<BitLeafletMapProvider> _popupMap = default!;
     private int _popupOpened;
     private int _popupClosed;
@@ -432,6 +460,20 @@
     private string? _failedState;
     private string? _failedCalls;
     private BitMap<FailingProvider> _failedMap = default!;
+
+    protected override void OnInitialized() => _updateMarkers = [_alpha, _bravo, _charlie];
+
+    // Through the Markers parameter: one marker of three changed, which BitMap hands the provider as an AddMarker.
+    private void UpdateAlpha(BitMapMarker alpha)
+    {
+        _alpha = alpha;
+        _updateMarkers = [_alpha, _bravo, _charlie];
+    }
+
+    private async Task SyncBravoAndDelta()
+    {
+        await _updatesMap.SyncMarkers([_bravo, new() { Id = "delta", Position = new(51.51, -0.09), Alt = "Delta" }]);
+    }
 
     private async Task CallTheFailedMap()
     {

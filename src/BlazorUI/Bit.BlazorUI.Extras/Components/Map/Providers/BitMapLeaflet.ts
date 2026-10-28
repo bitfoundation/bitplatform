@@ -363,7 +363,11 @@
             // of a double-click with the old one.
             const existing = s.markers[markerId];
             if (existing) {
-                BitMapLeaflet._updateMarker(s, existing, opts);
+                // Leaflet pans the map to an open popup as it moves or its content is set (autoPan). An update does
+                // not: that is spent as the popup opens, and doing it on every update would pull the map back to the
+                // popup each time, fighting a user who has dragged elsewhere.
+                BitMapHelpers.withOption(existing.getPopup()?.options, 'autoPan', false,
+                    () => BitMapLeaflet._updateMarker(s, existing, opts));
                 return;
             }
             const L = s.L;
@@ -385,6 +389,11 @@
             const m = L.marker([opts.lat, opts.lng], markerOpts);
             // What the marker was last built from, which an update compares against (_updateMarker).
             m._bmOpts = opts;
+            // Leaflet opens a hover tooltip on focus through listeners it adds to the element each time one is bound,
+            // and never takes away: a tooltip an update binds again would leave the old ones behind, to open a tooltip
+            // that is gone and close one that has turned permanent. The marker listens once instead (below), for the
+            // tooltip it has at the time.
+            m._addFocusListeners = () => { /* see the focus and blur listeners below */ };
             BitMapLeaflet._bindPopup(m, opts);
             BitMapLeaflet._bindTooltip(m, opts, null);
             m.addTo(s.map);
@@ -426,6 +435,10 @@
                     m.fire('click');
                     if (m.getPopup()) m.openPopup();
                 });
+                // The hover tooltip opens on focus too, as Leaflet's own listeners would have it (see above).
+                const hoverTooltip = () => !!m.getTooltip() && !m.getTooltip().options.permanent;
+                element.addEventListener('focus', () => { if (hoverTooltip()) m.openTooltip(); });
+                element.addEventListener('blur', () => { if (hoverTooltip()) m.closeTooltip(); });
             }
             // Only a draggable marker raises it, and an update can make one draggable.
             m.on('dragend', (e: any) => {
@@ -455,7 +468,8 @@
             if (!s) return;
             BitMapHelpers.syncMarkers(s.markers, markerIds, markers,
                 markerId => BitMapLeaflet.removeMarker(id, markerId),
-                (markerId, opts) => BitMapLeaflet.addMarker(id, markerId, opts));
+                (markerId, opts) => BitMapLeaflet.addMarker(id, markerId, opts),
+                ids => BitMapHelpers.orderElements(ids.map(markerId => s.markers[markerId]?.getElement?.())));
         }
 
         /**
@@ -698,7 +712,7 @@
                 if (opts.draggable) m.dragging?.enable();
                 else m.dragging?.disable();
             }
-            if (changed('iconUrl', 'iconWidth', 'iconHeight', 'iconAnchorX', 'iconAnchorY')) {
+            if (changed(...BitMapHelpers.markerIconFields)) {
                 m.setIcon(BitMapLeaflet._icon(s.L, opts) ?? new s.L.Icon.Default());
                 // An open popup or tooltip points from the edge of the icon, which may have moved.
                 if (m.isPopupOpen?.()) m.getPopup().update();
@@ -706,15 +720,16 @@
             }
             if (changed('opacity')) m.setOpacity(opts.opacity ?? 1);
             if (changed('zIndexOffset')) m.setZIndexOffset(opts.zIndexOffset ?? 0);
-            if (changed('popupHtml', 'popupText')) BitMapLeaflet._bindPopup(m, opts);
-            if (changed('tooltipHtml', 'tooltipText', 'tooltipPermanent', 'tooltipDirection')) BitMapLeaflet._bindTooltip(m, opts, was);
+            if (changed(...BitMapHelpers.markerPopupFields)) BitMapLeaflet._bindPopup(m, opts);
+            if (changed(...BitMapHelpers.markerTooltipFields)) BitMapLeaflet._bindTooltip(m, opts, was);
         }
 
         /** Binds a marker's popup, or gives the one it has new content - which keeps an open popup open. */
         private static _bindPopup(m: any, opts: any) {
             const content = opts.popupHtml || BitMapLeaflet._textContent(opts.popupText);
             if (!content) {
-                if (m.getPopup()) m.unbindPopup();
+                // Unbinding alone would leave an open popup on the map, with no marker left to close it.
+                if (m.getPopup()) m.closePopup().unbindPopup();
             } else if (m.getPopup()) {
                 m.setPopupContent(content);
             } else {
@@ -733,7 +748,14 @@
                 m.setTooltipContent(content);
                 return;
             }
-            if (tooltip) m.unbindTooltip();
+            if (tooltip) {
+                m.unbindTooltip();
+                // Leaflet points the marker at a tooltip as it opens one (aria-describedby), and leaves it pointing
+                // there once the tooltip is gone.
+                const element = m.getElement?.();
+                const describedBy = tooltip.getElement?.()?.id;
+                if (describedBy && element?.getAttribute('aria-describedby') === describedBy) element.removeAttribute('aria-describedby');
+            }
             if (!content) return;
             // A permanent one opens as it is bound to a marker on the map.
             m.bindTooltip(content, {

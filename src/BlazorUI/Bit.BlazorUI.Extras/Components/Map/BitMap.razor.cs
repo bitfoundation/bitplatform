@@ -1056,7 +1056,10 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// One interop call regardless of how many markers there are, so prefer it over a loop of
     /// <see cref="AddMarker"/> - each of those is its own round-trip (a SignalR message under
     /// Blazor Server). Only the markers missing from the new set are removed; one that keeps its
-    /// id is updated in place, as <see cref="AddMarker"/> does.
+    /// id is updated in place, as <see cref="AddMarker"/> does. The markers are then put in the
+    /// order of the new set, as a set built from scratch would be: the order a keyboard tabs
+    /// through them in, and the one a provider that draws them in the order they were added
+    /// stacks them in.
     /// </remarks>
     public async ValueTask SyncMarkers(IEnumerable<BitMapMarker> markers)
     {

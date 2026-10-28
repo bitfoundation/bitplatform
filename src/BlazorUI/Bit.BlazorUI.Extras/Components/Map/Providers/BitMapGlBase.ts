@@ -6,6 +6,13 @@
         tooltip?: any;
         /** What the marker was last built from, which an update compares against (_updateMarker). */
         opts: any;
+        /**
+         * Where the marker was last put (_moveTo) or dropped. An update measures a payload against this rather than
+         * the position the library reports, which it rewrites to the copy of the world nearest the centre - so a
+         * marker viewed across the antimeridian, or one past ±180, would read as moved on every update.
+         */
+        lat: number;
+        lng: number;
     };
 
     type GlState = {
@@ -345,7 +352,7 @@
             el.style.cursor = 'pointer';
             const marker = new gl.Marker({ element: el, draggable: !!opts.draggable, offset: BitMapGlBase._iconOffset(opts) })
                 .setLngLat([opts.lng, opts.lat]).addTo(s.map);
-            const row: GlMarker = { marker, opts };
+            const row: GlMarker = { marker, opts, lat: opts.lat, lng: opts.lng };
 
             const element = marker.getElement();
             if (element) {
@@ -391,8 +398,10 @@
             element?.addEventListener('blur', hide);
             // Only a draggable marker raises it, and an update can make one draggable.
             marker.on('dragend', () => {
-                if (s.isDisposed) return;
                 const p = marker.getLngLat();
+                row.lat = p.lat;
+                row.lng = p.lng;
+                if (s.isDisposed) return;
                 s.dotnetObj?.invokeMethodAsync('OnMarkerDragEnd', markerId, { lat: p.lat, lng: p.lng });
             });
 
@@ -419,7 +428,8 @@
             if (!s) return;
             BitMapHelpers.syncMarkers(s.markers, markerIds, markers,
                 markerId => BitMapGlBase.removeMarker(provider, id, markerId),
-                (markerId, opts) => BitMapGlBase.addMarker(provider, id, markerId, opts));
+                (markerId, opts) => BitMapGlBase.addMarker(provider, id, markerId, opts),
+                ids => BitMapHelpers.orderElements(ids.map(markerId => s.markers[markerId]?.marker.getElement())));
         }
 
         /** Makes a marker's double-click the marker's (OnMarkerDoubleClick) or leaves it the map's. */
@@ -432,10 +442,7 @@
             const s = BitMapGlBase._store(provider)[id];
             if (!s) return;
             const row = s.markers[markerId];
-            if (!row) return;
-            row.marker.setLngLat([lng, lat]);
-            // A permanent tooltip is positioned independently of its marker, so it has to follow.
-            if (row.tooltip) try { row.tooltip.setLngLat([lng, lat]); } catch { /* ignore */ }
+            if (row) BitMapGlBase._moveTo(row, lat, lng);
         }
 
         public static openMarkerPopup(provider: string, id: string, markerId: string) {
@@ -638,13 +645,8 @@
 
             // Measured against where the marker is rather than the last payload: a drag or setMarkerPosition moves a
             // marker without one.
-            const at = marker.getLngLat();
-            if (at.lat !== opts.lat || at.lng !== opts.lng) {
-                marker.setLngLat([opts.lng, opts.lat]);
-                // A permanent tooltip is positioned independently of its marker, so it has to follow.
-                if (row.tooltip) try { row.tooltip.setLngLat([opts.lng, opts.lat]); } catch { /* ignore */ }
-            }
-            const iconChanged = changed('iconUrl', 'iconWidth', 'iconHeight', 'iconAnchorX', 'iconAnchorY');
+            if (row.lat !== opts.lat || row.lng !== opts.lng) BitMapGlBase._moveTo(row, opts.lat, opts.lng);
+            const iconChanged = changed(...BitMapHelpers.markerIconFields);
             if (iconChanged) {
                 if (element) BitMapGlBase._applyIcon(element, opts);
                 marker.setOffset?.(BitMapGlBase._iconOffset(opts));
@@ -653,8 +655,16 @@
             if (changed('opacity')) BitMapGlBase._setOpacity(marker, opts.opacity ?? 1);
             if (changed('draggable')) marker.setDraggable?.(!!opts.draggable);
             // The popup and the tooltip point from the edge of the icon, so a new icon moves them too.
-            if (iconChanged || changed('popupHtml', 'popupText')) BitMapGlBase._syncPopup(s, row, was);
-            if (iconChanged || changed('tooltipHtml', 'tooltipText', 'tooltipPermanent', 'tooltipDirection')) BitMapGlBase._syncTooltip(s, row, was);
+            if (iconChanged || changed(...BitMapHelpers.markerPopupFields)) BitMapGlBase._syncPopup(s, row, was);
+            if (iconChanged || changed(...BitMapHelpers.markerTooltipFields)) BitMapGlBase._syncTooltip(s, row, was);
+        }
+
+        /** Moves a marker, and its tooltip with it: that is a popup of its own, positioned independently of the marker. */
+        private static _moveTo(row: GlMarker, lat: number, lng: number) {
+            row.lat = lat;
+            row.lng = lng;
+            row.marker.setLngLat([lng, lat]);
+            if (row.tooltip) try { row.tooltip.setLngLat([lng, lat]); } catch { /* ignore */ }
         }
 
         /** Draws a marker's icon into its element. Every marker has one by now - its own, or the default pin withDefaultIcon drew. */
@@ -713,7 +723,7 @@
             const popup = marker.getPopup();
             const offset = BitMapHelpers.popupOffsets(opts, opts.iconWidth || 32, opts.iconHeight || 32);
             if (popup && (opts.popupHtml || opts.popupText)) {
-                if (BitMapHelpers.markerChanged(was, opts, 'popupHtml', 'popupText')) BitMapGlBase._replaceContent(popup, opts.popupHtml, opts.popupText);
+                if (BitMapHelpers.markerChanged(was, opts, ...BitMapHelpers.markerPopupFields)) BitMapGlBase._replaceContent(popup, opts.popupHtml, opts.popupText);
                 popup.setOffset?.(offset);
                 return;
             }
@@ -789,22 +799,7 @@
          * the marker that has it. focusAfterOpen is what it checks, so it is off for the duration.
          */
         private static _replaceContent(popup: any, html: any, text: any) {
-            const options = popup.options;
-            if (!options) {
-                BitMapGlBase._setContent(popup, html, text);
-                return;
-            }
-            // The library's defaults sit on the prototype of its options, so an option that was never set is
-            // deleted again rather than set to what it read as.
-            const own = Object.prototype.hasOwnProperty.call(options, 'focusAfterOpen');
-            const focusAfterOpen = options.focusAfterOpen;
-            options.focusAfterOpen = false;
-            try {
-                BitMapGlBase._setContent(popup, html, text);
-            } finally {
-                if (own) options.focusAfterOpen = focusAfterOpen;
-                else delete options.focusAfterOpen;
-            }
+            BitMapHelpers.withOption(popup.options, 'focusAfterOpen', false, () => BitMapGlBase._setContent(popup, html, text));
         }
 
         private static _setOpacity(marker: any, opacity: number) {

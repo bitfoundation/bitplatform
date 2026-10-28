@@ -252,20 +252,14 @@
             if (!s) return;
             const e = s.markers[markerId];
             if (!e) return;
-            if (e.popup) e.popup.remove();
-            if (e.tooltip) e.tooltip.remove();
-            s.map.markers.remove(e.marker);
+            BitMapAzureMaps._removeEntry(s, e);
             delete s.markers[markerId];
         }
 
         public static clearMarkers(id: string) {
             const s = BitMapAzureMaps._maps[id];
             if (!s) return;
-            for (const k in s.markers) {
-                if (s.markers[k].popup) s.markers[k].popup.remove();
-                if (s.markers[k].tooltip) s.markers[k].tooltip.remove();
-                s.map.markers.remove(s.markers[k].marker);
-            }
+            for (const k in s.markers) BitMapAzureMaps._removeEntry(s, s.markers[k]);
             s.markers = {};
         }
 
@@ -274,7 +268,8 @@
             if (!s) return;
             BitMapHelpers.syncMarkers(s.markers, markerIds, markers,
                 markerId => BitMapAzureMaps.removeMarker(id, markerId),
-                (markerId, opts) => BitMapAzureMaps.addMarker(id, markerId, opts));
+                (markerId, opts) => BitMapAzureMaps.addMarker(id, markerId, opts),
+                ids => BitMapHelpers.orderElements(ids.map(markerId => s.markers[markerId]?.marker.getElement())));
         }
 
         /** Makes a marker's double-click the marker's (OnMarkerDoubleClick) or leaves it the map's. */
@@ -466,7 +461,6 @@
             return s;
         }
 
-        /** Builds the hover tooltip popup for a marker, or undefined when it has no tooltip. */
         /**
          * Brings a marker on the map in line with a new payload without replacing it (see addMarker), touching only
          * what changed. A new icon is drawn into the image the marker already shows.
@@ -487,20 +481,22 @@
                 if (entry.popup?.isOpen?.()) try { entry.popup.setOptions({ position }); } catch { /* ignore */ }
                 if (entry.tooltip) try { entry.tooltip.setOptions({ position }); } catch { /* ignore */ }
             }
-            if (entry.icon && changed('iconUrl', 'iconWidth', 'iconHeight')) BitMapAzureMaps._applyIcon(entry.icon, opts);
+            if (entry.icon && changed(...BitMapHelpers.markerIconFields)) BitMapAzureMaps._applyIcon(entry.icon, opts);
             if (changed('title')) marker.setOptions({ title: opts.title || '' });
             if (changed('draggable')) marker.setOptions({ draggable: !!opts.draggable });
-            if (changed('popupHtml', 'popupText')) {
+            if (changed(...BitMapHelpers.markerPopupFields)) {
                 if (entry.popup && (opts.popupHtml || opts.popupText)) {
                     // New content in the popup it has, which keeps an open one open.
                     entry.popup.setOptions({ content: BitMapAzureMaps._popupContent(opts) });
                 } else {
                     if (entry.popup) BitMapAzureMaps._removePopup(s, entry.popup);
                     entry.popup = BitMapAzureMaps._buildPopup(s, opts);
-                    if (entry.popup) marker.setOptions({ popup: entry.popup });
+                    // The marker holds the popup it toggles, so it is handed the new one - or, with null, lets go of
+                    // the old one, which takes it back to having none.
+                    marker.setOptions({ popup: entry.popup });
                 }
             }
-            if (changed('tooltipHtml', 'tooltipText', 'tooltipPermanent')) {
+            if (changed(...BitMapHelpers.markerTooltipFields)) {
                 if (entry.tooltip) BitMapAzureMaps._removePopup(s, entry.tooltip);
                 entry.tooltip = BitMapAzureMaps._buildTooltip(s, opts);
                 // Opened again while the pointer is over the marker, as it was.
@@ -541,6 +537,7 @@
             return content;
         }
 
+        /** Builds the hover tooltip popup for a marker, or undefined when it has no tooltip. */
         private static _buildTooltip(s: any, opts: any): any {
             if (!opts.tooltipHtml && !opts.tooltipText) return undefined;
             const content = document.createElement('div');
@@ -570,6 +567,16 @@
         private static _removePopup(s: any, popup: any) {
             try { s.map.popups.remove(popup); } catch { /* ignore */ }
             try { popup.remove(); } catch { /* ignore */ }
+        }
+
+        /**
+         * Takes a marker off the map with both its popups: either one would otherwise hang over the map with no
+         * marker, an open one in sight.
+         */
+        private static _removeEntry(s: any, entry: any) {
+            if (entry.popup) BitMapAzureMaps._removePopup(s, entry.popup);
+            if (entry.tooltip) BitMapAzureMaps._removePopup(s, entry.tooltip);
+            try { s.map.markers.remove(entry.marker); } catch { /* ignore */ }
         }
 
         private static _removeExisting(s: any, layerId: string) {
