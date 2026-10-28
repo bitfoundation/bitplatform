@@ -434,11 +434,13 @@ public partial class BrowserPlaybackTests
         interop.ComputedStyle = (_, key) => key == "backgroundColor" ? "rgb(0, 0, 255)" : null;
         interop.ReadStylesGate = gate.Task;
         engine.RegisterElement("el");
+        var context = new ManualSynchronizationContext();
 
         // The enter waits on its read (a round trip on Server); the pointer leaves meanwhile.
-        var enter = engine.ActivateGestureLayerAsync("el", "hover", Values(("backgroundColor", "rgb(255, 0, 0)")), Bm.Tween(0.3).ToConfig()).AsTask();
-        var leave = engine.DeactivateGestureLayerAsync("el", "hover").AsTask();
+        var enter = ManualSynchronizationContext.RunUnder(context, () => engine.ActivateGestureLayerAsync("el", "hover", Values(("backgroundColor", "rgb(255, 0, 0)")), Bm.Tween(0.3).ToConfig()).AsTask());
+        var leave = ManualSynchronizationContext.RunUnder(context, () => engine.DeactivateGestureLayerAsync("el", "hover").AsTask());
         gate.SetResult();
+        context.Pump();
         await Task.WhenAll(enter, leave);
 
         // Only the way back plays - an enter that resumed after its leave would leave the overlay on for good.
