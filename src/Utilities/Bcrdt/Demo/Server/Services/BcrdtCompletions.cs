@@ -25,7 +25,7 @@ public static class BcrdtCompletions
     [
         "two people typed into the same field and one of them lost everything",
         "the app fails while prerendering because IBcrdtCollaborationService is not registered",
-        "documents never sync and the log warns that Bit.Bcrdt's services are not registered",
+        "the page prerenders but throws in the browser that the collaboration service is neither registered nor configured",
         "the SignalR connection fails with 'The uri must be absolute'",
         "clients disconnect once the document gets bigger",
         "the WebSocket relay answers 400",
