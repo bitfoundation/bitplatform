@@ -189,11 +189,7 @@
                     </p>
                     <a href="commands">Registering commands →</a>
                 </div>
-                <pre class="bb-code"><span class="p">Palette</span>.Register(
-    <span class="k">BaletteCmd</span>.Navigate(<span class="s">"Settings"</span>, <span class="s">"/settings"</span>)
-        .Group(<span class="s">"Navigation"</span>).Shortcut(<span class="s">"G S"</span>).Keywords(<span class="s">"preferences"</span>),
-    <span class="k">BaletteCmd</span>.Action(<span class="s">"Toggle sidebar"</span>, () =&gt; _sidebarOpen = !_sidebarOpen)
-        .Shortcut(<span class="s">"Mod+B"</span>));</pre>
+                <CodeBlock Language="csharp" Code="@RegisterCode" />
             </div>
             <div class="bb-walkthrough-row">
                 <div class="bb-walkthrough-copy">
@@ -205,16 +201,7 @@
                     </p>
                     <a href="pages">Nested pages &amp; flows →</a>
                 </div>
-                <pre class="bb-code"><span class="k">BaletteCmd</span>.New(<span class="s">"Rename project…"</span>)
-    .Shortcut(<span class="s">"F2"</span>)
-    .Handler(_ =&gt; Task.FromResult(<span class="k">BaletteCommandResult</span>.Prompt(
-        <span class="s">"New project name"</span>,
-        ctx =&gt;
-        {
-            state.Rename(ctx.PromptValue!.Trim());
-            <span class="k">return</span> Task.FromResult(<span class="k">BaletteCommandResult</span>.Toast(<span class="s">"Renamed"</span>));
-        },
-        initialValue: state.ProjectName)))</pre>
+                <CodeBlock Language="csharp" Code="@PromptCode" />
             </div>
             <div class="bb-walkthrough-row">
                 <div class="bb-walkthrough-copy">
@@ -226,19 +213,7 @@
                     </p>
                     <a href="modes">Modes &amp; sources →</a>
                 </div>
-                <pre class="bb-code"><span class="k">public sealed class</span> PeopleSource : <span class="k">IBaletteSource</span>
-{
-    <span class="k">public string</span> Name =&gt; <span class="s">"People"</span>;
-    <span class="k">public bool</span> ApplyMatcher =&gt; <span class="k">true</span>;   <span class="c">// re-rank with the palette's matcher</span>
-
-    <span class="k">public async</span> Task&lt;IReadOnlyList&lt;<span class="k">BaletteCommand</span>&gt;&gt; SearchAsync(
-        <span class="k">string</span> query, <span class="k">BaletteSourceContext</span> context, CancellationToken cancellationToken)
-    {
-        <span class="k">var</span> people = <span class="k">await</span> context.Services.GetRequiredService&lt;PeopleClient&gt;()
-            .SearchAsync(query, cancellationToken);
-        <span class="k">return</span> [.. people.Select(p =&gt; <span class="k">BaletteCmd</span>.New(p.Name).Subtitle(p.Role).Build())];
-    }
-}</pre>
+                <CodeBlock Language="csharp" Code="@SourceCode" />
             </div>
         </div>
     </section>
@@ -383,6 +358,44 @@
         ("@ada", "People mode: an async source"),
         ("?", "Help mode: the Help group only"),
     ];
+
+    // The walkthrough's snippets, coloured by CodeBlock.
+    private const string RegisterCode = """
+        Palette.Register(
+            BaletteCmd.Navigate("Settings", "/settings")
+                .Group("Navigation").Shortcut("G S").Keywords("preferences"),
+            BaletteCmd.Action("Toggle sidebar", () => _sidebarOpen = !_sidebarOpen)
+                .Shortcut("Mod+B"));
+        """;
+
+    private const string PromptCode = """
+        BaletteCmd.New("Rename project…")
+            .Shortcut("F2")
+            .Handler(_ => Task.FromResult(BaletteCommandResult.Prompt(
+                "New project name",
+                ctx =>
+                {
+                    state.Rename(ctx.PromptValue!.Trim());
+                    return Task.FromResult(BaletteCommandResult.Toast("Renamed"));
+                },
+                initialValue: state.ProjectName)))
+        """;
+
+    private const string SourceCode = """
+        public sealed class PeopleSource : IBaletteSource
+        {
+            public string Name => "People";
+            public bool ApplyMatcher => true;   // re-rank with the palette's matcher
+
+            public async Task<IReadOnlyList<BaletteCommand>> SearchAsync(
+                string query, BaletteSourceContext context, CancellationToken cancellationToken)
+            {
+                var people = await context.Services.GetRequiredService<PeopleClient>()
+                    .SearchAsync(query, cancellationToken);
+                return [.. people.Select(p => BaletteCmd.New(p.Name).Subtitle(p.Role).Build())];
+            }
+        }
+        """;
 
     protected override void OnInitialized() => State.Changed += Refresh;
 

@@ -117,6 +117,7 @@
             <span>frecency loads once the page is interactive</span>
         }
     </div>
+    <CodeBlock Language="csharp" Code="@LabExample" />
 </div>
 
 <section class="bb-card" id="operators">
@@ -209,6 +210,7 @@
             <button type="button" class="btn btn-secondary" @onclick="() => Palette.OpenAsync(typo)"><code>@typo</code> in the palette</button>
         }
     </div>
+    <CodeBlock Code="@TypoExample" />
 </section>
 
 <section class="bb-card">
@@ -259,13 +261,13 @@
             </tbody>
         </table>
     </div>
-    <pre class="bb-code">options.Weights.Description = 0.6; // descriptions count for more</pre>
+    <CodeBlock Language="csharp" Code="@WeightsExample" />
 </section>
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Priority and frecency</h3>
     <p>With a query, the match decides and the rest only nudges it:</p>
-    <pre class="bb-code">rank = score + priority × @Format(Options.PriorityWeight) + ln(1 + frecency) × @Format(Options.FrecencyWeight)</pre>
+    <CodeBlock Language="csharp" Code="@RankFormula" />
     <p>
         On the empty query there is nothing to match, so priority leads and frecency orders what is left
         (<code>priority × 1000 + frecency</code>), inside each group. Only the best <code>MaxResults</code>
@@ -291,6 +293,7 @@
             </tbody>
         </table>
     </div>
+    <CodeBlock Language="csharp" Code="@PriorityExample" />
 </section>
 
 <section class="bb-card">
@@ -316,6 +319,7 @@
     <div class="bb-try">
         <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("theme dark")'><code>theme dark</code> in the palette</button>
     </div>
+    <CodeBlock Language="csharp" Code="@InPaletteExample" />
 </section>
 
 <section class="bb-card" id="matcher">
@@ -327,7 +331,7 @@
         case-insensitive substring matcher, for data where fuzziness hurts more than it helps - pick <em>Substring</em> in the
         lab to compare.
     </p>
-    <pre class="bb-code">@MatcherExample</pre>
+    <CodeBlock Language="csharp" Code="@MatcherExample" />
     <p>
         Matching can also be called directly - in a test, or in a tool that explains a search, the way the lab above and the
         MCP server's <code>InspectBaletteSearch</code> do, with <code>BaletteRanker</code> (injectable, like the options)
@@ -401,6 +405,72 @@
             .Build();
 
     private static readonly string[] Typos = ["settigns", "langauge", "shortcts"];
+
+    private const string LabExample = """
+        // What the lab runs on every keystroke: the palette's own two steps, over what its root page lists.
+        BaletteQuery query = BaletteQuery.Parse("rc");
+        var typing = query.Terms.Count > 0;
+
+        // The visible commands without a parent and, while typing, the nested ones found from the root too
+        // (SearchNestedCommands) - except the rows of a multi-select page.
+        var candidates = Palette.Commands
+            .Where(c => c.IsVisible?.Invoke() != false)
+            .Where(c => c.Parent is null || (typing && Options.SearchNestedCommands && Palette.Find(c.Parent) is { MultiSelectChildren: false }));
+
+        // The matcher picked in the lab; the palette uses Options.Matcher.
+        IBaletteMatcher matcher = BaletteFuzzyMatcher.Default;
+        var matches = new List<BaletteMatch>();
+        foreach (var command in candidates)
+        {
+            if (matcher.Match(command, query, Options.Weights) is { } match)
+            {
+                matches.Add(match);
+            }
+        }
+
+        // Ranker is the BaletteRanker, injected like the options: score, priority and frecency, best first.
+        List<BaletteMatch> ranked = Ranker.Rank(matches, typing, id => History.Frecency(id));
+        """;
+
+    private const string TypoExample = """
+        @* One palette; options.TypoTolerance = false turns the retry off for every palette. *@
+        <Balette TypoTolerance="false" />
+
+        @* A template can tell a close match from an exact one. *@
+        <Balette>
+            <ItemTemplate>
+                @context.Row.Command.Title
+                @if (context.Row.Match?.IsApproximate == true)
+                {
+                    <small>close match</small>
+                }
+            </ItemTemplate>
+        </Balette>
+        """;
+
+    private const string WeightsExample = """
+        options.Weights.Description = 0.6; // descriptions count for more
+        """;
+
+    private const string PriorityExample = """
+        BaletteCmd.Navigate("Introduction", "/").Priority(BaletteCommandPriority.High)   // leads on the empty query
+        BaletteCmd.New("Feedback: couldn't find a command?").AlwaysShow().Priority(BaletteCommandPriority.Lowest)
+
+        options.PriorityWeight = 2;   // how much priority nudges a search
+        options.FrecencyWeight = 1;   // and how much use, weighted by how recent
+        """;
+
+    private const string InPaletteExample = """
+        builder.Services.AddBitBaletteServices(options =>
+        {
+            options.HighlightMatches = false;       // no <mark> around the matched characters
+            options.GroupWhenSearching = false;     // one flat ranked list while searching
+            options.SearchNestedCommands = false;   // nested commands only on their own pages
+        });
+        """;
+
+    // The formula with this site's weights in it, so it cannot drift from what the palette sorts by.
+    private string RankFormula => $"rank = score + priority × {Format(Options.PriorityWeight)} + ln(1 + frecency) × {Format(Options.FrecencyWeight)}";
 
     private const string MatcherExample = """
         // The palette's matcher, for data where fuzziness hurts: plain substrings.

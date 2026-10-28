@@ -67,6 +67,7 @@
             · The registry holds <strong>@Palette.Commands.Count</strong> commands
             · <code>Find("toggle:wordwrap")</code> says it is <strong>@(Palette.Find("toggle:wordwrap")?.Checked == true ? "on" : "off")</strong>
         </p>
+        <CodeBlock Language="csharp" Code="@ServiceExample" />
         <p class="bb-soft demo-small">The service's events, newest first:</p>
         <div class="bb-log demo-events" aria-label="Service events">
             @if (_events.Count == 0)
@@ -101,6 +102,7 @@
     <div class="bb-try">
         <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("merge")'>Search "merge"</button>
     </div>
+    <CodeBlock Language="csharp" Code="@VisibleWhenExample" />
     <div class="bb-note">
         A predicate is evaluated every time the list is built, so an open palette is always right. The global shortcuts are
         synced to the browser ahead of time, though, so after state a predicate reads changes while the palette is closed -
@@ -160,8 +162,8 @@
         command on its own, so a list of them needs no <code>Build()</code> calls - only a target that is not a
         <code>BaletteCommand</code> does.
     </p>
-    <pre class="bb-code">@BuilderExample</pre>
-    <pre class="bb-code">@EntryPointsExample</pre>
+    <CodeBlock Language="csharp" Code="@BuilderExample" />
+    <CodeBlock Language="csharp" Code="@EntryPointsExample" />
     <p>
         <code>Handler</code> takes an <code>Action</code>, an <code>Action&lt;BaletteCommandContext&gt;</code> or a
         <code>Func&lt;BaletteCommandContext, Task&gt;</code> - all of which close the palette when they are done - or a
@@ -197,7 +199,7 @@
         global command. <code>C#</code> and <code>C++</code> both derive <code>c</code>, so one would replace the other;
         when two commands registered together share an id, the palette logs a warning naming both titles.
     </p>
-    <pre class="bb-code">@IdentityExample</pre>
+    <CodeBlock Language="csharp" Code="@IdentityExample" />
 </section>
 
 <section class="bb-card" id="markup">
@@ -208,7 +210,7 @@
         items, its priority to every item that does not set its own, and adds its tags to theirs. The <em>Quick create</em>
         group of this app is declared like this in <code>Components/AppPalette.razor</code>:
     </p>
-    <pre class="bb-code">@MarkupExample</pre>
+    <CodeBlock Code="@MarkupExample" />
     <p>
         <code>OnExecute</code> receives the <code>BaletteCommandContext</code>, and the palette closes after it unless
         <code>KeepOpen</code> is set; an item with an <code>Href</code> and no <code>OnExecute</code> navigates. An item
@@ -266,7 +268,7 @@
         code and returns the handle to dispose. A registered command is changed in place with <code>Update</code>, which
         replaces the command with the same id wherever it was registered - its static children included.
     </p>
-    <pre class="bb-code">@ScopedExample</pre>
+    <CodeBlock Code="@ScopedExample" />
 </section>
 
 <section class="bb-card">
@@ -283,6 +285,7 @@
             <code>GroupWhenSearching = false</code> flattens them into one ranked list; try it on
             <a href="search">Search &amp; ranking</a>.</li>
     </ul>
+    <CodeBlock Language="csharp" Code="@OrderingExample" />
 </section>
 
 <section class="bb-card" id="settings">
@@ -332,7 +335,7 @@
                  Style="--bit-balette-max-height: 260px"
                  Commands="_settingsCommands" />
     </div>
-    <pre class="bb-code">@InlineExample</pre>
+    <CodeBlock Code="@InlineExample" />
     <ul class="bb-detail-list">
         <li>An inline palette is a <code>&lt;section&gt;</code> named like the dialog (<code>data-balette="inline"</code>),
             always open and as wide as its container; <code>--bit-balette-max-height</code> bounds its list.</li>
@@ -356,6 +359,72 @@
 </section>
 
 @code {
+    private const string ServiceExample = """
+        // Palette is the IBaletteService, injected wherever it is needed.
+        IDisposable greeting = Palette.Register(BaletteCmd.New("Say hello").Group("This page"));
+        greeting.Dispose();                                  // gone again, shortcut included
+
+        Palette.Unregister("todo:3");                        // or one command, by its id
+        Palette.Update(Palette.Find("toggle:wordwrap")!.With(b => b.Badge("On")));
+
+        await Palette.OpenAsync("!delete");                  // a query, operators and mode prefixes included
+        await Palette.OpenAsync(pageCommandId: "actions.set-labels");
+        await Palette.ExecuteAsync("toggle:wordwrap");       // as if chosen, without opening
+
+        // The service outlives the page: subscribe named handlers, and remove them when the page is disposed.
+        Palette.Opened += OnOpened;
+        Palette.CommandsChanged += OnCommandsChanged;
+        Palette.CommandExecuted += OnExecuted;
+
+        private void OnOpened() => Log("Opened");
+        private void OnCommandsChanged() => Log($"{Palette.Commands.Count} commands registered");
+        private void OnExecuted(object? sender, BaletteCommandExecutedEventArgs e) => Log($"{e.Command.Id} -> {e.Result} in {e.Duration.TotalMilliseconds:0} ms");
+
+        public void Dispose()
+        {
+            Palette.Opened -= OnOpened;
+            Palette.CommandsChanged -= OnCommandsChanged;
+            Palette.CommandExecuted -= OnExecuted;
+        }
+        """;
+
+    private const string VisibleWhenExample = """
+        // Registered by <BaletteCommands Commands="_pageCommands" /> in the markup, so it goes when the page does.
+        _pageCommands =
+        [
+            BaletteCmd.New("Merge selected files")
+                .Group("This page")
+                .Shortcut("Alt+M")
+                .VisibleWhen(() => _selected.Count >= 2)   // asked every time the list is built
+                .Handler(_ => MergeAsync(_selected)),
+        ];
+
+        private void ToggleFile(string file)
+        {
+            if (!_selected.Remove(file))
+            {
+                _selected.Add(file);
+            }
+
+            // The palette is closed: tell it the predicate's answer may have changed, so Alt+M is claimed or released now.
+            Palette.Refresh();
+        }
+        """;
+
+    private const string OrderingExample = """
+        builder.Services.AddBitBaletteServices(options =>
+        {
+            // First on the empty query, in this order; the other groups follow.
+            options.GroupOrder.AddRange(["Navigation", "Actions", "Preferences", "Danger zone", "Help"]);
+
+            // While searching: one flat list ranked by match, instead of a heading per group.
+            options.GroupWhenSearching = false;
+        });
+
+        // Inside a group: priority, then frecency, then the order of registration.
+        BaletteCmd.Navigate("Introduction", "/").Group("Navigation").Priority(BaletteCommandPriority.High)
+        """;
+
     private const string BuilderExample = """
         BaletteCmd.Navigate("Settings", "/commands#settings")
             .Group("Navigation")
@@ -406,6 +475,8 @@
         """;
 
     private const string ScopedExample = """
+        @inject IBaletteService Palette
+
         <BaletteCommands Commands="_pageCommands" />
 
         @code {

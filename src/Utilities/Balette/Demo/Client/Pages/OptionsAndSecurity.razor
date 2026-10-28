@@ -50,6 +50,7 @@
         <code>OnQueryChanged</code>: <strong>@(_finderQuery.Length == 0 ? "(empty)" : _finderQuery)</strong>
         · <code>OnCommandExecuted</code>: <strong>@(_finderLast ?? "nothing yet")</strong>
     </p>
+    <CodeBlock Code="@FinderExample" />
 </div>
 
 <section class="bb-card" id="options">
@@ -59,6 +60,7 @@
         positive or not negative throw an <code>ArgumentOutOfRangeException</code> when set otherwise. Rows this site
         changed are marked.
     </p>
+    <CodeBlock Language="csharp" Code="@OptionsExample" />
     <div class="bb-scroll">
         <table class="bb-table demo-options">
             <thead>
@@ -119,7 +121,7 @@
         <code>OpenAsync</code>, <code>CloseAsync</code>, <code>ToggleAsync</code> and <code>SetQueryAsync</code> - the same
         as the service's, for the code that holds a reference to it:
     </p>
-    <pre class="bb-code">@ComponentExample</pre>
+    <CodeBlock Code="@ComponentExample" />
 </section>
 
 <section class="bb-card" id="security">
@@ -157,7 +159,7 @@
             <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("javascript link")'>Search "javascript link"</button>
         </div>
     </div>
-    <pre class="bb-code">@SecurityExample</pre>
+    <CodeBlock Language="csharp" Code="@SecurityExample" />
 </section>
 
 @code {
@@ -221,6 +223,41 @@
         new("Strings", o => o.Strings.GetType().Name, "Every label and announcement.", "localization"),
         new("AllowedUrlSchemes", o => Join(o.AllowedUrlSchemes.Order(StringComparer.Ordinal)), "Schemes an Href may use; relative links always may.", "options#security"),
     ];
+
+    private const string FinderExample = """
+        <button @onclick='() => _finder.SetQueryAsync("history")'>SetQueryAsync("history")</button>
+
+        <Balette @ref="_finder"
+                 Inline="true"
+                 IncludeRegisteredCommands="false"
+                 Commands="_optionCommands"
+                 OnQueryChanged="query => _finderQuery = query"
+                 OnCommandExecuted="e => _finderLast = e.Command.Title">
+            <DetailTemplate>
+                <h3>@context.Title</h3>
+                <p>@context.Subtitle</p>
+            </DetailTemplate>
+        </Balette>
+
+        @code {
+            private Balette _finder = default!;
+            private string _finderQuery = "";
+            private string? _finderLast;
+        }
+        """;
+
+    private const string OptionsExample = """
+        builder.Services.AddBitBaletteServices(options =>
+        {
+            options.MaxResults = 100;        // must be positive: 0 throws ArgumentOutOfRangeException
+            options.DebounceMs = 150;        // must not be negative
+            options.TypoTolerance = false;
+            options.EnableHistory = false;
+            options.ResetOnClose = false;    // reopen where it was left
+            options.Density = "compact";
+            options.Theme = "dark";
+        });
+        """;
 
     private const string ComponentExample = """
         <Balette @ref="_palette"
