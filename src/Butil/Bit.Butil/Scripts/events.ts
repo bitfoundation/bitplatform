@@ -52,6 +52,12 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                     // the string contract of ButilMouseEventArgs.RelatedTarget.
                     out[m] = e.relatedTarget?.id ?? '';
                     break;
+                case 'targetTagName':
+                    out[m] = butil.editableTarget.of(e)?.tagName ?? '';
+                    break;
+                case 'targetIsEditable':
+                    out[m] = butil.editableTarget.isEditable(butil.editableTarget.of(e));
+                    break;
                 default:
                     out[m] = e[m];
             }

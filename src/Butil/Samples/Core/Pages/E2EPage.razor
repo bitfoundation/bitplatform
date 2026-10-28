@@ -21,6 +21,7 @@
 @inject Bit.Butil.VirtualKeyboard virtualKeyboard
 @inject Bit.Butil.KeyboardLock keyboardLock
 @inject Bit.Butil.KeyboardLayout keyboardLayout
+@inject Bit.Butil.Keyboard keyboard
 @inject Bit.Butil.PointerTracker pointerTracker
 @inject Bit.Butil.TextEditContext textEditContext
 @inject Bit.Butil.AudioSession audioSession
@@ -309,6 +310,14 @@
 </section>
 
 <section>
+    <h3>Keyboard</h3>
+    @* The input's value is a literal, so no re-render ever writes it back over what a key deleted. *@
+    <input id="kb-input" value="abc" />
+    <button id="kb-editable" @onclick="KeyboardIgnoreWhenEditable">Delete shortcut, ignoreWhenEditable</button>
+    <button id="kb-target" @onclick="KeyboardTarget">keydown target</button>
+</section>
+
+<section>
     <h3>Platform</h3>
     @* Same rule as the Element section: every target here is rendered once and never re-rendered,
        so nothing a Blazor diff does can undo what the interop writes between click and assertion. *@
@@ -393,6 +402,10 @@
     private ElementReference _elementButton;
     private ElementReference _elementInput;
     private int _syntheticClicks;
+
+    private ButilSubscription? _keyboardShortcut;
+    private ButilSubscription? _keyboardTarget;
+    private int _keyboardDeletes;
 
     /// <summary>The namespace SVG's href lives in - the usual reason for the *NS attribute overloads.</summary>
     private const string XlinkNamespace = "http://www.w3.org/1999/xlink";
@@ -1951,8 +1964,30 @@
             // to drain it - see ElementReferenceEventExtensions - so the harness disposes it
             // like a real consumer would.
             if (_commandSub is not null) await _commandSub.DisposeAsync();
+            if (_keyboardShortcut is not null) await _keyboardShortcut.DisposeAsync();
+            if (_keyboardTarget is not null) await _keyboardTarget.DisposeAsync();
         }
         catch (Exception) { /* teardown - the circuit/runtime may already be gone */ }
+    }
+
+    // ─── Keyboard ───────────────────────────────────────────────────────────────
+    private async Task KeyboardIgnoreWhenEditable()
+    {
+        if (_keyboardShortcut is not null) await _keyboardShortcut.DisposeAsync();
+        _keyboardDeletes = 0;
+        // preventDefault stays at its default (true): the option has to win over it, since that default
+        // is exactly what used to stop Delete from deleting text in every input of the page.
+        _keyboardShortcut = await keyboard.Subscribe(ButilKeyCodes.Delete,
+            () => InvokeAsync(() => Set($"kb:delete:{++_keyboardDeletes}")),
+            ignoreWhenEditable: true);
+        Set("kb:armed");
+    }
+    private async Task KeyboardTarget()
+    {
+        if (_keyboardTarget is not null) await _keyboardTarget.DisposeAsync();
+        _keyboardTarget = await document.SubscribeEvent<ButilKeyboardEventArgs>(ButilEvents.KeyDown,
+            args => InvokeAsync(() => Set($"kb:target:{args.Code}/{args.TargetTagName}/{args.TargetIsEditable}")));
+        Set("kb:target-armed");
     }
 
     // ─── Element extensions ─────────────────────────────────────────────────────

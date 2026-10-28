@@ -10,7 +10,8 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     };
 
     function makeHandler(dotNetRef: any, listenerId: string, code: string, alt: boolean, ctrl: boolean,
-        meta: boolean, shift: boolean, preventDefault: boolean, stopPropagation: boolean, repeat: boolean) {
+        meta: boolean, shift: boolean, preventDefault: boolean, stopPropagation: boolean, repeat: boolean,
+        ignoreWhenEditable: boolean) {
         return (e: KeyboardEvent) => {
             if (e.code !== code) return;
 
@@ -21,6 +22,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
             if (!repeat && e.repeat) return;
 
+            // Checked before preventDefault, so a key pressed while typing keeps its own action -
+            // a page's Delete shortcut must not stop Delete from deleting text in an input.
+            if (ignoreWhenEditable && butil.editableTarget.isEditable(butil.editableTarget.of(e))) return;
+
             preventDefault && e.preventDefault();
             stopPropagation && e.stopPropagation();
 
@@ -29,21 +34,22 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     }
 
     function add(dotNetRef: any, listenerId: string, code: string, alt: boolean, ctrl: boolean,
-        meta: boolean, shift: boolean, preventDefault: boolean, stopPropagation: boolean, repeat: boolean) {
-        const handler = makeHandler(dotNetRef, listenerId, code, alt, ctrl, meta, shift, preventDefault, stopPropagation, repeat);
+        meta: boolean, shift: boolean, preventDefault: boolean, stopPropagation: boolean, repeat: boolean,
+        ignoreWhenEditable: boolean) {
+        const handler = makeHandler(dotNetRef, listenerId, code, alt, ctrl, meta, shift, preventDefault, stopPropagation, repeat, ignoreWhenEditable);
         _handlers[listenerId] = { target: document, handler };
         document.addEventListener('keydown', handler);
     }
 
     function addOn(dotNetRef: any, listenerId: string, element: HTMLElement, code: string,
         alt: boolean, ctrl: boolean, meta: boolean, shift: boolean,
-        preventDefault: boolean, stopPropagation: boolean, repeat: boolean) {
+        preventDefault: boolean, stopPropagation: boolean, repeat: boolean, ignoreWhenEditable: boolean) {
         if (!element) {
             // Fall back to document so callers don't lose the listener silently when the
             // element ref isn't ready yet.
-            return add(dotNetRef, listenerId, code, alt, ctrl, meta, shift, preventDefault, stopPropagation, repeat);
+            return add(dotNetRef, listenerId, code, alt, ctrl, meta, shift, preventDefault, stopPropagation, repeat, ignoreWhenEditable);
         }
-        const handler = makeHandler(dotNetRef, listenerId, code, alt, ctrl, meta, shift, preventDefault, stopPropagation, repeat);
+        const handler = makeHandler(dotNetRef, listenerId, code, alt, ctrl, meta, shift, preventDefault, stopPropagation, repeat, ignoreWhenEditable);
         _handlers[listenerId] = { target: element, handler };
         element.addEventListener('keydown', handler);
     }

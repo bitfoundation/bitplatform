@@ -13,7 +13,7 @@
 <div class="stack">
 <DemoSection Title="Register app-wide shortcuts"
              Api="Add"
-             Description="Add attaches a global keydown shortcut and returns a Guid you can later pass to Remove. By default the browser action is suppressed (preventDefault and stopPropagation are true) and held keys do not auto-repeat. Two shortcuts are live on this page right now."
+             Description="Add attaches a global keydown shortcut and returns a Guid you can later pass to Remove. By default the browser action is suppressed (preventDefault and stopPropagation are true) and held keys do not auto-repeat - for a key that also edits text, see ignoreWhenEditable below. Two shortcuts are live on this page right now."
              Code=@("""
 @inject Bit.Butil.Keyboard keyboard
 
@@ -119,6 +119,27 @@ await shortcut.DisposeAsync();
     <DemoConsole @ref="elementScopedOutput" Title="element-scoped output" />
 </DemoSection>
 
+<DemoSection Title="Stand aside while the user is typing"
+             Api="ignoreWhenEditable"
+             Description="A shortcut on a key that also edits text - Delete, Backspace, Enter, the arrows - takes that key away from every input on the page, because preventDefault defaults to true. Pass ignoreWhenEditable: true and the shortcut is skipped whenever the key goes to an element that takes typing: a text-like input or a textarea that is not read-only, a select, or contenteditable content. Nothing is suppressed there, so the key does what it always does. Register the Delete shortcut below both ways, then press Delete inside the input."
+             Code=@("""
+// Deletes the selected rows - but never the text being typed in a search box.
+await keyboard.Add(ButilKeyCodes.Delete,
+    () => { /* delete the selection */ },
+    ignoreWhenEditable: true);
+""")>
+    <div class="controls">
+        <label><input type="checkbox" @bind="ignoreWhenEditable" /> ignoreWhenEditable</label>
+        <button @onclick="RegisterDeleteShortcut">Register Delete</button>
+        <button class="danger" @onclick="RemoveDeleteShortcut" disabled="@(deleteSub is null)">Remove it</button>
+    </div>
+    <div class="field">
+        <span class="field-label">Press Delete in here, then outside it</span>
+        <input value="some text to delete" style="max-width:24rem;" />
+    </div>
+    <DemoConsole @ref="editableOutput" Title="editable output" />
+</DemoSection>
+
 <DemoSection Title="Removing shortcuts"
              Api="Remove / RemoveAll"
              Description="Remove(Guid) detaches one shortcut by the id Add returned. Remove(Action) matches by delegate identity and returns the removed ids. RemoveAll wipes every shortcut registered through this Keyboard instance."
@@ -158,6 +179,16 @@ ButilKeyCodes.Backquote   // "Backquote"
     <code>Subscribe</code> and dispose the returned handles - as this page does in <code>DisposeAsync</code>.
 </Callout>
 
+<Callout Type="warning" Title="The defaults block an editing key's own action">
+    <code>preventDefault</code> and <code>stopPropagation</code> default to <code>true</code>, which is right for a
+    shortcut that replaces what the browser would do (<code>Ctrl+S</code>, <code>F5</code>). On a key that edits text,
+    those same defaults stop it from editing anything while the shortcut is registered - a page's Delete shortcut
+    stops Delete and Backspace from deleting text in every input of the app. Pass <code>ignoreWhenEditable: true</code>
+    so the shortcut stands aside while the user is typing, or <code>preventDefault: false</code> to let the key keep its
+    action everywhere. A handler subscribed through <code>Document</code>, <code>Window</code> or an element reads the
+    same fact from <code>ButilKeyboardEventArgs.TargetIsEditable</code> and <code>TargetTagName</code>.
+</Callout>
+
 <Callout Type="info" Title="Physical keys, not characters">
     Matching uses <code>KeyboardEvent.code</code> - the physical key - so <code>ButilKeyCodes.KeyK</code>
     fires for that key position regardless of the active keyboard layout, and shortcuts keep working while
@@ -165,9 +196,9 @@ ButilKeyCodes.Backquote   // "Backquote"
 </Callout>
 
 <ApiTable Title="API reference">
-    <ApiMember Name="Add" Signature="Task<Guid> Add(string code, Action handler, ButilModifiers modifiers = ButilModifiers.None, bool preventDefault = true, bool stopPropagation = true, bool repeat = false)" Description="Registers a global keydown shortcut and returns its id. Set repeat to true to also fire on key auto-repeat." />
-    <ApiMember Name="Subscribe" Signature="Task<ButilSubscription> Subscribe(string code, Action handler, ButilModifiers modifiers = ButilModifiers.None, bool preventDefault = true, bool stopPropagation = true, bool repeat = false)" Description="Same as Add but returns a disposable handle that detaches the shortcut." />
-    <ApiMember Name="SubscribeOn" Signature="Task<ButilSubscription> SubscribeOn(ElementReference element, string code, Action handler, ButilModifiers modifiers = ButilModifiers.None, bool preventDefault = true, bool stopPropagation = true, bool repeat = false)" Description="Element-scoped variant: fires only while the element or a descendant receives the keyboard event." />
+    <ApiMember Name="Add" Signature="Task<Guid> Add(string code, Action handler, ButilModifiers modifiers = ButilModifiers.None, bool preventDefault = true, bool stopPropagation = true, bool repeat = false, bool ignoreWhenEditable = false)" Description="Registers a global keydown shortcut and returns its id. Set repeat to true to also fire on key auto-repeat, and ignoreWhenEditable to skip the shortcut - suppressing nothing - while the key goes to an element that takes typing." />
+    <ApiMember Name="Subscribe" Signature="Task<ButilSubscription> Subscribe(string code, Action handler, ButilModifiers modifiers = ButilModifiers.None, bool preventDefault = true, bool stopPropagation = true, bool repeat = false, bool ignoreWhenEditable = false)" Description="Same as Add but returns a disposable handle that detaches the shortcut." />
+    <ApiMember Name="SubscribeOn" Signature="Task<ButilSubscription> SubscribeOn(ElementReference element, string code, Action handler, ButilModifiers modifiers = ButilModifiers.None, bool preventDefault = true, bool stopPropagation = true, bool repeat = false, bool ignoreWhenEditable = false)" Description="Element-scoped variant: fires only while the element or a descendant receives the keyboard event." />
     <ApiMember Name="Remove" Signature="ValueTask<Guid[]> Remove(Action handler)" Description="Removes shortcuts matching the exact same delegate instance; returns the removed ids." />
     <ApiMember Name="Remove" Signature="ValueTask Remove(Guid id)" Description="Removes one shortcut by the id returned from Add." />
     <ApiMember Name="RemoveAll" Signature="ValueTask RemoveAll()" Description="Removes every shortcut registered on this Keyboard instance." />
@@ -182,6 +213,7 @@ ButilKeyCodes.Backquote   // "Backquote"
     private DemoConsole subscriptionOutput = default!;
     private DemoConsole elementScopedOutput = default!;
     private DemoConsole removingOutput = default!;
+    private DemoConsole editableOutput = default!;
 
     private ElementReference editorRef;
 
@@ -191,6 +223,8 @@ ButilKeyCodes.Backquote   // "Backquote"
     private string customLabel = "";
     private ButilSubscription? ctrlBSub;
     private ButilSubscription? editorSub;
+    private ButilSubscription? deleteSub;
+    private bool ignoreWhenEditable = true;
 
     private string customCode = "KeyU";
     private bool useCtrl = true;
@@ -311,6 +345,43 @@ ButilKeyCodes.Backquote   // "Backquote"
         }
     }
 
+    private async Task RegisterDeleteShortcut()
+    {
+        try
+        {
+            await RemoveDeleteShortcut();
+
+            var ignore = ignoreWhenEditable;
+            deleteSub = await keyboard.Subscribe(ButilKeyCodes.Delete,
+                () => _ = editableOutput.Success("Delete shortcut fired"),
+                ignoreWhenEditable: ignore);
+
+            await editableOutput.Log(ignore
+                ? "Registered Delete with ignoreWhenEditable - Delete still edits the input"
+                : "Registered Delete with the defaults - Delete no longer edits the input");
+        }
+        catch (Exception ex)
+        {
+            await editableOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task RemoveDeleteShortcut()
+    {
+        try
+        {
+            if (deleteSub is null) return;
+
+            await deleteSub.DisposeAsync();
+            deleteSub = null;
+            await editableOutput.Warn("Delete shortcut removed");
+        }
+        catch (Exception ex)
+        {
+            await editableOutput.Error(ex.Message);
+        }
+    }
+
     private async Task RemoveF9()
     {
         try
@@ -337,6 +408,7 @@ ButilKeyCodes.Backquote   // "Backquote"
             customId = null;
             ctrlBSub = null;
             editorSub = null;
+            deleteSub = null;
             await removingOutput.Warn("RemoveAll - every shortcut on this Keyboard instance is gone");
         }
         catch (Exception ex)
@@ -360,6 +432,7 @@ ButilKeyCodes.Backquote   // "Backquote"
             if (customId is not null) await keyboard.Remove(customId.Value);
             if (ctrlBSub is not null) await ctrlBSub.DisposeAsync();
             if (editorSub is not null) await editorSub.DisposeAsync();
+            if (deleteSub is not null) await deleteSub.DisposeAsync();
         }
         catch
         {

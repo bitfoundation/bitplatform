@@ -14,6 +14,12 @@ namespace Bit.Butil;
 /// key-press (<c>keypress</c>) are not observed, so a handler fires when the key combination goes
 /// down, not when it is released. Matching is by the physical key (<c>KeyboardEvent.code</c>),
 /// not the produced character.
+/// <br/>
+/// <c>preventDefault</c> and <c>stopPropagation</c> default to <see langword="true"/>, which suits a
+/// shortcut that replaces the browser's own action (Ctrl+S, F5). For a key that also edits text -
+/// Delete, Backspace, Enter, the arrows - those defaults take the key away from every input on the
+/// page while the shortcut is registered. Pass <c>ignoreWhenEditable: true</c> so the shortcut stands
+/// aside while the user is typing, or <c>preventDefault: false</c> so the key keeps its own action.
 /// </remarks>
 [ButilService(typeof(Keyboard))]
 public class Keyboard(IJSRuntime js) : IAsyncDisposable
@@ -53,7 +59,13 @@ public class Keyboard(IJSRuntime js) : IAsyncDisposable
     /// <param name="preventDefault">Suppress the browser's own action for the combination.</param>
     /// <param name="stopPropagation">Stop the keydown travelling any further.</param>
     /// <param name="repeat">Keep firing while the key is held, instead of once per press.</param>
-    public async Task<Guid> Add(string code, Action handler, ButilModifiers modifiers = ButilModifiers.None, bool preventDefault = true, bool stopPropagation = true, bool repeat = false)
+    /// <param name="ignoreWhenEditable">
+    /// Skip the shortcut - neither firing it nor suppressing anything - when the key goes to an element
+    /// that takes typing: a text-like <c>input</c> or a <c>textarea</c> that is not read-only, a
+    /// <c>select</c>, or <c>contenteditable</c> content. The key then does what it does there, so a
+    /// page's Delete shortcut no longer stops Delete from deleting text.
+    /// </param>
+    public async Task<Guid> Add(string code, Action handler, ButilModifiers modifiers = ButilModifiers.None, bool preventDefault = true, bool stopPropagation = true, bool repeat = false, bool ignoreWhenEditable = false)
     {
         var listenerId = Guid.NewGuid();
         _handlers.TryAdd(listenerId, handler);
@@ -68,7 +80,8 @@ public class Keyboard(IJSRuntime js) : IAsyncDisposable
             modifiers.HasFlag(ButilModifiers.Shift),
             preventDefault,
             stopPropagation,
-            repeat);
+            repeat,
+            ignoreWhenEditable);
 
         return listenerId;
     }
@@ -81,9 +94,10 @@ public class Keyboard(IJSRuntime js) : IAsyncDisposable
         ButilModifiers modifiers = ButilModifiers.None,
         bool preventDefault = true,
         bool stopPropagation = true,
-        bool repeat = false)
+        bool repeat = false,
+        bool ignoreWhenEditable = false)
     {
-        var id = await Add(code, handler, modifiers, preventDefault, stopPropagation, repeat);
+        var id = await Add(code, handler, modifiers, preventDefault, stopPropagation, repeat, ignoreWhenEditable);
         return new ButilSubscription(id, () => Remove(id));
     }
 
@@ -96,7 +110,8 @@ public class Keyboard(IJSRuntime js) : IAsyncDisposable
         ButilModifiers modifiers = ButilModifiers.None,
         bool preventDefault = true,
         bool stopPropagation = true,
-        bool repeat = false)
+        bool repeat = false,
+        bool ignoreWhenEditable = false)
     {
         var listenerId = Guid.NewGuid();
         _handlers.TryAdd(listenerId, handler);
@@ -112,7 +127,8 @@ public class Keyboard(IJSRuntime js) : IAsyncDisposable
             modifiers.HasFlag(ButilModifiers.Shift),
             preventDefault,
             stopPropagation,
-            repeat);
+            repeat,
+            ignoreWhenEditable);
 
         return new ButilSubscription(listenerId, () => Remove(listenerId));
     }

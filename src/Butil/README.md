@@ -365,6 +365,24 @@ event; the gate changes how often .NET hears, not what the page does.
 The one case to leave ungated is a handler that must see *every* change - a mutation change log, an
 undo stack - because what a gate drops is whole batches, not individual records.
 
+### Shortcuts on editing keys
+
+`Keyboard.Add`, `Subscribe` and `SubscribeOn` default to `preventDefault: true` and
+`stopPropagation: true`, which suits a shortcut that replaces the browser's own action (Ctrl+S, F5).
+On a key that also edits text, the same defaults take the key away from every input on the page: a
+Delete shortcut stops Delete and Backspace from deleting text anywhere in the app. Let it stand aside
+while the user is typing:
+
+```csharp
+await keyboard.Add(ButilKeyCodes.Delete, DeleteSelectedRows, ignoreWhenEditable: true);
+```
+
+The shortcut is then skipped - nothing fired, nothing suppressed - whenever the key goes to a text-like
+`input` or a `textarea` that is not read-only, a `select`, or `contenteditable` content. Pass
+`preventDefault: false` instead to keep the key's own action everywhere. A keydown listener subscribed
+through `Document`, `Window` or an element reads the same fact from
+`ButilKeyboardEventArgs.TargetIsEditable`, next to `TargetTagName`.
+
 ### Handles own hardware
 
 `MediaStreamHandle`, `MediaRecordingHandle`, `WakeLock`'s persistent handle and the File System

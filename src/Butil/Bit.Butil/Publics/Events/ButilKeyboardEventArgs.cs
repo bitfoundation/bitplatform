@@ -8,7 +8,7 @@ namespace Bit.Butil;
 /// </summary>
 public class ButilKeyboardEventArgs : EventArgs
 {
-    internal static readonly string[] EventArgsMembers = ["altKey", "code", "ctrlKey", "isComposing", "key", "location", "metaKey", "repeat", "shiftKey"];
+    internal static readonly string[] EventArgsMembers = ["altKey", "code", "ctrlKey", "isComposing", "key", "location", "metaKey", "repeat", "shiftKey", "targetTagName", "targetIsEditable"];
 
     /// <summary>
     /// Returns a boolean value that is true if the Alt (Option or ⌥ on macOS) key was active when the key event was generated.
@@ -54,5 +54,23 @@ public class ButilKeyboardEventArgs : EventArgs
     /// Returns a boolean value that is true if the Shift key was active when the key event was generated.
     /// </summary>
     public bool ShiftKey { get; set; }
+
+    /// <summary>
+    /// The upper-case tag name of the element the key went to (<c>INPUT</c>, <c>TEXTAREA</c>, <c>BODY</c>, ...), or an empty
+    /// string when the target is not an element. Read through the event's composed path, so a key typed into an input inside
+    /// an open shadow root reports that input rather than the shadow host.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Event/composedPath">Event.composedPath</see>
+    /// </summary>
+    public string TargetTagName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Returns true if the key went to an element that takes typing: a text-like <c>input</c> or a <c>textarea</c> that is not
+    /// read-only, a <c>select</c>, or <c>contenteditable</c> content. A shortcut handler checks it to stand aside while the user
+    /// is typing.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/isContentEditable">HTMLElement.isContentEditable</see>
+    /// </summary>
+    public bool TargetIsEditable { get; set; }
 
 }
