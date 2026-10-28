@@ -18,6 +18,8 @@ public sealed class ProjectRenamer
         ".mp3", ".mp4", ".wav", ".wasm", ".br", ".gz"
     };
 
+    private static readonly string[] databaseSuffixes = ["Db", "JobDb", "Jobs"];
+
     private static readonly Encoding utf8 = new UTF8Encoding(false, true);
 
     private static readonly Encoding[] encodingsWithBom =
@@ -29,23 +31,17 @@ public sealed class ProjectRenamer
         new UnicodeEncoding(true, true, true)
     ];
 
-    private readonly (string Old, string New)[] replacements;
+    private readonly (string Old, string New, bool Lowercase)[] replacements;
 
     public ProjectRenamer(string oldName, string newName)
     {
         ArgumentException.ThrowIfNullOrEmpty(oldName);
 
-        var pairs = new List<(string Old, string New)> { (oldName, newName) };
-        var oldLower = oldName.ToLowerInvariant();
-
-        if (string.Equals(oldLower, oldName, StringComparison.Ordinal) is false)
-        {
-            pairs.Add((oldLower, newName.ToLowerInvariant()));
-        }
+        var pairs = new List<(string Old, string New, bool Lowercase)> { (oldName.ToLowerInvariant(), newName.ToLowerInvariant(), true), (oldName, newName, false) };
 
         if (oldName.Contains('.'))
         {
-            pairs.Add((oldName.Replace('.', '_'), newName.Replace('.', '_')));
+            pairs.Add((oldName.Replace('.', '_'), newName.Replace('.', '_'), false));
         }
 
         replacements = [.. pairs];
@@ -67,7 +63,7 @@ public sealed class ProjectRenamer
             {
                 if (next[i] is not -1 && next[i] < copied)
                 {
-                    next[i] = Find(text, replacements[i].Old, copied);
+                    next[i] = Find(text, replacements[i].Old, replacements[i].Lowercase, copied);
                 }
 
                 if (next[i] >= 0 && (best < 0 || next[i] < next[best]))
@@ -151,13 +147,13 @@ public sealed class ProjectRenamer
         var files = 0;
         var folders = 0;
         var failures = new List<PathFailure>();
-        var entries = Entries(new DirectoryInfo(root)).OrderByDescending(e => e.FullName.Count(c => c == Path.DirectorySeparatorChar)).ToList();
+        var entries = Entries(new DirectoryInfo(root)).OrderBy(ProjectNameSource).ThenByDescending(e => e.FullName.Count(c => c == Path.DirectorySeparatorChar)).ToList();
 
         foreach (var entry in entries)
         {
             var newName = Replace(entry.Name);
 
-            if (string.Equals(newName, entry.Name, StringComparison.Ordinal))
+            if (string.Equals(newName, entry.Name, StringComparison.Ordinal) || (ProjectNameSource(entry) > 0 && failures.Count > 0))
                 continue;
 
             var source = entry.FullName;
@@ -250,11 +246,11 @@ public sealed class ProjectRenamer
         return bytes.AsSpan(0, Math.Min(bytes.Length, BinaryProbeLength)).Contains((byte)0) ? null : (utf8, 0);
     }
 
-    private static int Find(string text, string value, int start)
+    private static int Find(string text, string value, bool lowercase, int start)
     {
         var index = text.IndexOf(value, start, StringComparison.Ordinal);
 
-        while (index >= 0 && IsInsideWord(text, index, value.Length))
+        while (index >= 0 && IsName(text, index, value.Length, lowercase) is false)
         {
             index = text.IndexOf(value, index + 1, StringComparison.Ordinal);
         }
@@ -262,14 +258,36 @@ public sealed class ProjectRenamer
         return index;
     }
 
-    private static bool IsInsideWord(string text, int index, int length)
+    private static bool IsName(string text, int index, int length, bool lowercase)
     {
         var end = index + length;
+        var before = index > 0 ? text[index - 1] : ' ';
+        var after = end < text.Length ? text[end] : ' ';
 
-        return (index > 0 && IsWordCharacter(text[index - 1])) || (end < text.Length && char.IsLower(text[end]));
+        if (IsWordCharacter(before) || char.IsLower(after))
+            return false;
+
+        if (lowercase)
+            return after is '-' || (before is '.' && (char.IsWhiteSpace(after) || after is '"' or '\'' or '<'));
+
+        return (before is not '.' || after is '_') && (char.IsUpper(after) is false || databaseSuffixes.Any(suffix => IsWordEnd(text, end, suffix)));
+    }
+
+    private static bool IsWordEnd(string text, int start, string word)
+    {
+        var end = start + word.Length;
+
+        return text.AsSpan(start).StartsWith(word, StringComparison.Ordinal) && (end == text.Length || IsWordCharacter(text[end]) is false);
     }
 
     private static bool IsWordCharacter(char c) => char.IsLetterOrDigit(c) || c is '_';
+
+    private static int ProjectNameSource(FileSystemInfo entry)
+    {
+        return entry.Name.EndsWith(".Web.slnf", StringComparison.OrdinalIgnoreCase) ? 2
+            : entry.Name.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase) ? 1
+            : 0;
+    }
 
     private static IEnumerable<FileSystemInfo> Entries(DirectoryInfo folder)
     {

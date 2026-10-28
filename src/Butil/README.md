@@ -5,8 +5,8 @@ storage, media, sensors, crypto, workers - as injectable, strongly-typed, XML-do
 so you can stop writing `IJSRuntime.InvokeVoidAsync("someGlobal.someFunction", ...)` and start
 writing C#.
 
-Works on Blazor WebAssembly, Blazor Server, Blazor Hybrid and under prerendering, on .NET 8, 9
-and 10.
+Works on Blazor WebAssembly, Blazor Server, Blazor Hybrid and under prerendering, on .NET 10
+and 11.
 
 ---
 

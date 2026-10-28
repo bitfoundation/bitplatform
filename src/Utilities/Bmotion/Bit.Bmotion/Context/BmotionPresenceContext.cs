@@ -1,13 +1,37 @@
-
 namespace Bit.Bmotion;
 /// <summary>
-/// Cascaded by <see cref="BmotionAnimatePresence"/> to signal exit state to child Bmotion components.
+/// The presence a piece of content sits in - cascaded by <see cref="BmotionAnimatePresence"/>,
+/// <see cref="BmotionPresenceSwitch{TItem}"/> and <see cref="BmotionPresenceGroup{TItem}"/> to everything inside one
+/// entry. Every <see cref="Bmotion"/> in it takes part in its exits automatically; a component of your own takes part
+/// through <see cref="Register()"/> (motion.dev's <c>usePresence</c>), so the content stays mounted until its own exit
+/// - a CSS animation, a canvas fade - is over:
+/// <code>
+/// [CascadingParameter] public BmotionPresenceContext? Presence { get; set; }
+/// private BmPresenceRegistration? _presence;
+/// private bool _leaving;
+///
+/// protected override void OnInitialized() => _presence = Presence?.Register();
+///
+/// protected override async Task OnParametersSetAsync()
+/// {
+///     if (_presence is not { IsPresent: false } || _leaving) return; // re-renders mid-exit start nothing new
+///     _leaving = true;
+///     await PlayMyExitAsync();
+///     _leaving = false;
+///     _presence.SafeToRemove(); // ignored if the content came back meanwhile
+/// }
+///
+/// public void Dispose() => _presence?.Dispose();
+/// </code>
 /// </summary>
-internal class BmotionPresenceContext
+public sealed class BmotionPresenceContext
 {
-    private readonly List<Bmotion> _children = new();
+    // What takes part in the exits: Bmotion elements and registrations.
+    private readonly List<object> _children = new();
 
-    /// <summary>True while the children are playing their exit animation.</summary>
+    internal BmotionPresenceContext() { }
+
+    /// <summary>True while the content is on its way out: removed, and playing its exit.</summary>
     public bool IsExiting
     {
         get => _isExiting;
@@ -21,17 +45,40 @@ internal class BmotionPresenceContext
     }
     private bool _isExiting;
 
+    /// <summary>Whether the content is present - <c>false</c> once it has been removed and is exiting.</summary>
+    public bool IsPresent => !IsExiting;
+
     /// <summary>
     /// When true, exiting children pop out of the layout flow (position: absolute at their
     /// current spot) before playing their exit, so siblings reflow immediately.
     /// </summary>
     public bool PopLayout { get; internal set; }
 
-    internal void Register(Bmotion child)
+    /// <summary>
+    /// Takes part in this presence's exits: while the content exits, the presence keeps it mounted until every
+    /// <see cref="Bmotion"/> in it has finished and every registration has called
+    /// <see cref="BmPresenceRegistration.SafeToRemove"/> (or been disposed). Register once, as the component
+    /// initialises, and dispose the registration when the component goes away.
+    /// </summary>
+    public BmPresenceRegistration Register()
+    {
+        var registration = new BmPresenceRegistration(this);
+        Add(registration);
+        return registration;
+    }
+
+    internal void Register(Bmotion child) => Add(child);
+
+    internal void Unregister(Bmotion child) => Remove(child);
+
+    internal void NotifyExitComplete(Bmotion child) => Complete(child);
+
+    private void Add(object child)
     {
         if (!_children.Contains(child)) _children.Add(child);
     }
-    internal void Unregister(Bmotion child)
+
+    internal void Remove(object child)
     {
         _children.Remove(child);
         _completedChildren.Remove(child);
@@ -44,9 +91,11 @@ internal class BmotionPresenceContext
 
     internal int ChildCount => _children.Count;
 
-    private readonly HashSet<Bmotion> _completedChildren = new();
+    private readonly HashSet<object> _completedChildren = new();
 
-    internal void NotifyExitComplete(Bmotion child)
+    internal bool HasCompleted(object child) => _completedChildren.Contains(child);
+
+    internal void Complete(object child)
     {
         // An exit that finishes after it was cancelled (the content re-entered mid-exit) completes
         // nothing; ignore unregistered children and guard against double-counting.
@@ -67,4 +116,36 @@ internal class BmotionPresenceContext
 
     /// <summary>Fired when every registered child has finished its exit animation.</summary>
     internal event Action? AllExitsComplete;
+}
+
+/// <summary>
+/// A component's part in a presence's exits (see <see cref="BmotionPresenceContext.Register()"/>). Dispose it when the
+/// component is disposed: a registration that is gone holds nothing up.
+/// </summary>
+public sealed class BmPresenceRegistration : IDisposable
+{
+    private BmotionPresenceContext? _presence;
+
+    internal BmPresenceRegistration(BmotionPresenceContext presence) => _presence = presence;
+
+    /// <summary>Whether the content is present - <c>false</c> once it has been removed and is exiting.</summary>
+    public bool IsPresent => _presence?.IsPresent ?? true;
+
+    /// <summary>Whether this registration has reported the current exit over (<see cref="SafeToRemove"/>).</summary>
+    public bool IsExitComplete => _presence?.HasCompleted(this) == true;
+
+    /// <summary>
+    /// Reports this component's exit over: once everything else in the presence has finished too, the content is
+    /// removed. Ignored while the content is present - an exit cancelled by a re-entry completes nothing - so it is
+    /// safe to call from an exit that was overtaken.
+    /// </summary>
+    public void SafeToRemove() => _presence?.Complete(this);
+
+    /// <summary>Stops taking part: a presence waiting on this registration no longer does.</summary>
+    public void Dispose()
+    {
+        var presence = _presence;
+        _presence = null;
+        presence?.Remove(this);
+    }
 }

@@ -42,6 +42,39 @@ public sealed class ProgrammaticTests : BmotionPageTest
     }
 
     [TestMethod]
+    public async Task Controls_SeekMovesIt_PlayPlaysOnFromThere_AndASeekAfterTheEndTakesHoldAgain()
+    {
+        await ClickAsync("seek-start");
+        await ExpectEventAsync("seek:ready");
+        await ExpectReadoutAsync("seek-state", "Paused");
+
+        // Scrubbed back and forth while paused: the element follows each point of the 1 s, 0 → 200px move.
+        foreach (var (button, x) in new[] { ("seek-50", 100.0), ("seek-20", 40.0), ("seek-80", 160.0) })
+        {
+            await ClickAsync(button);
+            await WaitForStateAsync("#seek-target", $"s => Math.abs(s.x - {x}) < 1");
+        }
+        await Page.WaitForTimeoutAsync(300);
+        Assert.AreEqual(160, (await ProbeAsync("#seek-target")).X, 1, "a paused animation holds where it was sought");
+        await ExpectReadoutAsync("seek-state", "Paused");
+
+        // Played on from there to the end.
+        await ClickAsync("seek-play");
+        await ExpectEventAsync("seek:finished");
+        await WaitForStateAsync("#seek-target", "s => Math.abs(s.x - 200) < 0.5");
+        await ExpectReadoutAsync("seek-state", "Finished");
+        await ExpectReadoutAsync("seek-time", "1.00");
+
+        // Over, and sought again: it takes hold of the element again and holds there, then plays on to the end.
+        await ClickAsync("seek-50");
+        await WaitForStateAsync("#seek-target", "s => Math.abs(s.x - 100) < 1");
+        await ExpectReadoutAsync("seek-state", "Paused");
+        await ClickAsync("seek-play");
+        await ExpectEventAsync("seek:finished", 2);
+        await WaitForStateAsync("#seek-target", "s => Math.abs(s.x - 200) < 0.5");
+    }
+
+    [TestMethod]
     public async Task Controls_SetSpeed_PlaysFaster()
     {
         await ClickAsync("selector");

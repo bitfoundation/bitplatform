@@ -1,0 +1,12 @@
+﻿@* The router every host renders unchanged: Server with InteractiveServer, Wasm with InteractiveWebAssembly and Auto
+   with InteractiveAuto, each prerendering it first, and the MAUI app as the BlazorWebView's root component. Bmotion
+   needs nothing here - no initializer component, no script tag: AddBitBmotionServices is the whole setup, and the
+   library imports its browser bridge the first time an animation runs. NotFoundPage is also what the web hosts
+   re-execute a deep link to an unknown route through. *@
+
+<Router AppAssembly="typeof(Routes).Assembly" NotFoundPage="typeof(NotFoundPage)">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>

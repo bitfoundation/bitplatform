@@ -10,7 +10,7 @@ dotnet add package Bit.Bsqlite
 
 The engine (`.wasm` and the worker) and the backends' VFSes are served as static web assets under `_content/Bit.Bsqlite/`, each imported on demand: a session downloads one engine build and the VFS of the backend it selected, never the others. Nothing needs to be added to the host page.
 
-Bit.Bsqlite targets .NET 8, 9 and 10, each with the EF Core of the same major version.
+Bit.Bsqlite targets .NET 10 and 11, each with the EF Core of the same major version.
 
 ## Register
 
@@ -37,7 +37,7 @@ builder.Services.AddBitBsqliteDbContext<AppDbContext>(options =>
 });
 ```
 
-Register them in the project that runs on WebAssembly. In a Blazor Web App whose pages are prerendered, register them in the server project as well: the prerender pass instantiates the pages there, so what they inject has to resolve, and nothing touches the browser until a page opens the database - which it should do only once the page runs in the browser: `RendererInfo.IsInteractive` on Interactive WebAssembly, and `OperatingSystem.IsBrowser()` on Interactive Auto, where a page on the server circuit is interactive too (and on .NET 8, which has no `RendererInfo`).
+Register them in the project that runs on WebAssembly. In a Blazor Web App whose pages are prerendered, register them in the server project as well: the prerender pass instantiates the pages there, so what they inject has to resolve, and nothing touches the browser until a page opens the database - which it should do only once the page runs in the browser: `RendererInfo.IsInteractive` on Interactive WebAssembly, and `OperatingSystem.IsBrowser()` on Interactive Auto, where a page on the server circuit is interactive too.
 
 `AddBitBsqliteServices` registers, all scoped except the selection and the migrator (one scope is the whole application on WebAssembly, and a circuit or a request on a server):
 
@@ -68,7 +68,7 @@ await db.SaveChangesAsync();
 
 The factory opens the database on first use, runs the schema step once per session, and hands out contexts bound to the shared connection. Disposing a context does not close the database. The factory also implements `IDbContextFactory<TContext>`; its synchronous `CreateDbContext()` works once an awaited `CreateDbContextAsync()` has opened the session and run the schema step on it.
 
-The schema step and `OnFirstUse` run under a lock shared with every other tab, and so does EF's own `MigrateAsync` on EF Core 9 and later: each tab has its own worker over the same file, and two tabs opening after a deploy would otherwise both apply the new migration - or both seed an empty database. The lock is a Web Lock, so a tab that closes mid-migration releases it.
+The schema step and `OnFirstUse` run under a lock shared with every other tab, and so does EF's own `MigrateAsync`: each tab has its own worker over the same file, and two tabs opening after a deploy would otherwise both apply the new migration - or both seed an empty database. The lock is a Web Lock, so a tab that closes mid-migration releases it.
 
 With more than one database registered, name the one a context belongs to: `AddBitBsqliteDbContext<CacheDbContext>(o => o.DatabaseName = "cache.db")`. Leaving it out is an error then, rather than a context bound to whichever was registered last.
 

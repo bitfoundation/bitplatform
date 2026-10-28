@@ -103,14 +103,29 @@ public record BmotionPropertyDto
     public required string ValueType { get; init; }
 
     /// <summary>
-    /// True when the browser compositor can own this property, so the animation plays through the
-    /// Web Animations API with no per-frame interop - and therefore plays on Blazor Server too.
+    /// True when the engine hands an animation of this property to the browser as a Web Animation,
+    /// measured by running a plain tween of it through the real engine on Blazor Server. Such an
+    /// animation needs no frame loop, so it plays on every runtime.
+    /// </summary>
+    public required bool PlayedByBrowser { get; init; }
+
+    /// <summary>
+    /// How the browser was handed it: "Timeline" - two keyframes, with the curve as the easing - when
+    /// the browser interpolates the value exactly as the engine does, or "Recorded" - the frames the
+    /// engine drew, played linearly - when it does not. Null for a property only the frame loop plays.
+    /// </summary>
+    public string? BrowserPlayback { get; init; }
+
+    /// <summary>
+    /// True for the transform components and opacity, which the browser animates on its compositor -
+    /// off the main thread, with no layout or paint per frame. This is about cost, not about where it
+    /// plays: a width or a colour plays in the browser too, but runs layout or paint on every frame.
     /// </summary>
     public required bool CompositorEligible { get; init; }
 
     /// <summary>
-    /// What happens on Blazor Server: "Animates" for a compositor-eligible property, or
-    /// "Jumps to the target" for one that needs the per-frame loop.
+    /// What happens on Blazor Server: "Animates" for a property the browser plays, or
+    /// "Jumps to the target" for one only the per-frame loop can play.
     /// </summary>
     public required string OnBlazorServer { get; init; }
 
@@ -216,31 +231,66 @@ public record BmotionPlaybackDto
     /// <summary>The transition, written as the C# call that produces it.</summary>
     public required string Transition { get; init; }
 
-    /// <summary>"Compositor (Web Animations API)" or "C# frame loop (requestAnimationFrame)".</summary>
+    /// <summary>
+    /// Where the animation plays: "Browser (timeline)" - a two-keyframe Web Animation with the curve
+    /// as its easing; "Browser (recorded)" - the frames the engine drew, played linearly by the
+    /// browser; "Frame loop only (instant on Blazor Server)"; or "Instant" - a transition with no
+    /// length, set at once everywhere. Both browser shapes play on every runtime. When only some
+    /// properties need the frame loop, the browser shape is followed by
+    /// " + frame loop only (instant on Blazor Server)" and <see cref="FrameLoopProperties"/> names them.
+    /// "Not analysed" when there was nothing to run.
+    /// </summary>
     public required string Path { get; init; }
 
+    /// <summary>What the engine did on Blazor WebAssembly: "Browser (timeline)", "Browser (recorded)", "Frame loop" or "Instant", measured.</summary>
+    public string? OnWebAssembly { get; init; }
+
+    /// <summary>What the engine did on Blazor Server, measured the same way - where there is no frame loop, so what needs one is "Instant".</summary>
+    public string? OnBlazorServer { get; init; }
+
     /// <summary>
-    /// True when the animation plays on Blazor Server as it does on WebAssembly. False means it
-    /// collapses to an instant state change there, because it needs the per-frame loop.
+    /// True when the animation plays on Blazor Server as it does on WebAssembly. False means some or
+    /// all of it needs the per-frame loop and collapses to an instant state change there.
     /// </summary>
     public required bool WorksOnBlazorServer { get; init; }
 
-    /// <summary>Why the engine chose that path, in the engine's own terms.</summary>
+    /// <summary>The properties only the per-frame loop can play, when there are any.</summary>
+    public string[]? FrameLoopProperties { get; init; }
+
+    /// <summary>Why the engine chose that path, in the engine's own terms, and what it costs.</summary>
     public required string Reason { get; init; }
 
-    /// <summary>The duration the compositor was given, in milliseconds, when the animation was offloaded.</summary>
-    public double? CompositorDurationMs { get; init; }
+    /// <summary>
+    /// How many keyframes the browser was handed: two for a timeline whatever its length, more for a
+    /// recording. Blazor Server is sent one fewer of either, because the browser there starts from
+    /// what is on screen.
+    /// </summary>
+    public int? BrowserKeyframes { get; init; }
 
-    /// <summary>The CSS easing handed to the browser, when the animation was offloaded.</summary>
-    public string? CompositorEasing { get; init; }
+    /// <summary>The duration of the Web Animation the browser was handed, in milliseconds.</summary>
+    public double? BrowserDurationMs { get; init; }
 
-    /// <summary>What to change to make it play on Blazor Server, when it does not.</summary>
+    /// <summary>
+    /// The easing the browser was handed: the curve itself for a timeline (a <c>linear(...)</c>
+    /// sampling, or an exact CSS keyword or cubic-bezier), and <c>linear</c> for a recording, whose
+    /// keyframes already carry the curve.
+    /// </summary>
+    public string? BrowserEasing { get; init; }
+
+    /// <summary>What to change for the browser to play it, when some of it does not reach the browser.</summary>
     public string[]? HowToOffload { get; init; }
 
     /// <summary>
-    /// Set instead of a verdict when the transition could not be read, and says how to write it.
-    /// When this is present the rest of the fields state nothing: in particular WorksOnBlazorServer
-    /// is false because nothing was analysed, not because the animation would fail there.
+    /// What to change for the browser to play it as a timeline rather than a recording, when it was
+    /// recorded. Worth it where the motion allows: a timeline is two keyframes whatever its length.
+    /// </summary>
+    public string[]? HowToPlayAsTimeline { get; init; }
+
+    /// <summary>
+    /// Set instead of a verdict when the transition could not be read, or none of the properties is
+    /// one Bm.To has, and says what to write instead. When this is present the rest of the fields
+    /// state nothing: in particular WorksOnBlazorServer is false because nothing was analysed, not
+    /// because the animation would fail there.
     /// </summary>
     public string? Error { get; init; }
 }

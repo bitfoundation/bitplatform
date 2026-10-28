@@ -63,8 +63,9 @@ public abstract class BmotionPageTest
 
     /// <summary>
     /// Whether the runtime the page landed on has Bit.Bmotion's per-frame loop (WebAssembly). Without it (Blazor
-    /// Server) only compositor-eligible animations play, and everything else lands on its target at once - the
-    /// tests assert both halves of that contract. Auto may land on either, so this is read off the page.
+    /// Server) the browser plays what it can reproduce, and what only the loop can play (per-frame callbacks, SVG
+    /// <c>d</c> morphs) lands on its target at once - the tests assert both halves of that contract. Auto may land
+    /// on either, so this is read off the page.
     /// </summary>
     protected bool FrameLoop { get; private set; }
 
@@ -208,6 +209,37 @@ public abstract class BmotionPageTest
     }
 
     /// <summary>
+    /// Samples x and height once per frame, in the page, stamped with the document timeline's time - the instant the
+    /// browser computed that frame's animated values at - rather than with when the sampler happened to run, which
+    /// can be most of a frame later (or two callbacks a millisecond apart after a long task). A velocity is only
+    /// meaningful against the former. A frame sampled twice is kept once. Unlike <see cref="SampleAsync"/>, no round
+    /// trip can starve it, so nothing between two frames is missed.
+    /// </summary>
+    protected async Task<IReadOnlyList<MotionState>> SampleOnTheTimelineAsync(string selector, int milliseconds)
+    {
+        var json = await Page.EvaluateAsync<System.Text.Json.JsonElement>("""
+            async ([sel, ms]) => {
+                const el = document.querySelector(sel);
+                const out = [];
+                const start = document.timeline.currentTime;
+                let last = -1;
+                while (document.timeline.currentTime - start < ms) {
+                    const t = document.timeline.currentTime;
+                    if (t !== last) {
+                        const m = new DOMMatrixReadOnly(getComputedStyle(el).transform);
+                        out.push({ t: t - start, x: m.m41, h: el.getBoundingClientRect().height });
+                        last = t;
+                    }
+                    await new Promise(r => requestAnimationFrame(r));
+                }
+                return out;
+            }
+            """, new object[] { selector, milliseconds });
+        return [.. json.EnumerateArray().Select(s => new MotionState(
+            s.GetProperty("x").GetDouble(), 0, 1, 1, 0, 1, 0, 0, 0, s.GetProperty("h").GetDouble(), "", "", "") { Time = s.GetProperty("t").GetDouble() })];
+    }
+
+    /// <summary>
     /// Waits until the element stops moving - the same state on two probes <paramref name="quietMs"/> apart - and
     /// returns that state.
     /// </summary>
@@ -297,14 +329,23 @@ public abstract class BmotionPageTest
         return (box.X + (box.Width / 2), box.Y + (box.Height / 2));
     }
 
-    /// <summary>A pointer drag from the element's centre by (dx, dy), in <paramref name="steps"/> moves.</summary>
+    /// <summary>
+    /// A pointer drag from the element's centre by (dx, dy), in <paramref name="steps"/> moves, one a frame - as a
+    /// hand makes them. Chromium and Firefox hand pointer moves to the page once a frame on their own; WebKit passes
+    /// on every one as soon as it arrives, so a drag there waits a frame between moves, or a flick would cross the
+    /// screen in a millisecond.
+    /// </summary>
     protected async Task DragByAsync(string selector, double dx, double dy, int steps = 12, bool release = true)
     {
         var (x, y) = await CentreAsync(selector);
         await Page.Mouse.MoveAsync((float)x, (float)y);
         await Page.Mouse.DownAsync();
         for (var i = 1; i <= steps; i++)
+        {
+            if (BrowserLaunch.Browser == "webkit")
+                await Page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => resolve()))");
             await Page.Mouse.MoveAsync((float)(x + (dx * i / steps)), (float)(y + (dy * i / steps)));
+        }
         if (release) await Page.Mouse.UpAsync();
     }
 

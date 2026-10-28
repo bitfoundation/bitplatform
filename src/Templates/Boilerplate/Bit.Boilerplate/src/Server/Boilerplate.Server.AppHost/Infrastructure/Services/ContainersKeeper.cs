@@ -13,7 +13,8 @@ namespace Boilerplate.Server.AppHost.Infrastructure.Services;
 /// process tree, and every later run reuses it. While an app host runs, this hosted service writes a <c>heartbeat</c>
 /// file every 10 seconds and records the ids of its containers in a <c>containers</c> file. The keeper deletes the
 /// heartbeat every 30 seconds; once it hasn't seen one for the idle timeout, it runs <c>docker stop</c> on the recorded
-/// containers and exits. The next run starts a new keeper, and Aspire re-creates the stopped containers.
+/// containers, gives up on it after 90 seconds, and exits. The next run starts a new keeper, and Aspire re-creates the
+/// stopped containers.
 /// </para>
 /// <para>
 /// The state lives in <c>%TEMP%/aspire-containers-keeper/&lt;app host id&gt;</c>: <c>process</c> (the keeper's pid and start
@@ -31,7 +32,10 @@ internal sealed class ContainersKeeper(string stateDirectory, ResourceNotificati
 
     private static readonly TimeSpan heartbeatInterval = TimeSpan.FromSeconds(10);
 
-    // $1 = state directory, $2 = idle seconds, $3 = check interval seconds, $4 = container runtime (docker or podman).
+    private const int StopTimeoutSeconds = 90;
+
+    // $1 = state directory, $2 = idle seconds, $3 = check interval seconds, $4 = container runtime (docker or podman),
+    // $5 = stop timeout seconds.
     private const string UnixKeeperScript = """
         cd "$1" || exit 1
         idle=0
@@ -42,7 +46,14 @@ internal sealed class ContainersKeeper(string stateDirectory, ResourceNotificati
             [ "$idle" -lt "$2" ] && continue
             : > stopping
             if [ -e heartbeat ]; then rm -f stopping; idle=0; continue; fi
-            [ -s containers ] && "$4" stop $(cat containers) > /dev/null 2>&1
+            if [ -s containers ]; then
+                "$4" stop $(cat containers) > /dev/null 2>&1 &
+                stop=$!
+                ( sleep "$5"; kill "$stop" 2> /dev/null; sleep 5; kill -9 "$stop" 2> /dev/null ) &
+                watchdog=$!
+                wait "$stop"
+                kill "$watchdog" 2> /dev/null
+            fi
             rm -f process containers stopping
             exit 0
         done
@@ -168,7 +179,12 @@ internal sealed class ContainersKeeper(string stateDirectory, ResourceNotificati
                 if ($idle -lt {{idleSeconds}}) { continue }
                 New-Item stopping -ItemType File -Force | Out-Null
                 if (Test-Path heartbeat) { Remove-Item stopping -Force -ErrorAction SilentlyContinue; $idle = 0; continue }
-                if (Test-Path containers) { & '{{Quote(containerRuntime)}}' stop @(Get-Content containers) *> $null }
+                if (Test-Path containers) {
+                    try {
+                        $stop = Start-Process -FilePath '{{Quote(containerRuntime)}}' -ArgumentList (@('stop') + @(Get-Content containers)) -NoNewWindow -PassThru
+                        if (-not $stop.WaitForExit({{StopTimeoutSeconds * 1000}})) { $stop.Kill(); $stop.WaitForExit(5000) | Out-Null }
+                    } catch { }
+                }
                 Remove-Item process, containers, stopping -Force -ErrorAction SilentlyContinue
                 break
             }
@@ -192,7 +208,7 @@ internal sealed class ContainersKeeper(string stateDirectory, ResourceNotificati
     // group, and prints its pid. The line endings are normalized because a CRLF checkout would break the script.
     private static int? StartUnixKeeper(string? dcpPath, string stateDirectory, int idleSeconds, string containerRuntime)
         => File.Exists(dcpPath)
-            ? RunForProcessId(dcpPath, ["fork-process", "--", "/bin/sh", "-c", UnixKeeperScript.ReplaceLineEndings("\n"), "containers-keeper", stateDirectory, $"{idleSeconds}", $"{CheckIntervalSeconds}", containerRuntime])
+            ? RunForProcessId(dcpPath, ["fork-process", "--", "/bin/sh", "-c", UnixKeeperScript.ReplaceLineEndings("\n"), "containers-keeper", stateDirectory, $"{idleSeconds}", $"{CheckIntervalSeconds}", containerRuntime, $"{StopTimeoutSeconds}"])
             : null;
 
     private static int? RunForProcessId(string fileName, IEnumerable<string> arguments)

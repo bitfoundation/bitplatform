@@ -2096,4 +2096,13 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="SignOutOfAllAccounts" xml:space="preserve">
     <value>Se déconnecter de tous les comptes de cet appareil</value>
   </data>
+    <data name="KioskTitle" xml:space="preserve">
+    <value>Mode kiosque</value>
+  </data>
+    <data name="KioskMessage" xml:space="preserve">
+    <value>Cette application est verrouillée à l'écran : la touche Windows, Alt+Tab, le Gestionnaire des tâches et la fermeture de la fenêtre sont tous bloqués. Utilisez le bouton pour quitter.</value>
+  </data>
+    <data name="KioskExitApp" xml:space="preserve">
+    <value>Quitter l'application</value>
+  </data>
 </root>

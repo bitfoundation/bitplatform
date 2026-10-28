@@ -79,7 +79,7 @@ public sealed class UpdateButilServiceWorker : Task
         var hashes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var asset in TrimmedAssets.Where(a => string.IsNullOrEmpty(a.GetMetadata("RelatedAsset"))))
         {
-            // The .NET 8 SDK defines an asset without an integrity, so the file is hashed here instead.
+            // An asset defined without an integrity has its file hashed here instead.
             var integrity = asset.GetMetadata("Integrity");
             if (string.IsNullOrEmpty(integrity))
             {

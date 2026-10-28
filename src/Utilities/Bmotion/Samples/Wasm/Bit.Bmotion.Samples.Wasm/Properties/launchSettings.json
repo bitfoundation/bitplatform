@@ -1,0 +1,13 @@
+﻿{
+    "profiles": {
+        "Bit.Bmotion.Samples.Wasm": {
+            "commandName": "Project",
+            "dotnetRunMessages": true,
+            "launchBrowser": true,
+            "applicationUrl": "https://localhost:7302;http://localhost:5302",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        }
+    }
+}

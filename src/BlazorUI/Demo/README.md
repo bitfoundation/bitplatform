@@ -20,9 +20,9 @@ Three things keep the Debug inner loop small, and all three come back in Release
 that packing and CI still see the full picture:
 
 - **One target framework.** `Bit.BlazorUI`, `.Assets`, `.Extras`, `.Icons`,
-  `.Legacy` and the test projects multi-target `net10.0;net9.0;net8.0`, but the
-  demo and the tests only ever run on `net10.0`, so Debug compiles that one alone.
-  Pass `-p:BuildAllTfms=true` to compile all three locally; CI already does.
+  `.Legacy` and the test projects multi-target `net11.0;net10.0`, but the
+  demo and the tests only ever run on `net11.0`, so Debug compiles that one alone.
+  Pass `-p:BuildAllTfms=true` to compile both locally; CI already does.
 - **No analyzers during build.** `Bit.CodeAnalyzers` runs over every demo page and
   its findings are warnings only, so `RunAnalyzersDuringBuild` is off in Debug (see
   `Directory.Build.props`). The IDE still reports them live, and Release builds

@@ -1,0 +1,10 @@
+﻿@* The interactive root of every sample. Blow needs nothing here: no service and no initializer component - the canvas
+   imports its own JavaScript module the first time it renders. Its stylesheet is the one thing a host adds itself:
+   each host page links _content/Bit.Blow/bit-blow.css, as the library does not inject it. *@
+
+<Router AppAssembly="typeof(Routes).Assembly" NotFoundPage="typeof(NotFoundPage)">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>

@@ -68,6 +68,7 @@ public static class ProjectRun
 
         cli.Console.Out.MarkupLine("  [grey]It keeps running while this terminal is open. Close it, or press Ctrl+C, to stop the project.[/]");
         cli.Console.Out.WriteLine();
+        cli.Console.Title.Settle(urls.Count > 0 ? $"Running {running.AppUrl ?? urls[0]}" : "Running");
 
         using var closed = new CancellationTokenSource();
         var terminalClosed = false;

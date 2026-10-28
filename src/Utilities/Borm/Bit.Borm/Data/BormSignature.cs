@@ -30,8 +30,7 @@ public static class BormSignature
     // whose markup is escaped. An SVG embedded in a page rather than shown through an <img> runs what it holds,
     // so a value that only starts like one - posted by anyone who can post the form - is not taken for one.
     // Every loop in these stops at a character it cannot match, so a match never retries what it has read and
-    // takes as long as the value is, whatever was posted: NonBacktracking is not needed, and on .NET 8 it refuses
-    // patterns as long as these.
+    // takes as long as the value is, whatever was posted: NonBacktracking is not needed.
     private static readonly Regex Drawn = new(
         @"\A<svg xmlns='http://www\.w3\.org/2000/svg' viewBox='0 0 [0-9.]+ [0-9.]+' width='[0-9.]+' height='[0-9.]+'>"
         + @"<path d='[ML0-9. ]*' fill='none' stroke='" + Ink + "' stroke-width='2\\.5' stroke-linecap='round' stroke-linejoin='round'/></svg>\\z",

@@ -451,7 +451,6 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
             // WebAssembly runtime takes over. An interactive render mode that is not the
             // browser, though, will never activate, and saying so is better than a Start button
             // that quietly does nothing.
-#if NET9_0_OR_GREATER
             if (firstRender && RendererInfo.IsInteractive)
             {
                 await FailAsync(new BbScannerException(
@@ -459,18 +458,6 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
                     "Camera scanning needs Blazor WebAssembly; this component is running on the "
                     + $"{RendererInfo.Name} renderer, which cannot reach the browser's camera API.")).ConfigureAwait(true);
             }
-#else
-            // .NET 8 has no RendererInfo, but it needs none: a static prerender never calls
-            // OnAfterRender, so reaching this point outside the browser means an interactive
-            // renderer that is not WebAssembly.
-            if (firstRender)
-            {
-                await FailAsync(new BbScannerException(
-                    BbScannerErrorKind.NotSupported,
-                    "Camera scanning needs Blazor WebAssembly; this component is running on an "
-                    + "interactive renderer that cannot reach the browser's camera API.")).ConfigureAwait(true);
-            }
-#endif
 
             return;
         }
@@ -891,7 +878,10 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// file chosen from the built-in picker is, with the same size limits and EXIF orientation, and
     /// needs no camera, so no permission is asked for. Raises no events; the results are returned.
     /// </summary>
-    /// <param name="image">The encoded image. Read to its end, up to <see cref="MaxImageFileSize"/>.</param>
+    /// <param name="image">
+    /// The encoded image. Read to its end, up to <see cref="MaxImageFileSize"/>; not read at all when the component
+    /// is not running on WebAssembly.
+    /// </param>
     /// <param name="maxSymbols">The most symbols to return, at least one.</param>
     /// <param name="cancellationToken">Abandons the scan; an image already being decoded is discarded when it is ready.</param>
     /// <returns>The symbols found, matrix symbols first; empty when the image holds none.</returns>
@@ -905,6 +895,13 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         ArgumentNullException.ThrowIfNull(image);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxSymbols);
         ObjectDisposedException.ThrowIf(_disposed, this);
+
+        // Refused before a byte is read: off WebAssembly the image could only be refused once it was, and an upload
+        // over a circuit would cross the network in full first.
+        if (!OperatingSystem.IsBrowser())
+        {
+            throw ImageScanningNotSupported();
+        }
 
         // Read with the limit applied as the bytes arrive, so an oversized upload is refused
         // without first being held in memory in full.
@@ -949,10 +946,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         {
             // Disposed while the module loaded is a lifetime error, not a platform limitation.
             ObjectDisposedException.ThrowIf(_disposed, this);
-            throw new BbScannerException(
-                BbScannerErrorKind.NotSupported,
-                "Scanning an encoded image needs the browser's image decoders, which the component only reaches on WebAssembly. " +
-                "Decode the image to pixels with an image library and pass them to DecodeAllInImage instead.");
+            throw ImageScanningNotSupported();
         }
 
         if (MaxImageFileSize > 0 && image.Length > MaxImageFileSize)
@@ -1214,6 +1208,11 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     };
 
     private string TooLargeMessage() => Say(T.ImageTooLarge, BbScannerTexts.Default.ImageTooLarge, MaxImageFileSize / (1024.0 * 1024.0));
+
+    private static BbScannerException ImageScanningNotSupported() => new(
+        BbScannerErrorKind.NotSupported,
+        "Scanning an encoded image needs the browser's image decoders, which the component only reaches on WebAssembly. " +
+        "Decode the image to pixels with an image library and pass them to DecodeAllInImage instead.");
 
     private async Task RunFrameLoopAsync(CancellationToken cancellationToken, int version)
     {

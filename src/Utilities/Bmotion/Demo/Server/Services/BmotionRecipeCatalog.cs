@@ -33,8 +33,8 @@ public static class BmotionRecipeCatalog
                 </Bmotion>
                 """,
             Notes = "Initial only runs when the element mounts. To replay it, change the element's @key so " +
-                    "Blazor treats it as a new element. Both properties animated here are compositor-eligible, " +
-                    "so this works on Blazor Server as well."
+                    "Blazor treats it as a new element. The browser plays both properties as one two-keyframe Web " +
+                    "Animation, on its compositor, so this works on Blazor Server as well."
         },
         new()
         {
@@ -225,8 +225,8 @@ public static class BmotionRecipeCatalog
             Notes = "Nothing here animates height - the element is simply re-rendered into its new size and " +
                     "Bmotion measures the difference (FLIP). Use BmLayout.Position when scaling would distort " +
                     "text. Add LayoutScroll=\"true\" inside a scrolling container, or the container's own scroll " +
-                    "between the two measurements reads as movement and the element jumps. Layout animations " +
-                    "need the frame loop, so they snap on Blazor Server."
+                    "between the two measurements reads as movement and the element jumps. The bridge plays the " +
+                    "FLIP itself as a Web Animation, so it works on Blazor Server as well."
         },
         new()
         {
@@ -274,10 +274,11 @@ public static class BmotionRecipeCatalog
                     <div class="handle" />
                 </Bmotion>
                 """,
-            Notes = "Drag needs the synchronous per-frame loop, so it is WebAssembly-only: on Blazor Server " +
-                    "the element does not move at all. Gate it on BmotionCapabilities.SupportsFrameLoop and " +
-                    "give the server path a non-dragging equivalent. DragElastic controls how far past the " +
-                    "constraint the element can be pulled before it resists."
+            Notes = "On Blazor Server the browser keeps the dragged element under the pointer while each position " +
+                    "travels to the server (OnDrag runs a round trip behind), and the throw's momentum plays in the " +
+                    "browser as a recording. Don't put a CSS translate of your own on a draggable element there: the " +
+                    "drag uses it while .NET catches up. DragElastic controls how far past the constraint the element " +
+                    "can be pulled before it resists."
         },
         new()
         {
@@ -299,8 +300,8 @@ public static class BmotionRecipeCatalog
                 </Bmotion>
                 """,
             Notes = "BmEase.Linear is the one case where linear is correct: a spinner that eases has a visible " +
-                    "stutter every revolution. Keyframe arrays need the per-frame loop, so the pulse above " +
-                    "snaps on Blazor Server while the plain rotation still plays."
+                    "stutter every revolution. Both play on Blazor Server: the rotation as a looping two-keyframe " +
+                    "timeline, the keyframe pulse as one recorded cycle the browser repeats."
         },
         new()
         {

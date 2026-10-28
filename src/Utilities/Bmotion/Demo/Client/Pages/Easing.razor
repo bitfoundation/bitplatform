@@ -19,13 +19,32 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Named presets</h3>
     <p>
         Each row below plays the same 240&nbsp;px move over the same 0.9&nbsp;s, so the only thing
-        that differs is the curve. Watch where each one spends its time: <code>InOut</code> variants
-        start and end slow, <code>Out</code> variants front-load the distance, and
-        <code>ElasticOut</code> / <code>BounceOut</code> keep moving after they arrive.
+        that differs is the curve. Almost every family comes in three directions, and the direction is the
+        part to choose first: <code>In</code> starts slow and arrives fast - right for something leaving -
+        <code>Out</code> starts fast and settles, which is what an entrance wants, and <code>InOut</code> is slow at
+        both ends, for a move between two resting places. Within a direction the families differ in how hard they
+        lean: <code>Sine</code> barely, <code>Quad</code> through <code>Quint</code> and <code>Expo</code> more and
+        more, <code>Circ</code> abruptly. <code>Back</code> pulls back past its start or overshoots its end,
+        <code>Anticipate</code> pulls back before it sets off, and <code>Elastic</code> and <code>Bounce</code> keep
+        moving after they arrive. Switch direction to see all 32.
+    </p>
+    <p>
+        <code>Bm.Tween()</code> with no arguments is a 0.3&nbsp;s <code>BmEase.Out</code> - the plain
+        <code>In</code> / <code>Out</code> / <code>InOut</code> rows are the cubic curve, the default.
     </p>
 
+    <div class="bb-toolbar">
+        <div class="bb-segmented" role="group" aria-label="Easing direction">
+            @foreach (var direction in _directions)
+            {
+                <button type="button" aria-pressed="@(_direction == direction ? "true" : "false")"
+                        @onclick="@(() => _direction = direction)">@direction</button>
+            }
+        </div>
+    </div>
+
     <div class="ease-list">
-        @foreach (var e in _eases)
+        @foreach (var e in EasesFor(_direction))
         {
             <div class="ease-row">
                 <span class="demo-label ease-name">@e</span>
@@ -42,6 +61,11 @@
     <div class="bb-toolbar">
         <button class="btn btn-primary" @onclick="@(() => _on = !_on)">@(_on ? "Send back" : "Animate")</button>
     </div>
+
+    <p>
+        A keyframe sequence can take a different curve for every leg instead of one for the whole run - that is
+        <code>eases</code>, shown on the <a href="keyframes">Keyframes</a> page.
+    </p>
 
     <CodeSnippet Code="@_easeCode" />
 </section>
@@ -114,12 +138,21 @@
     private bool _bezier;
     private bool _stepped;
 
-    private readonly BmEase[] _eases =
-    [
-        BmEase.SineInOut, BmEase.QuadInOut, BmEase.QuartInOut, BmEase.QuintInOut,
-        BmEase.CircOut, BmEase.ExpoOut, BmEase.BackOut, BmEase.Anticipate,
-        BmEase.ElasticOut, BmEase.BounceOut,
-    ];
+    private static readonly string[] _directions = ["In", "Out", "InOut"];
+    private string _direction = "Out";
+
+    // The families that come in three directions, gentlest first. The cubic one is the bare
+    // In / Out / InOut, so its prefix is empty.
+    private static readonly string[] _families = ["Sine", "Quad", "", "Quart", "Quint", "Expo", "Circ", "Back", "Elastic", "Bounce"];
+
+    // Every BmEase in one direction: Linear and Anticipate have none, so they lead and close each list.
+    private static IEnumerable<BmEase> EasesFor(string direction)
+    {
+        yield return BmEase.Linear;
+        foreach (var family in _families)
+            yield return Enum.Parse<BmEase>(family + direction);
+        yield return BmEase.Anticipate;
+    }
 
     /// <summary>A hand-authored curve: its four control numbers and what they read as.</summary>
     private record BezierDemo(string Label, double[] Points);
@@ -148,13 +181,27 @@
             </Bmotion>
         }
 
+        <button @onclick="@(() => _on = !_on)">@(_on ? "Send back" : "Animate")</button>
+
         @code {
             private bool _on;
 
+            // All 32: Linear, Anticipate, and ten families in three directions each.
+            // Bm.Tween() with no arguments is Bm.Tween(0.3, BmEase.Out).
             private readonly BmEase[] _eases =
             [
-                BmEase.SineInOut, BmEase.QuadInOut, BmEase.QuartInOut, BmEase.QuintInOut,
-                BmEase.ExpoOut, BmEase.BackOut, BmEase.ElasticOut, BmEase.BounceOut,
+                BmEase.Linear,
+                BmEase.SineIn,    BmEase.SineOut,    BmEase.SineInOut,
+                BmEase.QuadIn,    BmEase.QuadOut,    BmEase.QuadInOut,
+                BmEase.In,        BmEase.Out,        BmEase.InOut,        // cubic
+                BmEase.QuartIn,   BmEase.QuartOut,   BmEase.QuartInOut,
+                BmEase.QuintIn,   BmEase.QuintOut,   BmEase.QuintInOut,
+                BmEase.ExpoIn,    BmEase.ExpoOut,    BmEase.ExpoInOut,
+                BmEase.CircIn,    BmEase.CircOut,    BmEase.CircInOut,
+                BmEase.BackIn,    BmEase.BackOut,    BmEase.BackInOut,
+                BmEase.ElasticIn, BmEase.ElasticOut, BmEase.ElasticInOut,
+                BmEase.BounceIn,  BmEase.BounceOut,  BmEase.BounceInOut,
+                BmEase.Anticipate,
             ];
         }
         """;
@@ -168,6 +215,12 @@
                  Transition="Bm.Tween(0.9, bezier: [0.68, -0.6, 0.32, 1.6])">
             <div class="box-sm" />
         </Bmotion>
+
+        <button @onclick="@(() => _on = !_on)">@(_on ? "Send back" : "Animate")</button>
+
+        @code {
+            private bool _on;
+        }
         """;
 
     private const string _stepsCode = """
@@ -179,5 +232,11 @@
                  Transition="Bm.Tween(1.2, steps: 6, stepJump: BmStepJump.End)">
             <div class="box-sm" />
         </Bmotion>
+
+        <button @onclick="@(() => _on = !_on)">@(_on ? "Send back" : "Step")</button>
+
+        @code {
+            private bool _on;
+        }
         """;
 }

@@ -14,7 +14,7 @@ internal sealed class BmotionTweenDriver : IBmotionAnimationDriver
     private readonly double _repeatDelayMs;
     private readonly Action<double> _apply;
 
-    private double _startTime = -1;
+    private double _startTime = double.NaN; // NaN = not started: a start can be negative (a negative delay near clock 0)
     private bool _cancelled;
     private int _iteration;
     private bool _reversed;
@@ -48,7 +48,7 @@ internal sealed class BmotionTweenDriver : IBmotionAnimationDriver
     {
         if (_cancelled) return true;
 
-        if (_startTime < 0) _startTime = timestamp + _delayMs;
+        if (double.IsNaN(_startTime)) _startTime = timestamp + _delayMs;
         if (timestamp < _startTime) { _apply(_curFrom); return false; }
 
         double elapsed = timestamp - _startTime;

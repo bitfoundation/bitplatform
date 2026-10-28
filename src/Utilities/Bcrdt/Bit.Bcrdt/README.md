@@ -75,7 +75,7 @@ Works in Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid
 - Snapshots that restore any point in a document's history.
 - `BcrdtTextSynchronizer` and `BcrdtTextInputBinding`, which turn an input's whole new value into the minimal edit.
 - In-memory and WebSocket client transports; every seam - transport, store, client identity - is an interface.
-- .NET 8, 9 and 10; trim- and AOT-safe for the collaborative value model.
+- .NET 10 and 11; trim- and AOT-safe for the collaborative value model.
 
 ## For AI agents
 

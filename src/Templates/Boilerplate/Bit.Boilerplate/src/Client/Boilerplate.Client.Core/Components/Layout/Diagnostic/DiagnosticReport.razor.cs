@@ -23,7 +23,7 @@ public partial class DiagnosticReport
 
     [AutoInject] private Clipboard clipboard = default!;
     //#if (signalR == true)
-    [AutoInject] private HubConnection hubConnection = default!;
+    [AutoInject] private AppHubConnection hubConnection = default!;
     //#endif
     [AutoInject] private ITelemetryContext telemetryContext = default!;
     [AutoInject] private IDiagnosticController diagnosticController = default!;
@@ -78,7 +78,7 @@ public partial class DiagnosticReport
         //#if (signalR == true)
         try
         {
-            signalRConnectionId = hubConnection.State == HubConnectionState.Connected ? hubConnection.ConnectionId : null;
+            signalRConnectionId = hubConnection.ConnectionId;
         }
         catch (Exception exp)
         {

@@ -1,0 +1,67 @@
+﻿@page "/"
+
+<PageTitle>BbScanner samples</PageTitle>
+
+<h1>BbScanner samples</h1>
+
+<p>
+    The same pages run in every Blazor hosting model: Server, WebAssembly, Auto and MAUI (Blazor Hybrid). The camera
+    is read through the WebAssembly runtime, so under Server and MAUI the scanner below reports
+    <code>NotSupported</code> - the expected outcome there, not a failure - while the <NavLink href="decoder">decoder</NavLink>
+    reads barcodes on every host.
+</p>
+
+<section>
+    <h2>This host</h2>
+    <HostFacts>
+        <dt>Scanner</dt>
+        <dd>@_status</dd>
+    </HostFacts>
+</section>
+
+<section>
+    <h2>Camera</h2>
+    <p>
+        Point the camera at a QR code, an EAN-13 or any other common symbology - the QR Code, Data Matrix, Code 128,
+        Code 39, EAN, UPC and ITF symbols on the <NavLink href="decoder">decoder</NavLink> page, shown on another
+        screen, will do. This scanner keeps to <code>BbBarcodeFormat.Common</code>, the default: PDF417, Aztec,
+        MaxiCode, Micro QR, Codabar, Code 93 and GS1 DataBar each cost every frame time of their own, so an app asks
+        for them by name through <code>Formats</code>, and the camera here passes them by. <em>Scan image</em> reads
+        a photo instead, without opening the camera.
+    </p>
+
+    <div class="surface">
+        <BbScanner Region="BbScanRegion.CenteredSquare(0.7)"
+                   OnScan="HandleScan"
+                   OnError="e => _error = e"
+                   OnStatusChanged="s => _status = s" />
+    </div>
+
+    @if (_error is not null)
+    {
+        <p class="status error"><strong>@_error.Kind</strong>: @_error.Message</p>
+    }
+
+    <ResultList Results="_results" />
+</section>
+
+<section>
+    <h2>What each page checks</h2>
+    <ul class="features">
+        <li>This page - the live camera: permission, the frame loop, the reticle and duplicate suppression.</li>
+        <li><NavLink href="image">Images</NavLink> - a picked or dropped photo, Blazor's <code>InputFile</code>, and pixels the application already has.</li>
+        <li><NavLink href="decoder">Decoder</NavLink> - <code>BbBarcodeDecoder</code> reading every symbology in-process, with the cost of a frame on this host.</li>
+    </ul>
+</section>
+
+@code {
+    private readonly List<BbBarcodeResult> _results = [];
+    private BbScannerStatus _status = BbScannerStatus.Idle;
+    private BbScannerException? _error;
+
+    private void HandleScan(BbBarcodeResult result)
+    {
+        _error = null;
+        ResultList.Prepend(_results, [result]);
+    }
+}

@@ -14,7 +14,7 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Install</h3>
     <p class="bb-card-desc">
-        The package runs on .NET 8, 9 and 10, in Blazor WebAssembly, Blazor Server, a Blazor Web App and Blazor
+        The package runs on .NET 10 and 11, in Blazor WebAssembly, Blazor Server, a Blazor Web App and Blazor
         Hybrid. In a Web App it belongs in the project that holds the pages with a canvas - the <code>.Client</code>
         project, for pages rendered with <code>InteractiveWebAssembly</code>.
     </p>
@@ -42,7 +42,7 @@
     </p>
     <CodeBlock Code="@StylesheetCode" />
     <p class="bb-card-desc">
-        On .NET 9 and later, <code>href="@@Assets["_content/Bit.Blow/bit-blow.css"]"</code> in <code>App.razor</code>
+        <code>href="@@Assets["_content/Bit.Blow/bit-blow.css"]"</code> in <code>App.razor</code>
         serves the fingerprinted copy. The script module, <code>_content/Bit.Blow/bit-blow.js</code>, needs no tag:
         the component imports it the first time it needs it.
     </p>

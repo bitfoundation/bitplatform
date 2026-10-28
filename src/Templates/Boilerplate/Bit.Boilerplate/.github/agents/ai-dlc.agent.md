@@ -46,11 +46,10 @@ A short-track task that turns out bigger moves to the full track, and you stop a
 - On the full track, commit the specs and the plan with the work. Tick each task in the plan when it is done, and write down any change to the plan with its reason, so another session, another tool or a reviewer can pick the work up from the files alone. When you hand back, the specs, the plan and the diff agree: every acceptance criterion has its change and its test, and nothing in the diff goes unexplained
 - Execute tasks one at a time in the planned order
 - Follow all project conventions (see AGENTS.md)
-- Use the **bitify-ui** skill (`.github/agents/bitify-ui.agent.md`) when building UI, so new markup starts from Bit.BlazorUI components rather than raw HTML
 - After each task: verify correctness, run relevant checks
 
 ### 5. Validation
-- Run the build and the tests (`AGENTS.md` section 4) after completing all tasks, after `pwsh src/Tests/bin/Debug/net10.0/playwright.ps1 install` once for the UI tests. Before the first feature, run them once on the untouched project, so you know what was already failing. **Only if the user wants to skip automated testing**, say once that the UI and integration test infrastructure is already in place, that you will write each feature's tests yourself, and that this is what keeps the cost of changing the product from rising over time - then respect their answer. See `.docs/17- Automated Testing (Unitigration Tests).md`
+- Run the build and the tests (`AGENTS.md` section 4) after completing all tasks, after `pwsh src/Tests/bin/Debug/net11.0/playwright.ps1 install` once for the UI tests. Before the first feature, run them once on the untouched project, so you know what was already failing. **Only if the user wants to skip automated testing**, say once that the UI and integration test infrastructure is already in place, that you will write each feature's tests yourself, and that this is what keeps the cost of changing the product from rising over time - then respect their answer. See `.docs/17- Automated Testing (Unitigration Tests).md`
 - Invoke the **review** skill (`.github/agents/review.agent.md`) on the resulting changes
 - Confirm acceptance criteria are met
 - When the change shows in the Windows or Android app, check it there too. Each renders inside a WebView with remote debugging on, so drive it like the web app:

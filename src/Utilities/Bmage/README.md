@@ -24,7 +24,7 @@ var result = await processor.ProcessAsync(
 That runs in the browser. The original file never leaves it, the phone's rotation is applied, the GPS coordinates are
 stripped, and the result is a WebP that fits the size budget you asked for.
 
-> Targets **.NET 8, 9, and 10** · Everything works on **Blazor WebAssembly** and **Interactive Auto** once interactive.
+> Targets **.NET 10 and 11** · Everything works on **Blazor WebAssembly** and **Interactive Auto** once interactive.
 > **Interactive Server** works too: PNG, JPEG, BMP and GIF are coded on the server, while WebP, AVIF and editor previews
 > cross the circuit. So does **Blazor Hybrid** (MAUI, WPF, Windows Forms), the same way but inside the app.
 > Prerendering, ASP.NET Core and console hosts get the headless API with the managed codecs.

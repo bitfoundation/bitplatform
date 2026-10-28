@@ -80,6 +80,59 @@ public class LayoutModeTests
         Assert.AreEqual(2.0, sy, 1e-9);
     }
 
+    // ── Holding the element through the render on Blazor Server ───────────────
+
+    private static BmotionTestContext RenderAndMove(bool inProcess, BmLayout layout, Func<string, BmotionBoundingRect?> rects)
+    {
+        var ctx = new BmotionTestContext();
+        ctx.Interop.IsInProcess = inProcess;
+        ctx.Interop.BoundingRectProvider = rects;
+        var component = ctx.Render<Bmotion>(ps => ps
+            .Add(p => p.Id, "box")
+            .Add(p => p.Layout, layout)
+            .Add(p => p.LayoutAnchor, BmLayoutAnchor.Center)
+            .Add(p => p.ChildContent, Div));
+        component.Render(ps => ps.Add(p => p.Custom, "changed"));
+        return ctx;
+    }
+
+    [TestMethod]
+    public void OnServer_TheSnapshotBeforeARender_HoldsTheElementThroughIt_InTheFlipsTerms()
+    {
+        // The FLIP is a round trip behind the render there: until it comes, the element is held where it was.
+        using var ctx = RenderAndMove(inProcess: false, BmLayout.Position, MovingRect());
+
+        var hold = ctx.Interop.ArgsOf("measureAndHoldLayout").Single();
+        Assert.AreEqual("box", hold[0]);
+        Assert.AreEqual(true, hold[2], "translates, as Position does");
+        Assert.AreEqual(false, hold[3], "but doesn't scale");
+        Assert.AreEqual(0.5, (double)hold[4]!, 1e-9, "about the same anchor");
+        Assert.AreEqual(0.5, (double)hold[5]!, 1e-9);
+        Assert.AreEqual(1, ctx.Interop.CountOf("playWaapiFlip"), "the FLIP takes it over");
+        Assert.IsFalse(ctx.Interop.WasCalled("releaseLayoutHold"));
+    }
+
+    [TestMethod]
+    public void OnServer_ARenderThatDoesntMoveTheElement_LetsGoOfTheHold()
+    {
+        var still = new BmotionBoundingRect { Left = 10, Top = 10, Width = 100, Height = 100 };
+        using var ctx = RenderAndMove(inProcess: false, BmLayout.Full, _ => still);
+
+        Assert.AreEqual(1, ctx.Interop.CountOf("measureAndHoldLayout"));
+        Assert.IsFalse(ctx.Interop.WasCalled("playWaapiFlip"));
+        Assert.AreEqual("box", (string?)ctx.Interop.ArgsOf("releaseLayoutHold").Single()[0]);
+    }
+
+    [TestMethod]
+    public void OnWebAssembly_NothingIsHeld()
+    {
+        // The FLIP plays before the browser paints there.
+        using var ctx = RenderAndMove(inProcess: true, BmLayout.Full, MovingRect());
+
+        Assert.IsFalse(ctx.Interop.WasCalled("measureAndHoldLayout"));
+        Assert.AreEqual(1, ctx.Interop.CountOf("playWaapiFlip"));
+    }
+
     [TestMethod]
     public void Size_IsEnabledAndDistinctFromTheOtherModes()
     {

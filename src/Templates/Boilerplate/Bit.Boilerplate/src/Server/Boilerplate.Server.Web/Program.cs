@@ -11,6 +11,12 @@ public static partial class Program
 {
     public static async Task Main(string[] args)
     {
+        //-:cnd:noEmit
+#if Development
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+#endif
+        //+:cnd:noEmit
+
         ConfigureGlobalization();
 
         var builder = WebApplication.CreateBuilder(options: new()

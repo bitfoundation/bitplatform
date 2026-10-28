@@ -159,7 +159,7 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
             throw new InvalidOperationException("The app's .NET runtime didn't start within 3 minutes.");
 
         await page.EvaluateAsync("() => { window.__bitAotProfile = 1; }", cancellationToken: cancellationToken);
-        var visited = new List<string> { (await page.EvaluateAsync(Settle, cancellationToken: cancellationToken)).GetString()! };
+        var visited = new List<string> { (await SettleAsync(startPath, cancellationToken)).GetString()! };
         progress(visited[0]);
         var queue = new Queue<string>();
 
@@ -184,7 +184,7 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
                     return visited;
             }
 
-            await page.EvaluateAsync(Settle, cancellationToken: cancellationToken);
+            await SettleAsync(next, cancellationToken);
             visited.Add(next);
             progress(next);
         }
@@ -224,12 +224,24 @@ public sealed partial class ProfileCollector(DevToolsPage page, PublishedApp app
             await Task.Delay(int.Parse(step["wait:".Length..]), cancellationToken);
         }
 
-        await page.EvaluateAsync(Settle, cancellationToken: cancellationToken);
+        await SettleAsync(step, cancellationToken);
 
         if ((await page.EvaluateAsync("() => window.__bitAotProfile === 1", cancellationToken: cancellationToken)).ValueKind is not JsonValueKind.True)
             throw new AppReloadedException(step);
 
         return true;
+    }
+
+    private async Task<JsonElement> SettleAsync(string path, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await page.EvaluateAsync(Settle, cancellationToken: cancellationToken);
+        }
+        catch (DevToolsException exp) when (exp.Message.Contains("Execution context was destroyed", StringComparison.Ordinal))
+        {
+            throw new AppReloadedException(path);
+        }
     }
 
     public async Task<byte[]> WriteAsync(CancellationToken cancellationToken)

@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace Bit.Cli.Templates;
 
@@ -10,6 +11,10 @@ public enum TemplateParameterType
 }
 
 public sealed record TemplateChoice(string Value, string? Description);
+
+public sealed record TemplateSwitchCase(string? Parameter, string? Value, string Result);
+
+public sealed record TemplateSwitch(string Replaces, IReadOnlyList<TemplateSwitchCase> Cases);
 
 public sealed record TemplateParameter
 {
@@ -41,7 +46,7 @@ public sealed record TemplateParameter
     }
 }
 
-public sealed class TemplateManifest
+public sealed partial class TemplateManifest
 {
     private static readonly string[] hiddenParameters = ["helpUrl"];
 
@@ -55,9 +60,26 @@ public sealed class TemplateManifest
 
     public required IReadOnlyList<TemplateParameter> Parameters { get; init; }
 
+    public IReadOnlyList<TemplateSwitch> Switches { get; init; } = [];
+
     public TemplateParameter? Find(string name)
     {
         return Parameters.FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public string ApplySwitches(string text, TemplateSelection selection)
+    {
+        foreach (var templateSwitch in Switches)
+        {
+            var match = templateSwitch.Cases.FirstOrDefault(c => c.Parameter is null || string.Equals(selection[c.Parameter], c.Value, StringComparison.OrdinalIgnoreCase));
+
+            if (match is not null)
+            {
+                text = text.Replace(templateSwitch.Replaces, match.Result, StringComparison.Ordinal);
+            }
+        }
+
+        return text;
     }
 
     public static TemplateManifest Embedded { get; } = LoadEmbedded();
@@ -68,10 +90,21 @@ public sealed class TemplateManifest
         var root = document.RootElement;
 
         var parameters = new List<TemplateParameter>();
+        var switches = new List<TemplateSwitch>();
 
         foreach (var symbol in root.GetProperty("symbols").EnumerateObject())
         {
             var value = symbol.Value;
+
+            if (GetString(value, "type") is "generated" && GetString(value, "generator") is "switch")
+            {
+                if (ParseSwitch(value) is { } templateSwitch)
+                {
+                    switches.Add(templateSwitch);
+                }
+
+                continue;
+            }
 
             if (GetString(value, "type") is not "parameter" || hiddenParameters.Contains(symbol.Name))
                 continue;
@@ -103,9 +136,43 @@ public sealed class TemplateManifest
             Identity = GetString(root, "identity") ?? "Bit.Boilerplate",
             ShortName = GetString(root, "shortName") ?? "bit-bp",
             SourceName = GetString(root, "sourceName") ?? "Boilerplate",
-            Parameters = parameters
+            Parameters = parameters,
+            Switches = switches
         };
     }
+
+    private static TemplateSwitch? ParseSwitch(JsonElement symbol)
+    {
+        if (GetString(symbol, "replaces") is not { Length: > 0 } replaces
+            || symbol.TryGetProperty("parameters", out var parameters) is false
+            || parameters.TryGetProperty("cases", out var cases) is false
+            || cases.ValueKind is not JsonValueKind.Array)
+            return null;
+
+        var parsed = new List<TemplateSwitchCase>();
+
+        foreach (var templateCase in cases.EnumerateArray())
+        {
+            if (GetString(templateCase, "value") is not { } result)
+                continue;
+
+            var condition = GetString(templateCase, "condition") ?? "";
+
+            if (condition.Trim().Length is 0)
+            {
+                parsed.Add(new(null, null, result));
+            }
+            else if (SwitchConditionRegex().Match(condition) is { Success: true } match)
+            {
+                parsed.Add(new(match.Groups["parameter"].Value, match.Groups["value"].Value, result));
+            }
+        }
+
+        return new TemplateSwitch(replaces, parsed);
+    }
+
+    [GeneratedRegex("""^\s*\(\s*(?<parameter>\w+)\s*==\s*['"](?<value>[^'"]*)['"]\s*\)\s*$""")]
+    private static partial Regex SwitchConditionRegex();
 
     private static TemplateManifest LoadEmbedded()
     {

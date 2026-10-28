@@ -1,0 +1,124 @@
+﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject SampleState State
+@inject IJSRuntime JS
+
+<div class="app">
+    <nav class="topbar">
+        <NavLink href="" Match="NavLinkMatch.All" class="brand">Balette samples</NavLink>
+        <NavLink href="commands">Commands</NavLink>
+        <NavLink href="flows">Flows</NavLink>
+        <NavLink href="sources">Sources</NavLink>
+        <NavLink href="inline">Inline</NavLink>
+        <BaletteTrigger Label="Search or run a command…" />
+        @* Which renderer produced this markup: Static while prerendering, then Server, WebAssembly or WebView. *@
+        <span class="renderer" data-renderer="@RendererInfo.Name" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")">
+            @RendererInfo.Name@(RendererInfo.IsInteractive ? null : " (prerendered)")
+        </span>
+    </nav>
+
+    <main>
+        @Body
+    </main>
+
+    <footer class="status" aria-live="polite">
+        Last action: <span id="last-action">@(State.LastAction ?? "none yet")</span>
+    </footer>
+</div>
+
+@* One palette for the whole app, in the layout every page renders in, with the app-wide commands. A new list is
+   handed to BaletteCommands whenever a value they show changes, so the Theme setting's value and the Compact rows switch
+   are never stale. The palette renders a closed <dialog> while prerendering and attaches its keyboard handling
+   once it is interactive. *@
+<BaletteCommands Commands="_appCommands" />
+
+<Balette Density="@(State.Compact ? "compact" : "comfortable")">
+    @* Declarative commands, next to the markup that owns them. *@
+    <BaletteGroup Heading="Help">
+        <BaletteItem Id="help.docs" Title="Read the documentation" Keywords="docs readme guide"
+                     Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Balette" NewTab="true" />
+        <BaletteItem Id="help.demo" Title="Open the demo website" Keywords="website site"
+                     Href="https://balette.bitplatform.dev" NewTab="true" />
+    </BaletteGroup>
+</Balette>
+
+@code {
+    private IReadOnlyList<BaletteCommand> _appCommands = [];
+    private (string Theme, bool Compact)? _shown;
+    private string? _appliedTheme;
+
+    protected override void OnInitialized()
+    {
+        UpdateCommands();
+        State.Changed += OnStateChanged;
+    }
+
+    // A new list re-registers every command, so one is built only when a value the commands show has changed: most
+    // changes - a person found, a message sent - touch none of them.
+    private void UpdateCommands()
+    {
+        var shown = (State.Theme, State.Compact);
+        if (_shown == shown) return;
+
+        _shown = shown;
+        _appCommands = BuildCommands();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_appliedTheme == State.Theme) return;
+
+        // The theme goes on <html data-theme>, where the palette's stylesheet and app.css both look for it. The
+        // palette's Theme parameter would style the dialog only, not the trigger and the sequence hint outside it.
+        _appliedTheme = State.Theme;
+        await JS.InvokeVoidAsync("document.documentElement.setAttribute", "data-theme", State.Theme);
+    }
+
+    private BaletteCommand[] BuildCommands() =>
+    [
+        BaletteCmd.Navigate("Home", "/").Id("nav.home").Group("Navigation").Shortcut("G H"),
+        BaletteCmd.Navigate("Commands", "/commands").Id("nav.commands").Group("Navigation").Shortcut("G C")
+            .Subtitle("Page-scoped commands, toggles, confirmation"),
+        BaletteCmd.Navigate("Flows", "/flows").Id("nav.flows").Group("Navigation").Shortcut("G F")
+            .Subtitle("Nested pages, prompts, multi-select"),
+        BaletteCmd.Navigate("Sources", "/sources").Id("nav.sources").Group("Navigation").Shortcut("G S")
+            .Subtitle("Modes and async sources"),
+        BaletteCmd.Navigate("Inline", "/inline").Id("nav.inline").Group("Navigation").Shortcut("G I")
+            .Subtitle("A palette in the page"),
+
+        // A setting shows its value; its children are the options, the current one checked.
+        BaletteCmd.New("Theme").Id("preferences.theme").Group("Preferences").Keywords("appearance", "color scheme")
+            .Value(Capitalize(State.Theme))
+            .Children(ThemeOption("auto", "Follow the operating system"),
+                      ThemeOption("light", "Always light"),
+                      ThemeOption("dark", "Always dark")),
+
+        // A toggle keeps the palette open, so the switch can be seen to flip.
+        BaletteCmd.New("Compact rows").Id("preferences.compact").Group("Preferences").Keywords("density")
+            .Checked(State.Compact)
+            .Handler(_ =>
+            {
+                State.ToggleCompact();
+                return Task.FromResult(BaletteCommandResult.KeepOpen);
+            }),
+    ];
+
+    private BaletteCommand ThemeOption(string theme, string subtitle) =>
+        BaletteCmd.New(Capitalize(theme)).Id($"preferences.theme.{theme}").Subtitle(subtitle)
+            .Checked(State.Theme == theme)
+            .Handler(_ =>
+            {
+                State.SetTheme(theme);
+                return Task.FromResult(BaletteCommandResult.Back);
+            });
+
+    private static string Capitalize(string value) => char.ToUpperInvariant(value[0]) + value[1..];
+
+    private void OnStateChanged()
+    {
+        UpdateCommands();
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose() => State.Changed -= OnStateChanged;
+}

@@ -6,7 +6,7 @@ namespace Bit.Belemetry;
 /// <summary>
 /// Gives ASP.NET Core's request <see cref="Activity"/> the HTTP semantic conventions (<c>http.request.method</c>,
 /// <c>url.scheme</c>, <c>http.route</c>, <c>http.response.status_code</c>, <c>error.type</c>, ...) that the OpenTelemetry
-/// ASP.NET Core instrumentation would otherwise add, and that ASP.NET Core itself leaves off on .NET 8 and 9.
+/// ASP.NET Core instrumentation would otherwise add.
 /// </summary>
 /// <remarks>
 /// Belemetry cannot reference ASP.NET Core (it also runs in the browser), and reading the <c>HttpContext</c> of the
@@ -23,7 +23,7 @@ internal sealed class BelemetryAspNetCoreRequests : IDisposable
 
     /// <summary>
     /// The .NET 10 switch behind which ASP.NET Core sets <c>url.path</c>, <c>server.address</c>, <c>server.port</c>
-    /// and friends on the request Activity itself (it is suppressed unless turned off). Ignored by .NET 8 and 9.
+    /// and friends on the request Activity itself (it is suppressed unless turned off).
     /// </summary>
     internal const string SuppressSwitch = "Microsoft.AspNetCore.Hosting.SuppressActivityOpenTelemetryData";
 

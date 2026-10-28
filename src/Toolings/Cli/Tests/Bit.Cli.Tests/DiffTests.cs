@@ -1,4 +1,6 @@
-﻿using Bit.Cli.Projects;
+﻿using System.Diagnostics;
+using Bit.Cli.Infrastructure;
+using Bit.Cli.Projects;
 using Bit.Cli.Templates;
 
 namespace Bit.Cli.Tests;
@@ -33,6 +35,23 @@ public class DiffTests
     }
 
     [TestMethod]
+    public void AProjectFromBeforeTheFrameworkOption_Should_KeepItsOwnFramework()
+    {
+        using var host = new Infrastructure.TestHost();
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "bit.json"), """{ "version": "11.0.0-pre-09", "name": "Contoso", "options": { "database": "PostgreSQL" } }""");
+        var core = Path.Combine(host.WorkingDirectory, "src", "Client", "Contoso.Client.Core");
+        Directory.CreateDirectory(core);
+        File.WriteAllText(Path.Combine(core, "Contoso.Client.Core.csproj"), "<Project><PropertyGroup><TargetFramework>net11.0</TargetFramework></PropertyGroup></Project>");
+
+        Assert.AreEqual("net11.0", TemplateDiff.ReadProject(host.WorkingDirectory).Options["framework"]);
+
+        File.Delete(Path.Combine(host.WorkingDirectory, "bit.json"));
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "Contoso.slnx"), "<Solution />");
+
+        Assert.AreEqual("net11.0", TemplateDiff.ReadProject(host.WorkingDirectory).Options["framework"]);
+    }
+
+    [TestMethod]
     public void TheSummary_Should_ShowThePasswordTheReadmeNames()
     {
         Assert.AreEqual("40817263", NewWorkflow.ReadSeedPassword("pre-confirmed accounts whose password is **`40817263`**:"));
@@ -48,5 +67,57 @@ public class DiffTests
 
         CollectionAssert.AreEqual(new[] { "--database", "PostgreSQL" }, arguments);
         CollectionAssert.AreEquivalent(new[] { "--madeUp true", "--module Nope" }, unknown);
+    }
+
+    [TestMethod]
+    public async Task TheDiff_Should_GoToAFolderOfTheUsersOwn()
+    {
+        using var host = new Infrastructure.TestHost(HostOs.Linux);
+
+        await host.RunAsync("diff", "10.6.0", "10.7.0", "--name", "Shop");
+
+        Assert.AreEqual(Path.Combine(host.Environment.BitDirectory, "diff", "Shop-10.6.0-10.7.0"), host.Runner.Calls.First(c => c.FileName is "git").WorkingDirectory, "Others can plant a link in the shared temp folder.");
+    }
+
+    [TestMethod]
+    public async Task AnOptionDiffDoesntHave_Should_StopBeforeItCreatesAnything()
+    {
+        using var host = new Infrastructure.TestHost(HostOs.Linux);
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("diff", "--yes", "--name", "Shop"), host.Output);
+        StringAssert.Contains(host.FlatOutput, "'--yes' isn't a bit Boilerplate version");
+        Assert.IsEmpty(host.Runner.Calls);
+        Assert.IsFalse(Directory.Exists(Path.Combine(host.Environment.BitDirectory, "diff")));
+    }
+
+    [TestMethod]
+    public void FolderRemover_Should_RemoveALinkedFolderButNotWhatItLinksTo()
+    {
+        using var host = new Infrastructure.TestHost();
+        var target = Directory.CreateDirectory(Path.Combine(host.Root, "projects")).FullName;
+        File.WriteAllText(Path.Combine(target, "Program.cs"), "keep");
+        File.WriteAllText(Path.Combine(Directory.CreateDirectory(Path.Combine(target, "src")).FullName, "App.cs"), "keep");
+        var link = Path.Combine(Directory.CreateDirectory(Path.Combine(host.Root, "bit-diff")).FullName, "Shop-10.6.0-10.7.0");
+        Link(link, target);
+
+        var (failures, _) = FolderRemover.Delete(link);
+
+        Assert.IsEmpty(failures);
+        Assert.IsFalse(Path.Exists(link));
+        Assert.IsTrue(File.Exists(Path.Combine(target, "Program.cs")));
+        Assert.IsTrue(File.Exists(Path.Combine(target, "src", "App.cs")));
+    }
+
+    private static void Link(string link, string target)
+    {
+        if (OperatingSystem.IsWindows() is false)
+        {
+            Directory.CreateSymbolicLink(link, target);
+            return;
+        }
+
+        using var junction = Process.Start(new ProcessStartInfo("cmd.exe", ["/c", "mklink", "/J", link, target]) { RedirectStandardOutput = true, UseShellExecute = false })!;
+        junction.WaitForExit();
+        Assert.AreEqual(0, junction.ExitCode);
     }
 }

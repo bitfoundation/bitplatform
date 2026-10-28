@@ -432,11 +432,7 @@ else
     {
         get
         {
-#if NET9_0_OR_GREATER
             return FormName is { Length: > 0 } && !RendererInfo.IsInteractive && AssignedRenderMode is null;
-#else
-            return false;
-#endif
         }
     }
 

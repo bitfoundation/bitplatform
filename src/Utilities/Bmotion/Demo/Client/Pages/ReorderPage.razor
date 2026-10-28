@@ -56,8 +56,7 @@
     <p>
         <code>Axis="BmDragAxis.X"</code> runs the same machinery sideways for a row of tabs, a
         toolbar or a card rail. Only the axis changes - the displacement, the commit and the binding
-        all behave identically. Wrapping grids are not supported: the group needs a single line to
-        reason about order along.
+        all behave identically.
     </p>
 
     <div class="demo-row">
@@ -76,13 +75,106 @@
 </section>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Keyboard access</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Grids</h3>
     <p>
-        A pointer drag is not reachable by keyboard, so a reorderable list needs a second way in -
-        and it does not need to be a separate mechanism. The group observes external mutations of
-        the bound list, so plain move-up / move-down buttons that reorder <code>Items</code>
-        directly (the ▲▼ controls in the first sample) animate exactly like a drag would. The same
-        applies to any other source of order: a sort, a server push, an undo.
+        <code>Axis="BmDragAxis.Both"</code> reorders a layout that wraps - a CSS grid, a
+        <code>flex-wrap</code> row. The dragged tile takes the cell nearest its centre and the others close up
+        around it in reading order. From the keyboard, <kbd>←</kbd>/<kbd>→</kbd> move a held tile one place and
+        <kbd>↑</kbd>/<kbd>↓</kbd> a row.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card">
+            <div class="tile-grid">
+                <BmotionReorderGroup @bind-Items="_tiles" Axis="BmDragAxis.Both" Context="tile">
+                    <div class="tile">@tile</div>
+                </BmotionReorderGroup>
+            </div>
+        </div>
+    </div>
+
+    <p class="reorder-readout">Current order: @string.Join(" ", _tiles)</p>
+
+    <CodeSnippet Code="@_gridCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Long lists</h3>
+    <p>
+        A list longer than its scroller scrolls while an item is held near its edge - faster the closer it gets -
+        and the item travels with it, so it can be carried past what is in view. It stops at the end of the list.
+        This is on by default; <code>AutoScroll="false"</code> turns it off. The page scrolls the same way when the
+        list itself is taller than the window.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card">
+            <div class="scroll-list-stage">
+                <BmotionReorderGroup @bind-Items="_chapters" Context="chapter">
+                    <div class="track-row"><span class="track-title">@chapter</span></div>
+                </BmotionReorderGroup>
+            </div>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_longListCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The lift and the settle</h3>
+    <p>
+        Two parameters shape how a reorder feels. <code>WhileDrag</code> is the overlay the held item wears -
+        a slight scale-up by default - and takes any target, so it can lift, tilt or cast a shadow.
+        <code>Transition</code> is the spring the other items make way with and the dropped one settles on -
+        snappy by default; a softer one below lets the rows drift into place. The same overlay shows on an item
+        picked up from the keyboard.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card list-stage">
+            <BmotionReorderGroup @bind-Items="_notes" Context="note"
+                                 WhileDrag='Bm.To(scale: 1.04, rotate: -2, boxShadow: "0 14px 28px rgba(0,0,0,.25)")'
+                                 Transition="Bm.Spring(stiffness: 160, damping: 20)">
+                <div class="track-row"><span class="track-title">@note</span></div>
+            </BmotionReorderGroup>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_feelCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Keyboard access</h3>
+    <p>
+        Every list here is keyboard-reorderable out of the box (<code>Keyboard="false"</code> turns it off). Tab
+        to a row and press <kbd>Space</kbd> or <kbd>Enter</kbd> to pick it up. The arrow keys move it while the
+        others make way, <kbd>Space</kbd> drops it - so does moving focus away - and <kbd>Escape</kbd> puts it
+        back. Each step is announced to screen readers through a live region. <code>Announce</code> words those
+        announcements: it is handed a <strong>BmReorderAnnouncement</strong> - the <code>Event</code> (picked up,
+        moved, dropped, cancelled), the <code>Item</code>, its 1-based <code>Position</code> and the
+        <code>Count</code> - and returns the sentence, so it can name the item or speak another language.
+        <code>DefaultText</code> is the library's own English wording. The list below names the track, and shows
+        what a screen reader would hear.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card list-stage">
+            <BmotionReorderGroup @bind-Items="_playlist" ItemKey="@(t => t.Id)" Context="track"
+                                 Announce="AnnounceTrack">
+                <div class="track-row">
+                    <span class="track-title">@track.Title</span>
+                    <span class="track-time">@track.Duration</span>
+                </div>
+            </BmotionReorderGroup>
+        </div>
+    </div>
+
+    <p class="reorder-readout" aria-hidden="true">Announced: @(_announcement ?? "nothing yet - tab to a row and press Space")</p>
+
+    <p>
+        The group also follows any change to the bound list, so plain move-up / move-down buttons that
+        reorder <code>Items</code> directly (the ▲▼ controls in the first sample) animate exactly like a
+        drag. The same goes for any other source of order: a sort, a server push, an undo.
     </p>
 
     <CodeSnippet Code="@_keyboardCode" />
@@ -104,7 +196,38 @@
 
     private List<string> _stages = ["Draft", "Review", "Approved", "Shipped"];
 
-    // Keyboard-accessible fallback for the pointer-only drag: the group observes external
+    private List<string> _tiles = ["🍎", "🍐", "🍊", "🍋", "🍌", "🍉", "🍇", "🍓", "🍒"];
+
+    private List<string> _chapters = [.. Enumerable.Range(1, 14).Select(i => $"Chapter {i}")];
+
+    private List<string> _notes = ["Buy strings", "Book the studio", "Mix the demo", "Send it out"];
+
+    private List<Track> _playlist =
+    [
+        new(1, "Around the World", "7:09"),
+        new(2, "Da Funk", "5:28"),
+        new(3, "Aerodynamic", "3:27"),
+        new(4, "Instant Crush", "5:37"),
+    ];
+
+    private string? _announcement;
+
+    // What a screen reader hears at each keyboard step: the track's own name in front of the library's
+    // wording. Kept here as well so the page can print it - the group's live region is visually hidden.
+    private string AnnounceTrack(BmReorderAnnouncement<Track> a)
+    {
+        _announcement = a.Event switch
+        {
+            BmReorderEvent.PickedUp => $"{a.Item.Title}, picked up. Position {a.Position} of {a.Count}.",
+            BmReorderEvent.Moved => $"{a.Item.Title}, position {a.Position} of {a.Count}.",
+            BmReorderEvent.Dropped => $"{a.Item.Title}, dropped at position {a.Position} of {a.Count}.",
+            _ => $"{a.Item.Title}: {a.DefaultText}",
+        };
+        _ = InvokeAsync(StateHasChanged);
+        return _announcement;
+    }
+
+    // Another source of order next to the drag and the built-in keyboard reordering: the group observes external
     // Items mutations, so moving an item in the bound list reorders the rendered rows.
     private void MoveTrack(Track track, int delta)
     {
@@ -159,7 +282,7 @@
     private const string _horizontalCode = """
         @using Bit.Bmotion
 
-        @* Same machinery, sideways. A single line only - wrapping grids are not supported. *@
+        @* Same machinery, sideways. For a layout that wraps, see Axis="BmDragAxis.Both" below. *@
         <div style="display:flex;gap:.5rem;flex-wrap:nowrap">
             <BmotionReorderGroup @bind-Items="_stages" Axis="BmDragAxis.X" Context="stage">
                 <div class="chip">@stage</div>
@@ -172,14 +295,84 @@
         }
         """;
 
-    private const string _keyboardCode = """
-        @* The group observes external mutations of the bound list, so anything that reorders
-           Items animates exactly like a drag: keyboard controls, a sort, a server push, an undo. *@
-        <button aria-label="Move @track.Title up"
-                disabled="@(_tracks.IndexOf(track) is 0)"
-                @onclick="() => MoveTrack(track, -1)">▲</button>
+    private const string _gridCode = """
+        @using Bit.Bmotion
+
+        <style>
+            .tile-grid { display: grid; grid-template-columns: repeat(3, 5rem); gap: .5rem; }
+            .tile { aspect-ratio: 1; display: grid; place-items: center; font-size: 1.6rem; cursor: grab; }
+        </style>
+
+        <div class="tile-grid">
+            <BmotionReorderGroup @bind-Items="_tiles" Axis="BmDragAxis.Both" Context="tile">
+                <div class="tile">@tile</div>
+            </BmotionReorderGroup>
+        </div>
 
         @code {
+            private List<string> _tiles = ["🍎", "🍐", "🍊", "🍋", "🍌", "🍉", "🍇", "🍓", "🍒"];
+        }
+        """;
+
+    private const string _longListCode = """
+        @* Held near the scroller's edge, the list scrolls and the row travels with it (AutoScroll, on by default). *@
+        <div style="max-height: 14rem; overflow-y: auto; display: flex; flex-direction: column; gap: .5rem">
+            <BmotionReorderGroup @bind-Items="_chapters" Context="chapter">
+                <div class="row">@chapter</div>
+            </BmotionReorderGroup>
+        </div>
+
+        @code {
+            private List<string> _chapters = [.. Enumerable.Range(1, 14).Select(i => $"Chapter {i}")];
+        }
+        """;
+
+    private const string _feelCode = """
+        @using Bit.Bmotion
+
+        @* WhileDrag: what the held item wears (default: a slight scale-up), for a drag and a keyboard
+           pick-up alike. Transition: the spring the others make way with and the dropped one settles on. *@
+        <BmotionReorderGroup @bind-Items="_notes" Context="note"
+                             WhileDrag='Bm.To(scale: 1.04, rotate: -2, boxShadow: "0 14px 28px rgba(0,0,0,.25)")'
+                             Transition="Bm.Spring(stiffness: 160, damping: 20)">
+            <div class="row">@note</div>
+        </BmotionReorderGroup>
+
+        @code {
+            private List<string> _notes = ["Buy strings", "Book the studio", "Mix the demo", "Send it out"];
+        }
+        """;
+
+    private const string _keyboardCode = """
+        @* Keyboard reordering is built in (Space or Enter, the arrow keys, Space; Escape cancels) and on by
+           default - Keyboard="false" turns it off. Announce words what a screen reader hears at each step. *@
+        <BmotionReorderGroup @bind-Items="_tracks" ItemKey="@(t => t.Id)" Context="track"
+                             Announce="AnnounceTrack">
+            <div class="row">
+                @track.Title
+                @* And the group observes external mutations of the bound list, so anything that reorders
+                   Items animates exactly like a drag: move buttons, a sort, a server push, an undo. *@
+                <button aria-label="Move @track.Title up"
+                        disabled="@(_tracks.IndexOf(track) is 0)"
+                        @onclick="() => MoveTrack(track, -1)">▲</button>
+            </div>
+        </BmotionReorderGroup>
+
+        @code {
+            private sealed record Track(int Id, string Title);
+
+            private List<Track> _tracks = [new(1, "One More Time"), new(2, "Digital Love"), new(3, "Voyager")];
+
+            // Event is PickedUp, Moved, Dropped or Cancelled; Position is 1-based, out of Count.
+            // DefaultText is the library's own English sentence for the same step.
+            private string AnnounceTrack(BmReorderAnnouncement<Track> a) => a.Event switch
+            {
+                BmReorderEvent.PickedUp => $"{a.Item.Title}, picked up. Position {a.Position} of {a.Count}.",
+                BmReorderEvent.Moved    => $"{a.Item.Title}, position {a.Position} of {a.Count}.",
+                BmReorderEvent.Dropped  => $"{a.Item.Title}, dropped at position {a.Position} of {a.Count}.",
+                _                       => $"{a.Item.Title}: {a.DefaultText}",
+            };
+
             private void MoveTrack(Track track, int delta)
             {
                 var index = _tracks.IndexOf(track);

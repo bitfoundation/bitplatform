@@ -18,7 +18,7 @@ public class HybridModeTests : InteractiveHarnessTests
 {
     protected override string BaseUrl => HybridHarnessHost.AppOrigin;
 
-    protected override string Framework => "net10.0";
+    protected override string Framework => "net11.0";
 
     protected override IReadOnlyList<string> ExpectedRenderers => ["WebView"];
 

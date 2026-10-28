@@ -33,6 +33,7 @@ public class BelemetryActivityCollectorTests
 
         string traceId, spanId;
         DateTime startUtc;
+        int flags;
         using (var activity = source.StartActivity("GET /orders", ActivityKind.Client, parentContext: default, tags: null, links: links)!)
         {
             Assert.IsNotNull(activity);
@@ -46,6 +47,7 @@ public class BelemetryActivityCollectorTests
             activity.AddEvent(new ActivityEvent("retry", DateTimeOffset.UtcNow, new ActivityTagsCollection { ["attempt"] = 2 }));
             activity.SetStatus(ActivityStatusCode.Error, "unavailable");
             traceId = activity.TraceId.ToHexString();
+            flags = (int)activity.ActivityTraceFlags;
             spanId = activity.SpanId.ToHexString();
             startUtc = activity.StartTimeUtc;
         }
@@ -57,7 +59,7 @@ public class BelemetryActivityCollectorTests
         Assert.AreEqual(spanId, span.SpanId);
         Assert.IsNull(span.ParentSpanId);
         Assert.AreEqual("vendor=1", span.TraceState);
-        Assert.AreEqual(1, span.Flags);
+        Assert.AreEqual(flags, span.Flags);
         Assert.AreEqual("GET /orders", span.Name);
         Assert.AreEqual(BelemetrySpanKind.Client, span.Kind);
         Assert.AreEqual(BelemetryTime.ToUnixNano(startUtc), span.StartTimeUnixNano);

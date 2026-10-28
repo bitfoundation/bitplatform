@@ -258,7 +258,6 @@ public class PanelInteractionTests : BunitContext
         Assert.IsEmpty(Session.Components.BuildTree(includeHidden: true));
     }
 
-#if NET10_0_OR_GREATER
     /// <summary>
     /// The framework's update_parameters meter names a component type, never an instance. The profiler's lifecycle
     /// table once listed BevTools' own panels and the framework components only they render (the component tree's
@@ -283,7 +282,6 @@ public class PanelInteractionTests : BunitContext
         Assert.Contains("ParentComponent", types, "the application's own component is measured");
         Assert.DoesNotContain(t => t.StartsWith("Bev", StringComparison.Ordinal) || t.StartsWith("Virtualize", StringComparison.Ordinal), types, string.Join(", ", types));
     }
-#endif
 
     /// <summary>The inverse: the propagation must not swallow the application's own use of the same framework components.</summary>
     [TestMethod]

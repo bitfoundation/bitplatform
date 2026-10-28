@@ -27,7 +27,7 @@ public sealed class MauiSampleApp : IAsyncDisposable
     /// <summary>The origin BlazorWebView serves the app from.</summary>
     public const string AppOrigin = "https://0.0.0.1";
 
-    public const string TargetFramework = "net10.0-windows10.0.19041.0";
+    public const string TargetFramework = "net11.0-windows10.0.19041.0";
 
     public static readonly string[] BuildProperties = ["-p:WindowsPackageType=None", "-p:WindowsAppSDKSelfContained=true"];
 

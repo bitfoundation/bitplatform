@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using Bit.Bcrdt.Server;
 using Bit.Bcrdt.SignalR;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,8 +14,8 @@ using LoopbackHost = Bit.Bcrdt.Tests.SyncRegressionTests.LoopbackHost;
 namespace Bit.Bcrdt.Tests;
 
 /// <summary>
-/// Read-only access, the handshake's completion rule, reconnection pacing, and the server-side
-/// document host - over the real relays where the behaviour lives in them.
+/// Read-only access, the handshake's completion rule, reconnection pacing, the server-side document
+/// host and the circuit presence handler - over the real relays where the behaviour lives in them.
 /// </summary>
 [TestClass]
 public class AccessAndHostingTests
@@ -638,6 +639,31 @@ public class AccessAndHostingTests
         Assert.IsEmpty(connection.Sent);
 
         session.Dispose();
+    }
+
+    [TestMethod]
+    public async Task The_circuit_handler_withdraws_presence_while_the_connection_is_down()
+    {
+        var services = new ServiceCollection();
+        services.AddBitBcrdtServices();
+        services.AddBitBcrdtCircuitPresence();
+        services.AddBitBcrdtCircuitPresence();
+
+        await using ServiceProvider provider = services.BuildServiceProvider();
+        await using AsyncServiceScope circuit = provider.CreateAsyncScope();
+
+        CircuitHandler[] handlers = [.. circuit.ServiceProvider.GetServices<CircuitHandler>()];
+        Assert.HasCount(1, handlers, "registering it twice should add it once");
+
+        BcrdtCollaborativeDocument document = await circuit.ServiceProvider.GetRequiredService<IBcrdtCollaborationService>()
+            .OpenAsync("notes", new BcrdtOpenDocumentOptions { User = new BcrdtCollaboratorInfo("ada", "Ada", "#ff0000") });
+
+        // The handler reads nothing off the circuit, and a Circuit cannot be made outside a running server.
+        await handlers[0].OnConnectionDownAsync(null!, CancellationToken.None);
+        Assert.IsTrue(document.Presence.IsSuspended, "a dropped connection should withdraw the circuit's presence");
+
+        await handlers[0].OnConnectionUpAsync(null!, CancellationToken.None);
+        Assert.IsFalse(document.Presence.IsSuspended, "and a restored one should publish it again");
     }
 
     // ---------------------------------------------------------------------------------------------

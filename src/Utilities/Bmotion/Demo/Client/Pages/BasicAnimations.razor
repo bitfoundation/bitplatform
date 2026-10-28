@@ -37,7 +37,7 @@
                                         : Bm.To(scale: 1, rotate: 0, backgroundColor: "#1276C6"))'
                     Transition="Bm.Tween(0.4)"
                     OnTap="@(() => _toggled = !_toggled)">
-                <div class="box" />
+                <div class="box box-solid box-grows" />
             </Bmotion>
         </div>
     </div>
@@ -50,7 +50,39 @@
 </section>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> CSS properties</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Transforms, one property each</h3>
+    <p>
+        Every part of a transform is a property of its own. <code>x</code> and <code>y</code> move the element
+        (a bare number is pixels), <code>scale</code> grows it evenly while <code>scaleX</code> and
+        <code>scaleY</code> stretch one axis, <code>rotate</code> turns it (in degrees - <code>rotateZ</code> is the
+        same turn under its 3-D name) and <code>skewX</code> / <code>skewY</code> lean it. Bmotion composes the
+        ones you animate into the single <code>transform</code> the element gets, in a fixed order, so animating
+        <code>rotate</code> never wipes out an <code>x</code> set somewhere else, and a hover that scales leaves a
+        running rotation alone.
+    </p>
+
+    <div class="demo-row">
+        @foreach (var t in _transforms)
+        {
+            <div class="demo-card stack transform-stage">
+                <span class="demo-label">@t.Label</span>
+                <Bmotion Animate="@(_transformed ? t.To : t.From)"
+                         Transition="Bm.Spring(stiffness: 200, damping: 16)">
+                    <div class="box box-sm" />
+                </Bmotion>
+            </div>
+        }
+    </div>
+
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _transformed = !_transformed)">@(_transformed ? "Reset" : "Transform")</button>
+    </div>
+
+    <CodeSnippet Code="@_transformsCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> CSS properties</h3>
     <p>
         Animation is not limited to transforms. Colors, <code>borderRadius</code> and
         <code>boxShadow</code> interpolate as values rather than snapping, and complex strings like
@@ -66,7 +98,7 @@
                         : Bm.To(borderRadius: "10px", backgroundColor: "#1276C6", scale: 1))'
                     Transition="Bm.Tween(0.5, BmEase.InOut)"
                     OnTap="@(() => _rounded = !_rounded)">
-                <div class="box" />
+                <div class="box box-solid" />
             </Bmotion>
         </div>
         <div class="demo-card stack">
@@ -103,7 +135,7 @@
 </section>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> 3D transforms</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> 3D transforms</h3>
     <p>
         <code>perspective</code> gives an element a vanishing point and
         <code>rotateX</code> / <code>rotateY</code> / <code>z</code> turn it in that space.
@@ -132,7 +164,7 @@
         </div>
 
         <div class="demo-card stack">
-            <span class="demo-label">originX: 0 &middot; hinged at the left edge</span>
+            <span class="demo-label">originX: 0, originY: 1 &middot; hinged at the bottom-left corner</span>
             <Bmotion Animate="@(_hinged ? Bm.To(rotate: -75, originX: 0, originY: 1) : Bm.To(rotate: 0, originX: 0, originY: 1))"
                     Transition="Bm.Spring(stiffness: 200, damping: 16)"
                     OnTap="@(() => _hinged = !_hinged)">
@@ -149,6 +181,170 @@
     <CodeSnippet Code="@_transform3dCode" />
 </section>
 
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Skipping the entrance</h3>
+    <p>
+        <code>Initial="false"</code> mounts the element already at its <code>Animate</code> target, with no enter
+        animation - motion.dev's <code>initial={false}</code>. It is for content whose resting state is the point:
+        a switch that should load showing the position it was saved in, a panel restored from the last visit.
+        Only the mount is skipped; every later change of <code>Animate</code> animates as usual. Re-mount the two
+        boxes and compare, then toggle them.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">Initial="Bm.To(opacity: 0, scale: 0.4)" &middot; plays its entrance</span>
+            <Bmotion @key="_mounts"
+                     Initial="Bm.To(opacity: 0, scale: 0.4)"
+                     Animate="@(_saved ? Bm.To(opacity: 1, scale: 1, x: 40) : Bm.To(opacity: 1, scale: 1, x: -40))"
+                     Transition="Bm.Spring(stiffness: 220, damping: 18)">
+                <div class="box box-sm" />
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">Initial="false" &middot; mounts at rest</span>
+            <Bmotion @key="_mounts"
+                     Initial="false"
+                     Animate="@(_saved ? Bm.To(opacity: 1, scale: 1, x: 40) : Bm.To(opacity: 1, scale: 1, x: -40))"
+                     Transition="Bm.Spring(stiffness: 220, damping: 18)">
+                <div class="box box-sm" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _mounts++)">Re-mount both</button>
+        <button class="btn btn-secondary" @onclick="@(() => _saved = !_saved)">Toggle</button>
+    </div>
+
+    <CodeSnippet Code="@_skipEnterCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Timing per property</h3>
+    <p>
+        One <code>Transition</code> times every property a target changes. When they should move differently - the
+        fade quick, the slide on a spring, the colour arriving last - give the transition a
+        <strong>Properties</strong> map. Each entry names a property the way the engine does (<code>"x"</code>,
+        <code>"opacity"</code>, <code>"backgroundColor"</code>, …) and the transition to play it with. An entry
+        replaces the base transition for that one property outright rather than merging with it, and every property
+        the map doesn't name keeps the base transition.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">one spring for x, opacity and colour</span>
+            <Bmotion Animate="@(_timed ? _timedTo : _timedFrom)"
+                     Transition="Bm.Spring(stiffness: 120, damping: 14)">
+                <div class="box box-sm box-solid" />
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">Properties &middot; a quick fade, a late colour</span>
+            <Bmotion Animate="@(_timed ? _timedTo : _timedFrom)" Transition="_perProperty">
+                <div class="box box-sm box-solid" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <p>
+        <code>delay</code> holds an animation back by that many seconds, on any transition.
+        <code>WithDelay</code> returns a copy of a configured transition with a different delay, which is how one
+        spring is reused across a row of elements without mutating the shared instance - each box below gets the
+        same spring, offset by its index.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card">
+            <div class="timing-row">
+                @for (var i = 0; i < 6; i++)
+                {
+                    <Bmotion Animate="@(_timed ? Bm.To(y: -28) : Bm.To(y: 0))"
+                             Transition="@_rowSpring.WithDelay(i * 0.07)">
+                        <div class="box timing-dot" />
+                    </Bmotion>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _timed = !_timed)">@(_timed ? "Send back" : "Animate")</button>
+    </div>
+
+    <CodeSnippet Code="@_timingCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Composing targets</h3>
+    <p>
+        A target is a value, so it can be built from parts. <code>+</code> layers one target over another
+        (<code>a.With(b)</code> is the same thing as a method): every property the right-hand side sets wins, every
+        one it leaves unset keeps the left-hand value, and <code>css</code> / <code>cssVars</code> merge key by key.
+        Neither side is changed, so a set of named building blocks can be combined freely. Below, the resting card
+        is the base, and each switch layers one more block on top of it.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">@ComposedLabel</span>
+            <Bmotion Animate="@Composed" Transition="Bm.Spring(stiffness: 260, damping: 20)">
+                <div class="box box-solid" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <div class="bb-toolbar">
+        <label class="demo-label"><input type="checkbox" @bind="_raised" /> + raised</label>
+        <label class="demo-label"><input type="checkbox" @bind="_tilted" /> + tilted</label>
+        <label class="demo-label"><input type="checkbox" @bind="_warm" /> + warm</label>
+    </div>
+
+    <CodeSnippet Code="@_composeCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Knowing when it ran</h3>
+    <p>
+        <code>OnAnimationStart</code> fires as an <code>Animate</code> (or variant) change starts to play and
+        <code>OnAnimationComplete</code> when it finishes; both hand you the target that played, so one handler
+        can tell its states apart. Complete means <em>finished</em>: press the button again while the box is still
+        moving and the run it interrupts reports no completion - only the run that lands does. That makes it the
+        hook for work that must wait for the motion, such as moving focus once a panel has opened. An entrance
+        played from prerendered HTML (see <a href="getting-started">Getting started</a>) finished before the
+        runtime arrived, so it reports neither.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <Bmotion Animate="@(_traveled ? Bm.To(x: 70) : Bm.To(x: -70))"
+                     Transition="Bm.Spring(stiffness: 90, damping: 14)"
+                     OnAnimationStart="@(props => AddLifecycle("Start", props))"
+                     OnAnimationComplete="@(props => AddLifecycle("Complete", props))">
+                <div class="box box-sm" />
+            </Bmotion>
+            <div class="readout event-log">
+                @if (_lifecycle.Count == 0)
+                {
+                    <div>No events yet.</div>
+                }
+                @foreach (var e in Enumerable.Reverse(_lifecycle))
+                {
+                    <div>@e</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _traveled = !_traveled)">Move</button>
+    </div>
+
+    <CodeSnippet Code="@_lifecycleCode" />
+</section>
+
 @code {
     private bool _toggled;
     private bool _rounded;
@@ -156,6 +352,87 @@
     private bool _lifted;
     private bool _flipped;
     private bool _hinged;
+    private bool _transformed;
+    private int _mounts;
+    private bool _saved;
+    private bool _timed;
+    private bool _raised;
+    private bool _tilted;
+    private bool _warm;
+    private bool _traveled;
+    private readonly List<string> _lifecycle = [];
+
+    /// <summary>One transform stage: its caption, and the two targets it moves between.</summary>
+    private sealed record TransformDemo(string Label, BmProps From, BmProps To);
+
+    private readonly TransformDemo[] _transforms =
+    [
+        new("x: 40", Bm.To(x: 0), Bm.To(x: 40)),
+        new("y: -30", Bm.To(y: 0), Bm.To(y: -30)),
+        new("scale: 1.4", Bm.To(scale: 1), Bm.To(scale: 1.4)),
+        new("scaleX: 1.8", Bm.To(scaleX: 1), Bm.To(scaleX: 1.8)),
+        new("scaleY: 0.4", Bm.To(scaleY: 1), Bm.To(scaleY: 0.4)),
+        new("rotate: 135", Bm.To(rotate: 0), Bm.To(rotate: 135)),
+        new("skewX: 25", Bm.To(skewX: 0), Bm.To(skewX: 25)),
+        new("skewY: -20", Bm.To(skewY: 0), Bm.To(skewY: -20)),
+    ];
+
+    private static readonly BmProps _timedFrom = Bm.To(x: -50, opacity: 1, backgroundColor: "#1276C6");
+    private static readonly BmProps _timedTo = Bm.To(x: 50, opacity: 0.35, backgroundColor: "#FD7F36");
+
+    // Properties: the spring is the base; opacity and backgroundColor each get a transition of their own.
+    private readonly BmTransition _perProperty = new BmSpring
+    {
+        Stiffness = 120,
+        Damping = 14,
+        Properties = new()
+        {
+            ["opacity"] = Bm.Tween(0.15),
+            ["backgroundColor"] = Bm.Tween(0.5, delay: 0.5),
+        },
+    };
+
+    private readonly BmTransition _rowSpring = Bm.Spring(stiffness: 300, damping: 15);
+
+    // The building blocks: a resting card, and three layers that each change part of it.
+    private static readonly BmProps _rest = Bm.To(y: 0, rotate: 0, scale: 1, backgroundColor: "#1276C6",
+                                                  boxShadow: "0 2px 4px rgba(0,0,0,.15)");
+    private static readonly BmProps _raise = Bm.To(y: -14, scale: 1.08, boxShadow: "0 22px 36px rgba(0,0,0,.3)");
+    private static readonly BmProps _tilt = Bm.To(rotate: -8);
+    private static readonly BmProps _warmth = Bm.To(backgroundColor: "#FD7F36");
+
+    private BmProps Composed
+    {
+        get
+        {
+            var target = _rest;
+            if (_raised) target += _raise;
+            if (_tilted) target += _tilt;
+            if (_warm) target += _warmth;
+            return target;
+        }
+    }
+
+    private string ComposedLabel
+    {
+        get
+        {
+            var parts = new List<string> { "_rest" };
+            if (_raised) parts.Add("_raise");
+            if (_tilted) parts.Add("_tilt");
+            if (_warm) parts.Add("_warmth");
+            return string.Join(" + ", parts);
+        }
+    }
+
+    private void AddLifecycle(string name, BmProps? props)
+    {
+        var x = props?.X?.Last ?? 0;
+        _lifecycle.Add($"[{DateTime.Now:HH:mm:ss.ff}] {name} → x {x:0}");
+        // Only the last 6 entries are ever shown; trim the rest so the list can't grow unbounded.
+        if (_lifecycle.Count > 6)
+            _lifecycle.RemoveRange(0, _lifecycle.Count - 6);
+    }
 
     private const string _basicCode = """
         @using Bit.Bmotion
@@ -176,6 +453,9 @@
                 cursor: pointer; user-select: none;
                 display: flex; align-items: center; justify-content: center;
             }
+            /* A box whose colour animates needs a flat fill: a gradient is a background IMAGE, painted over
+               whatever background-color the animation writes. */
+            .box.solid { background: var(--bm-primary); }
             .btn-bm {
                 background: var(--bm-primary); color: var(--bm-primary-text); border: none; border-radius: 8px;
                 padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
@@ -202,7 +482,7 @@
                                                 : Bm.To(scale: 1, rotate: 0, backgroundColor: "#1276C6"))'
                             Transition="Bm.Tween(0.4)"
                             OnTap="@(() => _toggled = !_toggled)">
-                        <div class="box" />
+                        <div class="box solid" />
                     </Bmotion>
                 </div>
             </div>
@@ -237,6 +517,9 @@
                 cursor: pointer; user-select: none;
                 display: flex; align-items: center; justify-content: center;
             }
+            /* A box whose colour animates needs a flat fill: a gradient is a background IMAGE, painted over
+               whatever background-color the animation writes. */
+            .box.solid { background: var(--bm-primary); }
         </style>
 
         <div class="demo-section">
@@ -249,7 +532,7 @@
                                 : Bm.To(borderRadius: "10px", backgroundColor: "#1276C6", scale: 1))'
                             Transition="Bm.Tween(0.5, BmEase.InOut)"
                             OnTap="@(() => _rounded = !_rounded)">
-                        <div class="box" />
+                        <div class="box solid" />
                     </Bmotion>
                 </div>
 
@@ -308,13 +591,155 @@
            Pinning it to the bottom-left corner turns a rotate into a hinge. *@
         <Bmotion Animate="@(_hinged ? Bm.To(rotate: -75, originX: 0, originY: 1)
                                     : Bm.To(rotate: 0, originX: 0, originY: 1))"
-                 Transition="Bm.Spring(stiffness: 200, damping: 16)">
+                 Transition="Bm.Spring(stiffness: 200, damping: 16)"
+                 OnTap="@(() => _hinged = !_hinged)">
             <div class="box" />
         </Bmotion>
 
         @code {
             private bool _flipped;
             private bool _hinged;
+        }
+        """;
+
+    private const string _transformsCode = """
+        @using Bit.Bmotion
+
+        @* Each component is its own property. Lengths are pixels and angles degrees, and the ones
+           an element animates are composed into one transform - so they never overwrite each other. *@
+        <Bmotion Animate="@(_on ? Bm.To(x: 40) : Bm.To(x: 0))" Transition="Bm.Spring(stiffness: 200, damping: 16)">
+            <div class="box" />
+        </Bmotion>
+
+        <Bmotion Animate="@(_on ? Bm.To(scaleX: 1.8) : Bm.To(scaleX: 1))">...</Bmotion>    @* one axis only *@
+        <Bmotion Animate="@(_on ? Bm.To(rotate: 135) : Bm.To(rotate: 0))">...</Bmotion>    @* rotateZ is the same turn *@
+        <Bmotion Animate="@(_on ? Bm.To(skewX: 25) : Bm.To(skewX: 0))">...</Bmotion>
+
+        @* …and any combination at once: Bm.To(x: 40, y: -30, scale: 1.4, rotate: 135, skewY: -20) *@
+
+        @code {
+            private bool _on;
+        }
+        """;
+
+    private const string _skipEnterCode = """
+        @using Bit.Bmotion
+
+        @* Plays its entrance: Initial → Animate on mount. *@
+        <Bmotion Initial="Bm.To(opacity: 0, scale: 0.4)"
+                 Animate="@(_saved ? Bm.To(x: 40) : Bm.To(x: -40))"
+                 Transition="Bm.Spring(stiffness: 220, damping: 18)">
+            <div class="box" />
+        </Bmotion>
+
+        @* Initial="false" mounts it already at Animate - no entrance. Later changes still animate. *@
+        <Bmotion Initial="false"
+                 Animate="@(_saved ? Bm.To(x: 40) : Bm.To(x: -40))"
+                 Transition="Bm.Spring(stiffness: 220, damping: 18)">
+            <div class="box" />
+        </Bmotion>
+
+        <button @onclick="@(() => _saved = !_saved)">Toggle</button>
+
+        @code {
+            private bool _saved;
+        }
+        """;
+
+    private const string _timingCode = """
+        @using Bit.Bmotion
+
+        <Bmotion Animate='@(_on ? Bm.To(x: 50, opacity: 0.35, backgroundColor: "#FD7F36")
+                                : Bm.To(x: -50, opacity: 1, backgroundColor: "#1276C6"))'
+                 Transition="_perProperty">
+            <div class="box" style="background:#1276C6" />
+        </Bmotion>
+
+        @* One spring, reused across a row: WithDelay returns a copy with a new delay. *@
+        @for (var i = 0; i < 6; i++)
+        {
+            <Bmotion Animate="@(_on ? Bm.To(y: -28) : Bm.To(y: 0))" Transition="@_rowSpring.WithDelay(i * 0.07)">
+                <div class="dot" />
+            </Bmotion>
+        }
+
+        <button @onclick="@(() => _on = !_on)">Animate</button>
+
+        @code {
+            private bool _on;
+
+            // x plays the base spring. The map's entries replace it for the properties they name:
+            // keys are the engine's camelCase names ("x", "opacity", "backgroundColor", ...).
+            private readonly BmTransition _perProperty = new BmSpring
+            {
+                Stiffness = 120,
+                Damping = 14,
+                Properties = new()
+                {
+                    ["opacity"] = Bm.Tween(0.15),                     // a quick fade
+                    ["backgroundColor"] = Bm.Tween(0.5, delay: 0.5),  // the colour arrives last
+                },
+            };
+
+            private readonly BmTransition _rowSpring = Bm.Spring(stiffness: 300, damping: 15);
+        }
+        """;
+
+    private const string _composeCode = """
+        @using Bit.Bmotion
+
+        <Bmotion Animate="@Composed" Transition="Bm.Spring(stiffness: 260, damping: 20)">
+            <div class="box" style="background:#1276C6" />
+        </Bmotion>
+
+        <label><input type="checkbox" @bind="_raised" /> + raised</label>
+        <label><input type="checkbox" @bind="_tilted" /> + tilted</label>
+
+        @code {
+            private bool _raised;
+            private bool _tilted;
+
+            private static readonly BmProps _rest = Bm.To(y: 0, rotate: 0, scale: 1, boxShadow: "0 2px 4px rgba(0,0,0,.15)");
+            private static readonly BmProps _raise = Bm.To(y: -14, scale: 1.08, boxShadow: "0 22px 36px rgba(0,0,0,.3)");
+            private static readonly BmProps _tilt = Bm.To(rotate: -8);
+
+            // + layers the right-hand target over the left: what it sets wins, what it leaves unset
+            // keeps the left's value. Neither input changes. a.With(b) is the same as a + b.
+            private BmProps Composed
+            {
+                get
+                {
+                    var target = _rest;
+                    if (_raised) target += _raise;
+                    if (_tilted) target += _tilt;
+                    return target;
+                }
+            }
+        }
+        """;
+
+    private const string _lifecycleCode = """
+        @using Bit.Bmotion
+
+        @* Both callbacks receive the target that played. Complete fires only for a run that
+           finished - an interrupted run reports no completion. *@
+        <Bmotion Animate="@(_moved ? Bm.To(x: 70) : Bm.To(x: -70))"
+                 Transition="Bm.Spring(stiffness: 90, damping: 14)"
+                 OnAnimationStart="@(props => Log("Start", props))"
+                 OnAnimationComplete="@(props => Log("Complete", props))">
+            <div class="box" />
+        </Bmotion>
+
+        <button @onclick="@(() => _moved = !_moved)">Move</button>
+
+        @foreach (var line in _log) { <div>@line</div> }
+
+        @code {
+            private bool _moved;
+            private readonly List<string> _log = [];
+
+            private void Log(string name, BmProps? props)
+                => _log.Add($"{name} → x {(props?.X?.Last ?? 0):0}");
         }
         """;
 }

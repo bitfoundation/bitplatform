@@ -70,7 +70,7 @@ cd src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E && BINK_E2E_BASE_URL=http://127.0
 
 That workflow only runs when started by hand (Actions > "bit platform CI - Bink E2E" > Run workflow), once per
 engine: Chromium, Firefox and WebKit run as separate jobs, each with its own results. The pull-request pipeline,
-`bit.ci.Bink.yml`, runs the build, engine, component and MCP tests, on .NET 8, 9 and 10.
+`bit.ci.Bink.yml`, runs the build, engine, component and MCP tests, on .NET 10 and 11.
 
 ### What another engine cannot run
 

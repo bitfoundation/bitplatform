@@ -1,0 +1,70 @@
+﻿@page "/previews"
+
+<PageTitle>Previews · Bdnd samples</PageTitle>
+
+<h1>Previews</h1>
+
+<p>
+    The first card sets <code>UseCustomDragLayer="true"</code>: the browser's drag image is hidden and a
+    <code>BdndDragLayer</code> draws the preview instead, at <code>SourceClientOffset</code>. The second can only be
+    picked up by its grip, a <code>BdndDragHandle</code>, so its text field stays a text field. The third drags from
+    anywhere. Each of them drags through the browser's native drag and drop with the mouse, and through Bdnd's own
+    pointer drag with touch and pen; the switch below makes the mouse take the pointer drag too
+    (<code>PointerDrag="BdndPointerDrag.All"</code>), which draws its own preview and never leaves the page.
+</p>
+
+<label class="row">
+    <input type="checkbox" @bind="_pointerForMouse" />
+    Drag with the mouse through pointer events as well
+</label>
+
+<BdndProvider>
+    <div class="row">
+        <BdndDraggable TItem="string" Type="@Layered" Item="@("The layered card")" Label="The layered card"
+                       UseCustomDragLayer="true" PointerDrag="PointerDrag" class="box" Context="drag">
+            A custom preview
+        </BdndDraggable>
+
+        <BdndDraggable TItem="string" Type="card" Item="@("The card with a grip")" Label="The card with a grip"
+                       UseHandle="true" PointerDrag="PointerDrag" class="box handle-box" Context="drag">
+            <BdndDragHandle>
+                <span class="handle" aria-hidden="true">⠿</span>
+            </BdndDragHandle>
+            <input aria-label="Note" value="Only the grip drags" />
+        </BdndDraggable>
+
+        <BdndDraggable TItem="string" Type="card" Item="@("The plain card")" Label="The plain card"
+                       PointerDrag="PointerDrag" class="box" Context="drag">
+            Drag me from anywhere
+        </BdndDraggable>
+    </div>
+
+    <BdndDropTarget TItem="string" AcceptTypes="TrayTypes" Label="the tray" class="bin tray"
+                    OnDrop="@(e => _dropped = $"{e.Item} ({e.Monitor.GetDragInput()})")" Context="tray">
+        @(tray.IsOver && tray.CanDrop ? "Release" : _dropped is null ? "Drop a card here" : $"Dropped: {_dropped}")
+    </BdndDropTarget>
+
+    @* Accept: the layer draws the layered card only. On Server and in the MAUI app it is also what makes the pointer's
+       moves cross to .NET - only for the drags a layer follows. *@
+    <BdndDragLayer TItem="string" Accept="@Layered" Context="layer">
+        @if (layer.IsDragging && layer.SourceClientOffset is { } at)
+        {
+            <div class="box preview" style="left:@Px(at.X);top:@Px(at.Y);">
+                @layer.Item
+            </div>
+        }
+    </BdndDragLayer>
+</BdndProvider>
+
+@code {
+    private const string Layered = "layered";
+    private static readonly string[] TrayTypes = [Layered, "card"];
+
+    private bool _pointerForMouse;
+    private string? _dropped;
+
+    private BdndPointerDrag PointerDrag => _pointerForMouse ? BdndPointerDrag.All : BdndPointerDrag.Touch;
+
+    // The invariant culture keeps the decimal separator a '.': a comma would make invalid CSS.
+    private static string Px(double value) => value.ToString("0.#", CultureInfo.InvariantCulture) + "px";
+}

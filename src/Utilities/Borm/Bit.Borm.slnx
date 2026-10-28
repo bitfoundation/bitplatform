@@ -10,6 +10,23 @@
         <Project Path="Demo/Client/Bit.Borm.Demo.Client.csproj" />
         <Project Path="Demo/Server/Bit.Borm.Demo.Server.csproj" />
     </Folder>
+    <Folder Name="/Samples/">
+        <Project Path="Samples/Core/Bit.Borm.Samples.Core.csproj" />
+        <Project Path="Samples/Maui/Bit.Borm.Samples.Maui.csproj">
+            <Deploy />
+        </Project>
+    </Folder>
+    <Folder Name="/Samples/Auto/">
+        <Project Path="Samples/Auto/Bit.Borm.Samples.Auto.Client/Bit.Borm.Samples.Auto.Client.csproj" />
+        <Project Path="Samples/Auto/Bit.Borm.Samples.Auto/Bit.Borm.Samples.Auto.csproj" />
+    </Folder>
+    <Folder Name="/Samples/Server/">
+        <Project Path="Samples/Server/Bit.Borm.Samples.Server.csproj" />
+    </Folder>
+    <Folder Name="/Samples/Wasm/">
+        <Project Path="Samples/Wasm/Bit.Borm.Samples.Wasm.Client/Bit.Borm.Samples.Wasm.Client.csproj" />
+        <Project Path="Samples/Wasm/Bit.Borm.Samples.Wasm/Bit.Borm.Samples.Wasm.csproj" />
+    </Folder>
     <Folder Name="/Tests/">
         <Project Path="Tests/Bit.Borm.Tests/Bit.Borm.Tests.csproj" />
         <Project Path="Tests/Bit.Borm.Tests.Mcp/Bit.Borm.Tests.Mcp.csproj" />

@@ -16,8 +16,8 @@ set -euo pipefail
 
 here="$(cd "$(dirname "$0")" && pwd)"
 
-# TargetFrameworks=net10.0 on top of -f: -f alone does not reach project references, which then still
+# TargetFrameworks=net11.0 on top of -f: -f alone does not reach project references, which then still
 # evaluate every framework they target - and with RunAOTCompilation each of those demands its own
 # wasm-tools workload.
 exec bash "$here/../../../../publish-gate.sh" Bit.Blex Tests "$here/../Bit.Blex.Tests.Harness.Web/Bit.Blex.Tests.Harness.Web.csproj" \
-    "$1" -f net10.0 -p:TargetFrameworks=net10.0 "${@:2}"
+    "$1" -f net11.0 -p:TargetFrameworks=net11.0 "${@:2}"

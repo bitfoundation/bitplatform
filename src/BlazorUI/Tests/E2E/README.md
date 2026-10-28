@@ -32,10 +32,10 @@ E2E/
 ## Running
 
 Build the solution once (`dotnet build src/BlazorUI/Bit.BlazorUI.slnx`), install the Playwright browsers once
-(`pwsh Bit.BlazorUI.Tests.E2E/bin/Debug/net10.0/playwright.ps1 install`), then in `Bit.BlazorUI.Tests.E2E`:
+(`pwsh Bit.BlazorUI.Tests.E2E/bin/Debug/net11.0/playwright.ps1 install`), then in `Bit.BlazorUI.Tests.E2E`:
 
 ```bash
-dotnet test -f net10.0
+dotnet test -f net11.0
 ```
 
 The first test starts the host (`dotnet run` of the TestHost on `http://localhost:5290`) and the run stops it at the
@@ -43,7 +43,7 @@ end. To pay the host's build once across runs, or to debug a page by hand, start
 it:
 
 ```bash
-dotnet run --project Bit.BlazorUI.Tests.E2E.TestHost --framework net10.0 --urls http://localhost:5290
+dotnet run --project Bit.BlazorUI.Tests.E2E.TestHost --framework net11.0 --urls http://localhost:5290
 ```
 
 | Variable | Meaning |
@@ -53,7 +53,7 @@ dotnet run --project Bit.BlazorUI.Tests.E2E.TestHost --framework net10.0 --urls 
 | `HEADED=1` | watch the browser |
 | `E2E_HOST_URL` | the host to drive instead of `http://localhost:5290` |
 
-Filter as usual: `dotnet test -f net10.0 --filter "FullyQualifiedName~BitButtonE2ETests"`. Test classes run four at
+Filter as usual: `dotnet test -f net11.0 --filter "FullyQualifiedName~BitButtonE2ETests"`. Test classes run four at
 a time (`E2ETestRun.cs`); the tests of a class run in order. The whole suite is about 6,800 tests and takes roughly
 a quarter of an hour on Chromium. On a loaded machine a Blazor Server circuit can time out or a fast keystroke can be
 lost; a test that fails only in the full run and passes alone is load, not a regression.
@@ -61,7 +61,7 @@ lost; a test that fails only in the full run and passes alone is load, not a reg
 If `dotnet test` reports that zero tests ran, run the built assembly directly:
 
 ```bash
-E2E_HOST_URL=http://localhost:5290 dotnet exec bin/Debug/net10.0/Bit.BlazorUI.Tests.E2E.dll --filter "FullyQualifiedName~BitButtonE2ETests"
+E2E_HOST_URL=http://localhost:5290 dotnet exec bin/Debug/net11.0/Bit.BlazorUI.Tests.E2E.dll --filter "FullyQualifiedName~BitButtonE2ETests"
 ```
 
 ## Writing a page and its tests

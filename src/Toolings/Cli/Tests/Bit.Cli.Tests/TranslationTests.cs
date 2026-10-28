@@ -1,4 +1,6 @@
 ﻿using System.Globalization;
+using System.Net;
+using System.Net.Sockets;
 using System.Text.Json;
 using Bit.Cli.Tests.Infrastructure;
 using Bit.Cli.Translation;
@@ -32,6 +34,47 @@ public class TranslationTests
         var files = ResxCatalog.FindBaseFiles(settings).Select(Path.GetFileName).ToArray();
 
         CollectionAssert.AreEquivalent(new[] { "Strings.resx", "Some.Api.resx" }, files);
+    }
+
+    [TestMethod]
+    [DataRow("/src/Shared/Resources/AppStrings.resx", "AppStrings.resx")]
+    [DataRow("/src/**/AppStrings.resx", "AppStrings.resx")]
+    [DataRow("/src/**/Resources/AppStrings.resx", "AppStrings.resx")]
+    [DataRow("/src/*/Resources/*.resx", "AppStrings.resx,IdentityStrings.resx")]
+    [DataRow("src/**/*.resx", "AppStrings.resx,BitBlazorUIStrings.resx,IdentityStrings.resx,Strings.resx")]
+    public void ResxPaths_Should_MatchOnlyWhatTheGlobNames(string pattern, string expected)
+    {
+        using var host = CreateProject(new() { ["Hello"] = "Hello" }, Config.Replace("/src/**/*.resx", pattern, StringComparison.Ordinal));
+        WriteResx(Path.Combine(host.WorkingDirectory, "src", "Shared", "Resources", "AppStrings.resx"), new() { ["Hello"] = "Hello" });
+        WriteResx(Path.Combine(host.WorkingDirectory, "src", "Shared", "Resources", "IdentityStrings.resx"), new() { ["Hello"] = "Hello" });
+        WriteResx(Path.Combine(host.WorkingDirectory, "src", "Shared", "Other", "BitBlazorUIStrings.resx"), new() { ["Hello"] = "Hello" });
+
+        var settings = ResxTranslatorSettings.Load(Path.Combine(host.WorkingDirectory, ResxTranslatorSettings.FileName), new Dictionary<string, string>());
+        var files = ResxCatalog.FindBaseFiles(settings).Select(Path.GetFileName).ToArray();
+
+        CollectionAssert.AreEquivalent(expected.Split(','), files, string.Join(", ", files));
+    }
+
+    [TestMethod]
+    public void AFolderBitCantRead_Should_NotHideTheOtherResxFiles()
+    {
+        if (OperatingSystem.IsWindows())
+            return;
+
+        using var host = CreateProject(new() { ["Hello"] = "Hello" });
+        var locked = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "src", "Locked")).FullName;
+        File.SetUnixFileMode(locked, UnixFileMode.None);
+
+        try
+        {
+            var settings = ResxTranslatorSettings.Load(Path.Combine(host.WorkingDirectory, ResxTranslatorSettings.FileName), new Dictionary<string, string>());
+
+            Assert.IsNotEmpty(ResxCatalog.FindBaseFiles(settings));
+        }
+        finally
+        {
+            File.SetUnixFileMode(locked, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        }
     }
 
     [TestMethod]
@@ -97,6 +140,20 @@ public class TranslationTests
         await new TranslationRun(host.Services, _ => client).RunAsync(new TranslateRequest(null, ["fa"], false, false), CancellationToken.None);
 
         Assert.AreEqual("fa:Bye {0}", ResxCatalog.Read(Path.Combine(host.WorkingDirectory, "src", "Strings.fa.resx"))["Bye"]);
+    }
+
+    [TestMethod]
+    public async Task AFailedBatch_Should_KeepTheBatchesTranslatedBeforeIt()
+    {
+        using var host = CreateProject(Enumerable.Range(0, TranslationRun.BatchSize + 50).ToDictionary(i => $"Key{i}", i => $"Text {i}"));
+        var client = new FakeTranslationClient { ShortBatch = 2 };
+
+        var exitCode = await new TranslationRun(host.Services, _ => client).RunAsync(new TranslateRequest(null, ["fa"], false, false), CancellationToken.None);
+
+        Assert.AreEqual(CliApp.ExitFailed, exitCode, host.Output);
+        Assert.HasCount(2, client.Batches);
+        Assert.HasCount(TranslationRun.BatchSize, ResxCatalog.Read(Path.Combine(host.WorkingDirectory, "src", "Strings.fa.resx")));
+        StringAssert.Contains(host.FlatOutput, $"Translated {TranslationRun.BatchSize} keys in 2 requests");
     }
 
     [TestMethod]
@@ -213,6 +270,22 @@ public class TranslationTests
         Assert.IsNotNull(chat.LastOptions.ResponseFormat);
     }
 
+    [TestMethod]
+    public async Task AnUnreachableEndpoint_Should_BeReportedAsOne()
+    {
+        var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+        listener.Stop();
+
+        using var host = CreateProject(new() { ["Hello"] = "Hello" }, Config.Replace("https://api.openai.com/v1", $"http://127.0.0.1:{port}/v1", StringComparison.Ordinal));
+
+        var exitCode = await new TranslationRun(host.Services).RunAsync(new TranslateRequest(null, ["fa"], false, false), CancellationToken.None);
+
+        Assert.AreEqual(CliApp.ExitFailed, exitCode, host.Output);
+        StringAssert.Contains(host.FlatOutput, "Couldn't translate Strings.fa.resx the model endpoint couldn't be reached");
+    }
+
     private static TestHost CreateProject(Dictionary<string, string> strings, string config = Config)
     {
         var host = new TestHost();
@@ -242,6 +315,8 @@ public class TranslationTests
 
         public int BreakPlaceholders { get; set; }
 
+        public int ShortBatch { get; set; }
+
         public Task<TranslationOutput> TranslateAsync(TranslationBatch batch, CancellationToken cancellationToken)
         {
             Batches.Add(batch);
@@ -256,6 +331,11 @@ public class TranslationTests
 
                 return $"{batch.Target.Name}:{v}";
             }).ToList();
+
+            if (Batches.Count == ShortBatch)
+            {
+                translations.RemoveAt(translations.Count - 1);
+            }
 
             return Task.FromResult(new TranslationOutput(translations, 10, 20));
         }

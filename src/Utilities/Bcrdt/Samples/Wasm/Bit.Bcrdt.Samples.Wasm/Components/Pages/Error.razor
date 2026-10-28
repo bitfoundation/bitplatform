@@ -1,0 +1,26 @@
+﻿@page "/Error"
+@* Rendered on the server alone, never by the interactive router, which knows the Core assembly's pages only and would
+   replace this one with the not-found page as soon as the app turned interactive. See App.razor. *@
+@attribute [ExcludeFromInteractiveRouting]
+@using System.Diagnostics
+
+<PageTitle>Error - Bcrdt samples</PageTitle>
+
+<h1>Error</h1>
+<p>An error occurred while processing your request.</p>
+
+@if (string.IsNullOrEmpty(RequestId) is false)
+{
+    <p><strong>Request ID:</strong> <code>@RequestId</code></p>
+}
+
+<a href="" class="btn">Back to the samples</a>
+
+@code {
+    [CascadingParameter] private HttpContext? HttpContext { get; set; }
+
+    private string? RequestId { get; set; }
+
+    protected override void OnInitialized() =>
+        RequestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+}

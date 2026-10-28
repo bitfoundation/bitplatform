@@ -255,8 +255,7 @@ runs and one `dotnet msbuild`, about two minutes in total, untrimmed runs only:
 - a **Blazor Web App with a service worker**
   ([`../Bit.Butil.Tests.PublishFixture.Hosted`](../Bit.Butil.Tests.PublishFixture.Hosted), with its
   WebAssembly client): the client trims to one module fewer than the server, so the bundle the server serves is
-  never the one the client's manifest listed, and the manifest published has to list it under its own hash - on
-  .NET 10 and on .NET 8, whose static web assets differ. In lazy mode with a client that does not trim, the
+  never the one the client's manifest listed, and the manifest published has to list it under its own hash. In lazy mode with a client that does not trim, the
   module files the server dropped have to leave the list; with both sides trimming there is nothing to rewrite,
   and nothing may be. And the client published on its own, a standalone PWA, has to list its trimmed bundle with
   no rewrite at all, since there the SDK writes the manifest after the trimming. Each of these reads the

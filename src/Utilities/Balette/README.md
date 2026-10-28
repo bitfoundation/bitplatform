@@ -61,7 +61,7 @@ natively for Blazor.
 - **Failures handled**: a handler or a page loader that throws is logged and reported in the palette, never ends a
   Blazor Server circuit, and a page that failed to load offers a retry.
 - **Theming through CSS variables**, light and dark, eight templates, or a fully unstyled mode.
-- Works on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, on .NET 8, 9 and 10, and is
+- Works on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, on .NET 10 and 11, and is
   trimming and AOT friendly.
 
 ## Quick start
@@ -99,7 +99,7 @@ The full walkthrough is in [getting started](#getting-started).
 
 ## Requirements
 
-- .NET 8, .NET 9 or .NET 10
+- .NET 10 or .NET 11
 - Blazor WebAssembly, Blazor Server, Blazor Web App (any interactive render mode) or Blazor Hybrid
 - A browser with the `<dialog>` element - every evergreen browser since 2022
 
@@ -112,6 +112,17 @@ search and ranking with a live view of the matcher's scores, modes and async sou
 keyboard, theming with every template and an unstyled palette running, localization and right-to-left text, an
 options reference with the site's live values, and a large-registry page that times a search over thousands of
 commands in your browser.
+
+[`Samples`](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Balette/Samples/) is the render-mode
+harness rather than the docs: one shared [Core](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Balette/Samples/Core/)
+project of pages (page-scoped commands and global shortcuts, nested pages and multi-step flows, modes and async sources
+registered at runtime, and an inline palette), hosted unchanged under
+[Server](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Balette/Samples/Server/),
+[Wasm](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Balette/Samples/Wasm/) and
+[Auto](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Balette/Samples/Auto/) so the same palette
+runs, prerendered first, in each render mode, and under [Maui](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Balette/Samples/Maui/),
+a Blazor Hybrid app for Android, iOS, macOS and Windows. Each host is also a minimal example of the wiring that
+platform needs.
 
 ## How it fits together
 
@@ -490,7 +501,7 @@ A handler returns a `BaletteCommandResult` that says what happens next:
 | `BaletteCommandResult.Reset` | Clear the query and return to the root page, staying open. |
 | `BaletteCommandResult.Page(title, commands, placeholder, multiSelect, onSubmit)` | Push a page listing `commands`. |
 | `BaletteCommandResult.Prompt(title, onSubmit, placeholder, initialValue)` | Ask for free text, then run `onSubmit` with it. |
-| `BaletteCommandResult.Toast(message, keepOpen)` | Show a message in the footer; closes shortly afterwards unless `keepOpen`. |
+| `BaletteCommandResult.Toast(message, keepOpen)` | Show a message in the footer; closes shortly afterwards unless `keepOpen`, or unless the palette is used again meanwhile. |
 | `BaletteCommandResult.Error(message)` | Show an error, announced assertively, and stay where the palette is - on a prompt, so the value can be corrected. |
 
 ### The context

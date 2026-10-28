@@ -188,7 +188,7 @@ The project includes a complete CI/CD pipeline setup using GitHub Actions with *
 **Key Configuration**:
 - **Runner**: Ubuntu 24.04
 - **SDK Version**: Automatically detected from `global.json`
-- **Machine setup**: the bit CLI, installed once per job with `dotnet tool install Bit.Cli --version 10.7.0`, then `bit setup`,
+- **Machine setup**: the bit CLI, installed once per job with `dotnet tool install Bit.Cli --version 11.0.0-pre-15`, then `bit setup`,
   which installs only what the runner is missing
 - **Test Artifacts**: Retained for 14 days on failure
 
@@ -310,7 +310,7 @@ This is the **core deployment workflow** that handles building and deploying all
 
 6. **Migrations Bundle**
    ```bash
-   dnx dotnet-ef@10.0.14 -- migrations bundle --self-contained --target-runtime linux-x64 --output efbundle
+   dnx dotnet-ef@11.0.0-rc.2.26504.105 -- migrations bundle --self-contained --target-runtime linux-x64 --output efbundle
    ```
    - Packs the EF Core migrations into one executable, uploaded as the `migrations-bundle` artifact for Job 2
 <!--#endif-->
@@ -460,7 +460,7 @@ Each signed file counts against the account's monthly quota. To sign only the ex
 ```bash
 # Install the bit CLI once, then let it install Node.js when missing, the MAUI Android workload
 # and what the Android SDK lacks; the publish below generates the CSS/JS files in its own build
-dotnet tool install --global Bit.Cli --version 10.7.0
+dotnet tool install --global Bit.Cli --version 11.0.0-pre-15
 bit setup --platforms android --no-build --yes
    
 # Publish signed AAB (Or APK if needed)
@@ -474,7 +474,7 @@ dotnet publish -c Release \
   -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" \
   -p:Version="1.0.0" \
   -p:Environment=Production \
-  -f net10.0-android
+  -f net11.0-android
 ```
 
 3. **Upload Artifact**
@@ -532,7 +532,7 @@ dotnet publish -c Release \
      -p:CodesignProvision="MyApp Provisioning" \  # Profile name
      -p:Version="1.0.0" \
      -p:Environment=Production \
-     -f net10.0-ios
+     -f net11.0-ios
    ```
 
 4. **Upload Artifact**
@@ -610,11 +610,11 @@ The workflow follows a **security-focused two-phase deployment** pattern that se
 ```yaml
 # Phase 1: Build (no production access)
 build_api_blazor:
-  runs-on: ubuntu-24.04
+  runs-on: ubuntu-26.04
   steps:
     - uses: actions/checkout@v7
     - uses: actions/setup-dotnet@v6
-    - run: dotnet tool install --global Bit.Cli --version 10.7.0
+    - run: dotnet tool install --global Bit.Cli --version 11.0.0-pre-15
     - run: bit setup --no-build --yes
     - run: dotnet publish ...
     - uses: actions/upload-artifact@v7  # Save artifact
@@ -622,7 +622,7 @@ build_api_blazor:
 # Phase 2: Deploy (has production access)
 deploy_api_blazor:
   needs: build_api_blazor  # Depends on Phase 1
-  runs-on: ubuntu-24.04
+  runs-on: ubuntu-26.04
   steps:
     - uses: actions/download-artifact@v8  # Get pre-built artifact
     - uses: azure/webapps-deploy@v3      # Deploy to production

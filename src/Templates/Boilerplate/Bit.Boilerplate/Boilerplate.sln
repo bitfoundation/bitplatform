@@ -25,7 +25,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".SolutionItems", ".Solution
         vs-spell.dic = vs-spell.dic
         .vscode\mcp.json=.vscode\mcp.json
         README.md = README.md
-        specs\README.md = specs\README.md
     EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{248D8229-BABD-4F0A-A9C6-0417B464507B}"
@@ -121,6 +120,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".grafana", ".grafana", "{42
 		.grafana\README.md = .grafana\README.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "specs", "specs", "{B4254654-25B2-4CD4-A83D-3B3CFD1011F0}"
+	ProjectSection(SolutionItems) = preProject
+		specs\README.md = specs\README.md
+	EndProjectSection
+EndProject
 Global
     GlobalSection(SolutionConfigurationPlatforms) = preSolution
         Debug|Any CPU = Debug|Any CPU
@@ -199,5 +203,6 @@ Global
 #endif
         {8A72BF22-F6D3-C5D9-4099-AB471879EBC8} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
 		{422B745D-CAE0-B458-8AF0-74AC40E4AE0D} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
+		{B4254654-25B2-4CD4-A83D-3B3CFD1011F0} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
     EndGlobalSection
 EndGlobal

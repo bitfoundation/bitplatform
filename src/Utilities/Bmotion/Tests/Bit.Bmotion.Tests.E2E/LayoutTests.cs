@@ -49,6 +49,32 @@ public sealed class LayoutTests : BmotionPageTest
     }
 
     [TestMethod]
+    public async Task LayoutSize_KeepsAChildItsOwnSize_WhileTheBoxScales()
+    {
+        await ClickAsync("grow");
+        // The box's rendered width and its child's, a frame at a time through the FLIP.
+        var frames = await Page.EvaluateAsync<double[][]>("""
+            async () => {
+                const box = document.getElementById('grow-box'), child = document.getElementById('grow-child');
+                const out = [], end = performance.now() + 450;
+                while (performance.now() < end) {
+                    await new Promise(requestAnimationFrame);
+                    out.push([box.getBoundingClientRect().width, child.getBoundingClientRect().width]);
+                }
+                return out;
+            }
+            """);
+        await ExpectEventAsync("grow:complete");
+
+        // Exact at every step, not only at the two ends: a correction interpolated straight from 1/scale to 1
+        // would leave the child 40% too wide halfway through this grow.
+        var scaling = frames.Where(f => f[0] is > 65 and < 195).ToArray();
+        Assert.IsTrue(scaling.Length > 3, "The box didn't scale through the FLIP.");
+        foreach (var f in scaling)
+            Assert.AreEqual(20, f[1], 0.6, $"The child is {f[1]:0.#}px wide while the box is {f[0]:0.#}px: it was stretched.");
+    }
+
+    [TestMethod]
     public async Task AfterALayoutAnimation_TheElementStillShowsItsOwnTransform()
     {
         await ClickAsync("move");
@@ -70,12 +96,16 @@ public sealed class LayoutTests : BmotionPageTest
         var shifted = await ProbeAsync("#both-box");
 
         await ClickAsync("move");
-        // It travels from where it was - its own x included - rather than jumping 50px when the FLIP starts:
-        // no frame moves further than the steady travel does (about 20px a frame here).
+        // It travels from where it was - its own x included - rather than jumping 50px when the FLIP starts (or, on
+        // Blazor Server, flashing at its new place for the round trip before the FLIP): no frame moves much further
+        // than the steady travel does. That is about 20px a frame at 60 fps; a browser drawing fewer frames (headless
+        // Firefox here) travels further per frame, so the bound follows the typical step.
         var samples = await SampleAsync("#both-box", 500);
         var jumps = samples.Zip(samples.Skip(1), (a, b) => Math.Abs(b.Left - a.Left)).ToArray();
         Assert.IsTrue(jumps.Length > 0, "No frames sampled.");
-        Assert.IsTrue(jumps.All(j => j < 45), $"The layout animation jumped: {string.Join(", ", jumps.Select(j => j.ToString("0")))}");
+        var moving = jumps.Where(j => j > 1).Order().ToArray();
+        var typical = moving.Length > 0 ? moving[moving.Length / 2] : 0;
+        Assert.IsTrue(jumps.All(j => j < Math.Max(45, typical * 1.8)), $"The layout animation jumped: {string.Join(", ", jumps.Select(j => j.ToString("0")))}");
 
         await ExpectEventAsync("both:layout-complete");
         var rest = await WaitForRestAsync("#both-box");
@@ -120,6 +150,50 @@ public sealed class LayoutTests : BmotionPageTest
         Assert.IsTrue(to.Left > from.Left + 100, "The underline didn't move to the new tab.");
         Assert.IsTrue(samples.Any(s => s.Left > from.Left + 20 && s.Left < to.Left - 20),
             $"The underline jumped instead of travelling: {string.Join(", ", samples.Select(s => s.Left.ToString("0")))}");
+    }
+
+    [TestMethod]
+    public async Task LayoutId_HandedOverWhileTheOldHolderIsLeaving_TheTwoCrossfade()
+    {
+        await ExpectEventAsync("armed:xfade1");
+
+        // Every frame of the hand-over: how opaque each card's crossfade has it (its filter: opacity()), and where
+        // the leaving card's centre is.
+        await Page.Locator("#xfade-swap").ClickAsync();
+        var frames = await Page.EvaluateAsync<double[][]>("""
+            async () => {
+                const fade = el => {
+                    const m = el && /opacity\(([\d.]+)\)/.exec(getComputedStyle(el).filter);
+                    return m ? parseFloat(m[1]) : (el ? 1 : -1);
+                };
+                const frames = [];
+                for (let i = 0; i < 40; i++) {
+                    await new Promise(r => requestAnimationFrame(r));
+                    const lead = document.getElementById('xfade-2'), follow = document.getElementById('xfade-1');
+                    const r = follow?.getBoundingClientRect();
+                    frames.push([fade(lead), fade(follow), r ? r.left + r.width / 2 : -1]);
+                }
+                return frames;
+            }
+            """);
+
+        string Trace(int column) => string.Join(" ", frames.Select(f => f[column].ToString("0.##")));
+        var stage = await BoxAsync("#xfade-stage");
+        // Part-way: card 2 is part faded in and card 1 part faded out - both on screen at once - and card 1 is on
+        // its way from its own centre (15) to card 2's (230).
+        Assert.IsTrue(frames.Any(f => f[0] is > 0.15 and < 0.85 && f[1] is > 0.15 and < 0.85),
+            $"no frame showed both cards part-way: in {Trace(0)} / out {Trace(1)}");
+        Assert.IsTrue(frames.Any(f => f[2] - stage.X is > 60 and < 190), $"card 1 didn't travel towards card 2: {Trace(2)}");
+        for (int i = 1; i < frames.Length; i++)
+            if (frames[i][0] >= 0 && frames[i - 1][0] >= 0)
+                Assert.IsTrue(frames[i][0] >= frames[i - 1][0] - 0.02, $"card 2 faded back out: {Trace(0)}");
+
+        // Then only card 2, where it belongs, fully shown.
+        await Assertions.Expect(Page.Locator("#xfade-1")).ToHaveCountAsync(0);
+        await Page.WaitForFunctionAsync("() => getComputedStyle(document.getElementById('xfade-2')).filter === 'none'");
+        var rest = await WaitForRestAsync("#xfade-2");
+        Assert.AreEqual(stage.X + 200, rest.Left, 1);
+        Assert.AreEqual(60, rest.Width, 1);
     }
 
     [TestMethod]

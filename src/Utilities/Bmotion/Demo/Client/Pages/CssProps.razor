@@ -99,10 +99,53 @@
     <CodeSnippet Code="@_spacingCode" />
 </section>
 
+@* ── Sizing ─────────────────────────────────────────────────────────────── *@
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Sizing</h3>
+    <p>
+        <code>width</code> and <code>height</code> animate between any two lengths in the same unit. A bare
+        number is pixels - <code>Bm.To(width: 180)</code> writes <code>180px</code> - and a string passes through
+        as written, so <code>"5rem"</code> or <code>"60%"</code> work too. Resizing makes the browser lay the page
+        out again on every frame, so for an element that only needs to <em>look</em> bigger, <code>scale</code>
+        or a <a href="layout">layout animation</a> is cheaper.
+    </p>
+
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _size = !_size)">
+            @(_size ? "Reset" : "Animate")
+        </button>
+    </div>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">width: 40 → 180 (bare numbers are px)</span>
+            <div class="css-track">
+                <Bmotion Animate="@(_size ? Bm.To(width: 180) : Bm.To(width: 40))"
+                         Transition="Bm.Spring(stiffness: 160, damping: 18)">
+                    <div class="size-bar" />
+                </Bmotion>
+            </div>
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">width + height in rem</span>
+            <Bmotion Animate='@(_size ? Bm.To(width: "7rem", height: "4rem") : Bm.To(width: "3rem", height: "3rem"))'
+                     Transition="Bm.Tween(0.6, BmEase.InOut)">
+                <div class="size-box" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_sizeCode" />
+</section>
+
 @* ── Positioning ────────────────────────────────────────────────────────── *@
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Positioning</h3>
-    <p>Animate <code>top</code>, <code>left</code>, <code>right</code> and <code>bottom</code> on a positioned element.</p>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Positioning</h3>
+    <p>
+        Animate <code>top</code>, <code>left</code>, <code>right</code> and <code>bottom</code> on a positioned
+        element - relatively positioned here, so each offset pushes the box away from the edge it names.
+    </p>
 
     <div class="bb-toolbar">
         <button class="btn btn-primary" @onclick="@(() => _pos = !_pos)">
@@ -130,14 +173,73 @@
                 </Bmotion>
             </div>
         </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">right + bottom, from the far corner</span>
+            <div class="css-track css-track-wide css-track-end" style="min-height:120px">
+                <Bmotion Animate="@(_pos ? Bm.To(right: "150px", bottom: "60px") : Bm.To(right: "0px", bottom: "0px"))"
+                         Transition="Bm.Spring(stiffness: 200, damping: 18)">
+                    <div class="box box-sm" style="position:relative" />
+                </Bmotion>
+            </div>
+        </div>
     </div>
 
     <CodeSnippet Code="@_posCode" />
 </section>
 
+@* ── Colours ────────────────────────────────────────────────────────────── *@
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Colours</h3>
+    <p>
+        Every colour property interpolates as a colour rather than as text: <code>backgroundColor</code> and
+        <code>color</code>, <code>borderColor</code> and <code>outlineColor</code>, and on SVG shapes
+        <code>fill</code> and <code>stroke</code>. Hex, <code>rgb()</code>, <code>hsl()</code>, named colours and
+        <code>transparent</code> all mix with each other, and the <a href="color">Color</a> page shows choosing
+        the space they mix in.
+    </p>
+
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _colors = !_colors)">
+            @(_colors ? "Reset" : "Animate")
+        </button>
+    </div>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">color</span>
+            <Bmotion Animate='@(_colors ? Bm.To(color: "#FD7F36") : Bm.To(color: "#1276C6"))'
+                     Transition="Bm.Tween(0.6)">
+                <div class="css-headline" style="color:#1276C6">Colour me</div>
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">borderColor + outlineColor</span>
+            <Bmotion Animate='@(_colors ? Bm.To(borderColor: "rgb(253, 127, 54)", outlineColor: "hsl(207, 83%, 42%)")
+                                        : Bm.To(borderColor: "rgb(18, 118, 198)", outlineColor: "hsl(22, 98%, 60%)"))'
+                     Transition="Bm.Tween(0.6)">
+                <div class="outline-box" />
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">fill + stroke (SVG)</span>
+            <svg viewBox="0 0 80 80" width="80" height="80" aria-hidden="true">
+                <Bmotion Animate='@(_colors ? Bm.To(fill: "#FD7F36", stroke: "#1276C6") : Bm.To(fill: "#1276C6", stroke: "#FD7F36"))'
+                         Transition="Bm.Tween(0.6)">
+                    <circle cx="40" cy="40" r="30" fill="#1276C6" stroke="#FD7F36" stroke-width="6" />
+                </Bmotion>
+            </svg>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_colorsCode" />
+</section>
+
 @* ── Clipping & backgrounds ─────────────────────────────────────────────── *@
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Clipping &amp; backgrounds</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Clipping &amp; backgrounds</h3>
     <p><code>clipPath</code>, <code>backgroundPosition</code> and <code>backgroundSize</code> interpolate their numeric parts frame by frame.</p>
 
     <div class="bb-toolbar">
@@ -177,7 +279,7 @@
 
 @* ── Generic escape hatch ───────────────────────────────────────────────── *@
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Generic <code>Css</code> escape hatch</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Generic <code>Css</code> escape hatch</h3>
     <p>The <code>css</code> bag animates <em>any</em> CSS property by name (dash- or camelCase) - the equivalent of motion.dev's <code>animate()</code>.</p>
 
     <div class="bb-toolbar">
@@ -209,7 +311,7 @@
 
 @* ── CSS custom properties ──────────────────────────────────────────────── *@
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> CSS custom properties</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> CSS custom properties</h3>
     <p>
         <code>cssVars</code> writes CSS custom properties (keys must start with <code>--</code>) on
         the animated element, where they cascade to everything inside it. That is the lever for the
@@ -243,7 +345,7 @@
 
 @* ── Accessibility & safety ─────────────────────────────────────────────── *@
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Accessibility &amp; safety knobs</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Accessibility &amp; safety knobs</h3>
     <p>These are configured once at registration in <code>Program.cs</code>:</p>
     <ul class="bb-detail-list">
         <li>
@@ -255,8 +357,9 @@
         <li>
             <strong>CSS-injection safe mode</strong> -
             <code>o.CssSafeMode = BmCssSafeMode.Throw</code> validates string values before they reach
-            inline style (reject <code>;</code>, <code>}</code>, <code>javascript:</code>, …). Enable it
-            when binding untrusted input.
+            inline style (reject <code>;</code>, <code>}</code>, <code>javascript:</code>, …) and throws on one
+            that fails; <code>Warn</code> logs it and applies it anyway, and <code>Off</code>, the default, skips the
+            check. Enable it when binding untrusted input.
         </li>
         <li>
             <strong>Capabilities</strong> - inject <code>BmotionCapabilities</code> to branch on
@@ -268,6 +371,8 @@
 @code {
     private bool _typo;
     private bool _spacing;
+    private bool _size;
+    private bool _colors;
     private bool _pos;
     private bool _visual;
     private bool _escape;
@@ -309,6 +414,10 @@
 
         <Bmotion Animate='@(_on ? Bm.To(fontSize: "2.2rem") : Bm.To(fontSize: "1rem"))'>...</Bmotion>
         <Bmotion Animate='@(_on ? Bm.To(lineHeight: "2.3") : Bm.To(lineHeight: "1.15"))'>...</Bmotion>
+
+        @code {
+            private bool _on;
+        }
         """;
 
     private const string _spacingCode = """
@@ -320,6 +429,10 @@
         @* padding grows the box from the inside; margin shifts it within its track *@
         <Bmotion Animate='@(_on ? Bm.To(padding: "1.8rem") : Bm.To(padding: "0.4rem"))'>...</Bmotion>
         <Bmotion Animate='@(_on ? Bm.To(margin: "1.6rem") : Bm.To(margin: "0.1rem"))'>...</Bmotion>
+
+        @code {
+            private bool _on;
+        }
         """;
 
     private const string _posCode = """
@@ -328,6 +441,56 @@
                  Transition="Bm.Spring(stiffness: 200, damping: 18)">
             <div class="box" style="position:relative" />
         </Bmotion>
+
+        @* right / bottom push it away from the right and bottom edges instead *@
+        <Bmotion Animate='@(_on ? Bm.To(right: "150px", bottom: "60px") : Bm.To(right: "0px", bottom: "0px"))'>
+            <div class="box" style="position:relative" />
+        </Bmotion>
+
+        @code {
+            private bool _on;
+        }
+        """;
+
+    private const string _sizeCode = """
+        @* A bare number is px: width: 180 writes 180px *@
+        <Bmotion Animate="@(_on ? Bm.To(width: 180) : Bm.To(width: 40))"
+                 Transition="Bm.Spring(stiffness: 160, damping: 18)">
+            <div class="bar" style="height:1rem" />
+        </Bmotion>
+
+        @* Strings pass through - any unit, as long as both ends use the same one *@
+        <Bmotion Animate='@(_on ? Bm.To(width: "7rem", height: "4rem") : Bm.To(width: "3rem", height: "3rem"))'
+                 Transition="Bm.Tween(0.6, BmEase.InOut)">
+            <div class="box" />
+        </Bmotion>
+
+        @code {
+            private bool _on;
+        }
+        """;
+
+    private const string _colorsCode = """
+        @* Colours mix as colours, in any CSS syntax: hex, rgb(), hsl(), names, transparent *@
+        <Bmotion Animate='@(_on ? Bm.To(color: "#FD7F36") : Bm.To(color: "#1276C6"))' Transition="Bm.Tween(0.6)">
+            <div style="color:#1276C6">Colour me</div>
+        </Bmotion>
+
+        <Bmotion Animate='@(_on ? Bm.To(borderColor: "rgb(253, 127, 54)", outlineColor: "hsl(207, 83%, 42%)")
+                                : Bm.To(borderColor: "rgb(18, 118, 198)", outlineColor: "hsl(22, 98%, 60%)"))'>
+            <div style="border:6px solid; outline:4px solid; outline-offset:4px" />
+        </Bmotion>
+
+        @* On SVG shapes: fill and stroke *@
+        <svg viewBox="0 0 80 80" width="80" height="80">
+            <Bmotion Animate='@(_on ? Bm.To(fill: "#FD7F36", stroke: "#1276C6") : Bm.To(fill: "#1276C6", stroke: "#FD7F36"))'>
+                <circle cx="40" cy="40" r="30" fill="#1276C6" stroke="#FD7F36" stroke-width="6" />
+            </Bmotion>
+        </svg>
+
+        @code {
+            private bool _on;
+        }
         """;
 
     private const string _visualCode = """
@@ -340,6 +503,10 @@
 
         <Bmotion Animate='@(_on ? Bm.To(backgroundPosition: "100% 50%") : Bm.To(backgroundPosition: "0% 50%"))'>...</Bmotion>
         <Bmotion Animate='@(_on ? Bm.To(backgroundSize: "250%") : Bm.To(backgroundSize: "120%"))'>...</Bmotion>
+
+        @code {
+            private bool _on;
+        }
         """;
 
     private const string _escapeCode = """
@@ -352,5 +519,9 @@
 
         <Bmotion Animate='@(_on ? Bm.To(css: new() { ["text-indent"] = "48px" })
                                 : Bm.To(css: new() { ["text-indent"] = "0px" }))'>...</Bmotion>
+
+        @code {
+            private bool _on;
+        }
         """;
 }

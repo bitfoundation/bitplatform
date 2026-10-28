@@ -20,7 +20,7 @@ jobs:
 
   e2e:
     name: Bcrdt E2E (${{ matrix.browser }})
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 60
 
     strategy:
@@ -36,7 +36,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -46,8 +46,9 @@ jobs:
       with:
         node-version: 24
 
+    # The workloads of what this job builds, not of the whole solution, whose MAUI sample would bring maui-android.
     - name: dotnet workload restore
-      run: cd src/Utilities/Bcrdt && dotnet workload restore
+      run: cd src/Utilities/Bcrdt && dotnet workload restore Demo/Server/Bit.Bcrdt.Demo.Server.csproj
 
     - name: Build the demo and the E2E suite
       run: |
@@ -55,7 +56,7 @@ jobs:
         dotnet build src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/Bit.Bcrdt.Tests.E2E.csproj -c Release
 
     - name: Install Playwright ${{ matrix.browser }}
-      run: pwsh src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps ${{ matrix.browser }}
+      run: pwsh src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps ${{ matrix.browser }}
 
     - name: Run E2E tests
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.

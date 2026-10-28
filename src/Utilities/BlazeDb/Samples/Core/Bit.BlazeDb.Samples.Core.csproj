@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+        <!-- The engine is not a Blazor library, so the pages need the components themselves. -->
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="11.0.0-rc.3.26522.148" />
+        <!-- The engine, browser backends included. -->
+        <ProjectReference Include="..\..\Bit.BlazeDb\Bit.BlazeDb.csproj" />
+        <!-- The generator as an analyzer, which is what the Bit.BlazeDb package adds to a consumer: it turns
+             Data/TodoItem.cs into a table (TodoItem.Table and TodoItem.Indexes). A project reference to
+             Bit.BlazeDb does not bring it, since the package carries it only as packed analyzer output. -->
+        <ProjectReference Include="..\..\Bit.BlazeDb.Generators\Bit.BlazeDb.Generators.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+
+</Project>

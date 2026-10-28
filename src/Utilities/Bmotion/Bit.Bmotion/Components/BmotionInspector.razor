@@ -30,6 +30,10 @@
                         {
                             <span class="bm-insp-badge">@d.ActiveDriverCount driver@(d.ActiveDriverCount == 1 ? "" : "s")</span>
                         }
+                        @if (d.BrowserProperties.Count > 0)
+                        {
+                            <span class="bm-insp-badge" title="@string.Join(", ", d.BrowserProperties)">@d.BrowserProperties.Count in browser</span>
+                        }
                         @if (d.IsDragging)
                         {
                             <span class="bm-insp-badge drag">drag</span>

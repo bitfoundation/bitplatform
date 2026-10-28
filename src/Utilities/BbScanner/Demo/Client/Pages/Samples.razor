@@ -158,9 +158,7 @@
 
         foreach (var sample in SampleCatalog.All)
         {
-            using var image = sample.Matrix is not null
-                ? SampleCatalog.RenderMatrix(sample, scale: 6)
-                : Bit.BbScanner.TestKit.SyntheticImage.FromLinear(sample.Modules!, scale: 3, height: 90);
+            using var image = SampleCatalog.Render(sample, scale: 6, linearScale: 3, height: 90);
 
             var start = System.Diagnostics.Stopwatch.GetTimestamp();
 

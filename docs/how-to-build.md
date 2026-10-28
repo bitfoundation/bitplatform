@@ -22,7 +22,7 @@ building each one of them requires some specific steps that are explained below.
 
 Building each of the bit platform projects needs the following basic requirements other than the specific requirements that are explained later:
 
-- [.NET 10 SDK (10.0.403)](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
+- [.NET 11 SDK (11.0.100-rc.3.26522.148)](https://dotnet.microsoft.com/en-us/download/dotnet/11.0)
 - [Node.js](https://nodejs.org)
 
 <br/>

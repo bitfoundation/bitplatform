@@ -97,9 +97,6 @@ public class ServerModeTests : PrerenderedWebModeTests
     [TestMethod]
     public async Task Stores_survive_the_circuit_being_paused_and_resumed()
     {
-        if (Framework != "net10.0")
-            Assert.Inconclusive("Circuit pause and resume arrived in .NET 10.");
-
         await GotoAsync("/");
         await WaitForInteractiveAsync();
         var token = await Page.Locator("#token").GetAttributeAsync("data-token");

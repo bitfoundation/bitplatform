@@ -214,7 +214,7 @@
              and its own copies of the packages' bundles are the ones published, so a trimming of the client's here would be
              work thrown away and a second, misleading line per bundle in the build output. The WebAssembly SDK makes that
              request with these two global properties (StaticWebAssetsAdditionalPublishProperties, Microsoft.NET.Sdk.WebAssembly
-             .Browser.props, on 8, 9 and 10 alike), read here while only a global property can have set them: the second
+             .Browser.props, on 10 and 11 alike), read here while only a global property can have set them: the second
              is given a default inside a target, as the references are resolved. -->
         <_BitBlazorUIPublishedByHost Condition="'$(_BitBlazorUIIsWebAssembly)' == 'true' and '$(BuildProjectReferences)' == 'false' and '$(ResolveAssemblyReferencesFindRelatedSatellites)' == 'true'">true</_BitBlazorUIPublishedByHost>
 
@@ -243,20 +243,16 @@
              describes what the trimming left. -->
         <ResolvePublishStaticWebAssetsDependsOn>$(ResolvePublishStaticWebAssetsDependsOn);_BitBlazorUIResolveAssetTrimming;BitBlazorUISelectPublishScriptAssets;BitBlazorUITrimAssets;BitBlazorUIUpdateServiceWorker</ResolvePublishStaticWebAssetsDependsOn>
 
-        <!-- On the .NET 9 SDK and later, the publish lists the JavaScript initializers Blazor imports as it starts before
-             the stage above, right after it gathered the assets of every source (ResolveCorePublishStaticWebAssets): an
-             initializer of the lazy scripts dropped any later would still be listed, and fail to load in a bundle-mode app
-             that references the packages as projects (a package's are dropped from its build already). So the shape is
-             chosen at the end of that stage there. -->
+        <!-- The publish lists the JavaScript initializers Blazor imports as it starts before the stage above, right after
+             it gathered the assets of every source (ResolveCorePublishStaticWebAssets): an initializer of the lazy scripts
+             dropped any later would still be listed, and fail to load in a bundle-mode app that references the packages as
+             projects (a package's are dropped from its build already). So the shape is chosen at the end of that stage. -->
         <ResolveCorePublishStaticWebAssetsDependsOn>$(ResolveCorePublishStaticWebAssetsDependsOn);BitBlazorUISelectPublishScriptAssets</ResolveCorePublishStaticWebAssetsDependsOn>
 
         <!-- The build's assets are gathered from three places in a fixed order - the packages', this project's own, then
-             the referenced projects' - named in the dependency list of one target: ResolveCoreStaticWebAssets on the .NET 9
-             SDK and later, ResolveStaticWebAssetsInputs on .NET 8. Appended to both, so the shape is chosen once every
-             source has contributed and before the initializers are listed, whichever SDK is in play; the second to be
-             reached finds the target built already. -->
+             the referenced projects' - named in the dependency list of ResolveCoreStaticWebAssets. Appended to it, so the
+             shape is chosen once every source has contributed and before the initializers are listed. -->
         <ResolveCoreStaticWebAssetsDependsOn>$(ResolveCoreStaticWebAssetsDependsOn);BitBlazorUISelectScriptAssets</ResolveCoreStaticWebAssetsDependsOn>
-        <ResolveStaticWebAssetsInputsDependsOn>$(ResolveStaticWebAssetsInputsDependsOn);BitBlazorUISelectScriptAssets</ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
     <!-- Where this package keeps its pieces: buildTransitive\bit-assets in the package, obj\bit-assets in the source tree.
@@ -456,16 +452,12 @@
     </Target>
 
     <PropertyGroup>
-        <!-- Evaluation time, because the Import at the foot of this file conditions on it. -->
-        <_BitBlazorUISdkHasEndpoints>false</_BitBlazorUISdkHasEndpoints>
-        <_BitBlazorUISdkHasEndpoints Condition="'$(NETCoreSdkVersion)' != '' and $([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '9.0'))">true</_BitBlazorUISdkHasEndpoints>
-
         <!-- Only the project that publishes an app. ResolvePublishStaticWebAssets is not the publish-only stage it looks
              like: the SDK runs it on REFERENCED projects too, and a hybrid head that packages its wwwroot reaches it in a
              plain build. A Razor class library asked for its publish assets that way would trim against its own
              references, which are not the app's. The SDK a project loaded says which it is - the Web SDK or one of the
              two WebAssembly ones names every project shape that publishes an app rather than contributing to one, on
-             8, 9 and 10 alike; a Razor class library (Sdk.Razor) and a MAUI hybrid head (the plain SDK with UseMaui)
+             10 and 11 alike; a Razor class library (Sdk.Razor) and a MAUI hybrid head (the plain SDK with UseMaui)
              match none of them. -->
         <_BitBlazorUIIsTrimmingHead>false</_BitBlazorUIIsTrimmingHead>
         <_BitBlazorUIIsTrimmingHead Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' or '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' or '$(UsingMicrosoftNETSdkWebAssembly)' == 'true'">true</_BitBlazorUIIsTrimmingHead>
@@ -645,14 +637,6 @@
         </ItemGroup>
     </Target>
 
-    <!-- .NET 8 SDK: no fingerprinting, no endpoints. The .NET 9+ counterpart is in Bit.BlazorUI.Endpoints.targets. -->
-    <Target Name="_BitBlazorUIDefineTrimmedAssets" AfterTargets="_BitBlazorUIAssembleTrimmedAssets"
-            Condition="'$(_BitBlazorUISdkHasEndpoints)' != 'true' and '@(_BitBlazorUITrimmedCandidate)' != ''">
-        <DefineStaticWebAssets CandidateAssets="@(_BitBlazorUITrimmedCandidate)">
-            <Output TaskParameter="Assets" ItemName="_BitBlazorUITrimmedAsset" />
-        </DefineStaticWebAssets>
-    </Target>
-
     <!-- The swap itself: the packages' bundles, what was derived from them and the endpoints that served either leave;
          the trimmed bundles, defined from their own content, take their place at the same URLs. -->
     <Target Name="BitBlazorUITrimAssets" DependsOnTargets="_BitBlazorUIAssembleTrimmedAssets" Condition="'$(_BitBlazorUIPublishTrimming)' == 'true'">
@@ -697,12 +681,13 @@
     So the manifest is rewritten here - the dropped files out of the list, the trimmed bundles under their own hashes, a new
     version - and so is the service worker script that names that version, which is what makes the browser install the
     update. The new files are defined as fresh assets in place of the client's, exactly as the trimmed bundles are, so
-    integrity, endpoints and the compressed copies are all computed from the rewritten content. Three targets for the same
-    reason as the bundles': the .NET 9+ definition is in Bit.BlazorUI.Endpoints.targets.
+    integrity, endpoints and the compressed copies are all computed from the rewritten content. Three targets, the
+    definition in Bit.BlazorUI.Endpoints.targets like the bundles'.
 
-      _BitBlazorUIRewriteServiceWorker   rewrites the files (UpdateBitBlazorUIServiceWorker) and lists what they replace
-      _BitBlazorUIDefineServiceWorker    defines the new assets (plain form here, with endpoints in the 9+ file)
-      BitBlazorUIUpdateServiceWorker     swaps the assets and endpoints in the static web asset lists
+      _BitBlazorUIRewriteServiceWorker               rewrites the files (UpdateBitBlazorUIServiceWorker) and lists what
+                                                     they replace
+      _BitBlazorUIDefineServiceWorkerWithEndpoints   defines the new assets, with endpoints
+      BitBlazorUIUpdateServiceWorker                 swaps the assets and endpoints in the static web asset lists
 
     @(_BitBlazorUITrimmedAsset) is read as it is, not handed over in an item of its own: it outlives the swap anyway, for
     BitBlazorUIRestoreTrimmedAssetLabels.
@@ -722,14 +707,6 @@
         </ItemGroup>
     </Target>
 
-    <!-- .NET 8 SDK: no endpoints. The .NET 9+ counterpart is in Bit.BlazorUI.Endpoints.targets. -->
-    <Target Name="_BitBlazorUIDefineServiceWorker" AfterTargets="_BitBlazorUIRewriteServiceWorker"
-            Condition="'$(_BitBlazorUISdkHasEndpoints)' != 'true' and '@(_BitBlazorUIServiceWorkerCandidate)' != ''">
-        <DefineStaticWebAssets CandidateAssets="@(_BitBlazorUIServiceWorkerCandidate)">
-            <Output TaskParameter="Assets" ItemName="_BitBlazorUIServiceWorkerAsset" />
-        </DefineStaticWebAssets>
-    </Target>
-
     <Target Name="BitBlazorUIUpdateServiceWorker" DependsOnTargets="_BitBlazorUIRewriteServiceWorker" Condition="'$(_BitBlazorUIPublishTrimming)' == 'true'">
         <ItemGroup Condition="'@(_BitBlazorUIServiceWorkerAsset)' != ''">
             <StaticWebAssetEndpoint Remove="@(_BitBlazorUIServiceWorkerStale)" MatchOnMetadata="AssetFile" MatchOnMetadataOptions="PathLike" Condition="'@(StaticWebAssetEndpoint)' != ''" />
@@ -747,6 +724,6 @@
         </ItemGroup>
     </Target>
 
-    <Import Project="Bit.BlazorUI.Endpoints.targets" Condition="'$(_BitBlazorUISdkHasEndpoints)' == 'true'" />
+    <Import Project="Bit.BlazorUI.Endpoints.targets" />
 
 </Project>

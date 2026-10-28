@@ -1,0 +1,31 @@
+﻿@* The root component every host renders: the App.razor of the web hosts with their render mode, and the MAUI host's
+   BlazorWebView. The one BonboardingRoot is in MainLayout. *@
+@inject NavigationManager NavigationManager
+@implements IDisposable
+
+<Router AppAssembly="typeof(Routes).Assembly" NotFoundPage="typeof(NotFoundPage)">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+        @* Not on arrival: <FocusOnNavigate> also fires on its first render, which is the moment the app turns
+           interactive and the welcome tour starts by itself, and it would pull focus away from the tour's dialog. It
+           joins the tree with the first navigation, and its first render then is that one. A navigation a tour makes
+           itself is followed by the step taking focus: BonboardingRoot focuses the card once the new page has
+           rendered and the step's element was found, which is after the h1 was focused. *@
+        @if (_navigated)
+        {
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        }
+    </Found>
+</Router>
+
+@code {
+    private bool _navigated;
+
+    // Subscribed ahead of the router (a parent initializes before the children it renders), so the flag is already set
+    // when the router renders the page the navigation asked for.
+    protected override void OnInitialized() => NavigationManager.LocationChanged += OnLocationChanged;
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e) => _navigated = true;
+
+    public void Dispose() => NavigationManager.LocationChanged -= OnLocationChanged;
+}
