@@ -17,7 +17,8 @@
             _cesiumHandler: any,
             _viewTimer: any,
             _moveEndCallback: any,
-            _drag: { entity: any, markerId: string } | null,
+            /** The marker a press landed on; a drag only once the pointer has moved past the click tolerance. */
+            _drag: { entity: any, markerId: string, start: any, moved: boolean } | null,
             _dragEndedAt: number,
             _contextMenuBlocker: { canvas: HTMLCanvasElement, preventMenu: (evt: MouseEvent) => void } | null,
             suppressBrowserContextMenu: boolean,
@@ -137,7 +138,7 @@
                 Cesium, viewer, dotnetObj,
                 markers: {} as any, layers: {} as any, geoJsonLayers: {} as any, tileOverlays: {} as any,
                 _cesiumHandler: null as any, _viewTimer: null as any, _moveEndCallback: null as any,
-                _drag: null as ({ entity: any, markerId: string } | null),
+                _drag: null as ({ entity: any, markerId: string, start: any, moved: boolean } | null),
                 _dragEndedAt: 0,
                 _contextMenuBlocker: null as ({ canvas: HTMLCanvasElement, preventMenu: (evt: MouseEvent) => void } | null),
                 suppressBrowserContextMenu: !!o.suppressBrowserContextMenu,
@@ -844,6 +845,11 @@
             // events: grab the picked marker entity on LEFT_DOWN, follow the pointer on
             // MOUSE_MOVE, and report the final position on LEFT_UP. Camera input is
             // suspended for the duration so the globe doesn't spin under the marker.
+            // A press becomes a drag only once the pointer has gone as far as Cesium's own click tolerance
+            // (ScreenSpaceEventHandler's clickPixelTolerance, 5 pixels). Short of that the release is a click, which
+            // Cesium reports as one - swallowed as the end of a drag, a draggable marker would never raise
+            // OnMarkerClick, and every click on it would report a drag to where it already was.
+            const clickTolerance = 5;
             const cameraController = viewer.scene.screenSpaceCameraController;
             const pickPosition = (screenPosition: any) => {
                 const carte = viewer.camera.pickEllipsoid(screenPosition, viewer.scene.globe.ellipsoid);
@@ -857,23 +863,30 @@
                 const ent = picked?.id;
                 const mid = ent?._bmMarkerId;
                 if (!mid || !ent._bmDraggable || s.markers[mid] !== ent) return;
-                s._drag = { entity: ent, markerId: mid };
+                s._drag = { entity: ent, markerId: mid, start: Cesium.Cartesian2.clone(event.position), moved: false };
                 cameraController.enableInputs = false;
             }, Cesium.ScreenSpaceEventType.LEFT_DOWN);
 
             handler.setInputAction((movement: any) => {
-                if (!s._drag) return;
+                const drag = s._drag;
+                if (!drag) return;
+                if (!drag.moved) {
+                    if (Cesium.Cartesian2.distance(drag.start, movement.endPosition) < clickTolerance) return;
+                    drag.moved = true;
+                }
                 const p = pickPosition(movement.endPosition);
                 if (!p) return;
-                s._drag.entity.position = Cesium.Cartesian3.fromDegrees(p.lng, p.lat);
+                drag.entity.position = Cesium.Cartesian3.fromDegrees(p.lng, p.lat);
             }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
 
             handler.setInputAction((event: any) => {
                 const drag = s._drag;
                 if (!drag) return;
                 s._drag = null;
-                s._dragEndedAt = performance.now();
                 cameraController.enableInputs = true;
+                // Never moved far enough to be a drag: Cesium reports the release as the click it is, next.
+                if (!drag.moved) return;
+                s._dragEndedAt = performance.now();
                 const p = pickPosition(event.position);
                 if (!p) return;
                 drag.entity.position = Cesium.Cartesian3.fromDegrees(p.lng, p.lat);

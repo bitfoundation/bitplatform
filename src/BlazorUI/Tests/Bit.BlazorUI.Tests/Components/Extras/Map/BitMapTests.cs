@@ -1690,21 +1690,24 @@ public class BitMapTests : BunitTestContext
     }
 
     // The GL libraries and Azure Maps (built on MapLibre) put a marker's element inside the map's canvas container, where
-    // the library listens for the dblclick it zooms on and raises as the map's. So the element's own native listener has
-    // to stop it; an Azure map.events listener cannot, since the event Atlas hands it carries no DOM event.
+    // the library listens for the click and the dblclick it raises as the map's (OnClick, OnDoubleClick) and zooms on. So
+    // the element's own native listener has to stop them; an Azure map.events listener cannot, since the event Atlas
+    // hands it carries no DOM event.
     [TestMethod,
-        DataRow("BitMapGlBase.ts"),
-        DataRow("BitMapAzureMaps.ts")]
-    public void BitMapDomMarkerProvidersShouldStopTheDoubleClickOnTheMarkersElement(string file)
+        DataRow("BitMapGlBase.ts", "click", "OnMarkerClick"),
+        DataRow("BitMapGlBase.ts", "dblclick", "OnMarkerDoubleClick"),
+        DataRow("BitMapAzureMaps.ts", "click", "OnMarkerClick"),
+        DataRow("BitMapAzureMaps.ts", "dblclick", "OnMarkerDoubleClick")]
+    public void BitMapDomMarkerProvidersShouldStopAMarkersClicksOnItsElement(string file, string type, string callback)
     {
         var script = SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "Map", "Providers", file);
 
-        var listener = Regex.Match(script, @"marker\.getElement\(\)\?\.addEventListener\('dblclick', \(ev: Event\) => \{(?<body>.*?)\n            \}\);", RegexOptions.Singleline);
-        Assert.IsTrue(listener.Success, "The marker's element has no native dblclick listener.");
+        var listener = Regex.Match(script, $@"marker\.getElement\(\)\?\.addEventListener\('{type}', \(ev: Event\) => \{{(?<body>.*?)\n            \}}\);", RegexOptions.Singleline);
+        Assert.IsTrue(listener.Success, $"The marker's element has no native {type} listener.");
         var body = listener.Groups["body"].Value;
         StringAssert.Contains(body, "ev.stopPropagation();");
-        StringAssert.Contains(body, "'OnMarkerDoubleClick'");
-        Assert.IsFalse(Regex.IsMatch(script, @"events\.add\('dblclick', marker"), "A map.events listener cannot stop the DOM event.");
+        StringAssert.Contains(body, $"'{callback}'");
+        Assert.IsFalse(Regex.IsMatch(script, $@"events\.add\('{type}', marker"), "A map.events listener cannot stop the DOM event.");
     }
 
     [TestMethod]

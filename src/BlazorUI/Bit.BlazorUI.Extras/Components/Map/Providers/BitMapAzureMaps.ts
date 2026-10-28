@@ -259,14 +259,15 @@
 
             // Read s.dotnetObj at dispatch time rather than capturing it: dispose() nulls
             // the field, and a stale capture would invoke a released .NET reference.
-            s.map.events.add('click', marker, (e: any) => {
-                e.originalEvent?.stopPropagation?.();
+            // Both listeners go on the element itself rather than through map.events: the event Atlas hands a marker's
+            // listener carries no DOM event to stop, and the element sits in the map's canvas container, where a click
+            // would go on to raise the map's own click (OnClick, which also closes a MarkerPopupTemplate popup the
+            // marker click has just opened) and a double-click the map's dblclick (OnDoubleClick) and its zoom.
+            marker.getElement()?.addEventListener('click', (ev: Event) => {
+                ev.stopPropagation();
                 s.dotnetObj?.invokeMethodAsync('OnMarkerClick', markerId);
                 if (popup) marker.togglePopup();
             });
-            // On the element itself rather than through map.events: the event Atlas hands a marker's listener carries no
-            // DOM event to stop, and the element sits in the map's canvas container, where the double-click would go on
-            // to raise the map's own dblclick (OnDoubleClick) and zoom in.
             marker.getElement()?.addEventListener('dblclick', (ev: Event) => {
                 ev.stopPropagation();
                 s.dotnetObj?.invokeMethodAsync('OnMarkerDoubleClick', markerId);

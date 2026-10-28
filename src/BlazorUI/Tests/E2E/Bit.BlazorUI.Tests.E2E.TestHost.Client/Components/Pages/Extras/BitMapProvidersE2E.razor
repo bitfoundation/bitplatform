@@ -79,6 +79,33 @@
     </E2ESection>
 }
 
+@* Cesium needs no key with its OpenStreetMap imagery, which comes off the network like ArcGIS's tiles, and its library is
+   as large - so it is loaded on a demand of its own too. It draws markers on its canvas and drags them itself. *@
+<button id="btn-load-cesium" @onclick="() => _loadCesium = true">Load the Cesium map</button>
+
+@if (_loadCesium)
+{
+    <E2ESection Id="cesium" Title="Cesium">
+        <div class="map-box">
+            <BitMap @ref="_csMap" TMapProvider="BitCesiumMapProvider" Id="map-cs" Provider="_csProvider" Markers="_draggableMarkers"
+                    AriaLabel="Cesium map"
+                    OnMarkerClick="id => { _csMarkerClicks++; _csMarker = id; }"
+                    OnMarkerDoubleClick="id => _csMarkerDouble = id"
+                    OnMarkerDragEnd="e => _csDragEnd = e.Id"
+                    OnDoubleClick="_ => _csMapDoubleClicks++"
+                    OnLoadStateChanged="s => _csState = s.ToString()" />
+        </div>
+        <button id="btn-cs-project" @onclick="ProjectBigBenOnCesium">Project Big Ben</button>
+        <span id="cs-projected">@(_csProjected ?? "none")</span>
+        <span id="cs-state">@(_csState ?? "none")</span>
+        <span id="cs-marker">@(_csMarker ?? "none")</span>
+        <span id="cs-marker-clicks">@_csMarkerClicks</span>
+        <span id="cs-marker-double">@(_csMarkerDouble ?? "none")</span>
+        <span id="cs-drag-end">@(_csDragEnd ?? "none")</span>
+        <span id="cs-map-double-clicks">@_csMapDoubleClicks</span>
+    </E2ESection>
+}
+
 @* A round trip of its own, so a test knows every callback a map raised before it has been rendered. *@
 <button id="btn-ping" @onclick="() => _pings++">Ping</button>
 <span id="pings">@_pings</span>
@@ -106,13 +133,28 @@
         Zoom = 13
     };
 
+    // Centred on Big Ben: a zoom of Cesium's is a camera altitude, closer in than the same zoom elsewhere, which would
+    // leave the marker off the edge of the other maps' view.
+    private readonly BitCesiumMapProvider _csProvider = new()
+    {
+        Center = new(51.5007, -0.1246),
+        Zoom = 12
+    };
+
     private bool _load;
     private bool _loadArcGis;
+    private bool _loadCesium;
     private int _pings;
 
     private readonly IEnumerable<BitMapMarker> _markers =
     [
         new() { Id = "big-ben", Position = new(51.5007, -0.1246), Alt = "Big Ben" },
+        new() { Id = "tower", Position = new(51.5055, -0.0754), Alt = "Tower Bridge" }
+    ];
+
+    private readonly IEnumerable<BitMapMarker> _draggableMarkers =
+    [
+        new() { Id = "big-ben", Position = new(51.5007, -0.1246), Alt = "Big Ben", Draggable = true },
         new() { Id = "tower", Position = new(51.5055, -0.0754), Alt = "Tower Bridge" }
     ];
 
@@ -143,6 +185,21 @@
     {
         var point = await _olMap.Project(new(51.5007, -0.1246));
         _olProjected = point is { } p ? string.Create(CultureInfo.InvariantCulture, $"{p.X:F0},{p.Y:F0}") : "null";
+    }
+
+    private BitMap<BitCesiumMapProvider> _csMap = default!;
+    private string? _csState;
+    private string? _csMarker;
+    private int _csMarkerClicks;
+    private string? _csMarkerDouble;
+    private string? _csDragEnd;
+    private int _csMapDoubleClicks;
+    private string? _csProjected;
+
+    private async Task ProjectBigBenOnCesium()
+    {
+        var point = await _csMap.Project(new(51.5007, -0.1246));
+        _csProjected = point is { } p ? string.Create(CultureInfo.InvariantCulture, $"{p.X:F0},{p.Y:F0}") : "null";
     }
 
     private async Task ProjectBigBenOnArcGis()

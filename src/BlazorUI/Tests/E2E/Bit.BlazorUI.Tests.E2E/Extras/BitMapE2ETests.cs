@@ -986,13 +986,86 @@ public class BitMapProvidersE2ETests : E2ETestBase
         Assert.AreEqual("none", await Page.Locator("#ag-marker").InnerTextAsync());
     }
 
-    // The map's OnDoubleClick would have been raised by the same event as the marker's, so once a later round trip
-    // has been rendered it would show.
-    private async Task AssertNoMapDoubleClickYetAsync(string counter)
+    [TestMethod]
+    public async Task Cesium_ADraggableMarkerIsClickedDoubleClickedAndDragged()
+    {
+        AllowConsoleErrors = true;
+
+        await OpenAsync(Route);
+        await Page.Locator("#btn-load-cesium").ClickAsync();
+        await Expect(Page.Locator("#cs-state")).ToHaveTextAsync(new Regex("^(Ready|Failed|Unsupported)$"), new() { Timeout = 90000 });
+        var state = await Page.Locator("#cs-state").InnerTextAsync();
+        if (state == "Unsupported") Assert.Inconclusive("This browser has no WebGL for Cesium.");
+        if (state == "Failed") Assert.Inconclusive("CesiumJS could not be loaded from its CDN.");
+
+        var canvas = Page.Locator("#map-cs-canvas");
+        await canvas.ScrollIntoViewIfNeededAsync();
+        await Page.Locator("#btn-cs-project").ClickAsync();
+        await Expect(Page.Locator("#cs-projected")).ToHaveTextAsync(new Regex(@"^\d+,\d+$"));
+        var xy = (await Page.Locator("#cs-projected").InnerTextAsync()).Split(',').Select(v => float.Parse(v, CultureInfo.InvariantCulture)).ToArray();
+        async Task<(float X, float Y)> BigBenAsync()
+        {
+            await canvas.ScrollIntoViewIfNeededAsync();
+            var box = (await canvas.BoundingBoxAsync())!;
+            return (box.X + xy[0], box.Y + xy[1] - 12);
+        }
+
+        // A press that does not move is a click, on a draggable marker too - not a drag to where it already was. Cesium
+        // picks only what it has drawn, and the pin's image loads after the marker is added, so the click is repeated
+        // until it lands.
+        var (x, y) = await BigBenAsync();
+        for (var attempt = 0; ; attempt++)
+        {
+            await Page.Mouse.ClickAsync(x, y);
+            try
+            {
+                await Expect(Page.Locator("#cs-marker")).ToHaveTextAsync("big-ben", new() { Timeout = 500 });
+                break;
+            }
+            catch (PlaywrightException) when (attempt < 20) { }
+        }
+        await PingAsync();
+        Assert.AreEqual("none", await Page.Locator("#cs-drag-end").InnerTextAsync());
+        var clicks = int.Parse(await Page.Locator("#cs-marker-clicks").InnerTextAsync(), CultureInfo.InvariantCulture);
+
+        // Cesium reports both clicks of a double-click as they land; the double-click is the marker's, and the camera
+        // does not fly to the marker either - or the drag below would start where the marker no longer is.
+        (x, y) = await BigBenAsync();
+        await Page.Mouse.DblClickAsync(x, y);
+        await Expect(Page.Locator("#cs-marker-double")).ToHaveTextAsync("big-ben");
+        await AssertNoMapDoubleClickYetAsync("#cs-map-double-clicks");
+        Assert.AreEqual((clicks + 2).ToString(CultureInfo.InvariantCulture), await Page.Locator("#cs-marker-clicks").InnerTextAsync());
+
+        // A press that moves is a drag, and its release is no click.
+        (x, y) = await BigBenAsync();
+        await Page.Mouse.MoveAsync(x, y);
+        await Page.Mouse.DownAsync();
+        await Page.Mouse.MoveAsync(x + 80, y, new() { Steps = 8 });
+        await Page.Mouse.UpAsync();
+        await Expect(Page.Locator("#cs-drag-end")).ToHaveTextAsync("big-ben");
+        await PingAsync();
+        Assert.AreEqual((clicks + 2).ToString(CultureInfo.InvariantCulture), await Page.Locator("#cs-marker-clicks").InnerTextAsync());
+
+        // Away from the markers the double-click is the map's.
+        await canvas.ScrollIntoViewIfNeededAsync();
+        var mapBox = (await canvas.BoundingBoxAsync())!;
+        await Page.Mouse.DblClickAsync(mapBox.X + 300, mapBox.Y + 330);
+        await Expect(Page.Locator("#cs-map-double-clicks")).ToHaveTextAsync("1");
+    }
+
+    // A round trip of the page's own: once it has been rendered, so has every callback a map raised before it.
+    private async Task PingAsync()
     {
         var pings = int.Parse(await Page.Locator("#pings").InnerTextAsync(), CultureInfo.InvariantCulture);
         await Page.Locator("#btn-ping").ClickAsync();
         await Expect(Page.Locator("#pings")).ToHaveTextAsync((pings + 1).ToString(CultureInfo.InvariantCulture));
+    }
+
+    // The map's OnDoubleClick would have been raised by the same event as the marker's, so once a later round trip
+    // has been rendered it would show.
+    private async Task AssertNoMapDoubleClickYetAsync(string counter)
+    {
+        await PingAsync();
         Assert.AreEqual("0", await Page.Locator(counter).InnerTextAsync());
     }
 }
