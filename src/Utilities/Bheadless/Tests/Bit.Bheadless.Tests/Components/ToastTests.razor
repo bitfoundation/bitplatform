@@ -111,7 +111,7 @@
     [TestMethod]
     public async Task Dismissing_waits_for_the_closed_state_to_render_before_looking_for_an_exit_animation()
     {
-        var module = JSInterop.SetupModule("./_content/Bit.Bheadless/bit-bheadless.js");
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
         module.Mode = JSRuntimeMode.Loose;
         var toaster = new BitBhToaster();
         var cut = Render(Viewport(toaster));

@@ -18,6 +18,7 @@ Inspired by [Radix UI](https://www.radix-ui.com/), [React Aria](https://react-sp
 - [Concepts](#concepts)
 - [Styling](#styling)
 - [Testing accessibility](#testing-accessibility)
+- [MCP server](#mcp-server)
 - [Demo](#demo)
 - [Contributing](#contributing)
 
@@ -269,6 +270,27 @@ public class SaveMenuTests : BitBhTestContext
 
 The audit complements — it does not replace — browser-based checks (e.g. axe-core with Playwright) and testing with real assistive technology.
 
+## MCP server
+
+The demo hosts a [Model Context Protocol](https://modelcontextprotocol.io) server at
+`https://bheadless.bitplatform.dev/mcp`, so an AI agent building a menu, a listbox or a dialog reads the library
+itself - its components, their parts and parameters, this guide and the demo's working examples - instead of
+writing the ARIA wiring from memory.
+
+```json
+{
+  "mcpServers": {
+    "bheadless": { "type": "http", "url": "https://bheadless.bitplatform.dev/mcp" }
+  }
+}
+```
+
+Start with `SearchBheadless`, which finds a component family, a part, a type or a section of this guide from a
+description of what the UI has to do, and points each hit at the exact follow-up call. `GetBheadlessComponent`
+gives a family's parts with their parameters, real defaults and styling hooks, `GetBheadlessExamples` the demo's
+working code for it in plain CSS or Tailwind, and `GetBheadlessSetupGuide` the installation and service
+registration, or any other section of this guide by its heading. Every tool is read-only.
+
 ## Demo
 
 https://bheadless.bitplatform.dev
@@ -277,7 +299,7 @@ https://bheadless.bitplatform.dev
 dotnet run --project src/Utilities/Bheadless/Demo/Bit.Bheadless.Demo.Server
 ```
 
-Every component is demonstrated twice - hand-written CSS at `/<component>` and Tailwind at `/tw/<component>` - with the Razor and CSS for each demo one click away. Debug builds run the demo as Blazor Server; Release builds (and `-p:IncludeWasm=true`) run it as Blazor WebAssembly. The demo also hosts an MCP server at `/mcp` that hands an AI agent the components, their parameters, styling hooks and demo examples.
+Every component is demonstrated twice - hand-written CSS at `/<component>` and Tailwind at `/tw/<component>` - with the Razor and CSS for each demo one click away. Debug builds run the demo as Blazor Server; Release builds (and `-p:IncludeWasm=true`) run it as Blazor WebAssembly. The demo also hosts the [MCP server](#mcp-server) at `/mcp`.
 
 ```
 Bit.Bheadless/                     the library (Components, Core, Scripts/*.ts compiled to wwwroot)
@@ -295,8 +317,8 @@ Tests/Bit.Bheadless.Tests.E2E/     real-browser tests: axe-core + keyboard (Play
 From the `src` folder (its `global.json` selects the test runner):
 
 ```bash
-dotnet build Bheadless/Bit.Bheadless.slnx
-cd Bheadless/Tests/Bit.Bheadless.Tests && dotnet test     # component, keyboard and ARIA tests (bUnit)
+dotnet build Utilities/Bheadless/Bit.Bheadless.slnx
+cd Utilities/Bheadless/Tests/Bit.Bheadless.Tests && dotnet test     # component, keyboard and ARIA tests (bUnit)
 ```
 
 Debug builds target .NET 11 only; pass `-p:BuildAllTfms=true` to build and test .NET 10 as well, as CI does. The browser suite (axe-core on every demo page + keyboard flows) is described in [Tests/Bit.Bheadless.Tests.E2E/README.md](Tests/Bit.Bheadless.Tests.E2E/README.md) and runs in `bit.ci.Bheadless.e2e.yml`.

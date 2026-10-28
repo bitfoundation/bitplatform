@@ -86,10 +86,10 @@ public partial class McpController : ControllerBase
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetBheadlessGuide), Title = "One section of the bit Bheadless guide",
+    [McpServerTool(Name = nameof(GetBheadlessSetupGuide), Title = "Setup and guide of bit Bheadless",
                    ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
-    [Description("Gets a section of the library's guide: installation and service registration, compound components and controlled / uncontrolled state, Template, the common parameters, positioning (Anchor), overlays, dismissal and focus, announcements, right-to-left, styling hooks (plain CSS, Tailwind, Bootstrap) and accessibility testing. Omit the topic for the list of sections and the installation section.")]
-    public string GetBheadlessGuide(
+    [Description("Gets the wiring for adding Bit.Bheadless to an app - the package, service registration in every DI container that renders components, the using and the interactive render mode it needs - when called without a topic, together with the list of the guide's sections. With a topic, gets that section of the guide instead: compound components and controlled / uncontrolled state, Template, the common parameters, positioning (Anchor), overlays, dismissal and focus, announcements, right-to-left, styling hooks (plain CSS, Tailwind, Bootstrap) and accessibility testing. Call it without a topic before writing any setup code.")]
+    public string GetBheadlessSetupGuide(
         [Description("Optional. A heading or what it is about, e.g. 'Installation', 'Positioning', 'rtl', 'testing'.")] string? topic = null)
         => BheadlessMarkdown.Bound(BheadlessGuide.Get(topic), "Ask for a sub-section by its heading.");
 

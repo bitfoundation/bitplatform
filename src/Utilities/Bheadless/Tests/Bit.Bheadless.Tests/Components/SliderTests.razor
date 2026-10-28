@@ -204,7 +204,7 @@
     [TestMethod]
     public void Disposed_while_attaching_detaches_what_the_attach_returns()
     {
-        var module = JSInterop.SetupModule("./_content/Bit.Bheadless/bit-bheadless.js");
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
         var attach = module.Setup<int>("slider.attach", _ => true);
         var cut = Render(
             @<Stateful T="bool" Initial="true" Context="s">
@@ -238,7 +238,7 @@
     [TestMethod]
     public void The_runtime_mirrors_pointer_input_by_the_slider_direction()
     {
-        var module = JSInterop.SetupModule("./_content/Bit.Bheadless/bit-bheadless.js");
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
         var attach = module.Setup<int>("slider.attach", _ => true);
         Render(
             @<BitBhDirectionProvider Dir="BitBhDirection.Rtl">

@@ -36,7 +36,7 @@ public partial class McpProxyService : IAsyncDisposable
     /// it into a tool an agent reaches for on its own instead of one it only uses when it is told to. The template's
     /// AGENTS.md points at this description rather than repeating the list, so this is the only place it is written down.
     /// </summary>
-    private const string askQuestionDescription = """
+    private static readonly string askQuestionDescription = $"""
         Asks a question about a public GitHub repository and answers it from that repository's own source code and
         documentation. Prefer it over a web search whenever the question is about one of these libraries:
         - riok/mapperly: object mapping between entities and DTOs, focusing on its partial static classes and extension methods approach.
@@ -45,15 +45,18 @@ public partial class McpProxyService : IAsyncDisposable
         - ZiggyCreatures/FusionCache: hybrid caching, L2 cache backplane, distributed locking, OpenTelemetry integration and cache factory configuration.
         - keycloak/keycloak: Keycloak and realm configuration.
         - microsoft/agent-framework: agent creation, multi agent orchestration, workflows, tools and function calling, MCP, A2A communication, memory and context, and provider integrations.
-        Do not ask it about the bit platform libraries themselves: BlazorUI, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite, Butil, Bswup, Brouter, Belemetry and Bheadless each have
-        their own dedicated tools, BlazorUI's and Butil's on this server and every other library's on its own server at https://<name>.bitplatform.dev/mcp, and those are written from the library rather than inferred from it.
+        Do not ask it about the bit platform libraries themselves: {BitLibraries.Names(BitLibraries.All)} each have
+        their own dedicated tools, {ServedHereTools} on this server and every other library's on its own server at https://<name>.bitplatform.dev/mcp, and those are written from the library rather than inferred from it.
         """;
+
+    /// <summary>"BlazorUI's and Butil's": the libraries whose tools this site serves itself.</summary>
+    private static string ServedHereTools => BitLibraries.List(BitLibraries.ServedHere.Select(library => $"{library.Name}'s"), "and");
 
     /// <summary>
     /// Ends the description of every CodebaseMemory tool: an agent may also have a codebase-memory server of its
     /// own, which answers about its own project.
     /// </summary>
-    private const string bitPlatformSourceScope = "It reads the source code of the bitfoundation/bitplatform GitHub repository at the release this connection asked for (the v query of this endpoint, the newest release when it names none or one not served yet, as the server instructions say), never the caller's own workspace, not even a project created from a bit template. Of that repository it holds the bit Boilerplate project template, the bit platform websites, the build time projects and two bit libraries, Besql (src/Besql) and BlazorES2019 (src/Toolings/BlazorES2019), but none of the other bit libraries: BlazorUI, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite, Brouter, Butil, Bswup, Belemetry and Bheadless each answer for themselves through their own tools, BlazorUI's and Butil's on this server and every other library's on its own server at https://<name>.bitplatform.dev/mcp, so a question about a component, a theme, an animation, a drawing canvas, a command palette, a barcode scanner, drag and drop, a browser database, a node-based editor, a schema-driven form, real-time collaboration, a sortable list, a product tour, state management, image processing, an EF Core database in the browser, routing, the service worker, telemetry or accessible unstyled UI primitives goes to those rather than to a search here.";
+    private static readonly string bitPlatformSourceScope = $"It reads the source code of the bitfoundation/bitplatform GitHub repository at the release this connection asked for (the v query of this endpoint, the newest release when it names none or one not served yet, as the server instructions say), never the caller's own workspace, not even a project created from a bit template. Of that repository it holds the bit Boilerplate project template, the bit platform websites, the build time projects and two bit libraries, Besql (src/Besql) and BlazorES2019 (src/Toolings/BlazorES2019), but none of the other bit libraries: {BitLibraries.Names(BitLibraries.All)} each answer for themselves through their own tools, {ServedHereTools} on this server and every other library's on its own server at https://<name>.bitplatform.dev/mcp, so a question about {BitLibraries.List(BitLibraries.All.Select(library => library.Topic), "or")} goes to those rather than to a search here.";
 
     /// <summary>
     /// Every tool of this upstream takes a project argument naming the index to answer from, a deployment
@@ -81,7 +84,8 @@ public partial class McpProxyService : IAsyncDisposable
 
     /// <summary>
     /// After a failed refresh the merged list is missing the tools of at least one server, so it is kept
-    /// only briefly: the next caller retries instead of waiting out the full <see cref="toolsCacheLifetime"/>.
+    /// only briefly: the next caller retries the servers that failed instead of waiting out the full
+    /// <see cref="toolsCacheLifetime"/>.
     /// </summary>
     private static readonly TimeSpan failedToolsCacheLifetime = TimeSpan.FromMinutes(1);
 
@@ -101,8 +105,7 @@ public partial class McpProxyService : IAsyncDisposable
 
     private readonly Upstream[] deployedLibraryUpstreams =
     [
-        .. new[] { "Bmotion", "Bswup", "Brouter", "Bmage", "Bink", "Balette", "BbScanner", "Bdnd", "BlazeDb", "Blow", "Borm", "Bcrdt", "Bonboarding", "Bortable", "Blex", "Bsqlite", "Belemetry", "Bheadless" }
-            .Select(library => new Upstream($"bit{library}", new($"https://{library.ToLowerInvariant()}.bitplatform.dev/mcp")))
+        .. BitLibraries.Deployed.Select(library => new Upstream($"bit{library.Name}", new($"https://{library.Name.ToLowerInvariant()}.bitplatform.dev/mcp")))
     ];
 
     /// <summary>
@@ -336,7 +339,13 @@ public partial class McpProxyService : IAsyncDisposable
         {
             if (DateTimeOffset.UtcNow < toolSet.ExpiresAt && toolSet.Generation == versions.Generation) return toolSet;
 
-            var toolsPerUpstream = await Task.WhenAll(UpstreamsOf(version).Select(async upstream => (upstream, tools: await ListTools(upstream, version, cancellationToken))));
+            // A retry after a failed refresh lists only the servers that failed: the tools of the others are as current
+            // as the last full refresh, and listing every server again would put all of their round trips in front of
+            // a caller every minute for as long as one of them stays down.
+            var isFullRefresh = toolSet.Generation != versions.Generation || DateTimeOffset.UtcNow >= toolSet.RefreshedAt + toolsCacheLifetime;
+            var listedToolsPerUpstream = isFullRefresh ? new Dictionary<Upstream, IReadOnlyList<Tool>>() : toolSet.ToolsPerUpstream;
+
+            var toolsPerUpstream = await Task.WhenAll(UpstreamsOf(version).Select(async upstream => (upstream, tools: listedToolsPerUpstream.GetValueOrDefault(upstream) ?? await ListTools(upstream, version, cancellationToken))));
 
             // This site's own tools lead the list; the upstreams fill in the rest behind it.
             List<Tool> mergedTools = [McpFeedbackTool.Definition, McpReleasesTool.Definition];
@@ -368,8 +377,18 @@ public partial class McpProxyService : IAsyncDisposable
             toolSet.Tools = [.. mergedTools];
             toolSet.DefaultTools = [.. defaultTools];
             toolSet.UpstreamPerToolName = mergedUpstreamPerToolName;
+            toolSet.ToolsPerUpstream = toolsPerUpstream.Where(t => t.tools is not null).ToDictionary(t => t.upstream, t => t.tools!);
             toolSet.Generation = versions.Generation;
-            toolSet.ExpiresAt = DateTimeOffset.UtcNow + (toolsPerUpstream.Any(t => t.tools is null) ? failedToolsCacheLifetime : toolsCacheLifetime);
+
+            if (isFullRefresh)
+            {
+                toolSet.RefreshedAt = DateTimeOffset.UtcNow;
+            }
+
+            var fullRefreshAt = toolSet.RefreshedAt + toolsCacheLifetime;
+            toolSet.ExpiresAt = toolsPerUpstream.Any(t => t.tools is null) && DateTimeOffset.UtcNow + failedToolsCacheLifetime < fullRefreshAt
+                ? DateTimeOffset.UtcNow + failedToolsCacheLifetime
+                : fullRefreshAt;
 
             return toolSet;
         }
@@ -550,6 +569,12 @@ public partial class McpProxyService : IAsyncDisposable
         public Tool[] DefaultTools { get; set; } = [];
 
         public Dictionary<string, Upstream> UpstreamPerToolName { get; set; } = new(StringComparer.Ordinal);
+
+        /// <summary>The tools of every upstream that answered, so a retry only lists the ones that did not.</summary>
+        public Dictionary<Upstream, IReadOnlyList<Tool>> ToolsPerUpstream { get; set; } = new();
+
+        /// <summary>When every upstream was last listed, which bounds how old the tools of <see cref="ToolsPerUpstream"/> get.</summary>
+        public DateTimeOffset RefreshedAt { get; set; }
 
         public DateTimeOffset ExpiresAt { get; set; }
 

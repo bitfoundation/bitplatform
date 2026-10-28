@@ -252,7 +252,7 @@
     public void Chevron_of_an_OpenOnFocus_combobox_opens_it()
     {
         // The input's focus event arrives while the chevron's click handler waits for the focus call.
-        var module = JSInterop.SetupModule("./_content/Bit.Bheadless/bit-bheadless.js");
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
         var focus = module.Setup<bool>("focus.focus", _ => true);
         var cut = Render(
             @<BitBhCombobox TValue="string" OpenOnFocus="true">
@@ -388,7 +388,7 @@
     public void Anchored_panel_scrolls_to_the_highlight_once_it_is_revealed()
     {
         // The open is held in flight: the panel stays hidden until the runtime has opened it.
-        var module = JSInterop.SetupModule("./_content/Bit.Bheadless/bit-bheadless.js");
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
         var open = module.Setup<int>("floating.open", _ => true);
         var cut = Render(
             @<BitBhCombobox TValue="string" DefaultValue="@("Cherry")">

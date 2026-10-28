@@ -21,7 +21,12 @@ namespace Bit.Bheadless;
 /// </summary>
 public sealed class BitBhInterop : IAsyncDisposable, IDisposable
 {
-    private const string ModulePath = "./_content/Bit.Bheadless/bit-bheadless.js";
+    /// <summary>
+    /// The path the JS runtime is imported from, e.g. for a bUnit <c>JSInterop.SetupModule</c>. A property rather
+    /// than a const, so code compiled against one version of the library reads the path of the one it runs with.
+    /// </summary>
+    public static string ModulePath { get; } = "./_content/Bit.Bheadless/bit-bheadless.js";
+
     private const DynamicallyAccessedMemberTypes JsonSerialized =
         DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties;
 

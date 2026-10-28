@@ -81,6 +81,7 @@ Before implementing any changes, you **MUST** complete the following:
     *   `bit Bcrdt` (`https://bcrdt.bitplatform.dev/mcp`): real-time collaborative editing on a CRDT engine, with presence and offline sync.
     *   `bit Bdnd` (`https://bdnd.bitplatform.dev/mcp`): declarative drag and drop between any sources and drop targets.
     *   `bit Belemetry` (`https://belemetry.bitplatform.dev/mcp`): logs, traces, metrics and web vitals from both the browser and the .NET side, over OpenTelemetry.
+    *   `bit Bheadless` (`https://bheadless.bitplatform.dev/mcp`): accessible, unstyled UI primitives - menus, listboxes, comboboxes, dialogs, tabs and more - with the keyboard interaction, focus management and ARIA built in, for a custom design system.
     *   `bit Bink` (`https://bink.bitplatform.dev/mcp`): drawing and ink: signatures, sketches, whiteboards and annotations.
     *   `bit Blex` (`https://blex.bitplatform.dev/mcp`): reactive state management with persistence, undo/redo and DevTools.
     *   `bit Blow` (`https://blow.bitplatform.dev/mcp`): node-based editors and diagrams, a counterpart to React Flow.

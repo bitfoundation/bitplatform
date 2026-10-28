@@ -129,7 +129,7 @@
     public void A_right_click_in_the_trigger_of_an_open_context_menu_moves_it()
     {
         // The open surface needs a handle for the move to reach the runtime.
-        var module = JSInterop.SetupModule("./_content/Bit.Bheadless/bit-bheadless.js");
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
         module.Mode = JSRuntimeMode.Loose;
         module.Setup<int>("floating.open", _ => true).SetResult(3);
 

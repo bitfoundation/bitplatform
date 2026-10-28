@@ -135,7 +135,7 @@
     {
         // An anchored / portalled panel stays hidden until the runtime has opened it: a scroll sent before
         // that does nothing. The open is held in flight here.
-        var module = JSInterop.SetupModule("./_content/Bit.Bheadless/bit-bheadless.js");
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
         var open = module.Setup<int>("floating.open", _ => true);
         var cut = Render(
             @<BitBhListbox TValue="int" DefaultValue="3">

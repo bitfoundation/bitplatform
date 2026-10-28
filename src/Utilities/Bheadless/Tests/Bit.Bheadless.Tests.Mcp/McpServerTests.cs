@@ -42,7 +42,7 @@ public class McpServerTests
                 nameof(McpController.SearchBheadless),
                 nameof(McpController.GetBheadlessComponent),
                 nameof(McpController.GetBheadlessExamples),
-                nameof(McpController.GetBheadlessGuide),
+                nameof(McpController.GetBheadlessSetupGuide),
             },
             tools.Select(tool => tool.Name).ToArray());
 
@@ -142,7 +142,7 @@ public class McpServerTests
     }
 
     [TestMethod]
-    public async Task Guide_WithoutATopic_ReturnsTheSectionsAndTheInstallationSection()
+    public async Task SetupGuide_WithoutATopic_ReturnsTheSectionsAndTheInstallationSection()
     {
         if (BheadlessGuide.Readme is null)
         {
@@ -151,8 +151,8 @@ public class McpServerTests
 
         foreach (var guide in new[]
         {
-            await Server.CallAsync(nameof(McpController.GetBheadlessGuide)),
-            await Server.GetAsync(nameof(McpController.GetBheadlessGuide)),
+            await Server.CallAsync(nameof(McpController.GetBheadlessSetupGuide)),
+            await Server.GetAsync(nameof(McpController.GetBheadlessSetupGuide)),
         })
         {
             StringAssert.Contains(guide, "## Sections of the guide");

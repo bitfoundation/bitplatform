@@ -22,7 +22,7 @@ public static class BheadlessMcpInstructions
 
         Call SearchBheadless first when you do not know the name - ask by what the UI has to do. Before writing
         markup, call GetBheadlessComponent for each family you use (its parts only work composed), then
-        GetBheadlessExamples for working code, in plain CSS or Tailwind. GetBheadlessGuide covers
+        GetBheadlessExamples for working code, in plain CSS or Tailwind. GetBheadlessSetupGuide covers
         installation and the concepts that hold across the library.
 
         Apply these without being asked:

@@ -60,7 +60,7 @@ internal sealed class BitBhBrowserEmulation
         var handler = new CollectionOrderHandler(this);
         context.JSInterop.AddInvocationHandler(handler);
         // The runtime is an ES module: answer calls made on it as well.
-        var module = context.JSInterop.SetupModule("./_content/Bit.Bheadless/bit-bheadless.js");
+        var module = context.JSInterop.SetupModule(BitBhInterop.ModulePath);
         module.Mode = JSRuntimeMode.Loose;
         module.AddInvocationHandler(new CollectionOrderHandler(this));
     }

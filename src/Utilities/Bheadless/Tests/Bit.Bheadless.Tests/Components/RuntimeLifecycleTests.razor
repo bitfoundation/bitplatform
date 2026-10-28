@@ -4,15 +4,13 @@
 @using Microsoft.JSInterop
 
 @code {
-    private const string ModulePath = "./_content/Bit.Bheadless/bit-bheadless.js";
-
     // Calls the components make on the runtime module, answered when the test says so.
     private BunitJSModuleInterop Module => _module ??= LooseModule();
     private BunitJSModuleInterop? _module;
 
     private BunitJSModuleInterop LooseModule()
     {
-        var module = JSInterop.SetupModule(ModulePath);
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
         module.Mode = JSRuntimeMode.Loose;
         return module;
     }

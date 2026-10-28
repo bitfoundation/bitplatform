@@ -157,7 +157,7 @@ public static partial class BheadlessSearchIndex
         foreach (var section in BheadlessGuide.Sections)
         {
             entries.Add(new Entry("guide", section.Heading, $"a section of the guide ({section.Markdown.Length} characters)",
-                                  $"GetBheadlessGuide(topic: \"{section.Heading}\")",
+                                  $"GetBheadlessSetupGuide(topic: \"{section.Heading}\")",
                                   Normalize(section.Heading), Words(section.Heading), Words(section.Markdown)));
         }
 

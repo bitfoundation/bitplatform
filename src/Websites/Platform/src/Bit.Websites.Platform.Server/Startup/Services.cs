@@ -171,7 +171,7 @@ public static class Services
                 Title = "bit platform",
                 Version = typeof(Services).Assembly.GetName().Version!.ToString()
             };
-            options.ServerInstructions = "Provides the bit BlazorUI and Butil documentation tools, a source code index of the bitfoundation/bitplatform repository and the tools of the other MCP servers the bit platform team develops against. Every other bit library - Bmotion, Bswup, Brouter, Bmage, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bsqlite, Belemetry and Bheadless - has an MCP server of its own at https://<name in lowercase>.bitplatform.dev/mcp, such as https://bmotion.bitplatform.dev/mcp: plain HTTP with no sign-in, so when one is not in your MCP configuration, send its JSON-RPC requests (tools/list, then tools/call) to that address directly.";
+            options.ServerInstructions = $"Provides the bit {BitLibraries.Names(BitLibraries.ServedHere)} documentation tools, a source code index of the bitfoundation/bitplatform repository and the tools of the other MCP servers the bit platform team develops against. Every other bit library - {BitLibraries.Names(BitLibraries.Deployed)} - has an MCP server of its own at https://<name in lowercase>.bitplatform.dev/mcp, such as https://bmotion.bitplatform.dev/mcp: plain HTTP with no sign-in, so when one is not in your MCP configuration, send its JSON-RPC requests (tools/list, then tools/call) to that address directly.";
         })
             // Stateless: no session state is kept between requests, so the endpoint keeps working when the
             // site runs behind a load balancer without session affinity. Nothing is lost by it here, since

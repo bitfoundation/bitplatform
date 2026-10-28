@@ -110,7 +110,7 @@
     [TestMethod]
     public void Disposed_while_attaching_detaches_what_the_attach_returns()
     {
-        var module = JSInterop.SetupModule("./_content/Bit.Bheadless/bit-bheadless.js");
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
         var attach = module.Setup<int>("sortable.attach", _ => true);
         var cut = Render(
             @<Stateful T="bool" Initial="true" Context="s">
