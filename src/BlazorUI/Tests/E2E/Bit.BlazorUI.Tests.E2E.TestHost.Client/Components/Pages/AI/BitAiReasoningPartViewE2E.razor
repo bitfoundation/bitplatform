@@ -1,0 +1,146 @@
+﻿@page "/e2e/aireasoningpartview"
+@implements IAsyncDisposable
+
+<PageTitle>BitAiReasoningPartView E2E</PageTitle>
+
+<h1>BitAiReasoningPartView</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <button id="rpv-before">Before the panel</button>
+    <div style="width:560px">
+        <BitAiReasoningPartView Id="rpv-basic" Part="_done" />
+    </div>
+    <div style="width:560px">
+        <BitAiReasoningPartView Id="rpv-timed" Part="_timed" />
+    </div>
+</E2ESection>
+
+@* Parts the page streams into itself. Append adds a sentence to both, Complete ends both. The second one is for the user
+   to open and close by hand while it streams. *@
+<E2ESection Id="streaming" Title="Streaming">
+    <button id="rpv-append" @onclick="Append">Append</button>
+    <button id="rpv-complete" @onclick="Complete">Complete</button>
+    <span id="rpv-sentences">@_sentences</span>
+    <div style="width:560px">
+        <BitAiReasoningPartView Id="rpv-stream" Part="_streaming" />
+        <BitAiReasoningPartView Id="rpv-stream-user" Part="_streamingUser" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="options" Title="CollapseReasoning off">
+    <BitAiOptionsProvider UiOptions="_keepOpen">
+        <BitAiReasoningPartView Id="rpv-open" Part="_done" />
+    </BitAiOptionsProvider>
+</E2ESection>
+
+@* The reasoning script, played by the transport: the thinking streams in word by word, then the answer. *@
+<E2ESection Id="transport" Title="Streamed by the transport">
+    <button id="rpv-send" @onclick="SendAsync">Send</button>
+    <span id="rpv-live-state">@_liveState</span>
+    <span id="rpv-live-answer">@(LiveMessage?.PartsOf<BitAiTextPart>().FirstOrDefault(p => p is not BitAiReasoningPart)?.Text)</span>
+    <div id="rpv-live" style="width:560px">
+        @if (LiveMessage?.PartsOf<BitAiReasoningPart>().FirstOrDefault() is { } reasoning)
+        {
+            <BitAiReasoningPartView Id="rpv-live-panel" Part="reasoning" />
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div style="width:480px">
+        <BitAiReasoningPartView Id="rpv-rtl" Dir="BitDir.Rtl" Part="_done" />
+    </div>
+    <div dir="rtl" style="width:480px">
+        <BitAiReasoningPartView Id="rpv-rtl-inherited" Part="_done" />
+    </div>
+    <div style="width:480px">
+        <BitAiReasoningPartView Id="rpv-ltr" Part="_done" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="variables" Title="Public variables">
+    <div style="width:480px; --bit-AiReasoningPartView-color: rgb(1, 2, 3); --bit-AiReasoningPartView-font-size: 11px; --bit-AiReasoningPartView-max-height: 60px">
+        <BitAiReasoningPartView Id="rpv-vars" Part="_long" />
+    </div>
+    <div style="width:480px">
+        <BitAiReasoningPartView Id="rpv-defaults" Part="_long" />
+    </div>
+    <BitAiReasoningPartView Id="rpv-parts"
+                            Part="_done"
+                            Class="e2e-rpv-class"
+                            Style="outline: 2px solid rgb(4, 5, 6)"
+                            Classes="@(new() { Root = "e2e-rpv-root", Header = "e2e-rpv-header", Icon = "e2e-rpv-icon", Title = "e2e-rpv-title", Body = "e2e-rpv-body", Markdown = new() { Markdown = new() { Paragraph = "e2e-rpv-paragraph" } } })"
+                            Styles="@(new() { Title = "letter-spacing: 3px", Body = "padding: 9px" })" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string DoneText = "The user asks about **render modes**.\n\n- Server keeps the state\n- WebAssembly runs offline";
+
+    private static readonly string[] Sentences =
+    [
+        "First, the user wants to know where the state lives. ",
+        "Then, what happens when the circuit drops. ",
+        "Finally, how to keep it.",
+    ];
+
+    private readonly BitAiReasoningPart _done = new(DoneText);
+    private readonly BitAiReasoningPart _timed = new();
+    private readonly BitAiReasoningPart _long = new(string.Join("\n\n", Enumerable.Range(1, 20).Select(i => $"Reasoning step {i}: weigh the option and move on.")));
+    private readonly BitAiReasoningPart _streaming = new();
+    private readonly BitAiReasoningPart _streamingUser = new();
+    private int _sentences;
+
+    private readonly BitAiUiOptions _keepOpen = BitAiUiOptions.Default with { CollapseReasoning = false };
+
+    private readonly BitAiChatSession _session = new(E2EAiTransport.For(E2EAiScripts.Reasoning, 40));
+    private BitAiRenderScheduler? _scheduler;
+    private string _liveState = "Idle";
+
+    private BitAiMessage? LiveMessage => _session.Conversation.Messages.LastOrDefault(m => m.Role.IsAssistant);
+
+    protected override void OnInitialized()
+    {
+        // A part that streamed and finished, so it knows how long the model thought for.
+        _timed.Append("A short thought.");
+        _timed.Complete();
+
+        _scheduler = new BitAiRenderScheduler(() => InvokeAsync(StateHasChanged));
+        _session.StateChanged += OnSessionChanged;
+    }
+
+    private void Append()
+    {
+        if (_sentences >= Sentences.Length) return;
+
+        _streaming.Append(Sentences[_sentences]);
+        _streamingUser.Append(Sentences[_sentences]);
+        _sentences++;
+    }
+
+    private void Complete()
+    {
+        _streaming.Complete();
+        _streamingUser.Complete();
+    }
+
+    private void OnSessionChanged() => _scheduler?.Request();
+
+    private async Task SendAsync()
+    {
+        _liveState = "Streaming";
+
+        await _session.SubmitAsync("What does a round trip cost?");
+
+        _liveState = "Complete";
+        if (_scheduler is not null) await _scheduler.FlushAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _session.StateChanged -= OnSessionChanged;
+        await _session.DisposeAsync();
+        if (_scheduler is not null) await _scheduler.DisposeAsync();
+    }
+}

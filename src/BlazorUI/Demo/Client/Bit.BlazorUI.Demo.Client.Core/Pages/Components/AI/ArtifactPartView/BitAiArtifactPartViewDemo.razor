@@ -1,0 +1,136 @@
+﻿@page "/components/ai/artifactpartview"
+@implements IAsyncDisposable
+
+<PageOutlet Url="components/ai/artifactpartview"
+            Title="AiArtifactPartView"
+            Description="BitAiArtifactPartView shows where a message introduced an artifact: the conversation's artifact, opened at the version that turn produced." />
+
+<DemoPage Name="AiArtifactPartView"
+          Description="BitAiArtifactPartView is what a message shows where it introduced an artifact. The artifact belongs to the conversation rather than to the message, so the part only names it: the view looks it up in the conversation by its id and shows the shared BitAiArtifactView, opened at the version this turn produced - so a later revision never rewrites what an earlier turn appears to have said. An artifact the conversation does not hold (yet) is named by a placeholder tag rather than dropped, so the turn still says it produced one."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          GitHubAIUrl="ArtifactPartView/BitAiArtifactPartView.razor"
+          GitHubDemoUrl="AI/ArtifactPartView/BitAiArtifactPartViewDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            BitAiArtifactPartView renders a <BitLink Href="/components/ai/artifactview">BitAiArtifactView</BitLink>, so it needs
+            what that needs: <b>AddBitBlazorUIAIServices</b> at startup. Inside a
+            <BitLink Href="/components/ai/chat">BitAiChat</BitLink> it is rendered for every artifact part of a message on its
+            own, by the <BitLink Href="/components/ai/messagepartview">BitAiMessagePartView</BitLink> of the part, which hands it
+            the session's conversation as its <b>Conversation</b>; a session adds the part to the message whose transport sent
+            the <b>BitAiArtifactCreatedEvent</b>, stamped with the version it opened. The body of the panel is drawn by the
+            artifact view, so a renderer registered for an artifact kind (<b>BitAiRendererRegistry.RegisterArtifact</b>, see
+            <BitLink Href="/components/ai/artifactview#artifact-context">AiArtifactView</BitLink>) draws it here too. See the
+            <BitLink Href="/ai/scenarios/artifacts">Artifacts</BitLink> scenario for the whole chat.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Give it the <b>Part</b> of the message - a <b>BitAiArtifactPart</b> naming the artifact by its id - and the
+                <b>Conversation</b> holding the artifact. The view finds it there and shows it in a panel.
+            </div>
+            <br />
+            <BitAiArtifactPartView Part="notesPart" Conversation="conversation" />
+        </DemoExample>
+
+        <DemoExample Title="Versions per turn" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" CodeFiles="@example2CodeFiles" Id="example2">
+            <div>
+                A session stamps each artifact part with the version its turn produced (<b>ArtifactVersion</b>). The scripted
+                transport here drafts a README on the first turn and revises the same artifact on the second: each turn's panel
+                opens at its own version, while the version selector of either can show the other.
+            </div>
+            <br />
+            <BitButton OnClick="SendAsync" Disabled="readmeSession.IsGenerating">@(readmeSession.Conversation.Messages.Count == 0 ? "Write me a README" : "Tighten it and add an install step")</BitButton>
+            <br /><br />
+            @foreach (var message in readmeSession.Conversation.Messages)
+            {
+                <div class="turn">
+                    <b>@(message.Role.IsUser ? "You" : "Assistant"):</b> @message.GetText()
+                    @foreach (var part in message.PartsOf<BitAiArtifactPart>())
+                    {
+                        <BitAiArtifactPartView Part="part" Conversation="readmeSession.Conversation" />
+                    }
+                </div>
+            }
+        </DemoExample>
+
+        <DemoExample Title="Missing artifacts" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                An artifact the conversation does not hold - no <b>Conversation</b> was given, the artifact was removed with the
+                messages that referenced it, or it has not arrived yet - is named by a neutral placeholder tag, whose tooltip is
+                the artifact id, so the turn still says it produced one.
+            </div>
+            <br />
+            <BitAiArtifactPartView Part="missingPart" Conversation="conversation" />
+            <br /><br />
+            <BitAiArtifactPartView Part="notesPart" />
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                <b>BitParams</b> with a <b>BitAiArtifactPartViewParams</b> sets the look of every artifact part view inside it - inside a
+                chat, the artifacts of every message - here the header of the panel and the placeholder tag. The part and the
+                conversation are not among them: they are what makes one view the one it is. It is a default, not an override: a view
+                keeps what it sets itself (the last one sets <b>Styles</b> of its own, which replace the cascaded ones).
+            </div>
+            <br />
+            <BitParams Parameters="artifactPartViewParams">
+                <BitAiArtifactPartView Part="notesPart" Conversation="conversation" />
+                <br />
+                <BitAiArtifactPartView Part="missingPart" Conversation="conversation" />
+                <br /><br />
+                <BitAiArtifactPartView Part="notesPart" Conversation="conversation" Styles="@(new() { ArtifactView = new() { Title = "font-style: italic;" } })" />
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root; <b>Styles</b> and <b>Classes</b> hand <b>ArtifactView</b> the
+                class-styles of the panel and <b>Placeholder</b> those of the tag. The part has no variables of its own: the
+                public <b>--bit-AiArtifactView-*</b> and <b>--bit-Tag-*</b> variables inherit, so set on the part's <b>Style</b>
+                they restyle the panel or the tag inside it.
+            </div>
+            <br />
+            @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+            <div>
+                <BitAiArtifactPartView Part="notesPart"
+                                       Conversation="conversation"
+                                       Styles="@(new() { ArtifactView = new() { Header = "background-color: #8a2be2; color: white" } })" />
+                <br />
+                <BitAiArtifactPartView Part="missingPart"
+                                       Conversation="conversation"
+                                       Classes="@(new() { Placeholder = new() { Root = "custom-placeholder" } })" />
+                <br /><br />
+                <BitAiArtifactPartView Part="notesPart"
+                                       Conversation="conversation"
+                                       Style="--bit-AiArtifactView-border-color: #d2691e; --bit-AiArtifactView-radius: 0; --bit-AiArtifactView-header-background: #d2691e1a" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                In right-to-left text the panel and the placeholder read from the right, whether the direction comes from
+                <b>Dir</b> or from a <b>dir</b> attribute around the view.
+            </div>
+            <br />
+            <BitAiArtifactPartView Dir="BitDir.Rtl" Part="persianPart" Conversation="conversation" />
+            <br />
+            <div dir="rtl">
+                <BitAiArtifactPartView Part="missingPart" Conversation="conversation" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

@@ -59,7 +59,7 @@ public sealed class BitEscapeClaimContractTests
         StringAssert.Contains(script, "claim === 'text'");
 
         // The core components and the Extras ones alike: both packages' components sit in the surfaces of either.
-        string[] components = [SourceFiles.GetDirectory("Bit.BlazorUI", "Components"), SourceFiles.GetDirectory("Bit.BlazorUI.Extras", "Components")];
+        string[] components = [SourceFiles.GetDirectory("Bit.BlazorUI", "Components"), SourceFiles.GetDirectory("Bit.BlazorUI.Extras", "Components"), SourceFiles.GetDirectory("Bit.BlazorUI.AI", "Components")];
 
         // A claim is written either straight into the attribute - a literal, or the branches of a conditional - or
         // through one of the components' ...Claim members, whose branches are the values it can take.
@@ -134,7 +134,7 @@ public sealed class BitEscapeClaimContractTests
         // Every script of both packages: the components' own (a text field holding back the keys of a composition, a
         // search box, a chart's tooltip) as well as the library's surfaces. The Extras ones call the core helper
         // through its declaration, which is no copy of it.
-        string[] packages = [SourceFiles.GetDirectory("Bit.BlazorUI"), SourceFiles.GetDirectory("Bit.BlazorUI.Extras")];
+        string[] packages = [SourceFiles.GetDirectory("Bit.BlazorUI"), SourceFiles.GetDirectory("Bit.BlazorUI.Extras"), SourceFiles.GetDirectory("Bit.BlazorUI.AI")];
 
         var scripts = packages.SelectMany(folder => Directory.EnumerateFiles(folder, "*.ts", SearchOption.AllDirectories))
                               .Where(file => file.EndsWith(".d.ts") is false)
@@ -201,8 +201,8 @@ public sealed class BitEscapeClaimContractTests
     [TestMethod]
     public void TheEscapeOfAnImeCompositionShouldNeverReachDotNet()
     {
-        // KeyboardEventArgs cannot tell it from any other Escape (no key code, and no composition state before .NET 9),
-        // so it is stopped on the document element in the bubble phase: after every listener of the page's elements,
+        // KeyboardEventArgs cannot tell it from any other Escape (no key code, which is all that marks it in WebKit once
+        // the composition has ended), so it is stopped on the document element in the bubble phase: after every listener of the page's elements,
         // and ahead of Blazor's delegation, which listens on the document.
         var keys = SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.Keys.ts");
 
@@ -267,7 +267,7 @@ public sealed class BitEscapeClaimContractTests
     {
         // Every root whose .NET handler acts on the key it claims tells its own press from one a part of it claimed
         // first through Utils.watchEscapeClaim - never through a copy of it, which would drift from it.
-        var copies = new[] { SourceFiles.GetDirectory("Bit.BlazorUI"), SourceFiles.GetDirectory("Bit.BlazorUI.Extras") }
+        var copies = new[] { SourceFiles.GetDirectory("Bit.BlazorUI"), SourceFiles.GetDirectory("Bit.BlazorUI.Extras"), SourceFiles.GetDirectory("Bit.BlazorUI.AI") }
             .SelectMany(folder => Directory.EnumerateFiles(Path.Combine(folder, "Components"), "*.ts", SearchOption.AllDirectories))
             .Where(file => SourceFiles.ReadFullPath(file).Contains("'OnEscapeVerdict'"))
             .Select(Path.GetFileName)

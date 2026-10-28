@@ -1,0 +1,152 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every agent run
+// view, one set on an ancestor the views inside it, and one set on the Style of an instance that one alone:
+//   --bit-AiAgentRunView-background          surface of the panel and its header      (default: $clr-bg-sec)
+//   --bit-AiAgentRunView-body-background     surface of the body under the header     (default: $clr-bg-pri)
+//   --bit-AiAgentRunView-border-color        edge of the panel and under its header   (default: $clr-brd-sec)
+//   --bit-AiAgentRunView-border-width        width of that edge                       (default: $shp-border-width)
+//   --bit-AiAgentRunView-radius              corner of the panel                      (default: $shp-radius-surface)
+//   --bit-AiAgentRunView-header-color        icon and words of the header             (default: $clr-fg-sec)
+//   --bit-AiAgentRunView-text-color          goal, counts and clock                   (default: $clr-fg-sec)
+//   --bit-AiAgentRunView-prompt-background   surface of the question asked of the user (default: $clr-wrn-tint)
+//   --bit-AiAgentRunView-progress-max-width  width the progress bar stops growing at  (default: spacing(24))
+//
+// What the panel renders of the library keeps its own variables: the badge (--bit-Tag-*), the bar (--bit-Progress-*),
+// the steps (--bit-AiAgentStepView-*), the answer field and buttons (--bit-TextField-*, --bit-Button-*).
+
+$aiarv-brd: var(--bit-AiAgentRunView-border-width, #{$shp-border-width}) $shp-border-style var(--bit-AiAgentRunView-border-color, #{$clr-brd-sec});
+
+.bit-aiarv {
+    overflow: hidden;
+    box-sizing: border-box;
+    font-family: $tg-font-family;
+    font-size: $tg-fs-sm;
+    color: $clr-fg-pri;
+    border: $aiarv-brd;
+    border-radius: var(--bit-AiAgentRunView-radius, #{$shp-radius-surface});
+    background-color: var(--bit-AiAgentRunView-background, #{$clr-bg-sec});
+
+    &.bit-dis {
+        color: $clr-fg-dis;
+    }
+}
+
+.bit-aiarv-hdr {
+    display: flex;
+    align-items: center;
+    gap: spacing(1);
+    padding: spacing(1) spacing(1.5);
+    color: var(--bit-AiAgentRunView-header-color, #{$clr-fg-sec});
+}
+
+.bit-aiarv-hic {
+    flex: none;
+}
+
+.bit-aiarv-ttl {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-weight: $tg-fw-medium;
+}
+
+.bit-aiarv-bdy {
+    padding: spacing(1.5);
+    border-block-start: $aiarv-brd;
+    background-color: var(--bit-AiAgentRunView-body-background, #{$clr-bg-pri});
+}
+
+.bit-aiarv-gol {
+    margin-block-end: spacing(1.5);
+    color: var(--bit-AiAgentRunView-text-color, #{$clr-fg-sec});
+}
+
+.bit-aiarv-prg {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: spacing(1.5);
+    margin-block-end: spacing(1);
+    font-size: $tg-fs-xs;
+    color: var(--bit-AiAgentRunView-text-color, #{$clr-fg-sec});
+    // The count and the clock change while the run goes on, and digits of one width keep the row from jittering.
+    font-variant-numeric: tabular-nums;
+}
+
+// Two classes, so the width wins over the root rule of the BitProgress whichever of the two bundles is linked first.
+.bit-aiarv-prg > .bit-aiarv-bar {
+    flex: 1 1 auto;
+    min-width: spacing(6);
+    max-width: var(--bit-AiAgentRunView-progress-max-width, #{spacing(24)});
+}
+
+.bit-aiarv-cnt,
+.bit-aiarv-elp {
+    white-space: nowrap;
+}
+
+.bit-aiarv-stl {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    // The list takes the focus from script alone, once an answer has taken the question away: it shows the ring a
+    // keyboard user follows, drawn inside it, and nothing to a pointer.
+    &:focus {
+        outline: none;
+    }
+
+    &:focus-visible {
+        @include focus-ring-inset($clr-pri-focus);
+    }
+}
+
+.bit-aiarv-prm {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: spacing(1);
+    margin-block-start: spacing(1.5);
+    padding: spacing(1.5);
+    border-radius: $shp-radius-surface;
+    background-color: var(--bit-AiAgentRunView-prompt-background, #{$clr-wrn-tint});
+}
+
+// The question is read in the color of the panel (the root sets it), so a panel an app recolors through its Style or
+// Class recolors the question with it.
+.bit-aiarv-qst {
+    flex: 1 1 spacing(24);
+}
+
+.bit-aiarv-ans {
+    display: flex;
+    flex: 1 1 100%;
+    align-items: center;
+    gap: spacing(1);
+}
+
+// Two classes, so the field takes the rest of the row whichever of the two bundles is linked first.
+.bit-aiarv-ans > .bit-aiarv-fld {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.bit-aiarv-err {
+    margin-block-start: spacing(1.5);
+}
+
+.bit-aiarv.bit-dis :is(.bit-aiarv-hdr, .bit-aiarv-gol, .bit-aiarv-prg) {
+    color: inherit;
+}
+
+@media (forced-colors: active) {
+    // The question sits on a tint the mode takes away, so it keeps an edge of its own instead.
+    .bit-aiarv-prm {
+        border: $shp-border-width $shp-border-style CanvasText;
+    }
+}

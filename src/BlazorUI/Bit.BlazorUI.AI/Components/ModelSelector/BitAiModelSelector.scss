@@ -1,0 +1,10 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// No public CSS variables of its own: the picker is a BitDropdown, restyled through its own --bit-Dropdown-* variables
+// and the Dropdown classes/styles of the model selector.
+
+.bit-aimds {
+    display: inline-flex;
+    min-width: 0;
+    max-width: 100%;
+}

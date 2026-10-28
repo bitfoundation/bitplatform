@@ -1,0 +1,79 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@* The root is the scroll container and the transcript's log region at once: new messages are announced politely, as
+   additions, so a listener is never interrupted mid-sentence by the next one. The name comes from the AriaLabel, an
+   aria-label written on the list, or the string table, in that order. data-bit-aimsl-old is the number of older
+   messages a long transcript leaves out, which the scroll script reads to ask for the next page of them. *@
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
+     role="log"
+     aria-label="@(ResolveAriaLabel() ?? Strings.Transcript)"
+     aria-live="polite"
+     aria-relevant="additions"
+     data-bit-aimsl-old="@OlderCount">
+    <div style="@Styles?.Content" class="bit-aimsl-con @Classes?.Content">
+        @* Above the first message, so not before the first message is drawn: above the first one drawn, it would stand
+           over the middle of the conversation, and push the page of older messages that comes in under it out of place. *@
+        @if (HeaderTemplate is not null && _windowStart == 0)
+        {
+            @HeaderTemplate
+        }
+
+        @if (_messages.Count == 0 && EmptyTemplate is not null)
+        {
+            @EmptyTemplate
+        }
+        else
+        {
+            @RenderTranscript()
+        }
+
+        @if (FooterTemplate is not null)
+        {
+            @FooterTemplate
+        }
+    </div>
+</div>
+
+@code {
+    /// <remarks>
+    /// Every message drawn is emitted from this one fragment so that their keys are siblings. A key only competes with
+    /// keys in the same region, so keying inside a per-message fragment would let removing one message recreate every
+    /// message after it - and a long transcript, whose drawn messages change as the reader scrolls up and back, recreate
+    /// every message on every turn, an open editor and its draft with them. An application template is keyed through
+    /// <see cref="BitAiKeyedRegion"/>, which adds no element, so the template's own markup still sits directly in the
+    /// list's flex layout.
+    /// </remarks>
+    private RenderFragment RenderTranscript() => __builder =>
+    {
+        for (var i = _windowStart; i < _messages.Count; i++)
+        {
+            var message = _messages[i];
+
+            if (MessageTemplate is not null)
+            {
+                __builder.OpenComponent<BitAiKeyedRegion>(0);
+                __builder.SetKey(message.MessageId);
+                __builder.AddComponentParameter(1, nameof(BitAiKeyedRegion.ChildContent), MessageTemplate(message));
+                __builder.CloseComponent();
+                continue;
+            }
+
+            <BitAiChatMessage Message="message"
+                              Conversation="Conversation"
+                              Session="Session"
+                              Disabled="Disabled"
+                              Animate="@_entering.Contains(message)"
+                              IsLatest="@IsLatestMessage(message)"
+                              OnCitationClick="OnCitationClick"
+                              OnSourceClick="OnSourceClick"
+                              OnFeedback="OnFeedback"
+                              @key="message.MessageId" />
+        }
+    };
+}

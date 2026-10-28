@@ -1,0 +1,160 @@
+﻿@page "/e2e/aitextpartview"
+@implements IAsyncDisposable
+
+<PageTitle>BitAiTextPartView E2E</PageTitle>
+
+<h1>BitAiTextPartView</h1>
+
+@* The title of the source of every citation marker the views raise, the latest last. *@
+<p>Clicked: <span id="tpv-log">@string.Join(",", _clicked)</span></p>
+
+<E2ESection Id="basic" Title="Basic">
+    <div style="width:560px">
+        <BitAiTextPartView Id="tpv-basic" Message="_basicMessage" Part="_basicPart" />
+    </div>
+</E2ESection>
+
+@* Citations anchored to character spans of the text: their markers are woven in where each span ends, mid-text. The
+   third span ends inside a code span, so it gets no marker. *@
+<E2ESection Id="citations" Title="Anchored citations">
+    <div style="width:560px">
+        <BitAiTextPartView Id="tpv-cited" Message="_citedMessage" Part="_citedPart" OnCitationClick="OnCitationClick" />
+    </div>
+    <BitAiOptionsProvider UiOptions="_noInlineCitations">
+        <BitAiTextPartView Id="tpv-cited-off" Message="_citedMessage" Part="_citedPart" />
+    </BitAiOptionsProvider>
+</E2ESection>
+
+@* A part the page streams into itself: Append adds the next chunk; a citation whose span ends in text that has not
+   arrived yet is held back until it has. *@
+<E2ESection Id="streaming" Title="Streaming">
+    <button id="tpv-append" @onclick="Append">Append</button>
+    <button id="tpv-complete" @onclick="Complete">Complete</button>
+    <span id="tpv-chunks">@_chunk</span>
+    <BitAiTextPartView Id="tpv-stream" Message="_streamMessage" Part="_streamPart" />
+</E2ESection>
+
+@* The citations script, played by the transport: three sentences, the first two cited. *@
+<E2ESection Id="transport" Title="Streamed by the transport">
+    <button id="tpv-send" @onclick="SendAsync">Send</button>
+    <span id="tpv-live-state">@_liveState</span>
+    <div id="tpv-live">
+        @if (LiveMessage is { } message)
+        {
+            @foreach (var part in message.PartsOf<BitAiTextPart>())
+            {
+                <BitAiTextPartView Message="message" Part="part" OnCitationClick="OnCitationClick" @key="part.PartId" />
+            }
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitAiTextPartView Id="tpv-rtl" Dir="BitDir.Rtl" Message="_rtlMessage" Part="_rtlPart" />
+    <div dir="rtl">
+        <BitAiTextPartView Id="tpv-rtl-inherited" Message="_rtlMessage" Part="_rtlPart" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="styles" Title="Style & Class">
+    <div style="--bit-AiMarkdownView-link-color: rgb(1, 2, 3)">
+        <BitAiTextPartView Id="tpv-vars" Message="_basicMessage" Part="_basicPart" />
+    </div>
+    <BitAiTextPartView Id="tpv-parts"
+                       Message="_basicMessage"
+                       Part="_basicPart"
+                       Class="e2e-tpv-class"
+                       Style="outline: 2px solid rgb(4, 5, 6)"
+                       Classes="@(new() { Root = "e2e-tpv-root", Markdown = new() { Root = "e2e-tpv-markdown", Markdown = new() { Root = "e2e-tpv-view", Paragraph = "e2e-tpv-paragraph", Link = "e2e-tpv-link" } } })"
+                       Styles="@(new() { Root = "padding: 6px", Markdown = new() { Markdown = new() { Paragraph = "letter-spacing: 3px" } } })" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string BasicText = "The **short answer** is that it depends on *where* your users are. Read [the docs](https://bitplatform.dev/) or call `StateHasChanged`.";
+
+    private const string First = "Interactive Server keeps the state on the server.";
+    private const string Second = " If the circuit drops, the state goes with it.";
+    private const string Third = " Call `PersistState()` to keep it.";
+
+    private static readonly BitAiCitationSource RenderModes = new("src-1", "Blazor render modes") { Url = "https://learn.microsoft.com/aspnet/core/blazor/components/render-modes" };
+    private static readonly BitAiCitationSource Circuits = new("src-2", "SignalR circuit lifetime") { Url = "https://learn.microsoft.com/aspnet/core/blazor/fundamentals/signalr" };
+    private static readonly BitAiCitationSource Persistence = new("src-3", "Persisting state") { Url = "https://learn.microsoft.com/aspnet/core/blazor/state-management" };
+
+    private readonly BitAiMessage _basicMessage = new(BitAiRole.Assistant, "tpv-basic-message");
+    private readonly BitAiTextPart _basicPart = new(BasicText, "tpv-basic-part");
+
+    private readonly BitAiMessage _citedMessage = new(BitAiRole.Assistant, "tpv-cited-message");
+    private readonly BitAiTextPart _citedPart = new(First + Second + Third, "tpv-cited-part");
+
+    private readonly BitAiMessage _rtlMessage = new(BitAiRole.Assistant, "tpv-rtl-message");
+    private readonly BitAiTextPart _rtlPart = new("سرور وضعیت را نگه می‌دارد و `x = 1;` را اجرا می‌کند.", "tpv-rtl-part");
+
+    private readonly BitAiUiOptions _noInlineCitations = BitAiUiOptions.Default with { InlineCitations = false };
+
+    private static readonly string[] Chunks = ["Here is **bo", "ld** text, and a cited", " sentence."];
+
+    private readonly BitAiMessage _streamMessage = new(BitAiRole.Assistant, "tpv-stream-message");
+    private BitAiTextPart _streamPart = default!;
+    private int _chunk;
+
+    private readonly List<string> _clicked = [];
+
+    private readonly BitAiChatSession _session = new(E2EAiTransport.For(E2EAiScripts.Citations, 20));
+    private BitAiRenderScheduler? _scheduler;
+    private string _liveState = "Idle";
+
+    private BitAiMessage? LiveMessage => _session.Conversation.Messages.LastOrDefault(m => m.Role.IsAssistant);
+
+    protected override void OnInitialized()
+    {
+        _basicMessage.AddPart(_basicPart);
+
+        _citedMessage.AddPart(_citedPart);
+        _citedMessage.AddCitation(new BitAiCitation("cit-1", RenderModes) { PartId = _citedPart.PartId, StartIndex = 0, EndIndex = First.Length });
+        _citedMessage.AddCitation(new BitAiCitation("cit-2", Circuits) { PartId = _citedPart.PartId, StartIndex = First.Length, EndIndex = First.Length + Second.Length });
+        // Ends between the backticks of the code span: a marker there would break the code.
+        _citedMessage.AddCitation(new BitAiCitation("cit-3", Persistence) { PartId = _citedPart.PartId, StartIndex = First.Length + Second.Length, EndIndex = First.Length + Second.Length + 12 });
+
+        _rtlMessage.AddPart(_rtlPart);
+
+        _streamPart = _streamMessage.AddPart(new BitAiTextPart(null, "tpv-stream-part"));
+        // The span ends with the last chunk, which has not arrived yet.
+        var cited = Chunks[0].Length + Chunks[1].Length + Chunks[2].Length;
+        _streamMessage.AddCitation(new BitAiCitation("cit-s", RenderModes) { PartId = _streamPart.PartId, StartIndex = Chunks[0].Length, EndIndex = cited });
+
+        _scheduler = new BitAiRenderScheduler(() => InvokeAsync(StateHasChanged));
+        _session.StateChanged += OnSessionChanged;
+    }
+
+    private void OnCitationClick(BitAiCitation citation) => _clicked.Add(citation.Source.Title);
+
+    private void Append()
+    {
+        if (_chunk >= Chunks.Length) return;
+
+        _streamPart.Append(Chunks[_chunk++]);
+    }
+
+    private void Complete() => _streamPart.Complete();
+
+    private void OnSessionChanged() => _scheduler?.Request();
+
+    private async Task SendAsync()
+    {
+        _liveState = "Streaming";
+
+        await _session.SubmitAsync("Where does the state live?");
+
+        _liveState = "Complete";
+        if (_scheduler is not null) await _scheduler.FlushAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _session.StateChanged -= OnSessionChanged;
+        await _session.DisposeAsync();
+        if (_scheduler is not null) await _scheduler.DisposeAsync();
+    }
+}

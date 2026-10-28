@@ -2464,22 +2464,32 @@ public class BitSearchBoxTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, "Apple");
         });
 
+        // The select-all is registered with the input once and made by the browser at the focus event itself (an
+        // empty field has nothing to select, which it checks there): a select() sent from .NET in answer to the focus
+        // would land a round trip late, on the keys the user typed by then.
+        var registrations = Context.JSInterop.Invocations["BitBlazorUI.Utils.registerSelectOnFocus"];
+        Assert.AreEqual(1, registrations.Count);
+        Assert.AreEqual(true, registrations[0].Arguments[1]);
+
         component.Find(".bit-srb-inp").FocusIn();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"].Count);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"].Count);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerSelectOnFocus"].Count);
     }
 
     [TestMethod]
-    public void BitSearchBoxSelectTextOnFocusShouldDoNothingForAnEmptyField()
+    public void BitSearchBoxSelectTextOnFocusShouldBeTurnedOffInPlace()
     {
         var component = RenderComponent<BitSearchBox>(parameters =>
         {
             parameters.Add(p => p.SelectTextOnFocus, true);
         });
 
-        component.Find(".bit-srb-inp").FocusIn();
+        component.Render(parameters => parameters.Add(p => p.SelectTextOnFocus, false));
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"].Count);
+        var registrations = Context.JSInterop.Invocations["BitBlazorUI.Utils.registerSelectOnFocus"];
+        Assert.AreEqual(2, registrations.Count);
+        Assert.AreEqual(false, registrations[1].Arguments[1]);
     }
 
     [TestMethod]
@@ -2493,6 +2503,7 @@ public class BitSearchBoxTests : BunitTestContext
         component.Find(".bit-srb-inp").FocusIn();
 
         Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"].Count);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerSelectOnFocus"].Count);
     }
 
     #endregion
@@ -4318,6 +4329,32 @@ public class BitSearchBoxTests : BunitTestContext
 
             Assert.AreEqual(true, toggle.Arguments[9]);
         });
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldDropACalloutToggleCancelledAsTheCircuitGoesAway()
+    {
+        // A keystroke starts a search nobody awaits, and the circuit can go away while it is opening the list: the call
+        // into JS is then cancelled, which is no failure for the renderer to report.
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Callouts.toggle", _ => true).SetCanceled();
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        component.Find(".bit-srb-inp").FocusIn();
+        component.Find(".bit-srb-inp").Input("apple");
+
+        // A cancelled toggle renders nothing after it, so it is waited for rather than a render - on the dispatcher, which
+        // the search runs on, so it has also run what the cancelled call left it to do by the time it is seen.
+        Assert.IsTrue(System.Threading.SpinWait.SpinUntil(
+            () => Renderer.Dispatcher.InvokeAsync(() => Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Callouts.toggle")).GetAwaiter().GetResult(),
+            TimeSpan.FromSeconds(5)));
+
+        Assert.IsFalse(Renderer.UnhandledException.IsCompleted);
     }
 
     #endregion

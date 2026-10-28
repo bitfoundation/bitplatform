@@ -978,14 +978,9 @@ public partial class BitMessage : BitComponentBase
         StateHasChanged();
     }
 
-    // A render with no JS runtime behind it is not an interactive one. The framework says which of the two others
-    // it is - a static render has no render mode, a prerender has the one of the interactive render that follows it.
-    private bool IsRenderedStatically()
-    {
-        if (_js.IsRuntimeInvalid() is false) return false;
-
-        return AssignedRenderMode is null;
-    }
+    // Of the two renders that are not interactive, the framework says which one it is - a static render has no render
+    // mode, a prerender has the one of the interactive render that follows it.
+    private bool IsRenderedStatically() => IsStaticRender(_js) && AssignedRenderMode is null;
 
 
 

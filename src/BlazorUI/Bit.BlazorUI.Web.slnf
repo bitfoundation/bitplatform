@@ -6,6 +6,7 @@
       "Bit.BlazorUI.Assets\\Bit.BlazorUI.Assets.csproj",
       "Bit.BlazorUI.Build\\Bit.BlazorUI.Build.csproj",
       "Bit.BlazorUI.Extras\\Bit.BlazorUI.Extras.csproj",
+      "Bit.BlazorUI.AI\\Bit.BlazorUI.AI.csproj",
       "Bit.BlazorUI.Legacy\\Bit.BlazorUI.Legacy.csproj",
       "Bit.BlazorUI.Icons\\Bit.BlazorUI.Icons.csproj",
       "Bit.BlazorUI.SourceGenerators\\Bit.BlazorUI.SourceGenerators.csproj",

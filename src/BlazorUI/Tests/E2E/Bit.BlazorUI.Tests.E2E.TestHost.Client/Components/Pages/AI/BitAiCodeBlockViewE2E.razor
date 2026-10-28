@@ -1,0 +1,100 @@
+﻿@page "/e2e/aicodeblockview"
+
+<PageTitle>BitAiCodeBlockView E2E</PageTitle>
+
+<h1>BitAiCodeBlockView</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <div style="width:560px">
+        <BitAiCodeBlockView Id="cbv-cs" Code="@CSharpCode" Language="csharp" />
+    </div>
+    <BitAiCodeBlockView Id="cbv-file" Code="@JsonCode" Language="json" FileName="appsettings.json" />
+    <BitAiCodeBlockView Id="cbv-plain" Code="plain text, no language" />
+    <BitAiCodeBlockView Id="cbv-unknown" Code="some code in a language nobody knows" Language="klingon" />
+    <BitAiCodeBlockView Id="cbv-noheader" Code="@CSharpCode" Language="csharp" ShowHeader="false" />
+</E2ESection>
+
+<E2ESection Id="languages" Title="Languages">
+    <BitAiCodeBlockView Id="cbv-diff" Code="@DiffCode" Language="diff" />
+    <BitAiCodeBlockView Id="cbv-html" Code="@HtmlCode" Language="html" />
+    <BitAiCodeBlockView Id="cbv-rust" Code="@RustCode" Language="rust" />
+    <BitAiCodeBlockView Id="cbv-yaml" Code="@YamlCode" Language="yaml" />
+</E2ESection>
+
+<E2ESection Id="copy" Title="Copy">
+    <button id="cbv-before-copy">Before the copy button</button>
+    <BitAiCodeBlockView Id="cbv-copy" Code="@CSharpCode" Language="csharp" />
+    <BitAiOptionsProvider UiOptions="_numbered">
+        <BitAiCodeBlockView Id="cbv-copy-numbered" Code="@CSharpCode" Language="csharp" />
+    </BitAiOptionsProvider>
+    <BitAiOptionsProvider UiOptions="_noCopy">
+        <BitAiCodeBlockView Id="cbv-nocopy" Code="@CSharpCode" Language="csharp" />
+    </BitAiOptionsProvider>
+</E2ESection>
+
+<E2ESection Id="line-numbers" Title="Line numbers">
+    <BitAiOptionsProvider UiOptions="_numbered">
+        <div style="width:560px">
+            <BitAiCodeBlockView Id="cbv-lines" Code="@CSharpCode" Language="csharp" />
+        </div>
+        <div dir="rtl" style="width:560px">
+            <BitAiCodeBlockView Id="cbv-lines-rtl" Code="@CSharpCode" Language="csharp" />
+        </div>
+    </BitAiOptionsProvider>
+</E2ESection>
+
+@* Code reads left to right whatever the page around it reads. *@
+<E2ESection Id="rtl" Title="RTL">
+    <div dir="rtl" style="width:480px">
+        <BitAiCodeBlockView Id="cbv-rtl" Code="@ShortCode" Language="csharp" />
+    </div>
+    <div style="width:480px">
+        <BitAiCodeBlockView Id="cbv-rtl-explicit" Dir="BitDir.Rtl" Code="@ShortCode" Language="csharp" />
+    </div>
+    <div style="width:480px">
+        <BitAiCodeBlockView Id="cbv-ltr" Code="@ShortCode" Language="csharp" />
+    </div>
+    @* A fenced block of a right-to-left answer. *@
+    <div dir="rtl" style="width:480px">
+        <BitAiStreamingMarkdown Id="cbv-rtl-markdown" Text="@RtlMarkdown" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="streaming" Title="Streaming">
+    <button id="cbv-stream-append" @onclick="Append">Append</button>
+    <button id="cbv-stream-finish" @onclick="() => _streaming = false">Finish</button>
+    <span id="cbv-stream-state">@(_streaming ? "streaming" : "done")</span>
+    <BitAiCodeBlockView Id="cbv-stream" Code="@_streamCode" Language="csharp" IsStreaming="_streaming" />
+</E2ESection>
+
+<E2ESection Id="overflow" Title="Overflow">
+    <div id="cbv-long-box" style="width:300px">
+        <BitAiCodeBlockView Id="cbv-long" Code="@LongLine" Language="csharp" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="variables" Title="Public variables">
+    <div style="--bit-AiCodeBlockView-background: rgb(250, 250, 240); --bit-AiCodeBlockView-color: rgb(1, 2, 3); --bit-AiCodeBlockView-border-color: rgb(4, 5, 6); --bit-AiCodeBlockView-radius: 12px; --bit-AiCodeBlockView-header-background: rgb(7, 8, 9); --bit-AiCodeBlockView-header-color: rgb(10, 11, 12); --bit-AiCodeBlockView-padding: 24px; --bit-AiCodeBlockView-font-family: serif; --bit-AiCodeBlockView-font-size: 20px; --bit-AiCodeBlockView-keyword-color: rgb(200, 0, 0); --bit-AiCodeBlockView-string-color: rgb(0, 200, 0); --bit-AiCodeBlockView-number-color: rgb(0, 0, 200); --bit-AiCodeBlockView-comment-color: rgb(13, 14, 15); --bit-AiCodeBlockView-type-color: rgb(16, 17, 18); --bit-AiCodeBlockView-property-color: rgb(19, 20, 21)">
+        <BitAiCodeBlockView Id="cbv-vars" Code="@CSharpCode" Language="csharp" />
+        <BitAiCodeBlockView Id="cbv-vars-json" Code="@JsonCode" Language="json" />
+        <BitAiCodeBlockView Id="cbv-vars-rust" Code="@RustCode" Language="rust" />
+        <BitAiCodeBlockView Id="cbv-vars-yaml" Code="@YamlCode" Language="yaml" />
+    </div>
+    <BitAiOptionsProvider UiOptions="_numbered">
+        <div style="--bit-AiCodeBlockView-line-number-color: rgb(22, 23, 24)">
+            <BitAiCodeBlockView Id="cbv-vars-lines" Code="@CSharpCode" Language="csharp" />
+        </div>
+    </BitAiOptionsProvider>
+    <BitAiCodeBlockView Id="cbv-vars-style" Style="--bit-AiCodeBlockView-keyword-color: rgb(0, 120, 0)" Code="@CSharpCode" Language="csharp" />
+    <BitAiOptionsProvider UiOptions="_numbered">
+        <BitAiCodeBlockView Id="cbv-parts"
+                            Code="@CSharpCode"
+                            Language="csharp"
+                            Class="e2e-cbv-class"
+                            Style="outline: 2px solid rgb(30, 31, 32)"
+                            Classes="@(new() { Root = "e2e-cbv-root", Header = "e2e-cbv-header", Label = "e2e-cbv-label", Body = "e2e-cbv-body", Pre = "e2e-cbv-pre", Code = "e2e-cbv-code", Line = "e2e-cbv-line" })"
+                            Styles="@(new() { Header = "letter-spacing: 3px", Pre = "padding: 30px", Line = "font-style: italic" })" />
+    </BitAiOptionsProvider>
+</E2ESection>
+
+<E2EStatus />

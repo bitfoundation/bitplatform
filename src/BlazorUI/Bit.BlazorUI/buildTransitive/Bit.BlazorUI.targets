@@ -8,7 +8,7 @@
     https://blazorui.bitplatform.dev/trimming
 
     The packages ship their JavaScript and CSS as bundles an app links once - bit.blazorui.js, bit.blazorui.css (and its
-    Fluent variants), bit.blazorui.extras.js / .css, bit.blazorui.legacy.js / .css, bit.blazorui.icons.css - and, beside
+    Fluent variants), bit.blazorui.extras.js / .css, bit.blazorui.ai.js / .css, bit.blazorui.legacy.js / .css, bit.blazorui.icons.css - and, beside
     them, the pieces those bundles are made of: one per TypeScript file and one per component stylesheet. A trimmed
     publish puts each bundle back together from only the pieces the app can use, under the same name and URL, so the
     <script> and <link> tags stay exactly as they are. A build - and dotnet run and dotnet watch, which run on one - is

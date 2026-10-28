@@ -1,0 +1,444 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@if (Document is { } document)
+{
+    _caretHost = ShowCaret && document.IsOpen && document.Blocks.Count > 0 && Options.ShowStreamingCaret ? CaretHost(document) : null;
+    _taskItemCount = 0;
+
+    <div @ref="RootElement"
+         @attributes="HtmlAttributes"
+         id="@_Id"
+         style="@StyleBuilder.Value"
+         class="@ClassBuilder.Value"
+         dir="@Dir?.ToString().ToLower()">
+        @foreach (var block in document.Blocks)
+        {
+            @RenderBlock(block)
+        }
+
+        @* Where the next block will start, when the text so far does not end in a line of text the caret can follow. *@
+        @if (ReferenceEquals(_caretHost, document))
+        {
+            @RenderCaret()
+        }
+
+        @if (document.Footnotes.Count > 0)
+        {
+            <section role="doc-endnotes" style="@Styles?.Footnotes" class="bit-aimdv-fns @Classes?.Footnotes">
+                <ol class="bit-aimdv-fnl">
+                    @foreach (var footnote in document.Footnotes)
+                    {
+                        <li id="@FootnoteId(footnote.Number)" class="bit-aimdv-fni">
+                            @foreach (var child in footnote.Blocks)
+                            {
+                                @RenderBlock(child)
+                            }
+                            @for (var i = 1; i <= footnote.ReferenceCount; i++)
+                            {
+                                var referenceId = FootnoteReferenceId(footnote.Number, i);
+
+                                @* A link into the view is followed by the view (FollowAsync), never by the browser, which
+                                   resolves "#..." against the base address of the app rather than the page. A note cited
+                                   more than once has a back-link per citation, each named after the one it leads to, so a
+                                   screen reader's list of links tells them apart. *@
+                                <a href="#@referenceId"
+                                   @onclick="() => FollowAsync(referenceId)"
+                                   @onclick:preventDefault
+                                   role="doc-backlink"
+                                   aria-label="@Strings.BackToReference(footnote.Number, i)"
+                                   class="bit-aimdv-fnb">&#8617;</a>
+                            }
+                        </li>
+                    }
+                </ol>
+            </section>
+        }
+    </div>
+}
+
+@code {
+    private static readonly string[] HeadingTags = ["h2", "h3", "h4", "h5", "h6"];
+
+    private RenderFragment RenderBlock(BitAiMarkdownBlock block) => __builder =>
+    {
+        switch (block)
+        {
+            case BitAiParagraphBlock paragraph:
+                <p style="@Styles?.Paragraph" class="bit-aimdv-par @Classes?.Paragraph">
+                    @RenderInlines(paragraph.Inlines)
+                    @if (ReferenceEquals(_caretHost, paragraph))
+                    {
+                        @RenderCaret()
+                    }
+                </p>
+                break;
+
+            case BitAiHeadingBlock heading:
+                @RenderHeading(heading)
+                break;
+
+            case BitAiCodeBlock fenced:
+                @if (Renderers.FindCodeLanguage(fenced.Language) is { } codeRenderer)
+                {
+                    @* A renderer of the app's own is handed what the model wrote, so a shape it did not expect costs that
+                       block alone. *@
+                    <BitAiRendererBoundary Label="@Strings.RendererFailed(fenced.Language!.Trim())">
+                        @codeRenderer(new BitAiCodeBlockContext(fenced.Code, fenced.Language, fenced.Meta, fenced.IsOpen))
+                    </BitAiRendererBoundary>
+                }
+                else
+                {
+                    <BitAiCodeBlockView Code="@fenced.Code" Language="@fenced.Language" IsStreaming="@fenced.IsOpen" />
+                }
+                break;
+
+            case BitAiListBlock list:
+                @RenderList(list)
+                break;
+
+            case BitAiQuoteBlock quote:
+                <blockquote style="@Styles?.Quote" class="bit-aimdv-quo @Classes?.Quote">
+                    @foreach (var child in quote.Blocks)
+                    {
+                        @RenderBlock(child)
+                    }
+                </blockquote>
+                break;
+
+            case BitAiTableBlock table:
+                @RenderTable(table)
+                break;
+
+            case BitAiThematicBreakBlock:
+                <hr style="@Styles?.Separator" class="bit-aimdv-sep @Classes?.Separator" />
+                break;
+
+            case BitAiMathBlock math:
+                @if (Renderers.MathRenderer is { } mathRenderer)
+                {
+                    <BitAiRendererBoundary Label="@Strings.RendererFailed(MathRendererName)">
+                        @mathRenderer(new BitAiMathContext(math.Expression, IsBlock: true))
+                    </BitAiRendererBoundary>
+                }
+                else
+                {
+                    <span data-math="@math.Expression" style="@Styles?.Math" class="bit-aimdv-mth bit-aimdv-mtb @Classes?.Math">@math.Expression</span>
+                }
+                break;
+
+            case BitAiHtmlBlock html:
+                @if (Options.Markdown.AllowRawHtml)
+                {
+                    @((MarkupString)html.Html)
+                }
+                else
+                {
+                    <p style="@Styles?.Paragraph" class="bit-aimdv-par @Classes?.Paragraph">@html.Html</p>
+                }
+                break;
+        }
+    };
+
+    // One level below the Markdown's own, so a "# Title" in an answer does not compete with the page's h1.
+    private RenderFragment RenderHeading(BitAiHeadingBlock heading) => __builder =>
+    {
+        __builder.OpenElement(0, HeadingTags[Math.Clamp(heading.Level + 1, 2, 6) - 2]);
+        if (heading.Id is not null)
+        {
+            __builder.AddAttribute(1, "id", HeadingId(heading.Id));
+        }
+        __builder.AddAttribute(2, "style", Styles?.Heading);
+        __builder.AddAttribute(3, "class", Join("bit-aimdv-hdg", Classes?.Heading));
+        __builder.AddContent(4, RenderInlines(heading.Inlines));
+        if (ReferenceEquals(_caretHost, heading))
+        {
+            __builder.AddContent(5, RenderCaret());
+        }
+        __builder.CloseElement();
+    };
+
+    private RenderFragment RenderList(BitAiListBlock list) => __builder =>
+    {
+        var isTask = list.Items.Exists(i => i.IsChecked is not null);
+        var listClass = (isTask, list.IsLoose) switch
+        {
+            (true, true) => "bit-aimdv-lst bit-aimdv-tsk bit-aimdv-lse",
+            (true, false) => "bit-aimdv-lst bit-aimdv-tsk",
+            (false, true) => "bit-aimdv-lst bit-aimdv-lse",
+            _ => "bit-aimdv-lst",
+        };
+
+        __builder.OpenElement(0, list.IsOrdered ? "ol" : "ul");
+        __builder.AddAttribute(1, "style", Styles?.List);
+        __builder.AddAttribute(2, "class", Join(listClass, Classes?.List));
+        if (list.IsOrdered && list.Start != 1)
+        {
+            __builder.AddAttribute(3, "start", list.Start);
+        }
+
+        var key = 0;
+        foreach (var item in list.Items)
+        {
+            __builder.OpenElement(4, "li");
+            __builder.SetKey(key++);
+            __builder.AddAttribute(5, "style", Styles?.ListItem);
+
+            if (item.IsChecked is { } isChecked)
+            {
+                // The box only shows the state the model wrote; nothing of the page can change it. It is named by the
+                // text of its item, which sits beside it rather than in a label around it.
+                var textId = $"{_Id}-tk-{_taskItemCount++}";
+
+                __builder.AddAttribute(6, "class", Join("bit-aimdv-itm bit-aimdv-tki", Classes?.ListItem));
+                __builder.OpenElement(7, "input");
+                __builder.AddAttribute(8, "type", "checkbox");
+                __builder.AddAttribute(9, "class", "bit-aimdv-chk");
+                __builder.AddAttribute(10, "checked", isChecked);
+                __builder.AddAttribute(11, "disabled", true);
+                __builder.AddAttribute(12, "aria-disabled", "true");
+                __builder.AddAttribute(20, "aria-labelledby", textId);
+                __builder.CloseElement();
+                __builder.OpenElement(13, "div");
+                __builder.AddAttribute(21, "id", textId);
+                __builder.AddAttribute(14, "class", "bit-aimdv-tkb");
+                foreach (var child in item.Blocks)
+                {
+                    __builder.AddContent(15, RenderBlock(child));
+                }
+                if (ReferenceEquals(_caretHost, item))
+                {
+                    __builder.AddContent(18, RenderCaret());
+                }
+                __builder.CloseElement();
+            }
+            else
+            {
+                __builder.AddAttribute(16, "class", Join("bit-aimdv-itm", Classes?.ListItem));
+                foreach (var child in item.Blocks)
+                {
+                    __builder.AddContent(17, RenderBlock(child));
+                }
+                if (ReferenceEquals(_caretHost, item))
+                {
+                    __builder.AddContent(19, RenderCaret());
+                }
+            }
+
+            __builder.CloseElement();
+        }
+
+        __builder.CloseElement();
+    };
+
+    // The table scrolls inside its container rather than by becoming a block itself, so it keeps the row and column
+    // semantics assistive technologies read it with. The container takes the focus itself while the table is too wide for
+    // it (data-bit-ai-scroll, see BitAiScrollStops.ts), so a keyboard can scroll it in an engine that does not make a
+    // scrolling box focusable on its own (WebKit), and a tab stop is announced by its name, so it is a named group (never a
+    // region, a landmark every table would repeat).
+    private RenderFragment RenderTable(BitAiTableBlock table) => __builder =>
+    {
+        <div data-bit-ai-scroll
+             role="group"
+             aria-label="@Strings.Table"
+             style="@Styles?.TableContainer"
+             class="bit-aimdv-tbw @Classes?.TableContainer">
+            <table style="@Styles?.Table" class="bit-aimdv-tbl @Classes?.Table">
+                <thead>
+                    <tr class="bit-aimdv-hrw">
+                        @for (var i = 0; i < table.Header.Count; i++)
+                        {
+                            <th scope="col" class="bit-aimdv-thc @AlignmentClass(table, i)">@RenderInlines(table.Header[i])</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in table.Rows)
+                    {
+                        <tr class="bit-aimdv-row">
+                            @for (var i = 0; i < row.Count; i++)
+                            {
+                                <td class="bit-aimdv-tdc @AlignmentClass(table, i)">@RenderInlines(row[i])</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    };
+
+    private RenderFragment RenderInlines(IReadOnlyList<BitAiMarkdownInline> inlines) => __builder =>
+    {
+        foreach (var inline in inlines)
+        {
+            @RenderInline(inline)
+        }
+    };
+
+    private RenderFragment RenderInline(BitAiMarkdownInline inline) => __builder =>
+    {
+        switch (inline)
+        {
+            case BitAiTextInline text:
+                @text.Text
+                break;
+
+            case BitAiEmphasisInline emphasis when emphasis.IsStrong:
+                <strong>@RenderInlines(emphasis.Inlines)</strong>
+                break;
+
+            case BitAiEmphasisInline emphasis:
+                <em>@RenderInlines(emphasis.Inlines)</em>
+                break;
+
+            case BitAiStrikethroughInline strike:
+                <del>@RenderInlines(strike.Inlines)</del>
+                break;
+
+            case BitAiCodeInline span:
+                <code style="@Styles?.InlineCode" class="bit-aimdv-cod @Classes?.InlineCode">@span.Code</code>
+                break;
+
+            case BitAiLinkInline link:
+                var linkUrl = BitAiSafeUrls.Link(link.Url);
+                var linkLeadsNowhere = linkUrl == "#";
+
+                @* An address of a scheme that can run script (javascript:) is replaced by "#", which leads nowhere: written
+                   as the href, it would open the home page of the app in a new tab. So such a link keeps its text and its
+                   styles but no address - an anchor without one is no link at all. *@
+                <a href="@(linkLeadsNowhere ? null : linkUrl)"
+                   title="@link.Title"
+                   target="@(linkLeadsNowhere ? null : "_blank")"
+                   rel="@(linkLeadsNowhere ? null : "noopener noreferrer nofollow")"
+                   style="@Styles?.Link"
+                   class="bit-aimdv-lnk @Classes?.Link">@RenderInlines(link.Inlines)</a>
+                break;
+
+            case BitAiImageInline image:
+                @RenderImage(image)
+                break;
+
+            case BitAiLineBreakInline { IsHard: true }:
+                <br />
+                break;
+
+            case BitAiLineBreakInline:
+                @(" ")
+                break;
+
+            case BitAiMathInline math:
+                @if (Renderers.MathRenderer is { } mathRenderer)
+                {
+                    <BitAiRendererBoundary Label="@Strings.RendererFailed(MathRendererName)" Class="bit-aimdv-rbi">
+                        @mathRenderer(new BitAiMathContext(math.Expression, IsBlock: false))
+                    </BitAiRendererBoundary>
+                }
+                else
+                {
+                    <span data-math="@math.Expression" style="@Styles?.Math" class="bit-aimdv-mth @Classes?.Math">@math.Expression</span>
+                }
+                break;
+
+            case BitAiFootnoteReferenceInline footnote:
+                var noteId = FootnoteId(footnote.Number);
+
+                @* Followed by the view, as the back-links are (FollowAsync). *@
+                <sup id="@FootnoteReferenceId(footnote.Number, footnote.Ordinal)" style="@Styles?.FootnoteReference" class="bit-aimdv-fnr @Classes?.FootnoteReference"><a href="#@noteId" @onclick="() => FollowAsync(noteId)" @onclick:preventDefault role="doc-noteref" class="bit-aimdv-fra">@footnote.Number</a></sup>
+                break;
+
+            case BitAiCitationMarkerInline marker:
+                @RenderCitation(marker)
+                break;
+
+            case BitAiRawHtmlInline html when Options.Markdown.AllowRawHtml:
+                @((MarkupString)html.Html)
+                break;
+
+            case BitAiRawHtmlInline html:
+                @html.Html
+                break;
+        }
+    };
+
+    // An image the policy holds back is a button that loads it, named after what it shows (or, with no alternative
+    // text, the host it would be fetched from) - never the image itself, which would already have been fetched.
+    private RenderFragment RenderImage(BitAiImageInline image) => __builder =>
+    {
+        var source = BitAiSafeUrls.Image(image.Url);
+        var loaded = _loadedImages.Contains(source);
+
+        switch (DecideImage(source, loaded))
+        {
+            case BitAiImageDecision.Show:
+                @RenderShownImage(image, source, loaded)
+                break;
+
+            case BitAiImageDecision.AskFirst:
+                <BitActionButton IconName="Photo2"
+                                 Title="@source"
+                                 OnClick="() => LoadImage(source)"
+                                 Classes="@ImagePlaceholderClasses"
+                                 Styles="@Styles?.ImagePlaceholder">
+                    @Strings.LoadImage(string.IsNullOrWhiteSpace(image.Alt) ? ImageHostOf(source) : image.Alt)
+                </BitActionButton>
+                break;
+
+            default:
+                @if (string.IsNullOrWhiteSpace(image.Alt) is false)
+                {
+                    <span style="@Styles?.BlockedImage" class="bit-aimdv-imb @Classes?.BlockedImage">@image.Alt</span>
+                }
+                break;
+        }
+    };
+
+    // Blazor sets the attributes in the order they are written, and an engine that sees the source before the loading
+    // attribute starts the fetch then (WebKit), so the lazy loading is written first. An image the user loaded takes the
+    // focus off the button it replaces (see LoadImage), so it can hold it; one the policy shows at once is no stop of the
+    // keyboard's.
+    private RenderFragment RenderShownImage(BitAiImageInline image, string source, bool loaded) => __builder =>
+    {
+        __builder.OpenElement(0, "img");
+        __builder.AddAttribute(1, "loading", "lazy");
+        __builder.AddAttribute(2, "src", source);
+        __builder.AddAttribute(3, "alt", image.Alt);
+        __builder.AddAttribute(4, "title", image.Title);
+        __builder.AddAttribute(5, "tabindex", loaded ? "-1" : null);
+        __builder.AddAttribute(6, "style", Styles?.Image);
+        __builder.AddAttribute(7, "class", Join("bit-aimdv-img", Classes?.Image));
+        if (loaded)
+        {
+            __builder.AddElementReferenceCapture(8, element => CaptureLoadedImage(source, element));
+        }
+        __builder.CloseElement();
+    };
+
+    private RenderFragment RenderCaret() => __builder =>
+    {
+        <span aria-hidden="true" style="@Styles?.Caret" class="bit-aimdv-crt @Classes?.Caret"></span>
+    };
+
+    // A marker resolves to a chip only when its source is known and inline citations are on; otherwise it stays the
+    // text the model wrote. The chip is the app's own when it registered a citation renderer, which is handed the
+    // citation as any other renderer of the app's is handed its subject: inside a boundary of its own - and, so its chip
+    // can act as the built-in one does, the OnCitationClick of this view.
+    private RenderFragment RenderCitation(BitAiCitationMarkerInline marker) => __builder =>
+    {
+        var citation = Options.InlineCitations ? Citations?.FirstOrDefault(c => c.Number == marker.Number) : null;
+
+        if (citation is null)
+        {
+            @($"[{marker.Number}]")
+        }
+        else if (Renderers.CitationRenderer is { } citationRenderer)
+        {
+            <BitAiRendererBoundary Label="@Strings.RendererFailed(CitationRendererName)" Class="bit-aimdv-rbi">
+                @citationRenderer(new BitAiCitationContext(citation, OnActivate: OnCitationClick))
+            </BitAiRendererBoundary>
+        }
+        else
+        {
+            <BitAiCitationMarker Citation="citation" OnActivate="OnCitationClick" />
+        }
+    };
+}

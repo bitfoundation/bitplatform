@@ -1,0 +1,177 @@
+﻿@page "/components/ai/sourcecard"
+
+<PageOutlet Url="components/ai/sourcecard"
+            Title="AiSourceCard"
+            Description="BitAiSourceCard shows one source an AI answer cited - its number, its title and the site it comes from - as a card that links to the source or reveals it in place." />
+
+<DemoPage Name="AiSourceCard"
+          Description="BitAiSourceCard shows one source a message cited - the number its citation markers carry, its title, and the site it comes from with its favicon - on a BitCard. The card is a link to the source when the source is addressable, so the browser gives the user the usual middle click and context menu, and a button when OnActivate is set. Source URLs come from the model or from retrieved content, so only a web address ever becomes a link, and only a web address or an inline raster image is ever loaded as the favicon - when the image policy of the options shows it outright. BitAiSourceList renders one per source."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="SourceCard/BitAiSourceCard.razor"
+          GitHubDemoUrl="AI/SourceCard/BitAiSourceCardDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            The card draws a <b>BitAiCitationSource</b> - the <b>Source</b> of a <b>BitAiCitation</b> (see
+            <BitLink Href="/components/ai/citationmarker">AiCitationMarker</BitLink>). Security: a source is untrusted input, so
+            only an absolute <b>http</b> or <b>https</b> URL becomes an <b>href</b> (opened in a new tab with
+            <b>noopener noreferrer</b>) - a <b>javascript:</b> one renders a plain card - and the favicon is loaded only from a
+            web address or an inline raster <b>data:image/</b> (never SVG), without a referrer, and only when the image policy of
+            the options (<b>BitAiUiOptions.Images</b>, a <BitLink Href="/components/ai/markdownview#image-policy">BitAiImagePolicy</BitLink>)
+            shows it outright - a favicon is not worth a placeholder of its own, so one the policy would load on request or block
+            is left out. Accessibility: the link or the
+            button covers the whole card and is named after everything the card says (its number, title and site), unless an
+            <b>AriaLabel</b> names it. See the cards under an answer in the
+            <BitLink Href="/ai/scenarios/citations">Citations</BitLink> scenario.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Hand the card a <b>Source</b>. A source with a web address is a link to it, opened in a new tab.
+            </div>
+            <br />
+            <div class="example-grid">
+                <BitAiSourceCard Source="renderModes" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Number" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                <b>Number</b> shows the number beside the title - the one the inline citation markers of the source carry, so
+                the reader can match them up.
+            </div>
+            <br />
+            <div class="example-grid">
+                <BitAiSourceCard Source="renderModes" Number="1" />
+                <BitAiSourceCard Source="circuits" Number="2" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Site & favicon" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                The line under the title is the <b>SiteName</b>, else the host of the <b>Url</b>, else the <b>Kind</b> of the
+                source; <b>IconUrl</b> adds a favicon before it, when the image policy of the options
+                (<b>BitAiUiOptions.Images</b>) shows it outright - under <b>ClickToLoad</b> or <b>Block</b> the card goes without
+                it, with no placeholder: turn on the toggle to see the first card under <b>Block</b>. A source with no web address
+                is a plain card.
+            </div>
+            <br />
+            <BitToggle @bind-Value="blockImages" Text="Images = BitAiImagePolicy.Block" />
+            <BitAiOptionsProvider UiOptions="@(blockImages ? blockedImageOptions : BitAiUiOptions.Default)">
+                <div class="example-grid">
+                    <BitAiSourceCard Source="withFavicon" Number="1" />
+                    <BitAiSourceCard Source="hostOnly" Number="2" />
+                    <BitAiSourceCard Source="attachedFile" Number="3" />
+                </div>
+            </BitAiOptionsProvider>
+        </DemoExample>
+
+        <DemoExample Title="Activation" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                With <b>OnActivate</b> the card is a button rather than a link, and hands over its source - to reveal it in place
+                rather than leave the page. The rest of what a source carries - its <b>Description</b>, <b>Author</b>,
+                <b>PublishedAt</b>, retrieval <b>Score</b> and <b>Metadata</b> - is the application's to show. A <b>Disabled</b>
+                card (the third) hands over nothing, and one that would be a link leads nowhere.
+            </div>
+            <br />
+            <div class="example-grid">
+                <BitAiSourceCard Source="renderModes" Number="1" OnActivate="s => activated = s" />
+                <BitAiSourceCard Source="circuits" Number="2" OnActivate="s => activated = s" />
+                <BitAiSourceCard Source="attachedFile" Number="3" OnActivate="s => activated = s" Disabled />
+            </div>
+            <br />
+            @if (activated is not null)
+            {
+                <BitCard>
+                    <BitText Typography="BitTypography.Subtitle1">@activated.Title</BitText>
+                    <BitText>@activated.Description</BitText>
+                    <BitText Typography="BitTypography.Caption1">
+                        @activated.Kind - @activated.Author - @activated.PublishedAt?.ToString("d") - score @activated.Score?.ToString("0.00")
+                    </BitText>
+                </BitCard>
+            }
+        </DemoExample>
+
+        <DemoExample Title="Untrusted URLs" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                A source is what a model or a retriever said, so the card never trusts its addresses: a <b>javascript:</b>
+                <b>Url</b> renders a plain card instead of a link that would run in the page, and an SVG <b>IconUrl</b> is not
+                loaded at all.
+            </div>
+            <br />
+            <div class="example-grid">
+                <BitAiSourceCard Source="untrusted" Number="1" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>BitParams</b> with a <b>BitAiSourceCardParams</b> sets the look of every source card inside it - the ones a
+                <b>BitAiSourceList</b> renders included - and a card's own value still wins (the last keeps its own <b>Styles</b>).
+            </div>
+            <br />
+            <BitParams Parameters="cardParams">
+                <div class="example-grid">
+                    <BitAiSourceCard Source="renderModes" Number="1" />
+                    <BitAiSourceCard Source="circuits" Number="2" />
+                    <BitAiSourceCard Source="attachedFile" Number="3" Styles="@(new() { Title = "font-weight: normal" })" />
+                </div>
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> every part - the BitCard
+                (<b>Card</b>, a <b>BitCardClassStyles</b>), the number, the title, the site line and the favicon. The public
+                <b>--bit-AiSourceCard-*</b> variables re-skin what the card says; its surface, corner, shadow, hover and focus
+                ring are the BitCard's, which the <b>--bit-Card-*</b> variables restyle.
+            </div>
+            <br />
+            @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+            <div class="example-grid">
+                <BitAiSourceCard Source="renderModes" Number="1" Style="max-width: 16rem; outline: 1px dashed #0ea5e9; outline-offset: 0.25rem" />
+                <BitAiSourceCard Source="circuits"
+                                 Number="2"
+                                 Class="custom-class"
+                                 Classes="@(new() { Index = "custom-index", Title = "custom-title" })"
+                                 Styles="@(new() { Card = new() { Root = "border-radius: 1rem" } })" />
+                <div style="--bit-AiSourceCard-index-color: #7c3aed;
+                            --bit-AiSourceCard-title-color: #4c1d95;
+                            --bit-AiSourceCard-title-font-size: 1rem;
+                            --bit-AiSourceCard-site-color: #8b5cf6;
+                            --bit-Card-background: #f5f3ff;
+                            --bit-Card-border-color: #c4b5fd;
+                            --bit-Card-radius: 0.75rem">
+                    <BitAiSourceCard Source="withFavicon" Number="3" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                In right-to-left text the number, the title and the site line are mirrored, whether the direction comes from
+                <b>Dir</b> or from a <b>dir</b> attribute around the card.
+            </div>
+            <br />
+            <div class="example-grid" dir="rtl">
+                <BitAiSourceCard Source="rtlSource" Number="1" />
+                <BitAiSourceCard Dir="BitDir.Rtl" Source="rtlSource" Number="2" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

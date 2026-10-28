@@ -1,0 +1,58 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@* A group named by the question it asks, so the three buttons are announced as the answers to it. The role comes
+   ahead of the splatted attributes, so a role the page passes itself is kept rather than replaced by this one. *@
+<div @ref="RootElement"
+     role="group"
+     @attributes="DisabledAwareHtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
+     aria-label="@(ResolveAriaLabel() ?? Strings.ApproveTool(_DisplayName))">
+    <div style="@Styles?.Text" class="bit-aitap-txt @Classes?.Text">
+        @if (Call.ApprovalReason is { Length: > 0 } reason)
+        {
+            @reason
+        }
+        else
+        {
+            @Strings.ApproveTool(_DisplayName)
+        }
+    </div>
+
+    @* The answers read from the most cautious to the most permissive, which is also the order the focus moves in. The
+       buttons are never submit buttons, so a conversation rendered inside a form cannot be submitted by an answer. *@
+    <div style="@Styles?.Actions" class="bit-aitap-act @Classes?.Actions">
+        <BitButton ButtonType="BitButtonType.Button"
+                   Variant="BitVariant.Outline"
+                   Class="bit-btn-dft-ter"
+                   Disabled="Disabled"
+                   OnClick="HandleOnReject"
+                   Styles="@Styles?.RejectButton"
+                   Classes="@Classes?.RejectButton">
+            @Strings.Reject
+        </BitButton>
+        <BitButton ButtonType="BitButtonType.Button"
+                   Variant="BitVariant.Outline"
+                   Class="bit-btn-dft-ter"
+                   Disabled="Disabled"
+                   OnClick="HandleOnApproveAlways"
+                   Styles="@Styles?.ApproveAlwaysButton"
+                   Classes="@Classes?.ApproveAlwaysButton">
+            @Strings.ApproveAlways
+        </BitButton>
+        @* Allowing a destructive tool is drawn in the error role rather than the primary one: the default answer
+           should not look like the safe one when it is not. It is the default this component gives the button, so
+           it goes through the host-default class, which an app's --bit-Button-* variables still win over. *@
+        <BitButton ButtonType="BitButtonType.Button"
+                   Class="@(_isDestructive ? "bit-btn-dft-err" : null)"
+                   Disabled="Disabled"
+                   OnClick="HandleOnApprove"
+                   Styles="@Styles?.ApproveButton"
+                   Classes="@Classes?.ApproveButton">
+            @Strings.Approve
+        </BitButton>
+    </div>
+</div>

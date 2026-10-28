@@ -1,0 +1,36 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@{
+    var text = _copied ? Strings.Copied : (Label ?? Strings.Copy);
+    var disabled = Disabled || Content is null;
+}
+
+<span @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+      id="@_Id"
+      style="@StyleBuilder.Value"
+      class="@ClassBuilder.Value"
+      dir="@Dir?.ToString().ToLower()">
+    @* The glyph turns into a check mark once the text is on the clipboard, and the name of the button follows it, since
+       a copy button that gives no feedback leaves the user guessing whether it worked. A neutral icon button by
+       default (the host-default tertiary role), which an app's --bit-Button-* variables still restyle. The Copy glyph
+       is not in the font of the core package, so it is drawn from the subset this package ships (ButtonClasses). *@
+    <BitButton IconName="@(_copied ? "Accept" : "Copy")"
+               Variant="BitVariant.Text"
+               Class="bit-btn-dft-ter"
+               Title="@text"
+               AriaLabel="@text"
+               Disabled="@disabled"
+               OnClick="HandleOnClick"
+               ChildContent="@(ShowLabel ? (RenderFragment)(b => b.AddContent(0, text)) : null)"
+               Classes="@ButtonClasses"
+               Styles="@Styles?.Button" />
+
+    @* A changed icon is invisible to a screen reader, so the confirmation is announced as well. The region is on the
+       page from the first render with nothing in it: text landing in a live region that is already there is what
+       screen readers reliably announce. *@
+    <span role="status"
+          aria-live="polite"
+          style="@Styles?.LiveRegion"
+          class="bit-aicpb-liv @Classes?.LiveRegion">@(_copied ? Strings.Copied : null)</span>
+</span>

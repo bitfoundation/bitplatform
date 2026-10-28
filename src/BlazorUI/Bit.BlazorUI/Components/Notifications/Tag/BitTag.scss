@@ -79,10 +79,13 @@
 // Outline and Text variants, the hover and pressed overlay a Fill tag composites from its own text color, the icon
 // and focus colors. The variables restyle the default, not a choice - which is why Color, Size and Shape publish
 // nothing while they are left unset: a class that always carried the default would be indistinguishable from one
-// that was asked for.
+// that was asked for. So the variables keep the last word over the default a component of the library gives the
+// tags it renders (see .bit-tag-dft-*), which is read after them.
 
 $tag-private-properties:
     clr, clr-txt, clr-dis, clr-dis-text, clr-active, clr-light, clr-light-hover, clr-light-active,
+    dft-clr, dft-clr-txt, dft-clr-dis, dft-clr-dis-text, dft-clr-active, dft-clr-light, dft-clr-light-hover,
+    dft-clr-light-active,
     sz-gap, sz-lbl-gap, sz-fs, sz-stx-fs, sz-img, sz-pad-y, sz-pad-x, sz-min-height, radius,
     // Only Outline and Text step a selected tag further, so Fill falls back to its resting pair.
     v-sel-hover-bg, v-sel-active-bg;
@@ -152,7 +155,8 @@ $tag-private-properties:
 
     // Comes after the selected state and so takes its paint off with it. The glyphs follow the disabled text
     // rather than a color of their own, which would leave them looking enabled, and every variant dims its
-    // text to the same disabled text of the Color role (the primary one while Color is unset).
+    // text to the same disabled text of the Color role (while Color is unset, the one a host default names,
+    // else the primary one).
     //
     // A disabled tag is inert to the pointer as a whole - the content, whatever a template put in it, and a
     // handler the app attached to the root - with one exception: a root carrying a title keeps answering the
@@ -162,7 +166,7 @@ $tag-private-properties:
         cursor: default;
         user-select: none;
         --bit-tag-icn-clr: currentcolor;
-        --bit-tag-fg: var(--bit-tag-clr-dis-text, var(--bit-Tag-disabled-color, #{$clr-pri-dis-text}));
+        --bit-tag-fg: var(--bit-tag-clr-dis-text, var(--bit-Tag-disabled-color, var(--bit-tag-dft-clr-dis-text, #{$clr-pri-dis-text})));
         --bit-tag-bg: var(--bit-tag-v-dis-bg);
         --bit-tag-brd: var(--bit-tag-v-dis-brd);
 
@@ -330,6 +334,10 @@ $tag-private-properties:
 
 // A tag that has a width of its own to protect keeps its content on one line and ends it with an ellipsis.
 // Every box between the root and the text has to be allowed to shrink for the ellipsis to ever appear.
+//
+// The clip that ellipsis needs is the box of the line, which a line-height of 1 makes no taller than the type: the
+// descenders of a g or a p hang below it and would be cut off. The padding gives the clip room for them above and below,
+// and the negative margin takes that room back out of the layout, so the label is exactly as tall as it was.
 .bit-tag-nwr {
     .bit-tag-cnt {
         white-space: nowrap;
@@ -340,6 +348,8 @@ $tag-private-properties:
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
+        padding-block: 0.2em;
+        margin-block: -0.2em;
     }
 }
 
@@ -408,23 +418,24 @@ $tag-private-properties:
 
 // The variants resolve the colors on the root, where the public ones arrive by inheritance, and the root rule above
 // paints what they leave behind. Each color the Color role paints is read from the role first - published only by
-// an explicit Color (see .bit-tag) - then from the public variables, then from the primary role an unset Color
-// stands for; a color the role leaves alone (the transparent background of Outline and Text, the rule of Text, the
-// overlay Fill hovers with) is the variables' alone.
+// an explicit Color (see .bit-tag) - then from the public variables, then from the default a host component gave
+// the tag (see .bit-tag-dft-*) and last from the primary role an unset Color stands for; a color the role leaves
+// alone (the transparent background of Outline and Text, the rule of Text, the overlay Fill hovers with) is the
+// variables' alone.
 //
 // Every color variable is read in two tiers: the variant's own (--bit-Tag-fill-*, -outline-*, -text-*) ahead of the
 // shared one, so a theme can give the three looks different colors from :root - an outline tag's neutral rule
 // without a ring around every filled tag - while a shared variable still re-skins all three at once. Both tiers sit
 // between the role and the default, so an explicit Color still wins over them.
 .bit-tag-fil {
-    --bit-tag-v-fg: var(--bit-tag-clr-txt, var(--bit-Tag-fill-color, var(--bit-Tag-color, #{$clr-pri-text})));
-    --bit-tag-v-bg: var(--bit-tag-clr, var(--bit-Tag-fill-background, var(--bit-Tag-background, #{$clr-pri})));
-    --bit-tag-v-brd: var(--bit-tag-clr, var(--bit-Tag-fill-border-color, var(--bit-Tag-border-color, #{$clr-pri})));
-    --bit-tag-v-sel-fg: var(--bit-tag-clr-txt, var(--bit-Tag-fill-selected-color, var(--bit-Tag-selected-color, var(--bit-Tag-fill-color, var(--bit-Tag-color, #{$clr-pri-text})))));
-    --bit-tag-v-sel-bg: var(--bit-tag-clr-active, var(--bit-Tag-fill-selected-background, var(--bit-Tag-selected-background, #{$clr-pri-active})));
-    --bit-tag-v-sel-brd: var(--bit-tag-clr-active, var(--bit-Tag-fill-selected-border-color, var(--bit-Tag-selected-border-color, #{$clr-pri-active})));
-    --bit-tag-v-dis-bg: var(--bit-tag-clr-dis, var(--bit-Tag-fill-disabled-background, var(--bit-Tag-disabled-background, #{$clr-pri-dis})));
-    --bit-tag-v-dis-brd: var(--bit-tag-clr-dis, var(--bit-Tag-fill-disabled-border-color, var(--bit-Tag-disabled-border-color, #{$clr-pri-dis})));
+    --bit-tag-v-fg: var(--bit-tag-clr-txt, var(--bit-Tag-fill-color, var(--bit-Tag-color, var(--bit-tag-dft-clr-txt, #{$clr-pri-text}))));
+    --bit-tag-v-bg: var(--bit-tag-clr, var(--bit-Tag-fill-background, var(--bit-Tag-background, var(--bit-tag-dft-clr, #{$clr-pri}))));
+    --bit-tag-v-brd: var(--bit-tag-clr, var(--bit-Tag-fill-border-color, var(--bit-Tag-border-color, var(--bit-tag-dft-clr, #{$clr-pri}))));
+    --bit-tag-v-sel-fg: var(--bit-tag-clr-txt, var(--bit-Tag-fill-selected-color, var(--bit-Tag-selected-color, var(--bit-Tag-fill-color, var(--bit-Tag-color, var(--bit-tag-dft-clr-txt, #{$clr-pri-text}))))));
+    --bit-tag-v-sel-bg: var(--bit-tag-clr-active, var(--bit-Tag-fill-selected-background, var(--bit-Tag-selected-background, var(--bit-tag-dft-clr-active, #{$clr-pri-active}))));
+    --bit-tag-v-sel-brd: var(--bit-tag-clr-active, var(--bit-Tag-fill-selected-border-color, var(--bit-Tag-selected-border-color, var(--bit-tag-dft-clr-active, #{$clr-pri-active}))));
+    --bit-tag-v-dis-bg: var(--bit-tag-clr-dis, var(--bit-Tag-fill-disabled-background, var(--bit-Tag-disabled-background, var(--bit-tag-dft-clr-dis, #{$clr-pri-dis}))));
+    --bit-tag-v-dis-brd: var(--bit-tag-clr-dis, var(--bit-Tag-fill-disabled-border-color, var(--bit-Tag-disabled-border-color, var(--bit-tag-dft-clr-dis, #{$clr-pri-dis}))));
     // A filled tag is already wearing the role color, so it answers the pointer by deepening it. The overlay
     // is composited from the text color so that it works over every role, including the neutral ones whose
     // hover slot is not a deeper version of themselves - and over a background a --bit-Tag-* variable set.
@@ -435,33 +446,33 @@ $tag-private-properties:
 }
 
 .bit-tag-otl {
-    --bit-tag-v-fg: var(--bit-tag-clr, var(--bit-Tag-outline-color, var(--bit-Tag-color, #{$clr-pri})));
+    --bit-tag-v-fg: var(--bit-tag-clr, var(--bit-Tag-outline-color, var(--bit-Tag-color, var(--bit-tag-dft-clr, #{$clr-pri}))));
     --bit-tag-v-bg: var(--bit-Tag-outline-background, var(--bit-Tag-background, transparent));
-    --bit-tag-v-brd: var(--bit-tag-clr, var(--bit-Tag-outline-border-color, var(--bit-Tag-border-color, #{$clr-pri})));
-    --bit-tag-v-sel-fg: var(--bit-tag-clr, var(--bit-Tag-outline-selected-color, var(--bit-Tag-selected-color, var(--bit-Tag-outline-color, var(--bit-Tag-color, #{$clr-pri})))));
-    --bit-tag-v-sel-bg: var(--bit-tag-clr-light, var(--bit-Tag-outline-selected-background, var(--bit-Tag-selected-background, #{$clr-pri-light})));
-    --bit-tag-v-sel-brd: var(--bit-tag-clr, var(--bit-Tag-outline-selected-border-color, var(--bit-Tag-selected-border-color, #{$clr-pri})));
+    --bit-tag-v-brd: var(--bit-tag-clr, var(--bit-Tag-outline-border-color, var(--bit-Tag-border-color, var(--bit-tag-dft-clr, #{$clr-pri}))));
+    --bit-tag-v-sel-fg: var(--bit-tag-clr, var(--bit-Tag-outline-selected-color, var(--bit-Tag-selected-color, var(--bit-Tag-outline-color, var(--bit-Tag-color, var(--bit-tag-dft-clr, #{$clr-pri}))))));
+    --bit-tag-v-sel-bg: var(--bit-tag-clr-light, var(--bit-Tag-outline-selected-background, var(--bit-Tag-selected-background, var(--bit-tag-dft-clr-light, #{$clr-pri-light}))));
+    --bit-tag-v-sel-brd: var(--bit-tag-clr, var(--bit-Tag-outline-selected-border-color, var(--bit-Tag-selected-border-color, var(--bit-tag-dft-clr, #{$clr-pri}))));
     --bit-tag-v-dis-bg: var(--bit-Tag-outline-disabled-background, var(--bit-Tag-disabled-background, transparent));
-    --bit-tag-v-dis-brd: var(--bit-tag-clr-dis, var(--bit-Tag-outline-disabled-border-color, var(--bit-Tag-disabled-border-color, #{$clr-pri-dis})));
-    --bit-tag-v-hover-bg: var(--bit-tag-clr-light, var(--bit-Tag-outline-hover-background, var(--bit-Tag-hover-background, #{$clr-pri-light})));
-    --bit-tag-v-active-bg: var(--bit-tag-clr-light-hover, var(--bit-Tag-outline-active-background, var(--bit-Tag-active-background, #{$clr-pri-light-hover})));
-    --bit-tag-v-sel-hover-bg: var(--bit-tag-clr-light-hover, var(--bit-Tag-outline-hover-background, var(--bit-Tag-hover-background, #{$clr-pri-light-hover})));
-    --bit-tag-v-sel-active-bg: var(--bit-tag-clr-light-active, var(--bit-Tag-outline-active-background, var(--bit-Tag-active-background, #{$clr-pri-light-active})));
+    --bit-tag-v-dis-brd: var(--bit-tag-clr-dis, var(--bit-Tag-outline-disabled-border-color, var(--bit-Tag-disabled-border-color, var(--bit-tag-dft-clr-dis, #{$clr-pri-dis}))));
+    --bit-tag-v-hover-bg: var(--bit-tag-clr-light, var(--bit-Tag-outline-hover-background, var(--bit-Tag-hover-background, var(--bit-tag-dft-clr-light, #{$clr-pri-light}))));
+    --bit-tag-v-active-bg: var(--bit-tag-clr-light-hover, var(--bit-Tag-outline-active-background, var(--bit-Tag-active-background, var(--bit-tag-dft-clr-light-hover, #{$clr-pri-light-hover}))));
+    --bit-tag-v-sel-hover-bg: var(--bit-tag-clr-light-hover, var(--bit-Tag-outline-hover-background, var(--bit-Tag-hover-background, var(--bit-tag-dft-clr-light-hover, #{$clr-pri-light-hover}))));
+    --bit-tag-v-sel-active-bg: var(--bit-tag-clr-light-active, var(--bit-Tag-outline-active-background, var(--bit-Tag-active-background, var(--bit-tag-dft-clr-light-active, #{$clr-pri-light-active}))));
 }
 
 .bit-tag-txt {
-    --bit-tag-v-fg: var(--bit-tag-clr, var(--bit-Tag-text-color, var(--bit-Tag-color, #{$clr-pri})));
+    --bit-tag-v-fg: var(--bit-tag-clr, var(--bit-Tag-text-color, var(--bit-Tag-color, var(--bit-tag-dft-clr, #{$clr-pri}))));
     --bit-tag-v-bg: var(--bit-Tag-text-background, var(--bit-Tag-background, transparent));
     --bit-tag-v-brd: var(--bit-Tag-text-border-color, var(--bit-Tag-border-color, transparent));
-    --bit-tag-v-sel-fg: var(--bit-tag-clr, var(--bit-Tag-text-selected-color, var(--bit-Tag-selected-color, var(--bit-Tag-text-color, var(--bit-Tag-color, #{$clr-pri})))));
-    --bit-tag-v-sel-bg: var(--bit-tag-clr-light, var(--bit-Tag-text-selected-background, var(--bit-Tag-selected-background, #{$clr-pri-light})));
+    --bit-tag-v-sel-fg: var(--bit-tag-clr, var(--bit-Tag-text-selected-color, var(--bit-Tag-selected-color, var(--bit-Tag-text-color, var(--bit-Tag-color, var(--bit-tag-dft-clr, #{$clr-pri}))))));
+    --bit-tag-v-sel-bg: var(--bit-tag-clr-light, var(--bit-Tag-text-selected-background, var(--bit-Tag-selected-background, var(--bit-tag-dft-clr-light, #{$clr-pri-light}))));
     --bit-tag-v-sel-brd: var(--bit-Tag-text-selected-border-color, var(--bit-Tag-selected-border-color, transparent));
     --bit-tag-v-dis-bg: var(--bit-Tag-text-disabled-background, var(--bit-Tag-disabled-background, transparent));
     --bit-tag-v-dis-brd: var(--bit-Tag-text-disabled-border-color, var(--bit-Tag-disabled-border-color, transparent));
-    --bit-tag-v-hover-bg: var(--bit-tag-clr-light, var(--bit-Tag-text-hover-background, var(--bit-Tag-hover-background, #{$clr-pri-light})));
-    --bit-tag-v-active-bg: var(--bit-tag-clr-light-hover, var(--bit-Tag-text-active-background, var(--bit-Tag-active-background, #{$clr-pri-light-hover})));
-    --bit-tag-v-sel-hover-bg: var(--bit-tag-clr-light-hover, var(--bit-Tag-text-hover-background, var(--bit-Tag-hover-background, #{$clr-pri-light-hover})));
-    --bit-tag-v-sel-active-bg: var(--bit-tag-clr-light-active, var(--bit-Tag-text-active-background, var(--bit-Tag-active-background, #{$clr-pri-light-active})));
+    --bit-tag-v-hover-bg: var(--bit-tag-clr-light, var(--bit-Tag-text-hover-background, var(--bit-Tag-hover-background, var(--bit-tag-dft-clr-light, #{$clr-pri-light}))));
+    --bit-tag-v-active-bg: var(--bit-tag-clr-light-hover, var(--bit-Tag-text-active-background, var(--bit-Tag-active-background, var(--bit-tag-dft-clr-light-hover, #{$clr-pri-light-hover}))));
+    --bit-tag-v-sel-hover-bg: var(--bit-tag-clr-light-hover, var(--bit-Tag-text-hover-background, var(--bit-Tag-hover-background, var(--bit-tag-dft-clr-light-hover, #{$clr-pri-light-hover}))));
+    --bit-tag-v-sel-active-bg: var(--bit-tag-clr-light-active, var(--bit-Tag-text-active-background, var(--bit-Tag-active-background, var(--bit-tag-dft-clr-light-active, #{$clr-pri-light-active}))));
 }
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only by an
@@ -476,6 +487,24 @@ $tag-private-properties:
         --bit-tag-clr-light: #{role($tokens, light)};
         --bit-tag-clr-light-hover: #{role($tokens, light-hover)};
         --bit-tag-clr-light-active: #{role($tokens, light-active)};
+    }
+}
+
+// The default a component of the library gives the tags it renders in place of the primary role, for the same role
+// names (bit-tag-dft-ter is a Tertiary default). Unlike the role classes above these are read after the public
+// variables - the last fallback of every color read - so an app's --bit-Tag-* restyle still reaches a tag its host
+// left without a Color, and an explicit Color still wins over both. Never rendered by a Color of its own; a host adds
+// the class to the root (through Class or Classes.Root).
+@each $role, $tokens in $bit-color-roles {
+    .bit-tag-dft-#{$role} {
+        --bit-tag-dft-clr: #{role($tokens, main)};
+        --bit-tag-dft-clr-txt: #{role($tokens, on)};
+        --bit-tag-dft-clr-dis: #{role($tokens, dis)};
+        --bit-tag-dft-clr-dis-text: #{role($tokens, dis-text)};
+        --bit-tag-dft-clr-active: #{role($tokens, active)};
+        --bit-tag-dft-clr-light: #{role($tokens, light)};
+        --bit-tag-dft-clr-light-hover: #{role($tokens, light-hover)};
+        --bit-tag-dft-clr-light-active: #{role($tokens, light-active)};
     }
 }
 

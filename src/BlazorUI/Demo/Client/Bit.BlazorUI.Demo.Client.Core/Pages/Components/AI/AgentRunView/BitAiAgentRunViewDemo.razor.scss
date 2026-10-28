@@ -1,0 +1,27 @@
+﻿.example-buttons {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+::deep {
+    .custom-class {
+        border-width: 2px;
+        border-color: #0ea5e9;
+    }
+
+    .custom-header {
+        color: #0369a1;
+        background-color: #e0f2fe;
+    }
+
+    .custom-goal {
+        font-size: 1rem;
+        color: var(--bit-clr-pri-fg);
+    }
+
+    .custom-question {
+        font-weight: bold;
+    }
+}

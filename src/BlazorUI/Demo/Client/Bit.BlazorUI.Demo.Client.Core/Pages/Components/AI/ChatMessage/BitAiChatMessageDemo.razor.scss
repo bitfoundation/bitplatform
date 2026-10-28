@@ -1,0 +1,21 @@
+﻿// The page is drawn on the secondary background, the one a user's bubble and a system note are filled with by default:
+// the messages of each section sit on a surface of the primary background, as they do in a transcript.
+.message-surface {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background-color: var(--bit-clr-bg-pri);
+}
+
+// The classes handed to the message land on its own elements, reached from the plain wrapper of the section.
+::deep {
+    .custom-message {
+        padding: 1rem;
+        border-radius: 1rem;
+        border: 1px dashed var(--bit-clr-pri);
+    }
+
+    .custom-message-body {
+        font-style: italic;
+        color: var(--bit-clr-pri);
+    }
+}

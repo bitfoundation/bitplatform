@@ -308,7 +308,7 @@ public partial class BitNavBar<[DynamicallyAccessedMembers(DynamicallyAccessedMe
 
         if (Mode == BitNavMode.Automatic)
         {
-            await SetSelectedItemByCurrentUrl(isPrerender: _js.IsRuntimeInvalid());
+            await SetSelectedItemByCurrentUrl(isPrerender: IsStaticRender(_js));
         }
         else
         {
@@ -880,7 +880,7 @@ public partial class BitNavBar<[DynamicallyAccessedMembers(DynamicallyAccessedMe
 
             // A prerender is only drawing the page; the interactive render that replaces it is the one that
             // reports, and only a selection that actually moved (a bound selection may hold it where it is).
-            if (_js.IsRuntimeInvalid() is false && IsSelected(previous) is false)
+            if (IsStaticRender(_js) is false && IsSelected(previous) is false)
             {
                 _unreportedSelection = SelectedItem;
             }

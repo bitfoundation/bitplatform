@@ -47,6 +47,7 @@ public class BitForcedColorsBrowserTests : PerformanceTestBase
         "card", "dialog", "dialog-background", "dialog-ok-off", "dialog-busy", "splitter", "tooltip",
         "icon", "text",
         "datagrid", "themeswitcher", "fullcalendar", "markdowneditor", "richtexteditor", "pdfviewer",
+        "aicitationmarker", "aiconversationlist", "aipromptinput", "aitoolapproval",
     ];
 
     [TestMethod]

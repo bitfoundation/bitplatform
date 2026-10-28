@@ -1,0 +1,213 @@
+﻿@page "/components/ai/chatmessage"
+@inherits AppComponentBase
+
+<PageOutlet Url="components/ai/chatmessage"
+            Title="AiChatMessage"
+            Description="BitAiChatMessage is one message of an AI conversation, laid out by role: the user's bubble, the assistant's streaming reply with its parts, sources and actions, and a system note." />
+
+<DemoPage Name="AiChatMessage"
+          SecondaryNames="@(["MessageBubble"])"
+          Description="BitAiChatMessage is one message of a conversation, laid out by role: a user turn as a bubble at the end of the line (with its attachments, copy and edit), an assistant turn as full-width prose with its parts - text, Markdown, reasoning, tool calls, artifacts, images, generative UI - its error, its sources and its actions, and a system note as a centered pill. It is what BitAiMessageList renders for every message, and what a MessageTemplate wraps to keep all of that."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="ChatMessage/BitAiChatMessage.razor"
+          GitHubDemoUrl="AI/ChatMessage/BitAiChatMessageDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            The message subscribes to its <b>BitAiMessage</b> for structural changes only (a part added, the status moving):
+            the content of a part is re-rendered by the part's own component, so a streaming token never re-renders the whole
+            message. A <b>Session</b> enables editing, regenerating, retrying and approving; without one the message only
+            shows. What it shows under a reply - the actions, the model, the usage, the time, the sources - follows the
+            <BitLink Href="/components/ai/optionsprovider">BitAiUiOptions</BitLink> in force.
+        </BitText>
+        <br />
+        <BitText>
+            The message is an <b>article</b>, <b>aria-busy</b> while it is generated so a screen reader waits for it to settle -
+            but for a reply waiting on the user's decision on a tool call, whose question a busy message would keep from being
+            announced - and carries <b>data-message-id</b> and <b>data-role</b> for an app to find one message or style a role of its own.
+            A user's text is shown as it was typed - never parsed as Markdown or HTML. The entrance (<b>Animate</b>) follows the
+            motion tokens, so it is skipped under reduced motion; use the ForceAnimation toggle at the top of this page to see it.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                A <b>Message</b> is laid out by its role: the user's as a bubble at the end of the line, under the files it
+                carries (its <b>Attachments</b>, as chips), the assistant's as
+                prose with its actions (revealed on hover) and the model and usage under it, a system message as a centered note.
+                Without a <b>Session</b> a reply offers copy and feedback only, and a user message no action at all. The model and
+                the usage show because this site's options turn <b>ShowModelName</b> and <b>ShowUsage</b> on.
+            </div>
+            <br />
+            <div class="message-surface" style="display:flex;flex-direction:column;gap:1.5rem">
+                <BitAiChatMessage Message="userMessage" />
+                <BitAiChatMessage Message="assistantMessage" />
+                <BitAiChatMessage Message="systemMessage" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Parts" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                A reply is a list of parts, each drawn by its own view: plain text, Markdown with code, a tool call with its
+                result, a table with a citation and the sources under it. <b>Conversation</b> is what resolves the artifacts a
+                part refers to.
+            </div>
+            <br />
+            <div class="message-surface" style="display:flex;flex-direction:column;gap:2rem">
+                @foreach (var message in partsConversation.Messages.Where(m => m.Role.IsAssistant))
+                {
+                    <BitAiChatMessage @key="message.MessageId" Message="message" Conversation="partsConversation" />
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Session" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                With a <b>Session</b>, a user message can be edited (hover it) and the reply marked <b>IsLatest</b> regenerated
+                - only the newest, since regenerating an older one discards everything after it. This transport fails its first
+                answer: the error offers to try again, which the session runs as a retry (<b>RetryAsync</b>). An edit starts a
+                turn of its own, so it waits while a reply is being generated; Escape cancels it.
+            </div>
+            <br />
+            <BitButton OnClick="AskSession" Disabled="session.IsGenerating">Ask a question</BitButton>
+            <br /><br />
+            <div class="message-surface" style="display:flex;flex-direction:column;gap:1.5rem">
+                @foreach (var message in session.Conversation.Messages)
+                {
+                    <BitAiChatMessage @key="message.MessageId"
+                                      Message="message"
+                                      Session="session"
+                                      Conversation="session.Conversation"
+                                      IsLatest="@(message == session.Conversation.LastMessage)" />
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Animate" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                <b>Animate</b> plays the entrance of a message that has just arrived. Leave it off for the messages restored from
+                history - BitAiMessageList turns it on only for the ones added while it is shown.
+            </div>
+            <br />
+            <BitButton OnClick="AddAnimatedMessage">Add a message</BitButton>
+            <br /><br />
+            <div class="message-surface" style="display:flex;flex-direction:column;gap:1.5rem">
+                @foreach (var message in animatedMessages)
+                {
+                    <BitAiChatMessage @key="message.MessageId" Message="message" Animate />
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Child content" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>ChildContent</b> is rendered at the end of an assistant message, after its parts and sources: a follow-up
+                action of the app's own, here.
+            </div>
+            <br />
+            <div class="message-surface">
+                <BitAiChatMessage Message="childContentMessage">
+                    <div>
+                        <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Package" OnClick="TrackOrder">Track order #4521</BitButton>
+                    </div>
+                </BitAiChatMessage>
+            </div>
+            <br />
+            <div>@(trackingStatus ?? "The order has not been opened yet.")</div>
+        </DemoExample>
+
+        <DemoExample Title="Citations & feedback" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>OnCitationClick</b> reports a numbered citation chip, <b>OnSourceClick</b> a source card and <b>OnFeedback</b>
+                a thumbs up or down - pressing the chosen one again withdraws it, reported as <b>None</b>.
+            </div>
+            <br />
+            <div class="message-surface">
+                <BitAiChatMessage Message="citedMessage"
+                                  OnCitationClick="HandleCitationClick"
+                                  OnSourceClick="HandleSourceClick"
+                                  OnFeedback="HandleFeedback" />
+            </div>
+            <br />
+            <div>Last event: <b>@(lastEvent ?? "-")</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                A disabled message stays readable; its actions, its editor and its retry are disabled with it.
+            </div>
+            <br />
+            <BitToggle @bind-Value="isDisabled" Text="Disabled" />
+            <div class="message-surface" style="display:flex;flex-direction:column;gap:1.5rem">
+                @foreach (var message in disabledSession.Conversation.Messages)
+                {
+                    <BitAiChatMessage @key="message.MessageId"
+                                      Disabled="isDisabled"
+                                      Message="message"
+                                      Session="disabledSession" />
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                <b>BitParams</b> with a <b>BitAiChatMessageParams</b> sets the classes and styles of every message inside it -
+                the messages a BitAiMessageList or a BitAiChat draws included, since neither sets them itself; a message's own
+                value wins, as a whole (the third keeps its own <b>Styles</b>).
+            </div>
+            <br />
+            <BitParams Parameters="messageParams">
+                <div class="message-surface" style="display:flex;flex-direction:column;gap:1.5rem">
+                    <BitAiChatMessage Message="cascadeUserMessage" />
+                    <BitAiChatMessage Message="cascadeAssistantMessage" />
+                    <BitAiChatMessage Message="cascadeOwnMessage" Styles="@(new() { Bubble = "font-style:italic" })" />
+                </div>
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                <b>Style</b> / <b>Class</b> reach the root, <b>Styles</b> / <b>Classes</b> each part (the bubble, the body,
+                the system pill, the actions and the editor, with the class-styles of the buttons and of the
+                BitAiMessageActions they render). The public <b>--bit-AiChatMessage-*</b> variables (see the CSS variables table)
+                re-skin the messages from <b>:root</b>, an ancestor or <b>Style</b>.
+            </div>
+            <br />
+            <div class="message-surface" style="display:flex;flex-direction:column;gap:1.5rem">
+                <BitAiChatMessage Message="styleUserMessage"
+                                  Styles="@(new() { Bubble = "background:linear-gradient(135deg, #7c3aed, #2563eb);color:#fff" })" />
+                <BitAiChatMessage Message="styleAssistantMessage"
+                                  Class="custom-message"
+                                  Classes="@(new() { Body = "custom-message-body" })" />
+                <div style="--bit-AiChatMessage-user-background:var(--bit-clr-pri);--bit-AiChatMessage-user-color:var(--bit-clr-pri-text);--bit-AiChatMessage-user-radius:0.25rem;--bit-AiChatMessage-system-background:transparent;--bit-AiChatMessage-system-border-color:var(--bit-clr-pri)">
+                    <BitAiChatMessage Message="variablesUserMessage" />
+                    <br />
+                    <BitAiChatMessage Message="variablesSystemMessage" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>Use BitAiChatMessage in right-to-left (RTL).</div>
+            <br />
+            <div class="message-surface" style="display:flex;flex-direction:column;gap:1.5rem">
+                <BitAiChatMessage Dir="BitDir.Rtl" Message="rtlUserMessage" />
+                <BitAiChatMessage Dir="BitDir.Rtl" Message="rtlAssistantMessage" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

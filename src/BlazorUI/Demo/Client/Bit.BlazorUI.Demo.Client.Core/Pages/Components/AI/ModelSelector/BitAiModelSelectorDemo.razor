@@ -1,0 +1,190 @@
+﻿@page "/components/ai/modelselector"
+
+<PageOutlet Url="components/ai/modelselector"
+            Title="AiModelSelector"
+            Description="BitAiModelSelector is a model picker for an AI chat, driven by the registered model catalog: its models grouped by family or provider, filtered by the capabilities a composer needs." />
+
+<DemoPage Name="AiModelSelector"
+          SecondaryNames="@(["ModelPicker"])"
+          Description="BitAiModelSelector is the model picker of an AI chat: a BitDropdown of the models of the registered catalog (or of a catalog or list of your own), grouped under their family or provider, each model's description as the tooltip of its option. It offers only the models that declare the capabilities you require, hides deprecated ones unless asked, and never shows a model the bound ModelId does not name without saying so: a selection it had to make on its own is raised through ModelIdChanged and OnModelSelected."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          PublicMembers="componentPublicMembers"
+          GitHubAIUrl="ModelSelector/BitAiModelSelector.razor"
+          GitHubDemoUrl="AI/ModelSelector/BitAiModelSelectorDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            The models come from the <b>IBitAiModelCatalog</b> registered with
+            <b>builder.Services.AddBitBlazorUIAIServices(ai => ai.AddModels(models, providers, defaultModelId))</b>, unless a
+            <b>Catalog</b> or a list of <b>Models</b> is given. A <b>BitAiModel</b> only describes a model - the picker never
+            calls a provider - so what the chosen id means is up to your transport. The selector renders nothing while no
+            model is left to offer. See the <BitLink Href="/ai/scenarios/usage">usage scenario</BitLink> for it in the prefix
+            of a composer, beside the context meter and the token usage it drives.
+        </BitText>
+        <br />
+        <BitText>
+            The picker is named Model for assistive technologies, the header of the models without a group is Other, and a
+            deprecated model is labelled "Name (deprecated)". These texts come from the strings in force (<b>Model</b>,
+            <b>OtherModels</b>, <b>ModelDeprecated</b>), which a
+            <BitLink Href="/components/ai/optionsprovider">BitAiOptionsProvider</BitLink> localizes.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Bind <b>ModelId</b>: the picker lists the models of the registered catalog under their family or provider, and the
+                description of a model is the tooltip of its option.
+            </div>
+            <br />
+            <BitAiModelSelector @bind-ModelId="basicModelId" />
+            <br /><br />
+            <div>ModelId: <b>@basicModelId</b></div>
+        </DemoExample>
+
+        <DemoExample Title="OnModelSelected" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                <b>OnModelSelected</b> hands over the whole <b>BitAiModel</b> record - its description, context window, prices and
+                capabilities - whenever the selection changes. A <b>ModelId</b> naming no model on offer (unset, as here,
+                deprecated or filtered out) makes the picker select the default model of the catalog, or else the first one, and
+                raise both <b>ModelIdChanged</b> and <b>OnModelSelected</b> for it, so a bound value never disagrees with what it
+                shows.
+            </div>
+            <br />
+            <BitAiModelSelector @bind-ModelId="recordModelId" OnModelSelected="HandleModelSelected" />
+            <br /><br />
+            @if (selectedModel is not null)
+            {
+                <div><b>@selectedModel.Name</b> (@selectedModel.ModelId): @selectedModel.Description</div>
+                <div>Context window: @selectedModel.ContextWindow tokens, up to @selectedModel.MaxOutputTokens out</div>
+                <div>Per million tokens: @selectedModel.InputPricePerMillion in, @selectedModel.OutputPricePerMillion out (@selectedModel.Currency)</div>
+                <div>Capabilities: @selectedModel.Capabilities</div>
+            }
+        </DemoExample>
+
+        <DemoExample Title="Models" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                <b>Models</b> offers a list of your own in place of the catalog's - the models a user's plan entitles them to, say.
+                A model is grouped under its <b>Family</b>, else the name of its provider; once any model has a group, the ones
+                that have none are gathered under "Other". Its <b>Icon</b> (an icon name) shows beside its name.
+            </div>
+            <br />
+            <BitAiModelSelector @bind-ModelId="planModelId" Models="planModels" />
+            <br /><br />
+            <div>ModelId: <b>@planModelId</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Catalog" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                <b>Catalog</b> takes an <b>IBitAiModelCatalog</b> of your own - a <b>BitAiModelCatalog</b> for a fixed list, or an
+                implementation over the model list of a gateway. Its providers name the groups of the models that have no
+                <b>Family</b>, and its default model is the one selected while <b>ModelId</b> names none - Team Vision here. The
+                <b>Selected</b> property of the selector is the model it shows.
+            </div>
+            <br />
+            <BitAiModelSelector @ref="catalogSelector" @bind-ModelId="catalogModelId" Catalog="teamCatalog" />
+            <br /><br />
+            <div>ModelId: <b>@catalogModelId</b>, Selected: <b>@(catalogSelector?.Selected?.Name)</b></div>
+        </DemoExample>
+
+        <DemoExample Title="RequiredCapabilities" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>RequiredCapabilities</b> offers only the models that declare every one of them - Vision for a composer with an
+                image staged, Tools and StructuredOutput for a flow that needs both.
+            </div>
+            <br />
+            <BitAiModelSelector @bind-ModelId="visionModelId" RequiredCapabilities="BitAiModelCapabilities.Vision" />
+            <br /><br />
+            <BitAiModelSelector @bind-ModelId="toolsModelId"
+                                RequiredCapabilities="@(BitAiModelCapabilities.Tools | BitAiModelCapabilities.StructuredOutput)" />
+            <br /><br />
+            <div>Vision: <b>@visionModelId</b>, tools and structured output: <b>@toolsModelId</b></div>
+        </DemoExample>
+
+        <DemoExample Title="ShowDeprecated" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                A model marked <b>IsDeprecated</b> is hidden by default. <b>ShowDeprecated</b> offers it too, labelled as such - for a
+                conversation that was started with it.
+            </div>
+            <br />
+            <BitAiModelSelector @bind-ModelId="currentModelId" Models="versionedModels" />
+            <br /><br />
+            <BitAiModelSelector @bind-ModelId="legacyModelId" Models="versionedModels" ShowDeprecated />
+            <br /><br />
+            <div>Without: <b>@currentModelId</b>, with deprecated models: <b>@legacyModelId</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <b>BitParams</b> with a <b>BitAiModelSelectorParams</b> sets the catalog or the models, the required capabilities,
+                <b>ShowDeprecated</b> and the look of every model selector inside it; a parameter of the selector itself still
+                wins. The bound <b>ModelId</b> and the callbacks are each selector's own.
+            </div>
+            <br />
+            <BitParams Parameters="selectorParams">
+                <BitAiModelSelector @bind-ModelId="cascadeModelId" />
+                <br /><br />
+                <BitAiModelSelector @bind-ModelId="ownModelId" ShowDeprecated="false" />
+            </BitParams>
+            <br /><br />
+            <div>First: <b>@cascadeModelId</b>, second (its own ShowDeprecated): <b>@ownModelId</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example8RazorCode" Id="example8">
+            <div>
+                A disabled model selector shows the selected model and cannot be opened.
+            </div>
+            <br />
+            <BitAiModelSelector Disabled ModelId="demo-model-1-fast" />
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root, which wraps the picker; <b>Styles.Dropdown</b> and
+                <b>Classes.Dropdown</b> reach every part of its BitDropdown (BitDropdownClassStyles), the list of the models
+                included. The model selector has no CSS variables of its own: the picker is restyled through the public
+                <b>--bit-Dropdown-*</b> variables, from <b>:root</b>, an ancestor or <b>Style</b>.
+            </div>
+            <br />
+            @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+            <div>
+                <BitAiModelSelector Style="padding:0.25rem;border:1px dashed var(--bit-clr-brd-pri)" />
+                <br /><br />
+                <BitAiModelSelector Class="custom-class" />
+                <br /><br />
+                <BitAiModelSelector Styles="@(new() { Dropdown = new() { Container = "border-radius:1rem", ItemButton = "font-style:italic" } })" />
+                <br /><br />
+                <BitAiModelSelector Classes="@(new() { Dropdown = new() { Container = "custom-container", ItemHeader = "custom-header" } })" />
+                <br /><br />
+                <div style="@cssVariablesStyle">
+                    <BitAiModelSelector />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                In right-to-left text the picker is mirrored, whether the direction comes from <b>Dir</b> or from a <b>dir</b>
+                attribute around it.
+            </div>
+            <br />
+            <BitAiModelSelector Dir="BitDir.Rtl" Models="persianModels" @bind-ModelId="rtlModelId" />
+            <br /><br />
+            <div dir="rtl">
+                <BitAiModelSelector Models="persianModels" @bind-ModelId="rtlModelId" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

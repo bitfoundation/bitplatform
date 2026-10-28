@@ -146,6 +146,7 @@ public class ReferenceToolTests : McpTestBase
 
         // The optional packages, with the whole of what each one takes rather than a mention.
         StringAssert.Contains(answer, "Bit.BlazorUI.Extras");
+        StringAssert.Contains(answer, "Bit.BlazorUI.AI");
         StringAssert.Contains(answer, "Bit.BlazorUI.Icons");
         StringAssert.Contains(answer, "Bit.BlazorUI.Legacy");
 

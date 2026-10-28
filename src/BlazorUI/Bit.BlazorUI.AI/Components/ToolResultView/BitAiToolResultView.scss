@@ -1,0 +1,68 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root, on an ancestor or on
+// the Style of a tool result reaches every tool result under it:
+//   --bit-AiToolResultView-background         surface of the card                    (default: $clr-bg-sec)
+//   --bit-AiToolResultView-border-color       outline of the card                    (default: $clr-brd-sec)
+//   --bit-AiToolResultView-radius             corner radius of the card              (default: $shp-radius-surface)
+//   --bit-AiToolResultView-header-color       text and icon of the header            (default: $clr-fg-sec)
+//   --bit-AiToolResultView-body-background    surface of the body                    (default: $clr-bg-pri)
+//
+// A failed result is a compact BitAiErrorView, and a structured one a BitAiJsonView, each restyled through its own
+// variables.
+
+.bit-aitrv {
+    min-width: 0;
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+    box-sizing: border-box;
+    font-size: $tg-fs-sm;
+    font-family: $tg-font-family;
+    border: $shp-border-width $shp-border-style var(--bit-AiToolResultView-border-color, #{$clr-brd-sec});
+    border-radius: var(--bit-AiToolResultView-radius, #{$shp-radius-surface});
+    background-color: var(--bit-AiToolResultView-background, #{$clr-bg-sec});
+}
+
+.bit-aitrv-hdr {
+    display: flex;
+    gap: spacing(1);
+    min-width: 0;
+    align-items: center;
+    box-sizing: border-box;
+    padding: spacing(1) spacing(1.5);
+    color: var(--bit-AiToolResultView-header-color, #{$clr-fg-sec});
+}
+
+.bit-aitrv-ico {
+    flex: 0 0 auto;
+    line-height: 1;
+    font-size: $siz-icon-sm;
+}
+
+.bit-aitrv-ttl {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-weight: $tg-fw-medium;
+}
+
+.bit-aitrv-bdy {
+    min-width: 0;
+    box-sizing: border-box;
+    padding: spacing(1.5);
+    border-block-start: $shp-border-width $shp-border-style var(--bit-AiToolResultView-border-color, #{$clr-brd-sec});
+    background-color: var(--bit-AiToolResultView-body-background, #{$clr-bg-pri});
+}
+
+// A result written as text is shown the way it was written: its line breaks are kept, and a long token wraps rather
+// than running off the side of the card.
+.bit-aitrv-txt {
+    display: block;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-family: $tg-font-family-mono;
+}

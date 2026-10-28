@@ -1,0 +1,257 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @if (_expanded)
+    {
+        <div style="@Styles?.Overlay" class="bit-aiatv-ovl @Classes?.Overlay" aria-hidden="true" @onclick="ToggleExpanded"></div>
+    }
+
+    @* Laid over the page, the panel is a modal dialog: it holds the keyboard (see HoldKeyboardAsync) and a screen reader
+       keeps to it, which is what the overlay hiding the page behind it says to the eye. Inline it is a region of the
+       page.
+       Escape collapses the full-screen panel. data-bit-esc claims that press while the panel is expanded (see
+       Utils.claimEscape), so a surface the artifact sits in (a BitModal, a BitPanel) does not close on it too - and
+       leaves it to that surface while the panel is inline, where the press does nothing here. The claim and the handler
+       are on the dialog itself: a dialog is a surface of its own, where the walk that looks for a claim stops, so a claim
+       on an element around it would never be found. *@
+    <section @ref="_panel"
+             id="@_PanelId"
+             style="@Styles?.Panel"
+             class="bit-aiatv-pnl @Classes?.Panel"
+             role="@(_expanded ? "dialog" : null)"
+             aria-modal="@(_expanded ? "true" : null)"
+             aria-label="@(AriaLabel ?? Artifact.Title)"
+             data-artifact-id="@Artifact.ArtifactId"
+             data-bit-esc="@_EscapeClaim"
+             @onkeydown="HandleOnKeyDown">
+        <div style="@Styles?.Header" class="bit-aiatv-hdr @Classes?.Header">
+            <i aria-hidden="true" style="@Styles?.Icon" class="bit-aiatv-ico @_KindIcon @Classes?.Icon"></i>
+
+            <span style="@Styles?.Title" class="bit-aiatv-ttl @Classes?.Title" title="@Artifact.Title">@Artifact.Title</span>
+
+            @if (IsStreaming)
+            {
+                @* The body says it is busy (aria-busy) and the chat announces the reply, so the dots are the picture of
+                   it alone and stay out of the accessibility tree rather than announcing themselves as a live region. *@
+                <BitEllipsisLoading Inline
+                                    aria-hidden="true"
+                                    Class="bit-aiatv-ldg"
+                                    Classes="@Classes?.Loading"
+                                    Styles="@Styles?.Loading" />
+            }
+
+            @if (_VersionItems.Count > 1)
+            {
+                <BitDropdown TItem="BitDropdownItem<int>" TValue="int"
+                             Items="_VersionItems"
+                             Value="ViewedVersion"
+                             OnChange="HandleOnVersionChange"
+                             AriaLabel="@Strings.Version"
+                             Disabled="Disabled"
+                             FitWidth
+                             Class="bit-aiatv-ver"
+                             Classes="@Classes?.VersionDropdown"
+                             Styles="@Styles?.VersionDropdown" />
+            }
+
+            @* Copy and download act on text there is: an image shown from its address has none, and both buttons are
+               then off rather than copying nothing or saving an empty file. *@
+            <BitAiCopyButton Content="@_SavableContent"
+                             Disabled="Disabled"
+                             Classes="@Classes?.CopyButton"
+                             Styles="@Styles?.CopyButton" />
+
+            <BitButton IconName="Download"
+                       Variant="BitVariant.Text"
+                       Title="@Strings.Download"
+                       AriaLabel="@Strings.Download"
+                       Disabled="@_DownloadDisabled"
+                       OnClick="DownloadAsync"
+                       Class="bit-aiatv-dlb bit-btn-dft-ter"
+                       Classes="@_DownloadButtonClasses"
+                       Styles="@Styles?.DownloadButton" />
+
+            @* The one toggle both ways, which takes the focus each time it turns: into the full-screen panel as it opens -
+               a click does not focus a button in every engine, and an Escape pressed with the focus outside the panel
+               would close the surface around it instead - and back to where the panel sits once it collapses. *@
+            <BitButton @ref="_expandButton"
+                       IconName="@(_expanded ? "BackToWindow" : "FullScreen")"
+                       Variant="BitVariant.Text"
+                       Title="@_ExpandLabel"
+                       AriaLabel="@_ExpandLabel"
+                       aria-pressed="@(_expanded ? "true" : "false")"
+                       Disabled="Disabled"
+                       OnClick="ToggleExpanded"
+                       Class="bit-aiatv-exb bit-btn-dft-ter"
+                       Classes="@_ExpandButtonClasses"
+                       Styles="@Styles?.ExpandButton" />
+        </div>
+
+        <div style="@Styles?.Body" class="bit-aiatv-bdy @Classes?.Body" aria-busy="@(IsStreaming ? "true" : null)">
+            @if (Renderers.FindArtifact(Artifact.Kind) is { } renderer)
+            {
+                <BitAiRendererBoundary Label="@Strings.RendererFailed(Artifact.Kind.ToString())">
+                    @renderer(new BitAiArtifactContext(Artifact, _expanded) { Version = ViewedVersion, Content = ViewedContent })
+                </BitAiRendererBoundary>
+            }
+            else
+            {
+                @RenderBuiltIn()
+            }
+        </div>
+    </section>
+</div>
+
+@code {
+    // The body of a kind the app registered no renderer for: an image, a document, a sandboxed page, a tree, a table,
+    // or the code itself.
+    private RenderFragment RenderBuiltIn() => __builder =>
+    {
+        var content = ViewedContent;
+        var kind = Artifact.Kind;
+
+        if (kind == BitAiArtifactKind.Image)
+        {
+            if ((Artifact.Url ?? content) is { Length: > 0 } source)
+            {
+                @RenderImage(BitAiSafeUrls.Image(source))
+            }
+
+            return;
+        }
+
+        if (kind == BitAiArtifactKind.Svg && IsStreaming is false && SvgSource(content, Artifact.Url) is { Length: > 0 } svg)
+        {
+            // An image element never runs a script inside the SVG, which inline markup would.
+            @RenderImage(BitAiSafeUrls.Image(svg))
+            return;
+        }
+
+        if (content is null) return;
+
+        if (kind == BitAiArtifactKind.Document)
+        {
+            <div style="@Styles?.Content" class="bit-aiatv-doc @Classes?.Content">
+                <BitAiStreamingMarkdown Text="@content" IsStreaming="@IsStreaming" />
+            </div>
+        }
+        else if (kind == BitAiArtifactKind.Html && IsStreaming is false)
+        {
+            @* The page may run its scripts, submit its forms and open popups, but it is denied same-origin access - the
+               only way to show generated markup without handing it the host page. It is handed with the panel's own
+               script after it (FrameDocument), which copy and download never see. *@
+            <iframe sandbox="allow-scripts allow-forms allow-popups"
+                    srcdoc="@FrameDocument(content)"
+                    title="@Artifact.Title"
+                    style="@Styles?.Frame"
+                    class="bit-aiatv-frm @Classes?.Frame"></iframe>
+        }
+        else if (kind == BitAiArtifactKind.Json && ParsedJson(content) is { } json)
+        {
+            <div style="@Styles?.Content" class="bit-aiatv-jsn @Classes?.Content">
+                <BitAiJsonView Value="json" />
+            </div>
+        }
+        else if (kind == BitAiArtifactKind.Table && LooksLikeJson(content) && ParsedJson(content) is { } rows)
+        {
+            if (rows.ValueKind is JsonValueKind.Array)
+            {
+                @* Framed by the panel, as a CSV or TSV table is, rather than by a frame of its own (see the stylesheet). *@
+                <BitAiDataTable Rows="rows" />
+            }
+            else
+            {
+                <div style="@Styles?.Content" class="bit-aiatv-jsn @Classes?.Content">
+                    <BitAiJsonView Value="rows" />
+                </div>
+            }
+        }
+        else if (kind == BitAiArtifactKind.Table)
+        {
+            @RenderDelimited(ParseDelimited(content, IsTabSeparated(Artifact.Language) ? '\t' : ','))
+        }
+        else
+        {
+            <BitAiCodeBlockView Code="@content"
+                                Language="@(Artifact.Language ?? DefaultLanguage(kind))"
+                                IsStreaming="@IsStreaming"
+                                ShowHeader="false" />
+        }
+    };
+
+    // A CSV or TSV table: the first row is the header, every other one a row of the body.
+    private RenderFragment RenderDelimited(List<List<string>> rows) => __builder =>
+    {
+        if (rows.Count == 0) return;
+
+        var header = rows[0];
+
+        <div style="@Styles?.Table" class="bit-aiatv-tbw @Classes?.Table">
+            <table class="bit-aiatv-tbl">
+                <thead>
+                    <tr>
+                        @foreach (var cell in header)
+                        {
+                            <th scope="col" style="@Styles?.HeaderCell" class="bit-aiatv-thc @Classes?.HeaderCell">@cell</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 1; i < rows.Count; i++)
+                    {
+                        <tr class="bit-aiatv-trw">
+                            @foreach (var cell in rows[i])
+                            {
+                                <td style="@Styles?.Cell" class="bit-aiatv-tdc @Classes?.Cell">@cell</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    };
+
+    // An image or an SVG artifact as the image policy decides, as the images of a message are: shown, a button that
+    // loads it when the policy asks first (named after the artifact, which is what it shows), or the title alone.
+    private RenderFragment RenderImage(string source) => __builder =>
+    {
+        @* The source asked for is the one shown once the user loaded it, so another version or artifact asks again. *@
+        var loaded = _loadedImage == source;
+
+        switch (DecideImage(source, loaded))
+        {
+            case BitAiImageDecision.Show:
+                @* An image the user loaded takes the focus off the button it replaces (see LoadImage), so it can hold it. *@
+                <img @ref="_image"
+                     src="@source"
+                     alt="@Artifact.Title"
+                     tabindex="@(loaded ? "-1" : null)"
+                     style="@Styles?.Image"
+                     class="bit-aiatv-img @Classes?.Image" />
+                break;
+
+            case BitAiImageDecision.AskFirst:
+                <div class="bit-aiatv-imh">
+                    <BitActionButton IconName="Photo2"
+                                     Title="@source"
+                                     OnClick="() => LoadImage(source)"
+                                     Classes="@_ImagePlaceholderClasses"
+                                     Styles="@Styles?.ImagePlaceholder">
+                        @Strings.LoadImage(string.IsNullOrWhiteSpace(Artifact.Title) ? ImageHostOf(source) : Artifact.Title)
+                    </BitActionButton>
+                </div>
+                break;
+
+            default:
+                <div class="bit-aiatv-imh">
+                    <span style="@Styles?.BlockedImage" class="bit-aiatv-imb @Classes?.BlockedImage">@Artifact.Title</span>
+                </div>
+                break;
+        }
+    };
+}

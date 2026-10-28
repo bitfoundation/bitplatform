@@ -1,0 +1,295 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every composer,
+// one set on an ancestor the composers inside it, and one set on the Style of an instance that one alone (a composer
+// holds no other composer):
+//   --bit-AiPromptInput-background             fill of the frame                                  (default: $clr-bg-pri)
+//   --bit-AiPromptInput-border-color           frame color                                        (default: $clr-brd-pri)
+//   --bit-AiPromptInput-border-width           frame thickness                                    (default: $shp-border-width)
+//   --bit-AiPromptInput-radius                 corner of the frame                                (default: $shp-radius-control)
+//   --bit-AiPromptInput-shadow                 elevation of the frame                             (default: none)
+//   --bit-AiPromptInput-padding                inset of the frame                                 (default: spacing(1))
+//   --bit-AiPromptInput-gap                    room between the rows inside the frame             (default: spacing(1))
+//   --bit-AiPromptInput-focus-color            ring drawn around the frame while the focus is in
+//                                              it                                                 (default: the global focus ring)
+//   --bit-AiPromptInput-color                  color of the typed text                            (default: $clr-fg-pri)
+//   --bit-AiPromptInput-placeholder-color      color of the placeholder                           (default: $clr-fg-sec)
+//   --bit-AiPromptInput-font-size              size of the typed text                             (default: $tg-fs-md)
+//   --bit-AiPromptInput-line-height            leading of the typed text, the unit the growing
+//                                              text counts its rows in                            (default: 1.5)
+//   --bit-AiPromptInput-drop-color             frame and text of the overlay while files are
+//                                              dragged over the composer                          (default: $clr-pri)
+//   --bit-AiPromptInput-drop-background        fill of that overlay                               (default: $clr-bg-pri at 86%)
+//   --bit-AiPromptInput-menu-background        fill of the menu of commands and mentions          (default: $clr-bg-pri)
+//   --bit-AiPromptInput-menu-border-color      rule around the menu                               (default: $clr-brd-sec)
+//   --bit-AiPromptInput-menu-shadow            elevation of the menu                              (default: $box-shadow-popup)
+//   --bit-AiPromptInput-menu-max-height        height past which the menu scrolls                 (default: $siz-popup-max-height)
+//   --bit-AiPromptInput-item-hover-background  fill of the option under the pointer or the arrow
+//                                              keys                                               (default: $clr-bg-pri-hover)
+//   --bit-AiPromptInput-hint-color             color of the hint, the counter, the descriptions of
+//                                              the options and the provisional dictation          (default: $clr-fg-sec)
+//   --bit-AiPromptInput-near-limit-color       color of the counter close to the limit            (default: $clr-wrn)
+//   --bit-AiPromptInput-over-limit-color       color of the counter past the limit                (default: $clr-err)
+//   --bit-AiPromptInput-disabled-color         color of the text of a disabled composer           (default: $clr-fg-dis)
+//   --bit-AiPromptInput-disabled-background    fill of the frame of a disabled composer           (default: $clr-bg-dis)
+//
+// The buttons, the chips of the staged files and the notice of the files turned away are the core components they look
+// like, restyled through their own --bit-Button-*, --bit-Tag-* and --bit-Message-* variables and the classes/styles of
+// the composer that reach them (AttachButton, SendButton, AttachmentChip, Notice).
+
+.bit-aipri {
+    // The containing block of the overlay, the menu and the visually hidden live region.
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    font-family: $tg-font-family;
+    gap: var(--bit-AiPromptInput-gap, #{spacing(1)});
+    padding: var(--bit-AiPromptInput-padding, #{spacing(1)});
+    border-style: $shp-border-style;
+    border-width: var(--bit-AiPromptInput-border-width, #{$shp-border-width});
+    border-color: var(--bit-AiPromptInput-border-color, #{$clr-brd-pri});
+    border-radius: var(--bit-AiPromptInput-radius, #{$shp-radius-control});
+    background-color: var(--bit-AiPromptInput-background, #{$clr-bg-pri});
+    box-shadow: var(--bit-AiPromptInput-shadow, none);
+    transition: box-shadow $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing;
+
+    // The text has no frame of its own: the composer is the field, so it is the composer that shows where the focus is.
+    // The shadow is kept behind the ring as a second layer of one box-shadow list, where none is not a valid layer (it
+    // would void the whole declaration and the ring with it), so an unset shadow falls back to an empty layer instead.
+    &:focus-within {
+        @include focus-ring-own(var(--bit-AiPromptInput-focus-color), var(--bit-AiPromptInput-shadow, 0 0 transparent));
+    }
+
+    &.bit-dis {
+        border-color: $clr-brd-dis;
+        background-color: var(--bit-AiPromptInput-disabled-background, #{$clr-bg-dis});
+    }
+}
+
+// While files are dragged over the composer its frame says where they will land.
+.bit-aipri-dnd {
+    border-style: dashed;
+    border-color: var(--bit-AiPromptInput-drop-color, #{$clr-pri});
+}
+
+.bit-aipri-dro {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    border-radius: inherit;
+    font-size: $tg-fs-sm;
+    font-weight: $tg-fw-medium;
+    color: var(--bit-AiPromptInput-drop-color, #{$clr-pri});
+    background-color: var(--bit-AiPromptInput-drop-background, #{translucent($clr-bg-pri, 86%)});
+}
+
+.bit-aipri-ats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: spacing(1);
+}
+
+// A popup of the composer's own rather than a callout: the options are driven by the arrow keys while the focus stays in
+// the text, which a callout that takes the focus and the Escape for itself would get in the way of. It opens above the
+// text, where a composer at the foot of a chat has room for it.
+.bit-aipri-mnu {
+    position: absolute;
+    z-index: $zindex-callout;
+    inset-inline-start: 0;
+    bottom: calc(100% + #{spacing(1)});
+    box-sizing: border-box;
+    min-width: spacing(28);
+    max-width: 100%;
+    overflow-y: auto;
+    padding: spacing(0.5);
+    max-height: var(--bit-AiPromptInput-menu-max-height, #{$siz-popup-max-height});
+    border: $shp-border-width $shp-border-style var(--bit-AiPromptInput-menu-border-color, #{$clr-brd-sec});
+    border-radius: $shp-radius-popup;
+    background-color: var(--bit-AiPromptInput-menu-background, #{$clr-bg-pri});
+    box-shadow: var(--bit-AiPromptInput-menu-shadow, #{$box-shadow-popup});
+}
+
+// The option the arrow keys have reached and the one under the pointer are drawn alike; both move the variable the option
+// is painted from rather than its background, so an option the app paints through Classes keeps that paint.
+.bit-aipri-mit {
+    --bit-aipri-mit-bg: transparent;
+    display: flex;
+    align-items: center;
+    gap: spacing(1);
+    width: 100%;
+    margin: 0;
+    border: none;
+    cursor: pointer;
+    box-sizing: border-box;
+    text-align: start;
+    font-family: inherit;
+    font-size: $tg-fs-sm;
+    font-weight: $tg-fw-regular;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    color: var(--bit-AiPromptInput-color, #{$clr-fg-pri});
+    min-height: $siz-item-md;
+    padding: 0 spacing(1);
+    border-radius: $shp-radius-sm;
+    background-color: var(--bit-aipri-mit-bg);
+
+    @media (hover: hover) {
+        &:hover {
+            --bit-aipri-mit-bg: var(--bit-AiPromptInput-item-hover-background, #{$clr-bg-pri-hover});
+        }
+    }
+}
+
+.bit-aipri-mia {
+    --bit-aipri-mit-bg: var(--bit-AiPromptInput-item-hover-background, #{$clr-bg-pri-hover});
+}
+
+.bit-aipri-mic {
+    flex-shrink: 0;
+}
+
+// The name of an option is what is chosen, so it keeps its room and is cut short only when it alone is wider than the
+// menu; the description takes the room left beside it - none to begin with, and everything the name leaves - and is
+// the one cut short with an ellipsis, at the end of the row where it has always sat.
+.bit-aipri-mlb {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.bit-aipri-mhn {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-align: end;
+    font-size: $tg-fs-xs;
+    color: var(--bit-AiPromptInput-hint-color, #{$clr-fg-sec});
+}
+
+// One row where there is room for it. Where there is not - a narrow screen, a prefix such as a model picker taking its
+// share - the row wraps rather than squeezing the text to a sliver: the text asks for a width of its own (see
+// .bit-aipri-inp), and what does not fit beside it moves to a row of its own, the tools keeping to the end of theirs.
+.bit-aipri-bdy {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: spacing(1);
+}
+
+.bit-aipri-pre,
+.bit-aipri-tls {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: spacing(0.5);
+}
+
+.bit-aipri-tls {
+    margin-inline-start: auto;
+}
+
+.bit-aipri-inp {
+    flex: 1 1 spacing(24);
+    min-width: 0;
+    margin: 0;
+    resize: none;
+    border: none;
+    outline: none;
+    background: none;
+    overflow-y: hidden;
+    box-sizing: border-box;
+    min-height: $siz-ctrl-md;
+    padding: spacing(0.75) spacing(0.5);
+    font-family: inherit;
+    font-weight: $tg-fw-regular;
+    font-size: var(--bit-AiPromptInput-font-size, #{$tg-fs-md});
+    line-height: var(--bit-AiPromptInput-line-height, 1.5);
+    color: var(--bit-AiPromptInput-color, #{$clr-fg-pri});
+    @include input-placeholder(var(--bit-AiPromptInput-placeholder-color, #{$clr-fg-sec}));
+}
+
+.bit-aipri.bit-dis .bit-aipri-inp {
+    color: var(--bit-AiPromptInput-disabled-color, #{$clr-fg-dis});
+    @include input-placeholder(var(--bit-AiPromptInput-disabled-color, #{$clr-fg-dis}));
+}
+
+// The file input is kept for what only it can do - open the picker and hand over the files - while the attach button is
+// what is seen and focused.
+.bit-aipri-fil {
+    @include visually-hidden-control;
+}
+
+// The send arrow points the way the text runs.
+.bit-aipri-snd > .bit-btn-icn:is(:dir(rtl), .bit-aipri.bit-rtl > .bit-aipri-bdy > .bit-aipri-tls > .bit-aipri-snd > *) {
+    transform: scaleX(-1);
+}
+
+// Provisional dictation: shown under the text, in a quieter voice, until the phrase is final.
+.bit-aipri-itr {
+    padding: 0 spacing(1);
+    font-size: $tg-fs-sm;
+    font-style: italic;
+    overflow-wrap: anywhere;
+    color: var(--bit-AiPromptInput-hint-color, #{$clr-fg-sec});
+}
+
+// The hint and the character counter share one line under the text.
+.bit-aipri-ftr {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: spacing(1.5);
+    padding: 0 spacing(1);
+    font-size: $tg-fs-xs;
+    color: var(--bit-AiPromptInput-hint-color, #{$clr-fg-sec});
+}
+
+.bit-aipri-hnt {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.bit-aipri-ctr {
+    white-space: nowrap;
+    margin-inline-start: auto;
+    font-variant-numeric: tabular-nums;
+}
+
+.bit-aipri-ctn {
+    color: var(--bit-AiPromptInput-near-limit-color, #{$clr-wrn});
+}
+
+.bit-aipri-cto {
+    color: var(--bit-AiPromptInput-over-limit-color, #{$clr-err});
+}
+
+.bit-aipri-sts {
+    @include visually-hidden;
+}
+
+@media (forced-colors: active) {
+    // The fill of an option is dropped in forced colors, so the one the arrow keys have reached is outlined instead.
+    .bit-aipri-mia {
+        outline: $shp-border-width-thick solid Highlight;
+        outline-offset: calc(-1 * #{$shp-border-width-thick});
+    }
+
+    .bit-aipri-dro {
+        outline: $shp-border-width-thick dashed Highlight;
+        outline-offset: calc(-2 * #{$shp-border-width-thick});
+    }
+}
+
+@media print {
+    // The composer is a control, which a printed conversation has no use for.
+    .bit-aipri {
+        display: none;
+    }
+}

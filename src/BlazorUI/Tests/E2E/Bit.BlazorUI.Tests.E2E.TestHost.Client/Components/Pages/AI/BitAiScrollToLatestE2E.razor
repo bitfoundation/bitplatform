@@ -1,0 +1,68 @@
+﻿@page "/e2e/aiscrolltolatest"
+
+<PageTitle>BitAiScrollToLatest E2E</PageTitle>
+
+<h1>BitAiScrollToLatest</h1>
+
+@* The button floats centered above its nearest positioned ancestor, so each one is put in a positioned box with room
+   above it. *@
+<E2ESection Id="basic" Title="Basic">
+    <button id="stl-toggle" @onclick="() => _visible = !_visible">Toggle visible</button>
+    <span id="stl-clicks">@_clicks</span>
+    <div id="stl-box" style="position:relative;height:120px;margin-top:80px;width:400px;background:#eee">
+        <BitAiScrollToLatest Id="stl-basic" Visible="_visible" OnClick="() => _clicks++" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="label" Title="Label">
+    <div style="position:relative;height:60px;margin-top:80px;width:400px">
+        <BitAiScrollToLatest Id="stl-label" Visible Label="Jump to the newest" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <span id="stl-disabled-clicks">@_disabledClicks</span>
+    <span id="stl-root-clicks">@_rootClicks</span>
+    <div style="position:relative;height:60px;margin-top:80px;width:400px">
+        <BitAiScrollToLatest Id="stl-disabled" Visible Disabled OnClick="() => _disabledClicks++" HtmlAttributes="@RootClick(() => _rootClicks++)" />
+    </div>
+    <span id="stl-enabled-root-clicks">@_enabledRootClicks</span>
+    <div style="position:relative;height:60px;margin-top:80px;width:400px">
+        <BitAiScrollToLatest Id="stl-enabled" Visible HtmlAttributes="@RootClick(() => _enabledRootClicks++)" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style & Class">
+    <div id="stl-vars-box" style="position:relative;height:60px;margin-top:100px;width:400px;--bit-AiScrollToLatest-offset:20px;--bit-AiScrollToLatest-shadow:rgb(255, 0, 0) 0px 0px 0px 3px;--bit-AiScrollToLatest-z-index:7">
+        <BitAiScrollToLatest Id="stl-var" Visible />
+    </div>
+    <div style="position:relative;height:60px;margin-top:80px;width:400px">
+        <BitAiScrollToLatest Id="stl-classes"
+                             Visible
+                             Class="e2e-stl-root"
+                             Styles="@(new() { Button = new() { Root = "outline: 2px solid rgb(5, 4, 3)" } })"
+                             Classes="@(new() { Button = new() { Root = "e2e-stl-button", Icon = "e2e-stl-icon" } })" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div id="stl-rtl-box" dir="rtl" style="position:relative;height:60px;margin-top:80px;width:400px">
+        <BitAiScrollToLatest Id="stl-rtl" Visible Dir="BitDir.Rtl" />
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private bool _visible;
+    private int _clicks;
+    private int _disabledClicks;
+    private int _rootClicks;
+    private int _enabledRootClicks;
+
+    // A click handler of the page's own on the root: the OnClick parameter takes the name @onclick would be given.
+    private Dictionary<string, object> RootClick(Action handler) => new()
+    {
+        ["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, handler),
+    };
+}

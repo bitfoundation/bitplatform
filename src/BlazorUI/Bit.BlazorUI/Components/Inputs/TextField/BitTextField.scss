@@ -117,7 +117,10 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
     --bit-tfl-dur: #{mot-scaled-duration(var(--bit-TextField-transition-duration, #{$mot-duration-short}))};
 
     &.bit-dis {
-        .bit-tfl-cnt {
+        // The footer under the frame goes grey with the field: a description left at full contrast under a greyed
+        // out input reads as if it still described something the user can fill in.
+        .bit-tfl-cnt,
+        .bit-tfl-des span {
             color: var(--bit-TextField-disabled-color, #{$clr-fg-dis});
         }
 

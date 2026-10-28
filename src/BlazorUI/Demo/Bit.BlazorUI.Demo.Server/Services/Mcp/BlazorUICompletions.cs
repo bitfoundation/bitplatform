@@ -7,7 +7,7 @@ namespace Bit.BlazorUI.Demo.Server.Services.Mcp;
 /// resource template, filtered by what has been typed so far.
 /// <para>
 /// Every one of those arguments is drawn from a closed set this server already holds - four hosting
-/// models, 110 component names, the public type names, the theming reference's own chapters - and
+/// models, 150 component names, the public type names, the theming reference's own chapters - and
 /// without this handler a client has no way to learn any of them except by calling a tool and
 /// reading it. That is fine for an agent and useless for the person picking "build a screen" out of
 /// a menu in their editor. The sets come from the same catalogs the tools answer from, so a

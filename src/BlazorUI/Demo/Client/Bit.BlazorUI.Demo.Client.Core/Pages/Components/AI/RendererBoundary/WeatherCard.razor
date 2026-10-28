@@ -1,0 +1,31 @@
+﻿@using System.Text.Json
+
+@* A custom renderer of the AiRendererBoundary demo: written for one shape of model output, and for nothing else. *@
+<div class="weather-card">
+    <BitIcon IconName="@BitIconName.Sunny" />
+    <div>
+        <div class="weather-card-city">@city</div>
+        <div>@degrees °C, @condition</div>
+    </div>
+</div>
+
+@code {
+    /// <summary>The forecast a model produced, as JSON.</summary>
+    [Parameter, EditorRequired] public string Json { get; set; } = default!;
+
+    private string? city;
+    private int degrees;
+    private string? condition;
+
+    // Written for the complete shape only: a partial payload, or one without a field, throws here - which is the
+    // failure a BitAiRendererBoundary around the card contains.
+    protected override void OnParametersSet()
+    {
+        using var document = JsonDocument.Parse(Json);
+        var root = document.RootElement;
+
+        city = root.GetProperty("city").GetString();
+        degrees = root.GetProperty("degrees").GetInt32();
+        condition = root.GetProperty("condition").GetString();
+    }
+}

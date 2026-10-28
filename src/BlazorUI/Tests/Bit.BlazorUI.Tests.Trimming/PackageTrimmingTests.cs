@@ -11,7 +11,7 @@ namespace Bit.BlazorUI.Tests.Trimming;
 /// the task loading from the package, and the SDK paths a ProjectReference never takes.
 /// </summary>
 /// <remarks>
-/// Opt-in (RUN_PACKAGE_TESTS=1): it packs four multi-targeted packages and publishes four apps, which restores the
+/// Opt-in (RUN_PACKAGE_TESTS=1): it packs five multi-targeted packages and publishes four apps, which restores the
 /// WebAssembly toolchain of the SDK from nuget.org. The packages go into the machine's NuGet cache under a version of
 /// their own (99.0.0-trimming.*), which <c>dotnet nuget locals global-packages --clear</c> takes back out.
 /// </remarks>
@@ -40,8 +40,8 @@ public sealed partial class PackageTrimmingTests
 
         var published = new PublishResult(Path.Combine(app, "publish"), result.ExitCode, result.Output);
 
-        // The app renders BitButton and BitDropdown, and nothing of the Extras: only their stylesheets, and the scripts
-        // they reach, are in the bundles the package's pieces are put back together into.
+        // The app renders BitButton and BitDropdown, and nothing of the Extras or the AI package: only their stylesheets,
+        // and the scripts they reach, are in the bundles the package's pieces are put back together into.
         if (shape == "web-lazy")
         {
             // The lazy scripts: the modules the app can reach and the initializers Blazor imports, no script bundle.
@@ -51,6 +51,7 @@ public sealed partial class PackageTrimmingTests
             Assert.IsTrue(published.ListedInitializers().Any(i => i.StartsWith("_content/Bit.BlazorUI/scripts/Bit.BlazorUI.", StringComparison.Ordinal)),
                           $"A lazy app does not list the core's initializer: {string.Join(", ", published.ListedInitializers())}");
             CollectionAssert.IsSubsetOf(new[] { "BitButton", "BitDropdown" }, published.KeptStyles("Bit.BlazorUI"));
+            Assert.AreEqual(0, published.PublishedModules("Bit.BlazorUI.AI").Count, $"A lazy app published AI modules it never calls: {string.Join(", ", published.PublishedModules("Bit.BlazorUI.AI"))}");
             return;
         }
 
@@ -65,6 +66,8 @@ public sealed partial class PackageTrimmingTests
         CollectionAssert.Contains(published.KeptScripts("Bit.BlazorUI"), "Callouts");
         CollectionAssert.DoesNotContain(published.KeptScripts("Bit.BlazorUI"), "BitScrollablePane");
         Assert.AreEqual(0, published.KeptStyles("Bit.BlazorUI.Extras").Count(s => s != "BitErrorBoundary"));
+        Assert.AreEqual(0, published.KeptStyles("Bit.BlazorUI.AI").Count, $"The AI stylesheet keeps {string.Join(", ", published.KeptStyles("Bit.BlazorUI.AI"))}");
+        Assert.AreEqual(0, published.KeptScripts("Bit.BlazorUI.AI").Count, $"The AI script keeps {string.Join(", ", published.KeptScripts("Bit.BlazorUI.AI"))}");
 
         published.AssertScriptsAreThePiecesInOrder("Bit.BlazorUI");
         published.AssertStylesAreThePiecesInOrder("Bit.BlazorUI");
@@ -115,7 +118,7 @@ public sealed partial class PackageTrimmingTests
 
         // Built, then packed without building, the way a release is: a pack that builds a multi-targeted package on its own
         // can reach for an inner build's output before it is written.
-        foreach (var package in new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Legacy", "Bit.BlazorUI.Icons" })
+        foreach (var package in new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.AI", "Bit.BlazorUI.Legacy", "Bit.BlazorUI.Icons" })
         {
             var project = Path.Combine(Publisher.Root, package, $"{package}.csproj");
 
@@ -158,6 +161,7 @@ public sealed partial class PackageTrimmingTests
         var packages = $"""
                 <PackageReference Include="Bit.BlazorUI" Version="{version}" />
                 <PackageReference Include="Bit.BlazorUI.Extras" Version="{version}" />
+                <PackageReference Include="Bit.BlazorUI.AI" Version="{version}" />
                 <PackageReference Include="Bit.BlazorUI.Icons" Version="{version}" />
             """;
 

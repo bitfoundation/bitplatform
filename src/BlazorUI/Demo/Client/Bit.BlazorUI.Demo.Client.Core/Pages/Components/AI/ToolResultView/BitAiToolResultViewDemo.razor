@@ -1,0 +1,148 @@
+﻿@page "/components/ai/toolresultview"
+
+<PageOutlet Url="components/ai/toolresultview"
+            Title="AiToolResultView"
+            Description="BitAiToolResultView shows a tool result carried as a message part of its own - as text, as a JSON tree, or as a compact error." />
+
+<DemoPage Name="AiToolResultView"
+          Description="BitAiToolResultView shows a tool result carried on its own (a BitAiToolResultPart) rather than on the call it answers - a conversation imported from a store that keeps each result as a message of its own: a card headed by the tool's name, with the result as it was written, as a JSON tree when it is structured, or as a compact error when it failed. A result streamed in by a transport always goes to its call and is shown by the BitAiToolCallView of that call."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="ToolResultView/BitAiToolResultView.razor"
+          GitHubDemoUrl="AI/ToolResultView/BitAiToolResultViewDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            A tool result a transport streams in always goes to the <BitLink Href="/components/ai/toolcallview">BitAiToolCallView</BitLink>
+            of its call, matched by <b>ToolCallId</b>: the stream processor holds a result that arrives ahead of its call until the call starts,
+            and drops one whose call never does (<b>BitAiChatSessionOptions.ToolResultHoldTime</b>, ten seconds by default) with an error part on
+            the message. This view is for a result carried on its own - a part of the <b>tool-result</b> kind an app adds itself, for a
+            conversation imported from a store that keeps each result as a message of its own - and <b>BitAiMessagePartView</b> renders it
+            for such a part. The result is the tool's: it is shown as text and as a JSON tree, never as markup. See the
+            <BitLink Href="/ai/scenarios/tools">Tools</BitLink> scenario.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Hand it the <b>Part</b> (a <b>BitAiToolResultPart</b>). The card is headed by the <b>ToolName</b> of the part, as it is written
+                (no tool definition is read for it), under the wrench of a tool; a result that carries <b>Text</b> is shown as it was written - its
+                line breaks kept, a long token wrapped. <b>Text</b> wins over a <b>Value</b> the outcome carries as well.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiToolResultView Part="textResult" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Structured result" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                A result that carries only a <b>Value</b> is shown as a <BitLink Href="/components/ai/jsonview">BitAiJsonView</BitLink> tree.
+                Without a <b>ToolName</b>, the card is headed <b>Result</b> (the <b>BitAiStrings.Result</b> of the options in force).
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiToolResultView Part="jsonResult" />
+                <BitAiToolResultView Part="unnamedResult" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Failure" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                A failed result (<b>BitAiToolOutcome.Failure</b>) is shown as a compact
+                <BitLink Href="/components/ai/errorview">BitAiErrorView</BitLink>, titled by its message, with its detail behind a disclosure.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiToolResultView Part="failedResult" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="In a message" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                In a conversation the part is one of the parts of an assistant message, and
+                <BitLink Href="/components/ai/messagepartview">BitAiMessagePartView</BitLink> renders it with this view, like any other part.
+            </div>
+            <br />
+            <div class="example-stack">
+                @foreach (var part in resultMessage.Parts)
+                {
+                    <BitAiMessagePartView @key="part.PartId" Part="part" Message="resultMessage" />
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>BitParams</b> with a <b>BitAiToolResultViewParams</b> sets the defaults of every result view inside it - here a dashed outline
+                and an italic title - the ones a <b>BitAiMessagePartView</b> renders included. It is a default, not an override: a view keeps what
+                it sets itself (the last one brings its own <b>Styles</b>). The part itself is never cascaded.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitParams Parameters="resultViewParams">
+                    <BitAiToolResultView Part="textResult" />
+                    <BitAiToolResultView Part="failedResult" />
+                    <BitAiToolResultView Part="jsonResult" Styles="@(new() { Root = "border-style: solid", Title = "font-weight: bold" })" />
+                </BitParams>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>Style</b> and <b>Class</b> land on the root, <b>Styles</b> and <b>Classes</b> on the header, its icon and title, the body and
+                a textual result. The public <b>--bit-AiToolResultView-*</b> variables (see the CSS variables table) inherit, so a container
+                restyles every card under it.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiToolResultView Part="textResult" Style="box-shadow: 0 0.25rem 1rem #0003" />
+
+                <BitAiToolResultView Part="textResult" Class="custom-result" />
+
+                <BitAiToolResultView Part="textResult"
+                                     Styles="@(new() { Icon = "color: #0b7a75",
+                                                       Title = "font-style: italic",
+                                                       Text = "font-family: inherit" })" />
+
+                <BitAiToolResultView Part="textResult"
+                                     Classes="@(new() { Header = "custom-result-header",
+                                                        Body = "custom-result-body" })" />
+
+                <div style="--bit-AiToolResultView-background: var(--bit-clr-suc-tint); --bit-AiToolResultView-border-color: var(--bit-clr-suc); --bit-AiToolResultView-header-color: var(--bit-clr-suc-fg); --bit-AiToolResultView-body-background: transparent; --bit-AiToolResultView-radius: 1rem;">
+                    <BitAiToolResultView Part="jsonResult" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                In right-to-left text the card is laid out from the right - the icon leads the title on the right, and the result reads from it -
+                whether the direction comes from <b>Dir</b> or from a <b>dir</b> attribute around the card. The heading of a result with no
+                <b>ToolName</b> is the <b>Result</b> text of the <b>BitAiStrings</b> in force - here a subclass of them, cascaded by a
+                <b>BitAiOptionsProvider</b>.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiToolResultView Dir="BitDir.Rtl" Part="rtlResult" />
+                <BitAiOptionsProvider UiOptions="persianOptions">
+                    <div dir="rtl">
+                        <BitAiToolResultView Part="rtlUnnamedResult" />
+                    </div>
+                </BitAiOptionsProvider>
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

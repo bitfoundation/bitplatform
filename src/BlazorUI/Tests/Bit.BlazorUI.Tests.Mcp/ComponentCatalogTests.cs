@@ -42,7 +42,7 @@ public class ComponentCatalogTests : McpTestBase
         Assert.IsGreaterThan(90, names.Length, "The catalog lost components.");
         Assert.AreEqual(names.Length, names.Distinct(StringComparer.Ordinal).Count(), "The catalog lists a component twice.");
 
-        foreach (var category in new[] { "Buttons", "Inputs", "Layouts", "Lists", "Navs", "Notifications", "Progress", "Surfaces", "Utilities", "Extras", "Legacy" })
+        foreach (var category in new[] { "Buttons", "Inputs", "Layouts", "Lists", "Navs", "Notifications", "Progress", "Surfaces", "Utilities", "Extras", "AI", "Legacy" })
         {
             StringAssert.Contains(catalog, $"## {category}", $"The catalog has no {category} section.");
         }
@@ -50,6 +50,7 @@ public class ComponentCatalogTests : McpTestBase
         // The package is the fact about a component that its own signature does not carry, and the
         // one whose absence produces a build error nobody can explain.
         StringAssert.Contains(catalog, "Bit.BlazorUI.Extras");
+        StringAssert.Contains(catalog, "Bit.BlazorUI.AI");
         StringAssert.Contains(catalog, "Bit.BlazorUI.Legacy");
 
         // The shared parameters are documented once and pointed at, rather than repeated on each of
@@ -233,16 +234,18 @@ public class ComponentCatalogTests : McpTestBase
     }
 
     [TestMethod]
-    public async Task A_component_from_an_optional_package_says_what_that_package_needs()
+    [DataRow("BitChart", "Bit.BlazorUI.Extras", "AddBitBlazorUIExtrasServices()", "bit.blazorui.extras.css", "bit.blazorui.extras.js")]
+    [DataRow("BitAiChat", "Bit.BlazorUI.AI", "AddBitBlazorUIAIServices(", "bit.blazorui.ai.css", "bit.blazorui.ai.js")]
+    public async Task A_component_from_an_optional_package_says_what_that_package_needs(string component, string package, string registration, string stylesheet, string script)
     {
-        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitChart" });
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = component });
 
         using var scope = Assert.Scope();
 
-        StringAssert.Contains(answer, "Bit.BlazorUI.Extras");
-        StringAssert.Contains(answer, "AddBitBlazorUIExtrasServices()");
-        StringAssert.Contains(answer, "bit.blazorui.extras.css");
-        StringAssert.Contains(answer, "bit.blazorui.extras.js");
+        StringAssert.Contains(answer, package);
+        StringAssert.Contains(answer, registration);
+        StringAssert.Contains(answer, stylesheet);
+        StringAssert.Contains(answer, script);
 
         // The core package needs no such line: every app that uses the library at all has it.
         var core = await CallAsync("GetBitBlazorUIComponent", new { name = "BitButton" });

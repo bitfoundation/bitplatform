@@ -6,7 +6,7 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// Whether a component renders what a visitor has already been shown by a prerender. A prerender (and a static SSR
-/// page) is told apart by its JS runtime, which cannot be called yet; the interactive render that replaces it cannot
+/// page) is told apart by its renderer, which is not an interactive one; the interactive render that replaces it cannot
 /// tell on its own, so the prerender has the page carry that over in its <see cref="PersistentComponentState"/>. A
 /// component that hands something over from the browser at its first render (an image the browser was already
 /// painting) does so only then, and a page that was never prerendered costs it nothing.
@@ -26,9 +26,11 @@ internal static class BitPrerender
     /// started, since the persisted entry can be taken only once and a page reached later through an enhanced
     /// navigation is prerendered again - what it costs a page that was not is one look at the browser per component.
     /// </summary>
-    internal static bool IsHandOver(IServiceProvider services, IJSRuntime js)
+    /// <param name="services">The services of the component, which hold the state of the page.</param>
+    /// <param name="staticRender">Whether the component is rendered statically (<see cref="BitComponentBase.IsStaticRender"/>).</param>
+    internal static bool IsHandOver(IServiceProvider services, bool staticRender)
     {
-        if (js.IsRuntimeInvalid())
+        if (staticRender)
         {
             CarryOver(services);
 

@@ -1,0 +1,33 @@
+﻿// The wrappers are written in this page, so they carry the scope attribute themselves and are styled without ::deep.
+.example-stack {
+    gap: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+// The reply area keeps its height while the indicator gives way to the answer, so nothing under it jumps.
+.example-reply {
+    min-height: 3rem;
+    max-width: 36rem;
+}
+
+::deep {
+    .custom-thinking {
+        color: #fff;
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        background-color: #0b7a75;
+        --bit-Loading-color: #fff;
+    }
+
+    .custom-thinking-root {
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
+
+    .custom-thinking-label {
+        color: #b45309;
+        font-weight: bold;
+    }
+}

@@ -16,6 +16,7 @@
         <p>Field: <span id="v-field">@_field</span></p>
         <p>Nav open: <span id="v-npn">@(_npnOpen ? "open" : "closed")</span></p>
         <p>Full-screen: <span id="v-fs">@(_mdeFullScreen ? "on" : "off")</span></p>
+        <p>AI turn: <span id="v-ai-turn">@(_aiGenerating ? "generating" : "stopped")</span></p>
         <p>Status: <span id="status">@_status</span></p>
     </div>
 </div>
@@ -102,6 +103,19 @@
     private readonly BitCalendarEvent[] _calEvents =
         [new() { Title = "Standup", Body = "Daily", Date = DateOnly.FromDateTime(DateTime.Today), StartTime = new TimeOnly(9, 0) }];
 
+    // BitAiArtifactView, BitAiPromptInput
+    private readonly BitAiArtifact _aiArtifact = AiArtifact();
+    private readonly List<BitAiSlashCommand> _aiCommands = [new("summarize", "Summarize the conversation"), new("translate", "Translate the last answer")];
+    private bool _aiGenerating = true;
+
+    private static BitAiArtifact AiArtifact()
+    {
+        var artifact = new BitAiConversation().GetOrAddArtifact("a1", BitAiArtifactKind.Document, "README");
+        artifact.SetContent("# Hello");
+        artifact.Complete();
+        return artifact;
+    }
+
     // BitSnackBar
     private BitSnackBar _snackBar = default!;
 
@@ -181,6 +195,21 @@
 
             case "cal":
                 <BitCalendar ShowMonthPickerAsOverlay ShowTimePicker ShowTimePickerAsOverlay Events="_calEvents" />
+                break;
+
+            case "aiatv":
+                @* BitAiArtifactView: Escape collapses the full-screen panel. *@
+                <BitAiArtifactView Artifact="_aiArtifact" />
+                break;
+
+            case "aipri":
+                @* BitAiPromptInput: Escape closes the slash menu, which typing "/" opens. *@
+                <BitAiPromptInput Commands="_aiCommands" />
+                break;
+
+            case "aipri-busy":
+                @* BitAiPromptInput: Escape stops the turn in flight. *@
+                <BitAiPromptInput Generating="_aiGenerating" OnStop="() => _aiGenerating = false" />
                 break;
 
             case "snb":

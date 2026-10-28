@@ -1,0 +1,173 @@
+﻿@page "/components/ai/imagepartview"
+
+<PageOutlet Url="components/ai/imagepartview"
+            Title="AiImagePartView"
+            Description="BitAiImagePartView shows an image part of an AI message - one a model generated or a tool returned - lazily loaded, at its intrinsic size, with its caption." />
+
+<DemoPage Name="AiImagePartView"
+          Description="BitAiImagePartView shows an image part of a message - one a model generated or a tool returned - in a figure with its caption. It declares the intrinsic size of the image where the part knows it, so the message list does not jump as the image decodes, and loads it lazily, so a long transcript only fetches the images that scroll into view. The alternative text of the part is the accessible name of the image. Like the images of Markdown, it follows the image policy of the options: an image the policy holds back is a button that loads it, and one it blocks is its alternative text."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="ImagePartView/BitAiImagePartView.razor"
+          GitHubDemoUrl="AI/ImagePartView/BitAiImagePartViewDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            A chat renders it for every <b>BitAiImagePart</b> of a message (through
+            <BitLink Href="/components/ai/messagepartview">BitAiMessagePartView</BitLink>); render it yourself to show an image part
+            anywhere else. It needs no chat session, only the part. A chat session adds an image part to the answer for every
+            <b>BitAiImageEvent</b> its transport sends - its <b>Url</b>, <b>Alt</b>, <b>Width</b> and <b>Height</b> become those of
+            the part (a caption is set on the part by the app). A model will not always describe the
+            image it returns: ask for an alternative text in the prompt or supply one, since without it the image is marked
+            decorative and a screen reader skips it.
+        </BitText>
+        <br />
+        <BitText>
+            The image follows the image policy of the options (<b>BitAiUiOptions.Images</b>, a
+            <BitLink Href="/components/ai/markdownview#image-policy">BitAiImagePolicy</BitLink>), as the images written inside
+            Markdown do: one the policy loads only on request is a placeholder that loads it on click, and one it blocks is replaced
+            by its alternative text. A relative URL is resolved against the base address of the document before the policy is
+            asked, so listing the app's own host with <b>AllowListedHosts</b> shows its images; a URL of a scheme that can run
+            script is never loaded, whatever the policy.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                <b>Part</b> is the <b>BitAiImagePart</b> to show: its <b>Url</b> (absolute, relative or a data URL), its <b>Alt</b>
+                text and, where known, its intrinsic <b>Width</b> and <b>Height</b>, which reserve the room the image takes before it
+                has loaded. It is never wider than its container, and its height follows its width.
+            </div>
+            <br />
+            <BitAiImagePartView Part="auroraImage" />
+        </DemoExample>
+
+        <DemoExample Title="Caption" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                A <b>Caption</b> of the part is rendered under the image as the caption of its figure.
+            </div>
+            <br />
+            <BitAiImagePartView Part="mountainImage" />
+        </DemoExample>
+
+        <DemoExample Title="Decorative image" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                A part without an <b>Alt</b> renders an empty alternative text, which marks the image decorative: assistive
+                technologies skip it. Without a <b>Width</b> and a <b>Height</b> the room for the image is only known once it has
+                loaded.
+            </div>
+            <br />
+            <BitAiImagePartView Part="decorativeImage" />
+        </DemoExample>
+
+        <DemoExample Title="Data URL" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                A generated image often arrives inline, as a <b>data:</b> URL - an image a tool drew or a model returned as base64 -
+                and is shown like any other, with no request made for it. Since nothing is fetched, the image policy shows it under
+                every mode but <b>Block</b>, unless its <b>AllowDataImages</b> is turned off.
+            </div>
+            <br />
+            <BitAiImagePartView Part="chartImage" />
+        </DemoExample>
+
+        <DemoExample Title="Image policy" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                The image follows <b>BitAiUiOptions.Images</b>, the
+                <BitLink Href="/components/ai/markdownview#image-policy">BitAiImagePolicy</BitLink> the images of Markdown follow
+                too, cascaded here by a <BitLink Href="/components/ai/optionsprovider">BitAiOptionsProvider</BitLink>. Under
+                <b>ClickToLoad</b> (the first) nothing is fetched until the reader presses the placeholder, a button named after the
+                <b>Alt</b> of the part that hands the focus on to the image it loads; under <b>Block</b> (the second) the alternative text stands in for the image. The caption is
+                shown either way. A relative URL, like this one, is resolved against the base address of the page before the policy
+                is asked, so <b>AllowListedHosts</b> with the app's own host shows it.
+            </div>
+            <br />
+            <BitAiOptionsProvider UiOptions="clickToLoadOptions">
+                <BitAiImagePartView Part="policyImage" />
+            </BitAiOptionsProvider>
+            <br />
+            <BitAiOptionsProvider UiOptions="blockOptions">
+                <BitAiImagePartView Part="policyImage" />
+            </BitAiOptionsProvider>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>BitParams</b> with a <b>BitAiImagePartViewParams</b> sets the look of every image part view inside it - inside a chat,
+                the images of every message. Which images are loaded is not one of them: that is the image policy of the AI options.
+                It is a default, not an override: a view keeps what it sets itself (the second one sets <b>Styles</b> of its own,
+                which replace the cascaded ones).
+            </div>
+            <br />
+            <BitParams Parameters="imagePartViewParams">
+                <BitAiImagePartView Part="mountainImage" />
+                <br />
+                <BitAiImagePartView Part="chartImage" Styles="@(new() { Caption = "font-weight: bold;" })" />
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root figure, <b>Styles</b> and <b>Classes</b> its <b>Image</b> and its
+                <b>Caption</b> - and <b>ImagePlaceholder</b> and <b>BlockedImage</b>, what stands in for an image the policy holds
+                back (the last two, under the <b>ClickToLoad</b> and <b>Block</b> options of the Image policy example). The public
+                <b>--bit-AiImagePartView-*</b> variables (see the CSS variables table) restyle every image part view under the element
+                they are set on.
+            </div>
+            <br />
+            <div class="example-content">
+                @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+                <BitAiImagePartView Part="styledImage" Style="max-width: 18rem; padding: 0.5rem; border: 1px dashed dodgerblue;" />
+
+                <BitAiImagePartView Part="styledImage" Class="custom-class" />
+
+                <BitAiImagePartView Part="styledImage"
+                                    Styles="@(new() { Root = "max-width: 18rem;",
+                                                      Image = "filter: grayscale(1);",
+                                                      Caption = "text-align: center; font-weight: bold;" })" />
+
+                <BitAiImagePartView Part="styledImage"
+                                    Classes="@(new() { Root = "custom-root", Image = "custom-image", Caption = "custom-caption" })" />
+
+                <div style="max-width: 18rem; --bit-AiImagePartView-radius: 2rem; --bit-AiImagePartView-caption-color: mediumseagreen; --bit-AiImagePartView-caption-font-size: 1rem;">
+                    <BitAiImagePartView Part="styledImage" />
+                </div>
+
+                <BitAiOptionsProvider UiOptions="clickToLoadOptions">
+                    <BitAiImagePartView Part="styledImage"
+                                        Styles="@(new() { ImagePlaceholder = new() { Root = "border: 1px dashed dodgerblue; border-radius: 1rem;" } })" />
+                </BitAiOptionsProvider>
+
+                <BitAiOptionsProvider UiOptions="blockOptions">
+                    <div style="max-width: 18rem; --bit-AiImagePartView-muted-color: tomato;">
+                        <BitAiImagePartView Part="styledImage" Styles="@(new() { BlockedImage = "font-style: normal;" })" />
+                    </div>
+                </BitAiOptionsProvider>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                In right-to-left text the caption is set from the right, whether the direction comes from <b>Dir</b> or from a
+                <b>dir</b> attribute around the figure.
+            </div>
+            <br />
+            <BitAiImagePartView Dir="BitDir.Rtl" Part="rtlImage" />
+            <br />
+            <div dir="rtl">
+                <BitAiImagePartView Part="rtlImage" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

@@ -1,0 +1,235 @@
+﻿@page "/components/ai/codeblockview"
+@implements IAsyncDisposable
+
+<PageOutlet Url="components/ai/codeblockview"
+            Title="AiCodeBlockView"
+            Description="BitAiCodeBlockView shows a block of code an AI model wrote: a header with its language or file name and a copy button, syntax highlighting in the colors of the theme, and line numbers." />
+
+<DemoPage Name="AiCodeBlockView"
+          SecondaryNames="@(["CodeBlock"])"
+          Description="BitAiCodeBlockView shows a block of code with a header naming its language or file, a copy button, and syntax highlighting for fifteen languages and their aliases out of the box. Highlighting is deferred while the block is still streaming - colors that shift as the lexer changes its mind about an unterminated string are worse than none - and applied once, the moment the block is complete. Every token kind is painted with a role color of the theme and restyled through a public CSS variable of its own. Every fenced code block of a BitAiMarkdownView is one, unless the app registered a renderer of its own for its language."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="CodeBlockView/BitAiCodeBlockView.razor"
+          GitHubDemoUrl="AI/CodeBlockView/BitAiCodeBlockViewDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page. The copy button writes to the clipboard from the
+            package's script.
+        </BitText>
+        <br />
+        <BitText>
+            It needs no chat session. The highlighter is a lexical one written in C#, so it runs in every render mode with no
+            script of its own and never fails on half-written code; the code is rendered as text, never as markup, so whatever
+            a model writes in it stays inert. Copying takes the code exactly as it is - the line numbers are generated content
+            and are never part of it. <b>BitAiUiOptions.ShowCodeCopy</b> and <b>BitAiUiOptions.ShowLineNumbers</b> turn the copy
+            button and the line numbers on and off for every block at once (see <BitLink Href="/components/ai/optionsprovider">AiOptionsProvider</BitLink>).
+            Accessibility: the code scrolls sideways in a group named after the file or the language (<b>BitAiStrings.CodeBlock</b>,
+            "csharp code"), which takes the keyboard focus while it has something to scroll, so a long line can be read without a
+            pointer; and the code is laid out left to right in right-to-left text too, so its punctuation stays where it was
+            written. See it at work in the <BitLink Href="/ai/scenarios/streaming">Streaming</BitLink> and
+            <BitLink Href="/ai/scenarios/artifacts">Artifacts</BitLink> scenarios.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                <b>Code</b> is the source and <b>Language</b> the identifier that picks a highlighter, also shown in the header beside
+                the copy button. Without a language the header says <b>text</b> and the code is not colored.
+            </div>
+            <br />
+            <BitAiCodeBlockView Language="csharp" Code="@csharpCode" />
+            <br />
+            <BitAiCodeBlockView Code="A block with no language is plain text." />
+        </DemoExample>
+
+        <DemoExample Title="File name" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                <b>FileName</b> is shown in the header in place of the language, which still picks the highlighter.
+            </div>
+            <br />
+            <BitAiCodeBlockView FileName="appsettings.json" Language="json" Code="@jsonCode" />
+        </DemoExample>
+
+        <DemoExample Title="Header" RazorCode="@example3RazorCode" Id="example3">
+            <div>
+                <b>ShowHeader</b> set to false leaves the header bar out - and the copy button with it - for a block that is only
+                read.
+            </div>
+            <br />
+            <BitAiCodeBlockView ShowHeader="false" Language="bash" Code="dotnet add package Bit.BlazorUI.AI" />
+        </DemoExample>
+
+        <DemoExample Title="Streaming" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                While <b>IsStreaming</b> is true the code is shown as plain text, however much of it has arrived; it is highlighted
+                once, the moment <b>IsStreaming</b> turns false. A BitAiMarkdownView sets it while the closing fence of a block has
+                not arrived yet.
+            </div>
+            <br />
+            <BitButton OnClick="StreamAsync" Disabled="isStreaming" IconName="@BitIconName.Play">Stream the code</BitButton>
+            <br /><br />
+            <BitAiCodeBlockView Language="python" Code="@streamedCode" IsStreaming="isStreaming" />
+        </DemoExample>
+
+        <DemoExample Title="Line numbers & copy" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>ShowLineNumbers</b> of the AI options numbers every line of every block, and <b>ShowCodeCopy</b> (on by default)
+                shows the copy button: a <b>BitAiOptionsProvider</b> sets them for a region. The numbers sit in a gutter of their
+                own and are never copied or selected with the code.
+            </div>
+            <br />
+            <BitToggle @bind-Value="showLineNumbers" Text="ShowLineNumbers" />
+            <BitToggle @bind-Value="showCodeCopy" Text="ShowCodeCopy" />
+            <BitAiOptionsProvider UiOptions="@codeOptions">
+                <BitAiCodeBlockView Language="csharp" Code="@csharpCode" />
+            </BitAiOptionsProvider>
+        </DemoExample>
+
+        <DemoExample Title="Languages" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                Fifteen languages are highlighted out of the box (<b>BitAiBuiltInLanguages</b>), each also under its aliases - the
+                names models write in their fences, matched without regard to case: <b>cs</b> is C#, <b>ts</b> is highlighted as
+                JavaScript, <b>xml</b> and <b>razor</b> as HTML, <b>kotlin</b> as Java, <b>ini</b> as TOML. A language that is not
+                registered renders as plain text, which is still correct, only not colored.
+            </div>
+            <br />
+            <BitDropdown Label="Language" Items="languageItems" @bind-Value="selectedLanguage" Style="max-width: 16rem;" />
+            <br />
+            <div>Aliases: <b>@SelectedAliases</b></div>
+            <br />
+            <BitAiCodeBlockView Language="@selectedLanguage" Code="@SelectedSample" />
+        </DemoExample>
+
+        <DemoExample Title="Custom language" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <b>BitAiLanguageRegistry.Register</b> adds a language - or replaces a built-in one, under all of its aliases - from
+                a <b>BitAiLanguageDefinition</b>: a lexical description (keywords, types, constants, comments, strings and a few
+                switches) rather than a grammar. Register once, at startup; this page registers GraphQL as it initializes.
+            </div>
+            <br />
+            <BitAiCodeBlockView Language="graphql" Code="@graphQlCode" />
+        </DemoExample>
+
+        <DemoExample Title="Token colors" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                Each kind of token (<BitLink Href="#token-kind-enum">BitAiTokenKind</BitLink>) is painted with a role color of the
+                theme - its <b>-fg</b> shade, legible on the page in both color schemes and in every preset - or a neutral text color,
+                and has a public variable of its own: keywords <b>--bit-AiCodeBlockView-keyword-color</b>, types <b>-type-color</b>,
+                strings <b>-string-color</b>, numbers <b>-number-color</b>, comments <b>-comment-color</b>, functions
+                <b>-function-color</b>, operators <b>-operator-color</b>, punctuation <b>-punctuation-color</b>, properties
+                <b>-property-color</b>, tags <b>-tag-color</b>, attributes <b>-attribute-color</b>, constants <b>-constant-color</b>,
+                diff lines <b>-inserted-color</b>, <b>-deleted-color</b> and <b>-meta-color</b>, labels <b>-label-color</b> and
+                variables <b>-variable-color</b>. Set them on any ancestor to give every block a palette of your own.
+            </div>
+            <br />
+            <BitToggle @bind-Value="customPalette" Text="A palette of my own" />
+            <div style="@(customPalette ? paletteStyle : null)">
+                <BitAiCodeBlockView Language="csharp" Code="@tokenCsharpCode" />
+                <br />
+                <BitAiCodeBlockView Language="html" Code="@tokenHtmlCode" />
+                <br />
+                <BitAiCodeBlockView Language="json" Code="@tokenJsonCode" />
+                <br />
+                <BitAiCodeBlockView Language="diff" Code="@tokenDiffCode" />
+                <br />
+                <BitAiCodeBlockView Language="rust" Code="@tokenRustCode" />
+                <br />
+                <BitAiCodeBlockView Language="powershell" Code="@tokenPowerShellCode" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Highlighter" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                <b>BitAiSyntaxHighlighter.Highlight</b> is the highlighter the code block uses, for an app that colors code anywhere
+                else. It returns the tokens of the code in the language registered under a name - a <b>BitAiCodeToken</b> each, its
+                <b>Kind</b> with the <b>Start</b> and the <b>Length</b> of its text - in order and never overlapping; the text between
+                them is plain, and a language that is not registered returns none. <b>Slice</b> reads the text of a token back from
+                the code. Edit the code and watch its tokens follow.
+            </div>
+            <br />
+            <BitTextField @bind-Value="highlighterCode" Immediate Label="C# code" />
+            <br />
+            <BitAiCodeBlockView Language="csharp" Code="@(highlighterCode ?? string.Empty)" />
+            <br />
+            <div style="display:flex;flex-wrap:wrap;gap:0.5rem">
+                @foreach (var token in BitAiSyntaxHighlighter.Highlight(highlighterCode, "csharp"))
+                {
+                    <span style="padding:0.125rem 0.5rem;border-radius:0.25rem;background-color:var(--bit-clr-bg-sec)">
+                        <b>@token.Kind</b> <code>@(token.Slice(highlighterCode!).ToString())</code>
+                    </span>
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example10RazorCode" Id="example10">
+            <div>
+                A <b>Disabled</b> code block still shows its code, highlighted as ever, and disables its copy button with it: nothing
+                is copied from the header. The code itself can still be selected.
+            </div>
+            <br />
+            <BitAiCodeBlockView Disabled Language="bash" Code="dotnet add package Bit.BlazorUI.AI" />
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>
+                <b>BitParams</b> with a <b>BitAiCodeBlockViewParams</b> sets the defaults of every code block inside it - here no
+                header - and a parameter of the block itself still wins.
+            </div>
+            <br />
+            <BitParams Parameters="codeBlockParams">
+                <BitAiCodeBlockView Language="bash" Code="dotnet new blazor -o MyChat" />
+                <br />
+                <BitAiCodeBlockView Language="bash" Code="dotnet add package Bit.BlazorUI.AI" />
+                <br />
+                <BitAiCodeBlockView Language="bash" Code="dotnet run" ShowHeader="true" />
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> its parts: the <b>Header</b> with its
+                <b>Label</b> and <b>CopyButton</b>, the scrolling <b>Body</b>, the <b>Pre</b> and <b>Code</b> elements, and every
+                numbered <b>Line</b>. The public <b>--bit-AiCodeBlockView-*</b> variables (see the CSS variables table) restyle the
+                block and its tokens.
+            </div>
+            <br />
+            <div class="example-content">
+                @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+                <BitAiCodeBlockView Language="bash" Code="@styleCode" Style="box-shadow: 0 0 0.5rem dodgerblue;" />
+                <br />
+                <BitAiCodeBlockView Language="bash" Code="@styleCode" Class="custom-class" />
+                <br />
+                <BitAiCodeBlockView Language="bash" Code="@styleCode"
+                                    Styles="@(new() { Header = "background-color: tomato; color: white;", Code = "font-size: 1rem;" })" />
+                <br />
+                <BitAiCodeBlockView Language="bash" Code="@styleCode"
+                                    Classes="@(new() { Root = "custom-root", Label = "custom-label", Pre = "custom-pre" })" />
+                <br />
+                <div style="--bit-AiCodeBlockView-background: #0f172a; --bit-AiCodeBlockView-color: #e2e8f0; --bit-AiCodeBlockView-header-background: #1e293b; --bit-AiCodeBlockView-header-color: #94a3b8; --bit-AiCodeBlockView-border-color: #334155; --bit-AiCodeBlockView-radius: 1rem;">
+                    <BitAiCodeBlockView Language="bash" Code="@styleCode" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+            <div>
+                In right-to-left text the header is mirrored - the label at the right, the copy button at the left - whether the
+                direction comes from <b>Dir</b> or from a <b>dir</b> attribute around the block. The code itself stays left to
+                right, as it is written.
+            </div>
+            <br />
+            <BitAiCodeBlockView Dir="BitDir.Rtl" FileName="مثال.cs" Language="csharp" Code="@rtlCode" />
+        </DemoExample>
+    </Examples>
+</DemoPage>

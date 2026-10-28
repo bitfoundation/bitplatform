@@ -5,7 +5,7 @@ Guidance for the bit BlazorUI component library and its demo app. Coding style c
 
 ## Never edit outside this folder
 
-**`src/BlazorUI` is the edit boundary, and it holds for every task.** The library, Extras, Legacy,
+**`src/BlazorUI` is the edit boundary, and it holds for every task.** The library, Extras, AI, Legacy,
 Icons, Assets, the source generators, the demo app and the tests are all inside it, so the work belongs
 here. Every sibling under `src/` - `Templates` (the Boilerplate), `Butil`, `Bswup`, `Besql`, `Bmotion`, `Bink`, `Balette`, `BbScanner`,
 `Bdnd`, `BlazeDb`, `Blow`, `Borm`, `Bcrdt`, `Bonboarding`, `Bortable`, `Blex`, `Bmage`, `Bsqlite`, `Brouter`, `Websites`, `CodeAnalyzers`, the rest - and the repo root are off limits, no matter what a
@@ -40,7 +40,7 @@ file that was just created.
 
 ## The scripts and stylesheets are trimmed at publish
 
-Every package's bundles (`bit.blazorui.js`, `bit.blazorui.css` and its Fluent variants, the Extras', Legacy's and
+Every package's bundles (`bit.blazorui.js`, `bit.blazorui.css` and its Fluent variants, the Extras', AI's, Legacy's and
 Icons' ones) are written by `Bit.BlazorUI.Build/build-assets.mjs` from **pieces** - one per `.ts` file, one per component
 stylesheet imported by the package's components file, one per icon glyph - which the package ships with a manifest
 (`obj/bit-assets`, `buildTransitive/bit-assets` in the package). At publish, the `Bit.BlazorUI.Build` MSBuild task
@@ -74,8 +74,8 @@ trimmed - off the app's type references and everything they reach. A piece left 
   go in `general.scss` or the theme files, which every bundle keeps. It is kept for the component of its file name; a
   stylesheet styling the parts of a family that are components of their own says so (`// bit-trim: owners BitFullCalendar
   BitFc*`). `build-assets.mjs` fails when the pieces do not add up to the whole bundle byte for byte.
-- **The Extras' scripts call the core's through `Scripts/BitBlazorUI.d.ts`**, which is also what keeps those core
-  functions in a trimmed core bundle: declare every core member a script of the Extras uses.
+- **The Extras' and AI's scripts call the core's through their `Scripts/BitBlazorUI.d.ts`**, which is also what keeps
+  those core functions in a trimmed core bundle: declare every core member a script of the package uses.
 - **A folder of vendored files** (a library a component loads at run time, a set of images) is declared as a
   `BitBlazorUIVendorFolder` in its package's `buildTransitive` targets, and is published only where code naming
   `_content/<package>/<folder>/` is.
@@ -170,7 +170,41 @@ components' markup, defaults and accessibility behaviour as well.
   drawing into), plumbing that is not a visual component (`BitCascadingValueProvider`), and a service
   whose job is to render the component it serves (`BitModalService` opening a `BitModal`).
 - **`Bit.BlazorUI.Extras` is the composition layer**: its components are built out of core ones (BitMessageBox
-  renders a BitTextField), which is exactly what keeps the core ones from having to be.
+  renders a BitTextField), which is exactly what keeps the core ones from having to be. `Bit.BlazorUI.AI` is one
+  too (BitAiChat's actions are BitButtons), over the core package only - it never references Extras.
+
+## The AI package
+
+`Bit.BlazorUI.AI` is the UI of AI apps - chat, prompt input, streaming Markdown, tool calls, agents, citations,
+artifacts, structured output, generative UI - and every rule of this file holds for it as it does for Extras. What is
+its own:
+
+- **Every type is `BitAi*`** (interfaces `IBitAi*`), in the one `Bit.BlazorUI` namespace. The non-UI layers keep a
+  folder each - `Abstractions/` (contracts, events, transport), `Core/` (conversation state, the streaming reducer,
+  sessions, tools, persistence), `Markdown/` (the incremental parser and highlighter), `GenerativeUI/` - beside
+  `Components/`, `Rendering/`, `Utils/` and `Extensions/`. Nothing in them references a model provider: an app
+  implements `IBitAiTransport` and registers it through `AddBitBlazorUIAIServices(ai => ai.UseTransport<T>())`.
+- **The components derive from `BitAiComponentBase`**, a `BitComponentBase` that adds the options in force
+  (`BitAiOptionsProvider`, else the registered `BitAiUiOptions`), their `BitAiStrings`, and `RequestRender()` - a
+  re-render coalesced to one per frame interval. A component reacting to streamed changes calls that, never
+  `StateHasChanged` per token. Every user-facing word goes through `BitAiStrings`.
+- **Its glyphs outside the core font subset come from its own subset** (`Styles/fabric.mdl2.bit.blazoui.ai.scss` and
+  `wwwroot/fonts/FabMDL2.4.66.bit.BlazorUI.AI.woff2`), as Extras' `bit-icon-ex` ones do: a core component is handed
+  the name as `IconName` plus `bit-icon-ai bit-icon-ai--Name` as its icon class (merged with the app's own classes
+  through `BitAiIconClasses`), always as literals. A new glyph is cut into the woff2 from Bit.BlazorUI.Icons' full
+  font together with its rule; `BitAiGlyphFontTests` pins the subset to the classes the sources use.
+- **What it serializes of its own goes through the source-generated `BitAiJsonContext`** - the conversation snapshot
+  is a persisted wire format and stays byte for byte what it was. An API that serializes a caller's type is
+  `[RequiresUnreferencedCode]`/`[RequiresDynamicCode]` (messages in `BitAiTrimming`) beside a trim-safe overload
+  taking a `JsonTypeInfo<T>`; no suppression stands in for either.
+- **An address a model, a tool or a retrieval hands a view is never written into an `href` or a `src` as given.** It
+  goes through a scheme check - `BitAiSafeUrls.Link` / `Image`, or `BitAiSourceCard`'s stricter web-only one - and an
+  image through `BitAiSafeUrls.Decide`, which asks the `BitAiUiOptions.Images` policy about the address the browser would
+  fetch (a relative one resolved against the base address). Markdown images, image parts, image artifacts, attachment
+  chip thumbnails and source favicons all follow the policy that way.
+- **The demo** has a page per component under `/components/ai/<name>` and the scenario pages under
+  `/ai/scenarios/<name>` (prose pages, outside `/components/`, so the catalog does not count them), all driven by
+  the scripted transports of `Demo/.../Services/AI`; the E2E host has its own (`E2EAiTransport`, a script per page).
 
 ## One Escape does one thing
 
@@ -448,7 +482,7 @@ sections hold differs.
 - **Prose pages** (Overview, Getting started, Theming, Iconography, Trimming, Terms): `DocsArticle` +
   `DocSection` - eyebrow, title, badges, lead, sections separated by air and a hairline, then
   `DocFeedback`.
-- **Component pages** (~110): `DemoPage`, the same shell by hand (`.doc-shell` / `.doc-main` /
+- **Component pages** (~150): `DemoPage`, the same shell by hand (`.doc-shell` / `.doc-main` /
   `.doc-head`, `DocSection`s for Notes, Introduction, Usage, API), for the two things `DocsArticle`
   does not offer - the reduced-motion class on the shell and the component-source links inside
   `DocFeedback`. Usage holds `DemoExample`s: title bar, folded source, live preview - **the source
@@ -466,8 +500,8 @@ Shared by both:
   component to the nav is all it takes. It powers the `/components` gallery, the home page's category
   grid, the header's search box, the category above a component's title, and the prev/next pager on
   every demo page. Of its own it adds a one-line summary and glyph per component, an icon and blurb
-  per category, and the category's NuGet package (Extras and Theming -> `Bit.BlazorUI.Extras`, Legacy
-  -> `Bit.BlazorUI.Legacy`, the rest core); a component with no glyph falls back to its category's, so
+  per category, and the category's NuGet package (Extras and Theming -> `Bit.BlazorUI.Extras`, AI ->
+  `Bit.BlazorUI.AI`, Legacy -> `Bit.BlazorUI.Legacy`, the rest core); a component with no glyph falls back to its category's, so
   the map may lag the nav without leaving a card blank. `ComponentCatalog.Search` ranks matches (name,
   then alias, then the words that only describe it); the gallery uses it when a term is typed, the
   header's box always.
@@ -871,8 +905,8 @@ at once.
 
 A component that renders a core one and wants a default other than the core one's (BitMessageBox's neutral
 buttons) never passes it as the parameter, which would make it a choice that outranks an app's variables. It
-leaves the parameter unset and adds the core component's host-default class instead (`bit-btn-dft-<role>`),
-read after the public variables as the last fallback.
+leaves the parameter unset and adds the core component's host-default class instead (`bit-btn-dft-<role>`,
+`bit-tag-dft-<role>`), read after the public variables as the last fallback.
 
 Adding a preset means touching all of: its `Styles/<Name>/` folder and bundle entry point,
 `Bit.BlazorUI.Extras/compilerconfig.json` and the csproj `BuildCss` target, `BitExtraThemePresets`,

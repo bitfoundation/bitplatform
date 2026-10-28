@@ -1,0 +1,36 @@
+﻿@* The box a live AI scenario runs in (Pages/AI/Scenarios): a fixed height for the chat to fill - BitAiChat takes the
+   height of its container - and, when the scenario has more to show (the citation clicked, the values a form submitted,
+   the list of conversations), a panel beside it, which moves above or under it in a narrow preview. *@
+<div class="@_class">
+    <div class="ai-scenario-main" style="@(Height.HasValue() ? $"height:{Height}" : null)">
+        @ChildContent
+    </div>
+
+    @if (Aside is not null)
+    {
+        <aside class="ai-scenario-aside" aria-label="@AsideLabel">
+            @Aside
+        </aside>
+    }
+</div>
+
+@code {
+    private string _class => Aside is null ? "ai-scenario"
+                           : AsideFirst ? "ai-scenario ai-scenario-split ai-scenario-split-start"
+                           : "ai-scenario ai-scenario-split";
+
+    /// <summary>The live demo: a BitAiChat, or the components a scenario puts together.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>What the scenario shows beside the demo.</summary>
+    [Parameter] public RenderFragment? Aside { get; set; }
+
+    /// <summary>Puts the panel at the start of the line rather than at its end - a sidebar rather than a report.</summary>
+    [Parameter] public bool AsideFirst { get; set; }
+
+    /// <summary>The accessible name of the panel beside the demo.</summary>
+    [Parameter] public string AsideLabel { get; set; } = "What the demo reports";
+
+    /// <summary>The height of the demo, a CSS length. Left unset, the stylesheet's default.</summary>
+    [Parameter] public string? Height { get; set; }
+}

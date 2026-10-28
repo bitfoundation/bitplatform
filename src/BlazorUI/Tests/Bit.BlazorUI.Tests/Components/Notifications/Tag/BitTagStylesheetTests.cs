@@ -213,18 +213,48 @@ public class BitTagStylesheetTests
 
         // So does an explicit Color, for every color its role paints - at rest, selected, hovered and disabled.
         var fill = SourceFiles.GetScssBlock(stylesheet, "\n.bit-tag-fil {");
-        StringAssert.Contains(fill, "--bit-tag-v-fg: var(--bit-tag-clr-txt, var(--bit-Tag-fill-color, var(--bit-Tag-color, #{$clr-pri-text})));");
-        StringAssert.Contains(fill, "--bit-tag-v-bg: var(--bit-tag-clr, var(--bit-Tag-fill-background, var(--bit-Tag-background, #{$clr-pri})));");
-        StringAssert.Contains(fill, "--bit-tag-v-sel-bg: var(--bit-tag-clr-active, var(--bit-Tag-fill-selected-background, var(--bit-Tag-selected-background, #{$clr-pri-active})));");
-        StringAssert.Contains(fill, "--bit-tag-v-dis-bg: var(--bit-tag-clr-dis, var(--bit-Tag-fill-disabled-background, var(--bit-Tag-disabled-background, #{$clr-pri-dis})));");
+        StringAssert.Contains(fill, "--bit-tag-v-fg: var(--bit-tag-clr-txt, var(--bit-Tag-fill-color, var(--bit-Tag-color, var(--bit-tag-dft-clr-txt, #{$clr-pri-text}))));");
+        StringAssert.Contains(fill, "--bit-tag-v-bg: var(--bit-tag-clr, var(--bit-Tag-fill-background, var(--bit-Tag-background, var(--bit-tag-dft-clr, #{$clr-pri}))));");
+        StringAssert.Contains(fill, "--bit-tag-v-sel-bg: var(--bit-tag-clr-active, var(--bit-Tag-fill-selected-background, var(--bit-Tag-selected-background, var(--bit-tag-dft-clr-active, #{$clr-pri-active}))));");
+        StringAssert.Contains(fill, "--bit-tag-v-dis-bg: var(--bit-tag-clr-dis, var(--bit-Tag-fill-disabled-background, var(--bit-Tag-disabled-background, var(--bit-tag-dft-clr-dis, #{$clr-pri-dis}))));");
         var outline = SourceFiles.GetScssBlock(stylesheet, "\n.bit-tag-otl {");
-        StringAssert.Contains(outline, "--bit-tag-v-hover-bg: var(--bit-tag-clr-light, var(--bit-Tag-outline-hover-background, var(--bit-Tag-hover-background, #{$clr-pri-light})));");
-        StringAssert.Contains(stylesheet, "--bit-tag-fg: var(--bit-tag-clr-dis-text, var(--bit-Tag-disabled-color, #{$clr-pri-dis-text}));");
+        StringAssert.Contains(outline, "--bit-tag-v-hover-bg: var(--bit-tag-clr-light, var(--bit-Tag-outline-hover-background, var(--bit-Tag-hover-background, var(--bit-tag-dft-clr-light, #{$clr-pri-light}))));");
+        StringAssert.Contains(stylesheet, "--bit-tag-fg: var(--bit-tag-clr-dis-text, var(--bit-Tag-disabled-color, var(--bit-tag-dft-clr-dis-text, #{$clr-pri-dis-text})));");
 
         // What the role leaves alone stays the variables': the transparent background of Outline and Text.
         StringAssert.Contains(outline, "--bit-tag-v-bg: var(--bit-Tag-outline-background, var(--bit-Tag-background, transparent));");
 
-        Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Tag-[a-z-]+, var\(--bit-tag-(clr|sz|radius|v-)"), "A public variable is read before the parameter it restyles the default of.");
+        // The default a host component gives its tags (--bit-tag-dft-*) is the one private value read after them.
+        Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Tag-[a-z-]+, var\(--bit-tag-(?!dft-)"), "A public variable is read before the parameter it restyles the default of.");
+    }
+
+    [TestMethod]
+    public void BitTagShouldReadTheDefaultOfItsHostAsTheLastFallbackOfEveryRoleColor()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // A component of the library that renders a tag gives it a default role other than the primary one through a
+        // class (bit-tag-dft-ter), never through Color: so every color the primary role stands in for reads that default
+        // right ahead of it - behind the role of an explicit Color and the public variables, which keep the last word.
+        var fallbacks = Regex.Matches(stylesheet, @"(\S*) #\{\$clr-pri(-[a-z-]+)?\}\)");
+        Assert.IsTrue(fallbacks.Count > 0, "No color falls back to the primary role.");
+        Assert.AreEqual(Regex.Matches(stylesheet, @"\$clr-pri\b").Count, fallbacks.Count, "A primary role token is read other than as the last fallback of a color.");
+
+        foreach (Match fallback in fallbacks)
+        {
+            var suffix = fallback.Groups[2].Value switch { "-text" => "-txt", var other => other };
+
+            Assert.AreEqual($"var(--bit-tag-dft-clr{suffix},", fallback.Groups[1].Value, $"{fallback.Value} is not read behind the host default.");
+        }
+
+        // The classes mirror the role classes - the same roles, the same values - and are never reset by the role classes.
+        var roles = SourceFiles.GetScssDeclarations(stylesheet, ".bit-tag-#{$role} {");
+        var defaults = SourceFiles.GetScssDeclarations(stylesheet, ".bit-tag-dft-#{$role} {");
+        StringAssert.Contains(stylesheet, "@each $role, $tokens in $bit-color-roles {\n    .bit-tag-dft-#{$role} {");
+        Assert.AreEqual(roles.Replace(".bit-tag-#{$role}", ".bit-tag-dft-#{$role}").Replace("--bit-tag-clr", "--bit-tag-dft-clr"), defaults);
+
+        // Declared after the root rule at the same weight, so the class wins over the reset on the root that carries it.
+        Assert.IsTrue(stylesheet.IndexOf("\n.bit-tag {", System.StringComparison.Ordinal) < stylesheet.IndexOf(".bit-tag-dft-#{$role} {", System.StringComparison.Ordinal));
     }
 
     [TestMethod,
@@ -264,6 +294,10 @@ public class BitTagStylesheetTests
         // same weight - still win on the root that carries them.
         foreach (var property in new[] { "--bit-tag-clr", "--bit-tag-clr-txt", "--bit-tag-clr-dis", "--bit-tag-clr-dis-text", "--bit-tag-clr-active",
                                          "--bit-tag-clr-light", "--bit-tag-clr-light-hover", "--bit-tag-clr-light-active",
+                                         // The default a host gave a tag, which a tag in its template must not inherit either.
+                                         "--bit-tag-dft-clr", "--bit-tag-dft-clr-txt", "--bit-tag-dft-clr-dis", "--bit-tag-dft-clr-dis-text",
+                                         "--bit-tag-dft-clr-active", "--bit-tag-dft-clr-light", "--bit-tag-dft-clr-light-hover",
+                                         "--bit-tag-dft-clr-light-active",
                                          "--bit-tag-sz-gap", "--bit-tag-sz-lbl-gap", "--bit-tag-sz-fs", "--bit-tag-sz-stx-fs", "--bit-tag-sz-img",
                                          "--bit-tag-sz-pad-y", "--bit-tag-sz-pad-x", "--bit-tag-sz-min-height", "--bit-tag-radius" })
         {

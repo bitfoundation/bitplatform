@@ -1,0 +1,185 @@
+﻿@page "/components/ai/voiceinput"
+
+<PageOutlet Url="components/ai/voiceinput"
+            Title="AiVoiceInput"
+            Description="BitAiVoiceInput is a dictation button for an AI chat: speech is turned into text by the speech recognition of the browser, each finished phrase raised to the app, the provisional one while the user is still speaking." />
+
+<DemoPage Name="AiVoiceInput"
+          SecondaryNames="@(["Dictation", "SpeechToText"])"
+          Description="BitAiVoiceInput is a dictation button: a toggle that turns the microphone on and off and hands over what is said as text, through the speech recognition of the browser (the Web Speech API) - no server of yours, no audio for your app to handle. Each finished phrase is raised through OnTranscript and the provisional text through OnInterim while the user is still speaking. Where the browser cannot transcribe, it renders nothing at all rather than a button that does nothing."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          PublicMembers="componentPublicMembers"
+          GitHubAIUrl="VoiceInput/BitAiVoiceInput.razor"
+          GitHubDemoUrl="AI/VoiceInput/BitAiVoiceInputDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            <b>BitAiVoiceInput renders nothing in a browser without speech recognition</b> (Firefox, for one) - it asks the
+            browser once it is on the page, so it is never part of a prerendered page either. Where nothing shows in the examples
+            below, try a Chromium browser or Safari. The browser asks for the microphone the first time it is pressed, and does
+            the recognition itself - some (Chrome, for one) in their vendor's cloud service, so do not offer it for speech that
+            must not leave the device. One dictation runs at a time on a page: starting one in a second voice input stops the
+            first, which raises its <b>OnListeningChanged</b> as if it had stopped on its own.
+        </BitText>
+        <br />
+        <BitText>
+            The button says what a press does next (Dictate, then Stop dictation) - its name alone, with no pressed state on top
+            of it to read ambiguously - and is drawn pressed while the microphone is on, and a polite live region announces when
+            the dictation starts, stops or fails (Listening, Dictation stopped, Dictation failed: not-allowed). These texts come
+            from the strings in force (<b>StartDictation</b>, <b>StopDictation</b>, <b>Listening</b>, <b>DictationStopped</b>,
+            <b>DictationFailed</b>), which a <BitLink Href="/components/ai/optionsprovider">BitAiOptionsProvider</BitLink>
+            localizes. A phrase still being spoken when the button stops the dictation is kept: it arrives through
+            <b>OnTranscript</b> once the recognizer has committed to it. A
+            <BitLink Href="/components/ai/promptinput">BitAiPromptInput</BitLink> with <b>AllowDictation</b> already carries one;
+            see the <BitLink Href="/ai/scenarios/attachments">attachments scenario</BitLink> for it in a chat.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Press the microphone and speak: <b>OnTranscript</b> receives each phrase once the recognizer has committed to it.
+                Press it again to stop. Nothing shows here in a browser that cannot transcribe.
+            </div>
+            <br />
+            <BitAiVoiceInput OnTranscript="HandleBasicTranscript" />
+            <br />
+            <div>Heard: <b>@basicTranscript</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Interim & listening" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                <b>OnInterim</b> carries the provisional text as the user speaks - it changes with every syllable - and an empty one
+                once that text is final or gone. <b>OnListeningChanged</b> is raised when the dictation starts or stops, however that
+                happens (the button, a silence the browser ends it on, an error, or another voice input of the page starting its own
+                dictation - one runs at a time, so try any other button of this page); <b>IsListening</b> says the same at any time.
+            </div>
+            <br />
+            <BitAiVoiceInput @ref="listeningInput"
+                             OnTranscript="HandleListeningTranscript"
+                             OnInterim="HandleInterim"
+                             OnListeningChanged="HandleListeningChanged" />
+            <br />
+            <div>Listening: <b>@isListening</b> (IsListening: <b>@(listeningInput?.IsListening)</b>)</div>
+            <div>Provisional: <i>@interim</i></div>
+            <div>Final: <b>@listeningTranscript</b></div>
+        </DemoExample>
+
+        <DemoExample Title="With a text field" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                The button only hands over text, so it goes beside any field: here each phrase is appended to a BitTextField, and the
+                provisional text shows as its description until it is final.
+            </div>
+            <br />
+            <div style="display:flex;align-items:flex-start;gap:0.5rem">
+                <BitTextField @bind-Value="note"
+                              Multiline
+                              Rows="3"
+                              Placeholder="Type or dictate a note"
+                              Description="@fieldInterim"
+                              Style="flex:1" />
+                <BitAiVoiceInput OnTranscript="AppendToNote" OnInterim="v => fieldInterim = v" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Language" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                <b>Language</b> is the language listened for, as a BCP 47 tag - the browser's own language when null. Pick one and
+                speak it.
+            </div>
+            <br />
+            <BitChoiceGroup @bind-Value="language" Items="languages" Horizontal />
+            <br />
+            <BitAiVoiceInput Language="@language" OnTranscript="HandleLanguageTranscript" />
+            <br />
+            <div>Heard (@language): <b>@languageTranscript</b></div>
+        </DemoExample>
+
+        <DemoExample Title="OnError" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>OnError</b> receives the name of the error the browser reported when the dictation fails - not-allowed for a
+                microphone refused, no-speech for a silence, audio-capture for no microphone at all, network - and the dictation
+                stops. Refuse the microphone to see it.
+            </div>
+            <br />
+            <BitAiVoiceInput OnTranscript="HandleErrorTranscript" OnError="HandleError" />
+            <br />
+            <div>Heard: <b>@errorTranscript</b></div>
+            <div>Last error: <b>@lastError</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>BitParams</b> with a <b>BitAiVoiceInputParams</b> sets the <b>Language</b> and the look of every voice input inside
+                it; a parameter of the voice input itself still wins.
+            </div>
+            <br />
+            <BitParams Parameters="voiceInputParams">
+                <div>British English: <BitAiVoiceInput OnTranscript="HandleCascadeTranscript" /></div>
+                <br />
+                <div>Its own Language, German: <BitAiVoiceInput Language="de-DE" OnTranscript="HandleCascadeTranscript" /></div>
+            </BitParams>
+            <br />
+            <div>Heard: <b>@cascadeTranscript</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                A disabled voice input cannot be pressed. Disabling it while it listens stops the dictation, rather than leaving the
+                microphone on with nothing able to turn it off.
+            </div>
+            <br />
+            <BitToggle @bind-Value="isDisabled" Text="Disabled" />
+            <BitAiVoiceInput Disabled="isDisabled" OnTranscript="HandleDisabledTranscript" />
+            <br />
+            <div>Heard: <b>@disabledTranscript</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> its button (BitToggleButtonClassStyles)
+                and its visually hidden live region. The voice input has no CSS variables of its own: the button is restyled through
+                the public <b>--bit-ToggleButton-*</b> variables, from <b>:root</b>, an ancestor or <b>Style</b>.
+            </div>
+            <br />
+            @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+            <div>
+                <BitAiVoiceInput Style="padding:0.25rem;border:1px dashed var(--bit-clr-brd-pri);border-radius:50%"
+                                 OnTranscript="HandleStyleTranscript" />
+                <BitAiVoiceInput Class="custom-class" OnTranscript="HandleStyleTranscript" />
+                <BitAiVoiceInput Styles="@(new() { Button = new() { Root = "border-radius:50%", Checked = "background-color:var(--bit-clr-err);color:var(--bit-clr-err-text)" } })"
+                                 OnTranscript="HandleStyleTranscript" />
+                <BitAiVoiceInput Classes="@(new() { Button = new() { Root = "custom-button", Checked = "custom-checked" } })"
+                                 OnTranscript="HandleStyleTranscript" />
+                <span style="@cssVariablesStyle">
+                    <BitAiVoiceInput OnTranscript="HandleStyleTranscript" />
+                </span>
+            </div>
+            <br />
+            <div>Heard: <b>@styleTranscript</b></div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                Use BitAiVoiceInput in right-to-left (RTL). The direction only lays it out: its <b>Language</b> is what decides the
+                language listened for - Persian here.
+            </div>
+            <br />
+            <div dir="rtl" style="display:flex;align-items:center;gap:0.5rem">
+                <BitAiVoiceInput Dir="BitDir.Rtl" Language="fa-IR" OnTranscript="HandleRtlTranscript" />
+                <span>شنیده شد: <b>@rtlTranscript</b></span>
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

@@ -1,0 +1,61 @@
+﻿@page "/ai/scenarios/reasoning"
+@inherits AppComponentBase
+
+<PageOutlet Url="ai/scenarios/reasoning"
+            Title="AI reasoning display"
+            Keywords="Blazor AI reasoning, chain of thought UI, thinking panel, BitAiReasoningPartView, LLM reasoning tokens"
+            Description="Model reasoning shown in its own collapsible, timed panel with bit BlazorUI's AI components - kept out of the answer, the copy and the next prompt." />
+
+<DocsArticle Eyebrow="AI scenarios"
+             Title="Reasoning"
+             Lead="Model thinking, shown in its own collapsed panel and kept out of the answer, the copy, and the next prompt."
+             GitHubUrl="AI/Scenarios/Reasoning/AiReasoningScenarioPage.razor">
+
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Bit.BlazorUI.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Scripted transport" />
+    </Badges>
+
+    <ChildContent>
+        <DocSection Id="demo" Title="Live demo"
+                    Description="Ask the starter question: the model thinks out loud first, then answers.">
+            <DemoExample Title="Reasoning before the answer" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+                <AiScenarioFrame>
+                    <BitAiChat Session="_session"
+                               EmptyTitle="Ask something with a trade-off"
+                               Suggestions="_suggestions" />
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
+        <DocSection Id="how-it-works" Title="How it works">
+            <p>
+                Reasoning arrives as <code>BitAiReasoningDeltaEvent</code> and becomes a <code>BitAiReasoningPart</code>.
+                Because it is a part of its own rather than text with a label, it can be collapsed, timed, excluded from the
+                copy button, and left out of the plain-text projection of the conversation sent back to the provider on the
+                next turn (<code>IBitAiMessage.GetText()</code> skips it). A provider that needs its reasoning replayed on a
+                later turn sends an opaque <code>Signature</code> with the delta, which the part keeps.
+            </p>
+            <p>
+                The transport here streams the reasoning a word at a time, then the answer as ordinary text deltas. Nothing
+                says where the thinking ends: the first part of the answer completes the reasoning part, as a
+                <code>BitAiPartCompletedEvent</code> for it would. The panel is open while the model thinks and folds itself
+                away once the answer starts, with the time it took in its header. <code>BitAiUiOptions.CollapseReasoning</code> turns the folding off; a reader who opens or
+                closes the panel themselves keeps it the way they left it.
+            </p>
+        </DocSection>
+
+        <DocSection Id="components" Title="Components used">
+            <ul>
+                <li><BitLink Href="/components/ai/reasoningpartview"><code>BitAiReasoningPartView</code></BitLink> - the reasoning, in its own panel, rendered as Markdown.</li>
+                <li><BitLink Href="/components/ai/collapsible"><code>BitAiCollapsible</code></BitLink> - the disclosure the panel is drawn with.</li>
+                <li><BitLink Href="/components/ai/thinkingindicator"><code>BitAiThinkingIndicator</code></BitLink> - what shows before the first token arrives.</li>
+                <li><BitLink Href="/components/ai/chat"><code>BitAiChat</code></BitLink> - the chat around them.</li>
+            </ul>
+        </DocSection>
+    </ChildContent>
+
+    <FooterTemplate>
+        <DocPager Pages="AiScenarioNav.Items" AriaLabel="AI scenarios" />
+    </FooterTemplate>
+</DocsArticle>

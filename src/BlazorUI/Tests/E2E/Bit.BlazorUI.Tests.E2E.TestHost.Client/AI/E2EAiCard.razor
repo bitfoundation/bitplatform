@@ -1,0 +1,16 @@
+﻿@namespace Bit.BlazorUI.Tests.E2E.TestHost.AI
+
+@* The one component generative UI may render in the E2E host (registered as e2e_card by E2EAiSetup), which the
+   generative scripts of E2EAiScripts fill in: a title over a number, each in an element a test can read. *@
+<div class="e2e-ai-card">
+    <div class="e2e-ai-card-title">@Title</div>
+    <div class="e2e-ai-card-value">@Value</div>
+</div>
+
+@code {
+    /// <summary>What the number is.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>The number.</summary>
+    [Parameter] public int Value { get; set; }
+}

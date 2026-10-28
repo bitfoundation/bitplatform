@@ -1,0 +1,159 @@
+﻿@page "/ai/scenarios/streaming"
+@inherits AppComponentBase
+
+<PageOutlet Url="ai/scenarios/streaming"
+            Title="Streaming AI responses"
+            Keywords="Blazor streaming markdown, Blazor AI streaming, LLM token streaming UI, BitAiStreamingMarkdown, BitAiChat"
+            Description="A long Markdown answer streamed into a bit BlazorUI AI chat a few characters at a time - headings, a table, fenced code, a quote - without flicker and at one render per 50 ms." />
+
+<DocsArticle Eyebrow="AI scenarios"
+             Title="Streaming"
+             Lead="A long Markdown answer arriving a few characters at a time: headings, a table, a fenced code block, a quote - readable at every step, and never redrawn more often than the eye can follow."
+             GitHubUrl="AI/Scenarios/Streaming/AiStreamingScenarioPage.razor">
+
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Bit.BlazorUI.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Scripted transport" />
+    </Badges>
+
+    <ChildContent>
+        <DocSection Id="demo" Title="Live demo"
+                    Description="Send anything: the reply is a full Markdown document, written progressively, and the events it arrives as are listed beside the chat.">
+            <DemoExample Title="A Markdown answer, streamed" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+                <AiScenarioFrame AsideLabel="Events">
+                    <Aside>
+                        <BitText Element="h4" Typography="BitTypography.Subtitle2">Events</BitText>
+                        <AiEventLog Session="_session" />
+                    </Aside>
+                    <ChildContent>
+                        <BitAiChat Session="_session"
+                                   EmptyTitle="Watch it arrive"
+                                   EmptyBody="Send anything. The reply is a full Markdown document written progressively."
+                                   Suggestions="_suggestions" />
+                    </ChildContent>
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
+        <DocSection Id="how-it-works" Title="How it works">
+            <p>
+                The transport answers with a stream of events, listed beside the chat as the session applies them:
+                <code>BitAiMessageStartedEvent</code>; a <code>BitAiMetadataEvent</code> naming the model and its context
+                window, merged into the reply's metadata (the model name under the reply comes from it); a
+                <code>BitAiTextDeltaEvent</code> per chunk of the answer; a <code>BitAiUsageUpdatedEvent</code> with the
+                tokens it used; and <code>BitAiMessageCompletedEvent</code>.
+            </p>
+            <p>
+                Each text delta is appended to the reply's text part (<code>BitAiTextPart</code>, which stays
+                <code>IsStreaming</code> until the reply completes). The Markdown is parsed again on every delta, but only
+                its tail is: everything before the last confirmed block boundary is kept as it was, so a long answer costs
+                the same per token at its end as at its start.
+            </p>
+            <p>
+                What is still open is drawn so it never flickers: a fenced code block is left unhighlighted until its closing
+                fence arrives, and an unmatched <code>**</code> is hidden rather than shown as a stray asterisk until its
+                partner comes.
+            </p>
+            <p>
+                Only the part the text goes into re-renders as it streams, and at most once per 50&nbsp;ms
+                (<code>BitAiUiOptions.RenderInterval</code>) however many deltas arrive in between; the rest of the
+                transcript is not drawn again for them, and the chat around it renders as the turn starts and ends.
+                Streaming faster than that changes nothing a reader can see, and on Blazor Server every render is a diff
+                sent down the circuit, so it costs real bandwidth.
+            </p>
+        </DocSection>
+
+        <DocSection Id="pacing" Title="Text pacing">
+            <p>
+                Providers deliver text in bursts: nothing for a moment, then a paragraph. Drawn as it comes, that reads as
+                stutter. So a session paces it: <code>BitAiChatSessionOptions.Pacing</code> is on by default
+                (<code>BitAiTextPacingOptions.Default</code>), buffering the text deltas and releasing them at a steady rate -
+                a chunk every <code>Interval</code> (16&nbsp;ms), sized to drain what is buffered over
+                <code>TargetDrain</code> (150&nbsp;ms), between <code>MinCharsPerTick</code> (1) and
+                <code>MaxCharsPerTick</code> (48) characters. Every other event passes through in order, behind the text
+                that came before it; a terminal error is let through at once. Pacing adds no delay when the model is slower
+                than the pacer, which is the common case, and never holds the end of a reply back by more than one drain
+                window.
+            </p>
+            <p>
+                The text deltas counted beside the chat are the paced ones. Set <code>Pacing</code> to <code>null</code> to
+                render the deltas exactly as the transport produces them, change it for every session with
+                <code>ai.ConfigureSessions</code>, or pace a stream consumed outside a session with the same operator,
+                <code>BitAiEventStreamExtensions.Paced</code> (<code>stream.Paced(options, cancellationToken)</code>) - the
+                <b>Text pacing</b> tab shows all three.
+            </p>
+        </DocSection>
+
+        <DocSection Id="parts" Title="Parts, and the events that address them">
+            <p>
+                A message is an ordered list of parts, not a string: text, reasoning, code, images, files, tool calls,
+                artifacts, structured data, each an <code>IBitAiMessagePart</code> with a <code>PartId</code> and a
+                <code>Kind</code> that picks its view. A part that contributes words to the message's plain text - what copy
+                and export use, and what a transport reads off the history with <code>IBitAiMessage.GetText()</code> - is an
+                <code>IBitAiTextualPart</code>; one that grows while the reply streams is an <code>IBitAiStreamablePart</code>,
+                whose <code>IsStreaming</code> lets its view skip expensive work (highlighting a half-written code block)
+                until it is complete.
+            </p>
+            <p>
+                The events that fill a part are <code>BitAiPartScopedEvent</code>s. A delta - text, reasoning, structured
+                data - with no <code>PartId</code>, as this transport sends them, goes into the newest open part of its kind,
+                created if there is none; a transport that interleaves several parts of one kind gives each delta the id of
+                its part. <code>BitAiPartStartedEvent(kind)</code> opens
+                a part explicitly, for what a delta cannot say: a code part's language and file name
+                (<code>BitAiMessagePartKinds.Code</code> with the <code>language</code> and <code>fileName</code>
+                <code>Attributes</code>), a Markdown part, a structured part's schema. <code>BitAiPartCompletedEvent</code>
+                closes one, so it is drawn finished - a code part highlighted - before the whole reply is.
+            </p>
+            <p>
+                The other events each have a scenario of their own: reasoning (<BitLink Href="/ai/scenarios/reasoning">Reasoning</BitLink>),
+                images and files (<BitLink Href="/ai/scenarios/attachments">Attachments</BitLink>), citations and status lines
+                (<BitLink Href="/ai/scenarios/citations">Citations</BitLink>), artifacts
+                (<BitLink Href="/ai/scenarios/artifacts">Artifacts</BitLink>), structured data
+                (<BitLink Href="/ai/scenarios/structured">Structured output</BitLink>), generated components
+                (<BitLink Href="/ai/scenarios/generative">Generative UI</BitLink>), tool calls
+                (<BitLink Href="/ai/scenarios/tools">Tool calling</BitLink>), agent runs
+                (<BitLink Href="/ai/scenarios/agent">Multi-step agent</BitLink>) and errors
+                (<BitLink Href="/ai/scenarios/errors">Errors and retry</BitLink>).
+            </p>
+        </DocSection>
+
+        <DocSection Id="reducer" Title="The reducer, and custom events">
+            <p>
+                A session applies every event through its <code>Processor</code>, a
+                <code>BitAiConversationStreamProcessor</code>: the reducer that turns events into parts, tool calls,
+                artifacts and agent runs on the conversation, and the only code that knows the event vocabulary. Its
+                <code>EventApplied</code> is raised for every event once it has been applied, on the thread that applied
+                it - the log beside the chat is a component listening to it (<b>AiEventLog.razor</b>), drawn through a
+                <code>BitAiRenderScheduler</code>, the same coalescer the AI components render with, so it renders at most
+                once every 100&nbsp;ms and the chat is not drawn again for it.
+            </p>
+            <p>
+                The reducer is usable on its own: <code>new BitAiConversationStreamProcessor(conversation)</code>, then
+                <code>BeginGeneration()</code>, <code>Apply(evt)</code> for each event and <code>EndGeneration()</code>
+                replay recorded events into a conversation - to test a renderer, or to show a reply a server pushed rather
+                than one a session asked for.
+            </p>
+            <p>
+                Information the framework has no event for travels as a <code>BitAiCustomEvent(name, data)</code>, its name
+                namespaced (<code>acme:quota</code>) so it never collides with another. The reducer applies nothing for it,
+                but <code>EventApplied</code> still raises it, so the app handles it there - a quota shown in the page, or a
+                custom part added to the reply (<code>Processor.Current</code>) and drawn by a renderer registered for its
+                kind (see <BitLink Href="/components/ai/messagepartview">BitAiMessagePartView</BitLink>). The
+                <b>The reducer</b> tab shows both.
+            </p>
+        </DocSection>
+
+        <DocSection Id="components" Title="Components used">
+            <ul>
+                <li><BitLink Href="/components/ai/chat"><code>BitAiChat</code></BitLink> - the chat the answer streams into.</li>
+                <li><BitLink Href="/components/ai/textpartview"><code>BitAiTextPartView</code></BitLink> and <BitLink Href="/components/ai/streamingmarkdown"><code>BitAiStreamingMarkdown</code></BitLink> - the text part, re-parsed only at its tail while it grows.</li>
+                <li><BitLink Href="/components/ai/markdownview"><code>BitAiMarkdownView</code></BitLink> - the parsed document: headings, tables, quotes.</li>
+                <li><BitLink Href="/components/ai/codeblockview"><code>BitAiCodeBlockView</code></BitLink> - the fenced code block, with its copy button.</li>
+            </ul>
+        </DocSection>
+    </ChildContent>
+
+    <FooterTemplate>
+        <DocPager Pages="AiScenarioNav.Items" AriaLabel="AI scenarios" />
+    </FooterTemplate>
+</DocsArticle>

@@ -1,0 +1,54 @@
+﻿@page "/e2e/aitoolresultview"
+
+<PageTitle>BitAiToolResultView E2E</PageTitle>
+
+<h1>BitAiToolResultView</h1>
+
+@* Results that arrived without a call of their own, the way a provider that runs its tools itself sends them: as text,
+   as structured data and as a failure. *@
+<E2ESection Id="basic" Title="Basic">
+    <div style="width:520px">
+        <BitAiToolResultView Id="trv-text" Part="_text" />
+        <BitAiToolResultView Id="trv-untitled" Part="_untitled" />
+        <BitAiToolResultView Id="trv-json" Part="_json" />
+        <BitAiToolResultView Id="trv-failed" Part="_failed" />
+        <BitAiToolResultView Id="trv-empty" Part="_empty" />
+    </div>
+</E2ESection>
+
+@* Through the part view, which picks this view for a result part. *@
+<E2ESection Id="dispatch" Title="In a message">
+    <div style="width:520px">
+        <BitAiMessagePartView Id="trv-part" Part="_dispatched" Message="_message" />
+    </div>
+</E2ESection>
+
+@* A token longer than the card is wide wraps inside it rather than widening it. *@
+<E2ESection Id="narrow" Title="Narrow">
+    <div id="trv-narrow-box" style="width:200px">
+        <BitAiToolResultView Id="trv-narrow" Part="_long" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style">
+    <div style="width:520px">
+        <div style="--bit-AiToolResultView-background: rgb(1, 2, 3); --bit-AiToolResultView-border-color: rgb(4, 5, 6); --bit-AiToolResultView-radius: 7px; --bit-AiToolResultView-header-color: rgb(7, 8, 9); --bit-AiToolResultView-body-background: rgb(10, 11, 12);">
+            <BitAiToolResultView Id="trv-vars" Part="_text" />
+        </div>
+        <BitAiToolResultView Id="trv-instance" Part="_text" Style="--bit-AiToolResultView-header-color: rgb(20, 21, 22);" />
+        <BitAiToolResultView Id="trv-styles" Part="_text"
+                             Styles="@(new() { Title = "color: rgb(200, 0, 0)", Text = "font-style: italic" })"
+                             Classes="@(new() { Root = "e2e-trv-root", Body = "e2e-trv-body" })" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div style="width:520px">
+        <BitAiToolResultView Id="trv-rtl" Dir="BitDir.Rtl" Part="_text" />
+        <div dir="rtl">
+            <BitAiToolResultView Id="trv-rtl-inherited" Part="_text" />
+        </div>
+    </div>
+</E2ESection>
+
+<E2EStatus />

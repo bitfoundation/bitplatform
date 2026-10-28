@@ -1,0 +1,124 @@
+﻿@page "/e2e/aicontextmeter"
+@implements IAsyncDisposable
+
+<PageTitle>BitAiContextMeter E2E</PageTitle>
+
+<h1>BitAiContextMeter</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <div style="width: 480px">
+        <BitAiContextMeter Id="ctm-basic" Used="1500" Window="10000" />
+    </div>
+</E2ESection>
+
+@* A meter the page fills step by step, past the Warn mark (80%) and the Critical mark (95%) and back. *@
+<E2ESection Id="crossing" Title="Crossing the marks">
+    <p>Used: <span id="ctm-crossing-used">@_used</span></p>
+    @foreach (var used in new long[] { 1000, 7900, 8000, 9400, 9500, 12000 })
+    {
+        <button id="@($"btn-crossing-{used}")" @onclick="() => _used = used">@used</button>
+    }
+    <div style="width: 480px">
+        <BitAiContextMeter Id="ctm-crossing" Used="_used" Window="10000" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="thresholds" Title="Marks of the page's">
+    <div style="width: 480px">
+        <BitAiContextMeter Id="ctm-thr-none" Used="490" Window="1000" Warn="0.5" Critical="0.7" />
+        <BitAiContextMeter Id="ctm-thr-warn" Used="500" Window="1000" Warn="0.5" Critical="0.7" />
+        <BitAiContextMeter Id="ctm-thr-critical" Used="700" Window="1000" Warn="0.5" Critical="0.7" />
+    </div>
+</E2ESection>
+
+@* Where the window comes from: the Window, else the conversation, else the model; nothing at all without one. *@
+<E2ESection Id="sources" Title="The window and the tokens">
+    <div style="width: 480px">
+        <BitAiContextMeter Id="ctm-pending" Used="1000" PendingTokens="7000" Window="10000" />
+        <BitAiContextMeter Id="ctm-model" Used="50000" Model="_model" />
+        <BitAiContextMeter Id="ctm-window-wins" Used="50000" Window="100000" Model="_model" />
+        <div id="ctm-none-host"><BitAiContextMeter Id="ctm-none" Used="50000" /></div>
+        <div id="ctm-zero-host"><BitAiContextMeter Id="ctm-zero" Used="50000" Window="0" /></div>
+    </div>
+</E2ESection>
+
+@* The usage script through a session: 1,500 tokens of a 200,000-token window, read off the conversation. *@
+<E2ESection Id="conversation" Title="Read off a conversation">
+    <button id="btn-conversation-ask" @onclick="Ask">Ask</button>
+    <p>Messages: <span id="ctm-conversation-count">@(_session?.Conversation.Messages.Count ?? 0)</span></p>
+    <div id="ctm-conversation-host" style="width: 480px">
+        @if (_session is not null)
+        {
+            <BitAiContextMeter Id="ctm-conversation" Conversation="_session.Conversation" />
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="vars" Title="Public variables, Styles and Classes">
+    <div style="width: 600px;
+                --bit-AiContextMeter-color: rgb(1, 2, 3);
+                --bit-AiContextMeter-warning-color: rgb(4, 5, 6);
+                --bit-AiContextMeter-critical-color: rgb(7, 8, 9);
+                --bit-AiContextMeter-font-size: 19px;
+                --bit-AiContextMeter-gap: 23px;
+                --bit-AiContextMeter-meter-max-width: 77px;
+                --bit-AiContextMeter-track-color: rgb(10, 11, 12);">
+        <BitAiContextMeter Id="ctm-vars" Used="100" Window="1000" />
+        <BitAiContextMeter Id="ctm-vars-warn" Used="850" Window="1000" />
+        <BitAiContextMeter Id="ctm-vars-critical" Used="990" Window="1000" />
+    </div>
+    <div style="width: 600px">
+        <BitAiContextMeter Id="ctm-styles"
+                           Used="100"
+                           Window="1000"
+                           Styles="@(new() { Label = "font-weight: 700", Percent = "color: rgb(40, 41, 42)" })"
+                           Classes="@(new() { Root = "e2e-ctm-root", Meter = new() { Root = "e2e-ctm-meter" } })" />
+        <BitAiContextMeter Id="ctm-title" Used="100" Window="1000" title="The page's own reading" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <div style="width: 480px">
+        <BitAiContextMeter Id="ctm-disabled" Used="9000" Window="10000" Disabled="true" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div style="width: 480px">
+        <BitAiContextMeter Id="ctm-rtl" Dir="BitDir.Rtl" Used="2500" Window="10000" />
+        <div dir="rtl">
+            <BitAiContextMeter Id="ctm-rtl-inherited" Used="2500" Window="10000" />
+        </div>
+        <BitAiContextMeter Id="ctm-ltr" Used="2500" Window="10000" />
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly BitAiModel _model = new("e2e-meter", "Meter model") { ContextWindow = 200_000 };
+
+    private long _used = 1000;
+
+    private BitAiChatSession? _session;
+
+    private async Task Ask()
+    {
+        await DisposeAsync();
+
+        _session = new BitAiChatSession(E2EAiTransport.For(E2EAiScripts.Usage));
+        _session.StateChanged += OnSessionChanged;
+        _ = _session.SubmitAsync("Which model answered?");
+    }
+
+    private void OnSessionChanged() => InvokeAsync(StateHasChanged);
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_session is null) return;
+
+        _session.StateChanged -= OnSessionChanged;
+        await _session.DisposeAsync();
+        _session = null;
+    }
+}

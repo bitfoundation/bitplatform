@@ -45,6 +45,7 @@ public static class ScssCompilerService
             "../../../Bit.BlazorUI.Extras/Styles/Fluent2/bit.blazorui.fluent2.scss:../../../Bit.BlazorUI.Extras/wwwroot/styles/bit.blazorui.fluent2.css",
             "../../../Bit.BlazorUI.Extras/Styles/Material/bit.blazorui.material.scss:../../../Bit.BlazorUI.Extras/wwwroot/styles/bit.blazorui.material.css",
             "../../../Bit.BlazorUI.Extras/Styles/Cupertino/bit.blazorui.cupertino.scss:../../../Bit.BlazorUI.Extras/wwwroot/styles/bit.blazorui.cupertino.css",
+            "../../../Bit.BlazorUI.AI/Styles/bit.blazorui.ai.scss:../../../Bit.BlazorUI.AI/wwwroot/styles/bit.blazorui.ai.css",
             "../../../Bit.BlazorUI.Icons/Styles/bit.blazorui.icons.scss:../../../Bit.BlazorUI.Icons/wwwroot/styles/bit.blazorui.icons.css",
             "../../../Bit.BlazorUI.Assets/Styles/bit.blazorui.assets.scss:../../../Bit.BlazorUI.Assets/wwwroot/styles/bit.blazorui.assets.css",
         };
@@ -62,6 +63,7 @@ public static class ScssCompilerService
             "--load-path=.",
             "--load-path=../../../Bit.BlazorUI/Components",
             "--load-path=../../../Bit.BlazorUI.Extras/Components",
+            "--load-path=../../../Bit.BlazorUI.AI/Components",
         };
 
         // --no-source-map is required for style hot reload to work. dart-sass emits a *.css.map next to

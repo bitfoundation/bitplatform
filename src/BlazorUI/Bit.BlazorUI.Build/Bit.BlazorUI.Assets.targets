@@ -2,7 +2,7 @@
 
     <!--
     The package side of the publish-time trimming, imported by the csproj of each bit BlazorUI package that ships scripts
-    or stylesheets (Bit.BlazorUI, Bit.BlazorUI.Extras, Bit.BlazorUI.Legacy, Bit.BlazorUI.Icons) - kept here, once, so the
+    or stylesheets (Bit.BlazorUI, Bit.BlazorUI.Extras, Bit.BlazorUI.AI, Bit.BlazorUI.Legacy, Bit.BlazorUI.Icons) - kept here, once, so the
     packages cannot drift apart in how their pieces are written and packed:
 
       @(BitAssetsScript)     build-assets.mjs, which each package's BuildJavaScript and BuildCss targets run with the

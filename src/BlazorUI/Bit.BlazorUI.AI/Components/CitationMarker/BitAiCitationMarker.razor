@@ -1,0 +1,21 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@* A button rather than a link, because activating it reveals the source in place instead of navigating away. The
+   preview is the native title rather than a BitTooltip: a marker sits inline in running text, many to a message, and a
+   tooltip would wrap each one in a block of its own and send every hover across the circuit of a Blazor Server app. The
+   accessible name carries the title of the source, so nothing the preview says is lost to a screen reader. The
+   attributes the page splatted come first, so the ones the marker builds itself are written over them - each falling
+   back to the splatted value it would otherwise remove. *@
+<button @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+        type="button"
+        id="@_Id"
+        style="@StyleBuilder.Value"
+        class="@ClassBuilder.Value"
+        dir="@Dir?.ToString().ToLower()"
+        title="@(GetSplattedAttribute("title") ?? _Tooltip)"
+        tabindex="@(TabIndex ?? GetSplattedAttribute("tabindex"))"
+        disabled="@Disabled"
+        aria-disabled="@(Disabled ? "true" : null)"
+        aria-label="@(ResolveAriaLabel() ?? Strings.CitationLabel(Citation.Number, Citation.Source.Title))"
+        @onclick="HandleOnClick">@Citation.Number</button>

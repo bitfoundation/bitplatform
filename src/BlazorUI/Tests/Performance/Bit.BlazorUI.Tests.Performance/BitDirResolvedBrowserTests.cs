@@ -25,7 +25,8 @@ public class BitDirResolvedBrowserTests : PerformanceTestBase
     private static readonly string[] Probes =
     [
         "colorpicker", "colorpicker-thumb", "pagination", "badge", "progress-gap", "progress-segments", "shimmer", "dialog",
-        "callout", "dropmenu", "swiper", "searchbox", "phoneinput", "persona"
+        "callout", "dropmenu", "swiper", "searchbox", "phoneinput", "persona",
+        "aijsonview", "aipromptinput", "aitoolcallview"
     ];
 
     // Each probe's part, read the way its right-to-left rule changes it.
@@ -73,7 +74,10 @@ public class BitDirResolvedBrowserTests : PerformanceTestBase
             'swiper': () => style('swiper', '.bit-swp-rbt .bit-ico-frt')?.scale,
             'searchbox': () => style('searchbox', 'i.bit-srb-dsi')?.transform,
             'phoneinput': () => style('phoneinput', '.bit-phi-inp')?.textAlign,
-            'persona': initials
+            'persona': initials,
+            'aijsonview': () => style('aijsonview', '.bit-aijsv-tcl')?.transform,
+            'aipromptinput': () => style('aipromptinput', '.bit-aipri-snd > .bit-btn-icn')?.transform,
+            'aitoolcallview': () => style('aitoolcallview', '.bit-aitcv-chv')?.transform
         };
         const result = {};
         for (const [probe, reader] of Object.entries(read)) {

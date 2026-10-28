@@ -457,6 +457,12 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    internal static ValueTask BitUtilsRegisterSelectOnFocus(this IJSRuntime jsRuntime, ElementReference element, bool active)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.registerSelectOnFocus", element, active);
+    }
+
+
     internal static ValueTask BitUtilsSetStyle(this IJSRuntime jsRuntime, ElementReference element, string key, string value)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setStyle", element, key, value);
