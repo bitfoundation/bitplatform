@@ -36,9 +36,12 @@ public static class McpPrompts
                WebAssemblyHostBuilder with no server means 'standalone-wasm'; a BlazorWebView means 'hybrid'; no UI at all
                means 'console'. Then continue with what you find.
             2. Call `GetBcrdtSetupGuide` with that hosting model and follow it. Registering `AddBitBcrdtServices` in only
-               one of a Blazor Web App's two DI containers is the most common setup bug - it fails while prerendering, not
-               at compile time. Register it in BOTH, through one shared extension method. Never re-register
-               `IBcrdtCollaborationService` as a singleton: in Blazor Server every visitor would share one replica.
+               one of a Blazor Web App's two DI containers is the most common setup bug, and nothing catches it at compile
+               time: the components in the other one fall back to a purely local collaboration service - documents are
+               neither synchronized nor saved - and log a warning that the services are not registered, and code injecting
+               `IBcrdtCollaborationService` there fails while prerendering. Register it in BOTH, through one shared
+               extension method. Never re-register `IBcrdtCollaborationService` as a singleton: in Blazor Server every
+               visitor would share one replica.
             3. Give the transport an absolute address - the .NET SignalR client rejects "/hub/bcrdt" - and on the server
                call `AddBitBcrdtHub` (not a bare AddSignalR, whose 32 KB limit drops clients once a document grows) and map
                `BcrdtHub`; for the WebSocket relay, call `UseWebSockets` before `MapBitBcrdtWebSocket`.

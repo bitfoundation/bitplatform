@@ -8,7 +8,8 @@ namespace Bit.Bcrdt.Demo.Server.Services;
 /// own sections on that model, and - for the Blazor Web App this demo is - the demo's real hosting files.
 /// <para>
 /// Collaboration fails in ways no compiler catches, and each hosting model has its own: a Blazor Web App
-/// that registers the services in only one of its two containers fails while prerendering; a relative hub
+/// that registers the services in only one of its two containers leaves the components in the other with a
+/// purely local service that logs a warning, and code injecting the service there fails while prerendering; a relative hub
 /// URL is rejected when the SignalR connection is built; a bare <c>AddSignalR</c> disconnects every client
 /// once a document outgrows 32 KB; a WebSocket relay mapped without <c>UseWebSockets</c> answers a flat 400;
 /// a Blazor Server page that opens a document while prerendering opens it for a request that is already over;
@@ -119,7 +120,7 @@ public static partial class BcrdtSetupGuide
                 survive a reload; with `UseInMemoryStore()` they last as long as the tab.
                 """,
                 UiChecklist,
-                ["Getting started", "Hosting models"],
+                ["Getting started", "Hosting models", "Lazy loading on WebAssembly"],
                 StandaloneFiles,
                 IncludeDemo: false),
 

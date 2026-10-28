@@ -62,6 +62,10 @@ That is a working collaborative editor with live presence, automatic reconnectio
 No stylesheet to reference and no script to add: the one small module `BcrdtTextArea` needs is imported on demand.
 Works in Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid.
 
+A WebAssembly app can skip the registration and lazy load `Bit.Bcrdt.wasm` instead, configuring the collaboration
+service through `IServiceProvider.GetBcrdtCollaborationService(...)`; see
+[lazy loading](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bcrdt#lazy-loading-on-webassembly).
+
 ## Features
 
 - A YATA-family sequence CRDT with run-length-encoded blocks: `BcrdtText` (with rich-text marks), `BcrdtArray`,
@@ -75,7 +79,7 @@ Works in Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid
 - Snapshots that restore any point in a document's history.
 - `BcrdtTextSynchronizer` and `BcrdtTextInputBinding`, which turn an input's whole new value into the minimal edit.
 - In-memory and WebSocket client transports; every seam - transport, store, client identity - is an interface.
-- .NET 10 and 11; trim- and AOT-safe for the collaborative value model.
+- .NET 10 and 11; trim- and AOT-safe for the collaborative value model; lazy loadable on WebAssembly.
 
 ## For AI agents
 
