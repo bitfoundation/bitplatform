@@ -573,6 +573,22 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         }
         """;
 
+    // On how many lines each word of the text an element holds is laid out, in order.
+    private const string WordLinesScript = """
+        el => {
+            const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), lines = [];
+            for (let node; (node = walker.nextNode());) {
+                for (const word of node.data.matchAll(/\S+/g)) {
+                    const range = document.createRange();
+                    range.setStart(node, word.index);
+                    range.setEnd(node, word.index + word[0].length);
+                    lines.push(new Set([...range.getClientRects()].map(r => Math.round(r.top))).size);
+                }
+            }
+            return lines;
+        }
+        """;
+
     // Whether an element's content overflows its box, which a label clips outside a wrapped header.
     private const string OverflowsScript = "el => el.scrollWidth > el.clientWidth";
 
@@ -608,7 +624,8 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
     // The header of #13963, right to left: a template laying a title out beside an icon keeps the title on one line and
     // its word whole, both where the two fit the column and where they run a few pixels short - the sort hint of the
     // sortable column follows them into the cell's padding rather than squeezing the title. A one-word title wider than
-    // its column, whether the grid writes it or an element of a template holds it, breaks inside the column.
+    // its column, whether the grid writes it or an element of a template holds it, breaks inside the column, and a title
+    // of several words that each fit it breaks between them.
     [TestMethod]
     public async Task Wrap_AWrappedHeaderTitle_BreaksOnlyAWordWiderThanItsRoom()
     {
@@ -662,6 +679,15 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
             Assert.IsTrue(text[2] > text[5] * 1.5, $"The {name} wider than its column did not wrap ({text[2]}px tall, lines of {text[5]}px).");
             Assert.IsTrue(text[0] >= text[3] - 0.5 && text[1] <= text[4] + 0.5, $"The {name} wider than its column overflows its label.");
         }
+
+        // A title of several words wider than its column, every word of which fits it, wraps between its words only.
+        var words = HeaderCell(id, 5).Locator(".bit-dtg-htext");
+        var wordsText = await words.EvaluateAsync<double[]>(LabelTextScript);
+        Assert.IsTrue(wordsText[2] > wordsText[5] * 1.5, $"The title of several words wider than its column did not wrap ({wordsText[2]}px tall, lines of {wordsText[5]}px).");
+        Assert.IsTrue(wordsText[0] >= wordsText[3] - 0.5 && wordsText[1] <= wordsText[4] + 0.5, "The title of several words wider than its column overflows its label.");
+        var wordLines = await words.EvaluateAsync<int[]>(WordLinesScript);
+        Assert.AreEqual(4, wordLines.Length, "The title of several words does not hold the words it was given.");
+        Assert.IsTrue(wordLines.All(lines => lines == 1), $"The title of several words breaks inside a word that fits its column (lines per word: {string.Join(", ", wordLines)}).");
     }
 
     [TestMethod]

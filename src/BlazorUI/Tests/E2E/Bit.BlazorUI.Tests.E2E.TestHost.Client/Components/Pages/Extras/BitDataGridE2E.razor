@@ -170,8 +170,9 @@
 <E2ESection Id="wrap-header" Title="Wrapped header titles">
     <label>Width of the first two columns <input id="wrap-header-width" type="number" step="any" @bind="_wrapHeaderWidth" @bind:event="oninput" /></label>
     @* The header of #13963: a template laying a Persian title out beside an icon in a flex row of its own, on a sortable
-       column and on the same column unsortable, so the two differ only by the sort hint of the first. The last two
-       columns hold a one-word title wider than its column, one the grid writes and one a template's element holds. *@
+       column and on the same column unsortable, so the two differ only by the sort hint of the first. The next two
+       columns hold a one-word title wider than its column, one the grid writes and one a template's element holds, and
+       the last a title of several words, each narrower than its column, that together are wider. *@
     <BitDataGrid Id="grid-wrap-header" Items="@_wrapHeaderItems" WrapCellText="true" Dir="BitDir.Rtl">
         <BitDataGridColumn ColumnId="Sortable" Property="p => p.Stock" Width="@WrapHeaderWidth">
             <HeaderTemplate>@WrapHeaderTemplate</HeaderTemplate>
@@ -183,6 +184,7 @@
         <BitDataGridColumn ColumnId="Word" Property="p => p.Name" Sortable="false" Width="60px">
             <HeaderTemplate><span class="wrap-header-word">Unfinished</span></HeaderTemplate>
         </BitDataGridColumn>
+        <BitDataGridColumn ColumnId="Words" Property="p => p.Name" Title="Back in stock soon" Sortable="false" Width="80px" />
     </BitDataGrid>
 </E2ESection>
 
