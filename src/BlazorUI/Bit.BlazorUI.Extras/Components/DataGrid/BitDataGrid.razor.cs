@@ -653,7 +653,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     private DotNetObjectReference<BitDataGrid<TItem>>? _gridSelfRef;
     private IJSObjectReference? _pointerReorderHandle;
     private bool _pointerReorderAttached;
-    private bool _nestedSurfaceKeysWatched;
+    private bool _nestedTargetsWatched;
 
     // select-all indeterminate state ("some but not all selected") is a DOM property, not an HTML
     // attribute, so Blazor markup can't express it; it is synced via a small JS call after render.
@@ -2189,20 +2189,21 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             }
         }
 
-        // The keys pressed in a surface rendered in a cell's or a header's template reach their handlers too, which the
-        // script tells apart for them (see KeyInNestedSurface).
-        if (!_nestedSurfaceKeysWatched)
+        // The keys pressed in a surface rendered in a cell's or a header's template reach their handlers too, and so do
+        // the clicks on a control in a cell, which the script tells apart for them (see KeyInNestedSurface and
+        // ClickOnCellControl).
+        if (!_nestedTargetsWatched)
         {
-            _nestedSurfaceKeysWatched = true;
+            _nestedTargetsWatched = true;
             _gridSelfRef ??= DotNetObjectReference.Create(this);
             try
             {
-                await JS.InvokeScriptVoidAsync("BitBlazorUI.DataGrid.watchNestedSurfaceKeys", RootElement, _gridSelfRef);
+                await JS.InvokeScriptVoidAsync("BitBlazorUI.DataGrid.watchNestedTargets", RootElement, _gridSelfRef);
             }
             // Released on failure so a failed call retries on a later render.
             catch (Exception ex)
             {
-                _nestedSurfaceKeysWatched = false;
+                _nestedTargetsWatched = false;
                 if (IsInteropFailure(ex) is false) throw;
             }
         }
@@ -3292,6 +3293,18 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// grid's content changes (see <c>KeyInNestedSurface</c>).</summary>
     [JSInvokable]
     public void OnNestedSurfaceKey(bool nested) => KeyInNestedSurface = nested;
+
+    // Whether the click or double-click the cells and the rows are about to hear landed on a control in a cell - a
+    // button, a link or an input of a template, the grid's own checkbox and toggles - or in a surface rendered in a
+    // cell's content, rather than on the cell itself. The click is the control's: the cells and the rows hear it on its
+    // way out too, and leave it to it - no row selected or expanded, no editor opened, none of their click events
+    // raised. The script reports it ahead of the click, whenever it changes.
+    internal bool ClickOnCellControl { get; private set; }
+
+    /// <summary>Invoked from JavaScript ahead of a click or a double-click when whether it landed on a control in a
+    /// cell of the grid changes (see <c>ClickOnCellControl</c>).</summary>
+    [JSInvokable]
+    public void OnCellControlClick(bool onControl) => ClickOnCellControl = onControl;
 
     internal int EditVersion => _editVersion;
 

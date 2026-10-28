@@ -69,8 +69,9 @@
         }
     }
 
-    private Task HandleClick(MouseEventArgs e) => Grid.HandleCellClickAsync(Column, Item, e);
-    private Task HandleDoubleClick(MouseEventArgs e) => Grid.HandleCellDoubleClickAsync(Column, Item, e);
+    // A click on a control in the cell is the control's, not the cell's (see BitDataGrid.ClickOnCellControl).
+    private Task HandleClick(MouseEventArgs e) => Grid.ClickOnCellControl ? Task.CompletedTask : Grid.HandleCellClickAsync(Column, Item, e);
+    private Task HandleDoubleClick(MouseEventArgs e) => Grid.ClickOnCellControl ? Task.CompletedTask : Grid.HandleCellDoubleClickAsync(Column, Item, e);
     private Task HandleContextMenu(MouseEventArgs e) => Grid.HandleCellContextMenuAsync(Column, Item, e);
 
     private void HandleFocusIn()

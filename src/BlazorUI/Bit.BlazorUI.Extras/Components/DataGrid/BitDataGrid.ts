@@ -390,11 +390,13 @@
         }
 
         // Has the grid's cells, rows and headers told which keys were pressed inside a surface rendered in their
-        // content (see reportNestedSurfaceKey), which the cell key guard works out for every key it sees.
-        public static watchNestedSurfaceKeys(root: HTMLElement, dotNetRef: DotNetObject) {
+        // content (see reportNestedSurfaceKey), which the cell key guard works out for every key it sees, and its
+        // cells and rows which clicks landed on a control in a cell (see reportCellControlClick), which the cell click
+        // guard works out for every click it sees.
+        public static watchNestedTargets(root: HTMLElement, dotNetRef: DotNetObject) {
             if (!root) return;
 
-            nestedSurfaceKeyWatches.set(root, { dotNetRef, nested: false });
+            nestedTargetWatches.set(root, { dotNetRef, nested: false, onControl: false });
         }
 
         // Measures an element's rendered width. Used when a column resize starts so the drag begins
@@ -714,19 +716,58 @@
     // ahead of the keydown Blazor dispatches - only when that changes, which a grid without a surface in it never sees
     // - and their handlers leave it alone (BitDataGrid.KeyInNestedSurface). Each grid around the key is told on its own,
     // as a grid in a dialog in another grid's cell is that surface's, not the outer grid's.
-    const nestedSurfaceKeyWatches = new WeakMap<HTMLElement, { dotNetRef: DotNetObject, nested: boolean }>();
+    const nestedTargetWatches = new WeakMap<HTMLElement, { dotNetRef: DotNetObject, nested: boolean, onControl: boolean }>();
     function reportNestedSurfaceKey(target: HTMLElement): boolean {
         let innermost: boolean | null = null;
         for (let root = target.closest<HTMLElement>('.bit-dtg'); root; root = root.parentElement?.closest<HTMLElement>('.bit-dtg') ?? null) {
             const nested = Utils.isInNestedSurface(target, root);
             innermost ??= nested;
-            const watch = nestedSurfaceKeyWatches.get(root);
+            const watch = nestedTargetWatches.get(root);
             if (!watch || watch.nested === nested) continue;
             watch.nested = nested;
             watch.dotNetRef.invokeMethodAsync('OnNestedSurfaceKey', nested).catch(() => { });
         }
         return innermost === true;
     }
+
+    // A click on a control in a cell - a button, a link or an input of a template, the grid's own checkbox and
+    // toggles - is the control's, and so is one anywhere in a surface rendered in a cell's content. The cell's and the
+    // row's .NET click and double-click handlers would hear it on its way out too, and select the row, expand its
+    // detail, open the cell's editor and raise OnRowClick, OnRowDoubleClick, OnCellClick and OnCellDoubleClick on top
+    // of what the control did. So, the way they are told about the keys of a surface (reportNestedSurfaceKey), the
+    // grids the click bubbles through are told whether it landed on one ahead of the click Blazor dispatches - only
+    // when that changes - and their handlers leave it alone (BitDataGrid.ClickOnCellControl).
+    const cellControlSelector = [
+        'a[href]', 'button', 'input', 'select', 'textarea', 'label', 'summary',
+        '[contenteditable]:not([contenteditable="false"])',
+        '[role="button"]', '[role="link"]', '[role="checkbox"]', '[role="radio"]', '[role="switch"]',
+        '[role="combobox"]', '[role="listbox"]', '[role="option"]', '[role="menuitem"]', '[role="tab"]',
+        '[role="slider"]', '[role="spinbutton"]', '[role="textbox"]'
+    ].join(',');
+    function reportCellControlClick(target: Element) {
+        // The innermost control around the target: one outside a grid (a grid placed in a button) is not in its cells.
+        const control = target.closest(cellControlSelector);
+        for (let root = target.closest<HTMLElement>('.bit-dtg'); root; root = root.parentElement?.closest<HTMLElement>('.bit-dtg') ?? null) {
+            const onControl = (!!control && control !== root && root.contains(control)) || Utils.isInNestedSurface(target, root);
+            const watch = nestedTargetWatches.get(root);
+            if (!watch || watch.onControl === onControl) continue;
+            watch.onControl = onControl;
+            watch.dotNetRef.invokeMethodAsync('OnCellControlClick', onControl).catch(() => { });
+        }
+    }
+
+    let cellClickGuardInstalled = false;
+    function installCellClickGuard() {
+        if (cellClickGuardInstalled || typeof document === 'undefined') return;
+        cellClickGuardInstalled = true;
+        // Capture-phase on the document, so the grids hear of the click before Blazor's own listener dispatches it.
+        const report = (e: MouseEvent) => {
+            if (e.target instanceof Element) reportCellControlClick(e.target);
+        };
+        document.addEventListener('click', report, { capture: true });
+        document.addEventListener('dblclick', report, { capture: true });
+    }
+    installCellClickGuard();
 
     let cellKeyGuardInstalled = false;
     function installCellKeyGuard() {

@@ -26,7 +26,7 @@
     @if (Grid.RowReorderEnabled)
     {
         specialColIndex++;
-        <div class="bit-dtg-cell bit-dtg-cell-reorder bit-dtg-sticky" style="@Grid.ReorderStickyStyle" role="gridcell" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
+        <div class="bit-dtg-cell bit-dtg-cell-reorder bit-dtg-sticky" style="@Grid.ReorderStickyStyle" role="gridcell" aria-colindex="@specialColIndex" @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
             @{ var reorderDisabled = Editing || Grid.Disabled; }
             <button type="button" class="bit-dtg-drag-handle"
                     draggable="@(!Editing && Grid.Disabled is false ? "true" : null)"
@@ -44,7 +44,7 @@
     @if (Grid.HasDetailColumn)
     {
         specialColIndex++;
-        <div class="bit-dtg-cell bit-dtg-cell-detail bit-dtg-sticky" style="@Grid.DetailStickyStyle" role="gridcell" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
+        <div class="bit-dtg-cell bit-dtg-cell-detail bit-dtg-sticky" style="@Grid.DetailStickyStyle" role="gridcell" aria-colindex="@specialColIndex" @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
             <button disabled="@(Grid.Disabled)" aria-disabled="@(Grid.Disabled ? "true" : null)" type="button" class="bit-dtg-icon-btn" tabindex="@CellControlTabIndex"
                     @onclick="() => Grid.ToggleDetailAsync(Item)" aria-label="@Grid.Strings.ToggleDetailsLabel" aria-expanded="@(Grid.IsDetailExpanded(Item) ? "true" : "false")">
                 <span class="@(Grid.IsDetailExpanded(Item) ? null : "bit-dtg-dir-glyph")" aria-hidden="true">@(Grid.IsDetailExpanded(Item) ? "▾" : "▸")</span>
@@ -55,7 +55,7 @@
     @if (Grid.HasSelectColumn)
     {
         specialColIndex++;
-        <div class="bit-dtg-cell bit-dtg-cell-select bit-dtg-sticky" style="@Grid.SelectStickyStyle" role="gridcell" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
+        <div class="bit-dtg-cell bit-dtg-cell-select bit-dtg-sticky" style="@Grid.SelectStickyStyle" role="gridcell" aria-colindex="@specialColIndex" @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
             @* Shift+click extends the selection from the last plainly-clicked row. The modifier is read
                on mousedown because the change event that carries the new value exposes no modifier
                keys, and mousedown is dispatched before it. *@
@@ -93,7 +93,7 @@
 
     @if (Grid.HasCommandColumn)
     {
-        <div class="bit-dtg-cell bit-dtg-cell-command" role="gridcell" aria-colindex="@Grid.AriaCommandColIndex" @onclick:stopPropagation="true">
+        <div class="bit-dtg-cell bit-dtg-cell-command" role="gridcell" aria-colindex="@Grid.AriaCommandColIndex" @onclick:stopPropagation="true" @ondblclick:stopPropagation="true">
             @if (Grid.IsCellEditMode)
             {
                 @* A cell opens and commits on its own (Enter, F2, a double-click; Enter or leaving it), so the row keeps only Delete. *@
@@ -183,7 +183,7 @@
             {
                 var toggleDisabled = Grid.Disabled || Grid.IsTreeNodeLoading(Item);
                 <button type="button" class="bit-dtg-icon-btn bit-dtg-tree-toggle" tabindex="@CellControlTabIndex"
-                        @onclick="() => Grid.ToggleTreeNodeAsync(Item)" @onclick:stopPropagation="true"
+                        @onclick="() => Grid.ToggleTreeNodeAsync(Item)" @onclick:stopPropagation="true" @ondblclick:stopPropagation="true"
                         @onkeydown:stopPropagation="true"
                         disabled="@toggleDisabled"
                         aria-disabled="@(toggleDisabled ? "true" : null)"
@@ -275,9 +275,11 @@
             ? column.GetFormattedValue(Item)
             : null;
 
-    private Task OnRowClick() => Grid.HandleRowClickAsync(Item);
+    // A click on a control in a cell - a template's Edit or Delete button, say - is the control's, not the row's
+    // (see BitDataGrid.ClickOnCellControl). Only the pointer is gated: the row's own Enter and Space go on below.
+    private Task OnRowClick() => Grid.ClickOnCellControl ? Task.CompletedTask : Grid.HandleRowClickAsync(Item);
 
-    private Task OnRowDoubleClick() => Grid.HandleRowDoubleClickAsync(Item);
+    private Task OnRowDoubleClick() => Grid.ClickOnCellControl ? Task.CompletedTask : Grid.HandleRowDoubleClickAsync(Item);
 
     // Keyboard activation of the row-as-toggle: Enter and Space do exactly what a click does (so the
     // edit guard, the single-selection and the expansion all stay in one place, and aria-expanded keeps
