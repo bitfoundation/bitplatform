@@ -138,6 +138,42 @@
     </div>
 </div>
 
+<div class="bb-card" id="lazy-loading">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Lazy loading on WebAssembly</h3>
+    <p class="bb-card-desc">
+        There is nothing to register, so a WebAssembly app can fetch BbScanner only when someone opens a page
+        with a scanner on it. Mark the assembly as lazy loaded in the project that runs in the browser, and load
+        it before that page first renders:
+    </p>
+    <pre class="bb-code">&lt;<span class="k">ItemGroup</span>&gt;
+  &lt;<span class="k">BlazorWebAssemblyLazyLoad</span> Include=<span class="s">"Bit.BbScanner.wasm"</span> /&gt;
+&lt;/<span class="k">ItemGroup</span>&gt;</pre>
+    <pre class="bb-code">@@* App.razor: the router waits for OnNavigateAsync before it renders the page. *@@
+<span class="k">@@using</span> Microsoft.AspNetCore.Components.WebAssembly.Services
+<span class="k">@@inject</span> LazyAssemblyLoader LazyAssemblyLoader
+
+&lt;<span class="k">Router</span> AppAssembly=<span class="s">"typeof(App).Assembly"</span> OnNavigateAsync=<span class="s">"OnNavigateAsync"</span>&gt;
+    ...
+&lt;/<span class="k">Router</span>&gt;
+
+<span class="k">@@code</span> {
+    <span class="k">private async</span> Task OnNavigateAsync(NavigationContext context)
+    {
+        <span class="k">if</span> (context.Path == <span class="s">"scan"</span>)
+            <span class="k">await</span> LazyAssemblyLoader.LoadAssembliesAsync([<span class="s">"Bit.BbScanner.wasm"</span>]);
+    }
+}</pre>
+    <p class="bb-card-desc">
+        The stylesheet is still injected at startup, since the package's Blazor initializer does not wait for the
+        assembly, and the component imports its JavaScript module the first time it renders. Only the pages
+        loaded after the assembly may use BbScanner's types - not a layout, a component on every page or
+        <code>Program.cs</code>. Do not lazy load in an AOT build: AOT compiles every assembly into
+        <code>dotnet.native.wasm</code>, so there is nothing left to download later, and lazy loading an
+        AOT-compiled assembly can fail at startup. Since camera scanning wants AOT, lazy loading suits an app that
+        reads still images or scans rarely.
+    </p>
+</div>
+
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> How it works</h3>
     <p class="bb-card-desc">
