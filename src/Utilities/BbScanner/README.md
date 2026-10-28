@@ -679,7 +679,52 @@ itself. The component, its parameters and its events are the same everywhere, an
 
 The fastest of them. The component, the frame loop and the decoder all run in the browser, and every frame crosses
 from JavaScript into managed memory exactly once. In a standalone WebAssembly app nothing else is needed: put
-`<BbScanner />` on a page. Compile the client ahead of time for production - see [performance](#performance).
+`<BbScanner />` on a page. Compile the client ahead of time for production - see [performance](#performance). An app
+that is not compiled ahead of time can download the library only when a page with a scanner opens - see
+[lazy loading](#lazy-loading-on-webassembly).
+
+### Lazy loading on WebAssembly
+
+There is nothing to register, so nothing has to run at startup, and a WebAssembly app can fetch BbScanner only when
+someone opens a page with a scanner on it. Mark the assembly as lazy loaded in the project that runs in the browser,
+and load it before that page first renders:
+
+```xml
+<ItemGroup>
+  <BlazorWebAssemblyLazyLoad Include="Bit.BbScanner.wasm" />
+</ItemGroup>
+```
+
+```razor
+@* App.razor: the router waits for OnNavigateAsync before it renders the page. *@
+@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@inject LazyAssemblyLoader LazyAssemblyLoader
+
+<Router AppAssembly="typeof(App).Assembly" OnNavigateAsync="OnNavigateAsync">
+    ...
+</Router>
+
+@code {
+    private async Task OnNavigateAsync(NavigationContext context)
+    {
+        // The page with the scanner on it: fetch BbScanner before it renders.
+        if (context.Path == "scan")
+            await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.BbScanner.wasm"]);
+    }
+}
+```
+
+The rest works as it does without lazy loading: the package's Blazor initializer is JavaScript, so it injects the
+stylesheet at startup without waiting for the assembly, and the component imports its JavaScript module the first time
+it renders.
+
+- Only the pages loaded after the assembly may use BbScanner's types. A page in the app's own assembly can hold a
+  `<BbScanner>` and a `BbBarcodeResult` field, since the router loads the assembly before rendering it; a layout, a
+  component on every page or `Program.cs` cannot.
+- Do not lazy load in an AOT build. AOT compiles every assembly into `dotnet.native.wasm`, so there is nothing left to
+  download later, and lazy loading an AOT-compiled assembly can fail at startup. Since an app that scans with the
+  camera should be compiled ahead of time (see [performance](#performance)), lazy loading suits one that is not: one
+  that reads still images, or scans rarely enough that the interpreter's speed is acceptable.
 
 ### Blazor Web App
 

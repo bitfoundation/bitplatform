@@ -93,7 +93,7 @@ public static class DocsCatalog
         [
             new("/getting-started", "Getting started",
                 "Install the package, add the namespace and put a working scanner on any interactive page - WebAssembly, Server, Auto or Hybrid; there is nothing to register.",
-                "install setup nuget package quick start using namespace rendermode InteractiveWebAssembly InteractiveServer InteractiveAuto blazor server hybrid maui webview android ios windows camera permission first scanner pipeline how it works",
+                "install setup nuget package quick start using namespace rendermode InteractiveWebAssembly InteractiveServer InteractiveAuto blazor server hybrid maui webview android ios windows camera permission first scanner pipeline how it works lazy load lazyassemblyloader blazorwebassemblylazyload aot",
                 typeof(GettingStarted)),
             new("/samples", "Sample barcodes",
                 "One scannable example of every supported symbology, drawn as SVG and decoded in place without a camera.",
