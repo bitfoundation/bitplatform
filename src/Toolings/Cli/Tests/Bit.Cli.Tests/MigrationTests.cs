@@ -185,6 +185,18 @@ public class MigrationTests
     }
 
     [TestMethod]
+    public async Task AProviderBitDoesntKnow_Should_StillGetItsMigrations()
+    {
+        using var host = new TestHost();
+        var project = CreateProject(host);
+        File.WriteAllText(Path.Combine(ServerApi(project), "Contoso.Server.Api.csproj"), "<Project><ItemGroup><PackageReference Include=\"Oracle.EntityFrameworkCore\" /></ItemGroup></Project>");
+        File.WriteAllText(Path.Combine(ServerApi(project), "Program.Services.cs"), "options.UseOracle(connectionString);");
+
+        Assert.AreEqual(CliApp.ExitOk, await RunInAsync(host, project, "migration", "add", "Initial"), host.Output);
+        Assert.IsTrue(host.Runner.Calls.Any(c => c.Arguments.Contains("migrations") && c.Arguments.Contains("Initial")));
+    }
+
+    [TestMethod]
     public async Task AProjectWithoutAnOfflineDatabase_Should_BeToldSo()
     {
         using var host = new TestHost();

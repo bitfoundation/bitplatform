@@ -19,7 +19,7 @@ public sealed partial class ProjectMigrations(CliServices cli, ProjectContext pr
 
     public bool HasOfflineDatabase => File.Exists(Path.Combine(project.ClientCoreDirectory, "Infrastructure", "Data", $"{OfflineContext}.cs")) && Directory.Exists(project.ServerWebDirectory);
 
-    public bool HasDatabaseProvider => project.Database is not "Other" && ReadText(Path.Combine(project.ServerApiDirectory, "Program.Services.cs")).Contains(MissingProviderText, StringComparison.Ordinal) is false;
+    public bool HasDatabaseProvider => ReadText(Path.Combine(project.ServerApiDirectory, "Program.Services.cs")).Contains(MissingProviderText, StringComparison.Ordinal) is false;
 
     private string[] OfflineArguments => ["--context", OfflineContext, "--project", $"../../Client/{project.Name}.Client.Core/{project.Name}.Client.Core.csproj"];
 

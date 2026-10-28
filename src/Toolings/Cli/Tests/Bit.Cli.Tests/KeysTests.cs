@@ -80,12 +80,21 @@ public class KeysTests
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("keys", "certificate", "--production"));
         Assert.IsFalse(File.Exists(Path.Combine(host.WorkingDirectory, "AppCertificate.key")));
 
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("keys", "certificate", "--production", "-o", Path.Combine(host.WorkingDirectory, "keys", "production")));
+        Assert.IsFalse(Directory.Exists(Path.Combine(host.WorkingDirectory, "keys")));
+
         var outside = Path.Combine(host.Root, "keys");
         host.Runner.On("git", "rev-parse --show-toplevel", 128, "fatal: not a git repository");
 
         Assert.AreEqual(0, await host.RunAsync("keys", "certificate", "--production", "--pfx", "-o", outside));
         var pair = AppCertificates.Read(outside, AppCertificates.ActiveName)!;
         StringAssert.Contains(AppCertificates.Subject(pair), "OU=Production");
+
+        if (OperatingSystem.IsWindows() is false)
+        {
+            Assert.AreEqual(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(Path.Combine(outside, "AppCertificate.key")));
+            Assert.AreEqual(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(Path.Combine(outside, "AppCertificate.pfx")));
+        }
 
         var password = System.Text.RegularExpressions.Regex.Match(host.Output, @"password (?<value>[A-Za-z0-9]{32})").Groups["value"].Value;
         using var pfx = X509CertificateLoader.LoadPkcs12FromFile(Path.Combine(outside, "AppCertificate.pfx"), password);
@@ -147,6 +156,23 @@ public class KeysTests
         StringAssert.Contains(host.Output, fingerprint);
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("keys", "android"));
+    }
+
+    [TestMethod]
+    public async Task KeysApple_Should_KeepTheP12OutOfTheRepository()
+    {
+        using var apple = new FakeAppStoreConnect();
+        using var host = new TestHost();
+        host.Runner.Executables["git"] = "git";
+        host.Runner.On("git", "rev-parse --show-toplevel", 0, host.WorkingDirectory);
+        host.Runner.On("git", "check-ignore", 1);
+        var p8 = Path.Combine(host.Root, "AuthKey_2X9R4HXF34.p8");
+        File.WriteAllText(p8, apple.Key.PrivateKey);
+
+        Assert.AreEqual(CliApp.ExitUsage, await KeysCommand.AppleAsync(host.Services, new AppleKeysRequest(apple.Key.IssuerId, apple.Key.KeyId, p8, "com.contoso.shop", null, host.WorkingDirectory), CancellationToken.None, apple));
+
+        Assert.IsEmpty(apple.Requests);
+        Assert.IsFalse(File.Exists(Path.Combine(host.WorkingDirectory, "com.contoso.shop.p12")));
     }
 
     private static string Project(TestHost host, string name)

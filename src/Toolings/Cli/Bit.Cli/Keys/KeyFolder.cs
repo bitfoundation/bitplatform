@@ -21,21 +21,49 @@ public static class KeyFolder
         return folder;
     }
 
-    public static void RestrictToOwner(string file)
+    public static void WriteSecret(string file, byte[] content)
     {
+        var directory = Path.GetDirectoryName(Path.GetFullPath(file))!;
+        Directory.CreateDirectory(directory);
+
+        var temporary = Path.Combine(directory, $".{Path.GetFileName(file)}.{Guid.NewGuid():N}.tmp");
+        var options = new FileStreamOptions { Mode = FileMode.CreateNew, Access = FileAccess.Write };
+
         if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
         {
-            File.SetUnixFileMode(file, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+            options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+        }
+
+        try
+        {
+            using (var stream = new FileStream(temporary, options))
+            {
+                stream.Write(content);
+            }
+
+            File.Move(temporary, file, overwrite: true);
+        }
+        catch
+        {
+            File.Delete(temporary);
+            throw;
         }
     }
+
+    public static void WriteSecret(string file, string content) => WriteSecret(file, new System.Text.UTF8Encoding(false).GetBytes(content));
 
     public static string NewPassword() => RandomNumberGenerator.GetString(PasswordCharacters, 32);
 
     public static async Task<string?> TrackedRepositoryAsync(IProcessRunner runner, string file, CancellationToken cancellationToken)
     {
-        var folder = Path.GetDirectoryName(Path.GetFullPath(file))!;
+        var folder = Path.GetDirectoryName(Path.GetFullPath(file));
 
-        if (Directory.Exists(folder) is false || runner.FindExecutable("git") is null)
+        while (folder is not null && Directory.Exists(folder) is false)
+        {
+            folder = Path.GetDirectoryName(folder);
+        }
+
+        if (folder is null || runner.FindExecutable("git") is null)
             return null;
 
         var root = await runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = ["rev-parse", "--show-toplevel"], WorkingDirectory = folder, Timeout = TimeSpan.FromSeconds(30) }, cancellationToken);

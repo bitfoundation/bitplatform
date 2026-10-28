@@ -244,6 +244,20 @@ public class PipelineTests
     }
 
     [TestMethod]
+    public async Task WithoutATerminal_Pipeline_Should_NeedYesBeforeItChangesAnything()
+    {
+        using var host = Repository();
+        Workflow(host, "cd.yml", "on: push\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: Production\n    steps:\n      - run: echo ${{ secrets.APP_CERTIFICATE }}\n");
+        host.Runner.On("gh", "api repos/contoso/shop/environments/Production --silent", 1, "HTTP 404");
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("pipeline"));
+
+        StringAssert.Contains(host.FlatOutput, "--yes");
+        Assert.IsEmpty(Stored(host));
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.Contains("PUT")));
+    }
+
+    [TestMethod]
     public async Task Pipeline_Should_RefuseARepositoryWithoutGitHubWorkflows()
     {
         using var host = Repository();

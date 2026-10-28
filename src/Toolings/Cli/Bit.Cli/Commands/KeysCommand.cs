@@ -101,8 +101,7 @@ public static partial class KeysCommand
             {
                 var password = KeyFolder.NewPassword();
                 var pfx = Path.Combine(folder, $"{AppCertificates.ActiveName}.pfx");
-                await File.WriteAllBytesAsync(pfx, AppCertificates.ExportPfx(pair, password), cancellationToken);
-                KeyFolder.RestrictToOwner(pfx);
+                KeyFolder.WriteSecret(pfx, AppCertificates.ExportPfx(pair, password));
                 cli.Console.Step(StepStatus.Succeeded, $"Created {AppCertificates.ActiveName}.pfx", $"password {password}");
             }
 
@@ -144,9 +143,7 @@ public static partial class KeysCommand
                 return cli.UsageError("key-in-repository", $"The keystore would be in the git repository {repository}, where a commit takes it along. Pick a file outside it with -o.");
 
             var keystore = AndroidKeystore.Create(alias);
-            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-            await File.WriteAllBytesAsync(path, keystore.Content, cancellationToken);
-            KeyFolder.RestrictToOwner(path);
+            KeyFolder.WriteSecret(path, keystore.Content);
 
             cli.Console.Step(StepStatus.Succeeded, "Created the Android signing key", path);
             cli.Console.Out.MarkupLine($"  [grey]Alias[/]     {Markup.Escape(keystore.Alias)}");
@@ -260,6 +257,11 @@ public static partial class KeysCommand
         if (File.Exists(certificatePath))
         {
             return cli.UsageError("certificate-exists", $"{certificatePath} already exists, and it may be the only copy of a certificate's private key. Move it away first, or pass another folder with -o.");
+        }
+
+        if (await KeyFolder.TrackedRepositoryAsync(cli.Runner, certificatePath, cancellationToken) is { } repository)
+        {
+            return cli.UsageError("key-in-repository", $"The .p12 holds a private key and would be in the git repository {repository}, where a commit takes it along. Pick a folder outside it with -o.");
         }
 
         try

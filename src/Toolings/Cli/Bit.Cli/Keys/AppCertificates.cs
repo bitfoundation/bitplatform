@@ -35,9 +35,8 @@ public static partial class AppCertificates
 
     public static void Write(string directory, string name, AppCertificatePair pair)
     {
-        AtomicFile.WriteAllText(Path.Combine(directory, $"{name}.key"), pair.PrivateKey);
+        KeyFolder.WriteSecret(Path.Combine(directory, $"{name}.key"), pair.PrivateKey);
         AtomicFile.WriteAllText(Path.Combine(directory, $"{name}.crt"), pair.Certificate);
-        KeyFolder.RestrictToOwner(Path.Combine(directory, $"{name}.key"));
     }
 
     public static AppCertificatePair? Read(string directory, string name)

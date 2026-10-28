@@ -144,7 +144,10 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             return CliApp.ExitOk;
         }
 
-        if (options.Yes is false && cli.IsInteractive && cli.Prompter.Confirm($"Store the missing secrets in {repository}?", true) is false)
+        if (options.Yes is false && cli.IsInteractive is false)
+            return cli.UsageError("confirmation-needed", $"bit pipeline changes the secrets of {repository}, and without a terminal it can't ask first. Pass --yes to go ahead.");
+
+        if (options.Yes is false && cli.Prompter.Confirm($"Store the missing secrets in {repository}?", true) is false)
             return CliApp.ExitOk;
 
         foreach (var environment in newEnvironments)
@@ -334,8 +337,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             appleSignings[(bundleId, profileName)] = signing;
 
             var copy = Path.Combine(KeyFolder.For(cli.Environment, repository), $"{bundleId}.{DateTimeOffset.UtcNow:yyyyMMddHHmmss}.p12");
-            await File.WriteAllBytesAsync(copy, signing.Pkcs12, cancellationToken);
-            KeyFolder.RestrictToOwner(copy);
+            KeyFolder.WriteSecret(copy, signing.Pkcs12);
             appleCertificates.Add($"The App Store certificate is kept in {copy} with the password {signing.Pkcs12Password}; it expires on {signing.CertificateExpiry:yyyy-MM-dd}.");
 
             if (signing.TeamId is { } teamId && ProjectContext.FindProjectName(root) is { } project && WellKnownFiles.AddAppleApp(WellKnownFiles.AppleAppSiteAssociationPath(root, project), teamId, bundleId))
@@ -391,8 +393,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             File.Move(path, Path.Combine(Path.GetDirectoryName(path)!, $"{alias}.{DateTimeOffset.UtcNow:yyyyMMddHHmmss}.keystore"));
         }
 
-        File.WriteAllBytes(path, created.Content);
-        KeyFolder.RestrictToOwner(path);
+        KeyFolder.WriteSecret(path, created.Content);
         return created;
     }
 
