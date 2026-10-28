@@ -55,6 +55,35 @@ public sealed class BaletteService : IBaletteService
         PlatformDetected?.Invoke();
     }
 
+    /// <summary>
+    /// The toggle shortcut and the strings of the modal palette - its parameters can set them apart from the options - so
+    /// a <see cref="BaletteTrigger"/> shows and announces what the palette it opens answers to. Null while there is none.
+    /// </summary>
+    internal (object Owner, BaletteKeyboardShortcut? ToggleShortcut, BaletteStrings Strings)? ModalPalette { get; private set; }
+
+    /// <summary>Raised when <see cref="ModalPalette"/> changed.</summary>
+    internal event Action? ModalPaletteChanged;
+
+    internal void SetModalPalette(object owner, BaletteKeyboardShortcut? toggleShortcut, BaletteStrings strings)
+    {
+        if (ModalPalette is { } current && ReferenceEquals(current.Owner, owner) && Equals(current.ToggleShortcut, toggleShortcut) && ReferenceEquals(current.Strings, strings))
+        {
+            return;
+        }
+
+        ModalPalette = (owner, toggleShortcut, strings);
+        ModalPaletteChanged?.Invoke();
+    }
+
+    internal void ClearModalPalette(object owner)
+    {
+        if (ModalPalette is { } current && ReferenceEquals(current.Owner, owner))
+        {
+            ModalPalette = null;
+            ModalPaletteChanged?.Invoke();
+        }
+    }
+
     public IReadOnlyCollection<BaletteCommand> Commands
     {
         get
