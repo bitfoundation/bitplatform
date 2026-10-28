@@ -103,6 +103,25 @@ bit setup --platforms android
 
 With a native platform, it first checks that the app id in Client.Maui's project file is one the native apps can have. It installs missing tools, build support and packages, builds, installs Playwright's Chromium for the UI tests, installs the VS Code extensions the project recommends when VS Code is installed, and starts the project the way `bit new` does.
 
+## bit run
+
+Builds and starts the project in the current folder:
+
+```bash
+bit run
+bit run android
+bit run ios
+```
+
+- Without a platform, it starts the project the way `bit new` does at its end: `aspire start` with Aspire, or a build and `dotnet run` of the servers without it. It opens the app in your browser, and the Aspire dashboard with Aspire, and keeps it running until you close the terminal or press Ctrl+C.
+- `android` uses a connected device or a running emulator. Without one, it gets the Android emulator ready in the Android SDK the build uses: it installs the emulator when it's missing, and when there's no virtual device yet, a Google APIs system image for this machine's CPU (x86_64 or arm64-v8a) at the Android version the app targets, and a virtual device, `bit_android_<version>`, with 8 GB of storage for debug installs. On Windows, when the SDK's folder needs administrator rights for that, Windows asks once. It starts the device, waits up to 10 minutes for it to boot, and turns off its autofill and stylus handwriting, because Google's "Save password?" and the keyboard's stylus sheets cover the app and take Back presses. Then it builds, installs and starts the app with `dotnet build -t:Run`.
+- `ios` runs the app in the iOS simulator and `macos` on the Mac, both on macOS only. `windows` builds and starts Client.Windows, on Windows only.
+- When this machine can't build that app yet, it says so and leaves the installing to `bit setup --platforms <platform>`.
+- The apps use the project's server, so start that too, with `bit run` in another terminal.
+- `-p, --property <name=value>` passes an MSBuild property to the build.
+
+In VS Code, bit Boilerplate's **Run the Android app** task runs `bit run android`.
+
 ## bit diff
 
 Shows what changed in bit Boilerplate between two versions, for your project:
@@ -352,6 +371,7 @@ Collect the profile in the job that publishes the app, right before the AOT publ
 - **VS Code extensions** the project's `.vscode/extensions.json` recommends, only the missing ones, with `code --install-extension`.
 - **Playwright's Chromium**, in Playwright's own browser folder, with the driver the project's tests were built with.
 - **A container runtime**, when you tick it: on Windows, Podman for your user only, its WSL machine, and a sign-in entry under `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` that starts that machine; on macOS, Colima, the docker CLI and buildx, with Colima started at sign-in by `brew services`; on Linux, Docker Engine.
+- **The Android emulator**, only when `bit run android` finds no device: the emulator and a system image in the Android SDK, and a virtual device in `~/.android/avd`.
 - **Container images** the project's AppHost uses, which Docker or Podman pulls during the first Aspire start and keeps.
 - **Administrator rights**: on Windows, the steps that need them (long paths, WSL, installers that need admin) run in one elevated PowerShell, so Windows asks once. It runs only the script bit wrote, checked by its hash, gives each command a time limit, and Ctrl+C stops it. On macOS and Linux, `sudo` asks for your password once.
 - **A private GitHub repository**, only with `--github-repo`, on the account you sign in with. The GitHub CLI keeps that sign-in, and git uses it to push.
