@@ -89,6 +89,10 @@
                 <td><code>AppAssembly</code> isn't set, or the page lives in another assembly that isn't in <code>AdditionalAssemblies</code>. If it only breaks in a published trimmed build, the component was trimmed away - preserve routable components as you would for the built-in Router.</td>
             </tr>
             <tr>
+                <td>A page is missing and the log warns that Brouter <em>couldn't load some types</em></td>
+                <td>The page, or one of its attributes, needs an assembly that is missing or isn't loaded yet, so discovery skipped it. On WebAssembly that's usually an assembly marked <code>BlazorWebAssemblyLazyLoad</code>: load it eagerly instead, since once it has failed to load, the scanned assembly's code can't use it even after it's loaded.</td>
+            </tr>
+            <tr>
                 <td><code>/products/list</code> 404s but <code>/products/en/list</code> works</td>
                 <td>Working as intended. A <strong>middle</strong> optional is required at match time - only a trailing run of optionals can be omitted. This is exact framework parity; declare a second route if you want both shapes.</td>
             </tr>

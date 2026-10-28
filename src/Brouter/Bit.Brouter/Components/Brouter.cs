@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace Bit.Brouter;
@@ -274,6 +275,9 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     private Assembly? _lastAppAssembly;
     private Assembly[]? _lastAdditionalAssemblies;
     private bool _discoveryComputed;
+
+    // Assemblies LogSkippedTypes has already warned about.
+    private HashSet<Assembly>? _assembliesWithSkippedTypes;
 
     // Assemblies handed back by the OnNavigateAsync hook at runtime (lazy loading). Merged into
     // every discovery scan alongside AppAssembly/AdditionalAssemblies; grows monotonically.
@@ -1303,7 +1307,19 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
         _discoveredRoutes = (AppAssembly is null && (scanSet is null || scanSet.Length == 0))
             ? []
-            : BrouteScanner.Discover(AppAssembly, scanSet);
+            : BrouteScanner.Discover(AppAssembly, scanSet, LogSkippedTypes);
+    }
+
+    private void LogSkippedTypes(Assembly assembly, IReadOnlyList<Exception> failures)
+    {
+        // Every scan reads every assembly again and the same types fail the same way, so each assembly is reported once.
+        if ((_assembliesWithSkippedTypes ??= []).Add(assembly) is false) return;
+
+        _services.GetService<ILogger<Brouter>>()?.LogWarning(
+            "Brouter couldn't load some types of {Assembly} while discovering routes and skipped them, so the routes they declare are missing. " +
+            "On WebAssembly, if they need an assembly marked BlazorWebAssemblyLazyLoad, load that assembly eagerly instead: " +
+            "once it fails to load, the scanned assembly's code can't use it even after it's loaded. {Reasons}",
+            assembly.GetName().Name, string.Join(" ", failures.Select(f => f.Message).Distinct()));
     }
 
     /// <summary>

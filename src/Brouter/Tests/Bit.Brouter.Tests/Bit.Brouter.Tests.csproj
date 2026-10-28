@@ -18,6 +18,8 @@
   <ItemGroup>
     <PackageReference Include="bunit" Version="2.13.3" />
     <PackageReference Include="MSTest" Version="4.5.1" />
+    <!-- Compiles the assemblies of UnloadableTypeDiscoveryTests, one of which references an assembly that's never loaded. -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
   </ItemGroup>
 
   <ItemGroup>
