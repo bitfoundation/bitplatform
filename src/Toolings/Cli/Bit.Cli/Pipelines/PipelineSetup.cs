@@ -44,6 +44,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
     private string repository = "";
     private IReadOnlyList<string> workflowTexts = [];
     private AndroidKeystore? keystore;
+    private HashSet<string> repositorySecrets = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<string> changedFiles = [];
     private bool failed;
 
@@ -92,8 +93,10 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             return CliApp.ExitOk;
         }
 
-        if (await ListSecretsAsync(null, cancellationToken) is not { } repositorySecrets)
+        if (await ListSecretsAsync(null, cancellationToken) is not { } listed)
             return CliApp.ExitFailed;
+
+        repositorySecrets = listed;
 
         var existing = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
         var newEnvironments = new List<string>();
@@ -295,17 +298,22 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
 
     private async Task<string?> AskAsync(string? environment, string name, CancellationToken cancellationToken)
     {
-        if (cli.IsInteractive is false || options.Yes)
-            return null;
-
         var hint = hints.GetValueOrDefault(name);
 
         if (name is VapidSubject)
         {
             var email = (await Runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = ["config", "user.email"], WorkingDirectory = root, Timeout = TimeSpan.FromSeconds(30) }, cancellationToken)).Output.Trim();
-            var subject = cli.Prompter.Text($"{name} for {Scope(environment)}: {hint}", email.Contains('@', StringComparison.Ordinal) ? $"mailto:{email}" : "");
+            var suggested = email.Contains('@', StringComparison.Ordinal) ? $"mailto:{email}" : "";
+
+            if (cli.IsInteractive is false || options.Yes)
+                return suggested;
+
+            var subject = cli.Prompter.Text($"{name} for {Scope(environment)}: {hint}", suggested);
             return subject.Length == 0 || subject.StartsWith("mailto:", StringComparison.Ordinal) || subject.StartsWith("https://", StringComparison.Ordinal) ? subject : $"mailto:{subject}";
         }
+
+        if (cli.IsInteractive is false || options.Yes)
+            return null;
 
         var answer = cli.Prompter.Secret($"{name} for {Scope(environment)}{(hint is null ? "" : $": {hint}")} (@file reads a file, empty skips it)");
 
@@ -338,6 +346,11 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             result.Succeeded ? string.Join(", ", new[] { Scope(environment), detail }.OfType<string>()) : LastLine(result));
 
         failed |= result.Succeeded is false;
+
+        if (result.Succeeded && environment is null)
+        {
+            repositorySecrets.Add(name);
+        }
     }
 
     private void Show(IReadOnlyList<WorkflowSecret> wanted, Func<WorkflowSecret, bool> isSet)
