@@ -998,7 +998,10 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
                 _groups[i] = new BitDataGridGroupDescriptor { ColumnId = column.Id, Direction = _groups[i].Direction };
         }
 
-        InvokeAsync(RefreshAsync);
+        // A server-sortable template column that lost its ColumnId now goes by a generated id, which no server
+        // orders by: its sort goes rather than travel under that id.
+        if (DropSortWithoutKey(column)) InvokeAsync(RefreshWithoutDroppedSortAsync);
+        else InvokeAsync(RefreshAsync);
     }
 
     // ------------------------------------------------------- Lifecycle
@@ -2301,13 +2304,37 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     }
 
     // ------------------------------------------------------------- Sorting
-    internal bool ColumnSortable(BitDataGridColumn<TItem> column)
-        // A custom SortBy key makes a template-only column sortable; otherwise a bound field is required.
-        // In server mode a SortBy delegate cannot be forwarded through the read request, and in
-        // queryable mode a delegate has no expression tree to translate, so only field-backed columns
-        // are sortable there.
-        => (column.HasField || (column.SortBy is not null && !IsServerMode && !IsInfiniteMode && !IsQueryableMode))
-        && (column.Sortable ?? Sortable);
+    internal bool ColumnSortable(BitDataGridColumn<TItem> column) => HasSortKey(column) && (column.Sortable ?? Sortable);
+
+    // Whether the grid's source can order the column at all; Sortable only decides whether its header does. Every
+    // source orders a field-backed column, by its field or by its id. A template-only column has no field: on the
+    // client its SortBy delegate is the key. In server and infinite mode the read request carries the column's id
+    // rather than a delegate, so such a column sorts there only when the app opted it in with ServerSortable and
+    // named it with a ColumnId its server orders by - a generated id means nothing to a server. A queryable source
+    // needs an expression tree, which a delegate cannot give it, so only field-backed columns sort there.
+    private bool HasSortKey(BitDataGridColumn<TItem> column)
+    {
+        if (column.HasField) return true;
+        if (IsQueryableMode) return false;
+        if (IsServerMode || IsInfiniteMode) return column.ServerSortable && column.HasExplicitId;
+        return column.SortBy is not null;
+    }
+
+    // Drops the sort of a column that lost its sort key (its SortBy, its ServerSortable or its ColumnId), so the
+    // source is not asked to order by a key that is gone and the header, no longer a sort button, does not show a
+    // sort nobody can clear. Returns whether a sort went.
+    private bool DropSortWithoutKey(BitDataGridColumn<TItem> column)
+    {
+        if (HasSortKey(column) || _sorts.RemoveAll(s => s.ColumnId == column.Id) == 0) return false;
+        Reprioritize();
+        return true;
+    }
+
+    private async Task RefreshWithoutDroppedSortAsync()
+    {
+        await NotifySortChangeAsync();
+        await RefreshAsync();
+    }
 
     internal BitDataGridSortDescriptor? GetSort(BitDataGridColumn<TItem> column)
         => _sorts.FirstOrDefault(s => s.ColumnId == column.Id);
@@ -4398,11 +4425,13 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// <summary>
     /// Programmatically sorts by the given column. <paramref name="direction"/> of
     /// <see cref="BitDataGridSortDirection.None"/> removes the column's sort. When
-    /// <paramref name="additive"/> is false (default) all other sorts are cleared first.
+    /// <paramref name="additive"/> is false (default) all other sorts are cleared first. A column the grid's
+    /// source cannot order (see <see cref="BitDataGridColumn{TItem}.Sortable"/>) is left as it is.
     /// </summary>
     public async Task SortByAsync(string columnId, BitDataGridSortDirection direction, bool additive = false)
     {
-        if (!_columnsById.ContainsKey(columnId)) return;
+        if (!_columnsById.TryGetValue(columnId, out var column)) return;
+        if (direction != BitDataGridSortDirection.None && !HasSortKey(column)) return;
         if (!additive) _sorts.Clear();
         else _sorts.RemoveAll(s => s.ColumnId == columnId);
 
@@ -4511,8 +4540,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     /// <summary>
     /// Restores a state snapshot captured by <see cref="GetState"/>. Descriptors and column entries
-    /// referencing ids that no longer exist are ignored; columns missing from the snapshot keep their
-    /// relative order after the restored ones.
+    /// referencing ids that no longer exist are ignored, as are sorts of columns the grid's source cannot
+    /// order; columns missing from the snapshot keep their relative order after the restored ones.
     /// <para>
     /// Restoring is deliberately silent: <see cref="OnSortChange"/>, <see cref="OnFilterChange"/>,
     /// <see cref="OnGroupChange"/> and <see cref="OnPageChange"/> report changes the view undergoes,
@@ -4549,7 +4578,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         _sorts.Clear();
         foreach (var s in state.Sorts.OrderBy(s => s.Priority))
         {
-            if (s.ColumnId is not null && _columnsById.ContainsKey(s.ColumnId) && s.Direction != BitDataGridSortDirection.None)
+            if (s.ColumnId is not null && _columnsById.TryGetValue(s.ColumnId, out var sortColumn) && HasSortKey(sortColumn)
+                && s.Direction != BitDataGridSortDirection.None)
                 _sorts.Add(new BitDataGridSortDescriptor { ColumnId = s.ColumnId, Direction = s.Direction, Priority = _sorts.Count + 1 });
         }
 
@@ -4658,6 +4688,17 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     {
         InvalidateVisibleColumns();
         InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>
+    /// Called by a column when its <c>SortBy</c> comes or goes, or its <c>ServerSortable</c> flips, from the parent
+    /// after registration: the header renders again as a sort button or as plain text, and a sort the column can no
+    /// longer carry is dropped.
+    /// </summary>
+    internal void NotifyColumnSortKeyChanged(BitDataGridColumn<TItem> column)
+    {
+        if (DropSortWithoutKey(column)) InvokeAsync(RefreshWithoutDroppedSortAsync);
+        else InvokeAsync(StateHasChanged);
     }
 
     // ----------------------------------------------------------- Identity
