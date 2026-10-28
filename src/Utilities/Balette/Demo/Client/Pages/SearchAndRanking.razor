@@ -407,19 +407,29 @@
     private static readonly string[] Typos = ["settigns", "langauge", "shortcts"];
 
     private const string LabExample = """
-        // What the lab runs on every keystroke: the palette's own two steps, over the root commands.
+        // What the lab runs on every keystroke: the palette's own two steps, over what its root page lists.
         BaletteQuery query = BaletteQuery.Parse("rc");
+        var typing = query.Terms.Count > 0;
+
+        // The visible commands without a parent and, while typing, the nested ones found from the root too
+        // (SearchNestedCommands) - except the rows of a multi-select page.
+        var candidates = Palette.Commands
+            .Where(c => c.IsVisible?.Invoke() != false)
+            .Where(c => c.Parent is null || (typing && Options.SearchNestedCommands && Palette.Find(c.Parent) is { MultiSelectChildren: false }));
+
+        // The matcher picked in the lab; the palette uses Options.Matcher.
+        IBaletteMatcher matcher = BaletteFuzzyMatcher.Default;
         var matches = new List<BaletteMatch>();
-        foreach (var command in Palette.Commands.Where(c => c.Parent is null))
+        foreach (var command in candidates)
         {
-            if (Options.Matcher.Match(command, query, Options.Weights) is { } match)
+            if (matcher.Match(command, query, Options.Weights) is { } match)
             {
                 matches.Add(match);
             }
         }
 
         // Ranker is the BaletteRanker, injected like the options: score, priority and frecency, best first.
-        List<BaletteMatch> ranked = Ranker.Rank(matches, hasQuery: true, id => History.Frecency(id));
+        List<BaletteMatch> ranked = Ranker.Rank(matches, typing, id => History.Frecency(id));
         """;
 
     private const string TypoExample = """

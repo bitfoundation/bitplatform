@@ -311,7 +311,8 @@
         {
             // Cancelled when the next search starts: hand the token to whatever waits, and stale results never show.
             var people = await http.GetFromJsonAsync<Person[]>($"api/people?q={Uri.EscapeDataString(query)}", cancellationToken);
-            return [.. people!.Select(p => BaletteCmd.New(p.Name).Subtitle(p.Role).Build())];
+            // An id of its own: two people can share a name, and recents and pins go by the id.
+            return [.. people!.Select(p => BaletteCmd.New(p.Name).Id($"person:{p.Email}").Subtitle(p.Role).Build())];
         }
         """;
 
@@ -381,7 +382,7 @@
             {
                 var people = await context.Services.GetRequiredService<PeopleClient>()
                     .SearchAsync(query, cancellationToken);
-                return [.. people.Select(p => BaletteCmd.New(p.Name).Subtitle(p.Role).Build())];
+                return [.. people.Select(p => BaletteCmd.New(p.Name).Id($"person:{p.Email}").Subtitle(p.Role).Build())];
             }
         }
         """;

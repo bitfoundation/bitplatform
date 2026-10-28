@@ -369,7 +369,7 @@
         """;
 
     private const string ConflictExample = """
-        // The page's own command on Alt+Q, registered while the page is shown...
+        // The page's own command on Alt+Q, registered by <BaletteCommands Commands="_pageCommands" /> while the page is shown...
         _pageCommands = [BaletteCmd.New("Save draft").Group("This page").Shortcut("Alt+Q").Handler(SaveDraft)];
 
         // ... and a second one on the same keys: registered later, so it wins them, and the palette logs a warning.

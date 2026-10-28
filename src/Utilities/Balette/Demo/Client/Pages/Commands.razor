@@ -371,17 +371,33 @@
         await Palette.OpenAsync(pageCommandId: "actions.set-labels");
         await Palette.ExecuteAsync("toggle:wordwrap");       // as if chosen, without opening
 
-        Palette.Opened += () => Log("Opened");
-        Palette.CommandsChanged += () => Log($"{Palette.Commands.Count} commands registered");
-        Palette.CommandExecuted += (_, e) => Log($"{e.Command.Id} -> {e.Result} in {e.Duration.TotalMilliseconds:0} ms");
+        // The service outlives the page: subscribe named handlers, and remove them when the page is disposed.
+        Palette.Opened += OnOpened;
+        Palette.CommandsChanged += OnCommandsChanged;
+        Palette.CommandExecuted += OnExecuted;
+
+        private void OnOpened() => Log("Opened");
+        private void OnCommandsChanged() => Log($"{Palette.Commands.Count} commands registered");
+        private void OnExecuted(object? sender, BaletteCommandExecutedEventArgs e) => Log($"{e.Command.Id} -> {e.Result} in {e.Duration.TotalMilliseconds:0} ms");
+
+        public void Dispose()
+        {
+            Palette.Opened -= OnOpened;
+            Palette.CommandsChanged -= OnCommandsChanged;
+            Palette.CommandExecuted -= OnExecuted;
+        }
         """;
 
     private const string VisibleWhenExample = """
-        BaletteCmd.New("Merge selected files")
-            .Group("This page")
-            .Shortcut("Alt+M")
-            .VisibleWhen(() => _selected.Count >= 2)   // asked every time the list is built
-            .Handler(_ => MergeAsync(_selected));
+        // Registered by <BaletteCommands Commands="_pageCommands" /> in the markup, so it goes when the page does.
+        _pageCommands =
+        [
+            BaletteCmd.New("Merge selected files")
+                .Group("This page")
+                .Shortcut("Alt+M")
+                .VisibleWhen(() => _selected.Count >= 2)   // asked every time the list is built
+                .Handler(_ => MergeAsync(_selected)),
+        ];
 
         private void ToggleFile(string file)
         {

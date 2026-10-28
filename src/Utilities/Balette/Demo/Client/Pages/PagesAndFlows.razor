@@ -390,7 +390,8 @@
     ];
 
     private const string StaticPageExample = """
-        // A static page: Enter on Theme opens it, and each option answers Back to land on the list again.
+        // A static page: Enter on Theme opens it, and each option answers Back to land on the list again. Registered with
+        // the app's other commands (Components/AppPalette.razor), which gives it the id preferences.theme.
         BaletteCmd.New("Theme")
             .Group("Preferences")
             .Value(state.Theme)
@@ -413,7 +414,8 @@
         """;
 
     private const string ResultsExample = """
-        // Stay, and rebuild the list: the switch shows the new state.
+        // Stay, and rebuild the list. Checked is fixed on the record, so the host builds its commands from state again on
+        // every state.Changed (Components/AppPalette.razor) and the rebuilt list shows the switch's new state.
         BaletteCmd.New("Word wrap").Checked(state.WordWrap).Handler(_ =>
         {
             state.ToggleWordWrap();
