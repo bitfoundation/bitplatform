@@ -1,0 +1,923 @@
+﻿@page "/menubar"
+
+<PageTitle>Menubar — bit Bheadless</PageTitle>
+
+<div class="demo-page">
+    <header class="demo-header">
+        <h1>Menubar</h1>
+        <p>A desktop-style application menu bar — menus, submenus, checkable items and keyboard shortcuts — with zero visual opinion.</p>
+        <SectionSwitcher Slug="menubar" />
+    </header>
+
+    <DemoBlock Title="Application menubar"
+               Code="@_appCode"
+               Css="@_appCss">
+        <Description>
+            The WAI-ARIA menubar pattern: the bar is a single tab stop, ← / → move between menus (and switch the
+            open one), ↓ / Enter / Space open a menu, ↑ / ↓, Home / End and typeahead move inside it, → / ← open
+            and close submenus, and Escape closes. Once a menu is open, hovering another trigger switches to it.
+            Checkbox (<code>menuitemcheckbox</code>) and radio (<code>menuitemradio</code>) items keep the menu
+            open and show their state through <code>BitBhMenuItemIndicator</code>; <code>BitBhMenuLabel</code> names its
+            <code>BitBhMenuGroup</code>. The shortcuts are just text.
+        </Description>
+        <LiveContent>
+            <BitBhMenubar class="menubar" aria-label="Application">
+                <BitBhMenu>
+                    <BitBhMenuButton class="menubar-trigger">File</BitBhMenuButton>
+                    <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+                        <BitBhMenuItem OnClick='@(() => Log("New Tab"))' class="menubar-item">
+                            New Tab <span class="menubar-shortcut">⌘T</span>
+                        </BitBhMenuItem>
+                        <BitBhMenuItem OnClick='@(() => Log("New Window"))' class="menubar-item">
+                            New Window <span class="menubar-shortcut">⌘N</span>
+                        </BitBhMenuItem>
+                        <BitBhMenuItem Disabled="true" class="menubar-item">New Incognito Window</BitBhMenuItem>
+                        <BitBhMenuSeparator class="menubar-separator" />
+                        <BitBhMenuSub>
+                            <BitBhMenuSubTrigger class="menubar-item">
+                                Share <span class="menubar-chevron" aria-hidden="true">›</span>
+                            </BitBhMenuSubTrigger>
+                            <BitBhMenuSubContent class="menubar-content">
+                                <BitBhMenuItem OnClick='@(() => Log("Email Link"))' class="menubar-item">Email Link</BitBhMenuItem>
+                                <BitBhMenuItem OnClick='@(() => Log("Messages"))' class="menubar-item">Messages</BitBhMenuItem>
+                                <BitBhMenuItem OnClick='@(() => Log("Notes"))' class="menubar-item">Notes</BitBhMenuItem>
+                            </BitBhMenuSubContent>
+                        </BitBhMenuSub>
+                        <BitBhMenuSeparator class="menubar-separator" />
+                        <BitBhMenuItem OnClick='@(() => Log("Print"))' class="menubar-item">
+                            Print… <span class="menubar-shortcut">⌘P</span>
+                        </BitBhMenuItem>
+                    </BitBhMenuItems>
+                </BitBhMenu>
+
+                <BitBhMenu>
+                    <BitBhMenuButton class="menubar-trigger">Edit</BitBhMenuButton>
+                    <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+                        <BitBhMenuItem OnClick='@(() => Log("Undo"))' class="menubar-item">
+                            Undo <span class="menubar-shortcut">⌘Z</span>
+                        </BitBhMenuItem>
+                        <BitBhMenuItem OnClick='@(() => Log("Redo"))' class="menubar-item">
+                            Redo <span class="menubar-shortcut">⇧⌘Z</span>
+                        </BitBhMenuItem>
+                        <BitBhMenuSeparator class="menubar-separator" />
+                        <BitBhMenuSub>
+                            <BitBhMenuSubTrigger class="menubar-item">
+                                Find <span class="menubar-chevron" aria-hidden="true">›</span>
+                            </BitBhMenuSubTrigger>
+                            <BitBhMenuSubContent class="menubar-content">
+                                <BitBhMenuItem OnClick='@(() => Log("Search the Web"))' class="menubar-item">Search the Web…</BitBhMenuItem>
+                                <BitBhMenuSeparator class="menubar-separator" />
+                                <BitBhMenuItem OnClick='@(() => Log("Find"))' class="menubar-item">
+                                    Find… <span class="menubar-shortcut">⌘F</span>
+                                </BitBhMenuItem>
+                                <BitBhMenuItem OnClick='@(() => Log("Find Next"))' class="menubar-item">
+                                    Find Next <span class="menubar-shortcut">⌘G</span>
+                                </BitBhMenuItem>
+                                <BitBhMenuItem OnClick='@(() => Log("Find Previous"))' class="menubar-item">
+                                    Find Previous <span class="menubar-shortcut">⇧⌘G</span>
+                                </BitBhMenuItem>
+                            </BitBhMenuSubContent>
+                        </BitBhMenuSub>
+                        <BitBhMenuSeparator class="menubar-separator" />
+                        <BitBhMenuItem OnClick='@(() => Log("Cut"))' class="menubar-item">
+                            Cut <span class="menubar-shortcut">⌘X</span>
+                        </BitBhMenuItem>
+                        <BitBhMenuItem OnClick='@(() => Log("Copy"))' class="menubar-item">
+                            Copy <span class="menubar-shortcut">⌘C</span>
+                        </BitBhMenuItem>
+                        <BitBhMenuItem OnClick='@(() => Log("Paste"))' class="menubar-item">
+                            Paste <span class="menubar-shortcut">⌘V</span>
+                        </BitBhMenuItem>
+                    </BitBhMenuItems>
+                </BitBhMenu>
+
+                <BitBhMenu>
+                    <BitBhMenuButton class="menubar-trigger">View</BitBhMenuButton>
+                    <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+                        <BitBhMenuCheckboxItem @bind-Checked="showBookmarks" class="menubar-item menubar-item-inset">
+                            <BitBhMenuItemIndicator class="menubar-indicator">✓</BitBhMenuItemIndicator>
+                            Always Show Bookmarks Bar <span class="menubar-shortcut">⇧⌘B</span>
+                        </BitBhMenuCheckboxItem>
+                        <BitBhMenuCheckboxItem @bind-Checked="showFullUrls" class="menubar-item menubar-item-inset">
+                            <BitBhMenuItemIndicator class="menubar-indicator">✓</BitBhMenuItemIndicator>
+                            Always Show Full URLs
+                        </BitBhMenuCheckboxItem>
+                        <BitBhMenuSeparator class="menubar-separator" />
+                        <BitBhMenuItem OnClick='@(() => Log("Reload"))' class="menubar-item menubar-item-inset">
+                            Reload <span class="menubar-shortcut">⌘R</span>
+                        </BitBhMenuItem>
+                        <BitBhMenuItem Disabled="true" class="menubar-item menubar-item-inset">
+                            Force Reload <span class="menubar-shortcut">⇧⌘R</span>
+                        </BitBhMenuItem>
+                        <BitBhMenuSeparator class="menubar-separator" />
+                        <BitBhMenuItem OnClick='@(() => Log("Toggle Fullscreen"))' class="menubar-item menubar-item-inset">Toggle Fullscreen</BitBhMenuItem>
+                        <BitBhMenuSeparator class="menubar-separator" />
+                        <BitBhMenuItem OnClick='@(() => Log("Hide Sidebar"))' class="menubar-item menubar-item-inset">Hide Sidebar</BitBhMenuItem>
+                    </BitBhMenuItems>
+                </BitBhMenu>
+
+                <BitBhMenu>
+                    <BitBhMenuButton class="menubar-trigger">Profiles</BitBhMenuButton>
+                    <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+                        <BitBhMenuGroup>
+                            <BitBhMenuLabel class="menubar-label">Switch profile</BitBhMenuLabel>
+                            <BitBhMenuRadioGroup @bind-Value="profile">
+                                @foreach (var name in profiles)
+                                {
+                                    <BitBhMenuRadioItem Value="@name" class="menubar-item menubar-item-inset">
+                                        <BitBhMenuItemIndicator class="menubar-indicator"><span class="menubar-dot"></span></BitBhMenuItemIndicator>
+                                        @name
+                                    </BitBhMenuRadioItem>
+                                }
+                            </BitBhMenuRadioGroup>
+                        </BitBhMenuGroup>
+                        <BitBhMenuSeparator class="menubar-separator" />
+                        <BitBhMenuItem OnClick='@(() => Log("Edit profile"))' class="menubar-item menubar-item-inset">Edit…</BitBhMenuItem>
+                        <BitBhMenuSeparator class="menubar-separator" />
+                        <BitBhMenuItem OnClick='@(() => Log("Add Profile"))' class="menubar-item menubar-item-inset">Add Profile…</BitBhMenuItem>
+                    </BitBhMenuItems>
+                </BitBhMenu>
+            </BitBhMenubar>
+
+            <span class="demo-output">
+                Last action: <strong>@(lastAction ?? "(none)")</strong> ·
+                Bookmarks bar: <strong>@(showBookmarks ? "on" : "off")</strong> ·
+                Profile: <strong>@profile</strong>
+            </span>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Checkbox and radio items driving the UI"
+               Code="@_editorCode"
+               Css="@_editorCss">
+        <Description>
+            Checkable items are just bound state. <code>@@bind-Checked</code> on <code>BitBhMenuCheckboxItem</code> and
+            <code>@@bind-Value</code> on <code>BitBhMenuRadioGroup</code> drive the editor below — toggle line numbers, word
+            wrap and the status bar, change the zoom or the theme. The menu stays open while you toggle so you can
+            see each change; set <code>CloseOnSelect="true"</code> on an item to close it instead.
+        </Description>
+        <LiveContent>
+            <div class="menubar-window">
+                <BitBhMenubar class="menubar" aria-label="Editor">
+                    <BitBhMenu>
+                        <BitBhMenuButton class="menubar-trigger">View</BitBhMenuButton>
+                        <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+                            <BitBhMenuCheckboxItem @bind-Checked="lineNumbers" class="menubar-item menubar-item-inset">
+                                <BitBhMenuItemIndicator class="menubar-indicator">✓</BitBhMenuItemIndicator>
+                                Line Numbers
+                            </BitBhMenuCheckboxItem>
+                            <BitBhMenuCheckboxItem @bind-Checked="wordWrap" class="menubar-item menubar-item-inset">
+                                <BitBhMenuItemIndicator class="menubar-indicator">✓</BitBhMenuItemIndicator>
+                                Word Wrap <span class="menubar-shortcut">⌥Z</span>
+                            </BitBhMenuCheckboxItem>
+                            <BitBhMenuCheckboxItem @bind-Checked="statusBar" class="menubar-item menubar-item-inset">
+                                <BitBhMenuItemIndicator class="menubar-indicator">✓</BitBhMenuItemIndicator>
+                                Status Bar
+                            </BitBhMenuCheckboxItem>
+                            <BitBhMenuSeparator class="menubar-separator" />
+                            <BitBhMenuGroup>
+                                <BitBhMenuLabel class="menubar-label">Zoom</BitBhMenuLabel>
+                                <BitBhMenuRadioGroup @bind-Value="zoom">
+                                    @foreach (var level in zoomLevels)
+                                    {
+                                        <BitBhMenuRadioItem Value="@level" class="menubar-item menubar-item-inset">
+                                            <BitBhMenuItemIndicator class="menubar-indicator"><span class="menubar-dot"></span></BitBhMenuItemIndicator>
+                                            @(level)%
+                                        </BitBhMenuRadioItem>
+                                    }
+                                </BitBhMenuRadioGroup>
+                            </BitBhMenuGroup>
+                        </BitBhMenuItems>
+                    </BitBhMenu>
+                    <BitBhMenu>
+                        <BitBhMenuButton class="menubar-trigger">Theme</BitBhMenuButton>
+                        <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+                            <BitBhMenuRadioGroup @bind-Value="editorTheme" AriaLabel="Color theme">
+                                @foreach (var option in editorThemes)
+                                {
+                                    <BitBhMenuRadioItem Value="@option" class="menubar-item menubar-item-inset">
+                                        <BitBhMenuItemIndicator class="menubar-indicator"><span class="menubar-dot"></span></BitBhMenuItemIndicator>
+                                        @option
+                                    </BitBhMenuRadioItem>
+                                }
+                            </BitBhMenuRadioGroup>
+                        </BitBhMenuItems>
+                    </BitBhMenu>
+                </BitBhMenubar>
+
+                <div class="menubar-editor" data-theme="@editorTheme">
+                    <div class="menubar-code" tabindex="0" role="region" aria-label="Editor preview" data-wrap="@wordWrap" style="font-size: @(zoom)%">
+                        @for (var i = 0; i < editorLines.Length; i++)
+                        {
+                            <div class="menubar-line">
+                                @if (lineNumbers)
+                                {
+                                    <span class="menubar-line-number">@(i + 1)</span>
+                                }
+                                <span class="menubar-line-text">@editorLines[i]</span>
+                            </div>
+                        }
+                    </div>
+                    @if (statusBar)
+                    {
+                        <div class="menubar-statusbar">
+                            <span>Ln 4, Col 18</span><span>UTF-8</span><span>@(zoom)%</span><span>@editorTheme</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Nested submenus"
+               Code="@_submenusCode"
+               Css="@_submenusCss">
+        <Description>
+            Nest <code>BitBhMenuSub</code> (a <code>BitBhMenuSubTrigger</code> plus a <code>BitBhMenuSubContent</code>) to any
+            depth. Hovering opens a submenu after <code>OpenDelay</code>, and a <code>CloseDelay</code> grace period lets
+            the pointer travel diagonally into it. → / Enter / Space open a submenu and focus its first item, ← / Escape
+            close it and return to the trigger; on an item without a submenu, → moves on to the next menu of the bar.
+            Submenu triggers expose <code>aria-haspopup</code>, <code>aria-expanded</code> and <code>data-state</code>.
+        </Description>
+        <LiveContent>
+            <BitBhMenubar class="menubar" aria-label="Document">
+                <BitBhMenu>
+                    <BitBhMenuButton class="menubar-trigger">Insert</BitBhMenuButton>
+                    <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+                        <BitBhMenuItem OnClick='@(() => Log("Insert image"))' class="menubar-item">Image…</BitBhMenuItem>
+                        <BitBhMenuSub>
+                            <BitBhMenuSubTrigger class="menubar-item">
+                                Table <span class="menubar-chevron" aria-hidden="true">›</span>
+                            </BitBhMenuSubTrigger>
+                            <BitBhMenuSubContent class="menubar-content">
+                                <BitBhMenuItem OnClick='@(() => Log("Insert 2 × 2 table"))' class="menubar-item">2 × 2</BitBhMenuItem>
+                                <BitBhMenuItem OnClick='@(() => Log("Insert 3 × 3 table"))' class="menubar-item">3 × 3</BitBhMenuItem>
+                                <BitBhMenuItem OnClick='@(() => Log("Insert 4 × 4 table"))' class="menubar-item">4 × 4</BitBhMenuItem>
+                                <BitBhMenuSeparator class="menubar-separator" />
+                                <BitBhMenuItem OnClick='@(() => Log("Insert custom table"))' class="menubar-item">Custom size…</BitBhMenuItem>
+                            </BitBhMenuSubContent>
+                        </BitBhMenuSub>
+                        <BitBhMenuSub>
+                            <BitBhMenuSubTrigger class="menubar-item">
+                                Shape <span class="menubar-chevron" aria-hidden="true">›</span>
+                            </BitBhMenuSubTrigger>
+                            <BitBhMenuSubContent class="menubar-content">
+                                <BitBhMenuItem OnClick='@(() => Log("Insert rectangle"))' class="menubar-item">Rectangle</BitBhMenuItem>
+                                <BitBhMenuItem OnClick='@(() => Log("Insert ellipse"))' class="menubar-item">Ellipse</BitBhMenuItem>
+                                <BitBhMenuSub>
+                                    <BitBhMenuSubTrigger class="menubar-item">
+                                        Arrow <span class="menubar-chevron" aria-hidden="true">›</span>
+                                    </BitBhMenuSubTrigger>
+                                    <BitBhMenuSubContent class="menubar-content">
+                                        <BitBhMenuItem OnClick='@(() => Log("Insert straight arrow"))' class="menubar-item">Straight</BitBhMenuItem>
+                                        <BitBhMenuItem OnClick='@(() => Log("Insert curved arrow"))' class="menubar-item">Curved</BitBhMenuItem>
+                                        <BitBhMenuItem OnClick='@(() => Log("Insert elbow arrow"))' class="menubar-item">Elbow</BitBhMenuItem>
+                                    </BitBhMenuSubContent>
+                                </BitBhMenuSub>
+                            </BitBhMenuSubContent>
+                        </BitBhMenuSub>
+                        <BitBhMenuSeparator class="menubar-separator" />
+                        <BitBhMenuItem OnClick='@(() => Log("Insert page break"))' class="menubar-item">
+                            Page Break <span class="menubar-shortcut">⌘↵</span>
+                        </BitBhMenuItem>
+                    </BitBhMenuItems>
+                </BitBhMenu>
+
+                <BitBhMenu>
+                    <BitBhMenuButton class="menubar-trigger">Share</BitBhMenuButton>
+                    <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+                        <BitBhMenuItem OnClick='@(() => Log("Copy link"))' class="menubar-item">
+                            Copy Link <span class="menubar-shortcut">⌘L</span>
+                        </BitBhMenuItem>
+                        <BitBhMenuSub OpenDelay="0" CloseDelay="500">
+                            <BitBhMenuSubTrigger class="menubar-item">
+                                Send To <span class="menubar-chevron" aria-hidden="true">›</span>
+                            </BitBhMenuSubTrigger>
+                            <BitBhMenuSubContent class="menubar-content">
+                                <BitBhMenuItem OnClick='@(() => Log("Send by email"))' class="menubar-item">Email</BitBhMenuItem>
+                                <BitBhMenuItem OnClick='@(() => Log("Send as message"))' class="menubar-item">Messages</BitBhMenuItem>
+                                <BitBhMenuItem OnClick='@(() => Log("Send to team chat"))' class="menubar-item">Team Chat</BitBhMenuItem>
+                            </BitBhMenuSubContent>
+                        </BitBhMenuSub>
+                    </BitBhMenuItems>
+                </BitBhMenu>
+            </BitBhMenubar>
+
+            <span class="demo-output">Last action: <strong>@(lastAction ?? "(none)")</strong></span>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Disabled menus and items"
+               Code="@_disabledCode"
+               Css="@_disabledCss">
+        <Description>
+            A disabled <code>BitBhMenu</code> can't be opened and ← / → skip over it; disabled items stay visible (with
+            <code>data-disabled</code> and <code>aria-disabled</code>) but arrow keys and typeahead pass them by.
+            <code>Loop="false"</code> stops the arrow keys at the first and last menu instead of wrapping. Items can
+            also render as links with <code>As="a"</code> — Enter follows the link.
+        </Description>
+        <LiveContent>
+            <BitBhMenubar Loop="false" class="menubar" aria-label="Read-only document">
+                <BitBhMenu>
+                    <BitBhMenuButton class="menubar-trigger">File</BitBhMenuButton>
+                    <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+                        <BitBhMenuItem OnClick='@(() => Log("Open"))' class="menubar-item">
+                            Open… <span class="menubar-shortcut">⌘O</span>
+                        </BitBhMenuItem>
+                        <BitBhMenuItem Disabled="true" class="menubar-item">
+                            Save <span class="menubar-shortcut">⌘S</span>
+                        </BitBhMenuItem>
+                        <BitBhMenuItem Disabled="true" class="menubar-item">
+                            Save As… <span class="menubar-shortcut">⇧⌘S</span>
+                        </BitBhMenuItem>
+                        <BitBhMenuItem OnClick='@(() => Log("Export PDF"))' class="menubar-item">Export as PDF</BitBhMenuItem>
+                    </BitBhMenuItems>
+                </BitBhMenu>
+
+                <BitBhMenu Disabled="true">
+                    <BitBhMenuButton class="menubar-trigger">Edit</BitBhMenuButton>
+                    <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+                        <BitBhMenuItem class="menubar-item">Undo</BitBhMenuItem>
+                    </BitBhMenuItems>
+                </BitBhMenu>
+
+                <BitBhMenu>
+                    <BitBhMenuButton class="menubar-trigger">Help</BitBhMenuButton>
+                    <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+                        <BitBhMenuItem As="a" href="https://www.w3.org/WAI/ARIA/apg/patterns/menubar/" target="_blank" rel="noopener"
+                                    class="menubar-item">
+                            Menubar pattern (APG) <span class="menubar-shortcut" aria-hidden="true">↗</span>
+                        </BitBhMenuItem>
+                        <BitBhMenuItem OnClick='@(() => Log("About"))' class="menubar-item">About</BitBhMenuItem>
+                    </BitBhMenuItems>
+                </BitBhMenu>
+            </BitBhMenubar>
+
+            <span class="demo-output">Last action: <strong>@(lastAction ?? "(none)")</strong></span>
+        </LiveContent>
+    </DemoBlock>
+</div>
+
+@code {
+    private string? lastAction;
+
+    private void Log(string action) => lastAction = action;
+
+    // ── Application menubar ────────────────────────────────────────────────────
+
+    private bool showBookmarks;
+    private bool showFullUrls = true;
+    private string? profile = "Benoit";
+    private readonly string[] profiles = ["Andy", "Benoit", "Luis"];
+
+    // ── Editor ─────────────────────────────────────────────────────────────────
+
+    private bool lineNumbers = true;
+    private bool wordWrap;
+    private bool statusBar = true;
+    private string? zoom = "100";
+    private string? editorTheme = "Light";
+    private readonly string[] zoomLevels = ["90", "100", "125"];
+    private readonly string[] editorThemes = ["Light", "Dark", "Sepia"];
+
+    private readonly string[] editorLines =
+    [
+        "// Use the View and Theme menus to restyle this editor.",
+        "public sealed class Greeter",
+        "{",
+        "    public string Greet(string name) => $\"Hello, {name}! This line is long enough to show what Word Wrap does.\";",
+        "}",
+    ];
+
+    // ── Source snippets shown alongside each live demo ─────────────────────────
+
+    private const string _appCode = """
+<BitBhMenubar class="menubar" aria-label="Application">
+    <BitBhMenu>
+        <BitBhMenuButton class="menubar-trigger">File</BitBhMenuButton>
+        <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+            <BitBhMenuItem OnClick='@(() => Log("New Tab"))' class="menubar-item">
+                New Tab <span class="menubar-shortcut">⌘T</span>
+            </BitBhMenuItem>
+            <BitBhMenuItem OnClick='@(() => Log("New Window"))' class="menubar-item">
+                New Window <span class="menubar-shortcut">⌘N</span>
+            </BitBhMenuItem>
+            <BitBhMenuItem Disabled="true" class="menubar-item">New Incognito Window</BitBhMenuItem>
+            <BitBhMenuSeparator class="menubar-separator" />
+            <BitBhMenuSub>
+                <BitBhMenuSubTrigger class="menubar-item">
+                    Share <span class="menubar-chevron" aria-hidden="true">›</span>
+                </BitBhMenuSubTrigger>
+                <BitBhMenuSubContent class="menubar-content">
+                    <BitBhMenuItem OnClick='@(() => Log("Email Link"))' class="menubar-item">Email Link</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Messages"))' class="menubar-item">Messages</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Notes"))' class="menubar-item">Notes</BitBhMenuItem>
+                </BitBhMenuSubContent>
+            </BitBhMenuSub>
+            <BitBhMenuSeparator class="menubar-separator" />
+            <BitBhMenuItem OnClick='@(() => Log("Print"))' class="menubar-item">
+                Print… <span class="menubar-shortcut">⌘P</span>
+            </BitBhMenuItem>
+        </BitBhMenuItems>
+    </BitBhMenu>
+
+    <BitBhMenu>
+        <BitBhMenuButton class="menubar-trigger">Edit</BitBhMenuButton>
+        <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+            <BitBhMenuItem OnClick='@(() => Log("Undo"))' class="menubar-item">
+                Undo <span class="menubar-shortcut">⌘Z</span>
+            </BitBhMenuItem>
+            <BitBhMenuItem OnClick='@(() => Log("Redo"))' class="menubar-item">
+                Redo <span class="menubar-shortcut">⇧⌘Z</span>
+            </BitBhMenuItem>
+            <BitBhMenuSeparator class="menubar-separator" />
+            <BitBhMenuSub>
+                <BitBhMenuSubTrigger class="menubar-item">
+                    Find <span class="menubar-chevron" aria-hidden="true">›</span>
+                </BitBhMenuSubTrigger>
+                <BitBhMenuSubContent class="menubar-content">
+                    <BitBhMenuItem OnClick='@(() => Log("Search the Web"))' class="menubar-item">Search the Web…</BitBhMenuItem>
+                    <BitBhMenuSeparator class="menubar-separator" />
+                    <BitBhMenuItem OnClick='@(() => Log("Find"))' class="menubar-item">
+                        Find… <span class="menubar-shortcut">⌘F</span>
+                    </BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Find Next"))' class="menubar-item">
+                        Find Next <span class="menubar-shortcut">⌘G</span>
+                    </BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Find Previous"))' class="menubar-item">
+                        Find Previous <span class="menubar-shortcut">⇧⌘G</span>
+                    </BitBhMenuItem>
+                </BitBhMenuSubContent>
+            </BitBhMenuSub>
+            <BitBhMenuSeparator class="menubar-separator" />
+            <BitBhMenuItem OnClick='@(() => Log("Cut"))' class="menubar-item">
+                Cut <span class="menubar-shortcut">⌘X</span>
+            </BitBhMenuItem>
+            <BitBhMenuItem OnClick='@(() => Log("Copy"))' class="menubar-item">
+                Copy <span class="menubar-shortcut">⌘C</span>
+            </BitBhMenuItem>
+            <BitBhMenuItem OnClick='@(() => Log("Paste"))' class="menubar-item">
+                Paste <span class="menubar-shortcut">⌘V</span>
+            </BitBhMenuItem>
+        </BitBhMenuItems>
+    </BitBhMenu>
+
+    <BitBhMenu>
+        <BitBhMenuButton class="menubar-trigger">View</BitBhMenuButton>
+        <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+            <BitBhMenuCheckboxItem @bind-Checked="showBookmarks" class="menubar-item menubar-item-inset">
+                <BitBhMenuItemIndicator class="menubar-indicator">✓</BitBhMenuItemIndicator>
+                Always Show Bookmarks Bar <span class="menubar-shortcut">⇧⌘B</span>
+            </BitBhMenuCheckboxItem>
+            <BitBhMenuCheckboxItem @bind-Checked="showFullUrls" class="menubar-item menubar-item-inset">
+                <BitBhMenuItemIndicator class="menubar-indicator">✓</BitBhMenuItemIndicator>
+                Always Show Full URLs
+            </BitBhMenuCheckboxItem>
+            <BitBhMenuSeparator class="menubar-separator" />
+            <BitBhMenuItem OnClick='@(() => Log("Reload"))' class="menubar-item menubar-item-inset">
+                Reload <span class="menubar-shortcut">⌘R</span>
+            </BitBhMenuItem>
+            <BitBhMenuItem Disabled="true" class="menubar-item menubar-item-inset">
+                Force Reload <span class="menubar-shortcut">⇧⌘R</span>
+            </BitBhMenuItem>
+            <BitBhMenuSeparator class="menubar-separator" />
+            <BitBhMenuItem OnClick='@(() => Log("Toggle Fullscreen"))' class="menubar-item menubar-item-inset">Toggle Fullscreen</BitBhMenuItem>
+            <BitBhMenuSeparator class="menubar-separator" />
+            <BitBhMenuItem OnClick='@(() => Log("Hide Sidebar"))' class="menubar-item menubar-item-inset">Hide Sidebar</BitBhMenuItem>
+        </BitBhMenuItems>
+    </BitBhMenu>
+
+    <BitBhMenu>
+        <BitBhMenuButton class="menubar-trigger">Profiles</BitBhMenuButton>
+        <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+            <BitBhMenuGroup>
+                <BitBhMenuLabel class="menubar-label">Switch profile</BitBhMenuLabel>
+                <BitBhMenuRadioGroup @bind-Value="profile">
+                    @foreach (var name in profiles)
+                    {
+                        <BitBhMenuRadioItem Value="@name" class="menubar-item menubar-item-inset">
+                            <BitBhMenuItemIndicator class="menubar-indicator"><span class="menubar-dot"></span></BitBhMenuItemIndicator>
+                            @name
+                        </BitBhMenuRadioItem>
+                    }
+                </BitBhMenuRadioGroup>
+            </BitBhMenuGroup>
+            <BitBhMenuSeparator class="menubar-separator" />
+            <BitBhMenuItem OnClick='@(() => Log("Edit profile"))' class="menubar-item menubar-item-inset">Edit…</BitBhMenuItem>
+            <BitBhMenuSeparator class="menubar-separator" />
+            <BitBhMenuItem OnClick='@(() => Log("Add Profile"))' class="menubar-item menubar-item-inset">Add Profile…</BitBhMenuItem>
+        </BitBhMenuItems>
+    </BitBhMenu>
+</BitBhMenubar>
+
+<span class="demo-output">
+    Last action: <strong>@(lastAction ?? "(none)")</strong> ·
+    Bookmarks bar: <strong>@(showBookmarks ? "on" : "off")</strong> ·
+    Profile: <strong>@profile</strong>
+</span>
+
+@code {
+    private string? lastAction;
+    private bool showBookmarks;
+    private bool showFullUrls = true;
+    private string? profile = "Benoit";
+    private readonly string[] profiles = ["Andy", "Benoit", "Luis"];
+
+    private void Log(string action) => lastAction = action;
+}
+""";
+
+    private const string _editorCode = """
+<div class="menubar-window">
+    <BitBhMenubar class="menubar" aria-label="Editor">
+        <BitBhMenu>
+            <BitBhMenuButton class="menubar-trigger">View</BitBhMenuButton>
+            <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+                <BitBhMenuCheckboxItem @bind-Checked="lineNumbers" class="menubar-item menubar-item-inset">
+                    <BitBhMenuItemIndicator class="menubar-indicator">✓</BitBhMenuItemIndicator>
+                    Line Numbers
+                </BitBhMenuCheckboxItem>
+                <BitBhMenuCheckboxItem @bind-Checked="wordWrap" class="menubar-item menubar-item-inset">
+                    <BitBhMenuItemIndicator class="menubar-indicator">✓</BitBhMenuItemIndicator>
+                    Word Wrap <span class="menubar-shortcut">⌥Z</span>
+                </BitBhMenuCheckboxItem>
+                <BitBhMenuCheckboxItem @bind-Checked="statusBar" class="menubar-item menubar-item-inset">
+                    <BitBhMenuItemIndicator class="menubar-indicator">✓</BitBhMenuItemIndicator>
+                    Status Bar
+                </BitBhMenuCheckboxItem>
+                <BitBhMenuSeparator class="menubar-separator" />
+                <BitBhMenuGroup>
+                    <BitBhMenuLabel class="menubar-label">Zoom</BitBhMenuLabel>
+                    <BitBhMenuRadioGroup @bind-Value="zoom">
+                        @foreach (var level in zoomLevels)
+                        {
+                            <BitBhMenuRadioItem Value="@level" class="menubar-item menubar-item-inset">
+                                <BitBhMenuItemIndicator class="menubar-indicator"><span class="menubar-dot"></span></BitBhMenuItemIndicator>
+                                @(level)%
+                            </BitBhMenuRadioItem>
+                        }
+                    </BitBhMenuRadioGroup>
+                </BitBhMenuGroup>
+            </BitBhMenuItems>
+        </BitBhMenu>
+        <BitBhMenu>
+            <BitBhMenuButton class="menubar-trigger">Theme</BitBhMenuButton>
+            <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+                <BitBhMenuRadioGroup @bind-Value="editorTheme" AriaLabel="Color theme">
+                    @foreach (var option in editorThemes)
+                    {
+                        <BitBhMenuRadioItem Value="@option" class="menubar-item menubar-item-inset">
+                            <BitBhMenuItemIndicator class="menubar-indicator"><span class="menubar-dot"></span></BitBhMenuItemIndicator>
+                            @option
+                        </BitBhMenuRadioItem>
+                    }
+                </BitBhMenuRadioGroup>
+            </BitBhMenuItems>
+        </BitBhMenu>
+    </BitBhMenubar>
+
+    <div class="menubar-editor" data-theme="@editorTheme">
+        <div class="menubar-code" tabindex="0" role="region" aria-label="Editor preview" data-wrap="@wordWrap" style="font-size: @(zoom)%">
+            @for (var i = 0; i < editorLines.Length; i++)
+            {
+                <div class="menubar-line">
+                    @if (lineNumbers)
+                    {
+                        <span class="menubar-line-number">@(i + 1)</span>
+                    }
+                    <span class="menubar-line-text">@editorLines[i]</span>
+                </div>
+            }
+        </div>
+        @if (statusBar)
+        {
+            <div class="menubar-statusbar">
+                <span>Ln 4, Col 18</span><span>UTF-8</span><span>@(zoom)%</span><span>@editorTheme</span>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private bool lineNumbers = true;
+    private bool wordWrap;
+    private bool statusBar = true;
+    private string? zoom = "100";
+    private string? editorTheme = "Light";
+    private readonly string[] zoomLevels = ["90", "100", "125"];
+    private readonly string[] editorThemes = ["Light", "Dark", "Sepia"];
+
+    private readonly string[] editorLines =
+    [
+        "// Use the View and Theme menus to restyle this editor.",
+        "public sealed class Greeter",
+        "{",
+        "    public string Greet(string name) => $\"Hello, {name}! This line is long enough to show what Word Wrap does.\";",
+        "}",
+    ];
+}
+""";
+
+    private const string _submenusCode = """
+<BitBhMenubar class="menubar" aria-label="Document">
+    <BitBhMenu>
+        <BitBhMenuButton class="menubar-trigger">Insert</BitBhMenuButton>
+        <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+            <BitBhMenuItem OnClick='@(() => Log("Insert image"))' class="menubar-item">Image…</BitBhMenuItem>
+            <BitBhMenuSub>
+                <BitBhMenuSubTrigger class="menubar-item">
+                    Table <span class="menubar-chevron" aria-hidden="true">›</span>
+                </BitBhMenuSubTrigger>
+                <BitBhMenuSubContent class="menubar-content">
+                    <BitBhMenuItem OnClick='@(() => Log("Insert 2 × 2 table"))' class="menubar-item">2 × 2</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Insert 3 × 3 table"))' class="menubar-item">3 × 3</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Insert 4 × 4 table"))' class="menubar-item">4 × 4</BitBhMenuItem>
+                    <BitBhMenuSeparator class="menubar-separator" />
+                    <BitBhMenuItem OnClick='@(() => Log("Insert custom table"))' class="menubar-item">Custom size…</BitBhMenuItem>
+                </BitBhMenuSubContent>
+            </BitBhMenuSub>
+            <BitBhMenuSub>
+                <BitBhMenuSubTrigger class="menubar-item">
+                    Shape <span class="menubar-chevron" aria-hidden="true">›</span>
+                </BitBhMenuSubTrigger>
+                <BitBhMenuSubContent class="menubar-content">
+                    <BitBhMenuItem OnClick='@(() => Log("Insert rectangle"))' class="menubar-item">Rectangle</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Insert ellipse"))' class="menubar-item">Ellipse</BitBhMenuItem>
+                    <BitBhMenuSub>
+                        <BitBhMenuSubTrigger class="menubar-item">
+                            Arrow <span class="menubar-chevron" aria-hidden="true">›</span>
+                        </BitBhMenuSubTrigger>
+                        <BitBhMenuSubContent class="menubar-content">
+                            <BitBhMenuItem OnClick='@(() => Log("Insert straight arrow"))' class="menubar-item">Straight</BitBhMenuItem>
+                            <BitBhMenuItem OnClick='@(() => Log("Insert curved arrow"))' class="menubar-item">Curved</BitBhMenuItem>
+                            <BitBhMenuItem OnClick='@(() => Log("Insert elbow arrow"))' class="menubar-item">Elbow</BitBhMenuItem>
+                        </BitBhMenuSubContent>
+                    </BitBhMenuSub>
+                </BitBhMenuSubContent>
+            </BitBhMenuSub>
+            <BitBhMenuSeparator class="menubar-separator" />
+            <BitBhMenuItem OnClick='@(() => Log("Insert page break"))' class="menubar-item">
+                Page Break <span class="menubar-shortcut">⌘↵</span>
+            </BitBhMenuItem>
+        </BitBhMenuItems>
+    </BitBhMenu>
+
+    <BitBhMenu>
+        <BitBhMenuButton class="menubar-trigger">Share</BitBhMenuButton>
+        <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+            <BitBhMenuItem OnClick='@(() => Log("Copy link"))' class="menubar-item">
+                Copy Link <span class="menubar-shortcut">⌘L</span>
+            </BitBhMenuItem>
+            <BitBhMenuSub OpenDelay="0" CloseDelay="500">
+                <BitBhMenuSubTrigger class="menubar-item">
+                    Send To <span class="menubar-chevron" aria-hidden="true">›</span>
+                </BitBhMenuSubTrigger>
+                <BitBhMenuSubContent class="menubar-content">
+                    <BitBhMenuItem OnClick='@(() => Log("Send by email"))' class="menubar-item">Email</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Send as message"))' class="menubar-item">Messages</BitBhMenuItem>
+                    <BitBhMenuItem OnClick='@(() => Log("Send to team chat"))' class="menubar-item">Team Chat</BitBhMenuItem>
+                </BitBhMenuSubContent>
+            </BitBhMenuSub>
+        </BitBhMenuItems>
+    </BitBhMenu>
+</BitBhMenubar>
+
+<span class="demo-output">Last action: <strong>@(lastAction ?? "(none)")</strong></span>
+
+@code {
+    private string? lastAction;
+
+    private void Log(string action) => lastAction = action;
+}
+""";
+
+    private const string _disabledCode = """
+<BitBhMenubar Loop="false" class="menubar" aria-label="Read-only document">
+    <BitBhMenu>
+        <BitBhMenuButton class="menubar-trigger">File</BitBhMenuButton>
+        <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+            <BitBhMenuItem OnClick='@(() => Log("Open"))' class="menubar-item">
+                Open… <span class="menubar-shortcut">⌘O</span>
+            </BitBhMenuItem>
+            <BitBhMenuItem Disabled="true" class="menubar-item">
+                Save <span class="menubar-shortcut">⌘S</span>
+            </BitBhMenuItem>
+            <BitBhMenuItem Disabled="true" class="menubar-item">
+                Save As… <span class="menubar-shortcut">⇧⌘S</span>
+            </BitBhMenuItem>
+            <BitBhMenuItem OnClick='@(() => Log("Export PDF"))' class="menubar-item">Export as PDF</BitBhMenuItem>
+        </BitBhMenuItems>
+    </BitBhMenu>
+
+    <BitBhMenu Disabled="true">
+        <BitBhMenuButton class="menubar-trigger">Edit</BitBhMenuButton>
+        <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+            <BitBhMenuItem class="menubar-item">Undo</BitBhMenuItem>
+        </BitBhMenuItems>
+    </BitBhMenu>
+
+    <BitBhMenu>
+        <BitBhMenuButton class="menubar-trigger">Help</BitBhMenuButton>
+        <BitBhMenuItems Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 6 })" class="menubar-content">
+            <BitBhMenuItem As="a" href="https://www.w3.org/WAI/ARIA/apg/patterns/menubar/" target="_blank" rel="noopener"
+                        class="menubar-item">
+                Menubar pattern (APG) <span class="menubar-shortcut" aria-hidden="true">↗</span>
+            </BitBhMenuItem>
+            <BitBhMenuItem OnClick='@(() => Log("About"))' class="menubar-item">About</BitBhMenuItem>
+        </BitBhMenuItems>
+    </BitBhMenu>
+</BitBhMenubar>
+
+<span class="demo-output">Last action: <strong>@(lastAction ?? "(none)")</strong></span>
+
+@code {
+    private string? lastAction;
+
+    private void Log(string action) => lastAction = action;
+}
+""";
+
+    // ── Styles (the same rules live in wwwroot/demos/menubar.css) ──────────────
+
+    private const string _baseStyles = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.menubar {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.125rem;
+    padding: 0.25rem;
+    background: #fff;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.6rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* Inside a menubar each BitBhMenuButton is a role="menuitem" with a roving tabindex */
+.menubar-trigger {
+    padding: 0.35rem 0.75rem;
+    border: 0;
+    border-radius: 0.4rem;
+    background: transparent;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #27272a;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 120ms ease;
+}
+
+.menubar-trigger:hover,
+.menubar-trigger[data-state="open"] { background: #f4f4f5; }
+.menubar-trigger:focus-visible      { background: #f4f4f5; outline: 2px solid #2563eb; outline-offset: 1px; }
+.menubar-trigger[data-disabled]     { opacity: 0.4; cursor: not-allowed; background: transparent; }
+
+/* BitBhMenuItems / BitBhMenuSubContent — positioned by the anchor engine */
+.menubar-content {
+    z-index: 50;
+    min-width: 14rem;
+    padding: 0.25rem;
+    background: #fff;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.6rem;
+    box-shadow: 0 10px 30px -6px rgba(0, 0, 0, 0.15);
+    outline: none; /* the highlighted item is the visible focus (aria-activedescendant) */
+}
+
+.menubar-content[hidden]             { display: none; }
+.menubar-content[data-state="open"]  { animation: menubar-in 120ms ease-out; }
+
+/* Opacity only: the anchor engine measures the panel, so don't transform it */
+@keyframes menubar-in {
+    from { opacity: 0; }
+}
+
+.menubar-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 0.35rem;
+    font-size: 0.85rem;
+    color: #27272a;
+    text-decoration: none;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* data-highlighted (alias: data-active) follows the keyboard / pointer highlight */
+.menubar-item[data-highlighted] { background: #eff6ff; color: #1d4ed8; }
+.menubar-item[data-disabled]    { opacity: 0.45; cursor: not-allowed; }
+
+/* A submenu trigger stays lit while its submenu is open */
+.menubar-item[data-state="open"]:not([data-highlighted]) { background: #f4f4f5; }
+
+.menubar-shortcut,
+.menubar-chevron {
+    margin-left: auto;
+    padding-left: 1.5rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    color: #a1a1aa;
+}
+
+.menubar-item[data-highlighted] .menubar-shortcut,
+.menubar-item[data-highlighted] .menubar-chevron { color: #60a5fa; }
+
+.menubar-separator { height: 1px; margin: 0.25rem -0.25rem; background: #e4e4e7; }
+""";
+
+    private const string _checkableStyles = """
+/* Room for the check mark / dot of checkbox and radio items */
+.menubar-item-inset { padding-left: 1.75rem; }
+
+/* BitBhMenuItemIndicator only renders while its item is checked */
+.menubar-indicator {
+    position: absolute;
+    left: 0.5rem;
+    display: inline-flex;
+    justify-content: center;
+    width: 1rem;
+    font-size: 0.75rem;
+    color: #2563eb;
+}
+
+.menubar-dot {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* BitBhMenuLabel names its BitBhMenuGroup (aria-labelledby) */
+.menubar-label {
+    padding: 0.45rem 0.6rem 0.2rem 1.75rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #71717a;
+}
+""";
+
+    private const string _editorStyles = """
+.menubar-window {
+    width: 100%;
+    max-width: 36rem;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* The menubar doubles as the window's title bar */
+.menubar-window .menubar {
+    display: flex;
+    border: 0;
+    border-bottom: 1px solid #e4e4e7;
+    border-radius: 0;
+    background: #fafafa;
+    box-shadow: none;
+}
+
+.menubar-editor {
+    font-size: 0.8rem;
+    background: #fff;
+    color: #27272a;
+    transition: background-color 200ms ease, color 200ms ease;
+}
+
+.menubar-editor[data-theme="Dark"]  { background: #18181b; color: #e4e4e7; }
+.menubar-editor[data-theme="Sepia"] { background: #f7f0e1; color: #5b4636; }
+
+.menubar-code {
+    overflow-x: auto;
+    padding: 0.85rem 1rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    line-height: 1.65;
+}
+
+.menubar-line        { display: flex; gap: 0.75rem; }
+.menubar-line-number { width: 1.25rem; flex-shrink: 0; text-align: right; opacity: 0.4; user-select: none; }
+.menubar-line-text   { white-space: pre; }
+
+/* data-wrap is only rendered while Word Wrap is checked */
+.menubar-code[data-wrap] .menubar-line-text { white-space: pre-wrap; }
+
+.menubar-statusbar {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.35rem 1rem;
+    border-top: 1px solid rgba(127, 127, 127, 0.2);
+    font-size: 0.72rem;
+    opacity: 0.75;
+}
+""";
+
+    private const string _appCss = _baseStyles + "\n\n" + _checkableStyles;
+    private const string _editorCss = _baseStyles + "\n\n" + _checkableStyles + "\n\n" + _editorStyles;
+    private const string _submenusCss = _baseStyles;
+    private const string _disabledCss = _baseStyles;
+}

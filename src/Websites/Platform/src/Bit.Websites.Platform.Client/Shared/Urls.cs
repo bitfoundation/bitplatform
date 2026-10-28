@@ -37,6 +37,7 @@ public static class Urls
     public const string Bortable = "https://bortable.bitplatform.dev/";
     public const string Blex = "https://blex.bitplatform.dev/";
     public const string Belemetry = "https://belemetry.bitplatform.dev/";
+    public const string Bheadless = "https://bheadless.bitplatform.dev/";
 
     public const string Cli = "/toolings/cli";
     public const string Minifier = "/toolings/minifier";

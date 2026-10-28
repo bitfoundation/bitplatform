@@ -1,0 +1,319 @@
+﻿@page "/tw/tabs"
+
+<PageTitle>Tabs — bit Bheadless · Tailwind</PageTitle>
+
+<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
+    <header class="mb-12">
+        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">Tabs</h1>
+        <p class="mt-2 text-zinc-500">Accessible tab group with roving tabindex and full keyboard navigation.</p>
+        <TwSectionSwitcher Slug="tabs" />
+    </header>
+
+    <TwDemoBlock Title="Basic Tabs" Code="@_basicCode">
+        <Description>Click or use Left / Right / Home / End. Disabled tabs are skipped.</Description>
+        <LiveContent>
+            <BitBhTabGroup class="flex w-full flex-col gap-4">
+                <BitBhTabList class="flex border-b border-zinc-200 gap-1">
+                    <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Account</BitBhTab>
+                    <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Profile</BitBhTab>
+                    <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Notifications</BitBhTab>
+                </BitBhTabList>
+                <BitBhTabPanels class="mt-2">
+                    <BitBhTabPanel class="py-2 text-zinc-900">
+                        <h3 class="text-sm font-semibold text-zinc-900">Account</h3>
+                        <p class="text-sm text-zinc-500">Manage your account settings and preferences.</p>
+                    </BitBhTabPanel>
+                    <BitBhTabPanel class="py-2 text-zinc-900">
+                        <h3 class="text-sm font-semibold text-zinc-900">Profile</h3>
+                        <p class="text-sm text-zinc-500">Update your public profile information.</p>
+                    </BitBhTabPanel>
+                    <BitBhTabPanel class="py-2 text-zinc-900">
+                        <h3 class="text-sm font-semibold text-zinc-900">Notifications</h3>
+                        <p class="text-sm text-zinc-500">Choose what alerts you'd like to receive.</p>
+                    </BitBhTabPanel>
+                </BitBhTabPanels>
+            </BitBhTabGroup>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Vertical Orientation" Code="@_verticalCode">
+        <Description>Set <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Vertical="true"</code>. The <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-orientation-vertical:</code> variant flips the layout.</Description>
+        <LiveContent>
+            <BitBhTabGroup Vertical="true" class="flex w-full items-start gap-6">
+                <BitBhTabList class="flex flex-col border-r border-zinc-200 min-w-48">
+                    <BitBhTab class="cursor-pointer border-0 bg-transparent border-r-2 border-transparent text-start px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">General</BitBhTab>
+                    <BitBhTab class="cursor-pointer border-0 bg-transparent border-r-2 border-transparent text-start px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Security</BitBhTab>
+                    <BitBhTab class="cursor-pointer border-0 bg-transparent border-r-2 border-transparent text-start px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Integrations</BitBhTab>
+                </BitBhTabList>
+                <BitBhTabPanels class="flex-1">
+                    <BitBhTabPanel class="py-2 text-zinc-900">
+                        <h3 class="text-sm font-semibold text-zinc-900">General</h3>
+                        <p class="text-sm text-zinc-500">Application-wide settings.</p>
+                    </BitBhTabPanel>
+                    <BitBhTabPanel class="py-2 text-zinc-900">
+                        <h3 class="text-sm font-semibold text-zinc-900">Security</h3>
+                        <p class="text-sm text-zinc-500">Two-factor auth, sessions, and audit log.</p>
+                    </BitBhTabPanel>
+                    <BitBhTabPanel class="py-2 text-zinc-900">
+                        <h3 class="text-sm font-semibold text-zinc-900">Integrations</h3>
+                        <p class="text-sm text-zinc-500">Connect third-party services.</p>
+                    </BitBhTabPanel>
+                </BitBhTabPanels>
+            </BitBhTabGroup>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Manual Activation" Code="@_manualCode">
+        <Description>With <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Manual="true"</code> arrow keys move focus only — press Space or Enter to activate.</Description>
+        <LiveContent>
+            <BitBhTabGroup Manual="true" class="flex w-full flex-col gap-4">
+                <BitBhTabList class="flex border-b border-zinc-200 gap-1">
+                    <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Inbox</BitBhTab>
+                    <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Sent</BitBhTab>
+                    <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Drafts</BitBhTab>
+                    <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Archive</BitBhTab>
+                </BitBhTabList>
+                <BitBhTabPanels class="mt-2">
+                    <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Inbox content</p></BitBhTabPanel>
+                    <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Sent content</p></BitBhTabPanel>
+                    <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Drafts content</p></BitBhTabPanel>
+                    <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Archive content</p></BitBhTabPanel>
+                </BitBhTabPanels>
+            </BitBhTabGroup>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Disabled Tab" Code="@_disabledCode">
+        <Description><code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-disabled:</code> dims the tab; arrow-key navigation skips it.</Description>
+        <LiveContent>
+            <BitBhTabGroup class="flex w-full flex-col gap-4">
+                <BitBhTabList class="flex border-b border-zinc-200 gap-1">
+                    <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Free</BitBhTab>
+                    <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Pro</BitBhTab>
+                    <BitBhTab Disabled="true"
+                           class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Enterprise (coming soon)</BitBhTab>
+                </BitBhTabList>
+                <BitBhTabPanels class="mt-2">
+                    <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Free plan features.</p></BitBhTabPanel>
+                    <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Pro plan features.</p></BitBhTabPanel>
+                    <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Enterprise plan features.</p></BitBhTabPanel>
+                </BitBhTabPanels>
+            </BitBhTabGroup>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Render Context (state-driven content)" Code="@_renderContextCode">
+        <Description><code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Context="t"</code> exposes <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">t.IsSelected</code> for state-driven badges.</Description>
+        <LiveContent>
+            <BitBhTabGroup class="flex w-full flex-col gap-4">
+                <BitBhTabList class="flex border-b border-zinc-200 gap-1">
+                    <BitBhTab
+                           class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">
+                        <Template Context="t">
+                            <span>Messages</span>
+                            <span class="@($"ml-2 rounded-full px-1.5 py-0.5 text-xs font-semibold {(t.IsSelected ? "bg-blue-600 text-white" : "bg-zinc-200 text-zinc-600")}")">12</span>
+                        </Template>
+                    </BitBhTab>
+                    <BitBhTab
+                           class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">
+                        <Template Context="t">
+                            <span>Mentions</span>
+                            <span class="@($"ml-2 rounded-full px-1.5 py-0.5 text-xs font-semibold {(t.IsSelected ? "bg-blue-600 text-white" : "bg-zinc-200 text-zinc-600")}")">3</span>
+                        </Template>
+                    </BitBhTab>
+                    <BitBhTab
+                           class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">
+                        <Template Context="t">
+                            <span>All</span>
+                        </Template>
+                    </BitBhTab>
+                </BitBhTabList>
+                <BitBhTabPanels class="mt-2">
+                    <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Direct messages</p></BitBhTabPanel>
+                    <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Mentions of you</p></BitBhTabPanel>
+                    <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Everything together</p></BitBhTabPanel>
+                </BitBhTabPanels>
+            </BitBhTabGroup>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Controlled" Code="@_controlledCode">
+        <Description><code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">SelectedIndex</code> + <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">OnSelectedIndexChange</code>.</Description>
+        <LiveContent>
+            <div class="flex flex-col gap-4 w-full">
+                <div class="flex flex-wrap items-center gap-3">
+                    @for (var i = 0; i < 3; i++)
+                    {
+                        var captured = i;
+                        <BitBhButton OnClick="() => selectedIndex = captured"
+                                  class="@($"inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium cursor-pointer {(selectedIndex == captured ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700" : "bg-white border-zinc-200 text-zinc-900 hover:bg-zinc-100")}")">
+                            Select tab @(captured + 1)
+                        </BitBhButton>
+                    }
+                    <span class="text-sm text-zinc-500">SelectedIndex: <strong class="text-zinc-900">@selectedIndex</strong></span>
+                </div>
+                <BitBhTabGroup SelectedIndex="@selectedIndex" OnSelectedIndexChange="i => selectedIndex = i" class="flex w-full flex-col gap-4">
+                    <BitBhTabList class="flex border-b border-zinc-200 gap-1">
+                        <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Tab 1</BitBhTab>
+                        <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Tab 2</BitBhTab>
+                        <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Tab 3</BitBhTab>
+                    </BitBhTabList>
+                    <BitBhTabPanels class="mt-2">
+                        <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">First panel</p></BitBhTabPanel>
+                        <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Second panel</p></BitBhTabPanel>
+                        <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Third panel</p></BitBhTabPanel>
+                    </BitBhTabPanels>
+                </BitBhTabGroup>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+</div>
+
+@code {
+    private int selectedIndex;
+
+    private const string _basicCode = """
+<BitBhTabGroup class="flex w-full flex-col gap-4">
+    <BitBhTabList class="flex border-b border-zinc-200 gap-1">
+        <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Account</BitBhTab>
+        <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Profile</BitBhTab>
+        <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Notifications</BitBhTab>
+    </BitBhTabList>
+    <BitBhTabPanels class="mt-2">
+        <BitBhTabPanel class="py-2 text-zinc-900">
+            <h3 class="text-sm font-semibold text-zinc-900">Account</h3>
+            <p class="text-sm text-zinc-500">Manage your account settings and preferences.</p>
+        </BitBhTabPanel>
+        <BitBhTabPanel class="py-2 text-zinc-900">
+            <h3 class="text-sm font-semibold text-zinc-900">Profile</h3>
+            <p class="text-sm text-zinc-500">Update your public profile information.</p>
+        </BitBhTabPanel>
+        <BitBhTabPanel class="py-2 text-zinc-900">
+            <h3 class="text-sm font-semibold text-zinc-900">Notifications</h3>
+            <p class="text-sm text-zinc-500">Choose what alerts you'd like to receive.</p>
+        </BitBhTabPanel>
+    </BitBhTabPanels>
+</BitBhTabGroup>
+""";
+
+    private const string _verticalCode = """
+<BitBhTabGroup Vertical="true" class="flex w-full items-start gap-6">
+    <BitBhTabList class="flex flex-col border-r border-zinc-200 min-w-48">
+        <BitBhTab class="cursor-pointer border-0 bg-transparent border-r-2 border-transparent text-start px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">General</BitBhTab>
+        <BitBhTab class="cursor-pointer border-0 bg-transparent border-r-2 border-transparent text-start px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Security</BitBhTab>
+        <BitBhTab class="cursor-pointer border-0 bg-transparent border-r-2 border-transparent text-start px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Integrations</BitBhTab>
+    </BitBhTabList>
+    <BitBhTabPanels class="flex-1">
+        <BitBhTabPanel class="py-2 text-zinc-900">
+            <h3 class="text-sm font-semibold text-zinc-900">General</h3>
+            <p class="text-sm text-zinc-500">Application-wide settings.</p>
+        </BitBhTabPanel>
+        <BitBhTabPanel class="py-2 text-zinc-900">
+            <h3 class="text-sm font-semibold text-zinc-900">Security</h3>
+            <p class="text-sm text-zinc-500">Two-factor auth, sessions, and audit log.</p>
+        </BitBhTabPanel>
+        <BitBhTabPanel class="py-2 text-zinc-900">
+            <h3 class="text-sm font-semibold text-zinc-900">Integrations</h3>
+            <p class="text-sm text-zinc-500">Connect third-party services.</p>
+        </BitBhTabPanel>
+    </BitBhTabPanels>
+</BitBhTabGroup>
+""";
+
+    private const string _manualCode = """
+<BitBhTabGroup Manual="true" class="flex w-full flex-col gap-4">
+    <BitBhTabList class="flex border-b border-zinc-200 gap-1">
+        <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Inbox</BitBhTab>
+        <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Sent</BitBhTab>
+        <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Drafts</BitBhTab>
+        <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Archive</BitBhTab>
+    </BitBhTabList>
+    <BitBhTabPanels class="mt-2">
+        <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Inbox content</p></BitBhTabPanel>
+        <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Sent content</p></BitBhTabPanel>
+        <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Drafts content</p></BitBhTabPanel>
+        <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Archive content</p></BitBhTabPanel>
+    </BitBhTabPanels>
+</BitBhTabGroup>
+""";
+
+    private const string _disabledCode = """
+<BitBhTabGroup class="flex w-full flex-col gap-4">
+    <BitBhTabList class="flex border-b border-zinc-200 gap-1">
+        <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Free</BitBhTab>
+        <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Pro</BitBhTab>
+        <BitBhTab Disabled="true"
+               class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Enterprise (coming soon)</BitBhTab>
+    </BitBhTabList>
+    <BitBhTabPanels class="mt-2">
+        <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Free plan features.</p></BitBhTabPanel>
+        <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Pro plan features.</p></BitBhTabPanel>
+        <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Enterprise plan features.</p></BitBhTabPanel>
+    </BitBhTabPanels>
+</BitBhTabGroup>
+""";
+
+    private const string _renderContextCode = """
+<BitBhTabGroup class="flex w-full flex-col gap-4">
+    <BitBhTabList class="flex border-b border-zinc-200 gap-1">
+        <BitBhTab
+               class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">
+            <Template Context="t">
+                <span>Messages</span>
+                <span class="@($"ml-2 rounded-full px-1.5 py-0.5 text-xs font-semibold {(t.IsSelected ? "bg-blue-600 text-white" : "bg-zinc-200 text-zinc-600")}")">12</span>
+            </Template>
+        </BitBhTab>
+        <BitBhTab
+               class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">
+            <Template Context="t">
+                <span>Mentions</span>
+                <span class="@($"ml-2 rounded-full px-1.5 py-0.5 text-xs font-semibold {(t.IsSelected ? "bg-blue-600 text-white" : "bg-zinc-200 text-zinc-600")}")">3</span>
+            </Template>
+        </BitBhTab>
+        <BitBhTab
+               class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">
+            <Template Context="t">
+                <span>All</span>
+            </Template>
+        </BitBhTab>
+    </BitBhTabList>
+    <BitBhTabPanels class="mt-2">
+        <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Direct messages</p></BitBhTabPanel>
+        <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Mentions of you</p></BitBhTabPanel>
+        <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Everything together</p></BitBhTabPanel>
+    </BitBhTabPanels>
+</BitBhTabGroup>
+""";
+
+    private const string _controlledCode = """
+<div class="flex flex-col gap-4 w-full">
+    <div class="flex flex-wrap items-center gap-3">
+        @for (var i = 0; i < 3; i++)
+        {
+            var captured = i;
+            <BitBhButton OnClick="() => selectedIndex = captured"
+                      class="@($"inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium cursor-pointer {(selectedIndex == captured ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700" : "bg-white border-zinc-200 text-zinc-900 hover:bg-zinc-100")}")">
+                Select tab @(captured + 1)
+            </BitBhButton>
+        }
+        <span class="text-sm text-zinc-500">SelectedIndex: <strong class="text-zinc-900">@selectedIndex</strong></span>
+    </div>
+    <BitBhTabGroup SelectedIndex="@selectedIndex" OnSelectedIndexChange="i => selectedIndex = i" class="flex w-full flex-col gap-4">
+        <BitBhTabList class="flex border-b border-zinc-200 gap-1">
+            <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Tab 1</BitBhTab>
+            <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Tab 2</BitBhTab>
+            <BitBhTab class="cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-zinc-500 outline-none transition-colors box-border hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 focus-visible:rounded data-state-active:text-blue-600 data-state-active:border-blue-600 data-disabled:opacity-40 data-disabled:cursor-not-allowed">Tab 3</BitBhTab>
+        </BitBhTabList>
+        <BitBhTabPanels class="mt-2">
+            <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">First panel</p></BitBhTabPanel>
+            <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Second panel</p></BitBhTabPanel>
+            <BitBhTabPanel class="py-2 text-zinc-900"><p class="text-sm text-zinc-500">Third panel</p></BitBhTabPanel>
+        </BitBhTabPanels>
+    </BitBhTabGroup>
+</div>
+
+@code {
+    private int selectedIndex;
+}
+""";
+}

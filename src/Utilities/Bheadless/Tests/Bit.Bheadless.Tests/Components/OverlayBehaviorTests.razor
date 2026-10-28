@@ -1,0 +1,186 @@
+﻿@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    [TestMethod]
+    public void Backdrops_are_left_alone_by_the_runtime_s_outside_press_dismissal()
+    {
+        var cut = Render(
+            @<BitBhDialog Open="true">
+                <BitBhDialogBackdrop />
+                <BitBhDialogPanel aria-label="Settings"><button>OK</button></BitBhDialogPanel>
+            </BitBhDialog>);
+
+        // The backdrop's own click is the one dismissal a press on it makes.
+        Assert.IsTrue(cut.Find("[aria-hidden=true]").HasAttribute("data-bit-bh-dismiss-ignore"));
+    }
+
+    [TestMethod]
+    public void A_backdrop_press_honours_DismissOnOutsideClick()
+    {
+        var open = true;
+        var cut = Render(
+            @<BitBhDialog @bind-Open="open" DismissOnOutsideClick="false">
+                <BitBhDialogBackdrop />
+                <BitBhDialogPanel aria-label="Settings"><button>OK</button></BitBhDialogPanel>
+            </BitBhDialog>);
+
+        cut.Find("[aria-hidden=true]").Click();
+
+        Assert.IsTrue(open);
+    }
+
+    [TestMethod]
+    public void A_non_modal_dialog_does_not_cover_the_page()
+    {
+        var cut = Render(
+            @<BitBhDialog Open="true" Modal="false">
+                <BitBhDialogPanel aria-label="Find"><input aria-label="Text" /></BitBhDialogPanel>
+            </BitBhDialog>);
+
+        var root = cut.Find("[data-bit-bh-presence=subtree]");
+        Assert.IsNull(root.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void Escape_on_the_trigger_of_an_open_popover_closes_it()
+    {
+        var cut = Render(
+            @<BitBhPopover DefaultOpen="true">
+                <BitBhPopoverButton>Share</BitBhPopoverButton>
+                <BitBhPopoverPanel aria-label="Share options">…</BitBhPopoverPanel>
+            </BitBhPopover>);
+
+        var button = cut.Find("button");
+        Assert.Contains("Escape", button.GetAttribute("data-bit-bh-keys")!);
+        button.Press("Escape");
+
+        Assert.AreEqual("false", cut.Find("button").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void Escape_on_the_button_of_an_open_menu_closes_it()
+    {
+        var cut = Render(
+            @<BitBhMenu DefaultOpen="true">
+                <BitBhMenuButton>Options</BitBhMenuButton>
+                <BitBhMenuItems><BitBhMenuItem>Edit</BitBhMenuItem></BitBhMenuItems>
+            </BitBhMenu>);
+
+        cut.Find("button").Press("Escape");
+
+        Assert.AreEqual("false", cut.Find("button").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void A_disabled_menubar_item_stays_focusable_and_reachable_but_never_opens()
+    {
+        var cut = Render(
+            @<BitBhMenubar aria-label="App">
+                <BitBhMenu>
+                    <BitBhMenuButton>File</BitBhMenuButton>
+                    <BitBhMenuItems><BitBhMenuItem>New</BitBhMenuItem></BitBhMenuItems>
+                </BitBhMenu>
+                <BitBhMenu Disabled="true">
+                    <BitBhMenuButton>Edit</BitBhMenuButton>
+                    <BitBhMenuItems><BitBhMenuItem>Undo</BitBhMenuItem></BitBhMenuItems>
+                </BitBhMenu>
+            </BitBhMenubar>);
+
+        var edit = cut.FindAll("[aria-haspopup=menu]")[1];
+        Assert.IsFalse(edit.HasAttribute("disabled"));
+        Assert.AreEqual("true", edit.GetAttribute("aria-disabled"));
+
+        cut.FindAll("[aria-haspopup=menu]")[0].Press("ArrowRight");
+        Assert.AreEqual(cut.FindAll("[aria-haspopup=menu]")[1].Id, this.LastFocusRequest());
+
+        cut.FindAll("[aria-haspopup=menu]")[1].Press("ArrowDown");
+        Assert.AreEqual("false", cut.FindAll("[aria-haspopup=menu]")[1].GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void A_modal_popover_panel_is_a_modal_dialog_named_by_its_button()
+    {
+        var cut = Render(
+            @<BitBhPopover Modal="true" DefaultOpen="true">
+                <BitBhPopoverButton>Filters</BitBhPopoverButton>
+                <BitBhPopoverPanel><button>Apply</button></BitBhPopoverPanel>
+            </BitBhPopover>);
+
+        var panel = cut.Find("[role=dialog]");
+        Assert.AreEqual("true", panel.GetAttribute("aria-modal"));
+        Assert.AreEqual("Filters", panel.AccessibleName());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void A_non_modal_popover_panel_keeps_no_dialog_role()
+    {
+        var cut = Render(
+            @<BitBhPopover DefaultOpen="true">
+                <BitBhPopoverButton>Share</BitBhPopoverButton>
+                <BitBhPopoverPanel aria-label="Share options"><a href="/copy">Copy link</a></BitBhPopoverPanel>
+            </BitBhPopover>);
+
+        Assert.IsEmpty(cut.FindAll("[role=dialog]"));
+    }
+
+    [TestMethod]
+    public void A_right_click_in_the_trigger_of_an_open_context_menu_moves_it()
+    {
+        // The open surface needs a handle for the move to reach the runtime.
+        var module = JSInterop.SetupModule("./_content/Bit.Bheadless/bit-bheadless.js");
+        module.Mode = JSRuntimeMode.Loose;
+        module.Setup<int>("floating.open", _ => true).SetResult(3);
+
+        var cut = Render(
+            @<BitBhContextMenu>
+                <BitBhContextMenuTrigger>Right-click here</BitBhContextMenuTrigger>
+                <BitBhContextMenuContent aria-label="Actions">
+                    <BitBhContextMenuItem>Reload</BitBhContextMenuItem>
+                </BitBhContextMenuContent>
+            </BitBhContextMenu>);
+
+        var trigger = cut.Find("[id$=-trigger]");
+        trigger.ContextMenu(new MouseEventArgs { ClientX = 10, ClientY = 10, Detail = 1 });
+
+        // The runtime must not take the next right-click in the trigger for an outside press: the menu moves.
+        var options = (IDictionary<string, object?>)JSInterop.Invocations["floating.open"].Last().Arguments[2]!;
+        var layer = (IDictionary<string, object?>)options["layer"]!;
+        Assert.Contains(trigger.Id, (string[])layer["secondaryIds"]!);
+
+        cut.Find("[id$=-trigger]").ContextMenu(new MouseEventArgs { ClientX = 40, ClientY = 50, Detail = 1 });
+        Assert.HasCount(1, JSInterop.Invocations["floating.open"]);
+        Assert.IsNotEmpty(JSInterop.Invocations["floating.setPoint"]);
+    }
+
+    [TestMethod]
+    public void A_tooltip_trigger_keeps_the_consumer_s_own_description()
+    {
+        var cut = Render(
+            @<div>
+                <p id="hint">Unsaved changes are kept.</p>
+                <BitBhTooltip>
+                    <BitBhTooltipTrigger aria-label="Save" aria-describedby="hint">💾</BitBhTooltipTrigger>
+                    <BitBhTooltipContent>Save (Ctrl+S)</BitBhTooltipContent>
+                </BitBhTooltip>
+            </div>);
+
+        var ids = cut.Find("button").GetAttribute("aria-describedby")!.Split(' ');
+        Assert.Contains("hint", ids);
+        Assert.Contains(cut.Find("[role=tooltip]").Id, ids);
+    }
+
+    [TestMethod]
+    public void An_unmounted_closed_tooltip_is_not_referenced()
+    {
+        var cut = Render(
+            @<BitBhTooltip>
+                <BitBhTooltipTrigger aria-label="Save">💾</BitBhTooltipTrigger>
+                <BitBhTooltipContent Unmount="true">Save (Ctrl+S)</BitBhTooltipContent>
+            </BitBhTooltip>);
+
+        cut.WaitForAssertion(() => Assert.IsNull(cut.Find("button").GetAttribute("aria-describedby")));
+        cut.ShouldBeAccessible();
+    }
+}

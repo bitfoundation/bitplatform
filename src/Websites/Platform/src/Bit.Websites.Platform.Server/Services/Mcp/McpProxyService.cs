@@ -45,7 +45,7 @@ public partial class McpProxyService : IAsyncDisposable
         - ZiggyCreatures/FusionCache: hybrid caching, L2 cache backplane, distributed locking, OpenTelemetry integration and cache factory configuration.
         - keycloak/keycloak: Keycloak and realm configuration.
         - microsoft/agent-framework: agent creation, multi agent orchestration, workflows, tools and function calling, MCP, A2A communication, memory and context, and provider integrations.
-        Do not ask it about the bit platform libraries themselves: BlazorUI, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite, Butil, Bswup, Brouter and Belemetry each have
+        Do not ask it about the bit platform libraries themselves: BlazorUI, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite, Butil, Bswup, Brouter, Belemetry and Bheadless each have
         their own dedicated tools, BlazorUI's and Butil's on this server and every other library's on its own server at https://<name>.bitplatform.dev/mcp, and those are written from the library rather than inferred from it.
         """;
 
@@ -53,7 +53,7 @@ public partial class McpProxyService : IAsyncDisposable
     /// Ends the description of every CodebaseMemory tool: an agent may also have a codebase-memory server of its
     /// own, which answers about its own project.
     /// </summary>
-    private const string bitPlatformSourceScope = "It reads the source code of the bitfoundation/bitplatform GitHub repository at the release this connection asked for (the v query of this endpoint, the newest release when it names none or one not served yet, as the server instructions say), never the caller's own workspace, not even a project created from a bit template. Of that repository it holds the bit Boilerplate project template, the bit platform websites, the build time projects and two bit libraries, Besql (src/Besql) and BlazorES2019 (src/Toolings/BlazorES2019), but none of the other bit libraries: BlazorUI, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite, Brouter, Butil, Bswup and Belemetry each answer for themselves through their own tools, BlazorUI's and Butil's on this server and every other library's on its own server at https://<name>.bitplatform.dev/mcp, so a question about a component, a theme, an animation, a drawing canvas, a command palette, a barcode scanner, drag and drop, a browser database, a node-based editor, a schema-driven form, real-time collaboration, a sortable list, a product tour, state management, image processing, an EF Core database in the browser, routing, the service worker or telemetry goes to those rather than to a search here.";
+    private const string bitPlatformSourceScope = "It reads the source code of the bitfoundation/bitplatform GitHub repository at the release this connection asked for (the v query of this endpoint, the newest release when it names none or one not served yet, as the server instructions say), never the caller's own workspace, not even a project created from a bit template. Of that repository it holds the bit Boilerplate project template, the bit platform websites, the build time projects and two bit libraries, Besql (src/Besql) and BlazorES2019 (src/Toolings/BlazorES2019), but none of the other bit libraries: BlazorUI, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite, Brouter, Butil, Bswup, Belemetry and Bheadless each answer for themselves through their own tools, BlazorUI's and Butil's on this server and every other library's on its own server at https://<name>.bitplatform.dev/mcp, so a question about a component, a theme, an animation, a drawing canvas, a command palette, a barcode scanner, drag and drop, a browser database, a node-based editor, a schema-driven form, real-time collaboration, a sortable list, a product tour, state management, image processing, an EF Core database in the browser, routing, the service worker, telemetry or accessible unstyled UI primitives goes to those rather than to a search here.";
 
     /// <summary>
     /// Every tool of this upstream takes a project argument naming the index to answer from, a deployment
@@ -101,7 +101,7 @@ public partial class McpProxyService : IAsyncDisposable
 
     private readonly Upstream[] deployedLibraryUpstreams =
     [
-        .. new[] { "Bmotion", "Bswup", "Brouter", "Bmage", "Bink", "Balette", "BbScanner", "Bdnd", "BlazeDb", "Blow", "Borm", "Bcrdt", "Bonboarding", "Bortable", "Blex", "Bsqlite", "Belemetry" }
+        .. new[] { "Bmotion", "Bswup", "Brouter", "Bmage", "Bink", "Balette", "BbScanner", "Bdnd", "BlazeDb", "Blow", "Borm", "Bcrdt", "Bonboarding", "Bortable", "Blex", "Bsqlite", "Belemetry", "Bheadless" }
             .Select(library => new Upstream($"bit{library}", new($"https://{library.ToLowerInvariant()}.bitplatform.dev/mcp")))
     ];
 

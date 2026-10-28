@@ -1,0 +1,330 @@
+﻿@page "/context-menu"
+
+<PageTitle>Context Menu — bit Bheadless</PageTitle>
+
+<div class="demo-page">
+    <header class="demo-header">
+        <h1>Context Menu</h1>
+        <p>A menu located at the pointer, triggered by a right click. Keyboard navigation, typeahead, and viewport collision handling included.</p>
+        <SectionSwitcher Slug="context-menu" />
+    </header>
+
+    <DemoBlock Title="Basic Context Menu"
+               Code="@_basicCode"
+               Css="@_basicCss">
+        <Description>
+            Right-click the trigger area to open the menu at the pointer. Use Up / Down to
+            navigate, Home / End to jump, Enter / Space to activate, Escape to close, and
+            type a letter to jump to the first matching item. The native browser menu is
+            suppressed on the trigger.
+        </Description>
+        <LiveContent>
+            <BitBhContextMenu>
+                <BitBhContextMenuTrigger class="cm-trigger">
+                    Right-click here
+                </BitBhContextMenuTrigger>
+                <BitBhContextMenuContent class="cm-content">
+                    <BitBhContextMenuItem OnClick='@(() => Log("Back"))'    class="cm-item" Label="Back">Back</BitBhContextMenuItem>
+                    <BitBhContextMenuItem OnClick='@(() => Log("Forward"))' class="cm-item" Label="Forward" Disabled="true">Forward</BitBhContextMenuItem>
+                    <BitBhContextMenuItem OnClick='@(() => Log("Reload"))'  class="cm-item" Label="Reload">Reload</BitBhContextMenuItem>
+                </BitBhContextMenuContent>
+            </BitBhContextMenu>
+
+            <span class="demo-output">Last action: <strong>@(lastAction ?? "(none)")</strong></span>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Labels, groups and separators"
+               Code="@_structuredCode"
+               Css="@_structuredCss">
+        <Description>
+            Use <code>BitBhContextMenuLabel</code> to title a section, <code>BitBhContextMenuGroup</code>
+            to relate items for assistive tech, and <code>BitBhContextMenuSeparator</code> to draw a
+            divider. Labels and separators are skipped by keyboard nav and typeahead.
+        </Description>
+        <LiveContent>
+            <BitBhContextMenu>
+                <BitBhContextMenuTrigger class="cm-trigger">
+                    Right-click for a structured menu
+                </BitBhContextMenuTrigger>
+                <BitBhContextMenuContent class="cm-content">
+                    <BitBhContextMenuLabel class="cm-label">Edit</BitBhContextMenuLabel>
+                    <BitBhContextMenuGroup class="cm-group">
+                        <BitBhContextMenuItem OnClick='@(() => Log("Cut"))'   class="cm-item" Label="Cut">Cut <span class="cm-shortcut">⌘X</span></BitBhContextMenuItem>
+                        <BitBhContextMenuItem OnClick='@(() => Log("Copy"))'  class="cm-item" Label="Copy">Copy <span class="cm-shortcut">⌘C</span></BitBhContextMenuItem>
+                        <BitBhContextMenuItem OnClick='@(() => Log("Paste"))' class="cm-item" Label="Paste">Paste <span class="cm-shortcut">⌘V</span></BitBhContextMenuItem>
+                    </BitBhContextMenuGroup>
+
+                    <BitBhContextMenuSeparator class="cm-separator" />
+
+                    <BitBhContextMenuLabel class="cm-label">Danger zone</BitBhContextMenuLabel>
+                    <BitBhContextMenuItem OnClick='@(() => Log("Delete"))' class="cm-item cm-item-danger" Label="Delete">Delete</BitBhContextMenuItem>
+                </BitBhContextMenuContent>
+            </BitBhContextMenu>
+
+            <span class="demo-output">Last action: <strong>@(lastAction ?? "(none)")</strong></span>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Disabled menu"
+               Code="@_disabledCode"
+               Css="@_disabledCss">
+        <Description>
+            Set <code>Disabled="true"</code> on <code>BitBhContextMenu</code> to turn the whole
+            thing off. The trigger then lets the native browser context menu through instead.
+        </Description>
+        <LiveContent>
+            <BitBhContextMenu Disabled="true">
+                <BitBhContextMenuTrigger class="cm-trigger cm-trigger-disabled">
+                    Right-click here (disabled — native menu shows)
+                </BitBhContextMenuTrigger>
+                <BitBhContextMenuContent class="cm-content">
+                    <BitBhContextMenuItem OnClick='@(() => Log("Never"))' class="cm-item" Label="Never">Never runs</BitBhContextMenuItem>
+                </BitBhContextMenuContent>
+            </BitBhContextMenu>
+        </LiveContent>
+    </DemoBlock>
+</div>
+
+@code {
+    private string? lastAction;
+
+    private void Log(string action) => lastAction = action;
+
+    // ── Source snippets shown alongside each live demo ─────────────────────────
+
+    private const string _basicCode = """
+<BitBhContextMenu>
+    <BitBhContextMenuTrigger class="cm-trigger">
+        Right-click here
+    </BitBhContextMenuTrigger>
+    <BitBhContextMenuContent class="cm-content">
+        <BitBhContextMenuItem OnClick='@(() => Log("Back"))'    class="cm-item" Label="Back">Back</BitBhContextMenuItem>
+        <BitBhContextMenuItem OnClick='@(() => Log("Forward"))' class="cm-item" Label="Forward" Disabled="true">Forward</BitBhContextMenuItem>
+        <BitBhContextMenuItem OnClick='@(() => Log("Reload"))'  class="cm-item" Label="Reload">Reload</BitBhContextMenuItem>
+    </BitBhContextMenuContent>
+</BitBhContextMenu>
+
+<span class="demo-output">Last action: <strong>@(lastAction ?? "(none)")</strong></span>
+
+@code {
+    private string? lastAction;
+
+    private void Log(string action) => lastAction = action;
+}
+""";
+
+    private const string _structuredCode = """
+<BitBhContextMenu>
+    <BitBhContextMenuTrigger class="cm-trigger">
+        Right-click for a structured menu
+    </BitBhContextMenuTrigger>
+    <BitBhContextMenuContent class="cm-content">
+        <BitBhContextMenuLabel class="cm-label">Edit</BitBhContextMenuLabel>
+        <BitBhContextMenuGroup class="cm-group">
+            <BitBhContextMenuItem OnClick='@(() => Log("Cut"))'   class="cm-item" Label="Cut">Cut <span class="cm-shortcut">⌘X</span></BitBhContextMenuItem>
+            <BitBhContextMenuItem OnClick='@(() => Log("Copy"))'  class="cm-item" Label="Copy">Copy <span class="cm-shortcut">⌘C</span></BitBhContextMenuItem>
+            <BitBhContextMenuItem OnClick='@(() => Log("Paste"))' class="cm-item" Label="Paste">Paste <span class="cm-shortcut">⌘V</span></BitBhContextMenuItem>
+        </BitBhContextMenuGroup>
+
+        <BitBhContextMenuSeparator class="cm-separator" />
+
+        <BitBhContextMenuLabel class="cm-label">Danger zone</BitBhContextMenuLabel>
+        <BitBhContextMenuItem OnClick='@(() => Log("Delete"))' class="cm-item cm-item-danger" Label="Delete">Delete</BitBhContextMenuItem>
+    </BitBhContextMenuContent>
+</BitBhContextMenu>
+""";
+
+    private const string _disabledCode = """
+<BitBhContextMenu Disabled="true">
+    <BitBhContextMenuTrigger class="cm-trigger cm-trigger-disabled">
+        Right-click here (disabled — native menu shows)
+    </BitBhContextMenuTrigger>
+    <BitBhContextMenuContent class="cm-content">
+        <BitBhContextMenuItem OnClick='@(() => Log("Never"))' class="cm-item" Label="Never">Never runs</BitBhContextMenuItem>
+    </BitBhContextMenuContent>
+</BitBhContextMenu>
+""";
+
+    private const string _basicCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.cm-trigger {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    min-height: 9rem;
+    padding: 2rem;
+    border: 2px dashed #d4d4d8;
+    border-radius: 0.75rem;
+    color: #71717a;
+    font-size: 0.95rem;
+    user-select: none;
+    cursor: context-menu;
+}
+
+.cm-trigger[data-state="open"] { border-color: #2563eb; color: #1d4ed8; }
+
+/* The content panel is positioned at the pointer with fixed positioning by the
+   JS engine, so it needs a high z-index and no manual top/left. */
+.cm-content {
+    z-index: 9999;
+    min-width: 11rem;
+    margin: 0;
+    padding: 0.25rem;
+    list-style: none;
+    background: #fff;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.cm-content:focus-visible { outline: none; }
+
+.cm-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.65rem;
+    border-radius: 0.35rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: #18181b;
+    list-style: none;
+}
+
+/* Hooks emitted by BitBhContextMenuItem */
+.cm-item[data-active]   { background: #eff6ff; color: #1d4ed8; }
+.cm-item[data-disabled] { opacity: 0.4; cursor: not-allowed; }
+""";
+
+    private const string _structuredCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.cm-trigger {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    min-height: 9rem;
+    padding: 2rem;
+    border: 2px dashed #d4d4d8;
+    border-radius: 0.75rem;
+    color: #71717a;
+    font-size: 0.95rem;
+    user-select: none;
+    cursor: context-menu;
+}
+
+.cm-trigger[data-state="open"] { border-color: #2563eb; color: #1d4ed8; }
+
+/* The content panel is positioned at the pointer with fixed positioning by the
+   JS engine, so it needs a high z-index and no manual top/left. */
+.cm-content {
+    z-index: 9999;
+    min-width: 11rem;
+    margin: 0;
+    padding: 0.25rem;
+    list-style: none;
+    background: #fff;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.cm-content:focus-visible { outline: none; }
+
+.cm-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.65rem;
+    border-radius: 0.35rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: #18181b;
+    list-style: none;
+}
+
+/* Hooks emitted by BitBhContextMenuItem */
+.cm-item[data-active]   { background: #eff6ff; color: #1d4ed8; }
+.cm-item[data-disabled] { opacity: 0.4; cursor: not-allowed; }
+
+.cm-label {
+    padding: 0.35rem 0.65rem 0.15rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #71717a;
+    list-style: none;
+}
+
+.cm-group { list-style: none; }
+
+.cm-separator {
+    display: block;
+    height: 1px;
+    background: #e4e4e7;
+    margin: 0.25rem 0;
+    list-style: none;
+}
+
+.cm-shortcut { margin-left: auto; font-size: 0.75rem; color: #71717a; }
+
+.cm-item-danger { color: #dc2626; }
+.cm-item-danger[data-active] { background: #fef2f2; color: #b91c1c; }
+""";
+
+    private const string _disabledCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.cm-trigger {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    min-height: 9rem;
+    padding: 2rem;
+    border: 2px dashed #d4d4d8;
+    border-radius: 0.75rem;
+    color: #71717a;
+    font-size: 0.95rem;
+    user-select: none;
+    cursor: context-menu;
+}
+
+.cm-trigger[data-state="open"] { border-color: #2563eb; color: #1d4ed8; }
+
+/* The content panel is positioned at the pointer with fixed positioning by the
+   JS engine, so it needs a high z-index and no manual top/left. */
+.cm-content {
+    z-index: 9999;
+    min-width: 11rem;
+    margin: 0;
+    padding: 0.25rem;
+    list-style: none;
+    background: #fff;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.cm-content:focus-visible { outline: none; }
+
+.cm-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.65rem;
+    border-radius: 0.35rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: #18181b;
+    list-style: none;
+}
+
+/* Hooks emitted by BitBhContextMenuItem */
+.cm-item[data-active]   { background: #eff6ff; color: #1d4ed8; }
+.cm-item[data-disabled] { opacity: 0.4; cursor: not-allowed; }
+
+/* A disabled context menu lets the native browser menu through, so the
+   trigger keeps the default cursor as a hint. */
+.cm-trigger-disabled { cursor: default; }
+""";
+}

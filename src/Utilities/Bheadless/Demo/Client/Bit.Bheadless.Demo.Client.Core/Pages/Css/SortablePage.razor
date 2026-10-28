@@ -1,0 +1,513 @@
+﻿@page "/sortable"
+
+<PageTitle>Sortable — bit Bheadless</PageTitle>
+
+<div class="demo-page">
+    <header class="demo-header">
+        <h1>Sortable</h1>
+        <p>Reorder a list by dragging with a pointer or entirely with the keyboard, with live screen-reader announcements.</p>
+        <SectionSwitcher Slug="sortable" />
+    </header>
+
+    <DemoBlock Title="Reorderable task list"
+               Code="@_tasksCode"
+               Css="@_tasksCss">
+        <Description>
+            Bind the list with <code>@@bind-Items</code>; <code>ItemKey</code> keeps each row's identity
+            stable and <code>ItemLabel</code> names it in announcements. Drag a grip with a mouse, pen or
+            finger — or focus a grip, press <kbd>Space</kbd> / <kbd>Enter</kbd> to pick the task up,
+            <kbd>↑</kbd> / <kbd>↓</kbd> to move it, <kbd>Space</kbd> / <kbd>Enter</kbd> to drop it and
+            <kbd>Escape</kbd> to cancel. Each step is announced automatically.
+        </Description>
+        <LiveContent>
+            <div class="sortable-demo">
+                <BitBhSortable TItem="TaskItem" @bind-Items="tasks"
+                            ItemKey="t => t.Id" ItemLabel="t => t.Title"
+                            aria-label="Tasks" class="sortable-list" Context="s">
+                    <BitBhSortableHandle TItem="TaskItem" class="sortable-handle"
+                                      aria-label="@($"Reorder {s.Item.Title}")">⠿</BitBhSortableHandle>
+                    <span class="sortable-title">@s.Item.Title</span>
+                    <span class="sortable-tag">@s.Item.Tag</span>
+                </BitBhSortable>
+                <p class="sortable-output">
+                    Bound order (ids): <strong>@string.Join(" · ", tasks.Select(t => t.Id))</strong>
+                </p>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="OnReorder event log"
+               Code="@_logCode"
+               Css="@_logCss">
+        <Description>
+            <code>OnReorder</code> fires once per committed move with the item and its old and new
+            index — handy for persisting the order or sending a PATCH. Moves cancelled with
+            <kbd>Escape</kbd> (or dropped in place) don't fire it.
+        </Description>
+        <LiveContent>
+            <div class="sortable-split">
+                <BitBhSortable TItem="string" @bind-Items="backlog" OnReorder="LogReorder"
+                            aria-label="Sprint backlog" class="sortable-list" Context="s">
+                    <BitBhSortableHandle TItem="string" class="sortable-handle"
+                                      aria-label="@($"Reorder {s.Item}")">⠿</BitBhSortableHandle>
+                    <span class="sortable-title">@s.Item</span>
+                </BitBhSortable>
+
+                <ol class="sortable-log" aria-label="Reorder events">
+                    @if (reorderLog.Count == 0)
+                    {
+                        <li class="sortable-log-empty">No moves yet — reorder an item.</li>
+                    }
+                    @foreach (var entry in reorderLog)
+                    {
+                        <li>@entry</li>
+                    }
+                </ol>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Horizontal orientation"
+               Code="@_horizontalCode"
+               Css="@_horizontalCss">
+        <Description>
+            Set <code>Orientation="BitBhOrientation.Horizontal"</code> for a row: pointer drags shift
+            siblings sideways and, once picked up, <kbd>←</kbd> / <kbd>→</kbd> move the item. Here the
+            whole chip is the <code>BitBhSortableHandle</code>, so its text becomes the accessible name.
+        </Description>
+        <LiveContent>
+            <div class="sortable-demo">
+                <BitBhSortable TItem="string" @bind-Items="priorities"
+                            Orientation="BitBhOrientation.Horizontal"
+                            aria-label="Priorities" class="sortable-row" Context="s">
+                    <BitBhSortableHandle TItem="string" class="sortable-chip">
+                        <span class="sortable-chip-grip" aria-hidden="true">⠿</span>@s.Item
+                    </BitBhSortableHandle>
+                </BitBhSortable>
+                <p class="sortable-output">
+                    Ranking: <strong>@string.Join(" › ", priorities)</strong>
+                </p>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Custom announcements"
+               Code="@_announcementsCode"
+               Css="@_announcementsCss">
+        <Description>
+            Pass a <code>BitBhSortableAnnouncements</code> to localize or reword what screen readers
+            hear: the <code>Instructions</code> every handle is described by, plus the
+            <code>PickedUp</code>, <code>Moved</code>, <code>Dropped</code> and <code>Cancelled</code>
+            messages. The template's <code>Index</code> is the live (preview) position.
+        </Description>
+        <LiveContent>
+            <BitBhSortable TItem="string" @bind-Items="queue" Announcements="queueAnnouncements"
+                        aria-label="Up next" class="sortable-list" Context="s">
+                <BitBhSortableHandle TItem="string" class="sortable-handle"
+                                  aria-label="@($"Move {s.Item}")">⠿</BitBhSortableHandle>
+                <span class="sortable-index">@(s.Index + 1)</span>
+                <span class="sortable-title">@s.Item</span>
+            </BitBhSortable>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Disabled"
+               Code="@_disabledCode"
+               Css="@_disabledCss">
+        <Description>
+            <code>Disabled="true"</code> stops pointer and keyboard reordering. The root and every
+            item get <code>data-disabled</code> and the handles <code>aria-disabled="true"</code>.
+            The lock below is a <code>BitBhToggle</code>.
+        </Description>
+        <LiveContent>
+            <div class="sortable-demo">
+                <BitBhToggle @bind-Pressed="locked" class="sortable-lock">Lock order</BitBhToggle>
+                <BitBhSortable TItem="string" @bind-Items="steps" Disabled="locked"
+                            aria-label="Onboarding steps" class="sortable-list" Context="s">
+                    <BitBhSortableHandle TItem="string" class="sortable-handle"
+                                      aria-label="@($"Reorder {s.Item}")">⠿</BitBhSortableHandle>
+                    <span class="sortable-title">@s.Item</span>
+                </BitBhSortable>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+</div>
+
+@code {
+    public sealed record TaskItem(int Id, string Title, string Tag);
+
+    private IList<TaskItem> tasks =
+    [
+        new(1, "Write release notes", "Docs"),
+        new(2, "Fix flaky login test", "Bug"),
+        new(3, "Review pull requests", "Team"),
+        new(4, "Update dependencies", "Chore"),
+    ];
+
+    private IList<string> backlog = ["Login page", "Password reset", "Audit log", "Dark mode", "CSV export"];
+    private readonly List<string> reorderLog = [];
+
+    private IList<string> priorities = ["Speed", "Quality", "Cost", "Scope"];
+
+    private IList<string> queue = ["Blue in Green", "So What", "Naima", "Take Five"];
+
+    private readonly BitBhSortableAnnouncements queueAnnouncements = new()
+    {
+        Instructions = "Press Space to grab a song. Use the up and down arrows to change its place in the queue, Space to drop it, or Escape to cancel.",
+        PickedUp = (song, position, count) => $"Grabbed {song}. It plays as number {position} of {count}.",
+        Moved = (song, position, count) => $"{song} now plays as number {position} of {count}.",
+        Dropped = (song, position, _) => position == 1 ? $"{song} plays next." : $"{song} plays as number {position}.",
+        Cancelled = (song, position) => $"Cancelled. {song} stays at number {position}.",
+    };
+
+    private bool locked = true;
+    private IList<string> steps = ["Create account", "Verify email", "Invite teammates", "Connect a repository"];
+
+    private void LogReorder(BitBhReorderEventArgs<string> e)
+    {
+        reorderLog.Insert(0, $"“{e.Item}” moved from index {e.OldIndex} to {e.NewIndex}");
+        if (reorderLog.Count > 6) reorderLog.RemoveAt(reorderLog.Count - 1);
+    }
+
+    // ── Source snippets shown alongside each live demo ─────────────────────────
+
+    private const string _tasksCode = """
+<BitBhSortable TItem="TaskItem" @bind-Items="tasks"
+            ItemKey="t => t.Id" ItemLabel="t => t.Title"
+            aria-label="Tasks" class="sortable-list" Context="s">
+    <BitBhSortableHandle TItem="TaskItem" class="sortable-handle"
+                      aria-label="@($"Reorder {s.Item.Title}")">⠿</BitBhSortableHandle>
+    <span class="sortable-title">@s.Item.Title</span>
+    <span class="sortable-tag">@s.Item.Tag</span>
+</BitBhSortable>
+
+<p class="sortable-output">
+    Bound order (ids): <strong>@string.Join(" · ", tasks.Select(t => t.Id))</strong>
+</p>
+
+@code {
+    public sealed record TaskItem(int Id, string Title, string Tag);
+
+    // Declare the field with the parameter's type (IList<T>) so @bind-Items infers cleanly.
+    private IList<TaskItem> tasks =
+    [
+        new(1, "Write release notes", "Docs"),
+        new(2, "Fix flaky login test", "Bug"),
+        new(3, "Review pull requests", "Team"),
+        new(4, "Update dependencies", "Chore"),
+    ];
+}
+""";
+
+    private const string _logCode = """
+<BitBhSortable TItem="string" @bind-Items="backlog" OnReorder="LogReorder"
+            aria-label="Sprint backlog" class="sortable-list" Context="s">
+    <BitBhSortableHandle TItem="string" class="sortable-handle"
+                      aria-label="@($"Reorder {s.Item}")">⠿</BitBhSortableHandle>
+    <span class="sortable-title">@s.Item</span>
+</BitBhSortable>
+
+<ol class="sortable-log" aria-label="Reorder events">
+    @if (reorderLog.Count == 0)
+    {
+        <li class="sortable-log-empty">No moves yet — reorder an item.</li>
+    }
+    @foreach (var entry in reorderLog)
+    {
+        <li>@entry</li>
+    }
+</ol>
+
+@code {
+    private IList<string> backlog = ["Login page", "Password reset", "Audit log", "Dark mode", "CSV export"];
+    private readonly List<string> reorderLog = [];
+
+    private void LogReorder(BitBhReorderEventArgs<string> e)
+    {
+        reorderLog.Insert(0, $"“{e.Item}” moved from index {e.OldIndex} to {e.NewIndex}");
+        if (reorderLog.Count > 6) reorderLog.RemoveAt(reorderLog.Count - 1);
+    }
+}
+""";
+
+    private const string _horizontalCode = """
+<BitBhSortable TItem="string" @bind-Items="priorities"
+            Orientation="BitBhOrientation.Horizontal"
+            aria-label="Priorities" class="sortable-row" Context="s">
+    @* The whole chip is the handle: pointer drags and keyboard both start here. *@
+    <BitBhSortableHandle TItem="string" class="sortable-chip">
+        <span class="sortable-chip-grip" aria-hidden="true">⠿</span>@s.Item
+    </BitBhSortableHandle>
+</BitBhSortable>
+
+<p class="sortable-output">
+    Ranking: <strong>@string.Join(" › ", priorities)</strong>
+</p>
+
+@code {
+    private IList<string> priorities = ["Speed", "Quality", "Cost", "Scope"];
+}
+""";
+
+    private const string _announcementsCode = """
+<BitBhSortable TItem="string" @bind-Items="queue" Announcements="queueAnnouncements"
+            aria-label="Up next" class="sortable-list" Context="s">
+    <BitBhSortableHandle TItem="string" class="sortable-handle"
+                      aria-label="@($"Move {s.Item}")">⠿</BitBhSortableHandle>
+    <span class="sortable-index">@(s.Index + 1)</span>
+    <span class="sortable-title">@s.Item</span>
+</BitBhSortable>
+
+@code {
+    private IList<string> queue = ["Blue in Green", "So What", "Naima", "Take Five"];
+
+    private readonly BitBhSortableAnnouncements queueAnnouncements = new()
+    {
+        Instructions = "Press Space to grab a song. Use the up and down arrows to change its place in the queue, Space to drop it, or Escape to cancel.",
+        PickedUp = (song, position, count) => $"Grabbed {song}. It plays as number {position} of {count}.",
+        Moved = (song, position, count) => $"{song} now plays as number {position} of {count}.",
+        Dropped = (song, position, _) => position == 1 ? $"{song} plays next." : $"{song} plays as number {position}.",
+        Cancelled = (song, position) => $"Cancelled. {song} stays at number {position}.",
+    };
+}
+""";
+
+    private const string _disabledCode = """
+<BitBhToggle @bind-Pressed="locked" class="sortable-lock">Lock order</BitBhToggle>
+
+<BitBhSortable TItem="string" @bind-Items="steps" Disabled="locked"
+            aria-label="Onboarding steps" class="sortable-list" Context="s">
+    <BitBhSortableHandle TItem="string" class="sortable-handle"
+                      aria-label="@($"Reorder {s.Item}")">⠿</BitBhSortableHandle>
+    <span class="sortable-title">@s.Item</span>
+</BitBhSortable>
+
+@code {
+    private bool locked = true;
+    private IList<string> steps = ["Create account", "Verify email", "Invite teammates", "Connect a repository"];
+}
+""";
+
+    // ── CSS (mirrors wwwroot/demos/sortable.css) ───────────────────────────────
+
+    private const string _listCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.sortable-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 28rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* Each item is rendered by BitBhSortable as <li data-bit-bh-sortable-item>. */
+.sortable-list > li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.55rem 0.75rem 0.55rem 0.5rem;
+    background: #fff;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+/* data-dragging: the item is picked up (keyboard) or dragged (pointer). */
+.sortable-list > li[data-dragging] {
+    border-color: #2563eb;
+    box-shadow: 0 10px 24px rgba(24, 24, 27, 0.14);
+}
+
+/* The root also carries data-dragging while any item moves. */
+.sortable-list[data-dragging] { user-select: none; }
+
+/* Drag handle (BitBhSortableHandle renders a <button>) */
+.sortable-handle {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 0.375rem;
+    color: #a1a1aa;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: grab;
+    touch-action: none;   /* lets touch drags start on the handle */
+    user-select: none;
+    transition: background-color 120ms ease, color 120ms ease;
+}
+
+.sortable-handle:hover         { background: #f4f4f5; color: #3f3f46; }
+.sortable-handle:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+
+/* aria-pressed="true" (and data-dragging) while picked up with the keyboard */
+.sortable-handle[aria-pressed="true"] {
+    background: #2563eb;
+    color: #fff;
+    cursor: grabbing;
+}
+
+.sortable-title { flex: 1; color: #18181b; }
+""";
+
+    private const string _tasksCss = _listCss + """
+
+
+.sortable-tag {
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: #f4f4f5;
+    color: #52525b;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Demo layout */
+.sortable-demo { display: grid; gap: 1rem; width: 100%; }
+
+.sortable-output { margin: 0; font-size: 0.85rem; color: #71717a; }
+.sortable-output strong { color: #18181b; font-weight: 600; }
+""";
+
+    private const string _logCss = _listCss + """
+
+
+/* List and log side by side */
+.sortable-split {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+    align-items: start;
+}
+
+.sortable-log {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    list-style: none;
+    min-height: 100%;
+    background: #fafafa;
+    border: 1px dashed #d4d4d8;
+    border-radius: 0.5rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.78rem;
+    color: #3f3f46;
+}
+
+.sortable-log li + li { margin-top: 0.35rem; }
+.sortable-log-empty   { color: #71717a; }
+""";
+
+    private const string _horizontalCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.sortable-row {
+    display: flex;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* <li data-bit-bh-sortable-item> rendered by BitBhSortable */
+.sortable-row > li {
+    background: #fff;
+    border: 1px solid #d4d4d8;
+    border-radius: 999px;
+    transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+
+.sortable-row > li[data-dragging] {
+    border-color: #2563eb;
+    background: #eff6ff;
+    box-shadow: 0 6px 16px rgba(24, 24, 27, 0.14);
+}
+
+/* The chip is the BitBhSortableHandle <button> */
+.sortable-chip {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #3f3f46;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+}
+
+.sortable-chip:focus-visible        { outline: 2px solid #2563eb; outline-offset: 2px; }
+.sortable-chip[aria-pressed="true"] { color: #1d4ed8; cursor: grabbing; }
+.sortable-chip-grip                 { color: #a1a1aa; }
+
+/* Demo layout */
+.sortable-demo { display: grid; gap: 1rem; width: 100%; }
+
+.sortable-output { margin: 0; font-size: 0.85rem; color: #71717a; }
+.sortable-output strong { color: #18181b; font-weight: 600; }
+""";
+
+    private const string _announcementsCss = _listCss + """
+
+
+/* Live position badge (the template's Index) */
+.sortable-index {
+    display: inline-grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+""";
+
+    private const string _disabledCss = _listCss + """
+
+
+/* Hooks emitted when Disabled="true" */
+.sortable-list[data-disabled] > li {
+    background: #fafafa;
+    color: #71717a;
+}
+
+.sortable-handle[aria-disabled="true"] { cursor: not-allowed; opacity: 0.5; }
+
+/* The lock is a BitBhToggle: data-state="on|off" + aria-pressed */
+.sortable-lock {
+    all: unset;
+    box-sizing: border-box;
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    background: #fff;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #3f3f46;
+    cursor: pointer;
+}
+
+.sortable-lock:hover               { background: #f4f4f5; }
+.sortable-lock:focus-visible       { outline: 2px solid #2563eb; outline-offset: 2px; }
+.sortable-lock[data-state="on"]    { background: #18181b; border-color: #18181b; color: #fff; }
+
+.sortable-demo { display: grid; gap: 1rem; width: 100%; }
+""";
+}
