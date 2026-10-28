@@ -36,6 +36,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
     function mapEvent(e: any, members: string[]) {
         const out: any = {};
+        // The keyboard target is read off the composed path, which the browser builds anew on every call -
+        // so it is read once per event, and only for a payload that asks for it.
+        let target: any = null;
+        const targetOf = () => target || (target = butil.editableTarget.of(e));
         for (const m of (members || [])) {
             switch (m) {
                 case 'touches':
@@ -53,10 +57,12 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                     out[m] = e.relatedTarget?.id ?? '';
                     break;
                 case 'targetTagName':
-                    out[m] = butil.editableTarget.of(e)?.tagName ?? '';
+                    // localName rather than tagName, whose case follows the document and the namespace:
+                    // upper-casing it reads the same on an HTML page, an XHTML one and for an SVG element.
+                    out[m] = targetOf()?.localName?.toUpperCase() ?? '';
                     break;
                 case 'targetIsEditable':
-                    out[m] = butil.editableTarget.isEditable(butil.editableTarget.of(e));
+                    out[m] = butil.editableTarget.takesKey(targetOf(), e);
                     break;
                 default:
                     out[m] = e[m];

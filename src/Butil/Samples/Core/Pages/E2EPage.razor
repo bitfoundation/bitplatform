@@ -311,9 +311,20 @@
 
 <section>
     <h3>Keyboard</h3>
-    @* The input's value is a literal, so no re-render ever writes it back over what a key deleted. *@
+    @* Every value here is a literal, so no re-render ever writes one back over what a key changed. kb-neutral takes
+       focus without being a control, so a key pressed there is one nothing on the page acts on; kb-host stays empty
+       for the tests to attach their shadow roots to. *@
+    <div id="kb-neutral" tabindex="-1">no control</div>
     <input id="kb-input" value="abc" />
-    <button id="kb-editable" @onclick="KeyboardIgnoreWhenEditable">Delete shortcut, ignoreWhenEditable</button>
+    <input id="kb-readonly" value="abc" readonly />
+    <textarea id="kb-textarea">abc</textarea>
+    <div id="kb-rich" contenteditable="true">abc</div>
+    <select id="kb-select"><option>a</option><option>b</option></select>
+    <input id="kb-range" type="range" min="0" max="10" value="5" />
+    <input id="kb-checkbox" type="checkbox" />
+    <textarea id="kb-scoped" @ref="_keyboardScope"></textarea>
+    <div id="kb-host"></div>
+    <button id="kb-arm" @onclick="KeyboardArm">shortcuts</button>
     <button id="kb-target" @onclick="KeyboardTarget">keydown target</button>
 </section>
 
@@ -403,9 +414,10 @@
     private ElementReference _elementInput;
     private int _syntheticClicks;
 
-    private ButilSubscription? _keyboardShortcut;
+    private ElementReference _keyboardScope;
+    private readonly List<ButilSubscription> _keyboardShortcuts = [];
+    private readonly Dictionary<string, int> _keyboardHits = [];
     private ButilSubscription? _keyboardTarget;
-    private int _keyboardDeletes;
 
     /// <summary>The namespace SVG's href lives in - the usual reason for the *NS attribute overloads.</summary>
     private const string XlinkNamespace = "http://www.w3.org/1999/xlink";
@@ -1964,23 +1976,42 @@
             // to drain it - see ElementReferenceEventExtensions - so the harness disposes it
             // like a real consumer would.
             if (_commandSub is not null) await _commandSub.DisposeAsync();
-            if (_keyboardShortcut is not null) await _keyboardShortcut.DisposeAsync();
+            await KeyboardDisarm();
             if (_keyboardTarget is not null) await _keyboardTarget.DisposeAsync();
         }
         catch (Exception) { /* teardown - the circuit/runtime may already be gone */ }
     }
 
     // ─── Keyboard ───────────────────────────────────────────────────────────────
-    private async Task KeyboardIgnoreWhenEditable()
+    private async Task KeyboardArm()
     {
-        if (_keyboardShortcut is not null) await _keyboardShortcut.DisposeAsync();
-        _keyboardDeletes = 0;
-        // preventDefault stays at its default (true): the option has to win over it, since that default
-        // is exactly what used to stop Delete from deleting text in every input of the page.
-        _keyboardShortcut = await keyboard.Subscribe(ButilKeyCodes.Delete,
-            () => InvokeAsync(() => Set($"kb:delete:{++_keyboardDeletes}")),
-            ignoreWhenEditable: true);
+        await KeyboardDisarm();
+        _keyboardHits.Clear();
+        // preventDefault stays at its default (true) throughout: standing aside has to win over it, since that
+        // default is exactly what used to take Delete away from every input on the page.
+        _keyboardShortcuts.Add(await keyboard.Subscribe(ButilKeyCodes.Delete, KeyboardHit("Delete")));
+        _keyboardShortcuts.Add(await keyboard.Subscribe(ButilKeyCodes.ArrowRight, KeyboardHit("ArrowRight")));
+        _keyboardShortcuts.Add(await keyboard.Subscribe(ButilKeyCodes.Space, KeyboardHit("Space")));
+        // A modifier keeps the default from standing a shortcut aside; IgnoreWhenEditable = true does it anyway,
+        // and false never does.
+        _keyboardShortcuts.Add(await keyboard.Subscribe(ButilKeyCodes.Delete, KeyboardHit("Ctrl+Delete"), ButilModifiers.Ctrl));
+        _keyboardShortcuts.Add(await keyboard.Subscribe(ButilKeyCodes.Backspace, KeyboardHit("Ctrl+Backspace"),
+            new KeyboardShortcutOptions { Modifiers = ButilModifiers.Ctrl, IgnoreWhenEditable = true }));
+        _keyboardShortcuts.Add(await keyboard.Subscribe(ButilKeyCodes.Backspace, KeyboardHit("Backspace"),
+            new KeyboardShortcutOptions { IgnoreWhenEditable = false }));
+        // Scoped to a text field, which never makes the shortcut stand aside in that field itself.
+        _keyboardShortcuts.Add(await keyboard.SubscribeOn(_keyboardScope, ButilKeyCodes.Enter, KeyboardHit("scoped-Enter")));
         Set("kb:armed");
+    }
+    private Action KeyboardHit(string name) => () => InvokeAsync(() =>
+    {
+        _keyboardHits[name] = _keyboardHits.GetValueOrDefault(name) + 1;
+        Set($"kb:{name}:{_keyboardHits[name]}");
+    });
+    private async Task KeyboardDisarm()
+    {
+        foreach (var shortcut in _keyboardShortcuts) await shortcut.DisposeAsync();
+        _keyboardShortcuts.Clear();
     }
     private async Task KeyboardTarget()
     {

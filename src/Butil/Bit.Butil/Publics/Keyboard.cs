@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
@@ -16,10 +17,10 @@ namespace Bit.Butil;
 /// not the produced character.
 /// <br/>
 /// <c>preventDefault</c> and <c>stopPropagation</c> default to <see langword="true"/>, which suits a
-/// shortcut that replaces the browser's own action (Ctrl+S, F5). For a key that also edits text -
-/// Delete, Backspace, Enter, the arrows - those defaults take the key away from every input on the
-/// page while the shortcut is registered. Pass <c>ignoreWhenEditable: true</c> so the shortcut stands
-/// aside while the user is typing, or <c>preventDefault: false</c> so the key keeps its own action.
+/// shortcut that replaces the browser's own action (Ctrl+S, F5). A shortcut without Ctrl, Alt or Meta
+/// stands aside, by default, when its key goes to a control that acts on that key itself - Delete in a
+/// text field, an arrow on a slider, Space on a checkbox - so registering one does not take the key away
+/// from every control on the page. <see cref="KeyboardShortcutOptions.IgnoreWhenEditable"/> changes that.
 /// </remarks>
 [ButilService(typeof(Keyboard))]
 public class Keyboard(IJSRuntime js) : IAsyncDisposable
@@ -59,79 +60,86 @@ public class Keyboard(IJSRuntime js) : IAsyncDisposable
     /// <param name="preventDefault">Suppress the browser's own action for the combination.</param>
     /// <param name="stopPropagation">Stop the keydown travelling any further.</param>
     /// <param name="repeat">Keep firing while the key is held, instead of once per press.</param>
-    /// <param name="ignoreWhenEditable">
-    /// Skip the shortcut - neither firing it nor suppressing anything - when the key goes to an element
-    /// that takes typing: a text-like <c>input</c> or a <c>textarea</c> that is not read-only, a
-    /// <c>select</c>, or <c>contenteditable</c> content. The key then does what it does there, so a
-    /// page's Delete shortcut no longer stops Delete from deleting text.
-    /// </param>
-    public async Task<Guid> Add(string code, Action handler, ButilModifiers modifiers = ButilModifiers.None, bool preventDefault = true, bool stopPropagation = true, bool repeat = false, bool ignoreWhenEditable = false)
+    public Task<Guid> Add(string code, Action handler, ButilModifiers modifiers = ButilModifiers.None, bool preventDefault = true, bool stopPropagation = true, bool repeat = false)
+        => Add(code, handler, Options(modifiers, preventDefault, stopPropagation, repeat));
+
+    /// <summary>
+    /// Registers an app-wide shortcut with the full set of <see cref="KeyboardShortcutOptions"/> and returns the id
+    /// that removes it again.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code">KeyboardEvent.code</see>
+    /// </summary>
+    /// <param name="code">The code to match, e.g. <see cref="ButilKeyCodes.KeyS"/>.</param>
+    /// <param name="handler">Called when the combination is pressed.</param>
+    /// <param name="options">The modifiers to match and what the shortcut does to the key.</param>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(JsKeyboardShortcut))]
+    public async Task<Guid> Add(string code, Action handler, KeyboardShortcutOptions options)
     {
+        ArgumentNullException.ThrowIfNull(options);
+
         var listenerId = Guid.NewGuid();
         _handlers.TryAdd(listenerId, handler);
 
-        await js.InvokeVoid("BitButil.keyboard.add",
-            DotNetRef,
-            listenerId,
-            code,
-            modifiers.HasFlag(ButilModifiers.Alt),
-            modifiers.HasFlag(ButilModifiers.Ctrl),
-            modifiers.HasFlag(ButilModifiers.Meta),
-            modifiers.HasFlag(ButilModifiers.Shift),
-            preventDefault,
-            stopPropagation,
-            repeat,
-            ignoreWhenEditable);
+        await js.InvokeVoid("BitButil.keyboard.add", DotNetRef, listenerId, JsKeyboardShortcut.From(code, options));
 
         return listenerId;
     }
 
     /// <summary>
-    /// Same as <see cref="Add"/> but returns an <see cref="IAsyncDisposable"/> handle that
-    /// detaches the shortcut when disposed.
+    /// Same as <see cref="Add(string, Action, ButilModifiers, bool, bool, bool)"/> but returns an
+    /// <see cref="IAsyncDisposable"/> handle that detaches the shortcut when disposed.
     /// </summary>
-    public async Task<ButilSubscription> Subscribe(string code, Action handler,
+    public Task<ButilSubscription> Subscribe(string code, Action handler,
         ButilModifiers modifiers = ButilModifiers.None,
         bool preventDefault = true,
         bool stopPropagation = true,
-        bool repeat = false,
-        bool ignoreWhenEditable = false)
+        bool repeat = false)
+        => Subscribe(code, handler, Options(modifiers, preventDefault, stopPropagation, repeat));
+
+    /// <summary>
+    /// Same as <see cref="Add(string, Action, KeyboardShortcutOptions)"/> but returns an
+    /// <see cref="IAsyncDisposable"/> handle that detaches the shortcut when disposed.
+    /// </summary>
+    public async Task<ButilSubscription> Subscribe(string code, Action handler, KeyboardShortcutOptions options)
     {
-        var id = await Add(code, handler, modifiers, preventDefault, stopPropagation, repeat, ignoreWhenEditable);
+        var id = await Add(code, handler, options);
         return new ButilSubscription(id, () => Remove(id));
     }
 
     /// <summary>
-    /// Element-scoped variant of <see cref="Subscribe"/>: the shortcut only fires while the given
-    /// element (or one of its descendants) has focus or receives the keyboard event.
+    /// Element-scoped variant of <see cref="Subscribe(string, Action, ButilModifiers, bool, bool, bool)"/>: the
+    /// shortcut only fires while the given element (or one of its descendants) has focus or receives the keyboard event.
     /// </summary>
-    public async Task<ButilSubscription> SubscribeOn(Microsoft.AspNetCore.Components.ElementReference element,
+    public Task<ButilSubscription> SubscribeOn(Microsoft.AspNetCore.Components.ElementReference element,
         string code, Action handler,
         ButilModifiers modifiers = ButilModifiers.None,
         bool preventDefault = true,
         bool stopPropagation = true,
-        bool repeat = false,
-        bool ignoreWhenEditable = false)
+        bool repeat = false)
+        => SubscribeOn(element, code, handler, Options(modifiers, preventDefault, stopPropagation, repeat));
+
+    /// <summary>
+    /// Element-scoped variant of <see cref="Subscribe(string, Action, KeyboardShortcutOptions)"/>: the shortcut only
+    /// fires while the given element (or one of its descendants) has focus or receives the keyboard event. It never
+    /// stands aside for the element itself under <see cref="KeyboardShortcutOptions.IgnoreWhenEditable"/>, only for
+    /// the controls inside it, so a shortcut scoped to a text field fires while the user types there.
+    /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(JsKeyboardShortcut))]
+    public async Task<ButilSubscription> SubscribeOn(Microsoft.AspNetCore.Components.ElementReference element,
+        string code, Action handler, KeyboardShortcutOptions options)
     {
+        ArgumentNullException.ThrowIfNull(options);
+
         var listenerId = Guid.NewGuid();
         _handlers.TryAdd(listenerId, handler);
 
-        await js.InvokeVoid("BitButil.keyboard.addOn",
-            DotNetRef,
-            listenerId,
-            element,
-            code,
-            modifiers.HasFlag(ButilModifiers.Alt),
-            modifiers.HasFlag(ButilModifiers.Ctrl),
-            modifiers.HasFlag(ButilModifiers.Meta),
-            modifiers.HasFlag(ButilModifiers.Shift),
-            preventDefault,
-            stopPropagation,
-            repeat,
-            ignoreWhenEditable);
+        await js.InvokeVoid("BitButil.keyboard.addOn", DotNetRef, listenerId, element, JsKeyboardShortcut.From(code, options));
 
         return new ButilSubscription(listenerId, () => Remove(listenerId));
     }
+
+    private static KeyboardShortcutOptions Options(ButilModifiers modifiers, bool preventDefault, bool stopPropagation, bool repeat)
+        => new() { Modifiers = modifiers, PreventDefault = preventDefault, StopPropagation = stopPropagation, Repeat = repeat };
 
     /// <summary>
     /// Removes a previously added keyboard shortcut by its handler.
@@ -140,7 +148,7 @@ public class Keyboard(IJSRuntime js) : IAsyncDisposable
     /// Listeners are matched by delegate identity, so you must pass the very same
     /// <paramref name="handler"/> instance that was registered. A newly-created lambda will not
     /// match and the returned array will be empty. To avoid this, keep the <see cref="Guid"/>
-    /// returned by <see cref="Add"/> and call <see cref="Remove(Guid)"/>, or use <see cref="Subscribe"/>
+    /// returned by <c>Add</c> and call <see cref="Remove(Guid)"/>, or use <c>Subscribe</c>
     /// which returns a disposable <see cref="ButilSubscription"/>.
     /// </remarks>
     public async ValueTask<Guid[]> Remove(Action handler)
@@ -152,7 +160,7 @@ public class Keyboard(IJSRuntime js) : IAsyncDisposable
         return ids;
     }
 
-    /// <summary>Removes one shortcut, by the id <see cref="Add"/> returned.</summary>
+    /// <summary>Removes one shortcut, by the id <c>Add</c> returned.</summary>
     public async ValueTask Remove(Guid id)
     {
         await Remove([id]);
