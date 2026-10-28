@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-#if NET9_0_OR_GREATER
 using System.Text.Json.Schema;
-#endif
 using System.Text.Json.Serialization.Metadata;
 
 namespace Bit.BlazorUI;
@@ -14,12 +12,6 @@ namespace Bit.BlazorUI;
 /// Writing an <see cref="IBitAiTool"/> class for a one-line capability is friction that discourages
 /// good tool design. These factories let a tool be declared where it is registered, while still
 /// producing a real JSON Schema for the model.
-/// </para>
-/// <para>
-/// Deriving a schema needs the JSON Schema exporter of System.Text.Json, which .NET 9 introduced: on .NET 8 every
-/// member that derives one throws a <see cref="PlatformNotSupportedException"/>. There, set
-/// <see cref="BitAiToolDefinition.ParametersSchema"/> yourself and create the tool with
-/// <see cref="Create(BitAiToolDefinition, Func{BitAiToolInvocation, CancellationToken, ValueTask{BitAiToolOutcome}})"/>.
 /// </para>
 /// <para>
 /// The overloads without a <see cref="JsonTypeInfo{T}"/> read the argument and result types by reflection, which an app
@@ -47,7 +39,6 @@ public static class BitAiTool
     /// <param name="handler">The implementation.</param>
     /// <param name="configure">Adjusts the generated definition, for example to require approval.</param>
     /// <returns>The tool.</returns>
-    /// <exception cref="PlatformNotSupportedException">On .NET 8, which cannot derive the schema.</exception>
     [RequiresUnreferencedCode(BitAiTrimming.JsonUnreferencedCode)]
     [RequiresDynamicCode(BitAiTrimming.JsonDynamicCode)]
     public static IBitAiTool Create<TArgs, TResult>(
@@ -92,7 +83,6 @@ public static class BitAiTool
     /// <param name="handler">The implementation.</param>
     /// <param name="configure">Adjusts the generated definition, for example to require approval.</param>
     /// <returns>The tool.</returns>
-    /// <exception cref="PlatformNotSupportedException">On .NET 8, which cannot derive the schema.</exception>
     public static IBitAiTool Create<TArgs, TResult>(
         string name,
         string description,
@@ -132,7 +122,6 @@ public static class BitAiTool
     /// <param name="handler">The implementation.</param>
     /// <param name="configure">Adjusts the generated definition.</param>
     /// <returns>The tool.</returns>
-    /// <exception cref="PlatformNotSupportedException">On .NET 8, which cannot derive the schema.</exception>
     [RequiresUnreferencedCode(BitAiTrimming.JsonUnreferencedCode)]
     [RequiresDynamicCode(BitAiTrimming.JsonDynamicCode)]
     public static IBitAiTool Create<TArgs>(
@@ -174,7 +163,6 @@ public static class BitAiTool
     /// <param name="handler">The implementation.</param>
     /// <param name="configure">Adjusts the generated definition.</param>
     /// <returns>The tool.</returns>
-    /// <exception cref="PlatformNotSupportedException">On .NET 8, which cannot derive the schema.</exception>
     public static IBitAiTool Create<TArgs>(
         string name,
         string description,
@@ -209,7 +197,7 @@ public static class BitAiTool
     /// <returns>The tool.</returns>
     /// <remarks>
     /// Nothing is derived here: the schema is whatever <see cref="BitAiToolDefinition.ParametersSchema"/> holds. This is
-    /// the overload to use on .NET 8, and anywhere the schema is written by hand.
+    /// the overload to use anywhere the schema is written by hand.
     /// </remarks>
     public static IBitAiTool Create(
         BitAiToolDefinition definition,
@@ -222,10 +210,8 @@ public static class BitAiTool
     /// <typeparam name="T">The type to describe.</typeparam>
     /// <returns>The schema.</returns>
     /// <remarks>
-    /// The type is read by reflection with the web defaults of System.Text.Json (camelCase property names). Not
-    /// available on .NET 8, which has no JSON Schema exporter: pass the schema yourself there.
+    /// The type is read by reflection with the web defaults of System.Text.Json (camelCase property names).
     /// </remarks>
-    /// <exception cref="PlatformNotSupportedException">On .NET 8.</exception>
     [RequiresUnreferencedCode(BitAiTrimming.JsonUnreferencedCode)]
     [RequiresDynamicCode(BitAiTrimming.JsonDynamicCode)]
     public static JsonElement CreateSchema<T>() => CreateSchema(typeof(T));
@@ -236,20 +222,14 @@ public static class BitAiTool
     /// <param name="type">The type to describe.</param>
     /// <returns>The schema.</returns>
     /// <remarks>
-    /// The type is read by reflection with the web defaults of System.Text.Json (camelCase property names). Not
-    /// available on .NET 8, which has no JSON Schema exporter: pass the schema yourself there.
+    /// The type is read by reflection with the web defaults of System.Text.Json (camelCase property names).
     /// </remarks>
-    /// <exception cref="PlatformNotSupportedException">On .NET 8.</exception>
     [RequiresUnreferencedCode(BitAiTrimming.JsonUnreferencedCode)]
     [RequiresDynamicCode(BitAiTrimming.JsonDynamicCode)]
     public static JsonElement CreateSchema(Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
-#if NET9_0_OR_GREATER
         return CreateSchema(ReflectionSchemaOptions.GetTypeInfo(type));
-#else
-        throw SchemaNotSupported();
-#endif
     }
 
     /// <summary>
@@ -259,10 +239,8 @@ public static class BitAiTool
     /// <param name="typeInfo">The metadata of <typeparamref name="T"/>, from the app's own JsonSerializerContext.</param>
     /// <returns>The schema.</returns>
     /// <remarks>
-    /// The schema follows the options of <paramref name="typeInfo"/> (property naming, number handling, ...). Not
-    /// available on .NET 8, which has no JSON Schema exporter: pass the schema yourself there.
+    /// The schema follows the options of <paramref name="typeInfo"/> (property naming, number handling, ...).
     /// </remarks>
-    /// <exception cref="PlatformNotSupportedException">On .NET 8.</exception>
     public static JsonElement CreateSchema<T>(JsonTypeInfo<T> typeInfo) => CreateSchema((JsonTypeInfo)typeInfo);
 
     /// <summary>
@@ -271,25 +249,18 @@ public static class BitAiTool
     /// <param name="typeInfo">The metadata of the type, from the app's own JsonSerializerContext.</param>
     /// <returns>The schema.</returns>
     /// <remarks>
-    /// The schema follows the options of <paramref name="typeInfo"/> (property naming, number handling, ...). Not
-    /// available on .NET 8, which has no JSON Schema exporter: pass the schema yourself there.
+    /// The schema follows the options of <paramref name="typeInfo"/> (property naming, number handling, ...).
     /// </remarks>
-    /// <exception cref="PlatformNotSupportedException">On .NET 8.</exception>
     public static JsonElement CreateSchema(JsonTypeInfo typeInfo)
     {
         ArgumentNullException.ThrowIfNull(typeInfo);
-#if NET9_0_OR_GREATER
         var node = typeInfo.GetJsonSchemaAsNode(new JsonSchemaExporterOptions
         {
             TreatNullObliviousAsNonNullable = true,
         });
         return JsonSerializer.SerializeToElement(node, BitAiJsonContext.Default.JsonNode);
-#else
-        throw SchemaNotSupported();
-#endif
     }
 
-#if NET9_0_OR_GREATER
     private static JsonSerializerOptions? _reflectionSchemaOptions;
 
     /// <remarks>
@@ -306,12 +277,6 @@ public static class BitAiTool
             TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
         };
     }
-#else
-    private static PlatformNotSupportedException SchemaNotSupported() => new(
-        "Deriving a JSON Schema from a type needs System.Text.Json's JsonSchemaExporter, which .NET 8 does not have. " +
-        "On .NET 8, set BitAiToolDefinition.ParametersSchema yourself and create the tool with " +
-        "BitAiTool.Create(BitAiToolDefinition, handler), reading the arguments with BitAiToolInvocation.GetArguments.");
-#endif
 
     private sealed class DelegateAiTool(
         BitAiToolDefinition definition,

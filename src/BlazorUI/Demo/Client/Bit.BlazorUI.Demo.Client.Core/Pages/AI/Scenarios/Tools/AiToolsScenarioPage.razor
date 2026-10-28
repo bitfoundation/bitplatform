@@ -70,16 +70,15 @@
                 <li><code>Create&lt;TArgs, TResult&gt;(name, description, argumentsTypeInfo, resultTypeInfo, (args, token) =&gt; ..., configure)</code> - the handler takes the arguments and returns a result, written back to the model as JSON. This page's <code>get_weather</code>.</li>
                 <li><code>Create&lt;TArgs&gt;(name, description, argumentsTypeInfo, (args, invocation, token) =&gt; ..., configure)</code> - the handler is also handed the <code>BitAiToolInvocation</code> and returns the whole <code>BitAiToolOutcome</code>: its display <code>Text</code>, its <code>Citations</code>, a structured failure (<BitLink Href="/ai/scenarios/custom-tool">Custom tool UI</BitLink>'s <code>search_docs</code>).</li>
                 <li>The same two without the <code>JsonTypeInfo</code>s read the types by reflection, so they are marked as unsafe to trim.</li>
-                <li><code>Create(definition, (invocation, token) =&gt; ...)</code> - nothing derived: the schema is whatever the definition holds, for arguments that are dynamic, or on .NET 8.</li>
+                <li><code>Create(definition, (invocation, token) =&gt; ...)</code> - nothing derived: the schema is whatever the definition holds, for arguments that are dynamic.</li>
             </ul>
             <p>
                 The <code>JsonTypeInfo</code> overloads take the metadata of the app's own <code>JsonSerializerContext</code>,
                 so the schema is derived and the arguments are read without reflection, and a trimmed WebAssembly app - like
                 this site - keeps working. <code>configure</code> adjusts the generated definition
-                (<code>definition =&gt; definition with { Title = ..., Risk = ... }</code>). Deriving a schema needs .NET 9 or
-                later; <code>BitAiTool.CreateSchema</code> does it on its own (<code>CreateSchema(typeInfo)</code>, safe to
-                trim, or <code>CreateSchema&lt;T&gt;()</code> by reflection) for a definition written by hand, and on .NET 8
-                <code>ParametersSchema</code> is set yourself.
+                (<code>definition =&gt; definition with { Title = ..., Risk = ... }</code>).
+                <code>BitAiTool.CreateSchema</code> derives a schema on its own (<code>CreateSchema(typeInfo)</code>, safe to
+                trim, or <code>CreateSchema&lt;T&gt;()</code> by reflection) for a definition written by hand.
             </p>
             <p>
                 A tool that needs services is a class of its own, registered with <code>ai.AddTool&lt;TTool&gt;()</code>, as

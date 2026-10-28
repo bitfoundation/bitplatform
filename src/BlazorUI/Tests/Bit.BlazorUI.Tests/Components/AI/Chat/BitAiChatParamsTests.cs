@@ -49,9 +49,7 @@ public class BitAiChatParamsTests : BitAiTestBase
 
     private IRenderedComponent<BitParams> RenderWithParams(BitAiChatParams chatParams, Action<RenderTreeBuilder>? extraAttributes = null)
     {
-#if NET9_0_OR_GREATER
         Context.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
-#endif
 
         var session = new BitAiChatSession(new SilentTransport());
         session.Conversation.AddMessage(BitAiRole.System, "You are helpful.");

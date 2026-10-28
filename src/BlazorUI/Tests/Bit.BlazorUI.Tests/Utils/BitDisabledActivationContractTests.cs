@@ -175,9 +175,7 @@ public class BitDisabledActivationContractTests : BunitTestContext
         context.Services.AddBitBlazorUIExtrasServices();
         context.Services.AddBitBlazorUIAIServices();
         context.JSInterop.Setup<bool>("BitBlazorUI.AiVoiceInput.isDictationSupported", _ => true).SetResult(true);
-#if NET9_0_OR_GREATER
         context.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
-#endif
     }
 
     [TestInitialize]

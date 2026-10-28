@@ -18,9 +18,7 @@ public class BitAiChatTests : BitAiTestBase
     // the way an interactive circuit does - once every service a test adds is in, since this reads the services.
     private void Interactive()
     {
-#if NET9_0_OR_GREATER
         Context.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
-#endif
     }
 
     private static BitAiChatSession NewSession() =>

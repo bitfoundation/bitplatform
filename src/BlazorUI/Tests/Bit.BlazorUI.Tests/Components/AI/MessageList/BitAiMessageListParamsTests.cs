@@ -35,9 +35,7 @@ public class BitAiMessageListParamsTests : BitAiTestBase
 
     private IRenderedComponent<BitParams> RenderWithParams(BitAiMessageListParams listParams, BitAiConversation conversation, Action<RenderTreeBuilder>? extraAttributes = null)
     {
-#if NET9_0_OR_GREATER
         Context.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
-#endif
 
         return RenderComponent<BitParams>(parameters =>
         {

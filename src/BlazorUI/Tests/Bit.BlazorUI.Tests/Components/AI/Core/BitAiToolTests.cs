@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -10,7 +9,6 @@ public class BitAiToolTests
 {
     private sealed record WeatherArgs(string City, int Days);
 
-#if NET9_0_OR_GREATER
     [TestMethod]
     public void SchemaIsDerivedFromTheArgumentType()
     {
@@ -35,25 +33,6 @@ public class BitAiToolTests
         Assert.IsTrue(outcome.IsSuccess);
         Assert.AreEqual("Oslo for 2 days", outcome.Value!.Value.GetProperty("summary").GetString());
     }
-#else
-    // .NET 8 has no JSON Schema exporter, so every member that derives a schema says so rather than sending the model
-    // a schema that does not describe the arguments.
-    [TestMethod]
-    public void DerivingASchemaIsNotSupportedOnNet8()
-    {
-        Assert.ThrowsExactly<PlatformNotSupportedException>(() => BitAiTool.CreateSchema<WeatherArgs>());
-        Assert.ThrowsExactly<PlatformNotSupportedException>(() => BitAiTool.CreateSchema(typeof(WeatherArgs)));
-    }
-
-    [TestMethod]
-    public void ATypedToolIsNotSupportedOnNet8()
-    {
-        Assert.ThrowsExactly<PlatformNotSupportedException>(() => BitAiTool.Create<WeatherArgs, object>(
-            "get_weather",
-            "Look up the weather.",
-            (args, _) => ValueTask.FromResult<object>(new { summary = $"{args.City} for {args.Days} days" })));
-    }
-#endif
 
     [TestMethod]
     public void ToolNamesResolveCaseInsensitively()

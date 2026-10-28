@@ -679,13 +679,9 @@ public partial class BitAiPromptInput : BitAiComponentBase
         }
     }
 
-    // The keydown of a key an IME takes is what the guard of the script reads off the browser event; .NET 8 has no
-    // IsComposing, and the "Process" key the browsers report for such a keystroke is what is left to go by there.
-    private static bool IsComposing(KeyboardEventArgs e) =>
-#if NET9_0_OR_GREATER
-        e.IsComposing ||
-#endif
-        e.Key is "Process";
+    // The keydown of a key an IME takes is what the guard of the script reads off the browser event: IsComposing, or the
+    // "Process" key the browsers report for such a keystroke (the one that starts a composition is not flagged yet).
+    private static bool IsComposing(KeyboardEventArgs e) => e.IsComposing || e.Key is "Process";
 
     private Task SendOrStopAsync() => IsGenerating ? StopAsync() : SubmitAsync();
 

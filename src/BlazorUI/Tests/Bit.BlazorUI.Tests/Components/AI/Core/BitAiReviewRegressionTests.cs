@@ -33,8 +33,6 @@ public class BitAiReviewRegressionTests
         Assert.AreEqual(1, fired);
     }
 
-#if NET9_0_OR_GREATER
-    // The typed tool derives a JSON schema for its arguments, which .NET 8 cannot do (see BitAiToolTests).
     [TestMethod]
     public async Task ACallTheTransportAlreadyAnsweredIsNotExecutedAgainLocally()
     {
@@ -60,7 +58,6 @@ public class BitAiReviewRegressionTests
         Assert.AreEqual("remote", reply!.FindToolCall("c1")!.Result!.Text);
         Assert.AreEqual(1, transport.Calls);
     }
-#endif
 
     [TestMethod]
     public void CreatedWithContentThenCompletedProducesOneVersion()

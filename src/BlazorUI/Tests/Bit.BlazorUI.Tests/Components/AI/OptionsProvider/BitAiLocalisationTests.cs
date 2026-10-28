@@ -85,11 +85,8 @@ public class BitAiLocalisationTests : BitAiTestBase
         var citation = new BitAiCitation("c1", new BitAiCitationSource("s1", "Handbook")) { Number = 2 };
         var marker = RenderComponent<BitAiCitationMarker>(p => p.Add(c => c.Citation, citation));
 
-        // The transcript rendered the way an interactive circuit renders it, as the original test set up. ASP.NET Core 8
-        // has no RendererInfo: the list asks its JS runtime there instead.
-#if NET9_0_OR_GREATER
+        // The transcript rendered the way an interactive circuit renders it, as the original test set up.
         Context.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
-#endif
         var transcript = RenderComponent<BitAiMessageList>(p => p.Add(c => c.Conversation, new BitAiConversation()));
 
         Assert.AreEqual("Quelle 2: Handbook", marker.Find("button").GetAttribute("aria-label"));

@@ -21,9 +21,7 @@ public class BitAiPromptInputKeyboardTests : BitAiTestBase
             .Add(c => c.Value, "こんにちは")
             .Add(c => c.OnSubmit, s => submissions.Add(s)));
 
-#if NET9_0_OR_GREATER
         composer.Find("textarea").KeyDown(new KeyboardEventArgs { Key = "Enter", IsComposing = true });
-#endif
         composer.Find("textarea").KeyDown(Key("Process"));
         Assert.IsEmpty(submissions);
 
@@ -44,7 +42,6 @@ public class BitAiPromptInputKeyboardTests : BitAiTestBase
         Assert.IsEmpty(submissions);
     }
 
-#if NET9_0_OR_GREATER
     [TestMethod]
     public void EnterDuringCompositionDoesNotChooseAMenuItem()
     {
@@ -59,7 +56,6 @@ public class BitAiPromptInputKeyboardTests : BitAiTestBase
         Assert.AreEqual("/", value);
         Assert.IsNotEmpty(composer.FindAll("[role=option]"));
     }
-#endif
 
     [TestMethod]
     public void TabAcceptsTheActiveMenuItem()

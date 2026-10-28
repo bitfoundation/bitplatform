@@ -83,7 +83,7 @@ var options = part.As(MyJsonContext.Default.ListOption);</CodeBox>
             <p>
                 The toggle replaces the session's options (<code>session.Options = session.Options with { ... }</code>):
                 they are an immutable record the session reads at the start of every request, so the next question goes
-                out with the new format. The schema here is written by hand; on .NET 9 or later
+                out with the new format. The schema here is written by hand;
                 <code>BitAiTool.CreateSchema(MyJsonContext.Default.ListOption)</code> derives one from the app's own type,
                 the same one the value is read back into.
             </p>

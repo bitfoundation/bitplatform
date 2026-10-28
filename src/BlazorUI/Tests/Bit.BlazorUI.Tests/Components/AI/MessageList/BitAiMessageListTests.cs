@@ -20,9 +20,7 @@ public class BitAiMessageListTests : BitAiTestBase
     {
         // The list draws a bounded tail instead of virtualizing while it is prerendered, so the tests render it the way
         // an interactive circuit does.
-#if NET9_0_OR_GREATER
         Context.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
-#endif
     }
 
     [TestMethod]
@@ -406,8 +404,7 @@ public class BitAiMessageListTests : BitAiTestBase
         Assert.IsFalse(component.Find(".bit-aimsl").HasAttribute("data-bit-aimsl-old"));
     }
 
-#if NET9_0_OR_GREATER
-    // A static render is told apart through RendererInfo, which is .NET 9+; on 8 it is the JS runtime that says so.
+    // A static render is told apart through RendererInfo.
     [TestMethod]
     public void BitAiMessageListShouldDrawABoundedTailWhilePrerendered()
     {
@@ -424,7 +421,6 @@ public class BitAiMessageListTests : BitAiTestBase
         StringAssert.Contains(articles[0].TextContent, "message 2");
         StringAssert.Contains(articles[^1].TextContent, "message 4");
     }
-#endif
 
     [TestMethod]
     public void BitAiMessageListShouldObserveItsScrollAndStartAtTheNewestMessage()

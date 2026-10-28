@@ -414,18 +414,7 @@ public partial class BitAiMessageList : BitAiComponentBase
     /// <summary>
     /// Whether this render is a static one (a prerender, or a page rendered by static SSR) rather than an interactive one.
     /// </summary>
-    /// <remarks>
-    /// <c>RendererInfo</c> answers it from ASP.NET Core 9 on. On 8 the JS runtime does: it cannot be called during a
-    /// prerender or a static render, which is what <see cref="IJSRuntimeExtensions.IsRuntimeInvalid(IJSRuntime)"/> reads.
-    /// </remarks>
-    private bool IsStaticRender()
-    {
-#if NET9_0_OR_GREATER
-        return RendererInfo.IsInteractive is false;
-#else
-        return _js.IsRuntimeInvalid();
-#endif
-    }
+    private bool IsStaticRender() => RendererInfo.IsInteractive is false;
 
     private void Detach()
     {
