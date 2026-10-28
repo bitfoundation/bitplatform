@@ -299,7 +299,7 @@ public static class BlazorUIComponentCatalog
                 CssVariables = tables?.CssVariables ?? [],
                 CascadingParams = CascadingParamsOf(shownType ?? componentType),
                 ShownComponentType = shownType,
-                OwnTypes = own,
+                OwnTypes = [.. own.Select(type => type.IsEnum ? type : type with { Members = WithSignatures(type.Members, FindType(Bare(type.Name))) })],
                 SharedTypes = shared,
                 FamilyMembers = FamilyMembersOf(componentType),
                 Examples = demo?.Examples ?? []
@@ -359,7 +359,7 @@ public static class BlazorUIComponentCatalog
             TypeParameters = TypeParametersOf(type),
             ComponentType = type,
             Parameters = MergeParameters(tables?.Parameters, type),
-            PublicMembers = tables?.PublicMembers ?? [],
+            PublicMembers = WithSignatures(tables?.PublicMembers ?? [], type),
             OwnTypes = tables?.SubEnums ?? []
         };
     }
@@ -474,9 +474,101 @@ public static class BlazorUIComponentCatalog
 
         // Matched on the bare name: the tables write an overload out as "FocusAsync(bool
         // preventScroll)", and the reflected member it names is the same member.
-        var named = documented.Select(m => m.Name.Split('(')[0]).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var named = documented.Select(m => Bare(m.Name)).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        return [.. documented, .. reflected.Where(m => named.Contains(m.Name.Split('(')[0]) is false)];
+        return [.. WithSignatures(documented, type), .. reflected.Where(m => named.Contains(Bare(m.Name)) is false)];
+    }
+
+    /// <summary>
+    /// A documented table with each method in it written as the signature it is called with.
+    /// <para>
+    /// The demo pages write a method's type as the delegate it would fit -
+    /// <c>BitMap.PanTo</c> is <c>Func&lt;BitMapLatLng, bool, bool, ValueTask&gt;</c> - which names
+    /// what it takes but not what the arguments are called or which of them may be left out, so it
+    /// cannot say whether <c>PanTo(center)</c> compiles. The prose stays the page's; the name and the
+    /// type are read off the method, which has the last word on how it is called. A row that writes
+    /// out a parameter list keeps to the overload of that many parameters, and a row naming the
+    /// method alone answers with every overload no other row has claimed.
+    /// </para>
+    /// </summary>
+    private static ComponentMember[] WithSignatures(IReadOnlyList<ComponentMember> documented, Type? type)
+    {
+        if (type is null || documented.Count == 0) return [.. documented];
+
+        var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)
+            .Where(m => m.IsSpecialName is false && m.DeclaringType != typeof(object))
+            .Where(m => m.IsDefined(typeof(Microsoft.JSInterop.JSInvokableAttribute)) is false)
+            .Where(m => m.GetCustomAttribute<System.ComponentModel.EditorBrowsableAttribute>()?.State is not System.ComponentModel.EditorBrowsableState.Never)
+            // A method hidden with `new` is listed beside the one it hides, under the same signature.
+            .DistinctBy(BlazorUIReflection.Signature)
+            .ToLookup(m => m.Name, StringComparer.Ordinal);
+
+        var claimed = documented.Select(row => Arity(row.Name) is int arity
+                                    ? methods[Bare(row.Name)].FirstOrDefault(m => m.GetParameters().Length == arity)
+                                    : null)
+                                .ToArray();
+
+        var taken = claimed.OfType<MethodInfo>().ToHashSet();
+        var signed = new List<ComponentMember>(documented.Count);
+
+        for (var i = 0; i < documented.Count; i++)
+        {
+            var row = documented[i];
+
+            if (claimed[i] is { } method)
+            {
+                signed.Add(Signed(row, method));
+                continue;
+            }
+
+            var overloads = Arity(row.Name) is null ? methods[Bare(row.Name)].Where(m => taken.Contains(m) is false).ToArray() : [];
+
+            if (overloads.Length == 0)
+            {
+                signed.Add(row);
+                continue;
+            }
+
+            // Taken as they are answered, so a name the table lists twice is not answered with the same overloads twice.
+            taken.UnionWith(overloads);
+            signed.AddRange(overloads.Select(m => Signed(row, m)));
+        }
+
+        return [.. signed];
+
+        static ComponentMember Signed(ComponentMember row, MethodInfo method)
+            => row with { Name = BlazorUIReflection.Signature(method), Type = BlazorUITypeNames.Of(method.ReturnParameter) };
+    }
+
+    /// <summary>A member's name without the parameter list or the type arguments a table or a signature writes after it.</summary>
+    private static string Bare(string name) => name.Split('(', '<')[0].Trim();
+
+    /// <summary>
+    /// How many parameters a name written as a call takes - <c>FocusAsync(bool preventScroll)</c> takes
+    /// one - or null for a name written alone. The commas inside a type's own arguments
+    /// (<c>Func&lt;int, string&gt; map</c>) separate nothing.
+    /// </summary>
+    private static int? Arity(string name)
+    {
+        var open = name.IndexOf('(', StringComparison.Ordinal);
+
+        if (open < 0) return null;
+
+        var list = name[(open + 1)..].TrimEnd().TrimEnd(')');
+
+        if (string.IsNullOrWhiteSpace(list)) return 0;
+
+        var depth = 0;
+        var count = 1;
+
+        foreach (var character in list)
+        {
+            if (character is '<' or '(' or '[') depth++;
+            else if (character is '>' or ')' or ']') depth--;
+            else if (character == ',' && depth == 0) count++;
+        }
+
+        return count;
     }
 
     /// <summary>
@@ -506,8 +598,8 @@ public static class BlazorUIComponentCatalog
             .Where(m => m.Name.StartsWith('_') is false && generated.Contains(m.Name) is false)
             .Where(m => m.Name is not ("Dispose" or "DisposeAsync" or "Equals" or "GetHashCode" or "ToString"))
             .Select(m => new ComponentMember(
-                $"{m.Name}({string.Join(", ", m.GetParameters().Select(p => $"{BlazorUITypeNames.Of(p.ParameterType)} {p.Name}"))})",
-                BlazorUITypeNames.Of(m.ReturnType),
+                BlazorUIReflection.Signature(m),
+                BlazorUITypeNames.Of(m.ReturnParameter),
                 null,
                 BlazorUIXmlDocs.GetSummary($"M:{type.FullName}.{m.Name}")));
 

@@ -66,28 +66,58 @@ public static class BlazorUITypeNames
         return constraints.Count == 0 ? null : $"where {argument.Name} : {string.Join(", ", constraints)}";
     }
 
-    public static string Of(Type type)
+    public static string Of(Type type) => Of(type, null);
+
+    /// <summary>
+    /// The type of a method's parameter or of its return value, with the <c>?</c> its nullable
+    /// annotations put on a reference type. A signature is read for which arguments may be null, and
+    /// <c>string name = null</c> reads as a contradiction where <c>string? name = null</c> is what the
+    /// method declares.
+    /// </summary>
+    public static string Of(ParameterInfo parameter)
+    {
+        NullabilityInfo? nullability;
+
+        try
+        {
+            nullability = new NullabilityInfoContext().Create(parameter);
+        }
+        catch (Exception)
+        {
+            // A parameter whose annotations cannot be read is still named, just without them.
+            nullability = null;
+        }
+
+        return Of(parameter.ParameterType.IsByRef ? parameter.ParameterType.GetElementType()! : parameter.ParameterType, nullability);
+    }
+
+    private static string Of(Type type, NullabilityInfo? nullability)
     {
         var nullable = Nullable.GetUnderlyingType(type);
 
         if (nullable is not null) return $"{Of(nullable)}?";
 
-        if (_aliases.TryGetValue(type, out var alias)) return alias;
+        var annotated = type.IsValueType is false && nullability?.ReadState is NullabilityState.Nullable ? "?" : null;
 
-        if (type.IsArray) return $"{Of(type.GetElementType()!)}[]";
+        if (_aliases.TryGetValue(type, out var alias)) return $"{alias}{annotated}";
+
+        if (type.IsArray) return $"{Of(type.GetElementType()!, nullability?.ElementType)}[]{annotated}";
 
         if (type.IsGenericType)
         {
             var name = type.Name[..type.Name.IndexOf('`', StringComparison.Ordinal)];
+            var arguments = type.GetGenericArguments();
+            var annotations = nullability?.GenericTypeArguments.Length == arguments.Length ? nullability.GenericTypeArguments : null;
+            var names = arguments.Select((argument, i) => Of(argument, annotations?[i]));
 
             // A tuple is written as a tuple: `(double, double, double)` is what a caller declares
             // the variable as, and `ValueTuple<double, double, double>` is the name of the type
             // behind it rather than anything anyone writes.
             return name == "ValueTuple"
-                ? $"({string.Join(", ", type.GetGenericArguments().Select(Of))})"
-                : $"{name}<{string.Join(", ", type.GetGenericArguments().Select(Of))}>";
+                ? $"({string.Join(", ", names)})"
+                : $"{name}<{string.Join(", ", names)}>{annotated}";
         }
 
-        return type.Name;
+        return $"{type.Name}{annotated}";
     }
 }

@@ -556,6 +556,15 @@ all it takes for it to appear in the catalog, the search index and the completio
   read off the component's own `[CascadingParameter]`, so it is in neither table, and named with the
   call that lists its members rather than tabulated, since its members are the parameter table again
   as nullables.
+- **A method is answered as the signature it is called with** - `PanTo(BitMapLatLng center, bool
+  animate = true, bool essential = false)` - never as the delegate type a demo page writes it as
+  (`Func<BitMapLatLng, bool, bool, ValueTask>`): the names, the nullable annotations and the defaults
+  are read off the method, the prose stays the page's (`WithSignatures`, `BlazorUIReflection.Signature`).
+- **A component's answer is narrowable.** The largest run to tens of thousands of characters, which a
+  client that caps a tool's output saves to a file and shows the model the start of. So
+  `GetBitBlazorUIComponent` takes `section` - a heading, or a parameter, member or CSS variable name, or
+  several - and a long answer opens by naming its sections. A search hit below a component names the
+  narrowed call rather than the whole reference.
 - **A miss answers with the nearest names** (`BlazorUISuggest`, edit distance over the names less
   their shared `Bit` prefix) rather than a refusal, and never as a failed tool call.
 
