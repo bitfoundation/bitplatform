@@ -258,20 +258,25 @@
                 xoffset: `${w / 2 - ax}px`,
                 yoffset: `${ay - h / 2}px`,
             });
-            const graphic = new esri.Graphic({
-                geometry: new esri.Point({ longitude: opts.lng, latitude: opts.lat }),
-                symbol: sym,
-                attributes: {
-                    markerId, popupHtml: opts.popupHtml || '', popupText: opts.popupText || '',
-                    title: opts.title || '', draggable: !!opts.draggable,
-                    // Where the icon is drawn around its point, for the hit test a double-click needs (_markerAt).
-                    bmIconBox: [w, h, ax, ay],
-                },
-            });
+            const geometry = new esri.Point({ longitude: opts.lng, latitude: opts.lat });
+            const attributes = {
+                markerId, popupHtml: opts.popupHtml || '', popupText: opts.popupText || '',
+                title: opts.title || '', draggable: !!opts.draggable,
+                // Where the icon is drawn around its point, for the hit test a double-click needs (_markerAt).
+                bmIconBox: [w, h, ax, ay],
+            };
+            // A marker already on the map is updated where it stands rather than replaced, as on every provider:
+            // taking the graphic off the layer and putting a new one on would make it flicker.
             const existing = s.markers[markerId];
-            if (existing) try { s.markerLayer.remove(existing); } catch { /* ignore */ }
-            s.markerLayer.add(graphic);
-            s.markers[markerId] = graphic;
+            if (existing) {
+                existing.geometry = geometry;
+                existing.symbol = sym;
+                existing.attributes = attributes;
+            } else {
+                const graphic = new esri.Graphic({ geometry, symbol: sym, attributes });
+                s.markerLayer.add(graphic);
+                s.markers[markerId] = graphic;
+            }
 
             if (opts.draggable) {
                 BitMapArcGis._ensureDragHandlers(s);
@@ -295,10 +300,9 @@
         public static syncMarkers(id: string, markerIds: string[], markers: any[]) {
             const s = BitMapArcGis._maps[id];
             if (!s) return;
-            s.markerLayer.removeAll();
-            s.markers = {};
-            const len = Math.min(markerIds?.length ?? 0, markers?.length ?? 0);
-            for (let i = 0; i < len; i++) BitMapArcGis.addMarker(id, markerIds[i], markers[i]);
+            BitMapHelpers.syncMarkers(s.markers, markerIds, markers,
+                markerId => BitMapArcGis.removeMarker(id, markerId),
+                (markerId, opts) => BitMapArcGis.addMarker(id, markerId, opts));
         }
 
         /** Makes a marker's double-click the marker's (OnMarkerDoubleClick) or leaves it the map's. */

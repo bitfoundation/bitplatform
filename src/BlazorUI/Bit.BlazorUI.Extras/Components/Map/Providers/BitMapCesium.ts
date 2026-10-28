@@ -454,8 +454,6 @@
             opts = BitMapHelpers.withDefaultIcon(id, opts);
             const s = BitMapCesium._require(id);
             const Cesium = s.Cesium;
-            const existing = s.markers[markerId];
-            if (existing) try { s.viewer.entities.remove(existing); } catch { /* ignore */ }
             // Drawn from its bottom centre, then shifted so the icon's anchor - a pin's tip by default - is
             // what sits on the coordinate, as on every other provider.
             const w = opts.iconWidth || 32, h = opts.iconHeight || 32;
@@ -475,11 +473,24 @@
             } else if (opts.popupText) {
                 description = String(opts.popupText).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
             }
+            const position = Cesium.Cartesian3.fromDegrees(opts.lng, opts.lat);
+            const label = opts.title ? { text: opts.title, font: '12px sans-serif', pixelOffset: new Cesium.Cartesian2(0, -50) } : undefined;
+            // A marker already on the map is updated where it stands rather than replaced, as on every provider:
+            // removing the entity would deselect it, and close the InfoBox showing its description.
+            const existing = s.markers[markerId];
+            if (existing) {
+                existing.position = position;
+                existing.billboard = billboard;
+                existing.label = label;
+                existing.description = description;
+                existing._bmDraggable = !!opts.draggable;
+                return;
+            }
             const ent = s.viewer.entities.add({
                 id: `bm-marker-${id}-${markerId}`,
-                position: Cesium.Cartesian3.fromDegrees(opts.lng, opts.lat),
+                position,
                 billboard,
-                label: opts.title ? { text: opts.title, font: '12px sans-serif', pixelOffset: new Cesium.Cartesian2(0, -50) } : undefined,
+                label,
                 description: description,
                 _bmMarkerId: markerId,
                 _bmDraggable: !!opts.draggable,
@@ -504,10 +515,9 @@
         public static syncMarkers(id: string, markerIds: string[], markers: any[]) {
             const s = BitMapCesium._maps[id];
             if (!s) return;
-            for (const k in s.markers) s.viewer.entities.remove(s.markers[k]);
-            s.markers = {};
-            const len = Math.min(markerIds?.length ?? 0, markers?.length ?? 0);
-            for (let i = 0; i < len; i++) BitMapCesium.addMarker(id, markerIds[i], markers[i]);
+            BitMapHelpers.syncMarkers(s.markers, markerIds, markers,
+                markerId => BitMapCesium.removeMarker(id, markerId),
+                (markerId, opts) => BitMapCesium.addMarker(id, markerId, opts));
         }
 
         /** Makes a marker's double-click the marker's (OnMarkerDoubleClick) or leaves it the map's. */

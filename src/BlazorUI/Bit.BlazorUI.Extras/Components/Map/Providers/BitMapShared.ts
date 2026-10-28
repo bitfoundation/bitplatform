@@ -277,6 +277,41 @@
             };
         }
 
+        /**
+         * Replaces a provider's marker set with a new one: a marker missing from the new set is removed, and every
+         * other one is handed to `upsert` - the provider's addMarker, which updates a marker it already has where it
+         * stands. Tearing the whole set down instead would replace the element of every marker that stayed, and with
+         * it the keyboard focus, an open popup or tooltip, and the second click of a double-click.
+         */
+        static syncMarkers(current: { [markerId: string]: any }, markerIds: string[], markers: any[],
+                           remove: (markerId: string) => void, upsert: (markerId: string, opts: any) => void) {
+            const length = Math.min(markerIds?.length ?? 0, markers?.length ?? 0);
+            const next = new Set<string>();
+            for (let i = 0; i < length; i++) next.add(markerIds[i]);
+            for (const markerId of Object.keys(current)) {
+                if (!next.has(markerId)) remove(markerId);
+            }
+            for (let i = 0; i < length; i++) upsert(markerIds[i], markers[i]);
+        }
+
+        /** Whether any of the given fields differs between two marker payloads. */
+        static markerChanged(previous: any, next: any, ...fields: string[]): boolean {
+            return fields.some(field => previous?.[field] !== next?.[field]);
+        }
+
+        /**
+         * Whether the pointer is over an element or it has the keyboard focus - which is when the hover tooltip of
+         * a marker is showing, and so when a tooltip that has to be built again is opened again.
+         */
+        static isEngaged(element: Element | null | undefined): boolean {
+            if (!element) return false;
+            try {
+                return element === document.activeElement || element.matches(':hover');
+            } catch {
+                return false;
+            }
+        }
+
         /** Split a subdomains option ("abc" or "a,b,c") into its individual values. */
         static readSubdomains(subdomains: string | undefined): string[] {
             const raw = (subdomains ?? 'abc').trim();

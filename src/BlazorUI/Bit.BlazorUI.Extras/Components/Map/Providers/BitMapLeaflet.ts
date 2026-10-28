@@ -358,25 +358,16 @@
         public static addMarker(id: string, markerId: string, opts: any) {
             opts = BitMapHelpers.withDefaultIcon(id, opts);
             const s = BitMapLeaflet._require(id);
-            const L = s.L;
-            let icon: any | undefined;
-            if (opts.iconUrl) {
-                const w = opts.iconWidth ?? 32;
-                const h = opts.iconHeight ?? 32;
-                // The point of the image that sits on the coordinate. Bottom-centre by default,
-                // which is where a pin's tip is; a dot-shaped icon passes its own centre instead.
-                const [ax, ay] = BitMapHelpers.readIconAnchor(opts, w, h);
-                const offsets = BitMapHelpers.popupOffsets(opts, w, h);
-                icon = L.icon({
-                    iconUrl: opts.iconUrl,
-                    iconSize: [w, h],
-                    iconAnchor: [ax, ay],
-                    popupAnchor: offsets['bottom'],
-                    // Beside the icon's head, as Leaflet's own pin has it - without one the tooltip
-                    // points at the coordinate, which is the tip of a pin, under the pin itself.
-                    tooltipAnchor: [offsets['left'][0] + 3, offsets['left'][1]],
-                });
+            // A marker already on the map is updated where it stands rather than replaced: a new one would come
+            // with a new element, which takes the keyboard focus, an open popup or tooltip, and the second click
+            // of a double-click with the old one.
+            const existing = s.markers[markerId];
+            if (existing) {
+                BitMapLeaflet._updateMarker(s, existing, opts);
+                return;
             }
+            const L = s.L;
+            const icon = BitMapLeaflet._icon(L, opts);
             const markerOpts: any = {
                 draggable: !!opts.draggable,
                 title: opts.title || undefined,
@@ -392,26 +383,10 @@
             if (icon) markerOpts.icon = icon;
 
             const m = L.marker([opts.lat, opts.lng], markerOpts);
-            if (opts.popupHtml) {
-                m.bindPopup(opts.popupHtml);
-            } else if (opts.popupText) {
-                const el = document.createElement('span');
-                el.textContent = opts.popupText;
-                m.bindPopup(el);
-            }
-            if (opts.tooltipHtml) {
-                m.bindTooltip(opts.tooltipHtml, {
-                    permanent: !!opts.tooltipPermanent,
-                    direction: opts.tooltipDirection || 'auto',
-                });
-            } else if (opts.tooltipText) {
-                const el = document.createElement('span');
-                el.textContent = opts.tooltipText;
-                m.bindTooltip(el, {
-                    permanent: !!opts.tooltipPermanent,
-                    direction: opts.tooltipDirection || 'auto',
-                });
-            }
+            // What the marker was last built from, which an update compares against (_updateMarker).
+            m._bmOpts = opts;
+            BitMapLeaflet._bindPopup(m, opts);
+            BitMapLeaflet._bindTooltip(m, opts, null);
             m.addTo(s.map);
 
             // Read s.dotnetObj at dispatch time; capturing it here would keep invoking a
@@ -437,30 +412,27 @@
                 if (s.markerDoubleClick) m.on('dblclick', m._bmDoubleClick);
             }
 
-            if (opts.focusable !== false) {
-                // Leaflet gives a marker a tabindex but renders it as an <img>, which no browser
-                // activates on Enter or Space - so a keyboard user can focus the marker and then
-                // do nothing with it. Synthesize the activation the element should already have.
-                const element = m.getElement?.();
-                if (element) {
-                    element.setAttribute('role', 'button');
-                    element.addEventListener('keydown', (ev: KeyboardEvent) => {
-                        if (ev.key !== 'Enter' && ev.key !== ' ' && ev.key !== 'Spacebar') return;
-                        ev.preventDefault();
-                        m.fire('click');
-                        if (m.getPopup()) m.openPopup();
-                    });
-                }
-            }
-            if (opts.draggable) {
-                m.on('dragend', (e: any) => {
-                    if (s.isDisposed) return;
-                    const p = e.target.getLatLng();
-                    s.dotnetObj?.invokeMethodAsync('OnMarkerDragEnd', markerId, { lat: p.lat, lng: p.lng });
+            // Leaflet gives a marker a tabindex but renders it as an <img>, which no browser
+            // activates on Enter or Space - so a keyboard user can focus the marker and then
+            // do nothing with it. Synthesize the activation the element should already have.
+            // Listened for whether or not the marker is focusable now, since an update can make it so.
+            const element = m.getElement?.();
+            if (element) {
+                if (opts.focusable !== false) element.setAttribute('role', 'button');
+                element.addEventListener('keydown', (ev: KeyboardEvent) => {
+                    if (m._bmOpts.focusable === false) return;
+                    if (ev.key !== 'Enter' && ev.key !== ' ' && ev.key !== 'Spacebar') return;
+                    ev.preventDefault();
+                    m.fire('click');
+                    if (m.getPopup()) m.openPopup();
                 });
             }
-            const existing = s.markers[markerId];
-            if (existing) s.map.removeLayer(existing);
+            // Only a draggable marker raises it, and an update can make one draggable.
+            m.on('dragend', (e: any) => {
+                if (s.isDisposed) return;
+                const p = e.target.getLatLng();
+                s.dotnetObj?.invokeMethodAsync('OnMarkerDragEnd', markerId, { lat: p.lat, lng: p.lng });
+            });
             s.markers[markerId] = m;
         }
 
@@ -481,10 +453,9 @@
         public static syncMarkers(id: string, markerIds: string[], markers: any[]) {
             const s = BitMapLeaflet._maps[id];
             if (!s) return;
-            for (const key in s.markers) s.map.removeLayer(s.markers[key]);
-            s.markers = {};
-            const len = Math.min(markerIds?.length ?? 0, markers?.length ?? 0);
-            for (let i = 0; i < len; i++) BitMapLeaflet.addMarker(id, markerIds[i], markers[i]);
+            BitMapHelpers.syncMarkers(s.markers, markerIds, markers,
+                markerId => BitMapLeaflet.removeMarker(id, markerId),
+                (markerId, opts) => BitMapLeaflet.addMarker(id, markerId, opts));
         }
 
         /**
@@ -651,6 +622,133 @@
             const existing = s.layers[layerId];
             if (existing) s.map.removeLayer(existing);
             s.layers[layerId] = layer;
+        }
+
+        /** A marker's icon, or undefined - which leaves it Leaflet's own pin - when it has no image. */
+        private static _icon(L: any, opts: any): any {
+            if (!opts.iconUrl) return undefined;
+            const w = opts.iconWidth ?? 32;
+            const h = opts.iconHeight ?? 32;
+            // The point of the image that sits on the coordinate. Bottom-centre by default,
+            // which is where a pin's tip is; a dot-shaped icon passes its own centre instead.
+            const [ax, ay] = BitMapHelpers.readIconAnchor(opts, w, h);
+            const offsets = BitMapHelpers.popupOffsets(opts, w, h);
+            return L.icon({
+                iconUrl: opts.iconUrl,
+                iconSize: [w, h],
+                iconAnchor: [ax, ay],
+                popupAnchor: offsets['bottom'],
+                // Beside the icon's head, as Leaflet's own pin has it - without one the tooltip
+                // points at the coordinate, which is the tip of a pin, under the pin itself.
+                tooltipAnchor: [offsets['left'][0] + 3, offsets['left'][1]],
+            });
+        }
+
+        /**
+         * Brings a marker on the map in line with a new payload without replacing it (see addMarker), touching only
+         * what changed. Leaflet draws a new icon into the <img> the marker already has, so even a new icon keeps the
+         * element.
+         */
+        private static _updateMarker(s: LeafletState, m: any, opts: any) {
+            const was = m._bmOpts;
+            m._bmOpts = opts;
+            const changed = (...fields: string[]) => BitMapHelpers.markerChanged(was, opts, ...fields);
+
+            // Measured against where the marker is rather than the last payload: a drag or setMarkerPosition moves a
+            // marker without one.
+            const at = m.getLatLng();
+            if (at.lat !== opts.lat || at.lng !== opts.lng) m.setLatLng([opts.lat, opts.lng]);
+
+            const element = m.getElement?.();
+            if (changed('title', 'alt')) {
+                m.options.title = opts.title || undefined;
+                m.options.alt = opts.alt || opts.title || undefined;
+                if (element) {
+                    if (opts.title) element.title = opts.title;
+                    else element.removeAttribute('title');
+                    element.alt = opts.alt || opts.title || '';
+                }
+            }
+            if (changed('focusable')) {
+                const focusable = opts.focusable !== false;
+                m.options.keyboard = focusable;
+                if (element) {
+                    if (focusable) {
+                        element.tabIndex = 0;
+                        element.setAttribute('role', 'button');
+                    } else {
+                        element.removeAttribute('tabindex');
+                        element.removeAttribute('role');
+                    }
+                }
+            }
+            if (changed('riseOnHover')) {
+                // Leaflet only starts listening as it sets the icon up, so the listeners are added or removed here.
+                const rise = { mouseover: m._bringToFront, mouseout: m._resetZIndex };
+                m.options.riseOnHover = !!opts.riseOnHover;
+                if (opts.riseOnHover) {
+                    m.on(rise);
+                } else {
+                    m.off(rise);
+                    m._resetZIndex?.();
+                }
+            }
+            if (changed('draggable')) {
+                m.options.draggable = !!opts.draggable;
+                if (opts.draggable) m.dragging?.enable();
+                else m.dragging?.disable();
+            }
+            if (changed('iconUrl', 'iconWidth', 'iconHeight', 'iconAnchorX', 'iconAnchorY')) {
+                m.setIcon(BitMapLeaflet._icon(s.L, opts) ?? new s.L.Icon.Default());
+                // An open popup or tooltip points from the edge of the icon, which may have moved.
+                if (m.isPopupOpen?.()) m.getPopup().update();
+                if (m.isTooltipOpen?.()) m.getTooltip().update();
+            }
+            if (changed('opacity')) m.setOpacity(opts.opacity ?? 1);
+            if (changed('zIndexOffset')) m.setZIndexOffset(opts.zIndexOffset ?? 0);
+            if (changed('popupHtml', 'popupText')) BitMapLeaflet._bindPopup(m, opts);
+            if (changed('tooltipHtml', 'tooltipText', 'tooltipPermanent', 'tooltipDirection')) BitMapLeaflet._bindTooltip(m, opts, was);
+        }
+
+        /** Binds a marker's popup, or gives the one it has new content - which keeps an open popup open. */
+        private static _bindPopup(m: any, opts: any) {
+            const content = opts.popupHtml || BitMapLeaflet._textContent(opts.popupText);
+            if (!content) {
+                if (m.getPopup()) m.unbindPopup();
+            } else if (m.getPopup()) {
+                m.setPopupContent(content);
+            } else {
+                m.bindPopup(content);
+            }
+        }
+
+        /**
+         * Binds a marker's tooltip, or gives the one it has new content. How a tooltip opens is fixed as it is bound,
+         * so a change to that binds it again - and opens it again while the marker is hovered or focused, as it was.
+         */
+        private static _bindTooltip(m: any, opts: any, was: any) {
+            const content = opts.tooltipHtml || BitMapLeaflet._textContent(opts.tooltipText);
+            const tooltip = m.getTooltip();
+            if (content && tooltip && !BitMapHelpers.markerChanged(was, opts, 'tooltipPermanent', 'tooltipDirection')) {
+                m.setTooltipContent(content);
+                return;
+            }
+            if (tooltip) m.unbindTooltip();
+            if (!content) return;
+            // A permanent one opens as it is bound to a marker on the map.
+            m.bindTooltip(content, {
+                permanent: !!opts.tooltipPermanent,
+                direction: opts.tooltipDirection || 'auto',
+            });
+            if (!opts.tooltipPermanent && BitMapHelpers.isEngaged(m.getElement?.())) m.openTooltip();
+        }
+
+        /** Plain text as an element, so it reaches the popup or tooltip as text rather than markup. Null when empty. */
+        private static _textContent(text: any): HTMLElement | null {
+            if (!text) return null;
+            const el = document.createElement('span');
+            el.textContent = text;
+            return el;
         }
 
         private static _wireVectorClick(s: LeafletState, layer: any, layerId: string, kind: string) {

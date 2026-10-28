@@ -849,6 +849,11 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     }
 
     /// <summary>Add a marker to the map.</summary>
+    /// <remarks>
+    /// A marker whose <see cref="BitMapMarker.Id"/> is already on the map is updated where it stands rather than
+    /// replaced, so it keeps its element - and with it the keyboard focus, an open popup or tooltip, and the second
+    /// click of a double-click. That is what lets a marker be restyled as it is selected.
+    /// </remarks>
     public async ValueTask AddMarker(BitMapMarker marker)
     {
         ArgumentNullException.ThrowIfNull(marker);
@@ -1050,7 +1055,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <remarks>
     /// One interop call regardless of how many markers there are, so prefer it over a loop of
     /// <see cref="AddMarker"/> - each of those is its own round-trip (a SignalR message under
-    /// Blazor Server).
+    /// Blazor Server). Only the markers missing from the new set are removed; one that keeps its
+    /// id is updated in place, as <see cref="AddMarker"/> does.
     /// </remarks>
     public async ValueTask SyncMarkers(IEnumerable<BitMapMarker> markers)
     {
@@ -1987,8 +1993,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// Reconciles the live marker set with <see cref="Markers"/>.
     /// <para>
     /// Markers compare by value, so this can tell an unchanged pin from a moved one and leave the
-    /// unchanged ones alone - which matters beyond performance: re-adding a marker closes its open
-    /// popup and drops its keyboard focus.
+    /// unchanged ones alone. A changed one is updated in place by the provider, which keeps its
+    /// element, its keyboard focus and an open popup or tooltip.
     /// </para>
     /// </summary>
     private async ValueTask ApplyMarkersAsync()
@@ -2026,8 +2032,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
             foreach (var marker in changed)
             {
-                // AddMarker replaces a marker that already carries this id, so an update needs no
-                // separate remove.
+                // AddMarker updates a marker that already carries this id in place, so an update
+                // needs no separate remove.
                 await AddMarker(marker);
             }
         }

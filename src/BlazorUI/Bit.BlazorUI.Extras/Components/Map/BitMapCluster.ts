@@ -124,8 +124,8 @@
                 ? BitMapCluster._capped(visible, s.options.maxRenderedMarkers)
                 : BitMapCluster._cluster(visible, zoom, s.options, colors);
 
-            // Re-syncing identical markers would tear down and rebuild every DOM marker, losing
-            // any open popup and the keyboard focus along with it.
+            // Re-syncing identical markers would walk the provider's whole set for nothing - it updates
+            // the ones it keeps in place, so their elements survive, but every one is still visited.
             //
             // The count and the centroid are part of the signature, not just the id: a bubble's id
             // is the marker that seeded it, which does not change as others join and leave it during a
