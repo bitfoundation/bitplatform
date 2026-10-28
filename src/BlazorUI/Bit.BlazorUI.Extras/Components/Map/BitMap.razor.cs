@@ -39,6 +39,10 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     // none of them doesn't pay an interop round-trip.
     private (string?, bool, bool, string, string, bool, bool, bool, bool?)? _chromeSignature;
 
+    // What the provider was last told about a marker's double-click (see ApplyMarkerDoubleClickAsync). A map is built
+    // with it off, so this starts false and goes back to false whenever the map is.
+    private bool _markerDoubleClick;
+
     // Last viewport the map reported. Two-way camera binding is diffed against it, which is what
     // stops the parameter -> map -> callback -> parameter round trip from looping forever.
     private BitMapViewState? _lastView;
@@ -205,6 +209,10 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <summary>
     /// Fired when the user clicks a cluster bubble. Fires instead of
     /// <see cref="OnMarkerClick"/> - a cluster is not one of your markers.
+    /// <para>
+    /// A double-click on a bubble is one click of it on every provider: it fires this once and expands the bubble once,
+    /// and the map neither raises <see cref="OnDoubleClick"/> for it nor zooms in on it.
+    /// </para>
     /// </summary>
     [Parameter] public EventCallback<BitMapClusterClickArgs> OnClusterClick { get; set; }
 
@@ -426,7 +434,9 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     [Parameter] public EventCallback<BitMapLatLng> OnClick { get; set; }
 
     /// <summary>
-    /// Fired when the user double-clicks the map (not on a marker: that is <see cref="OnMarkerDoubleClick"/>).
+    /// Fired when the user double-clicks the map - over a marker too, unless <see cref="OnMarkerDoubleClick"/> has a
+    /// handler, which makes that double-click the marker's. A double-click on a cluster bubble is always the bubble's
+    /// (see <see cref="OnClusterClick"/>).
     /// </summary>
     [Parameter] public EventCallback<BitMapLatLng> OnDoubleClick { get; set; }
 
@@ -459,10 +469,12 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <summary>
     /// Fired when the user double-clicks a marker. The argument is the marker id.
     /// <para>
-    /// The double-click belongs to the marker on every provider: the map does not raise <see cref="OnDoubleClick"/>
-    /// for it, nor zoom in (or, on Cesium, fly to the marker) the way a double-click elsewhere on the map would. A
-    /// double tap on a touch screen is the exception on MapLibre, Mapbox and Azure Maps, whose touch zoom works off
-    /// the taps themselves rather than the double-click, so the map may still zoom in there.
+    /// While this has a handler, the double-click belongs to the marker on every provider: the map does not raise
+    /// <see cref="OnDoubleClick"/> for it, nor zoom in (or, on Cesium, fly to the marker) the way a double-click
+    /// elsewhere on the map would. A double tap on a touch screen is the exception on MapLibre, Mapbox and Azure Maps,
+    /// whose touch zoom works off the taps themselves rather than the double-click, so the map may still zoom in there.
+    /// Without a handler a marker's double-click stays the map's, so a map that does not listen for this keeps its
+    /// double-click zoom and <see cref="OnDoubleClick"/> over its markers.
     /// </para>
     /// <para>
     /// The two clicks of a double-click are still clicks, as they are on the map. Leaflet, MapLibre, Mapbox, Azure
@@ -1444,7 +1456,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     {
         // A cluster bubble is drawn as a marker, so it arrives here - but it is not one of the
         // caller's markers and must not be reported as one.
-        if (IsClustering && markerId.StartsWith(ClusterIdPrefix, StringComparison.Ordinal))
+        if (IsClusterBubble(markerId))
         {
             await HandleClusterClick(markerId);
             return;
@@ -1454,36 +1466,18 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         // wants both gets both.
         if (MarkerPopupTemplate is not null) await OpenPopup(markerId);
 
-        if (OnMarkerClick.HasDelegate is false) return;
-        try
-        {
-            await OnMarkerClick.InvokeAsync(markerId);
-        }
-        catch (Exception ex)
-        {
-            // A consumer-thrown exception in their event handler must not propagate back into JS
-            // as an unhandled exception (which would surface as a circuit-breaking error in Blazor
-            // Server / WASM). Surface via OnInteropError so observability isn't lost.
-            await RaiseInteropError(BitMapInteropErrorSource.Callback, ex, nameof(OnMarkerClick));
-        }
+        await InvokeMarkerCallback(OnMarkerClick, markerId, nameof(OnMarkerClick));
     }
 
     [JSInvokable("OnMarkerDoubleClick")]
     public async Task _OnMarkerDoubleClick(string markerId)
     {
-        // A cluster bubble is not one of the caller's markers, and the first click of the pair has
-        // already zoomed into it.
-        if (IsClustering && markerId.StartsWith(ClusterIdPrefix, StringComparison.Ordinal)) return;
+        // The built-in providers keep a bubble's double-click to themselves - the click of the pair
+        // that expands it has been reported already - so this only guards against a provider that
+        // does not.
+        if (IsClusterBubble(markerId)) return;
 
-        if (OnMarkerDoubleClick.HasDelegate is false) return;
-        try
-        {
-            await OnMarkerDoubleClick.InvokeAsync(markerId);
-        }
-        catch (Exception ex)
-        {
-            await RaiseInteropError(BitMapInteropErrorSource.Callback, ex, nameof(OnMarkerDoubleClick));
-        }
+        await InvokeMarkerCallback(OnMarkerDoubleClick, markerId, nameof(OnMarkerDoubleClick));
     }
 
     /// <summary>
@@ -1491,6 +1485,29 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <c>BitMapCluster.clusterIdPrefix</c> in BitMapCluster.ts.
     /// </summary>
     private const string ClusterIdPrefix = "__bitmap_cluster_";
+
+    /// <summary>
+    /// Whether an id the provider reported is a cluster bubble's rather than one of the caller's markers.
+    /// </summary>
+    private bool IsClusterBubble(string markerId) => IsClustering && markerId.StartsWith(ClusterIdPrefix, StringComparison.Ordinal);
+
+    /// <summary>
+    /// Raises a callback that takes a marker's id. A consumer-thrown exception in their handler must not
+    /// propagate back into JS as an unhandled exception (which would surface as a circuit-breaking error
+    /// in Blazor Server / WASM), so it surfaces through <see cref="OnInteropError"/> instead.
+    /// </summary>
+    private async Task InvokeMarkerCallback(EventCallback<string> callback, string markerId, string callbackName)
+    {
+        if (callback.HasDelegate is false) return;
+        try
+        {
+            await callback.InvokeAsync(markerId);
+        }
+        catch (Exception ex)
+        {
+            await RaiseInteropError(BitMapInteropErrorSource.Callback, ex, callbackName);
+        }
+    }
 
     private async Task HandleClusterClick(string clusterId)
     {
@@ -1777,6 +1794,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
             _initialized = true;
             await AttachChromeAsync();
+            await ApplyMarkerDoubleClickAsync();
             _prefersReducedMotion = await ReadReducedMotionPreference();
         }
         finally
@@ -1828,6 +1846,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         {
             await AttachChromeAsync();
         }
+
+        if (_initialized) await ApplyMarkerDoubleClickAsync();
     }
 
 
@@ -2145,6 +2165,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         // component reporting IsReady=true while pointing at a disposed backend.
         _initialized = false;
         _activeProvider = null;
+        _markerDoubleClick = false;
         await SetLoadState(BitMapLoadState.Loading);
 
         if (Gone) return;
@@ -2176,6 +2197,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         _activeProvider = effective;
         _initialized = true;
         await AttachChromeAsync();
+        await ApplyMarkerDoubleClickAsync();
         // The camera goes back first: the new map was built from the provider's own Center/Zoom,
         // which is not necessarily where the user had panned to.
         _cameraParametersDirty = false;
@@ -2344,6 +2366,26 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             // The chrome is an enhancement; a failure here must not take the map down with it.
             await RaiseInteropError(BitMapInteropErrorSource.Init, ex, nameof(AttachChromeAsync));
         }
+    }
+
+    /// <summary>
+    /// Tells the provider whether a marker's double-click is the marker's, which it is only while
+    /// <see cref="OnMarkerDoubleClick"/> has a handler. Taking the gesture costs the map its
+    /// <see cref="OnDoubleClick"/> and its double-click zoom over every marker, which a map that does not
+    /// listen for the marker's has no reason to give up.
+    /// <para>
+    /// Only a change is sent, and a map is built with it off - so a map without the handler never pays
+    /// the round trip.
+    /// </para>
+    /// </summary>
+    private async ValueTask ApplyMarkerDoubleClickAsync()
+    {
+        var enabled = OnMarkerDoubleClick.HasDelegate;
+        if (enabled == _markerDoubleClick) return;
+
+        // Recorded before the call, so a provider that cannot take it fails once rather than on every render.
+        _markerDoubleClick = enabled;
+        await SafeInvokeAsync(_js.BitMapSetMarkerDoubleClick(JsObject, _Id, enabled), nameof(OnMarkerDoubleClick));
     }
 
     /// <summary>
@@ -2564,9 +2606,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         if (MarkerPopupTemplate is not null) await OpenPopup(markerId);
         else await OpenMarkerPopup(markerId);
 
-        if (OnMarkerClick.HasDelegate is false) return;
-        try { await OnMarkerClick.InvokeAsync(markerId); }
-        catch (Exception ex) { await RaiseInteropError(BitMapInteropErrorSource.Callback, ex, nameof(OnMarkerClick)); }
+        await InvokeMarkerCallback(OnMarkerClick, markerId, nameof(OnMarkerClick));
     }
 
     private string JsObject => _activeProvider!.JsObjectName;

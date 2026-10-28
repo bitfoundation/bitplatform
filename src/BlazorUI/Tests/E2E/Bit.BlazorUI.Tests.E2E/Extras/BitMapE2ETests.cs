@@ -333,6 +333,38 @@ public class BitMapE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Clustering_DoubleClickOnABubble_IsOneClickOfIt()
+    {
+        await OpenAsync(Route);
+        await ReadyAsync("map-cluster");
+
+        // Both clicks of the pair land on the bubble, which is still there while the first one's zoom plays - but it
+        // expands once, and the double-click is not the map's either.
+        await Marker("map-cluster", "Cluster of 10 markers").DblClickAsync();
+        await Expect(Page.Locator("#cluster-clicks")).ToHaveTextAsync("1");
+        await NumberAboveAsync("#cluster-zoom", 13);
+
+        // A round trip of the page's own: once it has been rendered, so has every callback the map raised before it.
+        await Page.Locator("#btn-markers-ping").ClickAsync();
+        await Expect(Page.Locator("#markers-pings")).ToHaveTextAsync("1");
+        Assert.AreEqual("1", await Page.Locator("#cluster-clicks").InnerTextAsync());
+        Assert.AreEqual("0", await Page.Locator("#cluster-map-double-clicks").InnerTextAsync());
+    }
+
+    [TestMethod]
+    public async Task Markers_DoubleClick_WithoutOnMarkerDoubleClick_IsTheMaps()
+    {
+        await OpenAsync(Route);
+        await ReadyAsync("map-cluster");
+
+        // The clustering map has no OnMarkerDoubleClick, so double-clicking a marker of its is what it always was: the
+        // map's OnDoubleClick and one level in, from 13.
+        await Marker("map-cluster", "Far away").DblClickAsync();
+        await Expect(Page.Locator("#cluster-map-double-clicks")).ToHaveTextAsync("1");
+        await Expect(Page.Locator("#cluster-zoom")).ToHaveTextAsync("14.0");
+    }
+
+    [TestMethod]
     public async Task Camera_TwoWayCenterAndZoom_MoveTheMapFromThePage()
     {
         await OpenAsync(Route);

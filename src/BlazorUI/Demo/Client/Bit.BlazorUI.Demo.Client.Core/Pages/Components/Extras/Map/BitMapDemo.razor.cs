@@ -213,7 +213,7 @@ public partial class BitMapDemo
             Name = "OnClusterClick",
             Type = "EventCallback<BitMapClusterClickArgs>",
             DefaultValue = "",
-            Description = "Fires when a cluster bubble is clicked, instead of OnMarkerClick.",
+            Description = "Fires when a cluster bubble is clicked, instead of OnMarkerClick. A double-click on a bubble is one click of it on every provider: it fires this once, and the map neither raises OnDoubleClick nor zooms in for it.",
         },
         new()
         {
@@ -227,7 +227,7 @@ public partial class BitMapDemo
             Name = "OnDoubleClick",
             Type = "EventCallback<BitMapLatLng>",
             DefaultValue = "",
-            Description = "Fires when the map is double-clicked away from a marker.",
+            Description = "Fires when the map is double-clicked - over a marker too, unless OnMarkerDoubleClick has a handler. Never for a double-click on a cluster bubble, which is the bubble's.",
         },
         new()
         {
@@ -269,7 +269,7 @@ public partial class BitMapDemo
             Name = "OnMarkerDoubleClick",
             Type = "EventCallback<string>",
             DefaultValue = "",
-            Description = "Fires when a marker is double-clicked, with its id. The map neither raises OnDoubleClick nor zooms in for it (a touch double tap can still zoom MapLibre, Mapbox and Azure Maps). Its two clicks raise OnMarkerClick too on every provider but OpenLayers and ArcGIS, which hold a click back until it cannot start a double-click.",
+            Description = "Fires when a marker is double-clicked, with its id. While this has a handler the map neither raises OnDoubleClick nor zooms in for it (a touch double tap can still zoom MapLibre, Mapbox and Azure Maps); without one the double-click stays the map's. Its two clicks raise OnMarkerClick too on every provider but OpenLayers and ArcGIS, which hold a click back until it cannot start a double-click.",
         },
         new()
         {

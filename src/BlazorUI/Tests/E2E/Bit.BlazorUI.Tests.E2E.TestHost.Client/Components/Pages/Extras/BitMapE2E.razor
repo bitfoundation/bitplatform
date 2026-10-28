@@ -75,15 +75,18 @@
 
 <E2ESection Id="clustering" Title="Clustering">
     <div class="map-box">
+        @* No OnMarkerDoubleClick here: a marker's double-click stays the map's. *@
         <BitMap TMapProvider="BitLeafletMapProvider" Id="map-cluster" Provider="_clusterProvider"
                 Markers="_clusterMarkers" Clustering="_clustering"
                 OnClusterClick="e => { _clusterClicks++; _clusterCount = e.Count; }"
+                OnDoubleClick="_ => _clusterMapDoubleClicks++"
                 OnViewChanged="HandleClusterView" />
     </div>
     <button id="btn-toggle-clustering" @onclick="() => _clustering = _clustering is null ? _clusterOptions : null">Toggle clustering</button>
     <span id="cluster-clicks">@_clusterClicks</span>
     <span id="cluster-count">@_clusterCount</span>
     <span id="cluster-zoom">@(_clusterZoom ?? "none")</span>
+    <span id="cluster-map-double-clicks">@_clusterMapDoubleClicks</span>
 </E2ESection>
 
 <E2ESection Id="camera" Title="Camera & events">
@@ -394,6 +397,7 @@
     private int _clusterClicks;
     private int _clusterCount;
     private string? _clusterZoom;
+    private int _clusterMapDoubleClicks;
 
     private BitMap<BitLeafletMapProvider> _cameraMap = default!;
     private BitMapLatLng? _center = new(51.505, -0.09);
