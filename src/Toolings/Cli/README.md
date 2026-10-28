@@ -122,6 +122,26 @@ bit diff --template-package ../bitplatform/src/Templates/Boilerplate/Bit.Boilerp
 
 The project's `upgrade` skill, for the AI coding tools, runs it and applies the changes to your code.
 
+## bit pipeline
+
+Fills in the secrets a project's GitHub Actions workflows use:
+
+```bash
+bit pipeline
+bit pipeline --check
+bit pipeline --env Production
+bit pipeline --rotate-certificate
+```
+
+- It reads the secrets from the workflows themselves, so a pipeline you changed is read as it is. It follows the reusable workflows they call, in the repository or in another one, with the inputs and secrets they're given, and finds the environment each job deploys to, like `environment: ${{ inputs.ENV_NAME }}` with `ENV_NAME: Production` from its caller.
+- It creates the environments that don't exist yet, and stores each secret in the environment of the jobs that use it, or in the repository for a job without one. A secret the repository already has counts as set everywhere.
+- It creates what it can: a VAPID key pair (`PUBLIC_VAPIDKEY`, `PRIVATE_VAPIDKEY`), an app certificate (`APP_CERTIFICATE`) and an Android signing key (`ANDROID_RELEASE_KEYSTORE_FILE_BASE64` and its two passwords), whose fingerprint it adds to the project's `assetlinks.json`. It asks for the rest; `@file` reads the value from a file, and an empty answer skips it. `--yes` skips what only you can give.
+- Values go to the GitHub CLI through its input, never on a command line, and bit keeps a copy of the keys it creates in `~/.bitplatform/keys`, since GitHub doesn't give a secret back. Google Play only takes updates signed with the same key, so save the keystore and its password somewhere safe too.
+- `--check` changes nothing: it lists the secrets and exits with code 3 when one is missing.
+- `--rotate-certificate` gives each environment a new app certificate and keeps the old one as `APP_CERTIFICATE_RETIRED`, so tokens it signed keep working.
+
+It needs the GitHub CLI, signed in with admin rights on the repository. For another pipeline, `bit keys` creates the same keys for you to store yourself.
+
 ## In CI
 
 `bit new` and `bit setup` prepare CI machines too, so a pipeline needs no steps of its own for Node.js, workloads, Playwright or the development certificate. The pipelines bit Boilerplate ships install bit once per job and run it before they publish:
@@ -305,7 +325,8 @@ Collect the profile in the job that publishes the app, right before the AOT publ
 - **A private GitHub repository**, only with `--github-repo`, on the account you sign in with. The GitHub CLI keeps that sign-in, and git uses it to push.
 - **Trust entries**, only for the folder `bit new` created or the one you pass to `bit trust`: `projects` in `~/.claude.json`, `trustedFolders` in `~/.copilot/config.json`, `[projects]` in `~/.codex/config.toml`, `~/.gemini/trustedFolders.json`, and VS Code's trust store in `~/.vscode-shared/sharedStorage/state.vscdb` (only while VS Code isn't running). Each file keeps everything else in it. To undo, delete the entry, or use each tool's own trust settings.
 - **bit itself**, when a newer version is out: a copy for the run in `~/.bitplatform/cli`, then `dotnet tool update --global Bit.Cli` once the run ends.
-- **Its own folder**, `~/.bitplatform`: `settings.json`, the template cache, logs, telemetry not sent yet, and the repositories `bit diff` creates.
+- **Secrets and environments** of your GitHub repository, only with `bit pipeline`, after you confirm or with `--yes`.
+- **Its own folder**, `~/.bitplatform`: `settings.json`, the template cache, logs, telemetry not sent yet, the repositories `bit diff` creates, and in `keys` the keys `bit pipeline` and `bit keys android` create, which only your user can read on macOS and Linux.
 
 ## Telemetry
 
@@ -343,7 +364,7 @@ gh attestation verify ~/.dotnet/tools/.store/bit.cli/<version>/bit.cli/<version>
 | 0 | Done |
 | 1 | A step failed |
 | 2 | Wrong usage, or a value is missing |
-| 3 | A check failed: `bit translate --check`, `bit doctor` |
+| 3 | A check failed: `bit translate --check`, `bit doctor`, `bit pipeline --check` |
 | 130 | Canceled |
 
 ## Coming from the old tools
