@@ -15,13 +15,10 @@ namespace Bit.BlazorUI.Tests.Components.AI.MessageList;
 [TestClass]
 public class BitAiMessageListTests : BitAiTestBase
 {
+    // The list draws a bounded tail instead of virtualizing while it is prerendered, so the tests render it the way an
+    // interactive circuit does.
     [TestInitialize]
-    public void Interactive()
-    {
-        // The list draws a bounded tail instead of virtualizing while it is prerendered, so the tests render it the way
-        // an interactive circuit does.
-        Context.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
-    }
+    public void RenderInteractively() => Interactive();
 
     [TestMethod]
     public void BitAiMessageListShouldRenderTheTranscriptAsALogRegion()

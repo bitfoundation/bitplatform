@@ -715,7 +715,7 @@ public partial class BitImage : BitComponentBase
 
     protected override void OnInitialized()
     {
-        _awaitsTakeOver = BitPrerender.IsHandOver(_services, _js);
+        _awaitsTakeOver = BitPrerender.IsHandOver(_services, IsStaticRender(_js));
 
         base.OnInitialized();
     }

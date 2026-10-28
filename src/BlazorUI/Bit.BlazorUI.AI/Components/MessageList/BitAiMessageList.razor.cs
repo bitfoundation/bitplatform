@@ -216,13 +216,19 @@ public partial class BitAiMessageList : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    protected override void OnInitialized()
+    {
+        // A static render (a prerender, or a page rendered by static SSR) stays one for the life of the list.
+        _prerendering = IsStaticRender(_js);
+
+        base.OnInitialized();
+    }
+
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
 
         base.OnParametersSet();
-
-        _prerendering = IsStaticRender();
 
         if (ReferenceEquals(_subscribed, Conversation) is false)
         {
@@ -410,11 +416,6 @@ public partial class BitAiMessageList : BitAiComponentBase
 
         if (ReferenceEquals(message, Volatile.Read(ref _latest))) RequestRender();
     }
-
-    /// <summary>
-    /// Whether this render is a static one (a prerender, or a page rendered by static SSR) rather than an interactive one.
-    /// </summary>
-    private bool IsStaticRender() => RendererInfo.IsInteractive is false;
 
     private void Detach()
     {

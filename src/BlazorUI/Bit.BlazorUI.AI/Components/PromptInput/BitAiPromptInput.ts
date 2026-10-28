@@ -256,16 +256,24 @@
         // menu from also moving the caret or the focus while that menu is open. Blazor cannot decide preventDefault per
         // keystroke, so it is decided here, where the event is. Enter alone submits when submitOnEnter is set, Ctrl or Cmd
         // with Enter submits either way, and Shift or Alt with Enter is left to the browser, which breaks the line. A key
-        // of an IME composition is the composition's own, never a submit. The menu marks the textarea with
-        // data-bit-aipri-mnu while it is open. Enter, Tab and Escape drive the menu only when pressed alone, which is all
-        // .NET acts on: with a modifier each keeps its own meaning - Shift+Enter breaks the line, Ctrl or Cmd with Enter
-        // sends, Shift+Tab moves the focus back, and a modified Escape is left to the surface around the composer.
+        // of an IME composition is the composition's own, never a submit or a menu key, and it never reaches .NET:
+        // KeyboardEventArgs cannot tell every one of them apart - WebKit reports the Enter that commits a candidate as
+        // the real key, after the composition has ended, marked by the legacy 229 key code alone, which it does not
+        // carry. The listener is on the textarea, so stopping the key here keeps it from Blazor's delegation on the
+        // document, and from the listeners around the composer, none of which acts on the key of a composition
+        // anyway. The menu marks the textarea with data-bit-aipri-mnu while it is open. Enter, Tab and Escape drive the
+        // menu only when pressed alone, which is all .NET acts on: with a modifier each keeps its own meaning -
+        // Shift+Enter breaks the line, Ctrl or Cmd with Enter sends, Shift+Tab moves the focus back, and a modified
+        // Escape is left to the surface around the composer.
         public static registerSubmitKey(id: string, element: HTMLElement | null, submitOnEnter: boolean) {
             AiPromptInput.unregisterSubmitKey(id);
             if (!element) return;
 
             const handler = (e: KeyboardEvent) => {
-                if (Utils.isComposingKey(e)) return;
+                if (Utils.isComposingKey(e)) {
+                    e.stopPropagation();
+                    return;
+                }
 
                 if (element.hasAttribute('data-bit-aipri-mnu') && AiPromptInput.MENU_KEYS.indexOf(e.key) >= 0) {
                     const modified = e.shiftKey || e.ctrlKey || e.altKey || e.metaKey;

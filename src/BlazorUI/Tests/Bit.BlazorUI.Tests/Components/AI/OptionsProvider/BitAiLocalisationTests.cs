@@ -86,7 +86,7 @@ public class BitAiLocalisationTests : BitAiTestBase
         var marker = RenderComponent<BitAiCitationMarker>(p => p.Add(c => c.Citation, citation));
 
         // The transcript rendered the way an interactive circuit renders it, as the original test set up.
-        Context.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+        Interactive();
         var transcript = RenderComponent<BitAiMessageList>(p => p.Add(c => c.Conversation, new BitAiConversation()));
 
         Assert.AreEqual("Quelle 2: Handbook", marker.Find("button").GetAttribute("aria-label"));

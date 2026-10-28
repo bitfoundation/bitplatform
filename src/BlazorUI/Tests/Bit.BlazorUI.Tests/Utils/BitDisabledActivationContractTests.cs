@@ -168,14 +168,12 @@ public class BitDisabledActivationContractTests : BunitTestContext
         RequiredParameters.TryGetValue(type, out var parameters) ? parameters() : [];
 
     // The carousels, the theme and the accent color switchers read services of the library's own, the AI components
-    // theirs; the dictation of BitAiVoiceInput is offered (and its root rendered) only where the browser supports it,
-    // and the transcript asks the renderer whether it is an interactive one.
+    // theirs; the dictation of BitAiVoiceInput is offered (and its root rendered) only where the browser supports it.
     internal static void AddServices(BunitContext context)
     {
         context.Services.AddBitBlazorUIExtrasServices();
         context.Services.AddBitBlazorUIAIServices();
         context.JSInterop.Setup<bool>("BitBlazorUI.AiVoiceInput.isDictationSupported", _ => true).SetResult(true);
-        context.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     [TestInitialize]

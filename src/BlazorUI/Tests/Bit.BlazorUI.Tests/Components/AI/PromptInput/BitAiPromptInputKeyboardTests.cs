@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components.Web;
@@ -55,6 +56,21 @@ public class BitAiPromptInputKeyboardTests : BitAiTestBase
 
         Assert.AreEqual("/", value);
         Assert.IsNotEmpty(composer.FindAll("[role=option]"));
+    }
+
+    // WebKit reports the Enter that commits a candidate as the real key, after the composition has ended, marked by the
+    // legacy 229 key code alone, which KeyboardEventArgs does not carry - .NET would take it for a submit. So the script
+    // of the submit key, on the textarea, keeps every key of a composition from Blazor's delegation on the document,
+    // before it decides anything else about the key.
+    [TestMethod]
+    public void TheKeysOfAnImeCompositionNeverReachDotNet()
+    {
+        var script = SourceFiles.Read("Bit.BlazorUI.AI", "Components", "PromptInput", "BitAiPromptInput.ts");
+        var register = SourceFiles.GetScriptMember(script, "registerSubmitKey", "AiPromptInput");
+
+        StringAssert.Matches(register, new Regex(
+            @"const handler = \(e: KeyboardEvent\) => \{\s*if \(Utils\.isComposingKey\(e\)\) \{\s*e\.stopPropagation\(\);\s*return;\s*\}"));
+        StringAssert.Contains(register, "element.addEventListener('keydown', handler);");
     }
 
     [TestMethod]

@@ -14,13 +14,6 @@ namespace Bit.BlazorUI.Tests.Components.AI.Chat;
 [TestClass]
 public class BitAiChatTests : BitAiTestBase
 {
-    // The transcript draws a bounded tail instead of virtualizing while it is prerendered, so the tests render the chat
-    // the way an interactive circuit does - once every service a test adds is in, since this reads the services.
-    private void Interactive()
-    {
-        Context.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
-    }
-
     private static BitAiChatSession NewSession() =>
         new(new SilentTransport(), options: new BitAiChatSessionOptions { Pacing = null });
 
@@ -39,6 +32,26 @@ public class BitAiChatTests : BitAiTestBase
 
         // Pinned to the newest message, so there is nowhere for the scroll button to go.
         Assert.IsEmpty(component.FindAll(".bit-aistl"));
+
+        await session.DisposeAsync();
+    }
+
+    // A renderer that does not say whether it is an interactive one - bUnit's until it is told, a host of the app's
+    // own - fails no transcript: the JS runtime answers for it, an interactive one here, so a new message enters.
+    [TestMethod]
+    public async Task BitAiChatShouldRenderOnARendererThatDoesNotSayWhetherItIsInteractive()
+    {
+        var session = NewSession();
+        session.Conversation.AddMessage(BitAiRole.User, "q");
+
+        var component = RenderComponent<BitAiChat>(p => p.Add(c => c.Session, session));
+
+        Assert.HasCount(1, component.FindAll("article.bit-aicms"));
+
+        var added = session.Conversation.AddMessage(BitAiRole.Assistant, "a");
+
+        component.WaitForAssertion(() =>
+            Assert.AreEqual(added.MessageId, component.Find("article.bit-aicms-ent").GetAttribute("data-message-id")));
 
         await session.DisposeAsync();
     }

@@ -201,8 +201,8 @@ public sealed class BitEscapeClaimContractTests
     [TestMethod]
     public void TheEscapeOfAnImeCompositionShouldNeverReachDotNet()
     {
-        // KeyboardEventArgs cannot tell it from any other Escape (no key code, and no composition state before .NET 9),
-        // so it is stopped on the document element in the bubble phase: after every listener of the page's elements,
+        // KeyboardEventArgs cannot tell it from any other Escape (no key code, which is all that marks it in WebKit once
+        // the composition has ended), so it is stopped on the document element in the bubble phase: after every listener of the page's elements,
         // and ahead of Blazor's delegation, which listens on the document.
         var keys = SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.Keys.ts");
 

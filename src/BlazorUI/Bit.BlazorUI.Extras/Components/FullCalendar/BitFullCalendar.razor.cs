@@ -578,7 +578,7 @@ public partial class BitFullCalendar : BitComponentBase
         if (_pendingDateChange is { } pending)
         {
             _pendingDateChange = null;
-            if (_initialDateChangeRaised || _js.IsRuntimeInvalid() is false)
+            if (_initialDateChangeRaised || IsStaticRender(_js) is false)
             {
                 _initialDateChangeRaised = true;
                 InvokeAsync(() => OnDateChange.InvokeAsync(pending));
@@ -605,7 +605,7 @@ public partial class BitFullCalendar : BitComponentBase
         // make it into the HTML sent before the page is interactive. The range is the state's alone, so nothing it
         // needs waits for the browser. An interactive calendar keeps reporting it after its first render, where a
         // handler is free to call JavaScript and to use the calendar's own.
-        if (_initialDateChangeRaised is false && OnDateChange.HasDelegate && _js.IsRuntimeInvalid())
+        if (_initialDateChangeRaised is false && OnDateChange.HasDelegate && IsStaticRender(_js))
         {
             try
             {

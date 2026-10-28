@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Schema;
+using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
 namespace Bit.BlazorUI;
@@ -210,7 +211,8 @@ public static class BitAiTool
     /// <typeparam name="T">The type to describe.</typeparam>
     /// <returns>The schema.</returns>
     /// <remarks>
-    /// The type is read by reflection with the web defaults of System.Text.Json (camelCase property names).
+    /// The type is read by reflection with the web defaults of System.Text.Json (camelCase property names), except
+    /// that numbers are described as numbers only.
     /// </remarks>
     [RequiresUnreferencedCode(BitAiTrimming.JsonUnreferencedCode)]
     [RequiresDynamicCode(BitAiTrimming.JsonDynamicCode)]
@@ -222,7 +224,8 @@ public static class BitAiTool
     /// <param name="type">The type to describe.</param>
     /// <returns>The schema.</returns>
     /// <remarks>
-    /// The type is read by reflection with the web defaults of System.Text.Json (camelCase property names).
+    /// The type is read by reflection with the web defaults of System.Text.Json (camelCase property names), except
+    /// that numbers are described as numbers only.
     /// </remarks>
     [RequiresUnreferencedCode(BitAiTrimming.JsonUnreferencedCode)]
     [RequiresDynamicCode(BitAiTrimming.JsonDynamicCode)]
@@ -266,7 +269,10 @@ public static class BitAiTool
     /// <remarks>
     /// The schema exporter refuses to run without a type-info resolver, and the implicit reflection
     /// default is not applied to an options instance built this way, so it is set explicitly here.
-    /// Created on first use, inside the members that already say they reflect.
+    /// Created on first use, inside the members that already say they reflect. Numbers are strict: the web
+    /// defaults read them from strings as well, which the exporter describes as a string-or-number type with a
+    /// pattern, and the providers whose function declarations take a single type refuse the tool for it. Reading
+    /// the arguments back stays lenient (<see cref="BitAiToolInvocation.GetArguments{T}(JsonSerializerOptions?)"/>).
     /// </remarks>
     private static JsonSerializerOptions ReflectionSchemaOptions
     {
@@ -275,6 +281,7 @@ public static class BitAiTool
         get => _reflectionSchemaOptions ??= new(JsonSerializerDefaults.Web)
         {
             TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+            NumberHandling = JsonNumberHandling.Strict,
         };
     }
 

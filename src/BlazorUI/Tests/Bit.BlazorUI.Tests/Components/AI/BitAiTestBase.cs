@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.AI;
@@ -13,6 +14,17 @@ public abstract class BitAiTestBase : BunitTestContext
     public void AddAiServices()
     {
         Context.Services.AddBitBlazorUIAIServices();
+    }
+
+    /// <summary>
+    /// Has the renderer say it is an interactive one, the way a circuit renders: the transcript draws a bounded tail
+    /// instead of virtualizing while it is prerendered. Called once every service a test adds is in, since setting it
+    /// builds the renderer, which reads the services. Without it the components ask the JS runtime, which answers
+    /// interactive as well (see <see cref="BitComponentBase"/>), so a test calls it only to say so outright.
+    /// </summary>
+    protected void Interactive()
+    {
+        Context.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
     }
 
     /// <summary>The renderer registry, for tests that register a custom renderer.</summary>

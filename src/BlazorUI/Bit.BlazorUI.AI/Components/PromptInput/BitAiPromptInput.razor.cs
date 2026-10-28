@@ -679,8 +679,10 @@ public partial class BitAiPromptInput : BitAiComponentBase
         }
     }
 
-    // The keydown of a key an IME takes is what the guard of the script reads off the browser event: IsComposing, or the
-    // "Process" key the browsers report for such a keystroke (the one that starts a composition is not flagged yet).
+    // The keydown of a key an IME takes, as far as KeyboardEventArgs tells it: IsComposing, or the "Process" key the
+    // browsers report for such a keystroke (the one that starts a composition is not flagged yet). The one it cannot
+    // tell - WebKit's Enter that commits a candidate, marked by the legacy 229 key code alone - the script of the
+    // submit key keeps from .NET altogether (registerSubmitKey).
     private static bool IsComposing(KeyboardEventArgs e) => e.IsComposing || e.Key is "Process";
 
     private Task SendOrStopAsync() => IsGenerating ? StopAsync() : SubmitAsync();
