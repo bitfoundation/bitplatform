@@ -7,6 +7,7 @@
 <DemoPage Name="SnackBar"
           SecondaryNames="@(["Toast"])"
           Description="Snackbars provide brief notifications, also known as toasts. One host, placed once and captured by reference, shows every notification of the page: each Show call stacks an item in the chosen corner and returns the handle that closes, updates, pauses or resumes it. Items are announced through a live region, and their countdown holds while they are being read."
+          Notes="While a notification is being announced its text is in the page twice: once in the item, and once in the visually hidden live region that announces it, which is emptied about a second later. A UI test that looks the text up across the whole page (Playwright's GetByText) finds both and fails in strict mode, and .First picks the hidden copy, which comes first. Scope the locator to the items instead: Page.Locator('.bit-snb-itm', new() { HasText = text })."
           Parameters="componentParameters"
           SubEnums="componentSubEnums"
           SubClasses="componentSubClasses"
