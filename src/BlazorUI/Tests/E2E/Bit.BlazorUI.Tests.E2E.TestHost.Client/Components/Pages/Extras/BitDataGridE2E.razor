@@ -167,6 +167,22 @@
     </BitDataGrid>
 </E2ESection>
 
+<E2ESection Id="wrap-header" Title="Wrapped header titles">
+    <label>Width of the first two columns <input id="wrap-header-width" type="number" step="any" @bind="_wrapHeaderWidth" @bind:event="oninput" /></label>
+    @* The header of #13963: a template laying a Persian title out beside an icon in a flex row of its own, on a sortable
+       column and on the same column unsortable, so the two differ only by the sort hint of the first. The last column's
+       one-word title is wider than its column. *@
+    <BitDataGrid Id="grid-wrap-header" Items="@_basic.Take(2).ToList()" WrapCellText="true" Dir="BitDir.Rtl">
+        <BitDataGridColumn ColumnId="Sortable" Property="p => p.Stock" Width="@WrapHeaderWidth">
+            <HeaderTemplate>@WrapHeaderTemplate</HeaderTemplate>
+        </BitDataGridColumn>
+        <BitDataGridColumn ColumnId="Unsortable" Property="p => p.Stock" Sortable="false" Width="@WrapHeaderWidth">
+            <HeaderTemplate>@WrapHeaderTemplate</HeaderTemplate>
+        </BitDataGridColumn>
+        <BitDataGridColumn Property="p => p.Name" Title="Unfinished" Sortable="false" Width="60px" />
+    </BitDataGrid>
+</E2ESection>
+
 <E2ESection Id="cell-events" Title="Row and cell events">
     <BitDataGrid TItem="Product" Id="grid-cell-events" Items="@_basic.Take(4).ToList()"
                  OnRowClick="p => { _rowClicks++; _rowClickArg = p.Name; }"
@@ -433,6 +449,7 @@
     private bool _striped = true;
     private bool _hoverable = true;
     private bool _wrap;
+    private double _wrapHeaderWidth = 300;
     private BitVisibility _visibility;
     private bool _disabled = true;
     private int _disabledRowClicks;
@@ -453,6 +470,14 @@
         _basicSortCount++;
         _basicSortLog = string.Join(",", sorts.Select(s => $"{s.ColumnId}:{s.Direction}:{s.Priority}"));
     }
+
+    private string WrapHeaderWidth => FormattableString.Invariant($"{_wrapHeaderWidth}px");
+
+    private static readonly RenderFragment WrapHeaderTemplate =
+        @<span class="wrap-header-tpl" style="display: flex; align-items: center;">
+            <span class="wrap-header-title">انجام‌نشده</span>
+            <span class="wrap-header-icon" style="display: block; flex: none; width: 24px; height: 24px;"></span>
+        </span>;
 
     private static string CellArgs(BitDataGridCellEventArgs<Product> a)
         => $"{a.Item.Name}|{a.ColumnId}|{a.ColumnTitle}|{a.Value}|button={a.Mouse.Button}|title={a.Column.Title}";

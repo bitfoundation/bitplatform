@@ -96,6 +96,35 @@ public class BitDataGridStylesheetTests
         StringAssert.Contains(stylesheet, "@media (forced-colors: active)");
     }
 
+    // The hint of an unsorted header hangs past its title instead of taking room of its own: laid out like the arrow it
+    // previews, it narrowed every sortable title by its width and the gap even while invisible, so a wrapped title
+    // broke before it had to (#13963).
+    [TestMethod]
+    public void BitDataGridShouldLetTheSortHintTakeNoRoomOfItsOwn()
+    {
+        var stylesheet = SourceFiles.ReadStylesheet("Bit.BlazorUI.Extras", "Components", "DataGrid", "BitDataGrid.scss");
+
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-dtg-htext {"), "gap: $dtg-htext-gap;");
+
+        var hint = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-dtg-sortable:not([aria-sort]) > .bit-dtg-htext::after {");
+        StringAssert.Contains(hint, "width: 0;");
+        StringAssert.Contains(hint, "padding-inline-start: $dtg-htext-gap;");
+        StringAssert.Contains(hint, "margin-inline: calc(-1 * #{$dtg-htext-gap});");
+        Assert.IsFalse(hint.Contains("display: none"), "Hidden from the layout, the hint would move the title as it shows.");
+    }
+
+    // A wrapped title the grid writes may still break a word wider than the room its column gives it, but the elements
+    // of a HeaderTemplate keep their words whole: anywhere let a title laid out beside an icon break in the middle of a
+    // word to save its flex row a few pixels (#13963).
+    [TestMethod]
+    public void BitDataGridShouldKeepTheWordsOfAWrappedHeaderTemplateWhole()
+    {
+        var stylesheet = SourceFiles.ReadStylesheet("Bit.BlazorUI.Extras", "Components", "DataGrid", "BitDataGrid.scss");
+
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-dtg-hcell-wrap .bit-dtg-htext {"), "overflow-wrap: anywhere;");
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n:where(.bit-dtg-hcell-wrap .bit-dtg-htext > *) {"), "overflow-wrap: break-word;");
+    }
+
     // The primary button's label is the on-color of its fill, Canvas under a forced palette, which Chromium's Canvas
     // backplate behind text hides; it is painted as a native button there instead.
     [TestMethod]
