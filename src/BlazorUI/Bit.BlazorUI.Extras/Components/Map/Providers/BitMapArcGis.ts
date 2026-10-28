@@ -268,6 +268,8 @@
                 attributes: {
                     markerId, popupHtml: opts.popupHtml || '', popupText: opts.popupText || '',
                     title: opts.title || '', draggable: !!opts.draggable,
+                    // Where the icon is drawn around its point, for the hit test a double-click needs (_markerAt).
+                    bmIconBox: [w, h, ax, ay],
                 },
             });
             const existing = s.markers[markerId];
@@ -770,6 +772,36 @@
             });
         }
 
+        /**
+         * The id of the topmost marker whose icon covers a point of the view, or null. Worked out synchronously from
+         * where each icon is drawn around its point, where hitTest answers in a promise.
+         */
+        private static _markerAt(s: any, x: number, y: number): string | null {
+            if (typeof x !== 'number' || typeof y !== 'number') return null;
+            // Zoomed out far enough, a wrapping view draws the world - and each marker - more than once side by side,
+            // where toScreen places only one copy; the others are a whole world's width of pixels away from it.
+            const sr = s.view.spatialReference;
+            const worldWidth = sr?.isWrappable && sr.isWebMercator && s.view.resolution > 0
+                ? 2 * 20037508.342789244 / s.view.resolution
+                : 0;
+            // Drawn in the layer's order, so the last one covering the point is the one on top.
+            const graphics = s.markerLayer.graphics.toArray();
+            for (let i = graphics.length - 1; i >= 0; i--) {
+                const g = graphics[i];
+                const a = g?.attributes;
+                if (!a?.markerId || s.markers[a.markerId] !== g || !Array.isArray(a.bmIconBox)) continue;
+                const p = s.view.toScreen(g.geometry);
+                if (!p) continue;
+                const [w, h, ax, ay] = a.bmIconBox;
+                const top = p.y - ay;
+                if (y < top || y > top + h) continue;
+                let dx = x - (p.x - ax);
+                if (worldWidth > w) dx = ((dx % worldWidth) + worldWidth) % worldWidth;
+                if (dx >= 0 && dx <= w) return a.markerId;
+            }
+            return null;
+        }
+
         private static _wireEvents(s: any) {
             const view = s.view;
             // Read s.dotnetObj at dispatch time. dispose() nulls it, and the hitTest
@@ -834,6 +866,16 @@
             }
 
             view.on('double-click', (event: any) => {
+                // A marker's double-click is the marker's, and the view zooms in on it unless its propagation is
+                // stopped before this handler returns - too early for hitTest's promise, hence _markerAt.
+                const markerId = BitMapArcGis._markerAt(s, event.x, event.y);
+                if (markerId) {
+                    event.stopPropagation();
+                    // The view holds a click back until it knows it is not the start of a double-click, and drops both
+                    // clicks of one - so the click that expands a cluster bubble is reported now, or it never is.
+                    dn()?.invokeMethodAsync(BitMapCluster.isClusterId(markerId) ? 'OnMarkerClick' : 'OnMarkerDoubleClick', markerId);
+                    return;
+                }
                 if (event.mapPoint) dn()?.invokeMethodAsync('OnDoubleClick', { lat: event.mapPoint.latitude, lng: event.mapPoint.longitude });
             });
             let viewTimer: any = null;

@@ -417,6 +417,13 @@
                 if (s.isDisposed) return;
                 s.dotnetObj?.invokeMethodAsync('OnMarkerClick', markerId);
             });
+            // Listening is what keeps the double-click off the map: it makes the marker a target of the event, and a
+            // marker's mouse events stop at the marker (bubblingMouseEvents is false for markers) instead of going on to
+            // the map. Without it the map is the only target, so it would raise OnDoubleClick and zoom in.
+            m.on('dblclick', () => {
+                if (s.isDisposed) return;
+                s.dotnetObj?.invokeMethodAsync('OnMarkerDoubleClick', markerId);
+            });
 
             if (opts.focusable !== false) {
                 // Leaflet gives a marker a tabindex but renders it as an <img>, which no browser

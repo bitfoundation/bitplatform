@@ -376,6 +376,13 @@
                 s.dotnetObj?.invokeMethodAsync('OnMarkerClick', markerId);
                 if (marker.getPopup()) marker.togglePopup();
             });
+            marker.getElement()?.addEventListener('dblclick', (ev: Event) => {
+                // Kept from the map's canvas container the same way, which is where the library both raises its
+                // dblclick (OnDoubleClick) and zooms in on one.
+                ev.stopPropagation();
+                if (s.isDisposed) return;
+                s.dotnetObj?.invokeMethodAsync('OnMarkerDoubleClick', markerId);
+            });
             if (draggable) {
                 marker.on('dragend', () => {
                     if (s.isDisposed) return;

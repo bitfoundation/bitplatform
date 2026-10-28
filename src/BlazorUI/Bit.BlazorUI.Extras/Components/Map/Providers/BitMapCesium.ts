@@ -813,13 +813,31 @@
                 }
             }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
+            const markerAt = (position: any): string | null => {
+                const mid = viewer.scene.pick(position)?.id?._bmMarkerId;
+                return mid && s.markers[mid] ? mid : null;
+            };
+
             handler.setInputAction((click: any) => {
+                const mid = markerAt(click.position);
+                if (mid) { dn()?.invokeMethodAsync('OnMarkerDoubleClick', mid); return; }
                 const carte = viewer.camera.pickEllipsoid(click.position, viewer.scene.globe.ellipsoid);
                 if (carte) {
                     const c = Cesium.Cartographic.fromCartesian(carte);
                     dn()?.invokeMethodAsync('OnDoubleClick', { lat: Cesium.Math.toDegrees(c.latitude), lng: Cesium.Math.toDegrees(c.longitude) });
                 }
             }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+
+            // The Viewer's own double-click tracks the entity under the pointer, flying the camera to it and locking it
+            // there. A marker's double-click is the marker's, so that is kept for every other entity only.
+            const widgetHandler = viewer.cesiumWidget?.screenSpaceEventHandler ?? viewer.screenSpaceEventHandler;
+            const track = widgetHandler?.getInputAction?.(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+            if (typeof track === 'function') {
+                widgetHandler.setInputAction((click: any) => {
+                    if (markerAt(click.position)) return;
+                    track(click);
+                }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+            }
 
             // ---- draggable markers ----
             // Cesium has no built-in marker dragging, so drive it from the screen-space

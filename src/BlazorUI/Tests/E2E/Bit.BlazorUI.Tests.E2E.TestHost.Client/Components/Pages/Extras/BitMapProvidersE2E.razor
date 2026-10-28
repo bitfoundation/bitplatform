@@ -19,6 +19,8 @@
             <BitMap @ref="_olMap" TMapProvider="BitOpenLayersMapProvider" Id="map-ol" Provider="_olProvider" Markers="_markers"
                     AriaLabel="OpenLayers map"
                     OnMarkerClick="id => _olMarker = id"
+                    OnMarkerDoubleClick="id => _olMarkerDouble = id"
+                    OnDoubleClick="_ => _olMapDoubleClicks++"
                     OnLoadStateChanged="s => _olState = s.ToString()"
                     @bind-Zoom="_olZoom" />
         </div>
@@ -27,6 +29,8 @@
         <span id="ol-projected">@(_olProjected ?? "none")</span>
         <span id="ol-state">@(_olState ?? "none")</span>
         <span id="ol-marker">@(_olMarker ?? "none")</span>
+        <span id="ol-marker-double">@(_olMarkerDouble ?? "none")</span>
+        <span id="ol-map-double-clicks">@_olMapDoubleClicks</span>
         <span id="ol-zoom">@(_olZoom?.ToString("F1", CultureInfo.InvariantCulture) ?? "null")</span>
     </E2ESection>
 
@@ -35,15 +39,49 @@
             <BitMap @ref="_glMap" TMapProvider="BitMapLibreMapProvider" Id="map-gl" Provider="_glProvider" Markers="_markers"
                     AriaLabel="MapLibre map"
                     OnMarkerClick="id => _glMarker = id"
+                    OnMarkerDoubleClick="id => _glMarkerDouble = id"
+                    OnDoubleClick="_ => _glMapDoubleClicks++"
                     OnLoadStateChanged="s => _glState = s.ToString()"
                     @bind-Zoom="_glZoom" />
         </div>
         <button id="btn-gl-zoom-in" @onclick="@(async () => await _glMap.ZoomIn(animate: false))">ZoomIn</button>
         <span id="gl-state">@(_glState ?? "none")</span>
         <span id="gl-marker">@(_glMarker ?? "none")</span>
+        <span id="gl-marker-double">@(_glMarkerDouble ?? "none")</span>
+        <span id="gl-map-double-clicks">@_glMapDoubleClicks</span>
         <span id="gl-zoom">@(_glZoom?.ToString("F1", CultureInfo.InvariantCulture) ?? "null")</span>
     </E2ESection>
 }
+
+@* ArcGIS needs no key either, but its SDK is far larger than the other two and its "osm" basemap draws OpenStreetMap's
+   own tiles - the one map here whose tiles come off the network - so it is loaded on a demand of its own. *@
+<button id="btn-load-arcgis" @onclick="() => _loadArcGis = true">Load the ArcGIS map</button>
+
+@if (_loadArcGis)
+{
+    <E2ESection Id="arcgis" Title="ArcGIS">
+        <div class="map-box">
+            <BitMap @ref="_agMap" TMapProvider="BitArcGisMapProvider" Id="map-ag" Provider="_agProvider" Markers="_markers"
+                    AriaLabel="ArcGIS map"
+                    OnMarkerClick="id => _agMarker = id"
+                    OnMarkerDoubleClick="id => _agMarkerDouble = id"
+                    OnDoubleClick="_ => _agMapDoubleClicks++"
+                    OnLoadStateChanged="s => _agState = s.ToString()"
+                    @bind-Zoom="_agZoom" />
+        </div>
+        <button id="btn-ag-project" @onclick="ProjectBigBenOnArcGis">Project Big Ben</button>
+        <span id="ag-projected">@(_agProjected ?? "none")</span>
+        <span id="ag-state">@(_agState ?? "none")</span>
+        <span id="ag-marker">@(_agMarker ?? "none")</span>
+        <span id="ag-marker-double">@(_agMarkerDouble ?? "none")</span>
+        <span id="ag-map-double-clicks">@_agMapDoubleClicks</span>
+        <span id="ag-zoom">@(_agZoom?.ToString("F1", CultureInfo.InvariantCulture) ?? "null")</span>
+    </E2ESection>
+}
+
+@* A round trip of its own, so a test knows every callback a map raised before it has been rendered. *@
+<button id="btn-ping" @onclick="() => _pings++">Ping</button>
+<span id="pings">@_pings</span>
 
 <style>
     .map-box { width: 600px; height: 400px; }
@@ -61,7 +99,16 @@
 
     private BitMapLibreMapProvider _glProvider = default!;
 
+    private readonly BitArcGisMapProvider _agProvider = new()
+    {
+        BasemapId = "osm",
+        Center = new(51.505, -0.09),
+        Zoom = 13
+    };
+
     private bool _load;
+    private bool _loadArcGis;
+    private int _pings;
 
     private readonly IEnumerable<BitMapMarker> _markers =
     [
@@ -72,18 +119,36 @@
     private BitMap<BitOpenLayersMapProvider> _olMap = default!;
     private string? _olState;
     private string? _olMarker;
+    private string? _olMarkerDouble;
+    private int _olMapDoubleClicks;
     private double? _olZoom = 13;
     private string? _olProjected;
 
     private BitMap<BitMapLibreMapProvider> _glMap = default!;
     private string? _glState;
     private string? _glMarker;
+    private string? _glMarkerDouble;
+    private int _glMapDoubleClicks;
     private double? _glZoom = 13;
+
+    private BitMap<BitArcGisMapProvider> _agMap = default!;
+    private string? _agState;
+    private string? _agMarker;
+    private string? _agMarkerDouble;
+    private int _agMapDoubleClicks;
+    private double? _agZoom = 13;
+    private string? _agProjected;
 
     private async Task ProjectBigBen()
     {
         var point = await _olMap.Project(new(51.5007, -0.1246));
         _olProjected = point is { } p ? string.Create(CultureInfo.InvariantCulture, $"{p.X:F0},{p.Y:F0}") : "null";
+    }
+
+    private async Task ProjectBigBenOnArcGis()
+    {
+        var point = await _agMap.Project(new(51.5007, -0.1246));
+        _agProjected = point is { } p ? string.Create(CultureInfo.InvariantCulture, $"{p.X:F0},{p.Y:F0}") : "null";
     }
 
     protected override void OnInitialized()

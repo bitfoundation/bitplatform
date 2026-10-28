@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Bit.BlazorUI;
 using Bunit;
@@ -1603,6 +1604,107 @@ public class BitMapTests : BunitTestContext
 
         CollectionAssert.AreEqual(new[] { "a" }, markerClicks);
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == CLUSTER_EXPAND));
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldRaiseOnMarkerDoubleClickWithTheMarkerId()
+    {
+        SetupSuccessfulMount();
+
+        var doubleClicks = new List<string>();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.OnMarkerDoubleClick,
+                Microsoft.AspNetCore.Components.EventCallback.Factory.Create<string>(this, id => doubleClicks.Add(id)));
+        });
+
+        await component.Instance._OnMarkerDoubleClick("a");
+
+        CollectionAssert.AreEqual(new[] { "a" }, doubleClicks);
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldNotReportADoubleClickOnAClusterBubbleAsAMarker()
+    {
+        // A bubble is not one of the caller's markers, and the click of the pair that expands it
+        // has already been reported - so its double-click is nobody's.
+        SetupSuccessfulMount();
+
+        var doubleClicks = new List<string>();
+        var clusterClicks = 0;
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.Clustering, new BitMapClustering());
+            parameters.Add(p => p.OnMarkerDoubleClick,
+                Microsoft.AspNetCore.Components.EventCallback.Factory.Create<string>(this, id => doubleClicks.Add(id)));
+            parameters.Add(p => p.OnClusterClick,
+                Microsoft.AspNetCore.Components.EventCallback.Factory.Create<BitMapClusterClickArgs>(this, _ => clusterClicks++));
+        });
+
+        await component.Instance._OnMarkerDoubleClick(CLUSTER_ID);
+
+        Assert.AreEqual(0, doubleClicks.Count);
+        Assert.AreEqual(0, clusterClicks);
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == CLUSTER_EXPAND));
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldSurviveAThrowingOnMarkerDoubleClick()
+    {
+        // The handler runs inside a [JSInvokable] callback, so letting it throw would come back as
+        // an unhandled interop exception - on Blazor Server, a torn-down circuit.
+        SetupSuccessfulMount();
+
+        var errors = new List<BitMapInteropErrorArgs>();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.OnMarkerDoubleClick,
+                Microsoft.AspNetCore.Components.EventCallback.Factory.Create<string>(this, (Action<string>)(_ => throw new InvalidOperationException("boom"))));
+            parameters.Add(p => p.OnInteropError,
+                Microsoft.AspNetCore.Components.EventCallback.Factory.Create<BitMapInteropErrorArgs>(this, e => errors.Add(e)));
+        });
+
+        await component.Instance._OnMarkerDoubleClick("a");
+
+        Assert.IsTrue(errors.Any(e => e.Source == BitMapInteropErrorSource.Callback
+                                   && e.Context == nameof(BitMap<BitLeafletMapProvider>.OnMarkerDoubleClick)));
+    }
+
+    // A bUnit render cannot double-click a marker, so the provider half is read off the scripts: every one of them
+    // reports a marker's double-click, which is also what keeps it from the map (see OnMarkerDoubleClick).
+    [TestMethod,
+        DataRow("BitMapLeaflet.ts"),
+        DataRow("BitMapGlBase.ts"),
+        DataRow("BitMapOpenLayers.ts"),
+        DataRow("BitMapArcGis.ts"),
+        DataRow("BitMapAzureMaps.ts"),
+        DataRow("BitMapCesium.ts")]
+    public void BitMapProvidersShouldReportAMarkerDoubleClick(string file)
+    {
+        var script = SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "Map", "Providers", file);
+
+        StringAssert.Contains(script, "'OnMarkerDoubleClick'");
+    }
+
+    // The GL libraries and Azure Maps (built on MapLibre) put a marker's element inside the map's canvas container, where
+    // the library listens for the dblclick it zooms on and raises as the map's. So the element's own native listener has
+    // to stop it; an Azure map.events listener cannot, since the event Atlas hands it carries no DOM event.
+    [TestMethod,
+        DataRow("BitMapGlBase.ts"),
+        DataRow("BitMapAzureMaps.ts")]
+    public void BitMapDomMarkerProvidersShouldStopTheDoubleClickOnTheMarkersElement(string file)
+    {
+        var script = SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "Map", "Providers", file);
+
+        var listener = Regex.Match(script, @"marker\.getElement\(\)\?\.addEventListener\('dblclick', \(ev: Event\) => \{(?<body>.*?)\n            \}\);", RegexOptions.Singleline);
+        Assert.IsTrue(listener.Success, "The marker's element has no native dblclick listener.");
+        var body = listener.Groups["body"].Value;
+        StringAssert.Contains(body, "ev.stopPropagation();");
+        StringAssert.Contains(body, "'OnMarkerDoubleClick'");
+        Assert.IsFalse(Regex.IsMatch(script, @"events\.add\('dblclick', marker"), "A map.events listener cannot stop the DOM event.");
     }
 
     [TestMethod]

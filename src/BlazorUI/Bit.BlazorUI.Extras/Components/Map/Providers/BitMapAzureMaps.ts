@@ -264,6 +264,13 @@
                 s.dotnetObj?.invokeMethodAsync('OnMarkerClick', markerId);
                 if (popup) marker.togglePopup();
             });
+            // On the element itself rather than through map.events: the event Atlas hands a marker's listener carries no
+            // DOM event to stop, and the element sits in the map's canvas container, where the double-click would go on
+            // to raise the map's own dblclick (OnDoubleClick) and zoom in.
+            marker.getElement()?.addEventListener('dblclick', (ev: Event) => {
+                ev.stopPropagation();
+                s.dotnetObj?.invokeMethodAsync('OnMarkerDoubleClick', markerId);
+            });
             if (opts.draggable) {
                 s.map.events.add('dragend', marker, () => {
                     const p = marker.getOptions().position ?? [0, 0];

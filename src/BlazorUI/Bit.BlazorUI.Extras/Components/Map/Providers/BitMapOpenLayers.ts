@@ -873,6 +873,19 @@
             map.getViewport().addEventListener('pointerleave', () => BitMapOpenLayers._hideTooltip(s));
 
             map.on('dblclick', (evt: any) => {
+                // The same hit test the click makes. A marker's double-click is the marker's: stopping it here, in a
+                // listener of the map, is what keeps it from the DoubleClickZoom interaction, which OpenLayers only
+                // hands an event its listeners let through.
+                const markerId: string | undefined = map.forEachFeatureAtPixel(evt.pixel,
+                    (feature: any, layer: any) => (layer === s.markerLayer ? feature.get('markerId') || undefined : undefined),
+                    { hitTolerance: 6 });
+                if (markerId) {
+                    evt.stopPropagation();
+                    // OpenLayers holds a click back until it knows it is not the start of a double-click, and drops
+                    // both clicks of one - so the click that expands a cluster bubble is reported now, or it never is.
+                    dn()?.invokeMethodAsync(BitMapCluster.isClusterId(markerId) ? 'OnMarkerClick' : 'OnMarkerDoubleClick', markerId);
+                    return;
+                }
                 const target = dn();
                 if (!target) return;
                 const ll = ol.toLonLat(evt.coordinate);

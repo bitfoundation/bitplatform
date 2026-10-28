@@ -426,7 +426,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     [Parameter] public EventCallback<BitMapLatLng> OnClick { get; set; }
 
     /// <summary>
-    /// Fired when the user double-clicks the map.
+    /// Fired when the user double-clicks the map (not on a marker: that is <see cref="OnMarkerDoubleClick"/>).
     /// </summary>
     [Parameter] public EventCallback<BitMapLatLng> OnDoubleClick { get; set; }
 
@@ -455,6 +455,24 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// Fired when the user clicks a marker. The argument is the marker id.
     /// </summary>
     [Parameter] public EventCallback<string> OnMarkerClick { get; set; }
+
+    /// <summary>
+    /// Fired when the user double-clicks a marker. The argument is the marker id.
+    /// <para>
+    /// The double-click belongs to the marker on every provider: the map does not raise <see cref="OnDoubleClick"/>
+    /// for it, nor zoom in (or, on Cesium, fly to the marker) the way a double-click elsewhere on the map would. A
+    /// double tap on a touch screen is the exception on MapLibre, Mapbox and Azure Maps, whose touch zoom works off
+    /// the taps themselves rather than the double-click, so the map may still zoom in there.
+    /// </para>
+    /// <para>
+    /// The two clicks of a double-click are still clicks, as they are on the map. Leaflet, MapLibre, Mapbox, Azure
+    /// Maps and Cesium report each click as it lands, so <see cref="OnMarkerClick"/> fires for both as well - the way
+    /// <see cref="OnClick"/> fires for the clicks of a double-click on the map - and a handler that opens something on a
+    /// click should expect to run then too. OpenLayers and ArcGIS hold a click back until it cannot be the start of a
+    /// double-click, so on them only this fires.
+    /// </para>
+    /// </summary>
+    [Parameter] public EventCallback<string> OnMarkerDoubleClick { get; set; }
 
     /// <summary>
     /// Fired when a draggable marker has been dropped at a new position.
@@ -1447,6 +1465,24 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             // as an unhandled exception (which would surface as a circuit-breaking error in Blazor
             // Server / WASM). Surface via OnInteropError so observability isn't lost.
             await RaiseInteropError(BitMapInteropErrorSource.Callback, ex, nameof(OnMarkerClick));
+        }
+    }
+
+    [JSInvokable("OnMarkerDoubleClick")]
+    public async Task _OnMarkerDoubleClick(string markerId)
+    {
+        // A cluster bubble is not one of the caller's markers, and the first click of the pair has
+        // already zoomed into it.
+        if (IsClustering && markerId.StartsWith(ClusterIdPrefix, StringComparison.Ordinal)) return;
+
+        if (OnMarkerDoubleClick.HasDelegate is false) return;
+        try
+        {
+            await OnMarkerDoubleClick.InvokeAsync(markerId);
+        }
+        catch (Exception ex)
+        {
+            await RaiseInteropError(BitMapInteropErrorSource.Callback, ex, nameof(OnMarkerDoubleClick));
         }
     }
 

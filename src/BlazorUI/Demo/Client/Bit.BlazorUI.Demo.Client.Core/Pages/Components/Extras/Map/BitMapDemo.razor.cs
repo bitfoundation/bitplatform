@@ -227,7 +227,7 @@ public partial class BitMapDemo
             Name = "OnDoubleClick",
             Type = "EventCallback<BitMapLatLng>",
             DefaultValue = "",
-            Description = "Fires when the map is double-clicked.",
+            Description = "Fires when the map is double-clicked away from a marker.",
         },
         new()
         {
@@ -263,6 +263,13 @@ public partial class BitMapDemo
             Type = "EventCallback<string>",
             DefaultValue = "",
             Description = "Fires when a marker is clicked, with its id.",
+        },
+        new()
+        {
+            Name = "OnMarkerDoubleClick",
+            Type = "EventCallback<string>",
+            DefaultValue = "",
+            Description = "Fires when a marker is double-clicked, with its id. The map neither raises OnDoubleClick nor zooms in for it (a touch double tap can still zoom MapLibre, Mapbox and Azure Maps). Its two clicks raise OnMarkerClick too on every provider but OpenLayers and ArcGIS, which hold a click back until it cannot start a double-click.",
         },
         new()
         {
@@ -1436,7 +1443,7 @@ public partial class BitMapDemo
 
     private BitMap<BitLeafletMapProvider> markersMapRef = default!;
     private readonly BitLeafletMapProvider markersProvider = new() { Center = new(48.8566, 2.3522), Zoom = 5 };
-    private string markersLog = "Click, hover or drag a marker.";
+    private string markersLog = "Click, double-click, hover or drag a marker.";
     private int markerCounter;
 
     private async Task OnMarkersReady()
@@ -1483,6 +1490,8 @@ public partial class BitMapDemo
     }
 
     private void OnMarkerClick(string id) => markersLog = $"Clicked {id}.";
+
+    private void OnMarkerDoubleClick(string id) => markersLog = $"Double-clicked {id}.";
 
     private void OnMarkerDragEnd(BitMapMarkerDragEndArgs e) => markersLog = $"Dropped {e.Id} at {e.Position.Latitude:F4}, {e.Position.Longitude:F4}.";
 
