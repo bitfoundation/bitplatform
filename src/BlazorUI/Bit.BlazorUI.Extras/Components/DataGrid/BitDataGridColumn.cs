@@ -46,6 +46,12 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
     [Parameter] public int? MaxWidth { get; set; }
 
     /// <summary>Overrides the grid-level <c>Sortable</c> for this column.</summary>
+    /// <remarks>
+    /// A column sorts only when it has something to sort by: a <see cref="Property"/> / <see cref="Field"/>,
+    /// or for a template-only column a <see cref="SortBy"/> key. In server (<c>OnRead</c>) and infinite
+    /// (<c>OnLoadMore</c>) mode the source does the sorting, so <c>true</c> here is enough for a template-only
+    /// column with a <see cref="ColumnId"/>: the read request carries that id for the server to order by.
+    /// </remarks>
     [Parameter] public bool? Sortable { get; set; }
 
     /// <summary>
@@ -53,6 +59,12 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
     /// <see cref="Field"/>) and overrides the field value as the sort key when both are set -
     /// e.g. sort a display-name column by last name.
     /// </summary>
+    /// <remarks>
+    /// The key is read on the client only. In server (<c>OnRead</c>) and infinite (<c>OnLoadMore</c>) mode the
+    /// read request carries the column's id instead, so a template-only column sorts there only with a
+    /// <see cref="ColumnId"/> the server can order by. A queryable (<see cref="IQueryable{T}"/>) source cannot
+    /// translate a delegate, so only a column with a <see cref="Property"/> / <see cref="Field"/> sorts there.
+    /// </remarks>
     [Parameter] public Func<TItem, object?>? SortBy { get; set; }
 
     /// <summary>

@@ -2302,12 +2302,21 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     // ------------------------------------------------------------- Sorting
     internal bool ColumnSortable(BitDataGridColumn<TItem> column)
-        // A custom SortBy key makes a template-only column sortable; otherwise a bound field is required.
-        // In server mode a SortBy delegate cannot be forwarded through the read request, and in
-        // queryable mode a delegate has no expression tree to translate, so only field-backed columns
-        // are sortable there.
-        => (column.HasField || (column.SortBy is not null && !IsServerMode && !IsInfiniteMode && !IsQueryableMode))
-        && (column.Sortable ?? Sortable);
+        => (column.HasField || TemplateColumnSortable(column)) && (column.Sortable ?? Sortable);
+
+    // A template-only column has no field to order by. On the client its SortBy delegate is the sort key.
+    // In server and infinite mode the read request forwards the column's id rather than a delegate, so
+    // such a column sorts there once the app has named it with a ColumnId (the id its server orders by)
+    // and asked for sorting - through a SortBy or its own Sortable="true"; a generated id means nothing to
+    // a server. A queryable source needs an expression tree, which a delegate cannot give it, so only
+    // field-backed columns sort there.
+    private bool TemplateColumnSortable(BitDataGridColumn<TItem> column)
+    {
+        if (IsQueryableMode) return false;
+        if (IsServerMode || IsInfiniteMode)
+            return !string.IsNullOrWhiteSpace(column.ColumnId) && (column.SortBy is not null || column.Sortable == true);
+        return column.SortBy is not null;
+    }
 
     internal BitDataGridSortDescriptor? GetSort(BitDataGridColumn<TItem> column)
         => _sorts.FirstOrDefault(s => s.ColumnId == column.Id);

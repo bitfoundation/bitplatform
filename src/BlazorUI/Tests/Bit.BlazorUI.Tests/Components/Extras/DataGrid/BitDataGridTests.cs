@@ -170,6 +170,98 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual("Cherry", FirstCellTexts(component)[^1]);
     }
 
+    // A template-only column: no Field, so on the client only its SortBy key could sort it.
+    private static RenderFragment TemplateOnlyColumn(string? columnId, Func<TestRow, object?>? sortBy, bool? sortable) => builder =>
+    {
+        builder.OpenComponent<BitDataGridColumn<TestRow>>(0);
+        builder.AddComponentParameter(1, "ColumnId", columnId);
+        builder.AddComponentParameter(2, "Title", "Custom");
+        builder.AddComponentParameter(3, "SortBy", sortBy);
+        builder.AddComponentParameter(4, "Sortable", sortable);
+        builder.AddComponentParameter(5, "Template", (RenderFragment<TestRow>)(row => b => b.AddContent(0, row.Name)));
+        builder.CloseComponent();
+    };
+
+    private IRenderedComponent<BitDataGrid<TestRow>> RenderServerGrid(RenderFragment columns, List<BitDataGridReadRequest> reads)
+        => RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.OnRead, (Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TestRow>>>)(request =>
+            {
+                reads.Add(request);
+                return Task.FromResult(new BitDataGridReadResult<TestRow>(CreateRows(), 5));
+            }));
+            parameters.Add(p => p.ChildContent, columns);
+        });
+
+    // In server mode the grid forwards the sorted column's id, never its SortBy delegate, so a template-only
+    // column the app named with a ColumnId sorts there: the server orders by that id (issue #14153).
+    [TestMethod]
+    [DataRow(true, true, DisplayName = "SortBy and Sortable=true")]
+    [DataRow(true, null, DisplayName = "SortBy, the grid's Sortable")]
+    [DataRow(false, true, DisplayName = "Sortable=true alone")]
+    public void ServerModeSortsANamedTemplateOnlyColumnByItsId(bool withSortBy, bool? sortable)
+    {
+        var reads = new List<BitDataGridReadRequest>();
+        var component = RenderServerGrid(TemplateOnlyColumn("UsedPercent", withSortBy ? r => r.Price : null, sortable), reads);
+
+        Assert.IsTrue(component.Find(".bit-dtg-hcell").ClassList.Contains("bit-dtg-sortable"));
+
+        component.Find("button.bit-dtg-htext").Click();
+
+        var sort = reads[^1].Sorts.Single();
+        Assert.AreEqual("UsedPercent", sort.ColumnId);
+        Assert.AreEqual(BitDataGridSortDirection.Ascending, sort.Direction);
+    }
+
+    // A generated id means nothing to a server, and a template-only column that never asked to sort (an actions
+    // column with a ColumnId under the grid's default Sortable) must not turn into a sort button.
+    [TestMethod]
+    [DataRow(null, true, true, DisplayName = "No ColumnId")]
+    [DataRow("actions", false, null, DisplayName = "ColumnId, neither SortBy nor Sortable=true")]
+    [DataRow("UsedPercent", true, false, DisplayName = "Sortable=false")]
+    public void ServerModeLeavesATemplateOnlyColumnUnsortableWithoutAnIdOrARequest(string? columnId, bool withSortBy, bool? sortable)
+    {
+        var reads = new List<BitDataGridReadRequest>();
+        var component = RenderServerGrid(TemplateOnlyColumn(columnId, withSortBy ? r => r.Price : null, sortable), reads);
+
+        Assert.IsFalse(component.Find(".bit-dtg-hcell").ClassList.Contains("bit-dtg-sortable"));
+        Assert.AreEqual(0, component.FindAll("button.bit-dtg-htext").Count);
+    }
+
+    [TestMethod]
+    public void InfiniteModeSortsANamedTemplateOnlyColumnByItsId()
+    {
+        var reads = new List<BitDataGridReadRequest>();
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Height, "300px");
+            parameters.Add(p => p.OnLoadMore, (Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TestRow>>>)(request =>
+            {
+                reads.Add(request);
+                return Task.FromResult(new BitDataGridReadResult<TestRow>(request.Skip == 0 ? CreateRows() : [], 0));
+            }));
+            parameters.Add(p => p.ChildContent, TemplateOnlyColumn("UsedPercent", r => r.Price, null));
+        });
+
+        component.Find("button.bit-dtg-htext").Click();
+
+        component.WaitForAssertion(() => Assert.AreEqual("UsedPercent", reads[^1].Sorts.Single().ColumnId));
+    }
+
+    // A queryable source composes an expression tree, which a SortBy delegate cannot give it, so a template-only
+    // column stays unsortable there even when named.
+    [TestMethod]
+    public void QueryableModeLeavesANamedTemplateOnlyColumnUnsortable()
+    {
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, CreateRows().AsQueryable());
+            parameters.Add(p => p.ChildContent, TemplateOnlyColumn("UsedPercent", r => r.Price, true));
+        });
+
+        Assert.AreEqual(0, component.FindAll("button.bit-dtg-htext").Count);
+    }
+
     [TestMethod]
     public async Task ApplyFilterAsyncFiltersRows()
     {
