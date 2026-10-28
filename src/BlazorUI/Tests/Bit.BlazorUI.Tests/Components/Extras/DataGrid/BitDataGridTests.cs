@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp.Dom;
 using Bunit;
@@ -2800,6 +2801,137 @@ public class BitDataGridTests : BunitTestContext
 
         await component.InvokeAsync(async () => revealed = await component.Instance.RevealItemAsync(new TreeNode { Id = 99 }));
         Assert.IsFalse(revealed, "a node that is not in the tree");
+    }
+
+    [TestMethod]
+    public async Task OnViewChangeTellsRowsApartByKeyRatherThanByInstance()
+    {
+        // Every read of the source makes new instances of the same rows, the way an untracked EF query does.
+        IQueryable<TestRow> Source() => CreateRows().AsQueryable().Select(r => new TestRow { Id = r.Id, Name = r.Name, Price = r.Price });
+        var views = 0;
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Source());
+            parameters.Add(p => p.KeyField, (Func<TestRow, object>)(r => r.Id));
+            parameters.Add(p => p.Pageable, true);
+            parameters.Add(p => p.PageSize, 2);
+            parameters.Add(p => p.OnViewChange, (IReadOnlyList<TestRow> _) => views++);
+            parameters.Add(p => p.ChildContent, DefaultColumns());
+        });
+        Assert.AreEqual(1, views, "the first view is reported once, however many columns register after it");
+
+        await component.InvokeAsync(() => component.Instance.GoToPageAsync(2));
+        await component.InvokeAsync(() => component.Instance.SetPageSizeAsync(3));
+        component.Render(parameters => parameters.Add(p => p.Items, Source()));
+        Assert.AreEqual(1, views, "another page, another page size or new instances of the same rows are not a new view");
+
+        await component.InvokeAsync(() => component.Instance.SortByAsync("Price", BitDataGridSortDirection.Descending));
+        Assert.AreEqual(2, views);
+    }
+
+    [TestMethod]
+    public void OnViewChangeHandsOverAReadOnlyListAndTellsAHandlerBoundAgain()
+    {
+        var views = new List<IReadOnlyList<TestRow>>();
+        Action<IReadOnlyList<TestRow>> handler = rows => views.Add(rows);
+        var component = RenderGrid(configure: parameters => parameters.Add(p => p.OnViewChange, handler));
+
+        Assert.AreEqual(1, views.Count);
+        Assert.ThrowsExactly<NotSupportedException>(() => ((IList<TestRow>)views[0])[0] = new TestRow(),
+            "the list the grid compares the next view with cannot be changed by the handler");
+
+        component.Render(parameters => parameters.Add(p => p.OnViewChange, default(EventCallback<IReadOnlyList<TestRow>>)));
+        component.Render(parameters => parameters.Add(p => p.OnViewChange, handler));
+
+        Assert.AreEqual(2, views.Count, "a handler bound again is told the view it has not seen");
+        Assert.AreEqual(5, views[1].Count);
+    }
+
+    [TestMethod]
+    public void OnViewChangeWalksASelfReferencingTreeOnce()
+    {
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<TreeNode>>(0);
+            builder.AddComponentParameter(1, "Field", "Name");
+            builder.CloseComponent();
+        };
+        var root = new TreeNode { Id = 1, Name = "root" };
+        root.Children = [new() { Id = 2, Name = "child", Children = [root] }];
+        IReadOnlyList<TreeNode>? view = null;
+
+        RenderComponent<BitDataGrid<TreeNode>>(parameters =>
+        {
+            parameters.Add(p => p.Items, new List<TreeNode> { root });
+            parameters.Add(p => p.KeyField, (Func<TreeNode, object>)(n => n.Id));
+            parameters.Add(p => p.ChildrenSelector, (Func<TreeNode, IEnumerable<TreeNode>?>)(n => n.Children));
+            parameters.Add(p => p.OnViewChange, (IReadOnlyList<TreeNode> rows) => view = rows);
+            parameters.Add(p => p.ChildContent, columns);
+        });
+
+        CollectionAssert.AreEqual(new[] { "root", "child" }, view!.Select(n => n.Name).ToList(), "the root beneath its child is the cycle, not a row");
+    }
+
+    [TestMethod]
+    public void OnViewChangeReportsTheChildrenALazyTreeLoadsButNotABranchOpeningOrClosing()
+    {
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<TreeNode>>(0);
+            builder.AddComponentParameter(1, "Field", "Name");
+            builder.CloseComponent();
+        };
+        var views = new List<IReadOnlyList<TreeNode>>();
+        var component = RenderComponent<BitDataGrid<TreeNode>>(parameters =>
+        {
+            parameters.Add(p => p.Items, new List<TreeNode> { new() { Id = 1, Name = "root", IsFolder = true } });
+            parameters.Add(p => p.KeyField, (Func<TreeNode, object>)(n => n.Id));
+            parameters.Add(p => p.HasChildrenSelector, (Func<TreeNode, bool>)(n => n.IsFolder));
+            parameters.Add(p => p.ChildrenProvider, (Func<TreeNode, Task<IEnumerable<TreeNode>?>>)(_ =>
+                Task.FromResult<IEnumerable<TreeNode>?>(new[] { new TreeNode { Id = 11, Name = "child" } })));
+            parameters.Add(p => p.OnViewChange, (IReadOnlyList<TreeNode> rows) => views.Add(rows));
+            parameters.Add(p => p.ChildContent, columns);
+        });
+        Assert.AreEqual(1, views.Count);
+
+        component.Find(".bit-dtg-tree-toggle").Click();
+        component.WaitForAssertion(() => Assert.AreEqual(2, views.Count));
+        Assert.AreEqual(2, views[1].Count, "the loaded child joins the view");
+
+        component.Find(".bit-dtg-tree-toggle").Click();
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-dtg-body > .bit-dtg-row").Count));
+        Assert.AreEqual(2, views.Count, "a collapsed branch is still in the view");
+    }
+
+    [TestMethod]
+    public async Task GetViewItemsAsyncReadsWithATokenTheCallerAndTheGridsDisposalCancel()
+    {
+        var tokens = new List<CancellationToken>();
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.OnRead, (Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TestRow>>>)(request =>
+            {
+                if (request.Take is not null) return Task.FromResult(new BitDataGridReadResult<TestRow>(CreateRows().Take(2).ToList(), 5));
+                // A read of the whole view that is still running.
+                tokens.Add(request.CancellationToken);
+                return new TaskCompletionSource<BitDataGridReadResult<TestRow>>().Task;
+            }));
+            parameters.Add(p => p.Pageable, true);
+            parameters.Add(p => p.PageSize, 2);
+            parameters.Add(p => p.ChildContent, DefaultColumns());
+        });
+
+        using var cts = new CancellationTokenSource();
+        await component.InvokeAsync(() => { _ = component.Instance.GetViewItemsAsync(cts.Token); });
+        await component.InvokeAsync(() => { _ = component.Instance.GetViewItemsAsync(); });
+        Assert.AreEqual(2, tokens.Count);
+
+        cts.Cancel();
+        Assert.IsTrue(tokens[0].IsCancellationRequested, "the caller's token reaches the provider");
+        Assert.IsFalse(tokens[1].IsCancellationRequested);
+
+        await component.InvokeAsync(async () => await component.Instance.DisposeAsync());
+        Assert.IsTrue(tokens[1].IsCancellationRequested, "a read still running goes with the grid");
     }
 
     // ------------------------------------------------------- Column auto-fit
