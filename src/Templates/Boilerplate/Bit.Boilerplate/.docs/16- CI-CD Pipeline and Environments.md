@@ -533,6 +533,8 @@ dotnet publish -c Release \
    - Requires: Issuer ID, API Key ID, Private Key
    - Downloads profile for specified Bundle ID
    ```
+   - No Mac needed to make them: `bit pipeline` creates the distribution certificate, its `.p12` and the App Store
+     provisioning profile through the App Store Connect API and stores them, and `bit keys apple` writes them as files
 
 3. **Build iOS App Package (IPA)**
    ```bash
@@ -654,8 +656,9 @@ The CI/CD pipeline requires various secrets and variables to be configured in Gi
 
 Run `bit pipeline` in the repository. It reads the secrets the workflows use, the reusable workflows they call included,
 creates the environments they deploy to, and stores each secret in its environment. It creates what it can on its own:
-the VAPID key pair, the app certificate and the Android signing key, which it also adds to `assetlinks.json`. It asks
-for the rest, and an empty answer skips one. `bit pipeline --check` only lists what's missing.
+the VAPID key pair, the app certificate and the Android signing key, which it also adds to `assetlinks.json`, and with
+an App Store Connect API key you give it, the iOS app's signing certificate and provisioning profile. It asks for the
+rest, and an empty answer skips one. `bit pipeline --check` only lists what's missing.
 
 Or by hand:
 

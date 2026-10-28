@@ -396,7 +396,7 @@ public class KeysTests
 
     private static bool Contains(byte[] data, byte[] part) => data.AsSpan().IndexOf(part) >= 0;
 
-    private sealed class FakeAppStoreConnect : HttpMessageHandler
+    internal sealed class FakeAppStoreConnect : HttpMessageHandler
     {
         public static readonly byte[] ProfileContent = Encoding.UTF8.GetBytes("<plist>an App Store profile</plist>");
 

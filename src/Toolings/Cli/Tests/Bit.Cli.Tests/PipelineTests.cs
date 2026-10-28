@@ -198,6 +198,52 @@ public class PipelineTests
     }
 
     [TestMethod]
+    public async Task ThePipeline_Should_CreateTheAppStoreSigningOnceForEveryEnvironment()
+    {
+        using var apple = new KeysTests.FakeAppStoreConnect();
+        var prompter = new ScriptedPrompter();
+        using var host = Repository(prompter);
+        var p8 = Path.Combine(host.Root, "AuthKey_2X9R4HXF34.p8");
+        File.WriteAllText(p8, apple.Key.PrivateKey);
+        prompter.On("Its issuer id", apple.Key.IssuerId).On("Its key id", apple.Key.KeyId).On("Its .p8 file", p8);
+
+        Workflow(host, "cd.yml", """
+            on: push
+            jobs:
+              production:
+                runs-on: macos-latest
+                environment: Production
+                steps:
+                  - run: echo ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }} ${{ secrets.APPSTORE_API_KEY_ID }} ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }} ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }} ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
+              test:
+                runs-on: macos-latest
+                environment: Test
+                steps:
+                  - run: echo ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }} ${{ secrets.APPSTORE_API_KEY_ID }} ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }} ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }} ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
+            """);
+        host.Runner.On("gh", "variable get APP_ID", 0, "com.contoso.shop\n");
+        host.Runner.On("gh", "variable get IOS_CODE_SIGN_PROVISION", 1, "variable IOS_CODE_SIGN_PROVISION was not found");
+
+        Assert.AreEqual(0, await new PipelineSetup(host.Services, new PipelineOptions([], false, false, false), apple).RunAsync(CancellationToken.None), host.Output);
+
+        var sets = host.Runner.Calls.Where(c => c.Arguments is ["secret", "set", ..]).ToList();
+        Assert.HasCount(10, sets, host.Output);
+        Assert.AreEqual(1, apple.Requests.Count(r => r.Line is "POST /v1/certificates"));
+
+        foreach (var environment in new[] { "Production", "Test" })
+        {
+            var stored = sets.Where(c => c.Arguments.Contains(environment)).ToDictionary(c => c.Arguments[2], c => c.StandardInput!);
+            Assert.AreEqual(apple.Key.PrivateKey, stored["APPSTORE_API_KEY_PRIVATE_KEY"]);
+
+            using var certificate = X509CertificateLoader.LoadPkcs12(Convert.FromBase64String(stored["APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64"]), stored["APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD"]);
+            Assert.IsTrue(certificate.HasPrivateKey);
+        }
+
+        StringAssert.Contains(host.FlatOutput, "com.contoso.shop App Store");
+        Assert.HasCount(1, Directory.GetFiles(Path.Combine(host.Home, ".bitplatform", "keys", "contoso-shop"), "com.contoso.shop.*.p12"));
+    }
+
+    [TestMethod]
     public async Task Pipeline_Should_RefuseARepositoryWithoutGitHubWorkflows()
     {
         using var host = Repository();
@@ -206,9 +252,9 @@ public class PipelineTests
         StringAssert.Contains(host.FlatOutput, "no GitHub Actions workflows");
     }
 
-    private static TestHost Repository()
+    private static TestHost Repository(IPrompter? prompter = null)
     {
-        var host = new TestHost();
+        var host = new TestHost(prompter: prompter);
         host.Runner.Executables["gh"] = "gh";
         host.Runner.Executables["git"] = "git";
         host.Runner.On("git", "rev-parse --show-toplevel", 0, host.WorkingDirectory);

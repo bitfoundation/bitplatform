@@ -9,7 +9,7 @@ namespace Bit.Cli.Pipelines;
 
 public sealed record PipelineOptions(IReadOnlyList<string> Environments, bool Check, bool Yes, bool RotateCertificate);
 
-public sealed partial class PipelineSetup(CliServices cli, PipelineOptions options)
+public sealed partial class PipelineSetup(CliServices cli, PipelineOptions options, HttpMessageHandler? appleHttp = null)
 {
     public const string PublicVapidKey = "PUBLIC_VAPIDKEY";
     public const string PrivateVapidKey = "PRIVATE_VAPIDKEY";
@@ -19,8 +19,15 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
     public const string AndroidKeystoreFile = "ANDROID_RELEASE_KEYSTORE_FILE_BASE64";
     public const string AndroidKeystorePassword = "ANDROID_RELEASE_KEYSTORE_PASSWORD";
     public const string AndroidSigningPassword = "ANDROID_RELEASE_SIGNING_PASSWORD";
+    public const string AppleIssuerId = "APPSTORE_API_KEY_ISSUER_ID";
+    public const string AppleKeyId = "APPSTORE_API_KEY_ID";
+    public const string ApplePrivateKey = "APPSTORE_API_KEY_PRIVATE_KEY";
+    public const string AppleCertificateFile = "APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64";
+    public const string AppleCertificatePassword = "APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD";
 
-    private static readonly string[] createdByBit = [PublicVapidKey, PrivateVapidKey, AppCertificate, AndroidKeystoreFile, AndroidKeystorePassword, AndroidSigningPassword];
+    private static readonly string[] createdByBit = [PublicVapidKey, PrivateVapidKey, AppCertificate, AndroidKeystoreFile, AndroidKeystorePassword, AndroidSigningPassword, AppleCertificateFile, AppleCertificatePassword];
+
+    private static readonly string[] apple = [AppleIssuerId, AppleKeyId, ApplePrivateKey, AppleCertificateFile, AppleCertificatePassword];
 
     private static readonly string[] optional = [RetiredAppCertificate];
 
@@ -33,9 +40,9 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
         ["OPENAI_APIKEY"] = "an OpenAI compatible API key for bit translate; without it nothing is translated",
         ["CLOUDFLARE_ZONE"] = "the zone id on your domain's Cloudflare overview page",
         ["CLOUDFLARE_TOKEN"] = "a Cloudflare API token that can purge the zone's cache",
-        ["APPSTORE_API_KEY_ISSUER_ID"] = "the issuer id on App Store Connect's Users and Access > Integrations page",
-        ["APPSTORE_API_KEY_ID"] = "the id of an App Store Connect API key with the App Manager role",
-        ["APPSTORE_API_KEY_PRIVATE_KEY"] = "that API key's .p8 file"
+        [AppleIssuerId] = "the issuer id on App Store Connect's Users and Access > Integrations page",
+        [AppleKeyId] = "the id of an App Store Connect team API key with the Admin role",
+        [ApplePrivateKey] = "that API key's .p8 file"
     };
 
     private IProcessRunner Runner => cli.Runner;
@@ -44,6 +51,10 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
     private string repository = "";
     private IReadOnlyList<string> workflowTexts = [];
     private AndroidKeystore? keystore;
+    private AppleApiKey? appleKey;
+    private bool appleSkipped;
+    private readonly Dictionary<(string BundleId, string Profile), AppleSigningResult> appleSignings = [];
+    private readonly List<string> appleCertificates = [];
     private HashSet<string> repositorySecrets = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<string> changedFiles = [];
     private bool failed;
@@ -166,6 +177,11 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             cli.Console.Out.MarkupLine($"[grey]The Android signing key is kept in[/] {Markup.Escape(Path.Combine(KeyFolder.For(cli.Environment, repository), $"{keystore.Alias}.keystore"))} [grey]with the password[/] {Markup.Escape(keystore.Password)}[grey]. Save both somewhere safe, like a password manager: Google Play only takes updates signed with this key.[/]");
         }
 
+        foreach (var certificate in appleCertificates)
+        {
+            cli.Console.Out.MarkupLine($"[grey]{Markup.Escape(certificate)}[/]");
+        }
+
         if (changedFiles.Count > 0)
         {
             cli.Console.Out.MarkupLine($"[grey]Changed in the repository, to commit:[/] {Markup.Escape(string.Join(", ", changedFiles.Distinct(StringComparer.Ordinal).Select(f => Path.GetRelativePath(root, f).Replace('\\', '/'))))}");
@@ -212,6 +228,11 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             await AddFingerprintAsync(environment, keystore, cancellationToken);
             absent.Remove(AndroidKeystorePassword);
             absent.Remove(AndroidSigningPassword);
+        }
+
+        if (used.Contains(AppleCertificateFile) && used.Contains(AppleCertificatePassword) && (absent.Contains(AppleCertificateFile) || absent.Contains(AppleCertificatePassword)))
+        {
+            await AppleAsync(environment, absent, cancellationToken);
         }
 
         foreach (var name in absent.Order(StringComparer.Ordinal))
@@ -261,6 +282,99 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
 
         AppCertificates.Write(folder, AppCertificates.ActiveName, next);
         await SetAsync(environment, AppCertificate, next.Pem, "a new one", cancellationToken);
+    }
+
+    private async Task AppleAsync(string? environment, HashSet<string> absent, CancellationToken cancellationToken)
+    {
+        appleKey ??= appleSkipped ? null : await AskAppleKeyAsync(cancellationToken);
+
+        if (appleKey is null)
+        {
+            appleSkipped = true;
+            cli.Console.Step(StepStatus.Skipped, "Skipped the App Store signing", Scope(environment));
+            absent.ExceptWith(apple);
+            return;
+        }
+
+        foreach (var (name, value) in new[] { (AppleIssuerId, appleKey.IssuerId), (AppleKeyId, appleKey.KeyId), (ApplePrivateKey, appleKey.PrivateKey) })
+        {
+            if (absent.Remove(name))
+            {
+                await SetAsync(environment, name, value, null, cancellationToken);
+            }
+        }
+
+        absent.Remove(AppleCertificateFile);
+        absent.Remove(AppleCertificatePassword);
+
+        var bundleId = await VariableAsync(environment, "APP_ID", cancellationToken) ?? (ProjectContext.FindProjectName(root) is { } projectName ? ProjectContext.ReadAppId(root, projectName) : null);
+
+        if (string.IsNullOrWhiteSpace(bundleId))
+        {
+            cli.Console.Step(StepStatus.Warning, "Skipped the App Store signing", $"bit doesn't know the app's bundle id; set the APP_ID variable of {Scope(environment)} and run bit pipeline again");
+            return;
+        }
+
+        var configuredProfile = await VariableAsync(environment, "IOS_CODE_SIGN_PROVISION", cancellationToken);
+        var profileName = configuredProfile ?? AppleSigning.DefaultProfileName(bundleId);
+
+        if (appleSignings.TryGetValue((bundleId, profileName), out var signing) is false)
+        {
+            try
+            {
+                signing = await new AppleSigning(appleHttp).CreateAppStoreSigningAsync(appleKey, bundleId, profileName, cancellationToken);
+            }
+            catch (AppleSigningException exp)
+            {
+                cli.Console.Step(StepStatus.Failed, "Couldn't create the App Store signing", exp.Message);
+                failed = true;
+                return;
+            }
+
+            appleSignings[(bundleId, profileName)] = signing;
+
+            var copy = Path.Combine(KeyFolder.For(cli.Environment, repository), $"{bundleId}.{DateTimeOffset.UtcNow:yyyyMMddHHmmss}.p12");
+            await File.WriteAllBytesAsync(copy, signing.Pkcs12, cancellationToken);
+            KeyFolder.RestrictToOwner(copy);
+            appleCertificates.Add($"The App Store certificate is kept in {copy} with the password {signing.Pkcs12Password}; it expires on {signing.CertificateExpiry:yyyy-MM-dd}.");
+
+            if (signing.TeamId is { } teamId && ProjectContext.FindProjectName(root) is { } project && WellKnownFiles.AddAppleApp(WellKnownFiles.AppleAppSiteAssociationPath(root, project), teamId, bundleId))
+            {
+                changedFiles.Add(WellKnownFiles.AppleAppSiteAssociationPath(root, project));
+            }
+        }
+
+        await SetAsync(environment, AppleCertificateFile, Convert.ToBase64String(signing.Pkcs12), "created by bit", cancellationToken);
+        await SetAsync(environment, AppleCertificatePassword, signing.Pkcs12Password, "created by bit", cancellationToken);
+
+        if (configuredProfile is null)
+        {
+            cli.Console.Out.MarkupLine($"    [grey]Set the IOS_CODE_SIGN_PROVISION variable of {Markup.Escape(Scope(environment))} to[/] {Markup.Escape(profileName)}[grey], the provisioning profile bit created.[/]");
+        }
+    }
+
+    private async Task<AppleApiKey?> AskAppleKeyAsync(CancellationToken cancellationToken)
+    {
+        if (cli.IsInteractive is false || options.Yes)
+            return null;
+
+        cli.Console.Out.MarkupLine("[grey]bit creates the App Store signing with an App Store Connect team API key with the Admin role, from App Store Connect's Users and Access > Integrations page.[/]");
+
+        var issuerId = cli.Prompter.Text("Its issuer id (empty skips the App Store signing)", "");
+
+        if (issuerId.Length == 0)
+            return null;
+
+        var keyId = cli.Prompter.Text("Its key id", "");
+        var path = Path.GetFullPath(cli.Prompter.Text("Its .p8 file", "").Trim('"'), cli.Environment.CurrentDirectory);
+
+        if (keyId.Length == 0 || File.Exists(path) is false)
+        {
+            cli.Console.Warn(File.Exists(path) ? "The key id is empty." : $"{path} doesn't exist.");
+            return null;
+        }
+
+        return new AppleApiKey(issuerId, keyId, await File.ReadAllTextAsync(path, cancellationToken));
     }
 
     private AndroidKeystore CreateKeystore()
