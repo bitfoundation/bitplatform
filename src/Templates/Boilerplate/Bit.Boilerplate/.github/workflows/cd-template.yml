@@ -106,6 +106,30 @@ jobs:
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: server-bundle
+#if (api == "Integrated")
+
+      - name: Use the environment's app certificate
+        env:
+          APP_CERTIFICATE: ${{ secrets.APP_CERTIFICATE }}
+          APP_CERTIFICATE_RETIRED: ${{ secrets.APP_CERTIFICATE_RETIRED }}
+        run: |
+          write_pair() {
+            printf '%s\n' "$2" | sed -n '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/p' > "$1.crt"
+            printf '%s\n' "$2" | sed -n '/-----BEGIN .*PRIVATE KEY-----/,/-----END .*PRIVATE KEY-----/p' > "$1.key"
+          }
+          if [ -n "$APP_CERTIFICATE" ]; then write_pair AppCertificate "$APP_CERTIFICATE"; fi
+          if [ -n "$APP_CERTIFICATE_RETIRED" ]; then write_pair AppCertificate.retired "$APP_CERTIFICATE_RETIRED"; fi
+#if (notification == true)
+
+      - name: Use the environment's web push keys
+        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
+        with:
+          files: 'appsettings*json'
+        env:
+          AdsPushVapid.PrivateKey: ${{ secrets.PRIVATE_VAPIDKEY }}
+          AdsPushVapid.Subject: ${{ secrets.VAPID_SUBJECT }}
+#endif
+#endif
 #if (api == "Integrated" && database != "Sqlite" && database != "Other")
 
       - name: Retrieve migrations bundle
@@ -219,6 +243,28 @@ jobs:
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: api-bundle
+
+      - name: Use the environment's app certificate
+        env:
+          APP_CERTIFICATE: ${{ secrets.APP_CERTIFICATE }}
+          APP_CERTIFICATE_RETIRED: ${{ secrets.APP_CERTIFICATE_RETIRED }}
+        run: |
+          write_pair() {
+            printf '%s\n' "$2" | sed -n '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/p' > "$1.crt"
+            printf '%s\n' "$2" | sed -n '/-----BEGIN .*PRIVATE KEY-----/,/-----END .*PRIVATE KEY-----/p' > "$1.key"
+          }
+          if [ -n "$APP_CERTIFICATE" ]; then write_pair AppCertificate "$APP_CERTIFICATE"; fi
+          if [ -n "$APP_CERTIFICATE_RETIRED" ]; then write_pair AppCertificate.retired "$APP_CERTIFICATE_RETIRED"; fi
+#if (notification == true)
+
+      - name: Use the environment's web push keys
+        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
+        with:
+          files: 'appsettings*json'
+        env:
+          AdsPushVapid.PrivateKey: ${{ secrets.PRIVATE_VAPIDKEY }}
+          AdsPushVapid.Subject: ${{ secrets.VAPID_SUBJECT }}
+#endif
 #if (database != "Sqlite" && database != "Other")
 
       - name: Retrieve migrations bundle

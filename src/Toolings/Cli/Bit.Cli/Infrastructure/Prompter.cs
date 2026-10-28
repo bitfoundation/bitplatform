@@ -13,6 +13,8 @@ public interface IPrompter
     IReadOnlyList<T> MultiSelect<T>(string question, IReadOnlyList<T> choices, IEnumerable<T> selected, Func<T, string> display) where T : notnull;
 
     bool Confirm(string question, bool defaultValue);
+
+    string Secret(string question);
 }
 
 public sealed class NonInteractivePrompter : IPrompter
@@ -28,6 +30,8 @@ public sealed class NonInteractivePrompter : IPrompter
         => [.. selected];
 
     public bool Confirm(string question, bool defaultValue) => defaultValue;
+
+    public string Secret(string question) => "";
 }
 
 public sealed class SpectrePrompter(IAnsiConsole console) : IPrompter
@@ -94,5 +98,10 @@ public sealed class SpectrePrompter(IAnsiConsole console) : IPrompter
     public bool Confirm(string question, bool defaultValue)
     {
         return console.Prompt(new ConfirmationPrompt($"[bold]{Markup.Escape(question)}[/]") { DefaultValue = defaultValue });
+    }
+
+    public string Secret(string question)
+    {
+        return console.Prompt(new TextPrompt<string>($"[bold]{Markup.Escape(question)}[/]").Secret().AllowEmpty()).Trim();
     }
 }

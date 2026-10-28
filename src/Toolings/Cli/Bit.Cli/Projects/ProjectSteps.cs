@@ -1,6 +1,4 @@
-﻿using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.RegularExpressions;
 using Bit.Cli.Infrastructure;
 using Bit.Cli.Telemetry;
@@ -60,15 +58,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         return Task.FromResult(StepResult.Succeeded("Created a unique app certificate", "development only"));
     }
 
-    public static void WriteDevelopmentCertificate(string directory)
-    {
-        using var rsa = RSA.Create(3072);
-        var request = new CertificateRequest(DevelopmentCertificateSubject, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-        using var certificate = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(5));
-
-        AtomicFile.WriteAllText(Path.Combine(directory, "AppCertificate.crt"), certificate.ExportCertificatePem().ReplaceLineEndings("\n") + "\n");
-        AtomicFile.WriteAllText(Path.Combine(directory, "AppCertificate.key"), rsa.ExportPkcs8PrivateKeyPem().ReplaceLineEndings("\n") + "\n");
-    }
+    public static void WriteDevelopmentCertificate(string directory) => Keys.AppCertificates.Write(directory, Keys.AppCertificates.ActiveName, Keys.AppCertificates.CreateDevelopment());
 
     public async Task<StepResult> GitAsync(Action<string> progress, CancellationToken cancellationToken)
     {

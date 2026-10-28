@@ -41,19 +41,23 @@ The application uses asymmetric cryptography (public/private key pairs) for thes
 
 ## Generating Certificates
 
-Use OpenSSL to generate the required certificate files:
+`bit new` gives every project a development certificate of its own. For a deployed app, create one with the bit CLI:
 
 ```shell
-# 1. Generate the private key (3072-bit RSA)
-openssl genrsa -out AppCertificate.key 3072
-
-# 2. Generate a self-signed X.509 certificate (valid for 1 year)
-openssl req -new -x509 -key AppCertificate.key -out AppCertificate.crt -days 365 -subj "/OU=Production/CN=AppCertificate" -sha256
+bit keys certificate --production -o <a folder outside the repository>
 ```
 
+It writes `AppCertificate.crt` and `AppCertificate.key`: RSA 3072 with SHA-256, `OU=Production`, valid for a year. It refuses a
+folder where git would commit the key.
+<!--#if (pipeline == "GitHub")-->
+
+With the GitHub pipeline, `bit pipeline` creates one for each environment instead and keeps it in that environment's
+`APP_CERTIFICATE` secret, and the deploy job writes it next to the app before the app or its migrations start.
+<!--#endif-->
+
 > **⚠ `AppCertificate.key` is a production secret. Do not commit the one you generate.**
-> The file ships with the template as a *development* default and is therefore tracked in git, so the commands above
-> overwrite a tracked file and `git add -A` will take your real key with it. Anyone who can read the repository can
+> The file ships with the template as a *development* default and is therefore tracked in git, so a production key
+> written over it goes along with the next `git add -A`. Anyone who can read the repository can
 > then mint a valid token for any user - including the global administrator - offline, and decrypt the Data Protection
 > key ring; there is no key id, no revocation list and no server-side state that would stop them. Deliver the key out
 > of band instead (a CI/CD secret, Azure Key Vault, AWS Secrets Manager, the OS certificate store - see *Why PEM over
@@ -63,6 +67,9 @@ The certificate the template ships has the subject `CN=AppCertificate, OU=Develo
 generates for each project on the developer's machine. Both are development certificates: outside the Development
 environment the app refuses to start while any certificate with `OU=Development` is loaded. Production needs one
 generated as above, with `OU=Production`, and delivered out of band.
+
+`bit keys certificate --list -o <folder>` shows the certificates in a folder: which one is active, each one's key id
+and when it expires.
 
 ## Rotating the Certificate
 
@@ -79,14 +86,18 @@ app, a sibling service, or anything reading `/.well-known/jwks` - picks the righ
 ### The procedure
 
 ```shell
-# 1. Retire the current certificate by renaming both files (any name you like).
-mv AppCertificate.crt AppCertificate.old.crt
-mv AppCertificate.key AppCertificate.old.key
-
-# 2. Generate the new pair under the active name (see "Generating Certificates" above).
-openssl genrsa -out AppCertificate.key 3072
-openssl req -new -x509 -key AppCertificate.key -out AppCertificate.crt -days 365 -subj "/OU=Production/CN=AppCertificate" -sha256
+bit keys certificate --rotate -o <the folder with your certificates>
 ```
+
+It renames the active pair to `AppCertificate.<date>.crt` / `.key`, which retires it, and creates a new active pair with
+the same subject.
+<!--#if (pipeline == "GitHub")-->
+
+With the GitHub pipeline, `bit pipeline --rotate-certificate` does the same in each environment: the new certificate
+goes into `APP_CERTIFICATE` and the old one into `APP_CERTIFICATE_RETIRED`, which the deploy job writes as
+`AppCertificate.retired.crt` / `.key`. GitHub doesn't give a secret back, so bit keeps a copy of every certificate it
+creates under `~/.bitplatform/keys`; on another machine it asks for the old certificate's PEM file.
+<!--#endif-->
 
 Deploy. From that moment new tokens are signed with the new key, tokens already in the wild keep validating against
 the retired one, and the existing Data Protection key ring is still readable.
@@ -105,6 +116,11 @@ Two independent clocks have to run out, not one:
 Until both have elapsed the old private key can still mint tokens this app accepts - so if you are rotating *because
 the old key leaked*, skip the overlap entirely, delete the retired pair immediately and accept the sign-out and the
 key-ring reset.
+<!--#if (pipeline == "GitHub")-->
+
+With the GitHub pipeline, deleting the retired pair means deleting the environment's `APP_CERTIFICATE_RETIRED` secret,
+plus `AppCertificate.retired.crt` and `.key` on the server, since a deploy leaves the files it doesn't bring in place.
+<!--#endif-->
 
 > Both files are copied to the output directory by the `AppCertificate.*` glob in the csproj, so a retired pair needs
 > no project change. Every instance behind a load balancer must carry the same set.
@@ -136,10 +152,11 @@ By default, the system uses **PEM files** (`.crt` and `.key`) instead of the bun
 - The local **OS Certificate Store**.
 
 #### How to generate PFX files (Optional):
-```powershell
-$cert = New-SelfSignedCertificate -Subject "CN=AppCertificate, OU=Production" -KeyLength 3072 -HashAlgorithm "SHA256" -NotAfter (Get-Date).AddYears(1)
-Export-PfxCertificate -cert $cert.PSPath -FilePath "AppCertificate.pfx" -Password (ConvertTo-SecureString -String "USE_STRONG_P@SSW0RD_HERE" -Force -AsPlainText)
+```shell
+bit keys certificate --production --pfx -o <a folder outside the repository>
 ```
+
+It also writes `AppCertificate.pfx`, protected by a password it creates and shows once.
 
 This architecture ensures that your security logic remains decoupled from your key storage strategy.
 

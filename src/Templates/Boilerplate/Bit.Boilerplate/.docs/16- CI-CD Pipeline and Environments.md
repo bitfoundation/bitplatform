@@ -149,6 +149,7 @@ Configure it in Azure DevOps rather than GitHub:
    be set at queue time, which would freeze the version at whatever the template shipped.
 4. **Pipelines → Library → Secure files** → upload `Boilerplate.keystore` for the Android job, and add
    `ANDROID_RELEASE_KEYSTORE_PASSWORD` / `ANDROID_RELEASE_SIGNING_PASSWORD` as secret pipeline variables.
+   `bit keys android --alias Boilerplate` creates the keystore and shows its password, which both variables take.
 <!--#if (api == "Integrated" && database != "Sqlite" && database != "Other")-->
 5. **Pipelines → Edit → Variables** → add `DATABASE_CONNECTION_STRING` as a secret variable: a connection string to
    the production database with the rights to change its schema. `deploy_api_blazor` applies the database migrations
@@ -329,7 +330,16 @@ This is the **core deployment workflow** that handles building and deploying all
    ```yaml
    - Download server-bundle from previous job
    - Contains complete self-contained application
+<!--#if (api == "Integrated")-->
+   - Write the environment's APP_CERTIFICATE secret (and APP_CERTIFICATE_RETIRED) next to it as the AppCertificate files
+<!--#if (notification == true)-->
+   - Put the environment's PRIVATE_VAPIDKEY and VAPID_SUBJECT secrets in its appsettings.json
+<!--#endif-->
+<!--#endif-->
    ```
+<!--#if (api == "Integrated")-->
+   - The deploy job applies these secrets, not the build job: anyone who can read the repository can download its build artifacts
+<!--#endif-->
 
 <!--#if (api == "Integrated" && database != "Sqlite" && database != "Other")-->
 2. **Apply Database Migrations**
@@ -367,6 +377,9 @@ This is the **core deployment workflow** that handles building and deploying all
 - ⚠️ **Not Yet Aspire-Friendly**: The backend deployment workflow doesn't yet integrate with .NET Aspire orchestration
 <!--#if (api == "Standalone" && database != "Sqlite" && database != "Other")-->
 - ✅ **Database Migrations**: the api deploys in its own `deploy_api` job, which runs the migrations bundle `build_api` made against the database in the `DATABASE_CONNECTION_STRING` secret right before it deploys the api
+<!--#endif-->
+<!--#if (api == "Standalone")-->
+- ✅ **Secrets**: the api's own `deploy_api` job writes the environment's `APP_CERTIFICATE` (and `APP_CERTIFICATE_RETIRED`) next to the api<!--#if (notification == true)-->, and its `PRIVATE_VAPIDKEY` and `VAPID_SUBJECT` into its appsettings.json<!--#endif-->, before the api or its migrations start
 <!--#endif-->
 <!--#if (database == "Sqlite")-->
 - ✅ **Database Migrations**: the app applies them itself when it starts
@@ -455,6 +468,7 @@ Each signed file counts against the account's monthly quota. To sign only the ex
    - Configure keystore for release signing
    ```
    - The keystore is stored as a GitHub secret in base64 format for security
+   - `bit pipeline` creates the keystore and its three secrets, and `bit keys android` creates one as a file
 
 2. **Build Android App Bundle (AAB)**
 ```bash
@@ -638,6 +652,13 @@ The CI/CD pipeline requires various secrets and variables to be configured in Gi
 
 ### How to Configure in GitHub
 
+Run `bit pipeline` in the repository. It reads the secrets the workflows use, the reusable workflows they call included,
+creates the environments they deploy to, and stores each secret in its environment. It creates what it can on its own:
+the VAPID key pair, the app certificate and the Android signing key, which it also adds to `assetlinks.json`. It asks
+for the rest, and an empty answer skips one. `bit pipeline --check` only lists what's missing.
+
+Or by hand:
+
 1. Navigate to your repository → **Settings** → **Environments**
 2. Create environment (e.g., "Production", "Test")
 3. Add **Secrets** (encrypted, never exposed) and **Variables** (plain text, visible)
@@ -659,7 +680,11 @@ Variables:
 
 Secrets:
   AZURE_PUBLISH_PROFILE = <production publish profile>
-  PUBLIC_VAPIDKEY = <production VAPID key>
+  APP_CERTIFICATE = <the production AppCertificate, its .crt and .key in one PEM>
+  APP_CERTIFICATE_RETIRED = <optional - the certificate it replaced, see AppCertificate.md>
+  PUBLIC_VAPIDKEY = <production VAPID public key>
+  PRIVATE_VAPIDKEY = <production VAPID private key>
+  VAPID_SUBJECT = <mailto: address or https URL the push services can reach you at>
   OPENAI_APIKEY = <optional - when unset, the bit translate step translates nothing>
 ```
 
@@ -692,7 +717,10 @@ Variables:
 
 Secrets:
   AZURE_PUBLISH_PROFILE = <test publish profile>
-  PUBLIC_VAPIDKEY = <test VAPID key>
+  APP_CERTIFICATE = <the test environment's own AppCertificate>
+  PUBLIC_VAPIDKEY = <test VAPID public key>
+  PRIVATE_VAPIDKEY = <test VAPID private key>
+  VAPID_SUBJECT = <mailto: address or https URL>
 ```
 
 This allows the same workflow to deploy different configurations to different environments.
