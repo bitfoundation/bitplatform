@@ -20,7 +20,7 @@ jobs:
 
   e2e:
     name: BlazorHeadlessUI E2E (Chromium, ${{ matrix.render-mode }})
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 60
 
     # The same suite in each render mode: on WebAssembly, as the site is published, and on Blazor Server, where every
@@ -40,7 +40,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -63,7 +63,7 @@ jobs:
       run: dotnet build src/BlazorHeadlessUI/Tests/Bit.BlazorHeadlessUI.Tests.E2E/Bit.BlazorHeadlessUI.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/BlazorHeadlessUI/Tests/Bit.BlazorHeadlessUI.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/BlazorHeadlessUI/Tests/Bit.BlazorHeadlessUI.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
     # The suite starts the published demo itself, on a free port, and stops it when the run ends.
     - name: Run E2E tests
@@ -86,5 +86,5 @@ jobs:
         name: blazorheadlessui-e2e-${{ matrix.render-mode }}
         path: |
           **/blazorheadlessui-e2e-${{ matrix.render-mode }}.trx
-          src/BlazorHeadlessUI/Tests/Bit.BlazorHeadlessUI.Tests.E2E/bin/Release/net10.0/TestResults/traces/
+          src/BlazorHeadlessUI/Tests/Bit.BlazorHeadlessUI.Tests.E2E/bin/Release/net11.0/TestResults/traces/
         if-no-files-found: ignore

@@ -56,7 +56,7 @@ Import the namespace:
 
 That's it. The small JavaScript runtime (`bit-blazorheadlessui.js`) is loaded automatically through a Razor class library initializer; there is no script tag to add. Components must run in an **interactive** render mode to respond to input; during prerendering they render their initial, accessible markup.
 
-Targets .NET 8, 9 and 10.
+Targets .NET 10 and 11.
 
 ## Components
 
@@ -299,7 +299,7 @@ dotnet build BlazorHeadlessUI/Bit.BlazorHeadlessUI.slnx
 cd BlazorHeadlessUI/Tests/Bit.BlazorHeadlessUI.Tests && dotnet test     # component, keyboard and ARIA tests (bUnit)
 ```
 
-Debug builds target .NET 10 only; pass `-p:BuildAllTfms=true` to build and test .NET 8 and 9 as well, as CI does. The browser suite (axe-core on every demo page + keyboard flows) is described in [Tests/Bit.BlazorHeadlessUI.Tests.E2E/README.md](Tests/Bit.BlazorHeadlessUI.Tests.E2E/README.md) and runs in `bit.ci.BlazorHeadlessUI.e2e.yml`.
+Debug builds target .NET 11 only; pass `-p:BuildAllTfms=true` to build and test .NET 10 as well, as CI does. The browser suite (axe-core on every demo page + keyboard flows) is described in [Tests/Bit.BlazorHeadlessUI.Tests.E2E/README.md](Tests/Bit.BlazorHeadlessUI.Tests.E2E/README.md) and runs in `bit.ci.BlazorHeadlessUI.e2e.yml`.
 
 New components should follow the APG pattern for their role, cover keyboard interaction and ARIA in tests (`ShouldBeAccessible()` on every state), and come with CSS and Tailwind demos.
 

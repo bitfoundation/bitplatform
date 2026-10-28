@@ -43,7 +43,7 @@ From `src/BlazorHeadlessUI` (inside `src`, so `src/global.json` selects the SDK 
 dotnet build Tests/Bit.BlazorHeadlessUI.Tests.E2E/Bit.BlazorHeadlessUI.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browser Playwright drives.
-pwsh Tests/Bit.BlazorHeadlessUI.Tests.E2E/bin/Debug/net10.0/playwright.ps1 install chromium
+pwsh Tests/Bit.BlazorHeadlessUI.Tests.E2E/bin/Debug/net11.0/playwright.ps1 install chromium
 
 cd Tests/Bit.BlazorHeadlessUI.Tests.E2E && dotnet test
 
@@ -54,7 +54,7 @@ dotnet test --filter "FullyQualifiedName~Dialog_traps_focus"
 
 The suite publishes the demo itself before the first test, the way `blazorheadlessui.demo.cd.yml` does
 (`dotnet publish ... -c Release -p:AspNetCoreHostingModel=OutOfProcess -p:InvariantGlobalization=true`), into
-`bin/<configuration>/net10.0/demo/<render mode>`, starts it on a free port in the Production environment, shares it
+`bin/<configuration>/net11.0/demo/<render mode>`, starts it on a free port in the Production environment, shares it
 between all tests and stops it when the run ends. A publish rather than a build output: only a publish trims the
 WebAssembly client, so an interop payload the trimmer breaks fails here and nowhere else. The publish needs the
 `wasm-tools` workload (`dotnet workload install wasm-tools`) and Node.js (the demo builds its Tailwind stylesheet). To
@@ -78,7 +78,7 @@ When no browser can be launched or the demo does not publish or start, every tes
 reason. On a build server (`CI=true`) the same tests **fail** instead, so a suite that never ran cannot pass.
 
 Without PowerShell 7, the browser can be installed with the Node.js runtime Playwright ships:
-`bin/Debug/net10.0/.playwright/node/<platform>/node bin/Debug/net10.0/.playwright/package/cli.js install chromium`.
+`bin/Debug/net11.0/.playwright/node/<platform>/node bin/Debug/net11.0/.playwright/package/cli.js install chromium`.
 
 ### WebAssembly and Blazor Server
 
