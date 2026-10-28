@@ -378,8 +378,10 @@ This is the **core deployment workflow** that handles building and deploying all
 <!--#if (api == "Standalone" && database != "Sqlite" && database != "Other")-->
 - ✅ **Database Migrations**: the api deploys in its own `deploy_api` job, which runs the migrations bundle `build_api` made against the database in the `DATABASE_CONNECTION_STRING` secret right before it deploys the api
 <!--#endif-->
-<!--#if (api == "Standalone")-->
-- ✅ **Secrets**: the api's own `deploy_api` job writes the environment's `APP_CERTIFICATE` (and `APP_CERTIFICATE_RETIRED`) next to the api<!--#if (notification == true)-->, and its `PRIVATE_VAPIDKEY` and `VAPID_SUBJECT` into its appsettings.json<!--#endif-->, before the api or its migrations start
+<!--#if (api == "Standalone" && notification == true)-->
+- ✅ **Secrets**: the api's own `deploy_api` job writes the environment's `APP_CERTIFICATE` (and `APP_CERTIFICATE_RETIRED`) next to the api, and its `PRIVATE_VAPIDKEY` and `VAPID_SUBJECT` into its appsettings.json, before the api or its migrations start
+<!--#elif (api == "Standalone")-->
+- ✅ **Secrets**: the api's own `deploy_api` job writes the environment's `APP_CERTIFICATE` (and `APP_CERTIFICATE_RETIRED`) next to the api before the api or its migrations start
 <!--#endif-->
 <!--#if (database == "Sqlite")-->
 - ✅ **Database Migrations**: the app applies them itself when it starts
