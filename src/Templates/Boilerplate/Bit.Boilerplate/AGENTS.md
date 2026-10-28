@@ -113,6 +113,7 @@ Before implementing any changes, you **MUST** complete the following:
 -   **Run tests**: Run `dotnet test` in the src/Tests directory.
 -   **Add new migrations**: Run `dnx dotnet-ef@11.0.0-rc.2.26504.105 -- migrations add <MigrationName> --output-dir Infrastructure/Data/Migrations --verbose` in src/Server/Boilerplate.Server.Api project directory.
 -   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in the src/Shared directory.
+-   **Use the bit CLI for the rest**: besides `bit setup` for a fresh clone, `bit keys` creates the project's keys and certificates, `bit pipeline` fills in the secrets of the GitHub Actions workflows, `bit migration` adds EF Core migrations and `bit run` starts the native apps; `bit --help` lists them all.
 
 ## 5. Coding Conventions & Best Practices
 
