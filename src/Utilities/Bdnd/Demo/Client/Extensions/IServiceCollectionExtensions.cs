@@ -11,8 +11,8 @@ public static class IServiceCollectionExtensions
 {
     public static IServiceCollection AddDemoServices(this IServiceCollection services)
     {
-        // The draggables and drop targets inject BdndInterop, and so does the sortable card,
-        // which measures the hovered card through it.
+        // The draggables and drop targets would create BdndInterop themselves, but the sortable card
+        // injects it, to measure the hovered card through it.
         services.AddBitBdndServices();
 
         return services;

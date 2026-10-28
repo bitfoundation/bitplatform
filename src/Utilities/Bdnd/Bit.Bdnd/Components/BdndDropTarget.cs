@@ -17,7 +17,10 @@ public sealed class BdndDropTarget<TItem> : ComponentBase, IHandleEvent, IAsyncD
 {
     [CascadingParameter] private BdndDragDropManager? Manager { get; set; }
     [CascadingParameter] private BdndDropTargetScope? ParentScope { get; set; }
-    [Inject] private BdndInterop Interop { get; set; } = default!;
+    [Inject] private IServiceProvider Services { get; set; } = default!;
+
+    // Resolved rather than injected, so the drop target also works when the app never called AddBitBdndServices.
+    private BdndInterop Interop => field ??= Services.GetBdndInterop();
 
     /// <summary>A single accepted item type.</summary>
     [Parameter] public string? Accept { get; set; }

@@ -8,10 +8,11 @@ namespace Bit.Bdnd.Demo.Server.Services;
 /// installing the package, registering its service and on hosting models, and - where the demo is
 /// that render mode - the demo's real hosting files.
 /// <para>
-/// Bdnd needs little wiring, and each part of it fails in its own way. The service registration is
-/// required - every draggable and drop target injects <c>BdndInterop</c> - and in a Blazor Web App it
-/// has to be in both containers, because the pages are prerendered on the server before they run in
-/// the browser. Every component must sit inside a <c>BdndProvider</c>, or it throws as it
+/// Bdnd needs little wiring, and each part of it fails in its own way. The service registration
+/// belongs in every container - a component of the app's own that injects <c>BdndInterop</c> fails
+/// without it, even though the draggables and drop targets then create the interop themselves - and
+/// in a Blazor Web App that is both, because the pages are prerendered on the server before they run
+/// in the browser. Every component must sit inside a <c>BdndProvider</c>, or it throws as it
 /// initializes. And a statically rendered page renders its draggables as inert markup that never
 /// wires up a drag event. What does differ per render mode is where the drag callbacks run - in the
 /// browser on WebAssembly, a round trip away under Blazor Server - and so which project the pages
@@ -104,6 +105,8 @@ public static partial class BdndSetupGuide
                 """
                 One project and no prerendering: the components run in the browser from the first render, and every drag
                 callback is handled without a network round trip. Register the service in the one `Program.cs` there is.
+                This is the setup for an app that loads Bit.Bdnd at startup; one that lazy loads it registers nothing - see
+                `GetBdndGuideSection(heading: "Lazy loading on WebAssembly")`.
                 """,
                 ["Install", "Register the service", "Blazor WebAssembly"],
                 StandaloneFiles,
@@ -172,10 +175,13 @@ public static partial class BdndSetupGuide
 
         1. `dotnet add package Bit.Bdnd` - one package, everything under the `Bit.Bdnd` namespace. In a Blazor Web App
            with an interactive client, add it to the .Client project.
-        2. Register the service - it is REQUIRED: `builder.Services.AddBitBdndServices();` in `Program.cs`, in EVERY project
-           that renders the components. In a Blazor Web App that is both the server's and the client's `Program.cs`:
-           the pages are prerendered on the server, so what a component injects has to resolve in both containers.
-           Without it a page throws `Cannot provide a value for property 'Interop'`. Calling it twice is harmless.
+        2. Register the service: `builder.Services.AddBitBdndServices();` in `Program.cs`, in EVERY project that renders
+           the components. In a Blazor Web App that is both the server's and the client's `Program.cs`: the pages are
+           prerendered on the server, so what a component injects has to resolve in both containers. The draggables and
+           drop targets create the interop themselves where it is missing, but a component of your own that injects
+           `BdndInterop` - a sortable card measuring itself - throws `There is no registered service of type
+           'Bit.Bdnd.BdndInterop'`. Calling it twice is harmless. (Only a WebAssembly app that lazy loads Bit.Bdnd leaves
+           the registration out - see the guide's lazy loading section.)
         3. Add `@using Bit.Bdnd` to `_Imports.razor`.
         4. There is NO stylesheet to link and no script tag to add: the components import their script module,
            `_content/Bit.Bdnd/bit-bdnd.js`, themselves the first time they need it. Style the drag states yourself,

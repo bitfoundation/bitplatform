@@ -69,7 +69,8 @@ put down in another - including files, text and links dragged in from outside th
 - **Robust** across re-renders: a dragged item may be re-parented, re-keyed or removed mid-drag and its `OnEnd` still
   runs; hover survives the target's children being re-rendered.
 - Works on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, on .NET 10 and 11 - driven by
-  the end-to-end suite in Chromium, Firefox and WebKit, over a Server circuit and in a WinForms `BlazorWebView`.
+  the end-to-end suite in Chromium, Firefox and WebKit, over a Server circuit and in a WinForms `BlazorWebView` - and
+  can be [lazy loaded](#lazy-loading-on-webassembly) on WebAssembly.
 
 ## Quick start
 
@@ -166,7 +167,7 @@ Everything ships in one package, `Bit.Bdnd`, under one namespace, `Bit.Bdnd`:
 | The state | `BdndDragDropManager` and its read-only view `IBdndMonitor`; the collected states `BdndDragState`, `BdndDropState<TItem>`, `BdndDragLayerState<TItem>`; the callback arguments `BdndDropEventArgs<TItem>`, `BdndDragEndContext<TItem>` and `BdndNativeDropEventArgs`. |
 | The values | `BdndXYCoord`, `BdndNativeTypes`, `BdndNativeFile`, `BdndDomRect`, `BdndEdge`, `BdndEdges`, `BdndAxis`, `BdndDragInput`, `BdndPointerDrag`, `BdndAnnouncements`. |
 | The helpers | `BdndList`: insertion indexes and moves within and across lists. |
-| The services | `AddBitBdndServices()` and `BdndInterop`, which also measures elements for you. |
+| The services | `AddBitBdndServices()` and `BdndInterop`, which also measures elements for you; `GetBdndInterop()` where the services are not registered. |
 
 ## MCP server
 
@@ -229,11 +230,15 @@ builder.Services.AddBitBdndServices();
 ```
 
 `AddBitBdndServices()` registers `BdndInterop`, the scoped wrapper around the script module that every draggable
-and drop target injects. Calling it more than once is harmless. The drag-and-drop manager itself is not a service:
-each `BdndProvider` creates its own and shares it with the components inside it.
+and drop target reaches the browser through, and that a component of your own can inject to measure an element.
+Calling it more than once is harmless. The drag-and-drop manager itself is not a service: each `BdndProvider` creates
+its own and shares it with the components inside it.
 
 In a Blazor Web App with an interactive client, register it in both `Program.cs` files: the pages are prerendered on
 the server before they run in the browser, so anything a component injects has to resolve in both containers.
+
+The draggables and drop targets also work without the registration - they then create the interop themselves, once
+per browser connection - which is what lets a WebAssembly app [lazy load](#lazy-loading-on-webassembly) Bdnd.
 
 ### A first drag and drop
 
@@ -768,7 +773,9 @@ Four details matter:
   zones, and a drop in a gap still counts as a drop (`DidDrop` is true), which is what "cancel on drop outside" -
   reverting the order in `OnEnd` when `DidDrop` is false - relies on.
 
-The demo's `Pages/Sortable/SortableCard.razor` is the complete card, measuring guard included.
+The demo's `Pages/Sortable/SortableCard.razor` is the complete card, measuring guard included. In an app that
+[lazy loads](#lazy-loading-on-webassembly) Bdnd, and so registers no services, the card injects `IServiceProvider`
+instead and measures through `Services.GetBdndInterop()`.
 
 ### Drop indicators and insertion positions
 
@@ -1220,7 +1227,8 @@ On a statically rendered page the markup appears but nothing can be dragged.
 
 The best fit. Every `dragover` and hover change is handled without a network round trip, `ItemFactory` can cancel
 the native drag, and the source's start rectangle is read synchronously while `dragstart` is dispatched, so a custom
-drag layer is aligned from the very first frame.
+drag layer is aligned from the very first frame. An app that is not compiled ahead of time can download the library
+only when a page that drags opens - see [lazy loading](#lazy-loading-on-webassembly).
 
 ### Blazor Server
 
@@ -1254,12 +1262,85 @@ dropped files - the way MAUI renders on Windows too; MAUI's Android and iOS web 
 Prerendered markup is shown before the page is interactive; draggables and drop targets render their idle state
 and start working once the page becomes interactive. No browser API is called while prerendering.
 
+### Lazy loading on WebAssembly
+
+The draggables and drop targets also work without `AddBitBdndServices`, so a WebAssembly app can fetch Bdnd only when
+someone opens a part of the app that drags. When `BdndInterop` is not registered, they create it themselves, once per
+browser connection, and `IServiceProvider.GetBdndInterop()` hands the app's own code the same one. Mark the assembly as
+lazy loaded in the project that runs in the browser, and load it before the first page that uses it renders:
+
+```xml
+<ItemGroup>
+  <BlazorWebAssemblyLazyLoad Include="Bit.Bdnd.wasm" />
+</ItemGroup>
+```
+
+```razor
+@* App.razor - in a Blazor Web App, the client project's Routes.razor: the router waits for OnNavigateAsync
+   before it renders the page. *@
+@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@inject LazyAssemblyLoader LazyAssemblyLoader
+
+<Router AppAssembly="typeof(App).Assembly" OnNavigateAsync="OnNavigateAsync">
+    ...
+</Router>
+
+@code {
+    private async Task OnNavigateAsync(NavigationContext context)
+    {
+        // The pages that drag: fetch Bdnd before they render. A second call loads nothing again. Routes match
+        // regardless of case, so /Board/2 is one of them too.
+        if (context.Path.StartsWith("board", StringComparison.OrdinalIgnoreCase))
+            await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bdnd.wasm"]);
+    }
+}
+```
+
+Those pages hold the provider, the draggables and the drop targets as usual. A component that measures an element -
+the card of a [sortable list](#sortable-lists) - takes the interop from `GetBdndInterop()` instead of injecting
+`BdndInterop`:
+
+```razor
+@* SortableCard.razor *@
+@inject IServiceProvider Services
+
+@code {
+    private async Task HandleHover(BdndDropEventArgs<DragItem> e)
+    {
+        var rect = await Services.GetBdndInterop().GetBoundingClientRectAsync(_element);
+        ...
+    }
+}
+```
+
+- Leave `AddBitBdndServices` out of that project's `Program.cs`: calling it references Bdnd's types before the
+  assembly is there. For the same reason only what renders after the assembly has loaded may use Bdnd's types - the
+  pages it is loaded for and a layout only they use, not `App.razor`, `Routes.razor`, a layout every page shares or
+  `Program.cs`.
+- No type in an assembly the router reads when the app starts - the app's own assembly first of all - may derive from
+  or implement one of Bdnd's: no component that inherits `BdndProvider`, `BdndDragLayer` or `BdndDragHandle`, no
+  `IBdndMonitor` or `IBdndDragHandleController` of your own. The router reads the types of those assemblies at
+  startup, and on WebAssembly a type whose base type or interface lives in an assembly that is not loaded yet fails to
+  load - and keeps failing after Bit.Bdnd has loaded. Put such a type in a library that is lazy loaded together with
+  Bit.Bdnd.
+- Nothing else changes: `AddBitBdndServices` takes no options, so the components behave exactly as they do with it,
+  and they import their script module the first time they need it either way.
+- In a Blazor Web App only the browser lazy loads. Give `Routes` the `InteractiveWebAssembly` or `InteractiveAuto`
+  render mode in `App.razor`, so the router - and its `OnNavigateAsync` - runs in the browser; with per-page render
+  modes it renders statically on the server and never loads the assembly in the browser. The server project loads
+  Bdnd with the rest of the app and keeps its `AddBitBdndServices()`, and registers `LazyAssemblyLoader`, which
+  `Routes.razor` injects while it is prerendered there and which loads nothing outside the browser:
+  `builder.Services.AddScoped<LazyAssemblyLoader>()`.
+- Do not lazy load in an AOT build. AOT compiles every assembly into `dotnet.native.wasm`, so there is nothing left to
+  download later, and lazy loading an AOT-compiled assembly can fail at startup.
+
 ## Troubleshooting
 
 | Symptom | Cause and fix |
 | --- | --- |
 | `InvalidOperationException: ... must be placed inside a BdndProvider` | Wrap the components in a `BdndProvider`. |
-| `Cannot provide a value for property 'Interop'` | `AddBitBdndServices()` is missing - in a Web App, from one of the two `Program.cs` files. |
+| `There is no registered service of type 'Bit.Bdnd.BdndInterop'` | A component of your own injects `BdndInterop` and `AddBitBdndServices()` is missing - in a Web App, from one of the two `Program.cs` files. In an app that lazy loads Bdnd, take it from `Services.GetBdndInterop()` instead. |
+| `Could not load file or assembly 'Bit.Bdnd'` in an app that lazy loads it | Something used Bdnd's types before the assembly loaded: load it in `OnNavigateAsync` for every route that renders them, and keep them out of `Program.cs`, `App.razor` and the layouts every page shares. See [lazy loading](#lazy-loading-on-webassembly). |
 | Nothing drags at all | The page is not interactive: add a render mode (`@rendermode InteractiveWebAssembly`), or render it from an interactive parent. |
 | The item drags but the target never lights up | The draggable's `Type` is not in the target's `Accept`/`AcceptTypes`, the target's `CanDropPredicate` answers false, or source and target are in different providers. |
 | The no-drop cursor shows in the gaps of a list | Make the list a drop target that accepts the item type too. |

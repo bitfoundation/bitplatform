@@ -18,7 +18,10 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
 {
     [CascadingParameter] private BdndDragDropManager? Manager { get; set; }
     [CascadingParameter] private BdndDropTargetScope? TargetScope { get; set; }
-    [Inject] private BdndInterop Interop { get; set; } = default!;
+    [Inject] private IServiceProvider Services { get; set; } = default!;
+
+    // Resolved rather than injected, so the draggable also works when the app never called AddBitBdndServices.
+    private BdndInterop Interop => field ??= Services.GetBdndInterop();
 
     /// <summary>Required. The item type used to match against drop-target <c>Accept</c> lists.</summary>
     [Parameter, EditorRequired] public string Type { get; set; } = default!;

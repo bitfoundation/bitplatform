@@ -24,9 +24,11 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Register the service</h3>
     <p class="bb-card-desc">
         It registers <code>BdndInterop</code>, the scoped wrapper around the script module that every draggable and
-        drop target injects. The drag-and-drop manager itself is not a service: each <code>BdndProvider</code>
-        creates its own and shares it with the components inside it. In a Blazor Web App, register it in both
-        <code>Program.cs</code> files - the pages are prerendered on the server before they run in the browser.
+        drop target reaches the browser through, and that a component of your own can inject to measure an element.
+        The drag-and-drop manager itself is not a service: each <code>BdndProvider</code> creates its own and shares
+        it with the components inside it. In a Blazor Web App, register it in both <code>Program.cs</code> files -
+        the pages are prerendered on the server before they run in the browser. Outside AOT builds, a WebAssembly app
+        can also <a href="getting-started#lazy-loading">lazy load</a> the library instead of registering it.
     </p>
     <CodeBlock Language="csharp" Code="@RegisterCode" />
     <p class="bb-card-desc">And the namespace, in <code>_Imports.razor</code>:</p>
@@ -110,6 +112,32 @@
     </div>
 </div>
 
+<div class="bb-card" id="lazy-loading">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Lazy loading on WebAssembly</h3>
+    <p class="bb-card-desc">
+        The draggables and drop targets also work without <code>AddBitBdndServices</code>, so a WebAssembly app can
+        fetch Bdnd only when someone opens a part of the app that drags. When <code>BdndInterop</code> is not
+        registered, they create it themselves, once per browser connection, and
+        <code>IServiceProvider.GetBdndInterop()</code> hands the app's own code the same one. Mark the assembly as lazy
+        loaded in the project that runs in the browser, and load it before the first page that uses it renders:
+    </p>
+    <CodeBlock Code="@LazyProjectCode" />
+    <CodeBlock Code="@LazyRouterCode" />
+    <p class="bb-card-desc">
+        Those pages hold the provider, the draggables and the drop targets as usual. A component that measures an
+        element - the card of a sortable list - takes the interop from <code>GetBdndInterop()</code> instead of
+        injecting <code>BdndInterop</code>:
+    </p>
+    <CodeBlock Code="@LazyCardCode" />
+    <ul class="bb-detail-list">
+        <li>Leave <code>AddBitBdndServices</code> out of that project's <code>Program.cs</code>: calling it references Bdnd's types before the assembly is there. For the same reason only what renders after the assembly has loaded may use Bdnd's types - the pages it is loaded for and a layout only they use, not <code>App.razor</code>, <code>Routes.razor</code>, a layout every page shares or <code>Program.cs</code>.</li>
+        <li>No type in an assembly the router reads when the app starts - the app's own assembly first of all - may derive from or implement one of Bdnd's: no component that inherits <code>BdndProvider</code>, <code>BdndDragLayer</code> or <code>BdndDragHandle</code>, no <code>IBdndMonitor</code> or <code>IBdndDragHandleController</code> of your own. On WebAssembly such a type fails to load before Bit.Bdnd is there, and keeps failing after it has loaded. Put it in a library that is lazy loaded together with Bit.Bdnd.</li>
+        <li>Nothing else changes: <code>AddBitBdndServices</code> takes no options, so the components behave exactly as they do with it, and they import their script module the first time they need it either way.</li>
+        <li>In a Blazor Web App only the browser lazy loads. Give <code>Routes</code> the <code>InteractiveWebAssembly</code> or <code>InteractiveAuto</code> render mode in <code>App.razor</code>, so the router - and its <code>OnNavigateAsync</code> - runs in the browser. The server project loads Bdnd with the rest of the app and keeps its <code>AddBitBdndServices()</code>, and registers <code>LazyAssemblyLoader</code>, which <code>Routes.razor</code> injects while it is prerendered there and which loads nothing outside the browser: <code>builder.Services.AddScoped&lt;LazyAssemblyLoader&gt;()</code>.</li>
+        <li>Do not lazy load in an AOT build. AOT compiles every assembly into <code>dotnet.native.wasm</code>, so there is nothing left to download later, and lazy loading an AOT-compiled assembly can fail at startup.</li>
+    </ul>
+</div>
+
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Where to go next</h3>
     <div class="bb-try">
@@ -133,6 +161,47 @@
         """;
 
     private const string ImportsCode = "@using Bit.Bdnd";
+
+    private const string LazyProjectCode = """
+        <!-- The browser project's .csproj -->
+        <ItemGroup>
+          <BlazorWebAssemblyLazyLoad Include="Bit.Bdnd.wasm" />
+        </ItemGroup>
+        """;
+
+    private const string LazyRouterCode = """
+        @* App.razor - in a Blazor Web App, the client project's Routes.razor: the router waits for OnNavigateAsync
+           before it renders the page. *@
+        @using Microsoft.AspNetCore.Components.WebAssembly.Services
+        @inject LazyAssemblyLoader LazyAssemblyLoader
+
+        <Router AppAssembly="typeof(App).Assembly" OnNavigateAsync="OnNavigateAsync">
+            ...
+        </Router>
+
+        @code {
+            private async Task OnNavigateAsync(NavigationContext context)
+            {
+                // The pages that drag: fetch Bdnd before they render. A second call loads nothing again. Routes match
+                // regardless of case, so /Board/2 is one of them too.
+                if (context.Path.StartsWith("board", StringComparison.OrdinalIgnoreCase))
+                    await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bdnd.wasm"]);
+            }
+        }
+        """;
+
+    private const string LazyCardCode = """
+        @* SortableCard.razor *@
+        @inject IServiceProvider Services
+
+        @code {
+            private async Task HandleHover(BdndDropEventArgs<DragItem> e)
+            {
+                var rect = await Services.GetBdndInterop().GetBoundingClientRectAsync(_element);
+                ...
+            }
+        }
+        """;
 
     // The live sample's own source, read at build time, so the code under the sample is the code that runs it.
     private static readonly string FirstDropCode = DemoSources.Components["FirstDrop.razor"];

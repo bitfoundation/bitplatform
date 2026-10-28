@@ -390,11 +390,15 @@ internal static class BdndDropHost
         protected override Task UpdateDisplayAsync(in RenderBatch renderBatch) => Task.CompletedTask;
     }
 
-    /// <summary>The components inject one service, BdndInterop, which needs one more, the JS runtime; nothing else is resolved.</summary>
+    /// <summary>
+    /// The components inject the service provider and take one service from it, BdndInterop, which needs one more, the
+    /// JS runtime; nothing else is resolved.
+    /// </summary>
     private sealed class ServiceProviderStub(IJSRuntime js, BdndInterop interop) : IServiceProvider
     {
         public object? GetService(Type serviceType)
         {
+            if (serviceType == typeof(IServiceProvider)) return this;
             if (serviceType == typeof(BdndInterop)) return interop;
             if (serviceType == typeof(IJSRuntime)) return js;
 

@@ -24,6 +24,10 @@ builder.Services.AddBitBdndServices();
 
 No stylesheet to link: the script module, `_content/Bit.Bdnd/bit-bdnd.js`, is imported by the components on demand.
 
+A WebAssembly app can skip the registration and lazy load `Bit.Bdnd.wasm` instead, reaching the interop through
+`IServiceProvider.GetBdndInterop()`; see
+[lazy loading](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bdnd#lazy-loading-on-webassembly).
+
 ```razor
 <BdndProvider>
     <BdndDraggable TItem="Card" Type="card" Item="card" Context="drag">
@@ -59,7 +63,8 @@ No stylesheet to link: the script module, `_content/Bit.Bdnd/bit-bdnd.js`, is im
 - `OnEnter` / `OnLeave` and `Disabled` on targets; `OnDragStart` / `OnDragEnd` on the provider for every drag.
 - Styling hooks on the host elements: `data-bit-bdnd-dragging`, `data-bit-bdnd-can-drop`, `data-bit-bdnd-over`, `data-bit-bdnd-over-shallow`.
 - Isolated drag contexts through nestable providers, and a read-only `IBdndMonitor` over the live drag state.
-- Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 10 and 11.
+- Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 10 and 11; lazy loadable on
+  WebAssembly.
 
 ## For AI agents
 
