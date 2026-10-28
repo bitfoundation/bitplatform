@@ -30,6 +30,7 @@ public static class CliApp
             RemoveCommand.Create(services),
             TranslateCommand.Create(services),
             DecodeCommand.Create(services),
+            KeysCommand.Create(services),
             AotProfileCommand.Create(services),
             TelemetryCommand.Create(services),
             UpdateCommand.Create(services),

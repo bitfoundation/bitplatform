@@ -20,6 +20,8 @@ public sealed record ProcessSpec
 
     public Action<string>? OnOutputLine { get; init; }
 
+    public string? StandardInput { get; init; }
+
     public string CommandLine => string.Join(' ', new[] { FileName }.Concat(Arguments).Select(Quote));
 
     public string ShellCommandLine(HostOs os)
@@ -167,9 +169,21 @@ public sealed class ProcessRunner(CliEnvironment environment, CliLog log) : IPro
 
         if (spec.Interactive is false)
         {
-            process.StandardInput.Close();
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
+
+            try
+            {
+                if (spec.StandardInput is not null)
+                {
+                    await process.StandardInput.WriteAsync(spec.StandardInput.AsMemory(), cancellationToken);
+                }
+
+                process.StandardInput.Close();
+            }
+            catch (IOException)
+            {
+            }
         }
 
         using var timeoutSource = spec.Timeout is { } timeout ? new CancellationTokenSource(timeout) : new CancellationTokenSource();

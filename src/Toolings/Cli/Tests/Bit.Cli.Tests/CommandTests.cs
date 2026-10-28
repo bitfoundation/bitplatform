@@ -14,7 +14,7 @@ public class CommandTests
         var root = CliApp.BuildRootCommand(() => throw new InvalidOperationException());
 
         CollectionAssert.AreEquivalent(
-            new[] { "new", "setup", "diff", "doctor", "trust", "clean", "rename", "remove", "translate", "decode", "aot-profile", "telemetry", "update", "about", "admin-helper" },
+            new[] { "new", "setup", "diff", "doctor", "trust", "clean", "rename", "remove", "translate", "decode", "keys", "aot-profile", "telemetry", "update", "about", "admin-helper" },
             root.Subcommands.Select(c => c.Name).ToArray());
     }
 
