@@ -985,7 +985,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
     public async Task<StepResult> GitHubRepositoryAsync(Action<string> progress, CancellationToken cancellationToken)
     {
         const string title = "Couldn't create the GitHub repo";
-        var push = "git push -u origin develop main && gh repo edit --default-branch develop";
+        var push = "git push -u origin develop && git push -u origin main && gh repo edit --default-branch develop";
         var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && gh repo create {ProcessSpec.Quote(project.Name)} --private --source . --remote origin && gh auth setup-git && {push}";
 
         if (project.GitReady is false)
@@ -1003,15 +1003,25 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             return StepResult.FromProcess(create, "", title, followUp);
 
         await Gh(["auth", "setup-git"], cancellationToken);
-        var pushed = await Git(["push", "-u", "origin", "develop", "main"], cancellationToken);
+        var pushed = await Git(["push", "-u", "origin", "develop"], cancellationToken);
+
+        if (pushed.Succeeded)
+        {
+            pushed = await Git(["push", "-u", "origin", "main"], cancellationToken);
+        }
 
         if (pushed.Succeeded is false)
             return StepResult.FromProcess(pushed, "", "Couldn't push to the GitHub repo", $"cd {ProcessSpec.Quote(project.Directory)} && {push}");
 
-        await Gh(["repo", "edit", "--default-branch", "develop"], cancellationToken);
+        var defaultBranch = await Gh(["repo", "edit", "--default-branch", "develop"], cancellationToken);
+        await Git(["remote", "set-head", "origin", "develop"], cancellationToken);
         var url = await Gh(["repo", "view", "--json", "url", "--jq", ".url"], cancellationToken);
+        var detail = url.Succeeded && url.Output.Trim().Length > 0 ? url.Output.Trim().Replace("https://", "", StringComparison.Ordinal) : "develop and main pushed";
 
-        return StepResult.Succeeded("Created a private GitHub repo", url.Succeeded && url.Output.Trim().Length > 0 ? url.Output.Trim().Replace("https://", "", StringComparison.Ordinal) : "develop and main pushed");
+        if (defaultBranch.Succeeded is false && (await Gh(["repo", "view", "--json", "defaultBranchRef", "--jq", ".defaultBranchRef.name"], cancellationToken)).Output.Trim() is not "develop")
+            return StepResult.Warning("Created a private GitHub repo, but develop isn't its default branch", detail, $"cd {ProcessSpec.Quote(project.Directory)} && gh repo edit --default-branch develop", resultCode: "github.default-branch");
+
+        return StepResult.Succeeded("Created a private GitHub repo", detail);
     }
 
     private async Task<string?> CommitPathAsync(string path, string message, CancellationToken cancellationToken)

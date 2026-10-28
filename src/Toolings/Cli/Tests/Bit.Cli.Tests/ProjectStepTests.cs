@@ -999,11 +999,53 @@ public class ProjectStepTests
 
         var calls = host.Runner.Calls.Select(c => c.CommandLine).ToList();
         var create = calls.IndexOf("gh repo create Contoso --private --source . --remote origin");
-        var push = calls.IndexOf("git push -u origin develop main");
+        var pushDevelop = calls.IndexOf("git push -u origin develop");
+        var pushMain = calls.IndexOf("git push -u origin main");
         var defaultBranch = calls.IndexOf("gh repo edit --default-branch develop");
+        var remoteHead = calls.IndexOf("git remote set-head origin develop");
 
-        Assert.IsTrue(create >= 0 && create < push && push < defaultBranch, string.Join(Environment.NewLine, calls));
+        Assert.IsTrue(create >= 0 && create < pushDevelop && pushDevelop < pushMain && pushMain < defaultBranch && defaultBranch < remoteHead, string.Join(Environment.NewLine, calls));
         Assert.IsTrue(host.Runner.Calls.All(c => c.WorkingDirectory == project.Directory));
+    }
+
+    [TestMethod]
+    public async Task TheGitHubRepo_Should_SayWhenDevelopIsntItsDefaultBranch()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+        project.GitReady = true;
+        host.Runner.Executables["gh"] = "/usr/bin/gh";
+        host.Runner.On("gh", "repo edit", 1, "HTTP 403: Resource not accessible by integration");
+        host.Runner.On("gh", "repo view --json url", 0, "https://github.com/contoso-dev/Contoso\n");
+        host.Runner.On("gh", "repo view --json defaultBranchRef", 0, "develop\n");
+
+        var steps = new ProjectSteps(host.Services, project);
+
+        Assert.AreEqual(StepStatus.Succeeded, (await steps.GitHubRepositoryAsync(_ => { }, CancellationToken.None)).Status);
+
+        host.Runner.On("gh", "repo view --json defaultBranchRef", 0, "main\n");
+        var result = await steps.GitHubRepositoryAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status);
+        Assert.AreEqual("github.com/contoso-dev/Contoso", result.Detail);
+        StringAssert.EndsWith(result.FollowUp, "gh repo edit --default-branch develop");
+    }
+
+    [TestMethod]
+    public async Task TheGitHubRepo_Should_PushMainOnlyAfterDevelop()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+        project.GitReady = true;
+        host.Runner.Executables["gh"] = "/usr/bin/gh";
+        host.Runner.On("git", "push -u origin develop", 1, "fatal: unable to access");
+
+        var result = await new ProjectSteps(host.Services, project).GitHubRepositoryAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Failed, result.Status);
+        StringAssert.EndsWith(result.FollowUp, "git push -u origin develop && git push -u origin main && gh repo edit --default-branch develop");
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments is ["push", "-u", "origin", "main"]));
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments is ["repo", "edit", ..]));
     }
 
     [TestMethod]

@@ -90,7 +90,7 @@ public class KeysTests
         var pair = AppCertificates.Read(outside, AppCertificates.ActiveName)!;
         StringAssert.Contains(AppCertificates.Subject(pair), "OU=Production");
 
-        if (OperatingSystem.IsWindows() is false)
+        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
         {
             Assert.AreEqual(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(Path.Combine(outside, "AppCertificate.key")));
             Assert.AreEqual(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(Path.Combine(outside, "AppCertificate.pfx")));
