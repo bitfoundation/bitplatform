@@ -14,6 +14,7 @@ public partial class BitMapDemo
             Provider=""@markersProvider""
             OnReady=""OnMarkersReady""
             OnMarkerClick=""OnMarkerClick""
+            OnMarkerDoubleClick=""OnMarkerDoubleClick""
             OnMarkerDragEnd=""OnMarkerDragEnd"" />
 </div>
 
@@ -27,7 +28,7 @@ public partial class BitMapDemo
     private readonly string example2CsharpCode = @"
 private BitMap<BitLeafletMapProvider> markersMapRef = default!;
 private readonly BitLeafletMapProvider markersProvider = new() { Center = new(48.8566, 2.3522), Zoom = 5 };
-private string markersLog = ""Click, hover or drag a marker."";
+private string markersLog = ""Click, double-click, hover or drag a marker."";
 private int markerCounter;
 
 private async Task OnMarkersReady()
@@ -74,6 +75,8 @@ private async Task ClearMarkers()
 }
 
 private void OnMarkerClick(string id) => markersLog = $""Clicked {id}."";
+
+private void OnMarkerDoubleClick(string id) => markersLog = $""Double-clicked {id}."";
 
 private void OnMarkerDragEnd(BitMapMarkerDragEndArgs e) => markersLog = $""Dropped {e.Id} at {e.Position.Latitude:F4}, {e.Position.Longitude:F4}."";";
 

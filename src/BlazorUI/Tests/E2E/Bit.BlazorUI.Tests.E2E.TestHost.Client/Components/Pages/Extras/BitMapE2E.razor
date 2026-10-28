@@ -23,10 +23,20 @@
         <BitMap @ref="_markersMap" TMapProvider="BitLeafletMapProvider" Id="map-markers" Provider="_markersProvider"
                 Markers="_markers"
                 OnMarkerClick="id => { _markerClicks++; _lastMarker = id; }"
+                OnMarkerDoubleClick="id => { _markerDoubleClicks++; _lastDoubleClicked = id; }"
+                OnDoubleClick="_ => _markersMapDoubleClicks++"
+                OnViewChanged="HandleMarkersView"
                 OnMarkerDragEnd="HandleDragEnd" />
     </div>
     <span id="marker-clicks">@_markerClicks</span>
     <span id="marker-last">@(_lastMarker ?? "none")</span>
+    <span id="marker-double-clicks">@_markerDoubleClicks</span>
+    <span id="marker-double-last">@(_lastDoubleClicked ?? "none")</span>
+    <span id="markers-map-double-clicks">@_markersMapDoubleClicks</span>
+    <span id="markers-zoom">@(_markersZoom ?? "none")</span>
+    @* A round trip of its own, so a test knows every callback the map raised before it has been rendered. *@
+    <button id="btn-markers-ping" @onclick="() => _markersPings++">Ping</button>
+    <span id="markers-pings">@_markersPings</span>
     <span id="drag-end">@(_dragEnd ?? "none")</span>
     <button id="btn-add-marker" @onclick="AddMarker">AddMarker</button>
     <button id="btn-remove-marker" @onclick="@(async () => await _markersMap.RemoveMarker("big-ben"))">RemoveMarker</button>
@@ -65,15 +75,18 @@
 
 <E2ESection Id="clustering" Title="Clustering">
     <div class="map-box">
+        @* No OnMarkerDoubleClick here: a marker's double-click stays the map's. *@
         <BitMap TMapProvider="BitLeafletMapProvider" Id="map-cluster" Provider="_clusterProvider"
                 Markers="_clusterMarkers" Clustering="_clustering"
                 OnClusterClick="e => { _clusterClicks++; _clusterCount = e.Count; }"
+                OnDoubleClick="_ => _clusterMapDoubleClicks++"
                 OnViewChanged="HandleClusterView" />
     </div>
     <button id="btn-toggle-clustering" @onclick="() => _clustering = _clustering is null ? _clusterOptions : null">Toggle clustering</button>
     <span id="cluster-clicks">@_clusterClicks</span>
     <span id="cluster-count">@_clusterCount</span>
     <span id="cluster-zoom">@(_clusterZoom ?? "none")</span>
+    <span id="cluster-map-double-clicks">@_clusterMapDoubleClicks</span>
 </E2ESection>
 
 <E2ESection Id="camera" Title="Camera & events">
@@ -366,6 +379,11 @@
     private BitMap<BitLeafletMapProvider> _markersMap = default!;
     private int _markerClicks;
     private string? _lastMarker;
+    private int _markerDoubleClicks;
+    private string? _lastDoubleClicked;
+    private int _markersMapDoubleClicks;
+    private string? _markersZoom;
+    private int _markersPings;
     private string? _dragEnd;
     private bool _closed;
     private string? _fitZoom;
@@ -379,6 +397,7 @@
     private int _clusterClicks;
     private int _clusterCount;
     private string? _clusterZoom;
+    private int _clusterMapDoubleClicks;
 
     private BitMap<BitLeafletMapProvider> _cameraMap = default!;
     private BitMapLatLng? _center = new(51.505, -0.09);
@@ -428,6 +447,8 @@
     private bool _mounted = true;
 
     private void HandleClusterView(BitMapViewState v) => _clusterZoom = v.Zoom.ToString("F1", CultureInfo.InvariantCulture);
+
+    private void HandleMarkersView(BitMapViewState v) => _markersZoom = v.Zoom.ToString("F1", CultureInfo.InvariantCulture);
 
     private void HandleDragEnd(BitMapMarkerDragEndArgs e) => _dragEnd = $"{e.Id}|{Fmt(e.Position)}";
 

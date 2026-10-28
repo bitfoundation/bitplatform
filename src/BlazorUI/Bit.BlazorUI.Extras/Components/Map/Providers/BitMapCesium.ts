@@ -17,8 +17,15 @@
             _cesiumHandler: any,
             _viewTimer: any,
             _moveEndCallback: any,
-            _drag: { entity: any, markerId: string } | null,
+            /** Removes the listener that forgets the last pick once the scene renders again. */
+            _removePickReset: (() => void) | null,
+            /** The marker a press landed on; a drag only once the pointer has moved past the click tolerance. */
+            _drag: { entity: any, markerId: string, start: any, moved: boolean } | null,
             _dragEndedAt: number,
+            /** When and where the last click landed, so the next can tell it is the second of a double-click. */
+            _lastClick: { at: number, position: any } | null,
+            /** Whether a marker's double-click is the marker's: only while OnMarkerDoubleClick has a handler. */
+            markerDoubleClick: boolean,
             _contextMenuBlocker: { canvas: HTMLCanvasElement, preventMenu: (evt: MouseEvent) => void } | null,
             suppressBrowserContextMenu: boolean,
             _baseImageryLayer: any,
@@ -137,8 +144,11 @@
                 Cesium, viewer, dotnetObj,
                 markers: {} as any, layers: {} as any, geoJsonLayers: {} as any, tileOverlays: {} as any,
                 _cesiumHandler: null as any, _viewTimer: null as any, _moveEndCallback: null as any,
-                _drag: null as ({ entity: any, markerId: string } | null),
+                _removePickReset: null as ((() => void) | null),
+                _drag: null as ({ entity: any, markerId: string, start: any, moved: boolean } | null),
                 _dragEndedAt: 0,
+                _lastClick: null as ({ at: number, position: any } | null),
+                markerDoubleClick: false,
                 _contextMenuBlocker: null as ({ canvas: HTMLCanvasElement, preventMenu: (evt: MouseEvent) => void } | null),
                 suppressBrowserContextMenu: !!o.suppressBrowserContextMenu,
                 _baseImageryLayer: null as any,
@@ -330,6 +340,7 @@
             if (s._cesiumHandler) { try { s._cesiumHandler.destroy(); } catch { /* ignore */ } s._cesiumHandler = null; }
             if (s._viewTimer) { clearTimeout(s._viewTimer); s._viewTimer = null; }
             if (s._moveEndCallback) { try { s.viewer.camera.moveEnd.removeEventListener(s._moveEndCallback); } catch { /* ignore */ } s._moveEndCallback = null; }
+            if (s._removePickReset) { try { s._removePickReset(); } catch { /* ignore */ } s._removePickReset = null; }
             try { s.viewer.destroy(); } catch { /* ignore */ }
             s.dotnetObj = null;
             delete BitMapCesium._maps[id];
@@ -497,6 +508,12 @@
             s.markers = {};
             const len = Math.min(markerIds?.length ?? 0, markers?.length ?? 0);
             for (let i = 0; i < len; i++) BitMapCesium.addMarker(id, markerIds[i], markers[i]);
+        }
+
+        /** Makes a marker's double-click the marker's (OnMarkerDoubleClick) or leaves it the map's. */
+        public static setMarkerDoubleClick(id: string, enabled: boolean) {
+            const s = BitMapCesium._maps[id];
+            if (s) s.markerDoubleClick = enabled;
         }
 
         public static setMarkerPosition(id: string, markerId: string, lat: number, lng: number) {
@@ -771,6 +788,33 @@
             const dn = () => s.dotnetObj;
 
             const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+
+            // How close to where it went down a press has to be released for this handler to report it as a click
+            // (LEFT_CLICK). It is a private field of Cesium's, read rather than copied, so that a press is a drag below,
+            // and a click a repeat, exactly when Cesium agrees it is no click of its own.
+            const clickTolerance = (): number => (typeof handler._clickPixelTolerance === 'number' ? handler._clickPixelTolerance : 5);
+
+            // One pick per position per rendered frame. Every pick renders a pass of the scene of its own and reads it
+            // back, and a double-click is looked at in the same place by the handlers here and by the Viewer's own.
+            let lastPick: { x: number, y: number, picked: any } | null = null;
+            s._removePickReset = viewer.scene.postRender.addEventListener(() => { lastPick = null; });
+            const pick = (position: any) => {
+                if (lastPick && lastPick.x === position.x && lastPick.y === position.y) return lastPick.picked;
+                const picked = viewer.scene.pick(position);
+                lastPick = { x: position.x, y: position.y, picked };
+                return picked;
+            };
+
+            // Cesium hands a click its position only, without the MouseEvent whose detail says which click of a
+            // double-click it is - so the clicks are counted here the way a browser counts them: one landing within the
+            // double-click interval (500ms, Windows' default) and the click tolerance of the last is a repeat.
+            const isRepeatClick = (position: any): boolean => {
+                const now = performance.now();
+                const last = s._lastClick;
+                s._lastClick = { at: now, position: Cesium.Cartesian2.clone(position) };
+                return !!last && now - last.at < 500 && Cesium.Cartesian2.distance(last.position, position) < clickTolerance();
+            };
+
             handler.setInputAction((click: any) => {
                 // A drag ends with a LEFT_UP that Cesium also reports as a LEFT_CLICK - but the
                 // LEFT_UP handler has already cleared s._drag by then, so the drag is remembered as
@@ -778,13 +822,19 @@
                 // LEFT_UP is swallowed; a genuine click afterwards still raises OnMarkerClick.
                 if (s._dragEndedAt && (performance.now() - s._dragEndedAt) < 100) {
                     s._dragEndedAt = 0;
+                    s._lastClick = null;
                     return;
                 }
-                const picked = viewer.scene.pick(click.position);
+                const repeat = isRepeatClick(click.position);
+                const picked = pick(click.position);
                 if (picked && picked.id) {
                     const ent = picked.id;
                     const mid = ent._bmMarkerId;
-                    if (mid && s.markers[mid]) { dn()?.invokeMethodAsync('OnMarkerClick', mid); return; }
+                    if (mid && s.markers[mid]) {
+                        // A double-click on a bubble is one click of it: the first of the pair has expanded it already.
+                        if (!repeat || !BitMapCluster.isClusterId(mid)) dn()?.invokeMethodAsync('OnMarkerClick', mid);
+                        return;
+                    }
                     const lid = ent._bmLayerId;
                     const kind = ent._bmVectorKind;
                     // GeoJSON feature click
@@ -813,7 +863,22 @@
                 }
             }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
+            // The marker a double-click belongs to, or null when it is the map's: a bubble always keeps its own, a marker
+            // only while OnMarkerDoubleClick has a handler - and with neither in play there is nothing to pick for.
+            const doubleClickedMarker = (position: any): string | null => {
+                if (!s.markerDoubleClick && !BitMapCluster.hasClusterIds(s.markers)) return null;
+                const mid = pick(position)?.id?._bmMarkerId;
+                if (!mid || !s.markers[mid]) return null;
+                return s.markerDoubleClick || BitMapCluster.isClusterId(mid) ? mid : null;
+            };
+
             handler.setInputAction((click: any) => {
+                const mid = doubleClickedMarker(click.position);
+                if (mid) {
+                    // A bubble's has been reported already, as the click of the pair that expanded it.
+                    if (!BitMapCluster.isClusterId(mid)) dn()?.invokeMethodAsync('OnMarkerDoubleClick', mid);
+                    return;
+                }
                 const carte = viewer.camera.pickEllipsoid(click.position, viewer.scene.globe.ellipsoid);
                 if (carte) {
                     const c = Cesium.Cartographic.fromCartesian(carte);
@@ -821,11 +886,25 @@
                 }
             }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
+            // The Viewer's own double-click tracks the entity under the pointer, flying the camera to it and locking it
+            // there. That is kept for every double-click that is not a marker's.
+            const widgetHandler = viewer.cesiumWidget?.screenSpaceEventHandler ?? viewer.screenSpaceEventHandler;
+            const track = widgetHandler?.getInputAction?.(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+            if (typeof track === 'function') {
+                widgetHandler.setInputAction((click: any) => {
+                    if (doubleClickedMarker(click.position)) return;
+                    track(click);
+                }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+            }
+
             // ---- draggable markers ----
             // Cesium has no built-in marker dragging, so drive it from the screen-space
             // events: grab the picked marker entity on LEFT_DOWN, follow the pointer on
             // MOUSE_MOVE, and report the final position on LEFT_UP. Camera input is
             // suspended for the duration so the globe doesn't spin under the marker.
+            // A press becomes a drag only once the pointer has gone as far as the click tolerance. Short of that the
+            // release is a click, which Cesium reports as one - swallowed as the end of a drag, a draggable marker would
+            // never raise OnMarkerClick, and every click on it would report a drag to where it already was.
             const cameraController = viewer.scene.screenSpaceCameraController;
             const pickPosition = (screenPosition: any) => {
                 const carte = viewer.camera.pickEllipsoid(screenPosition, viewer.scene.globe.ellipsoid);
@@ -835,27 +914,35 @@
             };
 
             handler.setInputAction((event: any) => {
-                const picked = viewer.scene.pick(event.position);
-                const ent = picked?.id;
+                const ent = pick(event.position)?.id;
                 const mid = ent?._bmMarkerId;
                 if (!mid || !ent._bmDraggable || s.markers[mid] !== ent) return;
-                s._drag = { entity: ent, markerId: mid };
+                s._drag = { entity: ent, markerId: mid, start: Cesium.Cartesian2.clone(event.position), moved: false };
                 cameraController.enableInputs = false;
             }, Cesium.ScreenSpaceEventType.LEFT_DOWN);
 
             handler.setInputAction((movement: any) => {
-                if (!s._drag) return;
+                const drag = s._drag;
+                if (!drag) return;
+                if (!drag.moved) {
+                    if (Cesium.Cartesian2.distance(drag.start, movement.endPosition) < clickTolerance()) return;
+                    drag.moved = true;
+                }
                 const p = pickPosition(movement.endPosition);
                 if (!p) return;
-                s._drag.entity.position = Cesium.Cartesian3.fromDegrees(p.lng, p.lat);
+                drag.entity.position = Cesium.Cartesian3.fromDegrees(p.lng, p.lat);
             }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
 
             handler.setInputAction((event: any) => {
                 const drag = s._drag;
                 if (!drag) return;
                 s._drag = null;
-                s._dragEndedAt = performance.now();
                 cameraController.enableInputs = true;
+                // Released short of the click tolerance without having moved past it: Cesium reports the release as the
+                // click it is, next. Released beyond it is a drag, even with no move reported in between (coalesced or
+                // synthetic input) - and no click.
+                if (!drag.moved && Cesium.Cartesian2.distance(drag.start, event.position) < clickTolerance()) return;
+                s._dragEndedAt = performance.now();
                 const p = pickPosition(event.position);
                 if (!p) return;
                 drag.entity.position = Cesium.Cartesian3.fromDegrees(p.lng, p.lat);

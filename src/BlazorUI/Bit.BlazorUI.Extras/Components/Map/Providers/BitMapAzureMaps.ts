@@ -16,6 +16,8 @@
             tileOverlays: { [k: string]: string },
             zoomControl: any, scaleControl: any,
             suppressBrowserContextMenu: boolean,
+            /** Whether a marker's double-click is the marker's: only while OnMarkerDoubleClick has a handler. */
+            markerDoubleClick: boolean,
         } } = {};
 
         public static async init(id: string, canvasId: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
@@ -48,6 +50,7 @@
                 markers: {} as any, layers: {} as any, geoJsonLayers: {} as any, tileOverlays: {} as any,
                 zoomControl: null as any, scaleControl: null as any,
                 suppressBrowserContextMenu: !!o.suppressBrowserContextMenu,
+                markerDoubleClick: false,
             };
             BitMapAzureMaps._ensureZoom(state, o.zoomControl !== false);
             BitMapAzureMaps._ensureScale(state, !!o.showScaleControl);
@@ -259,11 +262,20 @@
 
             // Read s.dotnetObj at dispatch time rather than capturing it: dispose() nulls
             // the field, and a stale capture would invoke a released .NET reference.
-            s.map.events.add('click', marker, (e: any) => {
-                e.originalEvent?.stopPropagation?.();
-                s.dotnetObj?.invokeMethodAsync('OnMarkerClick', markerId);
-                if (popup) marker.togglePopup();
-            });
+            // The element sits in the map's canvas container, so its click and double-click go on to the map's own
+            // listeners, which tell them apart as this marker's (_markerIdOf) - its click raises no OnClick, which
+            // would also close a MarkerPopupTemplate popup the marker click has just opened, and its double-click is
+            // reported there. Neither is stopped on the element: the page's own listeners still hear them.
+            const element = marker.getElement();
+            if (element) {
+                element._bmMarkerId = markerId;
+                element.addEventListener('click', (ev: MouseEvent) => {
+                    // A double-click on a bubble is one click of it: the first of the pair has expanded it already.
+                    if (ev.detail > 1 && BitMapCluster.isClusterId(markerId)) return;
+                    s.dotnetObj?.invokeMethodAsync('OnMarkerClick', markerId);
+                    if (popup) marker.togglePopup();
+                });
+            }
             if (opts.draggable) {
                 s.map.events.add('dragend', marker, () => {
                     const p = marker.getOptions().position ?? [0, 0];
@@ -305,6 +317,12 @@
             s.markers = {};
             const len = Math.min(markerIds?.length ?? 0, markers?.length ?? 0);
             for (let i = 0; i < len; i++) BitMapAzureMaps.addMarker(id, markerIds[i], markers[i]);
+        }
+
+        /** Makes a marker's double-click the marker's (OnMarkerDoubleClick) or leaves it the map's. */
+        public static setMarkerDoubleClick(id: string, enabled: boolean) {
+            const s = BitMapAzureMaps._maps[id];
+            if (s) s.markerDoubleClick = enabled;
         }
 
         public static setMarkerPosition(id: string, markerId: string, lat: number, lng: number) {
@@ -561,6 +579,8 @@
             // Read s.dotnetObj at dispatch time; dispose() nulls it.
             const dn = () => s.dotnetObj;
             map.events.add('click', (e: any) => {
+                // A marker's click, which its element's own listener has reported (see addMarker).
+                if (BitMapAzureMaps._markerIdOf(s, e.originalEvent?.target) !== null) return;
                 if (e.shapes && e.shapes.length > 0) {
                     const shape = e.shapes[0];
                     const props = shape.getProperties ? shape.getProperties() : (shape.properties ?? {});
@@ -582,6 +602,15 @@
                 if (e.position) dn()?.invokeMethodAsync('OnClick', { lat: e.position[1], lng: e.position[0] });
             });
             map.events.add('dblclick', (e: any) => {
+                // Preventing the event is what keeps the map's double-click zoom off a marker's. A bubble always keeps
+                // its double-click; a marker only while OnMarkerDoubleClick has a handler.
+                const markerId = BitMapAzureMaps._markerIdOf(s, e.originalEvent?.target);
+                if (markerId !== null && (s.markerDoubleClick || BitMapCluster.isClusterId(markerId))) {
+                    e.preventDefault?.();
+                    // A bubble's has been reported already, as the click of the pair that expanded it.
+                    if (!BitMapCluster.isClusterId(markerId)) dn()?.invokeMethodAsync('OnMarkerDoubleClick', markerId);
+                    return;
+                }
                 if (e.position) dn()?.invokeMethodAsync('OnDoubleClick', { lat: e.position[1], lng: e.position[0] });
             });
             map.events.add('contextmenu', (e: any) => {
@@ -590,6 +619,16 @@
             });
             let viewTimer: any = null;
             map.events.add('moveend', () => { clearTimeout(viewTimer); viewTimer = setTimeout(() => BitMapAzureMaps._notifyView(s), 80); });
+        }
+
+        /** The id of the marker whose element holds a DOM node - the target of a map event - or null. */
+        private static _markerIdOf(s: any, node: any): string | null {
+            const container = s.map.getCanvasContainer?.();
+            for (; node && node !== container; node = node.parentNode) {
+                const markerId = node._bmMarkerId;
+                if (typeof markerId === 'string' && s.markers[markerId]?.marker.getElement() === node) return markerId;
+            }
+            return null;
         }
 
         private static _notifyView(s: any) {

@@ -154,6 +154,12 @@
             return typeof markerId === 'string' && markerId.startsWith(BitMapCluster.clusterIdPrefix);
         }
 
+        /** Whether any of a provider's markers, keyed by id, is a cluster bubble. */
+        public static hasClusterIds(markers: { [markerId: string]: any }): boolean {
+            for (const markerId in markers) if (BitMapCluster.isClusterId(markerId)) return true;
+            return false;
+        }
+
         /**
          * Zooms to fit the members of a cluster. Returns the number of markers it contained, or 0
          * when the id is unknown - which is how the caller tells a cluster click from a real one.

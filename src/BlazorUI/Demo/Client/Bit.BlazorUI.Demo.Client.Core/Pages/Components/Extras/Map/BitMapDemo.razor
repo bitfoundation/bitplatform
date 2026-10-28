@@ -49,7 +49,9 @@
                 Add, move and remove markers by id once <b>OnReady</b> has fired. <b>Alt</b> is the accessible name,
                 <b>PopupText</b> is escaped (<b>PopupHtml</b> is not - never pass user data to it), and a tooltip shows on
                 hover and on keyboard focus. <b>OpenMarkerPopup</b> / <b>CloseMarkerPopup</b> drive the popup, which Escape
-                also closes. <b>SyncMarkers</b> replaces the whole set in one interop call.
+                also closes. <b>SyncMarkers</b> replaces the whole set in one interop call. Handling
+                <b>OnMarkerDoubleClick</b> makes a double-click on a marker the marker's, which the map then neither
+                reports nor zooms in on - without a handler it stays the map's.
             </div>
             <br />
             <div class="map-container">
@@ -58,6 +60,7 @@
                         Provider="@markersProvider"
                         OnReady="OnMarkersReady"
                         OnMarkerClick="OnMarkerClick"
+                        OnMarkerDoubleClick="OnMarkerDoubleClick"
                         OnMarkerDragEnd="OnMarkerDragEnd" />
             </div>
             <br />

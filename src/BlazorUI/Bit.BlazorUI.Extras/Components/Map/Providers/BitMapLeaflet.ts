@@ -22,6 +22,8 @@
         _zoomControl: any;
         _zoomControlEnabled: boolean;
         _viewTimer: any;
+        /** Whether a marker's double-click is the marker's: only while OnMarkerDoubleClick has a handler. */
+        markerDoubleClick: boolean;
         isDisposed: boolean;
     };
 
@@ -116,6 +118,7 @@
                 _zoomControl: (map as any).zoomControl ?? null,
                 _zoomControlEnabled: zoomControlEnabled,
                 _viewTimer: null,
+                markerDoubleClick: false,
                 isDisposed: false,
             };
 
@@ -413,10 +416,26 @@
 
             // Read s.dotnetObj at dispatch time; capturing it here would keep invoking a
             // DotNetObjectReference that dispose() has already released.
-            m.on('click', () => {
+            const isClusterBubble = BitMapCluster.isClusterId(markerId);
+            m.on('click', (e: any) => {
                 if (s.isDisposed) return;
+                // A double-click on a bubble is one click of it: the first of the pair has expanded it already.
+                if (isClusterBubble && e?.originalEvent?.detail > 1) return;
                 s.dotnetObj?.invokeMethodAsync('OnMarkerClick', markerId);
             });
+            // Listening is what keeps the double-click off the map: it makes the marker a target of the event, and a
+            // marker's mouse events stop at the marker (bubblingMouseEvents is false for markers) instead of going on to
+            // the map. Without it the map is the only target, so it raises OnDoubleClick and zooms in - which a marker
+            // leaves it while OnMarkerDoubleClick has no handler, and a bubble never does.
+            if (isClusterBubble) {
+                m.on('dblclick', () => { /* the click of the pair that expands the bubble has been reported */ });
+            } else {
+                m._bmDoubleClick = () => {
+                    if (s.isDisposed) return;
+                    s.dotnetObj?.invokeMethodAsync('OnMarkerDoubleClick', markerId);
+                };
+                if (s.markerDoubleClick) m.on('dblclick', m._bmDoubleClick);
+            }
 
             if (opts.focusable !== false) {
                 // Leaflet gives a marker a tabindex but renders it as an <img>, which no browser
@@ -466,6 +485,22 @@
             s.markers = {};
             const len = Math.min(markerIds?.length ?? 0, markers?.length ?? 0);
             for (let i = 0; i < len; i++) BitMapLeaflet.addMarker(id, markerIds[i], markers[i]);
+        }
+
+        /**
+         * Makes a marker's double-click the marker's (OnMarkerDoubleClick) or leaves it the map's. Listening for it is
+         * what takes it from the map (see addMarker), so the markers already on the map start or stop listening.
+         */
+        public static setMarkerDoubleClick(id: string, enabled: boolean) {
+            const s = BitMapLeaflet._maps[id];
+            if (!s) return;
+            s.markerDoubleClick = enabled;
+            for (const key in s.markers) {
+                const m = s.markers[key];
+                if (!m._bmDoubleClick) continue;
+                m.off('dblclick', m._bmDoubleClick);
+                if (enabled) m.on('dblclick', m._bmDoubleClick);
+            }
         }
 
         public static setMarkerPosition(id: string, markerId: string, lat: number, lng: number) {

@@ -133,6 +133,35 @@ public class BitMapE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Markers_DoubleClick_FiresOnMarkerDoubleClickAndNeitherReachesNorZoomsTheMap()
+    {
+        await OpenAsync(Route);
+        await ReadyAsync("map-markers");
+
+        // Leaflet reports both clicks of the pair as they land, then the double-click.
+        await Marker("map-markers", "Tower Bridge").DblClickAsync();
+        await Expect(Page.Locator("#marker-double-last")).ToHaveTextAsync("tower");
+        await Expect(Page.Locator("#marker-double-clicks")).ToHaveTextAsync("1");
+        await Expect(Page.Locator("#marker-clicks")).ToHaveTextAsync("2");
+
+        // The map's OnDoubleClick would have been raised by the same event, so once a later round trip has been
+        // rendered it would show.
+        await Page.Locator("#btn-markers-ping").ClickAsync();
+        await Expect(Page.Locator("#markers-pings")).ToHaveTextAsync("1");
+        Assert.AreEqual("0", await Page.Locator("#markers-map-double-clicks").InnerTextAsync());
+
+        // Away from the markers the double-click is the map's - which is what makes the 0 above mean something - and
+        // it zooms one level in, from 13: a 14 says the marker's double-click zoomed nothing.
+        var canvas = Canvas("map-markers");
+        await canvas.ScrollIntoViewIfNeededAsync();
+        var box = (await canvas.BoundingBoxAsync())!;
+        await Page.Mouse.DblClickAsync(box.X + 300, box.Y + 330);
+        await Expect(Page.Locator("#markers-map-double-clicks")).ToHaveTextAsync("1");
+        await Expect(Page.Locator("#markers-zoom")).ToHaveTextAsync("14.0");
+        Assert.AreEqual("1", await Page.Locator("#marker-double-clicks").InnerTextAsync());
+    }
+
+    [TestMethod]
     public async Task Markers_Tooltip_ShowsOnHover()
     {
         await OpenAsync(Route);
@@ -301,6 +330,38 @@ public class BitMapE2ETests : E2ETestBase
         await Expect(Markers("map-cluster")).ToHaveCountAsync(11);
         await Page.Locator("#btn-toggle-clustering").ClickAsync();
         await Expect(Markers("map-cluster")).ToHaveCountAsync(2);
+    }
+
+    [TestMethod]
+    public async Task Clustering_DoubleClickOnABubble_IsOneClickOfIt()
+    {
+        await OpenAsync(Route);
+        await ReadyAsync("map-cluster");
+
+        // Both clicks of the pair land on the bubble, which is still there while the first one's zoom plays - but it
+        // expands once, and the double-click is not the map's either.
+        await Marker("map-cluster", "Cluster of 10 markers").DblClickAsync();
+        await Expect(Page.Locator("#cluster-clicks")).ToHaveTextAsync("1");
+        await NumberAboveAsync("#cluster-zoom", 13);
+
+        // A round trip of the page's own: once it has been rendered, so has every callback the map raised before it.
+        await Page.Locator("#btn-markers-ping").ClickAsync();
+        await Expect(Page.Locator("#markers-pings")).ToHaveTextAsync("1");
+        Assert.AreEqual("1", await Page.Locator("#cluster-clicks").InnerTextAsync());
+        Assert.AreEqual("0", await Page.Locator("#cluster-map-double-clicks").InnerTextAsync());
+    }
+
+    [TestMethod]
+    public async Task Markers_DoubleClick_WithoutOnMarkerDoubleClick_IsTheMaps()
+    {
+        await OpenAsync(Route);
+        await ReadyAsync("map-cluster");
+
+        // The clustering map has no OnMarkerDoubleClick, so double-clicking a marker of its is what it always was: the
+        // map's OnDoubleClick and one level in, from 13.
+        await Marker("map-cluster", "Far away").DblClickAsync();
+        await Expect(Page.Locator("#cluster-map-double-clicks")).ToHaveTextAsync("1");
+        await Expect(Page.Locator("#cluster-zoom")).ToHaveTextAsync("14.0");
     }
 
     [TestMethod]
@@ -798,8 +859,9 @@ public class BitMapE2ETests : E2ETestBase
 }
 
 /// <summary>
-/// Drives BitMap at /e2e/map/providers on the two other providers that need no key, OpenLayers and MapLibre, whose
+/// Drives BitMap at /e2e/map/providers on the other providers that need no key, OpenLayers and MapLibre, whose
 /// libraries come from a CDN: the same chrome, markers, zoom and keyboard as on Leaflet, against the host's own tiles.
+/// ArcGIS, loaded on its own demand, covers the marker double-click its synchronous hit test decides.
 /// Without the network the libraries cannot load, and the tests say so as inconclusive rather than failing.
 /// </summary>
 [TestClass]
@@ -866,6 +928,177 @@ public class BitMapProvidersE2ETests : E2ETestBase
 
         await Page.Locator("#btn-gl-zoom-in").ClickAsync();
         await Expect(Page.Locator("#gl-zoom")).ToHaveTextAsync("14.0");
+    }
+
+    [TestMethod]
+    public async Task OpenLayers_AMarkerDoubleClickIsTheMarkers()
+    {
+        AllowConsoleErrors = true;
+
+        await OpenAsync(Route);
+        await Page.Locator("#btn-load").ClickAsync();
+        await Expect(Page.Locator("#ol-state")).ToHaveTextAsync(new Regex("^(Ready|Failed)$"), new() { Timeout = 60000 });
+        if (await Page.Locator("#ol-state").InnerTextAsync() == "Failed") Assert.Inconclusive("OpenLayers could not be loaded from its CDN.");
+
+        var canvas = Page.Locator("#map-ol-canvas");
+        await canvas.ScrollIntoViewIfNeededAsync();
+        await Page.Locator("#btn-ol-project").ClickAsync();
+        await Expect(Page.Locator("#ol-projected")).ToHaveTextAsync(new Regex(@"^\d+,\d+$"));
+        var xy = (await Page.Locator("#ol-projected").InnerTextAsync()).Split(',').Select(v => float.Parse(v, CultureInfo.InvariantCulture)).ToArray();
+        var box = (await canvas.BoundingBoxAsync())!;
+        await Page.Mouse.DblClickAsync(box.X + xy[0], box.Y + xy[1] - 12);
+        await Expect(Page.Locator("#ol-marker-double")).ToHaveTextAsync("big-ben");
+        await AssertNoMapDoubleClickYetAsync("#ol-map-double-clicks");
+
+        // Away from the markers the double-click is the map's: one OnDoubleClick and one level in, from 13.
+        await canvas.ScrollIntoViewIfNeededAsync();
+        box = (await canvas.BoundingBoxAsync())!;
+        await Page.Mouse.DblClickAsync(box.X + 300, box.Y + 330);
+        await Expect(Page.Locator("#ol-map-double-clicks")).ToHaveTextAsync("1");
+        await Expect(Page.Locator("#ol-zoom")).ToHaveTextAsync("14.0");
+        // OpenLayers holds a click back until it cannot be the start of a double-click, so neither pair was a click.
+        Assert.AreEqual("none", await Page.Locator("#ol-marker").InnerTextAsync());
+    }
+
+    [TestMethod]
+    public async Task MapLibre_AMarkerDoubleClickIsTheMarkers()
+    {
+        AllowConsoleErrors = true;
+
+        await OpenAsync(Route);
+        await Page.Locator("#btn-load").ClickAsync();
+        await Expect(Page.Locator("#gl-state")).ToHaveTextAsync(new Regex("^(Ready|Failed|Unsupported)$"), new() { Timeout = 60000 });
+        var state = await Page.Locator("#gl-state").InnerTextAsync();
+        if (state == "Unsupported") Assert.Inconclusive("This browser has no WebGL for MapLibre.");
+        if (state == "Failed") Assert.Inconclusive("MapLibre could not be loaded from its CDN.");
+
+        var canvas = Page.Locator("#map-gl-canvas");
+        await canvas.Locator(".maplibregl-marker[aria-label='Tower Bridge']").DblClickAsync();
+        await Expect(Page.Locator("#gl-marker-double")).ToHaveTextAsync("tower");
+        await Expect(Page.Locator("#gl-marker")).ToHaveTextAsync("tower");
+        await AssertNoMapDoubleClickYetAsync("#gl-map-double-clicks");
+
+        // Away from the markers the double-click is the map's: one OnDoubleClick and one level in, from 13.
+        await canvas.ScrollIntoViewIfNeededAsync();
+        var box = (await canvas.BoundingBoxAsync())!;
+        await Page.Mouse.DblClickAsync(box.X + 300, box.Y + 330);
+        await Expect(Page.Locator("#gl-map-double-clicks")).ToHaveTextAsync("1");
+        await Expect(Page.Locator("#gl-zoom")).ToHaveTextAsync("14.0");
+    }
+
+    [TestMethod]
+    public async Task ArcGis_AMarkerDoubleClickIsTheMarkers()
+    {
+        AllowConsoleErrors = true;
+
+        await OpenAsync(Route);
+        await Page.Locator("#btn-load-arcgis").ClickAsync();
+        await Expect(Page.Locator("#ag-state")).ToHaveTextAsync(new Regex("^(Ready|Failed|Unsupported)$"), new() { Timeout = 90000 });
+        if (await Page.Locator("#ag-state").InnerTextAsync() != "Ready") Assert.Inconclusive("The ArcGIS SDK could not be loaded from its CDN.");
+
+        // The markers are drawn on the view's canvas, and the double-click is told apart from the map's by the
+        // provider's own synchronous hit test, since the view's hitTest answers too late to stop the zoom.
+        var canvas = Page.Locator("#map-ag-canvas");
+        await canvas.ScrollIntoViewIfNeededAsync();
+        await Page.Locator("#btn-ag-project").ClickAsync();
+        await Expect(Page.Locator("#ag-projected")).ToHaveTextAsync(new Regex(@"^\d+,\d+$"));
+        var xy = (await Page.Locator("#ag-projected").InnerTextAsync()).Split(',').Select(v => float.Parse(v, CultureInfo.InvariantCulture)).ToArray();
+        var box = (await canvas.BoundingBoxAsync())!;
+        await Page.Mouse.DblClickAsync(box.X + xy[0], box.Y + xy[1] - 12);
+        await Expect(Page.Locator("#ag-marker-double")).ToHaveTextAsync("big-ben");
+        await AssertNoMapDoubleClickYetAsync("#ag-map-double-clicks");
+
+        // Away from the markers the double-click is the map's: one OnDoubleClick and one level in, from 13.
+        await canvas.ScrollIntoViewIfNeededAsync();
+        box = (await canvas.BoundingBoxAsync())!;
+        await Page.Mouse.DblClickAsync(box.X + 300, box.Y + 330);
+        await Expect(Page.Locator("#ag-map-double-clicks")).ToHaveTextAsync("1", new() { Timeout = 15000 });
+        await Expect(Page.Locator("#ag-zoom")).ToHaveTextAsync("14.0", new() { Timeout = 15000 });
+        // ArcGIS holds a click back until it cannot be the start of a double-click, so neither pair was a click.
+        Assert.AreEqual("none", await Page.Locator("#ag-marker").InnerTextAsync());
+    }
+
+    [TestMethod]
+    public async Task Cesium_ADraggableMarkerIsClickedDoubleClickedAndDragged()
+    {
+        AllowConsoleErrors = true;
+
+        await OpenAsync(Route);
+        await Page.Locator("#btn-load-cesium").ClickAsync();
+        await Expect(Page.Locator("#cs-state")).ToHaveTextAsync(new Regex("^(Ready|Failed|Unsupported)$"), new() { Timeout = 90000 });
+        var state = await Page.Locator("#cs-state").InnerTextAsync();
+        if (state == "Unsupported") Assert.Inconclusive("This browser has no WebGL for Cesium.");
+        if (state == "Failed") Assert.Inconclusive("CesiumJS could not be loaded from its CDN.");
+
+        var canvas = Page.Locator("#map-cs-canvas");
+        await canvas.ScrollIntoViewIfNeededAsync();
+        await Page.Locator("#btn-cs-project").ClickAsync();
+        await Expect(Page.Locator("#cs-projected")).ToHaveTextAsync(new Regex(@"^\d+,\d+$"));
+        var xy = (await Page.Locator("#cs-projected").InnerTextAsync()).Split(',').Select(v => float.Parse(v, CultureInfo.InvariantCulture)).ToArray();
+        async Task<(float X, float Y)> BigBenAsync()
+        {
+            await canvas.ScrollIntoViewIfNeededAsync();
+            var box = (await canvas.BoundingBoxAsync())!;
+            return (box.X + xy[0], box.Y + xy[1] - 12);
+        }
+
+        // A press that does not move is a click, on a draggable marker too - not a drag to where it already was. Cesium
+        // picks only what it has drawn, and the pin's image loads after the marker is added, so the click is repeated
+        // until it lands.
+        var (x, y) = await BigBenAsync();
+        for (var attempt = 0; ; attempt++)
+        {
+            await Page.Mouse.ClickAsync(x, y);
+            try
+            {
+                await Expect(Page.Locator("#cs-marker")).ToHaveTextAsync("big-ben", new() { Timeout = 500 });
+                break;
+            }
+            catch (PlaywrightException) when (attempt < 20) { }
+        }
+        await PingAsync();
+        Assert.AreEqual("none", await Page.Locator("#cs-drag-end").InnerTextAsync());
+        var clicks = int.Parse(await Page.Locator("#cs-marker-clicks").InnerTextAsync(), CultureInfo.InvariantCulture);
+
+        // Cesium reports both clicks of a double-click as they land; the double-click is the marker's, and the camera
+        // does not fly to the marker either - or the drag below would start where the marker no longer is.
+        (x, y) = await BigBenAsync();
+        await Page.Mouse.DblClickAsync(x, y);
+        await Expect(Page.Locator("#cs-marker-double")).ToHaveTextAsync("big-ben");
+        await AssertNoMapDoubleClickYetAsync("#cs-map-double-clicks");
+        Assert.AreEqual((clicks + 2).ToString(CultureInfo.InvariantCulture), await Page.Locator("#cs-marker-clicks").InnerTextAsync());
+
+        // A press that moves is a drag, and its release is no click.
+        (x, y) = await BigBenAsync();
+        await Page.Mouse.MoveAsync(x, y);
+        await Page.Mouse.DownAsync();
+        await Page.Mouse.MoveAsync(x + 80, y, new() { Steps = 8 });
+        await Page.Mouse.UpAsync();
+        await Expect(Page.Locator("#cs-drag-end")).ToHaveTextAsync("big-ben");
+        await PingAsync();
+        Assert.AreEqual((clicks + 2).ToString(CultureInfo.InvariantCulture), await Page.Locator("#cs-marker-clicks").InnerTextAsync());
+
+        // Away from the markers the double-click is the map's.
+        await canvas.ScrollIntoViewIfNeededAsync();
+        var mapBox = (await canvas.BoundingBoxAsync())!;
+        await Page.Mouse.DblClickAsync(mapBox.X + 300, mapBox.Y + 330);
+        await Expect(Page.Locator("#cs-map-double-clicks")).ToHaveTextAsync("1");
+    }
+
+    // A round trip of the page's own: once it has been rendered, so has every callback a map raised before it.
+    private async Task PingAsync()
+    {
+        var pings = int.Parse(await Page.Locator("#pings").InnerTextAsync(), CultureInfo.InvariantCulture);
+        await Page.Locator("#btn-ping").ClickAsync();
+        await Expect(Page.Locator("#pings")).ToHaveTextAsync((pings + 1).ToString(CultureInfo.InvariantCulture));
+    }
+
+    // The map's OnDoubleClick would have been raised by the same event as the marker's, so once a later round trip
+    // has been rendered it would show.
+    private async Task AssertNoMapDoubleClickYetAsync(string counter)
+    {
+        await PingAsync();
+        Assert.AreEqual("0", await Page.Locator(counter).InnerTextAsync());
     }
 }
 

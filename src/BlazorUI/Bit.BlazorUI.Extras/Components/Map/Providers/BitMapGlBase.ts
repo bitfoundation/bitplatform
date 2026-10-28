@@ -12,6 +12,8 @@
         isDisposed: boolean;
         viewTimer: any;
         viewListeners?: { notify: () => void };
+        /** Whether a marker's double-click is the marker's: only while OnMarkerDoubleClick has a handler. */
+        markerDoubleClick: boolean;
     };
 
     /**
@@ -100,6 +102,7 @@
                 lastStyleUrl: styleUrl,
                 isDisposed: false,
                 viewTimer: null,
+                markerDoubleClick: false,
             };
             BitMapGlBase._ensureNavControl(state, o);
 
@@ -119,6 +122,18 @@
                     state.dotnetObj.invokeMethodAsync('OnClick', { lat: e.lngLat.lat, lng: e.lngLat.lng });
                 });
                 map.on('dblclick', (e: any) => {
+                    // A marker's element sits in the canvas container, where the library listens, so a double-click on
+                    // it arrives here too. Preventing this event, rather than stopping the DOM one on the element, is what
+                    // keeps the library's double-click zoom off it while the page's own listeners still hear it. A bubble
+                    // always keeps its double-click; a marker only while OnMarkerDoubleClick has a handler.
+                    const markerId = BitMapGlBase._markerIdOf(state, e.originalEvent?.target);
+                    if (markerId !== null && (state.markerDoubleClick || BitMapCluster.isClusterId(markerId))) {
+                        e.preventDefault();
+                        // A bubble's has been reported already, as the click of the pair that expanded it.
+                        if (state.isDisposed || BitMapCluster.isClusterId(markerId)) return;
+                        state.dotnetObj?.invokeMethodAsync('OnMarkerDoubleClick', markerId);
+                        return;
+                    }
                     if (state.isDisposed || !state.dotnetObj) return;
                     state.dotnetObj.invokeMethodAsync('OnDoubleClick', { lat: e.lngLat.lat, lng: e.lngLat.lng });
                 });
@@ -337,6 +352,8 @@
             }
             const element = marker.getElement();
             if (element) {
+                // What tells a double-click the map hears apart as this marker's (_markerIdOf).
+                element._bmMarkerId = markerId;
                 if (opts.title) element.setAttribute('title', opts.title);
                 // GL markers are anonymous <div>s, so without a label a screen reader reads a
                 // row of identical, meaningless entries.
@@ -368,11 +385,14 @@
 
             // Read s.dotnetObj at dispatch time rather than capturing it: dispose() nulls
             // the field, and a stale capture would invoke a released .NET reference.
-            marker.getElement()?.addEventListener('click', (ev: Event) => {
+            // A marker's double-click is told apart by the map's own dblclick listener (see init).
+            element?.addEventListener('click', (ev: MouseEvent) => {
                 // Kept from the map so a marker click is not also a map click - but the library opens
                 // a marker's popup from the map's click, so the popup is toggled here instead.
                 ev.stopPropagation();
                 if (s.isDisposed) return;
+                // A double-click on a bubble is one click of it: the first of the pair has expanded it already.
+                if (ev.detail > 1 && BitMapCluster.isClusterId(markerId)) return;
                 s.dotnetObj?.invokeMethodAsync('OnMarkerClick', markerId);
                 if (marker.getPopup()) marker.togglePopup();
             });
@@ -412,6 +432,12 @@
             s.markers = {};
             const len = Math.min(markerIds?.length ?? 0, markers?.length ?? 0);
             for (let i = 0; i < len; i++) BitMapGlBase.addMarker(provider, id, markerIds[i], markers[i]);
+        }
+
+        /** Makes a marker's double-click the marker's (OnMarkerDoubleClick) or leaves it the map's. */
+        public static setMarkerDoubleClick(provider: string, id: string, enabled: boolean) {
+            const s = BitMapGlBase._store(provider)[id];
+            if (s) s.markerDoubleClick = enabled;
         }
 
         public static setMarkerPosition(provider: string, id: string, markerId: string, lat: number, lng: number) {
@@ -599,6 +625,16 @@
             // removing the marker alone would strand it.
             if (row.tooltip) try { row.tooltip.remove(); } catch { /* ignore */ }
             try { row.marker.remove(); } catch { /* ignore */ }
+        }
+
+        /** The id of the marker whose element holds a DOM node - the target of a map event - or null. */
+        private static _markerIdOf(s: GlState, node: any): string | null {
+            const container = s.map.getCanvasContainer();
+            for (; node && node !== container; node = node.parentNode) {
+                const markerId = node._bmMarkerId;
+                if (typeof markerId === 'string' && s.markers[markerId]?.marker.getElement() === node) return markerId;
+            }
+            return null;
         }
 
         /**
