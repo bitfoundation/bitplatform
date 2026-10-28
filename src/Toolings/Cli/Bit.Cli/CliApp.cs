@@ -29,6 +29,7 @@ public static class CliApp
             CleanCommand.Create(services),
             RenameCommand.Create(services),
             RemoveCommand.Create(services),
+            MigrationCommand.Create(services),
             TranslateCommand.Create(services),
             DecodeCommand.Create(services),
             KeysCommand.Create(services),

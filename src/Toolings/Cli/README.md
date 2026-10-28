@@ -247,6 +247,22 @@ Deletes a project's folder for good. On Windows that fails while the app, a buil
 - When a terminal is still in the folder, everything in it is deleted and the empty folder stays. Delete it after leaving it.
 - The project's Aspire containers and volumes stay in Docker. Remove them in Docker when you no longer need their data.
 
+## bit migration
+
+```bash
+bit migration add AddProductRating
+bit migration add AddTodoTags --offline
+bit migration remove
+bit migration bundle --runtime linux-x64
+```
+
+Runs EF Core's `dotnet ef` for the project, in any folder of it, with the `dotnet-ef` version that matches the project's EF Core packages:
+
+- `add <name>` adds a migration for the server's database to Server.Api, and `remove` removes the last one, as long as the development database doesn't have it yet. The app applies new migrations when it starts in Development.
+- `--offline` does the same for the offline database in Client.Core, then regenerates that database's compiled model, which the app needs outside Development and which goes stale after every model change. `bit migration optimize` regenerates it alone, e.g. before the first publish. EF Core's own build-time generation isn't used for it: in a library like Client.Core it reads the assembly of the build before, so its model lags one build behind.
+- `bundle` builds `efbundle` in Server.Api: one executable that applies the migrations to a deployed database. `--runtime` is the machine it runs on: `linux-x64` by default, or e.g. `win-x64` or `osx-arm64`.
+- When `dotnet ef` fails, bit shows its errors and the command to run it again. A project created with `--database Other` has no database provider until you add one, and bit says so.
+
 ## bit translate
 
 Fills in the missing translations of `.resx` files with an OpenAI-compatible LLM, and keeps the existing ones:

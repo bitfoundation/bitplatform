@@ -312,19 +312,23 @@ While you develop, you do **NOT** need to run `dotnet ef database update` or `Up
 
 ### The Initial Migration
 
-`bit new` adds the `Initial` migration to `/src/Server/Boilerplate.Server.Api/Infrastructure/Data/Migrations/` when it creates the project. A project created any other way starts without one, and `MigrateAsync()` refuses to run until it exists. Open a terminal in the `Boilerplate.Server.Api` project directory and run:
+`bit new` adds the `Initial` migration to `/src/Server/Boilerplate.Server.Api/Infrastructure/Data/Migrations/` when it creates the project. A project created any other way starts without one, and `MigrateAsync()` refuses to run until it exists. Run, in any folder of the project:
 
 ```bash
-dnx dotnet-ef@11.0.0-rc.2.26504.105 -- migrations add Initial --output-dir Infrastructure/Data/Migrations --verbose
+bit migration add Initial
 ```
+
+`bit migration` runs EF Core's `dotnet ef` with the `dotnet-ef` version that matches the project's EF Core packages, and when it fails, shows its errors and the command to run it again. Install the bit CLI with `dotnet tool install --global Bit.Cli --version 11.0.0-pre-15`, or run it without installing it: `dnx Bit.Cli --version 11.0.0-pre-15 -- migration add Initial`.
 
 ### Adding Future Migrations
 
 When you modify entities or configurations, create a new migration; the app applies it on its next start:
 
 ```bash
-dnx dotnet-ef@11.0.0-rc.2.26504.105 -- migrations add <MigrationName> --output-dir Infrastructure/Data/Migrations --verbose
+bit migration add <MigrationName>
 ```
+
+`bit migration remove` removes the last migration, as long as the development database doesn't have it yet.
 
 If the model changes without a migration, `MigrateAsync()` stops the app with a "pending model changes" error until the migration is added.
 <!--#if (database != "Sqlite")-->
@@ -339,13 +343,13 @@ The CD pipeline applies them. Its build job packs the migrations into a migratio
 Nothing in this project applies them to a deployed database, so apply them before each deployment of the api, for example with a migrations bundle as described below.
 <!--#endif-->
 
-A migrations bundle is one executable that holds the migrations. Build it in the `Boilerplate.Server.Api` project directory, with the `-r` value that matches the machine it will run on:
+A migrations bundle is one executable that holds the migrations. Build it with the `--runtime` of the machine it will run on (`linux-x64` when you leave it out):
 
 ```bash
-dnx dotnet-ef@11.0.0-rc.2.26504.105 -- migrations bundle --self-contained -r linux-x64
+bit migration bundle --runtime linux-x64
 ```
 
-Copy the `efbundle` file it creates into the deployed app's folder, where it finds the app's settings and certificate, and run it there before the new version starts. When the app's settings don't hold the production connection string, give it to the bundle in the `ConnectionStrings__<name>` environment variable the app reads it from.
+Copy the `efbundle` file it creates in the `Boilerplate.Server.Api` project directory (`efbundle.exe` for a Windows runtime) into the deployed app's folder, where it finds the app's settings and certificate, and run it there before the new version starts. When the app's settings don't hold the production connection string, give it to the bundle in the `ConnectionStrings__<name>` environment variable the app reads it from.
 <!--#endif-->
 
 ---
@@ -414,13 +418,16 @@ To add a migration for `AppOfflineDbContext`, follow these steps:
 ```powershell
 Add-Migration YourMigrationName -OutputDir Infrastructure\Data\Migrations -Context AppOfflineDbContext -Verbose
 ```
+4. Regenerate the compiled model with `Optimize-DbContext`, as [`/src/Client/Boilerplate.Client.Core/Infrastructure/Data/README.md`](/src/Client/Boilerplate.Client.Core/Infrastructure/Data/README.md) describes
 
-#### Option 2: Using dotnet CLI
+#### Option 2: Using the bit CLI
 
-Open a terminal in the `Boilerplate.Server.Web` project directory and run:
+Run, in any folder of the project:
 ```bash
-dnx dotnet-ef@11.0.0-rc.2.26504.105 -- migrations add YourMigrationName --context AppOfflineDbContext --output-dir Infrastructure/Data/Migrations --project ../../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
+bit migration add YourMigrationName --offline
 ```
+
+It also regenerates the compiled model that the app needs outside Development. `bit migration remove --offline` removes the last migration and regenerates the compiled model too.
 
 **Important Notes:**
 - Ensure the solution builds successfully before running migration commands

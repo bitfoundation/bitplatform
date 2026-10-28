@@ -306,22 +306,12 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         if (System.IO.Directory.Exists(migrations) && System.IO.Directory.EnumerateFiles(migrations, "*.cs").Any())
             return StepResult.Skipped("Skipped the initial migration", "the project already has migrations");
 
-        var version = project.PackageVersion("Microsoft.EntityFrameworkCore.Design") ?? project.PackageVersion("Microsoft.EntityFrameworkCore");
-        var tool = version is null ? "dotnet-ef" : $"dotnet-ef@{version}";
-        string[] arguments = ["dnx", tool, "--", "migrations", "add", "Initial", "--output-dir", "Infrastructure/Data/Migrations"];
-        var followUp = $"cd {ProcessSpec.Quote(project.ServerApiDirectory)} && dotnet {string.Join(' ', arguments)}";
-
-        var result = await Runner.RunAsync(new ProcessSpec
-        {
-            FileName = "dotnet",
-            Arguments = arguments,
-            WorkingDirectory = project.ServerApiDirectory,
-            OnOutputLine = progress,
-            Timeout = TimeSpan.FromMinutes(30)
-        }, cancellationToken);
+        var efTool = new ProjectMigrations(cli, project);
+        string[] arguments = ["migrations", "add", "Initial", "--output-dir", ProjectMigrations.MigrationsFolder];
+        var result = await efTool.RunAsync(project.ServerApiDirectory, arguments, progress, cancellationToken);
 
         if (result.Succeeded is false)
-            return StepResult.FromProcess(result, "", "Couldn't add the initial migration", followUp);
+            return StepResult.FromProcess(result, "", "Couldn't add the initial migration", efTool.FollowUp(project.ServerApiDirectory, arguments));
 
         migrationAdded = true;
         var committed = await CommitPathAsync(migrations, "Add the Initial EF Core migration", cancellationToken);
@@ -332,7 +322,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     public Func<Uri, CancellationToken, Task<bool>> AliveProbe { get; init; } = IsAliveAsync;
 
-    private string ServerWebDirectory => Path.Combine(project.Directory, "src", "Server", $"{project.Name}.Server.Web");
+    private string ServerWebDirectory => project.ServerWebDirectory;
 
     public Task<StepResult> AspireStartAsync(Action<string> progress, CancellationToken cancellationToken) => AspireStartAsync(keepRunning: false, progress, cancellationToken);
 

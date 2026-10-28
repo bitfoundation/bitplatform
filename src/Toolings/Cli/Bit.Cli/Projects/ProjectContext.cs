@@ -28,6 +28,10 @@ public sealed partial class ProjectContext
 
     public string ServerApiDirectory => Path.Combine(Directory, "src", "Server", $"{Name}.Server.Api");
 
+    public string ServerWebDirectory => Path.Combine(Directory, "src", "Server", $"{Name}.Server.Web");
+
+    public string ClientCoreDirectory => Path.Combine(Directory, "src", "Client", $"{Name}.Client.Core");
+
     public string AppHostDirectory => Path.Combine(Directory, "src", "Server", $"{Name}.Server.AppHost");
 
     public bool Exists => System.IO.Directory.Exists(Directory) && (File.Exists(Solution) || File.Exists(WebSolutionFilter));
@@ -89,6 +93,23 @@ public sealed partial class ProjectContext
 
         var solution = System.IO.Directory.EnumerateFiles(directory, "*.slnx").FirstOrDefault();
         return solution is null ? null : Path.GetFileNameWithoutExtension(solution);
+    }
+
+    public static string? FindProjectDirectory(string directory)
+    {
+        for (var folder = new DirectoryInfo(directory); folder is not null; folder = folder.Parent)
+        {
+            try
+            {
+                if (folder.Exists && FindProjectName(folder.FullName) is not null)
+                    return folder.FullName;
+            }
+            catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+            {
+            }
+        }
+
+        return null;
     }
 
     public static string? ReadAppId(string directory, string name)
