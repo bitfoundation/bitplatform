@@ -1,12 +1,16 @@
 ﻿using System.CommandLine;
+using System.Text.RegularExpressions;
 using Bit.Cli.Infrastructure;
 using Bit.Cli.Keys;
 using Bit.Cli.Projects;
+using Bit.Cli.Templates;
 using Spectre.Console;
 
 namespace Bit.Cli.Commands;
 
-public static class KeysCommand
+public sealed record AppleKeysRequest(string IssuerId, string KeyId, string PrivateKeyPath, string? BundleId, string? ProfileName, string? Output);
+
+public static partial class KeysCommand
 {
     public static Command Create(Func<CliServices> services)
     {
@@ -14,7 +18,8 @@ public static class KeysCommand
         {
             Vapid(services),
             Certificate(services),
-            Android(services)
+            Android(services),
+            Apple(services)
         };
     }
 
@@ -187,9 +192,148 @@ public static class KeysCommand
         for (var current = new DirectoryInfo(directory); current is not null; current = current.Parent)
         {
             if (current.Exists && ProjectContext.FindProjectName(current.FullName) is { } name)
-                return new ProjectContext { Name = name, Directory = current.FullName, Platforms = new HashSet<Templates.Platform>() };
+                return new ProjectContext { Name = name, Directory = current.FullName, Platforms = new HashSet<Platform>() };
         }
 
         return null;
     }
+
+    private static Command Apple(Func<CliServices> services)
+    {
+        var issuerIdOption = new Option<string>("--issuer-id") { Required = true, Description = "The issuer id of the App Store Connect API key, shown in App Store Connect under Users and Access, Integrations." };
+        var keyIdOption = new Option<string>("--key-id") { Required = true, Description = "The API key's id, e.g. 2X9R4HXF34." };
+        var privateKeyOption = new Option<string>("--private-key") { Required = true, Description = "The AuthKey_<key id>.p8 file App Store Connect gave when the key was created." };
+        var bundleIdOption = new Option<string?>("--bundle-id") { Description = "The app's bundle id, e.g. com.contoso.shop. Default: the ApplicationId of the project's Client.Maui, in a bit Boilerplate project's folder." };
+        var profileNameOption = new Option<string?>("--profile-name") { Description = "The provisioning profile's name. A profile with this name is replaced. Default: \"<bundle id> App Store\"." };
+        var outputOption = new Option<string?>("--output", "-o") { Description = "The folder to write the .p12 and .mobileprovision files to. Default: the current folder." };
+
+        var command = new Command("apple", "Create an Apple Distribution certificate and an App Store provisioning profile with an App Store Connect API key, so the CD signs the iOS app without a Mac.")
+        {
+            issuerIdOption,
+            keyIdOption,
+            privateKeyOption,
+            bundleIdOption,
+            profileNameOption,
+            outputOption
+        };
+
+        command.SetAction((parseResult, cancellationToken) => AppleAsync(services(), new AppleKeysRequest(
+            parseResult.GetValue(issuerIdOption)?.Trim() ?? "",
+            parseResult.GetValue(keyIdOption)?.Trim() ?? "",
+            parseResult.GetValue(privateKeyOption) ?? "",
+            parseResult.GetValue(bundleIdOption)?.Trim(),
+            parseResult.GetValue(profileNameOption)?.Trim(),
+            parseResult.GetValue(outputOption)), cancellationToken));
+
+        return command;
+    }
+
+    public static async Task<int> AppleAsync(CliServices cli, AppleKeysRequest request, CancellationToken cancellationToken, HttpMessageHandler? http = null)
+    {
+        var directory = cli.Environment.CurrentDirectory;
+        var privateKeyPath = Path.GetFullPath(request.PrivateKeyPath, directory);
+
+        if (File.Exists(privateKeyPath) is false)
+        {
+            return cli.UsageError("private-key-missing", $"No file at {privateKeyPath}. Pass the AuthKey_<key id>.p8 file App Store Connect gave when the key was created.");
+        }
+
+        var projectName = Directory.Exists(directory) ? ProjectContext.FindProjectName(directory) : null;
+        var bundleId = request.BundleId ?? (projectName is null ? null : ProjectContext.ReadAppId(directory, projectName));
+
+        if (string.IsNullOrEmpty(bundleId))
+        {
+            return cli.UsageError("bundle-id-missing", projectName is null
+                ? "Pass the app's bundle id with --bundle-id, e.g. --bundle-id com.contoso.shop, or run this in a bit Boilerplate project's folder to use its app id."
+                : $"{Platforms.MauiProject(projectName)} has no <ApplicationId>. Pass the app's bundle id with --bundle-id.");
+        }
+
+        if (BundleIdRegex().IsMatch(bundleId) is false)
+        {
+            return cli.UsageError("bundle-id-invalid", $"Apple doesn't accept {bundleId} as a bundle id: use only Latin letters, digits, hyphens and dots, as in com.contoso.shop.");
+        }
+
+        var folder = Path.GetFullPath(request.Output ?? ".", directory);
+        var certificatePath = Path.Combine(folder, $"{bundleId}.p12");
+        var profilePath = Path.Combine(folder, $"{bundleId}.mobileprovision");
+
+        if (File.Exists(certificatePath))
+        {
+            return cli.UsageError("certificate-exists", $"{certificatePath} already exists, and it may be the only copy of a certificate's private key. Move it away first, or pass another folder with -o.");
+        }
+
+        try
+        {
+            Directory.CreateDirectory(folder);
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            return cli.UsageError("output-unwritable", $"Couldn't create the folder {folder}: {exp.Message}");
+        }
+
+        var key = new AppleApiKey(request.IssuerId, request.KeyId, await File.ReadAllTextAsync(privateKeyPath, cancellationToken));
+        var profileName = string.IsNullOrEmpty(request.ProfileName) ? AppleSigning.DefaultProfileName(bundleId) : request.ProfileName;
+        AppleSigningResult result;
+
+        try
+        {
+            result = await cli.Console.RunWithStatusAsync($"Creating the App Store signing of {bundleId}", _ => new AppleSigning(http).CreateAppStoreSigningAsync(key, bundleId, profileName, cancellationToken));
+        }
+        catch (AppleSigningException exp)
+        {
+            cli.Console.Fail(exp.Message);
+            return CliApp.ExitFailed;
+        }
+
+        var options = new FileStreamOptions { Mode = FileMode.CreateNew, Access = FileAccess.Write };
+
+        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+        {
+            options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+        }
+
+        using (var stream = new FileStream(certificatePath, options))
+        {
+            stream.Write(result.Pkcs12);
+        }
+
+        await File.WriteAllBytesAsync(profilePath, result.Profile, CancellationToken.None);
+
+        var console = cli.Console;
+        console.Out.MarkupLine($"[green]{console.OkSymbol}[/] Created an Apple Distribution certificate, valid until {result.CertificateExpiry:yyyy-MM-dd}, and the App Store profile [bold]{Markup.Escape(result.ProfileName)}[/] for {Markup.Escape(bundleId)}.");
+        console.Out.MarkupLine($"  [grey]Certificate[/]  {Markup.Escape(certificatePath)}");
+        console.Out.MarkupLine($"  [grey]Password[/]     {Markup.Escape(result.Pkcs12Password)}");
+        console.Out.MarkupLine($"  [grey]Profile[/]      {Markup.Escape(profilePath)}");
+        console.Out.MarkupLine($"  [grey]Team id[/]      {Markup.Escape(result.TeamId ?? "unknown")}");
+        console.Out.WriteLine();
+        console.Dim("The iOS job of the project's CD reads them from these secrets and variables of its GitHub environment:");
+
+        var grid = new Grid().AddColumn(new GridColumn().NoWrap().PadLeft(2).PadRight(2)).AddColumn();
+
+        void Row(string name, string value) => grid.AddRow(Markup.Escape(name), Markup.Escape(value));
+
+        Row("APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64", $"secret: the file {Path.GetFileName(certificatePath)} in base64");
+        Row("APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD", "secret: the password above");
+        Row("APPSTORE_API_KEY_ISSUER_ID", $"secret: {request.IssuerId}");
+        Row("APPSTORE_API_KEY_ID", $"secret: {request.KeyId}");
+        Row("APPSTORE_API_KEY_PRIVATE_KEY", $"secret: the text of {Path.GetFileName(privateKeyPath)}");
+        Row("IOS_CODE_SIGN_PROVISION", $"variable: {result.ProfileName}");
+        Row("APP_ID", $"variable: {bundleId}");
+        console.Out.Write(grid);
+
+        var base64Command = cli.Environment.Os switch
+        {
+            HostOs.Windows => $"[Convert]::ToBase64String([IO.File]::ReadAllBytes('{certificatePath.Replace("'", "''", StringComparison.Ordinal)}'))",
+            HostOs.MacOS => $"base64 -i {ProcessSpec.ShellQuote(certificatePath, HostOs.MacOS)}",
+            _ => $"base64 -w0 {ProcessSpec.ShellQuote(certificatePath, HostOs.Linux)}"
+        };
+
+        console.Dim(cli.Environment.Os is HostOs.Windows ? "Get the file in base64 with this PowerShell command:" : "Get the file in base64 with:");
+        console.UnwrappedLine($"  {base64Command}");
+        console.Dim("The password is shown only this once. The .p12 and .p8 files hold private keys: keep them out of the repository.");
+        return CliApp.ExitOk;
+    }
+
+    [GeneratedRegex(@"^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*$")]
+    private static partial Regex BundleIdRegex();
 }

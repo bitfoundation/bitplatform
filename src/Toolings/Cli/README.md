@@ -286,6 +286,38 @@ Without a map, the newest `obj/**/bit-minifier.map` under the current folder is 
 
 The map's first line names the Bit.Minifier that wrote it, and `bit decode` runs that version from the NuGet cache, restoring it first when it isn't there, so a map is always read the way it was written.
 
+## bit keys
+
+Creates the keys and certificates a bit Boilerplate project signs and encrypts with:
+
+```bash
+bit keys vapid
+bit keys certificate --production -o ../keys
+bit keys certificate --rotate -o ../keys
+bit keys android
+bit keys apple --issuer-id 57246542-96fe-1a63-e053-0824d011072a --key-id 2X9R4HXF34 --private-key AuthKey_2X9R4HXF34.p8
+```
+
+`bit keys vapid` prints a new key pair for web push notifications: the public key goes in `AdsPushVapid:PublicKey` of Client.Web, the private key in `AdsPushVapid:PrivateKey` of the server.
+
+`bit keys certificate` creates the `AppCertificate.crt` and `.key` the server signs tokens and encrypts its Data Protection keys with, RSA 3072 with SHA-256:
+
+- In a project, without options, a development one (`OU=Development`) in Server.Api's folder. `--production` makes one for a deployed app (`OU=Production`, valid for a year), and refuses a folder where git would commit its private key.
+- `--rotate` renames the current pair to `AppCertificate.<date>.crt` and `.key`, which the server keeps trusting for what it signed, and creates a new one with the same subject.
+- `--pfx` also writes `AppCertificate.pfx` behind a generated password. `--list` shows the folder's certificates, which one is active, their key ids and when they expire.
+
+`bit keys android` creates the keystore that signs the Android app for Google Play: an RSA 2048 key valid for 30 years under the project's name as its alias, with one generated password for the keystore and the key. It goes to `~/.bitplatform/keys/<project>` or `-o <file>`, never into the repository, and in a project its SHA-256 fingerprint is added to `assetlinks.json` for the app's id. Google Play only takes updates signed with the same key, so save it and its password somewhere safe.
+
+`bit keys apple` creates the signing the CD needs to publish the iOS app, without a Mac, through the App Store Connect API:
+
+- It needs a team API key with the Admin role, made in App Store Connect under Users and Access, Integrations: its issuer id, its key id and the `AuthKey_<key id>.p8` file App Store Connect lets you download once.
+- Registers the bundle id for iOS when the team doesn't have it yet. In a project's folder the bundle id is the `ApplicationId` of its Client.Maui project; elsewhere pass `--bundle-id`.
+- Creates a new private key, an Apple Distribution certificate for it, and an App Store provisioning profile for the bundle id and that certificate, named `<bundle id> App Store` or `--profile-name`. A profile with that name is replaced. When the profile can't be created, the new certificate is revoked again.
+- Writes `<bundle id>.p12`, the certificate with its private key behind a generated password, and `<bundle id>.mobileprovision` to the current folder or `-o <folder>`. It never overwrites a `.p12`, which may be the only copy of a certificate's private key.
+- Prints the password, only this once, the team id, and the CD secret or variable each value goes in: `APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64` (the `.p12` in base64), `APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD`, `APPSTORE_API_KEY_ISSUER_ID`, `APPSTORE_API_KEY_ID`, `APPSTORE_API_KEY_PRIVATE_KEY`, `IOS_CODE_SIGN_PROVISION` and `APP_ID`.
+
+Apple allows a team only a few distribution certificates. When the team has them all, `bit keys apple` lists them: revoke one that no build signs with anymore in the [Apple Developer site](https://developer.apple.com/account/resources/certificates/list) and run it again. Apps already in the App Store keep working.
+
 ## bit aot-profile
 
 Writes the profile that profile-guided AOT compiles a Blazor WebAssembly app with. Compiling every method ahead of time makes the app fast but its download much bigger. With a profile, only the methods the app really runs are compiled and the rest stay on the interpreter, so the download stays small and the code that runs is still compiled.
