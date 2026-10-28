@@ -27,7 +27,8 @@ internal static class BrouteScanner
     /// internal component types annotated with one or more <see cref="RouteAttribute"/> and returns the
     /// discovered routes. Each <c>[Route]</c> on a component yields one entry, so a component with several
     /// route attributes contributes several routes. Duplicate assemblies are scanned only once. A type that can't
-    /// be loaded is skipped, and <paramref name="onTypesSkipped"/> gets why, once per assembly that had any.
+    /// be loaded is skipped, routable or not (which can't be told without loading it), and
+    /// <paramref name="onTypesSkipped"/> gets why, once per assembly that had any.
     /// </summary>
     /// <remarks>
     /// This reflects over every type in the given assemblies, so it is inherently trim-unsafe: the
@@ -144,6 +145,12 @@ internal static class BrouteScanner
             catch (ArgumentOutOfRangeException)
             {
                 return [.. types];
+            }
+            // A row whose metadata is malformed: the runtime reports it as an ArgumentException rather than a
+            // BadImageFormatException. Skipping the row loses at most that one type.
+            catch (ArgumentException ex)
+            {
+                failures?.Add(ex);
             }
             catch (Exception ex) when (IsLoadFailure(ex))
             {

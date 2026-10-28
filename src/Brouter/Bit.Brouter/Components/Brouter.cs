@@ -276,8 +276,8 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     private Assembly[]? _lastAdditionalAssemblies;
     private bool _discoveryComputed;
 
-    // Assemblies LogSkippedTypes has already warned about.
-    private HashSet<Assembly>? _assembliesWithSkippedTypes;
+    // Why LogSkippedTypes last warned about each assembly, so a rescan that fails the same way isn't reported again.
+    private Dictionary<Assembly, string>? _reportedSkippedTypes;
 
     // Assemblies handed back by the OnNavigateAsync hook at runtime (lazy loading). Merged into
     // every discovery scan alongside AppAssembly/AdditionalAssemblies; grows monotonically.
@@ -1312,14 +1312,22 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
     private void LogSkippedTypes(Assembly assembly, IReadOnlyList<Exception> failures)
     {
-        // Every scan reads every assembly again and the same types fail the same way, so each assembly is reported once.
-        if ((_assembliesWithSkippedTypes ??= []).Add(assembly) is false) return;
+        // Every scan reads every assembly again and the same types usually fail the same way, so an assembly is
+        // reported once per distinct set of reasons.
+        var reasons = string.Join(" ", failures.Select(f => f.Message).Distinct());
+        _reportedSkippedTypes ??= [];
+        if (_reportedSkippedTypes.TryGetValue(assembly, out var reported) && reported == reasons) return;
+        _reportedSkippedTypes[assembly] = reasons;
 
+        // The failures go out as the log entry's exception too, so their inner exceptions (a version mismatch's
+        // detail, for example) reach whoever reads the log.
         _services.GetService<ILogger<Brouter>>()?.LogWarning(
-            "Brouter couldn't load some types of {Assembly} while discovering routes and skipped them, so the routes they declare are missing. " +
+            new AggregateException(failures),
+            "Brouter couldn't load some types of {Assembly} while discovering routes and skipped them. " +
+            "If any of them is a routable component, the routes it declares are missing. " +
             "On WebAssembly, if they need an assembly marked BlazorWebAssemblyLazyLoad, load that assembly eagerly instead: " +
             "once it fails to load, the scanned assembly's code can't use it even after it's loaded. {Reasons}",
-            assembly.GetName().Name, string.Join(" ", failures.Select(f => f.Message).Distinct()));
+            assembly.GetName().Name, reasons);
     }
 
     /// <summary>

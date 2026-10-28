@@ -1,8 +1,8 @@
+using Microsoft.AspNetCore.Components;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.Loader;
 using Bunit;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -66,79 +66,80 @@ public class UnloadableTypeDiscoveryTests : BunitTestContext
         // A new assembly set makes Brouter scan the fixture again.
         cut.Render(p => p.Add(b => b.AdditionalAssemblies, [typeof(DiscoveryHost).Assembly]));
 
-        var warning = logger.Warnings.Single();
+        var (warning, exception) = logger.Warnings.Single();
         StringAssert.Contains(warning, "Bit.Brouter.Tests.UnloadableTypes");
         StringAssert.Contains(warning, MissingAssemblyName);
+        // The failures themselves ride along, inner exceptions and all.
+        Assert.HasCount(2, Assert.IsInstanceOfType<AggregateException>(exception).InnerExceptions);
     }
 
     // DerivedPage can't be loaded at all, since its base type is in the missing assembly. DecoratedPage loads, but one of
     // its attributes is in the missing assembly, so reading its attributes fails.
     private static Assembly BuildFixture()
     {
-        var missing = Compile(MissingAssemblyName, """
-            namespace MissingDependency;
+        // The missing assembly has to exist while the fixture is built, since the fixture's types refer to its types, so
+        // it lives in a context of its own that the fixture's context knows nothing about.
+        var missing = new AssemblyLoadContext("Brouter missing dependency").LoadFromStream(new MemoryStream(Emit(MissingAssemblyName, module =>
+        {
+            module.DefineType("MissingDependency.MissingBase", TypeAttributes.Public | TypeAttributes.Class).CreateType();
+            module.DefineType("MissingDependency.MissingAttribute", TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.Class, typeof(Attribute)).CreateType();
+        })));
+        var missingBase = missing.GetType("MissingDependency.MissingBase", throwOnError: true)!;
+        var missingAttribute = missing.GetType("MissingDependency.MissingAttribute", throwOnError: true)!.GetConstructor(Type.EmptyTypes)!;
 
-            public class MissingBase { }
+        var fixture = Emit("Bit.Brouter.Tests.UnloadableTypes", module =>
+        {
+            var page = DefineComponent(module, "UnloadableTypes.Page", typeof(object), TypeAttributes.Abstract).CreateType();
+            DefineComponent(module, "UnloadableTypes.BeforePage", page, routes: "/before").CreateType();
+            DefineComponent(module, "UnloadableTypes.DerivedPage", missingBase, routes: "/derived").CreateType();
+            var decorated = DefineComponent(module, "UnloadableTypes.DecoratedPage", page, routes: "/decorated");
+            decorated.SetCustomAttribute(new CustomAttributeBuilder(missingAttribute, []));
+            decorated.CreateType();
+            DefineComponent(module, "UnloadableTypes.AfterPage", page, routes: "/after").CreateType();
+        });
 
-            public sealed class MissingAttribute : System.Attribute { }
-            """);
-
-        var fixture = Compile("Bit.Brouter.Tests.UnloadableTypes", """
-            using System.Threading.Tasks;
-            using Microsoft.AspNetCore.Components;
-
-            namespace UnloadableTypes;
-
-            public abstract class Page : IComponent
-            {
-                public void Attach(RenderHandle renderHandle) { }
-                public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
-            }
-
-            [Route("/before")]
-            public class BeforePage : Page { }
-
-            [Route("/derived")]
-            public class DerivedPage : MissingDependency.MissingBase, IComponent
-            {
-                public void Attach(RenderHandle renderHandle) { }
-                public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
-            }
-
-            [Route("/decorated"), MissingDependency.Missing]
-            public class DecoratedPage : Page { }
-
-            [Route("/after")]
-            public class AfterPage : Page { }
-            """, MetadataReference.CreateFromImage(missing));
-
-        // Only the fixture is loaded. Its other references fall back to the default context, which can't find the missing one.
+        // Only the fixture is loaded here. Its other references fall back to the default context, which can't find the
+        // missing one.
         return new AssemblyLoadContext("Brouter unloadable types").LoadFromStream(new MemoryStream(fixture));
     }
 
-    private static byte[] Compile(string assemblyName, string source, params MetadataReference[] references)
+    private static byte[] Emit(string assemblyName, Action<ModuleBuilder> define)
     {
-        var tpa = (string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!;
-        var compilation = CSharpCompilation.Create(
-            assemblyName,
-            syntaxTrees: [CSharpSyntaxTree.ParseText(source)],
-            references: tpa.Split(Path.PathSeparator)
-                .Where(p => p.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
-                .Select(p => (MetadataReference)MetadataReference.CreateFromFile(p))
-                .Concat(references),
-            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var builder = new PersistedAssemblyBuilder(new AssemblyName(assemblyName), typeof(object).Assembly);
+        define(builder.DefineDynamicModule(assemblyName));
 
         using var ms = new MemoryStream();
-        var emit = compilation.Emit(ms);
-        if (emit.Success is false)
-            throw new InvalidOperationException(string.Join(Environment.NewLine, emit.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error)));
-
+        builder.Save(ms);
         return ms.ToArray();
+    }
+
+    // A public class deriving from parent that implements IComponent itself (a base type's implementation isn't enough
+    // when parent is MissingBase), with one [Route] per template.
+    private static TypeBuilder DefineComponent(ModuleBuilder module, string name, Type parent, TypeAttributes attributes = default, params string[] routes)
+    {
+        var type = module.DefineType(name, TypeAttributes.Public | TypeAttributes.Class | attributes, parent, [typeof(IComponent)]);
+
+        const MethodAttributes implementation = MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Final;
+
+        var attach = type.DefineMethod(nameof(IComponent.Attach), implementation, typeof(void), [typeof(RenderHandle)]).GetILGenerator();
+        attach.Emit(OpCodes.Ret);
+
+        var setParameters = type.DefineMethod(nameof(IComponent.SetParametersAsync), implementation, typeof(Task), [typeof(ParameterView)]).GetILGenerator();
+        setParameters.Emit(OpCodes.Call, typeof(Task).GetProperty(nameof(Task.CompletedTask))!.GetMethod!);
+        setParameters.Emit(OpCodes.Ret);
+
+        var route = typeof(RouteAttribute).GetConstructor([typeof(string)])!;
+        foreach (var template in routes)
+        {
+            type.SetCustomAttribute(new CustomAttributeBuilder(route, [template]));
+        }
+
+        return type;
     }
 
     private sealed class RecordingLogger : ILogger<Brouter>
     {
-        public List<string> Warnings { get; } = [];
+        public List<(string Message, Exception? Exception)> Warnings { get; } = [];
 
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
 
@@ -146,7 +147,7 @@ public class UnloadableTypeDiscoveryTests : BunitTestContext
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
-            if (logLevel == LogLevel.Warning) Warnings.Add(formatter(state, exception));
+            if (logLevel == LogLevel.Warning) Warnings.Add((formatter(state, exception), exception));
         }
     }
 }

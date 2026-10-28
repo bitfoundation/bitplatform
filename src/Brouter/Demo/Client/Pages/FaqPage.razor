@@ -90,7 +90,7 @@
             </tr>
             <tr>
                 <td>A page is missing and the log warns that Brouter <em>couldn't load some types</em></td>
-                <td>The page, or one of its attributes, needs an assembly that is missing or isn't loaded yet, so discovery skipped it. On WebAssembly that's usually an assembly marked <code>BlazorWebAssemblyLazyLoad</code>: load it eagerly instead, since once it has failed to load, the scanned assembly's code can't use it even after it's loaded.</td>
+                <td>The page, or one of its attributes, needs an assembly that is missing or isn't loaded yet, so discovery skipped it (the warning can't tell a routable component from any other type it couldn't load, so it also fires when no page is affected). On WebAssembly that's usually an assembly marked <code>BlazorWebAssemblyLazyLoad</code>: load it eagerly instead, since once it has failed to load, the scanned assembly's code can't use it even after it's loaded.</td>
             </tr>
             <tr>
                 <td><code>/products/list</code> 404s but <code>/products/en/list</code> works</td>
