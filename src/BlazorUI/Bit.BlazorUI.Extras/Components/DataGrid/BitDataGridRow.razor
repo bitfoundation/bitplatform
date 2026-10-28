@@ -241,7 +241,7 @@
     {
         get
         {
-            var s = $"grid-template-columns:var(--bit-dtg-template);min-height:{Grid.ResolveRowHeight(Item).ToString(System.Globalization.CultureInfo.InvariantCulture)}px;";
+            var s = "grid-template-columns:var(--bit-dtg-template);" + Grid.RowHeightStyle(Grid.ResolveRowHeight(Item));
             s = AppendStyle(s, Grid.Styles?.Row);
             if (Selected) s = AppendStyle(s, Grid.Styles?.SelectedRow);
             // Appended after the layout declarations so a caller's style wins on any property it repeats.

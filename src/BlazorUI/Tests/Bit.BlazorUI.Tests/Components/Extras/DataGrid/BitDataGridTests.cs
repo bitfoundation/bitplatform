@@ -3234,6 +3234,28 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual(0, component.FindAll(".bit-dtg-hcell-wrap").Count);
     }
 
+    [TestMethod]
+    public void VirtualizedRowsAreExactlyRowHeightTall()
+    {
+        // Virtualize, the grid's spacers and revealRow place every row RowHeight down from the last, so a row
+        // whose content made it taller would put the rows after it out of place: the height is pinned, not a minimum.
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.Virtualize, true);
+            parameters.Add(p => p.Height, "300px");
+            parameters.Add(p => p.RowHeight, 40f);
+        });
+
+        var rows = component.FindAll(".bit-dtg-body > .bit-dtg-row");
+        Assert.IsTrue(rows.Count > 0);
+        foreach (var row in rows)
+        {
+            var style = row.GetAttribute("style") ?? "";
+            StringAssert.Contains(style, ";height:40px;");
+            Assert.IsFalse(style.Contains("min-height"), style);
+        }
+    }
+
     // -------------------------------------------------------------- Row events
 
     [TestMethod]

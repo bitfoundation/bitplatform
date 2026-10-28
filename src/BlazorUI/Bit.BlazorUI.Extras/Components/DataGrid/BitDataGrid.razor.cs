@@ -5543,6 +5543,15 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// </summary>
     internal float ResolveRowHeight(TItem item) => Virtualize ? RowHeight : (RowHeightSelector?.Invoke(item) ?? RowHeight);
 
+    /// <summary>
+    /// The inline height declaration of a row. While <see cref="Virtualize"/> is enabled every row is exactly
+    /// that tall - the size Virtualize, the grid's own spacers and <c>revealRow</c> count each one at - and content
+    /// taller than it is clipped by the cells rather than pushing the rows after it out of place; otherwise it is
+    /// only a minimum the row grows past.
+    /// </summary>
+    internal string RowHeightStyle(float height) =>
+        FormattableString.Invariant($"{(Virtualize ? "height" : "min-height")}:{height}px;");
+
     /// <summary>Builds the CSS grid template-columns value for the whole row layout.</summary>
     private string BuildGridTemplate()
     {
