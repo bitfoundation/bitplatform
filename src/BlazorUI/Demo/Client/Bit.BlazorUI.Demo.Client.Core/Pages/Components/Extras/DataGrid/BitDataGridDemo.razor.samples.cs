@@ -1175,13 +1175,15 @@ private async Task DeleteCellMenuRow()
     <BitButton OnClick=""ApiGoToPage3"">Go to page 3</BitButton>
     <BitButton OnClick=""ApiPageSize50"">Page size 50</BitButton>
     <BitButton OnClick=""ApiPriceFirst"">Move Price first</BitButton>
+    <BitButton OnClick=""ApiRevealRandom"">Reveal a random row</BitButton>
     <BitButton OnClick=""ApiRefresh"" Variant=""BitVariant.Outline"">Refresh</BitButton>
 </BitStack>
 
 <BitDataGrid @ref=""apiGrid"" TItem=""Product"" Items=""@apiProducts"" Height=""430px""
              Filterable=""true"" Groupable=""true"" Pageable=""true"" PageSize=""10""
              OnSortChange=""OnApiSortChange"" OnFilterChange=""OnApiFilterChange""
-             OnGroupChange=""OnApiGroupChange"" OnPageChange=""OnApiPageChange"">
+             OnGroupChange=""OnApiGroupChange"" OnPageChange=""OnApiPageChange""
+             OnViewChange=""OnApiViewChange"">
     <BitDataGridColumn Property=""p => p.Id"" Title=""ID"" Width=""70px"" Align=""BitTextAlign.End"" Filterable=""false"" Groupable=""false"" />
     <BitDataGridColumn Property=""p => p.Name"" Width=""220px"" Groupable=""false"" />
     <BitDataGridColumn Property=""p => p.Category"" />
@@ -1189,11 +1191,14 @@ private async Task DeleteCellMenuRow()
     <BitDataGridColumn Property=""p => p.Stock"" Align=""BitTextAlign.End"" Groupable=""false"" />
 </BitDataGrid>
 
-<BitText>@apiLog</BitText>";
+<BitText>@apiLog</BitText>
+<BitText>@apiViewLog</BitText>";
     private readonly string example24CsharpCode = @"
 private readonly List<Product> apiProducts = SampleData.Generate(200);
 private BitDataGrid<Product>? apiGrid;
 private string apiLog = ""The grid reports every view change here."";
+private IReadOnlyList<Product> apiViewItems = [];
+private string apiViewLog = """";
 
 private async Task ApiSortByPrice() { if (apiGrid is not null) await apiGrid.SortByAsync(nameof(Product.Price), BitDataGridSortDirection.Descending); }
 private async Task ApiClearSorts() { if (apiGrid is not null) await apiGrid.ClearSortsAsync(); }
@@ -1205,6 +1210,19 @@ private async Task ApiGoToPage3() { if (apiGrid is not null) await apiGrid.GoToP
 private async Task ApiPageSize50() { if (apiGrid is not null) await apiGrid.SetPageSizeAsync(50); }
 private async Task ApiPriceFirst() { if (apiGrid is not null) await apiGrid.MoveColumnAsync(nameof(Product.Price), 0); }
 private async Task ApiRefresh() { if (apiGrid is not null) await apiGrid.RefreshAsync(); }
+
+private async Task ApiRevealRandom()
+{
+    if (apiGrid is null || apiViewItems.Count == 0) return;
+    var product = apiViewItems[Random.Shared.Next(apiViewItems.Count)];
+    if (await apiGrid.RevealItemAsync(product)) apiLog = $""Revealed {product.Name} (#{product.Id}) on page {apiGrid.CurrentPage}."";
+}
+
+private void OnApiViewChange(IReadOnlyList<Product> rows)
+{
+    apiViewItems = rows;
+    apiViewLog = $""{rows.Count} row(s) in the view, from {rows.FirstOrDefault()?.Name ?? ""-""} to {rows.LastOrDefault()?.Name ?? ""-""}."";
+}
 
 private void OnApiSortChange(IReadOnlyList<BitDataGridSortDescriptor> sorts)
     => apiLog = sorts.Count == 0 ? ""Sorting cleared."" : $""Sorting by {string.Join("", "", sorts.Select(s => $""{s.ColumnId} {s.Direction}""))}."";
