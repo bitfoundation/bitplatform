@@ -47,25 +47,37 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
 
     /// <summary>Overrides the grid-level <c>Sortable</c> for this column.</summary>
     /// <remarks>
-    /// A column sorts only when it has something to sort by: a <see cref="Property"/> / <see cref="Field"/>,
-    /// or for a template-only column a <see cref="SortBy"/> key. In server (<c>OnRead</c>) and infinite
-    /// (<c>OnLoadMore</c>) mode the source does the sorting, so <c>true</c> here is enough for a template-only
-    /// column with a <see cref="ColumnId"/>: the read request carries that id for the server to order by.
+    /// Either value only decides whether a column that has something to sort by sorts; it never gives a column a
+    /// sort key. A column with a <see cref="Property"/> / <see cref="Field"/> has one under every source. A
+    /// template-only column has one only where the grid can use it: a <see cref="SortBy"/> key with an in-memory
+    /// source, <see cref="ServerSortable"/> with a <see cref="ColumnId"/> in server (<c>OnRead</c>) and infinite
+    /// (<c>OnLoadMore</c>) mode, and none with a queryable (<see cref="IQueryable{T}"/>) source.
     /// </remarks>
     [Parameter] public bool? Sortable { get; set; }
 
     /// <summary>
     /// Optional custom sort key selector. Enables sorting for template-only columns (no
     /// <see cref="Field"/>) and overrides the field value as the sort key when both are set -
-    /// e.g. sort a display-name column by last name.
+    /// e.g. sort a display-name column by last name. In-memory sources only.
     /// </summary>
     /// <remarks>
-    /// The key is read on the client only. In server (<c>OnRead</c>) and infinite (<c>OnLoadMore</c>) mode the
-    /// read request carries the column's id instead, so a template-only column sorts there only with a
-    /// <see cref="ColumnId"/> the server can order by. A queryable (<see cref="IQueryable{T}"/>) source cannot
-    /// translate a delegate, so only a column with a <see cref="Property"/> / <see cref="Field"/> sorts there.
+    /// The key is read on the client only, so every other source ignores it. A queryable
+    /// (<see cref="IQueryable{T}"/>) source cannot translate a delegate: a column with a <see cref="Property"/> /
+    /// <see cref="Field"/> sorts by that field there, and a template-only column does not sort. In server
+    /// (<c>OnRead</c>) and infinite (<c>OnLoadMore</c>) mode the read request carries the column's id for the server
+    /// to order by: a field-backed column sorts by it as usual, and a template-only column needs
+    /// <see cref="ServerSortable"/> to sort.
     /// </remarks>
     [Parameter] public Func<TItem, object?>? SortBy { get; set; }
+
+    /// <summary>
+    /// Lets a template-only column (no <see cref="Property"/> / <see cref="Field"/>) sort in server (<c>OnRead</c>)
+    /// and infinite (<c>OnLoadMore</c>) mode, where the source does the sorting: the read request carries the
+    /// column's <see cref="ColumnId"/> for the server to order by. Requires a <see cref="ColumnId"/>, since a
+    /// generated id means nothing to a server, and still follows <see cref="Sortable"/>. Has no effect on a
+    /// field-backed column, which sorts there anyway, or with any other source.
+    /// </summary>
+    [Parameter] public bool ServerSortable { get; set; }
 
     /// <summary>
     /// When true, the first click on the header sorts descending instead of ascending.
@@ -284,9 +296,12 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
     // check) so an accidental blank value can't become a column id. Blank ids would collide across columns
     // instead of each falling back to a unique generated id, so only use the generated fallback when both
     // are unset.
-    internal string Id => !string.IsNullOrWhiteSpace(ColumnId) ? ColumnId
+    internal string Id => HasExplicitId ? ColumnId!
                         : !string.IsNullOrWhiteSpace(EffectiveField) ? EffectiveField
                         : $"col-{GetHashCode():x}";
+
+    /// <summary>Whether <see cref="Id"/> is the <see cref="ColumnId"/> the app gave the column.</summary>
+    internal bool HasExplicitId => !string.IsNullOrWhiteSpace(ColumnId);
 
     // The id this column is currently registered under in the grid. Tracked separately from Id so a
     // later change to ColumnId/Field can re-register the column under its new id (and the old entry
@@ -325,6 +340,13 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
         => new(Title, Width, MinWidth, MaxWidth, Align, Group, HeaderClass, CellClass, Sortable, SortDescendingFirst,
                Filterable, FilterOperators, Resizable, Reorderable, Editable, Groupable, ShowTooltip, WrapText,
                RowHeader, DataType);
+
+    // Whether a template-only column has a sort key at all hangs on these two, so a change to one from the parent
+    // turns its header into a sort button or out of one, and can leave a sort behind that the column no longer
+    // carries. Only the presence of SortBy counts: Razor hands a lambda over as a new delegate on every render.
+    private (bool HasSortBy, bool ServerSortable) _lastSortKey;
+
+    private (bool HasSortBy, bool ServerSortable) CurrentSortKey() => (SortBy is not null, ServerSortable);
 
     internal string DisplayTitle => Title ?? Humanize(EffectiveField) ?? Id;
 
@@ -379,6 +401,7 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
         _lastFrozen = Frozen;
         _lastFrozenEnd = FrozenEnd;
         _lastPresentation = CurrentPresentation();
+        _lastSortKey = CurrentSortKey();
     }
 
     protected override void OnParametersSet()
@@ -412,6 +435,13 @@ public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMe
         {
             _lastPresentation = presentation;
             if (_registeredId is not null) Grid?.NotifyColumnVisibilityChanged();
+        }
+
+        var sortKey = CurrentSortKey();
+        if (sortKey != _lastSortKey)
+        {
+            _lastSortKey = sortKey;
+            if (_registeredId is not null) Grid?.NotifyColumnSortKeyChanged(this);
         }
 
         // This column was skipped during initial registration because its id collided with another
