@@ -149,6 +149,30 @@ public class BitDataGridColumnsE2ETests : BitDataGridE2ETestBase
         Assert.IsFalse(await text.EvaluateAsync<bool>("el => el.scrollWidth > el.clientWidth"), "The fitted column still clips its text.");
     }
 
+    // The column's title is far wider than its values, so its header sets the width a fit gives it: that width holds the
+    // hidden sort hint, which is the room of the arrow a sort puts in its place, so neither is clipped.
+    [TestMethod]
+    public async Task Resize_AFittedColumn_LeavesItsHeaderTheRoomOfTheSortArrow()
+    {
+        await OpenAsync(Url);
+
+        const string id = "grid-fit-header";
+        var header = HeaderCell(id, 1);
+        var label = header.Locator(".bit-dtg-htext");
+        await Expect(header).Not.ToHaveAttributeAsync("aria-sort", new Regex(".*"));
+
+        Assert.AreEqual(200, await WidthAsync(id, 1), 1);
+        await Resizer(id, 1).DblClickAsync();
+        await UntilAsync(async () => await WidthAsync(id, 1) < 190, "The double-click did not shrink the column to its header.");
+        var title = await BoxAsync(label.Locator(".bit-dtg-htitle"));
+        Assert.IsTrue(await WidthAsync(id, 1) < title.Width + 50, "The fitted column is not as narrow as its header.");
+        Assert.IsFalse(await label.EvaluateAsync<bool>("el => el.scrollWidth > el.clientWidth"), "The fitted column clips its sort hint.");
+
+        await label.ClickAsync();
+        await Expect(header).ToHaveAttributeAsync("aria-sort", "ascending");
+        Assert.IsFalse(await label.EvaluateAsync<bool>("el => el.scrollWidth > el.clientWidth"), "The fitted column clips its sort arrow.");
+    }
+
     [TestMethod]
     public async Task Resize_TheAutoFitApi_FitsAColumnAndEveryColumn()
     {

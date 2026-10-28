@@ -279,11 +279,28 @@ $dtg-private-properties:
     overflow: visible;
 }
 
+/* A wrapped header breaks its lines between words, and a word only once it alone is wider than its line. Everything
+   in the label inherits that, a HeaderTemplate's content too: anywhere, which this once was, also let a flex item
+   shrink below its longest word, so a title a template lays out beside an icon in a flex row of its own broke that
+   word in the middle whenever the row ran a few pixels short (#13963). */
 .bit-dtg-hcell-wrap .bit-dtg-htext {
     white-space: normal;
     overflow: visible;
     text-overflow: clip;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
+}
+
+/* The title the grid writes itself shrinks to whatever room its column leaves it beside the sort arrow, and wraps
+   there. */
+.bit-dtg-hcell-wrap .bit-dtg-htitle {
+    min-width: 0;
+}
+
+/* An element of a HeaderTemplate keeps the width its content needs unless that is wider than the whole label: it is
+   held to the label's width, and a word wider than that breaks inside the column rather than spilling out of it. Of
+   no weight, so a class of the template's own decides otherwise. */
+:where(.bit-dtg-hcell-wrap .bit-dtg-htext > *) {
+    max-width: 100%;
 }
 
 .bit-dtg-bordered .bit-dtg-cell,
@@ -456,7 +473,10 @@ button.bit-dtg-htext {
 
 /* An unsorted sortable header shows which way its first click sorts, but only under the pointer or the focus, so the
    affordance is discoverable without every title carrying an arrow. Generated content with an empty alternative: it
-   is no part of the header's text or its accessible name (a browser without the syntax drops the hint altogether). */
+   is no part of the header's text or its accessible name (a browser without the syntax drops the hint altogether).
+   It is laid out like the arrow it previews, so it holds that arrow's room while it is hidden: it shows inside the
+   label however the title is aligned, a fitted column leaves the arrow room, and nothing in the header moves when
+   the column is sorted. */
 .bit-dtg-sortable:not([aria-sort]) > .bit-dtg-htext::after {
     content: "▲" / "";
     font-size: $tg-fs-2xs;

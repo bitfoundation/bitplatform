@@ -167,6 +167,27 @@
     </BitDataGrid>
 </E2ESection>
 
+<E2ESection Id="wrap-header" Title="Wrapped header titles">
+    <label>Width of the first two columns <input id="wrap-header-width" type="number" step="any" @bind="_wrapHeaderWidth" @bind:event="oninput" /></label>
+    @* The header of #13963: a template laying a Persian title out beside an icon in a flex row of its own, on a sortable
+       column and on the same column unsortable, so the two differ only by the sort hint of the first. The next two
+       columns hold a one-word title wider than its column, one the grid writes and one a template's element holds, and
+       the last a title of several words, each narrower than its column, that together are wider. *@
+    <BitDataGrid Id="grid-wrap-header" Items="@_wrapHeaderItems" WrapCellText="true" Dir="BitDir.Rtl">
+        <BitDataGridColumn ColumnId="Sortable" Property="p => p.Stock" Width="@WrapHeaderWidth">
+            <HeaderTemplate>@WrapHeaderTemplate</HeaderTemplate>
+        </BitDataGridColumn>
+        <BitDataGridColumn ColumnId="Unsortable" Property="p => p.Stock" Sortable="false" Width="@WrapHeaderWidth">
+            <HeaderTemplate>@WrapHeaderTemplate</HeaderTemplate>
+        </BitDataGridColumn>
+        <BitDataGridColumn Property="p => p.Name" Title="Unfinished" Sortable="false" Width="60px" />
+        <BitDataGridColumn ColumnId="Word" Property="p => p.Name" Sortable="false" Width="60px">
+            <HeaderTemplate><span class="wrap-header-word">Unfinished</span></HeaderTemplate>
+        </BitDataGridColumn>
+        <BitDataGridColumn ColumnId="Words" Property="p => p.Name" Title="Back in stock soon" Sortable="false" Width="80px" />
+    </BitDataGrid>
+</E2ESection>
+
 <E2ESection Id="cell-events" Title="Row and cell events">
     <BitDataGrid TItem="Product" Id="grid-cell-events" Items="@_basic.Take(4).ToList()"
                  OnRowClick="p => { _rowClicks++; _rowClickArg = p.Name; }"
@@ -388,6 +409,8 @@
 
     private readonly List<Product> _basic = Products();
     private readonly List<Product> _emptyItems = [];
+    // Kept, not taken afresh on each render: the grid reloads whenever its Items reference changes.
+    private readonly List<Product> _wrapHeaderItems = Products().Take(2).ToList();
     private readonly List<Product> _many = Enumerable.Range(1, 40).Select(i => new Product { Id = i, Name = $"Item {i:00}" }).ToList();
     private readonly List<Product> _long =
     [
@@ -433,6 +456,7 @@
     private bool _striped = true;
     private bool _hoverable = true;
     private bool _wrap;
+    private double _wrapHeaderWidth = 300;
     private BitVisibility _visibility;
     private bool _disabled = true;
     private int _disabledRowClicks;
@@ -453,6 +477,14 @@
         _basicSortCount++;
         _basicSortLog = string.Join(",", sorts.Select(s => $"{s.ColumnId}:{s.Direction}:{s.Priority}"));
     }
+
+    private string WrapHeaderWidth => FormattableString.Invariant($"{_wrapHeaderWidth}px");
+
+    private static readonly RenderFragment WrapHeaderTemplate =
+        @<span class="wrap-header-tpl" style="display: flex; align-items: center;">
+            <span class="wrap-header-title">انجام‌نشده</span>
+            <span class="wrap-header-icon" style="display: block; flex: none; width: 24px; height: 24px;"></span>
+        </span>;
 
     private static string CellArgs(BitDataGridCellEventArgs<Product> a)
         => $"{a.Item.Name}|{a.ColumnId}|{a.ColumnTitle}|{a.Value}|button={a.Mouse.Button}|title={a.Column.Title}";
