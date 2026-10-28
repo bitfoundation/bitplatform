@@ -40,8 +40,29 @@ public abstract class BcrdtComponentBase : ComponentBase, IAsyncDisposable
     private bool _disposed;
 
     /// <summary>The collaboration service for this scope.</summary>
+    /// <remarks>
+    /// The one <c>AddBitBcrdtServices</c> registered or, in an app that lazy loads Bit.Bcrdt on WebAssembly and so
+    /// cannot register it, the one <see cref="BitBcrdt.GetBcrdtCollaborationService"/> configured. On WebAssembly it is
+    /// resolved on first use, so that the page around the component can configure it first; everywhere else it is
+    /// resolved when the component is created, as an injected service is, and a missing registration fails right there -
+    /// while prerendering too.
+    /// </remarks>
+    protected IBcrdtCollaborationService Collaboration
+    {
+        get => field ??= ServiceProvider.GetBcrdtCollaborationService();
+        set;
+    }
+
     [Inject]
-    protected IBcrdtCollaborationService Collaboration { get; set; } = default!;
+    private IServiceProvider ServiceProvider
+    {
+        get;
+        set
+        {
+            field = value;
+            if (BcrdtOwnCollaboration.IsWebAssembly(value) is false) Collaboration = value.GetBcrdtCollaborationService();
+        }
+    } = default!;
 
     /// <summary>
     /// How long to coalesce renders for. Roughly one frame by default.
