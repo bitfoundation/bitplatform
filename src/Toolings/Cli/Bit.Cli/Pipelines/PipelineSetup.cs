@@ -144,8 +144,8 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
 
         foreach (var scope in wanted.GroupBy(s => s.Environment))
         {
-            var used = scope.Select(s => s.Name).ToHashSet(StringComparer.Ordinal);
-            var absent = scope.Where(s => IsSet(s) is false).Select(s => s.Name).ToHashSet(StringComparer.Ordinal);
+            var used = scope.Select(s => s.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var absent = scope.Where(s => IsSet(s) is false).Select(s => s.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
             if (absent.Count > 0)
             {
@@ -342,6 +342,8 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
 
     private void Show(IReadOnlyList<WorkflowSecret> wanted, Func<WorkflowSecret, bool> isSet)
     {
+        var width = wanted.Max(s => s.Name.Length) + 2;
+
         foreach (var scope in wanted.GroupBy(s => s.Environment))
         {
             cli.Console.Out.MarkupLine($"[bold]{Markup.Escape(Scope(scope.Key))}[/]");
@@ -353,7 +355,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
                     : createdByBit.Contains(secret.Name) ? "[yellow]missing[/] [grey]bit creates it[/]"
                     : "[yellow]missing[/]";
 
-                cli.Console.Out.MarkupLine($"  {Markup.Escape(secret.Name),-44} {state}");
+                cli.Console.Out.MarkupLine($"  {Markup.Escape(secret.Name.PadRight(width))}{state}");
             }
         }
     }
@@ -390,7 +392,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
         var result = await Gh(arguments, cancellationToken);
 
         if (result.Succeeded)
-            return result.OutputLines.Select(l => l.Trim()).Where(l => l.Length > 0).ToHashSet(StringComparer.Ordinal);
+            return result.OutputLines.Select(l => l.Trim()).Where(l => l.Length > 0).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         cli.Console.Fail($"Couldn't read the secrets of {Scope(environment)}: {LastLine(result)}. Storing secrets needs admin rights on {repository}.");
         return null;

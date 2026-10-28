@@ -167,6 +167,17 @@ public class PipelineTests
     }
 
     [TestMethod]
+    public async Task SecretNames_Should_MatchWhateverTheirCase()
+    {
+        using var host = Repository();
+        Workflow(host, "ci.yml", "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo ${{ secrets.OpenAI__ApiKey }} ${{ secrets.OPENAI__APIKEY }}\n");
+        host.Runner.On("gh", "secret list --repo contoso/shop --json", 0, "OPENAI__APIKEY\n");
+
+        Assert.AreEqual(0, await host.RunAsync("pipeline", "--check"));
+        Assert.AreEqual(1, System.Text.RegularExpressions.Regex.Matches(host.Output, "OPENAI__APIKEY", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Count, host.Output);
+    }
+
+    [TestMethod]
     public async Task RotatingTheCertificate_Should_KeepTheOldOneAsTheRetiredOne()
     {
         using var host = Repository();

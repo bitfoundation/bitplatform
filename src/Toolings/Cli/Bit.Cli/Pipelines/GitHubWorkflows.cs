@@ -196,6 +196,8 @@ public sealed partial class GitHubWorkflows(string repositoryRoot, Func<string, 
         if (string.Equals(name, "GITHUB_TOKEN", StringComparison.OrdinalIgnoreCase))
             return;
 
+        name = name.ToUpperInvariant();
+
         if (found.TryGetValue((name, environment), out var users) is false)
         {
             found[(name, environment)] = users = new(StringComparer.Ordinal);
