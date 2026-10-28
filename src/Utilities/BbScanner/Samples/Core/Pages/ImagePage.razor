@@ -7,8 +7,8 @@
 
 <p>
     Three ways to read a still image, none of which opens the camera, so no permission is asked for. The first two
-    have the browser decode the image file and need the WebAssembly runtime, as the camera does; the third hands the
-    scanner pixels the application already has, and works on every host.
+    have the page decode the image file - the browser, or the WebView - and the third hands the scanner pixels the
+    application already has. All three work on every host.
 </p>
 
 <div class="surface narrow">
@@ -23,8 +23,9 @@
     <h2>Pick or drop an image</h2>
     <p>
         The scanner's own <em>Scan image</em> button, an image file dropped onto it, or a button of the page's own
-        through <code>OpenFilePickerAsync</code>. Results arrive through <code>OnScan</code>. Off WebAssembly
-        <code>OpenFilePickerAsync</code> does nothing, so the page's button says why instead.
+        through <code>OpenFilePickerAsync</code>. Results arrive through <code>OnScan</code>. The built-in button opens
+        the picker in the page itself; <code>OpenFilePickerAsync</code> on a Server circuit reaches the page a round trip
+        after the click, which a strict browser may no longer take as the user's.
     </p>
     <div class="toolbar">
         <button type="button" @onclick="OpenPickerAsync">Choose an image</button>
@@ -35,8 +36,8 @@
     <h2>Blazor's InputFile</h2>
     <p>
         <code>ScanImageAsync</code> reads an image the application holds - an upload, a download, a file from
-        <code>InputFile</code> - and returns every symbol in it instead of raising <code>OnScan</code>. Off WebAssembly
-        it throws <code>NotSupported</code> before reading the stream, so a file is not uploaded just to be refused.
+        <code>InputFile</code> - and returns every symbol in it instead of raising <code>OnScan</code>. The page decodes
+        it, so on a Server circuit the uploaded file goes back to the browser and its luminance comes back.
     </p>
     <div class="toolbar">
         <label for="image-to-scan">Image to scan</label>
@@ -77,16 +78,6 @@
     private async Task OpenPickerAsync()
     {
         _error = null;
-        if (!OperatingSystem.IsBrowser())
-        {
-            // OpenFilePickerAsync does nothing off WebAssembly, where the scanner has no picker to open: say so,
-            // rather than leave a button that looks broken.
-            _error = new BbScannerException(
-                BbScannerErrorKind.NotSupported,
-                $"The scanner's file picker needs Blazor WebAssembly; this page is running on the {RendererInfo.Name} renderer.");
-            return;
-        }
-
         if (_scanner is not null)
         {
             await _scanner.OpenFilePickerAsync();
@@ -116,7 +107,7 @@
         }
         catch (BbScannerException ex)
         {
-            // NotSupported off WebAssembly; InvalidImage for a file that is refused or unreadable.
+            // InvalidImage for a file that is refused or unreadable; NotSupported only before the page is interactive.
             _error = ex;
         }
         catch (IOException ex)

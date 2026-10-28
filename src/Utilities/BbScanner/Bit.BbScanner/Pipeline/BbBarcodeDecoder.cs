@@ -267,6 +267,17 @@ public sealed class BbBarcodeDecoder : IDisposable
         // the work too.
         (cropX, cropY, var cropWidth, var cropHeight) = _options.Region.ToPixels(width, height);
 
+        var bpp = BbPixelConverter.BytesPerPixel(format);
+        var stride = width * bpp;
+        return PrepareRegion(pixels[((cropY * stride) + (cropX * bpp))..], cropWidth, cropHeight, stride, format, out step);
+    }
+
+    /// <summary>
+    /// Converts a region already cut out of a frame - its first pixel at the start of <paramref name="pixels"/>, its rows
+    /// <paramref name="stride"/> bytes apart - into the luminance plane, subsampled.
+    /// </summary>
+    private BbLuminanceView PrepareRegion(ReadOnlySpan<byte> pixels, int cropWidth, int cropHeight, int stride, BbPixelFormat format, out int step)
+    {
         // A factor the frame, or the region, is too small for would leave nothing to decode, so
         // it is lowered to the largest one that still leaves eight pixels a side.
         step = Math.Clamp(Math.Min(cropWidth, cropHeight) / 8, 1, _options.DownsampleFactor);
@@ -282,10 +293,8 @@ public sealed class BbBarcodeDecoder : IDisposable
             _grayscale.Resize(targetWidth, targetHeight);
         }
 
-        var bpp = BbPixelConverter.BytesPerPixel(format);
-        var stride = width * bpp;
         BbPixelConverter.ToGrayscaleDownsampled(
-            pixels[((cropY * stride) + (cropX * bpp))..],
+            pixels,
             _grayscale.Pixels,
             cropWidth,
             cropHeight,
@@ -294,6 +303,84 @@ public sealed class BbBarcodeDecoder : IDisposable
             stride);
 
         return _grayscale.View;
+    }
+
+    /// <summary>
+    /// Decodes a frame of which only the searched region was supplied, cut out by the caller - the page, when frames
+    /// cross a network to reach the decoder. <paramref name="pixels"/> holds the region, tightly packed;
+    /// <paramref name="region"/> says where it sits in a frame <paramref name="frameWidth"/> by
+    /// <paramref name="frameHeight"/>, and the results are reported in that frame's coordinates, exactly as
+    /// <see cref="Decode(ReadOnlySpan{byte}, int, int, BbPixelFormat, bool)"/> reports them for the whole frame when
+    /// <paramref name="region"/> is what <see cref="BbScanRegion.ToPixels"/> gives for it.
+    /// </summary>
+    internal BbBarcodeResult? DecodeRegion(
+        ReadOnlySpan<byte> pixels,
+        BbPixelFormat format,
+        (int X, int Y, int Width, int Height) region,
+        int frameWidth,
+        int frameHeight,
+        bool suppressDuplicates = true)
+    {
+        var start = Stopwatch.GetTimestamp();
+        var view = PrepareCutOut(pixels, format, region, frameWidth, frameHeight, out var step);
+        var afterGrayscale = Stopwatch.GetTimestamp();
+
+        return DecodeCore(view, region.X, region.Y, step, start, afterGrayscale, frameWidth, frameHeight, suppressDuplicates, maxSymbols: 1, results: null);
+    }
+
+    /// <summary>
+    /// Decodes every symbol in a frame of which only the searched region was supplied; see
+    /// <see cref="DecodeRegion"/> and <see cref="DecodeAll(ReadOnlySpan{byte}, int, int, BbPixelFormat, int, bool)"/>.
+    /// </summary>
+    internal IReadOnlyList<BbBarcodeResult> DecodeAllRegion(
+        ReadOnlySpan<byte> pixels,
+        BbPixelFormat format,
+        (int X, int Y, int Width, int Height) region,
+        int frameWidth,
+        int frameHeight,
+        int maxSymbols = 16,
+        bool suppressDuplicates = true)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxSymbols);
+
+        var start = Stopwatch.GetTimestamp();
+        var view = PrepareCutOut(pixels, format, region, frameWidth, frameHeight, out var step);
+        var afterGrayscale = Stopwatch.GetTimestamp();
+
+        var results = new List<BbBarcodeResult>();
+        DecodeCore(view, region.X, region.Y, step, start, afterGrayscale, frameWidth, frameHeight, suppressDuplicates, maxSymbols, results);
+        return results;
+    }
+
+    private BbLuminanceView PrepareCutOut(
+        ReadOnlySpan<byte> pixels,
+        BbPixelFormat format,
+        (int X, int Y, int Width, int Height) region,
+        int frameWidth,
+        int frameHeight,
+        out int step)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(region.Width);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(region.Height);
+
+        if (frameWidth < 8 || frameHeight < 8)
+        {
+            throw new ArgumentException("The frame is too small to decode.", nameof(pixels));
+        }
+
+        if (region.X < 0 || region.Y < 0 || region.X + region.Width > frameWidth || region.Y + region.Height > frameHeight)
+        {
+            throw new ArgumentOutOfRangeException(nameof(region), "The region does not lie inside the frame.");
+        }
+
+        var stride = region.Width * BbPixelConverter.BytesPerPixel(format);
+        if (pixels.Length < stride * region.Height)
+        {
+            throw new ArgumentException("The pixels are fewer than the region holds.", nameof(pixels));
+        }
+
+        return PrepareRegion(pixels, region.Width, region.Height, stride, format, out step);
     }
 
     /// <summary>

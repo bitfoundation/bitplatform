@@ -55,7 +55,26 @@ public abstract class BbScannerTest
     /// <summary>Opens a browser whose camera is the given clip, and a page on the demo.</summary>
     /// <param name="clipPath">Y4M file the fake camera plays, or <see langword="null"/> for the rotating clip.</param>
     /// <param name="grantPermission">Whether the camera permission prompt is auto-accepted.</param>
-    protected async Task<ScannerSession> OpenAsync(string? clipPath = null, bool grantPermission = true)
+    protected Task<ScannerSession> OpenAsync(string? clipPath = null, bool grantPermission = true)
+        => OpenAsync(BaseUrl, clipPath, grantPermission);
+
+    /// <summary>
+    /// Opens a browser whose camera is the given clip, and a page on the Blazor Server sample: the scanner on a circuit.
+    /// The test is inconclusive where the sample has not been built - or fails, on a build server.
+    /// </summary>
+    protected async Task<ScannerSession> OpenOnServerAsync(string? clipPath = null, bool grantPermission = true)
+    {
+        var host = await ServerSampleHost.GetAsync();
+        if (host.Unavailable is { } reason)
+        {
+            if (E2EEnvironment.IsContinuousIntegration) Assert.Fail("The Blazor Server tests could not run: " + reason);
+            Assert.Inconclusive("The Blazor Server tests could not run: " + reason);
+        }
+
+        return await OpenAsync(host.BaseUrl!, clipPath, grantPermission);
+    }
+
+    private async Task<ScannerSession> OpenAsync(string baseUrl, string? clipPath, bool grantPermission)
     {
         var launch = Session.Launch!;
 
@@ -87,7 +106,7 @@ public abstract class BbScannerTest
         });
 
         var page = await context.NewPageAsync();
-        var session = new ScannerSession(browser, context, page, BaseUrl);
+        var session = new ScannerSession(browser, context, page, baseUrl);
         _sessions.Add(session);
 
         await session.AttachDiagnosticsAsync();

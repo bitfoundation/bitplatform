@@ -4,9 +4,8 @@ using Bit.BbScanner.Samples.Core;
 var builder = WebApplication.CreateBuilder(args);
 
 // InteractiveAuto: the first visit runs on a circuit while the WebAssembly runtime downloads, later visits run in the
-// browser. The scanner follows: on the circuit it reports NotSupported, as under Server; reload once the runtime is
-// cached and the same page opens the camera. An app that scans therefore renders its scanning pages with
-// InteractiveWebAssembly explicitly - here the whole app shares one mode, to show both sides.
+// browser. The scanner follows: on the circuit its frames are decoded on the server, as under Server; reload once the
+// runtime is cached and the same page decodes them in the browser, with nothing in the page changing.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();

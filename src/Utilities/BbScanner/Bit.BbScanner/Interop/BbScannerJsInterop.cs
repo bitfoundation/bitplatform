@@ -4,7 +4,7 @@ using System.Runtime.Versioning;
 namespace Bit.BbScanner;
 
 /// <summary>
-/// The complete JavaScript surface of the library.
+/// The JavaScript surface of the library as WebAssembly reaches it; <see cref="BbScannerWasmBridge"/> is its only user.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -16,8 +16,8 @@ namespace Bit.BbScanner;
 /// </para>
 /// <para>
 /// The control methods could have used ordinary Blazor interop, but keeping them here means the
-/// whole bridge is one module with one lifetime, and the component never needs an
-/// <see cref="Microsoft.JSInterop.IJSObjectReference"/> at all.
+/// whole WebAssembly bridge is one module with one lifetime. Under Blazor Server and Blazor Hybrid, where these
+/// bindings do not exist, <see cref="BbScannerJsRuntimeBridge"/> calls the same module through IJSRuntime.
 /// </para>
 /// </remarks>
 [SupportedOSPlatform("browser")]
@@ -77,7 +77,8 @@ internal static partial class BbScannerJsInterop
         string? deviceId,
         int requestedWidth,
         int requestedHeight,
-        string? facingMode);
+        string? facingMode,
+        int watchdogMs);
 
     [JSImport("configure", ModuleName)]
     internal static partial void Configure(string sessionId, int width, int height);
@@ -99,23 +100,14 @@ internal static partial class BbScannerJsInterop
     [JSImport("getViewSize", ModuleName)]
     internal static partial int GetViewSize(string sessionId);
 
-    [JSImport("pollChanges", ModuleName)]
-    internal static partial int PollChanges(string sessionId);
+    [JSImport("poll", ModuleName)]
+    internal static partial int Poll(string sessionId);
 
     [JSImport("stop", ModuleName)]
     internal static partial void Stop(string sessionId);
 
     [JSImport("dispose", ModuleName)]
     internal static partial void DisposeSession(string sessionId);
-
-    [JSImport("isTrackEnded", ModuleName)]
-    internal static partial bool IsTrackEnded(string sessionId);
-
-    [JSImport("wasLostWhileHidden", ModuleName)]
-    internal static partial bool WasLostWhileHidden(string sessionId);
-
-    [JSImport("isPageHidden", ModuleName)]
-    internal static partial bool IsPageHidden();
 
     [JSImport("feedback", ModuleName)]
     internal static partial void Feedback(int kinds);
@@ -154,17 +146,14 @@ internal static partial class BbScannerJsInterop
     [JSImport("prepareVideoFrame", ModuleName)]
     internal static partial int PrepareVideoFrame(string sessionId, int requestId, int maxDimension);
 
-    [JSImport("attachDropTarget", ModuleName)]
-    internal static partial void AttachDropTarget(string sessionId, string targetElementId, string inputElementId);
+    [JSImport("attachRoot", ModuleName)]
+    internal static partial void AttachRoot(string sessionId, string targetElementId, string inputElementId);
 
     [JSImport("click", ModuleName)]
     internal static partial void Click(string elementId);
 
-    [JSImport("isCameraSupported", ModuleName)]
-    internal static partial bool IsCameraSupported();
-
-    [JSImport("isSecureContext", ModuleName)]
-    internal static partial bool IsSecureContext();
+    [JSImport("capabilities", ModuleName)]
+    internal static partial int Capabilities();
 
     [JSImport("queryCameraPermission", ModuleName)]
     internal static partial Task<string> QueryCameraPermissionAsync();

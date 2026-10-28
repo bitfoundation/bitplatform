@@ -94,6 +94,9 @@ public class McpResourcePromptTests
         // the mistake the prompt exists to prevent.
         var types = BbScannerApiCatalog.Types.Select(type => type.Name).ToHashSet(StringComparer.Ordinal);
 
+        // Bit.BbScanner.Maui's public types: a MAUI library, which the demo's server cannot load to catalog.
+        types.UnionWith(["BbScannerHost", "BbScannerMauiAppBuilderExtensions"]);
+
         foreach (var (name, arguments) in _prompts)
         {
             var result = await McpTestHost.Client.GetPromptAsync(name, arguments);

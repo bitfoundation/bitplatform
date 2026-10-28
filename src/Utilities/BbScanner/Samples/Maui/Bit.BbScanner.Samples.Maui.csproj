@@ -52,6 +52,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Core\Bit.BbScanner.Samples.Core.csproj" />
+        <ProjectReference Include="..\..\Bit.BbScanner.Maui\Bit.BbScanner.Maui.csproj" />
     </ItemGroup>
 
 </Project>

@@ -6,6 +6,8 @@
     <NavLink href="decoder">Decoder</NavLink>
 </nav>
 
-<main>
+@* data-interactive turns true once the page runs interactively - on the circuit, in the browser or in the WebView -
+   rather than as prerendered markup, which buttons do not answer yet; the browser tests wait for it. *@
+<main data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")">
     @Body
 </main>

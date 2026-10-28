@@ -4,12 +4,16 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:core="clr-namespace:Bit.BbScanner.Samples.Core;assembly=Bit.BbScanner.Samples.Core"
+    xmlns:bb="clr-namespace:Bit.BbScanner;assembly=Bit.BbScanner.Maui"
     BackgroundColor="White">
 
-    <BlazorWebView x:Name="blazorWebView" HostPage="wwwroot/index.html" BlazorWebViewInitialized="OnBlazorWebViewInitialized">
-        <BlazorWebView.RootComponents>
-            <RootComponent ComponentType="{x:Type core:Routes}" Selector="#app" />
-        </BlazorWebView.RootComponents>
-    </BlazorWebView>
+    <!-- The host draws the device camera's preview behind the BlazorWebView, where the scanner is. -->
+    <bb:BbScannerHost>
+        <BlazorWebView x:Name="blazorWebView" HostPage="wwwroot/index.html" BlazorWebViewInitialized="OnBlazorWebViewInitialized">
+            <BlazorWebView.RootComponents>
+                <RootComponent ComponentType="{x:Type core:Routes}" Selector="#app" />
+            </BlazorWebView.RootComponents>
+        </BlazorWebView>
+    </bb:BbScannerHost>
 
 </ContentPage>

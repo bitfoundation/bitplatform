@@ -51,5 +51,8 @@
     </dict>
     <key>XSAppIconAssets</key>
     <string>Assets.xcassets/appicon.appiconset</string>
+    <!-- The scanner opens the camera: without a usage description macOS refuses it. -->
+    <key>NSCameraUsageDescription</key>
+    <string>Point the camera at a barcode to scan it.</string>
 </dict>
 </plist>
