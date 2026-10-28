@@ -25,7 +25,7 @@
     {
         subscription = await window.SubscribeEvent<ButilKeyboardEventArgs>(
             ButilEvents.KeyDown,
-            args => Console.WriteLine($"{args.Key} ({args.Code})"));
+            args => Console.WriteLine($"{args.Key} ({args.Code}) on {args.TargetTagName}, editable: {args.TargetIsEditable}"));
     }
 
     public async ValueTask DisposeAsync()
@@ -38,7 +38,7 @@
             <button @onclick="SubscribeKeyDown" disabled="@(keydownSubscription is not null)">Subscribe keydown</button>
             <button class="secondary" @onclick="UnsubscribeKeyDown" disabled="@(keydownSubscription is null)">Unsubscribe</button>
         </div>
-        <p class="section-desc">While subscribed, press any key and watch the console below.</p>
+        <p class="section-desc">While subscribed, press any key and watch the console below - once on the page, once in any text field on it. TargetTagName and TargetIsEditable tell a shortcut handler whether the user was typing.</p>
         <DemoConsole @ref="eventsOutput" Title="window events output" />
     </DemoSection>
 
@@ -423,7 +423,7 @@ foreach (var range in ranges)
         {
             keydownSubscription = await window.SubscribeEvent<ButilKeyboardEventArgs>(
                 ButilEvents.KeyDown,
-                args => _ = eventsOutput.Info("keydown:", args.Key, $"(code: {args.Code}, ctrl: {args.CtrlKey}, shift: {args.ShiftKey})"));
+                args => _ = eventsOutput.Info("keydown:", args.Key, $"(code: {args.Code}, ctrl: {args.CtrlKey}, shift: {args.ShiftKey}, target: {args.TargetTagName}, editable: {args.TargetIsEditable})"));
             await eventsOutput.Success("Subscribed to window keydown.");
         }
         catch (Exception ex)

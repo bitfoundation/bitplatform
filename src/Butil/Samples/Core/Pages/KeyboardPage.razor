@@ -14,10 +14,11 @@
 
 await keyboard.Add(ButilKeyCodes.F5, () => { ... });
 await keyboard.Add(ButilKeyCodes.F10, () => { ... }, ButilModifiers.Alt | ButilModifiers.Ctrl);
+await keyboard.Add(ButilKeyCodes.Delete, () => { ... });
 </pre>
 
 <DemoCard Title="Try the registered shortcuts" Api="Add"
-          Description="Two shortcuts are registered for this page. Press them and watch the output below light up.">
+          Description="Three shortcuts are registered for this page - these two, and Delete in the next card. Press them and watch the output below light up.">
     <div class="controls">
         <span class="result-pill"><b>F5</b></span>
         <span class="muted">- logs a message</span>
@@ -29,17 +30,27 @@ await keyboard.Add(ButilKeyCodes.F10, () => { ... }, ButilModifiers.Alt | ButilM
     <p class="muted" style="margin-top:1rem">Tip: F5 normally reloads the page - Bit.Butil intercepts it here so the handler runs instead.</p>
 </DemoCard>
 
-<DemoConsole @ref="output" Title="keyboard output" Placeholder="Press F5 or Ctrl+Alt+F10..." />
+<DemoCard Title="A shortcut that stands aside while typing" Api="IgnoreWhenEditable"
+          Description="Delete has no Ctrl, Alt or Meta, so it stands aside by default where a control acts on it: it fires anywhere on the page, but inside a text field it deletes text as usual and the shortcut stays quiet.">
+    <div class="controls">
+        <span class="result-pill"><b>Delete</b></span>
+        <input value="type or delete here" />
+    </div>
+</DemoCard>
+
+<DemoConsole @ref="output" Title="keyboard output" Placeholder="Press F5, Ctrl+Alt+F10 or Delete..." />
 
 @code {
     private DemoConsole output = default!;
     private Guid _f5Id;
     private Guid _f10Id;
+    private Guid _deleteId;
 
     protected override async Task OnInitializedAsync()
     {
         _f5Id = await keyboard.Add(ButilKeyCodes.F5, () => _ = output.Success("F5 was pressed!"));
         _f10Id = await keyboard.Add(ButilKeyCodes.F10, () => _ = output.Success("Ctrl+Alt+F10 was pressed!"), ButilModifiers.Alt | ButilModifiers.Ctrl);
+        _deleteId = await keyboard.Add(ButilKeyCodes.Delete, () => _ = output.Success("Delete was pressed outside a text field!"));
 
         await base.OnInitializedAsync();
     }
@@ -48,5 +59,6 @@ await keyboard.Add(ButilKeyCodes.F10, () => { ... }, ButilModifiers.Alt | ButilM
     {
         await keyboard.Remove(_f5Id);
         await keyboard.Remove(_f10Id);
+        await keyboard.Remove(_deleteId);
     }
 }

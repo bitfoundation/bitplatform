@@ -365,6 +365,46 @@ event; the gate changes how often .NET hears, not what the page does.
 The one case to leave ungated is a handler that must see *every* change - a mutation change log, an
 undo stack - because what a gate drops is whole batches, not individual records.
 
+### Shortcuts on keys a control acts on
+
+`Keyboard.Add`, `Subscribe` and `SubscribeOn` default to `preventDefault: true` and
+`stopPropagation: true`, which suits a shortcut that replaces the browser's own action (Ctrl+S, F5).
+On a key a control also acts on, the same defaults would take the key away from every control on the
+page - a Delete shortcut would stop Delete from deleting text in any input. So a shortcut without
+Ctrl, Alt or Meta stands aside, by default, while its key goes to a control that acts on that key
+itself: nothing fired, nothing suppressed, the key does what it always does there.
+
+The test is per key, not per element:
+
+- a text field - an `input` that takes text, a `textarea`, `contenteditable` content, or an element
+  driven through `TextEditContext` - takes the keys that type, delete or move the caret, and Enter
+  where it adds a line or submits a form. A read-only field takes none of them;
+- a `select` takes the arrows, Home, End, PageUp, PageDown, Space, Enter and the letters and digits -
+  not Delete, so a Delete shortcut still fires on a focused filter dropdown;
+- a range input takes the arrows, Home, End, PageUp and PageDown, a radio button the arrows and
+  Space, a checkbox Space, and a color or file input Space and Enter;
+- an element declaring one of those controls by its `role` counts as that control, and a
+  form-associated custom element counts as a text field.
+
+`KeyboardShortcutOptions.IgnoreWhenEditable` sets it explicitly - `true` stands aside whatever the
+modifiers, `false` never does:
+
+```csharp
+// Delete has no Ctrl, Alt or Meta: it stands aside in text fields without being told.
+await keyboard.Add(ButilKeyCodes.Delete, DeleteSelectedRows);
+
+// The field's own undo wins while the user is typing; the app's undo everywhere else.
+await keyboard.Add(ButilKeyCodes.KeyZ, UndoRowEdit,
+    new KeyboardShortcutOptions { Modifiers = ButilModifiers.Ctrl, IgnoreWhenEditable = true });
+```
+
+A shortcut registered with `SubscribeOn` never stands aside for the element it is scoped to - scoping
+one to a text field means it is meant to fire there - only for the controls inside it. A key typed
+inside a closed shadow root arrives with the shadow host as its target, since nothing outside that
+root can see what has focus inside it; such a host counts by its `role` or form association, or as
+no control at all. A keydown listener subscribed through `Document`, `Window` or an element reads the
+same test from `ButilKeyboardEventArgs.TargetIsEditable`, next to `TargetTagName`.
+
 ### Handles own hardware
 
 `MediaStreamHandle`, `MediaRecordingHandle`, `WakeLock`'s persistent handle and the File System
