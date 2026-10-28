@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <!-- The pages every hosting sample (Server, WebAssembly, Auto, MAUI) renders. Nothing in here knows which host it
-         runs in, so running the same pages in each one shows what BbScanner can do where: the camera needs the
-         WebAssembly runtime, the decoder runs wherever .NET does. -->
+         runs in, so running the same pages in each one shows BbScanner doing the same things everywhere: the camera
+         in the page, the decoder wherever .NET runs. -->
 
     <PropertyGroup>
         <TargetFramework>net11.0</TargetFramework>

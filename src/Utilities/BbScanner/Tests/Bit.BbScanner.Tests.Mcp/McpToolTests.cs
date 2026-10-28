@@ -213,13 +213,40 @@ public class McpToolTests
     }
 
     [TestMethod]
-    public async Task The_server_mode_explains_that_the_camera_needs_webassembly()
+    public async Task The_server_mode_explains_how_frames_reach_the_server()
     {
         var guide = await McpCall.TextAsync("GetBbScannerSetupGuide", new() { ["renderMode"] = "server" });
 
-        Assert.Contains("NotSupported", guide);
+        Assert.Contains("@rendermode InteractiveServer", guide);
+        Assert.Contains("MaximumReceiveMessageSize", guide);
+        Assert.Contains("watchdog", guide);
         Assert.Contains("BbBarcodeDecoder", guide);
         Assert.Contains("#### Blazor Server", guide, "The quoted guide section should be demoted under 'From the guide'.");
+    }
+
+    [TestMethod]
+    public async Task The_hybrid_mode_sets_up_the_device_camera_and_its_permission_on_each_platform()
+    {
+        var guide = await McpCall.TextAsync("GetBbScannerSetupGuide", new() { ["renderMode"] = "hybrid" });
+
+        Assert.Contains("Bit.BbScanner.Maui", guide);
+        Assert.Contains("builder.UseBbScanner();", guide);
+        Assert.Contains("<bb:BbScannerHost>", guide);
+        Assert.Contains("android.permission.CAMERA", guide);
+        Assert.Contains("NSCameraUsageDescription", guide);
+        Assert.Contains("com.apple.security.device.camera", guide);
+        Assert.Contains("<DeviceCapability Name=\"webcam\" />", guide);
+        Assert.Contains("#### Blazor Hybrid: .NET MAUI", guide, "The quoted guide section should be demoted under 'From the guide'.");
+        Assert.Contains("#### Blazor Hybrid: WPF and Windows Forms", guide);
+    }
+
+    [TestMethod]
+    public async Task The_auto_mode_does_not_send_the_scanner_to_webassembly()
+    {
+        var guide = await McpCall.TextAsync("GetBbScannerSetupGuide", new() { ["renderMode"] = "auto" });
+
+        Assert.Contains("no page needs `@rendermode InteractiveWebAssembly` of its own", guide);
+        Assert.Contains("AddInteractiveServerRenderMode()", guide);
     }
 
     [TestMethod]

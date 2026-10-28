@@ -182,8 +182,8 @@
                     <h3>One package, one namespace</h3>
                     <p>
                         No services to register, no script tag and no stylesheet link: the package's initializer
-                        adds the stylesheet and the component imports its own module. Put it on a page rendered
-                        with <code>InteractiveWebAssembly</code>.
+                        adds the stylesheet and the component imports its own module. Put it on any interactive
+                        page - WebAssembly, Server, Auto or Hybrid.
                     </p>
                     <a href="getting-started">Getting started →</a>
                 </div>
@@ -215,7 +215,7 @@
                     <h3>Decode without a camera</h3>
                     <p>
                         The pipeline has no dependency on Blazor, JavaScript or a camera: a server decoding uploads,
-                        a MAUI app feeding the platform camera's frames, or a unit test uses the same decoder.
+                        a worker reading a folder of images, or a unit test uses the same decoder.
                     </p>
                     <a href="api">API reference →</a>
                 </div>
@@ -247,7 +247,7 @@
                 </thead>
                 <tbody>
                     <tr><td>Where the decoding runs</td><td>JavaScript, outside the .NET debugger</td><td>C#, in managed code you can step into</td></tr>
-                    <tr><td>What crosses interop</td><td>Results marshalled back as JSON</td><td>One memory-view copy of each frame into a reused buffer</td></tr>
+                    <tr><td>What crosses interop</td><td>Results marshalled back as JSON</td><td>One memory-view copy of each frame into a reused buffer on WebAssembly; the scan region's luminance, in 30 KB slices, under Server and Hybrid</td></tr>
                     <tr><td>Dependencies</td><td>A script library to ship and keep up to date</td><td>None beyond <code>Microsoft.AspNetCore.Components.Web</code></td></tr>
                     <tr><td>The result</td><td>Whatever shape the library returns</td><td><code>BbBarcodeResult</code>: text, raw bytes, corners, metadata</td></tr>
                     <tr><td>Without a browser</td><td>A second decoder for the server</td><td>The same <code>BbBarcodeDecoder</code>, anywhere .NET runs</td></tr>
@@ -289,9 +289,12 @@
             <details>
                 <summary>Which render modes can open the camera?</summary>
                 <p>
-                    WebAssembly: a standalone Blazor WebAssembly app, or the <code>InteractiveWebAssembly</code> pages of
-                    a Blazor Web App, on .NET 10 and 11. Under Blazor Server and Blazor Hybrid the component reports
-                    <code>NotSupported</code> instead, and <code>BbBarcodeDecoder</code> decodes pixels in-process there.
+                    All the interactive ones, on .NET 10 and 11: a standalone Blazor WebAssembly app, Blazor Server,
+                    the <code>InteractiveServer</code>, <code>InteractiveWebAssembly</code> and <code>InteractiveAuto</code>
+                    pages of a Blazor Web App, and a Blazor Hybrid app's <code>BlazorWebView</code> in MAUI, WPF or
+                    Windows Forms. On WebAssembly the frames are decoded in the browser; under Server the page sends the
+                    scan region's luminance to the server; in a MAUI app <code>Bit.BbScanner.Maui</code> opens the
+                    device's own camera and its frames go straight to the decoder in the app.
                 </p>
             </details>
             <details>
@@ -299,7 +302,9 @@
                 <p>
                     Browsers only expose the camera in a secure context - a page served over HTTPS, or from
                     <code>localhost</code>. Anywhere else the component reports <code>NotSupported</code> straight away,
-                    with a message that says so, rather than waiting on a prompt that will never appear.
+                    with a message that says so, rather than waiting on a prompt that will never appear. The render mode
+                    makes no difference here; in a Blazor Hybrid app the platform has to allow the camera as well, and
+                    asks the user itself.
                 </p>
             </details>
             <details>

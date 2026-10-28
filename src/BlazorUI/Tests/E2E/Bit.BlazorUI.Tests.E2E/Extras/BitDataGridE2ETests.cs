@@ -562,6 +562,134 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         Assert.IsTrue(after.Height > before.Height + 10, $"The wrapped row did not grow ({before.Height}px -> {after.Height}px).");
     }
 
+    // Where the text a header's label holds itself (its title, not the sort hint drawn after it) lies, and the label's
+    // box and line height: [text left, text right, text height, label left, label right, line height].
+    private const string LabelTextScript = """
+        label => {
+            const range = document.createRange();
+            range.selectNodeContents(label);
+            const text = range.getBoundingClientRect(), box = label.getBoundingClientRect();
+            return [text.left, text.right, text.height, box.left, box.right, parseFloat(getComputedStyle(label).lineHeight)];
+        }
+        """;
+
+    // On how many lines each word of the text an element holds is laid out, in order.
+    private const string WordLinesScript = """
+        el => {
+            const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), lines = [];
+            for (let node; (node = walker.nextNode());) {
+                for (const word of node.data.matchAll(/\S+/g)) {
+                    const range = document.createRange();
+                    range.setStart(node, word.index);
+                    range.setEnd(node, word.index + word[0].length);
+                    lines.push(new Set([...range.getClientRects()].map(r => Math.round(r.top))).size);
+                }
+            }
+            return lines;
+        }
+        """;
+
+    // Whether an element's content overflows its box, which a label clips outside a wrapped header.
+    private const string OverflowsScript = "el => el.scrollWidth > el.clientWidth";
+
+    // The hint of an unsorted column is laid out like the arrow it previews: hovered, it shows inside its label even
+    // where the title is end-aligned (hung past the title instead, the label clipped it there), and sorting the column
+    // puts the arrow in its place without moving the title.
+    [TestMethod]
+    public async Task Sorting_TheSortHint_ShowsInsideTheLabelAndHoldsTheRoomOfTheArrow()
+    {
+        await OpenAsync(Url);
+
+        var header = HeaderCell("grid-basic", 1);
+        var label = HeaderButton("grid-basic", "ID");
+        await Expect(header).ToHaveClassAsync(HasClass("bit-dtg-sortable"));
+        await Expect(header).ToHaveClassAsync(HasClass("bit-dtg-end"));
+        await Expect(header).Not.ToHaveAttributeAsync("aria-sort", new Regex(".*"));
+
+        await label.HoverAsync();
+        await UntilAsync(async () => await label.EvaluateAsync<string>("el => getComputedStyle(el, '::after').opacity") == "1",
+                         "The hovered header does not show its sort hint.");
+        Assert.IsFalse(await label.EvaluateAsync<bool>(OverflowsScript), "The label clips the sort hint of its end-aligned title.");
+        var box = await BoxAsync(label);
+        var unsorted = await BoxAsync(label.Locator(".bit-dtg-htitle"));
+        Assert.IsTrue(box.X + box.Width - (unsorted.X + unsorted.Width) > 4, "The end-aligned title leaves its sort hint no room in the label.");
+
+        await label.ClickAsync();
+        await Expect(header).ToHaveAttributeAsync("aria-sort", "ascending");
+        var sorted = await BoxAsync(label.Locator(".bit-dtg-htitle"));
+        Assert.AreEqual(unsorted.X, sorted.X, 0.5, "Sorting the column moved its title.");
+        Assert.IsFalse(await label.EvaluateAsync<bool>(OverflowsScript), "The label clips the sort arrow of its end-aligned title.");
+    }
+
+    // The header of #13963, right to left: a template laying a title out beside an icon keeps the title on one line and
+    // its word whole, both where the two fit the column and where they run a few pixels short - the sort hint of the
+    // sortable column follows them into the cell's padding rather than squeezing the title. A one-word title wider than
+    // its column, whether the grid writes it or an element of a template holds it, breaks inside the column, and a title
+    // of several words that each fit it breaks between them.
+    [TestMethod]
+    public async Task Wrap_AWrappedHeaderTitle_BreaksOnlyAWordWiderThanItsRoom()
+    {
+        await OpenAsync(Url);
+
+        const string id = "grid-wrap-header";
+        var sortable = HeaderCell(id, 1);
+        var unsortable = HeaderCell(id, 2);
+        await Expect(sortable).ToHaveClassAsync(HasClass("bit-dtg-sortable"));
+        await Expect(sortable).ToHaveClassAsync(HasClass("bit-dtg-hcell-wrap"));
+        await Expect(unsortable).Not.ToHaveClassAsync(HasClass("bit-dtg-sortable"));
+
+        // Measured where the column is wide enough: the room its cell takes from its label, and what the template
+        // needs to lay its title and icon out on one line.
+        var cell = await BoxAsync(unsortable);
+        var label = await BoxAsync(unsortable.Locator(".bit-dtg-htext"));
+        var template = await BoxAsync(unsortable.Locator(".wrap-header-tpl"));
+        var title = await BoxAsync(unsortable.Locator(".wrap-header-title"));
+        var fit = cell.Width - label.Width + template.Width;
+
+        async Task ResizeAsync(double width)
+        {
+            await Page.Locator("#wrap-header-width").FillAsync(width.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            await UntilAsync(async () => Math.Abs((await BoxAsync(sortable)).Width - width) < 0.5 && Math.Abs((await BoxAsync(unsortable)).Width - width) < 0.5,
+                             $"The columns did not take a width of {width}px.");
+        }
+
+        async Task ExpectTheTitleWholeAsync(string when)
+        {
+            foreach (var (header, name) in new[] { (sortable, "sortable"), (unsortable, "unsortable") })
+            {
+                var box = await BoxAsync(header.Locator(".wrap-header-title"));
+                Assert.AreEqual(title.Height, box.Height, 0.5, $"The {name} column's title wraps {when}.");
+                Assert.AreEqual(title.Width, box.Width, 0.5, $"The {name} column's title shrinks below its word {when}.");
+            }
+        }
+
+        await ResizeAsync(Math.Ceiling(fit) + 4);
+        await ExpectTheTitleWholeAsync("where the title and the icon fit the column");
+        var sortableLabel = await BoxAsync(sortable.Locator(".bit-dtg-htext"));
+        var sortableTemplate = await BoxAsync(sortable.Locator(".wrap-header-tpl"));
+        Assert.IsTrue(sortableTemplate.X >= sortableLabel.X - 0.5, "The sortable column's template overflows its label where it fits the column.");
+
+        await ResizeAsync(Math.Floor(fit) - 6);
+        await ExpectTheTitleWholeAsync("where the title and the icon run a few pixels short");
+
+        // A one-word title wider than its column breaks, and every line of it stays inside the label.
+        foreach (var (ariaColIndex, name) in new[] { (3, "title"), (4, "template's title") })
+        {
+            var text = await HeaderCell(id, ariaColIndex).Locator(".bit-dtg-htext").EvaluateAsync<double[]>(LabelTextScript);
+            Assert.IsTrue(text[2] > text[5] * 1.5, $"The {name} wider than its column did not wrap ({text[2]}px tall, lines of {text[5]}px).");
+            Assert.IsTrue(text[0] >= text[3] - 0.5 && text[1] <= text[4] + 0.5, $"The {name} wider than its column overflows its label.");
+        }
+
+        // A title of several words wider than its column, every word of which fits it, wraps between its words only.
+        var words = HeaderCell(id, 5).Locator(".bit-dtg-htext");
+        var wordsText = await words.EvaluateAsync<double[]>(LabelTextScript);
+        Assert.IsTrue(wordsText[2] > wordsText[5] * 1.5, $"The title of several words wider than its column did not wrap ({wordsText[2]}px tall, lines of {wordsText[5]}px).");
+        Assert.IsTrue(wordsText[0] >= wordsText[3] - 0.5 && wordsText[1] <= wordsText[4] + 0.5, "The title of several words wider than its column overflows its label.");
+        var wordLines = await words.EvaluateAsync<int[]>(WordLinesScript);
+        Assert.AreEqual(4, wordLines.Length, "The title of several words does not hold the words it was given.");
+        Assert.IsTrue(wordLines.All(lines => lines == 1), $"The title of several words breaks inside a word that fits its column (lines per word: {string.Join(", ", wordLines)}).");
+    }
+
     [TestMethod]
     public async Task RowHeight_RowHeightAndRowHeightSelector_SetTheRowsMinimumHeight()
     {

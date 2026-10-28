@@ -26,6 +26,7 @@ public static class BbScannerCompletions
         "the scanner shows NotSupported instead of the camera",
         "the camera never starts and no permission prompt appears",
         "the scanner works on localhost but not on the deployed site",
+        "the camera never opens in the MAUI app on Android",
         "the same barcode is reported over and over",
         "a barcode on screen is never read",
         "an EAN-13 is reported as UPC-A",

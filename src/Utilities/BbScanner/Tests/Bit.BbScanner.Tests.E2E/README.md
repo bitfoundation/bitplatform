@@ -12,7 +12,8 @@ everything that only exists in a real browser:
 - the demo pages, which compose the scanner with real application code, never run.
 
 This suite boots the demo (`Bit.BbScanner.Demo.Server`, which prerenders the pages and runs them on WebAssembly) and
-drives it in Chromium with Playwright. The browser's camera is a generated Y4M video
+drives it in Chromium with Playwright. It boots the Blazor Server sample (`Bit.BbScanner.Samples.Server`) too, where
+the same scanner runs on a circuit: the camera in the browser, the frame loop and the decoder on the server. The browser's camera is a generated Y4M video
 (`--use-file-for-fake-video-capture`) rendered by the test kit's encoders, so everything below the sensor is real:
 the WebAssembly runtime, the JavaScript module, a real `MediaStream`, the real frame loop and the real decoder.
 
@@ -23,6 +24,7 @@ the WebAssembly runtime, the JavaScript module, a real `MediaStream`, the real f
 | `ScannerLifecycleTests` | The camera starts and scans continuously; every symbology in the clip (QR Code, Data Matrix, Code 128, EAN-13, a tilted PDF417 and a turned Aztec code) is decoded; a blank clip reports nothing; stop releases the camera and start opens it again; pause keeps the camera and stops reporting; repeated start/stop cycles and a start superseded by another leave no camera running; navigating away disposes the scanner and releases the camera; reloads start cleanly; a denied permission is reported as an error; switching cameras keeps exactly one track open; a minute of scanning does not grow the heap without bound; frames never reach the render tree. |
 | `ScannerInterfaceTests` | Every demo page loads without errors and an unknown route shows the not-found page; the scanner is a labelled region with named controls, announces results in a live region and is operable from the keyboard; the layout mirrors in a right-to-left document and fits a narrow phone screen; the scanner keeps the camera's aspect ratio so overlays line up; losing the camera mid-scan is reported rather than hanging; choosing the same image twice scans it twice; a file that is not an image is refused before it is decoded; `DecodeImage` reads a buffer the page generated. |
 | `ScannerInputTests` | An image dropped onto the scanner and one passed to `ScanImageAsync` from `InputFile` are scanned without the camera; every symbol of an image is reported when asked for; `AfterScan` stops the camera after a scan; `AcceptResult` reports only what it accepts; a session window reports each value once however often it returns; the current frame can be scanned at full resolution. |
+| `ScannerServerTests` | On a Blazor Server circuit: the camera opens in the browser and the server decodes the frames the page streams to it, without a WebAssembly runtime being downloaded; stop releases the camera and start opens it again; navigating away disposes the scanner and releases the camera; a camera the circuit leaves behind (`Blazor.disconnect()`) is closed by the page's watchdog; the built-in *Scan image* button opens the file picker although the click went to the server and back; an `InputFile` upload is scanned through `ScanImageAsync`. |
 | `ScannerExperienceTests` | The interface follows the application's `Texts`, right to left included; stopping from the keyboard keeps focus on the button that starts again; a camera the browser ends while the page is hidden is reopened, paused if it was, when the page returns; `ReleaseCameraWhenHidden` closes and reopens it, and without it a hidden page keeps its camera; the camera permission can be asked about without opening the camera; stopping and starting rebuilds the frame readback; a scan vibrates and beeps once per scan, only when asked. Hiding a page is simulated - headless Chromium never hides one - by overriding `document.visibilityState`. |
 
 Camera tracks are counted as the page opens and stops them, so a leaked stream fails a test rather than only
@@ -34,8 +36,10 @@ lighting up the camera indicator. Every page is prerendered, so each test waits 
 From `src/Utilities/BbScanner` (inside `src`, so `src/global.json` selects the Microsoft.Testing.Platform runner):
 
 ```bash
-# The suite runs the demo server's build output: build it first, in the configuration the tests run in.
+# The suite runs the demo server's and the Blazor Server sample's build output: build them first, in the configuration
+# the tests run in.
 dotnet build Demo/Server/Bit.BbScanner.Demo.Server.csproj
+dotnet build Samples/Server/Bit.BbScanner.Samples.Server.csproj
 dotnet build Tests/Bit.BbScanner.Tests.E2E/Bit.BbScanner.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browser Playwright drives.
@@ -57,6 +61,7 @@ publishes it - trimmed and compiled ahead of time, which a build output is neith
 ```bash
 dotnet workload install wasm-tools
 dotnet publish src/Utilities/BbScanner/Demo/Server/Bit.BbScanner.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
+dotnet build src/Utilities/BbScanner/Samples/Server/Bit.BbScanner.Samples.Server.csproj -c Release
 dotnet build src/Utilities/BbScanner/Tests/Bit.BbScanner.Tests.E2E/Bit.BbScanner.Tests.E2E.csproj -c Release
 pwsh src/Utilities/BbScanner/Tests/Bit.BbScanner.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 (cd demo && dotnet Bit.BbScanner.Demo.Server.dll --urls http://127.0.0.1:5000 &)
@@ -65,7 +70,9 @@ cd src/Utilities/BbScanner/Tests/Bit.BbScanner.Tests.E2E && BBSCANNER_E2E_BASE_U
 
 The suite starts the demo server itself (`dotnet Bit.BbScanner.Demo.Server.dll --urls http://127.0.0.1:<free port>`,
 in the Development environment so the build output finds its static web assets), waits until it answers, shares it
-between all tests and stops it when the run ends. Unlike most browser suites, every test launches a browser of its
+between all tests and stops it when the run ends. It starts the Blazor Server sample the same way, from its build
+output, the first time a Blazor Server test needs it. The Blazor Server sample has no published counterpart: a circuit
+runs .NET on the server, where nothing is trimmed or compiled ahead of time. Unlike most browser suites, every test launches a browser of its
 own: the clip the fake camera plays and whether the permission prompt is accepted are launch arguments of the
 browser process. The tests run one at a time, because each one waits for the decoder to keep up with a video in
 real time.
@@ -77,7 +84,8 @@ a build server (`CI=true`) the same tests **fail** instead, so a suite that neve
 
 | Variable | Effect |
 |---|---|
-| `BBSCANNER_E2E_CONFIGURATION` | Build configuration of the demo server to boot; defaults to the test assembly's own. |
+| `BBSCANNER_E2E_CONFIGURATION` | Build configuration of the demo server and the Blazor Server sample to boot; defaults to the test assembly's own. |
 | `BBSCANNER_E2E_BASE_URL` | Drive an already running demo (for example one started from the IDE) instead of booting one. |
+| `BBSCANNER_E2E_SERVER_BASE_URL` | Drive an already running Blazor Server sample instead of booting one. |
 | `BBSCANNER_E2E_CHANNEL` / `BBSCANNER_E2E_EXECUTABLE` | Use an installed Chrome/Edge (`chrome`, `msedge`) or a specific Chromium binary. Without either, the full Chromium build Playwright installed is used in its new headless mode (not the headless shell, which reports a denied camera permission as an unsupported API), falling back to an installed Chrome, then Edge. |
 | `BBSCANNER_E2E_HEADED=1` | Show the browser. |

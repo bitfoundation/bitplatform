@@ -35,4 +35,5 @@
     <Project Path="Tests/Bit.BbScanner.Benchmarks/Bit.BbScanner.Benchmarks.csproj" />
   </Folder>
   <Project Path="Bit.BbScanner/Bit.BbScanner.csproj" />
+  <Project Path="Bit.BbScanner.Maui/Bit.BbScanner.Maui.csproj" />
 </Solution>
