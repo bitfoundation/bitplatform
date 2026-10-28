@@ -26,7 +26,9 @@ internal static class BrouteScanner
     /// Scans <paramref name="appAssembly"/> and <paramref name="additionalAssemblies"/> for public or
     /// internal component types annotated with one or more <see cref="RouteAttribute"/> and returns the
     /// discovered routes. Each <c>[Route]</c> on a component yields one entry, so a component with several
-    /// route attributes contributes several routes. Duplicate assemblies are scanned only once.
+    /// route attributes contributes several routes. Duplicate assemblies are scanned only once. A type that can't
+    /// be loaded is skipped, routable or not (which can't be told without loading it), and
+    /// <paramref name="onTypesSkipped"/> gets why, once per assembly that had any.
     /// </summary>
     /// <remarks>
     /// This reflects over every type in the given assemblies, so it is inherently trim-unsafe: the
@@ -36,7 +38,10 @@ internal static class BrouteScanner
     [RequiresUnreferencedCode(
         "Attribute-route discovery reflects over all types in the supplied assemblies to find components " +
         "annotated with [Route]/@page. Ensure routable components are preserved when trimming.")]
-    internal static IReadOnlyList<DiscoveredRoute> Discover(Assembly? appAssembly, IReadOnlyList<Assembly>? additionalAssemblies)
+    internal static IReadOnlyList<DiscoveredRoute> Discover(
+        Assembly? appAssembly,
+        IReadOnlyList<Assembly>? additionalAssemblies,
+        Action<Assembly, IReadOnlyList<Exception>>? onTypesSkipped = null)
     {
         // Preserve declaration intent: scan the app assembly first so, on an otherwise-identical
         // template tie, an app-level page is registered before one contributed by a referenced
@@ -44,12 +49,12 @@ internal static class BrouteScanner
         var seen = new HashSet<Assembly>();
         var results = new List<DiscoveredRoute>();
 
-        ScanAssembly(appAssembly, seen, results);
+        ScanAssembly(appAssembly, seen, results, onTypesSkipped);
         if (additionalAssemblies is not null)
         {
             for (int i = 0; i < additionalAssemblies.Count; i++)
             {
-                ScanAssembly(additionalAssemblies[i], seen, results);
+                ScanAssembly(additionalAssemblies[i], seen, results, onTypesSkipped);
             }
         }
 
@@ -57,9 +62,12 @@ internal static class BrouteScanner
     }
 
     [RequiresUnreferencedCode("See Discover.")]
-    private static void ScanAssembly(Assembly? assembly, HashSet<Assembly> seen, List<DiscoveredRoute> results)
+    private static void ScanAssembly(Assembly? assembly, HashSet<Assembly> seen, List<DiscoveredRoute> results, Action<Assembly, IReadOnlyList<Exception>>? onTypesSkipped)
     {
         if (assembly is null || seen.Add(assembly) is false) return;
+
+        // Why each type that can't be loaded was skipped, for onTypesSkipped.
+        var failures = new List<Exception>();
 
         // Use GetTypes (not GetExportedTypes): Razor components can be generated as internal, and the
         // built-in Router discovers those too. A partially-loadable assembly throws
@@ -72,24 +80,38 @@ internal static class BrouteScanner
         catch (ReflectionTypeLoadException ex)
         {
             types = ex.Types;
+            failures.AddRange(ex.LoaderExceptions.OfType<Exception>());
         }
         // Mono on WebAssembly throws one of these instead, when a type's base type or interface is in an assembly
         // that isn't loaded yet (a BlazorWebAssemblyLazyLoad one, for example).
-        catch (Exception ex) when (ex is FileNotFoundException or TypeLoadException)
+        catch (Exception ex) when (IsLoadFailure(ex))
         {
-            types = GetLoadableTypes(assembly.ManifestModule);
+            types = GetLoadableTypes(assembly.ManifestModule, failures);
         }
 
         foreach (var type in types)
         {
-            if (type is null || type.IsClass is false || type.IsAbstract) continue;
-            if (IsComponent(type) is false) continue;
+            if (type is null) continue;
 
-            // inherit: false - a base component's [Route] should not silently spawn routes for every
-            // derived component. This matches the built-in Router, which reads route attributes declared
-            // directly on the routable type.
-            var routeAttributes = type.GetCustomAttributes(typeof(RouteAttribute), inherit: false);
-            if (routeAttributes.Length == 0) continue;
+            object[] routeAttributes;
+            try
+            {
+                if (type.IsClass is false || type.IsAbstract) continue;
+                if (typeof(IComponent).IsAssignableFrom(type) is false) continue;
+
+                // inherit: false - a base component's [Route] should not silently spawn routes for every
+                // derived component. This matches the built-in Router, which reads route attributes declared
+                // directly on the routable type.
+                routeAttributes = type.GetCustomAttributes(typeof(RouteAttribute), inherit: false);
+            }
+            // A type that loaded can still fail here: Mono resolves a type's interfaces only when it is first asked about
+            // them, and reading the [Route]s of a type resolves every attribute it has, one from an assembly that isn't
+            // loaded included.
+            catch (Exception ex) when (IsLoadFailure(ex))
+            {
+                failures.Add(ex);
+                continue;
+            }
 
             foreach (var attribute in routeAttributes)
             {
@@ -97,24 +119,20 @@ internal static class BrouteScanner
                 results.Add(new DiscoveredRoute(NormalizeTemplate(template), type));
             }
         }
+
+        if (failures.Count > 0)
+        {
+            onTypesSkipped?.Invoke(assembly, failures);
+        }
     }
 
-    // Mono resolves a type's interfaces only when it is first asked about them, so a type GetLoadableTypes returned can still fail here.
-    private static bool IsComponent(Type type)
-    {
-        try
-        {
-            return typeof(IComponent).IsAssignableFrom(type);
-        }
-        catch (Exception ex) when (ex is FileNotFoundException or TypeLoadException)
-        {
-            return false;
-        }
-    }
+    // What the runtime throws when a type, or a type it refers to, is in an assembly that can't be loaded, or isn't loaded yet.
+    private static bool IsLoadFailure(Exception ex) =>
+        ex is TypeLoadException or FileNotFoundException or FileLoadException or BadImageFormatException;
 
     // Resolves the TypeDef rows one by one, so one type that can't be loaded doesn't hide the rest. Row 1 is <Module>.
     [RequiresUnreferencedCode("See Discover.")]
-    internal static Type?[] GetLoadableTypes(Module module)
+    internal static Type?[] GetLoadableTypes(Module module, List<Exception>? failures = null)
     {
         var types = new List<Type?>();
 
@@ -128,8 +146,15 @@ internal static class BrouteScanner
             {
                 return [.. types];
             }
-            catch (Exception ex) when (ex is FileNotFoundException or TypeLoadException)
+            // A row whose metadata is malformed: the runtime reports it as an ArgumentException rather than a
+            // BadImageFormatException. Skipping the row loses at most that one type.
+            catch (ArgumentException ex)
             {
+                failures?.Add(ex);
+            }
+            catch (Exception ex) when (IsLoadFailure(ex))
+            {
+                failures?.Add(ex);
             }
         }
     }
