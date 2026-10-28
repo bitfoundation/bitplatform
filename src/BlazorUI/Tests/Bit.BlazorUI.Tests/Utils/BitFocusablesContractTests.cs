@@ -12,7 +12,7 @@ namespace Bit.BlazorUI.Tests.Utils;
 /// Bit.BlazorUI.Extras and Bit.BlazorUI.AI call the core members through the ambient declaration of their
 /// Scripts/BitBlazorUI.d.ts, which nothing compiles against the core script; these tests fail when a member declared
 /// there is no longer in Utils, and when a script declares a focusable selector of its own again, which a fix to the
-/// shared one would not reach.
+/// shared one would not reach. The same holds for Utils.isInteractive, the one definition of what a click activates.
 /// </summary>
 [TestClass]
 public sealed class BitFocusablesContractTests
@@ -60,5 +60,26 @@ public sealed class BitFocusablesContractTests
 
         Assert.AreEqual(0, copies.Count,
             $"These scripts declare a focusable selector of their own; ask BitBlazorUI.Utils instead: {string.Join(", ", copies)}");
+    }
+
+    // Utils.isInteractive is the one answer to "is a click on this element the element's own" - a drag surface and the
+    // cells and rows of BitDataGrid ask it, and data-bit-interactive overrides it for all of them alike.
+    [TestMethod]
+    public void NoOtherScriptShouldDeclareAnInteractiveSelectorOfItsOwn()
+    {
+        var shared = SourceFiles.GetPath("Bit.BlazorUI", "Scripts", "Utils.Interactive.ts");
+
+        // A list of what a click activates names the ARIA button; the lists of what consumes a key do not.
+        var copies = new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.AI" }
+            .SelectMany(project => Directory.EnumerateFiles(SourceFiles.GetDirectory(project), "*.ts", SearchOption.AllDirectories))
+            .Where(file => file.EndsWith(".d.ts", StringComparison.Ordinal) is false)
+            .Where(file => file.Split(Path.DirectorySeparatorChar).Any(part => part is "node_modules" or "wwwroot" or "bin" or "obj") is false)
+            .Where(file => string.Equals(Path.GetFullPath(file), Path.GetFullPath(shared), StringComparison.OrdinalIgnoreCase) is false)
+            .Where(file => Regex.IsMatch(SourceFiles.ReadFullPath(file), @"['""`][^'""`\n]*\[role=\\?[""']?button\\?[""']?\][^'""`\n]*['""`]"))
+            .Select(file => Path.GetRelativePath(SourceFiles.Root, file))
+            .ToList();
+
+        Assert.AreEqual(0, copies.Count,
+            $"These scripts declare a selector of interactive elements of their own; ask BitBlazorUI.Utils.isInteractive instead: {string.Join(", ", copies)}");
     }
 }

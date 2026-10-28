@@ -10,6 +10,25 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 The packages no longer ship `net8.0` and `net9.0` builds. **An app on .NET 8 or .NET 9** moves to .NET 10 or later
 before it updates, or stays on 10.x of the packages.
 
+### `BitDataGrid` leaves the clicks on a control in a cell to the control ([#14316](https://github.com/bitfoundation/bitplatform/issues/14316))
+
+A click on a control in a cell - a button, a link or a field of a cell's template, an ARIA widget, an element in the
+tab sequence, the grid's own checkbox and toggles, anything in a dialog or in a grid rendered in a cell - also reached
+the cell and the row, which selected the row, toggled its detail (`ExpandDetailOnRowClick`), opened the cell's editor
+on a double-click and raised `OnRowClick`, `OnRowDoubleClick`, `OnCellClick`, `OnCellDoubleClick` and
+`OnCellContextMenu` on top of what the control did. The grid now leaves such a click to the control: none of that
+happens, and a right-click on the control keeps the browser's own menu where `OnCellContextMenu` suppressed it. The
+double-clicks on the grid's own control cells are no longer the row's either. **An app that read the clicked row from
+the selection or from one of these events** in the handler of a control of its template (an Edit button reading
+`SelectedItems`) takes the item from the template's context instead. **A control whose click should still reach the
+row** carries `data-bit-interactive="false"`, and an element of a template the grid does not take for a control (an
+icon with an `@onclick`) carries `data-bit-interactive` to keep its clicks from the row.
+
+The drag of a draggable `BitDialog` / `BitModal` goes by the same definition of a control: it no longer starts on an
+element marked `data-bit-interactive`, an element in the tab sequence or an ARIA widget it did not know
+(`menuitemcheckbox`, `menuitemradio`, `treeitem`, `searchbox`, a media player's controls), and now does start on a
+`label` without a control and on a `summary` that is not the first of a `details` element.
+
 ## 10.7.0 (first shipped in 10.7.0-pre-01)
 
 ### `BitFullCalendarChangeNotifier` passes on whether to show the refusal notice ([#13827](https://github.com/bitfoundation/bitplatform/issues/13827))

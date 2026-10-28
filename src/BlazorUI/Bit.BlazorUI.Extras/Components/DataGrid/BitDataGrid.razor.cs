@@ -303,8 +303,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public EventCallback<BitDataGridRowReorderEventArgs<TItem>> OnRowReorder { get; set; }
 
     // ------------------------------------------------------------- Selection
-    /// <summary>How rows are selected: not at all, by a row click (Single), or by a checkbox column with a select-all
-    /// box (Multiple). Single makes the cells keyboard-navigable (<see cref="CellNavigation"/>), so Space can select the
+    /// <summary>How rows are selected: not at all, by a row click (Single; a click on a control in a cell selects
+    /// nothing, see <see cref="OnRowClick"/>), or by a checkbox column with a select-all box (Multiple). Single makes the cells keyboard-navigable (<see cref="CellNavigation"/>), so Space can select the
     /// focused row.</summary>
     [Parameter] public BitSelectionMode SelectionMode { get; set; } = BitSelectionMode.None;
 
@@ -315,23 +315,34 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// <summary>Raised with the new selection whenever it changes.</summary>
     [Parameter] public EventCallback<IReadOnlyList<TItem>> SelectedItemsChanged { get; set; }
 
-    /// <summary>Raised when a row is clicked.</summary>
+    /// <summary>
+    /// Raised when a row is clicked. A click on a control in one of its cells is the control's, not the row's: a
+    /// button, a link or a field of a template, an ARIA widget, an element in the tab sequence, an element marked
+    /// <c>data-bit-interactive</c>, the grid's own checkbox and toggles, and anything in a dialog or a grid rendered in a
+    /// cell raise neither this nor <see cref="OnCellClick"/>, and select or expand nothing. <c>data-bit-interactive</c>
+    /// opts an element of a template in (an icon with an <c>@onclick</c>), and <c>data-bit-interactive="false"</c>
+    /// opts a control out, whose clicks then reach the cell and the row too.
+    /// </summary>
     [Parameter] public EventCallback<TItem> OnRowClick { get; set; }
 
     /// <summary>
     /// Raised when a row is double-clicked - the row-level counterpart of
     /// <see cref="OnCellDoubleClick"/>, and the usual hook for "open this record" or for starting an
-    /// inline edit with <see cref="BeginEdit"/>.
+    /// inline edit with <see cref="BeginEdit"/>. Not raised for a double-click on a control in one of its cells
+    /// (see <see cref="OnRowClick"/>).
     /// </summary>
     [Parameter] public EventCallback<TItem> OnRowDoubleClick { get; set; }
 
-    /// <summary>Raised when a data cell is clicked.</summary>
+    /// <summary>Raised when a data cell is clicked, unless the click is on a control in it (see <see cref="OnRowClick"/>).</summary>
     [Parameter] public EventCallback<BitDataGridCellEventArgs<TItem>> OnCellClick { get; set; }
 
-    /// <summary>Raised when a data cell is double-clicked.</summary>
+    /// <summary>Raised when a data cell is double-clicked, unless the double-click is on a control in it, which opens no
+    /// editor either (see <see cref="OnRowClick"/>).</summary>
     [Parameter] public EventCallback<BitDataGridCellEventArgs<TItem>> OnCellDoubleClick { get; set; }
 
-    /// <summary>Raised when a data cell is right-clicked. Useful for custom context menus.</summary>
+    /// <summary>Raised when a data cell is right-clicked. Useful for custom context menus: the browser's own menu is
+    /// suppressed while it is set. A right-click on a control in the cell (see <see cref="OnRowClick"/>) raises nothing
+    /// and keeps the browser's menu - a link's "open in a new tab", a field's "paste".</summary>
     [Parameter] public EventCallback<BitDataGridCellEventArgs<TItem>> OnCellContextMenu { get; set; }
 
     /// <summary>
@@ -496,8 +507,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// <summary>
     /// Expands (and collapses) a row's detail content when the row itself is clicked, so the toggle
     /// button is no longer the only way in. Combines with <see cref="SelectionMode"/>: a click both
-    /// selects the row and toggles its detail. Clicks inside the reorder/select/command cells are
-    /// excluded, since those cells own their own interaction.
+    /// selects the row and toggles its detail. Clicks inside the reorder/detail/select/command cells and on a
+    /// control in a cell (see <see cref="OnRowClick"/>) are excluded, since those own their own interaction.
     /// </summary>
     [Parameter] public bool ExpandDetailOnRowClick { get; set; }
 
@@ -3294,15 +3305,16 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     [JSInvokable]
     public void OnNestedSurfaceKey(bool nested) => KeyInNestedSurface = nested;
 
-    // Whether the click or double-click the cells and the rows are about to hear landed on a control in a cell - a
-    // button, a link or an input of a template, the grid's own checkbox and toggles - or in a surface rendered in a
-    // cell's content, rather than on the cell itself. The click is the control's: the cells and the rows hear it on its
-    // way out too, and leave it to it - no row selected or expanded, no editor opened, none of their click events
-    // raised. The script reports it ahead of the click, whenever it changes.
+    // Whether the click, double-click or right-click the cells and the rows are about to hear landed on a control in a
+    // cell - a button, a link or an input of a template, an element marked data-bit-interactive, the grid's own control
+    // cells - or in a surface or a grid rendered in a cell's content, rather than on the cell itself. The click is the
+    // control's: the cells and the rows hear it on its way out too, and leave it to it - no row selected or expanded,
+    // no editor opened, none of their click events raised. The script reports it ahead of the click, whenever it
+    // changes, and again after a report that may not have arrived (BitDataGrid.ts, reportCellControlClick).
     internal bool ClickOnCellControl { get; private set; }
 
-    /// <summary>Invoked from JavaScript ahead of a click or a double-click when whether it landed on a control in a
-    /// cell of the grid changes (see <c>ClickOnCellControl</c>).</summary>
+    /// <summary>Invoked from JavaScript ahead of a click, a double-click or a right-click when whether it landed on a
+    /// control in a cell of the grid changes (see <c>ClickOnCellControl</c>).</summary>
     [JSInvokable]
     public void OnCellControlClick(bool onControl) => ClickOnCellControl = onControl;
 

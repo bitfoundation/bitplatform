@@ -3346,15 +3346,16 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual("DETAIL-1", component.Find(".bit-dtg-detail-content").TextContent.Trim());
     }
 
-    // The grid's own cells stop the double-click along with the click, so a double-click on their controls - or between
-    // them - is not the row's.
+    // The grid's own control cells stop no double-click, so a handler of the page around the grid hears one on their
+    // controls - it reaches the row here, which nothing on the way stops; the script tells the row it is not its own
+    // (BitDataGrid.ts, reportCellControlClick), and the row leaves it alone.
     [TestMethod]
     [DataRow(".bit-dtg-cell-command button")]
     [DataRow(".bit-dtg-cell-select input")]
     [DataRow(".bit-dtg-cell-detail button")]
     [DataRow(".bit-dtg-cell-reorder button")]
     [DataRow(".bit-dtg-tree-toggle")]
-    public void BuiltInCellControlsKeepTheirDoubleClickFromTheRow(string selector)
+    public async Task BuiltInCellControlsLetTheirDoubleClickThroughToThePage(string selector)
     {
         var doubleClicked = 0;
         var component = RenderGrid(configure: parameters =>
@@ -3370,8 +3371,49 @@ public class BitDataGridTests : BunitTestContext
                 parameters.Add(p => p.RowReorderable, true);
         });
 
-        Assert.ThrowsExactly<MissingEventHandlerException>(() => component.Find($".bit-dtg-body > .bit-dtg-row {selector}").DoubleClick());
-        Assert.AreEqual(0, doubleClicked);
+        component.Find($".bit-dtg-body > .bit-dtg-row {selector}").DoubleClick();
+
+        Assert.AreEqual(1, doubleClicked, "the double-click was stopped on its way out of the grid's own cell");
+
+        await component.InvokeAsync(() => component.Instance.OnCellControlClick(true));
+        component.Find($".bit-dtg-body > .bit-dtg-row {selector}").DoubleClick();
+
+        Assert.AreEqual(1, doubleClicked);
+    }
+
+    // A right-click on a control in a cell is the control's as well: the cell raises nothing, and the browser's menu is
+    // the script's to suppress (data-bit-dtg-contextmenu), on the cell itself only - never through a preventDefault of
+    // the cell's markup, which would take a link's or a field's own menu away from it.
+    [TestMethod]
+    public async Task CellLeavesTheRightClickOfAControlInItAlone()
+    {
+        var contextMenus = 0;
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.OnCellContextMenu, (BitDataGridCellEventArgs<TestRow> _) => contextMenus++);
+        });
+
+        Assert.AreEqual("true", DataCell(component, 0, 0).GetAttribute("data-bit-dtg-contextmenu"));
+        Assert.IsFalse(DataCell(component, 0, 0).HasAttribute("blazor:oncontextmenu:preventDefault"));
+
+        await component.InvokeAsync(() => component.Instance.OnCellControlClick(true));
+        DataCell(component, 0, 0).ContextMenu();
+
+        Assert.AreEqual(0, contextMenus);
+
+        await component.InvokeAsync(() => component.Instance.OnCellControlClick(false));
+        DataCell(component, 0, 0).ContextMenu();
+
+        Assert.AreEqual(1, contextMenus);
+    }
+
+    // Without a handler of its own the grid leaves the browser's context menu alone everywhere.
+    [TestMethod]
+    public void CellsLeaveTheBrowsersContextMenuAloneWithoutOnCellContextMenu()
+    {
+        var component = RenderGrid();
+
+        Assert.IsFalse(DataCell(component, 0, 0).HasAttribute("data-bit-dtg-contextmenu"));
     }
 
     [TestMethod]

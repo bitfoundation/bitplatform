@@ -732,6 +732,141 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         Assert.IsTrue(await Page.EvaluateAsync<bool>("() => window.__dtgContextMenuPrevented === true"), "The browser's own context menu was not suppressed.");
     }
 
+    private const string ControlsGrid = "grid-cell-controls";
+
+    // A custom element whose button lives in an open shadow root: the document hears its click retargeted to the host.
+    private const string DefineShadowControlScript = """
+        () => {
+            if (customElements.get('cc-shadow')) return;
+            customElements.define('cc-shadow', class extends HTMLElement {
+                connectedCallback() {
+                    if (!this.shadowRoot) this.attachShadow({ mode: 'open' }).innerHTML = '<button type="button" class="cc-shadow-button">Go</button>';
+                }
+            });
+        }
+        """;
+
+    // Every click below is sent in order, so the one the test waits for last has the earlier ones handled before it:
+    // a count still at its value then is one the earlier clicks left alone, not one they have yet to reach.
+    [TestMethod]
+    public async Task CellControls_AClickOnAControlInACell_IsTheControlsNotTheCellsOrTheRows()
+    {
+        await OpenAsync(Url);
+        await Page.EvaluateAsync(DefineShadowControlScript);
+
+        await DataRow(ControlsGrid, 0).Locator(".cc-text").ClickAsync();
+        await Expect(Text("cc-row-click-count")).ToHaveTextAsync("1");
+        await Expect(Text("cc-cell-click-count")).ToHaveTextAsync("1");
+        await Expect(Text("cc-selection")).ToHaveTextAsync("Laptop");
+
+        // The template's button and field, an icon marked data-bit-interactive, a button in a shadow root, a row of a
+        // grid rendered in the cell: each is its own, and the inner grid's row is that grid's.
+        await DataRow(ControlsGrid, 1).Locator(".cc-button").ClickAsync();
+        await DataRow(ControlsGrid, 1).Locator(".cc-input").ClickAsync();
+        await DataRow(ControlsGrid, 1).Locator(".cc-icon").ClickAsync();
+        await DataRow(ControlsGrid, 1).Locator(".cc-shadow-button").ClickAsync();
+        await DataRow("grid-cell-inner-2", 0).ClickAsync();
+        await Expect(Text("cc-button-count")).ToHaveTextAsync("1");
+        await Expect(Text("cc-icon-count")).ToHaveTextAsync("1");
+        await Expect(Text("cc-inner-row-click-count")).ToHaveTextAsync("1");
+
+        // A bare label is text, and a control marked data-bit-interactive="false" hands its click on to the row too.
+        await DataRow(ControlsGrid, 1).Locator(".cc-label").ClickAsync();
+        await Expect(Text("cc-row-click-count")).ToHaveTextAsync("2");
+        await Expect(Text("cc-selection")).ToHaveTextAsync("Novel");
+        await DataRow(ControlsGrid, 0).Locator(".cc-optout").ClickAsync();
+        await Expect(Text("cc-optout-count")).ToHaveTextAsync("1");
+        await Expect(Text("cc-row-click-count")).ToHaveTextAsync("3");
+        await Expect(Text("cc-selection")).ToHaveTextAsync("Laptop");
+
+        await Expect(Text("cc-cell-click-count")).ToHaveTextAsync("3");
+        await Expect(Text("cc-button-count")).ToHaveTextAsync("1");
+        await Expect(Text("cc-inner-row-click-count")).ToHaveTextAsync("1");
+    }
+
+    [TestMethod]
+    public async Task CellControls_ADoubleClickOnAControl_IsNotTheRowsAndStillReachesThePage()
+    {
+        await OpenAsync(Url);
+
+        await DataRow(ControlsGrid, 0).Locator(".cc-button").DblClickAsync();
+        // The grid's own control cell, on its control and around it.
+        await DataRow(ControlsGrid, 0).Locator(".bit-dtg-drag-handle").DblClickAsync();
+        await DataRow(ControlsGrid, 0).Locator(".bit-dtg-cell-reorder").DblClickAsync(new() { Position = new() { X = 1, Y = 1 } });
+        await Expect(Text("cc-page-dblclick-count")).ToHaveTextAsync("3");
+
+        await DataRow(ControlsGrid, 0).Locator(".cc-text").DblClickAsync();
+        await Expect(Text("cc-page-dblclick-count")).ToHaveTextAsync("4");
+        await Expect(Text("cc-row-dblclick-count")).ToHaveTextAsync("1");
+        await Expect(Text("cc-cell-dblclick-count")).ToHaveTextAsync("1");
+    }
+
+    [TestMethod]
+    public async Task CellControls_ARightClickOnAControl_KeepsTheBrowsersMenuAndRaisesNothing()
+    {
+        await OpenAsync(Url);
+        await Page.EvaluateAsync("() => window.addEventListener('contextmenu', e => window.__ccMenuPrevented = e.defaultPrevented)");
+
+        await DataRow(ControlsGrid, 0).Locator(".cc-input").ClickAsync(new() { Button = MouseButton.Right });
+        Assert.IsFalse(await Page.EvaluateAsync<bool>("() => window.__ccMenuPrevented"), "The context menu of a field in the cell was suppressed.");
+
+        await DataRow(ControlsGrid, 0).Locator(".cc-text").ClickAsync(new() { Button = MouseButton.Right });
+        Assert.IsTrue(await Page.EvaluateAsync<bool>("() => window.__ccMenuPrevented"), "The context menu of the cell was not suppressed.");
+        await Expect(Text("cc-cell-contextmenu-count")).ToHaveTextAsync("1");
+
+        await DataRow(ControlsGrid, 1).Locator(".cc-label").ClickAsync();
+        await Expect(Text("cc-row-click-count")).ToHaveTextAsync("1");
+        await Expect(Text("cc-cell-contextmenu-count")).ToHaveTextAsync("1");
+    }
+
+    // The script tells a grid only what changes, so it has to know what the grid holds: a call that failed leaves it
+    // not knowing, and the next click tells the grid again; a watch renewed for the same grid (a render retrying a call
+    // that timed out after it had run) goes on from what the grid was told rather than from the start. Clicks outside a
+    // row of the grid - its header, the page - tell it nothing.
+    [TestMethod]
+    public async Task CellControls_TheScript_TellsTheGridAgainWhatItMayNotHold()
+    {
+        await OpenAsync(Url);
+
+        var calls = await Page.EvaluateAsync<string[]>("""
+            async () => {
+                const root = document.getElementById('grid-cell-controls');
+                const row = root.querySelector(':scope > .bit-dtg-viewport > .bit-dtg-table > .bit-dtg-body > .bit-dtg-row');
+                const button = row.querySelector('.cc-button');
+                const text = row.querySelector('.cc-text');
+                const calls = [];
+                let fail = true;
+                const watcher = name => ({ invokeMethodAsync: (method, value) => {
+                    calls.push(`${name}:${method}:${value}`);
+                    return fail ? Promise.reject(new Error('dropped')) : Promise.resolve();
+                } });
+                const settle = () => new Promise(resolve => setTimeout(resolve, 0));
+                // Takes the grid's watch over, keeping what it was told (nothing yet: false).
+                BitBlazorUI.DataGrid.watchNestedTargets(root, watcher('a'));
+
+                button.click(); await settle();
+                button.click(); await settle();
+                fail = false;
+                button.click(); await settle();
+                button.click(); await settle();
+                BitBlazorUI.DataGrid.watchNestedTargets(root, watcher('b'));
+                button.click(); await settle();
+                root.querySelector('.bit-dtg-header-row').click(); await settle();
+                document.body.click(); await settle();
+                text.click(); await settle();
+                return calls;
+            }
+            """);
+
+        CollectionAssert.AreEqual(new[]
+        {
+            "a:OnCellControlClick:true",
+            "a:OnCellControlClick:true",
+            "a:OnCellControlClick:true",
+            "b:OnCellControlClick:false",
+        }, calls, string.Join(" | ", calls));
+    }
+
     [TestMethod]
     public async Task StyleAndClass_TheRootAndEveryPart_TakeTheirClassesAndStyles()
     {
