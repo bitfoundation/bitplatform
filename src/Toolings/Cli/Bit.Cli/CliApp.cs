@@ -14,7 +14,7 @@ public static class CliApp
     public const int ExitUsage = 2;
     public const int ExitCheckFailed = 3;
 
-    private static readonly string[] longRunningCommands = ["new", "setup", "run", "diff", "translate", "doctor", "clean", "aot-profile"];
+    private static readonly string[] longRunningCommands = ["new", "setup", "run", "diff", "translate", "doctor", "clean", "aot-profile", "migration", "pipeline"];
 
     public static RootCommand BuildRootCommand(Func<CliServices> services)
     {
@@ -62,7 +62,9 @@ public static class CliApp
         var root = BuildRootCommand(() => services!);
         var parseResult = root.Parse(args);
         var command = parseResult.CommandResult.Command;
-        var commandName = command == root ? "bit" : command.Name;
+        var commandPath = CommandPath(parseResult.CommandResult, root);
+        var commandName = commandPath.Count == 0 ? "bit" : string.Join('-', commandPath);
+        var topCommandName = commandPath.Count == 0 ? "bit" : commandPath[0];
 
         using var log = new CliLog(environment.LogsDirectory, commandName);
         services = new CliServices(environment, console, log: log);
@@ -78,14 +80,14 @@ public static class CliApp
 
         services.Telemetry = isMeta
             ? CliTelemetry.Disabled(decision)
-            : CliTelemetry.Start(decision, environment, services.Settings, commandName, longRunningCommands.Contains(commandName), Console.Error);
+            : CliTelemetry.Start(decision, environment, services.Settings, commandName, longRunningCommands.Contains(topCommandName), Console.Error);
 
         if (services.Settings.IsFirstRun)
         {
             services.Settings.Save();
         }
 
-        using var title = new ConsoleTitle(isMeta is false && console.IsInteractive && Console.IsOutputRedirected is false && environment.IsCI is false, console.Unicode, $"bit {commandName}");
+        using var title = new ConsoleTitle(isMeta is false && console.IsInteractive && Console.IsOutputRedirected is false && environment.IsCI is false, console.Unicode, $"bit {string.Join(' ', commandPath)}");
         console.Title = title;
 
         var exitCode = ExitFailed;
@@ -122,5 +124,17 @@ public static class CliApp
         {
             services.Telemetry.Complete(exitCode);
         }
+    }
+
+    public static IReadOnlyList<string> CommandPath(System.CommandLine.Parsing.CommandResult result, Command root)
+    {
+        var names = new List<string>();
+
+        for (var current = result; current is not null && current.Command != root; current = current.Parent as System.CommandLine.Parsing.CommandResult)
+        {
+            names.Insert(0, current.Command.Name);
+        }
+
+        return names;
     }
 }

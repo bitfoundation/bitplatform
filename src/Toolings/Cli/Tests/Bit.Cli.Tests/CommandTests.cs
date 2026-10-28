@@ -19,6 +19,16 @@ public class CommandTests
     }
 
     [TestMethod]
+    public void ANestedCommand_Should_BeNamedByItsWholePath()
+    {
+        var root = CliApp.BuildRootCommand(() => throw new InvalidOperationException());
+
+        CollectionAssert.AreEqual(new[] { "migration", "remove" }, CliApp.CommandPath(root.Parse(["migration", "remove"]).CommandResult, root).ToArray());
+        CollectionAssert.AreEqual(new[] { "remove" }, CliApp.CommandPath(root.Parse(["remove"]).CommandResult, root).ToArray());
+        Assert.IsEmpty(CliApp.CommandPath(root.Parse([]).CommandResult, root));
+    }
+
+    [TestMethod]
     public void EveryCommandAndOption_Should_HaveADescription()
     {
         var root = CliApp.BuildRootCommand(() => throw new InvalidOperationException());
