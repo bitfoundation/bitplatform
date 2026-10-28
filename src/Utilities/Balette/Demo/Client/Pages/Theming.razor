@@ -102,12 +102,7 @@
     </div>
 
     <p class="bb-soft demo-small">What the palette host hands its palette right now:</p>
-    <pre class="bb-code demo-output">&lt;Balette Theme="@(State.PaletteTheme ?? "(follows the page)")"
-         Density="@(State.Density ?? "(comfortable, from the options)")"
-         Style="@(State.PaletteStyle ?? "(none)")"
-         DetailTemplate="@(State.ShowDetail ? "_detailPane" : "null")"
-         ShowFooter="@(State.ShowFooter ? "true" : "false")"
-         ShowShortcuts="@(State.ShowShortcuts ? "true" : "false")" /&gt;</pre>
+    <CodeBlock Class="demo-output" Code="@PaletteMarkup" />
 </div>
 
 <div class="bb-note">
@@ -159,7 +154,7 @@
             </tbody>
         </table>
     </div>
-    <pre class="bb-code">@TokensExample</pre>
+    <CodeBlock Language="css" Code="@TokensExample" />
     <p>
         The MCP server's <code>GetBaletteThemeVariables</code> lists every one with its light and dark value, read from the
         stylesheet itself (see <a href="mcp-server">MCP server</a>).
@@ -188,6 +183,8 @@
             chevrons are mirrored, and user text isolates its own direction (<code>dir="auto"</code>), so an English title in
             a Persian UI keeps its punctuation where it belongs. Key caps always read left to right, as on the keys.</li>
     </ul>
+    <CodeBlock Code="@AdaptsExample" />
+    <CodeBlock Language="css" Code="@DensityExample" />
     <div class="bb-try">
         <button type="button" class="btn btn-secondary" @onclick="ToggleDirection">@(_rtl ? "Back to left to right" : "Lay the page out right to left")</button>
     </div>
@@ -245,7 +242,7 @@
                  HeaderTemplate="_headerTemplate"
                  FooterTemplate="_footerTemplate" />
     </div>
-    <pre class="bb-code">@ItemTemplateExample</pre>
+    <CodeBlock Code="@ItemTemplateExample" />
     <p>
         <code>BaletteHighlightedText</code> renders a text with the matched positions marked, for templates that want the
         highlighting back, and <code>BaletteShortcutHint</code> a shortcut in the platform's symbols. A
@@ -271,7 +268,8 @@
                  Placeholder="Search the pantry…"
                  Commands="_pantry" />
     </div>
-    <pre class="bb-code">@UnstyledExample</pre>
+    <CodeBlock Code="@UnstyledExample" />
+    <CodeBlock Language="css" Code="@UnstyledCssExample" />
     <p>
         The structure stays addressable through stable <code>data-balette</code> attributes: <code>dialog</code>
         (<code>inline</code> for an inline palette), <code>root</code>, <code>main</code>, <code>header</code>,
@@ -334,7 +332,7 @@
                 @{ var file = context.Row.Command; }
                 <span class="file-row">
                     <span class="file-ext">@Extension(file.Title)</span>
-                    <BaletteHighlightedText Text="@file.Title" Positions="@context.Row.Match!.TitlePositions" />
+                    <BaletteHighlightedText Text="@file.Title" Positions="context.Row.Match!.TitlePositions" />
                     <small>@file.Subtitle</small>
                     @if (context.IsActive)
                     {
@@ -350,9 +348,40 @@
         </Balette>
         """;
 
+    private const string AdaptsExample = """
+        @* Light or dark: prefers-color-scheme, <html data-theme="...">, or the palette's own Theme, which wins for it alone. *@
+        <Balette Theme="dark" Density="compact" />
+
+        @* Right to left: dir on the palette, or on anything around it. *@
+        <div dir="rtl">
+            <Balette />
+        </div>
+        """;
+
+    private const string DensityExample = """
+        /* data-density is any value Density is given: a stylesheet can define more than the two. */
+        .bit-balette-dialog[data-density="cozy"] {
+            --bit-balette-row-height: 38px;
+            --bit-balette-input-height: 48px;
+            --bit-balette-item-padding: 4px 9px;
+        }
+        """;
+
+    // What the palette host hands its palette right now, as markup.
+    private string PaletteMarkup => $"""
+        <Balette Theme="{State.PaletteTheme ?? "(follows the page)"}"
+                 Density="{State.Density ?? "(comfortable, from the options)"}"
+                 Style="{State.PaletteStyle ?? "(none)"}"
+                 DetailTemplate="{(State.ShowDetail ? "_detailPane" : "null")}"
+                 ShowFooter="{(State.ShowFooter ? "true" : "false")}"
+                 ShowShortcuts="{(State.ShowShortcuts ? "true" : "false")}" />
+        """;
+
     private const string UnstyledExample = """
         <Balette Unstyled="true" Class="my-palette" />
+        """;
 
+    private const string UnstyledCssExample = """
         .my-palette [data-balette="item"][data-active] { background: CanvasText; color: Canvas; }
         .my-palette [data-balette="item"][data-disabled] { opacity: .5; }
         .my-palette [data-balette="group-heading"] { font-size: .75rem; text-transform: uppercase; }

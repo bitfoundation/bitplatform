@@ -33,7 +33,7 @@
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Register the services</h3>
-    <pre class="bb-code">@RegisterExample</pre>
+    <CodeBlock Language="csharp" Code="@RegisterExample" />
     <p>
         The options are a singleton. The registry, the open state and the history are scoped: one per circuit on Blazor
         Server, one per application on WebAssembly. Every page of a Blazor Web App is prerendered on the server before it
@@ -45,14 +45,14 @@
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Reference the stylesheet</h3>
-    <pre class="bb-code">&lt;link rel="stylesheet" href="_content/Bit.Balette/bit-balette.css" /&gt;</pre>
+    <CodeBlock Code="@StylesheetExample" />
     <p>
         In <code>App.razor</code> or <code>index.html</code>, before your own stylesheet, so your overrides of its
         <code>--bit-balette-*</code> variables win. It is a plain stylesheet with no dependencies, and it is not added for
         you: leave it out and set <code>Unstyled="true"</code> to style everything yourself. Add the namespace to
         <code>_Imports.razor</code> as well:
     </p>
-    <pre class="bb-code">@@using Bit.Balette</pre>
+    <CodeBlock Code="@ImportsExample" />
 </section>
 
 <section class="bb-card">
@@ -61,7 +61,7 @@
         Put one <code>Balette</code> where it is rendered interactively on every page, and a <code>BaletteTrigger</code>
         wherever a visible entry point helps:
     </p>
-    <pre class="bb-code">@LayoutExample</pre>
+    <CodeBlock Code="@LayoutExample" />
     <p>
         The palette renders a closed <code>&lt;dialog&gt;</code> until it is opened, so it costs nothing while it is not in
         use. It needs an interactive render mode: a statically rendered palette never attaches its keyboard handling.
@@ -78,7 +78,7 @@
         detected one, <code>Class</code> adds classes, and <code>ChildContent</code> replaces the whole content. Any other
         attribute lands on the button. These three are live:
     </p>
-    <pre class="bb-code">@TriggerExample</pre>
+    <CodeBlock Code="@TriggerExample" />
     <div class="bb-try">
         <BaletteTrigger Label="Find a teammate" Query="@("@")" aria-label="Find a teammate" />
         <BaletteTrigger Label="Change theme" PageCommandId="preferences.theme" ShowShortcut="false" aria-label="Change theme" />
@@ -91,7 +91,7 @@
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Register commands</h3>
     <p>Inject <code>IBaletteService</code> wherever commands belong and register them:</p>
-    <pre class="bb-code">@CommandsExample</pre>
+    <CodeBlock Code="@CommandsExample" />
     <p>
         <code>Register</code> returns an <code>IDisposable</code>: dispose it to remove the commands again. Commands that
         belong to the whole app are registered once, from the layout or at startup through <code>options.Commands</code>;
@@ -108,7 +108,7 @@
         optionally with a query - a mode prefix included - or directly on a command's page, and runs a command by its id
         without opening anything:
     </p>
-    <pre class="bb-code">@OpenExample</pre>
+    <CodeBlock Language="csharp" Code="@OpenExample" />
     <div class="bb-try">
         <button type="button" class="btn btn-secondary" @onclick="() => Palette.OpenAsync()">Open the palette</button>
         <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync(">")'>Commands mode</button>
@@ -191,7 +191,7 @@
             </tbody>
         </table>
     </div>
-    <pre class="bb-code">@PerPageExample</pre>
+    <CodeBlock Code="@PerPageExample" />
     <p>
         While prerendering, the palette renders a closed dialog. It attaches its keyboard handling once it is interactive and
         then marks the dialog <code>data-ready="true"</code> - what an end-to-end test waits for before pressing
@@ -230,6 +230,14 @@
             // Groups appear in this order on the empty query; any others follow alphabetically.
             options.GroupOrder.AddRange(["Navigation", "Actions", "Preferences", "Help"]);
         });
+        """;
+
+    private const string StylesheetExample = """
+        <link rel="stylesheet" href="_content/Bit.Balette/bit-balette.css" />
+        """;
+
+    private const string ImportsExample = """
+        @using Bit.Balette
         """;
 
     private const string LayoutExample = """

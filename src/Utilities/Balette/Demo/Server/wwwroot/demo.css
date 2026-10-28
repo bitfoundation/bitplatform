@@ -287,6 +287,36 @@ html:root[bit-theme="dark"],
     background: transparent;
 }
 
+/* ---------- Code: SyntaxHighlighter's tokens on the kit's code surface ----------
+
+   The highlighter tells more kinds apart than the kit's four (keyword, string, comment, parameter),
+   so the extra ones get colours of their own here, light and dark, picked to hold their contrast on
+   --bb-code-bg in both themes. */
+:root {
+    --demo-code-type: #8250DF;
+    --demo-code-fn: #795E26;
+    --demo-code-number: #CF222E;
+    --demo-code-razor: #A21CAF;
+}
+
+:root[bit-theme="dark"] {
+    --demo-code-type: #D2A8FF;
+    --demo-code-fn: #DCDCAA;
+    --demo-code-number: #FF7B72;
+    --demo-code-razor: #F0ABFC;
+}
+
+.bb-code .tok-com { color: var(--bb-code-comment); font-style: italic; }
+.bb-code .tok-pun { color: var(--bb-code-comment); }
+.bb-code .tok-tag,
+.bb-code .tok-key { color: var(--bb-code-keyword); }
+.bb-code .tok-str { color: var(--bb-code-string); }
+.bb-code .tok-attr { color: var(--bb-code-param); }
+.bb-code .tok-type { color: var(--demo-code-type); }
+.bb-code .tok-fn { color: var(--demo-code-fn); }
+.bb-code .tok-num { color: var(--demo-code-number); }
+.bb-code .tok-raz { color: var(--demo-code-razor); }
+
 /* ---------- Readouts and controls of the demo pages ---------- */
 
 .demo-small {

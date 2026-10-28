@@ -57,9 +57,11 @@
              sources they share, the palette host and the client half of the hosting. The MCP page
              describes this server rather than the library, and the not-found page teaches nothing
              about palettes. Neither does the site chrome: Layout\ and DocsCatalog.cs are the header,
-             docs shell, search and footer every Utilities demo shares, so they are left out too. -->
+             docs shell, search and footer every Utilities demo shares, and Shared\ is the code viewer
+             (CodeBlock and its SyntaxHighlighter) that colours the pages' samples, so they are left
+             out too. -->
         <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
-                          Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Layout\**;..\Client\DocsCatalog.cs;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor">
+                          Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Layout\**;..\Client\Shared\**;..\Client\DocsCatalog.cs;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor">
             <LogicalName>BaletteSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
 

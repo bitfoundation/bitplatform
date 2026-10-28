@@ -167,6 +167,7 @@
             on it - debounced, cancelled, timed out and retried like the root's sources - and on a multi-select page the
             checked rows are kept across searches.</li>
     </ul>
+    <CodeBlock Language="csharp" Code="@StaticPageExample" />
 </section>
 
 <section class="bb-card">
@@ -192,6 +193,7 @@
             </tbody>
         </table>
     </div>
+    <CodeBlock Language="csharp" Code="@ResultsExample" />
 </section>
 
 <section class="bb-card" id="context">
@@ -217,7 +219,7 @@
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A prompt</h3>
-    <pre class="bb-code">@PromptExample</pre>
+    <CodeBlock Language="csharp" Code="@PromptExample" />
     <p>
         The search box becomes the text field: <kbd>Enter</kbd> submits and <kbd>Esc</kbd> goes back. <kbd>Enter</kbd> on a
         value the validator refuses shows and announces its message and marks the box <code>aria-invalid</code>; from then on
@@ -228,13 +230,13 @@
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A multi-select page</h3>
-    <pre class="bb-code">@MultiSelectExample</pre>
+    <CodeBlock Language="csharp" Code="@MultiSelectExample" />
     <p>
         <kbd>Enter</kbd>, a click or <kbd>Space</kbd> (on an empty box) toggles a row, and <kbd>Ctrl</kbd> <kbd>Enter</kbd>
         (<kbd>⌘</kbd> <kbd>↩</kbd>) runs the page's handler with the checked commands. A page a handler returns works the
         same way - <em>Create webhook…</em> asks for an address first, then answers with one:
     </p>
-    <pre class="bb-code">@ChainExample</pre>
+    <CodeBlock Language="csharp" Code="@ChainExample" />
 </section>
 
 <section class="bb-card">
@@ -245,7 +247,7 @@
         for every query instead of downloading everything up front, and a handler can answer with a page whose list it
         decided when it ran:
     </p>
-    <pre class="bb-code">@LazyExample</pre>
+    <CodeBlock Language="csharp" Code="@LazyExample" />
     <div class="bb-note">
         <code>OpenAsync(pageCommandId: ...)</code> opens straight inside a registered command's page, and
         <code>BaletteTrigger</code> takes the same <code>PageCommandId</code>: a "Change theme" button can be a trigger
@@ -262,7 +264,7 @@
         ignored while it runs, and <kbd>Esc</kbd> closes the palette and cancels the handler's token; what it returns
         afterwards is dropped. Run <em>Generate report…</em> and press <kbd>Esc</kbd> halfway.
     </p>
-    <pre class="bb-code">@LongRunningExample</pre>
+    <CodeBlock Language="csharp" Code="@LongRunningExample" />
 </section>
 
 <section class="bb-card" id="failures">
@@ -275,7 +277,7 @@
         ("Couldn’t run “Sync with server”."), so an exception's own text - which can name a server, a table or a user - never
         reaches the screen by accident. A subscriber picks another:
     </p>
-    <pre class="bb-code">@FailureExample</pre>
+    <CodeBlock Language="csharp" Code="@FailureExample" />
     <ul class="bb-detail-list">
         <li><code>Handled = true</code> says the subscriber reported it: the palette does not log it, and
             <code>ExecuteAsync</code> does not rethrow it. This page records its own commands' failures below, so it sets it.</li>
@@ -356,6 +358,7 @@
         can inject too: <code>Pinned()</code>, <code>Recents(max)</code>, <code>Get(id)</code>, <code>Frecency(id)</code>,
         <code>TogglePinAsync</code>, <code>RemoveAsync</code>, <code>ClearAsync</code> and a <code>Changed</code> event.
     </p>
+    <CodeBlock Language="csharp" Code="@ActionsExample" />
     <div class="bb-try">
         <button type="button" class="btn btn-secondary" @onclick="() => Palette.OpenAsync()">Open the palette on the root</button>
         <button type="button" class="btn btn-secondary" disabled="@(!History.IsLoaded)" @onclick="() => History.ClearAsync()">Clear recent commands</button>
@@ -368,7 +371,7 @@
         nowhere - plug in a store; turn it off with <code>options.EnableHistory = false</code>, or on one palette with
         <code>EnableHistory="false"</code>, as the inline palette on <a href="commands#settings">Registering commands</a> does.
     </p>
-    <pre class="bb-code">@HistoryExample</pre>
+    <CodeBlock Language="csharp" Code="@HistoryExample" />
 </section>
 
 @code {
@@ -385,6 +388,70 @@
         ("v4.2.0", "Production", "yesterday"),
         ("v4.1.9", "Production", "last week"),
     ];
+
+    private const string StaticPageExample = """
+        // A static page: Enter on Theme opens it, and each option answers Back to land on the list again.
+        BaletteCmd.New("Theme")
+            .Group("Preferences")
+            .Value(state.Theme)
+            .Children(
+                ThemeOption("light", "Always light"),
+                ThemeOption("dark", "Always dark"))
+
+        BaletteCommand ThemeOption(string theme, string subtitle) => BaletteCmd.New(theme)
+            .Id($"theme:{theme}")
+            .Subtitle(subtitle)
+            .Checked(state.Theme == theme)
+            .Handler(async _ =>
+            {
+                await state.SetThemeAsync(theme);
+                return BaletteCommandResult.Back;
+            });
+
+        // Straight to the page, its ancestors behind it.
+        await Palette.OpenAsync(pageCommandId: "preferences.theme");
+        """;
+
+    private const string ResultsExample = """
+        // Stay, and rebuild the list: the switch shows the new state.
+        BaletteCmd.New("Word wrap").Checked(state.WordWrap).Handler(_ =>
+        {
+            state.ToggleWordWrap();
+            return Task.FromResult(BaletteCommandResult.KeepOpen);
+        })
+
+        // Back to the root, the query cleared, where the new to-do is listed.
+        BaletteCmd.New("Add a to-do…").Handler(_ => Task.FromResult(BaletteCommandResult.Prompt(
+            "New to-do",
+            submit =>
+            {
+                Palette.Register(BaletteCmd.New(submit.PromptValue!.Trim()).Id($"todo:{++_todoCount}"));
+                return Task.FromResult(BaletteCommandResult.Reset);
+            })))
+
+        // A message in the footer, the palette kept open.
+        BaletteCmd.New("What's new").Handler(_ => Task.FromResult(BaletteCommandResult.Toast("You are on the latest version", keepOpen: true)))
+
+        // A second Enter first: in the danger colour, or - with Confirm - without it.
+        BaletteCmd.New("Delete project").Destructive("This permanently deletes the project").Handler(_ => DeleteProjectAsync())
+        BaletteCmd.New("Sign out other devices").Confirm("Sign out every other browser and device?").Handler(_ => SignOutOthersAsync())
+        """;
+
+    private const string ActionsExample = """
+        // Listed first in the row's action panel (Tab), before Pin to top and Remove from recents; Ctrl+Enter runs the first.
+        BaletteCmd.New(person.Name)
+            .Id($"person:{person.Id}")
+            .Actions(
+                BaletteCmd.Action("Copy e-mail", _ => Task.FromResult(BaletteCommandResult.Toast($"Copied {person.Email}"))).Build(),
+                BaletteCmd.Action("Mention in issue", _ => Task.FromResult(BaletteCommandResult.Toast($"Mentioned {person.Name}"))).Build())
+
+        // The history behind the recents and the pins, injected like the service.
+        await History.EnsureLoadedAsync();
+        IReadOnlyList<string> pinned = History.Pinned();
+        IReadOnlyList<string> recent = History.Recents(5);
+        await History.TogglePinAsync("toggle:wordwrap");
+        History.Changed += () => InvokeAsync(StateHasChanged);
+        """;
 
     private const string PromptExample = """
         BaletteCmd.New("Rename project…")

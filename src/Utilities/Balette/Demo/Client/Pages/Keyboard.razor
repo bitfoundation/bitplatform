@@ -97,6 +97,7 @@
             <span>Sequence: <strong>@(_pending is null ? "none in progress" : $"{_pending.ToDisplayString(Palette.IsMac)}, waiting for the next key")</strong></span>
         </div>
     </div>
+    <CodeBlock Code="@RegistryExample" />
     <p>
         The registered shortcuts are synced to the browser as strings and matched there, so only a completed shortcut crosses
         the interop boundary - typing on the page never causes a round trip. A sequence waits <code>SequenceTimeoutMs</code>
@@ -118,7 +119,7 @@
         <code>IBaletteService.SequencePending</code> reports it to code either way - with the chords pressed so far, then
         null - which is what the status line above listens to:
     </p>
-    <pre class="bb-code">@SequenceExample</pre>
+    <CodeBlock Language="csharp" Code="@SequenceExample" />
 </section>
 
 <section class="bb-card">
@@ -133,6 +134,7 @@
         Try it
         <input type="text" placeholder="Type g then s here…" aria-label="Typing area" />
     </label>
+    <CodeBlock Language="csharp" Code="@EditableExample" />
     <div class="bb-note">
         This site has a second palette: the documentation search in its header, which answers to <kbd>/</kbd> because
         <kbd>@Mod</kbd> <kbd>K</kbd> is Balette's. Whichever of the two is open owns the keyboard - a chord pressed in the
@@ -199,7 +201,7 @@
     {
         <p class="bb-note bb-note-warn">Not a shortcut: <code>TryParse</code> says no, and <code>Parse</code> would throw a <code>FormatException</code>.</p>
     }
-    <pre class="bb-code">@ShortcutExample</pre>
+    <CodeBlock Language="csharp" Code="@ShortcutExample" />
 </section>
 
 <section class="bb-card" id="conflicts">
@@ -232,6 +234,7 @@
             <kbd>Alt</kbd> <kbd>Q</kbd> runs <strong>@(_override is null ? "Save draft" : "Save and publish")</strong>
             · Last pressed: <strong>@(_conflictLast ?? "not yet")</strong>
         </p>
+        <CodeBlock Language="csharp" Code="@ConflictExample" />
     </div>
 </section>
 
@@ -245,7 +248,7 @@
         way the palette does, with an accessible name in words ("Ctrl+K", "G then S") while its key caps are hidden from
         screen readers, and <code>BaletteTrigger</code> updates itself. Every hint on this page is one.
     </p>
-    <pre class="bb-code">@HintExample</pre>
+    <CodeBlock Code="@HintExample" />
 </section>
 
 <section class="bb-card">
@@ -267,6 +270,8 @@
         </table>
     </div>
     <p><code>Loop</code> and <code>VimBindings</code> can also be set on one palette, with the parameters of the same names.</p>
+    <CodeBlock Language="csharp" Code="@KeyboardOptionsExample" />
+    <CodeBlock Code="@KeyboardParametersExample" />
 </section>
 
 <section class="bb-card" id="accessibility">
@@ -328,7 +333,65 @@
         };
         """;
 
+    private const string RegistryExample = """
+        @inject IBaletteService Palette
+
+        @foreach (var command in Palette.Commands.Where(c => c.Shortcut is not null && c.GlobalShortcut))
+        {
+            <tr>
+                <td><BaletteShortcutHint Shortcut="command.Shortcut" IsMac="Palette.IsMac" /></td>
+                <td>@command.Title</td>
+                <td>@(command.Shortcut!.IsSequence ? "sequence" : "chord")</td>
+            </tr>
+        }
+
+        @code {
+            // A page's commands come and go with the page: list the registry again when it changes.
+            protected override void OnInitialized() => Palette.CommandsChanged += () => InvokeAsync(StateHasChanged);
+        }
+        """;
+
+    private const string EditableExample = """
+        builder.Services.AddBitBaletteServices(options =>
+        {
+            // On by default: a plain key pressed in a text field is typing. Off, G then S fires there too.
+            options.SuppressShortcutsInEditableElements = false;
+        });
+
+        BaletteCmd.New("Search").Shortcut("/")          // a plain key: never while typing, unless turned off
+        BaletteCmd.New("Word wrap").Shortcut("Alt+Z")   // a chord with a modifier: anywhere
+        """;
+
+    private const string ConflictExample = """
+        // The page's own command on Alt+Q, registered while the page is shown...
+        _pageCommands = [BaletteCmd.New("Save draft").Group("This page").Shortcut("Alt+Q").Handler(SaveDraft)];
+
+        // ... and a second one on the same keys: registered later, so it wins them, and the palette logs a warning.
+        _override = Palette.Register(BaletteCmd.New("Save and publish").Group("This page").Shortcut("Alt+Q").Handler(Publish));
+
+        // Disposed, and Alt+Q is Save draft's again.
+        _override.Dispose();
+        """;
+
+    private const string KeyboardOptionsExample = """
+        builder.Services.AddBitBaletteServices(options =>
+        {
+            options.ToggleShortcut = "Mod+K";                 // null for none
+            options.AdditionalToggleShortcuts.Add("Mod+Shift+P");
+            options.SequenceTimeoutMs = 1500;                 // how long G waits for the next key
+            options.ShowSequenceHint = false;                 // no status while a sequence is in progress
+            options.Loop = false;                             // stop at the first and the last row
+            options.VimBindings = true;                       // Ctrl+J / Ctrl+K move inside the list
+        });
+        """;
+
+    private const string KeyboardParametersExample = """
+        <Balette Loop="false" VimBindings="true" ToggleShortcut="Mod+P" />
+        """;
+
     private const string HintExample = """
+        @inject IBaletteService Palette
+
         <BaletteShortcutHint Shortcut="command.Shortcut" IsMac="Palette.IsMac" />
 
         @code {
