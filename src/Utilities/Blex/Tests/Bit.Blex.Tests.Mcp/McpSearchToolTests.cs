@@ -22,6 +22,33 @@ public class McpSearchToolTests
     }
 
     [TestMethod]
+    [DataRow("a counter whose value survives a page reload", "Persistence")]
+    [DataRow("state that survives a reload", "Persistence")]
+    [DataRow("testing", "Testing")]
+    public async Task A_question_in_plain_words_puts_its_answer_first(string query, string expected)
+    {
+        // An agent that trusts the first hit goes wherever it points, so a word every paged query shares
+        // ("page", "value") must not hand that place to them - however few hits were asked for.
+        foreach (var limit in new[] { 1, 3, 6 })
+        {
+            var result = await SearchAsync(query, limit);
+
+            Assert.AreEqual(expected, result.Hits.FirstOrDefault()?.Title,
+                $"'{query}' (limit {limit}) ranked first: {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
+        }
+    }
+
+    [TestMethod]
+    public async Task A_member_every_type_has_is_not_an_answer()
+    {
+        // Split into words, GetHashCode is "code": left in, it answers anything done from code.
+        var result = await SearchAsync("code", 50);
+
+        Assert.IsFalse(result.Hits.Any(hit => hit.Title.EndsWith(".GetHashCode", StringComparison.Ordinal) || hit.Title.EndsWith(".Equals", StringComparison.Ordinal)),
+            string.Join(" | ", result.Hits.Select(hit => hit.Title)));
+    }
+
+    [TestMethod]
     public async Task A_query_in_another_librarys_words_still_lands()
     {
         // A Fluxor or Redux user asks for reducers; Blex calls them actions.

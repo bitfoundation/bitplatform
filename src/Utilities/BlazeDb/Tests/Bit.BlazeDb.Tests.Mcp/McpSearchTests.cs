@@ -49,6 +49,48 @@ public partial class McpSearchTests
         Assert.IsEmpty(misses, string.Join(Environment.NewLine, misses));
     }
 
+    /// <summary>
+    /// Questions that say what the app has to do rather than what the feature is called, and the titles
+    /// one of which has to be the first hit: an agent that trusts the first hit goes wherever it points.
+    /// </summary>
+    private static readonly (string Query, string[] Answers)[] _firstHits =
+    [
+        ("a todo list that survives a page reload", ["Persistence guarantees", "Quick start"]),
+        ("what survives a page reload", ["Persistence guarantees"]),
+    ];
+
+    [TestMethod]
+    public async Task A_question_in_plain_words_puts_its_answer_first()
+    {
+        var misses = new List<string>();
+
+        // However few hits were asked for, the first one is the same.
+        foreach (var (query, answers) in _firstHits)
+        {
+            foreach (var limit in new[] { 1, 3, 6 })
+            {
+                var result = await McpCall.StructuredAsync<BlazeDbSearchResultDto>("SearchBlazeDb", new() { ["query"] = query, ["limit"] = limit });
+                var first = result.Hits.FirstOrDefault()?.Title ?? string.Empty;
+
+                if (answers.Any(answer => first.Contains(answer, StringComparison.OrdinalIgnoreCase))) continue;
+
+                misses.Add($"'{query}' (limit {limit}) ranked first: {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
+            }
+        }
+
+        Assert.IsEmpty(misses, string.Join(Environment.NewLine, misses));
+    }
+
+    [TestMethod]
+    public async Task A_member_every_type_has_is_not_an_answer()
+    {
+        // Split into words, GetHashCode is "code": left in, it answers anything done from code.
+        var result = await McpCall.StructuredAsync<BlazeDbSearchResultDto>("SearchBlazeDb", new() { ["query"] = "code", ["limit"] = 50 });
+
+        Assert.IsFalse(result.Hits.Any(hit => hit.Title.EndsWith(".GetHashCode", StringComparison.Ordinal) || hit.Title.EndsWith(".Equals", StringComparison.Ordinal)),
+            string.Join(" | ", result.Hits.Select(hit => hit.Title)));
+    }
+
     [TestMethod]
     public async Task A_word_inside_another_word_does_not_count()
     {
