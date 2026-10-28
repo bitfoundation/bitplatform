@@ -245,6 +245,63 @@ public sealed class FileSystemStorageProviderTests
         Assert.IsFalse(File.Exists(path + "-journal"));
     }
 
+    /// <summary>
+    /// The old file's journal and log hold committed writes of its own until the new file has taken the name:
+    /// an import that cannot finish leaves the old database as it was, log included.
+    /// </summary>
+    [TestMethod]
+    public async Task Import_ThatCannotTakeTheName_KeepsTheOldFilesLog()
+    {
+        var provider = Provider();
+        var path = provider.GetDatabasePath("app.db");
+
+        // A folder where the file goes: the new file cannot be moved over it, on any platform.
+        Directory.CreateDirectory(path);
+        await File.WriteAllTextAsync(path + "-wal", "committed", Ct);
+
+        await Assert.ThrowsAsync<Exception>(async () => await provider.Admin.ImportAsync("app.db", SqliteImage(), Ct));
+
+        Assert.AreEqual("committed", await File.ReadAllTextAsync(path + "-wal", Ct));
+        Assert.HasCount(1, Directory.GetFiles(_root.Path), "Something was left beside the database.");
+    }
+
+    /// <summary>
+    /// The file and its journal leave the name together or not at all: a journal left behind would be rolled back
+    /// into whatever file next takes the name.
+    /// </summary>
+    [TestMethod]
+    public async Task Delete_ThatCannotMoveTheJournal_LeavesTheFileInPlace()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            Assert.Inconclusive("Only Windows refuses to rename a file another handle holds without sharing it.");
+        }
+
+        var provider = Provider();
+        var path = provider.GetDatabasePath("app.db");
+        await provider.Admin.ImportAsync("app.db", SqliteImage(), Ct);
+        await File.WriteAllTextAsync(path + "-journal", "hot", Ct);
+
+        await using (new FileStream(path + "-journal", FileMode.Open, FileAccess.Read, FileShare.None))
+        {
+            await Assert.ThrowsAsync<IOException>(async () => await provider.Admin.DeleteAsync("app.db", Ct));
+        }
+
+        Assert.IsTrue(await provider.Admin.ExistsAsync("app.db", Ct));
+        Assert.AreEqual("hot", await File.ReadAllTextAsync(path + "-journal", Ct));
+        Assert.HasCount(2, Directory.GetFiles(_root.Path));
+    }
+
+    [TestMethod]
+    public async Task List_LeavesOutFilesMovedAside()
+    {
+        var provider = Provider();
+        await provider.Admin.ImportAsync("app.db", SqliteImage(), Ct);
+        await File.WriteAllBytesAsync(provider.GetDatabasePath($"app.db.{Guid.NewGuid():N}.aside"), SqliteImage(), Ct);
+
+        CollectionAssert.AreEqual(new[] { "app.db" }, (await provider.Admin.ListAsync(Ct)).ToArray());
+    }
+
     [TestMethod]
     public async Task Delete_RemovesTheFileAndItsJournal()
     {

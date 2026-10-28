@@ -27,7 +27,8 @@ internal sealed class BsqliteTransportFactory(
     Func<IBsqliteTransportFactory> workerTransports,
     BsqliteWorkerTransportDefaults defaults,
     BsqliteHostKind host,
-    ILogger<BsqliteTransportFactory>? logger = null) : IBsqliteTransportFactory
+    ILogger<BsqliteTransportFactory>? logger = null,
+    ILogger<BsqliteNativeTransport>? nativeTransportLogger = null) : IBsqliteTransportFactory
 {
     private readonly ILogger _logger = logger ?? NullLogger<BsqliteTransportFactory>.Instance;
     private IBsqliteTransportFactory? _workerTransports;
@@ -55,7 +56,7 @@ internal sealed class BsqliteTransportFactory(
                     string.Join(", ", defaults.ExtensionModules.Select(module => module.ModuleUrl)));
             }
 
-            return new BsqliteNativeTransport(files, defaults.EnableForeignKeys, defaults.OnOpenSql);
+            return new BsqliteNativeTransport(files, defaults.EnableForeignKeys, defaults.OnOpenSql, nativeTransportLogger);
         }
 
         if (!BsqliteStorageProviderResolver.RunsInBrowser(provider))

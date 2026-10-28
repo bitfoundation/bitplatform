@@ -1,4 +1,5 @@
-﻿using Bit.Bsqlite.Storage;
+﻿using System.Collections.Concurrent;
+using Bit.Bsqlite.Storage;
 using Bit.Bsqlite.Storage.FileSystem;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -45,7 +46,8 @@ public sealed class BsqliteStorageProviderResolver
     private readonly IBsqliteStorageBindingStore _bindingStore;
     private readonly BsqliteHostKind _host;
     private readonly ILogger _logger;
-    private readonly Dictionary<string, BsqliteProbeResult> _probeCache =
+    // Concurrent: on a device two databases of one scope can open at once, their continuations on the thread pool.
+    private readonly ConcurrentDictionary<string, BsqliteProbeResult> _probeCache =
         new(StringComparer.OrdinalIgnoreCase);
 
     public BsqliteStorageProviderResolver(

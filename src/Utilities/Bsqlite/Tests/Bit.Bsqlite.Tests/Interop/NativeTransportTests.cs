@@ -49,6 +49,90 @@ public sealed class NativeTransportTests
     }
 
     /// <summary>
+    /// A window closing while its last write is still running: until the file is closed it is still that window's,
+    /// so the admin surface must not delete or replace it under the write.
+    /// </summary>
+    [TestMethod]
+    public async Task Dispose_KeepsTheFileFromTheAdmin_UntilItIsClosed()
+    {
+        var provider = new BsqliteFileSystemStorageProvider(new() { RootDirectory = _root.Path });
+        using var entered = new ManualResetEventSlim();
+        using var release = new ManualResetEventSlim();
+        var transport = new BlockingTransport(entered, release, $"Data Source={provider.GetDatabasePath("app.db")};Pooling=False");
+        await transport.OpenAsync("app.db", Ct);
+
+        var batch = Task.Run(() => transport.ExecuteAsync(
+            [new BsqliteCommandRequest { CommandText = "CREATE TABLE t (x)" }],
+            Ct), Ct);
+        Assert.IsTrue(entered.Wait(TimeSpan.FromSeconds(10), Ct));
+        var disposal = transport.DisposeAsync().AsTask();
+
+        var error = await Assert.ThrowsExactlyAsync<IOException>(async () => await provider.Admin.DeleteAsync("app.db", Ct));
+        Assert.Contains("is open in 1 session", error.Message);
+
+        release.Set();
+        await batch;
+        await disposal;
+
+        await provider.Admin.DeleteAsync("app.db", Ct);
+        Assert.IsFalse(await provider.Admin.ExistsAsync("app.db", Ct));
+    }
+
+    [TestMethod]
+    public async Task Open_AfterDispose_Throws()
+    {
+        var transport = new BsqliteNativeTransport(new BsqliteFileSystemStorageProvider(new() { RootDirectory = _root.Path }));
+        await transport.OpenAsync("app.db", Ct);
+        await transport.DisposeAsync();
+
+        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(() => transport.OpenAsync("app.db", Ct));
+    }
+
+    /// <summary>
+    /// Opens racing on one transport open the file once: a second connection would leak, and stay among the file's
+    /// sessions after disposal, so the admin surface would refuse the file for the life of the process.
+    /// </summary>
+    [TestMethod]
+    public async Task ConcurrentOpens_OpenTheFileOnce()
+    {
+        var provider = new BsqliteFileSystemStorageProvider(new() { RootDirectory = _root.Path });
+        var transport = new BsqliteNativeTransport(provider);
+
+        await Task.WhenAll(Enumerable.Range(0, 8).Select(_ => Task.Run(() => transport.OpenAsync("app.db", Ct), Ct)));
+        await transport.DisposeAsync();
+
+        await provider.Admin.DeleteAsync("app.db", Ct);
+        Assert.IsFalse(await provider.Admin.ExistsAsync("app.db", Ct));
+    }
+
+    /// <summary>
+    /// The writes have committed by the time a handler hears of them: a handler that throws must not turn the batch
+    /// into a failure the caller would retry. In the browser a handler's exception does not reach the write either.
+    /// </summary>
+    [TestMethod]
+    public async Task ThrowingTablesChangedHandler_DoesNotFailTheCommittedWrite()
+    {
+        await using var transport = new BsqliteNativeTransport(new BsqliteFileSystemStorageProvider(new() { RootDirectory = _root.Path }));
+        await transport.OpenAsync("app.db", Ct);
+        var heard = new List<string>();
+        transport.TablesChanged += (_, _) => throw new InvalidOperationException("A handler's bug.");
+        transport.TablesChanged += (_, e) => heard.AddRange(e.Tables);
+
+        await transport.ExecuteAsync(
+            [
+                new BsqliteCommandRequest { CommandText = "CREATE TABLE t (x)" },
+                new BsqliteCommandRequest { CommandText = "INSERT INTO t VALUES (1)" },
+            ],
+            Ct);
+
+        var count = await transport.ExecuteAsync(
+            [new BsqliteCommandRequest { CommandText = "SELECT COUNT(*) FROM t", ResultKind = BsqliteResultKind.Scalar }],
+            Ct);
+        Assert.AreEqual(1L, Assert.ContainsSingle(Assert.ContainsSingle(count).Rows)[0]);
+        Assert.Contains("t", heard);
+    }
+
+    /// <summary>
     /// While another connection holds a file in WAL mode it cannot leave it, and waiting does not change that:
     /// the open goes ahead at once instead of retrying for a command's whole timeout.
     /// </summary>
@@ -129,8 +213,11 @@ public sealed class NativeTransportTests
     }
 
     /// <summary>Holds its batch at the first statement until told to go on.</summary>
-    private sealed class BlockingTransport(ManualResetEventSlim entered, ManualResetEventSlim release)
-        : BsqliteNativeTransport("Data Source=:memory:", onOpenSql: null, registerEfFunctions: false)
+    private sealed class BlockingTransport(
+        ManualResetEventSlim entered,
+        ManualResetEventSlim release,
+        string connectionString = "Data Source=:memory:")
+        : BsqliteNativeTransport(connectionString, onOpenSql: null, registerEfFunctions: false)
     {
         protected override void OnExecuting(BsqliteCommandRequest request)
         {

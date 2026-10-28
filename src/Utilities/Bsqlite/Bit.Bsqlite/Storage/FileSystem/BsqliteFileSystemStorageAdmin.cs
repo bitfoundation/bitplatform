@@ -25,6 +25,8 @@ internal sealed class BsqliteFileSystemStorageAdmin(BsqliteFileSystemStorageProv
 {
     private const string StagingSuffix = ".import";
 
+    private const string AsideSuffix = ".aside";
+
     private static readonly string[] SideFileSuffixes = ["-journal", "-wal", "-shm"];
 
     private static ReadOnlySpan<byte> SqliteHeader => "SQLite format 3\0"u8;
@@ -43,7 +45,8 @@ internal sealed class BsqliteFileSystemStorageAdmin(BsqliteFileSystemStorageProv
         var names = Directory
             .EnumerateFiles(root, "*", SearchOption.AllDirectories)
             .Where(path => !SideFileSuffixes.Any(suffix => path.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
-                && !path.EndsWith(StagingSuffix, StringComparison.OrdinalIgnoreCase))
+                && !path.EndsWith(StagingSuffix, StringComparison.OrdinalIgnoreCase)
+                && !path.EndsWith(AsideSuffix, StringComparison.OrdinalIgnoreCase))
             .Where(IsDatabaseFile)
             .Select(path => Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/'))
             .Order(StringComparer.Ordinal)
@@ -61,8 +64,9 @@ internal sealed class BsqliteFileSystemStorageAdmin(BsqliteFileSystemStorageProv
             // Nothing to delete where the folder was never created - and File.Delete throws there on Windows.
             if (Directory.Exists(Path.GetDirectoryName(path)))
             {
-                File.Delete(path);
-                DeleteSideFiles(path);
+                // The file and its journal leave the name together or not at all: a journal left behind
+                // would be rolled back into whatever file next takes the name.
+                DeleteQuietly(MoveAside([path, .. SideFilesOf(path)]));
             }
 
             return Task.CompletedTask;
@@ -121,8 +125,21 @@ internal sealed class BsqliteFileSystemStorageAdmin(BsqliteFileSystemStorageProv
 
             await BsqliteNativeTransport.WhileClosedAsync(path, () =>
             {
-                DeleteSideFiles(path);
-                File.Move(staging, path, overwrite: true);
+                // The old file's journal and log are moved aside first, and put back if the new file cannot
+                // take the name: deleted up front, a failed move would leave the old file without the
+                // committed writes its log still held.
+                var aside = MoveAside(SideFilesOf(path));
+                try
+                {
+                    File.Move(staging, path, overwrite: true);
+                }
+                catch
+                {
+                    Restore(aside);
+                    throw;
+                }
+
+                DeleteQuietly(aside);
                 return Task.CompletedTask;
             }, cancellationToken).ConfigureAwait(false);
         }
@@ -132,11 +149,61 @@ internal sealed class BsqliteFileSystemStorageAdmin(BsqliteFileSystemStorageProv
         }
     }
 
-    private static void DeleteSideFiles(string path)
+    private static IEnumerable<string> SideFilesOf(string path) => SideFileSuffixes.Select(suffix => path + suffix);
+
+    /// <summary>
+    /// Renames each of <paramref name="paths"/> that exists to a name of its own beside it - all of them, or,
+    /// when one cannot be moved, none: those already moved are put back before the failure is thrown.
+    /// </summary>
+    private static List<(string Original, string Aside)> MoveAside(IEnumerable<string> paths)
     {
-        foreach (var suffix in SideFileSuffixes)
+        var moved = new List<(string Original, string Aside)>();
+        try
         {
-            File.Delete(path + suffix);
+            foreach (var original in paths)
+            {
+                if (!File.Exists(original))
+                {
+                    continue;
+                }
+
+                var aside = $"{original}.{Guid.NewGuid():N}{AsideSuffix}";
+                File.Move(original, aside);
+                moved.Add((original, aside));
+            }
+        }
+        catch
+        {
+            Restore(moved);
+            throw;
+        }
+
+        return moved;
+    }
+
+    private static void Restore(List<(string Original, string Aside)> moved)
+    {
+        for (var i = moved.Count - 1; i >= 0; i--)
+        {
+            File.Move(moved[i].Aside, moved[i].Original);
+        }
+    }
+
+    /// <summary>
+    /// Deletes what <see cref="MoveAside"/> moved. The names are free by now, so a file that cannot be deleted
+    /// yet harms nothing: listing passes it over, and it holds no name SQLite reads.
+    /// </summary>
+    private static void DeleteQuietly(List<(string Original, string Aside)> moved)
+    {
+        foreach (var (_, aside) in moved)
+        {
+            try
+            {
+                File.Delete(aside);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+            }
         }
     }
 

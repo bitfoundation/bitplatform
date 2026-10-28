@@ -184,7 +184,20 @@ public sealed class BsqliteTransaction : DbTransaction
             // and nothing it wrote is reported as committed.
             Detach();
             _connection.DiscardPendingWrites();
-            ReleaseTurn();
+
+            if (statement == "COMMIT")
+            {
+                // A COMMIT that fails busy - another window or process reading the file - leaves the
+                // transaction open in the engine. Ended here, before the turn passes on, so the next
+                // context's writes do not land in it, unreported, to be lost when the session closes.
+                // Where the engine has already ended it, the ROLLBACK fails and changes nothing.
+                await RollbackQuietlyAsync().ConfigureAwait(false);
+            }
+            else
+            {
+                ReleaseTurn();
+            }
+
             throw;
         }
 

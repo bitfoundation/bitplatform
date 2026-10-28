@@ -4,6 +4,8 @@ using System.Runtime.InteropServices;
 using Bit.Bsqlite.Data;
 using Bit.Bsqlite.Storage;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using SQLitePCL;
 
 namespace Bit.Bsqlite.Interop;
@@ -37,17 +39,23 @@ public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource,
 {
     // Transports over the same database share their locks and their change notifications, the way tabs
     // over the same file share the worker transport's Web Locks and BroadcastChannel.
-    private static readonly ConcurrentDictionary<string, SemaphoreSlim> SharedLocks = new(StringComparer.Ordinal);
-    private static readonly ConcurrentDictionary<string, List<BsqliteNativeTransport>> SharedPeers = new(StringComparer.Ordinal);
+    //
+    // Keyed without regard to case: Windows, macOS and iOS take two spellings of a path as one file, and
+    // telling them apart there would let the admin surface replace a file another window has open. Where
+    // the file system does tell them apart, sharing a key costs no more than a spurious notification or a
+    // lock taken in turn.
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim> SharedLocks = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly ConcurrentDictionary<string, List<BsqliteNativeTransport>> SharedPeers = new(StringComparer.OrdinalIgnoreCase);
 
     // Opening a file and the admin surface's work on it take turns, so the file is never replaced or
     // deleted while a window is opening it.
-    private static readonly ConcurrentDictionary<string, SemaphoreSlim> OpenGates = new(StringComparer.Ordinal);
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim> OpenGates = new(StringComparer.OrdinalIgnoreCase);
 
     private readonly Func<string, string> _connectionStringFor;
     private readonly IReadOnlyList<string> _onOpenSql;
     private readonly bool _registerEfFunctions;
     private readonly bool _offload;
+    private readonly ILogger _logger;
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly HashSet<string> _writtenTables = new(StringComparer.OrdinalIgnoreCase);
     private ConcurrentDictionary<string, SemaphoreSlim> _locks = new(StringComparer.Ordinal);
@@ -55,6 +63,7 @@ public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource,
     private bool _shared;
     private SqliteConnection? _connection;
     private bool _committed;
+    private bool _disposed;
 
     // Held so the native side never calls a delegate the collector has reclaimed.
     private delegate_update? _updateHook;
@@ -79,6 +88,7 @@ public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource,
         _connectionStringFor = _ => connectionString;
         _onOpenSql = onOpenSql ?? [];
         _registerEfFunctions = registerEfFunctions;
+        _logger = NullLogger<BsqliteNativeTransport>.Instance;
 
         // Known now, so another transport's lock on the same database is honoured before this one opens.
         ConfigureScope(new SqliteConnectionStringBuilder(connectionString));
@@ -90,10 +100,12 @@ public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource,
     /// <param name="provider">Where the databases live.</param>
     /// <param name="enableForeignKeys">Whether every connection runs with foreign keys enforced.</param>
     /// <param name="onOpenSql">Statements to run on every open, after the function set is installed.</param>
+    /// <param name="logger">Where a <see cref="TablesChanged"/> handler that throws is reported.</param>
     public BsqliteNativeTransport(
         IBsqliteFileStorageProvider provider,
         bool enableForeignKeys = true,
-        IReadOnlyList<string>? onOpenSql = null)
+        IReadOnlyList<string>? onOpenSql = null,
+        ILogger<BsqliteNativeTransport>? logger = null)
     {
         ArgumentNullException.ThrowIfNull(provider);
 
@@ -109,6 +121,7 @@ public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource,
         _onOpenSql = onOpenSql ?? [];
         _registerEfFunctions = true;
         _offload = true;
+        _logger = logger ?? NullLogger<BsqliteNativeTransport>.Instance;
     }
 
     /// <summary>The underlying connection, once open, for callers that need to inspect engine state directly.</summary>
@@ -144,6 +157,7 @@ public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource,
     public async Task OpenAsync(string databaseName, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(databaseName);
+        ObjectDisposedException.ThrowIf(_disposed, this);
 
         if (_connection is not null)
         {
@@ -153,6 +167,7 @@ public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource,
         var options = new SqliteConnectionStringBuilder(_connectionStringFor(databaseName));
         ConfigureScope(options);
 
+        // The file's gate first, then this transport's own - the order every caller takes them in.
         var gate = _shared ? OpenGates.GetOrAdd(_scope, _ => new SemaphoreSlim(1, 1)) : null;
         if (gate is not null)
         {
@@ -161,13 +176,30 @@ public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource,
 
         try
         {
-            if (_offload)
+            await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
             {
-                await Task.Run(() => Open(options), cancellationToken).ConfigureAwait(false);
+                // Decided again under the gates: an open that got here first has opened the file - a second
+                // connection would leak, and count as a session of its own for the admin surface to wait on
+                // forever - and a disposal has closed it for good.
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                if (_connection is not null)
+                {
+                    return;
+                }
+
+                if (_offload)
+                {
+                    await Task.Run(() => Open(options), cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    Open(options);
+                }
             }
-            else
+            finally
             {
-                Open(options);
+                _gate.Release();
             }
         }
         finally
@@ -392,22 +424,27 @@ public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource,
     }
 
     /// <inheritdoc />
-    /// <remarks>Waits for a batch or a snapshot in progress, so the connection is never closed under it.</remarks>
+    /// <remarks>
+    /// Waits for a batch or a snapshot in progress, so the connection is never closed under it, and leaves
+    /// the file's sessions only once the file is closed - so the admin surface never deletes or replaces it
+    /// while a write of this transport's is still landing in it.
+    /// </remarks>
     public async ValueTask DisposeAsync()
     {
-        if (_shared && SharedPeers.TryGetValue(_scope, out var peers))
-        {
-            lock (peers)
-            {
-                peers.Remove(this);
-            }
-        }
-
         await _gate.WaitAsync().ConfigureAwait(false);
         try
         {
+            _disposed = true;
             _connection?.Dispose();
             _connection = null;
+
+            if (_shared && SharedPeers.TryGetValue(_scope, out var peers))
+            {
+                lock (peers)
+                {
+                    peers.Remove(this);
+                }
+            }
         }
         finally
         {
@@ -509,7 +546,7 @@ public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource,
             return;
         }
 
-        TablesChanged?.Invoke(this, new BsqliteTablesChangedEventArgs(tables));
+        RaiseTablesChanged(tables);
 
         if (_shared && SharedPeers.TryGetValue(_scope, out var peers))
         {
@@ -523,7 +560,33 @@ public class BsqliteNativeTransport : IBsqliteTransport, IBsqliteSnapshotSource,
             // re-runs on its own connection, and must not do so inside this one's ExecuteAsync.
             foreach (var other in others)
             {
-                _ = Task.Run(() => other.TablesChanged?.Invoke(other, new BsqliteTablesChangedEventArgs(tables)));
+                _ = Task.Run(() => other.RaiseTablesChanged(tables));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Raises <see cref="TablesChanged"/>, reporting a handler that throws rather than letting it through: by
+    /// now the writes have committed, and a batch that failed here would read as one that did not - and be
+    /// retried. In the browser a handler's exception does not reach the write either.
+    /// </summary>
+    private void RaiseTablesChanged(HashSet<string> tables)
+    {
+        if (TablesChanged is not { } handlers)
+        {
+            return;
+        }
+
+        var args = new BsqliteTablesChangedEventArgs(tables);
+        foreach (var handler in handlers.GetInvocationList().Cast<EventHandler<BsqliteTablesChangedEventArgs>>())
+        {
+            try
+            {
+                handler(this, args);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "A TablesChanged handler threw for tables {Tables}.", string.Join(", ", tables));
             }
         }
     }

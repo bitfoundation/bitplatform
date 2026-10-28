@@ -1,5 +1,7 @@
 ﻿using Bit.Bsqlite.Data;
 using Bit.Bsqlite.Testing;
+using Microsoft.Data.Sqlite;
+using SQLitePCL;
 
 namespace Bit.Bsqlite.Interop.Tests;
 
@@ -132,6 +134,32 @@ public sealed class BsqliteTransactionTests
     }
 
     /// <summary>
+    /// A COMMIT that fails busy - another window or process reading the file - leaves the transaction
+    /// open in the engine. Unless it is ended there, the next context's writes run inside it,
+    /// unreported, and are lost when the session closes.
+    /// </summary>
+    [TestMethod]
+    public async Task Commit_ThatFails_LeavesNoTransactionOpenInTheEngine()
+    {
+        await using var inner = new BsqliteInProcessTransport();
+        await using var transport = new BusyCommitTransport(inner);
+        await using var connection = new BsqliteConnection(transport, "tx.db");
+        await connection.OpenAsync(Ct);
+        await ExecuteAsync(connection, "CREATE TABLE product (id INTEGER PRIMARY KEY, name TEXT)");
+
+        var transaction = await connection.BeginTransactionAsync(Ct);
+        await ExecuteAsync(connection, "INSERT INTO product (name) VALUES ('Blocked')");
+        await Assert.ThrowsAsync<SqliteException>(() => transaction.CommitAsync(Ct));
+        await transaction.DisposeAsync();
+
+        Assert.AreEqual(1, raw.sqlite3_get_autocommit(inner.Connection!.Handle!));
+
+        await ExecuteAsync(connection, "INSERT INTO product (name) VALUES ('Kept')");
+        Assert.AreEqual(1L, await CountAsync(connection));
+        Assert.AreEqual(1, raw.sqlite3_get_autocommit(inner.Connection!.Handle!));
+    }
+
+    /// <summary>
     /// Two connections over one transport are one SQLite connection in the engine, so a statement
     /// from the second would run inside the first one's transaction - and roll back with it. It
     /// waits for the transaction to end instead, as it would for a second connection's file lock.
@@ -227,6 +255,28 @@ public sealed class BsqliteTransactionTests
 
             return results;
         }
+
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+
+    /// <summary>
+    /// Fails every COMMIT busy without running it, so the engine stays in the transaction - what SQLite
+    /// does when a COMMIT cannot get the file to itself.
+    /// </summary>
+    private sealed class BusyCommitTransport(BsqliteInProcessTransport inner) : IBsqliteTransport
+    {
+        public Task OpenAsync(string databaseName, CancellationToken cancellationToken = default)
+            => inner.OpenAsync(databaseName, cancellationToken);
+
+        public Task CloseAsync(CancellationToken cancellationToken = default)
+            => inner.CloseAsync(cancellationToken);
+
+        public Task<IReadOnlyList<BsqliteCommandResult>> ExecuteAsync(
+            IReadOnlyList<BsqliteCommandRequest> batch,
+            CancellationToken cancellationToken = default)
+            => batch[0].CommandText == "COMMIT"
+                ? throw new SqliteException("database is locked", raw.SQLITE_BUSY)
+                : inner.ExecuteAsync(batch, cancellationToken);
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }

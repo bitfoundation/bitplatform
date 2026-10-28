@@ -291,7 +291,8 @@ public sealed class BsqliteBuilder
             () => new BsqliteWorkerTransportFactory(sp.GetRequiredService<IJSRuntime>(), defaults),
             defaults,
             sp.GetRequiredService<BsqliteRuntimeHost>().Kind,
-            sp.GetService<ILogger<BsqliteTransportFactory>>()));
+            sp.GetService<ILogger<BsqliteTransportFactory>>(),
+            sp.GetService<ILogger<BsqliteNativeTransport>>()));
         Services.TryAddSingleton<BsqliteStorageMigrator>();
         Services.TryAddScoped(sp => new BsqliteStorageProviderResolver(
             sp.GetServices<IBsqliteStorageProvider>(),

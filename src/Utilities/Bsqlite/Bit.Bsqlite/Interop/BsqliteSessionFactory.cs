@@ -121,20 +121,36 @@ public sealed class BsqliteSessionFactory : IBsqliteSessionFactory
             throw;
         }
 
-        // Only after the open: a failed open must not leave a binding claiming the database exists
-        // somewhere it does not.
-        await _resolver.CommitBindingAsync(resolution, cancellationToken).ConfigureAwait(false);
-
-        var capabilities = resolution.Provider.Capabilities;
-        var connection = new BsqliteConnection(transport, databaseName)
+        BsqliteConnection? connection = null;
+        try
         {
-            RuntimeLimits = new BsqliteRuntimeLimits
+            // Only after the open: a failed open must not leave a binding claiming the database exists
+            // somewhere it does not.
+            await _resolver.CommitBindingAsync(resolution, cancellationToken).ConfigureAwait(false);
+
+            var capabilities = resolution.Provider.Capabilities;
+            connection = new BsqliteConnection(transport, databaseName)
             {
-                SupportsMultiDatabaseTransactions = capabilities.SupportsMultiDatabaseTransactions,
-                CanChangePageSize = capabilities.CanChangePageSize,
-            },
-        };
-        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+                RuntimeLimits = new BsqliteRuntimeLimits
+                {
+                    SupportsMultiDatabaseTransactions = capabilities.SupportsMultiDatabaseTransactions,
+                    CanChangePageSize = capabilities.CanChangePageSize,
+                },
+            };
+            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch
+        {
+            // Nothing owns the open transport yet: left open, it would keep the file - and, on a device,
+            // its place among the sessions the admin surface waits for - for the life of the process.
+            if (connection is not null)
+            {
+                await connection.DisposeAsync().ConfigureAwait(false);
+            }
+
+            await transport.DisposeAsync().ConfigureAwait(false);
+            throw;
+        }
 
         return new BsqliteSession(connection, transport, resolution);
     }

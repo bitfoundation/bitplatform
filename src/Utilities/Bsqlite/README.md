@@ -216,6 +216,7 @@ for the browser matrix, the soak suite and the benchmark page.
 - [Limits](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/limits.md) - what the browser cannot do and how the library tells you
 - [Extending](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/extending.md) - SQL functions from JavaScript, custom transports
 - [Moving from Bit.Besql](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/migrating-from-besql.md) - what replaces each Bit.Besql API, and keeping users' data
+- [Moving a bit Boilerplate project from Bit.Besql](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/migrating-boilerplate-from-besql.md) - the offline database of a project made from the template, file by file
 
 ## License
 
