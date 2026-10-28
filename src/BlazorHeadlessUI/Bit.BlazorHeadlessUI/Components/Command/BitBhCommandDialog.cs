@@ -120,7 +120,6 @@ public class BitBhCommandDialog : ComponentBase
         if (value == IsOpen) return;
         if (!_controlled) _open = value;
         await OpenChanged.InvokeAsync(value);
-        StateHasChanged();
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)

@@ -45,14 +45,24 @@
         // pick it up so the switches report the right pressed state.
         if (firstRender)
         {
-            _darkTheme = await JS.InvokeAsync<string>("bitBhTheme.get") == "dark";
-            if (_darkTheme) StateHasChanged();
+            try
+            {
+                _darkTheme = await JS.InvokeAsync<string>("bitBhTheme.get") == "dark";
+                if (_darkTheme) StateHasChanged();
+            }
+            // A dropped circuit or a theme.js that failed to load leaves the switches on light; neither is
+            // worth the error bar.
+            catch (Exception ex) when (ex is JSDisconnectedException or JSException) { }
         }
     }
 
     private async Task SetThemeAsync(bool dark)
     {
         _darkTheme = dark;
-        await JS.InvokeVoidAsync("bitBhTheme.set", dark ? "dark" : "light");
+        try
+        {
+            await JS.InvokeVoidAsync("bitBhTheme.set", dark ? "dark" : "light");
+        }
+        catch (Exception ex) when (ex is JSDisconnectedException or JSException) { }
     }
 }

@@ -39,13 +39,7 @@ builder.Services.AddMcpServer(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-#if INCLUDE_WASM
-    app.UseWebAssemblyDebugging();
-#endif
-}
-else
+if (app.Environment.IsDevelopment() is false)
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
