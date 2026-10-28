@@ -95,7 +95,7 @@ public static class DocsCatalog
         [
             new("/getting-started", "Getting started",
                 "Install the package, register the services, link the stylesheet, place the palette and register your first commands - on every hosting model.",
-                "install setup nuget package AddBitBaletteServices quick start program.cs stylesheet render mode BaletteTrigger hosting webassembly server web app hybrid csp troubleshooting",
+                "install setup nuget package AddBitBaletteServices quick start program.cs stylesheet render mode BaletteTrigger hosting webassembly server web app hybrid csp troubleshooting lazy load lazyassemblyloader blazorwebassemblylazyload GetBaletteService aot",
                 typeof(GettingStarted)),
         ]),
         new("Commands",

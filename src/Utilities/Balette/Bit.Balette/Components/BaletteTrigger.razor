@@ -1,7 +1,7 @@
 ﻿@namespace Bit.Balette
 @implements IDisposable
-@inject BaletteService Palette
-@inject BaletteOptions Options
+@using Microsoft.Extensions.DependencyInjection
+@inject IServiceProvider Services
 
 <button type="button"
         class="bit-balette-trigger @Class"
@@ -26,6 +26,11 @@
 </button>
 
 @code {
+    // Resolved rather than injected, so the trigger also works when the app never called AddBitBaletteServices.
+    private IServiceProvider PaletteServices => field ??= BitBalette.GetServices(Services);
+    private BaletteService Palette => field ??= PaletteServices.GetRequiredService<BaletteService>();
+    private BaletteOptions Options => field ??= PaletteServices.GetRequiredService<BaletteOptions>();
+
     /// <summary>Label text. Defaults to "Search".</summary>
     [Parameter] public string? Label { get; set; }
 

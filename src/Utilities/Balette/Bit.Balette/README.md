@@ -50,6 +50,10 @@ builder.Services.AddBitBaletteServices();
 `<BaletteCommands Commands="..." />`. Commands can also be written as markup with `<BaletteGroup>` and
 `<BaletteItem>` inside `<Balette>`.
 
+A WebAssembly app can skip the registration and lazy load `Bit.Balette.wasm` instead, reaching the registry through
+`IServiceProvider.GetBaletteService()`; see
+[lazy loading](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Balette#lazy-loading-on-webassembly).
+
 ## Features
 
 - An fzf-style fuzzy matcher with word-boundary, camelCase and consecutive-run bonuses, smart case and highlighting;
@@ -69,7 +73,7 @@ builder.Services.AddBitBaletteServices();
   refused.
 - CSS-variable theming, light and dark, eight templates or a fully unstyled mode, localizable strings.
 - Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 10 and 11; trimming and AOT
-  friendly.
+  friendly; lazy loadable on WebAssembly.
 
 ## For AI agents
 

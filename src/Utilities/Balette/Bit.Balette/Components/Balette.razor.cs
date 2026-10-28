@@ -3,6 +3,7 @@ using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.JSInterop;
@@ -101,10 +102,13 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     [Inject] private IJSRuntime JS { get; set; } = default!;
     [Inject] private NavigationManager Navigation { get; set; } = default!;
     [Inject] private IServiceProvider Services { get; set; } = default!;
-    [Inject] private BaletteService Service { get; set; } = default!;
-    [Inject] private BaletteOptions Options { get; set; } = default!;
-    [Inject] private BaletteRanker Ranker { get; set; } = default!;
-    [Inject] private BaletteHistory History { get; set; } = default!;
+
+    // Resolved rather than injected, so the palette also works when the app never called AddBitBaletteServices.
+    private IServiceProvider PaletteServices => field ??= BitBalette.GetServices(Services);
+    private BaletteService Service => field ??= PaletteServices.GetRequiredService<BaletteService>();
+    private BaletteOptions Options => field ??= PaletteServices.GetRequiredService<BaletteOptions>();
+    private BaletteRanker Ranker => field ??= PaletteServices.GetRequiredService<BaletteRanker>();
+    private BaletteHistory History => field ??= PaletteServices.GetRequiredService<BaletteHistory>();
 
     // ---- Parameters -------------------------------------------------------------------------
 
