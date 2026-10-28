@@ -1,0 +1,107 @@
+﻿@{
+#if INCLUDE_WASM
+    var includeWasm = true;
+#else
+    var includeWasm = false;
+#endif
+    var noPrerender = HttpContext.Request.Query["no-prerender"].Count > 0;
+    // Without the WASM client in the build, WebAssembly render modes can't boot, so fall back to Blazor
+    // Server even where AppRenderMode.Current would pick WebAssembly (e.g. Release with IncludeWasm=false).
+    IComponentRenderMode? renderMode = noPrerender
+        ? (includeWasm ? AppRenderMode.NoPrerenderBlazorWebAssembly : AppRenderMode.NoPrerenderBlazorServer)
+        : (includeWasm ? AppRenderMode.Current : AppRenderMode.BlazorServer);
+    // A page excluded from interactive routing (the error page) is rendered statically, so the HttpContext
+    // of the request that failed is there for it to read.
+    if (HttpContext.AcceptsInteractiveRouting() is false) renderMode = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    @* No static <title> here: every page supplies its own through <PageTitle> (Routes.razor the fallback),
+       and with prerendering the HeadOutlet emits a real <title> element into this head. *@
+    <meta name="description" content="bit BlazorHeadlessUI - accessible, unstyled UI primitives for Blazor: keyboard interaction, focus management, positioning, dismissal and WAI-ARIA semantics, styled with plain CSS or Tailwind." />
+    <ResourcePreloader />
+    @* Render-blocking on purpose: sets <html data-theme> before the first paint. *@
+    <script src="@Assets["_content/Bit.BlazorHeadlessUI.Demo.Client.Core/theme.js"]"></script>
+    <link rel="stylesheet" href="@Assets["_content/Bit.BlazorHeadlessUI.Demo.Client.Core/app.css"]" />
+    @* Styles of the newer demo pages (plain CSS section), one file per component. *@
+    <link rel="stylesheet" href="@Assets["_content/Bit.BlazorHeadlessUI.Demo.Client.Core/demos/accessibility.css"]" />
+    <link rel="stylesheet" href="@Assets["_content/Bit.BlazorHeadlessUI.Demo.Client.Core/demos/command.css"]" />
+    <link rel="stylesheet" href="@Assets["_content/Bit.BlazorHeadlessUI.Demo.Client.Core/demos/grid.css"]" />
+    <link rel="stylesheet" href="@Assets["_content/Bit.BlazorHeadlessUI.Demo.Client.Core/demos/menubar.css"]" />
+    <link rel="stylesheet" href="@Assets["_content/Bit.BlazorHeadlessUI.Demo.Client.Core/demos/progress.css"]" />
+    <link rel="stylesheet" href="@Assets["_content/Bit.BlazorHeadlessUI.Demo.Client.Core/demos/slider.css"]" />
+    <link rel="stylesheet" href="@Assets["_content/Bit.BlazorHeadlessUI.Demo.Client.Core/demos/sortable.css"]" />
+    <link rel="stylesheet" href="@Assets["_content/Bit.BlazorHeadlessUI.Demo.Client.Core/demos/toast.css"]" />
+    <link rel="stylesheet" href="@Assets["_content/Bit.BlazorHeadlessUI.Demo.Client.Core/demos/toggle-group.css"]" />
+    <link rel="stylesheet" href="@Assets["_content/Bit.BlazorHeadlessUI.Demo.Client.Core/demos/toolbar.css"]" />
+    <link rel="stylesheet" href="@Assets["_content/Bit.BlazorHeadlessUI.Demo.Client.Core/demos/tree.css"]" />
+    @* Generated from tailwind/input.css by the Client.Core build. *@
+    <link rel="stylesheet" href="@Assets["_content/Bit.BlazorHeadlessUI.Demo.Client.Core/tailwind.css"]" />
+    @* Scoped-CSS bundle: includes Client.Core's *.razor.css files as well. *@
+    <link rel="stylesheet" href="@Assets["Bit.BlazorHeadlessUI.Demo.Server.styles.css"]" />
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <ImportMap />
+    @* Same render mode as Routes, so <PageTitle> keeps updating once the app is interactive. *@
+    <HeadOutlet @rendermode="renderMode" />
+    @* Keeps a title in the document while the app boots. The client activates <HeadOutlet> as a root
+       component of its own, before <Routes>: at that first render no <PageTitle> has registered yet
+       (they all live inside Routes), so the diff against the prerendered markup deletes the <title>
+       until Routes renders - the whole of hydration under WebAssembly - and the tab shows the URL.
+       This parks a copy of the last title in <head> while the real one is missing and drops it as
+       soon as Blazor puts one back (Blazor's sits earlier in <head>, so document.title reads it). *@
+    <script>
+        (function () {
+            var head = document.head;
+            var lastTitle = document.title || 'bit BlazorHeadlessUI';
+            var placeholder = null;
+
+            function findRealTitle() {
+                var titles = head.getElementsByTagName('title');
+                for (var i = 0; i < titles.length; i++) {
+                    if (titles[i] !== placeholder) return titles[i];
+                }
+                return null;
+            }
+
+            function sync() {
+                var real = findRealTitle();
+                if (real) {
+                    if (real.textContent) lastTitle = real.textContent;
+                    if (placeholder) {
+                        placeholder.remove();
+                        placeholder = null;
+                    }
+                } else if (placeholder === null) {
+                    placeholder = document.createElement('title');
+                    placeholder.textContent = lastTitle;
+                    head.appendChild(placeholder);
+                }
+            }
+
+            sync();
+            new MutationObserver(sync).observe(head, { childList: true, subtree: true, characterData: true });
+        })();
+    </script>
+</head>
+
+<body>
+    <Routes @rendermode="renderMode" />
+    @if (renderMode is InteractiveServerRenderMode)
+    {
+        @* The reconnect UI only means something while a circuit is alive: Blazor Server mode. *@
+        <ReconnectModal />
+    }
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>
+
+@code {
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+}

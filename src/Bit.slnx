@@ -578,6 +578,23 @@
     <Project Path="Utilities/BevTools/Tests/Bit.BevTools.Benchmarks/Bit.BevTools.Benchmarks.csproj" />
     <Project Path="Utilities/BevTools/Tests/Bit.BevTools.Tests/Bit.BevTools.Tests.csproj" />
   </Folder>
+  <Folder Name="/BlazorHeadlessUI/">
+    <File Path="BlazorHeadlessUI/README.md" />
+    <Project Path="BlazorHeadlessUI/Bit.BlazorHeadlessUI/Bit.BlazorHeadlessUI.csproj" />
+    <Project Path="BlazorHeadlessUI/Bit.BlazorHeadlessUI.Testing/Bit.BlazorHeadlessUI.Testing.csproj" />
+  </Folder>
+  <Folder Name="/BlazorHeadlessUI/Demo/">
+    <Project Path="BlazorHeadlessUI/Demo/Bit.BlazorHeadlessUI.Demo.Server/Bit.BlazorHeadlessUI.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/BlazorHeadlessUI/Demo/Client/">
+    <Project Path="BlazorHeadlessUI/Demo/Client/Bit.BlazorHeadlessUI.Demo.Client.Core/Bit.BlazorHeadlessUI.Demo.Client.Core.csproj" />
+    <Project Path="BlazorHeadlessUI/Demo/Client/Bit.BlazorHeadlessUI.Demo.Client.Web/Bit.BlazorHeadlessUI.Demo.Client.Web.csproj" />
+  </Folder>
+  <Folder Name="/BlazorHeadlessUI/Tests/">
+    <Project Path="BlazorHeadlessUI/Tests/Bit.BlazorHeadlessUI.Tests/Bit.BlazorHeadlessUI.Tests.csproj" />
+    <Project Path="BlazorHeadlessUI/Tests/Bit.BlazorHeadlessUI.Tests.Mcp/Bit.BlazorHeadlessUI.Tests.Mcp.csproj" />
+    <Project Path="BlazorHeadlessUI/Tests/Bit.BlazorHeadlessUI.Tests.E2E/Bit.BlazorHeadlessUI.Tests.E2E.csproj" />
+  </Folder>
   <Folder Name="/BlazorUI/">
     <File Path="BlazorUI/Clean.bat" />
     <File Path="BlazorUI/README.md" />

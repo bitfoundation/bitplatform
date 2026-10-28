@@ -1,0 +1,452 @@
+﻿@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    private RenderFragment Files(BitBhTreeSelectionMode mode = BitBhTreeSelectionMode.Single, bool checkboxes = false, Action<string?>? onSelect = null) =>
+        @<BitBhTree TValue="string" aria-label="Files" SelectionMode="mode" Checkboxes="checkboxes"
+                 SelectedValueChanged="v => onSelect?.Invoke(v)">
+            <BitBhTreeItem TValue="string" Value="@("src")" Label="src">
+                <span>src</span>
+                <BitBhTreeGroup TValue="string">
+                    <BitBhTreeItem TValue="string" Value="@("app")" Label="app.cs">app.cs</BitBhTreeItem>
+                    <BitBhTreeItem TValue="string" Value="@("lib")" Label="lib.cs">lib.cs</BitBhTreeItem>
+                </BitBhTreeGroup>
+            </BitBhTreeItem>
+            <BitBhTreeItem TValue="string" Value="@("docs")" Label="docs" Disabled="true">docs</BitBhTreeItem>
+            <BitBhTreeItem TValue="string" Value="@("readme")" Label="readme.md">readme.md</BitBhTreeItem>
+        </BitBhTree>;
+
+    private AngleSharp.Dom.IElement Item(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut, string label)
+        => cut.Find($"[role=treeitem][data-bit-bh-text='{label}']");
+
+    [TestMethod]
+    public void Tree_structure_is_exposed()
+    {
+        var cut = Render(Files());
+        var tree = cut.Find("[role=tree]");
+        Assert.AreEqual("Files", tree.AccessibleName());
+
+        var src = Item(cut, "src");
+        Assert.AreEqual("1", src.GetAttribute("aria-level"));
+        Assert.AreEqual("1", src.GetAttribute("aria-posinset"));
+        Assert.AreEqual("3", src.GetAttribute("aria-setsize"));
+        Assert.AreEqual("false", src.GetAttribute("aria-expanded"));
+        Assert.IsTrue(cut.Find("[role=group]").HasAttribute("hidden"));
+
+        var app = Item(cut, "app.cs");
+        Assert.AreEqual("2", app.GetAttribute("aria-level"));
+        Assert.AreEqual("2", app.GetAttribute("aria-setsize"));
+
+        // Leaf items carry no aria-expanded.
+        Assert.IsNull(Item(cut, "readme.md").GetAttribute("aria-expanded"));
+        Assert.AreEqual("true", Item(cut, "docs").GetAttribute("aria-disabled"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Only_one_item_is_in_the_tab_order()
+    {
+        var cut = Render(Files());
+        var stops = cut.TabSequence();
+        Assert.ContainsSingle(stops);
+        Assert.AreEqual("src", stops[0].Element.GetAttribute("data-bit-bh-text"));
+    }
+
+    [TestMethod]
+    public void Right_expands_then_moves_to_the_first_child_and_Left_returns()
+    {
+        var cut = Render(Files());
+        Item(cut, "src").Press("ArrowRight");
+        Assert.AreEqual("true", Item(cut, "src").GetAttribute("aria-expanded"));
+        Assert.IsFalse(cut.Find("[role=group]").HasAttribute("hidden"));
+
+        Item(cut, "src").Press("ArrowRight");
+        Assert.AreEqual(Item(cut, "app.cs").Id, this.LastFocusRequest());
+        Assert.AreEqual("0", Item(cut, "app.cs").GetAttribute("tabindex"));
+        Assert.AreEqual("-1", Item(cut, "src").GetAttribute("tabindex"));
+
+        Item(cut, "app.cs").Press("ArrowLeft");
+        Assert.AreEqual(Item(cut, "src").Id, this.LastFocusRequest());
+        Item(cut, "src").Press("ArrowLeft");
+        Assert.AreEqual("false", Item(cut, "src").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void Up_and_down_walk_visible_items_skipping_disabled_ones()
+    {
+        var cut = Render(Files());
+        Item(cut, "src").Press("ArrowDown");
+        // Collapsed children and the disabled item are skipped.
+        Assert.AreEqual(Item(cut, "readme.md").Id, this.LastFocusRequest());
+        Item(cut, "readme.md").Press("Home");
+        Assert.AreEqual(Item(cut, "src").Id, this.LastFocusRequest());
+        Item(cut, "src").Press("End");
+        Assert.AreEqual(Item(cut, "readme.md").Id, this.LastFocusRequest());
+    }
+
+    [TestMethod]
+    public void Asterisk_expands_all_siblings()
+    {
+        var cut = Render(Files());
+        Item(cut, "readme.md").Press("*");
+        Assert.AreEqual("true", Item(cut, "src").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void Typeahead_focuses_by_label()
+    {
+        var cut = Render(Files());
+        Item(cut, "src").Press("r");
+        Assert.AreEqual(Item(cut, "readme.md").Id, this.LastFocusRequest());
+    }
+
+    [TestMethod]
+    public void Single_selection_with_Enter_and_click()
+    {
+        string? selected = null;
+        var cut = Render(Files(onSelect: v => selected = v));
+        Item(cut, "readme.md").Press("Enter");
+        Assert.AreEqual("readme", selected);
+        Assert.AreEqual("true", Item(cut, "readme.md").GetAttribute("aria-selected"));
+        Assert.AreEqual("false", Item(cut, "src").GetAttribute("aria-selected"));
+
+        Item(cut, "src").PointerClick();
+        Assert.AreEqual("src", selected);
+        Assert.AreEqual("false", Item(cut, "readme.md").GetAttribute("aria-selected"));
+    }
+
+    [TestMethod]
+    public void Multi_selection_marks_the_tree_multiselectable()
+    {
+        var cut = Render(Files(BitBhTreeSelectionMode.Multiple));
+        Assert.AreEqual("true", cut.Find("[role=tree]").GetAttribute("aria-multiselectable"));
+        Item(cut, "src").Press(" ");
+        Item(cut, "readme.md").Press(" ");
+        Assert.AreEqual("true", Item(cut, "src").GetAttribute("aria-selected"));
+        Assert.AreEqual("true", Item(cut, "readme.md").GetAttribute("aria-selected"));
+        Item(cut, "src").Press(" ");
+        Assert.AreEqual("false", Item(cut, "src").GetAttribute("aria-selected"));
+    }
+
+    [TestMethod]
+    public void Checkboxes_cascade_to_descendants_and_show_mixed_parents()
+    {
+        var cut = Render(Files(checkboxes: true));
+        Item(cut, "src").Press("ArrowRight");
+        Item(cut, "app.cs").Press(" ");
+        Assert.AreEqual("true", Item(cut, "app.cs").GetAttribute("aria-checked"));
+        Assert.AreEqual("mixed", Item(cut, "src").GetAttribute("aria-checked"));
+
+        Item(cut, "lib.cs").Press(" ");
+        Assert.AreEqual("true", Item(cut, "src").GetAttribute("aria-checked"));
+
+        Item(cut, "src").Press(" ");
+        Assert.AreEqual("false", Item(cut, "app.cs").GetAttribute("aria-checked"));
+        Assert.AreEqual("false", Item(cut, "lib.cs").GetAttribute("aria-checked"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Lazy_children_load_on_expand_and_report_busy()
+    {
+        var gate = new TaskCompletionSource();
+        var loaded = new List<string>();
+        var cut = Render(
+            @<BitBhTree TValue="string" aria-label="Lazy" LoadChildren="async v => { loaded.Add(v); await gate.Task; }">
+                <BitBhTreeItem TValue="string" Value="@("root")" Label="root" HasChildren="true">root</BitBhTreeItem>
+            </BitBhTree>);
+
+        var root = cut.Find("[role=treeitem]");
+        Assert.AreEqual("false", root.GetAttribute("aria-expanded"));
+        root.Press("ArrowRight");
+        Assert.AreSequenceEqual(new[] { "root" }, loaded);
+        Assert.AreEqual("true", cut.Find("[role=treeitem]").GetAttribute("aria-busy"));
+
+        gate.SetResult();
+        cut.WaitForAssertion(() => Assert.IsNull(cut.Find("[role=treeitem]").GetAttribute("aria-busy")));
+        Assert.AreEqual("true", cut.Find("[role=treeitem]").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void Template_exposes_item_state()
+    {
+        var cut = Render(
+            @<BitBhTree TValue="int" aria-label="Numbers" DefaultExpandedValues="@(new[] { 1 })">
+                <BitBhTreeItem TValue="int" Value="1" Label="One">
+                    <Template Context="i">
+                        <span class="row">@(i.IsExpanded ? "▾" : "▸") One (level @i.Level)</span>
+                        <BitBhTreeGroup TValue="int">
+                            <BitBhTreeItem TValue="int" Value="2" Label="Two">
+                                <Template Context="c">Two (level @c.Level)</Template>
+                            </BitBhTreeItem>
+                        </BitBhTreeGroup>
+                    </Template>
+                </BitBhTreeItem>
+            </BitBhTree>);
+        Assert.Contains("▾ One (level 1)", cut.Markup);
+        Assert.Contains("Two (level 2)", cut.Markup);
+    }
+
+    [TestMethod]
+    public void Toggle_follows_expansion_and_typeahead_ignores_child_text()
+    {
+        var cut = Render(
+            @<BitBhTree TValue="string" aria-label="Files">
+                <BitBhTreeItem TValue="string" Value="@("docs")">
+                    <BitBhTreeItemToggle TValue="string" /> docs
+                    <BitBhTreeGroup TValue="string">
+                        <BitBhTreeItem TValue="string" Value="@("zeta")">zeta.md</BitBhTreeItem>
+                    </BitBhTreeGroup>
+                </BitBhTreeItem>
+                <BitBhTreeItem TValue="string" Value="@("zoo")">zoo.txt</BitBhTreeItem>
+            </BitBhTree>);
+
+        var toggle = cut.Find("[aria-hidden=true]");
+        Assert.AreEqual("closed", toggle.GetAttribute("data-state"));
+        cut.FindAll("[role=treeitem]")[0].Press("ArrowRight");
+        Assert.AreEqual("open", cut.Find("[aria-hidden=true]").GetAttribute("data-state"));
+
+        // "z" from "docs" must find zeta.md / zoo.txt by their own text, not "docs zeta.md".
+        cut.FindAll("[role=treeitem]")[0].Press("ArrowLeft");
+        cut.FindAll("[role=treeitem]")[0].Press("z");
+        Assert.AreEqual(cut.FindAll("[role=treeitem]").Last().Id, this.LastFocusRequest());
+    }
+
+    [TestMethod]
+    public void A_chevron_click_expands_without_selecting()
+    {
+        var cut = Render(
+            @<BitBhTree TValue="string" aria-label="Files">
+                <BitBhTreeItem TValue="string" Value="@("docs")">
+                    <BitBhTreeItemToggle TValue="string" /> docs
+                    <BitBhTreeGroup TValue="string">
+                        <BitBhTreeItem TValue="string" Value="@("zeta")">zeta.md</BitBhTreeItem>
+                    </BitBhTreeGroup>
+                </BitBhTreeItem>
+            </BitBhTree>);
+
+        // The item listens to the owned click; the chevron's press must reach neither its plain nor its owned one.
+        cut.Find("[aria-hidden=true]").PointerClick();
+        Assert.AreEqual("true", cut.FindAll("[role=treeitem]")[0].GetAttribute("aria-expanded"));
+        Assert.AreEqual("false", cut.FindAll("[role=treeitem]")[0].GetAttribute("aria-selected"));
+    }
+
+    [TestMethod]
+    public void Asterisk_expands_every_sibling_with_controlled_expansion()
+    {
+        // ExpandedValues only catches up after the parent re-rendered: one set must carry all siblings.
+        var cut = Render(
+            @<Stateful T="IReadOnlyCollection<string>" Initial="@(Array.Empty<string>())" Context="s">
+                <BitBhTree TValue="string" aria-label="Files" ExpandedValues="s.Value" ExpandedValuesChanged="s.Set">
+                    <BitBhTreeItem TValue="string" Value="@("src")" Label="src">
+                        src
+                        <BitBhTreeGroup TValue="string">
+                            <BitBhTreeItem TValue="string" Value="@("app")" Label="app.cs">app.cs</BitBhTreeItem>
+                        </BitBhTreeGroup>
+                    </BitBhTreeItem>
+                    <BitBhTreeItem TValue="string" Value="@("docs")" Label="docs">
+                        docs
+                        <BitBhTreeGroup TValue="string">
+                            <BitBhTreeItem TValue="string" Value="@("guide")" Label="guide.md">guide.md</BitBhTreeItem>
+                        </BitBhTreeGroup>
+                    </BitBhTreeItem>
+                    <BitBhTreeItem TValue="string" Value="@("readme")" Label="readme.md">readme.md</BitBhTreeItem>
+                </BitBhTree>
+            </Stateful>);
+
+        Item(cut, "readme.md").Press("*");
+        Assert.AreSequenceEqual(new[] { "docs", "src" }, cut.FindComponent<Stateful<IReadOnlyCollection<string>>>().Instance.Value!.OrderBy(v => v));
+        Assert.AreEqual("true", Item(cut, "src").GetAttribute("aria-expanded"));
+        Assert.AreEqual("true", Item(cut, "docs").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void An_unmounting_group_keeps_its_item_expandable_and_loads_children_once()
+    {
+        var loads = new List<string>();
+        var loaded = new HashSet<string>();
+        var cut = Render(
+            @<BitBhTree TValue="string" aria-label="Files" LoadChildren="v => { loads.Add(v); loaded.Add(v); return Task.CompletedTask; }">
+                <BitBhTreeItem TValue="string" Value="@("lazy")" Label="lazy" HasChildren="true">
+                    lazy
+                    <BitBhTreeGroup TValue="string" Unmount="true">
+                        @if (loaded.Contains("lazy"))
+                        {
+                            <BitBhTreeItem TValue="string" Value="@("lazy/a")" Label="a.txt">a.txt</BitBhTreeItem>
+                        }
+                    </BitBhTreeGroup>
+                </BitBhTreeItem>
+                <BitBhTreeItem TValue="string" Value="@("plain")" Label="plain">
+                    plain
+                    <BitBhTreeGroup TValue="string" Unmount="true">
+                        <BitBhTreeItem TValue="string" Value="@("plain/x")" Label="x.txt">x.txt</BitBhTreeItem>
+                    </BitBhTreeGroup>
+                </BitBhTreeItem>
+            </BitBhTree>);
+
+        // Children unknown while collapsed: the item is still expandable.
+        Assert.AreEqual("false", Item(cut, "plain").GetAttribute("aria-expanded"));
+        Item(cut, "plain").Press("ArrowRight");
+        Assert.AreEqual("true", Item(cut, "plain").GetAttribute("aria-expanded"));
+        Assert.IsNotNull(cut.Find("[data-bit-bh-text='x.txt']"));
+        Item(cut, "plain").Press("ArrowLeft");
+        Assert.AreEqual("false", Item(cut, "plain").GetAttribute("aria-expanded"));
+        Assert.IsEmpty(cut.FindAll("[data-bit-bh-text='x.txt']"));
+        Item(cut, "plain").Press("ArrowRight");
+        Assert.AreEqual("true", Item(cut, "plain").GetAttribute("aria-expanded"));
+
+        // Lazily loaded children are loaded once, though unmounted on every collapse.
+        Item(cut, "lazy").Press("ArrowRight");
+        Item(cut, "lazy").Press("ArrowLeft");
+        Item(cut, "lazy").Press("ArrowRight");
+        Assert.AreEqual("true", Item(cut, "lazy").GetAttribute("aria-expanded"));
+        Assert.AreSequenceEqual(new[] { "lazy" }, loads);
+    }
+
+    [TestMethod]
+    public void A_second_expand_while_children_load_does_not_load_them_again()
+    {
+        var gate = new TaskCompletionSource();
+        var loads = new List<string>();
+        var cut = Render(
+            @<BitBhTree TValue="string" aria-label="Lazy" LoadChildren="async v => { loads.Add(v); await gate.Task; }">
+                <BitBhTreeItem TValue="string" Value="@("root")" Label="root" HasChildren="true">root</BitBhTreeItem>
+            </BitBhTree>);
+
+        cut.Find("[role=treeitem]").Press("ArrowRight");
+        cut.Find("[role=treeitem]").Press("ArrowRight");
+        gate.SetResult();
+        cut.WaitForAssertion(() => Assert.AreEqual("true", cut.Find("[role=treeitem]").GetAttribute("aria-expanded")));
+        Assert.AreSequenceEqual(new[] { "root" }, loads);
+    }
+
+    [TestMethod]
+    public void Positions_follow_an_item_inserted_mid_list()
+    {
+        var items = new List<string> { "a", "c" };
+        var cut = Render(
+            @<Stateful T="int" Context="s">
+                <BitBhTree TValue="string" aria-label="Letters">
+                    @foreach (var i in items)
+                    {
+                        <BitBhTreeItem TValue="string" Value="@i" Label="@i" @key="i">@i</BitBhTreeItem>
+                    }
+                </BitBhTree>
+            </Stateful>);
+
+        items.Insert(1, "b");
+        var host = cut.FindComponent<Stateful<int>>().Instance;
+        cut.InvokeAsync(() => host.Set(1));
+
+        // "b" registered last but sits second: every sibling re-renders once the order is known.
+        cut.WaitForAssertion(() =>
+        {
+            Assert.AreSequenceEqual(new[] { "1", "2", "3" }, new[] { "a", "b", "c" }.Select(l => Item(cut, l).GetAttribute("aria-posinset")));
+            Assert.AreSequenceEqual(new[] { "3", "3", "3" }, new[] { "a", "b", "c" }.Select(l => Item(cut, l).GetAttribute("aria-setsize")));
+        });
+    }
+
+    [TestMethod]
+    public void A_disabled_item_never_takes_the_tab_stop_nor_activates()
+    {
+        string? activated = null;
+        var cut = Render(
+            @<BitBhTree TValue="string" aria-label="Files" OnItemActivate="v => activated = v">
+                <BitBhTreeItem TValue="string" Value="@("src")" Label="src">src</BitBhTreeItem>
+                <BitBhTreeItem TValue="string" Value="@("docs")" Label="docs" Disabled="true">docs</BitBhTreeItem>
+                <BitBhTreeItem TValue="string" Value="@("readme")" Label="readme.md">readme.md</BitBhTreeItem>
+            </BitBhTree>);
+
+        // A click focuses it (tabindex="-1"), but the tab stop stays where it was.
+        Item(cut, "docs").Focus();
+        Assert.AreEqual("-1", Item(cut, "docs").GetAttribute("tabindex"));
+        Assert.AreEqual("0", Item(cut, "src").GetAttribute("tabindex"));
+
+        Item(cut, "docs").Press("Enter");
+        Assert.IsNull(activated);
+
+        // Arrows move on from where the disabled item is.
+        Item(cut, "docs").Press("ArrowDown");
+        Assert.AreEqual(Item(cut, "readme.md").Id, this.LastFocusRequest());
+        Item(cut, "docs").Press("ArrowUp");
+        Assert.AreEqual(Item(cut, "src").Id, this.LastFocusRequest());
+    }
+
+    [TestMethod]
+    public void Keys_pressed_in_interactive_content_of_an_item_are_left_to_it()
+    {
+        string? activated = null;
+        IReadOnlyCollection<string>? selected = null;
+        var cut = Render(
+            @<BitBhTree TValue="string" aria-label="Files" SelectionMode="BitBhTreeSelectionMode.Multiple"
+                        OnItemActivate="v => activated = v" SelectedValuesChanged="v => selected = v">
+                <BitBhTreeItem TValue="string" Value="@("a")" Label="a">a <button type="button" class="rename">Rename</button></BitBhTreeItem>
+                <BitBhTreeItem TValue="string" Value="@("b")" Label="b">b</BitBhTreeItem>
+            </BitBhTree>);
+
+        // Keys pressed on the item's button bubble to the item, but they are the button's.
+        var rename = cut.Find("button.rename");
+        rename.Press(" ");
+        rename.Press("Enter");
+        rename.Press("ArrowDown");
+        Assert.IsNull(selected);
+        Assert.IsNull(activated);
+        Assert.IsNull(this.LastFocusRequest());
+
+        // So is a click on it: it renames, it does not select the item.
+        rename.PointerClick();
+        Assert.IsNull(selected);
+
+        // On the item itself its keys work.
+        Item(cut, "a").Press(" ");
+        Assert.AreSequenceEqual(new[] { "a" }, selected!);
+    }
+
+    [TestMethod]
+    public void Keys_of_a_child_item_are_not_its_parent_s()
+    {
+        var cut = Render(Files(BitBhTreeSelectionMode.Multiple));
+        Item(cut, "src").Press("ArrowRight");
+
+        // The child's keys bubble through its parent item: the parent must not act on them as well.
+        Item(cut, "app.cs").Press(" ");
+        Assert.AreEqual("true", Item(cut, "app.cs").GetAttribute("aria-selected"));
+        Assert.AreEqual("false", Item(cut, "src").GetAttribute("aria-selected"));
+    }
+
+    [TestMethod]
+    public void A_held_Space_does_not_toggle_the_selection_again()
+    {
+        var cut = Render(Files(BitBhTreeSelectionMode.Multiple));
+        Item(cut, "readme.md").Press(" ");
+        Item(cut, "readme.md").Press(" ", repeat: true);
+        Assert.AreEqual("true", Item(cut, "readme.md").GetAttribute("aria-selected"));
+    }
+
+    [TestMethod]
+    public void A_branch_with_a_disabled_unchecked_leaf_toggles_its_enabled_leaves()
+    {
+        IReadOnlyCollection<string>? selected = null;
+        var cut = Render(
+            @<BitBhTree TValue="string" aria-label="Files" Checkboxes="true" DefaultExpandedValues="@(new[] { "src" })"
+                     SelectedValuesChanged="v => selected = v">
+                <BitBhTreeItem TValue="string" Value="@("src")" Label="src">
+                    <span>src</span>
+                    <BitBhTreeGroup TValue="string">
+                        <BitBhTreeItem TValue="string" Value="@("app")" Label="app.cs">app.cs</BitBhTreeItem>
+                        <BitBhTreeItem TValue="string" Value="@("lib")" Label="lib.cs" Disabled="true">lib.cs</BitBhTreeItem>
+                    </BitBhTreeGroup>
+                </BitBhTreeItem>
+            </BitBhTree>);
+
+        Item(cut, "src").Press(" ");
+        Assert.AreSequenceEqual(new[] { "app" }, selected!);
+        Assert.AreEqual("mixed", Item(cut, "src").GetAttribute("aria-checked"));
+
+        // The disabled leaf keeps the branch mixed: the next press clears what the branch can change.
+        Item(cut, "src").Press(" ");
+        Assert.IsEmpty(selected!);
+        Assert.AreEqual("false", Item(cut, "src").GetAttribute("aria-checked"));
+        Assert.AreEqual("false", Item(cut, "app.cs").GetAttribute("aria-checked"));
+    }
+}

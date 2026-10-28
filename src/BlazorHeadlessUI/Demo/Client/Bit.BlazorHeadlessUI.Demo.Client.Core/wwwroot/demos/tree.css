@@ -1,0 +1,148 @@
+﻿/* tree demo styles — plain CSS section. The library ships zero CSS. */
+
+/* ── Demo layout ───────────────────────────────────────────────────────── */
+.tree-demo {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.tree-output { font-size: 0.875rem; color: var(--color-muted); }
+.tree-output strong { color: var(--color-text); font-weight: 600; }
+
+.tree-actions { display: flex; gap: 0.5rem; }
+
+.tree-button {
+    padding: 0.35rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.375rem;
+    background: var(--color-surface);
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--color-text);
+    cursor: pointer;
+}
+.tree-button:hover         { background: var(--color-fill); }
+.tree-button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+/* ── Tree ──────────────────────────────────────────────────────────────── */
+/* BitBhTree renders <ul role="tree">, BitBhTreeGroup <ul role="group">. */
+.tree,
+.tree-group {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.tree {
+    width: 100%;
+    max-width: 22rem;
+    padding: 0.375rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--color-text);
+}
+
+/* <li role="treeitem"> wraps its own row AND its child group, so state styles
+   target the item's direct .tree-row child — a selected folder must not tint
+   the rows of its children. */
+.tree-item { outline: none; }
+
+.tree-row {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-height: 1.875rem;
+    padding: 0.2rem 0.5rem;
+    /* --bit-bh-tree-level (1, 2, 3, …) is emitted on every BitBhTreeItem. */
+    padding-inline-start: calc((var(--bit-bh-tree-level, 1) - 1) * 1.25rem + 0.375rem);
+    border-radius: 0.375rem;
+    cursor: pointer;
+    user-select: none;
+}
+.tree-row:hover { background: var(--color-fill); }
+
+/* Roving focus: the focused <li> draws its ring on its own row. */
+.tree-item:focus-visible > .tree-row { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+
+/* aria-selected is emitted in single / multiple selection mode. */
+.tree-item[aria-selected="true"] > .tree-row { background: var(--color-accent-subtle); color: var(--color-accent-text); font-weight: 500; }
+
+.tree-item[data-disabled] > .tree-row { background: transparent; opacity: 0.45; cursor: not-allowed; }
+
+/* BitBhTreeItemToggle: data-state="open|closed" on branches, data-leaf on leaves. */
+.tree-toggle {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 0.25rem;
+    color: var(--color-faint);
+    font-size: 0.75rem;
+    transition: transform 150ms ease;
+}
+.tree-toggle:hover              { background: var(--color-fill-strong); color: var(--color-text); }
+.tree-toggle[data-state="open"] { transform: rotate(90deg); }
+.tree-toggle[data-leaf]         { visibility: hidden; }
+
+.tree-icon { flex: none; width: 1.25rem; text-align: center; }
+
+.tree-meta { margin-inline-start: auto; font-size: 0.75rem; color: var(--color-faint); }
+
+.tree-count {
+    margin-inline-start: auto;
+    min-width: 1.25rem;
+    padding: 0 0.375rem;
+    border-radius: 999px;
+    background: var(--color-fill);
+    color: var(--color-muted);
+    font-size: 0.7rem;
+    text-align: center;
+}
+
+/* ── Hierarchical checkboxes ───────────────────────────────────────────── */
+/* With Checkboxes="true" every item carries aria-checked and
+   data-checked="true|false|mixed"; a parent is mixed when only some of its
+   leaves are checked. The box itself is decoration (aria-hidden). */
+.tree-check {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+    border: 1.5px solid var(--color-border-hover);
+    border-radius: 0.25rem;
+    background: var(--color-surface);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+}
+.tree-item[data-checked="true"]  > .tree-row .tree-check,
+.tree-item[data-checked="mixed"] > .tree-row .tree-check { background: var(--color-primary); border-color: var(--color-primary); }
+.tree-item[data-checked="true"]  > .tree-row .tree-check::after { content: "✓"; }
+.tree-item[data-checked="mixed"] > .tree-row .tree-check::after { content: "–"; }
+
+/* ── Lazy loading ──────────────────────────────────────────────────────── */
+/* aria-busy="true" is set while LoadChildren runs. */
+.tree-item[aria-busy="true"] > .tree-row { color: var(--color-muted); cursor: progress; }
+
+.tree-spinner {
+    flex: none;
+    width: 0.875rem;
+    height: 0.875rem;
+    border: 2px solid var(--color-accent-muted);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: tree-spin 0.7s linear infinite;
+}
+
+@keyframes tree-spin { to { transform: rotate(360deg); } }

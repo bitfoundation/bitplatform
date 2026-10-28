@@ -1,0 +1,21 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "target": "ES2019",
+        // The runtime is imported as an ES module (the interop's import() and the JS initializer), and its
+        // namespaces are called as named exports, so the output stays an ES module: one file per script,
+        // emitted from Scripts/ straight to wwwroot/ with its exports intact.
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "lib": [ "DOM", "DOM.Iterable", "ES2020" ],
+        "rootDir": "Scripts",
+        "outDir": "wwwroot",
+        "noImplicitThis": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "alwaysStrict": true,
+        "strictNullChecks": false,
+        "forceConsistentCasingInFileNames": true
+    },
+    "include": [ "./Scripts/**/*.ts" ]
+}

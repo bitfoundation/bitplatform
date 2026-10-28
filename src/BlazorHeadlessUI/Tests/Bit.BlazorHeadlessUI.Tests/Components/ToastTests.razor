@@ -1,0 +1,149 @@
+﻿@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    private RenderFragment Viewport(BitBhToaster toaster) =>
+        @<BitBhToastViewport Toaster="toaster" Duration="0" Context="toast">
+            <BitBhToast Item="toast">
+                <BitBhToastTitle>@toast.Title</BitBhToastTitle>
+                @if (toast.Description is not null)
+                {
+                    <BitBhToastDescription>@toast.Description</BitBhToastDescription>
+                }
+                @if (toast.Options.ActionLabel is not null)
+                {
+                    <BitBhToastAction>@toast.Options.ActionLabel</BitBhToastAction>
+                }
+                <BitBhToastClose aria-label="Dismiss">×</BitBhToastClose>
+            </BitBhToast>
+        </BitBhToastViewport>;
+
+    [TestMethod]
+    public void Viewport_is_a_labelled_landmark_with_a_hotkey_hint()
+    {
+        var cut = Render(Viewport(new BitBhToaster()));
+        var region = cut.Find("[role=region]");
+        Assert.AreEqual("Notifications (F8)", region.AccessibleName());
+        // The list inside keeps its semantics and is the F8 focus target.
+        Assert.AreEqual("-1", region.QuerySelector("ol")!.GetAttribute("tabindex"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public async Task Showing_a_toast_renders_and_announces_it()
+    {
+        var toaster = new BitBhToaster();
+        var cut = Render(Viewport(toaster));
+        await cut.InvokeAsync(() => toaster.Show("Saved", "Your changes were saved."));
+
+        Assert.ContainsSingle(cut.FindAll("li"));
+        Assert.Contains("Your changes were saved.", cut.Markup);
+        await Announcer.WaitForAsync("Saved. Your changes were saved.");
+        Assert.AreEqual(BitBhPoliteness.Polite, Announcer.Announcements[^1].Politeness);
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public async Task Foreground_toasts_are_assertive()
+    {
+        var toaster = new BitBhToaster();
+        var cut = Render(Viewport(toaster));
+        await cut.InvokeAsync(() => toaster.Show(new BitBhToastOptions { Title = "Connection lost", Foreground = true }));
+        await Announcer.WaitForAsync("Connection lost");
+        Assert.AreEqual(BitBhPoliteness.Assertive, Announcer.Announcements[^1].Politeness);
+    }
+
+    [TestMethod]
+    public async Task Close_button_Escape_and_action_dismiss()
+    {
+        var toaster = new BitBhToaster();
+        var acted = false;
+        var cut = Render(Viewport(toaster));
+        await cut.InvokeAsync(() =>
+        {
+            toaster.Show("One");
+            toaster.Show("Two");
+            toaster.Show(new BitBhToastOptions { Title = "Three", ActionLabel = "Undo", OnAction = () => { acted = true; return Task.CompletedTask; } });
+        });
+        Assert.AreEqual(3, cut.FindAll("li").Count);
+
+        cut.FindAll("li")[0].QuerySelector("[aria-label=Dismiss]")!.Click();
+        cut.WaitForAssertion(() => Assert.AreEqual(2, cut.FindAll("li").Count));
+
+        cut.FindAll("li")[0].Press("Escape");
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll("li")));
+
+        cut.Find("li").QuerySelectorAll("button").First(b => b.TextContent == "Undo").Click();
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("li")));
+        Assert.IsTrue(acted);
+    }
+
+    [TestMethod]
+    public async Task Limit_drops_the_oldest_toasts()
+    {
+        var toaster = new BitBhToaster { Limit = 2 };
+        var cut = Render(Viewport(toaster));
+        await cut.InvokeAsync(() =>
+        {
+            toaster.Show("1");
+            toaster.Show("2");
+            toaster.Show("3");
+        });
+        Assert.AreSequenceEqual(new[] { "2", "3" }, toaster.Toasts.Select(t => t.Title));
+    }
+
+    [TestMethod]
+    public async Task The_pointer_leaving_keeps_a_focused_toast_paused()
+    {
+        var toaster = new BitBhToaster();
+        var cut = Render(Viewport(toaster));
+        await cut.InvokeAsync(() => toaster.Show(new BitBhToastOptions { Title = "Deleted", Duration = 60_000 }));
+
+        cut.Find("li").FocusIn();
+        cut.Find("li").PointerEnter();
+        cut.Find("li").PointerLeave();
+        Assert.IsTrue(cut.Find("li").HasAttribute("data-paused"));
+
+        cut.Find("li").FocusOut();
+        Assert.IsFalse(cut.Find("li").HasAttribute("data-paused"));
+    }
+
+    [TestMethod]
+    public async Task Dismissing_waits_for_the_closed_state_to_render_before_looking_for_an_exit_animation()
+    {
+        var module = JSInterop.SetupModule("./_content/Bit.BlazorHeadlessUI/bit-blazorheadlessui.js");
+        module.Mode = JSRuntimeMode.Loose;
+        var toaster = new BitBhToaster();
+        var cut = Render(Viewport(toaster));
+        await cut.InvokeAsync(() => toaster.Show("Saved"));
+
+        string? stateAtExit = null;
+        var exit = module.SetupVoid("presence.waitForExit", _ =>
+        {
+            stateAtExit = cut.Find("li").GetAttribute("data-state");
+            return true;
+        });
+        cut.Find("li").Press("Escape");
+
+        // Asked before data-state="closed" reached the page, the runtime finds no exit animation running.
+        cut.WaitForAssertion(() => Assert.AreEqual("closed", stateAtExit));
+        Assert.ContainsSingle(cut.FindAll("li"));
+        exit.SetVoidResult();
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("li")));
+    }
+
+    [TestMethod]
+    public void Toasts_is_a_snapshot_that_later_changes_leave_alone()
+    {
+        var toaster = new BitBhToaster();
+        toaster.Show("1");
+        var shown = toaster.Toasts;
+
+        // A viewport enumerating the toasts while Show runs elsewhere (a timer, a hub message) must not fail.
+        foreach (var _ in shown) toaster.Show("2");
+        toaster.Clear();
+
+        Assert.ContainsSingle(shown);
+        Assert.IsEmpty(toaster.Toasts);
+    }
+}

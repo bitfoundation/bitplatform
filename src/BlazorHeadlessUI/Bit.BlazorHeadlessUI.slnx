@@ -1,0 +1,23 @@
+﻿<Solution>
+  <Folder Name="/.Solution Items/">
+    <File Path="../../.gitignore" />
+    <File Path="../.editorconfig" />
+    <File Path="../Bit.Build.props" />
+    <File Path="../global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Demo/">
+    <Project Path="Demo/Bit.BlazorHeadlessUI.Demo.Server/Bit.BlazorHeadlessUI.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Demo/Client/">
+    <Project Path="Demo/Client/Bit.BlazorHeadlessUI.Demo.Client.Core/Bit.BlazorHeadlessUI.Demo.Client.Core.csproj" />
+    <Project Path="Demo/Client/Bit.BlazorHeadlessUI.Demo.Client.Web/Bit.BlazorHeadlessUI.Demo.Client.Web.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Bit.BlazorHeadlessUI.Tests/Bit.BlazorHeadlessUI.Tests.csproj" />
+    <Project Path="Tests/Bit.BlazorHeadlessUI.Tests.Mcp/Bit.BlazorHeadlessUI.Tests.Mcp.csproj" />
+    <Project Path="Tests/Bit.BlazorHeadlessUI.Tests.E2E/Bit.BlazorHeadlessUI.Tests.E2E.csproj" />
+  </Folder>
+  <Project Path="Bit.BlazorHeadlessUI/Bit.BlazorHeadlessUI.csproj" />
+  <Project Path="Bit.BlazorHeadlessUI.Testing/Bit.BlazorHeadlessUI.Testing.csproj" />
+</Solution>
