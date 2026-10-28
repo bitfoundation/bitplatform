@@ -20,9 +20,10 @@ public static class BbScannerSearchIndex
         /// <summary>
         /// The title split into words, camel-case humps included, so "TryVerticalLines" is found by
         /// "vertical lines" - and so a query word only counts as a title hit when it IS one of those
-        /// words, rather than merely appearing inside one ("can" inside "Scanner").
+        /// words, rather than merely appearing inside one ("can" inside "Scanner"). The entry's
+        /// aliases, if it has any, are its words too.
         /// </summary>
-        public string[] TitleWords { get; } = SplitWords(Title);
+        public string[] TitleWords { get; } = [.. SplitWords(Title).Concat(_aliases.TryGetValue(Title, out var aliases) ? SplitWords(aliases) : [])];
     }
 
     private const int MaxTerms = 16;
@@ -67,6 +68,38 @@ public static class BbScannerSearchIndex
         "bbscanner", "bit", "blazor", "library", "barcode", "barcodes"
     };
 
+    /// <summary>
+    /// The one- and two-letter words that name something here. The tokenizer drops words that short
+    /// because "a", "in" and "do" match everything, but "QR" is the symbology half the questions are
+    /// about, and "1D" and "2D" are how a caller who does not know the words "linear" and "matrix"
+    /// asks for a family of them. Dropped, "scan a QR code" is a search for "scan code".
+    /// </summary>
+    private static readonly HashSet<string> _shortNames = new(StringComparer.OrdinalIgnoreCase) { "qr", "1d", "2d" };
+
+    /// <summary>
+    /// The words a caller uses for a thing whose entry here is named otherwise, by the title of that
+    /// entry. They count as words of the title: someone who asks about an uploaded photo is asking
+    /// about still image scanning, and a name match is the only signal strong enough to rank that
+    /// section above the decoder's own QR types when "QR" is in the question too - and to keep it
+    /// in view, since a word that names none of the top hits earns its best entry a place among them.
+    /// <para>
+    /// The no-hit message explains the same words, for the query these did not catch.
+    /// </para>
+    /// </summary>
+    private static readonly Dictionary<string, string> _aliases = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Scanning still images"] = "photo photograph picture upload file gallery",
+        ["BbScanner.ScanImageAsync"] = "photo photograph picture upload file",
+        ["BbScanner.OpenFilePickerAsync"] = "photo photograph picture upload gallery",
+        ["BbScanner.DecodeImage"] = "photo photograph picture upload file",
+        ["Camera, torch and zoom"] = "flashlight light",
+        ["BbScanner.SetTorchAsync"] = "flashlight light",
+        ["Scan region"] = "aim crop viewfinder",
+        ["Duplicates and the lifecycle"] = "repeat again",
+        ["Supported symbologies"] = "1d 2d linear matrix",
+        ["Styling"] = "theme theming colour color",
+    };
+
     private static readonly HashSet<string> _metaSections = new(StringComparer.OrdinalIgnoreCase) { "Documentation", "MCP server" };
 
     private static readonly HashSet<string> _stopWords = new(StringComparer.OrdinalIgnoreCase)
@@ -90,7 +123,7 @@ public static class BbScannerSearchIndex
             {
                 Terms = [],
                 Hits = [],
-                Message = "The query held no word longer than two letters that was not a filler word, so there was " +
+                Message = "The query held nothing but filler words and words too short to search by, so there was " +
                           "nothing to rank by. Search for the thing itself - 'qr', 'torch', 'scan image file' - " +
                           "rather than for a sentence."
             };
@@ -403,7 +436,7 @@ public static class BbScannerSearchIndex
             // One- and two-letter words ("a", "in", "do") match everything and rank nothing - and
             // the words a question is phrased with do worse than nothing: "how do I read a barcode FROM
             // a photo" would otherwise score a section whose heading merely contains "from".
-            .Where(term => term.Length > 2 && _stopWords.Contains(term) is false)
+            .Where(term => (term.Length > 2 || _shortNames.Contains(term)) && _stopWords.Contains(term) is false)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             // Every term is counted in every entry's body, so the work is terms x corpus. No question
             // is phrased in more words than this, while a pasted file as a query would scan for hours.

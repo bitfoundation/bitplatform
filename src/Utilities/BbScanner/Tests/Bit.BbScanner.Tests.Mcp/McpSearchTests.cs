@@ -14,6 +14,13 @@ public partial class McpSearchTests
     private static readonly (string Query, string ExpectedTitle)[] _questions =
     [
         ("scan a qr code from an uploaded photo", "Scanning still images"),
+        ("scan a qr code from an uploaded photo", "QR Code"),
+        ("qr", "QR Code"),
+        ("qr code", "QR Code"),
+        ("1d barcodes", "Supported symbologies"),
+        ("2d", "Supported symbologies"),
+        ("read a barcode from a photo", "Scanning still images"),
+        ("flashlight", "SetTorchAsync"),
         ("turn the torch on", "SetTorchAsync"),
         ("ean-13", "EAN-13"),
         ("decode images on the server", "DecodeImage"),
