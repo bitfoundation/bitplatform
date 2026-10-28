@@ -310,17 +310,19 @@ public static class BlazorUISearchIndex
             // characters to search through.
             string Narrowed(string section) => $"GetBitBlazorUIComponent(name: \"{component.Name}\", section: \"{section}\")";
 
-            foreach (var parameter in component.Parameters)
-            {
-                entries.Add(new Entry("Parameter", $"{component.Name}.{parameter.Name}", component.Name, Narrowed(parameter.Name),
-                    parameter.Description ?? string.Empty, parameter.Type));
-            }
+            // One entry per name rather than per overload, titled by the name alone: a signature's
+            // parameter names, types and defaults are not what the member is called, and as title words
+            // they made every method taking a `title` or a `value` a title hit for those words - once
+            // per overload. The section a hit names is matched on the same bare name. (A service's
+            // methods are in the table a component's parameters are in.)
+            IEnumerable<Entry> ByName(string kind, IReadOnlyList<ComponentMember> members)
+                => members.GroupBy(m => BlazorUIComponentCatalog.Bare(m.Name), StringComparer.Ordinal)
+                          .Select(overloads => new Entry(kind, $"{component.Name}.{overloads.Key}", component.Name, Narrowed(overloads.Key),
+                              string.Join(' ', overloads.Select(m => m.Description).Where(d => string.IsNullOrWhiteSpace(d) is false).Distinct(StringComparer.Ordinal)),
+                              string.Join(' ', overloads.Select(m => m.Type).Distinct(StringComparer.Ordinal))));
 
-            foreach (var member in component.PublicMembers)
-            {
-                entries.Add(new Entry("Public member", $"{component.Name}.{member.Name}", component.Name, Narrowed(member.Name.Split('(', '<')[0]),
-                    member.Description ?? string.Empty, member.Type));
-            }
+            entries.AddRange(ByName(component.IsComponent ? "Parameter" : "Member", component.Parameters));
+            entries.AddRange(ByName("Public member", component.PublicMembers));
 
             // The custom properties are the half of a component's look that no parameter reaches, so
             // a search for "action button hover background" has to land on one rather than on the

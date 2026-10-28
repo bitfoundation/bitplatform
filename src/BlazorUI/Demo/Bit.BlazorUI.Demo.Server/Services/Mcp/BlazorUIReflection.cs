@@ -113,7 +113,7 @@ public static class BlazorUIReflection
 
         foreach (var member in members)
         {
-            builder.Append($"| `{member.Name}` | `{member.Type}` | ");
+            builder.Append($"| `{member.Name}` | `{Cell(member.Type)}` | ");
             if (values) builder.Append($"{Code(member.Value)} | ");
             builder.AppendLine($"{Cell(member.Summary)} |");
         }
@@ -242,9 +242,11 @@ public static class BlazorUIReflection
         builder.AppendLine("| Signature | Description |");
         builder.AppendLine("| --- | --- |");
 
+        var context = new NullabilityInfoContext();
+
         foreach (var method in methods)
         {
-            builder.AppendLine($"| `{BlazorUITypeNames.Of(method.ReturnParameter)} {Signature(method)}` | {Cell(BlazorUIXmlDocs.GetSummary($"M:{type.FullName}.{method.Name}"))} |");
+            builder.AppendLine($"| `{Cell($"{BlazorUITypeNames.Of(method.ReturnParameter, context)} {Signature(method, context)}")}` | {Cell(BlazorUIXmlDocs.GetSummary($"M:{type.FullName}.{method.Name}"))} |");
         }
 
         builder.AppendLine();
@@ -257,12 +259,16 @@ public static class BlazorUIReflection
     /// <c>Func&lt;BitMapLatLng, bool, bool, ValueTask&gt;</c> leaves out, and they are what decide
     /// whether <c>PanTo(center)</c> compiles and what <c>animate: false</c> is called.
     /// </para>
+    /// <para>
+    /// Written as C# writes it, which is not always safe in a Markdown table: a <c>[Flags]</c> default
+    /// is <c>A | B</c>, so a table cell takes it through its own escaping.
+    /// </para>
     /// </summary>
-    public static string Signature(MethodInfo method)
+    public static string Signature(MethodInfo method, NullabilityInfoContext? context = null)
     {
         var generics = method.IsGenericMethodDefinition ? $"<{string.Join(", ", method.GetGenericArguments().Select(a => a.Name))}>" : null;
 
-        return $"{method.Name}{generics}({Parameters(method)})";
+        return $"{method.Name}{generics}({Parameters(method, context)})";
     }
 
     private static void AppendEvents(StringBuilder builder, Type type)
@@ -283,7 +289,7 @@ public static class BlazorUIReflection
         builder.AppendLine();
     }
 
-    private static string Parameters(MethodInfo method)
+    private static string Parameters(MethodInfo method, NullabilityInfoContext? context = null)
     {
         return string.Join(", ", method.GetParameters().Select(p =>
         {
@@ -293,21 +299,24 @@ public static class BlazorUIReflection
 
             var optional = p.HasDefaultValue ? $" = {DefaultOf(p)}" : null;
 
-            return $"{modifier}{BlazorUITypeNames.Of(p)} {p.Name}{optional}";
+            return $"{modifier}{BlazorUITypeNames.Of(p, context)} {p.Name}{optional}";
         }));
     }
 
     /// <summary>
     /// A parameter's default as it is written in C#: <c>true</c> rather than the <c>True</c>
-    /// <see cref="bool.ToString()"/> gives, a string in quotes, an enum by its member name rather than
-    /// by the number stored in the metadata, and <c>default</c> for a struct, which has no literal.
+    /// <see cref="bool.ToString()"/> gives, a string or a char as its literal, escapes included, an enum
+    /// by its member name rather than by the number stored in the metadata, and <c>default</c> for a
+    /// struct, which has no literal, and for a type argument, which may be one.
     /// </summary>
     private static string DefaultOf(ParameterInfo parameter)
     {
-        var type = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
+        // An `in` or `ref` parameter's type is the reference to it; its default is the referenced type's.
+        var declared = parameter.ParameterType.IsByRef ? parameter.ParameterType.GetElementType()! : parameter.ParameterType;
+        var type = Nullable.GetUnderlyingType(declared) ?? declared;
         var value = parameter.DefaultValue;
 
-        if (value is null) return type.IsValueType && type == parameter.ParameterType ? "default" : "null";
+        if (value is null) return type.IsGenericParameter || (type.IsValueType && type == declared) ? "default" : "null";
 
         if (type.IsEnum)
         {
@@ -323,13 +332,39 @@ public static class BlazorUIReflection
         return value switch
         {
             bool boolean => boolean ? "true" : "false",
-            string text => $"\"{text.Replace(@"\", @"\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal)}\"",
-            char character => $"'{character}'",
+            string text => $"\"{Escaped(text, '"')}\"",
+            char character => $"'{Escaped(character.ToString(), '\'')}'",
             float single => $"{single.ToString(System.Globalization.CultureInfo.InvariantCulture)}f",
             decimal number => $"{number.ToString(System.Globalization.CultureInfo.InvariantCulture)}m",
             IFormattable formattable => formattable.ToString(null, System.Globalization.CultureInfo.InvariantCulture),
             _ => value.ToString() ?? "default"
         };
+    }
+
+    /// <summary>
+    /// A string's text as a C# literal spells it between <paramref name="quote"/>s. A line break written
+    /// out raw is not what the method declares, and it ends the table row the signature is printed in.
+    /// </summary>
+    private static string Escaped(string text, char quote)
+    {
+        var builder = new StringBuilder(text.Length);
+
+        foreach (var character in text)
+        {
+            switch (character)
+            {
+                case '\\': builder.Append(@"\\"); break;
+                case '\n': builder.Append(@"\n"); break;
+                case '\r': builder.Append(@"\r"); break;
+                case '\t': builder.Append(@"\t"); break;
+                case '\0': builder.Append(@"\0"); break;
+                case var _ when character == quote: builder.Append('\\').Append(quote); break;
+                case var _ when char.IsControl(character): builder.Append($@"\u{(int)character:x4}"); break;
+                default: builder.Append(character); break;
+            }
+        }
+
+        return builder.ToString();
     }
 
     /// <summary>

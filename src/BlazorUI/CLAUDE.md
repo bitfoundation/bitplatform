@@ -560,11 +560,15 @@ all it takes for it to appear in the catalog, the search index and the completio
   animate = true, bool essential = false)` - never as the delegate type a demo page writes it as
   (`Func<BitMapLatLng, bool, bool, ValueTask>`): the names, the nullable annotations and the defaults
   are read off the method, the prose stays the page's (`WithSignatures`, `BlazorUIReflection.Signature`).
+  A row keeps to the overload whose parameter types it writes out, so each overload keeps its own prose,
+  and an overload no row describes is listed with its own XML summary. A service's member table, an own
+  type's rows and the extension members are written as signatures the same way.
 - **A component's answer is narrowable.** The largest run to tens of thousands of characters, which a
   client that caps a tool's output saves to a file and shows the model the start of. So
   `GetBitBlazorUIComponent` takes `section` - a heading, or a parameter, member or CSS variable name, or
   several - and a long answer opens by naming its sections. A search hit below a component names the
-  narrowed call rather than the whole reference.
+  narrowed call rather than the whole reference, so a narrowed answer still opens with the generic
+  constraints and the package line, and a picked row keeps its table's columns.
 - **A miss answers with the nearest names** (`BlazorUISuggest`, edit distance over the names less
   their shared `Bit` prefix) rather than a refusal, and never as a failed tool call.
 

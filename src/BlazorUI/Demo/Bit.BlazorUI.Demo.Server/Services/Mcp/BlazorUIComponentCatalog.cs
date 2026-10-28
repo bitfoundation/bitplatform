@@ -147,6 +147,8 @@ public static class BlazorUIComponentCatalog
 
     private static readonly Lazy<BlazorUIComponent[]> _components = new(Build, LazyThreadSafetyMode.PublicationOnly);
 
+    private static readonly Lazy<FrozenDictionary<string, Type>> _typesByName = new(BuildTypeIndex, LazyThreadSafetyMode.PublicationOnly);
+
     /// <summary>
     /// The link to a component's source: <paramref name="pagePath"/> is the path its demo page states,
     /// relative to the package's Components folder. A page whose source lives outside that folder (the
@@ -275,6 +277,9 @@ public static class BlazorUIComponentCatalog
             var inherited = InheritedBases(componentType);
             var shownType = ShownComponentTypeOf(componentType);
             var parameters = MergeParameters(tables?.Parameters, componentType);
+
+            // A service's page documents its methods in the table a component's parameters are in.
+            if (componentType is not null && typeof(IComponent).IsAssignableFrom(componentType) is false) parameters = WithSignatures(parameters, componentType);
             var (own, shared) = SplitSubTypes(name, shownType, tables);
 
             return new BlazorUIComponent
@@ -486,89 +491,329 @@ public static class BlazorUIComponentCatalog
     /// <c>BitMap.PanTo</c> is <c>Func&lt;BitMapLatLng, bool, bool, ValueTask&gt;</c> - which names
     /// what it takes but not what the arguments are called or which of them may be left out, so it
     /// cannot say whether <c>PanTo(center)</c> compiles. The prose stays the page's; the name and the
-    /// type are read off the method, which has the last word on how it is called. A row that writes
-    /// out a parameter list keeps to the overload of that many parameters, and a row naming the
-    /// method alone answers with every overload no other row has claimed.
+    /// type are read off the method, which has the last word on how it is called.
+    /// </para>
+    /// <para>
+    /// Which overload a row describes is read off the parameters it writes out - in its name
+    /// (<c>FocusAsync(bool preventScroll)</c>), in its type (<c>Task (BitModalReference modal, object? result)</c>)
+    /// or as the delegate it fits - and rows are paired with overloads by those types, best fit first,
+    /// so two rows of as many parameters are two overloads rather than one twice, and each keeps its own
+    /// prose. A row that writes out no parameters answers with every overload no other row has claimed,
+    /// and an overload no row claims at all follows the rows of its name with the summary it ships with:
+    /// the type has the last word on which overloads exist.
     /// </para>
     /// </summary>
     private static ComponentMember[] WithSignatures(IReadOnlyList<ComponentMember> documented, Type? type)
     {
         if (type is null || documented.Count == 0) return [.. documented];
 
+        var names = documented.Select(row => Bare(row.Name)).ToHashSet(StringComparer.Ordinal);
+
+        // Narrowed to the names the table documents before anything else is read off them: a component
+        // inherits the whole of ComponentBase, and a collection type the whole of List<T>.
         var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)
+            .Where(m => names.Contains(m.Name))
             .Where(m => m.IsSpecialName is false && m.DeclaringType != typeof(object))
             .Where(m => m.IsDefined(typeof(Microsoft.JSInterop.JSInvokableAttribute)) is false)
             .Where(m => m.GetCustomAttribute<System.ComponentModel.EditorBrowsableAttribute>()?.State is not System.ComponentModel.EditorBrowsableState.Never)
-            // A method hidden with `new` is listed beside the one it hides, under the same signature.
-            .DistinctBy(BlazorUIReflection.Signature)
+            // A method hidden with `new` is listed beside the one hiding it. Taking the same types is what
+            // hides it - the parameter names may differ - and the one a call reaches is the most derived.
+            .GroupBy(m => $"{m.Name}`{(m.IsGenericMethodDefinition ? m.GetGenericArguments().Length : 0)}({string.Join(", ", m.GetParameters().Select(p => p.ParameterType))})", StringComparer.Ordinal)
+            .Select(hiding => hiding.MaxBy(m => Depth(m.DeclaringType))!)
             .ToLookup(m => m.Name, StringComparer.Ordinal);
 
-        var claimed = documented.Select(row => Arity(row.Name) is int arity
-                                    ? methods[Bare(row.Name)].FirstOrDefault(m => m.GetParameters().Length == arity)
-                                    : null)
-                                .ToArray();
+        var calls = documented.Select(CallOf).ToArray();
+        var claimed = new MethodInfo?[documented.Count];
+        var taken = new HashSet<MethodInfo>();
 
-        var taken = claimed.OfType<MethodInfo>().ToHashSet();
+        var fits = Enumerable.Range(0, documented.Count)
+            .Where(i => calls[i] is not null)
+            .SelectMany(i => methods[Bare(documented[i].Name)].Select(method => (Row: i, Method: method, Fit: Fit(calls[i]!, method))))
+            .Where(pair => pair.Fit >= 0)
+            .OrderByDescending(pair => pair.Fit)
+            .ThenBy(pair => pair.Row);
+
+        foreach (var (row, method, _) in fits)
+        {
+            if (claimed[row] is not null || taken.Add(method) is false) continue;
+
+            claimed[row] = method;
+        }
+
+        var last = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        for (var i = 0; i < documented.Count; i++) last[Bare(documented[i].Name)] = i;
+
+        var context = new NullabilityInfoContext();
         var signed = new List<ComponentMember>(documented.Count);
 
         for (var i = 0; i < documented.Count; i++)
         {
             var row = documented[i];
+            var name = Bare(row.Name);
 
-            if (claimed[i] is { } method)
+            if (claimed[i] is { } method) signed.Add(Signed(row, method));
+            else if (calls[i] is null && Unclaimed(name) is { Length: > 0 } overloads) signed.AddRange(overloads.Select(m => Signed(row, m)));
+            else signed.Add(row);
+
+            if (last[name] == i)
             {
-                signed.Add(Signed(row, method));
-                continue;
+                signed.AddRange(Unclaimed(name).Select(m => new ComponentMember(
+                    BlazorUIReflection.Signature(m, context),
+                    BlazorUITypeNames.Of(m.ReturnParameter, context),
+                    null,
+                    BlazorUIXmlDocs.GetSummary(BlazorUIXmlDocs.IdOf(m)))));
             }
-
-            var overloads = Arity(row.Name) is null ? methods[Bare(row.Name)].Where(m => taken.Contains(m) is false).ToArray() : [];
-
-            if (overloads.Length == 0)
-            {
-                signed.Add(row);
-                continue;
-            }
-
-            // Taken as they are answered, so a name the table lists twice is not answered with the same overloads twice.
-            taken.UnionWith(overloads);
-            signed.AddRange(overloads.Select(m => Signed(row, m)));
         }
 
         return [.. signed];
 
-        static ComponentMember Signed(ComponentMember row, MethodInfo method)
-            => row with { Name = BlazorUIReflection.Signature(method), Type = BlazorUITypeNames.Of(method.ReturnParameter) };
-    }
-
-    /// <summary>A member's name without the parameter list or the type arguments a table or a signature writes after it.</summary>
-    private static string Bare(string name) => name.Split('(', '<')[0].Trim();
-
-    /// <summary>
-    /// How many parameters a name written as a call takes - <c>FocusAsync(bool preventScroll)</c> takes
-    /// one - or null for a name written alone. The commas inside a type's own arguments
-    /// (<c>Func&lt;int, string&gt; map</c>) separate nothing.
-    /// </summary>
-    private static int? Arity(string name)
-    {
-        var open = name.IndexOf('(', StringComparison.Ordinal);
-
-        if (open < 0) return null;
-
-        var list = name[(open + 1)..].TrimEnd().TrimEnd(')');
-
-        if (string.IsNullOrWhiteSpace(list)) return 0;
-
-        var depth = 0;
-        var count = 1;
-
-        foreach (var character in list)
+        // Taken as they are answered, so no overload is answered twice.
+        MethodInfo[] Unclaimed(string name)
         {
-            if (character is '<' or '(' or '[') depth++;
-            else if (character is '>' or ')' or ']') depth--;
-            else if (character == ',' && depth == 0) count++;
+            var overloads = methods[name].Where(m => taken.Contains(m) is false).ToArray();
+
+            taken.UnionWith(overloads);
+
+            return overloads;
         }
 
-        return count;
+        ComponentMember Signed(ComponentMember row, MethodInfo method)
+            => row with { Name = BlazorUIReflection.Signature(method, context), Type = BlazorUITypeNames.Of(method.ReturnParameter, context) };
+
+        static int Depth(Type? declaring)
+        {
+            var depth = 0;
+
+            for (; declaring is not null; declaring = declaring.BaseType) depth++;
+
+            return depth;
+        }
+    }
+
+    /// <summary>The parameters a table row writes out for a method, and the type arguments when it writes those too.</summary>
+    private sealed record WrittenCall(int? TypeArguments, (string Type, string? Name)[] Parameters);
+
+    /// <summary>
+    /// The parameters a row writes out, which say which overload it describes: in its name
+    /// (<c>FocusAsync(bool preventScroll)</c>), in its type written as a call (<c>Task Close(BitSnackBarItem item)</c>,
+    /// <c>Task (BitModalReference modal)</c>, <c>() =&gt; Task</c>) or as the delegate it fits
+    /// (<c>Func&lt;BitMapLatLng, bool, bool, ValueTask&gt;</c>). Null for a row that writes out none - its
+    /// type is only what it returns - or that leaves some out (<c>Track(Task task, ...)</c>).
+    /// </summary>
+    private static WrittenCall? CallOf(ComponentMember row)
+    {
+        var name = Bare(row.Name);
+
+        foreach (var text in (string[])[row.Name, row.Type])
+        {
+            if (ParameterList(text, out var head) is not { } list) continue;
+
+            if (list.Contains("...", StringComparison.Ordinal)) return null;
+
+            // What precedes the list is the method's own name when no space parts the two - Add<T>(...),
+            // Task<T> Track<T>(...) - and it then says how many type arguments the call is written with.
+            var token = head.Length == 0 || char.IsWhiteSpace(head[^1]) ? null : SplitTopLevel(head, ' ').Last();
+            var open = token?.IndexOf('<', StringComparison.Ordinal) ?? -1;
+
+            int? typeArguments = token is null || Bare(token) != name ? null
+                               : open < 0 ? 0
+                               : SplitTopLevel(token[(open + 1)..].TrimEnd('>')).Count();
+
+            return new(typeArguments, [.. Parameters(list)]);
+        }
+
+        // A delegate's type arguments are what it takes, less the last of a Func, which is what it returns.
+        var type = row.Type.Trim();
+
+        if (type.StartsWith("Func<", StringComparison.Ordinal) && type.EndsWith('>'))
+        {
+            return new(null, [.. SplitTopLevel(type[5..^1]).SkipLast(1).Select(argument => (argument.Trim(), (string?)null))]);
+        }
+
+        if (type.StartsWith("Action<", StringComparison.Ordinal) && type.EndsWith('>'))
+        {
+            return new(null, [.. SplitTopLevel(type[7..^1]).Select(argument => (argument.Trim(), (string?)null))]);
+        }
+
+        return type == "Action" ? new(null, []) : null;
+    }
+
+    /// <summary>
+    /// How well a row's written parameters fit an overload, or -1 when they cannot be its - more arguments
+    /// than it takes, or fewer than it needs. A type that agrees counts most, then taking exactly that
+    /// many, then the type arguments and the names agreeing too.
+    /// </summary>
+    private static int Fit(WrittenCall call, MethodInfo method)
+    {
+        var parameters = method.GetParameters();
+        var variadic = parameters.Length > 0 && parameters[^1].IsDefined(typeof(ParamArrayAttribute));
+        var required = parameters.Count(p => p.IsOptional is false) - (variadic ? 1 : 0);
+
+        if (call.Parameters.Length < required || (call.Parameters.Length > parameters.Length && variadic is false)) return -1;
+
+        var fit = call.Parameters.Length == parameters.Length ? 4 : 0;
+
+        if (call.TypeArguments == (method.IsGenericMethodDefinition ? method.GetGenericArguments().Length : 0)) fit += 2;
+
+        for (var i = 0; i < Math.Min(call.Parameters.Length, parameters.Length); i++)
+        {
+            var (type, name) = call.Parameters[i];
+            var declared = parameters[i].ParameterType;
+
+            if (Normalized(type) == Normalized(BlazorUITypeNames.Of(declared.IsByRef ? declared.GetElementType()! : declared))) fit += 8;
+            if (name == parameters[i].Name) fit += 1;
+        }
+
+        return fit;
+
+        // The tables write a nullable reference with its ? and reflection without one; either way it is one type.
+        static string Normalized(string type) => new([.. type.Where(c => char.IsWhiteSpace(c) is false && c != '?')]);
+    }
+
+    /// <summary>
+    /// A member's name without the parameter list or the type arguments a table or a signature writes after
+    /// it - <c>PanTo</c> for a whole signature. The one spelling every part of this server matches on: the
+    /// catalog pairing a row with its method, a <c>section</c> finding the row, and a search hit naming the
+    /// <c>section</c> that finds it.
+    /// </summary>
+    public static string Bare(string name)
+    {
+        // A CSS variable is all punctuation and letters; it has no parameter list to cut off.
+        if (name.StartsWith("--", StringComparison.Ordinal)) return name;
+
+        return name.Split('(', '<')[0].Trim();
+    }
+
+    /// <summary>
+    /// The types a name written as a call takes - <c>BitMapGeolocationOptions?</c> for
+    /// <c>Locate(BitMapGeolocationOptions? options = null)</c> - and none for a name written alone. A
+    /// method's row is typed by what it returns, so this is where the rest of the types it names are.
+    /// </summary>
+    public static IEnumerable<string> ParameterTypes(string name)
+        => ParameterList(name, out _) is { } list ? Parameters(list).Select(p => p.Type) : [];
+
+    /// <summary>
+    /// Text split at each <paramref name="separator"/> that is outside a type's arguments, a parameter
+    /// list and a quoted default, so <c>PanTo(BitMapLatLng center, bool animate = true), SetZoom</c> is two
+    /// parts and <c>Func&lt;int, string&gt; map</c> is one.
+    /// </summary>
+    public static IEnumerable<string> SplitTopLevel(string text, char separator = ',')
+    {
+        var depth = 0;
+        var start = 0;
+        char? quote = null;
+
+        for (var i = 0; i < text.Length; i++)
+        {
+            var character = text[i];
+
+            if (quote is not null)
+            {
+                if (character == '\\') i++;
+                else if (character == quote) quote = null;
+
+                continue;
+            }
+
+            switch (character)
+            {
+                case '"' or '\'': quote = character; break;
+                case '<' or '(' or '[' or '{': depth++; break;
+                case '>' or ')' or ']' or '}': depth--; break;
+                default:
+                    if (character == separator && depth == 0)
+                    {
+                        yield return text[start..i];
+
+                        start = i + 1;
+                    }
+
+                    break;
+            }
+        }
+
+        yield return text[start..];
+    }
+
+    /// <summary>
+    /// The parameter list a name or a type written as a call carries - what is between the first parenthesis
+    /// outside a type's own arguments and its match - with what precedes it; null when it carries none. A
+    /// tuple the text opens with is the type of what is called rather than its parameters:
+    /// <c>(double Min, double Max)? GetAxisRange(string axisId)</c> takes one argument.
+    /// </summary>
+    private static string? ParameterList(string text, out string head)
+    {
+        var depth = 0;
+
+        for (var i = 0; i < text.Length; i++)
+        {
+            switch (text[i])
+            {
+                case '<' or '[': depth++; break;
+                case '>' or ']': depth--; break;
+                case '(' when depth == 0:
+                    var close = i + 1;
+
+                    for (var nested = 0; close < text.Length; close++)
+                    {
+                        if (text[close] == '(') nested++;
+                        else if (text[close] == ')' && nested == 0) break;
+                        else if (text[close] == ')') nested--;
+                    }
+
+                    // A tuple type is followed by the name it types; a parameter list by nothing, or by the => of a lambda.
+                    var after = close < text.Length ? text.AsSpan(close + 1).TrimStart("? ") : [];
+
+                    if (after.Length > 0 && (char.IsLetter(after[0]) || after[0] is '_' or '@'))
+                    {
+                        i = close;
+                        break;
+                    }
+
+                    head = text[..i];
+
+                    return text[(i + 1)..Math.Min(close, text.Length)];
+            }
+        }
+
+        head = text;
+
+        return null;
+    }
+
+    /// <summary>
+    /// The parameters of a written list, each as its type and its name when one is written: a table writes
+    /// <c>string? body = ""</c> or <c>params object[] args</c>, a delegate's arguments are types alone.
+    /// </summary>
+    private static IEnumerable<(string Type, string? Name)> Parameters(string list)
+    {
+        if (string.IsNullOrWhiteSpace(list)) yield break;
+
+        foreach (var parameter in SplitTopLevel(list))
+        {
+            // A type is never written with an '=', so the first one is where the default starts.
+            var equals = parameter.IndexOf('=', StringComparison.Ordinal);
+            var declaration = (equals < 0 ? parameter : parameter[..equals]).Trim();
+
+            foreach (var modifier in (string[])["this ", "params ", "scoped ", "ref ", "out ", "in ", "readonly "])
+            {
+                if (declaration.StartsWith(modifier, StringComparison.Ordinal)) declaration = declaration[modifier.Length..].TrimStart();
+            }
+
+            var words = SplitTopLevel(declaration, ' ').Where(word => word.Length > 0).ToArray();
+
+            yield return words.Length > 1 && IsIdentifier(words[^1])
+                ? (string.Join(' ', words[..^1]), words[^1].TrimStart('@'))
+                : (declaration, null);
+        }
+
+        static bool IsIdentifier(string word)
+        {
+            var name = word.TrimStart('@');
+
+            return name.Length > 0 && char.IsDigit(name[0]) is false && name.All(c => char.IsLetterOrDigit(c) || c == '_');
+        }
     }
 
     /// <summary>
@@ -590,6 +835,7 @@ public static class BlazorUIComponentCatalog
         const BindingFlags Declared = BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly;
 
         var generated = parameters.Select(p => $"Assign{p.Name}").Append(nameof(BitComponentBase.HasNotBeenSet)).ToHashSet(StringComparer.Ordinal);
+        var context = new NullabilityInfoContext();
 
         var methods = type.GetMethods(Declared)
             .Where(m => m.IsSpecialName is false && m.GetBaseDefinition() == m)
@@ -598,10 +844,10 @@ public static class BlazorUIComponentCatalog
             .Where(m => m.Name.StartsWith('_') is false && generated.Contains(m.Name) is false)
             .Where(m => m.Name is not ("Dispose" or "DisposeAsync" or "Equals" or "GetHashCode" or "ToString"))
             .Select(m => new ComponentMember(
-                BlazorUIReflection.Signature(m),
-                BlazorUITypeNames.Of(m.ReturnParameter),
+                BlazorUIReflection.Signature(m, context),
+                BlazorUITypeNames.Of(m.ReturnParameter, context),
                 null,
-                BlazorUIXmlDocs.GetSummary($"M:{type.FullName}.{m.Name}")));
+                BlazorUIXmlDocs.GetSummary(BlazorUIXmlDocs.IdOf(m))));
 
         var properties = type.GetProperties(Declared)
             .Where(p => p.GetIndexParameters().Length == 0 && p.CanRead)
@@ -739,22 +985,26 @@ public static class BlazorUIComponentCatalog
         return FindType($"{name}Base") is { } family && typeof(BitComponentBase).IsAssignableFrom(family) ? family : type;
     }
 
-    private static Type? FindType(string name)
+    private static Type? FindType(string name) => _typesByName.Value.GetValueOrDefault(name);
+
+    /// <summary>
+    /// Every exported type of the packages by its name less the arity marker a generic one carries -
+    /// BitDropdown for BitDropdown`2 - the first in package order winning. Indexed once rather than
+    /// scanned per lookup: the catalog looks up every component and every type its page documents.
+    /// </summary>
+    private static FrozenDictionary<string, Type> BuildTypeIndex()
     {
+        var index = new Dictionary<string, Type>(StringComparer.Ordinal);
+
         foreach (var assembly in BlazorUIAssemblies.All)
         {
             foreach (var type in assembly.GetExportedTypes())
             {
-                if (type.Name == name) return type;
-
-                // A generic type's reflected name carries its arity - BitDropdown is BitDropdown`2.
-                var arity = type.Name.IndexOf('`', StringComparison.Ordinal);
-
-                if (arity > 0 && type.Name.AsSpan(0, arity).SequenceEqual(name)) return type;
+                index.TryAdd(Simple(type), type);
             }
         }
 
-        return null;
+        return index.ToFrozenDictionary(StringComparer.Ordinal);
     }
 
     private static string? TypeParametersOf(Type? type)

@@ -97,6 +97,23 @@ public class SearchTests : McpTestBase
         Assert.DoesNotContain("has no section", rows, $"The call a hit names for {name}.{section} does not resolve.");
     }
 
+    /// <summary>
+    /// A member is found by its name, once, rather than by the parameter names of each of its overloads: as
+    /// title words, a signature's <c>title</c> and <c>body</c> made every one of BitSnackBar's methods a hit.
+    /// </summary>
+    [TestMethod]
+    public async Task A_member_is_titled_by_its_name_alone()
+    {
+        var answer = await CallAsync("SearchBitBlazorUI", new { query = "snackbar title body", limit = 20 });
+
+        var titles = answer.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n').Where(line => line.StartsWith("## ", StringComparison.Ordinal)).ToArray();
+
+        using var scope = Assert.Scope();
+
+        Assert.IsFalse(titles.Any(title => title.Contains('(', StringComparison.Ordinal)), $"A hit is titled by a signature: {string.Join(" / ", titles)}");
+        CollectionAssert.AllItemsAreUnique(titles, "A member is a hit once per overload.");
+    }
+
     [TestMethod]
     public async Task Search_covers_more_than_the_components()
     {

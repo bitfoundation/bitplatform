@@ -137,13 +137,15 @@ public static class BlazorUIExtensionMembers
                 isStatic));
         }
 
+        var context = new NullabilityInfoContext();
+
+        // Written as the signature it is called with, like every other method this server answers with:
+        // which arguments a call may leave out is read off the defaults and the nullable annotations.
         foreach (var method in skeleton.GetMethods(Declared).Where(m => m.IsSpecialName is false && m.Name.StartsWith('<') is false))
         {
-            var parameters = string.Join(", ", method.GetParameters().Select(p => $"{BlazorUITypeNames.Of(p.ParameterType)} {p.Name}"));
-
             members.Add(new BlazorUIExtensionMember(
                 method.Name,
-                $"{BlazorUITypeNames.Of(method.ReturnType)} {method.Name}({parameters})",
+                $"{BlazorUITypeNames.Of(method.ReturnParameter, context)} {BlazorUIReflection.Signature(method, context)}",
                 null,
                 BlazorUIXmlDocs.GetSummary($"M:{(skeleton.FullName ?? skeleton.Name).Replace('+', '.')}.{method.Name}"),
                 method.IsStatic));

@@ -637,6 +637,46 @@ public class ComponentCatalogTests : McpTestBase
         var snackBar = await CallAsync("GetBitBlazorUIComponent", new { name = "BitSnackBar", section = "Info" });
 
         StringAssert.Contains(snackBar, "Info(string title, string? body = \"\", bool persistent = false, TimeSpan? autoDismissTime = null)");
+
+        // A string default is written as its literal, escapes included: a raw line break is not what the
+        // method declares, and it would end the table row the signature is in.
+        var pdfViewer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitPdfViewer", section = "ExtractText" });
+
+        StringAssert.Contains(pdfViewer, "| `ExtractText(string pageSeparator = \"\\n\\n\")` |");
+
+        // The types a method takes are named back as well as the one it returns.
+        CollectionAssert.Contains(TableRows(answer, "## Public members").Select(row => row[0]).ToArray(), "Locate(BitMapGeolocationOptions? options = null)");
+        StringAssert.Contains(answer, "- `BitMapGeolocationOptions` (class)", "A library type only a method's parameter names is not named back.");
+    }
+
+    /// <summary>
+    /// Each documented overload keeps its own prose: a row is paired with the overload whose parameter types
+    /// it writes out, rather than with the first of that name, and an overload no row describes is still
+    /// listed, once.
+    /// </summary>
+    [TestMethod]
+    public async Task Each_overload_is_answered_with_its_own_row()
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitModalService", section = "Close, Show" });
+
+        var rows = TableRows(answer, "## Members").Skip(1).ToArray();
+        var close = rows.Where(row => row[0].StartsWith("Close(", StringComparison.Ordinal)).ToDictionary(row => row[0], row => row[^1], StringComparer.Ordinal);
+        var show = rows.Where(row => row[0].StartsWith("Show", StringComparison.Ordinal)).Select(row => row[0]).ToArray();
+
+        using var scope = Assert.Scope();
+
+        Assert.HasCount(2, close, "The two Close overloads are not two rows.");
+        StringAssert.Contains(close.GetValueOrDefault("Close(BitModalReference modalRef)") ?? string.Empty, "with a null result");
+        StringAssert.Contains(close.GetValueOrDefault("Close(BitModalReference modalRef, object? result)") ?? string.Empty, "with the result its Result task completes with");
+
+        CollectionAssert.AllItemsAreUnique(show, "An overload is answered twice.");
+        Assert.DoesNotContain("Show", show, "A row is still answered without a signature.");
+        CollectionAssert.Contains(show, "Show(RenderFragment content, BitModalParameters? modalParameters = null, bool persistent = false)");
+        CollectionAssert.Contains(show, "Show<T>(bool persistent = false)", "An overload no row describes is left out.");
+
+        var markup = rows.First(row => row[0].StartsWith("Show(RenderFragment content", StringComparison.Ordinal));
+
+        StringAssert.Contains(markup[^1], "the given markup as its content", "An overload is answered with another one's prose.");
     }
 
     /// <summary>
@@ -675,6 +715,47 @@ public class ComponentCatalogTests : McpTestBase
         Assert.AreEqual(2, rows.Length, "Two names did not answer with exactly their two rows.");
         Assert.AreEqual(1, answer.Split("## Public members").Length - 1, "Two rows of one table were answered as two tables.");
         Assert.DoesNotContain("## Parameters", answer);
+
+        // The rows keep the columns of the table they are picked from.
+        var whole = await CallAsync("GetBitBlazorUIComponent", new { name = "BitMap", section = "Public members" });
+
+        Assert.AreEqual(TableRows(whole, "## Public members")[0].Length, TableRows(answer, "## Public members")[0].Length, "The picked rows are written with other columns than the whole table.");
+
+        // A signature copied from an answer names one member, its own commas notwithstanding.
+        var signature = await CallAsync("GetBitBlazorUIComponent", new { name = "BitMap", section = "PanTo(BitMapLatLng center, bool animate = true, bool essential = false)" });
+
+        Assert.DoesNotContain("has no section", signature, "A signature is split at the commas of its own parameter list.");
+        Assert.HasCount(2, TableRows(signature, "## Public members"), "A signature does not answer with its one row.");
+    }
+
+    /// <summary>
+    /// A part of a name is matched against an own type's heading without the component's name every one of
+    /// them opens with, and against the rows at once: <c>marker</c> on BitMap is BitMapMarker and the members
+    /// about markers, not the type alone.
+    /// </summary>
+    [TestMethod]
+    public async Task A_part_of_a_name_answers_with_the_types_and_the_rows_it_is_part_of()
+    {
+        var marker = await CallAsync("GetBitBlazorUIComponent", new { name = "BitMap", section = "marker" });
+        var date = await CallAsync("GetBitBlazorUIComponent", new { name = "BitDatePicker", section = "date" });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(marker, "## BitMapMarker (class)");
+        CollectionAssert.Contains(TableRows(marker, "## Public members").Select(row => row[0]).ToArray(), "AddMarker(BitMapMarker marker)", "The rows a part of a name is in are not answered.");
+        Assert.DoesNotContain("## BitDatePickerClassStyles", date, "A part of the component's own name matched every one of its types.");
+    }
+
+    /// <summary>
+    /// A narrowed answer opens with what none of it can be read without - the package and what it needs wired
+    /// up - since a search hit names the narrowed call rather than the whole reference.
+    /// </summary>
+    [TestMethod]
+    public async Task A_narrowed_answer_opens_with_where_the_component_ships()
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitDataGrid", section = "Sortable" });
+
+        StringAssert.Contains(answer, "Ships in `Bit.BlazorUI.Extras`", "A narrowed answer does not say which package the component needs.");
     }
 
     /// <summary>

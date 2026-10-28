@@ -73,14 +73,24 @@ public static class BlazorUITypeNames
     /// annotations put on a reference type. A signature is read for which arguments may be null, and
     /// <c>string name = null</c> reads as a contradiction where <c>string? name = null</c> is what the
     /// method declares.
+    /// <para>
+    /// The <c>?</c> of an argument is whether a caller may pass null, which is the write state rather
+    /// than the read state: the two part under <c>[AllowNull] string name</c>, which takes the null its
+    /// type does not show, and <c>[DisallowNull] string? name</c>, which turns one down. What comes back
+    /// - the return value, an <c>out</c> argument - is read, so it is the read state.
+    /// </para>
+    /// <para>
+    /// <paramref name="context"/> is one context reused across the parameters of a whole listing: it
+    /// caches what it has read off each member, and one per parameter re-reads them every time.
+    /// </para>
     /// </summary>
-    public static string Of(ParameterInfo parameter)
+    public static string Of(ParameterInfo parameter, NullabilityInfoContext? context = null)
     {
         NullabilityInfo? nullability;
 
         try
         {
-            nullability = new NullabilityInfoContext().Create(parameter);
+            nullability = (context ?? new NullabilityInfoContext()).Create(parameter);
         }
         catch (Exception)
         {
@@ -88,16 +98,20 @@ public static class BlazorUITypeNames
             nullability = null;
         }
 
-        return Of(parameter.ParameterType.IsByRef ? parameter.ParameterType.GetElementType()! : parameter.ParameterType, nullability);
+        var state = parameter.Position >= 0 && parameter.IsOut is false ? nullability?.WriteState : nullability?.ReadState;
+
+        return Of(parameter.ParameterType.IsByRef ? parameter.ParameterType.GetElementType()! : parameter.ParameterType, nullability, state);
     }
 
-    private static string Of(Type type, NullabilityInfo? nullability)
+    private static string Of(Type type, NullabilityInfo? nullability) => Of(type, nullability, nullability?.ReadState);
+
+    private static string Of(Type type, NullabilityInfo? nullability, NullabilityState? state)
     {
         var nullable = Nullable.GetUnderlyingType(type);
 
         if (nullable is not null) return $"{Of(nullable)}?";
 
-        var annotated = type.IsValueType is false && nullability?.ReadState is NullabilityState.Nullable ? "?" : null;
+        var annotated = type.IsValueType is false && state is NullabilityState.Nullable ? "?" : null;
 
         if (_aliases.TryGetValue(type, out var alias)) return $"{alias}{annotated}";
 
