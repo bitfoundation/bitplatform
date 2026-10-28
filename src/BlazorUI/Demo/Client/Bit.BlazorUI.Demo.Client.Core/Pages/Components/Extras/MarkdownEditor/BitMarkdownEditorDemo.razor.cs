@@ -1307,11 +1307,11 @@ and split panes that never stack (`--bit-MarkdownEditor-pane-min-width:0`).";
 
     private void EditorBlurred() => focusStatus = "The editor lost the keyboard focus.";
 
-    private async Task SubmitFromEditor(string? value)
+    private void SubmitFromEditor(string? value)
     {
         formModel.ReleaseNotes = value;
 
-        if (await formEditContext.ValidateAsync()) HandleValidSubmit();
+        if (formEditContext.Validate()) HandleValidSubmit();
     }
 
     private void HandleValidSubmit() => submittedStatus = $"Published {formModel.ReleaseNotes?.Length ?? 0} characters.";

@@ -49,7 +49,7 @@ public partial class HomePage
     //#if (framework == 'net11.0')
 
     /// <summary>
-    /// The demo Windows app ships with kiosk mode on, so the page offers the way out that the lockdown takes away.
+    /// In kiosk mode the page offers the way out that the lockdown takes away.
     /// </summary>
     private bool IsKiosk => AppPlatform.IsWindows && bool.TryParse(Configuration["Kiosk:Enabled"], out var enabled) && enabled;
 

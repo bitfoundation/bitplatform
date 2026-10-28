@@ -2096,13 +2096,15 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <data name="SignOutOfAllAccounts" xml:space="preserve">
     <value>Logga ut från alla konton på den här enheten</value>
   </data>
+  <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">
     <value>Kioskläge</value>
   </data>
     <data name="KioskMessage" xml:space="preserve">
-    <value>Den här appen är låst till skärmen: Windows-tangenten, Alt+Tab, Aktivitetshanteraren och att stänga fönstret är alla blockerade. Använd knappen för att avsluta.</value>
+    <value>Den här appen är låst till skärmen: Windows-tangenten, Alt+Tab och att stänga fönstret är alla blockerade. Använd knappen för att avsluta.</value>
   </data>
     <data name="KioskExitApp" xml:space="preserve">
     <value>Avsluta appen</value>
   </data>
+  <!--#endif -->
 </root>

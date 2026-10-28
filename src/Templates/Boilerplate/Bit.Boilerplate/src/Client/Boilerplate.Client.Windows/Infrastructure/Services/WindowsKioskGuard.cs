@@ -1,4 +1,5 @@
 //+:cnd:noEmit
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 
 namespace Boilerplate.Client.Windows.Infrastructure.Services;
@@ -29,7 +30,8 @@ public static partial class WindowsKioskGuard
     {
         kioskForm = form;
         hookProc = OnKey;
-        SetWindowsHookExW(WH_KEYBOARD_LL, hookProc, 0, 0);
+        if (SetWindowsHookExW(WH_KEYBOARD_LL, hookProc, 0, 0) is 0)
+            throw new Win32Exception();
 
         // Windows itself still gets to shut down; only the person in front of the machine is refused.
         form.FormClosing += (_, e) => e.Cancel = e.CloseReason is CloseReason.UserClosing;
