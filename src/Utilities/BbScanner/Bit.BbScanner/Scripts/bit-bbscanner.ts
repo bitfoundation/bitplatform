@@ -158,11 +158,17 @@ interface NativePreview {
     video: HTMLElement;
     root: HTMLElement;
     receiver: DotNetReceiver;
+    // The animation frame a measurement is scheduled on, or 0, and how many frames in a row found nothing moved.
     frame: number;
+    settled: number;
     last: string;
     backdrop: string;
     // The ancestors made transparent, with their own inline background as it was, to put back.
     cleared: ClearedBackground[];
+    // What wakes the measurements up: a resize, a scroll, a transition or an animation, and a slow timer for the rest.
+    wake: () => void;
+    observer: ResizeObserver | null;
+    timer: number;
 }
 
 interface ClearedBackground {
@@ -183,6 +189,9 @@ interface DropListeners {
 
 const state = {
     sessions: new Map<string, Session>(),
+    // The sessions disposed, so that a call still on its way from a .NET in another process - a part of an image it was
+    // sending - does not bring one back to life with nothing left to dispose it. Session ids are never reused.
+    disposed: new Set<string>(),
 };
 
 /** grabFrame result: the camera track has ended (unplugged, revoked, or taken by another app). */
@@ -212,6 +221,7 @@ const POLL_HIDDEN = 1 << 24;
 const POLL_ENDED = 1 << 25;
 const POLL_INTERRUPTED = 1 << 26;
 const POLL_FRAME = 1 << 27;
+const POLL_GRABBED = 1 << 28;
 
 /** capabilities flags; the values of BbScannerBridge's Capability constants. */
 const CAPABILITY_CAMERA = 1;
@@ -844,11 +854,14 @@ function observeViewSize(session: Session, video: HTMLVideoElement): void {
  * - POLL_INTERRUPTED, when the camera that ended was lost to the page being hidden - a phone switching to another app
  *   or locking its screen ends the page's camera - or to the watchdog, rather than gone for good. The page still being
  *   hidden counts: an ended track is not always announced by an event;
- * - POLL_FRAME, when the camera has delivered a frame not grabbed yet.
+ * - POLL_FRAME, when the camera has delivered a frame not grabbed yet;
+ * - POLL_GRABBED, when a .NET in another process gave the region it is about to grab and the frame was grabbed with
+ *   the poll, as grabFrameData would have, ready to read through readData: a round trip fewer a frame. Only a region
+ *   that lies inside the frame as configured is grabbed, so that what is read is exactly the region asked for.
  *
  * It is also the sign of life the watchdog waits for.
  */
-export function poll(sessionId: string): number {
+export function poll(sessionId: string, x?: number, y?: number, width?: number, height?: number): number {
     const hidden = document.visibilityState === 'hidden';
     let flags = hidden ? POLL_HIDDEN : 0;
     const session = state.sessions.get(sessionId);
@@ -867,6 +880,11 @@ export function poll(sessionId: string): number {
 
     if (hasFrame(session)) {
         flags |= POLL_FRAME;
+        if (x !== undefined && y !== undefined && width && height && x >= 0 && y >= 0
+            && x + width <= session.canvasWidth && y + height <= session.canvasHeight
+            && readyRegion(session, x, y, width, height) === width * height) {
+            flags |= POLL_GRABBED;
+        }
     }
 
     return flags | (session.devicesVersion << 16) | (session.videoSizeVersion << 8) | session.viewSizeVersion;
@@ -946,10 +964,14 @@ export function grabFrameData(sessionId: string, x: number, y: number, width: nu
     }
 
     session.lastContact = performance.now();
-    if (!hasFrame(session)) {
-        return 0;
-    }
+    return hasFrame(session) ? readyRegion(session, x, y, width, height) : 0;
+}
 
+/**
+ * Reads the waiting frame and readies the luminance of the region, clamped to the frame, in session.frameData for
+ * readData. Returns the number of bytes readied, or 0 when the frame could not be read.
+ */
+function readyRegion(session: Session, x: number, y: number, width: number, height: number): number {
     const frameWidth = session.canvasWidth;
     const frameHeight = session.canvasHeight;
     x = Math.max(0, Math.min(frameWidth - 1, Math.floor(x)));
@@ -1167,6 +1189,7 @@ export function stop(sessionId: string): void {
 
 /** Stops the camera and forgets the session entirely. */
 export function dispose(sessionId: string): void {
+    state.disposed.add(sessionId);
     const session = state.sessions.get(sessionId);
     if (!session) {
         return;
@@ -1532,6 +1555,11 @@ export async function prepareStagedImage(sessionId: string, requestId: number, m
  * that no one message is large - under requestId and its index, for prepareStagedParts. Parts may arrive in any order.
  */
 export function stageImagePart(sessionId: string, requestId: number, index: number, part: Uint8Array): void {
+    // Parts still on their way when the scanner was disposed are dropped: nothing would ever release them.
+    if (state.disposed.has(sessionId)) {
+        return;
+    }
+
     const session = getSession(sessionId);
     let parts = session.stagedParts.get(requestId);
     if (!parts) {
@@ -1744,10 +1772,24 @@ function paints(style: CSSStyleDeclaration): boolean {
     return style.backgroundImage !== 'none' || isColour(style.backgroundColor);
 }
 
+/** How many animation frames in a row the native preview's placement has to stay put before it stops being measured. */
+const PREVIEW_SETTLE_FRAMES = 10;
+
+/** How often the native preview's placement is measured when nothing else says it may have moved. */
+const PREVIEW_IDLE_CHECK_MS = 500;
+
+/** The document events after which the native preview may have moved, and keeps moving until it settles. */
+const PREVIEW_WAKE_EVENTS = ['scroll', 'transitionrun', 'transitionend', 'animationstart', 'animationend'];
+
 /**
  * Shows a native camera's preview through the page - Bit.BbScanner.Maui draws it behind the WebView - where the
- * scanner's video element is, and reports where that is to receiver's Place whenever it moves, resizes, shows or hides:
- * on every animation frame, the page posting only what changed.
+ * scanner's video element is, and reports where that is to receiver's Place whenever it moves, resizes, shows or hides,
+ * the page posting only what changed.
+ *
+ * Measuring forces style and layout - of the scanner, and of every element above it - so it is not done on every
+ * animation frame for as long as the camera is open. A resize, a scroll, a transition or an animation starts it, and it
+ * goes on frame after frame until the placement has stayed put for PREVIEW_SETTLE_FRAMES; anything else that moves the
+ * scanner is caught by a measurement every PREVIEW_IDLE_CHECK_MS.
  *
  * Nothing the page paints may cover the preview, so the scanner and every element above it in the tree are made
  * transparent while it shows, and put back afterwards. The page's own background colour - the outermost one painted -
@@ -1763,6 +1805,7 @@ export function attachNativePreview(sessionId: string, videoElementId: string, r
     if (video && session.nativePreview?.video === video) {
         session.nativePreview.receiver = receiver;
         session.nativePreview.last = '';
+        session.nativePreview.wake();
         return;
     }
 
@@ -1797,11 +1840,8 @@ export function attachNativePreview(sessionId: string, videoElementId: string, r
         element.style.setProperty('background-image', 'none', 'important');
     }
 
-    // A page that paints no background of its own shows the WebView's canvas, which is white.
-    const preview: NativePreview = { video, root, receiver, frame: 0, last: '', backdrop: backdrop ?? 'rgb(255, 255, 255)', cleared };
-    session.nativePreview = preview;
-
     const step = (): void => {
+        preview.frame = 0;
         if (session.nativePreview !== preview) {
             return;
         }
@@ -1814,11 +1854,44 @@ export function attachNativePreview(sessionId: string, videoElementId: string, r
         const key = placement.join('|');
         if (key !== preview.last) {
             preview.last = key;
+            preview.settled = 0;
             void preview.receiver.invokeMethodAsync('Place', ...placement).catch(() => undefined);
+        } else {
+            preview.settled++;
         }
 
-        preview.frame = requestAnimationFrame(step);
+        if (preview.settled < PREVIEW_SETTLE_FRAMES) {
+            preview.frame = requestAnimationFrame(step);
+        }
     };
+
+    // Measured on the next animation frames, as many as asked for at least; a burst under way is never cut short.
+    const measure = (frames: number): void => {
+        preview.settled = Math.min(preview.settled, PREVIEW_SETTLE_FRAMES - frames);
+        if (!preview.frame && session.nativePreview === preview) {
+            preview.frame = requestAnimationFrame(step);
+        }
+    };
+
+    const wake = (): void => measure(PREVIEW_SETTLE_FRAMES);
+
+    // A page that paints no background of its own shows the WebView's canvas, which is white.
+    const preview: NativePreview = {
+        video, root, receiver, frame: 0, settled: 0, last: '', backdrop: backdrop ?? 'rgb(255, 255, 255)', cleared, wake,
+        observer: typeof ResizeObserver === 'function' ? new ResizeObserver(wake) : null,
+        // One look, which goes on only if the scanner did move.
+        timer: window.setInterval(() => measure(1), PREVIEW_IDLE_CHECK_MS),
+    };
+    session.nativePreview = preview;
+
+    // The scanner resized, or the page around it - which moves it more often than not.
+    preview.observer?.observe(video);
+    preview.observer?.observe(document.documentElement);
+    window.addEventListener('resize', wake);
+    for (const type of PREVIEW_WAKE_EVENTS) {
+        // Captured, since a scroll does not bubble: any scrolling element may carry the scanner along.
+        document.addEventListener(type, wake, { capture: true, passive: true });
+    }
 
     step();
 }
@@ -1865,6 +1938,13 @@ function detachPreview(session: Session): void {
 
     session.nativePreview = null;
     cancelAnimationFrame(preview.frame);
+    window.clearInterval(preview.timer);
+    preview.observer?.disconnect();
+    window.removeEventListener('resize', preview.wake);
+    for (const type of PREVIEW_WAKE_EVENTS) {
+        document.removeEventListener(type, preview.wake, { capture: true });
+    }
+
     preview.root.removeAttribute('data-native-preview');
     for (const cleared of preview.cleared) {
         cleared.element.style.setProperty('background-color', cleared.color, cleared.colorPriority);

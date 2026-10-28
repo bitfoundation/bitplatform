@@ -15,6 +15,7 @@ internal sealed class FakeScannerPage : IJSRuntime, IJSObjectReference
     private const int PollEnded = 1 << 25;
     private const int PollInterrupted = 1 << 26;
     private const int PollFrame = 1 << 27;
+    private const int PollGrabbed = 1 << 28;
 
     /// <summary>Every call the module received, in order, with its arguments.</summary>
     public ConcurrentQueue<(string Identifier, object?[] Arguments)> Calls { get; } = new();
@@ -28,6 +29,9 @@ internal sealed class FakeScannerPage : IJSRuntime, IJSObjectReference
 
     /// <summary>When set, opening the camera fails with it, as getUserMedia rejects.</summary>
     public Exception? StartFailure { get; set; }
+
+    /// <summary>When set, the camera describes itself so as soon as it has opened: a track that renegotiated, or turned.</summary>
+    public string? CameraJsonAfterStart { get; set; }
 
     /// <summary>The scene in front of the camera, at the size the scanner configured; null for no frames.</summary>
     public byte[]? Frame { get; set; }
@@ -49,6 +53,9 @@ internal sealed class FakeScannerPage : IJSRuntime, IJSObjectReference
 
     /// <summary>The largest slice the scanner asked for in one readData call.</summary>
     public int LargestSlice { get; private set; }
+
+    /// <summary>The region of every frame readied for reading - by a poll that grabbed it, or by grabFrameData - in order.</summary>
+    public ConcurrentQueue<(int X, int Y, int Width, int Height)> Grabs { get; } = new();
 
     /// <summary>Exceptions the next calls of a function throw, one a call, as a call lost to a reconnecting circuit does.</summary>
     public ConcurrentDictionary<string, ConcurrentQueue<Exception>> Faults { get; } = new();
@@ -116,7 +123,7 @@ internal sealed class FakeScannerPage : IJSRuntime, IJSObjectReference
             "queryCameraPermission" => "granted",
             "start" => Start(),
             "configure" => Configure((int)args[1]!, (int)args[2]!),
-            "poll" => Poll(),
+            "poll" => Poll(args),
             "grabFrameData" => GrabFrameData((int)args[1]!, (int)args[2]!, (int)args[3]!, (int)args[4]!),
             "readData" => ReadData((int)args[1]!, (int)args[2]!, (int)args[3]!),
             "attachNativePreview" => AttachPreview(args[2]),
@@ -150,7 +157,14 @@ internal sealed class FakeScannerPage : IJSRuntime, IJSObjectReference
 
         Ended = false;
         Interrupted = false;
-        return CameraJson;
+        var camera = CameraJson;
+        if (CameraJsonAfterStart is { } after)
+        {
+            CameraJson = after;
+            CameraJsonAfterStart = null;
+        }
+
+        return camera;
     }
 
     private object? Configure(int width, int height)
@@ -166,7 +180,7 @@ internal sealed class FakeScannerPage : IJSRuntime, IJSObjectReference
         return null;
     }
 
-    private int Poll()
+    private int Poll(object?[] args)
     {
         var flags = Hidden ? PollHidden : 0;
         if (Ended)
@@ -182,6 +196,14 @@ internal sealed class FakeScannerPage : IJSRuntime, IJSObjectReference
         if (!Ended && Frame is not null && Configured.Width > 0)
         {
             flags |= PollFrame;
+
+            // Given the region the scanner is about to grab, and lying inside the frame, the frame is grabbed with the poll.
+            if (args.Length == 5 && args[1] is int x && args[2] is int y && args[3] is int width && args[4] is int height
+                && x >= 0 && y >= 0 && x + width <= Configured.Width && y + height <= Configured.Height)
+            {
+                GrabFrameData(x, y, width, height);
+                flags |= PollGrabbed;
+            }
         }
 
         return flags;
@@ -208,6 +230,7 @@ internal sealed class FakeScannerPage : IJSRuntime, IJSObjectReference
         }
 
         _frameData = region;
+        Grabs.Enqueue((x, y, width, height));
         return region.Length;
     }
 

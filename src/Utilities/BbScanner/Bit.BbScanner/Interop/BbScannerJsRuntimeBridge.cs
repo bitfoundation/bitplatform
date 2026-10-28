@@ -83,7 +83,13 @@ internal sealed class BbScannerJsRuntimeBridge(IJSRuntime jsRuntime, bool local 
     private IJSObjectReference? _module;
     private bool _disposed;
 
+    /// <summary>The region the last poll grabbed a frame's luminance of, ready to read, or <see langword="null"/>.</summary>
+    private (int X, int Y, int Width, int Height)? _grabbed;
+
     public override bool IsRemote => true;
+
+    // Behind a WebView the component's dispatcher is the app's UI thread, which a decode would hold up.
+    public override bool DecodesOffThread => local;
 
     /// <summary>The slice size in force: under a circuit's message limit, or a WebView's frame at a time.</summary>
     private int Slice => local ? LocalSliceBytes : SliceBytes;
@@ -170,14 +176,36 @@ internal sealed class BbScannerJsRuntimeBridge(IJSRuntime jsRuntime, bool local 
     }
 
     public override async ValueTask ConfigureAsync(string sessionId, int width, int height)
-        => await Module.InvokeVoidAsync("configure", CallTimeout, sessionId, width, height).ConfigureAwait(false);
+    {
+        // A region grabbed at the size before is not the same region at this one, whatever its numbers.
+        _grabbed = null;
+        await Module.InvokeVoidAsync("configure", CallTimeout, sessionId, width, height).ConfigureAwait(false);
+    }
 
-    public override ValueTask<int> PollAsync(string sessionId) => Module.InvokeAsync<int>("poll", CallTimeout, sessionId);
+    public override async ValueTask<int> PollAsync(string sessionId, (int X, int Y, int Width, int Height)? grab = null)
+    {
+        // A waiting frame is grabbed along with the poll: one round trip fewer a frame, of the three it would take to
+        // poll, grab and read.
+        _grabbed = null;
+        var state = grab is { } region
+            ? await Module.InvokeAsync<int>("poll", CallTimeout, sessionId, region.X, region.Y, region.Width, region.Height).ConfigureAwait(false)
+            : await Module.InvokeAsync<int>("poll", CallTimeout, sessionId).ConfigureAwait(false);
+        if ((state & PollGrabbed) != 0)
+        {
+            _grabbed = grab;
+        }
+
+        return state;
+    }
 
     public override async ValueTask<int> GrabFrameAsync(string sessionId, byte[] buffer, (int X, int Y, int Width, int Height) region)
     {
-        var length = await Module.InvokeAsync<int>("grabFrameData", CallTimeout, sessionId, region.X, region.Y, region.Width, region.Height)
-            .ConfigureAwait(false);
+        // Grabbed by the poll before this, when that was for this region; asked for now otherwise.
+        var grabbed = _grabbed == region;
+        _grabbed = null;
+        var length = grabbed
+            ? region.Width * region.Height
+            : await Module.InvokeAsync<int>("grabFrameData", CallTimeout, sessionId, region.X, region.Y, region.Width, region.Height).ConfigureAwait(false);
 
         // Nothing new, or a frame of another size than asked for - read at a size the page has not been told yet.
         if (length <= 0 || length != region.Width * region.Height)

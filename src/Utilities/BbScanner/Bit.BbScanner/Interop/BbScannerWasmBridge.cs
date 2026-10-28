@@ -38,7 +38,9 @@ internal sealed class BbScannerWasmBridge : BbScannerBridge
         return default;
     }
 
-    public override ValueTask<int> PollAsync(string sessionId) => new(BbScannerJsInterop.Poll(sessionId));
+    // A poll costs nothing here, and a grab hands the whole frame over through a memory view: nothing to fold together.
+    public override ValueTask<int> PollAsync(string sessionId, (int X, int Y, int Width, int Height)? grab = null)
+        => new(BbScannerJsInterop.Poll(sessionId));
 
     // The whole frame: converting and cropping it in managed code costs less here than doing it in JavaScript.
     public override ValueTask<int> GrabFrameAsync(string sessionId, byte[] buffer, (int X, int Y, int Width, int Height) region)

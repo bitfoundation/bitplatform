@@ -36,6 +36,9 @@ internal abstract class BbScannerBridge : IAsyncDisposable
     /// <summary>Poll flag: the camera has delivered a frame not grabbed yet.</summary>
     internal const int PollFrame = 1 << 27;
 
+    /// <summary>Poll flag: the poll grabbed that frame already, as the luminance of the region it was given, ready to read.</summary>
+    internal const int PollGrabbed = 1 << 28;
+
     /// <summary>Capability flag: the page exposes the camera API.</summary>
     internal const int CapabilityCamera = 1;
 
@@ -98,8 +101,12 @@ internal abstract class BbScannerBridge : IAsyncDisposable
     /// <summary>Sets the size frames are read at.</summary>
     public abstract ValueTask ConfigureAsync(string sessionId, int width, int height);
 
-    /// <summary>The change versions and the <c>Poll</c> flags, in one number.</summary>
-    public abstract ValueTask<int> PollAsync(string sessionId);
+    /// <summary>
+    /// The change versions and the <c>Poll</c> flags, in one number. Given the region the frame loop is about to grab,
+    /// a bridge that pays a round trip a call may grab a waiting frame's region along with the poll, for
+    /// <see cref="GrabFrameAsync"/> to read without asking for it again.
+    /// </summary>
+    public abstract ValueTask<int> PollAsync(string sessionId, (int X, int Y, int Width, int Height)? grab = null);
 
     /// <summary>
     /// Copies the latest frame into <paramref name="buffer"/>, and returns how many bytes were written: zero when there

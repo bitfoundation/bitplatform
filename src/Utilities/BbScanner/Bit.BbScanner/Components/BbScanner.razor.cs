@@ -85,14 +85,13 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// <summary>The way into the page's JavaScript, made for where the component runs on its first use.</summary>
     private BbScannerBridge? _bridge;
 
-    /// <summary>The decoder a frame is being decoded with on another thread, which nothing may dispose meanwhile.</summary>
-    private BbBarcodeDecoder? _decodingDecoder;
-
-    /// <summary>A decoder retired while <see cref="_decodingDecoder"/>, disposed once its decode is done.</summary>
-    private BbBarcodeDecoder? _retiredWhileDecoding;
-
-    /// <summary>Set when the camera closed while a frame was being decoded on another thread: the decoder forgets it after.</summary>
-    private bool _forgetWhileDecoding;
+    /// <summary>
+    /// The decoder of the frame the loop has in hand, from its grab until it is decoded - its pixels arriving on other
+    /// threads, or decoding on one of its own - or <see langword="null"/>. Meanwhile that frame has the frame buffer and
+    /// the decoder to itself: no other frame is grabbed, and what a stop, a new size or a new decoder would do to either
+    /// is left to <see cref="EndFrame"/>.
+    /// </summary>
+    private BbBarcodeDecoder? _frameDecoder;
     private BbBarcodeDecoder? _decoder;
     private string? _decoderSignature;
     private Exception? _optionsError;
@@ -148,6 +147,12 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     private long _lastDiagnosticsAt;
     private int _startVersion;
     private int _changeToken;
+
+    /// <summary>
+    /// Set when a camera opened: the change token is read after the camera was described, so a resize in between would
+    /// count as seen. The first tick describes the camera again, whatever the token says.
+    /// </summary>
+    private bool _describePending;
     private bool _disposed;
 
     /// <summary>
@@ -504,18 +509,27 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         }
 
         int capabilities;
-        try
+        while (true)
         {
-            // Before the camera check: a page with no camera, or one served without HTTPS, can still
-            // scan an image dropped onto it.
-            await bridge.AttachRootAsync(_sessionId, RootId(), _fileInputId).ConfigureAwait(true);
-            _rootAttached = true;
-            capabilities = await bridge.GetCapabilitiesAsync().ConfigureAwait(true);
-        }
-        catch (Exception ex) when (bridge.IsInteropFailure(ex))
-        {
-            // The page went away while the scanner was being attached: there is nobody left to tell.
-            return;
+            try
+            {
+                // Before the camera check: a page with no camera, or one served without HTTPS, can still
+                // scan an image dropped onto it.
+                await bridge.AttachRootAsync(_sessionId, RootId(), _fileInputId).ConfigureAwait(true);
+                _rootAttached = true;
+                capabilities = await bridge.GetCapabilitiesAsync().ConfigureAwait(true);
+                break;
+            }
+            catch (Exception ex) when (bridge.IsTransient(ex) && !_disposed)
+            {
+                // Not answered for now - a circuit reconnecting, or a slow one - is not gone: nothing else would ever
+                // attach the scanner or start it, so it is asked again. A call that timed out waited long enough already.
+            }
+            catch (Exception ex) when (bridge.IsInteropFailure(ex))
+            {
+                // The page went away while the scanner was being attached: there is nobody left to tell.
+                return;
+            }
         }
 
         if (_disposed)
@@ -699,6 +713,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         _zoom = camera.Zoom;
 
         ConfigureProcessingSize(camera.Width, camera.Height);
+        _describePending = true;
         try
         {
             await ApplyProcessingSizeAsync().ConfigureAwait(true);
@@ -1290,7 +1305,10 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         }
     }
 
-    /// <summary>The quick look and then the exhaustive pass, with options built beforehand, for a thread of its own.</summary>
+    /// <summary>
+    /// The quick look, when <paramref name="quickOptions"/> asks for one, and then the exhaustive pass, with options
+    /// built beforehand: it reads nothing of the component, so it runs on any thread.
+    /// </summary>
     private static IReadOnlyList<BbBarcodeResult> DecodeStillImage(
         byte[] pixels, int width, int height, BbPixelFormat format, int maxSymbols, BbScannerOptions? quickOptions, BbScannerOptions stillOptions)
     {
@@ -1305,13 +1323,6 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         }
 
         using var decoder = new BbBarcodeDecoder(stillOptions);
-        return decoder.DecodeAll(pixels, width, height, format, maxSymbols, suppressDuplicates: false);
-    }
-
-    /// <summary>Decodes a still image with the still image settings.</summary>
-    private IReadOnlyList<BbBarcodeResult> DecodeStill(byte[] pixels, int width, int height, BbPixelFormat format, int maxSymbols)
-    {
-        using var decoder = new BbBarcodeDecoder(BuildStillImageOptions());
         return decoder.DecodeAll(pixels, width, height, format, maxSymbols, suppressDuplicates: false);
     }
 
@@ -1331,29 +1342,20 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     {
         try
         {
+            var quickOptions = maxSymbols == 1 ? BuildQuickStillImageOptions() : null;
+            var stillOptions = BuildStillImageOptions();
+
             // In a Blazor Hybrid app the dispatcher is the app's UI thread, which a large photograph would hold for a
             // noticeable while: the decoders here are this image's own, so they can run anywhere.
             if (_bridge?.DecodesOffThread == true)
             {
-                var quickOptions = maxSymbols == 1 ? BuildQuickStillImageOptions() : null;
-                var stillOptions = BuildStillImageOptions();
                 return await Task.Run(() => DecodeStillImage(pixels, width, height, format, maxSymbols, quickOptions, stillOptions)).ConfigureAwait(true);
-            }
-
-            if (maxSymbols == 1)
-            {
-                using var quick = new BbBarcodeDecoder(BuildQuickStillImageOptions());
-                var found = quick.DecodeAll(pixels, width, height, format, 1, suppressDuplicates: false);
-                if (found.Count > 0)
-                {
-                    return found;
-                }
             }
 
             // A timer, not Task.Yield: a continuation queued straight back onto the single WebAssembly thread can run
             // before the browser has painted anything.
             await Task.Delay(1).ConfigureAwait(true);
-            return DecodeStill(pixels, width, height, format, maxSymbols);
+            return DecodeStillImage(pixels, width, height, format, maxSymbols, quickOptions, stillOptions);
         }
         finally
         {
@@ -1485,8 +1487,15 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// </summary>
     private async Task<bool> TickAsync(BbScannerBridge bridge, int version)
     {
-        // Everything the page could have changed, in one call: across a network that is one round trip a tick.
-        var state = await bridge.PollAsync(_sessionId).ConfigureAwait(true);
+        // Everything the page could have changed, in one call: across a network that is one round trip a tick. When a
+        // frame is wanted, the region of it the decoder searches is asked for along with it, should one be waiting.
+        (int X, int Y, int Width, int Height)? grab = null;
+        if (_status == BbScannerStatus.Scanning && !_configurePending && _frameDecoder is null && _decoder is { } wanted)
+        {
+            grab = wanted.Options.Region.ToPixels(_processingWidth, _processingHeight);
+        }
+
+        var state = await bridge.PollAsync(_sessionId, grab).ConfigureAwait(true);
         if (IsStale(version))
         {
             return false;
@@ -1512,7 +1521,9 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
 
         if ((state & BbScannerBridge.PollEnded) != 0)
         {
-            await LoseCameraAsync(version).ConfigureAwait(true);
+            // How it ended comes in the same poll. Asking again would leave a round trip in which a newer start could
+            // begin opening a camera - that the release would then close under it.
+            await LoseCameraAsync(version, interrupted: (state & BbScannerBridge.PollInterrupted) != 0).ConfigureAwait(true);
             return false;
         }
 
@@ -1533,9 +1544,9 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
             return true;
         }
 
-        // A frame of the loop before this one - stopped and started again meanwhile - still decoding on another thread
-        // reads the frame buffer: the next frame waits for it.
-        if (_decodingDecoder is not null)
+        // A frame of the loop before this one - stopped and started again meanwhile - still on its way or still decoding
+        // on another thread has the frame buffer to itself: the next frame waits for it.
+        if (_frameDecoder is not null)
         {
             return true;
         }
@@ -1555,101 +1566,101 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         // whole frame and the decoder cuts the region out itself.
         var region = decoder.Options.Region.ToPixels(width, height);
         var buffer = _frameBuffer;
-        var written = await bridge.GrabFrameAsync(_sessionId, buffer, region).ConfigureAwait(true);
-        if (IsStale(version))
-        {
-            // Stopped while the frame was on its way: it arrived after the buffer was wiped, and is wiped in turn.
-            Array.Clear(buffer);
-            return false;
-        }
-
-        if (written == 0)
-        {
-            return true;
-        }
-
-        if (written == BbScannerBridge.FrameTrackEnded)
-        {
-            await LoseCameraAsync(version).ConfigureAwait(true);
-            return false;
-        }
-
-        if (written == BbScannerBridge.FrameBufferTooSmall)
-        {
-            // The frame buffer and the canvas are sized together, so this cannot happen
-            // without an invariant having been broken. Retrying would spin at the frame
-            // rate reporting nothing, so it is treated as a fault.
-            await ReleaseCameraAsync().ConfigureAwait(true);
-            await FailAsync(new BbScannerException(
-                BbScannerErrorKind.Unknown,
-                "The frame buffer no longer matches the camera's frame size.")).ConfigureAwait(true);
-            return false;
-        }
-
-        // The decoder may have been replaced, or the processing size changed, while the frame was on its way.
-        if (shape != _processingVersion || !ReferenceEquals(buffer, _frameBuffer) || !ReferenceEquals(decoder, _decoder) ||
-            _status != BbScannerStatus.Scanning)
-        {
-            return true;
-        }
-
-        // A remote page sends the searched region as luminance. Otherwise the frame is whole: the grayscale plane, a byte
-        // a pixel, from the GPU path or a native camera, and RGBA from the 2D canvas.
-        var pixels = width * height;
         var remote = bridge.IsRemote;
-        if (remote ? written != region.Width * region.Height : written != pixels && written < pixels * 4)
-        {
-            return true;
-        }
-
-        var format = remote || written == pixels ? BbPixelFormat.Gray8 : BbPixelFormat.Rgba32;
         var maxSymbols = MaxSymbolsPerFrame;
-
-        // Every decoded frame is returned, duplicates included, so the highlight can
-        // follow a symbol held in view; suppression is applied below, before reporting.
-        // One symbol a frame, the default, takes the cheaper single result path.
         BbBarcodeResult? result;
         IReadOnlyList<BbBarcodeResult>? results;
+
+        _frameDecoder = decoder;
         try
         {
-            (result, results) = bridge.DecodesOffThread
-                ? await DecodeOffThreadAsync(decoder, () => DecodeFrame(decoder, buffer, written, format, remote, region, width, height, maxSymbols)).ConfigureAwait(true)
-                : DecodeFrame(decoder, buffer, written, format, remote, region, width, height, maxSymbols);
+            var written = await bridge.GrabFrameAsync(_sessionId, buffer, region).ConfigureAwait(true);
 
-            _consecutiveDecodeFailures = 0;
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            // A decoder retired under a decode on another thread, or a scanner stopped meanwhile, says nothing about the
-            // decoder there is now.
+            // Stopped while the frame was on its way. Or nothing new - or a camera track that ended, which the next poll
+            // reports along with how it ended.
+            if (IsStale(version) || written is 0 or BbScannerBridge.FrameTrackEnded)
+            {
+                return !IsStale(version);
+            }
+
+            if (written == BbScannerBridge.FrameBufferTooSmall)
+            {
+                // The frame buffer and the canvas are sized together, so this cannot happen
+                // without an invariant having been broken. Retrying would spin at the frame
+                // rate reporting nothing, so it is treated as a fault.
+                await ReleaseCameraAsync().ConfigureAwait(true);
+                await FailAsync(new BbScannerException(
+                    BbScannerErrorKind.Unknown,
+                    "The frame buffer no longer matches the camera's frame size.")).ConfigureAwait(true);
+                return false;
+            }
+
+            // The decoder may have been replaced, or the processing size changed, while the frame was on its way.
+            if (shape != _processingVersion || !ReferenceEquals(buffer, _frameBuffer) || !ReferenceEquals(decoder, _decoder) ||
+                _status != BbScannerStatus.Scanning)
+            {
+                return true;
+            }
+
+            // A remote page sends the searched region as luminance. Otherwise the frame is whole: the grayscale plane, a
+            // byte a pixel, from the GPU path or a native camera, and RGBA from the 2D canvas.
+            var pixels = width * height;
+            if (remote ? written != region.Width * region.Height : written != pixels && written < pixels * 4)
+            {
+                return true;
+            }
+
+            var format = remote || written == pixels ? BbPixelFormat.Gray8 : BbPixelFormat.Rgba32;
+
+            // Every decoded frame is returned, duplicates included, so the highlight can
+            // follow a symbol held in view; suppression is applied below, before reporting.
+            // One symbol a frame, the default, takes the cheaper single result path.
+            try
+            {
+                (result, results) = bridge.DecodesOffThread
+                    ? await Task.Run(() => DecodeFrame(decoder, buffer, written, format, remote, region, width, height, maxSymbols)).ConfigureAwait(true)
+                    : DecodeFrame(decoder, buffer, written, format, remote, region, width, height, maxSymbols);
+
+                _consecutiveDecodeFailures = 0;
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // A scanner stopped, or given another decoder, while the frame decoded on another thread: the failure
+                // says nothing about the decoder there is now.
+                if (IsStale(version) || !ReferenceEquals(decoder, _decoder))
+                {
+                    return !IsStale(version);
+                }
+
+                // One frame the decoder trips over is skipped; the next frame is a different
+                // image. Only a decoder that fails frame after frame ends the session.
+                if (++_consecutiveDecodeFailures < MaxConsecutiveDecodeFailures)
+                {
+                    return true;
+                }
+
+                await ReleaseCameraAsync().ConfigureAwait(true);
+                await FailAsync(new BbScannerException(
+                    BbScannerErrorKind.Unknown,
+                    $"The decoder failed on {MaxConsecutiveDecodeFailures} frames in a row.",
+                    ex)).ConfigureAwait(true);
+                return false;
+            }
+
+            // Stopped, or given another decoder, while the frame was decoded on another thread: what it found is the old
+            // decoder's, for a session that may be gone.
             if (IsStale(version) || !ReferenceEquals(decoder, _decoder))
             {
                 return !IsStale(version);
             }
 
-            // One frame the decoder trips over is skipped; the next frame is a different
-            // image. Only a decoder that fails frame after frame ends the session.
-            if (++_consecutiveDecodeFailures < MaxConsecutiveDecodeFailures)
-            {
-                return true;
-            }
-
-            await ReleaseCameraAsync().ConfigureAwait(true);
-            await FailAsync(new BbScannerException(
-                BbScannerErrorKind.Unknown,
-                $"The decoder failed on {MaxConsecutiveDecodeFailures} frames in a row.",
-                ex)).ConfigureAwait(true);
-            return false;
+            _lastDiagnostics = decoder.LastFrame;
         }
-
-        // Stopped, or given another decoder, while the frame was decoded on another thread: what it found is the old
-        // decoder's, for a session that may be gone.
-        if (IsStale(version) || !ReferenceEquals(decoder, _decoder))
+        finally
         {
-            return !IsStale(version);
+            EndFrame(decoder, buffer, version);
         }
 
-        _lastDiagnostics = decoder.LastFrame;
         await ReportDiagnosticsAsync().ConfigureAwait(true);
 
         // An OnDiagnostics handler, or the user, may have paused or stopped the scanner meanwhile: the frame
@@ -1682,35 +1693,27 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>
-    /// Runs a decode on the thread pool, keeping <paramref name="decoder"/> alive for it: a decoder retired meanwhile -
-    /// the formats changed, or the scanner was disposed - is disposed once the decode is done rather than under it, and
-    /// one told to forget its image forgets it then.
+    /// Hands the frame buffer and <paramref name="decoder"/> back once the frame the loop had in hand is done with them,
+    /// and does what was left to it meanwhile. A buffer let go of - the camera closed, the scanner stopped or started
+    /// again, or a new size given - is wiped, along with what the decoder kept of the frame, and a decoder retired
+    /// meanwhile - the formats changed, or the scanner disposed - is disposed now rather than under the frame.
     /// </summary>
-    private async Task<T> DecodeOffThreadAsync<T>(BbBarcodeDecoder decoder, Func<T> decode)
+    private void EndFrame(BbBarcodeDecoder decoder, byte[] buffer, int version)
     {
-        _decodingDecoder = decoder;
-        try
+        _frameDecoder = null;
+        var closed = IsStale(version) || _camera is null;
+        if (closed || !ReferenceEquals(buffer, _frameBuffer))
         {
-            return await Task.Run(decode).ConfigureAwait(true);
+            Array.Clear(buffer);
         }
-        finally
+
+        if (!ReferenceEquals(decoder, _decoder))
         {
-            if (ReferenceEquals(_decodingDecoder, decoder))
-            {
-                _decodingDecoder = null;
-            }
-
-            if (_retiredWhileDecoding is { } retired)
-            {
-                _retiredWhileDecoding = null;
-                retired.Dispose();
-            }
-            else if (_forgetWhileDecoding)
-            {
-                decoder.ForgetImage();
-            }
-
-            _forgetWhileDecoding = false;
+            decoder.Dispose();
+        }
+        else if (closed)
+        {
+            decoder.ForgetImage();
         }
     }
 
@@ -1727,7 +1730,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// </remarks>
     private async Task ApplyBrowserChangesAsync(BbScannerBridge bridge, int token)
     {
-        if (token == _changeToken)
+        if (token == _changeToken && !_describePending)
         {
             return;
         }
@@ -1735,7 +1738,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         // The token is taken up only once what it says changed has been applied: a call lost on the way - a circuit
         // reconnecting - leaves it as it was, so the next tick applies the change again rather than never.
         var devicesChanged = (token >> 16) != (_changeToken >> 16);
-        var videoChanged = ((token >> 8) & 0xFF) != ((_changeToken >> 8) & 0xFF);
+        var videoChanged = _describePending || ((token >> 8) & 0xFF) != ((_changeToken >> 8) & 0xFF);
         var viewChanged = (token & 0xFF) != (_changeToken & 0xFF);
 
         if (devicesChanged)
@@ -1772,20 +1775,33 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         {
             // No camera to describe: the track is gone, which the poll reports on its own.
             _changeToken = token;
+            _describePending = false;
             return;
         }
 
-        var resized = _camera is null || camera.Width != _camera.Width || camera.Height != _camera.Height;
+        var previous = _camera;
+        var resized = previous is null || camera.Width != previous.Width || camera.Height != previous.Height;
         _camera = camera;
         _mirrored = camera.FacingMode == "user";
 
         if (resized)
         {
             ConfigureProcessingSize(camera.Width, camera.Height);
-            await ApplyProcessingSizeAsync().ConfigureAwait(true);
+            try
+            {
+                await ApplyProcessingSizeAsync().ConfigureAwait(true);
+            }
+            catch when (ReferenceEquals(_camera, camera))
+            {
+                // Lost on the way - a circuit reconnecting. The next tick describes the camera again, and has to find it
+                // resized again, for OnCameraChanged to be raised once the page has the new size.
+                _camera = previous;
+                throw;
+            }
         }
 
         _changeToken = token;
+        _describePending = false;
         RequestRender();
         StateHasChanged();
 
@@ -1802,20 +1818,16 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// reconnecting. Anything else - unplugged, claimed by another application, the permission
     /// revoked - releases what is left and is reported.
     /// </summary>
-    private async Task LoseCameraAsync(int version)
+    /// <param name="version">The start the frame loop that found the camera gone belongs to.</param>
+    /// <param name="interrupted">
+    /// Whether the poll that said the camera ended said it was interrupted: the page forgets how a camera ended once it
+    /// is released.
+    /// </param>
+    private async Task LoseCameraAsync(int version, bool interrupted)
     {
-        // Asked before the stream is released, which forgets how it ended.
-        var interrupted = false;
-        if (_bridge is { IsLoaded: true } bridge)
+        if (IsStale(version))
         {
-            try
-            {
-                interrupted = (await bridge.PollAsync(_sessionId).ConfigureAwait(true) & BbScannerBridge.PollInterrupted) != 0;
-            }
-            catch (Exception ex) when (bridge.IsInteropFailure(ex))
-            {
-                // Not knowing, the camera is reported lost rather than waited for.
-            }
+            return;
         }
 
         await ReleaseCameraAsync().ConfigureAwait(true);
@@ -1964,14 +1976,11 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         _zoom = 0;
 
         // The buffers are kept for the next start, but not the picture in them: once the camera is closed, nothing
-        // holds on to the last thing it saw - not the frame, and not the decoder's copies and measurements of it.
-        Array.Clear(_frameBuffer);
-        if (_decoder is not null && ReferenceEquals(_decoder, _decodingDecoder))
+        // holds on to the last thing it saw - not the frame, and not the decoder's copies and measurements of it. A frame
+        // still on its way, or still decoding, wipes them once it is done with them.
+        if (_frameDecoder is null)
         {
-            _forgetWhileDecoding = true;
-        }
-        else
-        {
+            Array.Clear(_frameBuffer);
             _decoder?.ForgetImage();
         }
     }
@@ -1995,8 +2004,13 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         if (_frameBuffer.Length < required)
         {
             // The buffer lives for the whole session; frames are copied into it in place. The one it replaces is
-            // zeroed first: let go of, it would keep its last frame until the memory happened to be reused.
-            Array.Clear(_frameBuffer);
+            // zeroed first: let go of, it would keep its last frame until the memory happened to be reused. A frame
+            // still on its way into it, or decoding from it, zeroes it once it is done.
+            if (_frameDecoder is null)
+            {
+                Array.Clear(_frameBuffer);
+            }
+
             _frameBuffer = new byte[required];
         }
 
@@ -2186,12 +2200,9 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
 
         _retiredFramesDecoded += _decoder.FramesDecoded;
         _retiredFramesWithSymbol += _decoder.FramesWithSymbol;
-        if (ReferenceEquals(_decoder, _decodingDecoder))
-        {
-            // Decoding a frame on another thread: disposed once it is done.
-            _retiredWhileDecoding = _decoder;
-        }
-        else
+
+        // The decoder of a frame in hand is disposed by EndFrame, once the frame is done with it.
+        if (!ReferenceEquals(_decoder, _frameDecoder))
         {
             _decoder.Dispose();
         }
@@ -2925,9 +2936,13 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         StopFrameLoop();
 
         // Everything managed is let go before the page is told, which over a circuit takes a round trip and may never
-        // complete.
+        // complete. A frame still in hand wipes the buffer, and disposes its decoder, once it is done with them.
         RetireDecoder();
-        Array.Clear(_frameBuffer);
+        if (_frameDecoder is null)
+        {
+            Array.Clear(_frameBuffer);
+        }
+
         _frameBuffer = [];
         _camera = null;
 

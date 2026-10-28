@@ -69,9 +69,10 @@ public class BbScannerRemoteTests : BunitContext
 
         WaitUntil(() => Assert.IsNotNull(scanned));
 
-        // A square of 0.7 of the shorter side, centred: 336 pixels of a 640 by 480 frame.
-        var grab = _page.Last("grabFrameData");
-        CollectionAssert.AreEqual(new object[] { 152, 72, 336, 336 }, grab[1..]);
+        // A square of 0.7 of the shorter side, centred: 336 pixels of a 640 by 480 frame. It is grabbed with the poll
+        // that finds it waiting, rather than asked for in a round trip of its own.
+        Assert.AreEqual((152, 72, 336, 336), _page.Grabs.Last());
+        Assert.AreEqual(0, _page.Count("grabFrameData"));
 
         // 113 KB of luminance, read in slices that each fit in one message of a circuit's default 32 KB limit.
         Assert.IsLessThanOrEqualTo(30 * 1024, _page.LargestSlice);
@@ -96,7 +97,7 @@ public class BbScannerRemoteTests : BunitContext
             .Add(p => p.Region, BbScanRegion.CenteredSquare(0.5))
             .Add(p => p.OnScan, _ => scans++));
 
-        WaitUntil(() => Assert.IsGreaterThanOrEqualTo(3, _page.Count("grabFrameData")));
+        WaitUntil(() => Assert.IsGreaterThanOrEqualTo(3, _page.Grabs.Count));
         Assert.AreEqual(0, scans);
     }
 
@@ -106,9 +107,10 @@ public class BbScannerRemoteTests : BunitContext
         Interactive("Server");
         _page.Frame = FrameWithQrCode("AFTER-A-BLIP", centreX: FrameWidth / 2, centreY: FrameHeight / 2);
 
-        // What a circuit reconnecting does to the calls in flight: they are never answered, and time out.
+        // What a circuit reconnecting does to the calls in flight: they are never answered, and time out. The frame
+        // loop's poll carries its grab.
         _page.FailNext("poll", new TaskCanceledException());
-        _page.FailNext("grabFrameData", new TaskCanceledException());
+        _page.FailNext("poll", new TaskCanceledException());
         _page.FailNext("readData", new OperationCanceledException());
         BbScannerException? error = null;
         BbBarcodeResult? scanned = null;
@@ -138,6 +140,39 @@ public class BbScannerRemoteTests : BunitContext
         WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
         Assert.IsNull(error);
         Assert.AreEqual(640, scanner.Instance.Camera!.Width);
+    }
+
+    [TestMethod]
+    public void Attaching_that_times_out_on_the_first_render_is_tried_again_rather_than_given_up()
+    {
+        Interactive("Server");
+
+        // A slow circuit on the first render: the page is still there, only late to answer.
+        _page.FailNext("attachRoot", new TaskCanceledException());
+        _page.FailNext("capabilities", new TaskCanceledException());
+
+        var scanner = Render<BbScanner>();
+
+        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        Assert.AreEqual(3, _page.Count("attachRoot"));
+        Assert.AreEqual(1, _page.Count("start"));
+    }
+
+    [TestMethod]
+    public void A_camera_that_resizes_as_soon_as_it_opens_is_resized_for()
+    {
+        Interactive("Server");
+
+        // The track renegotiated, or the phone turned, between the page answering the start and the scanner's first poll.
+        _page.CameraJsonAfterStart = _page.CameraJson.Replace("\"width\":640,\"height\":480", "\"width\":480,\"height\":640");
+        var cameras = new List<BbCameraInfo>();
+
+        var scanner = Render<BbScanner>(parameters => parameters.Add(p => p.OnCameraChanged, c => cameras.Add(c)));
+
+        WaitUntil(() => Assert.AreEqual(480, scanner.Instance.Camera?.Width));
+        Assert.AreEqual((480, 640), scanner.Instance.ProcessingSize);
+        WaitUntil(() => Assert.AreEqual((480, 640), _page.Configured));
+        WaitUntil(() => Assert.AreEqual(640, cameras.Last().Height));
     }
 
     [TestMethod]

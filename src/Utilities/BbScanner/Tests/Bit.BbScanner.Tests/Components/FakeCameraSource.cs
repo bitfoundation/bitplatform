@@ -12,6 +12,9 @@ internal sealed class FakeCameraSource : IBbCameraSource
 
     public BbCameraPermission Permission { get; set; } = BbCameraPermission.Granted;
 
+    /// <summary>When set, asking for the permission fails with it, as a platform does for an app that does not declare the camera.</summary>
+    public Exception? PermissionFailure { get; set; }
+
     /// <summary>When set, opening a camera fails with it.</summary>
     public Exception? OpenFailure { get; set; }
 
@@ -33,7 +36,8 @@ internal sealed class FakeCameraSource : IBbCameraSource
 
     public FakeCameraSession? Current => Sessions.LastOrDefault(s => !s.Disposed);
 
-    public Task<BbCameraPermission> GetPermissionAsync() => Task.FromResult(Permission);
+    public Task<BbCameraPermission> GetPermissionAsync()
+        => PermissionFailure is { } failure ? Task.FromException<BbCameraPermission>(failure) : Task.FromResult(Permission);
 
     public Task<IReadOnlyList<BbCameraDevice>> GetCamerasAsync()
         => Task.FromResult<IReadOnlyList<BbCameraDevice>>([new("back", "Back camera"), new("front", "Front camera")]);

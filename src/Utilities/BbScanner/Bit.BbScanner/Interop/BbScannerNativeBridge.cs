@@ -42,13 +42,27 @@ internal sealed class BbScannerNativeBridge(BbScannerJsRuntimeBridge page, IBbCa
     public override ValueTask<int> GetCapabilitiesAsync() => new(CapabilityCamera | CapabilitySecureContext);
 
     public override async ValueTask<string> QueryCameraPermissionAsync()
-        => await source.GetPermissionAsync().ConfigureAwait(false) switch
+    {
+        BbCameraPermission permission;
+        try
+        {
+            permission = await source.GetPermissionAsync().ConfigureAwait(false);
+        }
+        catch (Exception)
+        {
+            // A platform that throws rather than answer - an app that does not declare the camera, say - is one that will
+            // not say; opening the camera reports what is wrong.
+            return "";
+        }
+
+        return permission switch
         {
             BbCameraPermission.Granted => "granted",
             BbCameraPermission.Denied => "denied",
             BbCameraPermission.Prompt => "prompt",
             _ => "",
         };
+    }
 
     public override async ValueTask<string> ListCamerasAsync()
     {
@@ -61,6 +75,7 @@ internal sealed class BbScannerNativeBridge(BbScannerJsRuntimeBridge page, IBbCa
         // A newer start, a stop or disposal supersedes this one: a camera that opens for it after all is closed again.
         // The count goes up before the wait, so the start this one waits for already knows it is superseded.
         var generation = Interlocked.Increment(ref _generation);
+        IBbCameraSession session;
         await _gate.WaitAsync().ConfigureAwait(false);
         try
         {
@@ -69,7 +84,7 @@ internal sealed class BbScannerNativeBridge(BbScannerJsRuntimeBridge page, IBbCa
             // Another camera for the same scanner: the page goes on showing a preview through itself meanwhile.
             await CloseAsync(detach: false).ConfigureAwait(false);
 
-            var session = await source.OpenAsync(new BbCameraRequest
+            session = await source.OpenAsync(new BbCameraRequest
             {
                 DeviceId = deviceId,
                 Facing = facingMode switch
@@ -106,13 +121,20 @@ internal sealed class BbScannerNativeBridge(BbScannerJsRuntimeBridge page, IBbCa
                 await CloseAsync(detach: true).ConfigureAwait(false);
                 throw;
             }
-
-            return Serialize(session.Camera);
         }
         finally
         {
             _gate.Release();
         }
+
+        // A stop or disposal after that check found the gate still taken, and left the camera to this as well.
+        if (generation != Volatile.Read(ref _generation))
+        {
+            await CloseUnlessOpeningAsync(session).ConfigureAwait(false);
+            ThrowIfSuperseded(generation);
+        }
+
+        return Serialize(session.Camera);
     }
 
     public override ValueTask ConfigureAsync(string sessionId, int width, int height)
@@ -122,18 +144,20 @@ internal sealed class BbScannerNativeBridge(BbScannerJsRuntimeBridge page, IBbCa
         return default;
     }
 
-    public override ValueTask<int> PollAsync(string sessionId)
+    public override ValueTask<int> PollAsync(string sessionId, (int X, int Y, int Width, int Height)? grab = null)
     {
-        var flags = source.IsInBackground ? PollHidden : 0;
+        // Hidden is the app in the background only. A camera the platform interrupts while the app is in front - iPad
+        // multitasking, system pressure - is waited for with the camera kept: released, it would be opened again at once,
+        // into the same interruption, over and over.
+        var hidden = source.IsInBackground;
+        var flags = hidden ? PollHidden : 0;
         if (_session is { } session)
         {
             if (session.State == BbCameraSessionState.Ended)
             {
-                flags |= PollEnded;
-            }
-            else if (session.State == BbCameraSessionState.Interrupted)
-            {
-                flags |= PollHidden;
+                // As in the page: a camera that ends while the app is in the background is an interruption, opened
+                // again once the app is back.
+                flags |= hidden ? PollEnded | PollInterrupted : PollEnded;
             }
 
             // A turned device delivers frames of another shape, which the scanner has to be sized for again.
@@ -323,10 +347,10 @@ internal sealed class BbScannerNativeBridge(BbScannerJsRuntimeBridge page, IBbCa
     }
 
     /// <summary>
-    /// Closes the camera, unless a start is still opening one: that start finds itself superseded once it has, and
-    /// closes it itself.
+    /// Closes the camera - <paramref name="only"/>, when given, and only while it is still the one open - unless a start
+    /// is still opening one: that start finds itself superseded once it has, and closes it itself.
     /// </summary>
-    private async ValueTask CloseUnlessOpeningAsync()
+    private async ValueTask CloseUnlessOpeningAsync(IBbCameraSession? only = null)
     {
         if (!await _gate.WaitAsync(0).ConfigureAwait(false))
         {
@@ -335,7 +359,10 @@ internal sealed class BbScannerNativeBridge(BbScannerJsRuntimeBridge page, IBbCa
 
         try
         {
-            await CloseAsync(detach: true).ConfigureAwait(false);
+            if (only is null || ReferenceEquals(_session, only))
+            {
+                await CloseAsync(detach: true).ConfigureAwait(false);
+            }
         }
         finally
         {

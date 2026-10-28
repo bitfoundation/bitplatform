@@ -45,7 +45,7 @@ public class BbScannerNativeCameraTests : BunitContext
         Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status);
         Assert.AreEqual(BbCameraFacing.Rear, _camera.Requests.Single().Facing);
         Assert.AreEqual(0, _page.Count("start"), "The page's camera is never asked for.");
-        Assert.AreEqual(0, _page.Count("grabFrameData"), "No frame crosses the page.");
+        Assert.IsEmpty(_page.Grabs, "No frame crosses the page.");
         Assert.AreEqual(1, _page.Count("attachNativePreview"), "The page shows the native preview through itself.");
     }
 
@@ -153,6 +153,51 @@ public class BbScannerNativeCameraTests : BunitContext
         _camera.IsInBackground = false;
         WaitUntil(() => Assert.HasCount(2, _camera.Sessions));
         WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+    }
+
+    [TestMethod]
+    public void A_camera_the_platform_interrupts_while_the_app_is_in_front_is_waited_for_rather_than_released()
+    {
+        var scanner = Render<BbScanner>(parameters => parameters.Add(p => p.ReleaseCameraWhenHidden, true));
+        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        var session = _camera.Current!;
+
+        // iPad multitasking, or system pressure: the app is still in front. Released, the camera would be opened again at
+        // once, into the same interruption.
+        session.State = BbCameraSessionState.Interrupted;
+        Thread.Sleep(500);
+
+        Assert.IsFalse(session.Disposed);
+        Assert.HasCount(1, _camera.Sessions);
+        Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status);
+    }
+
+    [TestMethod]
+    public void A_camera_that_ends_while_the_app_is_in_the_background_is_opened_again_when_it_returns()
+    {
+        BbScannerException? error = null;
+        var scanner = Render<BbScanner>(parameters => parameters.Add(p => p.OnError, e => error = e));
+        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        var first = _camera.Current!;
+
+        _camera.IsInBackground = true;
+        first.State = BbCameraSessionState.Ended;
+        WaitUntil(() => Assert.IsTrue(first.Disposed));
+        Assert.AreEqual(BbScannerStatus.Starting, scanner.Instance.Status);
+
+        _camera.IsInBackground = false;
+        WaitUntil(() => Assert.HasCount(2, _camera.Sessions));
+        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        Assert.IsNull(error, "An interruption is recovered from, not reported.");
+    }
+
+    [TestMethod]
+    public async Task A_platform_that_throws_rather_than_say_reports_the_permission_unknown()
+    {
+        _camera.PermissionFailure = new InvalidOperationException("You need to declare using the permission: `android.permission.CAMERA`.");
+        var scanner = Render<BbScanner>(parameters => parameters.Add(p => p.AutoStart, false));
+
+        Assert.AreEqual(BbCameraPermission.Unknown, await scanner.InvokeAsync(() => scanner.Instance.GetCameraPermissionAsync()));
     }
 
     [TestMethod]
