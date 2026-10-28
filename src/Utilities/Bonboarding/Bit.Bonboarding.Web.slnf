@@ -1,0 +1,19 @@
+{
+  "solution": {
+    "path": "Bit.Bonboarding.slnx",
+    "projects": [
+      "Bit.Bonboarding\\Bit.Bonboarding.csproj",
+      "Demo\\Client\\Bit.Bonboarding.Demo.Client.csproj",
+      "Demo\\Server\\Bit.Bonboarding.Demo.Server.csproj",
+      "Samples\\Auto\\Bit.Bonboarding.Samples.Auto.Client\\Bit.Bonboarding.Samples.Auto.Client.csproj",
+      "Samples\\Auto\\Bit.Bonboarding.Samples.Auto\\Bit.Bonboarding.Samples.Auto.csproj",
+      "Samples\\Core\\Bit.Bonboarding.Samples.Core.csproj",
+      "Samples\\Server\\Bit.Bonboarding.Samples.Server.csproj",
+      "Samples\\Wasm\\Bit.Bonboarding.Samples.Wasm.Client\\Bit.Bonboarding.Samples.Wasm.Client.csproj",
+      "Samples\\Wasm\\Bit.Bonboarding.Samples.Wasm\\Bit.Bonboarding.Samples.Wasm.csproj",
+      "Tests\\Bit.Bonboarding.Tests.E2E\\Bit.Bonboarding.Tests.E2E.csproj",
+      "Tests\\Bit.Bonboarding.Tests.Mcp\\Bit.Bonboarding.Tests.Mcp.csproj",
+      "Tests\\Bit.Bonboarding.Tests\\Bit.Bonboarding.Tests.csproj"
+    ]
+  }
+}

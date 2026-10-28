@@ -1,0 +1,25 @@
+﻿@inject SampleDatabase Database
+
+@* What a page renders until its data is there: while the database opens, or - where the pages render on a server
+   but the database lives in the browser - in place of it. *@
+<div class="card pending" id="database-pending">
+    @if (Database.Unreachable is { } reason)
+    {
+        <p>@reason It opens once the page runs on WebAssembly.</p>
+
+        @if (RendererInfo.IsInteractive)
+        {
+            @* Interactive, yet on the server: Interactive Auto's first visit, rendered on the server while the
+               WebAssembly runtime downloads. A plain onclick, not @onclick: it has to work whatever the renderer. *@
+            <p>
+                This is an Interactive Auto first visit, which runs on the server while the WebAssembly runtime
+                downloads. Later visits run in the browser:
+                <button type="button" class="btn" onclick="location.reload()">Reload</button>
+            </p>
+        }
+    }
+    else
+    {
+        <p>Opening the database…</p>
+    }
+</div>

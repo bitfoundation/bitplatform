@@ -7,13 +7,12 @@ namespace Bit.BlazorUI.Tests.Trimming;
 /// The trimming as an app gets it from nuget.org: the packages packed from this source tree into a feed of their own, and
 /// apps outside the repository referencing them - a Blazor WebAssembly app with a service worker (a standalone PWA), a Blazor
 /// Web App's server, and a Blazor Web App whose server hosts a WebAssembly client with a service worker - published with
-/// each SDK the packages support (.NET 8, 9 and 10; the targets differ between 8 and 9). This is what checks the package
-/// layout (buildTransitive\bit-assets, tasks\Bit.BlazorUI.Build.dll), the task loading from the package, and the SDK
-/// paths a ProjectReference never takes.
+/// the .NET 10 SDK. This is what checks the package layout (buildTransitive\bit-assets, tasks\Bit.BlazorUI.Build.dll),
+/// the task loading from the package, and the SDK paths a ProjectReference never takes.
 /// </summary>
 /// <remarks>
-/// Opt-in (RUN_PACKAGE_TESTS=1): it packs five multi-targeted packages and publishes twelve apps, which restores the
-/// WebAssembly toolchain of each SDK from nuget.org. The packages go into the machine's NuGet cache under a version of
+/// Opt-in (RUN_PACKAGE_TESTS=1): it packs five multi-targeted packages and publishes four apps, which restores the
+/// WebAssembly toolchain of the SDK from nuget.org. The packages go into the machine's NuGet cache under a version of
 /// their own (99.0.0-trimming.*), which <c>dotnet nuget locals global-packages --clear</c> takes back out.
 /// </remarks>
 [TestClass]
@@ -22,17 +21,9 @@ public sealed partial class PackageTrimmingTests
     private static readonly Lazy<(string Feed, string Version)> Packed = new(Pack);
 
     [TestMethod]
-    [DataRow(8, "wasm")]
-    [DataRow(9, "wasm")]
     [DataRow(10, "wasm")]
-    [DataRow(8, "web")]
-    [DataRow(9, "web")]
     [DataRow(10, "web")]
-    [DataRow(8, "web-lazy")]
-    [DataRow(9, "web-lazy")]
     [DataRow(10, "web-lazy")]
-    [DataRow(8, "web-hosted")]
-    [DataRow(9, "web-hosted")]
     [DataRow(10, "web-hosted")]
     public void AnAppReferencingThePackagesShouldPublishTrimmedBundles(int sdkMajor, string shape)
     {
@@ -95,9 +86,8 @@ public sealed partial class PackageTrimmingTests
 
         if (shape == "wasm")
         {
-            // A standalone PWA's manifest is its own, which the SDK writes after the trimming, from the trimmed files - on
-            // every SDK, though the .NET 8 one defines it as an asset from the build on, before its file is written (or while
-            // it is still the previous publish's). Nothing to rewrite, then, and nothing to warn about.
+            // A standalone PWA's manifest is its own, which the SDK writes after the trimming, from the trimmed files.
+            // Nothing to rewrite, then, and nothing to warn about.
             Assert.IsNull(published.ServiceWorkerRewrite, $"A standalone app's own manifest was rewritten:\n{Tail(result.Output)}");
             Assert.IsFalse(Regex.IsMatch(result.Output, "BITBLAZORUI00[45]"), $"A standalone app warned about its own service worker:\n{Tail(result.Output)}");
             published.AssertServiceWorkerListsWhatIsServed();
@@ -112,8 +102,7 @@ public sealed partial class PackageTrimmingTests
                             $"The bundle was trimmed more than once - by the client as well as the server:\n{Tail(result.Output)}");
 
             // The client's service worker manifest, written from the full bundles and the Extras' vendored files before the
-            // server trimmed, rewritten to what the server serves - on each SDK, whose static web assets differ: no
-            // integrity on a .NET 8 asset, no endpoints there either.
+            // server trimmed, rewritten to what the server serves.
             Assert.IsTrue(published.ServiceWorkerRewrite is { Dropped: > 0, Rehashed: > 0 },
                           $"The client's service worker manifest was not rewritten to what the server serves:\n{Tail(result.Output)}");
             published.AssertServiceWorkerListsWhatIsServed();

@@ -2,10 +2,10 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <!-- Single-target: this is a measurement tool, not a shipped/multi-TFM library. net10.0 matches
+    <!-- Single-target: this is a measurement tool, not a shipped/multi-TFM library. net11.0 matches
          global.json's pinned SDK. The scenarios it measures (route instantiation vs a route-table
          baseline) are framework-version-agnostic, so multi-targeting would only slow the build. -->
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>

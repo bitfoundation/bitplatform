@@ -1,0 +1,79 @@
+﻿@page "/inline"
+
+<PageTitle>Inline · Balette samples</PageTitle>
+
+<h1>Inline</h1>
+
+<p>
+    A palette can live in a page rather than over it - here a settings search - with the same search, keyboard and
+    templates. It lists only the commands it is given, stays out of the way of the app's modal palette, and answers
+    neither <kbd>Ctrl</kbd> <kbd>K</kbd> nor any global shortcut.
+</p>
+
+<div class="inline-frame">
+    <Balette Inline="true"
+             IncludeRegisteredCommands="false"
+             Commands="_settings"
+             Density="compact"
+             Placeholder="Search settings…"
+             aria-label="Settings" />
+</div>
+
+<div class="card">
+    <dl>
+        <dt>Notifications</dt>
+        <dd id="notifications">@(_notifications ? "on" : "off")</dd>
+        <dt>Autosave</dt>
+        <dd id="autosave">@(_autosave ? "on" : "off")</dd>
+        <dt>Spell check</dt>
+        <dd id="spellcheck">@(_spellcheck ? "on" : "off")</dd>
+        <dt>Font size</dt>
+        <dd id="font-size">@_fontSize</dd>
+    </dl>
+</div>
+
+@code {
+    private bool _notifications = true;
+    private bool _autosave;
+    private bool _spellcheck = true;
+    private string _fontSize = "Medium";
+    private IReadOnlyList<BaletteCommand> _settings = [];
+
+    protected override void OnInitialized() => _settings = BuildSettings();
+
+    // The palette re-reads Commands when it is given a new collection, so every change builds a new list.
+    private BaletteCommand[] BuildSettings() =>
+    [
+        Toggle("Notifications", "settings.notifications", _notifications, () => _notifications = _notifications is false, "alerts"),
+        Toggle("Autosave", "settings.autosave", _autosave, () => _autosave = _autosave is false, "save"),
+        Toggle("Spell check", "settings.spellcheck", _spellcheck, () => _spellcheck = _spellcheck is false, "spelling"),
+        BaletteCmd.New("Font size").Id("settings.font-size").Group("Editor").Keywords("text", "zoom")
+            .Value(_fontSize)
+            .Children(FontSize("Small"), FontSize("Medium"), FontSize("Large")),
+    ];
+
+    private BaletteCommand Toggle(string title, string id, bool value, Action toggle, string keywords) =>
+        BaletteCmd.New(title).Id(id).Group("General").Keywords(keywords)
+            .Checked(value)
+            .Handler(_ =>
+            {
+                toggle();
+                return Changed(BaletteCommandResult.KeepOpen);
+            });
+
+    private BaletteCommand FontSize(string size) =>
+        BaletteCmd.New(size).Id($"settings.font-size.{size.ToLowerInvariant()}")
+            .Checked(_fontSize == size)
+            .Handler(_ =>
+            {
+                _fontSize = size;
+                return Changed(BaletteCommandResult.Back);
+            });
+
+    private async Task<BaletteCommandResult> Changed(BaletteCommandResult result)
+    {
+        _settings = BuildSettings();
+        await InvokeAsync(StateHasChanged);
+        return result;
+    }
+}

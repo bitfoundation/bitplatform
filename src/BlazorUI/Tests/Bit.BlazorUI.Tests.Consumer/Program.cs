@@ -14,7 +14,7 @@ builder.Services.AddBitBlazorUIExtrasServices();
 builder.Services.AddBitBlazorUIAIServices(ai => ai.UseTransport<EchoTransport>());
 
 // The packaged presets register themselves once the Extras assembly loads; an app that never names one of its types
-// registers them by hand, through the plain type a C# 12 app can call.
+// registers them by hand, through the plain type.
 BitExtraThemeRegistration.Register();
 
 await builder.Build().RunAsync();

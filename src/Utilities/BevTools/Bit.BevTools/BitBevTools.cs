@@ -136,17 +136,14 @@ public static class BitBevTools
 
     private static void RegisterInstrumentation(IServiceCollection services, BitBevToolsOptions options)
     {
-#if NET10_0_OR_GREATER
         // The framework only registers its own ActivitySource/meters for server-side rendering. Registering them here
         // is what makes "why did this render?" work in WebAssembly and in any other host; both calls are public and
-        // idempotent. Both arrived in .NET 10: on .NET 8 and 9 there is nothing to register, and the capability report
-        // says the event-driven render causes need runtime support.
+        // idempotent.
         if (options.UseFrameworkInstrumentation)
         {
             ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(services);
             ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(services);
         }
-#endif
 
         if (!services.Any(d => d.ServiceType == typeof(IComponentActivator) && d.ImplementationType == typeof(BevToolsComponentActivator)))
         {

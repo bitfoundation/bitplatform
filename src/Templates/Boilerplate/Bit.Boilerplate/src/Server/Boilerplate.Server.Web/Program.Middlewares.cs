@@ -47,11 +47,20 @@ public static partial class Program
             app.UseExceptionHandler();
             //#endif
 
+            //#if (framework == 'net10.0')
+            //#if (IsInsideProjectTemplate == true)
+            /*
+            //#endif
             if (env.IsDevelopment())
             {
                 app.UseWebAssemblyDebugging();
             }
-            else
+
+            //#if (IsInsideProjectTemplate == true)
+            */
+            //#endif
+            //#endif
+            if (env.IsDevelopment() is false)
             {
                 app.UseHttpsRedirection();
                 app.UseResponseCompression();
@@ -194,7 +203,7 @@ public static partial class Program
                 //    and use the Server.Web project solely as a Blazor Server or pre-rendering service provider.
                 throw new InvalidOperationException("Azure SignalR is not supported with Blazor Server and Auto");
             }
-            app.MapHub<Api.Infrastructure.SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
+            app.MapHub<Api.Infrastructure.SignalR.AppHub>("/app-hub", Api.Infrastructure.SignalR.AppHubOptions.Configure);
 
             // Chatbot tools. Isolated from /dev-mcp. Served under the api version the controllers carry as well.
             foreach (var path in new[] { OAuthResources.McpPath, $"{OAuthResources.McpPath}/v1" })

@@ -3,6 +3,13 @@
 Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`, `Bit.BlazorUI.Extras`,
 `Bit.BlazorUI.AI`, `Bit.BlazorUI.Assets`), newest version first, each with what to change in your code.
 
+## 11.0.0
+
+### The packages target .NET 10 and .NET 11 only
+
+The packages no longer ship `net8.0` and `net9.0` builds. **An app on .NET 8 or .NET 9** moves to .NET 10 or later
+before it updates, or stays on 10.x of the packages.
+
 ## 10.7.0 (first shipped in 10.7.0-pre-01)
 
 ### `BitFullCalendarChangeNotifier` passes on whether to show the refusal notice ([#13827](https://github.com/bitfoundation/bitplatform/issues/13827))

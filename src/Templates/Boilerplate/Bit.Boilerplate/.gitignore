@@ -232,6 +232,8 @@ custom.aprof
 
 .env
 .playwright-mcp/
+# Podman on Windows has ssh write its known hosts to NUL, which Git's own ssh makes a real file that git add -A then fails on.
+NUL
 
 *.keystore
 *.jks

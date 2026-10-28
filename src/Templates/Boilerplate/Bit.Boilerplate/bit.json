@@ -1,8 +1,9 @@
 {
     "template": "bit-bp",
-    "version": "10.7.0",
+    "version": "11.0.0-pre-15",
     "name": "Boilerplate",
     "options": {
+        "framework": "net11.0",
         "database": "bit-option-database",
         "filesStorage": "bit-option-filesStorage",
         "api": "bit-option-api",

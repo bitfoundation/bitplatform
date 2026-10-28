@@ -72,13 +72,27 @@ any page listed on `/`; `?mode=<mode>` overrides the render mode of one request.
 | Variable | Effect |
 | --- | --- |
 | `BMOTION_E2E_HOST` | The render mode of the run - see above. A name that is not one of them fails the run. |
-| `BMOTION_E2E_FRAMEWORK` | Target framework of the harness host: `net10.0` (default), `net9.0`, `net8.0`. |
+| `BMOTION_E2E_FRAMEWORK` | Target framework of the harness host: `net11.0` (default), `net10.0`. |
 | `BMOTION_E2E_CONFIGURATION` | Build configuration of the harness host; defaults to the test assembly's. |
 | `BMOTION_E2E_SKIP_BUILD` | `1`: the harness host was built beforehand (as CI does); do not rebuild it. |
 | `BMOTION_E2E_PUBLISHED_HOST` | A `dotnet publish` output of the harness host to run instead of the build output. |
-| `BMOTION_E2E_CHANNEL` | An installed browser channel instead of the bundled Chromium - e.g. `chrome`, `msedge`. |
+| `BMOTION_E2E_BROWSER` | `chromium` (default), `firefox` or `webkit`: the Playwright browser engine to run in. |
+| `BMOTION_E2E_CHANNEL` | An installed browser channel instead of the bundled Chromium - e.g. `chrome`, `msedge`. Chromium only. |
 | `BMOTION_E2E_EXECUTABLE` | Full path to a chromium-family executable. |
 | `BMOTION_E2E_HEADED` | `1` to watch the run in a visible window. |
+
+**Firefox and WebKit.** Install the engine once (`playwright.ps1 install firefox webkit`) and run one test class at
+a time: headless Firefox throttles the timers and frames of windows that aren't in front, so tests running in
+parallel windows starve each other. `serial.testconfig.json` runs them one after another:
+
+```powershell
+$env:BMOTION_E2E_BROWSER = "firefox"
+dotnet test --project Utilities\Bmotion\Tests\Bit.Bmotion.Tests.E2E\Bit.Bmotion.Tests.E2E.csproj -- --config-file Utilities\Bmotion\Tests\Bit.Bmotion.Tests.E2E\serial.testconfig.json
+```
+
+Some browser quirks shape the tests. Under automation Firefox reports a pointer dragged out of the viewport in the
+wrong place and drops its `pointerup`, so drags stay inside the viewport. WebKit passes every Playwright pointer move
+on the moment it arrives instead of once a frame, so `DragByAsync` paces them a frame apart there.
 
 ## Layout
 

@@ -511,7 +511,7 @@ public sealed class TailSampler : IBelemetryProcessor
 
 Instruments of the meters in `Metrics.Meters` (default `System.Net.Http`, `Microsoft.AspNetCore.Components*`,
 `System.Runtime`) are aggregated - counters and up-down counters as sums, histograms with explicit buckets (instrument
-advice is honored on .NET 9+), gauges as last values - and exported every `Metrics.ExportInterval` (60 s), with
+advice is honored), gauges as last values - and exported every `Metrics.ExportInterval` (60 s), with
 `Metrics.Temporality` (cumulative by default; Azure Monitor always gets deltas) and a `Metrics.CardinalityLimit` per
 instrument (2000; overflow goes to an `otel.metric.overflow` point).
 
@@ -750,8 +750,7 @@ options.Server.Features = BelemetryFeatures.Errors | BelemetryFeatures.Logs | Be
 options.Server.IgnoredRequestPaths.AddRange(["/health", "/alive", "/_framework", "/_content", "/_blazor"]);   // no request spans for probes and Blazor's own traffic
 ```
 
-`IgnoredRequestPaths` matches `url.path` on .NET 10 and only `http.route` on .NET 8 and 9, where a request that
-matched no endpoint (a static file) cannot be matched at all; and since the span is dropped when it ends, a child it
+`IgnoredRequestPaths` matches `url.path`; and since the span is dropped when it ends, a child it
 had - the database check behind `/health` - is still exported, with a parent that never arrives.
 
 The server pipeline serves every user at once, so it is governed by `Server.Features` (operator telemetry), not by
@@ -766,11 +765,11 @@ and `/proc` alone (no metadata-service call): `host.name`, `process.pid`, `proce
 name (`WEBSITE_INSTANCE_ID`, `CONTAINER_APP_REPLICA_NAME`) or the machine name, so Application Insights keeps counting
 the same instance across restarts - a device or a browser tab keeps a random id, which identifies nobody.
 
-ASP.NET Core's request activity (`Microsoft.AspNetCore.Hosting.HttpRequestIn`) carries no HTTP tags of its own on
-.NET 8 and 9. Belemetry fills them in without a middleware or a reference to ASP.NET Core, from the tags ASP.NET Core
+ASP.NET Core's request activity (`Microsoft.AspNetCore.Hosting.HttpRequestIn`) carries no HTTP tags of its own by
+default. Belemetry fills them in without a middleware or a reference to ASP.NET Core, from the tags ASP.NET Core
 puts on its `http.server.request.duration` measurement: `http.request.method`, `url.scheme`, `http.route`,
 `http.response.status_code`, `network.protocol.version` and `error.type`. The span is named `{method} {route}` (or
-`{method}` without a route, unless the app renamed the activity), and a 5xx marks it as an error. On .NET 10 Belemetry
+`{method}` without a route, unless the app renamed the activity), and a 5xx marks it as an error. Belemetry
 also turns off ASP.NET Core's `Microsoft.AspNetCore.Hosting.SuppressActivityOpenTelemetryData` switch (unless the app
 set it either way), which adds `url.path`, `server.address` and `server.port`.
 

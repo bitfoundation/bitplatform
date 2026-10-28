@@ -136,8 +136,8 @@ public class ProfileComparisonTests : BunitContext
         // A patch release is the same runtime for timing purposes; another minor version is not.
         var patch = Export(true, ("A", 1, 1, 1)).Replace(".NET 10.0.0", ".NET 10.0.3", StringComparison.Ordinal);
         Assert.IsEmpty(BevProfileComparison.Compare(baseline, patch).Warnings);
-        var minor = Export(true, ("A", 1, 1, 1)).Replace(".NET 10.0.0", ".NET 9.0.8", StringComparison.Ordinal);
-        Assert.Contains("different runtimes (.NET 10.0.0 → .NET 9.0.8)", Assert.ContainsSingle(BevProfileComparison.Compare(baseline, minor).Warnings), StringComparison.Ordinal);
+        var minor = Export(true, ("A", 1, 1, 1)).Replace(".NET 10.0.0", ".NET 11.0.1", StringComparison.Ordinal);
+        Assert.Contains("different runtimes (.NET 10.0.0 → .NET 11.0.1)", Assert.ContainsSingle(BevProfileComparison.Compare(baseline, minor).Warnings), StringComparison.Ordinal);
     }
 
     [TestMethod]

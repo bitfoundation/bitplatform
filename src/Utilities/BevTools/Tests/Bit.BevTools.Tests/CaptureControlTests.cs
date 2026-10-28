@@ -159,7 +159,6 @@ public class CaptureControlTests : BunitContext
         Assert.ContainsSingle(e => e.ExceptionType == typeof(HttpRequestException).FullName, errors);
     }
 
-#if NET10_0_OR_GREATER
     // UI events are observed through the framework's HandleEvent activity, which .NET 10 introduced.
     /// <summary>
     /// The click is not in the timeline while paused, so nothing may point at it. It used to be attached to the
@@ -188,7 +187,6 @@ public class CaptureControlTests : BunitContext
         Assert.AreEqual(click.Id, Session.LastUiEventId);
         Assert.AreEqual(click.Id, error!.PrecedingEventId);
     }
-#endif
 
     /// <summary>Disposal detection must use "has rendered", like cause detection, or a paused-only component lingers for 5 s.</summary>
     [TestMethod]

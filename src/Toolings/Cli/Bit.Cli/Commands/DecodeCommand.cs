@@ -45,8 +45,7 @@ public static partial class DecodeCommand
 
                 if (map is null)
                 {
-                    cli.Console.Fail("No bit-minifier.map found under obj/ here. Pass the map's path: bit decode <map> [<trace>]");
-                    return CliApp.ExitUsage;
+                    return cli.UsageError("map-not-found", "No bit-minifier.map found under obj/ here. Pass the map's path: bit decode <map> [<trace>]");
                 }
 
                 cli.Console.Error.MarkupLine($"[grey]Using {Markup.Escape(Path.GetRelativePath(cli.Environment.CurrentDirectory, map))}[/]");
@@ -57,14 +56,12 @@ public static partial class DecodeCommand
 
             if (File.Exists(map) is false)
             {
-                cli.Console.Fail($"No map at {map}.");
-                return CliApp.ExitUsage;
+                return cli.UsageError("map-missing", $"No map at {map}.");
             }
 
             if (ReadMinifierVersion(map) is not { } version)
             {
-                cli.Console.Fail($"{map} doesn't name the Bit.Minifier that wrote it: its first line should be \"# Bit.Minifier <version>\".");
-                return CliApp.ExitUsage;
+                return cli.UsageError("map-not-minifier", $"{map} doesn't name the Bit.Minifier that wrote it: its first line should be \"# Bit.Minifier <version>\".");
             }
 
             if ((FindMinifier(cli.Environment, version) ?? await RestoreMinifierAsync(cli, version, cancellationToken)) is not { } minifier)

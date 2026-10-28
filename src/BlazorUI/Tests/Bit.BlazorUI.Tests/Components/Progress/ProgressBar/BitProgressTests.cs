@@ -921,7 +921,6 @@ public class BitProgressTests : BunitTestContext
         Assert.Contains("--bit-prb-delay: 400ms;", component.Find(".bit-prb").GetAttribute("style")!);
     }
 
-#if NET9_0_OR_GREATER
     [TestMethod]
     public void BitProgressDelayShouldHoldAPrerenderedProgressForTheInteractiveRender()
     {
@@ -958,7 +957,6 @@ public class BitProgressTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-prb-dly"));
         Assert.IsFalse(root.ClassList.Contains("bit-prb-dlh"));
     }
-#endif
 
 
     // ---------------------------------------------------------------- percentage readout

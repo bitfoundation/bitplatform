@@ -114,7 +114,7 @@ public class ProfilerTimeAndRouteTests : BunitContext
     }
 
     [TestMethod]
-    [DataRow(false, DisplayName = "the panel records the navigation (.NET 8 and 9, or framework instrumentation off)")]
+    [DataRow(false, DisplayName = "the panel records the navigation (framework instrumentation off)")]
     [DataRow(true, DisplayName = "the router's Navigate activity records it, where there is one (.NET 10)")]
     public void A_pages_first_render_is_on_that_page_although_the_router_renders_it_before_anything_hears_of_the_navigation(bool frameworkInstrumentation)
     {

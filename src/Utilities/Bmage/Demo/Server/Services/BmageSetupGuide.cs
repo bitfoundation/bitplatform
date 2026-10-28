@@ -100,7 +100,7 @@ public static class BmageSetupGuide
         ```
 
         Install it in the project that runs in the browser - in a Blazor Web App, the **.Client** project.
-        Targets .NET 8, 9 and 10.
+        Targets .NET 10 and 11.
 
         Then add the namespaces to `_Imports.razor` of that project. Bmage's types are spread over several
         namespaces, and the ones a page normally needs are these:

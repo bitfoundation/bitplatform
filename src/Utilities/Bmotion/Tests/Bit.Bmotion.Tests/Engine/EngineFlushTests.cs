@@ -105,8 +105,9 @@ public class EngineFlushTests
     [TestMethod]
     public async Task ComputeFrame_SurvivesAnOnFrameCallbackThatMountsAndUnmountsElements()
     {
-        var (engine, _) = NewEngine();
+        var (engine, interop) = NewEngine();
         await using var __ = engine;
+        interop.WebAnimationsSupported = false; // the per-frame callback is a frame-loop affair
         foreach (var id in new[] { "a", "b" })
         {
             engine.RegisterElement(id, Values("backgroundColor", "#000000"));

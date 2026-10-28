@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
     <!-- An app the way a consumer of the packages writes one, kept to the things the library's own projects cannot
-         check for it, since every one of them compiles with C# 14 and is never trimmed:
+         check for it, since every one of them compiles with the preview language and is never trimmed:
 
-         - Building it compiles the markup and the C# below as C# 12, the language a net8.0 app compiles with. A public
-           API that only C# 14 can call - an extension member (extension(T) blocks) standing where a plain member used
-           to - fails here with CS9202 on every build of the solution, rather than in an app after a release.
+         - Building it compiles the markup and the C# below as C# 14, the language a net10.0 app compiles with. A public
+           API that only a newer C# can call fails here on every build of the solution, rather than in an app after a
+           release.
          - Publishing it (dotnet publish -c Release) trims the app, the packages with it, and turns every trim warning
            ILLink reports for them into an error: IsTrimmable promises an app that trimming leaves it working.
          - The same publish trims the packages' scripts and stylesheets off what ILLink kept, as a WebAssembly app gets
@@ -13,8 +13,8 @@
 
          It references the projects rather than the packages, so it checks the code of the branch it is built from. -->
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
-        <LangVersion>12</LangVersion>
+        <TargetFramework>net11.0</TargetFramework>
+        <LangVersion>14</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsPackable>false</IsPackable>
@@ -47,7 +47,7 @@
     </Target>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.14" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.3.26522.148" />
     </ItemGroup>
 
     <ItemGroup>

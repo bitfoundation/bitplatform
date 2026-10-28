@@ -58,15 +58,11 @@ public static class BlexDiagnostics
 
     private static Histogram<double> CreateDuration(string name, string description)
     {
-#if NET9_0_OR_GREATER
         // UI actions run in microseconds; effects and fetches in hundreds of milliseconds.
         return Meter.CreateHistogram<double>(name, "s", description, tags: null, advice: new InstrumentAdvice<double>
         {
             HistogramBucketBoundaries = [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30],
         });
-#else
-        return Meter.CreateHistogram<double>(name, "s", description);
-#endif
     }
 
     /// <summary>Whether anything listens to actions -- spans or metrics. The inlined check on every action's path.</summary>

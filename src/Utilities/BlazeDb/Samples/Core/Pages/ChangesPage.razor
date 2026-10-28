@@ -1,0 +1,209 @@
+﻿@page "/changes"
+@using System.Collections.Concurrent
+@implements IDisposable
+@inject SampleDatabase Database
+
+<PageTitle>Changes · BlazeDb samples</PageTitle>
+
+<h1>Changes</h1>
+
+<p>
+    The database raises <code>Changed</code> after every commit, with the net change to each row it touched: a
+    transaction that edits a row three times reports one update, a row inserted and deleted again in one commit is
+    not reported at all, and neither is anything rolled back. Each button below makes one kind of commit; the log
+    lists what was reported. On the Server host every browser window shares the database, so the commits made in
+    the others show up here too.
+</p>
+
+@if (_unsubscribe is null)
+{
+    <DatabasePending />
+}
+else
+{
+    <div class="row">
+        <button type="button" class="btn" id="insert-one" @onclick="InsertOneAsync">Insert a row</button>
+        <button type="button" class="btn" id="insert-three" @onclick="InsertThreeAsync">Insert three in one transaction</button>
+        <button type="button" class="btn" id="edit-three-times" @onclick="EditThreeTimesAsync">Edit a row three times in one transaction</button>
+        <button type="button" class="btn" id="insert-delete" @onclick="InsertAndDeleteAsync">Insert and delete in one transaction</button>
+        <button type="button" class="btn" id="roll-back" @onclick="RollBackAsync">Roll a transaction back</button>
+        <button type="button" class="btn" id="clean-up" @onclick="CleanUpAsync">Delete the rows this page added</button>
+    </div>
+
+    <h2>Notifications</h2>
+    @if (_log.Count == 0)
+    {
+        <p class="muted" id="log-empty">Nothing yet.</p>
+    }
+    else
+    {
+        <ol class="log" id="log" reversed>
+            @foreach (var entry in _log)
+            {
+                <li @key="entry" class="@(entry.Changes.Count == 0 ? "muted" : null)">
+                    <strong>@entry.What</strong> <span class="muted">@ViewerTime.Format(entry.At, RendererInfo, "T")</span>
+                    @if (entry.Changes.Count > 0)
+                    {
+                        <ul>
+                            @foreach (var change in entry.Changes)
+                            {
+                                <li>@change</li>
+                            }
+                        </ul>
+                    }
+                </li>
+            }
+        </ol>
+    }
+}
+
+@code {
+    // Rows this page adds go in a category of their own, so it can delete exactly them again.
+    private const string Category = "Changes";
+
+    private readonly List<Entry> _log = [];
+    // What was reported but is not in the log yet, in the order it was reported.
+    private readonly ConcurrentQueue<Entry> _reported = new();
+    private int _notifications;
+    private bool _acting;
+    private Action? _unsubscribe;
+    private bool _disposed;
+
+    // At is in UTC.
+    private sealed record Entry(DateTime At, string What, List<string> Changes);
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Database.Unreachable is not null) return;
+
+        await Database.UseAsync(db =>
+        {
+            // Left while the database was opening, or on a server while waiting its turn: subscribing now would
+            // keep logging - and re-rendering - for a page that is gone.
+            if (_disposed) return;
+
+            db.Changed += OnChanged;
+            _unsubscribe = () => db.Changed -= OnChanged;
+        });
+    }
+
+    // Runs synchronously on the thread that committed, once the commit is complete: inside Act below for this
+    // page's own commits, and on a server inside another circuit's write - and the lock it took - for theirs. The
+    // log itself is only ever touched on this component's dispatcher, reached from the thread pool: called right
+    // here, the dispatcher would render on that thread, keeping the writer waiting too. The queue keeps the
+    // entries in the order their commits were made, whichever reaches the dispatcher first.
+    private void OnChanged(object? sender, BlazeDbChangedEventArgs e)
+    {
+        Interlocked.Increment(ref _notifications);
+
+        _reported.Enqueue(new Entry(DateTime.UtcNow,
+                                    $"{(_acting ? "This page" : "Elsewhere")}: {e.Changes.Count} {(e.Changes.Count == 1 ? "change" : "changes")} in one commit",
+                                    [.. e.Changes.Select(Describe)]));
+
+        _ = Task.Run(() => InvokeAsync(ShowReported));
+    }
+
+    private static string Describe(BlazeDbRowChange change) => change switch
+    {
+        { Kind: BlazeDbChangeKind.Inserted, NewRow: TodoItem row } => $"Inserted '{row.Title}'",
+        { Kind: BlazeDbChangeKind.Updated, OldRow: TodoItem before, NewRow: TodoItem after } => $"Updated '{before.Title}' to '{after.Title}'",
+        { Kind: BlazeDbChangeKind.Deleted, OldRow: TodoItem row } => $"Deleted '{row.Title}'",
+        _ => $"{change.Kind} {change.Key} in {change.Table}",
+    };
+
+    private Task InsertOneAsync() => Act("Insert a row", (db, todos) => todos.Insert(New("Inserted on its own")));
+
+    private Task InsertThreeAsync() => Act("Insert three in one transaction", (db, todos) => db.RunInTransaction(() =>
+    {
+        todos.Insert(New("First of three"));
+        todos.Insert(New("Second of three"));
+        todos.Insert(New("Third of three"));
+    }));
+
+    // A row of this page's own to edit: the newest, or a new one - whose insert is a commit of its own, reported
+    // before the edits are.
+    private Task EditThreeTimesAsync() => Act("Edit a row three times in one transaction", (db, todos) =>
+    {
+        var row = todos.Lookup(TodoItem.Indexes.Category, Category).MaxBy(t => t.CreatedAt);
+        if (row is null)
+        {
+            row = New("To be edited");
+            todos.Insert(row);
+        }
+
+        db.RunInTransaction(() =>
+        {
+            for (var edit = 1; edit <= 3; edit++)
+            {
+                // A new row each time: rows are replaced, never changed in place.
+                row = row with { Title = $"Edited {edit}x" };
+                todos.Update(row);
+            }
+        });
+    });
+
+    private Task InsertAndDeleteAsync() => Act("Insert and delete in one transaction", (db, todos) => db.RunInTransaction(() =>
+    {
+        var row = New("Here and gone");
+        todos.Insert(row);
+        todos.Delete(row.Id);
+    }));
+
+    // Disposing a transaction without committing it rolls it back: its writes are undone, rows and index entries
+    // alike, and nothing is reported.
+    private Task RollBackAsync() => Act("Roll a transaction back", (db, todos) =>
+    {
+        using var transaction = db.BeginTransaction();
+        todos.Insert(New("Never committed"));
+    });
+
+    private Task CleanUpAsync() => Act("Delete the rows this page added", (db, todos) =>
+        todos.DeleteMany(todos.Lookup(TodoItem.Indexes.Category, Category).Select(t => t.Id)));
+
+    private async Task Act(string what, Action<BlazeDbDatabase, BlazeDbTable<Guid, TodoItem>> commit)
+    {
+        var reported = await Database.UseAsync(db =>
+        {
+            var before = _notifications;
+            _acting = true;
+            try
+            {
+                commit(db, db.GetTable(TodoItem.Table));
+            }
+            finally
+            {
+                _acting = false;
+            }
+
+            return _notifications != before;
+        });
+
+        if (reported is false)
+        {
+            _reported.Enqueue(new Entry(DateTime.UtcNow, $"{what}: nothing reported", []));
+        }
+
+        // This page's own commits are logged now, rather than once their turn on the dispatcher comes.
+        ShowReported();
+    }
+
+    private void ShowReported()
+    {
+        while (_reported.TryDequeue(out var entry))
+        {
+            _log.Insert(0, entry);
+            if (_log.Count > 30) _log.RemoveAt(_log.Count - 1);
+        }
+
+        StateHasChanged();
+    }
+
+    private static TodoItem New(string title) =>
+        new() { Id = Guid.NewGuid(), Title = title, Category = Category, CreatedAt = DateTime.UtcNow };
+
+    public void Dispose()
+    {
+        _disposed = true;
+        _unsubscribe?.Invoke();
+    }
+}

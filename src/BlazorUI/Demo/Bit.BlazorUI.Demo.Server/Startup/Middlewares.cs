@@ -17,13 +17,7 @@ public class Middlewares
     {
         app.UseForwardedHeaders();
 
-        if (env.IsDevelopment())
-        {
-#if INCLUDE_WASM
-            app.UseWebAssemblyDebugging();
-#endif
-        }
-        else
+        if (env.IsDevelopment() is false)
         {
             app.UseHttpsRedirection();
             app.UseResponseCompression();

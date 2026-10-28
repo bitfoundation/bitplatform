@@ -18,7 +18,7 @@ public partial class AppAiChatPanel : IAiChatCardHost
 
 
     [AutoInject] private Clipboard clipboard = default!;
-    [AutoInject] private HubConnection hubConnection = default!;
+    [AutoInject] private AppHubConnection hubConnection = default!;
     [AutoInject] private SignInModalService signInModalService = default!;
 
 

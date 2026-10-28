@@ -10,6 +10,23 @@
     <Project Path="Demo/Client/Bit.BlazeDb.Demo.Client.csproj" />
     <Project Path="Demo/Server/Bit.BlazeDb.Demo.Server.csproj" />
   </Folder>
+  <Folder Name="/Samples/">
+    <Project Path="Samples/Core/Bit.BlazeDb.Samples.Core.csproj" />
+    <Project Path="Samples/Maui/Bit.BlazeDb.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Samples/Auto/">
+    <Project Path="Samples/Auto/Bit.BlazeDb.Samples.Auto.Client/Bit.BlazeDb.Samples.Auto.Client.csproj" />
+    <Project Path="Samples/Auto/Bit.BlazeDb.Samples.Auto/Bit.BlazeDb.Samples.Auto.csproj" />
+  </Folder>
+  <Folder Name="/Samples/Server/">
+    <Project Path="Samples/Server/Bit.BlazeDb.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Samples/Wasm/">
+    <Project Path="Samples/Wasm/Bit.BlazeDb.Samples.Wasm.Client/Bit.BlazeDb.Samples.Wasm.Client.csproj" />
+    <Project Path="Samples/Wasm/Bit.BlazeDb.Samples.Wasm/Bit.BlazeDb.Samples.Wasm.csproj" />
+  </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/Bit.BlazeDb.Tests/Bit.BlazeDb.Tests.csproj" />
     <Project Path="Tests/Bit.BlazeDb.Tests.Mcp/Bit.BlazeDb.Tests.Mcp.csproj" />

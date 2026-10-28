@@ -22,9 +22,7 @@ public class BbScannerTextsTests : BunitContext
     public BbScannerTextsTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-#if NET9_0_OR_GREATER
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));
-#endif
     }
 
     [TestMethod]
@@ -39,9 +37,7 @@ public class BbScannerTextsTests : BunitContext
         Assert.Contains("Escanear imagen", controls);
         Assert.DoesNotContain("Scan image", controls);
 
-        // .NET 8 cannot tell a prerender from an interactive render, so there the scanner has already reported that
-        // it cannot run here, which is a status of its own.
-        Assert.Contains(OnNet8() ? "Fallo" : "Listo", scanner.Find(".bit-bbscanner__status").TextContent);
+        Assert.Contains("Listo", scanner.Find(".bit-bbscanner__status").TextContent);
     }
 
     [TestMethod]
@@ -57,9 +53,7 @@ public class BbScannerTextsTests : BunitContext
     [TestMethod]
     public void A_failure_is_shown_and_alerted_in_the_application_language_while_the_application_gets_the_original()
     {
-#if NET9_0_OR_GREATER
         SetRendererInfo(new RendererInfo("Server", isInteractive: true));
-#endif
         BbScannerException? error = null;
 
         var scanner = Render<BbScanner>(parameters => parameters
@@ -137,14 +131,5 @@ public class BbScannerTextsTests : BunitContext
         using var image = SyntheticImage.FromLinear(modules, scale: 3, height: 40);
         using var decoder = new BbBarcodeDecoder(new BbScannerOptions { DuplicateSuppressionWindow = TimeSpan.Zero });
         return decoder.Decode(image.View, suppressDuplicates: false) ?? throw new AssertFailedException("The symbol did not decode.");
-    }
-
-    private static bool OnNet8()
-    {
-#if NET9_0_OR_GREATER
-        return false;
-#else
-        return true;
-#endif
     }
 }

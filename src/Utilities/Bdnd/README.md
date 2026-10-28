@@ -68,7 +68,7 @@ put down in another - including files, text and links dragged in from outside th
 - **Isolated contexts** through nestable providers, and a read-only `IBdndMonitor` over the live drag state.
 - **Robust** across re-renders: a dragged item may be re-parented, re-keyed or removed mid-drag and its `OnEnd` still
   runs; hover survives the target's children being re-rendered.
-- Works on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, on .NET 8, 9 and 10 - driven by
+- Works on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, on .NET 10 and 11 - driven by
   the end-to-end suite in Chromium, Firefox and WebKit, over a Server circuit and in a WinForms `BlazorWebView`.
 
 ## Quick start
@@ -113,7 +113,7 @@ themselves the first time they need it. The full walkthrough is in [getting star
 
 ## Requirements
 
-- .NET 8, .NET 9 or .NET 10
+- .NET 10 or .NET 11
 - Blazor WebAssembly, Blazor Server, Blazor Web App or Blazor Hybrid, on an interactive render mode
 - A mouse, a trackpad, a pen, a touch screen or the keyboard: the mouse drags through the browser's HTML5 drag and
   drop, touch and pen through pointer events (any browser with pointer events), the keyboard through key handling.
@@ -134,6 +134,14 @@ To run it locally:
 ```bash
 dotnet run --project src/Utilities/Bdnd/Demo/Server
 ```
+
+[`Samples`](Samples/) is the hosting harness rather than the docs: one shared [Core](Samples/Core/) project of pages
+(dustbins with type-matched targets, sortable lists with drop indicators, a custom drag layer and a drag handle, and
+native file, text and link drops), hosted unchanged under [Server](Samples/Server/), [WASM](Samples/Wasm/) and
+[Auto](Samples/Auto/) so the same drags run, prerendered first, in each render mode - and under [MAUI](Samples/Maui/)
+(Android, iOS, Mac Catalyst and Windows), where a `BlazorWebView` runs them as a Blazor Hybrid app. Each host is also a
+minimal example of the wiring its platform needs: `AddBitBdndServices()` in every container that renders the pages -
+called in each host's `Program.cs` (`MauiProgram.cs` in the MAUI app) - and nothing else.
 
 ## How it fits together
 

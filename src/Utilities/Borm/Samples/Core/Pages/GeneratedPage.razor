@@ -1,0 +1,29 @@
+﻿@page "/generated"
+
+<PageTitle>From a type · Borm samples</PageTitle>
+
+<h1>From a type</h1>
+
+<p class="muted">
+    Nothing below was configured field by field: <code>BormSchemaGenerator.Generate&lt;Signup&gt;()</code> read the labels,
+    the field types, the plan's options and every rule off the <code>Signup</code> class and its DataAnnotations.
+</p>
+
+<BormView Definition="_definition" Model="_model" OnValidSubmit="Submitted" SubmitText="Sign up" />
+
+@if (_answers is not null)
+{
+    <div class="card answers">
+        <h2>Submitted</h2>
+        <pre>@_answers</pre>
+    </div>
+}
+
+@code {
+    private readonly Signup _model = new();
+    private readonly BormDefinition _definition = BormSchemaGenerator.Generate<Signup>();
+    private string? _answers;
+
+    // A valid submit: _model holds every answer, and every rule has passed.
+    private void Submitted(BormState state) => _answers = SampleDirectory.ToJson(_model);
+}

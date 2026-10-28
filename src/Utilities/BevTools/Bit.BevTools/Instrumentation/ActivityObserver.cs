@@ -49,7 +49,7 @@ internal static class ActivityObserver
     /// <summary>
     /// Puts the observer in the state a .NET 10 app reaches after its first render batch: render_diff measurements
     /// seen. Lets the tests of the diff-matching queue state their precondition instead of inheriting it from whichever
-    /// test happened to render through a real meter first - which also keeps them meaningful on .NET 8 and 9.
+    /// test happened to render through a real meter first.
     /// </summary>
     internal static void MarkBatchMetricsObserved() => Interlocked.Increment(ref _batchMeasurements);
 

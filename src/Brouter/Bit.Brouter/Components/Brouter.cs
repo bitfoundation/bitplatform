@@ -1242,11 +1242,9 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         }
 
         _navManager.LocationChanged += NavManagerLocationChanged;
-#if NET10_0_OR_GREATER
         // .NET 10 not-found contract: app code (or the framework) calls NavigationManager.NotFound()
         // to signal a missing resource; routers subscribe to OnNotFound and render their fallback.
         _navManager.OnNotFound += NavManagerOnNotFound;
-#endif
 
         // Establish the initial location synchronously so any code that reads
         // BrouterService.Location before the first navigation pipeline runs sees
@@ -1704,7 +1702,6 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         }
     }
 
-#if NET10_0_OR_GREATER
     // True while Brouter itself is calling NavigationManager.NotFound() to propagate a router-level
     // "no route matched" to the framework (so static SSR responds with HTTP 404 instead of a 200
     // carrying fallback HTML). Our own OnNotFound event handler must no-op for that call: the
@@ -1826,7 +1823,6 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             await SafeInvokeOnError(location, location, ex);
         }
     }
-#endif
 
     /// <summary>
     /// Preventive navigation decision. Registered via <c>NavigationManager.RegisterLocationChangingHandler</c>
@@ -2391,7 +2387,6 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                         }
                     }
                 }
-#if NET10_0_OR_GREATER
                 // During static SSR/prerender an unmatched URL must produce an HTTP 404 response, not
                 // a 200 whose body happens to contain fallback HTML (an SEO/correctness bug).
                 // NavigationManager.NotFound() is the framework's channel for that status code (and it
@@ -2409,7 +2404,6 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                         _raisingFrameworkNotFound = false;
                     }
                 }
-#endif
                 StateHasChanged();
                 return;
             }
@@ -3843,9 +3837,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         _pendingLifecycleFlush.Clear();
 
         _navManager.LocationChanged -= NavManagerLocationChanged;
-#if NET10_0_OR_GREATER
         _navManager.OnNotFound -= NavManagerOnNotFound;
-#endif
         // Unhook the preventive changing handler so a disposed Brouter can't keep vetoing navigations.
         _locationChangingRegistration?.Dispose();
         _locationChangingRegistration = null;

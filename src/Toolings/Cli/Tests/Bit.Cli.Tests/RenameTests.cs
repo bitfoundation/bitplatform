@@ -80,6 +80,28 @@ public class RenameTests
     }
 
     [TestMethod]
+    public async Task Rename_Should_KeepTheOldNameUntilEverythingIsRenamed()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var folder = CreateProject(host);
+        host.Runner.On("git", "rev-parse", 0, folder);
+        host.Runner.On("git", "status --porcelain", 0, "");
+        var blocker = Directory.CreateDirectory(Path.Combine(folder, "src", "Server", "Contoso.Shop.Server.Api")).FullName;
+
+        Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("rename", "Contoso.Shop", folder), host.Output);
+        Assert.AreEqual("Old", ProjectContext.FindProjectName(folder));
+        Assert.IsTrue(File.Exists(Path.Combine(folder, "Old.slnx")));
+
+        Directory.Delete(blocker);
+
+        Assert.AreEqual(0, await host.RunAsync("rename", "Contoso.Shop", folder), host.Output);
+        Assert.AreEqual("Contoso.Shop", ProjectContext.FindProjectName(folder));
+        Assert.IsTrue(File.Exists(Path.Combine(folder, "Contoso.Shop.slnx")));
+        Assert.IsTrue(File.Exists(Path.Combine(folder, "src", "Server", "Contoso.Shop.Server.Api", "Contoso.Shop.Server.Api.csproj")));
+        Assert.IsFalse(Directory.Exists(Path.Combine(folder, "src", "Server", "Old.Server.Api")));
+    }
+
+    [TestMethod]
     public async Task Rename_Should_RefuseAGitRepositoryWithChanges()
     {
         using var host = new TestHost();
@@ -133,6 +155,45 @@ public class RenameTests
     }
 
     [TestMethod]
+    public async Task Rename_Should_RefuseANameThatIsATypeInTheProject()
+    {
+        using var host = new TestHost();
+        var folder = CreateProject(host);
+        Write(Path.Combine(folder, "src", "Client", "Old.Client.Core", "Components", "Shop.razor"), "<h1>Shop</h1>\n");
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("rename", "Contoso.Shop", folder, "--yes"));
+        StringAssert.Contains(host.FlatOutput, "'Shop' is also the name of a type");
+        StringAssert.Contains(host.FlatOutput, "bit rename Contoso.MyShop");
+        Assert.IsTrue(File.Exists(Path.Combine(folder, "Old.slnx")));
+        Assert.IsEmpty(host.Runner.Calls);
+    }
+
+    [TestMethod]
+    public async Task Rename_Should_RefuseAProjectNamedLikeOneOfItsTypes()
+    {
+        using var host = new TestHost();
+        var folder = CreateProject(host);
+        Write(Path.Combine(folder, "src", "Server", "Old.Server.Api", "Components", "Old.razor.cs"), "namespace Old.Server.Api.Components;\n\npublic partial class Old;\n");
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("rename", "Contoso.Shop", folder, "--yes"));
+        StringAssert.Contains(host.FlatOutput, "can't tell which Old to change");
+        Assert.IsTrue(File.Exists(Path.Combine(folder, "Old.slnx")));
+        Assert.IsEmpty(host.Runner.Calls);
+    }
+
+    [TestMethod]
+    public async Task Rename_Should_KeepTheNativeAppsAppIdValid()
+    {
+        using var host = new TestHost();
+        var folder = CreateProject(host);
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("rename", "Магазин", folder, "--yes"));
+        StringAssert.Contains(host.FlatOutput, "com.companyname.магазин");
+        Assert.IsTrue(File.Exists(Path.Combine(folder, "Old.slnx")));
+        Assert.IsEmpty(host.Runner.Calls);
+    }
+
+    [TestMethod]
     public async Task Rename_Should_LeaveAProjectWithTheSameNameAlone()
     {
         using var host = new TestHost();
@@ -165,6 +226,31 @@ public class RenameTests
 
         var text = "nothing to see";
         Assert.AreSame(text, growing.Replace(text));
+    }
+
+    [TestMethod]
+    public void Replace_Should_LeaveTheNamesACommonWordIsPartOf()
+    {
+        var app = new ProjectRenamer("App", "Contoso.Shop");
+
+        Assert.AreEqual("<FrameworkReference Include=\"Microsoft.AspNetCore.App\" />", app.Replace("<FrameworkReference Include=\"Microsoft.AspNetCore.App\" />"));
+        Assert.AreEqual("var app = builder.Build(); AppDomain.CurrentDomain AppDbContext Contoso.ShopDb.db Contoso.ShopJobDb.db <ApplicationId>com.companyname.contoso.shop</ApplicationId>",
+            app.Replace("var app = builder.Build(); AppDomain.CurrentDomain AppDbContext AppDb.db AppJobDb.db <ApplicationId>com.companyname.app</ApplicationId>"));
+
+        var web = new ProjectRenamer("Web", "Contoso");
+
+        Assert.AreEqual("<Project Sdk=\"Microsoft.NET.Sdk.Web\">", web.Replace("<Project Sdk=\"Microsoft.NET.Sdk.Web\">"));
+        Assert.AreEqual("Contoso.Web.slnf src/Server/Contoso.Server.Web Microsoft.AspNetCore.Components.WebAssembly WebAssemblyHostBuilder _framework/blazor.web.js",
+            web.Replace("Web.Web.slnf src/Server/Web.Server.Web Microsoft.AspNetCore.Components.WebAssembly WebAssemblyHostBuilder _framework/blazor.web.js"));
+
+        var test = new ProjectRenamer("Test", "Contoso");
+
+        Assert.AreEqual("[TestMethod] Microsoft.NET.Test.Sdk dotnet test test@bitplatform.dev /iPad/.test(agent) contoso-e2e Projects.Contoso_Server_Api",
+            test.Replace("[TestMethod] Microsoft.NET.Test.Sdk dotnet test test@bitplatform.dev /iPad/.test(agent) test-e2e Projects.Test_Server_Api"));
+
+        var lowercase = new ProjectRenamer("shop", "Contoso");
+
+        Assert.AreEqual("Contoso.Server.Api com.companyname.contoso contoso-e2e", lowercase.Replace("shop.Server.Api com.companyname.shop shop-e2e"));
     }
 
     private static string CreateProject(TestHost host)

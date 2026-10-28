@@ -30,9 +30,13 @@ public class McpControllerTests
         StringAssert.Contains(overview, "## How to work");
         StringAssert.Contains(overview, "## Rules of thumb when writing Bmotion code");
 
-        // The rule that decides whether an animation works at all in production.
+        // The rule that decides whether an animation works at all in production: the browser plays it,
+        // as a timeline or a recording, unless only the frame loop can.
         StringAssert.Contains(overview, "Blazor Server");
         StringAssert.Contains(overview, "compositor");
+        StringAssert.Contains(overview, "*timeline*");
+        StringAssert.Contains(overview, "*records*");
+        StringAssert.Contains(overview, "Only the C# frame loop can play");
 
         // A section the guide no longer has must be reported, not left as a silent gap.
         Assert.IsFalse(overview.Contains("was not found in this build", StringComparison.Ordinal),
@@ -302,6 +306,32 @@ public class McpControllerTests
             CollectionAssert.AreEqual(new[] { "x", "opacity" }, result.Properties, $"'{written}' was read as something else.");
             Assert.IsTrue(result.WorksOnBlazorServer);
         }
+    }
+
+    /// <summary>
+    /// The filters partition the measured catalog the way the verdict does: what the browser plays -
+    /// as a timeline or as a recording, nothing else - and what only the frame loop plays.
+    /// </summary>
+    [TestMethod]
+    public async Task GetBmotionAnimatableProperties_TheFiltersPartitionTheMeasuredVerdict()
+    {
+        var all = await _controller.GetBmotionAnimatableProperties();
+        var browser = await _controller.GetBmotionAnimatableProperties("browser");
+        var timeline = await _controller.GetBmotionAnimatableProperties("timeline");
+        var recorded = await _controller.GetBmotionAnimatableProperties("recorded");
+        var frameLoop = await _controller.GetBmotionAnimatableProperties("frame-loop");
+        var compositor = await _controller.GetBmotionAnimatableProperties("compositor");
+
+        Assert.AreEqual(all.Length, browser.Length + frameLoop.Length);
+        Assert.AreEqual(browser.Length, timeline.Length + recorded.Length);
+        CollectionAssert.AreEqual(new[] { "d" }, frameLoop.Select(property => property.Name).ToArray());
+
+        // Width is the property everyone remembers as Server-hostile; it is a browser timeline now.
+        Assert.IsTrue(timeline.Any(property => property.Name == "width"));
+
+        // The compositor is the cheap end of what the browser plays, not a list of what survives Server.
+        Assert.IsTrue(compositor.All(property => property.PlayedByBrowser));
+        Assert.IsFalse(compositor.Any(property => property.Name == "width"));
     }
 
     [TestMethod]

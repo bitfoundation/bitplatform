@@ -2096,4 +2096,13 @@
     <data name="SignOutOfAllAccounts" xml:space="preserve">
     <value>تسجيل الخروج من جميع الحسابات على هذا الجهاز</value>
   </data>
+    <data name="KioskTitle" xml:space="preserve">
+    <value>وضع الكشك</value>
+  </data>
+    <data name="KioskMessage" xml:space="preserve">
+    <value>هذا التطبيق مثبَّت على الشاشة: مفتاح Windows و Alt+Tab و إدارة المهام وإغلاق النافذة كلها محظورة. استخدم الزر للخروج.</value>
+  </data>
+    <data name="KioskExitApp" xml:space="preserve">
+    <value>الخروج من التطبيق</value>
+  </data>
 </root>

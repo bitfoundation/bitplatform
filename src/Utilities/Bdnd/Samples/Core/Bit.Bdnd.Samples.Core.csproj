@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <!-- The pages every hosting sample (Server, WebAssembly, Auto, MAUI) renders. Nothing in here knows which host it
+         runs in, so running the same pages in each one shows Bdnd dragging in every hosting model. -->
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+        <ProjectReference Include="..\..\Bit.Bdnd\Bit.Bdnd.csproj" />
+    </ItemGroup>
+
+</Project>

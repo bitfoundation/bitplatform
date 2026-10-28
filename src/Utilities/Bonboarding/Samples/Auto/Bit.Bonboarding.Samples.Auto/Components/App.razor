@@ -1,0 +1,36 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#FFFFFF" />
+    <base href="/" />
+    <title>Bonboarding samples (Auto)</title>
+    @* The library's stylesheet first, so the samples' own rules (and an application's) come later in the cascade. *@
+    <link rel="stylesheet" href="_content/Bit.Bonboarding/bit-bonboarding.css" />
+    <link rel="stylesheet" href="_content/Bit.Bonboarding.Samples.Core/app.css" />
+    <link rel="icon" type="image/svg+xml" href="_content/Bit.Bonboarding.Samples.Core/favicon.svg" />
+    <HeadOutlet @rendermode="PageRenderMode" />
+</head>
+
+<body>
+    <Routes @rendermode="PageRenderMode" />
+    <div id="blazor-error-ui" data-nosnippet>
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+    @* No script tag for Bonboarding: the library imports its one small module itself, on demand. *@
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>
+
+@code {
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+
+    // Interactive everywhere but on a page marked [ExcludeFromInteractiveRouting] - the error page, which lives in this
+    // assembly rather than the Core one the router searches.
+    private IComponentRenderMode? PageRenderMode => HttpContext.AcceptsInteractiveRouting() ? InteractiveAuto : null;
+}

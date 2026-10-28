@@ -152,7 +152,7 @@ It carries `context: fork` in its frontmatter, so tools that support forked skil
 - Phase 5 - Validation via build, tests and the `review` skill
 - Checks every request against the optional template features this project did not enable, so they are ported from `bitfoundation/bitplatform` instead of reinvented
 - Proposes the bit libraries this project doesn't use yet, which `AGENTS.md` lists with their MCP servers, when a request falls in their area
-- Delegates to `scaffold-entity` and `bitify-ui` where they apply
+- Delegates to `scaffold-entity` where it applies
 - Checks, alongside phase 1, whether the project is on the newest bit platform release, makes the case for upgrading from the release notes, and remembers a no instead of asking again every session
 
 **Example usage**: `/ai-dlc add a customer feedback feature`
@@ -187,7 +187,7 @@ Everything lives in the one skill file; it brings no scripts or tools of its own
 
 **Canonical file**: `.github/agents/upgrade.agent.md`
 
-**What it does**: Brings a newer bit Boilerplate version into the project. `bit diff` creates the project with the version it came from and with the newer one into one git repository in a temporary folder, so the second commit is exactly what the template changed for a project with this name and these options. The skill carries each of those changes into the codebase, keeping what the team changed, adds the database migrations the changes need, and updates the version `bit.json` and the MCP server configurations record.
+**What it does**: Brings a newer bit Boilerplate version into the project. `bit diff` creates the project with the version it came from and with the newer one into one git repository in bit's own folder in the user's home, so the second commit is exactly what the template changed for a project with this name and these options. The skill carries each of those changes into the codebase, keeping what the team changed, adds the database migrations the changes need, and updates the version `bit.json` and the MCP server configurations record.
 
 **When to use it**: When a newer bit Boilerplate is out and the project should get its fixes, features and dependency updates.
 

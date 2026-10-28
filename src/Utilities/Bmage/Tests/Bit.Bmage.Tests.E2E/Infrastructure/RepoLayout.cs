@@ -13,7 +13,7 @@ public static class RepoLayout
     public static string ServerDirectory() => Path.GetDirectoryName(ServerProject())!;
 
     public static string ServerAssembly(string configuration) =>
-        Path.Combine(ServerDirectory(), "bin", configuration, "net10.0", $"{ServerName}.dll");
+        Path.Combine(ServerDirectory(), "bin", configuration, "net11.0", $"{ServerName}.dll");
 
     /// <summary>The host project of a hosting sample: Server, Wasm or Auto.</summary>
     public static string SampleProject(string sample) => FindUpward(sample == SampleHosts.Server
@@ -21,7 +21,7 @@ public static class RepoLayout
         : Path.Combine("Samples", sample, $"Bit.Bmage.Samples.{sample}", $"Bit.Bmage.Samples.{sample}.csproj"));
 
     public static string SampleAssembly(string sample, string configuration) =>
-        Path.Combine(Path.GetDirectoryName(SampleProject(sample))!, "bin", configuration, "net10.0", $"{Path.GetFileNameWithoutExtension(SampleProject(sample))}.dll");
+        Path.Combine(Path.GetDirectoryName(SampleProject(sample))!, "bin", configuration, "net11.0", $"{Path.GetFileNameWithoutExtension(SampleProject(sample))}.dll");
 
     public static string MauiSampleProject() => FindUpward(Path.Combine("Samples", "MAUI", "Bit.Bmage.Samples.Maui.csproj"));
 

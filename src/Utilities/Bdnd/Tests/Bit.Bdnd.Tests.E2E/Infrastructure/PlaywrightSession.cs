@@ -72,8 +72,8 @@ public static class PlaywrightSession
         {
             playwright.Dispose();
             return Session.Fail(E2EEnvironment.BrowserEngine is "firefox" or "webkit"
-                ? $"{E2EEnvironment.BrowserEngine} could not be launched. Run 'pwsh bin/<configuration>/net10.0/playwright.ps1 install {E2EEnvironment.BrowserEngine}'."
-                : "no Chromium-based browser could be launched. Run 'pwsh bin/<configuration>/net10.0/playwright.ps1 install chromium', or install Chrome or Edge.");
+                ? $"{E2EEnvironment.BrowserEngine} could not be launched. Run 'pwsh bin/<configuration>/net11.0/playwright.ps1 install {E2EEnvironment.BrowserEngine}'."
+                : "no Chromium-based browser could be launched. Run 'pwsh bin/<configuration>/net11.0/playwright.ps1 install chromium', or install Chrome or Edge.");
         }
 
         try

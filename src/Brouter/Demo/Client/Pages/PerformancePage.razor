@@ -84,7 +84,7 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Not-found under static SSR</h3>
     <p class="bb-card-desc">
-        On .NET 10, when Brouter matches nothing during static SSR it calls
+        When Brouter matches nothing during static SSR it calls
         <code>NavigationManager.NotFound()</code>, so the response carries a real HTTP 404 (and
         drives <code>UseStatusCodePagesWithReExecute</code> when configured) instead of a 200 with
         fallback HTML - good for crawlers, CDNs and correctness alike.

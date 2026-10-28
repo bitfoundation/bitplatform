@@ -60,7 +60,9 @@ internal static class BmotionBrowserTiming
         if (config.Type == BmotionTransitionType.Spring) return linearSupported ? BuildLinearEasing(samples) : null;
 
         bool hasKeyword = config.Eases is null && BmEaseFunctions.HasFaithfulCssEasing(config);
-        if (hasKeyword && (preferKeyword || !linearSupported)) return BmEaseFunctions.ToCssString(config);
+        // A staircase can't be sampled: linear() interpolates between the samples, so every jump would
+        // become a ramp one sample wide (tens of milliseconds on screen). steps() is the only exact form.
+        if (hasKeyword && (preferKeyword || !linearSupported || config.StepCount > 0)) return BmEaseFunctions.ToCssString(config);
         // Elastic/bounce have no CSS curve: without linear() the browser can't play them.
         return linearSupported ? BuildLinearEasing(samples) : null;
     }

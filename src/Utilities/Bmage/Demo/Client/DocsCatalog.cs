@@ -38,7 +38,7 @@ public static class SiteInfo
         "export images on the user's device from strongly typed C#, with a full editor component and a " +
         "headless engine. Every sample on this site runs in your browser.";
 
-    public static readonly string[] Badges = ["MIT", "net8.0", "net9.0", "net10.0"];
+    public static readonly string[] Badges = ["MIT", "net10.0", "net11.0"];
 
     /// <summary>Words the search palette suggests when a query finds nothing.</summary>
     public static readonly string[] SearchHints = ["crop", "webp", "exif", "editor", "batch"];

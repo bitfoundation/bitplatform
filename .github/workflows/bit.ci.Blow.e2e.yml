@@ -18,7 +18,7 @@ jobs:
 
   e2e:
     name: Blow E2E (${{ matrix.browser }})
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 60
     # Every engine, not just Chromium: Safari has no context-stroke and scrolls a focused <svg> by its unscaled
     # content, and both broke the demo where Chromium never showed a thing.
@@ -34,7 +34,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -56,7 +56,7 @@ jobs:
       run: dotnet build src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E/Bit.Blow.Tests.E2E.csproj -c Release
 
     - name: Install Playwright ${{ matrix.browser }}
-      run: pwsh src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps ${{ matrix.browser }}
+      run: pwsh src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps ${{ matrix.browser }}
 
     - name: Start the published demo
       run: |

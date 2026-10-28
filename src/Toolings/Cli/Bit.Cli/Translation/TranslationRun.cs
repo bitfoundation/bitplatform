@@ -24,8 +24,7 @@ public sealed class TranslationRun(CliServices cli, Func<ResxTranslatorSettings,
 
         if (configPath is null || File.Exists(configPath) is false)
         {
-            cli.Console.Fail($"No {ResxTranslatorSettings.FileName} in this folder or above it. Run bit translate in a bit Boilerplate project, or pass --config <file>.");
-            return CliApp.ExitUsage;
+            return cli.UsageError("config-missing", $"No {ResxTranslatorSettings.FileName} in this folder or above it. Run bit translate in a bit Boilerplate project, or pass --config <file>.");
         }
 
         var settings = ResxTranslatorSettings.Load(configPath, cli.Environment.Variables);
@@ -43,6 +42,7 @@ public sealed class TranslationRun(CliServices cli, Func<ResxTranslatorSettings,
                 cli.Console.Fail($"{configPath}: {problem}");
             }
 
+            cli.Telemetry.SetTag(TelemetryFields.UsageError, "config-invalid");
             return CliApp.ExitUsage;
         }
 
@@ -104,26 +104,24 @@ public sealed class TranslationRun(CliServices cli, Func<ResxTranslatorSettings,
                 try
                 {
                     var (translations, skipped) = await TranslateAsync(client, item, progress, ct);
-
-                    if (translations.Count > 0)
-                    {
-                        ResxCatalog.Write(item.Pair, translations);
-                    }
-
                     var detail = $"+{translations.Count} key{(translations.Count == 1 ? "" : "s")}";
 
                     return skipped == 0
                         ? StepResult.Succeeded($"Translated {name}", detail)
                         : StepResult.Warning($"Translated {name}", $"{detail}, {skipped} kept out: their placeholders didn't match", "bit translate");
                 }
-                catch (ClientResultException exp)
+                catch (Exception exp) when (LastTry(exp) is ClientResultException { Status: > 0 } answer)
                 {
-                    cli.Telemetry.SetTag(TelemetryFields.HttpStatus, exp.Status);
-                    return StepResult.Failed($"Couldn't translate {name}", $"the model endpoint answered {exp.Status}", "bit translate", resultCode: $"translate.http.{exp.Status}", hint: exp.Message.Split('\n')[0]);
+                    cli.Telemetry.SetTag(TelemetryFields.HttpStatus, answer.Status);
+                    return StepResult.Failed($"Couldn't translate {name}", $"the model endpoint answered {answer.Status}", "bit translate", resultCode: $"translate.http.{answer.Status}", hint: answer.Message.Split('\n')[0]);
                 }
-                catch (HttpRequestException exp)
+                catch (Exception exp) when (LastTry(exp) is ClientResultException or HttpRequestException)
                 {
-                    return StepResult.Failed($"Couldn't translate {name}", "the model endpoint couldn't be reached", "bit translate", resultCode: "translate.network", hint: exp.Message);
+                    return StepResult.Failed($"Couldn't translate {name}", "the model endpoint couldn't be reached", "bit translate", resultCode: "translate.network", hint: LastTry(exp).Message);
+                }
+                catch (Exception exp) when (LastTry(exp) is TaskCanceledException && ct.IsCancellationRequested is false)
+                {
+                    return StepResult.Failed($"Couldn't translate {name}", "the model endpoint didn't answer in time", "bit translate", resultCode: "translate.timeout", hint: LastTry(exp).Message);
                 }
                 catch (InvalidOperationException exp)
                 {
@@ -149,48 +147,59 @@ public sealed class TranslationRun(CliServices cli, Func<ResxTranslatorSettings,
         var batches = item.Missing.Chunk(BatchSize).ToList();
         var skipped = 0;
 
-        for (var index = 0; index < batches.Count; index++)
+        try
         {
-            progress($"batch {index + 1} of {batches.Count}");
-
-            var batch = batches[index];
-            var result = await TranslateBatchAsync(client, item, [.. batch.Select(kvp => kvp.Value)], reminder: false, cancellationToken);
-            var retry = new List<int>();
-
-            for (var i = 0; i < batch.Length; i++)
+            for (var index = 0; index < batches.Count; index++)
             {
-                if (ChatTranslationClient.PlaceholdersMatch(batch[i].Value, result[i]))
-                {
-                    translations[batch[i].Key] = result[i];
-                }
-                else
-                {
-                    retry.Add(i);
-                }
-            }
+                progress($"batch {index + 1} of {batches.Count}");
 
-            if (retry.Count > 0)
-            {
-                progress($"batch {index + 1} of {batches.Count}, retrying {retry.Count} with placeholder problems");
-                var second = await TranslateBatchAsync(client, item, [.. retry.Select(i => batch[i].Value)], reminder: true, cancellationToken);
+                var batch = batches[index];
+                var result = await TranslateBatchAsync(client, item, [.. batch.Select(kvp => kvp.Value)], reminder: false, cancellationToken);
+                var retry = new List<int>();
 
-                for (var r = 0; r < retry.Count; r++)
+                for (var i = 0; i < batch.Length; i++)
                 {
-                    var original = batch[retry[r]];
-
-                    if (ChatTranslationClient.PlaceholdersMatch(original.Value, second[r]))
+                    if (ChatTranslationClient.PlaceholdersMatch(batch[i].Value, result[i]))
                     {
-                        translations[original.Key] = second[r];
+                        translations[batch[i].Key] = result[i];
                     }
                     else
                     {
-                        skipped++;
+                        retry.Add(i);
+                    }
+                }
+
+                if (retry.Count > 0)
+                {
+                    progress($"batch {index + 1} of {batches.Count}, retrying {retry.Count} with placeholder problems");
+                    var second = await TranslateBatchAsync(client, item, [.. retry.Select(i => batch[i].Value)], reminder: true, cancellationToken);
+
+                    for (var r = 0; r < retry.Count; r++)
+                    {
+                        var original = batch[retry[r]];
+
+                        if (ChatTranslationClient.PlaceholdersMatch(original.Value, second[r]))
+                        {
+                            translations[original.Key] = second[r];
+                        }
+                        else
+                        {
+                            skipped++;
+                        }
                     }
                 }
             }
         }
+        finally
+        {
+            if (translations.Count > 0)
+            {
+                ResxCatalog.Write(item.Pair, translations);
+            }
 
-        Interlocked.Add(ref translatedKeys, translations.Count);
+            Interlocked.Add(ref translatedKeys, translations.Count);
+        }
+
         return (translations, skipped);
     }
 
@@ -207,4 +216,6 @@ public sealed class TranslationRun(CliServices cli, Func<ResxTranslatorSettings,
 
         return output.Translations;
     }
+
+    private static Exception LastTry(Exception exception) => exception is AggregateException { InnerExceptions: [.., var last] } ? last : exception;
 }

@@ -91,9 +91,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         _interactive = interactive;
         Session.Platform ??= platform;
         Session.IsInteractive = interactive;
-#if NET9_0_OR_GREATER
         Session.RenderModeName = AssignedRenderMode?.GetType().Name.Replace("RenderMode", "");
-#endif
         if (!_interactive)
         {
             // Prerendering: this session ends with the response, so what it saw is handed to the interactive one.
@@ -133,19 +131,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
 
     private (string? Platform, bool Interactive) ResolveRenderer()
     {
-#if NET9_0_OR_GREATER
         return (RendererInfo.Name, RendererInfo.IsInteractive);
-#else
-        // .NET 8 has no RendererInfo, but the JS runtime each host hands its renderer tells the same story: prerendering
-        // and static SSR get one that refuses every call, and each interactive host has its own.
-        return JS.GetType().Name switch
-        {
-            "UnsupportedJavaScriptRuntime" => ("Static", false),
-            "RemoteJSRuntime" => ("Server", true),
-            "WebViewJSRuntime" => ("WebView", true),
-            _ => (OperatingSystem.IsBrowser() ? "WebAssembly" : null, true),
-        };
-#endif
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -624,7 +610,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         }
 
         // The router handles LocationChanged before this panel and renders the new page right there, so on this path (no
-        // Navigate activity: .NET 8 and 9, or framework instrumentation off) the page's first renders have happened, in
+        // Navigate activity: framework instrumentation off) the page's first renders have happened, in
         // the batch still open now. Dated from that batch the navigation comes before them, as it did; dated now, each
         // page's first render would be put on the page it left (Profiler → Renders per page).
         var startTicks = System.Diagnostics.Stopwatch.GetTimestamp();

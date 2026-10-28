@@ -10,47 +10,79 @@ namespace Bit.Bmotion.Demo.Server.Services;
 /// <para>
 /// It is the reason <c>SimulateBmotionTransition</c> and <c>AnalyzeBmotionAnimation</c> can answer
 /// with numbers instead of adjectives: the engine takes exactly the decisions it takes in a
-/// browser - whether an animation can be handed to the compositor, how a spring is sampled, how
-/// long it keeps ticking - and this fake records them rather than forwarding them to JavaScript.
-/// The alternative would be a second implementation of the physics living in the demo, which is
-/// the one thing guaranteed to drift away from the library it documents.
+/// browser - whether the browser can play an animation, as a two-keyframe timeline or as a
+/// recording, how a spring is sampled, how long it keeps ticking - and this fake records them
+/// rather than forwarding them to JavaScript. The alternative would be a second implementation of
+/// the physics living in the demo, which is the one thing guaranteed to drift away from the
+/// library it documents.
 /// </para>
 /// <para>
-/// <see cref="IsInProcess"/> reports <c>true</c>, which is what the engine reads to decide that a
-/// per-frame loop exists (Blazor WebAssembly). Frames are then advanced by calling the engine's
-/// <c>ComputeFrame</c> directly - see <see cref="BmotionMotionLab"/> - instead of by a real
-/// <c>requestAnimationFrame</c> ticker, so a simulation runs as fast as the CPU allows rather than
-/// in real time.
+/// <see cref="IsInProcess"/> reports <c>true</c> by default, which is what the engine reads to
+/// decide that a per-frame loop exists (Blazor WebAssembly). Frames are then advanced by calling
+/// the engine's <c>ComputeFrame</c> directly - see <see cref="BmotionMotionLab"/> - instead of by a
+/// real <c>requestAnimationFrame</c> ticker, so a simulation runs as fast as the CPU allows rather
+/// than in real time.
 /// </para>
 /// </summary>
 internal sealed class HeadlessBmotionInterop : IBmotionInterop
 {
-    /// <summary>One compositor (Web Animations API) hand-off the engine attempted.</summary>
-    /// <param name="ElementId">The element the engine offloaded.</param>
-    /// <param name="Keyframes">The pre-sampled CSS keyframes, as handed to the browser.</param>
-    /// <param name="Timing">The WAAPI timing object: duration, delay, easing, iterations, direction.</param>
+    /// <summary>One Web Animation the engine handed the browser.</summary>
+    /// <param name="ElementId">The element it plays on.</param>
+    /// <param name="Keyframes">
+    /// The CSS keyframes, as handed to the browser: two for a timeline (one on Blazor Server, where
+    /// the browser starts from what is on screen), and more for a recording - each of those carrying
+    /// its own <c>offset</c>.
+    /// </param>
+    /// <param name="Timing">
+    /// The timing object: duration, delay, easing (the curve itself for a timeline, <c>linear</c>
+    /// for a recording), iterations and direction.
+    /// </param>
     internal sealed record WaapiCall(string ElementId, object Keyframes, object Timing);
 
     private readonly List<WaapiCall> _waapiCalls = [];
     private int _elementSeq;
 
-    /// <summary>Every compositor offload the engine asked for, in order. Empty means it stayed on the frame loop.</summary>
+    /// <summary>Every Web Animation the engine handed the browser, in order. Empty means none: the frame loop played it, or it landed at once.</summary>
     public IReadOnlyList<WaapiCall> WaapiCalls => _waapiCalls;
 
     /// <summary>
-    /// Whether the browser is pretended to support CSS <c>linear()</c> easing. Springs can only be
-    /// offloaded to the compositor when it does, so turning this off is how a simulation asks what
-    /// happens on a browser that lacks it.
+    /// Whether the browser is pretended to support CSS <c>linear()</c> easing. A spring, or a curve
+    /// no CSS keyword describes, plays as a timeline only when it does, so turning this off is how a
+    /// simulation asks what happens on a browser that lacks it.
     /// </summary>
     public bool SupportsLinearEasing { get; init; } = true;
+
+    /// <summary>
+    /// Whether the browser is pretended to support <c>oklab()</c> colours. A colour transition in
+    /// <see cref="BmColorSpace.Oklab"/> plays as a timeline only where it does - the browser then
+    /// mixes it in OKLab itself - and is recorded elsewhere. Every current browser does, so this is
+    /// on unless a simulation asks otherwise.
+    /// </summary>
+    public bool SupportsOklabColor { get; init; } = true;
+
+    /// <summary>
+    /// What the page reports as the computed value of each property the engine has never seen,
+    /// keyed by the engine's camelCase names (<c>opacity</c>, <c>width</c>, <c>backgroundColor</c>,
+    /// <c>--glow</c>).
+    /// <para>
+    /// The engine reads these off the computed style before an animation starts (see
+    /// <see cref="ReadStylesAsync"/>), and whether the browser can play the animation depends on the
+    /// starting value as much as on the target: a length in the same unit at both ends, a filter
+    /// with the same functions. Left unanswered, every such property would start from nothing,
+    /// which the engine can only jump from - and a simulation would report a jump that no page with
+    /// a stylesheet makes.
+    /// </para>
+    /// </summary>
+    public IReadOnlyDictionary<string, string>? ComputedStyles { get; init; }
 
     /// <summary>What <see cref="PrefersReducedMotionAsync"/> answers - the OS accessibility setting.</summary>
     public bool PrefersReducedMotion { get; init; }
 
     /// <summary>
     /// <c>true</c>: the engine believes a synchronous per-frame loop is available, as on Blazor
-    /// WebAssembly. Set it to <c>false</c> to observe the Blazor Server behaviour instead, where
-    /// everything that needs the loop collapses to an instant state change.
+    /// WebAssembly. Set it to <c>false</c> to observe Blazor Server instead, where there is no frame
+    /// loop: the engine hands the browser every animation it can, and only what the frame loop
+    /// alone can play collapses to an instant state change.
     /// </summary>
     public bool IsInProcess { get; init; } = true;
 
@@ -119,14 +151,46 @@ internal sealed class HeadlessBmotionInterop : IBmotionInterop
         string? finalTransform, double originX, double originY, DotNetObjectReference<T>? dotnetRef) where T : class
         => ValueTask.CompletedTask;
 
-    // -- Compositor offload ----------------------------------------------------
+    // -- Reading the page ------------------------------------------------------
+
+    /// <summary>
+    /// Answers from <see cref="ComputedStyles"/>, for the starting values and for the values a
+    /// gesture hands back to the stylesheet alike: there is one stylesheet here, and it gives each
+    /// property the value it lists. A property it does not list goes unanswered, as it would for a
+    /// page whose stylesheet never mentions it.
+    /// </summary>
+    public ValueTask<BmotionStyleRead?> ReadStylesAsync(string elementId, string[] current, string[] stylesheet)
+    {
+        return ValueTask.FromResult<BmotionStyleRead?>(new BmotionStyleRead
+        {
+            Current = Read(current),
+            Stylesheet = Read(stylesheet)
+        });
+
+        Dictionary<string, string> Read(string[] keys)
+        {
+            var values = new Dictionary<string, string>(StringComparer.Ordinal);
+
+            foreach (var key in keys)
+            {
+                if (ComputedStyles?.TryGetValue(key, out var value) is true) values[key] = value;
+            }
+
+            return values;
+        }
+    }
+
+    // -- Browser playback (Web Animations API) ---------------------------------
 
     public ValueTask<bool> SupportsLinearEasingAsync() => ValueTask.FromResult(SupportsLinearEasing);
 
+    public ValueTask<bool> SupportsOklabColorAsync() => ValueTask.FromResult(SupportsOklabColor);
+
     /// <summary>
-    /// Records the hand-off and reports it as played. That the engine called this at all is the
-    /// answer <c>AnalyzeBmotionAnimation</c> is after: an animation the compositor can own plays on
-    /// Blazor Server too, because it needs one async interop call and no frame loop.
+    /// Records the hand-off and reports it as played. That the engine called this at all is half of
+    /// what <c>AnalyzeBmotionAnimation</c> is after: an animation the browser is handed plays on
+    /// Blazor Server too, because it needs one async interop call and no frame loop. The keyframes
+    /// and timing are the other half - they are what tells a timeline from a recording.
     /// </summary>
     public ValueTask<bool> PlayWaapiAnimationAsync(string elementId, int token, object keyframes, object timing)
     {

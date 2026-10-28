@@ -134,7 +134,8 @@ public static partial class BcrdtSetupGuide
                 `BcrdtHub` with a SignalR backplane and connect every circuit to it with `BcrdtSignalRTransportFactory` at an
                 absolute address instead. Pages are prerendered first, and a document opened then belongs to a request that
                 is already over: open it once `RendererInfo.IsInteractive`. A circuit outlives its browser tab by the circuit
-                retention period, so a `CircuitHandler` suspends presence the moment the connection drops.
+                retention period, so `AddBitBcrdtCircuitPresence()` from `Bit.Bcrdt.Server` registers a `CircuitHandler`
+                that suspends presence the moment the connection drops.
                 """,
                 UiChecklist,
                 ["Hosting models", "The five-minute version", "Presence"],
@@ -257,10 +258,9 @@ public static partial class BcrdtSetupGuide
            app.Services.GetRequiredService<BcrdtDocumentHost>() }`.
         5. Add `@using Bit.Bcrdt` and `@using Bit.Bcrdt.Blazor` to `_Imports.razor`.
         6. Open a document with `<BcrdtCollaborationScope DocumentId="..." User="...">`, which opens it, cascades it and
-           releases it - and on .NET 9 and later waits until the page is interactive by itself - or with
+           releases it - and waits until the page is interactive by itself - or with
            `IBcrdtCollaborationService.OpenAsync` paired with `CloseAsync`, and then only once the component
-           is interactive wherever pages are prerendered: `RendererInfo.IsInteractive` on .NET 9 and later,
-           `OnAfterRenderAsync` on .NET 8.
+           is interactive wherever pages are prerendered: `RendererInfo.IsInteractive`.
         7. Derive your own collaborative components from `BcrdtComponentBase` and `Track` what they render, so a change from
            anyone re-renders them, coalesced onto a frame. There is no script tag to add: `BcrdtTextArea` imports its small
            caret module from `_content/Bit.Bcrdt/bit-bcrdt.js` itself.
@@ -403,7 +403,7 @@ public static partial class BcrdtSetupGuide
 
         ```csharp
         using Bit.Bcrdt;
-        using Microsoft.AspNetCore.Components.Server.Circuits;
+        using Bit.Bcrdt.Server;
 
         var builder = WebApplication.CreateBuilder(args);
 
@@ -416,8 +416,10 @@ public static partial class BcrdtSetupGuide
             .UseTransport(documentId => BcrdtInMemoryNetwork.Shared.CreateTransport(documentId))
             .UseStore(new BcrdtFileSystemDocumentStore(Path.Combine(builder.Environment.ContentRootPath, "documents"))));
 
-        // Resolved from each circuit's own scope, so it sees that circuit's documents.
-        builder.Services.AddScoped<CircuitHandler, PresenceCircuitHandler>();
+        // A circuit outlives its tab by the retention period, and would keep the user listed until then. This
+        // registers a CircuitHandler - resolved from each circuit's own scope, so it sees that circuit's documents -
+        // that withdraws them the moment the connection drops, and publishes them again if it comes back.
+        builder.Services.AddBitBcrdtCircuitPresence();
 
         var app = builder.Build();
 
@@ -427,30 +429,6 @@ public static partial class BcrdtSetupGuide
             .AddInteractiveServerRenderMode();
 
         app.Run();
-        ```
-
-        ### `PresenceCircuitHandler.cs`
-
-        ```csharp
-        using Bit.Bcrdt;
-        using Microsoft.AspNetCore.Components.Server.Circuits;
-
-        // A circuit outlives its tab by the retention period, and would keep the user listed until then. This
-        // withdraws them the moment the connection drops, and publishes them again if it comes back.
-        public sealed class PresenceCircuitHandler(IBcrdtCollaborationService collaboration) : CircuitHandler
-        {
-            public override Task OnConnectionDownAsync(Circuit circuit, CancellationToken cancellationToken)
-            {
-                foreach (BcrdtCollaborativeDocument document in collaboration.OpenDocuments) document.Presence.Suspend();
-                return Task.CompletedTask;
-            }
-
-            public override Task OnConnectionUpAsync(Circuit circuit, CancellationToken cancellationToken)
-            {
-                foreach (BcrdtCollaborativeDocument document in collaboration.OpenDocuments) document.Presence.Resume();
-                return Task.CompletedTask;
-            }
-        }
         ```
 
         ### `Components/Pages/Notes.razor`

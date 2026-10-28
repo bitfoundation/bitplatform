@@ -1,0 +1,49 @@
+﻿@page "/"
+
+<PageTitle>Bmotion samples</PageTitle>
+
+<h1>Bmotion samples</h1>
+
+<p>
+    One set of pages hosted unchanged by three Blazor Web Apps - <strong>Server</strong> (Interactive Server),
+    <strong>Wasm</strong> (Interactive WebAssembly) and <strong>Auto</strong> (Interactive Auto), each prerendering
+    first - and by a <strong>MAUI</strong> Blazor Hybrid app for Android, iOS, macOS and Windows. The animations are the
+    same in each: the engine's maths runs in C# wherever the components do, and the browser plays what it hands over.
+    What the host changes is whether the engine can also step an animation itself, once a frame.
+</p>
+
+<section>
+    <h2>This host</h2>
+    <HostFacts />
+</section>
+
+<section>
+    <h2>The samples</h2>
+    <p class="muted">
+        These cards came in one after another: a variant cascade, which a web host serves already playing as CSS
+        (<code>BmPrerenderMode.Animate</code>), before any runtime has started. Hover or press one; Hide and Show play
+        the cascade again from C#, and a hidden list is <code>inert</code>, so no tile can be pressed or focused while it
+        cannot be seen. <strong>Slow motion</strong> in the bar above plays the transitions of every
+        <code>&lt;Bmotion&gt;</code> on these pages at a quarter of their speed; what <code>BmotionAnimateService</code>
+        starts on the Programmatic page keeps its own.
+    </p>
+
+    <Bmotion Variants="_list" InitialState="hidden" State="@(_shown ? "visible" : "hidden")"
+             Transition="@(_shown ? ShowTiles : HideTiles)">
+        <ul class="tiles" inert="@(_shown is false)">
+            @foreach (var sample in _samples)
+            {
+                <Bmotion @key="sample.Href" Variants="_tile" WhileHover="Bm.To(y: -4)" WhileTap="Bm.To(scale: 0.97)">
+                    <li class="tile">
+                        <NavLink href="@sample.Href">@sample.Title</NavLink>
+                        <span>@sample.Summary</span>
+                    </li>
+                </Bmotion>
+            }
+        </ul>
+    </Bmotion>
+
+    <div class="toolbar">
+        <button type="button" id="toggle-tiles" @onclick="() => _shown = !_shown">@(_shown ? "Hide" : "Show")</button>
+    </div>
+</section>

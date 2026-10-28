@@ -42,23 +42,22 @@ public sealed partial class ProjectContext
 
     public string? SeedPassword { get; set; }
 
-    public string TargetFrameworkVersion
+    public string TargetFrameworkVersion => ReadTargetFramework(Directory, Name) ?? $"net{Environment.Version.Major}.0";
+
+    public static string? ReadTargetFramework(string directory, string name)
     {
-        get
+        var core = Path.Combine(directory, "src", "Client", $"{name}.Client.Core", $"{name}.Client.Core.csproj");
+
+        try
         {
-            var core = Path.Combine(Directory, "src", "Client", $"{Name}.Client.Core", $"{Name}.Client.Core.csproj");
-
-            try
-            {
-                if (File.Exists(core) && TargetFrameworkRegex().Match(File.ReadAllText(core)) is { Success: true } match)
-                    return match.Groups["tfm"].Value;
-            }
-            catch (IOException)
-            {
-            }
-
-            return $"net{Environment.Version.Major}.0";
+            if (File.Exists(core) && TargetFrameworkRegex().Match(File.ReadAllText(core)) is { Success: true } match)
+                return match.Groups["tfm"].Value;
         }
+        catch (IOException)
+        {
+        }
+
+        return null;
     }
 
     public string? PackageVersion(string packageId)
@@ -90,6 +89,20 @@ public sealed partial class ProjectContext
 
         var solution = System.IO.Directory.EnumerateFiles(directory, "*.slnx").FirstOrDefault();
         return solution is null ? null : Path.GetFileNameWithoutExtension(solution);
+    }
+
+    public static string? ReadAppId(string directory, string name)
+    {
+        var maui = Path.Combine(directory, Templates.Platforms.MauiProject(name));
+
+        try
+        {
+            return File.Exists(maui) && AppIdRegex().Match(File.ReadAllText(maui)) is { Success: true } match ? match.Groups["id"].Value.Trim() : null;
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
     }
 
     private string? ReadDatabaseFromProject()
@@ -158,6 +171,9 @@ public sealed partial class ProjectContext
 
     [GeneratedRegex(@"<TargetFramework>(?<tfm>net\d+\.\d+)</TargetFramework>")]
     private static partial Regex TargetFrameworkRegex();
+
+    [GeneratedRegex(@"<ApplicationId>(?<id>[^<]*)</ApplicationId>")]
+    private static partial Regex AppIdRegex();
 
     [GeneratedRegex(@"<WasmBuildNative[^>]*>\s*true\s*</WasmBuildNative>", RegexOptions.IgnoreCase)]
     private static partial Regex NativeWebAssemblyRegex();

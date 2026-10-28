@@ -6,9 +6,9 @@
 /// the form to reach for - <c>BitThemeName.MaterialDark</c> next to
 /// <see cref="BitThemeName.FluentDark"/>. This type is what those members are built from, and it
 /// stays public for a consumer that cannot read them: extension members need C# 14 on the READING
-/// side too, which a <c>net8.0</c> or <c>net9.0</c> app - the two other frameworks this package
-/// targets - does not compile at by default. See <see cref="BitExtraThemePresets"/> for the whole of
-/// that story and for the stylesheet each preset requires.
+/// side too, which an app that lowers its <c>LangVersion</c> below 14 does not compile at. See
+/// <see cref="BitExtraThemePresets"/> for the whole of that story and for the stylesheet each preset
+/// requires.
 /// </summary>
 /// <remarks>
 /// Each value is built through <see cref="BitThemeName.Custom(string)"/>, so it carries the same

@@ -117,10 +117,11 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
     private async Task SwitchToTenant(IPage page, string tenantName)
     {
         await page.GoToInApp(PageUrls.ManageMyTenants);
-        await Expect(page.GetByText(tenantName).First).ToBeVisibleAsync();
 
-        var cardSwitch = page.Locator(".tenant-card", new() { HasText = tenantName })
-            .GetByRole(AriaRole.Button, new() { Name = AppStrings.Switch });
+        var card = page.Locator(".tenant-card", new() { Has = page.GetByText(tenantName, new() { Exact = true }) });
+        await Expect(card.First).ToBeVisibleAsync();
+
+        var cardSwitch = card.GetByRole(AriaRole.Button, new() { Name = AppStrings.Switch });
 
         if (await cardSwitch.CountAsync() > 0)
         {

@@ -39,7 +39,7 @@ public static class SiteInfo
         "why a component rendered, a timeline, state, forms, routing, network, JS interop, errors, DI and circuit diagnostics. " +
         "This site is a Blazor app with BevTools switched on - press Ctrl+Shift+D to open it.";
 
-    public static readonly string[] Badges = ["MIT", "net8.0", "net9.0", "net10.0"];
+    public static readonly string[] Badges = ["MIT", "net10.0", "net11.0"];
 
     /// <summary>Words the search palette suggests when a query finds nothing.</summary>
     public static readonly string[] SearchHints = ["render", "state", "network", "routing", "extension"];

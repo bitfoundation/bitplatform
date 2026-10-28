@@ -355,8 +355,8 @@ internal static class BlazorReflection
 
     /// <summary>
     /// The render mode the renderer assigned to a component (<c>@rendermode</c> on it or on an ancestor's component
-    /// frame, or <c>[RenderMode*]</c> on its type). <c>ComponentBase.AssignedRenderMode</c> reads the same on .NET 9,
-    /// but it is protected; this works on every version and for components that do not derive from ComponentBase.
+    /// frame, or <c>[RenderMode*]</c> on its type). <c>ComponentBase.AssignedRenderMode</c> reads the same,
+    /// but it is protected; this also works for components that do not derive from ComponentBase.
     /// </summary>
     public static IComponentRenderMode? AssignedRenderMode(Renderer renderer, IComponent component)
     {
@@ -496,18 +496,13 @@ internal static class BlazorReflection
     }
 
     /// <summary>
-    /// The renderer's name and interactivity from <c>ComponentBase.RendererInfo</c>, which .NET 9 introduced; null on
-    /// .NET 8, where the property does not exist and the panel infers both from its JS runtime instead.
+    /// The renderer's name and interactivity from <c>ComponentBase.RendererInfo</c>; null when it cannot be read.
     /// </summary>
     public static (string Name, bool IsInteractive)? ResolveRendererInfo(ComponentBase component)
     {
         try
         {
-#if NET9_0_OR_GREATER
             return RendererInfoProperty?.GetValue(component) is RendererInfo info ? (info.Name, info.IsInteractive) : null;
-#else
-            return null;
-#endif
         }
         catch
         {

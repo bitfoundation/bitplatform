@@ -33,38 +33,43 @@ public sealed partial class NewWorkflow(CliServices cli)
         foreach (var (option, value) in request.TemplateValues)
         {
             if (selection.Set(option, value) is { } error)
-                return UsageError(error);
+                return cli.UsageError("template-option-invalid", error);
         }
 
         var name = request.Name;
 
         if (name is null)
-            return UsageError($"Pass the project name: bit new <name>. {CreateProjectPage} builds the whole command.");
+            return cli.UsageError("name-missing", $"Pass the project name: bit new <name>. {CreateProjectPage} builds the whole command.");
 
-        if (ProjectName.Validate(name) is { } nameError)
-            return UsageError($"{nameError} Try: bit new {ProjectName.Suggest(name)}");
+        var typeNames = request.TemplatePackage is null ? TypeNames.Template : TypeNames.FromPackage(Path.GetFullPath(request.TemplatePackage, cli.Environment.CurrentDirectory));
+
+        if (ProjectName.Validate(name, typeNames) is { } nameError)
+            return cli.UsageError("name-invalid", $"{nameError} Try: bit new {ProjectName.Suggest(name, typeNames)}");
 
         if (request.GitHubRepo && string.Equals(selection["pipeline"], "GitHub", StringComparison.OrdinalIgnoreCase) is false)
-            return UsageError("--github-repo needs the GitHub pipeline (--pipeline GitHub).");
+            return cli.UsageError("github-repo-needs-github", "--github-repo needs the GitHub pipeline (--pipeline GitHub).");
 
         if (request.GitHubRepo && request.NoGit)
-            return UsageError("--github-repo pushes the project's git repository, so it can't go with --no-git.");
+            return cli.UsageError("github-repo-no-git", "--github-repo pushes the project's git repository, so it can't go with --no-git.");
 
         var directory = Path.GetFullPath(request.Output ?? name, cli.Environment.CurrentDirectory);
 
         if (Directory.Exists(directory) && Directory.EnumerateFileSystemEntries(directory).Any())
-            return UsageError($"{directory} already exists and isn't empty. Pick another name, or a folder with -o.");
+            return cli.UsageError("folder-not-empty", $"{directory} already exists and isn't empty. Pick another name, or a folder with -o.");
 
         var (platforms, platformError) = SharedOptions.ParsePlatforms(request.Platforms, cli.Environment.Os);
 
         if (platformError is not null)
-            return UsageError(platformError);
+            return cli.UsageError("platforms-invalid", platformError);
+
+        if (Platforms.BuildsSolution(platforms) && ProjectName.ValidateAppId(name) is { } appIdError)
+            return cli.UsageError("app-id-invalid", appIdError);
 
         if (request.PropertyError is not null)
-            return UsageError(request.PropertyError);
+            return cli.UsageError("properties-invalid", request.PropertyError);
 
         var ide = request.NoOpen ? IdeLocator.None : request.Ide;
-        var requirements = request.TemplatePackage is null ? TemplateRequirements.Embedded : TemplateRequirements.FromPackage(Path.GetFullPath(request.TemplatePackage, cli.Environment.CurrentDirectory));
+        var requirements = (request.TemplatePackage is null ? TemplateRequirements.Embedded : TemplateRequirements.FromPackage(Path.GetFullPath(request.TemplatePackage, cli.Environment.CurrentDirectory))).For(selection);
         var needs = new ToolNeeds { Aspire = selection.Aspire, Containers = selection.AspireContainers(), ContainersRequired = selection.NeedsContainers, NativeWebAssembly = selection.IsTrue("offlineDb"), GitHubRepo = request.GitHubRepo, Platforms = platforms, Ide = ide, Sdk = requirements.Sdk, NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
         var hardware = request.NoSetup ? null : ProbeHardwareAsync(cli, directory, cancellationToken);
         var selectedTools = request.NoTools ? [] : await ChooseToolsAsync(cli, needs, request.Tools, request.ToolsGiven, interactive, hardware, cancellationToken);
@@ -82,9 +87,10 @@ public sealed partial class NewWorkflow(CliServices cli)
         }
 
         var context = new ProjectContext { Name = name, Directory = directory, Platforms = platforms, Template = selection, BuildProperties = request.Properties };
+        var administrator = await AdministratorNeeds.FindAsync(cli, selectedTools, needs, request.NoSetup is false && request.NoWorkloads is false, cancellationToken);
 
         TagTelemetry(selection, platforms, selectedTools, ide, request);
-        WritePlan(context, selection, selectedTools, ide, request);
+        WritePlan(context, selection, selectedTools, ide, request, administrator);
 
         if (request.DryRun)
         {
@@ -105,25 +111,35 @@ public sealed partial class NewWorkflow(CliServices cli)
         var stopwatch = Stopwatch.StartNew();
         var steps = new StepRunner(cli);
         var projectSteps = new ProjectSteps(cli, context);
+        bool sdkReady;
 
-        if (selectedTools.Count > 0)
+        await AdministratorNeeds.StartAsync(cli, administrator, cancellationToken);
+
+        try
         {
-            await new ToolInstaller(cli, steps).InstallAsync(selectedTools, CreateToolContext(cli, needs), cancellationToken);
+            if (selectedTools.Count > 0)
+            {
+                await new ToolInstaller(cli, steps).InstallAsync(selectedTools, CreateToolContext(cli, needs), cancellationToken);
+            }
+
+            await CreateAsync(steps, context, selection, request, cancellationToken);
+
+            if (request.NoCertificate is false)
+            {
+                await RunProjectStepAsync(steps, context, "certificate", "Creating a unique app certificate", projectSteps.AppCertificateAsync, cancellationToken);
+            }
+
+            if (request.NoGit is false)
+            {
+                await RunProjectStepAsync(steps, context, "git", "Initializing git", projectSteps.GitAsync, cancellationToken);
+            }
+
+            sdkReady = await RunSetupStepsAsync(cli, steps, context, projectSteps, request.NoWorkloads, request.NoRestore, request.NoBuild, request.NoBrowsers, cancellationToken);
         }
-
-        await CreateAsync(steps, context, selection, request, cancellationToken);
-
-        if (request.NoCertificate is false)
+        finally
         {
-            await RunProjectStepAsync(steps, context, "certificate", "Creating a unique app certificate", projectSteps.AppCertificateAsync, cancellationToken);
+            await AdministratorNeeds.EndAsync(cli);
         }
-
-        if (request.NoGit is false)
-        {
-            await RunProjectStepAsync(steps, context, "git", "Initializing git", projectSteps.GitAsync, cancellationToken);
-        }
-
-        var sdkReady = await RunSetupStepsAsync(cli, steps, context, projectSteps, request.NoWorkloads, request.NoRestore, request.NoBuild, request.NoBrowsers, cancellationToken);
 
         if (sdkReady is false)
         {
@@ -189,13 +205,18 @@ public sealed partial class NewWorkflow(CliServices cli)
 
         if (steps.Reports.LastOrDefault() is { Id: "sdk", Result.Status: StepStatus.Failed })
         {
-            steps.Add("setup", StepResult.Skipped("Skipped build tools, restore and build", "they need the project's .NET SDK"));
+            steps.Add("setup", StepResult.Skipped($"Skipped {Platforms.BuildSupport(context.Platforms)}, restore and build", "they need the project's .NET SDK"));
             return false;
+        }
+
+        if (cli.Environment.IsCI is false && Directory.Exists(context.AppHostDirectory))
+        {
+            await RunProjectStepAsync(steps, context, "container-runtime", "Checking the container runtime", projectSteps.ContainerRuntimeAsync, cancellationToken);
         }
 
         if (noWorkloads is false)
         {
-            await RunProjectStepAsync(steps, context, "workloads", "Installing build tools", projectSteps.WorkloadsAsync, cancellationToken);
+            await RunProjectStepAsync(steps, context, "workloads", $"Installing {Platforms.BuildSupport(context.Platforms)}", projectSteps.WorkloadsAsync, cancellationToken);
 
             if (context.BuildsSolution)
             {
@@ -442,7 +463,7 @@ public sealed partial class NewWorkflow(CliServices cli)
         cli.Telemetry.SetTag(TelemetryFields.TemplateVersion, request.TemplatePackage is null ? request.TemplateVersion ?? BuildInfo.Version : "local");
     }
 
-    private void WritePlan(ProjectContext context, TemplateSelection selection, IReadOnlyList<ToolCheck> tools, string ide, NewRequest request)
+    private void WritePlan(ProjectContext context, TemplateSelection selection, IReadOnlyList<ToolCheck> tools, string ide, NewRequest request, IReadOnlyList<string> administrator)
     {
         var grid = new Grid().AddColumn(new GridColumn().NoWrap().PadRight(2)).AddColumn();
 
@@ -465,7 +486,8 @@ public sealed partial class NewWorkflow(CliServices cli)
         if (request.NoCertificate is false) stepsList.Add("unique app certificate");
         if (request.NoGit is false) stepsList.Add("git with develop and main");
         stepsList.Add(".NET SDK check");
-        if (request.NoWorkloads is false) stepsList.Add("build tools");
+        if (selection.Aspire && cli.Environment.IsCI is false) stepsList.Add("container runtime for Aspire");
+        if (request.NoWorkloads is false) stepsList.Add(Platforms.BuildSupport(context.Platforms));
         if (cli.Environment.IsMacOS && context.BuildsSolution) stepsList.Add("Xcode check");
         if (request.NoRestore is false) stepsList.Add("restore");
         if (request.NoBuild is false) stepsList.Add("build");
@@ -482,24 +504,25 @@ public sealed partial class NewWorkflow(CliServices cli)
         cli.Console.Out.WriteLine();
         cli.Console.Out.Write(new Panel(grid).Header("[bold]bit new[/]").Border(BoxBorder.Rounded).BorderStyle(new Style(Color.Grey)).Padding(1, 0, 1, 0));
 
-        var adminTools = tools.Where(t => t.Action?.Elevation is Elevation.Admin).Select(t => t.Tool.Name).ToList();
+        WriteAdministratorNote(cli, tools, administrator);
+        cli.Console.Out.WriteLine();
+    }
 
-        if (adminTools.Count > 0 && cli.Environment.IsElevated is false)
+    public static void WriteAdministratorNote(CliServices cli, IReadOnlyList<ToolCheck> tools, IReadOnlyList<string> administrator)
+    {
+        IReadOnlyList<string> needing = administrator.Count > 0 || cli.Environment.IsElevated
+            ? administrator
+            : [.. tools.Where(t => t.Action?.Elevation is Elevation.Admin).Select(t => t.Tool.Name)];
+
+        if (needing.Count > 0)
         {
-            cli.Console.Out.MarkupLine($"[yellow]{cli.Console.WarnSymbol}[/] Windows will ask once for administrator permission (UAC), for: {Markup.Escape(string.Join(", ", adminTools))}.");
+            cli.Console.Out.MarkupLine($"[yellow]{cli.Console.WarnSymbol}[/] Windows will ask once for administrator permission (UAC), for: {Markup.Escape(string.Join(", ", needing))}.");
         }
 
         if (tools.Any(t => t.Action?.Elevation is Elevation.Sudo) && cli.Environment.IsElevated is false)
         {
             cli.Console.Out.MarkupLine($"[yellow]{cli.Console.WarnSymbol}[/] Some installs run with sudo; you'll be asked for your password once.");
         }
-
-        if (cli.Environment.IsWindows && request.NoWorkloads is false)
-        {
-            cli.Console.Out.MarkupLine("[grey]Installing the build tools can show a Windows permission prompt too.[/]");
-        }
-
-        cli.Console.Out.WriteLine();
     }
 
     private static void WriteSummary(CliServices cli, StepRunner steps, ProjectContext context, TemplateSelection selection, TimeSpan elapsed, bool setupSkipped)
@@ -561,12 +584,6 @@ public sealed partial class NewWorkflow(CliServices cli)
         }
 
         cli.Console.Out.WriteLine();
-    }
-
-    private int UsageError(string message)
-    {
-        cli.Console.Fail(message);
-        return CliApp.ExitUsage;
     }
 
     public static string? ReadSeedPassword(string readme) => SeedPasswordRegex().Match(readme) is { Success: true } match ? match.Groups["password"].Value : null;

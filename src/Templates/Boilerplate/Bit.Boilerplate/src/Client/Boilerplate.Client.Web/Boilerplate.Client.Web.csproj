@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net11.0</TargetFramework>
         <!--If you don't need to use the time zone and your app is in WASM format, you can reduce the output size of the app by disabling the time zone.-->
         <InvariantTimezone>false</InvariantTimezone>
         <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
@@ -54,6 +54,18 @@
     <ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' AND '$(PublishAot)' != 'true' ">
         <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.wasm" />
         <BlazorWebAssemblyLazyLoad Condition=" '$(Environment)' != 'Development' " Include="Bit.BevTools.wasm" />
+        <!--#if (signalR == true)-->
+        <BlazorWebAssemblyLazyLoad Include="Microsoft.AspNetCore.SignalR.Client.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Microsoft.AspNetCore.SignalR.Common.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Microsoft.AspNetCore.SignalR.Protocols.Json.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Microsoft.AspNetCore.Http.Connections.Client.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Microsoft.AspNetCore.Http.Connections.Common.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Microsoft.AspNetCore.Connections.Abstractions.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Microsoft.Extensions.Features.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Net.WebSockets.Client.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Net.WebSockets.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Net.ServerSentEvents.wasm" />
+        <!--#endif-->
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" BeforeTargets="ResolveScopedCssInputs" Condition=" '$(DesignTimeBuild)' != 'true' ">

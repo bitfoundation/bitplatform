@@ -3,14 +3,14 @@
 Create [bit platform](https://bitplatform.dev) projects that are ready to run on Windows, macOS and Linux, translate `.resx` files with an LLM, decode stack traces minified by Bit.Minifier, and write the profiles that compile Blazor WebAssembly apps ahead of time.
 
 ```bash
-dotnet tool install --global Bit.Cli --version 10.7.0
+dotnet tool install --global Bit.Cli --version 11.0.0-pre-15
 bit new MyApp
 ```
 
 Or run it without installing anything:
 
 ```bash
-dnx Bit.Cli --version 10.7.0 -- new MyApp
+dnx Bit.Cli --version 11.0.0-pre-15 -- new MyApp
 ```
 
 It needs a .NET 10 SDK or later. `dnx` asks once before it downloads the package.
@@ -19,22 +19,22 @@ It needs a .NET 10 SDK or later. `dnx` asks once before it downloads the package
 
 `bit new` creates a project from [bit Boilerplate](https://bitplatform.dev/templates) and gets it ready, so the first run works:
 
-1. Takes the project name and options from its arguments. The [create project page](https://bitplatform.dev/templates/create-project) builds the whole command. When a newer bit is out, the run continues with it, see [Staying up to date](#staying-up-to-date).
-2. Checks this machine, lists what the project needs and is missing, and installs what you tick: the .NET SDK the template's `global.json` pins, nuget.org as a package source when it's missing or disabled, Node.js, a container runtime that is free for commercial use (Podman on Windows, Colima with the docker CLI on macOS, Docker Engine on Linux; a Docker you already have is used as it is), WSL and the Windows Virtual Machine Platform that Podman runs on, Git, the Aspire CLI, the HTTPS development certificate, VS Code, the GitHub CLI when you ask for a GitHub repository, Windows long paths, and for native apps the Windows Hypervisor Platform the Android emulator uses and Windows developer mode, plus Python 3 on Linux when the offline database's native WebAssembly build needs it. Things already installed aren't shown, and neither is anything that doesn't apply to your operating system. A project that runs without its containers, such as one with SQLite and no Redis, still gets them, but a restart they ask for is a note, not a warning. The development certificate is trusted first, because Windows and macOS ask you to confirm it, so once that and the administrator prompt are answered you can leave it to finish. The versions come from the project: the .NET SDK from `global.json`, Node.js from `engines.node` in Client.Core's `package.json`, and the Aspire CLI from the AppHost's Aspire version, so an older Aspire CLI is updated to it. When nvm, fnm or Volta manages Node.js, Node.js is installed or updated through it, so the version it picks is the one that runs. On macOS with a native app, it also checks that Xcode is the one the project's .NET for iOS asks for.
+1. Takes the project name and options from its arguments. The [create project page](https://bitplatform.dev/templates/create-project) builds the whole command. A name that is also the name of a type in bit Boilerplate's code, like `App` or `Program`, is refused, because its namespace would hide that type and the project wouldn't build. When a newer bit is out, the run continues with it, see [Staying up to date](#staying-up-to-date).
+2. Checks this machine, lists what the project needs and is missing, and installs what you tick: the .NET SDK the template's `global.json` pins, nuget.org as a package source when it's missing or disabled, Node.js, a container runtime that is free for commercial use (Podman on Windows, Colima with the docker CLI on macOS, Docker Engine on Linux; a Docker you already have is used as it is), WSL and the Windows Virtual Machine Platform that Podman runs on, Git, the Aspire CLI, the HTTPS development certificate, VS Code, the GitHub CLI when you ask for a GitHub repository, Windows long paths, and for native apps the Windows Hypervisor Platform the Android emulator uses and Windows developer mode, plus Python 3 on Linux when the offline database's native WebAssembly build needs it. Things already installed aren't shown, and neither is anything that doesn't apply to your operating system. A project that runs without its containers, such as one with SQLite and no Redis, still gets them, but a restart they ask for is a note, not a warning. The development certificate is trusted first, because Windows and macOS ask you to confirm it, so once that and the administrator prompt are answered you can leave it to finish. On Windows that one prompt, right after the plan, also covers the build support and the Android SDK when their folders need administrator rights. The versions come from the project: the .NET SDK from `global.json`, Node.js from `engines.node` in Client.Core's `package.json`, and the Aspire CLI from the AppHost's Aspire version, so an older Aspire CLI is updated to it. When nvm, fnm or Volta manages Node.js, Node.js is installed or updated through it, so the version it picks is the one that runs. On macOS with a native app, it also checks that Xcode is the one the project's .NET for iOS asks for.
 3. Warns, only when it's sure, about hardware that makes development slow: virtualization turned off in the BIOS or UEFI while the project's containers or the Android emulator need it, less than 15 GB of memory, or a project drive that is a hard disk rather than an SSD. Drives are judged only when they're internal and on real hardware; USB drives, virtual disks and virtual machines are left alone.
 4. Creates the project, with a development certificate of its own, and keeps only its `.slnx`: the `.sln` the template also ships for older Visual Studio versions is removed.
 5. Initializes git with `develop` and `main`, and commits. When git doesn't know your name yet, it commits as your user name and `<user name>@git.com`, set on this repository only. On Windows it also turns on git's own long path support (`core.longpaths`), which Windows long paths don't cover.
-6. Checks that `dotnet` picks an SDK the project's `global.json` accepts; when it doesn't, the steps that need one are skipped with a single note instead of failing one by one. Then installs the build tools the chosen platforms need (.NET workloads), restores NuGet packages, and builds, which also generates the CSS and JS. With only the web app it builds `Web.slnf`; once any native app is picked it builds the whole `.slnx`, every app the MAUI project targets on this OS included, so it also installs the MAUI build tools and the Android SDK. When the build fails with Razor errors, it restarts the C# compiler server and builds once more: a compiler server that has gone bad reports Razor errors in files that are fine, and keeps doing so for every build until it restarts. Then it installs the Chromium that Playwright runs the UI tests with.
+6. Checks that `dotnet` picks an SDK the project's `global.json` accepts; when it doesn't, the steps that need one are skipped with a single note instead of failing one by one. With Aspire, it records in the AppHost's user secrets whether Docker or Podman runs the containers, whichever answers, since Aspire would otherwise pick again on every run and prefer a Docker Desktop that has hung over the Podman the containers are on. Then installs the build support the chosen platforms need (.NET workloads: WebAssembly, and the native apps'), restores NuGet packages, and builds, which also generates the CSS and JS. With only the web app it builds `Web.slnf`; once any native app is picked it builds the whole `.slnx`, every app the MAUI project targets on this OS included, so it also installs their build support and the Android SDK. When the build fails with Razor errors, it restarts the C# compiler server and builds once more: a compiler server that has gone bad reports Razor errors in files that are fine, and keeps doing so for every build until it restarts. Then it installs the Chromium that Playwright runs the UI tests with.
 7. Runs `dotnet format`, and commits that on its own.
 8. Adds the `Initial` EF Core migration, and commits it on its own. The app applies migrations when it starts.
 9. With `--github-repo`, signs you in to GitHub when needed: it shows the one-time code, opens GitHub's device page in your browser, and Esc skips the sign-in and the repository if it gets stuck. Then it creates a private repository named after the project, pushes `develop` and `main` to it, and makes `develop` its default branch.
 10. Marks the folder as trusted for VS Code, Claude Code, Copilot CLI, Codex and Gemini CLI, so the project's tasks and MCP servers work without prompts. That works even when VS Code was just installed and has never run.
-11. Installs the VS Code extensions the project recommends, like the C# extension and Claude Code. C# Dev Kit and the .NET MAUI extension stay recommended, so VS Code offers them, but bit doesn't install them: they come with Visual Studio's license, which is free for teams of up to five. Copilot is built into VS Code, so it isn't one of them. bit checks in VS Code that each one is really there afterwards, tries the missing ones once more, and names any it couldn't install.
+11. Installs the VS Code extensions the project recommends, like the C# extension and Claude Code. Copilot is built into VS Code, so it isn't one of them. bit checks in VS Code that each one is really there afterwards, tries the missing ones once more, and names any it couldn't install.
 12. Starts the project: with Aspire, `aspire start`; without it, `dotnet run` of Server.Web (and of Server.Api when the API is standalone). It waits until the servers are healthy, comes last so everything else is ready however long it takes, and while it waits, shows which resources are still starting or unhealthy, and stops waiting as soon as one fails to start. It asks `aspire doctor` first whether Aspire can use Docker or Podman. Without one, a project whose servers wait for a container (SQL Server, PostgreSQL, MySQL or Redis) isn't started, with why and how to fix it; any other project starts without its containers, so only Keycloak, Mailpit and the like are missing.
 13. Opens the project in VS Code, or the IDE you pick. All that's left is signing in to Claude or Copilot.
 14. Opens the Aspire dashboard and then the app in your browser, and keeps the project running while the terminal you ran bit in is open. Close it, or press Ctrl+C, to stop the project. Without a terminal, such as under a coding agent or in a dev container, it only starts the project once with Aspire, so the container images are pulled, and stops it; CI starts nothing.
 
-A step that fails doesn't stop the rest: every step runs, and the summary lists the commands that finish whatever didn't work. The first run takes a few minutes, mostly build tools and the first build.
+A step that fails doesn't stop the rest: every step runs, and the summary lists the commands that finish whatever didn't work. The first run takes a few minutes, mostly build support and the first build.
 
 ```bash
 bit new Contoso.Shop
@@ -49,6 +49,7 @@ Every option of the bit Boilerplate template works the same way:
 
 | Option | Values | Default |
 |---|---|---|
+| `--framework` | `net10.0`, `net11.0` | `net10.0` |
 | `--database` | `Sqlite`, `SqlServer`, `PostgreSQL`, `MySql`, `Other` | `Sqlite` |
 | `--filesStorage` | `Local`, `S3`, `AzureBlobStorage`, `Other` | `Local` |
 | `--api` | `Integrated`, `Standalone` | `Integrated` |
@@ -61,7 +62,7 @@ Every option of the bit Boilerplate template works the same way:
 | `--notification` | `true`, `false` | `true` |
 | `--cloudflare` | `true`, `false` | `true` |
 | `--redis` | `true`, `false` | `false` |
-| `--signalR` | `true`, `false` | `false` |
+| `--signalR` | `true`, `false` | `true` |
 | `--offlineDb` | `true`, `false` | `false` |
 | `--sentry` | `true`, `false` | `false` |
 | `--appInsights` | `true`, `false` | `false` |
@@ -77,7 +78,7 @@ And these of its own:
 | Option | What it does |
 |---|---|
 | `-o, --output <dir>` | Create the project there. Default: `./<name>`. |
-| `--platforms web,android,ios,macos,windows` | Platforms to set up and build on this machine now. Every project has all of them; the web app is always set up. Any native app means building the whole solution, which adds several GB of build tools and minutes of build, so it can wait for `bit setup`. iOS and macOS build on Windows and on a Mac, Windows builds on Windows, and Linux builds web and Android. Running the iOS app from Windows needs a Mac on the network, and the macOS app runs on macOS. |
+| `--platforms web,android,ios,macos,windows` | Platforms to set up and build on this machine now. Every project has all of them; the web app is always set up. Any native app means building the whole solution, which adds several GB of build support and minutes of build, so it can wait for `bit setup`. iOS and macOS build on Windows and on a Mac, Windows builds on Windows, and Linux builds web and Android. Running the iOS app from Windows needs a Mac on the network, and the macOS app runs on macOS. |
 | `--tools node,docker,...` | Tools to install when missing. Default: the ones the project needs. `none` installs nothing. |
 | `--ide code\|vs\|rider\|none` | Open the project in this IDE. Default: VS Code; `none` in CI. bit installs and sets up VS Code only; Visual Studio and Rider are opened when they're already installed. |
 | `--template-version <version>` | The bit Boilerplate version. Default: the CLI's own version. |
@@ -100,7 +101,7 @@ bit setup
 bit setup --platforms android
 ```
 
-It installs missing tools, build tools and packages, builds, installs Playwright's Chromium for the UI tests, installs the VS Code extensions the project recommends when VS Code is installed, and starts the project the way `bit new` does.
+With a native platform, it first checks that the app id in Client.Maui's project file is one the native apps can have. It installs missing tools, build support and packages, builds, installs Playwright's Chromium for the UI tests, installs the VS Code extensions the project recommends when VS Code is installed, and starts the project the way `bit new` does.
 
 ## bit diff
 
@@ -112,11 +113,12 @@ bit diff 10.6.2 10.7.0
 bit diff --template-package ../bitplatform/src/Templates/Boilerplate/Bit.Boilerplate
 ```
 
-- It creates the project with each version, the old one first, into one git repository in the temp folder, so the second commit is exactly the upgrade, and writes it as `bit-diff.patch` in that repository too. Your project isn't touched.
+- It creates the project with each version, the old one first, into one git repository in your home folder, so the second commit is exactly the upgrade, and writes it as `bit-diff.patch` in that repository too. Your project isn't touched.
 - In a project, it takes the name, the version and the options from the project's `bit.json`, where the template records them. Pass `from`, `to`, `--name` or any option of `bit new` to change them. `to` defaults to this bit's own version.
 - An option a version doesn't have is left out for that version, and said so.
+- Both sides get the project's own .NET version. `--framework` gives only the newer side another one, so `bit diff --framework net11.0` shows what moving a .NET 10 project to .NET 11 changes.
 - What the template picks at random on every run, like ports, GUIDs, dates and the seeded accounts' password, differs between the two, and so does what `bit new` adds after creating a project.
-- The repository goes to `<temp>/bit-diff/<name>-<from>-<to>`, or `-o <folder>`. Delete it with `bit remove <folder> --yes` when you're done.
+- The repository goes to `~/.bitplatform/diff/<name>-<from>-<to>`, or `-o <folder>`. Delete it with `bit remove <folder> --yes` when you're done.
 
 The project's `upgrade` skill, for the AI coding tools, runs it and applies the changes to your code.
 
@@ -125,7 +127,7 @@ The project's `upgrade` skill, for the AI coding tools, runs it and applies the 
 `bit new` and `bit setup` prepare CI machines too, so a pipeline needs no steps of its own for Node.js, workloads, Playwright or the development certificate. The pipelines bit Boilerplate ships install bit once per job and run it before they publish:
 
 ```bash
-dotnet tool install --global Bit.Cli --version 10.7.0
+dotnet tool install --global Bit.Cli --version 11.0.0-pre-15
 bit setup --platforms android --no-browsers --yes
 ```
 
@@ -171,7 +173,7 @@ Deletes the project's build outputs and downloaded packages, so the next build s
 
 - On Windows it first stops every app that runs from the project folder, like the app itself, its Aspire AppHost, or Node.js and Sass from `node_modules`. macOS and Linux don't lock open files, so there nothing is stopped.
 - Runs the project's own `Clean.bat` on Windows or `Clean.sh` on macOS and Linux, which deletes `bin`, `obj`, `node_modules` and the generated CSS and JS.
-- When a `bin`, `obj` or `.vs` folder is still there on Windows, it asks Windows which processes hold its files. A .NET build process among them (`dotnet`, `MSBuild`, `VBCSCompiler`) is stopped, that one process and no other build server, and the script runs once more. Any other app that holds them, such as an IDE, keeps running and is named.
+- When a `bin`, `obj` or `.vs` folder is still there on Windows, it asks Windows which processes hold its files. A build process among them (`dotnet`, `MSBuild`, `VBCSCompiler`, WinUI's `XamlCompiler`, or a tool one of them started) is stopped, that one process and no other build server, and the script runs once more. Any other app that holds them, such as an IDE, keeps running and is named.
 
 Run `bit setup` afterwards to restore and build again.
 
@@ -184,8 +186,9 @@ bit rename Contoso.Shop
 Renames the project everywhere its name appears: files, folders, namespaces, the solution, database names and the app id.
 
 - In a git repository it needs your changes committed or stashed first, so you can review the rename with `git diff` and undo it with `git checkout`. Outside git it asks first, or needs `--yes`.
-- Stops the same apps `bit clean` stops, and deletes `bin`, `obj` and `.vs`, which hold the old name. A .NET build process that holds one of their files is stopped and the deletion retried, like `bit clean` does.
-- For a project named `MyApp`, it replaces `MyApp`, `myapp` as in `com.companyname.myapp`, and for a name with dots the same name with underscores. A match counts only where the name starts a word and isn't followed by a lowercase letter, so `MyAppDb` and `MyApp.Server` change while `TheMyApp` and `MyApps` don't.
+- Stops the same apps `bit clean` stops, and deletes `bin`, `obj` and `.vs`, which hold the old name. A build process that holds one of their files is stopped and the deletion retried, like `bit clean` does.
+- For a project named `MyApp`, it replaces `MyApp` where a name starts with it, as in `MyApp.Server`, `Projects.MyApp_Server_Api` and the database name `MyAppDb`, and `myapp` in the app id `com.companyname.myapp` and in names like `myapp-e2e`; for a name with dots, also the same name with underscores. `TheMyApp`, `MyApps`, `MyAppService`, a `myapp` variable and a later part of a dotted name, like the `App` of `Microsoft.AspNetCore.App`, stay as they are.
+- Refuses a new name that is also the name of a type in the project's code, like `App`, and a project whose own name is one, since it can't tell the two apart. Rename that type first. It also refuses a name that would leave the native apps with an invalid app id.
 - Skips `.git`, `node_modules` and binary files. Every file keeps its encoding and line endings.
 - Leaves the project's own folder named as it was, since your terminal is usually in it. Rename it after closing the editors and terminals that use it.
 
@@ -201,7 +204,7 @@ bit remove ../Contoso.Shop --yes
 Deletes a project's folder for good. On Windows that fails while the app, a build process or Node.js still holds its files, so:
 
 - It asks first, and says when the project has changes that aren't committed or commits that aren't pushed. Without a terminal to ask in, it needs `--yes`.
-- It stops the apps that run from the folder, the same way `bit clean` does, then deletes the folder, read-only files like git's included. When a file is still in use, it stops the .NET build process that holds it, if one does, and tries once more. The failure names any other app that still holds a file.
+- It stops the apps that run from the folder, the same way `bit clean` does, then deletes the folder, read-only files like git's included. When a file is still in use, it stops the build process that holds it, if one does, like `bit clean` does, and tries once more. The failure names any other app that still holds a file.
 - When a terminal is still in the folder, everything in it is deleted and the empty folder stays. Delete it after leaving it.
 - The project's Aspire containers and volumes stay in Docker. Remove them in Docker when you no longer need their data.
 
@@ -242,7 +245,7 @@ In a pipeline:
 
 ```yaml
 - name: Install the bit CLI
-  run: dotnet tool install --global Bit.Cli --version 10.7.0
+  run: dotnet tool install --global Bit.Cli --version 11.0.0-pre-15
 
 - name: Translate .resx files
   env:
@@ -294,7 +297,7 @@ Collect the profile in the job that publishes the app, right before the AOT publ
 
 - **Tools** you tick, with `winget` on Windows, Homebrew on macOS and the distribution's package manager on Linux. Each command is shown before it runs.
 - **The .NET SDK** a project pins, next to the SDKs you already have: with `winget` on Windows (Microsoft's `dotnet-install.ps1` when winget doesn't list that build yet), Microsoft's installer package on macOS after checking it's signed by Microsoft, and Microsoft's `dotnet-install.sh` on Linux.
-- **VS Code extensions** the project's `.vscode/extensions.json` recommends, only the missing ones and never C# Dev Kit or the .NET MAUI extension, with `code --install-extension`.
+- **VS Code extensions** the project's `.vscode/extensions.json` recommends, only the missing ones, with `code --install-extension`.
 - **Playwright's Chromium**, in Playwright's own browser folder, with the driver the project's tests were built with.
 - **A container runtime**, when you tick it: on Windows, Podman for your user only, its WSL machine, and a sign-in entry under `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` that starts that machine; on macOS, Colima, the docker CLI and buildx, with Colima started at sign-in by `brew services`; on Linux, Docker Engine.
 - **Container images** the project's AppHost uses, which Docker or Podman pulls during the first Aspire start and keeps.
@@ -302,11 +305,11 @@ Collect the profile in the job that publishes the app, right before the AOT publ
 - **A private GitHub repository**, only with `--github-repo`, on the account you sign in with. The GitHub CLI keeps that sign-in, and git uses it to push.
 - **Trust entries**, only for the folder `bit new` created or the one you pass to `bit trust`: `projects` in `~/.claude.json`, `trustedFolders` in `~/.copilot/config.json`, `[projects]` in `~/.codex/config.toml`, `~/.gemini/trustedFolders.json`, and VS Code's trust store in `~/.vscode-shared/sharedStorage/state.vscdb` (only while VS Code isn't running). Each file keeps everything else in it. To undo, delete the entry, or use each tool's own trust settings.
 - **bit itself**, when a newer version is out: a copy for the run in `~/.bitplatform/cli`, then `dotnet tool update --global Bit.Cli` once the run ends.
-- **Its own folder**, `~/.bitplatform`: `settings.json`, the template cache, logs, and telemetry not sent yet.
+- **Its own folder**, `~/.bitplatform`: `settings.json`, the template cache, logs, telemetry not sent yet, and the repositories `bit diff` creates.
 
 ## Telemetry
 
-bit sends error reports to the bit platform team so failed runs get fixed: whether each step worked and how long it took, error codes like `NU1301`, the type and stack trace of a crash, the OS, .NET and bit versions, the bit version a run was handed over from, whether it runs in CI, through `dnx` or for a coding agent, and which hardware warnings it showed. A random ID, made on the first run, ties one machine's runs together.
+bit sends error reports to the bit platform team so failed runs get fixed: whether each step worked and how long it took, error codes like `NU1301`, which check refused a command, like `folder-not-empty` or `name-missing`, the type and stack trace of a crash, the OS, .NET and bit versions, the bit version a run was handed over from, whether it runs in CI, through `dnx` or for a coding agent, and which hardware warnings it showed. A random ID, made on the first run, ties one machine's runs together.
 
 It never sends project names, paths, user or machine names, file contents, `.resx` text, prompts, API keys, environment variable values, feed URLs, git remotes, exception messages or the output of the tools it runs.
 
@@ -347,5 +350,5 @@ gh attestation verify ~/.dotnet/tools/.store/bit.cli/<version>/bit.cli/<version>
 
 | Before | Now |
 |---|---|
-| `dnx Bit.ResxTranslator` | `dnx Bit.Cli --version 10.7.0 -- translate`, or `bit translate` |
-| `dnx Bit.Minifier.Cli --decode map trace` | `dnx Bit.Cli --version 10.7.0 -- decode map trace`, or `bit decode map trace` |
+| `dnx Bit.ResxTranslator` | `dnx Bit.Cli --version 11.0.0-pre-15 -- translate`, or `bit translate` |
+| `dnx Bit.Minifier.Cli --decode map trace` | `dnx Bit.Cli --version 11.0.0-pre-15 -- decode map trace`, or `bit decode map trace` |

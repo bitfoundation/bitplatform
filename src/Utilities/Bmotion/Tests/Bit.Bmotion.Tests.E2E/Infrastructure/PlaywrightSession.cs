@@ -3,9 +3,9 @@
 namespace Bit.Bmotion.Tests.E2E.Infrastructure;
 
 /// <summary>
-/// One Playwright driver and one launched Chromium for the whole run. Tests isolate from each other with a
-/// browser context apiece (separate cookies, storage, cache, circuit and WebAssembly instance), which is far
-/// cheaper than a browser apiece and isolates just as well.
+/// One Playwright driver and one launched browser (Chromium unless BMOTION_E2E_BROWSER says otherwise) for the
+/// whole run. Tests isolate from each other with a browser context apiece (separate cookies, storage, cache,
+/// circuit and WebAssembly instance), which is far cheaper than a browser apiece and isolates just as well.
 /// </summary>
 public static class PlaywrightSession
 {
@@ -32,5 +32,5 @@ public static class PlaywrightSession
     }
 
     private static async Task<IBrowser> LaunchAsync()
-        => await (await PlaywrightAsync()).Chromium.LaunchAsync(BrowserLaunch.OptionsFromEnvironment());
+        => await BrowserLaunch.TypeOf(await PlaywrightAsync()).LaunchAsync(BrowserLaunch.OptionsFromEnvironment());
 }

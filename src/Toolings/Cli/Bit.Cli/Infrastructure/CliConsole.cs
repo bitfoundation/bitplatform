@@ -1,4 +1,5 @@
-﻿using Spectre.Console;
+﻿using System.Text.RegularExpressions;
+using Spectre.Console;
 
 namespace Bit.Cli.Infrastructure;
 
@@ -10,7 +11,7 @@ public enum StepStatus
     Skipped
 }
 
-public sealed class CliConsole(IAnsiConsole output, IAnsiConsole error)
+public sealed partial class CliConsole(IAnsiConsole output, IAnsiConsole error)
 {
     private const int TitleWidth = 34;
 
@@ -34,6 +35,8 @@ public sealed class CliConsole(IAnsiConsole output, IAnsiConsole error)
 
     public string BulletSymbol => Unicode ? "◆" : "*";
 
+    public ConsoleTitle Title { get; set; } = ConsoleTitle.None;
+
     public static CliConsole Create()
     {
         return new CliConsole(
@@ -44,6 +47,8 @@ public sealed class CliConsole(IAnsiConsole output, IAnsiConsole error)
     public void Line(string markup = "") => Out.MarkupLine(markup);
 
     public void Text(string text) => Out.WriteLine(text);
+
+    public void UnwrappedLine(string text) => Out.Profile.Out.Writer.WriteLine(text);
 
     public void Dim(string text) => Out.MarkupLine($"[grey]{Markup.Escape(text)}[/]");
 
@@ -95,18 +100,26 @@ public sealed class CliConsole(IAnsiConsole output, IAnsiConsole error)
             return await work(_ => { });
 
         T result = default!;
+        Title.Working(title);
 
-        await Out.Status()
-            .Spinner(Unicode ? Spinner.Known.Dots : Spinner.Known.Line)
-            .SpinnerStyle(new Style(Color.Blue))
-            .StartAsync(Markup.Escape(title), async context =>
-            {
-                result = await work(line =>
+        try
+        {
+            await Out.Status()
+                .Spinner(Unicode ? Spinner.Known.Dots : Spinner.Known.Line)
+                .SpinnerStyle(new Style(Color.Blue))
+                .StartAsync(Markup.Escape(title), async context =>
                 {
-                    var text = Truncate(line.Trim(), Math.Max(10, Width - title.Length - 10));
-                    context.Status($"{Markup.Escape(title)} [grey]{Markup.Escape(text)}[/]");
+                    result = await work(line =>
+                    {
+                        var text = Truncate(PlainText(line).Trim(), Math.Max(10, Width - title.Length - 10));
+                        context.Status($"{Markup.Escape(title)} [grey]{Markup.Escape(text)}[/]");
+                    });
                 });
-            });
+        }
+        finally
+        {
+            Title.Idle();
+        }
 
         return result;
     }
@@ -125,4 +138,12 @@ public sealed class CliConsole(IAnsiConsole output, IAnsiConsole error)
 
         return text.Length <= length ? text : length <= 3 ? text[..length] : text[..(length - 3)] + "...";
     }
+
+    public static string PlainText(string text)
+    {
+        return new([.. AnsiSequenceRegex().Replace(text, "").Select(c => char.IsControl(c) ? ' ' : c)]);
+    }
+
+    [GeneratedRegex(@"\x1B(?:\[[0-?]*[ -/]*[@-~]|\][^\x07\x1B]*(?:\x07|\x1B\\)?|[@-Z\\-_])")]
+    private static partial Regex AnsiSequenceRegex();
 }

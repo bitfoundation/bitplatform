@@ -17,6 +17,8 @@ public sealed partial class SelfUpdate(CliServices cli)
 
     public string InstallMethod { get; init; } = CliTelemetry.InstallMethod();
 
+    public string BaseDirectory { get; init; } = AppContext.BaseDirectory;
+
     private string CopiesDirectory => Path.Combine(cli.Environment.BitDirectory, "cli");
 
     public bool CanHandOff(NewRequest request)
@@ -96,6 +98,13 @@ public sealed partial class SelfUpdate(CliServices cli)
         if (CompareVersions(latest, CurrentVersion) <= 0)
         {
             cli.Console.Text($"bit {CurrentVersion} is the newest.");
+            return CliApp.ExitOk;
+        }
+
+        if (InstallMethod is "tool-path")
+        {
+            var toolPath = BaseDirectory[..BaseDirectory.Replace('\\', '/').IndexOf("/.store/", StringComparison.OrdinalIgnoreCase)];
+            cli.Console.Text($"bit {latest} is out. Update it with: dotnet tool update {BuildInfo.PackageId} --tool-path {ProcessSpec.Quote(toolPath)} --version {latest}");
             return CliApp.ExitOk;
         }
 

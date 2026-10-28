@@ -47,38 +47,105 @@
 </section>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Shared elements</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> What moves: position, size or both</h3>
+    <p>
+        A layout change can move an element, resize it, or both, and <code>Layout</code> chooses which of those
+        animate. <code>Layout="true"</code> (<code>BmLayout.Full</code>) animates both.
+        <code>BmLayout.Position</code> animates only the move: the element takes its new size at once and slides
+        there, with no scaling at all - the cheapest mode, and the one for anything holding text.
+        <code>BmLayout.Size</code> is the mirror image: the element jumps to its new place and only the resize
+        animates - for a box that grows or shrinks where it stands, like an accordion panel. Each box below
+        moves across its track and doubles in size on the same click.
+    </p>
+
+    <div class="demo-row">
+        @foreach (var mode in _layoutModes)
+        {
+            <div class="demo-card stack mode-stage">
+                <span class="demo-label">@mode.Label</span>
+                <div class="mode-track @(_moved ? "moved" : null)">
+                    <Bmotion Layout="mode.Layout" Transition="Bm.Spring(stiffness: 200, damping: 24)">
+                        <div class="@(_moved ? "mode-box big" : "mode-box")"><span>Aa</span></div>
+                    </Bmotion>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _moved = !_moved)">@(_moved ? "Back" : "Move and grow")</button>
+    </div>
+
+    <CodeSnippet Code="@_modesCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Shared elements</h3>
     <p>
         <strong>LayoutId</strong> connects elements <em>across</em> mounts. When one unmounts and
         another mounts carrying the same id, the new one FLIPs from where the old one was - so a
         single underline appears to slide between tabs even though each tab renders its own.
         <code>Layout="BmLayout.Position"</code> animates position without scaling, which is what
-        you want on anything containing text. Wrap independent groups in
-        <code>&lt;BmotionLayoutGroup Name="…"&gt;</code> to keep their ids from colliding.
+        you want on anything containing text.
+    </p>
+    <p>
+        A LayoutId is global by default, so two components that happen to pick the same id would hand the
+        element to each other. <strong>BmotionLayoutGroup</strong> namespaces the ids beneath it: the two strips
+        below both name their underline <code>"tab-underline"</code>, but each sits in a group of its own, so each
+        underline only ever travels inside its own strip.
     </p>
 
     <div class="demo-row">
-        <div class="demo-card layout-tab-stage">
-            <div class="layout-tab-strip" role="tablist">
-                @foreach (var tab in _tabs)
-                {
-                    var t = tab;
-                    <div class="layout-tab @(t == _activeTab ? "active" : null)"
-                         role="tab" tabindex="0" aria-selected="@(t == _activeTab ? "true" : "false")"
-                         @onclick="@(() => _activeTab = t)"
-                         @onkeydown="@(e => { if (e.Key is "Enter" or " ") _activeTab = t; })">
-                        @t
-                        @if (t == _activeTab)
-                        {
-                            <Bmotion LayoutId="tab-underline"
-                                    Layout="BmLayout.Position"
-                                    Transition="Bm.Tween(0.3, BmEase.InOut)">
-                                <div class="layout-tab-underline" />
-                            </Bmotion>
-                        }
-                    </div>
-                }
-            </div>
+        <div class="demo-card stack layout-tab-stage">
+            <span class="demo-label">BmotionLayoutGroup Name="site"</span>
+            <BmotionLayoutGroup Name="site">
+                <div class="layout-tab-strip" role="tablist" aria-label="Site sections">
+                    @foreach (var tab in _tabs)
+                    {
+                        var t = tab;
+                        <div class="layout-tab @(t == _activeTab ? "active" : null)"
+                             role="tab" tabindex="0" aria-selected="@(t == _activeTab ? "true" : "false")"
+                             @onclick="@(() => _activeTab = t)"
+                             @onkeydown="@(e => { if (e.Key is "Enter" or " ") _activeTab = t; })">
+                            @t
+                            @if (t == _activeTab)
+                            {
+                                <Bmotion LayoutId="tab-underline"
+                                        Layout="BmLayout.Position"
+                                        Transition="Bm.Tween(0.3, BmEase.InOut)">
+                                    <div class="layout-tab-underline" />
+                                </Bmotion>
+                            }
+                        </div>
+                    }
+                </div>
+            </BmotionLayoutGroup>
+        </div>
+
+        <div class="demo-card stack layout-tab-stage">
+            <span class="demo-label">BmotionLayoutGroup Name="settings"</span>
+            <BmotionLayoutGroup Name="settings">
+                <div class="layout-tab-strip" role="tablist" aria-label="Settings sections">
+                    @foreach (var tab in _settingsTabs)
+                    {
+                        var t = tab;
+                        <div class="layout-tab @(t == _activeSetting ? "active" : null)"
+                             role="tab" tabindex="0" aria-selected="@(t == _activeSetting ? "true" : "false")"
+                             @onclick="@(() => _activeSetting = t)"
+                             @onkeydown="@(e => { if (e.Key is "Enter" or " ") _activeSetting = t; })">
+                            @t
+                            @if (t == _activeSetting)
+                            {
+                                <Bmotion LayoutId="tab-underline"
+                                        Layout="BmLayout.Position"
+                                        Transition="Bm.Tween(0.3, BmEase.InOut)">
+                                    <div class="layout-tab-underline" />
+                                </Bmotion>
+                            }
+                        </div>
+                    }
+                </div>
+            </BmotionLayoutGroup>
         </div>
     </div>
 
@@ -86,7 +153,43 @@
 </section>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Size correction</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Crossfade</h3>
+    <p>
+        When the old holder of a LayoutId is still on screen as the new one mounts - it is playing its exit under a
+        presence in <code>Sync</code> mode - the two <strong>crossfade</strong>: the new one grows out of the old
+        one's box as it fades in, and the old one travels onto the new one's box as it fades out. Click the card.
+        The fade multiplies with the elements' own opacity, so their own enter and exit fades play on underneath;
+        <code>LayoutCrossfade="false"</code> leaves just the FLIP - untick it and compare.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card xfade-stage">
+            <BmotionPresenceSwitch Item="_expanded" Mode="BmPresenceMode.Sync" Context="expanded">
+                <Bmotion LayoutId="xfade-card" LayoutCrossfade="_crossfade"
+                         Exit="Bm.To(opacity: 0)" Transition="Bm.Tween(0.5, BmEase.InOut)">
+                    <button type="button" class="@(expanded ? "xfade-detail" : "xfade-thumb")"
+                            aria-label="@(expanded ? "Collapse the card" : "Expand the card")"
+                            @onclick="() => _expanded = !_expanded">
+                        @if (expanded)
+                        {
+                            <strong>Shared element</strong>
+                            <span>Click to collapse</span>
+                        }
+                    </button>
+                </Bmotion>
+            </BmotionPresenceSwitch>
+        </div>
+    </div>
+
+    <div class="bb-toolbar">
+        <label class="demo-label"><input type="checkbox" @bind="_crossfade" /> LayoutCrossfade</label>
+    </div>
+
+    <CodeSnippet Code="@_crossfadeCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Size correction</h3>
     <p>
         Animating a box's size by scaling it is fast but wrong: the text inside stretches and the
         corners go oval. With <strong>Layout="true"</strong> Bmotion still scales - that is what
@@ -114,32 +217,38 @@
 </section>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Anchoring and measurement</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Anchoring and measurement</h3>
     <p>
         A FLIP is a comparison between two measurements, and four parameters decide what is being
-        compared. <strong>LayoutAnchor</strong> picks the point that appears to stay still: the
-        default top-left corner is right for text and rows, while
-        <code>BmLayoutAnchor.Center</code> makes a box grow outward evenly - the same size change,
-        read completely differently.
+        compared. <strong>LayoutAnchor</strong> picks the point of the box the animation is projected
+        from - the point that appears to stay still while it resizes. It shows when the move and the resize
+        are animated apart, as with <code>BmLayout.Size</code>: the box jumps to its new place and grows out of
+        its anchor there. Both boxes below stay centred in their stages, so
+        <code>BmLayoutAnchor.Center</code> grows them evenly about the middle, while the default
+        <code>TopLeft</code> pins the new top-left corner - the box starts up and to the left of where it was
+        and grows down and right, which is what an accordion panel whose top edge stays put should do.
+        <code>new BmLayoutAnchor(1, 0)</code> would pin the top-right corner. (With <code>Layout="true"</code>
+        the move plays along with the resize, so every anchor traces the same path.)
     </p>
 
     <div class="demo-row">
         <div class="demo-card stack resize-stage">
-            <span class="demo-label">anchor: TopLeft (default)</span>
-            <Bmotion Layout="true"
+            <span class="demo-label">BmLayout.Size &middot; anchor TopLeft (default)</span>
+            <Bmotion Layout="BmLayout.Size"
                      LayoutDependency="_anchored"
+                     OnLayoutAnimationStart="@(() => { _layoutStarts++; StateHasChanged(); })"
                      OnLayoutAnimationComplete="@(() => { _layoutCompletions++; StateHasChanged(); })"
-                     Transition="Bm.Spring(stiffness: 350, damping: 30)">
+                     Transition="Bm.Spring(stiffness: 200, damping: 26)">
                 <div class="@(_anchored ? "anchor-box big" : "anchor-box")" />
             </Bmotion>
         </div>
 
         <div class="demo-card stack resize-stage">
-            <span class="demo-label">anchor: Center</span>
-            <Bmotion Layout="true"
+            <span class="demo-label">BmLayout.Size &middot; anchor Center</span>
+            <Bmotion Layout="BmLayout.Size"
                      LayoutAnchor="BmLayoutAnchor.Center"
                      LayoutDependency="_anchored"
-                     Transition="Bm.Spring(stiffness: 350, damping: 30)">
+                     Transition="Bm.Spring(stiffness: 200, damping: 26)">
                 <div class="@(_anchored ? "anchor-box big" : "anchor-box")" />
             </Bmotion>
         </div>
@@ -147,7 +256,7 @@
 
     <div class="bb-toolbar">
         <button class="btn btn-primary" @onclick="@(() => _anchored = !_anchored)">@(_anchored ? "Shrink" : "Grow")</button>
-        <span class="demo-label">layout animations completed: @_layoutCompletions</span>
+        <span class="demo-label">left stage: OnLayoutAnimationStart @_layoutStarts &middot; OnLayoutAnimationComplete @_layoutCompletions</span>
     </div>
 
     <p>
@@ -157,7 +266,10 @@
         <strong>LayoutRoot</strong> does the same job for a <code>position: fixed</code> element,
         which stays put while the page scrolls under it. <strong>LayoutDependency</strong> is the
         performance one - measuring forces a reflow, so pointing it at the state the layout actually
-        depends on stops unrelated re-renders paying for one.
+        depends on stops unrelated re-renders paying for one (the stages above measure only when
+        <code>_anchored</code> changes). <code>OnLayoutAnimationStart</code> and
+        <code>OnLayoutAnimationComplete</code> bracket each layout animation, and a superseded one still
+        reports its completion, so every start is matched by exactly one end.
     </p>
 
     <CodeSnippet Code="@_projectionCode" />
@@ -166,10 +278,27 @@
 @code {
     private readonly string[] _tabs = ["Home", "Projects", "About", "Contact"];
     private string _activeTab = "Home";
+    private bool _expanded;
     private bool _big;
     private bool _anchored;
+    private int _layoutStarts;
     private int _layoutCompletions;
+    private bool _moved;
+    private bool _crossfade = true;
     private string _justifyContent = "flex-start";
+
+    private readonly string[] _settingsTabs = ["General", "Privacy", "Billing"];
+    private string _activeSetting = "General";
+
+    /// <summary>One layout-mode stage: its caption and the mode it plays.</summary>
+    private sealed record LayoutModeDemo(string Label, BmLayout Layout);
+
+    private readonly LayoutModeDemo[] _layoutModes =
+    [
+        new("Layout=\"true\" · moves and grows", BmLayout.Full),
+        new("BmLayout.Position · moves, size jumps", BmLayout.Position),
+        new("BmLayout.Size · grows, place jumps", BmLayout.Size),
+    ];
 
     /// <summary>A shuffled tile: its label and which of the palette's five tones it wears.</summary>
     private record ColoredItem(string Label, int Tone);
@@ -238,6 +367,55 @@
         }
         """;
 
+    private const string _modesCode = """
+        @using Bit.Bmotion
+
+        <style>
+            .track { display: flex; justify-content: flex-start; height: 6rem; align-items: center; }
+            .track.moved { justify-content: flex-end; }
+            .tile { width: 2.5rem; height: 2.5rem; }
+            .tile.big { width: 5rem; height: 5rem; }
+        </style>
+
+        @* The click moves the tile to the other end of its track AND doubles its size. *@
+        <div class="@(_moved ? "track moved" : "track")">
+            @* Layout="true" (BmLayout.Full): both animate; children are counter-scaled. *@
+            <Bmotion Layout="true"><div class="@(_moved ? "tile big" : "tile")">Aa</div></Bmotion>
+        </div>
+        <div class="@(_moved ? "track moved" : "track")">
+            @* Position only: the new size applies at once and the tile slides - no scaling. *@
+            <Bmotion Layout="BmLayout.Position"><div class="@(_moved ? "tile big" : "tile")">Aa</div></Bmotion>
+        </div>
+        <div class="@(_moved ? "track moved" : "track")">
+            @* Size only: the tile jumps to its new place and only the resize animates. *@
+            <Bmotion Layout="BmLayout.Size"><div class="@(_moved ? "tile big" : "tile")">Aa</div></Bmotion>
+        </div>
+
+        <button @onclick="@(() => _moved = !_moved)">Move and grow</button>
+
+        @code {
+            private bool _moved;
+        }
+        """;
+
+    private const string _crossfadeCode = """
+        @using Bit.Bmotion
+
+        @* Sync: the old card plays its exit while the new one enters, so the two crossfade.
+           LayoutCrossfade="false" keeps the shared FLIP but drops the fade between them. *@
+        <BmotionPresenceSwitch Item="_expanded" Mode="BmPresenceMode.Sync" Context="expanded">
+            <Bmotion LayoutId="card" LayoutCrossfade="true" Exit="Bm.To(opacity: 0)" Transition="Bm.Tween(0.5, BmEase.InOut)">
+                <button class="@(expanded ? "detail" : "thumb")" @onclick="() => _expanded = !_expanded">
+                    @if (expanded) { <strong>Shared element</strong> }
+                </button>
+            </Bmotion>
+        </BmotionPresenceSwitch>
+
+        @code {
+            private bool _expanded;
+        }
+        """;
+
     private const string _layoutIdCode = """
         @using Bit.Bmotion
 
@@ -262,10 +440,16 @@
             </div>
         }
 
-        @* Reuse the same id in independent groups by namespacing it: *@
-        <BmotionLayoutGroup Name="sidebar">
-            ... <Bmotion LayoutId="tab-underline"><div /></Bmotion> ...
+        @* Ids are global unless namespaced: a second strip that also says "tab-underline" goes in a
+           group of its own, and the two underlines never trade places. *@
+        <BmotionLayoutGroup Name="settings">
+            ... <Bmotion LayoutId="tab-underline" Layout="BmLayout.Position"><div /></Bmotion> ...
         </BmotionLayoutGroup>
+
+        @code {
+            private readonly string[] _tabs = ["Home", "Projects", "About", "Contact"];
+            private string _activeTab = "Home";
+        }
         """;
 
     private const string _sizeCode = """
@@ -301,10 +485,11 @@
     private const string _projectionCode = """
         @using Bit.Bmotion
 
-        @* LayoutAnchor picks the point that appears to stay still while the box resizes.
-           TopLeft (the default) pins the corner; Center grows the box outward evenly. *@
-        <Bmotion Layout="true" LayoutAnchor="BmLayoutAnchor.Center">
-            <div class="box" />
+        @* LayoutAnchor picks the point that appears to stay still while the box resizes. It shows
+           when the resize animates apart from the move (Size): TopLeft, the default, pins the new
+           top-left corner; Center grows the box evenly about its middle; (1, 0) pins top-right. *@
+        <Bmotion Layout="BmLayout.Size" LayoutAnchor="BmLayoutAnchor.Center" LayoutDependency="_big">
+            <div class="@(_big ? "box big" : "box")" />
         </Bmotion>
 
         @* LayoutScroll: the element lives in a scrolling container, so its measurements fold in
@@ -333,6 +518,7 @@
         </Bmotion>
 
         @code {
+            private bool _big;
             private bool _isOpen;
             private bool _settling;
         }

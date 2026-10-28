@@ -74,7 +74,7 @@ global using Bit.BlazeDb.Querying;  // BlazeDbQuery, BlazeDbBound
 
 ## Requirements
 
-- .NET 8, .NET 9 or .NET 10. `Bit.BlazeDb.EntityFrameworkCore` targets EF Core 8, 9 and 10 respectively.
+- .NET 10 or .NET 11. `Bit.BlazeDb.EntityFrameworkCore` targets EF Core 10 and 11 respectively.
 - Blazor WebAssembly - standalone, or a Blazor Web App's `.Client` project - for the browser backends.
   The engine itself has no browser dependency: it runs in any .NET process, with the file or in-memory
   backend.
@@ -118,6 +118,19 @@ fonts. Every page drives the real engine in your browser rather than describing 
 | `/bench` | Read, write and encoding benchmarks measured in your own browser, next to the desktop BenchmarkDotNet figures. |
 | `/roadmap` | What ships - each item linked to the page that drives it - what never will, and how the repository is laid out. |
 | `/mcp-server` | The MCP server this site hosts for AI agents. |
+
+[`Samples`](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BlazeDb/Samples/) is the hosting
+harness rather than the docs: one shared [Core](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BlazeDb/Samples/Core/)
+project of pages (a todo list kept current by a live query, `BlazeDbQuery` with `Explain()`, change notifications,
+and flushes, checkpoints and exports), hosted unchanged under
+[Server](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BlazeDb/Samples/Server/),
+[Wasm](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BlazeDb/Samples/Wasm/),
+[Auto](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BlazeDb/Samples/Auto/) and
+[Maui](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BlazeDb/Samples/Maui/), a Blazor Hybrid
+app for Android, iOS, macOS and Windows. The pages are the same everywhere; where the database lives is not, and each
+host is a minimal example of the wiring its [hosting model](#hosting-models) needs: files on the server shared by every
+circuit behind one lock (Server), OPFS in the browser tab with a placeholder wherever the page renders on the server
+(Wasm and Auto), and files in the app's data directory (Maui).
 
 ## MCP server
 
@@ -917,7 +930,7 @@ From the repository's `src` folder:
 
 ```bash
 dotnet build Utilities/BlazeDb/Bit.BlazeDb.slnx
-dotnet test --project Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests        # engine and EF Core provider, net8.0/net9.0/net10.0
+dotnet test --project Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests        # engine and EF Core provider, net10.0/net11.0
 dotnet test --project Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.Mcp    # the demo's MCP server
 dotnet run --project Utilities/BlazeDb/Demo/Server                     # the demo site
 ```
