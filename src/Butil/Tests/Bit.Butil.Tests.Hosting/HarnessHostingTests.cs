@@ -46,9 +46,7 @@ public class HarnessHostingTests
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.AreEqual("dotnet", RenderedHtml.AttributeOf(html, "status", "data-platform"));
-#if NET9_0_OR_GREATER
         Assert.AreEqual("Static", RenderedHtml.AttributeOf(html, "status", "data-renderer"));
-#endif
     }
 
     [TestMethod]

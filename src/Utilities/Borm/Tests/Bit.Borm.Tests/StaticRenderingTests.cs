@@ -62,9 +62,7 @@ public class StaticRenderingTests : ComponentTestBase
     [TestMethod]
     public void A_named_form_posts_each_control_under_the_name_model_binding_reads()
     {
-#if NET9_0_OR_GREATER
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));
-#endif
         var cut = Render<BormView>(p => p.Add(x => x.Definition, Form()).Add(x => x.Model, Person()).Add(x => x.FormName, "signup"));
 
         var form = cut.Find("form");
@@ -73,10 +71,8 @@ public class StaticRenderingTests : ComponentTestBase
         Assert.AreEqual("Model.Name", cut.Find("#borm_Name").GetAttribute("name"));
         Assert.AreEqual("Model.Address.City", cut.Find("#borm_Address_City").GetAttribute("name"));
         Assert.AreEqual("Model.Lines[0].Product", cut.Find("#borm_Lines_0_Product").GetAttribute("name"));
-#if NET9_0_OR_GREATER
         // Rendered statically every row is there, past the page size of one.
         Assert.AreEqual("Model.Lines[1].Product", cut.Find("#borm_Lines_1_Product").GetAttribute("name"));
-#endif
         // A ticked box posts "true"; an unticked one posts nothing, which binds as false.
         Assert.AreEqual("true", cut.Find("#borm_Subscribe").GetAttribute("value"));
         Assert.IsTrue(cut.FindAll("#borm_Plan input[type=radio]").All(r => r.GetAttribute("name") == "Model.Plan"));
@@ -86,9 +82,7 @@ public class StaticRenderingTests : ComponentTestBase
     [TestMethod]
     public void A_read_only_choice_and_a_signature_post_their_answers_though_their_controls_cannot()
     {
-#if NET9_0_OR_GREATER
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));
-#endif
         var signature = BormSignature.FromTypedName("Ada")!;
         var form = BormBuilder.Create()
             .Select("Plan", f => f.ReadOnly().Options(("solo", "Solo"), ("team", "Team")))
@@ -129,8 +123,6 @@ public class StaticRenderingTests : ComponentTestBase
         Assert.IsNull(cut.Find("#borm_Name").GetAttribute("name"));
     }
 
-#if NET9_0_OR_GREATER
-    // .NET 8 cannot tell a component how it is rendered, so there a named form keeps the shape it has interactive.
     [TestMethod]
     public void Rendered_statically_a_wizard_is_shown_whole_and_a_list_as_it_stands()
     {
@@ -144,14 +136,11 @@ public class StaticRenderingTests : ComponentTestBase
         Assert.HasCount(2, cut.FindAll(".bit-borm-array__item"));
         Assert.IsEmpty(cut.FindAll(".bit-borm-array__pager, .bit-borm-array__item-actions, .bit-borm-btn--add"));
     }
-#endif
 
     [TestMethod]
     public void Interactive_the_same_named_form_is_the_wizard_it_was()
     {
-#if NET9_0_OR_GREATER
         SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
-#endif
         var cut = Render<BormView>(p => p.Add(x => x.Definition, Form(wizard: true)).Add(x => x.Model, Person()).Add(x => x.FormName, "signup"));
 
         Assert.IsNotEmpty(cut.FindAll("button").Where(b => b.TextContent.Trim() == "Next"));

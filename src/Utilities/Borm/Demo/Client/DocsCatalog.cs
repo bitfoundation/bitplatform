@@ -39,7 +39,7 @@ public static class SiteInfo
         "or JSON Schema - and it renders, validates and keeps the state of it, with every decision made in C#. " +
         "Every page of this site is a working form.";
 
-    public static readonly string[] Badges = ["MIT", "net8.0", "net9.0", "net10.0"];
+    public static readonly string[] Badges = ["MIT", "net10.0", "net11.0"];
 
     /// <summary>Words the search palette suggests when a query finds nothing.</summary>
     public static readonly string[] SearchHints = ["wizard", "repeater", "json schema", "validation", "combobox"];

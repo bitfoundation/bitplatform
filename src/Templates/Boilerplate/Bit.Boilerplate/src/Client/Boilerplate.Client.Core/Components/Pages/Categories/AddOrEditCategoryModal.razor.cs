@@ -12,6 +12,7 @@ public partial class AddOrEditCategoryModal
     private bool isOpen;
     private bool isSaving;
     private bool isColorPickerOpen;
+    private static readonly string[] presetColors = ["#FFCD56", "#FF6384", "#4BC0C0", "#FF9124", "#2B88D8", "#C7E0F4"];
     private CategoryDto category = new();
     private EditForm editForm = default!;
     private AppDataAnnotationsValidator validatorRef = default!;
@@ -26,11 +27,6 @@ public partial class AddOrEditCategoryModal
             categoryToShow.Patch(category);
             StateHasChanged();
         });
-    }
-
-    private void SetCategoryColor(string color)
-    {
-        category.Color = color;
     }
 
     private async Task Save()

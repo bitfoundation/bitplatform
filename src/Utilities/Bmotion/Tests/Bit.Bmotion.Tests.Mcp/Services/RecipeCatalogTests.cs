@@ -170,20 +170,40 @@ public class RecipeCatalogTests
     }
 
     /// <summary>
-    /// A recipe whose code the agent must not simply lift - one that only works on WebAssembly -
-    /// has to say so in the notes rather than leaving it to be discovered in production.
+    /// A recipe whose behaviour on Blazor Server an agent is likely to doubt - a layout animation, a
+    /// drag, a keyframe loop, all of which the frame loop used to own - has to say how it behaves
+    /// there in the notes, rather than leaving it to be discovered in production.
     /// </summary>
     [TestMethod]
     [DataRow("layout-animation")]
     [DataRow("drag-with-constraints")]
-    public void All_TheRecipesThatNeedTheFrameLoop_SayWhereTheyStopWorking(string id)
+    [DataRow("loading-spinner")]
+    public void All_TheRecipesPeopleDoubtOnServer_SayHowTheyBehaveThere(string id)
     {
         var recipe = BmotionRecipeCatalog.Find(id);
 
         Assert.IsNotNull(recipe, $"'{id}' is no longer a recipe.");
-        Assert.IsTrue(recipe.Notes!.Contains("Server", StringComparison.OrdinalIgnoreCase) ||
-                      recipe.Notes.Contains("WebAssembly", StringComparison.OrdinalIgnoreCase),
-                      $"'{id}' does not say which render modes it survives: {recipe.Notes}");
+        Assert.IsTrue(recipe.Notes!.Contains("Blazor Server", StringComparison.OrdinalIgnoreCase),
+                      $"'{id}' does not say how it behaves on Blazor Server: {recipe.Notes}");
+    }
+
+    /// <summary>
+    /// The old rule, in the notes, would send an agent to rewrite working code: none of the recipes may
+    /// still claim that what they animate snaps or stops on Blazor Server, now that the browser plays it.
+    /// </summary>
+    [TestMethod]
+    public void All_NoRecipe_ClaimsItsAnimationSnapsOnServer()
+    {
+        foreach (var recipe in BmotionRecipeCatalog.All)
+        {
+            var notes = recipe.Notes ?? string.Empty;
+
+            Assert.IsFalse(notes.Contains("snaps on Blazor Server", StringComparison.OrdinalIgnoreCase) ||
+                           notes.Contains("does not move at all", StringComparison.OrdinalIgnoreCase) ||
+                           notes.Contains("need the frame loop", StringComparison.OrdinalIgnoreCase) ||
+                           notes.Contains("needs the per-frame loop", StringComparison.OrdinalIgnoreCase),
+                           $"'{recipe.Id}' still states the old playback rule: {notes}");
+        }
     }
 
     /// <summary>An exit animation without its presence component is the mistake the catalog exists to prevent.</summary>

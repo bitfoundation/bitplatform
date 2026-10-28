@@ -3,7 +3,7 @@
 namespace Bit.BlazorUI.Tests.Consumer;
 
 /// <summary>
-/// The theming calls an app makes, written the way C# 12 has to write them: the plain BitExtra* types stand in for the
+/// The theming calls an app makes, written through the plain types: the BitExtra* types stand in for the
 /// extension members of BitThemePresets and BitThemeName, and a preset name is a constant a case label can use.
 /// </summary>
 public static class ThemeChoices

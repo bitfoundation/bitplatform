@@ -14,7 +14,7 @@
     },
     "ghcr.io/devcontainers/features/node:2": { "version": "24" }
   },
-  "image": "mcr.microsoft.com/dotnet/sdk:10.0.403",
+  "image": "mcr.microsoft.com/dotnet/sdk:11.0.100-rc.3",
   "postStartCommand": "dotnet workload install wasm-tools && dotnet dev-certs https --trust",
   "waitFor": "onCreateCommand",
   "customizations": {
@@ -26,8 +26,6 @@
     "vscode": {
       "extensions": [
         "ms-dotnettools.csharp",
-        "ms-dotnettools.csdevkit",
-        "ms-azuretools.vscode-docker",
         "ms-vscode-remote.remote-containers",
         "ms-dotnettools.blazorwasm-companion",
         "ms-dotnettools.vscode-dotnet-runtime"

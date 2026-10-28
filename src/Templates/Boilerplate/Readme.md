@@ -47,7 +47,7 @@ Comprehensive **Data and Response caching**:
 - Powerful vectorized database search using embeddings
 
 ### Modern Stack
-- **ASP.NET Core 10**, **C# 14**, **.NET Aspire**
+- **ASP.NET Core 10 or 11**, **C# 14**, **.NET Aspire**
 - **Entity Framework Core** with multiple database support (SQL Server, PostgreSQL, MySQL, SQLite)
 - Flexible file storage (Local, S3, Azure Blob Storage)
 - CI/CD pipelines for GitHub Actions and Azure DevOps
@@ -62,7 +62,7 @@ Try it out on [Google Play, App Store, Web, and Windows](https://bitplatform.dev
 Create a project that's ready to run, on Windows, macOS or Linux, with the [bit CLI](https://www.nuget.org/packages/Bit.Cli):
 
 ```bash
-dotnet tool install --global Bit.Cli --version 10.7.0
+dotnet tool install --global Bit.Cli --version 11.0.0-pre-15
 bit new MyApp
 ```
 

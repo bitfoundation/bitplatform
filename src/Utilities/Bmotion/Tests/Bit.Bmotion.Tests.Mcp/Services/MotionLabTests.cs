@@ -237,72 +237,243 @@ public class MotionLabTests
     }
 
     [TestMethod]
-    public async Task AnalyzePlayback_TransformsAndOpacity_GoToTheCompositor()
+    public async Task AnalyzePlayback_TransformsAndOpacity_PlayInTheBrowserAsATimeline()
     {
         var result = await BmotionMotionLab.AnalyzePlaybackAsync(["x", "opacity"], "tween(0.4, InOut)");
 
         Assert.IsNull(result.Error);
         Assert.IsTrue(result.WorksOnBlazorServer, result.Reason);
-        StringAssert.Contains(result.Path, "Compositor");
-        Assert.IsNull(result.HowToOffload, "There is nothing to fix about an animation that already offloads.");
+        Assert.AreEqual("Browser (timeline)", result.Path);
+        Assert.AreEqual("Browser (timeline)", result.OnWebAssembly);
+        Assert.AreEqual("Browser (timeline)", result.OnBlazorServer);
+        Assert.IsNull(result.HowToOffload, "There is nothing to fix about an animation the browser already plays.");
+        Assert.IsNull(result.HowToPlayAsTimeline, "A timeline is already the cheapest shape.");
 
         // The timing handed to the browser is read back off the interop, so a wrong duration here
         // would mean the tool is reporting an animation other than the one it ran.
-        Assert.AreEqual(400, result.CompositorDurationMs!.Value, 1);
-        Assert.IsNotNull(result.CompositorEasing);
+        Assert.AreEqual(400, result.BrowserDurationMs!.Value, 1);
+        Assert.AreEqual(2, result.BrowserKeyframes, "A timeline is two keyframes whatever its length.");
+
+        // A timeline's easing is the curve itself - never the plain 'linear' a recording plays with.
+        Assert.IsNotNull(result.BrowserEasing);
+        Assert.AreNotEqual("linear", result.BrowserEasing);
     }
 
+    /// <summary>
+    /// The case the old rule got wrong: lengths and colours used to need the frame loop and jump on
+    /// Blazor Server. The engine now hands them to the browser as a timeline like any transform, on
+    /// Server too - which the tool has to measure, not remember.
+    /// </summary>
     [TestMethod]
     [DataRow("width")]
     [DataRow("height")]
     [DataRow("backgroundColor")]
     [DataRow("top")]
-    public async Task AnalyzePlayback_APropertyTheCompositorCannotOwn_StaysOnTheFrameLoopAndSaysWhy(string property)
+    [DataRow("filter")]
+    [DataRow("boxShadow")]
+    public async Task AnalyzePlayback_APropertyThatUsedToNeedTheFrameLoop_IsPlayedByTheBrowserOnServer(string property)
     {
         var result = await BmotionMotionLab.AnalyzePlaybackAsync([property], "tween(0.4)");
 
-        Assert.IsFalse(result.WorksOnBlazorServer, $"'{property}' was reported as compositor-eligible.");
-        StringAssert.Contains(result.Path, "frame loop");
+        Assert.IsNull(result.Error);
+        Assert.IsTrue(result.WorksOnBlazorServer, $"'{property}' was reported as snapping on Blazor Server: {result.Reason}");
+        Assert.AreEqual("Browser (timeline)", result.Path, result.Reason);
+        Assert.AreEqual("Browser (timeline)", result.OnBlazorServer, "Measured as Blazor Server, the browser was not handed it.");
+        Assert.IsNull(result.FrameLoopProperties);
+        Assert.IsNull(result.HowToOffload);
+    }
+
+    /// <summary>
+    /// The browser plays it, but not for free: a length or a colour off the compositor still costs
+    /// layout or paint on every frame, and the reason says what the compositor equivalent is.
+    /// </summary>
+    [TestMethod]
+    [DataRow("width", "scale")]
+    [DataRow("top", "x/y")]
+    [DataRow("backgroundColor", "opacity")]
+    public async Task AnalyzePlayback_APropertyOffTheCompositor_NamesWhatItCostsAndTheCheaperEquivalent(string property, string equivalent)
+    {
+        var result = await BmotionMotionLab.AnalyzePlaybackAsync([property], "tween(0.4)");
+
         StringAssert.Contains(result.Reason, property);
+        StringAssert.Contains(result.Reason, equivalent);
+    }
+
+    [TestMethod]
+    public async Task AnalyzePlayback_TransformsAndALength_ShareOneTimeline()
+    {
+        var result = await BmotionMotionLab.AnalyzePlaybackAsync(["x", "opacity", "height"], "tween(0.4)");
+
+        Assert.IsTrue(result.WorksOnBlazorServer, result.Reason);
+        Assert.AreEqual("Browser (timeline)", result.Path);
+        Assert.AreEqual(2, result.BrowserKeyframes);
+    }
+
+    /// <summary>
+    /// An SVG path morph is the one property no Web Animation can play: Web Animations animate CSS,
+    /// and d is an attribute. It is the frame-loop case that is left, and the tool has to say so.
+    /// </summary>
+    [TestMethod]
+    public async Task AnalyzePlayback_AnSvgPathMorph_StaysOnTheFrameLoopAndSaysWhy()
+    {
+        var result = await BmotionMotionLab.AnalyzePlaybackAsync(["d"], "tween(0.4)");
+
+        Assert.IsFalse(result.WorksOnBlazorServer);
+        Assert.AreEqual("Frame loop only (instant on Blazor Server)", result.Path);
+        Assert.AreEqual("Frame loop", result.OnWebAssembly);
+        Assert.AreEqual("Instant", result.OnBlazorServer);
+        CollectionAssert.AreEqual(new[] { "d" }, result.FrameLoopProperties);
+        StringAssert.Contains(result.Reason, "attribute");
+        Assert.IsNull(result.BrowserKeyframes, "Nothing was handed to the browser.");
 
         Assert.IsNotNull(result.HowToOffload);
         Assert.AreNotEqual(0, result.HowToOffload.Length, "A frame-loop verdict with no remedy leaves the caller stuck.");
     }
 
     [TestMethod]
-    public async Task AnalyzePlayback_OneIneligiblePropertyInASetTakesTheWholeAnimationOffTheCompositor()
+    public async Task AnalyzePlayback_OneFrameLoopOnlyPropertyInASet_StaysOnTheLoopAlone()
     {
-        var result = await BmotionMotionLab.AnalyzePlaybackAsync(["x", "opacity", "height"], "tween(0.4)");
+        var result = await BmotionMotionLab.AnalyzePlaybackAsync(["x", "opacity", "d"], "tween(0.4)");
 
         Assert.IsFalse(result.WorksOnBlazorServer);
-        StringAssert.Contains(result.Reason, "height");
-        // The properties that were fine are not blamed for it.
-        Assert.IsFalse(result.Reason.Contains("opacity -", StringComparison.Ordinal));
-    }
+        Assert.AreEqual("Browser (timeline) + frame loop only (instant on Blazor Server)", result.Path);
+        CollectionAssert.AreEqual(new[] { "d" }, result.FrameLoopProperties);
 
-    [TestMethod]
-    public async Task AnalyzePlayback_Inertia_NamesTheTransitionAsTheBlocker()
-    {
-        var result = await BmotionMotionLab.AnalyzePlaybackAsync(["x"], "inertia(velocity: 500)");
-
-        Assert.IsFalse(result.WorksOnBlazorServer);
-        StringAssert.Contains(result.Reason, "inertia");
-        Assert.IsTrue(result.HowToOffload!.Any(remedy => remedy.Contains("spring", StringComparison.OrdinalIgnoreCase)));
+        // The rest still reaches the browser, and is not blamed for the part that does not.
+        Assert.AreEqual(2, result.BrowserKeyframes);
+        StringAssert.Contains(result.Reason, "attribute");
+        Assert.IsFalse(result.Reason.Contains("opacity is", StringComparison.Ordinal));
     }
 
     /// <summary>
-    /// A spring with an initial velocity drops off the compositor silently - it is the case an agent
-    /// is least likely to predict, and the one the tool most needs to catch.
+    /// Inertia has no target to describe a curve to, so it used to be a frame-loop animation. The
+    /// engine now records its glide, and the browser plays the recording on every runtime.
     /// </summary>
     [TestMethod]
-    public async Task AnalyzePlayback_ASpringWithInitialVelocity_LosesTheCompositor()
+    public async Task AnalyzePlayback_Inertia_IsRecorded_AndSaysWhyItIsNotATimeline()
+    {
+        var result = await BmotionMotionLab.AnalyzePlaybackAsync(["x"], "inertia(velocity: 500)");
+
+        Assert.IsTrue(result.WorksOnBlazorServer, result.Reason);
+        Assert.AreEqual("Browser (recorded)", result.Path);
+        StringAssert.Contains(result.Reason, "inertia");
+        Assert.IsNull(result.HowToOffload, "The browser plays it; there is nothing to get it there.");
+        Assert.IsTrue(result.HowToPlayAsTimeline!.Any(remedy => remedy.Contains("spring", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    /// <summary>
+    /// What a recording costs: more keyframes than a timeline's two, each carrying its own offset,
+    /// played with a linear easing because the keyframes already carry the curve.
+    /// </summary>
+    [TestMethod]
+    public async Task AnalyzePlayback_ARecording_SendsMoreKeyframesThanATimeline_PlayedLinearly()
+    {
+        var recorded = await BmotionMotionLab.AnalyzePlaybackAsync(["x"], "inertia(velocity: 500)");
+
+        Assert.AreEqual("linear", recorded.BrowserEasing);
+        Assert.IsTrue(recorded.BrowserKeyframes > 2, $"A recording of a glide sent {recorded.BrowserKeyframes} keyframes.");
+        StringAssert.Contains(recorded.Reason, "keyframes");
+    }
+
+    /// <summary>
+    /// A spring with an initial velocity is still played by the browser - but as a recording rather
+    /// than a timeline. It is the case an agent is least likely to predict, and the cost it most
+    /// needs to see.
+    /// </summary>
+    [TestMethod]
+    public async Task AnalyzePlayback_ASpringWithInitialVelocity_IsRecordedRatherThanATimeline()
     {
         var still = await BmotionMotionLab.AnalyzePlaybackAsync(["x"], "spring(stiffness: 260, damping: 20)");
         var flung = await BmotionMotionLab.AnalyzePlaybackAsync(["x"], "spring(stiffness: 260, damping: 20, velocity: 400)");
 
-        Assert.IsTrue(still.WorksOnBlazorServer, still.Reason);
-        Assert.IsFalse(flung.WorksOnBlazorServer, "An initial velocity has to be reported as costing the compositor path.");
+        Assert.AreEqual("Browser (timeline)", still.Path, still.Reason);
+        Assert.AreEqual("Browser (recorded)", flung.Path, "An initial velocity has to be reported as costing the timeline.");
+        Assert.IsTrue(still.WorksOnBlazorServer);
+        Assert.IsTrue(flung.WorksOnBlazorServer);
         StringAssert.Contains(flung.Reason, "velocity");
+    }
+
+    /// <summary>
+    /// Transitions a spec string cannot write go through the C# overload. These are the engine's
+    /// reasons for recording rather than describing a curve: each must come back as a recording that
+    /// still plays on Blazor Server.
+    /// </summary>
+    [TestMethod]
+    public async Task AnalyzePlayback_PerPropertyTransitionsMirrorsAndRepeatDelays_AreRecorded()
+    {
+        var perProperty = new BmTween { Duration = 0.4, Properties = new() { ["opacity"] = new BmTween { Duration = 0.2 } } };
+        var mirrored = new BmTween { Duration = 0.4, Repeat = BmRepeat.Mirror(2) };
+        var delayed = new BmTween { Duration = 0.4, Repeat = BmRepeat.Loop(2, delay: 0.3) };
+
+        foreach (var (transition, properties, cause) in new (BmTransition, string[], string)[]
+        {
+            (perProperty, ["x", "opacity"], "per-property"),
+            (mirrored, ["x"], "mirrored"),
+            (delayed, ["x"], "waits between iterations"),
+        })
+        {
+            var result = await BmotionMotionLab.AnalyzePlaybackAsync(properties, transition);
+
+            Assert.AreEqual("Browser (recorded)", result.Path, $"{cause}: {result.Reason}");
+            Assert.IsTrue(result.WorksOnBlazorServer, cause);
+            StringAssert.Contains(result.Reason, cause);
+            Assert.AreNotEqual(0, result.HowToPlayAsTimeline?.Length ?? 0, $"{cause}: no way to a timeline was offered.");
+        }
+    }
+
+    /// <summary>
+    /// What is left of the frame loop besides attributes: a per-frame callback, an endlessly reversing
+    /// repeat, and a recording too long to make. Each animates on WebAssembly and lands at once on
+    /// Blazor Server, and the reason names the one that applies.
+    /// </summary>
+    [TestMethod]
+    public async Task AnalyzePlayback_OnUpdateEndlessReverseAndLongRecordings_StayOnTheFrameLoop()
+    {
+        var onUpdate = new BmTween { Duration = 0.4, OnUpdate = _ => { } };
+        var endlessReverse = new BmTween { Duration = 0.4, Repeat = BmRepeat.Reverse() };
+        var tooLong = new BmTween { Duration = 4, Repeat = BmRepeat.Mirror(2) };
+
+        foreach (var (transition, cause) in new (BmTransition, string)[]
+        {
+            (onUpdate, "OnUpdate"),
+            (endlessReverse, "BmRepeat.Reverse"),
+            (tooLong, "10 seconds"),
+        })
+        {
+            var result = await BmotionMotionLab.AnalyzePlaybackAsync(["x"], transition);
+
+            Assert.AreEqual("Frame loop only (instant on Blazor Server)", result.Path, $"{cause}: {result.Reason}");
+            Assert.AreEqual("Instant", result.OnBlazorServer, cause);
+            Assert.IsFalse(result.WorksOnBlazorServer, cause);
+            StringAssert.Contains(result.Reason, cause);
+            Assert.AreNotEqual(0, result.HowToOffload?.Length ?? 0, $"{cause}: no remedy was offered.");
+        }
+    }
+
+    /// <summary>
+    /// The ten-second limit is a recording's, not a timeline's: a long plain tween is still two
+    /// keyframes, and still plays in the browser.
+    /// </summary>
+    [TestMethod]
+    public async Task AnalyzePlayback_ALongPlainTween_IsStillATimeline()
+    {
+        var result = await BmotionMotionLab.AnalyzePlaybackAsync(["x"], "tween(12)");
+
+        Assert.AreEqual("Browser (timeline)", result.Path, result.Reason);
+        Assert.AreEqual(12_000, result.BrowserDurationMs!.Value, 1);
+    }
+
+    [TestMethod]
+    public async Task AnalyzePlayback_AZeroDurationTween_IsInstantEverywhereAlike()
+    {
+        var result = await BmotionMotionLab.AnalyzePlaybackAsync(["x", "width"], "tween(0)");
+
+        Assert.AreEqual("Instant", result.Path);
+        Assert.AreEqual("Instant", result.OnWebAssembly);
+        Assert.AreEqual("Instant", result.OnBlazorServer);
+        // Nothing animates anywhere, so Server does exactly what WebAssembly does.
+        Assert.IsTrue(result.WorksOnBlazorServer);
+        StringAssert.Contains(result.Reason, "no duration");
     }
 
     [TestMethod]
@@ -332,5 +503,9 @@ public class MotionLabTests
 
         Assert.AreEqual(0, result.Properties.Length);
         Assert.IsNotNull(result.Reason);
+
+        // An animation of nothing is not a verdict about the transition - instant or otherwise.
+        Assert.AreEqual("Not analysed", result.Path);
+        Assert.IsNotNull(result.Error);
     }
 }

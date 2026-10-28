@@ -105,6 +105,7 @@ public class AnimateServiceStateTests
     private static async Task<(BmotionAnimationEngine Engine, BmAnimationControls Controls)> StartOnSharedElement()
     {
         var (service, engine, interop) = Create();
+        interop.WebAnimationsSupported = false; // ticked by hand on the frame loop
         interop.SelectorResolver = _ => ["el"];
         engine.RegisterElement("el", new Dictionary<string, object?> { ["backgroundColor"] = "#000000" });
         var controls = await service.AnimateAsync("#el", Bm.To(backgroundColor: "#ffffff"), Bm.Tween(0.5, ease: BmEase.Linear));

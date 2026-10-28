@@ -151,11 +151,8 @@ public partial class Acknowledgements
     private static readonly Dependency[] IdeExtensions =
     [
         new("C# (ms-dotnettools.csharp)", "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp", "https://github.com/dotnet/vscode-csharp", "MIT"),
-        new("C# Dev Kit", "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit", null, "Proprietary"),
-        new(".NET MAUI (VS Code)", "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-maui", null, "Proprietary"),
         new("Aspire (VS Code)", "https://marketplace.visualstudio.com/items?itemName=microsoft-aspire.aspire-vscode", "https://github.com/microsoft/aspire", "MIT"),
         new(".NET Install Tool", "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.vscode-dotnet-runtime", "https://github.com/dotnet/vscode-dotnet-runtime", "MIT"),
-        new("Container Tools (Docker)", "https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker", "https://github.com/microsoft/vscode-docker", "MIT"),
         new("Dev Containers", "https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers", null, "Proprietary"),
         new("Blazor WASM Companion", "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.blazorwasm-companion", "https://github.com/dotnet/razor", "MIT"),
         new("ResX Manager", "https://marketplace.visualstudio.com/items?itemName=TomEnglert.ResXManager", "https://github.com/dotnet/ResXResourceManager", "MIT"),

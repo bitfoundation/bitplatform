@@ -150,9 +150,7 @@ public sealed class ConcurrentContextsTests
     private static ProductContext Create(BsqliteConnection connection)
         => new(new DbContextOptionsBuilder<ProductContext>()
             .UseBitBsqlite(connection)
-#if NET9_0_OR_GREATER
             .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
-#endif
             .Options);
 
     /// <summary>

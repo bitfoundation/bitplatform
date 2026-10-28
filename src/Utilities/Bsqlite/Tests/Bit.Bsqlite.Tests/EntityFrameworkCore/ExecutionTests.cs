@@ -85,8 +85,6 @@ public sealed class ExecutionTests
         AssertSequence.Equal(["Pricey"], await query.Select(p => p.Name).ToListAsync(Ct));
     }
 
-#if NET9_0_OR_GREATER
-    // EF Core translates SUM over a decimal from EF Core 9 on; before that the stock provider refuses it too.
     [TestMethod]
     public async Task DecimalSum_RunsThroughEfSum()
     {
@@ -106,7 +104,6 @@ public sealed class ExecutionTests
         Assert.Contains("ef_sum", query.ToQueryString(), StringComparison.Ordinal);
         Assert.AreEqual(3.30m, await query.SingleAsync(Ct));
     }
-#endif
 
     [TestMethod]
     public async Task WithoutEfFunctions_DecimalQueries_Fail()

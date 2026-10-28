@@ -47,6 +47,14 @@ public class DiscoveryAndPersistenceTests : BunitTestContext
     }
 
     [TestMethod]
+    public void Type_by_type_scan_finds_every_type_GetTypes_finds()
+    {
+        var assembly = typeof(DiscoveryHost).Assembly;
+
+        CollectionAssert.AreEquivalent(assembly.GetTypes(), BrouteScanner.GetLoadableTypes(assembly.ManifestModule));
+    }
+
+    [TestMethod]
     public void Prerender_state_round_trips_loader_value_with_its_concrete_type()
     {
         var dto = new SampleDto { Name = "saleh", Count = 3 };

@@ -48,10 +48,8 @@ public sealed class BlazorHybridTests
         services.AddBitBsqliteDbContext<ProductContext>(options =>
         {
             options.Schema = BsqliteSchemaStrategy.EnsureCreated;
-#if NET9_0_OR_GREATER
             options.Configure = (_, builder) => builder.ConfigureWarnings(w =>
                 w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
-#endif
         });
 
         return services.BuildServiceProvider();

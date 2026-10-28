@@ -1,0 +1,187 @@
+﻿@page "/progress"
+@using System.Globalization
+@implements IDisposable
+@inject IBonboardingService BonboardingService
+@inject TimeProvider TimeProvider
+
+<PageTitle>Progress - Bonboarding samples</PageTitle>
+
+<h1>Progress</h1>
+
+<p>
+    What the store holds for each tour, read back through <code>IBonboardingService</code>. Progress is written after
+    every step, which is what lets a tour resume after a reload - or, on Server, after the circuit is replaced.
+</p>
+
+<section class="panel">
+    <div class="row">
+        <h2>Stored records</h2>
+        <button type="button" @onclick="ResetAsync" disabled="@(_records is null)">Reset everything</button>
+    </div>
+
+    @if (_records is null)
+    {
+        @* The store is read through JS interop, which is not there while prerendering. *@
+        <p class="muted">Reading the store...</p>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr><th>Id</th><th>State</th><th>Updated (UTC)</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var (id, record) in _records)
+                {
+                    <tr>
+                        <td><code>@id</code></td>
+                        <td>@Describe(record)</td>
+                        <td>@(record is null ? "-" : FormatTime(record.UpdatedAt))</td>
+                    </tr>
+                }
+                <tr>
+                    <td><code>checklist:@SampleTours.ChecklistId</code></td>
+                    <td>@(_checklistDismissed ? "dismissed; " : string.Empty)ticked off: @(_checklistTicked.Count == 0 ? "nothing" : string.Join(", ", _checklistTicked))</td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="muted">
+            A checklist stores only what was ticked off - by a signal or by <code>SetChecklistItemAsync</code>. An item
+            done by its tour or by a condition is worked out again each time, from the tour's record or the condition.
+            After a reset the welcome tour is due again: it starts by itself the next time the app is loaded.
+        </p>
+        <p class="muted">
+            Times are in UTC, the same in every host: under Server, and under Auto until WebAssembly takes over, this
+            page runs on the server, which knows neither the user's time zone nor their culture.
+        </p>
+    }
+</section>
+
+<section class="panel">
+    <h2>Events</h2>
+    @if (_log.Count == 0)
+    {
+        <p class="muted">Nothing yet. Run a tour, open the hint on the guidance page, or tick something off.</p>
+    }
+    else
+    {
+        <ol class="list log">
+            @foreach (var entry in _log)
+            {
+                <li><span class="muted">@FormatTime(entry.Time)</span> <strong>@entry.Kind</strong> @entry.Detail</li>
+            }
+        </ol>
+    }
+</section>
+
+@code {
+    private static readonly string[] RecordIds = [SampleTours.WelcomeId, SampleTours.WorkspaceId, SampleTours.ExportHintId];
+
+    private readonly List<LogEntry> _log = [];
+    private (string Id, BonboardingRecord? Record)[]? _records;
+    private IReadOnlyCollection<string> _checklistTicked = [];
+    private bool _checklistDismissed;
+    private Task? _loading;
+    private bool _loadAgain;
+
+    // Subscribed in every render, but events only flow once the page is interactive.
+    protected override void OnInitialized() => BonboardingService.EventRaised += OnEvent;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        // The checklist's last item is done by being here, ticked off from another page than the checklist's own.
+        await BonboardingService.SetChecklistItemAsync(SampleTours.ChecklistId, SampleTours.ProgressItemId);
+
+        await LoadAsync();
+    }
+
+    private async Task ResetAsync()
+    {
+        // A tour still running - on screen, or holding its place while the user is on another page - writes its record
+        // again at its next step, which would undo the reset. Stopped first, it has nothing left to write.
+        await BonboardingService.StopAllAsync();
+        await BonboardingService.ResetAllAsync();
+        await LoadAsync();
+    }
+
+    // One read of the store at a time, so a read that started earlier never lands after one that started later. A call
+    // made while a read runs asks for one more after it, which also folds a burst of events into a single extra read.
+    private Task LoadAsync()
+    {
+        if (_loading is { IsCompleted: false })
+        {
+            _loadAgain = true;
+            return _loading;
+        }
+
+        return _loading = LoadUntilCurrentAsync();
+    }
+
+    private async Task LoadUntilCurrentAsync()
+    {
+        do
+        {
+            _loadAgain = false;
+
+            // Side by side: on Server, every read of a record the store has not seen yet is a round trip to the browser.
+            var records = Task.WhenAll(RecordIds.Select(async id => (id, await BonboardingService.GetRecordAsync(id))));
+            var ticked = BonboardingService.GetCompletedChecklistItemsAsync(SampleTours.ChecklistId);
+            var dismissed = BonboardingService.IsChecklistDismissedAsync(SampleTours.ChecklistId);
+
+            _records = await records;
+            _checklistTicked = await ticked;
+            _checklistDismissed = await dismissed;
+        }
+        while (_loadAgain);
+
+        StateHasChanged();
+    }
+
+    private void OnEvent(object? sender, BonboardingEvent onboardingEvent) => _ = OnEventAsync(onboardingEvent);
+
+    // An event can be raised away from the renderer's dispatcher, so the page's state is only touched on it. Nothing
+    // awaits this task, so a failure is handed to the renderer, which reports it like any other.
+    private async Task OnEventAsync(BonboardingEvent onboardingEvent)
+    {
+        try
+        {
+            await InvokeAsync(() =>
+            {
+                var detail = onboardingEvent.Step is { } step ? $"{onboardingEvent.Tour.Id} / {step.Id}" : onboardingEvent.Tour.Id;
+                _log.Insert(0, new LogEntry(onboardingEvent.Timestamp, onboardingEvent.Kind, detail));
+                if (_log.Count > 30) _log.RemoveRange(30, _log.Count - 30);
+                StateHasChanged();
+
+                // The engine writes a record when a step is shown and when a tour ends; no other event changes the store.
+                return onboardingEvent.Kind is BonboardingEventKind.StepShown || onboardingEvent.Reason is not null
+                    ? LoadAsync()
+                    : Task.CompletedTask;
+            });
+        }
+        catch (Exception exception)
+        {
+            await DispatchExceptionAsync(exception);
+        }
+    }
+
+    private string Describe(BonboardingRecord? record) => record switch
+    {
+        null => "never started",
+        { Completed: true } => "completed",
+        { Dismissed: true } => "dismissed",
+        // Only while the snooze runs: once it is over the tour is due again, at the step it was snoozed on.
+        { SnoozedUntil: { } until } when record.IsSnoozedAt(TimeProvider.GetUtcNow()) => $"snoozed until {FormatTime(until, "yyyy-MM-dd HH:mm")}",
+        _ => $"in progress, at step {record.CurrentStepId ?? "?"}",
+    };
+
+    private static string FormatTime(DateTimeOffset time, string format = "HH:mm:ss")
+        => time.UtcDateTime.ToString(format, CultureInfo.InvariantCulture);
+
+    public void Dispose() => BonboardingService.EventRaised -= OnEvent;
+
+    private sealed record LogEntry(DateTimeOffset Time, BonboardingEventKind Kind, string Detail);
+}

@@ -20,4 +20,11 @@ public sealed record BmotionElementDiagnostics(
     IReadOnlyList<string> ActiveProperties,
     IReadOnlyDictionary<string, double> Transforms,
     IReadOnlyDictionary<string, double> NumericValues,
-    IReadOnlyDictionary<string, string> StringValues);
+    IReadOnlyDictionary<string, string> StringValues)
+{
+    /// <summary>
+    /// The property keys the browser is animating for the element right now (Web Animations the engine handed
+    /// it, on every runtime) - as opposed to <see cref="ActiveProperties"/>, which the frame loop drives.
+    /// </summary>
+    public IReadOnlyList<string> BrowserProperties { get; init; } = [];
+}

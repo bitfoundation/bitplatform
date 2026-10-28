@@ -72,7 +72,16 @@ public sealed class StepRunner(CliServices cli)
             if (needsTerminal)
             {
                 cli.Console.Out.MarkupLine($"  [blue]>[/] {Markup.Escape(runningTitle)}");
-                result = await work(_ => { }, cancellationToken);
+                cli.Console.Title.Working(runningTitle);
+
+                try
+                {
+                    result = await work(_ => { }, cancellationToken);
+                }
+                finally
+                {
+                    cli.Console.Title.Idle();
+                }
             }
             else
             {

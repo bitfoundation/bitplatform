@@ -269,6 +269,46 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public async Task AHungDocker_Should_LeaveAspireOnThePodmanThatAnswers()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var project = CreateFakeProject(host, "Contoso");
+        host.Runner.On("docker", "version", 1);
+        host.Runner.Executables["podman"] = "/usr/bin/podman";
+        host.Runner.On("podman", "container ls", 0);
+
+        var result = await new ProjectSteps(host.Services, project).ContainerRuntimeAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail + result.FollowUp);
+        Assert.AreEqual("Aspire runs the containers on Podman", result.Title);
+        CollectionAssert.AreEqual(new[] { "user-secrets", "set", "DcpPublisher:ContainerRuntime", "podman", "--project", project.AppHostDirectory },
+            host.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() is "user-secrets").Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task TheContainerRuntime_Should_BeDockerWhenItAnswers_AndLeftAloneWhenNothingDoes()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var project = CreateFakeProject(host, "Contoso");
+        var steps = new ProjectSteps(host.Services, project);
+        host.Runner.Executables["podman"] = "/usr/bin/podman";
+        host.Runner.On("podman", "container ls", 125);
+        host.Runner.On("docker", "version", 1);
+
+        Assert.AreEqual(StepStatus.Skipped, (await steps.ContainerRuntimeAsync(_ => { }, CancellationToken.None)).Status);
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "user-secrets"));
+
+        using var dockerHost = new TestHost(HostOs.Linux);
+        var dockerProject = CreateFakeProject(dockerHost, "Contoso");
+        dockerHost.Runner.On("docker", "version", 0, "29.1.3");
+
+        var docker = await new ProjectSteps(dockerHost.Services, dockerProject).ContainerRuntimeAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual("Aspire runs the containers on Docker", docker.Title);
+        Assert.AreEqual("docker", dockerHost.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() is "user-secrets").Arguments[3]);
+    }
+
+    [TestMethod]
     public async Task AspireStart_Should_WaitForEveryServerAndStopTheProject()
     {
         using var host = new TestHost(HostOs.Linux);
@@ -280,7 +320,7 @@ public class ProjectStepTests
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
         var aspire = host.Runner.Calls.Where(c => c.FileName is "aspire").Select(c => string.Join(' ', c.Arguments.Take(2))).ToArray();
-        CollectionAssert.AreEqual(new[] { "doctor --format", "start --apphost", "wait serverweb", "wait serverapi", "stop --apphost" }, aspire);
+        CollectionAssert.AreEqual(new[] { "doctor --format", "ps --format", "start --apphost", "wait serverweb", "wait serverapi", "stop --apphost" }, aspire);
     }
 
     [TestMethod]
@@ -450,6 +490,28 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public async Task DotnetRun_Should_BuildAgainAfterTheMigrationAddedFiles()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.OnAsync("dotnet", "run", async (_, ct) =>
+        {
+            await Task.Delay(Timeout.Infinite, ct);
+            return new ProcessResult { ExitCode = 0 };
+        });
+        var project = CreateFakeProject(host, "Contoso");
+        WriteServerWeb(project, "http://localhost:5030");
+        var steps = new ProjectSteps(host.Services, project) { AliveProbe = (_, _) => Task.FromResult(true) };
+
+        Assert.AreEqual(StepStatus.Succeeded, (await steps.MigrationAsync(_ => { }, CancellationToken.None)).Status);
+        var result = await steps.DotnetRunAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
+        CollectionAssert.DoesNotContain(host.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() is "run").Arguments.ToArray(), "--no-build", "The build from before the migration has no Initial migration in it.");
+
+        await steps.Running!.StopAsync(false);
+    }
+
+    [TestMethod]
     public async Task DotnetRun_Should_ReportAServerThatExits()
     {
         using var host = new TestHost(HostOs.Linux);
@@ -514,6 +576,54 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public async Task AspireStart_Should_LeaveAnAppHostThatWasAlreadyRunning()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["aspire"] = "aspire";
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+        host.Runner.On("aspire", "ps", 0, $$"""[{ "appHostPath": {{System.Text.Json.JsonSerializer.Serialize(Path.Combine(project.AppHostDirectory, "Contoso.Server.AppHost.csproj"))}} }]""");
+        host.Runner.On("aspire", "start", 1, "The configuration is invalid.");
+
+        var result = await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status);
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() == "stop"), string.Join("\n", host.Runner.Calls.Select(c => c.CommandLine)));
+    }
+
+    [TestMethod]
+    public async Task AspireStart_Should_SayWhenItCouldntStopTheProject()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["aspire"] = "aspire";
+        host.Runner.On("aspire", "stop", 1, "Failed to stop the AppHost.");
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+
+        var result = await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status, result.Detail);
+        Assert.AreEqual("Started the project with Aspire, but couldn't stop it", result.Title);
+        StringAssert.Contains(result.FollowUp, "aspire stop");
+        Assert.AreEqual(1, host.Runner.Calls.Count(c => c.Arguments.FirstOrDefault() is "stop"));
+    }
+
+    [TestMethod]
+    public async Task AspireStart_Should_StopWhatAFailedStartLeftRunning()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["aspire"] = "aspire";
+        host.Runner.On("aspire", "start", 1, "The AppHost didn't start in time.");
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+
+        var result = await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status);
+        CollectionAssert.AreEqual(new[] { "stop", "--apphost", project.AppHostDirectory, "--non-interactive" }, host.Runner.Calls.Last().Arguments.ToArray());
+    }
+
+    [TestMethod]
     public void TheProjectContext_Should_ReadTheGeneratedProject()
     {
         using var host = new TestHost();
@@ -538,6 +648,23 @@ public class ProjectStepTests
         Assert.IsTrue(steps.Reports.All(r => r.Result.Status is StepStatus.Skipped));
         Assert.IsFalse(steps.AnyFailed);
         Assert.IsEmpty(host.Runner.Calls);
+    }
+
+    [TestMethod]
+    public async Task AWorkloadInstallRetriedWithSudo_Should_RunTheDotnetOnThePath()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var project = CreateFakeProject(host, "Contoso");
+        host.Runner.Executables["dotnet"] = "/opt/dotnet/dotnet";
+        host.Runner.Executables["sudo"] = "/usr/bin/sudo";
+        host.Runner.On("dotnet", "workload list", 0, "Installed Workload Id\n---\n");
+        host.Runner.On("dotnet", "workload install", 1, "Inadequate permissions. Run the command with elevated privileges.");
+
+        var result = await new ProjectSteps(host.Services, project).WorkloadsAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
+        Assert.AreEqual("sudo", host.Runner.Calls.Last().FileName);
+        CollectionAssert.AreEqual(new[] { "-n", "/opt/dotnet/dotnet", "workload", "install", "wasm-tools" }, host.Runner.Calls.Last().Arguments.ToArray(), "sudo's secure_path may not have the user's dotnet, or may have another one.");
     }
 
     [TestMethod]
@@ -625,28 +752,16 @@ public class ProjectStepTests
     {
         using var host = new TestHost();
         var project = CreateFakeProject(host, "Contoso");
-        WriteRecommendations(project, "ms-dotnettools.csdevkit", "Anthropic.claude-code", "ms-dotnettools.csdevkit");
+        WriteRecommendations(project, "ms-dotnettools.csharp", "Anthropic.claude-code", "ms-dotnettools.csharp");
 
-        CollectionAssert.AreEqual(new[] { "ms-dotnettools.csdevkit", "Anthropic.claude-code" }, ProjectSteps.ReadRecommendedExtensions(project.Directory).ToArray());
-    }
-
-    [TestMethod]
-    public void CSharpDevKitAndMaui_Should_StayRecommendedButNotBeInstalled()
-    {
-        CollectionAssert.AreEqual(new[] { "ms-dotnettools.csharp", "Anthropic.claude-code" },
-            ProjectSteps.ExtensionsToInstall(["ms-dotnettools.csdevkit", "Anthropic.claude-code", "ms-dotnettools.dotnet-maui"]).ToArray());
-
-        CollectionAssert.AreEqual(new[] { "Anthropic.claude-code", "ms-dotnettools.csharp" },
-            ProjectSteps.ExtensionsToInstall(["Anthropic.claude-code", "ms-dotnettools.csharp", "ms-dotnettools.csdevkit"]).ToArray());
-
-        CollectionAssert.AreEqual(new[] { "Anthropic.claude-code" }, ProjectSteps.ExtensionsToInstall(["Anthropic.claude-code"]).ToArray());
+        CollectionAssert.AreEqual(new[] { "ms-dotnettools.csharp", "Anthropic.claude-code" }, ProjectSteps.ReadRecommendedExtensions(project.Directory).ToArray());
     }
 
     [TestMethod]
     public async Task ExtensionsVsCodeBuildsIn_Should_CountAsInstalled()
     {
         using var host = new TestHost(HostOs.Linux);
-        var (project, vsCode) = FakeVsCode(host, "ms-dotnettools.csdevkit");
+        var (project, vsCode) = FakeVsCode(host, "ms-dotnettools.csharp");
         WriteRecommendations(project, "Anthropic.claude-code", "vscode.git");
         host.Runner.On(vsCode.Name, "--install-extension", spec =>
         {
@@ -688,8 +803,8 @@ public class ProjectStepTests
     public async Task VsCode_Should_GetOnlyTheExtensionsItLacks()
     {
         using var host = new TestHost(HostOs.Linux);
-        var (project, vsCode) = FakeVsCode(host, "ms-dotnettools.csharp", "ms-dotnettools.csdevkit");
-        WriteRecommendations(project, "ms-dotnettools.csdevkit", "Anthropic.claude-code", "ms-dotnettools.csharp");
+        var (project, vsCode) = FakeVsCode(host, "ms-dotnettools.csharp", "EditorConfig.EditorConfig");
+        WriteRecommendations(project, "EditorConfig.EditorConfig", "Anthropic.claude-code", "ms-dotnettools.csharp");
         host.Runner.On(vsCode.Name, "--install-extension", spec =>
         {
             vsCode.Installed.UnionWith(spec.Arguments.Where(a => a.StartsWith('-') is false));
@@ -758,6 +873,7 @@ public class ProjectStepTests
     {
         using var ci = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["GITHUB_ACTIONS"] = "true" });
         ci.Runner.Executables["sudo"] = "/usr/bin/sudo";
+        ci.Runner.Executables["apt-get"] = "/usr/bin/apt-get";
         var project = CreateFakeProject(ci, "Contoso");
         var playwright = Directory.CreateDirectory(Path.Combine(project.Directory, "src", "Tests", "bin", "Debug", "net10.0", ".playwright")).FullName;
         Directory.CreateDirectory(Path.Combine(playwright, "package"));
@@ -772,6 +888,28 @@ public class ProjectStepTests
         Assert.AreEqual("Installed Playwright's browsers", result.Title);
         CollectionAssert.AreEqual(new[] { cliScript, "install" }, ci.Runner.Calls.First().Arguments.ToArray());
         CollectionAssert.AreEqual(new[] { "-n", Path.Combine(nodeDirectory, "node"), cliScript, "install-deps" }, ci.Runner.Calls.Last().Arguments.ToArray());
+        Assert.IsNotNull(ci.Runner.Calls.First().Timeout);
+        Assert.AreEqual("sudo", ci.Runner.Calls.Last().FileName);
+        Assert.IsNull(ci.Runner.Calls.Last().Timeout);
+    }
+
+    [TestMethod]
+    public async Task Playwright_Should_LeaveTheSystemLibrariesToALinuxWithoutAptGet()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["sudo"] = "/usr/bin/sudo";
+        host.Runner.Executables["dnf"] = "/usr/bin/dnf";
+        var project = CreateFakeProject(host, "Contoso");
+        var playwright = Directory.CreateDirectory(Path.Combine(project.Directory, "src", "Tests", "bin", "Debug", "net10.0", ".playwright")).FullName;
+        Directory.CreateDirectory(Path.Combine(playwright, "package"));
+        File.WriteAllText(Path.Combine(playwright, "package", "cli.js"), "");
+        File.WriteAllText(Path.Combine(Directory.CreateDirectory(Path.Combine(playwright, "node", "linux-x64")).FullName, "node"), "");
+
+        var result = await new ProjectSteps(host.Services, project).PlaywrightAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail + result.FollowUp);
+        Assert.IsNull(result.FollowUp);
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.Contains("install-deps")), "Playwright's install-deps runs only apt-get.");
     }
 
     [TestMethod]
@@ -783,6 +921,50 @@ public class ProjectStepTests
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status);
         StringAssert.Contains(ci.Runner.Calls.Single().CommandLine, "-t:InstallAndroidDependencies");
+    }
+
+    [TestMethod]
+    public async Task TheAndroidSdk_Should_AskForAnElevatedTerminal_WhenItsFolderNeedsAdministratorRights()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        host.Runner.On("dotnet", "build", 1, @"error : Failure to move Android component to its destination path. System.UnauthorizedAccessException: Access to the path 'C:\Program Files (x86)\Android\android-sdk\build-tools\36.0.0' is denied.");
+
+        var result = await new ProjectSteps(host.Services, CreateFakeProject(host, "Contoso")).AndroidDependenciesAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status);
+        Assert.AreEqual("The Android SDK and Java need administrator rights", result.Title);
+        Assert.AreEqual("run it in an elevated terminal", result.Detail);
+        StringAssert.Contains(result.FollowUp, "-t:InstallAndroidDependencies");
+    }
+
+    [TestMethod]
+    public async Task TheAndroidSdk_Should_ReportAFailureThatIsNotAboutAccess()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        host.Runner.On("dotnet", "build", 1, "error XA5300: The Java SDK directory could not be found.");
+
+        var result = await new ProjectSteps(host.Services, CreateFakeProject(host, "Contoso")).AndroidDependenciesAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Failed, result.Status);
+        Assert.AreEqual("Couldn't install the Android SDK and Java", result.Title);
+    }
+
+    [TestMethod]
+    public async Task Workloads_Should_SeeThatTheyNeedSudoWhateverTheMachinesLanguage()
+    {
+        using var host = new TestHost(HostOs.MacOS, new Dictionary<string, string> { ["LANG"] = "de_DE.UTF-8" });
+        host.Runner.Executables["sudo"] = "/usr/bin/sudo";
+        host.Runner.On("dotnet", "workload install", spec => new ProcessResult
+        {
+            ExitCode = 1,
+            Output = spec.Environment?.GetValueOrDefault("DOTNET_CLI_UI_LANGUAGE") is "en"
+                ? "Inadequate permissions. Run the command with elevated privileges."
+                : "Unzureichende Berechtigungen. Führen Sie den Befehl mit erhöhten Rechten aus."
+        });
+
+        await new ProjectSteps(host.Services, CreateFakeProject(host, "Contoso")).WorkloadsAsync(_ => { }, CancellationToken.None);
+
+        Assert.IsTrue(host.Runner.Calls.Any(c => c.FileName is "sudo"), string.Join(Environment.NewLine, host.Runner.Calls.Select(c => c.CommandLine)));
     }
 
     [TestMethod]
@@ -858,7 +1040,7 @@ public class ProjectStepTests
         var result = await new ProjectSteps(host.Services, project).GitHubSignInAsync(_ => { }, CancellationToken.None);
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status);
-        CollectionAssert.AreEqual(new[] { "auth setup-git --hostname github.com --force", "auth login --web --git-protocol https --hostname github.com" },
+        CollectionAssert.AreEqual(new[] { "auth setup-git --hostname github.com --force", "auth login --web --clipboard --git-protocol https --hostname github.com" },
             host.Runner.Calls.Where(c => c.FileName is "gh").Select(c => string.Join(' ', c.Arguments)).ToArray());
     }
 
@@ -891,9 +1073,26 @@ public class ProjectStepTests
         Assert.AreEqual(StepStatus.Warning, result.Status);
         Assert.AreEqual("Skipped signing in to GitHub", result.Title);
         Assert.IsTrue(stopped, "Skipping stops gh's sign-in.");
-        StringAssert.Contains(host.FlatOutput, "Enter AB12-CD34");
+        StringAssert.Contains(host.FlatOutput, "Enter AB12-CD34 (copied to the clipboard)");
         StringAssert.Contains(host.FlatOutput, "Press Esc to skip");
         CollectionAssert.AreEqual(new[] { "https://github.com/login/device" }, host.Runner.Detached.SelectMany(d => d.Arguments).Where(a => a.StartsWith("https", StringComparison.Ordinal)).ToArray());
+    }
+
+    [TestMethod]
+    public async Task GitHubSignIn_Should_SayTheCodeIsCopiedOnlyWhenGhCopiedIt()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var project = CreateFakeProject(host, "Contoso");
+        host.Runner.Executables["gh"] = "/usr/bin/gh";
+        host.Runner.On("gh", "auth login", spec =>
+        {
+            spec.OnOutputLine?.Invoke("! First copy your one-time code: AB12-CD34");
+            return new ProcessResult { ExitCode = 0 };
+        });
+
+        await new ProjectSteps(host.Services, project).GitHubSignInAsync(_ => { }, CancellationToken.None);
+
+        StringAssert.Contains(host.FlatOutput, "Enter AB12-CD34 at https://github.com/login/device");
     }
 
     [TestMethod]

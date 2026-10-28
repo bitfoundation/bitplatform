@@ -174,6 +174,39 @@ public class AnimatePresenceTests
     }
 
     [TestMethod]
+    public async Task AnExitingElement_IsInert_UntilItReEnters()
+    {
+        using var ctx = new BmotionTestContext();
+        var cut = RenderPresence(ctx, BmPresenceMode.Sync, () => { });
+        await ctx.FinishWaapiAsync("box");
+        Assert.IsFalse(ctx.Interop.WasCalled("setInert"), "an element that is entering or present stays interactive");
+
+        cut.Render(ps => ps.Add(p => p.IsPresent, false));
+        var inert = ctx.Interop.ArgsOf("setInert").Single();
+        Assert.AreEqual("box", inert[0]);
+        Assert.AreEqual(true, inert[1]);
+        Assert.IsTrue(IndexOfLast(ctx, "setInert", "box") < IndexOfLast(ctx, "playWaapiAnimation", "box"),
+            "inert before the exit plays, so it can't be pressed again on its way out");
+
+        cut.Render(ps => ps.Add(p => p.IsPresent, true));
+        Assert.AreEqual(false, ctx.Interop.ArgsOf("setInert").Last()[1], "a cancelled exit makes it interactive again");
+    }
+
+    [TestMethod]
+    public async Task InertWhileExiting_CanBeTurnedOff()
+    {
+        using var ctx = new BmotionTestContext();
+        ctx.Options.InertWhileExiting = false;
+        var cut = RenderPresence(ctx, BmPresenceMode.Sync, () => { });
+        await ctx.FinishWaapiAsync("box");
+
+        cut.Render(ps => ps.Add(p => p.IsPresent, false));
+        cut.Render(ps => ps.Add(p => p.IsPresent, true));
+
+        Assert.IsFalse(ctx.Interop.WasCalled("setInert"));
+    }
+
+    [TestMethod]
     public async Task ReEnterMidExit_ThenExitAgain_StillCompletesAndRemoves()
     {
         using var ctx = new BmotionTestContext();

@@ -39,7 +39,7 @@ public static class SiteInfo
         "managed memory, source-generated schemas, atomic transactions, an EF Core provider and a write-ahead " +
         "log persisted to OPFS. Every page of this site drives the real engine in your browser.";
 
-    public static readonly string[] Badges = ["MIT", "net8.0", "net9.0", "net10.0"];
+    public static readonly string[] Badges = ["MIT", "net10.0", "net11.0"];
 
     /// <summary>Words the search palette suggests when a query finds nothing.</summary>
     public static readonly string[] SearchHints = ["index", "transaction", "opfs", "efcore", "wal"];

@@ -18,7 +18,7 @@ dotnet add package SQLitePCLRaw.bundle_e_sqlite3
 
 - or keeps the SQLitePCLRaw bundle it already uses, such as `bundle_e_sqlcipher`. Added to a Razor class library shared with a WebAssembly client, the bundle stays out of the WebAssembly build.
 
-Bit.Bsqlite targets .NET 8, 9 and 10, each with the EF Core of the same major version.
+Bit.Bsqlite targets .NET 10 and 11, each with the EF Core of the same major version.
 
 ## Register
 
@@ -47,7 +47,7 @@ builder.Services.AddBitBsqliteDbContext<AppDbContext>(options =>
 
 Register them in the project that runs on WebAssembly. In a Blazor Hybrid app - MAUI, WPF, Windows Forms - the same registration works unchanged: .NET runs natively there, so Bsqlite adds the `file-system` backend, ranks it ahead of the browser ones, and keeps the database as a SQLite file in the app's own folder, opened in-process by the native SQLite the app brings (see [Install](#install) and [Storage](storage.md#file-system-blazor-hybrid)). A Razor class library shared by a WebAssembly client and a Hybrid app registers Bsqlite once for both.
 
-In a Blazor Web App whose pages are prerendered, register them in the server project as well: the prerender pass instantiates the pages there, so what they inject has to resolve, and nothing touches the browser until a page opens the database - which it should do only once the page runs in the browser: `RendererInfo.IsInteractive` on Interactive WebAssembly, and `OperatingSystem.IsBrowser()` on Interactive Auto, where a page on the server circuit is interactive too (and on .NET 8, which has no `RendererInfo`).
+In a Blazor Web App whose pages are prerendered, register them in the server project as well: the prerender pass instantiates the pages there, so what they inject has to resolve, and nothing touches the browser until a page opens the database - which it should do only once the page runs in the browser: `RendererInfo.IsInteractive` on Interactive WebAssembly, and `OperatingSystem.IsBrowser()` on Interactive Auto, where a page on the server circuit is interactive too.
 
 `AddBitBsqliteServices` registers, all scoped except the selection and the migrator (one scope is the whole application on WebAssembly, and a circuit or a request on a server):
 
@@ -88,7 +88,7 @@ await db.SaveChangesAsync();
 
 The factory opens the database on first use, runs the schema step once per session, and hands out contexts bound to the shared connection. Disposing a context does not close the database. The factory also implements `IDbContextFactory<TContext>`; its synchronous `CreateDbContext()` works once an awaited `CreateDbContextAsync()` has opened the session and run the schema step on it.
 
-The schema step and `OnFirstUse` run under a lock shared with every other tab, and so does EF's own `MigrateAsync` on EF Core 9 and later: each tab has its own worker over the same file, and two tabs opening after a deploy would otherwise both apply the new migration - or both seed an empty database. The lock is a Web Lock, so a tab that closes mid-migration releases it.
+The schema step and `OnFirstUse` run under a lock shared with every other tab, and so does EF's own `MigrateAsync`: each tab has its own worker over the same file, and two tabs opening after a deploy would otherwise both apply the new migration - or both seed an empty database. The lock is a Web Lock, so a tab that closes mid-migration releases it.
 
 With more than one database registered, name the one a context belongs to: `AddBitBsqliteDbContext<CacheDbContext>(o => o.DatabaseName = "cache.db")`. Leaving it out is an error then, rather than a context bound to whichever was registered last.
 

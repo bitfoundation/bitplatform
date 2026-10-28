@@ -24,22 +24,20 @@ public static class CleanCommand
 
             if (name is null)
             {
-                cli.Console.Fail($"{folder} isn't a bit Boilerplate project folder (no *.Web.slnf or *.slnx). Run bit clean in the project's folder.");
-                return CliApp.ExitUsage;
+                return cli.UsageError("not-a-project", $"{folder} isn't a bit Boilerplate project folder (no *.Web.slnf or *.slnx). Run bit clean in the project's folder.");
             }
 
             var script = cli.Environment.IsWindows ? "Clean.bat" : "Clean.sh";
 
             if (File.Exists(Path.Combine(folder, script)) is false)
             {
-                cli.Console.Fail($"{folder} has no {script} to clean the project with.");
-                return CliApp.ExitUsage;
+                return cli.UsageError("clean-script-missing", $"{folder} has no {script} to clean the project with.");
             }
 
             cli.Console.Out.MarkupLine($"Cleaning [bold]{Markup.Escape(name)}[/] [grey]in {Markup.Escape(folder)}[/]");
 
             var steps = new StepRunner(cli);
-            await ProjectProcesses.StopAsync(cli, steps, folder, cancellationToken);
+            var stoppedBuilds = await ProjectProcesses.StopAsync(cli, steps, folder, cancellationToken);
 
             var spec = new ProcessSpec
             {
@@ -56,9 +54,9 @@ public static class CleanCommand
 
             var result = await RunScriptAsync("clean", $"Running {script}");
 
-            if (cli.Environment.IsWindows && ProjectRenamer.FindBuildFolders(folder) is { Count: > 0 } left)
+            if (ProjectRenamer.FindBuildFolders(folder) is { Count: > 0 } left)
             {
-                var freed = ProjectProcesses.Free(cli, left);
+                var freed = ProjectProcesses.Free(cli, left, stoppedBuilds: stoppedBuilds);
 
                 if (freed.Stopped.Count > 0)
                 {
@@ -71,6 +69,11 @@ public static class CleanCommand
                 {
                     var shown = string.Join('\n', left.Take(5)) + (freed.InUseBy is { } holders ? $"\n{holders}" : "");
                     steps.Add("clean-left", StepResult.Warning("Some build folders are still there", $"{left.Count} folder{(left.Count == 1 ? "" : "s")}", hint: shown));
+
+                    foreach (var line in shown.Split('\n'))
+                    {
+                        cli.Console.UnwrappedLine("      " + line);
+                    }
                 }
             }
 

@@ -24,11 +24,15 @@ public class AsyncLifecycleTests
 
     // ── AnimateAsync with a cancellation token ────────────────────────────────
 
+    // Runs on the frame loop (the fake browser has no Web Animations), so a test can freeze it mid-way.
     private static IRenderedComponent<Bmotion> RenderBlack(BmotionTestContext ctx)
-        => ctx.Render<Bmotion>(ps => ps
+    {
+        ctx.Interop.WebAnimationsSupported = false;
+        return ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.Initial, Bm.To(backgroundColor: "#000000"))
             .Add(p => p.ChildContent, Div));
+    }
 
     [TestMethod]
     public async Task AnimateAsync_TokenCancelledMidFlight_StopsTheAnimationWhereItIs()

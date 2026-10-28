@@ -187,12 +187,6 @@ internal sealed class BlazeDbEfCoreDatabase : IDatabase
     public Expression<Func<QueryContext, TResult>> CompileQueryExpression<TResult>(Expression query, bool async) =>
         throw NoPipeline();
 
-#if NET9_0
-    // EF Core 9 alone passes the precompiled-query parameter set; 8 and 10 have only the overload above.
-    public Expression<Func<QueryContext, TResult>> CompileQueryExpression<TResult>(Expression query, bool async, IReadOnlySet<string> nonNullableReferenceTypeParameters) =>
-        throw NoPipeline();
-#endif
-
     private static InvalidOperationException NoPipeline() =>
         new("BlazeDb executes queries through its own compiler and never builds an EF query pipeline. " +
             "Reaching this method means the provider's IQueryCompiler was replaced.");

@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <!-- The pages every hosting sample renders unchanged. The Server, WebAssembly, Auto and MAUI hosts differ only in
+         where these components run (see each host's Program.cs or MauiProgram.cs); the tours, the hints, the checklist
+         and the stored progress behave the same in all of them. -->
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+        <ProjectReference Include="..\..\Bit.Bonboarding\Bit.Bonboarding.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Bit.Bonboarding" />
+    </ItemGroup>
+
+</Project>

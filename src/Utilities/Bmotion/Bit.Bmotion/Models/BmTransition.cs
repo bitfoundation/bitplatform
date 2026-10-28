@@ -385,6 +385,21 @@ public sealed class BmInertia : BmTransition
     public double? Max { get; set; }
 
     /// <summary>
+    /// Stiffness of the spring that takes over when the coast reaches <see cref="Min"/>/<see cref="Max"/>: the
+    /// element keeps the speed it was thrown with until it gets there, then bounces off the bound and settles on it
+    /// (motion.dev's <c>bounceStiffness</c>). Higher is a harder wall. <c>null</c> (the default) is 500 - or, for a
+    /// drag's momentum (<c>DragTransition</c>), the spring a drag released out of bounds snaps back with.
+    /// </summary>
+    public double? BounceStiffness { get; set; }
+
+    /// <summary>
+    /// Damping of the bounce spring at <see cref="Min"/>/<see cref="Max"/> (motion.dev's <c>bounceDamping</c>).
+    /// Higher bounces less: from about 2·√<see cref="BounceStiffness"/> it doesn't bounce at all. <c>null</c> (the
+    /// default) is 10 - or, for a drag's momentum, the drag's snap-back spring.
+    /// </summary>
+    public double? BounceDamping { get; set; }
+
+    /// <summary>
     /// Adjusts where the coast comes to rest - motion.dev's <c>modifyTarget</c>. The projected
     /// resting position is passed in and the returned value is used instead, which is how a fling
     /// snaps to a grid, a page or a set of stops:
@@ -406,6 +421,8 @@ public sealed class BmInertia : BmTransition
         InertiaRestDelta = RestDelta,
         InertiaMin = Min,
         InertiaMax = Max,
+        BounceStiffness = BounceStiffness,
+        BounceDamping = BounceDamping,
         ModifyTarget = ModifyTarget,
     };
 
@@ -419,6 +436,8 @@ public sealed class BmInertia : BmTransition
             RestDelta = RestDelta,
             Min = Min,
             Max = Max,
+            BounceStiffness = BounceStiffness,
+            BounceDamping = BounceDamping,
             ModifyTarget = ModifyTarget,
         };
         CopyBaseTo(copy);
@@ -429,6 +448,7 @@ public sealed class BmInertia : BmTransition
         => other is BmInertia i
            && Velocity == i.Velocity && TimeConstant == i.TimeConstant && Power == i.Power
            && RestDelta == i.RestDelta && Min == i.Min && Max == i.Max
+           && BounceStiffness == i.BounceStiffness && BounceDamping == i.BounceDamping
            // Like OnUpdate, an inline lambda is a fresh delegate every render; comparing it by
            // reference would report a transition change on every re-render. Compare by target
            // method so a stable named method still reads as unchanged.

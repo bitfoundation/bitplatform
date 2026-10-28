@@ -14,7 +14,6 @@
     <File Path="vs-spell.dic" />
     <File Path=".vscode/mcp.json" />
     <File Path="README.md" />
-    <File Path="specs/README.md" />
     <File Path="settings.VisualStudio.json" />
     <File Path="Bit.ResxTranslator.json" />
     <File Path="src/Directory.Build.props" />
@@ -86,6 +85,9 @@
   <Folder Name="/.SolutionItems/.grafana/">
     <File Path=".grafana/dashboard.json" />
     <File Path=".grafana/README.md" />
+  </Folder>
+  <Folder Name="/.SolutionItems/specs/">
+    <File Path="specs/README.md" />
   </Folder>
   <Folder Name="/Client/">
     <Project Path="src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj" />

@@ -42,11 +42,9 @@ public sealed class DependencyInjectionTests
         services.AddBitBsqliteDbContext<ProductContext>(options =>
         {
             options.Schema = BsqliteSchemaStrategy.EnsureCreated;
-#if NET9_0_OR_GREATER
-            // EF Core 9 started refusing to migrate a model with pending changes; EF Core 8 has no such warning.
+            // EF Core 9 started refusing to migrate a model with pending changes.
             options.Configure = (_, builder) => builder.ConfigureWarnings(w =>
                 w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
-#endif
             configure?.Invoke(options);
         });
 

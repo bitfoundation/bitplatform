@@ -35,7 +35,7 @@ public sealed class HybridHarnessHost : IAsyncDisposable
         "Tests", "Bit.Bdnd.Tests.Harness.Hybrid", "Bit.Bdnd.Tests.Harness.Hybrid.csproj");
 
     public static string Executable() => Path.Combine(
-        Path.GetDirectoryName(Project())!, "bin", E2EEnvironment.Configuration, "net10.0-windows", "Bit.Bdnd.Tests.Harness.Hybrid.exe");
+        Path.GetDirectoryName(Project())!, "bin", E2EEnvironment.Configuration, "net11.0-windows", "Bit.Bdnd.Tests.Harness.Hybrid.exe");
 
     public static async Task<HybridHarnessHost> StartAsync()
     {

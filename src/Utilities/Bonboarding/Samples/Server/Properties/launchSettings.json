@@ -1,0 +1,13 @@
+﻿{
+  "profiles": {
+    "Bit.Bonboarding.Samples.Server": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "applicationUrl": "https://localhost:7591;http://localhost:5591",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

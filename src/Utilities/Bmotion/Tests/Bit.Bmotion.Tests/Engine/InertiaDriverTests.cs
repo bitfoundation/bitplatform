@@ -257,4 +257,116 @@ public class InertiaDriverTests
         Assert.IsTrue(done);
         Assert.AreEqual(0.0, values[^1], 1e-5);
     }
+
+    // ── Bouncing off the bounds ───────────────────────────────────────────────
+
+    // Every value the driver shows, one 60 Hz frame at a time, until it settles.
+    private static List<double> Run(double from, BmotionTransitionConfig config)
+    {
+        var values = new List<double>();
+        var driver = new BmotionInertiaDriver(from, config, values.Add);
+        bool done = false;
+        for (double ts = 0; !done && ts < 10_000; ts += 1000.0 / 60) done = driver.Tick(ts);
+        Assert.IsTrue(done, "the inertia never settled");
+        return values;
+    }
+
+    [TestMethod]
+    public void AThrowTowardsABound_KeepsItsSpeedUntilItGetsThere()
+    {
+        // motion.dev semantics: the coast heads for where the throw would come to rest, and the bound is enforced
+        // when it gets there - not by braking from the start to stop on it.
+        var free = Run(0, new BmotionTransitionConfig { InertiaVelocity = 1000 });
+        var bounded = Run(0, new BmotionTransitionConfig { InertiaVelocity = 1000, InertiaMax = 300 });
+
+        for (int i = 0; i < 10; i++)
+            Assert.AreEqual(free[i], bounded[i], 1e-9, $"frame {i}: the bound slowed the throw down before it was reached");
+    }
+
+    [TestMethod]
+    public void AThrowPastABound_BouncesOffIt_AndSettlesOnIt()
+    {
+        var values = Run(0, new BmotionTransitionConfig { InertiaVelocity = 1000, InertiaMax = 300 });
+
+        Assert.IsTrue(values.Max() > 300.5, $"it stopped dead at the bound (max {values.Max():0.##})");
+        Assert.AreEqual(300, values[^1], 1e-9, "and settles on it");
+    }
+
+    [TestMethod]
+    public void AStiffCriticallyDampedWall_StopsNearTheBound_WithoutBouncing()
+    {
+        // ζ = 1: the spring brings it straight back - within the couple of pixels a 60 Hz step of so stiff a spring
+        // rings by - rather than bouncing.
+        var values = Run(0, new BmotionTransitionConfig
+        {
+            InertiaVelocity = 1000, InertiaMax = 300, BounceStiffness = 20_000, BounceDamping = 2 * Math.Sqrt(20_000),
+        });
+
+        int peak = values.IndexOf(values.Max());
+        Assert.IsTrue(values.Max() < 300 + 15, $"it went {values.Max() - 300:0.##}px past a stiff wall");
+        for (int i = peak + 1; i < values.Count; i++)
+            Assert.IsTrue(Math.Abs(values[i] - 300) <= 2, $"frame {i}: it bounced ({values[i]:0.###})");
+        Assert.AreEqual(300, values[^1], 1e-9);
+    }
+
+    [TestMethod]
+    public void AVeryHeavilyDampedWall_StaysFinite()
+    {
+        // Explicit damping this heavy would flip and amplify the velocity every step until it is NaN.
+        var values = new List<double>();
+        var driver = new BmotionInertiaDriver(0, new BmotionTransitionConfig
+        {
+            InertiaVelocity = 1000, InertiaMax = 300, BounceStiffness = 1_000_000, BounceDamping = 10_000_000,
+        }, values.Add);
+        for (double ts = 0; ts < 3000; ts += 1000.0 / 60) driver.Tick(ts);
+
+        Assert.IsTrue(values.All(double.IsFinite));
+        Assert.IsTrue(values.Max() < 330, $"it went {values.Max() - 300:0.##}px past the wall");
+    }
+
+    [TestMethod]
+    public void ReleasedPastABound_ComesBack_FromWhereItIs()
+    {
+        // A drag pulled 10px past its constraint and let go moving fast further out: it carries on a little, turns, and
+        // settles on the bound - never jumps to it.
+        var values = Run(310, new BmotionTransitionConfig { InertiaVelocity = 3000, InertiaMax = 300 });
+
+        Assert.IsTrue(Math.Abs(values[0] - 310) < 1e-9, "it starts where it was let go");
+        Assert.IsTrue(values.Skip(1).Take(3).Max() > 315, "the outward velocity carries it on for a moment");
+        Assert.AreEqual(300, values[^1], 1e-9);
+        for (int i = 1; i < values.Count; i++)
+            Assert.IsTrue(Math.Abs(values[i] - values[i - 1]) < 3000.0 / 60 + 5, $"frame {i}: jumped {values[i] - values[i - 1]:0.##}px");
+    }
+
+    [TestMethod]
+    public void ABounceSettles_AtThePixelScale_NotTheDistanceScale()
+    {
+        // The spring scales its rest thresholds by the distance it covers; released 200px out, an unscaled 0.5px
+        // threshold would become 100px and it would snap home from far away.
+        var values = Run(500, new BmotionTransitionConfig { InertiaVelocity = 0, InertiaMax = 300 });
+
+        Assert.AreEqual(300, values[^1], 1e-9);
+        Assert.IsTrue(Math.Abs(values[^2] - 300) < 1, $"it snapped home from {values[^2] - 300:0.##}px away");
+    }
+
+    [TestMethod]
+    public void Complete_LandsOnTheBound()
+    {
+        double last = double.NaN;
+        var driver = new BmotionInertiaDriver(0, new BmotionTransitionConfig { InertiaVelocity = 1000, InertiaMax = 300 }, v => last = v);
+        driver.Complete();
+        Assert.AreEqual(300, last);
+    }
+
+    [TestMethod]
+    public void BmInertia_CarriesItsBounce_IntoTheConfig()
+    {
+        var inertia = new BmInertia { BounceStiffness = 250, BounceDamping = 30 };
+        var config = inertia.ToConfig();
+
+        Assert.AreEqual(250, config.BounceStiffness);
+        Assert.AreEqual(30, config.BounceDamping);
+        Assert.AreEqual(250, config.Clone().BounceStiffness);
+        Assert.IsNull(new BmInertia().ToConfig().BounceStiffness, "unset means the context's default");
+    }
 }

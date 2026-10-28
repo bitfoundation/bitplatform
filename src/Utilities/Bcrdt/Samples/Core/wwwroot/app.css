@@ -1,0 +1,153 @@
+﻿/* Minimal styling for the Bcrdt samples - just enough to keep the pages readable. The library ships no stylesheet:
+   its components render plain markup. */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    line-height: 1.5;
+    color: #1b1b1f;
+    background: #fff;
+}
+
+a {
+    color: #1276c6;
+}
+
+code {
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: .9em;
+    background: #f2f3f5;
+    border-radius: 3px;
+    padding: .1em .3em;
+}
+
+.topbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: .75rem 1.5rem;
+    border-bottom: 1px solid #e3e4e8;
+}
+
+.topbar a {
+    text-decoration: none;
+}
+
+.topbar a.active {
+    font-weight: 600;
+}
+
+main {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+h1 {
+    font-size: 1.5rem;
+    margin: 0 0 1rem;
+}
+
+h2 {
+    font-size: 1.1rem;
+    margin: 1.5rem 0 .5rem;
+}
+
+ul {
+    margin: 0;
+    padding-left: 1.25rem;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    align-items: center;
+    margin: .5rem 0;
+}
+
+.muted {
+    color: #5b5c66;
+    font-size: .9rem;
+}
+
+.error {
+    border-left: 4px solid #d33;
+    padding-left: 1rem;
+}
+
+/* The presence list, the connection status and the offline switch above every document. */
+.status {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    align-items: center;
+    padding: .5rem 0;
+    margin-bottom: .75rem;
+    border-bottom: 1px solid #e3e4e8;
+}
+
+button, .btn {
+    font: inherit;
+    padding: .35rem .8rem;
+    border: 1px solid #c7c9d1;
+    border-radius: 5px;
+    background: #f7f8fa;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+button:disabled {
+    opacity: .5;
+    cursor: default;
+}
+
+input[type=text], select, textarea {
+    font: inherit;
+    padding: .35rem .5rem;
+    border: 1px solid #c7c9d1;
+    border-radius: 5px;
+}
+
+textarea {
+    width: 100%;
+}
+
+.todos {
+    list-style: none;
+    padding: 0;
+}
+
+.todos input[type=text] {
+    flex: 1;
+    min-width: 8rem;
+}
+
+.form {
+    display: grid;
+    gap: .75rem;
+    max-width: 36rem;
+}
+
+.form > label {
+    display: grid;
+    gap: .25rem;
+}
+
+fieldset {
+    border: 1px solid #e3e4e8;
+    border-radius: 5px;
+}
+
+/* A fieldset that is there only to disable the controls in it, for a read-only replica. */
+fieldset.bare {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+}

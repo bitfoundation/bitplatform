@@ -12,8 +12,12 @@ public class ColorInterpolatorTests
     [DataRow("rgb(255,0,0)", true)]
     [DataRow("rgba(255,0,0,1)", true)]
     [DataRow("hsl(0,100%,50%)", true)]
-    [DataRow("red", false)]
-    [DataRow("transparent", false)]
+    [DataRow("red", true)]
+    [DataRow("transparent", true)]
+    [DataRow("rgb(255 0 0 / 50%)", true)]
+    [DataRow("oklch(0.7 0.2 140)", true)]
+    [DataRow("currentColor", false)]
+    [DataRow("10px", false)]
     [DataRow("", false)]
     [DataRow(null, false)]
     public void LooksLikeColor_ReturnsExpected(string? value, bool expected)
@@ -52,9 +56,18 @@ public class ColorInterpolatorTests
     [TestMethod]
     public void Lerp_ShorthandHexWithAlpha_ParsesAlpha()
     {
-        // #000f → [0,0,0,alpha=1.0]; #fff0 → [255,255,255,alpha=0.0]
+        // #000f → [0,0,0,alpha=1.0]; #fff0 → [255,255,255,alpha=0.0]. Mixed premultiplied, as CSS does, the
+        // transparent end contributes no colour: half-way is half-transparent black, not grey.
         var result = BmotionColorInterpolator.Lerp("#000f", "#fff0", 0.5);
-        Assert.AreEqual("rgba(128,128,128,0.5)", result);
+        Assert.AreEqual("rgba(0,0,0,0.5)", result);
+    }
+
+    [TestMethod]
+    public void Lerp_FromTransparent_FadesTheColourIn_WithoutDarkening()
+    {
+        // transparent is transparent black: unpremultiplied, the way there would darken through translucent black.
+        Assert.AreEqual("rgba(255,0,0,0.5)", BmotionColorInterpolator.Lerp("transparent", "red", 0.5));
+        Assert.AreEqual("rgba(255,0,0,0.25)", BmotionColorInterpolator.Lerp("red", "transparent", 0.75));
     }
 
     [TestMethod]

@@ -86,7 +86,43 @@
 </section>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Continuing from the current value</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What happens at the end</h3>
+    <p>
+        <code>repeat</code> takes a <strong>BmRepeat</strong>, and its type decides what each run after the first
+        does. <code>Loop</code> jumps back to the start and plays forwards again. <code>Mirror</code> plays the
+        motion back the way it came, so it ping-pongs. <code>Reverse</code> plays forwards once, then backwards
+        every time after that, jumping to the end before each pass. The number is how many runs follow the first
+        - all three below play three times - and <code>delay</code> pauses between runs.
+        <code>BmRepeat.Forever</code> never stops, and a bare number (<code>repeat: 2</code>) is a
+        <code>Loop</code>. The same repeats work on springs, tweens and keyframe sequences alike.
+    </p>
+
+    <div class="demo-row">
+        @foreach (var r in _repeats)
+        {
+            <div class="demo-card stack">
+                <span class="demo-label">@r.Label</span>
+                <div class="current-track">
+                    <Bmotion @key="@($"{_repeatRun}-{r.Label}")"
+                             Animate="Bm.To(x: [0, 140])"
+                             Transition="@Bm.Tween(0.7, BmEase.InOut, repeat: r.Repeat)">
+                        <div class="box box-sm" />
+                    </Bmotion>
+                </div>
+                <span class="demo-label">@r.Note</span>
+            </div>
+        }
+    </div>
+
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _repeatRun++)">Play again</button>
+    </div>
+
+    <CodeSnippet Code="@_repeatCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Continuing from the current value</h3>
     <p>
         A sequence normally snaps to its first entry before it starts - fine on mount, jarring when
         the element is already mid-flight somewhere else. <strong>Bm.Current</strong> is a wildcard
@@ -126,6 +162,17 @@
 
 @code {
     private bool _pulse;
+    private int _repeatRun;
+
+    /// <summary>One repeat stage: its caption, the repeat it plays and where it comes to rest.</summary>
+    private sealed record RepeatDemo(string Label, BmRepeat Repeat, string Note);
+
+    private readonly RepeatDemo[] _repeats =
+    [
+        new("BmRepeat.Loop(2, delay: 0.3)", BmRepeat.Loop(2, delay: 0.3), "0→140 three times, ends at 140"),
+        new("BmRepeat.Mirror(2, delay: 0.3)", BmRepeat.Mirror(2, delay: 0.3), "there, back, there - ends at 140"),
+        new("BmRepeat.Reverse(2, delay: 0.3)", BmRepeat.Reverse(2, delay: 0.3), "forwards, then backwards twice - ends at 0"),
+    ];
 
     private const string _keyframesCode = """
         @using Bit.Bmotion
@@ -195,6 +242,30 @@
                 <div class="ball" />
             </Bmotion>
         </div>
+        """;
+
+    private const string _repeatCode = """
+        @using Bit.Bmotion
+
+        @* The count is the runs AFTER the first, so each of these plays three times;
+           delay is the pause between runs. *@
+        <Bmotion Animate="Bm.To(x: [0, 140])"
+                 Transition="Bm.Tween(0.7, BmEase.InOut, repeat: BmRepeat.Loop(2, delay: 0.3))">
+            <div class="box" />   @* jumps back to 0 and replays: ends at 140 *@
+        </Bmotion>
+
+        <Bmotion Animate="Bm.To(x: [0, 140])"
+                 Transition="Bm.Tween(0.7, BmEase.InOut, repeat: BmRepeat.Mirror(2, delay: 0.3))">
+            <div class="box" />   @* there, back, there: ends at 140 *@
+        </Bmotion>
+
+        <Bmotion Animate="Bm.To(x: [0, 140])"
+                 Transition="Bm.Tween(0.7, BmEase.InOut, repeat: BmRepeat.Reverse(2, delay: 0.3))">
+            <div class="box" />   @* forwards once, then backwards from the end: ends at 0 *@
+        </Bmotion>
+
+        @* Also: BmRepeat.Forever, BmRepeat.Mirror() (forever), BmRepeat.Times(3, BmRepeatType.Mirror),
+           and a bare count - repeat: 2 is BmRepeat.Loop(2). *@
         """;
 
     private const string _currentCode = """

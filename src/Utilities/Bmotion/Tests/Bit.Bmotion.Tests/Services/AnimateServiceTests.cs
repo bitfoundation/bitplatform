@@ -125,6 +125,8 @@ public class AnimateServiceTests
     private static async Task<(BmotionAnimateService, BmotionAnimationEngine, BmAnimationControls)> StartColorTween(double seconds = 1)
     {
         var (service, engine, interop) = Create();
+        // Playback control on the frame loop, ticked by hand (the fake browser has no Web Animations).
+        interop.WebAnimationsSupported = false;
         interop.SelectorResolver = _ => ["el"];
         engine.RegisterElement("el", new Dictionary<string, object?> { ["backgroundColor"] = "#000000" });
         var controls = await service.AnimateAsync("#el", Bm.To(backgroundColor: "#ffffff"), Bm.Tween(seconds, ease: BmEase.Linear));

@@ -359,12 +359,12 @@ internal sealed class RenderTracker
     }
 
     /// <summary>
-    /// Whether <c>render_diff</c> measurements are expected, so closed batches wait in a queue for theirs. Never on a
-    /// runtime without the framework meters (before .NET 10), unless a measurement was actually seen: batches would
-    /// wait for a measurement that never comes until the queue overflowed.
+    /// Whether <c>render_diff</c> measurements are expected, so closed batches wait in a queue for theirs. Never without
+    /// the framework meters, unless a measurement was actually seen: batches would wait for a measurement that never
+    /// comes until the queue overflowed.
     /// </summary>
     private bool DiffMatchingActive =>
-        ((_options.UseFrameworkInstrumentation && CapabilityReport.FrameworkInstrumentationExists) || ActivityObserver.BatchMetricsObserved)
+        (_options.UseFrameworkInstrumentation || ActivityObserver.BatchMetricsObserved)
         && CapabilityReport.MetricsAreSupported();
 
     /// <summary>

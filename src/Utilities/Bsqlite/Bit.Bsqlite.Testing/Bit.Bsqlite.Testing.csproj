@@ -3,7 +3,7 @@
     <Import Project="../../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
         <RootNamespace>Bit.Bsqlite</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Description>Test support for bit Bsqlite: an in-process IBsqliteTransport backed by Microsoft.Data.Sqlite - the native transport Blazor Hybrid apps run on, recording what it executes - so the stack can be unit-tested on desktop .NET without a browser, and the MSTest conformance kit every storage provider must pass - inherit its test classes in your provider's test project and hand them your provider.</Description>
@@ -21,7 +21,8 @@
              what executes the SQL. Lifted to match the SQLitePCLRaw.core Bit.Bsqlite compiles against: a native
              provider from an older bundle cannot implement the newer core's ISQLite3Provider, and the transport
              snapshots the database through raw.sqlite3_serialize, which the older ones do not expose. -->
-        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="[2.1.13,3.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' != 'net11.0'" Include="SQLitePCLRaw.bundle_e_sqlite3" Version="[2.1.13,3.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="SQLitePCLRaw.bundle_e_sqlite3" Version="[3.0.5,4.0.0)" />
 
         <!-- The conformance kit is a library of tests other projects inherit, not a runnable test project, so
              it takes the framework rather than the runner. -->

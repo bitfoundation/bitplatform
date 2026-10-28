@@ -187,8 +187,8 @@ register OPFS and IndexedDB alone.
 
 Bit.Besql said to use the factory in `OnAfterRender`, because it needed `IJSRuntime`. Bsqlite needs the page to run on
 WebAssembly: on Interactive WebAssembly open the database once `RendererInfo.IsInteractive` is true, on Interactive Auto
-once `OperatingSystem.IsBrowser()` is - a page on the server circuit is interactive too - and on .NET 8, which has no
-`RendererInfo`, use `OperatingSystem.IsBrowser()` either way. Blazor Hybrid pages open it whenever they like.
+once `OperatingSystem.IsBrowser()` is - a page on the server circuit is interactive too. Blazor Hybrid pages open it
+whenever they like.
 
 ### 7. Check the result
 

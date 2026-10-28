@@ -68,7 +68,7 @@ builder.Services.AddBitBaletteServices();
 - Failures logged through `ILogger` and reported in the palette without exposing exception text; unsafe link schemes
   refused.
 - CSS-variable theming, light and dark, eight templates or a fully unstyled mode, localizable strings.
-- Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 8, 9 and 10; trimming and AOT
+- Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 10 and 11; trimming and AOT
   friendly.
 
 ## For AI agents

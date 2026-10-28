@@ -52,7 +52,7 @@ order a user makes is the order your code reads back.
   `OnRemove`, `OnUpdate`, `OnSort`, `OnChange`), which also say how the drag was made and whether it was
   cancelled.
 - **Generic and strongly typed**: `Bortable<TItem>`.
-- Works on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, on .NET 8, 9 and 10, and is
+- Works on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, on .NET 10 and 11, and is
   trimming and AOT friendly.
 
 ## Quick start
@@ -91,7 +91,7 @@ The full walkthrough is in [getting started](#getting-started).
 
 ## Requirements
 
-- .NET 8, .NET 9 or .NET 10
+- .NET 10 or .NET 11
 - Blazor WebAssembly, Blazor Server, Blazor Web App (any interactive render mode) or Blazor Hybrid
 - Any evergreen browser: the mouse uses HTML5 drag and drop, a finger or a pen pointer events, so touch screens work
   whether or not their browser drags natively
@@ -104,6 +104,26 @@ past it: a simple list, shared lists with an empty state, cloning from a list an
 keyboard and translated screen reader announcements, a board with rules, touch and pen, a large list, a grid with
 horizontal and right-to-left rows, nested lists, the stylesheet's custom properties and classes, an events log, and
 the multi-drag and swap plugins. Every page shows its own source and the parameters it uses.
+
+[`Samples`](Samples/) is the hosting harness rather than the docs: one shared [Core](Samples/Core/) project of
+pages (a list and two shared lists with their drag log, a board with rules and moves from code, a form builder that
+clones from a palette, a tree of nested lists, and multi-drag and swap mode), hosted unchanged under
+[Server](Samples/Server/), [WASM](Samples/Wasm/), [Auto](Samples/Auto/) and [MAUI](Samples/Maui/) (Blazor Hybrid on
+Android, iOS, macOS and Windows), so each [hosting model](#hosting-models) can be tried with the same lists. Every
+page says which renderer it is on and where a drop position is decided: in the browser, on the server across the
+circuit, or in the app's own process.
+
+```bash
+dotnet run --project src/Utilities/Bortable/Samples/Server
+dotnet run --project src/Utilities/Bortable/Samples/Wasm/Bit.Bortable.Samples.Wasm
+dotnet run --project src/Utilities/Bortable/Samples/Auto/Bit.Bortable.Samples.Auto
+dotnet build -t:Run -f net10.0-android src/Utilities/Bortable/Samples/Maui
+```
+
+`Bit.Bortable.slnx` includes the MAUI sample, whose Android, iOS and Mac Catalyst (and, on Windows, Windows) targets
+need the `maui-*` workloads - `dotnet workload restore` from `src/Utilities/Bortable` installs them. Without them the
+solution build fails with `NETSDK1147`; the library, the demo, the tests and the web samples still build as projects
+of their own.
 
 ## How it fits together
 
@@ -919,8 +939,10 @@ the stylesheet from the server's `App.razor`.
 
 ### Blazor Hybrid
 
-Register the services in `MauiProgram.cs` and link the stylesheet from `wwwroot/index.html`. Drag and drop is the
-web view's own, so it works wherever the platform's web view supports HTML5 drag and drop.
+Register the services in `MauiProgram.cs` and link the stylesheet from `wwwroot/index.html`, as the
+[MAUI sample](Samples/Maui/wwwroot/index.html) does. A finger or a pen drags with pointer events, which every
+platform's web view supports; only the mouse uses the web view's own HTML5 drag and drop. Where a web view's native
+mouse drag fails, set `ForceFallback` and the mouse drags with pointer events too.
 
 ### Prerendering
 

@@ -1,0 +1,39 @@
+﻿@inherits LayoutComponentBase
+
+@* A reading-progress bar for whichever page is showing, driven by the page's scroll on the browser's own scroll
+   timeline: no scroll handler and no interop per frame, so it follows the scroll as closely on Server and in the MAUI
+   app as on WebAssembly. An element on a timeline is prerendered at its Initial state, so the bar starts empty. *@
+<Bmotion Timeline="BmScrollTimeline.Page()" Initial="Bm.To(scaleX: 0)" Animate="Bm.To(scaleX: [0, 1])">
+    <div class="scroll-progress" aria-hidden="true"></div>
+</Bmotion>
+
+<div class="app">
+    <nav class="topbar">
+        <NavLink href="" Match="NavLinkMatch.All" class="brand">Bmotion samples</NavLink>
+        <NavLink href="gestures">Gestures</NavLink>
+        <NavLink href="presence">Presence</NavLink>
+        <NavLink href="layout">Layout</NavLink>
+        <NavLink href="programmatic">Programmatic</NavLink>
+        <NavLink href="scroll">Scroll</NavLink>
+        <button type="button" class="toggle" aria-pressed="@(_slow ? "true" : "false")" @onclick="() => _slow = !_slow">
+            Slow motion
+        </button>
+        @* Which renderer produced this markup: Static while prerendering, then Server, WebAssembly or WebView. *@
+        <span class="renderer" data-renderer="@RendererInfo.Name" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")">
+            @RendererInfo.Name@(RendererInfo.IsInteractive ? null : " (prerendered)")
+        </span>
+    </nav>
+
+    <main>
+        @* The transitions of every <Bmotion> beneath it play at this speed. It scales durations and delays, so the
+           pages time their transitions with tweens and duration-based springs. At a quarter of it, what each host does,
+           and when, is easy to follow. *@
+        <BmotionConfig TransitionSpeed="@(_slow ? 0.25 : 1)">
+            @Body
+        </BmotionConfig>
+    </main>
+</div>
+
+@code {
+    private bool _slow;
+}

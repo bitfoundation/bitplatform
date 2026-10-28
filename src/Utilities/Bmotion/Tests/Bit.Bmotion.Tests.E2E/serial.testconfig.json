@@ -1,0 +1,13 @@
+{
+  "mstest": {
+    "timeout": {
+      "test": 180000,
+      "useCooperativeCancellation": true
+    },
+    "parallelism": {
+      "enabled": true,
+      "workers": 1,
+      "scope": "class"
+    }
+  }
+}

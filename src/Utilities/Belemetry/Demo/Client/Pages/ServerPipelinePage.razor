@@ -25,8 +25,7 @@
     </p>
     <p>
         <code>Server.IgnoredRequestPaths</code> keeps the request spans of health probes and Blazor's own traffic
-        out, by path prefix (<code>url.path</code> on .NET 10, only the route on .NET 8 and 9, so a static file
-        cannot be matched there), before the span is even converted. The span is dropped when it ends, so a child
+        out, by path prefix (<code>url.path</code>), before the span is even converted. The span is dropped when it ends, so a child
         it had - the database check behind <code>/health</code> - is still exported, with a parent that never arrives.
     </p>
     <CodeSnippet Code="@SetupCode" Language="C#" Expanded="true" />
@@ -93,12 +92,12 @@
     </div>
     <p>
         ASP.NET Core's request activity (<code>Microsoft.AspNetCore.Hosting.HttpRequestIn</code>) carries no HTTP tags of
-        its own on .NET 8 and 9. Belemetry fills them in without a middleware or a reference to ASP.NET Core, from the
+        its own by default. Belemetry fills them in without a middleware or a reference to ASP.NET Core, from the
         tags ASP.NET Core puts on its <code>http.server.request.duration</code> measurement:
         <code>http.request.method</code>, <code>url.scheme</code>, <code>http.route</code>,
         <code>http.response.status_code</code>, <code>network.protocol.version</code> and <code>error.type</code>. The
         span is named <code>{method} {route}</code> (or <code>{method}</code> without a route, unless the app renamed the
-        activity), and a 5xx marks it as an error. On .NET 10 Belemetry also turns off ASP.NET Core's
+        activity), and a 5xx marks it as an error. Belemetry also turns off ASP.NET Core's
         <code>Microsoft.AspNetCore.Hosting.SuppressActivityOpenTelemetryData</code> switch (unless the app set it either
         way), which adds <code>url.path</code>, <code>server.address</code> and <code>server.port</code>.
     </p>

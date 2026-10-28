@@ -39,7 +39,7 @@ public static class SiteInfo
         "text, lists, maps and sets, with synchronization, presence, offline-first persistence and selective undo. " +
         "Every panel on this site is a separate replica, merging for real.";
 
-    public static readonly string[] Badges = ["MIT", "net8.0", "net9.0", "net10.0"];
+    public static readonly string[] Badges = ["MIT", "net10.0", "net11.0"];
 
     /// <summary>Words the search palette suggests when a query finds nothing.</summary>
     public static readonly string[] SearchHints = ["offline", "undo", "conflict", "presence", "history", "SignalR"];

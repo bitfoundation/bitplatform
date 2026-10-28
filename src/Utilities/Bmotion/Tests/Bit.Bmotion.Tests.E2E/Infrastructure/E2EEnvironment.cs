@@ -14,8 +14,8 @@ public static class E2EEnvironment
     /// </summary>
     public static string Host { get; } = HarnessHostKinds.Validate(Read("BMOTION_E2E_HOST") ?? HarnessHostKinds.WebAssembly);
 
-    /// <summary><c>BMOTION_E2E_FRAMEWORK</c>: the target framework the harness host runs on. Defaults to net10.0.</summary>
-    public static string Framework { get; } = Read("BMOTION_E2E_FRAMEWORK") ?? "net10.0";
+    /// <summary><c>BMOTION_E2E_FRAMEWORK</c>: the target framework the harness host runs on. Defaults to net11.0.</summary>
+    public static string Framework { get; } = Read("BMOTION_E2E_FRAMEWORK") ?? "net11.0";
 
     /// <summary>
     /// <c>BMOTION_E2E_CONFIGURATION</c>: the build configuration of the harness host. Defaults to the configuration

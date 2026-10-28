@@ -5,7 +5,7 @@
          (Samples/Standalone) and a .NET MAUI Blazor Hybrid app (Samples/MAUI). -->
 
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net11.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>

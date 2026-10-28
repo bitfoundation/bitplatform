@@ -97,25 +97,47 @@ public static partial class ToolCatalog
         }
     }
 
-    public static string? DotnetRoot(ToolContext context)
+    public static async Task<string?> ContainerRuntimeAsync(IProcessRunner runner, CliEnvironment environment, CancellationToken cancellationToken)
     {
-        if (context.Runner.FindExecutable("dotnet") is not { } muxer)
-            return null;
+        var docker = await runner.RunAsync(new ProcessSpec { FileName = "docker", Arguments = ["version", "--format", "{{.Server.Version}}"], Timeout = TimeSpan.FromSeconds(20) }, cancellationToken);
 
-        try
+        if (docker.Succeeded && ParseVersion(docker.Output) is not null)
+            return "docker";
+
+        return DockerTool.FindPodman(runner, environment) is { } podman
+            && (await runner.RunAsync(new ProcessSpec { FileName = podman, Arguments = ["container", "ls", "-n", "1"], Timeout = TimeSpan.FromSeconds(20) }, cancellationToken)).Succeeded
+            ? "podman"
+            : null;
+    }
+
+    public static string? DotnetRoot(ToolContext context) => DotnetRoot(context.Runner);
+
+    public static string? DotnetRoot(IProcessRunner runner)
+    {
+        var muxer = runner.FindExecutable("dotnet");
+
+        for (var links = 0; muxer is not null && links < 10; links++)
         {
-            muxer = File.ResolveLinkTarget(muxer, returnFinalTarget: true)?.FullName ?? muxer;
-        }
-        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
-        {
+            var separator = muxer.LastIndexOfAny(['/', '\\']);
+
+            if (separator > 0 && Directory.Exists(Path.Combine(muxer[..separator], "host", "fxr")))
+                return muxer[..separator];
+
+            try
+            {
+                muxer = File.ResolveLinkTarget(muxer, returnFinalTarget: false)?.FullName;
+            }
+            catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+            {
+                return null;
+            }
         }
 
-        var separator = muxer.LastIndexOfAny(['/', '\\']);
-        return separator > 0 ? muxer[..separator] : null;
+        return null;
     }
 
     [GeneratedRegex(@"^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$")]
-    private static partial Regex SdkVersionRegex();
+    internal static partial Regex SdkVersionRegex();
 
     private sealed class DotnetSdkTool : Tool
     {
@@ -368,7 +390,7 @@ public static partial class ToolCatalog
                     Elevation = Elevation.Sudo,
                     Commands =
                     [
-                        PackageManagers.Sudo("bash", "-c", "curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -"),
+                        PackageManagers.Sudo("bash", "-c", "set -o pipefail; curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -"),
                         PackageManagers.Sudo("apt-get", "install", "-y", "nodejs")
                     ],
                     InstalledExecutables = PackageExecutables
@@ -485,7 +507,7 @@ public static partial class ToolCatalog
             ToolId = Id,
             Title = "Install Homebrew",
             Interactive = true,
-            Commands = [new ProcessSpec { FileName = "/bin/bash", Arguments = ["-c", "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"], Interactive = true }]
+            Commands = [new ProcessSpec { FileName = "/bin/bash", Arguments = ["-c", "script=\"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\" && /bin/bash -c \"$script\""], Interactive = true }]
         };
 
         public override string? ManualInstructions(ToolContext context) => "https://brew.sh";
@@ -555,6 +577,12 @@ public static partial class ToolCatalog
 
         private const string PodmanMachineStopped = "Podman's machine isn't running";
 
+        private const string DockerWithoutAccess = "your user can't reach it";
+
+        private const string SignOutAndIn = "Sign out and back in so your user can run docker without sudo.";
+
+        private static readonly string[] DockerScriptDistributions = ["centos", "fedora", "rhel", "rocky"];
+
         public override string Id => "docker";
 
         public override string Name => "Docker or Podman";
@@ -589,6 +617,9 @@ public static partial class ToolCatalog
                     return new ToolStatus(ToolState.NotRunning, null, (await context.RunAsync(podman, ["machine", "inspect"], cancellationToken)).Succeeded ? PodmanMachineStopped : PodmanWithoutMachine);
             }
 
+            if (context.Environment.IsLinux && server.Output.Contains("permission denied", StringComparison.OrdinalIgnoreCase))
+                return new ToolStatus(ToolState.NotRunning, null, DockerWithoutAccess);
+
             var client = await context.RunAsync("docker", ["--version"], cancellationToken);
             return client.Succeeded ? new ToolStatus(ToolState.NotRunning, ParseVersion(client.Output)?.ToString(), "installed, but not running") : ToolStatus.Missing();
         }
@@ -610,7 +641,7 @@ public static partial class ToolCatalog
                     {
                         ToolId = Id,
                         Title = "Start Docker Desktop",
-                        Commands = [new ProcessSpec { FileName = "cmd.exe", Arguments = ["/c", "start", "", desktop] }],
+                        Commands = [new ProcessSpec { FileName = "powershell.exe", Arguments = ["-NoProfile", "-NonInteractive", "-Command", $"Start-Process -FilePath '{desktop.Replace("'", "''", StringComparison.Ordinal)}'"] }],
                         AfterInstall = "Docker Desktop is starting; accept its terms if it asks."
                     },
                     HostOs.MacOS when context.Runner.FindExecutable("colima") is { } colima
@@ -618,6 +649,8 @@ public static partial class ToolCatalog
                     HostOs.MacOS when Directory.Exists("/Applications/Docker.app")
                         => new ToolAction { ToolId = Id, Title = "Start Docker Desktop", Commands = [new ProcessSpec { FileName = "open", Arguments = ["-a", "Docker"] }] },
                     HostOs.MacOS => Colima(context),
+                    HostOs.Linux when status.Detail is DockerWithoutAccess
+                        => new ToolAction { ToolId = Id, Title = "Enable Docker for your user", Elevation = Elevation.Sudo, AfterInstall = SignOutAndIn, Commands = [JoinDockerGroup(context)] },
                     HostOs.Linux => new ToolAction { ToolId = Id, Title = "Start Docker", Elevation = Elevation.Sudo, Commands = [PackageManagers.Sudo("systemctl", "start", "docker")] },
                     _ => null
                 };
@@ -629,20 +662,23 @@ public static partial class ToolCatalog
                     ? winget with { Commands = [.. winget.Commands, .. PodmanMachine(PodmanInstallPath(context), init: true)] }
                     : null,
                 HostOs.MacOS => Colima(context),
+                _ when context.PackageManagers is { Apt: null, Dnf: not null, Distribution: { } distribution } && DockerScriptDistributions.Contains(distribution) is false => null,
                 _ when context.PackageManagers.Apt is not null || context.PackageManagers.Dnf is not null => new ToolAction
                 {
                     ToolId = Id,
                     Title = "Install Docker Engine",
                     Elevation = Elevation.Sudo,
-                    AfterInstall = "Sign out and back in so your user can run docker without sudo.",
+                    AfterInstall = SignOutAndIn,
                     Commands =
                     [
                         PackageManagers.Sudo("sh", "-c", "curl -fsSL https://get.docker.com | sh"),
-                        PackageManagers.Sudo("usermod", "-aG", "docker", context.Environment.GetVariable("USER") ?? Environment.UserName),
+                        JoinDockerGroup(context),
                         PackageManagers.Sudo("systemctl", "enable", "--now", "docker")
                     ]
                 },
-                _ => context.PackageManagers.LinuxInstall(Id, "Install Docker", "docker.io docker-buildx", "docker docker-buildx", "docker docker-buildx")
+                _ => context.PackageManagers.LinuxInstall(Id, "Install Docker", "docker.io docker-buildx", "docker docker-buildx", "docker docker-buildx", SignOutAndIn) is { } install
+                    ? install with { Commands = [.. install.Commands, JoinDockerGroup(context), PackageManagers.Sudo("systemctl", "enable", "--now", "docker")] }
+                    : null
             };
         }
 
@@ -652,6 +688,8 @@ public static partial class ToolCatalog
             HostOs.MacOS => "https://github.com/abiosoft/colima#installation",
             _ => "https://docs.docker.com/engine/install/"
         };
+
+        private static ProcessSpec JoinDockerGroup(ToolContext context) => PackageManagers.Sudo("usermod", "-aG", "docker", context.Environment.GetVariable("USER") ?? Environment.UserName);
 
         private static IReadOnlyList<ProcessSpec> PodmanMachine(string podman, bool init)
         {
@@ -689,17 +727,21 @@ public static partial class ToolCatalog
             };
         }
 
-        private static string? FindPodman(ToolContext context)
+        private static string? FindPodman(ToolContext context) => FindPodman(context.Runner, context.Environment);
+
+        internal static string? FindPodman(IProcessRunner runner, CliEnvironment environment)
         {
-            if (context.Runner.FindExecutable("podman") is { } podman)
+            if (runner.FindExecutable("podman") is { } podman)
                 return podman;
 
-            var installed = PodmanInstallPath(context);
-            return context.Environment.IsWindows && File.Exists(installed) ? installed : null;
+            var installed = PodmanInstallPath(environment);
+            return environment.IsWindows && File.Exists(installed) ? installed : null;
         }
 
-        private static string PodmanInstallPath(ToolContext context)
-            => Path.Combine(context.Environment.GetVariable("LOCALAPPDATA") ?? Path.Combine(context.Environment.HomeDirectory, "AppData", "Local"), "Programs", "Podman", "podman.exe");
+        private static string PodmanInstallPath(ToolContext context) => PodmanInstallPath(context.Environment);
+
+        private static string PodmanInstallPath(CliEnvironment environment)
+            => Path.Combine(environment.GetVariable("LOCALAPPDATA") ?? Path.Combine(environment.HomeDirectory, "AppData", "Local"), "Programs", "Podman", "podman.exe");
 
         private static string? FindDockerDesktop(ToolContext context)
         {
@@ -741,12 +783,16 @@ public static partial class ToolCatalog
             var wanted = context.Needs.AspireVersion?.ToString();
             var outdated = status.State is ToolState.Outdated;
             string[] version = wanted is null ? [] : ["--version", wanted];
+            var aspire = outdated ? context.Runner.FindExecutable("aspire") : null;
+            var dotnetTools = Path.Combine(context.Environment.HomeDirectory, ".dotnet", "tools");
 
             return new ToolAction
             {
                 ToolId = Id,
                 Title = outdated ? $"Update the Aspire CLI to {wanted}" : wanted is null ? "Install the Aspire CLI" : $"Install the Aspire CLI {wanted}",
-                Commands = [new ProcessSpec { FileName = "dotnet", Arguments = ["tool", outdated ? "update" : "install", "--global", "Aspire.Cli", .. version], Timeout = TimeSpan.FromMinutes(10) }]
+                Commands = [aspire is not null && string.Equals(Path.GetDirectoryName(aspire), dotnetTools, StringComparison.OrdinalIgnoreCase) is false
+                    ? new ProcessSpec { FileName = aspire, Arguments = ["update", "--self", "--channel", "stable"], Timeout = TimeSpan.FromMinutes(10) }
+                    : new ProcessSpec { FileName = "dotnet", Arguments = ["tool", outdated ? "update" : "install", "--global", "Aspire.Cli", .. version], Timeout = TimeSpan.FromMinutes(10) }]
             };
         }
 

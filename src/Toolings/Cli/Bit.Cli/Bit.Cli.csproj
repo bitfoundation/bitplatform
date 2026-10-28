@@ -33,6 +33,7 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.14" />
         <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.14" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.14" />
+        <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="10.0.14" />
         <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.14" />
         <PackageReference Include="Tomlyn" Version="2.10.1" />
         <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.10.0" />
@@ -52,5 +53,19 @@
         <AssemblyMetadata Include="BitCliBuildRunUrl" Value="$(BitCliBuildRunUrl)" />
         <AssemblyMetadata Include="BitCliTelemetryConnectionString" Value="$(BitCliTelemetryConnectionString)" />
     </ItemGroup>
+
+    <Target Name="EmbedTemplateTypeNames" BeforeTargets="AssignTargetPaths">
+        <PropertyGroup>
+            <_TemplateSource>$([MSBuild]::NormalizeDirectory($(MSBuildThisFileDirectory), '..', '..', '..', 'Templates', 'Boilerplate', 'Bit.Boilerplate', 'src'))</_TemplateSource>
+        </PropertyGroup>
+        <ItemGroup>
+            <_TemplateCodeFile Include="$(_TemplateSource)**/*.cs;$(_TemplateSource)**/*.razor" Exclude="$(_TemplateSource)**/bin/**;$(_TemplateSource)**/obj/**;$(_TemplateSource)**/node_modules/**" />
+        </ItemGroup>
+        <WriteLinesToFile File="$(IntermediateOutputPath)template-types.txt" Lines="@(_TemplateCodeFile->'%(Filename)%(Extension)'->Distinct())" Overwrite="true" WriteOnlyWhenDifferent="true" />
+        <ItemGroup>
+            <EmbeddedResource Include="$(IntermediateOutputPath)template-types.txt" LogicalName="Bit.Cli.template-types.txt" />
+            <FileWrites Include="$(IntermediateOutputPath)template-types.txt" />
+        </ItemGroup>
+    </Target>
 
 </Project>

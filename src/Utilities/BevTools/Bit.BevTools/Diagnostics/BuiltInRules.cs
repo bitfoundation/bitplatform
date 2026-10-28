@@ -309,7 +309,7 @@ internal static class BuiltInRules
                     $"{group.Key} ran while prerendering and again when the page became interactive",
                     $"Prerendering requested it {Times(prerendered.Count)} on the server ({Ms(prerendered.Sum(r => r.DurationMs ?? 0))}); this {session.Platform ?? "interactive"} session requested it {Times(again.Count)} more, the first {after:0.0} s after it started. "
                         + "OnInitializedAsync runs once to prerender the HTML and once more when the component becomes interactive, and nothing carried the first result over.",
-                    "Hand the data over: [PersistentState] on the property (.NET 10), or PersistentComponentState.PersistAsJson and TryTakeFromJson (.NET 8 and 9). Or turn prerendering off for the component: new InteractiveServerRenderMode(prerender: false).",
+                    "Hand the data over: [PersistentState] on the property, or PersistentComponentState.PersistAsJson and TryTakeFromJson. Or turn prerendering off for the component: new InteractiveServerRenderMode(prerender: false).",
                     Fingerprint: Id + ":" + group.Key,
                     RelatedEventIds: again.Select(r => r.TimelineEventId).Where(id => id > 0).Take(10).ToList());
             }

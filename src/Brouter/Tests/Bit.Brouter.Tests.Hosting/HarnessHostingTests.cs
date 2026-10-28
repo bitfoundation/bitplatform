@@ -50,12 +50,7 @@ public class HarnessHostingTests
     {
         using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/nope/deeper");
 
-#if NET10_0_OR_GREATER
         Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
-#else
-        // Before .NET 10 there is no NavigationManager.NotFound, so no way for a router to set the status.
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-#endif
 
         // The status alone is not enough: the user still has to see the fallback, and an interactive
         // mode still needs its script to boot on this page.
@@ -64,7 +59,6 @@ public class HarnessHostingTests
         StringAssert.Contains(html, "_framework/blazor.web.js");
     }
 
-#if NET10_0_OR_GREATER
     [TestMethod]
     [DataRow(Modes.Ssr)]
     [DataRow(Modes.Server)]
@@ -77,7 +71,6 @@ public class HarnessHostingTests
         Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
         StringAssert.Contains(await response.Content.ReadAsStringAsync(), "id=\"not-found\" data-path=\"/missing/0\"");
     }
-#endif
 
     [TestMethod]
     [DataRow(Modes.Ssr)]

@@ -30,6 +30,12 @@ runs at [bcrdt.bitplatform.dev](https://bcrdt.bitplatform.dev).
 That same server hosts an **MCP server** at `/mcp`, so an AI agent works against bit Bcrdt's real API instead of
 guessing at it - see [MCP server](#mcp-server).
 
+[`Samples`](Samples/) is the hosting-model harness rather than the docs: one shared [Core](Samples/Core/) project of
+collaborative pages - notes, a to-do list and a ticket form - hosted unchanged under [Server](Samples/Server/),
+[WASM](Samples/Wasm/) and [Auto](Samples/Auto/), each with its own `BcrdtHub` and document host, so two tabs edit
+one document whichever render mode they run in - and under [MAUI](Samples/Maui/) (Android, iOS, Mac Catalyst and
+Windows), where a `BlazorWebView` runs them as a local-first Blazor Hybrid app over a file-system store.
+
 ---
 
 ## Contents
@@ -96,14 +102,14 @@ understanding what it will decide. See [Choosing a data type](#choosing-a-data-t
 |---|---|
 | `Bit.Bcrdt` | The engine: identity, clocks and state vectors, the YATA engine with `BcrdtText`, `BcrdtArray`, `BcrdtMap` and `BcrdtSet`, updates, snapshots and selective undo; presence and awareness; the store abstraction with in-memory, file-system and browser (IndexedDB) stores; the sync protocol and `BcrdtSyncProvider`; `IBcrdtCollaborationService` and `AddBitBcrdtServices`; the text-input and object bindings; the in-memory and WebSocket client transports; and metrics. And the Blazor components, in the `Bit.Bcrdt.Blazor` namespace: `BcrdtComponentBase`, `BcrdtCollaborationScope`, `BcrdtTextArea` and `BcrdtPresenceView`. |
 | `Bit.Bcrdt.SignalR` | The SignalR client transport. No ASP.NET Core server dependency, so it runs in WebAssembly and Hybrid apps. |
-| `Bit.Bcrdt.Server` | The ASP.NET Core relays - `BcrdtHub` for the SignalR transport and `MapBitBcrdtWebSocket` for the WebSocket transport - with per-document read-only or read-write access, and `BcrdtDocumentHost`, which keeps a persisted, always-present replica of every document the relays carry. |
+| `Bit.Bcrdt.Server` | The ASP.NET Core relays - `BcrdtHub` for the SignalR transport and `MapBitBcrdtWebSocket` for the WebSocket transport - with per-document read-only or read-write access; `BcrdtDocumentHost`, which keeps a persisted, always-present replica of every document the relays carry; and `BcrdtPresenceCircuitHandler`, which withdraws a Blazor Server user's presence while their browser connection is down. |
 | `Bit.Bcrdt.Testing` | A deterministic, seeded network simulator (loss, duplication, reordering, partitions, offline peers), random operation generators, a convergence harness and an update corrupter for fuzzing. |
 
 Dependencies point strictly downward. The engine knows nothing about transports, storage or Blazor - nothing in it
 touches the components that ship beside it; the components know nothing about transports; the relays never decode a
 message.
 
-All four target .NET 8, 9 and 10.
+All four target .NET 10 and 11.
 
 ---
 
@@ -227,8 +233,7 @@ tag to add: the one small module `BcrdtTextArea` needs (`_content/Bit.Bcrdt/bit-
 Where a page is prerendered and then becomes interactive, a document must be opened only once the component is
 interactive (`RendererInfo.IsInteractive`) - a document opened while prerendering belongs to a request that is
 already over, and a browser store cannot be reached at all. `BcrdtCollaborationScope` does this by itself and shows
-`LoadingContent` while prerendering - on .NET 8, where there is no `RendererInfo`, by waiting for its first render in
-the browser. Give it `ErrorContent` to show a document that cannot be opened instead of failing the page.
+`LoadingContent` while prerendering. Give it `ErrorContent` to show a document that cannot be opened instead of failing the page.
 
 `BcrdtTextArea` turns read-only - still showing everyone else's changes - when its `ReadOnly` parameter says so, or
 when the server granted the cascaded document's connection read-only access. If its small browser module cannot be
@@ -366,9 +371,10 @@ heartbeat, so a crashed tab disappears from everyone's list without any server b
 user id into a fixed palette, so every participant agrees on everyone's colour with no coordination.
 
 In Blazor Server a circuit outlives its browser tab by the circuit retention period, and its documents keep publishing
-presence until then. To withdraw a user as soon as the connection drops, register a `CircuitHandler` that calls
-`BcrdtPresenceService.Suspend` on every open document in `OnConnectionDownAsync` and `Resume` in
-`OnConnectionUpAsync`.
+presence until then. To withdraw a user as soon as the connection drops, call
+`builder.Services.AddBitBcrdtCircuitPresence()` from `Bit.Bcrdt.Server`: it registers `BcrdtPresenceCircuitHandler`, which
+calls `BcrdtPresenceService.Suspend` on every document the circuit has open when the connection goes down, and `Resume`
+when it comes back.
 
 ---
 
@@ -476,6 +482,9 @@ a specific reason:
   edits apart.
 - **Blazor Web App** - register it in both projects; whichever side renders interactively owns the replica.
 - **Hybrid (MAUI, WPF, WinForms)** - as WebAssembly, with the local process as the replica.
+
+The [samples](Samples/) wire bit Bcrdt into each of these - their `Program.cs` (and the MAUI sample's `MauiProgram.cs`)
+is the registration to copy.
 
 The engine requires no JavaScript interop, so it runs unchanged in all of them, in a background service, in a console
 application, or on a server that hosts documents without rendering them.
@@ -1305,8 +1314,7 @@ Changes since the previous release that an application may notice:
 - **`BcrdtHub.OnDisconnectedAsync` is overridden.** A subclass overriding it must call the base implementation.
 - **`BcrdtUndoManagerOptions.MaxStackItems` defaults to 100.** Set it to zero for the previous unbounded stacks.
 - **Collaborative types nest at most 128 levels.** Deeper nesting throws locally and is dropped when it arrives.
-- **`BcrdtCollaborationScope` does not open documents while prerendering.** On .NET 8 it opens them after its first
-  interactive render.
+- **`BcrdtCollaborationScope` does not open documents while prerendering.**
 - **`EncodeStateAsUpdate` includes updates a replica is still waiting to place**, as Yjs does.
 - **The browser module's exports changed.** It is internal to the components; the unused `getSelection`,
   `setSelection`, `setValuePreservingSelection`, `focus` and `measureCaret` are gone.
@@ -1347,9 +1355,10 @@ called without input. Every tool is read-only, and every one is also a plain HTT
 |---|---|
 | `Bit.Bcrdt` | The engine, presence, persistence, sync, collaboration service, bindings and the in-memory and WebSocket client transports; the Blazor components and `BcrdtComponentBase` in `Blazor/` (TypeScript in `Scripts/`, compiled into `wwwroot/` on build). |
 | `Bit.Bcrdt.SignalR` | The SignalR client transport. |
-| `Bit.Bcrdt.Server` | The ASP.NET Core relays: the SignalR hub and the WebSocket endpoint. |
+| `Bit.Bcrdt.Server` | The ASP.NET Core relays: the SignalR hub and the WebSocket endpoint, the document host behind them, and the Blazor Server presence circuit handler. |
 | `Bit.Bcrdt.Testing` | The network simulator, operation generators, convergence harness and update corrupter. |
 | `Demo` | The demo (`Client` + prerendering `Server` host): side-by-side replicas over the in-memory transport, a live page across tabs through the server's relays, and the MCP server. |
+| `Samples` | The hosting samples: the `Core` pages hosted under `Server`, `Wasm` and `Auto` (each with its own relay) and `Maui` (local-first, file-system store). |
 | `Tests/Bit.Bcrdt.Tests` | MSTest tests - convergence, adversarial networks, fuzzing, persistence recovery, undo, presence, the transports and relays, the demo's own plumbing - on every target framework. |
 | `Tests/Bit.Bcrdt.Tests.Mcp` | MCP server tests, over the real protocol against the demo server's own `Program.cs`. |
 | `Tests/Bit.Bcrdt.Tests.E2E` | Playwright tests of the demo in a real browser, including collaboration between tabs. See its [README](Tests/Bit.Bcrdt.Tests.E2E/README.md). |

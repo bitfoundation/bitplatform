@@ -23,7 +23,6 @@ public sealed class MigrationLockTests
 
     private static string SharedDatabase() => $"Data Source=lock-{Guid.NewGuid():N};Mode=Memory;Cache=Shared";
 
-#if NET9_0_OR_GREATER
     [TestMethod]
     public async Task MigrateAsync_WaitsWhileAnotherTabIsMigrating()
     {
@@ -66,12 +65,10 @@ public sealed class MigrationLockTests
             Assert.ContainsSingle(await ctx.Database.GetAppliedMigrationsAsync(Ct));
         }
     }
-#endif
 
     /// <summary>
     /// The factory's first-use step - the schema step and the seed after it - runs under a lock of
-    /// its own, which is also what keeps two tabs on EF Core 8, whose migrator takes no lock, from
-    /// applying the same migration twice.
+    /// its own.
     /// </summary>
     [TestMethod]
     public async Task ContextFactory_FirstUse_WaitsWhileAnotherTabPreparesTheDatabase()

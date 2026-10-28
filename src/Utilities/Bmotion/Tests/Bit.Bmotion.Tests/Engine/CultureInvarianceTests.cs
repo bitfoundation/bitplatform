@@ -75,9 +75,9 @@ public class CultureInvarianceTests
     public Task FrameLoopOutput_IsCultureInvariant()
         => AssertCultureInvariant(async () =>
         {
-            await using var engine = new BmotionAnimationEngine(new FakeBmotionInterop());
+            // Without Web Animations the whole target plays on the frame loop.
+            await using var engine = new BmotionAnimationEngine(new FakeBmotionInterop { WebAnimationsSupported = false });
             engine.RegisterElement("el", null);
-            // width is not compositor-eligible, so the whole target stays on the frame loop.
             await engine.AnimateToAsync("el", Fractional.ToJsDictionary(), Bm.Tween(1, ease: BmEase.Linear).ToConfig());
             engine.ComputeFrame(0);
             var frame = engine.ComputeFrame(333)!["el"];

@@ -1,6 +1,6 @@
 ﻿# Bit.Belemetry
 
-One lightweight telemetry SDK for Blazor (WebAssembly, Server, Auto, static SSR, Hybrid/MAUI; net8.0/9.0/10.0).
+One lightweight telemetry SDK for Blazor (WebAssembly, Server, Auto, static SSR, Hybrid/MAUI; net10.0/11.0).
 It covers both sides of the app:
 
 - **Browser:** page views, interactions, web vitals, JS errors, and fetch/XHR dependencies.

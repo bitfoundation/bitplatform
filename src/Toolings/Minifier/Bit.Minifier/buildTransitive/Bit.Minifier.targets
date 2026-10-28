@@ -39,7 +39,7 @@
         <PropertyGroup>
             <_BitMinifierPath>$(MSBuildThisFileDirectory)..\tools\Bit.Minifier.dll</_BitMinifierPath>
             <!-- imported straight from this repository's source tree, the tool is in its own build output -->
-            <_BitMinifierPath Condition="!Exists('$(_BitMinifierPath)')">$(MSBuildThisFileDirectory)..\bin\$(Configuration)\net8.0\Bit.Minifier.dll</_BitMinifierPath>
+            <_BitMinifierPath Condition="!Exists('$(_BitMinifierPath)')">$(MSBuildThisFileDirectory)..\bin\$(Configuration)\net10.0\Bit.Minifier.dll</_BitMinifierPath>
             <!-- ILLink's own fallback for Visual Studio's msbuild.exe, where DOTNET_HOST_PATH is not set -->
             <_BitMinifyDotNetHost>$(DOTNET_HOST_PATH)</_BitMinifyDotNetHost>
             <_BitMinifyDotNetHost Condition="'$(_BitMinifyDotNetHost)' == '' and $([MSBuild]::IsOSPlatform(`Windows`))">$(NetCoreRoot)dotnet.exe</_BitMinifyDotNetHost>
