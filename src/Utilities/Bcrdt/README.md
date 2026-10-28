@@ -565,7 +565,9 @@ The pages then use `BcrdtCollaborationScope` as usual, and code of their own tha
   `IBcrdtTransport`, `IBcrdtDocumentStore` or `IBcrdtClientIdProvider` of your own. The router reads the types of
   those assemblies at startup, and on WebAssembly a type whose base type or interface lives in an assembly that is not
   loaded yet fails to load - and keeps failing after Bit.Bcrdt has loaded, breaking the app's use of it for the rest of
-  the session. Put such a class in a library that is lazy loaded together with Bit.Bcrdt.
+  the session. Put such a class in a library that is lazy loaded together with Bit.Bcrdt. The router finds the routes
+  of that library's pages only once it knows the assembly: load it in the same `LoadAssembliesAsync` call as
+  `Bit.Bcrdt.wasm`, and add the assemblies the call returns to a list the `Router`'s `AdditionalAssemblies` is bound to.
 - Configure the service before anything asks for it: in `OnInitialized`, not after an `await` in
   `OnInitializedAsync`, which lets the layout's content render - and its components ask - first. A component that
   asks before anything configured the service throws, naming both ways to provide one, rather than collaborating on a

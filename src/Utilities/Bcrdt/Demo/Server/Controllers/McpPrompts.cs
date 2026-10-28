@@ -40,7 +40,12 @@ public static class McpPrompts
                time. Without the server's registration the app fails while prerendering. Without the client's it
                prerenders fine and fails only in the browser, once the page is interactive: the collaborative components,
                and code injecting `IBcrdtCollaborationService`, throw there - in the browser console, not the server log.
-               Register it in BOTH, through one shared extension method. Never re-register `IBcrdtCollaborationService`
+               Register it in BOTH, through one shared extension method - unless the WebAssembly client lazy loads
+               Bit.Bcrdt: then the server still registers it, but the client registers nothing, since its `Program.cs`
+               would reference Bit.Bcrdt before the assembly loads, and configures the service early instead, in the
+               `OnInitialized` of a page or layout that renders after the load, through
+               `Services.GetBcrdtCollaborationService(collaboration => ...)` - see
+               `GetBcrdtGuideSection(heading: "Lazy loading on WebAssembly")`. Never re-register `IBcrdtCollaborationService`
                as a singleton: in Blazor Server every visitor would share one replica.
             3. Give the transport an absolute address - the .NET SignalR client rejects "/hub/bcrdt" - and on the server
                call `AddBitBcrdtHub` (not a bare AddSignalR, whose 32 KB limit drops clients once a document grows) and map
