@@ -190,7 +190,7 @@
         Palette.Refresh();
         """;
 
-    private static readonly string[] Queries =["c12", "cmd 1234", "command", "synthetic 19", "^command 7", "zzz"];
+    private static readonly string[] Queries = ["c12", "cmd 1234", "command", "synthetic 19", "^command 7", "zzz"];
 
     private sealed record Measurement(string Query, int Matched, TimeSpan Match, TimeSpan Rank, TimeSpan? Source);
 

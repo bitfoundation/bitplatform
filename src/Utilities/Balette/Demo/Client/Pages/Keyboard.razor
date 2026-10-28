@@ -335,6 +335,7 @@
 
     private const string RegistryExample = """
         @inject IBaletteService Palette
+        @implements IDisposable
 
         @foreach (var command in Palette.Commands.Where(c => c.Shortcut is not null && c.GlobalShortcut))
         {
@@ -347,7 +348,12 @@
 
         @code {
             // A page's commands come and go with the page: list the registry again when it changes.
-            protected override void OnInitialized() => Palette.CommandsChanged += () => InvokeAsync(StateHasChanged);
+            protected override void OnInitialized() => Palette.CommandsChanged += Refresh;
+
+            private void Refresh() => _ = InvokeAsync(StateHasChanged);
+
+            // The service outlives the page: a handler left on it keeps the page alive and rendering.
+            public void Dispose() => Palette.CommandsChanged -= Refresh;
         }
         """;
 
@@ -391,12 +397,17 @@
 
     private const string HintExample = """
         @inject IBaletteService Palette
+        @implements IDisposable
 
         <BaletteShortcutHint Shortcut="command.Shortcut" IsMac="Palette.IsMac" />
 
         @code {
             // IsMac is known once the palette has started in the browser.
-            protected override void OnInitialized() => Palette.PlatformDetected += () => InvokeAsync(StateHasChanged);
+            protected override void OnInitialized() => Palette.PlatformDetected += Refresh;
+
+            private void Refresh() => _ = InvokeAsync(StateHasChanged);
+
+            public void Dispose() => Palette.PlatformDetected -= Refresh;
         }
         """;
 

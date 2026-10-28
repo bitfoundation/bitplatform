@@ -325,7 +325,7 @@
             [
                 new BaletteDelegateSource("Packages", async (query, cursor, context, ct) =>
                 {
-                    var page = await Api.SearchPackagesAsync(query, after: cursor, take: 10, ct);
+                    var page = await api.SearchPackagesAsync(query, after: cursor, take: 10, ct);
                     return new BaletteSourcePage([.. page.Items.Select(ToCommand)], page.NextCursor, page.Total);
                 }, minQueryLength: 0, maxResults: 10),
             ],
@@ -343,7 +343,7 @@
 
             public async Task<IReadOnlyList<BaletteCommand>> SearchAsync(string query, BaletteSourceContext context, CancellationToken ct)
             {
-                var services = await Api.GetStatusAsync(ct);     // throws, or never answers: a retry row
+                var services = await api.GetStatusAsync(ct);     // throws, or never answers: a retry row
                 return [.. services.Where(s => s.Name.Contains(query)).Select(ToCommand)];
             }
         }

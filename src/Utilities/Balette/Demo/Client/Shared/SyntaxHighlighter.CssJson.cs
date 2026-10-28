@@ -4,7 +4,8 @@ namespace Bit.Balette.Demo.Client.Shared;
 
 public static partial class SyntaxHighlighter
 {
-    // What the CSS and the JSON lexers share: a position in the source, and the HTML written so far.
+    // What the CSS and the JSON lexers share: a position in the source, and the HTML written so far - through Emit and
+    // DelimitedEnd, as the Razor and C# lexer writes its own.
     private abstract class Scanner(string source)
     {
         private readonly StringBuilder _sb = new(source.Length * 2);
@@ -28,8 +29,7 @@ public static partial class SyntaxHighlighter
         // A comment that runs from `open` through `close`, or to the end of the source when it is never closed.
         protected void Delimited(string cls, int openLength, string close)
         {
-            var end = Text.IndexOf(close, Math.Min(Index + openLength, Text.Length), StringComparison.Ordinal);
-            Take(cls, (end < 0 ? Text.Length : end + close.Length) - Index);
+            Take(cls, DelimitedEnd(Text, Index, openLength, close) - Index);
         }
 
         // A quoted string through its closing quote - a backslash escapes the character after it - or to the end of
@@ -54,34 +54,14 @@ public static partial class SyntaxHighlighter
 
         protected void Span(string cls, int start, int end)
         {
-            if (end <= start)
-            {
-                return;
-            }
-            _sb.Append("<span class=\"").Append(cls).Append("\">");
-            Plain(start, end);
-            _sb.Append("</span>");
+            Emit(_sb, cls, Text, start, end);
         }
 
         // Emits the next `length` characters uncoloured and moves past them.
         protected void Plain(int length)
         {
-            Plain(Index, Index + length);
+            Emit(_sb, null, Text, Index, Index + length);
             Index += length;
-        }
-
-        private void Plain(int start, int end)
-        {
-            for (var k = start; k < end && k < Text.Length; k++)
-            {
-                switch (Text[k])
-                {
-                    case '&': _sb.Append("&amp;"); break;
-                    case '<': _sb.Append("&lt;"); break;
-                    case '>': _sb.Append("&gt;"); break;
-                    default: _sb.Append(Text[k]); break;
-                }
-            }
         }
     }
 
@@ -197,6 +177,11 @@ public static partial class SyntaxHighlighter
                 {
                     var colons = Peek(1) == ':' ? 2 : 1;
                     Take("tok-fn", colons + NameLength(Index + colons));
+                }
+                else if (atRule && IsNameStart(Index) && Peek(NameLength(Index)) == '(')
+                {
+                    // A function, `url(theme.css)` or `layer(base)`, rather than a media feature's parentheses.
+                    Function();
                 }
                 else if (c == '(' && atRule)
                 {
@@ -332,15 +317,7 @@ public static partial class SyntaxHighlighter
                     var length = NameLength(Index);
                     if (Index + length < Text.Length && Text[Index + length] == '(')
                     {
-                        var url = Text.AsSpan(Index, length).Equals("url", StringComparison.OrdinalIgnoreCase);
-                        Take("tok-fn", length);
-                        Plain(1);
-                        if (url && Peek() is not ('"' or '\''))
-                        {
-                            // An unquoted address is a string as much as a quoted one.
-                            var close = Text.IndexOf(')', Index);
-                            Take("tok-str", (close < 0 ? Text.Length : close) - Index);
-                        }
+                        Function();
                     }
                     else
                     {
@@ -355,6 +332,21 @@ public static partial class SyntaxHighlighter
             if (Peek() == ';')
             {
                 Take("tok-pun", 1);
+            }
+        }
+
+        // A function's name and its '(' - `var(`, `url(` - in a value or an at-rule's prelude; what is inside follows.
+        private void Function()
+        {
+            var length = NameLength(Index);
+            var url = Text.AsSpan(Index, length).Equals("url", StringComparison.OrdinalIgnoreCase);
+            Take("tok-fn", length);
+            Plain(1);
+            if (url && Peek() is not ('"' or '\''))
+            {
+                // An unquoted address is a string as much as a quoted one.
+                var close = Text.IndexOf(')', Index);
+                Take("tok-str", (close < 0 ? Text.Length : close) - Index);
             }
         }
 

@@ -450,7 +450,9 @@
         IReadOnlyList<string> pinned = History.Pinned();
         IReadOnlyList<string> recent = History.Recents(5);
         await History.TogglePinAsync("toggle:wordwrap");
-        History.Changed += () => InvokeAsync(StateHasChanged);
+        History.Changed += Refresh;
+        // ... and when the page goes, since the history outlives it:
+        History.Changed -= Refresh;
         """;
 
     private const string PromptExample = """
