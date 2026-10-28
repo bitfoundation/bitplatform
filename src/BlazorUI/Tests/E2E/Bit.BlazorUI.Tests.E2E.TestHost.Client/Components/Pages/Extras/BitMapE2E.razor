@@ -220,8 +220,10 @@
             <div class="map-toolbar">
                 <button id="btn-overlay-zoom" @onclick="@(async () => await _overlayMap.ZoomIn(animate: false))">Zoom in</button>
             </div>
+            <div id="overlay-badge" class="map-badge">Badge</div>
         </BitMap>
     </div>
+    <button id="btn-toggle-overlay-zoom-control" @onclick="ToggleOverlayZoomControl">Toggle zoom control</button>
     <span id="overlay-zoom">@(_overlayZoom?.ToString("F1", CultureInfo.InvariantCulture) ?? "null")</span>
 </E2ESection>
 
@@ -252,7 +254,9 @@
 
 <E2ESection Id="rtl" Title="RTL">
     <div class="map-box">
-        <BitMap TMapProvider="BitLeafletMapProvider" Id="map-rtl" Dir="BitDir.Rtl" Provider="_rtlProvider" AriaLabel="نقشه" />
+        <BitMap TMapProvider="BitLeafletMapProvider" Id="map-rtl" Dir="BitDir.Rtl" Provider="_rtlProvider" AriaLabel="نقشه">
+            <div id="rtl-badge" class="map-badge">نشان</div>
+        </BitMap>
     </div>
 </E2ESection>
 
@@ -316,6 +320,7 @@
     /* A map with its marker list beside it: the list is a sibling of the map, so the box grows with it. */
     .map-box-list { width: 600px; --bit-Map-height: 400px; }
     .map-toolbar { position: absolute; top: 8px; right: 8px; }
+    .map-badge { padding: 4px 8px; background: white; }
 </style>
 
 <E2EStatus />
@@ -351,7 +356,7 @@
     private readonly BitLeafletMapProvider _listSrProvider = Leaflet();
     private readonly BitLeafletMapProvider _listTemplateProvider = Leaflet();
     private readonly BitLeafletMapProvider _vectorProvider = Leaflet();
-    private readonly BitLeafletMapProvider _overlayProvider = Leaflet();
+    private BitLeafletMapProvider _overlayProvider = Leaflet();
     private readonly BitLeafletMapProvider _disabledProvider = Leaflet();
     private readonly BitLeafletMapProvider _varsProvider = Leaflet();
     private readonly BitLeafletMapProvider _styledProvider = Leaflet();
@@ -453,6 +458,13 @@
 
     private BitMap<BitLeafletMapProvider> _overlayMap = default!;
     private double? _overlayZoom = 13;
+
+    private void ToggleOverlayZoomControl()
+    {
+        var provider = Leaflet();
+        provider.ZoomControl = _overlayProvider.ZoomControl is false;
+        _overlayProvider = provider;
+    }
 
     private bool _disabled = true;
     private bool _dialogOpen;

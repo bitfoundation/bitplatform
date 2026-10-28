@@ -17,6 +17,8 @@
             geoJsonLayers: { [k: string]: { graphics: any[] } },
             tileOverlays: { [k: string]: any },
             scaleBar: any,
+            /** The zoom widget ZoomControl took off the view's UI, kept to be put back where it was. */
+            removedZoom: { widget: any, position: string } | null,
             suppressBrowserContextMenu: boolean,
             /**
              * BitMapProviderBase.DoubleClickZoom. MapView's actionMap has no entry for it, so the view's double-click
@@ -69,6 +71,7 @@
                 geoJsonLayers: {} as any,
                 tileOverlays: {} as any,
                 scaleBar: null as any,
+                removedZoom: null as ({ widget: any, position: string } | null),
                 suppressBrowserContextMenu: !!o.suppressBrowserContextMenu,
                 doubleClickZoom: o.doubleClickZoom !== false,
                 markerDoubleClick: false,
@@ -101,8 +104,7 @@
                 throw err;
             }
 
-            if (o.zoomControl === false) { try { const w = view.ui.find('zoom'); if (w) view.ui.remove(w); } catch { /* ignore */ } }
-            if (o.attributionControl === false) { try { const w = view.ui.find('attribution'); if (w) view.ui.remove(w); } catch { /* ignore */ } }
+            BitMapArcGis._applyDefaultWidgets(state, o);
 
             BitMapArcGis._notifyView(state);
         }
@@ -137,6 +139,8 @@
             if (Object.prototype.hasOwnProperty.call(o, 'doubleClickZoom')) {
                 s.doubleClickZoom = o.doubleClickZoom !== false;
             }
+
+            BitMapArcGis._applyDefaultWidgets(s, o);
         }
 
         public static dispose(id: string) {
@@ -158,6 +162,8 @@
 
             try {
                 if (s.scaleBar) { s.scaleBar.destroy(); }
+                // Off the UI, so destroying the view would not reach it.
+                s.removedZoom?.widget?.destroy?.();
                 s.view.destroy();
             } catch { /* ignore */ }
             s.dotnetObj = null;
@@ -688,6 +694,38 @@
         private static _rgbaArr(color: string, alpha: number): number[] {
             const [r, g, b, a] = BitMapHelpers.parseColor(color) ?? [51, 136, 255, 1];
             return [r, g, b, a * alpha];
+        }
+
+        /**
+         * ZoomControl and AttributionControl, switched at init and on every sync carrying the flag - only a key the caller
+         * supplied is touched. The attribution is the view's own, not a widget of its UI, and has a switch of its own.
+         */
+        private static _applyDefaultWidgets(s: any, o: any) {
+            const has = (k: string) => Object.prototype.hasOwnProperty.call(o, k);
+            if (has('zoomControl')) BitMapArcGis._showZoom(s, o.zoomControl !== false);
+            if (has('attributionControl')) { try { s.view.attributionVisible = o.attributionControl !== false; } catch { /* ignore */ } }
+        }
+
+        /**
+         * The zoom buttons are a default widget of the view's UI. Writing ui.components does not switch them: the view
+         * takes the names but leaves the widget where it is (and throws on the way). So the widget is taken off the UI,
+         * and kept, since the view never builds it again: switching it back on puts that one back where the view had it.
+         */
+        private static _showZoom(s: any, show: boolean) {
+            try {
+                const ui = s.view.ui;
+                const shown = ui.find('zoom');
+                if (!show && shown) {
+                    // The corner it was in, read off its container: the view picks it, and may mirror it right to left.
+                    const corner = (shown.container as HTMLElement | null | undefined)?.closest?.('.esri-ui-corner');
+                    const position = Array.from(corner?.classList ?? []).find(c => c !== 'esri-ui-corner' && c.startsWith('esri-ui-'))?.slice('esri-ui-'.length) ?? 'top-left';
+                    ui.remove(shown);
+                    s.removedZoom = { widget: shown, position };
+                } else if (show && !shown && s.removedZoom) {
+                    ui.add(s.removedZoom.widget, s.removedZoom.position);
+                    s.removedZoom = null;
+                }
+            } catch { /* ignore */ }
         }
 
         private static _ensureScaleBar(s: any, show: boolean) {

@@ -23,6 +23,9 @@
         vectorCatalog: { [id: string]: { sourceId: string, layerIds: string[], handlers: { layerId: string, handler: any }[] } };
         tileOverlayCatalog: { [id: string]: { sourceId: string, layerId: string } };
         navControl: any;
+        /** What the navigation control was last built from: ShowNavigationControl, and ZoomControl for its +/- buttons. */
+        navShown: boolean;
+        navZoom: boolean;
         lastStyleUrl: string;
         isDisposed: boolean;
         viewTimer: any;
@@ -114,6 +117,8 @@
                 vectorCatalog: {},
                 tileOverlayCatalog: {},
                 navControl: null,
+                navShown: true,
+                navZoom: true,
                 lastStyleUrl: styleUrl,
                 isDisposed: false,
                 viewTimer: null,
@@ -228,7 +233,7 @@
                 || has('dragPan') || has('dragging') || has('dragRotate') || has('keyboardNavigation')) {
                 BitMapGlBase._applyInteractivity(map, o);
             }
-            if (has('showNavigationControl')) {
+            if (has('showNavigationControl') || has('zoomControl')) {
                 BitMapGlBase._ensureNavControl(s, o);
             }
         }
@@ -868,15 +873,26 @@
             }
         }
 
+        /**
+         * The navigation control is the zoom buttons and the compass in one. ZoomControl is the +/- buttons on every
+         * provider, so here it is the zoom half of the control - whose compass stays while ShowNavigationControl does -
+         * and ShowNavigationControl the whole of it. A key the caller did not supply keeps what it was last built with,
+         * and a control already built that way is left in place.
+         */
         private static _ensureNavControl(s: GlState, o: any) {
             const gl = s.gl;
-            const show = o.showNavigationControl !== false;
+            const has = (k: string) => Object.prototype.hasOwnProperty.call(o, k);
+            const shown = has('showNavigationControl') ? o.showNavigationControl !== false : s.navShown;
+            const zoom = has('zoomControl') ? o.zoomControl !== false : s.navZoom;
+            if (s.navControl && shown === s.navShown && zoom === s.navZoom) return;
             if (s.navControl) {
                 try { s.map.removeControl(s.navControl); } catch { /* ignore */ }
                 s.navControl = null;
             }
-            if (show && gl.NavigationControl) {
-                s.navControl = new gl.NavigationControl();
+            s.navShown = shown;
+            s.navZoom = zoom;
+            if (shown && gl.NavigationControl) {
+                s.navControl = new gl.NavigationControl({ showZoom: zoom, showCompass: true });
                 s.map.addControl(s.navControl, 'top-right');
             }
         }
