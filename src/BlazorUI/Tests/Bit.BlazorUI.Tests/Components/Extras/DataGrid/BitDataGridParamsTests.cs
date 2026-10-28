@@ -89,6 +89,7 @@ public class BitDataGridParamsTests : BunitTestContext
         nameof(BitDataGrid<Row>.OnRowSave),
         nameof(BitDataGrid<Row>.OnSortChange),
         nameof(BitDataGrid<Row>.OnStateChange),
+        nameof(BitDataGrid<Row>.OnViewChange),
         nameof(BitDataGrid<Row>.RowClass),
         nameof(BitDataGrid<Row>.RowHeightSelector),
         nameof(BitDataGrid<Row>.RowReorderable),

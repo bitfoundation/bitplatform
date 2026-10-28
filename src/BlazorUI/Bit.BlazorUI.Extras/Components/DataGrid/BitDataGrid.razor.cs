@@ -470,6 +470,17 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// </summary>
     [Parameter] public EventCallback<BitDataGridState> OnStateChange { get; set; }
 
+    /// <summary>
+    /// Raised with the rows of the view across every page (see <see cref="GetViewItems"/>) once the grid has
+    /// re-rendered after they changed - the search, the filters or the sorts took rows in or out or put them in another
+    /// order, or <see cref="Items"/> did - so a map or a chart of the same rows can stay in step with the grid. Raised
+    /// only in the modes that work the view out of <see cref="Items"/> (a list, a tree, or an <see cref="IQueryable{T}"/>,
+    /// where it costs a query of the whole view on every refresh); server (<see cref="OnRead"/>) and
+    /// infinite-scrolling (<see cref="OnLoadMore"/>) modes only ever hold a window of it, which
+    /// <see cref="GetViewItemsAsync"/> reads in full.
+    /// </summary>
+    [Parameter] public EventCallback<IReadOnlyList<TItem>> OnViewChange { get; set; }
+
     // -------------------------------------------------------- Master detail
     /// <summary>
     /// Renders the expand/collapse toggle column on the inline-start edge of every row while a
@@ -569,6 +580,13 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     private IReadOnlyList<TItem> _view = Array.Empty<TItem>();      // filtered + sorted (full)
     private IReadOnlyList<TItem> _pageItems = Array.Empty<TItem>(); // current page slice
+    // The rows OnViewChange was last raised with (a copy: the view can be the parent's own list, changed in place),
+    // and whether it is still to be raised with them after the render.
+    private IReadOnlyList<TItem>? _lastViewItems;
+    private bool _viewChangePending;
+    // The row RevealItemAsync scrolls into view once the render it asked for has put it on screen.
+    private TItem? _revealItem;
+    private bool _revealPending;
     private List<BitDataGridGroup<TItem>>? _viewGroups;
     private List<BitDataGridAggregateResult> _footerAggregates = new();
     private int _totalCount;
@@ -1203,8 +1221,24 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             // and the removed rows would stay selected/expanded (and strongly referenced). Pruning here
             // covers that path too; tree sources keep their own expand state and are left alone.
             if (!IsTreeMode) await PruneStaleRowStateAsync();
+
+            TrackViewChange();
         }
         StateHasChanged();
+    }
+
+    // Notes whether the rows of the view differ from the ones OnViewChange was last raised with, which it is then
+    // raised with after the render. Compared rather than raised on every refresh: a list source refreshes on every
+    // render of the parent, which the callback itself re-renders.
+    private void TrackViewChange()
+    {
+        if (!OnViewChange.HasDelegate) return;
+
+        var rows = GetSyncExportRows();
+        if (_lastViewItems is not null && _lastViewItems.SequenceEqual(rows)) return;
+
+        _lastViewItems = rows.ToList();
+        _viewChangePending = true;
     }
 
     // ---------------------------------------------- Server-side virtualization
@@ -1946,6 +1980,30 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         {
             _stateChangePending = false;
             if (OnStateChange.HasDelegate) await OnStateChange.InvokeAsync(GetState());
+        }
+
+        if (_viewChangePending)
+        {
+            _viewChangePending = false;
+            if (OnViewChange.HasDelegate && _lastViewItems is { } viewItems) await OnViewChange.InvokeAsync(viewItems);
+        }
+
+        if (_revealPending)
+        {
+            _revealPending = false;
+            var item = _revealItem;
+            _revealItem = default;
+            if (item is not null && AriaRowIndex(item) is { } rowIndex)
+            {
+                // A virtualized row may not be rendered yet, so its place among the body's rows (each RowHeight tall
+                // there) goes along to scroll to when it is not.
+                var position = (UseVirtualization || UseServerVirtualization) && RowDataIndex(item) is { } index
+                    ? index - (PagingActive ? (_currentPage - 1) * _effectivePageSize : 0) + PendingRowCount
+                    : -1;
+                try { await JS.InvokeScriptVoidAsync("BitBlazorUI.DataGrid.revealRow", RootElement, rowIndex, position, RowHeight); }
+                catch (JSException) { }
+                catch (JSDisconnectedException) { }
+            }
         }
 
         if (_editorFocusRequest is { } editorColumn && _editItem is not null)
@@ -4407,6 +4465,142 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         // A new page size starts over at page 1 of a different number of pages, which the dropdown alone does not say.
         Announce(string.Format(Strings.AnnouncementPage, _currentPage, TotalPages));
         StateHasChanged();
+    }
+
+    // --------------------------------------------------------------- View
+    /// <summary>
+    /// The rows of the current view across every page, in the order the grid shows them: what the quick search and
+    /// the filters leave, sorted - in group order while grouped (collapsed groups included), and a tree's matching
+    /// rows with their collapsed branches. Queryable mode runs the query without the page window. Server and
+    /// infinite-scrolling modes hold only the rows loaded so far; use <see cref="GetViewItemsAsync"/> there.
+    /// </summary>
+    public IReadOnlyList<TItem> GetViewItems() => GetSyncExportRows().ToList();
+
+    /// <summary>
+    /// The rows of the current view across every page, like <see cref="GetViewItems"/>, in every data mode: server
+    /// and infinite-scrolling modes read them through <see cref="OnRead"/>/<see cref="OnLoadMore"/> with no paging
+    /// (<c>Take = null</c>) and the active search, filters and sorts.
+    /// </summary>
+    public async Task<IReadOnlyList<TItem>> GetViewItemsAsync() => (await GetExportRowsAsync()).ToList();
+
+    /// <summary>
+    /// Brings a row of the view into sight, for a row picked outside the grid (on a map or a chart of the same rows):
+    /// goes to the page that holds it, opens the collapsed groups or tree branches it is in, and scrolls it into the
+    /// viewport - also when the grid is virtualized and the row is not rendered yet. Returns <c>false</c>, changing
+    /// nothing, when the row is not in the view: left out by the search or the filters, under a branch of a lazy tree
+    /// not loaded yet, or - in server and infinite-scrolling modes, where the grid cannot tell where an unloaded row
+    /// is - not among the rows loaded.
+    /// </summary>
+    public async Task<bool> RevealItemAsync(TItem item)
+    {
+        if (item is null) return false;
+
+        if (IsTreeMode)
+        {
+            if (FindTreeAncestors(item) is not { } ancestors) return false;
+
+            var expanded = false;
+            foreach (var ancestor in ancestors)
+            {
+                if (IsTreeRowExpanded(ancestor)) continue;
+                // A pruned tree renders from the per-criteria collapse set, an unpruned one from the expand state.
+                if (TreeFilteringActive) _treeFilterCollapsed.Remove(GetKey(ancestor));
+                else _expandedTree.Add(GetKey(ancestor));
+                expanded = true;
+            }
+            if (expanded) await RefreshAsync();
+        }
+        else if (_viewGroups is not null)
+        {
+            if (FindGroupPath(_viewGroups, item) is not { } groups) return false;
+
+            var opened = false;
+            foreach (var group in groups)
+            {
+                if (!IsGroupCollapsed(group)) continue;
+                if (!_groupStateOverrides.Add(group.Path)) _groupStateOverrides.Remove(group.Path);
+                opened = true;
+            }
+            if (opened)
+            {
+                _groupExpansionVersion++;
+                MarkStateChanged();
+            }
+        }
+        else if (PagingActive && !IsServerMode)
+        {
+            // The view across every page: the local view, or the queryable source's whole result.
+            var rows = GetSyncExportRows();
+            var index = -1;
+            for (var i = 0; i < rows.Count; i++)
+            {
+                if (rows[i] is not null && KeyEquals(rows[i], item)) { index = i; break; }
+            }
+            if (index < 0) return false;
+
+            var page = index / _effectivePageSize + 1;
+            if (page != _currentPage) await GoToPageAsync(page);
+        }
+        else if (RowDataIndex(item) is null)
+        {
+            // Every row of the view is in the row index map here, and in server and infinite-scrolling modes every
+            // row loaded: one it does not know is not in the view, or not where the grid can tell.
+            return false;
+        }
+
+        _revealItem = item;
+        _revealPending = true;
+        StateHasChanged();
+        return true;
+    }
+
+    // The nodes a row of the tree sits under, outermost first, walking the branches the active search and filters
+    // keep the way the rendered view does - or null when the row is not among them. A lazy tree is walked only as far
+    // as its children are loaded.
+    private List<TItem>? FindTreeAncestors(TItem item)
+    {
+        var filtering = TreeFilteringActive;
+        var path = new List<TItem>();
+        // A self-referencing hierarchy would otherwise be walked forever.
+        var visited = new HashSet<object>();
+        return Find(Items ?? Enumerable.Empty<TItem>(), keepAll: false) ? path : null;
+
+        bool Find(IEnumerable<TItem> siblings, bool keepAll)
+        {
+            foreach (var node in siblings)
+            {
+                if (node is null || (filtering && !keepAll && !KeepTreeNode(node))) continue;
+                if (KeyEquals(node, item)) return true;
+                if (!visited.Add(GetKey(node)) || ResolveTreeChildren(node) is not { Count: > 0 } children) continue;
+
+                path.Add(node);
+                // A node that matched the criteria itself keeps its whole subtree, as in the rendered view.
+                if (Find(children, filtering && (keepAll || TreeNodeSelfMatches(node)))) return true;
+                path.RemoveAt(path.Count - 1);
+            }
+            return false;
+        }
+    }
+
+    // The groups a row of the grouped view sits in, outermost first, or null when it is in none.
+    private List<BitDataGridGroup<TItem>>? FindGroupPath(IReadOnlyList<BitDataGridGroup<TItem>> groups, TItem item)
+    {
+        foreach (var group in groups)
+        {
+            if (group.HasSubGroups)
+            {
+                if (FindGroupPath(group.SubGroups, item) is { } path)
+                {
+                    path.Insert(0, group);
+                    return path;
+                }
+            }
+            else if (group.Items.Any(row => row is not null && KeyEquals(row, item)))
+            {
+                return [group];
+            }
+        }
+        return null;
     }
 
     // ------------------------------------------------------ Public state API

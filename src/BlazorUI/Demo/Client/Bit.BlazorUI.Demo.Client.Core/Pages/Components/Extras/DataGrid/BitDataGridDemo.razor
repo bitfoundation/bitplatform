@@ -661,6 +661,8 @@
                 Everything the UI does is public API: <b>SortByAsync</b>, <b>ApplyFilterAsync</b>, <b>GroupByAsync</b>, <b>GoToPageAsync</b>,
                 <b>SetPageSizeAsync</b>, <b>MoveColumnAsync</b>, <b>SearchAsync</b>, <b>RefreshAsync</b> and more. <b>OnSortChange</b>,
                 <b>OnFilterChange</b>, <b>OnGroupChange</b> and <b>OnPageChange</b> report each change however it was made.
+                <b>OnViewChange</b> hands over the rows of the view across every page - what a map or a chart of the same rows needs -
+                and <b>RevealItemAsync</b> brings any of them into sight, going to its page and opening its group.
             </div>
             <br />
             <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
@@ -673,13 +675,15 @@
                 <BitButton OnClick="ApiGoToPage3">Go to page 3</BitButton>
                 <BitButton OnClick="ApiPageSize50">Page size 50</BitButton>
                 <BitButton OnClick="ApiPriceFirst">Move Price first</BitButton>
+                <BitButton OnClick="ApiRevealRandom">Reveal a random row</BitButton>
                 <BitButton OnClick="ApiRefresh" Variant="BitVariant.Outline">Refresh</BitButton>
             </BitStack>
             <br />
             <BitDataGrid @ref="apiGrid" TItem="Product" Items="@apiProducts" Height="430px"
                          Filterable="true" Groupable="true" Pageable="true" PageSize="10"
                          OnSortChange="OnApiSortChange" OnFilterChange="OnApiFilterChange"
-                         OnGroupChange="OnApiGroupChange" OnPageChange="OnApiPageChange">
+                         OnGroupChange="OnApiGroupChange" OnPageChange="OnApiPageChange"
+                         OnViewChange="OnApiViewChange">
                 <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" Filterable="false" Groupable="false" />
                 <BitDataGridColumn Property="p => p.Name" Width="220px" Groupable="false" />
                 <BitDataGridColumn Property="p => p.Category" />
@@ -688,6 +692,7 @@
             </BitDataGrid>
             <br />
             <BitText>@apiLog</BitText>
+            <BitText>@apiViewLog</BitText>
         </DemoExample>
 
         <DemoExample Title="State persistence" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25">

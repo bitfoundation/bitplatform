@@ -304,6 +304,33 @@
             row?.querySelector<HTMLElement>('.bit-dtg-cell-command button:not([disabled])')?.focus();
         }
 
+        // Scrolls a row into view (RevealItemAsync), below the sticky header and above the footer - the scroll padding
+        // the stylesheet derives from them. A virtualized row outside the rendered window has no element yet, so the
+        // viewport is scrolled to its place instead (position rows of rowHeight down the body; -1 when not virtualized),
+        // and Virtualize renders it there.
+        public static revealRow(root: HTMLElement, ariaRowIndex: number, position: number, rowHeight: number) {
+            const row = Array.from(root?.querySelectorAll<HTMLElement>(`.bit-dtg-row[aria-rowindex="${ariaRowIndex}"]`) ?? [])
+                .find(r => r.closest('.bit-dtg') === root);
+            if (row) {
+                row.scrollIntoView({ block: 'nearest' });
+                return;
+            }
+
+            const viewport = root?.querySelector<HTMLElement>(':scope > .bit-dtg-viewport');
+            const body = viewport?.querySelector<HTMLElement>(':scope > .bit-dtg-table > .bit-dtg-body');
+            if (!viewport || !body || position < 0) return;
+
+            const style = getComputedStyle(viewport);
+            const head = parseFloat(style.getPropertyValue('--bit-dtg-head-h')) || 0;
+            const foot = parseFloat(style.getPropertyValue('--bit-dtg-foot-h')) || 0;
+            const top = body.getBoundingClientRect().top - viewport.getBoundingClientRect().top + viewport.scrollTop + position * rowHeight;
+            if (top - head < viewport.scrollTop) {
+                viewport.scrollTop = top - head;
+            } else if (top + rowHeight > viewport.scrollTop + viewport.clientHeight - foot) {
+                viewport.scrollTop = top + rowHeight - viewport.clientHeight + foot;
+            }
+        }
+
         // Cell edit mode commits when the focus leaves the open cell. A focusout whose relatedTarget is still
         // inside the cell (a custom EditTemplate with several controls) is a move within it, not a departure -
         // and so is one into a popup the cell's editor opened (a dropdown's list, a date picker's calendar), which
