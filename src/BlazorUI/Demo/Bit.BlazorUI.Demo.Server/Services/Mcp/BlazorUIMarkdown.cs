@@ -62,21 +62,66 @@ public static class BlazorUIMarkdown
         return builder.ToString();
     }
 
-    /// <summary>The full reference of one component.</summary>
-    public static string Component(BlazorUIComponent component)
+    /// <summary>
+    /// How long a component's reference may run before it opens by naming its sections.
+    /// <para>
+    /// A client that caps what one tool call may return - Claude Code among them - saves a longer
+    /// answer to a file and shows the model only its first lines, so the start of a long answer is
+    /// the one part certain to be read. A line there naming the sections, and the argument that
+    /// returns one of them, turns a grep through a file into a second call that answers exactly; on
+    /// a short answer it is only a line that was not needed.
+    /// </para>
+    /// </summary>
+    private const int LongAnswer = 20_000;
+
+    /// <summary>
+    /// The reference of one component - whole, or narrowed by <paramref name="section"/> to the
+    /// sections and the rows it names.
+    /// </summary>
+    public static string Component(BlazorUIComponent component, string? section = null)
+    {
+        var sections = Sections(component);
+
+        if (string.IsNullOrWhiteSpace(section) is false) return Narrowed(component, sections, section);
+
+        var title = $"# {component.Name}{component.TypeParameters}";
+        var header = Header(component);
+        var body = string.Concat(sections.Select(s => s.Text));
+
+        var builder = new StringBuilder();
+
+        builder.AppendLine(title).AppendLine();
+
+        if (title.Length + header.Length + body.Length > LongAnswer)
+        {
+            builder.AppendLine($"A long reference: `GetBitBlazorUIComponent(name: \"{component.Name}\", section: \"...\")` returns one part of it - {string.Join(", ", sections.Select(s => $"`{s.Name}`"))} - or the rows of one parameter, member or CSS variable by its name; several, separated by commas.")
+                   .AppendLine();
+        }
+
+        builder.Append(header).Append(body);
+
+        return Truncate(builder.ToString());
+    }
+
+    /// <summary>
+    /// One part of a component's reference: its name as a caller passes it in <c>section</c>, and its text
+    /// from the <c>##</c> heading on.
+    /// </summary>
+    private sealed record ComponentSection(string Name, string Text);
+
+    /// <summary>
+    /// A table one row of which a <c>section</c> can name: the section it is printed in, its heading and the
+    /// paragraph under it there, and how its rows are written - given the rows picked and the whole table,
+    /// whose columns they keep - so a row asked for alone reads exactly as it does in the whole.
+    /// </summary>
+    private sealed record RowSource(string Section, string Heading, string? Lead, IReadOnlyList<ComponentMember> Rows, Action<StringBuilder, IReadOnlyList<ComponentMember>, IReadOnlyList<ComponentMember>> Write);
+
+    /// <summary>What a component's answer says before its first section - who it is, where it ships and what it needs.</summary>
+    private static string Header(BlazorUIComponent component)
     {
         var builder = new StringBuilder();
 
-        builder.AppendLine($"# {component.Name}{component.TypeParameters}").AppendLine();
-
-        // The constraints of a generic component, which decide what its type arguments may be and
-        // are written nowhere else: a TItem in a parameter table does not say it has to be a
-        // reference type with a parameterless constructor, and the compiler is where that is
-        // otherwise found out.
-        if (component.ComponentType is not null && BlazorUITypeNames.ConstraintsOf(component.ComponentType) is string constraints)
-        {
-            builder.AppendLine($"`{constraints}`").AppendLine();
-        }
+        AppendConstraints(builder, component);
 
         builder.Append(component.Category).Append(" · ").Append(component.Package.PackageId);
         if (component.Url.StartsWith("/components", StringComparison.Ordinal)) builder.Append(" · ").Append(SiteUrl).Append(component.Url);
@@ -107,39 +152,287 @@ public static class BlazorUIMarkdown
             builder.AppendLine($"**Note:** {component.Notes}").AppendLine();
         }
 
-        // Stated on the component rather than left to the setup guide: a component from a package
-        // the app has not referenced is the failure this line prevents, and it is the one an agent
-        // reads at exactly the moment it decides to use it.
-        if (component.Package.Required is false)
+        AppendPackage(builder, component);
+
+        return builder.ToString();
+    }
+
+    /// <summary>
+    /// The constraints of a generic component, which decide what its type arguments may be and are
+    /// written nowhere else: a TItem in a parameter table does not say it has to be a reference type
+    /// with a parameterless constructor, and the compiler is where that is otherwise found out.
+    /// </summary>
+    private static void AppendConstraints(StringBuilder builder, BlazorUIComponent component)
+    {
+        if (component.ComponentType is not null && BlazorUITypeNames.ConstraintsOf(component.ComponentType) is string constraints)
         {
-            builder.Append($"Ships in `{component.Package.PackageId}`: add the package, ")
-                   .Append(component.Package.Registration is null ? "and " : $"call `{component.Package.Registration}`, and ")
-                   .AppendLine($"add `{component.Package.Stylesheet}`{(component.Package.Script is null ? null : $" and `{component.Package.Script}`")} to the host page. `GetBitBlazorUISetupGuide` has the exact tags.")
-                   .AppendLine();
+            builder.AppendLine($"`{constraints}`").AppendLine();
+        }
+    }
+
+    /// <summary>
+    /// What an optional package needs wired up. Stated on the component rather than left to the setup
+    /// guide: a component from a package the app has not referenced is the failure this line prevents,
+    /// and it is the one an agent reads at exactly the moment it decides to use it.
+    /// </summary>
+    private static void AppendPackage(StringBuilder builder, BlazorUIComponent component)
+    {
+        if (component.Package.Required) return;
+
+        builder.Append($"Ships in `{component.Package.PackageId}`: add the package, ")
+               .Append(component.Package.Registration is null ? "and " : $"call `{component.Package.Registration}`, and ")
+               .AppendLine($"add `{component.Package.Stylesheet}`{(component.Package.Script is null ? null : $" and `{component.Package.Script}`")} to the host page. `GetBitBlazorUISetupGuide` has the exact tags.")
+               .AppendLine();
+    }
+
+    /// <summary>
+    /// The sections of a component's answer, in the order they are answered in, each written on its own
+    /// so a <c>section</c> can return it alone. A section with nothing to say is left out rather than
+    /// answered as an empty heading.
+    /// </summary>
+    private static List<ComponentSection> Sections(BlazorUIComponent component)
+    {
+        List<ComponentSection> sections = [];
+
+        void Add(string name, Action<StringBuilder> write)
+        {
+            var builder = new StringBuilder();
+
+            write(builder);
+
+            if (builder.Length > 0) sections.Add(new(name, builder.ToString()));
         }
 
-        AppendMembers(builder, component.IsComponent ? "Parameters" : "Members", component.Parameters);
-        AppendMembers(builder, "Public members", component.PublicMembers);
+        var parameters = component.IsComponent ? "Parameters" : "Members";
 
-        AppendInherited(builder, component);
-        AppendBindable(builder, component);
-        AppendCascadingParams(builder, component);
-        AppendCssVariables(builder, component);
+        // The bindable line names parameters, so it is answered with them: a caller asking for the
+        // parameters alone is the one who needs to know which of them take @bind-.
+        Add(parameters, builder =>
+        {
+            AppendMembers(builder, parameters, component.Parameters);
+            AppendBindable(builder, component);
+        });
+
+        Add("Public members", builder => AppendMembers(builder, "Public members", component.PublicMembers));
+        Add("Inherited parameters", builder => AppendInherited(builder, component));
+        Add("Cascading parameters", builder => AppendCascadingParams(builder, component));
+        Add("CSS variables", builder => AppendCssVariables(builder, component));
 
         foreach (var type in component.OwnTypes)
         {
-            builder.AppendLine($"## {type.Name} ({Kind(type)})").AppendLine();
+            Add(type.Name, builder =>
+            {
+                builder.AppendLine($"## {type.Name} ({Kind(type)})").AppendLine();
 
-            if (string.IsNullOrWhiteSpace(type.Description) is false) builder.AppendLine(type.Description).AppendLine();
+                if (string.IsNullOrWhiteSpace(type.Description) is false) builder.AppendLine(type.Description).AppendLine();
 
-            if (type.IsEnum) AppendEnumRows(builder, type.Members);
-            else AppendMemberRows(builder, type.Members);
+                if (type.IsEnum) AppendEnumRows(builder, type.Members);
+                else AppendMemberRows(builder, type.Members);
 
+                builder.AppendLine();
+            });
+        }
+
+        Add("Library types used here", builder => AppendReferencedTypes(builder, component));
+        Add("Worked examples", builder => AppendExamples(builder, component));
+
+        return sections;
+    }
+
+    /// <summary>
+    /// The parts of a component's answer a <c>section</c> names: a section by its heading, or the rows of a
+    /// parameter, member, CSS variable or own type's member by its name - several, separated by commas
+    /// outside a signature's own parameter list, so a signature copied from an answer names one member.
+    /// <para>
+    /// A name is matched exactly before it is matched as part of one, so <c>Parameters</c> is the table
+    /// rather than BitParams' parameter of that name, and <c>Zoom</c> is BitMap's parameter rather than
+    /// every member with the word in it. A name that matches nothing exactly is then read as part of a
+    /// heading (<c>css</c>, <c>examples</c>) and of a member's name at once, which is what makes
+    /// <c>Zoom</c> on a component with no such parameter answer with SetZoom, ZoomIn and ZoomOut. An own
+    /// type's heading is read there without the component's name every one of them opens with, so
+    /// <c>marker</c> on BitMap is BitMapMarker and the members about markers, and <c>date</c> on
+    /// BitDatePicker is the members about dates rather than every BitDatePicker* type.
+    /// </para>
+    /// <para>
+    /// Whatever is picked, the answer opens with what no part of it can be read without: the constraints
+    /// a generic component's type arguments must meet and the package it ships in with what that package
+    /// needs wired up.
+    /// </para>
+    /// </summary>
+    private static string Narrowed(BlazorUIComponent component, List<ComponentSection> sections, string section)
+    {
+        var sources = RowSources(component);
+        var whole = new HashSet<string>(StringComparer.Ordinal);
+        var rows = new HashSet<ComponentMember>(ReferenceEqualityComparer.Instance);
+        var pointers = new List<string>();
+        var missed = new List<string>();
+
+        var terms = BlazorUIComponentCatalog.SplitTopLevel(section).Select(term => term.Trim()).Where(term => term.Length > 0);
+
+        foreach (var term in terms)
+        {
+            var key = Key(term);
+
+            if (key.Length == 0)
+            {
+                missed.Add(term);
+                continue;
+            }
+
+            if (Pick(sections.Where(s => Key(s.Name) == key).Select(s => s.Name), whole) ||
+                Pick(sources.SelectMany(s => s.Rows).Where(row => Key(row.Name) == key), rows)) continue;
+
+            if (InheritedFrom(component, key) is string pointer)
+            {
+                pointers.Add(pointer);
+                continue;
+            }
+
+            // Both rather than the first that matches: a part of a name can be a heading's and a member's alike.
+            var inHeadings = Pick(sections.Where(s => HeadingKey(component, s.Name).Contains(key, StringComparison.Ordinal)).Select(s => s.Name), whole);
+            var inRows = Pick(sources.SelectMany(s => s.Rows).Where(row => Key(row.Name).Contains(key, StringComparison.Ordinal)), rows);
+
+            if (inHeadings || inRows) continue;
+
+            missed.Add(term);
+        }
+
+        // Nothing but commas names nothing, which is a request for the whole rather than a miss.
+        if (whole.Count == 0 && rows.Count == 0 && pointers.Count == 0 && missed.Count == 0) return Component(component);
+
+        var builder = new StringBuilder();
+
+        builder.AppendLine($"# {component.Name}{component.TypeParameters}").AppendLine();
+
+        AppendConstraints(builder, component);
+        AppendPackage(builder, component);
+
+        // In the order of the whole answer, and with the rows two names picked out of one table written
+        // as one table: a reader asking for PanTo and SetZoom is asking about one table, not two.
+        foreach (var part in sections)
+        {
+            if (whole.Contains(part.Name))
+            {
+                builder.Append(part.Text);
+                continue;
+            }
+
+            if (sources.FirstOrDefault(s => s.Section == part.Name) is not { } source) continue;
+
+            var picked = source.Rows.Where(rows.Contains).ToArray();
+
+            if (picked.Length == 0) continue;
+
+            builder.AppendLine($"## {source.Heading}").AppendLine();
+
+            if (string.IsNullOrWhiteSpace(source.Lead) is false) builder.AppendLine(source.Lead).AppendLine();
+
+            source.Write(builder, picked, source.Rows);
             builder.AppendLine();
         }
 
-        AppendReferencedTypes(builder, component);
+        foreach (var pointer in pointers.Distinct(StringComparer.Ordinal)) builder.AppendLine(pointer).AppendLine();
 
+        if (missed.Count > 0)
+        {
+            var names = sources.SelectMany(s => s.Rows).Select(row => BlazorUIComponentCatalog.Bare(row.Name)).ToArray();
+            var nearest = missed.SelectMany(term => BlazorUISuggest.Closest(term, names)).Distinct(StringComparer.Ordinal).ToArray();
+
+            builder.AppendLine($"{component.Name} has no section, parameter or member called {string.Join(", ", missed.Select(m => $"'{m}'"))}. Its sections are {string.Join(", ", sections.Select(s => $"`{s.Name}`"))}{(nearest.Length == 0 ? null : $"; the nearest names are {string.Join(", ", nearest.Select(n => $"`{n}`"))}")}. Without `section`, `GetBitBlazorUIComponent(name: \"{component.Name}\")` returns the whole reference.");
+        }
+        else
+        {
+            builder.AppendLine($"Part of the reference: `GetBitBlazorUIComponent(name: \"{component.Name}\")` returns the whole of it.");
+        }
+
+        return Truncate(builder.ToString());
+    }
+
+    /// <summary>
+    /// A heading as a part of a name is matched against: an own type's without the component's name it opens
+    /// with - or the name of the component a service shows, which its types are named after - since every
+    /// own type shares that and a term that is part of it would otherwise match all of them.
+    /// </summary>
+    private static string HeadingKey(BlazorUIComponent component, string heading)
+    {
+        var key = Key(heading);
+
+        foreach (var owner in (string?[])[component.Name, component.ShownComponentType?.Name])
+        {
+            if (owner is null) continue;
+
+            var prefix = Key(owner);
+
+            if (key.Length > prefix.Length && key.StartsWith(prefix, StringComparison.Ordinal)) return key[prefix.Length..];
+        }
+
+        return key;
+    }
+
+    /// <summary>Adds what a term matched to what the answer carries, and says whether it matched anything.</summary>
+    private static bool Pick<T>(IEnumerable<T> matches, HashSet<T> picked)
+    {
+        var any = false;
+
+        foreach (var match in matches)
+        {
+            picked.Add(match);
+            any = true;
+        }
+
+        return any;
+    }
+
+    /// <summary>The tables of a component's answer whose rows a <c>section</c> can name one by one, each with the section it is printed in.</summary>
+    private static RowSource[] RowSources(BlazorUIComponent component)
+    {
+        var parameters = component.IsComponent ? "Parameters" : "Members";
+
+        return
+        [
+            new(parameters, parameters, null, component.Parameters, AppendMemberRows),
+            new("Public members", "Public members", null, component.PublicMembers, AppendMemberRows),
+            new("CSS variables", "CSS variables", CssVariablesLead, component.CssVariables, (builder, rows, _) => AppendCssVariableRows(builder, rows)),
+            .. component.OwnTypes.Select(type => new RowSource(type.Name, $"{type.Name} ({Kind(type)})", type.Description, type.Members,
+                                                               type.IsEnum ? (builder, rows, _) => AppendEnumRows(builder, rows) : AppendMemberRows))
+        ];
+    }
+
+    /// <summary>
+    /// Where a parameter or member the component takes from one of its bases is documented, for a
+    /// <c>section</c> that names one: <c>Value</c> and <c>FocusAsync</c> on BitTextField are not in its own
+    /// tables, and the answer that says so has to say where they are instead.
+    /// </summary>
+    private static string? InheritedFrom(BlazorUIComponent component, string key)
+    {
+        foreach (var @base in component.Inherited)
+        {
+            var members = BlazorUIComponentCatalog.Bases.FirstOrDefault(b => b.Name == @base.Lookup)?.PublicMembers.Select(m => BlazorUIComponentCatalog.Bare(m.Name)) ?? [];
+
+            if (@base.Parameters.Concat(members).FirstOrDefault(name => Key(name) == key) is string name)
+            {
+                return $"`{name}` is inherited from `{@base.Name}`: `GetBitBlazorUIComponent(name: \"{@base.Lookup}\", section: \"{name}\")` describes it.";
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// A name as a <c>section</c> is matched by: without the parameter list or the type arguments a
+    /// signature writes after it, and then without case, punctuation or the <c>Bit</c> prefix, so
+    /// <c>PanTo</c>, <c>panTo(center)</c> and <c>BitDropdownItem&lt;TValue&gt;</c> all find what they name.
+    /// </summary>
+    private static string Key(string name)
+    {
+        var text = new string([.. BlazorUIComponentCatalog.Bare(name).Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant)]);
+
+        return text.StartsWith("bit", StringComparison.Ordinal) ? text[3..] : text;
+    }
+
+    /// <summary>The titles of a component's worked examples, and the call that returns their code.</summary>
+    private static void AppendExamples(StringBuilder builder, BlazorUIComponent component)
+    {
         if (component.Examples.Count > 0)
         {
             builder.AppendLine("## Worked examples").AppendLine();
@@ -167,8 +460,6 @@ public static class BlazorUIMarkdown
 
             builder.AppendLine();
         }
-
-        return Truncate(builder.ToString());
     }
 
     /// <summary>The worked examples of one component, optionally narrowed to the sections a filter names.</summary>
@@ -367,9 +658,10 @@ public static class BlazorUIMarkdown
             .Select(name => name.Split('<')[0])
             .ToHashSet(StringComparer.Ordinal);
 
+        // A method's row is typed by what it returns; the types it takes are in its signature.
         var texts = component.Parameters.Concat(component.PublicMembers)
             .Concat(component.OwnTypes.SelectMany(t => t.Members))
-            .Select(m => m.Type);
+            .SelectMany(m => BlazorUIComponentCatalog.ParameterTypes(m.Name).Append(m.Type));
 
         var extra = BlazorUITypeCatalog.Referenced(texts)
             .Where(type => documented.Contains(type.Name) is false)
@@ -567,28 +859,40 @@ public static class BlazorUIMarkdown
         if (component.CssVariables.Count == 0) return;
 
         builder.AppendLine("## CSS variables").AppendLine();
-        builder.AppendLine("Read off the root with a fallback and never declared by the component, so they inherit: set one on `:root` (or a `[bit-theme]` block) to restyle every instance, on an ancestor to restyle the ones inside it, or on the `Style` of one instance to restyle it and every instance nested inside it, which inherits the value too - a parameter changes one alone, as does the real CSS property on its `Style` / `Styles` when that property does not inherit (`opacity`, `border`, `padding`); an inherited one (`color`, `font-family`) reaches the nested instances that do not set it themselves. They restyle the default, never a choice: a parameter set on the instance (its `Color`, `Size`, `Shape`, ...) wins over the variable restyling what it sets, so a variable only shows on the instances that leave that parameter unset.").AppendLine();
-        builder.AppendLine("| Variable | Default | Description |");
-        builder.AppendLine("| --- | --- | --- |");
-
-        foreach (var variable in component.CssVariables)
-        {
-            builder.AppendLine($"| `{variable.Name}` | {Cell(variable.Default)} | {Cell(variable.Description)} |");
-        }
-
+        builder.AppendLine(CssVariablesLead).AppendLine();
+        AppendCssVariableRows(builder, component.CssVariables);
         builder.AppendLine();
     }
 
-    private static void AppendMemberRows(StringBuilder builder, IReadOnlyList<ComponentMember> members)
+    private const string CssVariablesLead = "Read off the root with a fallback and never declared by the component, so they inherit: set one on `:root` (or a `[bit-theme]` block) to restyle every instance, on an ancestor to restyle the ones inside it, or on the `Style` of one instance to restyle it and every instance nested inside it, which inherits the value too - a parameter changes one alone, as does the real CSS property on its `Style` / `Styles` when that property does not inherit (`opacity`, `border`, `padding`); an inherited one (`color`, `font-family`) reaches the nested instances that do not set it themselves. They restyle the default, never a choice: a parameter set on the instance (its `Color`, `Size`, `Shape`, ...) wins over the variable restyling what it sets, so a variable only shows on the instances that leave that parameter unset.";
+
+    private static void AppendCssVariableRows(StringBuilder builder, IReadOnlyList<ComponentMember> variables)
     {
-        var defaults = members.Any(m => string.IsNullOrWhiteSpace(m.Default) is false);
+        builder.AppendLine("| Variable | Default | Description |");
+        builder.AppendLine("| --- | --- | --- |");
+
+        foreach (var variable in variables)
+        {
+            builder.AppendLine($"| `{variable.Name}` | {Cell(variable.Default)} | {Cell(variable.Description)} |");
+        }
+    }
+
+    /// <summary>
+    /// Rows of a parameter or member table, with the columns of <paramref name="table"/> - the whole table
+    /// they are part of, when only some of its rows are written - so a row reads the same either way. A
+    /// name is a signature for a method, and a signature can hold a pipe (<c>A | B</c>, a <c>[Flags]</c>
+    /// default), so it is escaped like any other cell.
+    /// </summary>
+    private static void AppendMemberRows(StringBuilder builder, IReadOnlyList<ComponentMember> members, IReadOnlyList<ComponentMember>? table = null)
+    {
+        var defaults = (table ?? members).Any(m => string.IsNullOrWhiteSpace(m.Default) is false);
 
         builder.AppendLine(defaults ? "| Name | Type | Default | Description |" : "| Name | Type | Description |");
         builder.AppendLine(defaults ? "| --- | --- | --- | --- |" : "| --- | --- | --- |");
 
         foreach (var member in members)
         {
-            builder.Append($"| `{member.Name}` | `{Cell(member.Type)}` | ");
+            builder.Append($"| `{Cell(member.Name)}` | `{Cell(member.Type)}` | ");
             if (defaults) builder.Append($"{Code(member.Default)} | ");
             builder.AppendLine($"{Cell(member.Description)} |");
         }

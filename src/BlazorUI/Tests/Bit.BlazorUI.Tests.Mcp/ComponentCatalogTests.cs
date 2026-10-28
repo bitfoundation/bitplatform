@@ -613,4 +613,209 @@ public class ComponentCatalogTests : McpTestBase
         StringAssert.Contains(answer, "`BitRingLoading`", "The answer does not name the tags the family is written with.");
         StringAssert.Contains(answer, "`BitXboxLoading`", "The answer does not name the tags the family is written with.");
     }
+
+    /// <summary>
+    /// A method is answered as the signature it is called with. The demo pages write it as the delegate it
+    /// would fit - <c>Func&lt;BitMapLatLng, bool, bool, ValueTask&gt;</c> - which leaves out what the
+    /// arguments are called and which of them may be left out, so nothing in the answer said whether
+    /// <c>PanTo(center)</c> compiles.
+    /// </summary>
+    [TestMethod]
+    public async Task A_method_is_answered_as_the_signature_it_is_called_with()
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitMap" });
+
+        var members = TableRows(answer, "## Public members").GroupBy(row => row[0], StringComparer.Ordinal).ToDictionary(g => g.Key, g => g.First()[1], StringComparer.Ordinal);
+
+        using var scope = Assert.Scope();
+
+        Assert.IsTrue(members.TryGetValue("PanTo(BitMapLatLng center, bool animate = true, bool essential = false)", out var type),
+            "PanTo is not answered with its parameter names and defaults.");
+        Assert.AreEqual("ValueTask", type, "PanTo is not answered with what it returns.");
+
+        CollectionAssert.Contains(members.Keys, "SetZoom(double zoom, bool animate = true, bool essential = false)");
+        Assert.DoesNotContain("Func<BitMapLatLng, bool, bool, ValueTask>", answer, "A method is still answered as a delegate type.");
+
+        // A reference type the method declares nullable is written with its ?, and a default the way C# writes it.
+        var snackBar = await CallAsync("GetBitBlazorUIComponent", new { name = "BitSnackBar", section = "Info" });
+
+        StringAssert.Contains(snackBar, "Info(string title, string? body = \"\", bool persistent = false, TimeSpan? autoDismissTime = null)");
+
+        // A string default is written as its literal, escapes included: a raw line break is not what the
+        // method declares, and it would end the table row the signature is in.
+        var pdfViewer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitPdfViewer", section = "ExtractText" });
+
+        StringAssert.Contains(pdfViewer, "| `ExtractText(string pageSeparator = \"\\n\\n\")` |");
+
+        // The types a method takes are named back as well as the one it returns.
+        CollectionAssert.Contains(TableRows(answer, "## Public members").Select(row => row[0]).ToArray(), "Locate(BitMapGeolocationOptions? options = null)");
+        StringAssert.Contains(answer, "- `BitMapGeolocationOptions` (class)", "A library type only a method's parameter names is not named back.");
+    }
+
+    /// <summary>
+    /// Each documented overload keeps its own prose: a row is paired with the overload whose parameter types
+    /// it writes out, rather than with the first of that name, and an overload no row describes is still
+    /// listed, once.
+    /// </summary>
+    [TestMethod]
+    public async Task Each_overload_is_answered_with_its_own_row()
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitModalService", section = "Close, Show" });
+
+        var rows = TableRows(answer, "## Members").Skip(1).ToArray();
+        var close = rows.Where(row => row[0].StartsWith("Close(", StringComparison.Ordinal)).ToDictionary(row => row[0], row => row[^1], StringComparer.Ordinal);
+        var show = rows.Where(row => row[0].StartsWith("Show", StringComparison.Ordinal)).Select(row => row[0]).ToArray();
+
+        using var scope = Assert.Scope();
+
+        Assert.HasCount(2, close, "The two Close overloads are not two rows.");
+        StringAssert.Contains(close.GetValueOrDefault("Close(BitModalReference modalRef)") ?? string.Empty, "with a null result");
+        StringAssert.Contains(close.GetValueOrDefault("Close(BitModalReference modalRef, object? result)") ?? string.Empty, "with the result its Result task completes with");
+
+        CollectionAssert.AllItemsAreUnique(show, "An overload is answered twice.");
+        Assert.DoesNotContain("Show", show, "A row is still answered without a signature.");
+        CollectionAssert.Contains(show, "Show(RenderFragment content, BitModalParameters? modalParameters = null, bool persistent = false)");
+        CollectionAssert.Contains(show, "Show<T>(bool persistent = false)", "An overload no row describes is left out.");
+
+        var markup = rows.First(row => row[0].StartsWith("Show(RenderFragment content", StringComparison.Ordinal));
+
+        StringAssert.Contains(markup[^1], "the given markup as its content", "An overload is answered with another one's prose.");
+    }
+
+    /// <summary>
+    /// The largest references run to tens of thousands of characters, which a client that caps a tool's
+    /// output saves to a file rather than reads. A <c>section</c> answers with one part of it alone.
+    /// </summary>
+    [TestMethod]
+    public async Task A_section_answers_with_that_part_of_the_reference_alone()
+    {
+        var whole = await CallAsync("GetBitBlazorUIComponent", new { name = "BitDataGrid" });
+        var parameters = await CallAsync("GetBitBlazorUIComponent", new { name = "BitDataGrid", section = "Parameters" });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.StartsWith(parameters, "# BitDataGrid");
+        Assert.IsGreaterThan(10, TableRows(parameters, "## Parameters").Length, "The parameters section came back without its table.");
+        Assert.DoesNotContain("## Public members", parameters, "The section brought its neighbours with it.");
+        Assert.DoesNotContain("## Worked examples", parameters, "The section brought its neighbours with it.");
+        Assert.IsLessThan(whole.Length / 2, parameters.Length, "The section is not much smaller than the whole reference.");
+
+        // A heading is matched by part of its name, without case.
+        var css = await CallAsync("GetBitBlazorUIComponent", new { name = "BitActionButton", section = "css" });
+
+        StringAssert.Contains(css, "## CSS variables", "A section is not found by part of its heading.");
+    }
+
+    [TestMethod]
+    public async Task A_member_name_answers_with_its_rows_alone_in_one_table()
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitMap", section = "PanTo, SetZoom" });
+
+        var rows = TableRows(answer, "## Public members").Skip(1).Select(row => row[0]).ToArray();
+
+        using var scope = Assert.Scope();
+
+        Assert.AreEqual(2, rows.Length, "Two names did not answer with exactly their two rows.");
+        Assert.AreEqual(1, answer.Split("## Public members").Length - 1, "Two rows of one table were answered as two tables.");
+        Assert.DoesNotContain("## Parameters", answer);
+
+        // The rows keep the columns of the table they are picked from.
+        var whole = await CallAsync("GetBitBlazorUIComponent", new { name = "BitMap", section = "Public members" });
+
+        Assert.AreEqual(TableRows(whole, "## Public members")[0].Length, TableRows(answer, "## Public members")[0].Length, "The picked rows are written with other columns than the whole table.");
+
+        // A signature copied from an answer names one member, its own commas notwithstanding.
+        var signature = await CallAsync("GetBitBlazorUIComponent", new { name = "BitMap", section = "PanTo(BitMapLatLng center, bool animate = true, bool essential = false)" });
+
+        Assert.DoesNotContain("has no section", signature, "A signature is split at the commas of its own parameter list.");
+        Assert.HasCount(2, TableRows(signature, "## Public members"), "A signature does not answer with its one row.");
+    }
+
+    /// <summary>
+    /// A part of a name is matched against an own type's heading without the component's name every one of
+    /// them opens with, and against the rows at once: <c>marker</c> on BitMap is BitMapMarker and the members
+    /// about markers, not the type alone.
+    /// </summary>
+    [TestMethod]
+    public async Task A_part_of_a_name_answers_with_the_types_and_the_rows_it_is_part_of()
+    {
+        var marker = await CallAsync("GetBitBlazorUIComponent", new { name = "BitMap", section = "marker" });
+        var date = await CallAsync("GetBitBlazorUIComponent", new { name = "BitDatePicker", section = "date" });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(marker, "## BitMapMarker (class)");
+        CollectionAssert.Contains(TableRows(marker, "## Public members").Select(row => row[0]).ToArray(), "AddMarker(BitMapMarker marker)", "The rows a part of a name is in are not answered.");
+        Assert.DoesNotContain("## BitDatePickerClassStyles", date, "A part of the component's own name matched every one of its types.");
+    }
+
+    /// <summary>
+    /// A narrowed answer opens with what none of it can be read without - the package and what it needs wired
+    /// up - since a search hit names the narrowed call rather than the whole reference.
+    /// </summary>
+    [TestMethod]
+    public async Task A_narrowed_answer_opens_with_where_the_component_ships()
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitDataGrid", section = "Sortable" });
+
+        StringAssert.Contains(answer, "Ships in `Bit.BlazorUI.Extras`", "A narrowed answer does not say which package the component needs.");
+    }
+
+    /// <summary>
+    /// A name the component takes from one of its bases is not in its own tables, so the answer says where
+    /// it is documented - with the call that returns exactly that row. (BitTextField documents a
+    /// FocusAsync of its own, so the inherited one is asked of a component that does not.)
+    /// </summary>
+    [TestMethod]
+    [DataRow("BitTextField", "Value", "BitInputBase")]
+    [DataRow("BitTextField", "Class", "BitComponentBase")]
+    [DataRow("BitChoiceGroup", "FocusAsync", "BitInputBase")]
+    public async Task An_inherited_name_points_at_the_base_that_documents_it(string component, string section, string @base)
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = component, section });
+
+        var call = $"GetBitBlazorUIComponent(name: \"{@base}\", section: \"{section}\")";
+
+        StringAssert.Contains(answer, call, $"{component}'s {section} does not point at {@base}.");
+
+        var documented = await CallAsync("GetBitBlazorUIComponent", new { name = @base, section });
+
+        StringAssert.Contains(documented, $"| `{section}", $"{call} does not answer with the row it points at.");
+    }
+
+    [TestMethod]
+    public async Task A_section_that_names_nothing_answers_with_the_sections_and_the_nearest_names()
+    {
+        var result = await CallRawAsync("GetBitBlazorUIComponent", new Dictionary<string, object?> { ["name"] = "BitDataGrid", ["section"] = "Sortabel" });
+
+        var text = Text(result);
+
+        using var scope = Assert.Scope();
+
+        Assert.AreNotEqual(true, result.IsError, "A section that names nothing failed the call instead of answering.");
+        StringAssert.Contains(text, "`Sortable`", "The nearest member name is not offered.");
+        StringAssert.Contains(text, "`Public members`", "The sections that do exist are not named.");
+    }
+
+    /// <summary>
+    /// A client that saves a long answer to a file shows the model its first lines only, so a long
+    /// reference opens by naming its sections and the argument that returns one of them.
+    /// </summary>
+    [TestMethod]
+    public async Task A_long_reference_opens_by_naming_its_sections()
+    {
+        var answer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitDataGrid" });
+
+        var opening = answer[..Math.Min(answer.Length, 2_000)];
+
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(opening, "GetBitBlazorUIComponent(name: \"BitDataGrid\", section: ", "A long reference does not open by naming the section argument.");
+        StringAssert.Contains(opening, "`Public members`", "A long reference does not open by naming its sections.");
+
+        // A short one has no need of the line.
+        var spacer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitSpacer" });
+
+        Assert.DoesNotContain("section: ", spacer, "A short reference opens with a line about narrowing it.");
+    }
 }

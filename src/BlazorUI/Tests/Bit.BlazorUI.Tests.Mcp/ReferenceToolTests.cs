@@ -47,6 +47,23 @@ public class ReferenceToolTests : McpTestBase
         }
     }
 
+    /// <summary>
+    /// A method is written the way C# declares it - with its parameter names, the <c>?</c> on a reference
+    /// it accepts null for, and each default as it is typed (<c>false</c>, not <c>False</c>) - because that
+    /// is what decides which of its arguments a call can leave out.
+    /// </summary>
+    [TestMethod]
+    public async Task A_method_is_written_with_its_parameter_names_and_defaults()
+    {
+        var answer = await CallAsync("GetBitBlazorUIType", new { typeName = "BitCascadingValueList" });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(answer, "void Add(object? value, Type valueType, string? name = null, bool isFixed = false, bool enabled = true)");
+        Assert.DoesNotContain("= False", answer, "A bool default is written as .NET prints it rather than as C# declares it.");
+        Assert.DoesNotContain("= True", answer, "A bool default is written as .NET prints it rather than as C# declares it.");
+    }
+
     [TestMethod]
     public async Task A_dotted_name_reaches_a_nested_token_catalog()
     {

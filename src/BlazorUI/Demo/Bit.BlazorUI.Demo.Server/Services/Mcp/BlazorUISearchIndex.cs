@@ -44,7 +44,7 @@ public static class BlazorUISearchIndex
         /// A component's answer already contains its parameters, its own enums and the titles of
         /// its examples, so a query that matches both the component and one of its members is
         /// better served by the component: the member hit is a subset of what the component hit
-        /// returns, and it costs the same call. Without this a query like "multi select chips"
+        /// returns. Without this a query like "multi select chips"
         /// fills its whole result with three of BitDropdown's parameters and never names
         /// BitDropdown.
         /// </para>
@@ -304,17 +304,25 @@ public static class BlazorUISearchIndex
                 AliasWords = [.. Aliases(component.Aliases).SelectMany(SplitWords).Select(word => word.ToLowerInvariant())]
             });
 
-            foreach (var parameter in component.Parameters)
-            {
-                entries.Add(new Entry("Parameter", $"{component.Name}.{parameter.Name}", component.Name, call,
-                    parameter.Description ?? string.Empty, parameter.Type));
-            }
+            // A hit below the component is answered with its own rows rather than with the whole
+            // reference: the section argument narrows to exactly the name the hit is about, which on
+            // the largest components is the difference between one table row and fifty thousand
+            // characters to search through.
+            string Narrowed(string section) => $"GetBitBlazorUIComponent(name: \"{component.Name}\", section: \"{section}\")";
 
-            foreach (var member in component.PublicMembers)
-            {
-                entries.Add(new Entry("Public member", $"{component.Name}.{member.Name}", component.Name, call,
-                    member.Description ?? string.Empty, member.Type));
-            }
+            // One entry per name rather than per overload, titled by the name alone: a signature's
+            // parameter names, types and defaults are not what the member is called, and as title words
+            // they made every method taking a `title` or a `value` a title hit for those words - once
+            // per overload. The section a hit names is matched on the same bare name. (A service's
+            // methods are in the table a component's parameters are in.)
+            IEnumerable<Entry> ByName(string kind, IReadOnlyList<ComponentMember> members)
+                => members.GroupBy(m => BlazorUIComponentCatalog.Bare(m.Name), StringComparer.Ordinal)
+                          .Select(overloads => new Entry(kind, $"{component.Name}.{overloads.Key}", component.Name, Narrowed(overloads.Key),
+                              string.Join(' ', overloads.Select(m => m.Description).Where(d => string.IsNullOrWhiteSpace(d) is false).Distinct(StringComparer.Ordinal)),
+                              string.Join(' ', overloads.Select(m => m.Type).Distinct(StringComparer.Ordinal))));
+
+            entries.AddRange(ByName(component.IsComponent ? "Parameter" : "Member", component.Parameters));
+            entries.AddRange(ByName("Public member", component.PublicMembers));
 
             // The custom properties are the half of a component's look that no parameter reaches, so
             // a search for "action button hover background" has to land on one rather than on the
@@ -322,7 +330,7 @@ public static class BlazorUISearchIndex
             // it is what names the global token the variable falls back to.
             foreach (var variable in component.CssVariables)
             {
-                entries.Add(new Entry("CSS variable", variable.Name, component.Name, call,
+                entries.Add(new Entry("CSS variable", variable.Name, component.Name, Narrowed(variable.Name),
                     variable.Description ?? string.Empty, variable.Default ?? string.Empty));
             }
 
@@ -332,7 +340,7 @@ public static class BlazorUISearchIndex
                 // is thirty part names, and boosting each of them made "BitDatePickerClassStyles"
                 // outrank BitDateRangePicker for "pick a date range". A body is capped as a whole,
                 // so the names can still find the type without winning on volume.
-                entries.Add(new Entry(type.IsEnum ? "Enum" : "Class", type.Name, component.Name, call,
+                entries.Add(new Entry(type.IsEnum ? "Enum" : "Class", type.Name, component.Name, Narrowed(type.Name),
                     $"{type.Description} {string.Join(' ', type.Members.Select(m => m.Name))}".Trim(), string.Empty));
             }
 
