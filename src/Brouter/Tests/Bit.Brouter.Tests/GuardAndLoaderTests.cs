@@ -55,6 +55,21 @@ public class GuardAndLoaderTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow(true, "/admin?tab=users#Top", "/admin?tab=users#Top")]
+    [DataRow(true, "/admin?tab=Users#top", "/admin?tab=Users#top")]
+    [DataRow(true, "/admin?tab=Users#Top", null)]
+    [DataRow(false, "/admin?tab=users#top", null)]
+    public void Redirect_to_the_current_target_compares_query_and_hash_by_the_routing_case_sensitivity(bool caseSensitive, string url, string? expected)
+    {
+        var to = new BrouterLocation("http://localhost/admin?tab=Users#Top", "/admin", ["admin"], "?tab=Users", "#Top");
+        var ctx = new BrouterNavigationContext(to, to, CancellationToken.None, caseSensitive);
+
+        ctx.Redirect(url);
+
+        Assert.AreEqual(expected, ctx.RedirectUrl);
+    }
+
+    [TestMethod]
     public void Loader_value_is_exposed_via_RouteData()
     {
         var nav = Services.GetRequiredService<BunitNavigationManager>();
