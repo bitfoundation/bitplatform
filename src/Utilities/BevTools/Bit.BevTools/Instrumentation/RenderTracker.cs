@@ -853,7 +853,7 @@ internal static class ComponentStateReader
             foreach (var property in current.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
             {
                 if (!property.CanRead || property.GetIndexParameters().Length != 0 || result.ContainsKey(property.Name)
-                    || property.IsDefined(typeof(BevToolsIgnoreAttribute), true))
+                    || Attribute.IsDefined(property, typeof(BevToolsIgnoreAttribute), true))
                 {
                     continue;
                 }
@@ -878,7 +878,7 @@ internal static class ComponentStateReader
             foreach (var property in current.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
             {
                 if (property.IsDefined(typeof(ParameterAttribute), true) || property.IsDefined(typeof(CascadingParameterAttribute), true)
-                    || property.IsDefined(typeof(InjectAttribute), true) || property.IsDefined(typeof(BevToolsIgnoreAttribute), true)
+                    || property.IsDefined(typeof(InjectAttribute), true) || Attribute.IsDefined(property, typeof(BevToolsIgnoreAttribute), true)
                     || property.IsDefined(typeof(SupplyParameterFromQueryAttribute), true) || property.IsDefined(typeof(SupplyParameterFromFormAttribute), true))
                 {
                     excludedProperties.Add(property.Name);

@@ -9,7 +9,7 @@ namespace Bit.BevTools;
 /// </summary>
 public sealed partial class BevRedactor
 {
-    private static readonly Regex JwtPattern = new(@"ey[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}\.", RegexOptions.CultureInvariant);
+    private static readonly Regex JwtPattern = new(@"(?<![A-Za-z0-9_-])ey[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}\.", RegexOptions.CultureInvariant);
 
     public const string RedactedValue = "«redacted»";
 
@@ -45,7 +45,7 @@ public sealed partial class BevRedactor
 
     public bool IsSensitive(MemberInfo member)
     {
-        if (member.IsDefined(typeof(BevToolsSensitiveAttribute), inherit: true))
+        if (Attribute.IsDefined(member, typeof(BevToolsSensitiveAttribute), inherit: true))
         {
             return true;
         }
@@ -96,12 +96,12 @@ public sealed partial class BevRedactor
 
     // A value is anything up to the next separator, except what redaction already put there: text that went through
     // RedactText once must not look like a secret again ("Password=«redacted»").
-    private const string SecretValue = @"(?!" + RedactedValue + @")(?!Bearer\s)[^\s;,""'&]{3,}";
+    private const string SecretValue = @"(?!" + RedactedValue + @")(?!Bearer\s)(?:(?<="")(?:""""|\\.|[^""\\\r\n]){3,}|(?<=')(?:''|\\.|[^'\\\r\n]){3,}|[^\s;,""'&]{3,})";
 
     [GeneratedRegex(@"\bBearer\s+(?!" + RedactedValue + @")[A-Za-z0-9._~+/=-]+|-----BEGIN [A-Z ]*PRIVATE KEY-----|(?:^|[\s;,{""'&?])(?:" + SecretKeyNames + @")[""']?\s*[:=]\s*[""']?(?:Bearer\s+)?" + SecretValue + "|" + ProviderTokenFormats, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)]
     private static partial Regex SecretShapes();
 
-    [GeneratedRegex(@"ey[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]*", RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"(?<![A-Za-z0-9_-])ey[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]*", RegexOptions.CultureInvariant)]
     private static partial Regex JwtTokens();
 
     [GeneratedRegex(@"(?<scheme>\bBearer)\s+[A-Za-z0-9._~+/=-]+", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)]

@@ -83,6 +83,20 @@ public class ProfileComparisonTests : BunitContext
     }
 
     [TestMethod]
+    public void A_type_name_built_to_make_the_version_stripping_backtrack_is_read_in_linear_time()
+    {
+        var typeName = "Version=," + new string(' ', 200_000);
+
+        var start = System.Diagnostics.Stopwatch.GetTimestamp();
+        Assert.AreEqual(typeName, BevRenderProfile.TypeKey(typeName));
+        var elapsed = System.Diagnostics.Stopwatch.GetElapsedTime(start);
+
+        Assert.IsTrue(elapsed.TotalMilliseconds < 1000, $"normalizing a 200,000 character type name took {elapsed.TotalMilliseconds:0} ms");
+        Assert.AreEqual("Dictionary`2[[System.String],[App.Item]]",
+            BevRenderProfile.TypeKey("Dictionary`2[[System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[App.Item, App,   Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"));
+    }
+
+    [TestMethod]
     public void Extra_renders_are_a_regression_and_timing_noise_is_not()
     {
         var baseline = Export(true, ("ProductRow", 20, 20, 10), ("Cart", 1, 2, 3), ("Header", 1, 100, 50), ("Footer", 1, 1, 1));

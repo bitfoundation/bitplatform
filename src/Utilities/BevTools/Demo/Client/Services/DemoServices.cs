@@ -259,7 +259,7 @@ public sealed class ProductApi(IHttpClientFactory factory, NavigationManager nav
         get
         {
             var client = factory.CreateClient("api");
-            client.BaseAddress = new Uri(navigation.BaseUri);
+            client.BaseAddress ??= new Uri(navigation.BaseUri);
             return client;
         }
     }

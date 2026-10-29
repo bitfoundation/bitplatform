@@ -1384,7 +1384,7 @@ public static class BevSessionExporter
             case DateTime dt:
                 w.WriteString(key, dt);
                 break;
-            case IEnumerable<string> strings:
+            case IEnumerable<string> strings when inspector.ValueAccess == BevValueAccess.Full:
                 w.WriteStartArray(key);
                 foreach (var item in strings.Take(100))
                 {

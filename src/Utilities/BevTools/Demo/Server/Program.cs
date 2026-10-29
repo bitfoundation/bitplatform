@@ -3,6 +3,7 @@ using Bit.BevTools.Demo.Client.Extension;
 using Bit.BevTools.Demo.Client.Models;
 using Bit.BevTools.Demo.Client.Services;
 using Bit.BevTools.Demo.Server.Components;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.HttpOverrides;
 
 DemoCulture.Apply();
@@ -18,6 +19,14 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddDemoServices();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient("api").ConfigureHttpClient((services, client) =>
+{
+    if (services.GetRequiredService<IHttpContextAccessor>().HttpContext?.Request is { } request)
+    {
+        client.BaseAddress = new Uri(UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase, "/"));
+    }
+});
 
 // One line. An application leaves Enabled alone and BevTools turns itself on in Development only; this demo exists to
 // show BevTools, wherever it is deployed (bevtools.bitplatform.dev included), so it is on in every environment.
@@ -33,8 +42,7 @@ builder.Services.AddBitBevToolsServerServices(o =>
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
-    options.ForwardedHeaders = ForwardedHeaders.All;
-    options.ForwardedHostHeaderName = "X-Host";
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
     options.KnownIPNetworks.Clear();
     options.KnownProxies.Clear();
     options.ForwardLimit = 1;

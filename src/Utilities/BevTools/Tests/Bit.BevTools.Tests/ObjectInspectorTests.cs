@@ -31,6 +31,30 @@ public class ObjectInspectorTests
         public Action Callback { get; set; } = () => { };
     }
 
+    private sealed record Account(string Owner, [property: BevToolsIgnore] string Note);
+
+    private readonly record struct Grant(string User, [property: BevToolsSensitive] string Handle);
+
+    [TestMethod]
+    public void ToString_is_not_shown_for_a_type_with_an_ignored_or_sensitive_member()
+    {
+        var inspector = Create();
+
+        Assert.IsFalse(inspector.Describe("account", new Account("ada", "do-not-show")).Display.Contains("do-not-show", StringComparison.Ordinal));
+        Assert.IsFalse(inspector.Describe("grant", new Grant("ada", "opaque-handle")).Display.Contains("opaque-handle", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void Json_shows_its_size_below_Full_and_its_keys_checked_at_Full()
+    {
+        using var document = System.Text.Json.JsonDocument.Parse("""{"user":"ada","accessToken":"opaque","items":[1,2]}""");
+        var options = new BitBevToolsOptions();
+        var shallow = new BevObjectInspector(options, new BevRedactor(options.SensitiveNamePatterns), valueAccess: BevValueAccess.Shallow);
+
+        Assert.AreEqual("JsonElement (3 properties)", shallow.Describe("json", document.RootElement).Display);
+        Assert.AreEqual("{\"user\": \"ada\", \"accessToken\": " + BevRedactor.RedactedValue + ", \"items\": [1, 2]}", Create().Describe("json", document.RootElement).Display);
+    }
+
     [TestMethod]
     public void Redacts_by_name_and_by_attribute()
     {
