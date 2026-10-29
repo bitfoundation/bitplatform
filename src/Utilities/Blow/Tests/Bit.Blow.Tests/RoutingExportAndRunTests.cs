@@ -163,19 +163,20 @@ public class RoutingExportAndRunTests : BunitContext
             new() { Id = "a-b", Source = "a", Target = "b" },
             new() { Id = "a-c", Source = "a", Target = "c", MarkerStart = true, MarkerColor = "red" },
             new() { Id = "b-c", Source = "b", Target = "c" },
-            new() { Id = "c-a", Source = "c", Target = "a", MarkerWidth = 12 },
+            new() { Id = "c-a", Source = "c", Target = "a", MarkerWidth = 12, MarkerHeight = 5 },
+            new() { Id = "b-a", Source = "b", Target = "a", MarkerType = BlowMarkerType.ArrowClosed, MarkerWidth = 7, MarkerHeight = 7 },
         };
 
         var doc = XDocument.Parse(BlowSvgExport.ToSvg(nodes, edges));
         var paths = doc.Descendants(Svg + "path").Where(p => p.Parent!.Name != Svg + "marker").ToList();
         var markers = doc.Descendants(Svg + "marker").ToList();
 
-        CollectionAssert.AreEqual(new[] { "m0", "m1", "m2" }, markers.Select(m => m.Attribute("id")!.Value).ToArray());
-        CollectionAssert.AreEqual(new[] { "7", "7", "12" }, markers.Select(m => m.Attribute("markerWidth")!.Value).ToArray());
-        CollectionAssert.AreEqual(new[] { "7", "7", "12" }, markers.Select(m => m.Attribute("markerHeight")!.Value).ToArray());
+        CollectionAssert.AreEqual(new[] { "m0", "m1", "m2", "m3" }, markers.Select(m => m.Attribute("id")!.Value).ToArray());
+        CollectionAssert.AreEqual(new[] { "7", "7", "12", "7" }, markers.Select(m => m.Attribute("markerWidth")!.Value).ToArray());
+        CollectionAssert.AreEqual(new[] { "7", "7", "5", "7" }, markers.Select(m => m.Attribute("markerHeight")!.Value).ToArray());
         Assert.AreEqual("red", markers[1].Element(Svg + "path")!.Attribute("stroke")!.Value);
-        CollectionAssert.AreEqual(new[] { "url(#m0)", "url(#m1)", "url(#m0)", "url(#m2)" }, paths.Select(p => p.Attribute("marker-end")?.Value).ToArray());
-        CollectionAssert.AreEqual(new[] { null, "url(#m1)", null, null }, paths.Select(p => p.Attribute("marker-start")?.Value).ToArray());
+        CollectionAssert.AreEqual(new[] { "url(#m0)", "url(#m1)", "url(#m0)", "url(#m2)", "url(#m3)" }, paths.Select(p => p.Attribute("marker-end")?.Value).ToArray());
+        CollectionAssert.AreEqual(new[] { null, "url(#m1)", null, null, null }, paths.Select(p => p.Attribute("marker-start")?.Value).ToArray());
     }
 
     [TestMethod]

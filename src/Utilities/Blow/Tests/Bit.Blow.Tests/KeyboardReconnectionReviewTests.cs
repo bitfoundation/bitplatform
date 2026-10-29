@@ -261,8 +261,8 @@ public class KeyboardReconnectionReviewTests : BunitContext
         CollectionAssert.AreEqual(new[] { ("a", "c"), ("d", "b") }, asked.Select(c => (c.Source, c.Target)).ToArray());
         Assert.AreEqual(("a", "c"), (edges[0].Source, edges[0].Target), "d -> c was applied, though only a -> c and d -> b were approved");
         Assert.AreEqual(BlowAriaLabels.Default.ConnectionRejected(BlowConnectionRejection.RejectedByRule), Heard(cut));
-        CollectionAssert.AreEqual(new[] { (true, BlowConnectionRejection.None), (false, BlowConnectionRejection.RejectedByRule) },
-            connectEnds.TakeLast(2).Select(e => (e.IsValid, e.Rejection)).ToArray());
+        CollectionAssert.AreEqual(new[] { (true, true, BlowConnectionRejection.None), (true, false, BlowConnectionRejection.RejectedByRule) },
+            connectEnds.TakeLast(2).Select(e => (e.IsReconnect, e.IsValid, e.Rejection)).ToArray());
         CollectionAssert.AreEqual(new[] { (BlowHandleType.Target, true), (BlowHandleType.Source, false) },
             reconnectEnds.TakeLast(2).Select(e => (e.MovingEnd, e.Rewired)).ToArray());
     }
