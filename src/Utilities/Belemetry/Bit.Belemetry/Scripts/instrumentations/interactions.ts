@@ -37,6 +37,23 @@ export function xpath(element: Element): string {
     return '/' + parts.join('/');
 }
 
+function textOutsideIgnored(node: Node): string {
+    let text = '';
+    for (let child = node.firstChild; child; child = child.nextSibling) {
+        if (child.nodeType === 3) text += child.nodeValue || '';
+        else if (child.nodeType === 1 && !(child as Element).hasAttribute('data-bit-belemetry-ignore')) text += textOutsideIgnored(child);
+    }
+    return text;
+}
+
+function inIgnoredRegion(path: EventTarget[]): boolean {
+    for (const target of path) {
+        const element = target as Element;
+        if (element.nodeType === 1 && element.hasAttribute('data-bit-belemetry-ignore')) return true;
+    }
+    return false;
+}
+
 /** The click attributes. Input values are never read; the text only with `captureText`. */
 export function describeTarget(element: Element, eventType: string, config: InteractionsConfig): Attributes {
     const attributes: Attributes = {
@@ -47,7 +64,8 @@ export function describeTarget(element: Element, eventType: string, config: Inte
     const name = element.getAttribute('data-bit-belemetry-name') || element.getAttribute('aria-label') || element.getAttribute('name');
     if (name) attributes['target.name'] = name;
     if (config.captureText && element.nodeName !== 'INPUT') {
-        const text = (element.textContent || '').replace(/\s+/g, ' ').trim();
+        const raw = element.querySelector('[data-bit-belemetry-ignore]') ? textOutsideIgnored(element) : element.textContent;
+        const text = (raw || '').replace(/\s+/g, ' ').trim();
         if (text) attributes['target.text'] = text.slice(0, Math.max(0, config.maxTextLength));
     }
     attributes['target.xpath'] = xpath(element);
@@ -68,6 +86,7 @@ export function installInteractions(ctx: InstrumentationContext): Uninstall {
     let burst: { element: Element; start: number; count: number } | null = null;
     const handler = guard((event: Event) => {
         const path = typeof event.composedPath === 'function' ? event.composedPath() : [];
+        if (inIgnoredRegion(path)) return;
         const element = resolveTarget(path.length ? path[0] : event.target);
         if (!element) return;
         const attributes = describeTarget(element, event.type, config);

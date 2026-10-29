@@ -340,7 +340,8 @@ options.AddAzureMonitorExporter("InstrumentationKey=...;IngestionEndpoint=https:
 Belemetry takes no dependency on Azure.Identity - the token provider is a plain delegate. An exporter with a token
 provider is never handed to the browser script.
 
-> Live Metrics follows the Application Insights QuickPulse protocol; treat it as a preview feature.
+> Live Metrics follows the Application Insights QuickPulse protocol; treat it as a preview feature. In a Hybrid app it
+> streams only while the user grants `Metrics`, and it follows the service's endpoint redirects over HTTPS only.
 
 ### Console, in-memory and custom exporters
 
@@ -410,7 +411,8 @@ How it behaves:
 - **Nothing undecided leaves the device.** Records of not-yet-granted features are held in memory (up to
   `Consent.PendingLimit`) and sent if the user grants them, dropped if not.
 - **Revoking is immediate.** Queued records of a revoked feature are discarded, and its device storage is cleared:
-  `Persistence` clears the offline queue, `Sessions` the stored session, `UserTracking` the pseudo id and user id.
+  revoking any feature clears the offline queue (a stored request can hold that feature's records), `Sessions` the
+  stored session, `UserTracking` the pseudo id and user id, which also leave the records still queued.
 - **The choice is remembered** (`Consent.Persist`, default on) in `localStorage` (and in a file in Hybrid apps) -
   recording the choice itself is strictly necessary. Other open tabs of the app adopt it as it is made, so a banner
   answered in one tab closes in the rest, and a revoke there stops them sending too.
@@ -631,13 +633,14 @@ Name interactions with `data-bit-belemetry-name`, and keep a region out entirely
 <section data-bit-belemetry-ignore>...</section>
 ```
 
-Input values are never read.
+Input values are never read. An ignored region stays out everywhere: clicks in it are skipped, those in a shadow root
+under it too, and with `CaptureInteractionText` its text is left out of the text of a clicked element around it.
 
 ---
 
 ## Privacy
 
-Applied on both sides before anything is queued (`options.Privacy.*`):
+Applied on both sides before anything is queued, and by .NET to every metric point it collects (`options.Privacy.*`):
 
 - `RedactQueryParameters`: values of sensitive query parameters (`token`, `code`, `password`, `secret`, `key`,
   `access_token`, `email`, ..., and the signatures and credentials of pre-signed storage URLs - `X-Amz-Signature`,
@@ -647,7 +650,9 @@ Applied on both sides before anything is queued (`options.Privacy.*`):
   `{Password}` and `user.password`, and `authorization` covers `http.request.header.authorization` - while
   `password_policy` is left alone; a trailing `*` matches a prefix (`http.request.header.*`). Defaults: `password`, `passwd`, `pwd`, `secret`,
   `client_secret`, `token`, `access_token`, `refresh_token`, `id_token`, `apikey`, `api_key`, `x-api-key`,
-  `authorization`, `proxy-authorization`, `cookie`, `set-cookie`.
+  `authorization`, `proxy-authorization`, `cookie`, `set-cookie`. A log message that renders such a value (or a
+  blocked one) is exported with its template as the body (`Sign-in for {User} with {Password}`), so the value does not
+  reach the backend in the message either.
 - `StripQueryString` (off; it also drops `url.query`) and `StripFragment` (on - fragments may carry OAuth tokens).
   `url.query` gets the same parameter redaction as a URL.
 - `ScrubPatterns` (on): bearer tokens, JWTs, e-mail addresses, card numbers (Luhn-checked) and IPv4 addresses are
@@ -657,9 +662,10 @@ Applied on both sides before anything is queued (`options.Privacy.*`):
   versions read as addresses). A key named like a version (`AppVersion`, `app.version`, `build_version`) keeps its
   four-part values too; the other patterns still apply to it.
 - `CollectUserAgent` (on): the user agent string in the browser resource.
-- `BlockedAttributes`: attribute keys (exact, case-sensitive) removed from every record and span event, by the
-  script and by .NET. The ids (`session.id`, `enduser.pseudo.id`, `user.id`) are governed by consent and untouched
-  by every other privacy rule, but a blocked one is never added, and is removed from relayed browser records.
+- `BlockedAttributes`: attribute keys (exact, case-sensitive) removed from every record, span event, span link and
+  metric point, by the script and by .NET. The ids (`session.id`, `enduser.pseudo.id`, `user.id`) are governed by
+  consent and untouched by every other privacy rule, but a blocked one is never added, and is removed from relayed
+  browser records.
 - Azure Monitor's `MaskIp` (on) stops IP-based geolocation; Belemetry never adds the client IP itself.
 
 IP scrubbing leaves the **host** of a URL and `server.address` alone, even when they are IP literals: they name the
@@ -734,7 +740,8 @@ best effort; nothing can guarantee it.
 
 Stored requests never contain headers, so API keys are not written to disk or `localStorage`. The exporter's current
 headers are added when a stored request is sent, so a rotated key applies to the backlog too. (In WebAssembly, a .NET
-request stored by the browser is resent with the headers of the browser exporter posting to the same URL.)
+request stored by the browser is resent with the headers of the browser exporter posting to the same URL.) A request
+stored for an endpoint the exporter no longer posts to is dropped, so the current key never goes to an old address.
 
 ---
 

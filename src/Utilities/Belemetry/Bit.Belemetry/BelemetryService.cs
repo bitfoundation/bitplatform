@@ -7,6 +7,8 @@ internal sealed class BelemetryService(BelemetrySettings settings, BelemetryPipe
 {
     private static readonly BelemetryScope _scope = new("Bit.Belemetry.Api", BelemetrySettings.SdkVersion);
 
+    private static readonly string[] _consentIds = [BelemetrySemanticConventions.SessionId, BelemetrySemanticConventions.EndUserPseudoId, BelemetrySemanticConventions.UserId];
+
     public void TrackEvent(string name, IReadOnlyDictionary<string, object?>? attributes = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
@@ -92,7 +94,7 @@ internal sealed class BelemetryService(BelemetrySettings settings, BelemetryPipe
     /// </summary>
     private bool UseBrowser() => settings.IsServer && (bridge.IsStarted || settings.CollectDotnet is false);
 
-    private static BelemetryLogRecord CreateRecord(BelemetryFeatures feature, BelemetrySeverity severity, string? body, IReadOnlyDictionary<string, object?>? attributes)
+    private BelemetryLogRecord CreateRecord(BelemetryFeatures feature, BelemetrySeverity severity, string? body, IReadOnlyDictionary<string, object?>? attributes)
     {
         var now = BelemetryTime.NowUnixNano();
         var record = new BelemetryLogRecord
@@ -108,7 +110,11 @@ internal sealed class BelemetryService(BelemetrySettings settings, BelemetryPipe
 
         if (attributes is not null)
         {
-            foreach (var (key, value) in attributes) record.Attributes.Set(key, value);
+            foreach (var (key, value) in attributes)
+            {
+                if (settings.IsServer is false && Array.IndexOf(_consentIds, key) >= 0) continue;
+                record.Attributes.Set(key, value);
+            }
         }
 
         if (Activity.Current is { IdFormat: ActivityIdFormat.W3C } activity)

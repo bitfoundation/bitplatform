@@ -245,10 +245,11 @@ export function rebuildPartial(request: OutgoingRequest, responseText: string, p
     if (!Array.isArray(errors)) return null;
     const items = JSON.parse(new TextDecoder().decode(plainBody || request.raw || request.body));
     if (!Array.isArray(items)) return null;
-    const retry: unknown[] = [];
+    const indexes = new Set<unknown>();
     for (const error of errors) {
-        if (error && isRetryable(error.statusCode) && items[error.index] !== undefined) retry.push(items[error.index]);
+        if (error && isRetryable(error.statusCode)) indexes.add(error.index);
     }
+    const retry = items.filter((_: unknown, index: number) => indexes.has(index));
     if (!retry.length) return null;
     return { ...request, body: encodeUtf8(JSON.stringify(retry)), raw: null, contentEncoding: null };
 }

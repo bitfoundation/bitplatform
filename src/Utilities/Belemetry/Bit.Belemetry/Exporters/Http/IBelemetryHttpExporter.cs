@@ -9,6 +9,8 @@ internal interface IBelemetryHttpExporter
     /// <summary>Serializes a batch into one request per signal it sends.</summary>
     IEnumerable<BelemetryHttpRequest> CreateRequests(BelemetryBatch batch);
 
+    bool PostsTo(string url);
+
     /// <summary>The headers every request carries; applied at send time, never persisted.</summary>
     IReadOnlyDictionary<string, string> Headers { get; }
 

@@ -17,6 +17,10 @@ public static partial class BelemetryCodeReview
 {
     private sealed record Rule(string Id, string Severity, Func<string, IEnumerable<(int Index, string Message, string Fix)>> Check);
 
+    private const int MaxCodeLength = 64 * 1024;
+
+    private const int MaxFindings = 100;
+
     private static readonly Rule[] _rules =
     [
         new("BLM001", "error", RenamedApi),
@@ -48,12 +52,17 @@ public static partial class BelemetryCodeReview
             return new("Nothing to review: pass the Belemetry registration (Program.cs) and, ideally, App.razor and Routes.razor.", []);
         }
 
+        if (code.Length > MaxCodeLength)
+        {
+            return new($"Not reviewed: the code is {code.Length} characters long; the review reads at most {MaxCodeLength}.", []);
+        }
+
         var text = code.Replace("\r\n", "\n", StringComparison.Ordinal);
         var findings = new List<BelemetryReviewFindingDto>();
 
         foreach (var rule in _rules)
         {
-            foreach (var (index, message, fix) in rule.Check(text))
+            foreach (var (index, message, fix) in rule.Check(text).Take(MaxFindings - findings.Count))
             {
                 findings.Add(new(rule.Id, rule.Severity, index < 0 ? null : LineOf(text, index), message, fix));
             }

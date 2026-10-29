@@ -108,4 +108,15 @@ public class CodeReviewTests
         CollectionAssert.AreEqual(new int?[] { 1, 2 }, findings.Select(f => f.Line).ToArray());
         StringAssert.Contains(BelemetryCodeReview.Review("").Summary, "Nothing to review");
     }
+
+    [TestMethod]
+    public void AnOversizedSnippet_IsRefused_AndTheFindingsAreCapped()
+    {
+        var oversized = BelemetryCodeReview.Review(new string('x', 64 * 1024 + 1));
+        StringAssert.StartsWith(oversized.Summary, "Not reviewed");
+        Assert.IsEmpty(oversized.Findings);
+
+        var repeated = BelemetryCodeReview.Review(string.Concat(Enumerable.Repeat("var a = \"http://c:4317\";\n", 500)));
+        Assert.HasCount(100, repeated.Findings);
+    }
 }

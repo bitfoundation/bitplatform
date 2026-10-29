@@ -81,6 +81,7 @@ internal sealed class BelemetryHttpSender : IDisposable
     public async Task<BelemetrySendResult> SendWithResultAsync(IBelemetryHttpExporter exporter, BelemetryHttpRequest request, bool retry, CancellationToken cancellationToken)
     {
         var attempts = retry ? Backoff.Length + 1 : 1;
+        var extended = false;
         var grpc = IsGrpc(request);
 
         // What the partial successes settled before the request was narrowed to the rest.
@@ -143,7 +144,11 @@ internal sealed class BelemetryHttpSender : IDisposable
                         // Retried right away, even on what would have been the last attempt: the accepted items are in,
                         // and what is left is a smaller request that has not failed yet. Only while it shrinks, so a
                         // server that keeps rejecting the same items cannot keep it going.
-                        if (attempt + 1 >= attempts && partial.Body.Length < request.Body.Length) attempts++;
+                        if (attempt + 1 >= attempts && partial.Body.Length < request.Body.Length && extended is false)
+                        {
+                            attempts++;
+                            extended = true;
+                        }
                         delivered += Math.Max(0, request.Count - partial.Count - refused);
                         rejected += refused;
                         request = partial;

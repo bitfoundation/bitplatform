@@ -171,6 +171,22 @@ describe('interactions', () => {
         expect(resolveTarget(document.getElementById('secret'))).toBeNull();
     });
 
+    it('leaves the text of an ignored part out of a clicked element', () => {
+        document.body.innerHTML = '<button id="pay">Pay <span data-bit-belemetry-ignore>4111 1111</span> now</button>';
+        const config = { events: ['click'], captureText: true, maxTextLength: 64 };
+        expect(describeTarget(document.getElementById('pay'), 'click', config)['target.text']).toBe('Pay now');
+    });
+
+    it('skips clicks in a shadow root under [data-bit-belemetry-ignore]', () => {
+        document.body.innerHTML = '<div id="host" data-bit-belemetry-ignore></div>';
+        const root = document.getElementById('host').attachShadow({ mode: 'open' });
+        root.innerHTML = '<button id="inside">Secret</button>';
+        const ctx = fakeContext();
+        uninstall = installInteractions(ctx);
+        root.getElementById('inside').dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true }));
+        expect(ctx.records).toHaveLength(0);
+    });
+
     it('describes the target without values, text only with captureText', () => {
         document.body.innerHTML = '<form id="f"><input type="submit" name="go" value="secret"><button data-bit-belemetry-name="save">  Save\n  all  </button></form>';
         const input = document.querySelector('input');

@@ -245,6 +245,24 @@ public class OtlpReceiverTests
     }
 
     [TestMethod]
+    public void TheDecoder_BoundsWhatOneRecordKeeps()
+    {
+        var value = new string('v', 1000);
+        var attributes = string.Join(",", Enumerable.Range(0, 1000).Select(i => $$$"""{"key":"k{{{i}}}","value":{"stringValue":"{{{value}}}"}}"""));
+        var json = $$$"""
+            {"resourceLogs":[{"resource":{"attributes":[{{{attributes}}}]},"scopeLogs":[{"logRecords":[
+              {"body":{"stringValue":"{{{new string('b', 100_000)}}}"},"attributes":[{{{attributes}}}]}]}]}]}
+            """;
+
+        var record = OtlpJsonDecoder.DecodeLogs(JsonDocument.Parse(json).RootElement).Single();
+
+        var budget = 8 * 1024 + 2 * OtlpJsonDecoder.MaxValueLength;
+        Assert.IsTrue(record.Resource.Sum(a => a.Key.Length + a.Value.Length) <= budget, "Every record of a batch carries its resource into the feed.");
+        Assert.IsTrue(record.Attributes.Sum(a => a.Key.Length + a.Value.Length) <= budget);
+        Assert.AreEqual(OtlpJsonDecoder.MaxValueLength + 3, record.Body!.Length);
+    }
+
+    [TestMethod]
     public async Task TheServerPipeline_ExportsToItsOwnReceiver()
     {
         // Program.cs turns on Server.CollectDotnetTelemetry and points the OTLP exporter at this process; the fixture

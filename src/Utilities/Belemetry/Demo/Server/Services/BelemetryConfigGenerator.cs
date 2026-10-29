@@ -20,9 +20,16 @@ public static class BelemetryConfigGenerator
     /// <summary>The consent models <c>consent</c> accepts.</summary>
     public static readonly string[] ConsentModels = ["opt-in", "opt-out", "none"];
 
+    private const int MaxArgumentLength = 1024;
+
     /// <summary>Generates the files; unknown inputs are reported in the notes rather than thrown.</summary>
     public static BelemetryGeneratedConfigDto Generate(string? host, string? exporters, string? consent, string? features, string? transport)
     {
+        if (new[] { host, exporters, consent, features, transport }.Any(argument => argument?.Length > MaxArgumentLength))
+        {
+            return new([], [$"Not generated: an argument is longer than {MaxArgumentLength} characters."]);
+        }
+
         var notes = new List<string>();
         var files = new List<BelemetryGeneratedFileDto>();
 
@@ -41,8 +48,9 @@ public static class BelemetryConfigGenerator
         foreach (var unknown in exporterSet.Except(ExporterIds).ToArray())
         {
             notes.Add($"Unknown exporter '{unknown}' ignored. Use any of: {string.Join(", ", ExporterIds)} - or implement IBelemetryExporter and call options.AddExporter(...).");
-            exporterSet.Remove(unknown);
         }
+
+        exporterSet.RemoveAll(exporter => ExporterIds.Contains(exporter) is false);
 
         if (exporterSet.Count == 0) exporterSet.Add("otlp");
 

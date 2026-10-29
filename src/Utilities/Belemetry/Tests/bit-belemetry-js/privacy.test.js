@@ -196,6 +196,13 @@ describe('applyPrivacy', () => {
         expect(stripped.attributes).toEqual({ other: 'x' });
     });
 
+    it('redacts every URL of an array, as the C# side does', () => {
+        const record = log({ attributes: { 'url.full': ['https://x.test/a?token=abc', 'https://x.test/b'], 'url.query': ['code=1&page=2'] } });
+        applyPrivacy(record, privacy({ scrubPatterns: false }));
+        expect(record.attributes['url.full']).toEqual(['https://x.test/a?token=REDACTED', 'https://x.test/b']);
+        expect(record.attributes['url.query']).toEqual(['code=REDACTED&page=2']);
+    });
+
     it('keeps user_agent.original verbatim (its four-part versions are not addresses)', () => {
         const ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36';
         const record = log({ attributes: { 'user_agent.original': ua, other: 'Chrome/120.0.0.0' } });

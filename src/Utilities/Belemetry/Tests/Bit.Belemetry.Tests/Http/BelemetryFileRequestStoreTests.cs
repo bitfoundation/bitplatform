@@ -296,6 +296,32 @@ public class BelemetryFileRequestStoreTests
         Assert.IsTrue(left.Count == 2 && left.All(r => r.Url.StartsWith("http://down.test", StringComparison.Ordinal)), string.Join(" | ", left.Select(r => r.Url)));
     }
 
+    [TestMethod]
+    public async Task Pipeline_DropsAStoredRequest_ForAnAddressItsExporterNoLongerPostsTo()
+    {
+        var sent = new List<string>();
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(new BelemetryHttpMessageHandlerProvider(new ByHost(sent, down: "none.test")));
+        services.AddBitBelemetryServices(o =>
+        {
+            TestHost.ApplyTestDefaults(o);
+            o.Persistence.Enabled = true;
+            o.Persistence.Directory = _directory;
+            o.AddOtlpExporter("http://new.test:4318", e => e.Headers["x-api-key"] = "key-2");
+        });
+        await using var provider = services.BuildServiceProvider();
+        var pipeline = provider.GetRequiredService<BelemetryPipeline>();
+        var request = Request();
+        request.Url = "http://old.test:4318/v1/logs";
+        await pipeline.Exporters.Store!.SaveAsync(request, CancellationToken.None);
+
+        await pipeline.Exporters.RetryStoredAsync(persistenceAllowed: true, CancellationToken.None);
+
+        Assert.IsEmpty(sent, "The current key must not go to the address the exporter used before.");
+        Assert.IsEmpty(StoredFiles());
+    }
+
     /// <summary>Answers 503 for one host and 200 for the others, recording the hosts it was sent to.</summary>
     private sealed class ByHost(List<string> sent, string down) : HttpMessageHandler
     {
