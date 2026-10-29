@@ -178,6 +178,50 @@ public class SwapTests : BortableTestContext
     }
 
     [TestMethod]
+    public async Task ASwapOutOfACloneListIsProposedAsTheItemItself()
+    {
+        List<string> left = ["A"], right = ["X"];
+        BortableEventArgs<string>? asked = null;
+        var l1 = RenderSwapList(left, "L1", extra: p => p.Add(c => c.Pull, BortablePull.Clone));
+        var l2 = RenderSwapList(right, "L2", extra: p => p.Add(c => c.CanDrop, e => { asked = e; return true; }));
+
+        await DragStartAsync(l1, "A");
+        await HoverItemAsync(l2, 0);
+        await DropAsync(l2);
+
+        Assert.IsNotNull(asked);
+        Assert.AreEqual("A", asked.Item);
+        Assert.IsFalse(asked.IsClone);
+        Assert.AreSequenceEqual(["X"], left);
+        Assert.AreSequenceEqual(["A"], right);
+    }
+
+    [TestMethod]
+    public async Task AKeyboardSwapRefusesAPartnerTheCarryingListCannotHold()
+    {
+        var source = new List<object> { "a", "b" };
+        var words = new List<string> { "x" };
+        var swap = new List<object> { 42 };
+        var s = RenderList(source, o => o.ToString()!, "S", p => p.Add(c => c.Group, "g"));
+        RenderList(words, w => w, "W", p => p.Add(c => c.Group, "g"));
+        RenderList(swap, o => o.ToString()!, "Z", p =>
+        {
+            p.Add(c => c.Group, "g");
+            p.Add(c => c.Swap, true);
+        });
+
+        await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync(KeyOf(s, "a"), "pick", null, -1));
+        await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync("", "to", "W", 0));
+        var over = await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync("", "to", "Z", 0));
+        await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync("", "drop", null, -1));
+
+        Assert.IsNull(over.Target);
+        Assert.AreSequenceEqual(["a", "x"], words);
+        CollectionAssert.AreEqual(new object[] { "b" }, source);
+        CollectionAssert.AreEqual(new object[] { 42 }, swap);
+    }
+
+    [TestMethod]
     public async Task SwappingAcrossListsOfAGroup()
     {
         List<string> left = ["A", "B", "C"], right = ["X", "Y"];

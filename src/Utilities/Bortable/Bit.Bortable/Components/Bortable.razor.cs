@@ -1043,7 +1043,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     private bool AllowsDrop(BortableDragContext ctx, int newIndex)
         => CanDrop is null || CanDrop(ArgsOf(MoveInfo(ctx, this, newIndex)));
 
-    private bool AllowsMove(BortableMoveInfo info) => CanDrop is null || (info.Item is TItem && CanDrop(ArgsOf(info)));
+    private bool AllowsMove(BortableMoveInfo info) => info.Item is TItem && (CanDrop is null || CanDrop(ArgsOf(info)));
 
     /// <summary>
     /// Whether the item currently being dragged (and, for a multi-drag, the rest of the
@@ -1147,8 +1147,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             NewIndex = index,
             From = ctx.Source,
             To = this,
-            Input = ctx.Input,
-            IsClone = IsCloneInto(ctx, this)
+            Input = ctx.Input
         };
         if (!AllowsMove(swapped)) return false;
         if (home) return true;
