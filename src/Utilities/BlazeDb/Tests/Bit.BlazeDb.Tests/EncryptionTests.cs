@@ -246,8 +246,14 @@ public class EncryptionTests
         await inner.WriteAtomicAsync("wal-1.blz", wal[..ends[0]].Concat(wal[ends[1]..]).ToArray());
 
         var reopened = await BlazeDbDatabase.OpenAsync(options());
-        await using var owned = reopened;
         Assert.AreSequenceEqual([1], reopened.GetTable(PersonTable.Descriptor).Scan().Select(p => p.Id));
+        reopened.GetTable(PersonTable.Descriptor).Insert(new Person(4, "p4", 4));
+        await reopened.FlushAsync();
+        await reopened.DisposeAsync();
+
+        var third = await BlazeDbDatabase.OpenAsync(options());
+        await using var owned = third;
+        Assert.AreSequenceEqual([1, 4], third.GetTable(PersonTable.Descriptor).Scan().Select(p => p.Id).Order());
     }
 
     [TestMethod]
