@@ -332,6 +332,19 @@ public class McpDropLabTests
     }
 
     [TestMethod]
+    public async Task A_near_miss_at_the_length_limit_is_suggested_and_one_past_it_is_not()
+    {
+        var atLimit = new string('x', 127);
+        var pastLimit = new string('x', 128);
+
+        var at = await InspectAsync(Scenario("card", atLimit + "a", Target(atLimit + "b", ["card"])));
+        var past = await InspectAsync(Scenario("card", pastLimit + "a", Target(pastLimit + "b", ["card"])));
+
+        Assert.Contains("Did you mean", at.Error!);
+        Assert.DoesNotContain("Did you mean", past.Error!);
+    }
+
+    [TestMethod]
     public async Task A_misspelt_property_is_named_rather_than_silently_ignored()
     {
         var target = new JsonObject { ["id"] = "list", ["acept"] = "card" };
