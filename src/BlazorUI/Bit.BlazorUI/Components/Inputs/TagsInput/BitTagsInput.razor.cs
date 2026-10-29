@@ -52,6 +52,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     private string? _handedBackText;
     private DotNetObjectReference<BitTagsInput>? _dotnetObj;
     private Regex? _patternRegex;
+    private bool _patternTimedOut;
     private string? _announcement;
 
     // A screen reader only re-reads a live region that actually changed, so the very same message said
@@ -2123,7 +2124,10 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             {
                 matched = _patternRegex.IsMatch(text);
             }
-            catch (RegexMatchTimeoutException) { }
+            catch (RegexMatchTimeoutException)
+            {
+                _patternTimedOut = true;
+            }
 
             if (matched is false)
             {
@@ -3109,6 +3113,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     private async Task<int> TryAddTags(string[] tags)
     {
         ClearInvalid();
+        _patternTimedOut = false;
 
         var list = GetTags();
         var addedTags = new List<string>();
@@ -3124,7 +3129,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
                 // Once the ceiling is reached nothing else of the batch can be added either, so the
                 // rest of it is not walked (and not reported) one rejection at a time.
-                if (reason == BitTagsInputInvalidReason.MaxTags) break;
+                if (reason == BitTagsInputInvalidReason.MaxTags || _patternTimedOut) break;
 
                 continue;
             }

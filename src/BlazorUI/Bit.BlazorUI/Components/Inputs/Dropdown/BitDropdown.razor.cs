@@ -2139,13 +2139,15 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
         {
             if (Values?.Any() ?? false)
             {
+                var selectedValues = new HashSet<TValue>(_selectedItems.Select(si => GetValue(si)!), comparer);
                 foreach (var item in items)
                 {
                     if (GetItemType(item) != BitDropdownItemType.Normal) continue;
                     if (ContainsValue(GetValue(item)) is false) continue;
-                    if (ItemsProvider is not null && _selectedItems.Exists(si => comparer.Equals(GetValue(si), GetValue(item)))) continue;
+                    if (ItemsProvider is not null && selectedValues.Contains(GetValue(item)!)) continue;
 
                     _selectedItems.Add(item);
+                    selectedValues.Add(GetValue(item)!);
                 }
 
                 if (ItemsProvider is not null)
@@ -2154,13 +2156,14 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
                 }
                 else
                 {
+                    var itemSet = items as ISet<TItem> ?? new HashSet<TItem>(items);
                     foreach (var previousItem in previousSelectedItems)
                     {
-                        if (items.Contains(previousItem)) continue;
+                        if (itemSet.Contains(previousItem)) continue;
 
                         var value = GetValue(previousItem);
                         if (ContainsValue(value) is false) continue;
-                        if (_selectedItems.Exists(si => comparer.Equals(GetValue(si), value))) continue;
+                        if (selectedValues.Add(value!) is false) continue;
 
                         _selectedItems.Add(previousItem);
                     }

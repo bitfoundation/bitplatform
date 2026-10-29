@@ -121,6 +121,24 @@ public class BitRichTextEditorPrerenderTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitRichTextEditorShouldDropTheSrcdocOfAnEmbedEvenWhenAPolicyAllowsIt()
+    {
+        var policy = new BitRichTextEditorSanitizationPolicy
+        {
+            AllowedTags = new HashSet<string> { "p", "iframe" },
+            AllowedAttributes = new Dictionary<string, ISet<string>> { ["iframe"] = new HashSet<string> { "src", "srcdoc" } },
+            AllowedUriSchemes = new HashSet<string> { "https" },
+        };
+
+        var document = await PrerenderAsync(
+            "<iframe src=\"https://www.youtube-nocookie.com/embed/abc\" srcdoc=\"&lt;script&gt;parent.alert(1)&lt;/script&gt;\"></iframe>", policy);
+
+        var frame = Surface(document).QuerySelector("iframe")!;
+        Assert.AreEqual("https://www.youtube-nocookie.com/embed/abc", frame.GetAttribute("src"));
+        Assert.IsFalse(frame.HasAttribute("srcdoc"));
+    }
+
+    [TestMethod]
     public async Task BitRichTextEditorShouldPrerenderEveryTargetThatOpensANewContextHardened()
     {
         var document = await PrerenderAsync(

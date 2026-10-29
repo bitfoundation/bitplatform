@@ -1220,7 +1220,7 @@
                     const c = child as HTMLTableCellElement;
                     if (c.tagName !== 'TD' && c.tagName !== 'TH') continue;
                     while (grid[r][col]) col++;
-                    const colspan = Math.max(1, parseInt(c.getAttribute('colspan') || '1') || 1);
+                    const colspan = Math.min(1000, Math.max(1, parseInt(c.getAttribute('colspan') || '1') || 1));
                     const rowspan = Math.max(1, parseInt(c.getAttribute('rowspan') || '1') || 1);
                     for (let dr = 0; dr < rowspan && r + dr < rows.length; dr++) {
                         for (let dc = 0; dc < colspan; dc++) grid[r + dr][col + dc] = c;
@@ -3493,7 +3493,7 @@
                 for (const attr of Array.from(el.attributes)) {
                     const name = attr.name.toLowerCase();
                     const val = attr.value;
-                    if (name.startsWith('on')) { el.removeAttribute(attr.name); continue; }
+                    if (name.startsWith('on') || (tag === 'iframe' && name === 'srcdoc')) { el.removeAttribute(attr.name); continue; }
                     if (name === 'href' || name === 'src' || name === 'poster') {
                         // Enforce the active policy's scheme allowlist on every inbound HTML
                         // path (paste, source import, setHtml) - not just the command handlers.

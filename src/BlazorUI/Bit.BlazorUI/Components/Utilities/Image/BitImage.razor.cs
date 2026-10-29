@@ -975,18 +975,7 @@ public partial class BitImage : BitComponentBase
             BitImageCrossOrigin.UseCredentials => "use-credentials",
             _ => null
         });
-        Set(attributes, "referrerpolicy", ReferrerPolicy switch
-        {
-            BitImageReferrerPolicy.NoReferrer => "no-referrer",
-            BitImageReferrerPolicy.NoReferrerWhenDowngrade => "no-referrer-when-downgrade",
-            BitImageReferrerPolicy.Origin => "origin",
-            BitImageReferrerPolicy.OriginWhenCrossOrigin => "origin-when-cross-origin",
-            BitImageReferrerPolicy.SameOrigin => "same-origin",
-            BitImageReferrerPolicy.StrictOrigin => "strict-origin",
-            BitImageReferrerPolicy.StrictOriginWhenCrossOrigin => "strict-origin-when-cross-origin",
-            BitImageReferrerPolicy.UnsafeUrl => "unsafe-url",
-            _ => null
-        });
+        Set(attributes, "referrerpolicy", GetReferrerPolicy());
         Set(attributes, "draggable", Draggable.HasValue ? (Draggable.Value ? "true" : "false") : null);
 
         // The label names the image rather than the frame: an aria-label on a div with no role of its
@@ -1044,6 +1033,21 @@ public partial class BitImage : BitComponentBase
             attributes[name] = value!;
         }
     }
+
+    private string? GetReferrerPolicy() => ReferrerPolicy switch
+    {
+        BitImageReferrerPolicy.NoReferrer => "no-referrer",
+        BitImageReferrerPolicy.NoReferrerWhenDowngrade => "no-referrer-when-downgrade",
+        BitImageReferrerPolicy.Origin => "origin",
+        BitImageReferrerPolicy.OriginWhenCrossOrigin => "origin-when-cross-origin",
+        BitImageReferrerPolicy.SameOrigin => "same-origin",
+        BitImageReferrerPolicy.StrictOrigin => "strict-origin",
+        BitImageReferrerPolicy.StrictOriginWhenCrossOrigin => "strict-origin-when-cross-origin",
+        BitImageReferrerPolicy.UnsafeUrl => "unsafe-url",
+        _ => null
+    };
+
+    private string? GetPlaceholderReferrerPolicy() => GetReferrerPolicy() ?? GetImageAttribute("referrerpolicy");
 
     private string GetPlaceholderClasses()
     {
