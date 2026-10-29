@@ -57,6 +57,15 @@ public sealed class TemplateDiff(CliServices cli)
 
         var fromOptions = new Dictionary<string, string>(options, StringComparer.OrdinalIgnoreCase);
 
+        if (record.Options.TryGetValue("framework", out var recordedFramework))
+        {
+            fromOptions["framework"] = recordedFramework;
+        }
+        else
+        {
+            fromOptions.Remove("framework");
+        }
+
         if (Directory.Exists(directory) && ProjectContext.ReadTargetFramework(directory, name) is { } framework)
         {
             fromOptions["framework"] = framework;

@@ -2096,13 +2096,15 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <data name="SignOutOfAllAccounts" xml:space="preserve">
     <value>Von allen Konten auf diesem Gerät abmelden</value>
   </data>
+  <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">
     <value>Kioskmodus</value>
   </data>
     <data name="KioskMessage" xml:space="preserve">
-    <value>Diese App ist auf dem Bildschirm gesperrt: Windows-Taste, Alt+Tab, Task-Manager und das Schließen des Fensters sind alle blockiert. Verwenden Sie die Schaltfläche, um sie zu verlassen.</value>
+    <value>Diese App ist auf dem Bildschirm gesperrt: Windows-Taste, Alt+Tab und das Schließen des Fensters sind alle blockiert. Verwenden Sie die Schaltfläche, um sie zu verlassen.</value>
   </data>
     <data name="KioskExitApp" xml:space="preserve">
     <value>App beenden</value>
   </data>
+  <!--#endif -->
 </root>
