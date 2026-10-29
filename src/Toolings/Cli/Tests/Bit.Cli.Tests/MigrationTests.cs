@@ -21,7 +21,7 @@ public class MigrationTests
         var call = host.Runner.Calls.Single();
         Assert.AreEqual("dotnet", call.FileName);
         Assert.AreEqual(ServerApi(project), call.WorkingDirectory);
-        CollectionAssert.AreEqual(Ef("migrations", "add", "AddProductRating", "--output-dir", "Infrastructure/Data/Migrations"), call.Arguments.ToArray());
+        CollectionAssert.AreEqual(Ef("migrations", "add", "AddProductRating", "--output-dir", "Infrastructure/Data/Migrations", "--context", "AppDbContext"), call.Arguments.ToArray());
         StringAssert.Contains(host.FlatOutput, "Added the AddProductRating migration");
     }
 
@@ -66,7 +66,7 @@ public class MigrationTests
 
         var server = host.Runner.Calls.Single();
         Assert.AreEqual(ServerApi(project), server.WorkingDirectory);
-        CollectionAssert.AreEqual(Ef("migrations", "remove"), server.Arguments.ToArray());
+        CollectionAssert.AreEqual(Ef("migrations", "remove", "--context", "AppDbContext"), server.Arguments.ToArray());
     }
 
     [TestMethod]
@@ -92,7 +92,7 @@ public class MigrationTests
 
         var call = host.Runner.Calls.Single();
         Assert.AreEqual(ServerApi(project), call.WorkingDirectory);
-        CollectionAssert.AreEqual(Ef("migrations", "bundle", "--configuration", "Release", "--self-contained", "--target-runtime", "win-x64", "--output", "efbundle.exe", "--force"), call.Arguments.ToArray());
+        CollectionAssert.AreEqual(Ef("migrations", "bundle", "--configuration", "Release", "--self-contained", "--target-runtime", "win-x64", "--output", "efbundle.exe", "--force", "--context", "AppDbContext"), call.Arguments.ToArray());
         StringAssert.Contains(host.FlatOutput, $"Copy {Path.Combine("src", "Server", "Contoso.Server.Api", "efbundle.exe")} into the deployed app's folder");
 
         host.Runner.Calls.Clear();
@@ -191,7 +191,7 @@ public class MigrationTests
 
         StringAssert.Contains(host.FlatOutput, "The name 'Initial' is used by an existing migration.");
         Assert.IsFalse(host.Output.Contains("0 Error(s)", StringComparison.Ordinal), host.Output);
-        StringAssert.Contains(host.FlatOutput, "dotnet dnx dotnet-ef@10.0.14 -- migrations add Initial --output-dir Infrastructure/Data/Migrations --verbose");
+        StringAssert.Contains(host.FlatOutput, "dotnet dnx dotnet-ef@10.0.14 -- migrations add Initial --output-dir Infrastructure/Data/Migrations --context AppDbContext --verbose");
     }
 
     [TestMethod]
@@ -256,6 +256,99 @@ public class MigrationTests
     }
 
     [TestMethod]
+    public async Task AnOfflineDatabaseThatMovedToOtherProjects_Should_BeFoundByItsClass()
+    {
+        using var host = new TestHost();
+        var project = CreateProject(host);
+        Directory.Delete(ServerWeb(project), recursive: true);
+        Directory.Delete(Path.Combine(project, "src", "Client", "Contoso.Client.Core"), recursive: true);
+
+        var data = Path.Combine(project, "src", "Client", "Contoso.Client.Data");
+        Write(Path.Combine(data, "Contoso.Client.Data.csproj"), "<Project Sdk=\"Microsoft.NET.Sdk\" />");
+        Write(Path.Combine(data, "Offline", "OfflineDatabase.cs"), "namespace Contoso.Client.Data.Offline;\n\npublic partial class AppOfflineDbContext(DbContextOptions<AppOfflineDbContext> options) : OfflineDbContext(options);");
+        Write(Path.Combine(data, "Offline", "History", "AppOfflineDbContextModelSnapshot.cs"), "namespace Contoso.Client.Data.Offline.History;");
+        Write(Path.Combine(data, "Offline", "Model", "AppOfflineDbContextModel.cs"), "namespace Contoso.Client.Data.Offline.Model;");
+        Write(Path.Combine(project, "src", "Client", "Contoso.Client.Web", "Contoso.Client.Web.csproj"), """<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly"><ItemGroup><ProjectReference Include="..\Contoso.Client.Data\Contoso.Client.Data.csproj" /></ItemGroup></Project>""");
+        Write(Path.Combine(project, "src", "Contoso.Host", "Contoso.Host.csproj"), """<Project Sdk="Microsoft.NET.Sdk.Web"><ItemGroup><ProjectReference Include="..\Client\Contoso.Client.Web\Contoso.Client.Web.csproj" /></ItemGroup></Project>""");
+        host.Runner.On("dotnet", "dnx dotnet-ef@10.0.14 -- migrations add", spec =>
+        {
+            File.WriteAllText(Path.Combine(data, "Offline", "History", "20261029000000_AddTodoTags.cs"), "");
+            return new ProcessResult { ExitCode = 0 };
+        });
+
+        Assert.AreEqual(CliApp.ExitOk, await RunInAsync(host, project, "migration", "add", "AddTodoTags", "--offline"), host.Output);
+
+        const string dataProject = "../Client/Contoso.Client.Data/Contoso.Client.Data.csproj";
+        Assert.HasCount(3, host.Runner.Calls);
+        var (add, format, optimize) = (host.Runner.Calls[0], host.Runner.Calls[1], host.Runner.Calls[2]);
+        Assert.AreEqual(Path.Combine(project, "src", "Contoso.Host"), add.WorkingDirectory);
+        CollectionAssert.AreEqual(Ef("migrations", "add", "AddTodoTags", "--output-dir", "Offline/History", "--context", "AppOfflineDbContext", "--project", dataProject), add.Arguments.ToArray());
+        Assert.AreEqual(data, format.WorkingDirectory);
+        CollectionAssert.AreEqual(new[] { "format", "Contoso.Client.Data.csproj", "--no-restore", "--include", "Offline/History/20261029000000_AddTodoTags.cs" }, format.Arguments.ToArray());
+        CollectionAssert.AreEqual(Ef("dbcontext", "optimize", "--output-dir", "Offline/Model", "--namespace", "Contoso.Client.Data.Offline.Model", "--context", "AppOfflineDbContext", "--project", dataProject, "--no-build"), optimize.Arguments.ToArray());
+        StringAssert.Contains(host.FlatOutput, $"AppOfflineDbContext in {Path.Combine("src", "Client", "Contoso.Client.Data", "Contoso.Client.Data.csproj")}, started with {Path.Combine("src", "Contoso.Host")}");
+    }
+
+    [TestMethod]
+    public async Task ADatabaseContextInALibrary_Should_RunFromTheServerThatReferencesIt()
+    {
+        using var host = new TestHost();
+        var project = CreateProject(host);
+        File.Delete(Path.Combine(ServerApi(project), "Infrastructure", "Data", "AppDbContext.cs"));
+        File.WriteAllText(Path.Combine(ServerApi(project), "Contoso.Server.Api.csproj"), """<Project Sdk="Microsoft.NET.Sdk.Web"><ItemGroup><PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" /><ProjectReference Include="..\Contoso.Server.Data\Contoso.Server.Data.csproj" /></ItemGroup></Project>""");
+        var data = Path.Combine(project, "src", "Server", "Contoso.Server.Data");
+        Write(Path.Combine(data, "Contoso.Server.Data.csproj"), "<Project Sdk=\"Microsoft.NET.Sdk\" />");
+        Write(Path.Combine(data, "AppDbContext.cs"), "namespace Contoso.Server.Data;\n\npublic partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options);");
+
+        Assert.AreEqual(CliApp.ExitOk, await RunInAsync(host, project, "migration", "add", "AddProductRating"), host.Output);
+
+        var add = host.Runner.Calls.Single();
+        Assert.AreEqual(ServerApi(project), add.WorkingDirectory);
+        CollectionAssert.AreEqual(Ef("migrations", "add", "AddProductRating", "--output-dir", "Migrations", "--context", "AppDbContext", "--project", "../Contoso.Server.Data/Contoso.Server.Data.csproj"), add.Arguments.ToArray());
+
+        host.Runner.Calls.Clear();
+
+        Assert.AreEqual(CliApp.ExitOk, await RunInAsync(host, project, "migration", "bundle"), host.Output);
+        CollectionAssert.IsSubsetOf(new[] { "--context", "AppDbContext", "--project", "../Contoso.Server.Data/Contoso.Server.Data.csproj" }, host.Runner.Calls.Single().Arguments.ToArray());
+        Assert.AreEqual(ServerApi(project), host.Runner.Calls.Single().WorkingDirectory);
+    }
+
+    [TestMethod]
+    public async Task AnOfflineDatabaseNoAppReferences_Should_SayHowToRunEfCoreByHand()
+    {
+        using var host = new TestHost();
+        var project = CreateProject(host, offline: true);
+        File.WriteAllText(Path.Combine(ServerWeb(project), "Contoso.Server.Web.csproj"), "<Project Sdk=\"Microsoft.NET.Sdk.Web\" />");
+
+        Assert.AreEqual(CliApp.ExitUsage, await RunInAsync(host, project, "migration", "add", "AddTodoTags", "--offline"));
+
+        StringAssert.Contains(host.FlatOutput, "no ASP.NET Core project (Microsoft.NET.Sdk.Web) is it or references it");
+        StringAssert.Contains(host.FlatOutput, "dotnet dnx dotnet-ef@10.0.14 -- migrations add <name> --context AppOfflineDbContext --project src/Client/Contoso.Client.Core/Contoso.Client.Core.csproj --startup-project <the app's .csproj>");
+        Assert.IsEmpty(host.Runner.Calls);
+    }
+
+    [TestMethod]
+    public void TheTemplatesDatabaseContexts_Should_BeFoundWhereTheTemplateHasThem()
+    {
+        using var host = new TestHost();
+        var template = Path.GetDirectoryName(TestHost.RepositoryFile("src", "Templates", "Boilerplate", "Bit.Boilerplate", "Boilerplate.slnx"))!;
+        var migrations = new Projects.ProjectMigrations(host.Services, new Projects.ProjectContext { Name = "Boilerplate", Directory = template, Platforms = new HashSet<Templates.Platform> { Templates.Platform.Web } });
+
+        var server = migrations.Find(offline: false).Target!;
+        Assert.AreEqual(Path.Combine(template, "src", "Server", "Boilerplate.Server.Api", "Boilerplate.Server.Api.csproj"), server.ProjectFile);
+        Assert.IsTrue(server.StartsItself);
+        Assert.IsTrue(server.ContextFound);
+        Assert.AreEqual("Infrastructure/Data/Migrations", server.MigrationsFolder);
+
+        var offline = migrations.Find(offline: true).Target!;
+        Assert.AreEqual(Path.Combine(template, "src", "Client", "Boilerplate.Client.Core", "Boilerplate.Client.Core.csproj"), offline.ProjectFile);
+        Assert.AreEqual(Path.Combine(template, "src", "Server", "Boilerplate.Server.Web"), offline.StartupDirectory);
+        Assert.AreEqual("Infrastructure/Data/Migrations", offline.MigrationsFolder);
+        Assert.AreEqual("Infrastructure/Data/CompiledModel", offline.CompiledModelFolder);
+        Assert.AreEqual("Boilerplate.Client.Core.Infrastructure.Data", offline.Namespace);
+    }
+
+    [TestMethod]
     public async Task AFolderOutsideAProject_Should_BeRefused()
     {
         using var host = new TestHost();
@@ -280,15 +373,17 @@ public class MigrationTests
         File.WriteAllText(Path.Combine(directory, "Contoso.Web.slnf"), "{}");
 
         var api = Directory.CreateDirectory(ServerApi(directory)).FullName;
-        File.WriteAllText(Path.Combine(api, "Contoso.Server.Api.csproj"), "<Project><ItemGroup><PackageReference Include=\"Microsoft.EntityFrameworkCore.Sqlite\" /><PackageReference Include=\"Npgsql.EntityFrameworkCore.PostgreSQL\" /></ItemGroup></Project>");
+        File.WriteAllText(Path.Combine(api, "Contoso.Server.Api.csproj"), "<Project Sdk=\"Microsoft.NET.Sdk.Web\"><ItemGroup><PackageReference Include=\"Microsoft.EntityFrameworkCore.Sqlite\" /><PackageReference Include=\"Npgsql.EntityFrameworkCore.PostgreSQL\" /></ItemGroup></Project>");
         File.WriteAllText(Path.Combine(api, "Program.Services.cs"), "options.UseNpgsql(dataSource);");
-        Directory.CreateDirectory(ServerWeb(directory));
+        Write(Path.Combine(api, "Infrastructure", "Data", "AppDbContext.cs"), "namespace Contoso.Server.Api.Infrastructure.Data;\n\npublic partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options);");
+        Write(Path.Combine(ServerWeb(directory), "Contoso.Server.Web.csproj"), """<Project Sdk="Microsoft.NET.Sdk.Web"><ItemGroup><ProjectReference Include="..\Contoso.Server.Api\Contoso.Server.Api.csproj" /><ProjectReference Include="..\..\Client\Contoso.Client.Core\Contoso.Client.Core.csproj" /></ItemGroup></Project>""");
 
-        var data = Directory.CreateDirectory(Path.Combine(directory, "src", "Client", "Contoso.Client.Core", "Infrastructure", "Data")).FullName;
+        var core = Path.Combine(directory, "src", "Client", "Contoso.Client.Core");
+        Write(Path.Combine(core, "Contoso.Client.Core.csproj"), "<Project Sdk=\"Microsoft.NET.Sdk.Razor\" />");
 
         if (offline)
         {
-            File.WriteAllText(Path.Combine(data, "AppOfflineDbContext.cs"), "");
+            Write(Path.Combine(core, "Infrastructure", "Data", "AppOfflineDbContext.cs"), "namespace Contoso.Client.Core.Infrastructure.Data;\n\npublic partial class AppOfflineDbContext(DbContextOptions<AppOfflineDbContext> options) : OfflineDbContext(options);");
         }
 
         File.WriteAllText(Path.Combine(directory, "src", "Directory.Packages.props"), """
@@ -301,6 +396,12 @@ public class MigrationTests
             """);
 
         return directory;
+    }
+
+    private static void Write(string path, string text)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllText(path, text);
     }
 
     private static Task<int> RunInAsync(TestHost host, string directory, params string[] args)

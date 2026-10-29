@@ -10,7 +10,7 @@ public static class MigrationCommand
 {
     public static Command Create(Func<CliServices> services)
     {
-        return new Command("migration", "Add and remove the EF Core migrations of a bit Boilerplate project's database or of its offline database, and bundle them for a deployed database. It works in any folder of the project.")
+        return new Command("migration", "Add and remove the EF Core migrations of a bit Boilerplate project's database or of its offline database, and bundle them for a deployed database. It works in any folder of the project, and finds the projects of AppDbContext and AppOfflineDbContext by their classes.")
         {
             Add(services),
             Remove(services),
@@ -22,7 +22,7 @@ public static class MigrationCommand
     private static Command Add(Func<CliServices> services)
     {
         var nameArgument = new Argument<string>("name") { Description = "The migration's name, e.g. AddProductRating." };
-        var offlineOption = new Option<bool>("--offline") { Description = "Add it to the offline database in Client.Core instead, then regenerate that database's compiled model." };
+        var offlineOption = new Option<bool>("--offline") { Description = "Add it to the offline database, AppOfflineDbContext, instead, then regenerate that database's compiled model." };
 
         var command = new Command("add", "Add a migration with what changed in the database's model since the last one.")
         {
@@ -57,7 +57,7 @@ public static class MigrationCommand
 
     private static Command Remove(Func<CliServices> services)
     {
-        var offlineOption = new Option<bool>("--offline") { Description = "Remove it from the offline database in Client.Core instead, then regenerate that database's compiled model." };
+        var offlineOption = new Option<bool>("--offline") { Description = "Remove it from the offline database, AppOfflineDbContext, instead, then regenerate that database's compiled model." };
 
         var command = new Command("remove", "Remove the last migration, as long as the development database doesn't have it yet.")
         {
@@ -96,7 +96,7 @@ public static class MigrationCommand
     {
         var runtimeOption = new Option<string>("--runtime", "-r") { Description = "The runtime of the machine the bundle runs on, e.g. linux-x64, linux-arm64, win-x64 or osx-arm64.", DefaultValueFactory = _ => "linux-x64" };
 
-        var command = new Command("bundle", "Build efbundle in Server.Api: one executable that applies the migrations to a deployed database.")
+        var command = new Command("bundle", "Build efbundle in the folder of the server project that runs AppDbContext: one executable that applies the migrations to a deployed database.")
         {
             runtimeOption
         };
@@ -143,22 +143,20 @@ public static class MigrationCommand
         var project = new ProjectContext { Name = name, Directory = directory, Platforms = new HashSet<Platform> { Platform.Web } };
         var migrations = new ProjectMigrations(cli, project);
 
-        if (offline && migrations.HasOfflineDatabase is false)
+        var lookup = migrations.Find(offline);
+
+        if (lookup.Target is not { } target)
         {
-            return cli.UsageError("offline-db-missing", $"{name} has no offline database. Only a project created with --offlineDb true has one.");
+            return cli.UsageError(lookup.Code, lookup.Problem);
         }
 
-        if (offline is false && Directory.Exists(project.ServerApiDirectory) is false)
+        if (offline is false && migrations.HasDatabaseProvider(target) is false)
         {
-            return cli.UsageError("server-api-missing", $"{name} has no src/Server/{name}.Server.Api folder, where the database's migrations are.");
-        }
-
-        if (offline is false && migrations.HasDatabaseProvider is false)
-        {
-            return cli.UsageError("database-provider-missing", $"{name} was created with --database Other, so its database has no provider yet. Add the EF Core provider of your database (https://learn.microsoft.com/ef/core/providers) to Server.Api and use it in Program.Services.cs, where the template throws NotImplementedException, then run this again.");
+            return cli.UsageError("database-provider-missing", $"{name} was created with --database Other, so its database has no provider yet. Add the EF Core provider of your database (https://learn.microsoft.com/ef/core/providers) to {Path.GetFileNameWithoutExtension(target.ProjectFile)} and use it in Program.Services.cs, where the template throws NotImplementedException, then run this again.");
         }
 
         cli.Console.Out.MarkupLine($"[bold]{Markup.Escape(name)}[/]{(offline ? "'s offline database" : "'s database")} [grey]in {Markup.Escape(directory)}[/]");
+        cli.Console.Out.MarkupLine($"[grey]{Markup.Escape(migrations.Describe(target))}[/]");
 
         var steps = new StepRunner(cli);
         await work(steps, migrations);

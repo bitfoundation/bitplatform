@@ -7,21 +7,25 @@ public sealed partial class ProjectMigrations(CliServices cli, ProjectContext pr
 {
     public const string MigrationsFolder = "Infrastructure/Data/Migrations";
 
-    public const string OfflineContext = "AppOfflineDbContext";
-
-    private const string CompiledModelFolder = "Infrastructure/Data/CompiledModel";
-
     private const string MissingProviderText = "Install and configure any database supported by ef core";
 
     private static readonly string[] diagnostics = ["--verbose", "--no-color", "--prefix-output"];
 
     public string Tool => (project.PackageVersion("Microsoft.EntityFrameworkCore.Design") ?? project.PackageVersion("Microsoft.EntityFrameworkCore")) is { } version ? $"dotnet-ef@{version}" : "dotnet-ef";
 
-    public bool HasOfflineDatabase => File.Exists(Path.Combine(project.ClientCoreDirectory, "Infrastructure", "Data", $"{OfflineContext}.cs")) && Directory.Exists(project.ServerWebDirectory);
+    private MigrationTargets? targets;
 
-    public bool HasDatabaseProvider => ReadText(Path.Combine(project.ServerApiDirectory, "Program.Services.cs")).Contains(MissingProviderText, StringComparison.Ordinal) is false;
+    public MigrationLookup Find(bool offline) => (targets ??= new(project, () => Tool)).Find(offline);
 
-    private string[] OfflineArguments => ["--context", OfflineContext, "--project", $"../../Client/{project.Name}.Client.Core/{project.Name}.Client.Core.csproj"];
+    public bool HasDatabaseProvider(MigrationTarget target) => new[] { target.StartupDirectory, target.ProjectDirectory }
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .All(directory => ReadText(Path.Combine(directory, "Program.Services.cs")).Contains(MissingProviderText, StringComparison.Ordinal) is false);
+
+    public string Describe(MigrationTarget target)
+    {
+        var where = $"{target.Context} in {Path.GetRelativePath(project.Directory, target.ProjectFile)}";
+        return target.StartsItself ? where : $"{where}, started with {Path.GetRelativePath(project.Directory, target.StartupDirectory)}";
+    }
 
     public Task<ProcessResult> RunAsync(string directory, IReadOnlyList<string> arguments, Action<string> progress, CancellationToken cancellationToken)
     {
@@ -42,7 +46,10 @@ public sealed partial class ProjectMigrations(CliServices cli, ProjectContext pr
 
     public IReadOnlySet<string> MigrationFiles(bool offline)
     {
-        var folder = Path.Combine(Project(offline), MigrationsFolder);
+        if (Find(offline).Target is not { } target)
+            return new HashSet<string>();
+
+        var folder = Path.Combine(target.ProjectDirectory, target.MigrationsFolder);
 
         try
         {
@@ -56,13 +63,14 @@ public sealed partial class ProjectMigrations(CliServices cli, ProjectContext pr
 
     public async Task<StepResult> FormatAsync(bool offline, IReadOnlySet<string> before, Action<string> progress, CancellationToken cancellationToken)
     {
-        var directory = Project(offline);
+        var target = Target(offline);
+        var directory = target.ProjectDirectory;
         var added = MigrationFiles(offline).Where(f => before.Contains(f) is false).Select(f => Path.GetRelativePath(directory, f).Replace('\\', '/')).Order(StringComparer.Ordinal).ToList();
 
         if (added.Count == 0)
             return StepResult.Skipped("Skipped dotnet format", "the migration added no files");
 
-        string[] arguments = ["format", $"{Path.GetFileName(directory)}.csproj", "--no-restore", "--include", .. added];
+        string[] arguments = ["format", Path.GetFileName(target.ProjectFile), "--no-restore", "--include", .. added];
         var result = await cli.Runner.RunAsync(new ProcessSpec { FileName = "dotnet", Arguments = arguments, WorkingDirectory = directory, OnOutputLine = progress, Timeout = TimeSpan.FromMinutes(15) }, cancellationToken);
         var followUp = $"cd {ProcessSpec.Quote(directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}";
 
@@ -73,40 +81,53 @@ public sealed partial class ProjectMigrations(CliServices cli, ProjectContext pr
 
     public Task<StepResult> AddAsync(string name, bool offline, Action<string> progress, CancellationToken cancellationToken)
     {
-        string[] arguments = ["migrations", "add", name, "--output-dir", MigrationsFolder, .. offline ? OfflineArguments : Array.Empty<string>()];
-        return StepAsync(Startup(offline), arguments, [], $"Added the {name} migration", $"Couldn't add the {name} migration", Where(offline), progress, cancellationToken);
+        var target = Target(offline);
+        string[] arguments = ["migrations", "add", name, "--output-dir", target.MigrationsFolder, .. Arguments(target)];
+        return StepAsync(target.StartupDirectory, arguments, [], $"Added the {name} migration", $"Couldn't add the {name} migration", Where(offline), progress, cancellationToken);
     }
 
     public async Task<StepResult> RemoveAsync(bool offline, Action<string> progress, CancellationToken cancellationToken)
     {
-        string[] arguments = ["migrations", "remove", .. offline ? OfflineArguments : Array.Empty<string>()];
-        var result = await RunAsync(Startup(offline), [.. arguments, .. diagnostics], progress, cancellationToken);
+        var target = Target(offline);
+        string[] arguments = ["migrations", "remove", .. Arguments(target)];
+        var result = await RunAsync(target.StartupDirectory, [.. arguments, .. diagnostics], progress, cancellationToken);
         var removed = RemovedMigrationRegex().Match(result.Output) is { Success: true } match ? match.Groups["name"].Value : Where(offline);
 
-        return Step(result, Startup(offline), arguments, arguments, "Removed the last migration", "Couldn't remove the last migration", removed);
+        return Step(result, target.StartupDirectory, arguments, arguments, "Removed the last migration", "Couldn't remove the last migration", removed);
     }
 
     public Task<StepResult> OptimizeAsync(bool build, Action<string> progress, CancellationToken cancellationToken)
     {
-        string[] arguments = ["dbcontext", "optimize", "--output-dir", CompiledModelFolder, "--namespace", $"{project.Name}.Client.Core.Infrastructure.Data", .. OfflineArguments];
-        return StepAsync(project.ServerWebDirectory, arguments, build ? [] : ["--no-build"], "Regenerated the compiled model", "Couldn't regenerate the compiled model", Where(offline: true), progress, cancellationToken);
+        var target = Target(offline: true);
+        string[] arguments = ["dbcontext", "optimize", "--output-dir", target.CompiledModelFolder, "--namespace", target.Namespace, .. Arguments(target)];
+        return StepAsync(target.StartupDirectory, arguments, build ? [] : ["--no-build"], "Regenerated the compiled model", "Couldn't regenerate the compiled model", Where(offline: true), progress, cancellationToken);
     }
 
     public Task<StepResult> BundleAsync(string runtime, Action<string> progress, CancellationToken cancellationToken)
     {
-        string[] arguments = ["migrations", "bundle", "--configuration", "Release", "--self-contained", "--target-runtime", runtime, "--output", BundleFile(runtime), "--force"];
-        return StepAsync(project.ServerApiDirectory, arguments, [], "Built the migrations bundle", "Couldn't build the migrations bundle", $"for {runtime}", progress, cancellationToken);
+        var target = Target(offline: false);
+        string[] arguments = ["migrations", "bundle", "--configuration", "Release", "--self-contained", "--target-runtime", runtime, "--output", BundleFile(runtime), "--force", .. Arguments(target)];
+        return StepAsync(target.StartupDirectory, arguments, [], "Built the migrations bundle", "Couldn't build the migrations bundle", $"for {runtime}", progress, cancellationToken);
     }
 
-    public string BundlePath(string runtime) => Path.GetRelativePath(project.Directory, Path.Combine(project.ServerApiDirectory, BundleFile(runtime)));
+    public string BundlePath(string runtime) => Path.GetRelativePath(project.Directory, Path.Combine(Target(offline: false).StartupDirectory, BundleFile(runtime)));
 
     private static string BundleFile(string runtime) => runtime.StartsWith("win", StringComparison.OrdinalIgnoreCase) ? "efbundle.exe" : "efbundle";
 
-    private string Startup(bool offline) => offline ? project.ServerWebDirectory : project.ServerApiDirectory;
+    private static string[] Arguments(MigrationTarget target) =>
+    [
+        .. target.ContextFound ? new[] { "--context", target.Context } : [],
+        .. target.StartsItself ? [] : new[] { "--project", Path.GetRelativePath(target.StartupDirectory, target.ProjectFile).Replace('\\', '/') }
+    ];
 
-    private string Project(bool offline) => offline ? project.ClientCoreDirectory : project.ServerApiDirectory;
+    private MigrationTarget Target(bool offline) => Find(offline).Target ?? throw new InvalidOperationException(Find(offline).Problem);
 
-    private string Where(bool offline) => offline ? "offline database, Client.Core" : $"{project.Database ?? "the"} database, Server.Api";
+    private string Where(bool offline)
+    {
+        var name = Path.GetFileNameWithoutExtension(Target(offline).ProjectFile);
+        var shortName = name.StartsWith($"{project.Name}.", StringComparison.Ordinal) ? name[(project.Name.Length + 1)..] : name;
+        return offline ? $"offline database, {shortName}" : $"{project.Database ?? "the"} database, {shortName}";
+    }
 
     private async Task<StepResult> StepAsync(string directory, string[] arguments, string[] runOnly, string succeeded, string failed, string detail, Action<string> progress, CancellationToken cancellationToken)
     {

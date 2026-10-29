@@ -189,8 +189,8 @@ The project includes a complete CI/CD pipeline setup using GitHub Actions with *
 **Key Configuration**:
 - **Runner**: Ubuntu 24.04
 - **SDK Version**: Automatically detected from `global.json`
-- **Machine setup**: the bit CLI, installed once per job with `dotnet tool install Bit.Cli --version 11.0.0-pre-15`, then `bit setup`,
-  which installs only what the runner is missing
+- **Machine setup**: bit platform's `bit-setup` action, which installs the bit CLI and runs `bit setup`, which installs
+  only what the runner is missing
 - **Test Artifacts**: Retained for 14 days on failure
 
 **Important**: The CI workflow ensures that all code changes are validated before merging. It's the gatekeeper for code quality.
@@ -266,6 +266,17 @@ This is the **core deployment workflow** that handles building and deploying all
 2. **build_blazor_hybrid_windows**: Windows desktop app (.exe installer)
 3. **build_blazor_hybrid_android**: Android app bundle (.aab for Google Play)
 4. **build_blazor_hybrid_iOS**: iOS app package (.ipa for App Store) and macOS app
+
+**Shared steps from bit platform**: three steps use short composite actions from
+[bitfoundation/bitplatform](https://github.com/bitfoundation/bitplatform/tree/develop/.github/actions/boilerplate), at the
+bit platform version of the project, so the workflows stay short and get their fixes with each upgrade:
+- `bit-setup` installs the bit CLI of that version and runs `bit setup`, which `ci.yml` uses too
+- `app-certificate` writes the `APP_CERTIFICATE` and `APP_CERTIFICATE_RETIRED` secrets next to the server as the
+  `AppCertificate` files, and fails the deploy when openssl can't read one
+- `artifact-signing` logs in to Azure with the job's OpenID Connect token and lets `vpk pack` sign with Artifact Signing
+
+Each is a few lines of YAML. To stop depending on that repository, copy one into your own `.github/actions` folder and
+point its step at the copy.
 
 ---
 
