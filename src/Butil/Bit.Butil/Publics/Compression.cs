@@ -46,7 +46,7 @@ public class Compression(IJSRuntime js)
     /// </summary>
     /// <param name="data">The compressed bytes.</param>
     /// <param name="format">The codec the data was compressed with. Defaults to gzip.</param>
-    /// <param name="maxLength">The most bytes the output may have; a payload that decompresses to more returns null. Defaults to 128 MB.</param>
+    /// <param name="maxLength">The most bytes the output may have, zero or more; a payload that decompresses to more returns null. Defaults to 128 MB, and a negative value throws <see cref="ArgumentOutOfRangeException"/>.</param>
     /// <returns>
     /// The original bytes, or null when the API is unavailable, the input is corrupt, or the format
     /// doesn't match what the data actually is. Nothing is thrown - a bad payload from the network
@@ -77,7 +77,7 @@ public class Compression(IJSRuntime js)
     /// </summary>
     /// <param name="data">The compressed bytes.</param>
     /// <param name="format">The codec the data was compressed with. Defaults to gzip.</param>
-    /// <param name="maxLength">The most bytes the decompressed UTF-8 may have; a payload that decompresses to more returns null. Defaults to 128 MB.</param>
+    /// <param name="maxLength">The most bytes the decompressed UTF-8 may have, zero or more; a payload that decompresses to more returns null. Defaults to 128 MB, and a negative value throws <see cref="ArgumentOutOfRangeException"/>.</param>
     /// <returns>The text, or null when the payload couldn't be decompressed.</returns>
     public async ValueTask<string?> DecompressText(byte[] data, CompressionFormat format = CompressionFormat.Gzip, int maxLength = 128 * 1024 * 1024)
     {

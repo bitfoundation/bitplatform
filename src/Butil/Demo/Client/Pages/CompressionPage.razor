@@ -106,7 +106,7 @@ var original = await compression.Decompress(packed!, CompressionFormat.Gzip);
                Description="Compresses bytes. Null when the API is unavailable or the stream errored." />
     <ApiMember Name="Decompress"
                Signature="ValueTask<byte[]?> Decompress(byte[] data, CompressionFormat format = CompressionFormat.Gzip, int maxLength = 128 * 1024 * 1024)"
-               Description="Decompresses bytes. Null when the input is corrupt, the format doesn't match or the output passes maxLength - nothing is thrown." />
+               Description="Decompresses bytes. Null when the input is corrupt, the format doesn't match or the output passes maxLength - nothing is thrown for a bad payload. A negative maxLength throws ArgumentOutOfRangeException." />
     <ApiMember Name="CompressText"
                Signature="ValueTask<byte[]?> CompressText(string text, CompressionFormat format = CompressionFormat.Gzip)"
                Description="Compresses text as UTF-8." />
