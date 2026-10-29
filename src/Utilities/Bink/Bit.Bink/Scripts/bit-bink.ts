@@ -1167,7 +1167,7 @@ class Surface {
         count = Math.min(count, commands.length);
 
         try {
-            this.replay(rootContext, commands, count, strings);
+            this.replay(rootContext, commands, count, strings, layer !== 'export');
         } catch (error) {
             // An export has a caller waiting for its result, which should hear about the failure.
             if (layer === 'export') throw error;
@@ -1186,7 +1186,7 @@ class Surface {
         if (!this.disposed && this.callback && this.callback.resourcesLost) this.callback.resourcesLost();
     }
 
-    replay(rootContext: CanvasRenderingContext2D, commands: ArrayLike<number>, count: number, strings: string[]): void {
+    replay(rootContext: CanvasRenderingContext2D, commands: ArrayLike<number>, count: number, strings: string[], fetchImages: boolean): void {
         let ctx: CanvasRenderingContext2D = rootContext;
         const groups: IsolatedGroup[] = [];
         let i = 0;
@@ -1375,7 +1375,7 @@ class Surface {
                         this.images.set(uri, image);
                         this.imagesUsedThisFrame.add(uri);
                     }
-                    else this.requestImage(uri);
+                    else if (fetchImages) this.requestImage(uri);
                     if (image && image.complete && image.naturalWidth > 0) {
                         ctx.globalAlpha = alpha;
                         if (hasCrop) ctx.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);

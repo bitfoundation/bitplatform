@@ -229,9 +229,6 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
         int y0 = Math.Max((int)MathF.Floor(deviceRect.Top), 0);
         int x1 = Math.Min((int)MathF.Ceiling(deviceRect.Right), _target.Width);
         int y1 = Math.Min((int)MathF.Ceiling(deviceRect.Bottom), _target.Height);
-        long samples = x1 > x0 && y1 > y0 ? (long)(x1 - x0) * (y1 - y0) * BinkRasterizer.SubSamples : 0;
-        if (samples > RasterWorkBudget - _rasterWork) throw new InvalidOperationException(BinkRasterizer.WorkLimitMessage);
-        _rasterWork += samples;
 
         BinkPngCodec.DecodedImage? decoded = GetImage(image, destination, deviceRect);
         if (decoded is null)
@@ -239,6 +236,10 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
             SkippedImages++;
             return;
         }
+
+        long samples = x1 > x0 && y1 > y0 ? (long)(x1 - x0) * (y1 - y0) * BinkRasterizer.SubSamples : 0;
+        if (samples > RasterWorkBudget - _rasterWork) throw new InvalidOperationException(BinkRasterizer.WorkLimitMessage);
+        _rasterWork += samples;
 
         BinkPngCodec.DecodedImage source = decoded.Value;
         BinkRect crop = sourceRect ?? new BinkRect(0, 0, source.Width, source.Height);

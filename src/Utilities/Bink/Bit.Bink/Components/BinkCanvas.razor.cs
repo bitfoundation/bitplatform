@@ -831,7 +831,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             ElementFilter = filter is { Count: > 0 } ? filter : null,
         });
 
-        await EnsureImagesLoadedAsync(options.MaxPixels, cancellationToken).ConfigureAwait(true);
+        await EnsureImagesLoadedAsync(region, options.IncludeHiddenLayers, filter is { Count: > 0 } ? filter : null, options.MaxPixels, cancellationToken).ConfigureAwait(true);
         string mimeType = MimeTypeOf(format);
         // Even an incompressible encoding stays within four bytes a pixel plus its headers.
         long maxBytes = (long)width * height * 4 + (1 << 20);
@@ -1451,6 +1451,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
                 break;
             case BinkPointerPhase.Move:
                 if (_touchPoints.ContainsKey(sample.PointerId)) _touchPoints[sample.PointerId] = sample.Position;
+                else if (_gestureRouting) return true;
                 break;
             case BinkPointerPhase.Up:
             case BinkPointerPhase.Cancel:
@@ -2275,18 +2276,27 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         }
     }
 
-    private async Task EnsureImagesLoadedAsync(long maxPixels, CancellationToken cancellationToken)
+    private async Task EnsureImagesLoadedAsync(BinkRect region, bool includeHiddenLayers, IReadOnlyCollection<Guid>? filter, long maxPixels, CancellationToken cancellationToken)
     {
         if (_interop is null) return;
-        var requested = new HashSet<object>(ReferenceEqualityComparer.Instance);
+        HashSet<Guid>? selected = filter is null ? null : [.. filter];
+        var seen = new HashSet<object>(ReferenceEqualityComparer.Instance);
+        var requested = new HashSet<string>(StringComparer.Ordinal);
         long remaining = maxPixels;
-        foreach (BinkElement element in _document.AllElements)
+        foreach (BinkLayer layer in _document.Layers)
         {
-            if (element is not BinkImageElement { Source.IsOmitted: false } image || !requested.Add(image.Source.Uri)) continue;
-            long pixels = ImagePixels(image.Source);
-            if (pixels > remaining) continue;
-            remaining -= pixels;
-            await _interop.LoadImageAsync(image.Source.Uri, cancellationToken).ConfigureAwait(true);
+            if (!layer.IsVisible && !includeHiddenLayers) continue;
+            foreach (BinkElement element in layer.Elements)
+            {
+                if (element is not BinkImageElement { Source.IsOmitted: false } image) continue;
+                if (selected is not null && !selected.Contains(element.Id)) continue;
+                if (!region.IsEmpty && !element.Bounds.Intersects(region)) continue;
+                if (!seen.Add(image.Source.Uri) || !requested.Add(image.Source.Uri)) continue;
+                long pixels = ImagePixels(image.Source);
+                if (pixels > remaining) continue;
+                remaining -= pixels;
+                await _interop.LoadImageAsync(image.Source.Uri, cancellationToken).ConfigureAwait(true);
+            }
         }
     }
 

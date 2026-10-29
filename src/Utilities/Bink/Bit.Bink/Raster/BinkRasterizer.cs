@@ -200,6 +200,7 @@ public sealed class BinkRasterizer
             work += last + 1 - first;
             onRow(y, xStart + first, coverage[first..(last + 1)]);
         }
+        if (work > workLimit) throw new InvalidOperationException(WorkLimitMessage);
         return work;
     }
 
