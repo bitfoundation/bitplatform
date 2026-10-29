@@ -129,11 +129,12 @@ public class McpController : ControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(InspectBlazeDbTable), Title = "Inspect a table type with the real generator", ReadOnly = true, OpenWorld = false, UseStructuredContent = true)]
     [Description("Runs the real Bit.BlazeDb source generator over C# source containing one or more [BlazeDbTable] types and reports its verdict: every BLZ diagnostic a build would report, the C# compiler errors in the result, and for each table its stored name, its key, the field number and wire type of every stored property (and whether the number was pinned with [BlazeDbField]), its hash, ordered and compound indexes, and the members the generator adds ('Table', 'Indexes.X'). Check every table type with it before you build on it, and use the generated names it lists rather than guessed ones. The usual usings (System, System.Collections.Generic, Bit.BlazeDb, ...) are implied, so a class on its own is enough. The source is compiled, never run.")]
-    public BlazeDbTableInspectionDto InspectBlazeDbTable(
+    public Task<BlazeDbTableInspectionDto> InspectBlazeDbTable(
         [Description("The table source: one or more types marked [BlazeDbTable], as they would be written in a .cs file. At most 50,000 characters.")] string source,
-        [Description("True to also return the full generated source. Off by default - the table report is what a caller normally needs.")] bool includeGeneratedCode = false)
+        [Description("True to also return the full generated source. Off by default - the table report is what a caller normally needs.")] bool includeGeneratedCode = false,
+        CancellationToken cancellationToken = default)
     {
-        return BlazeDbTableInspector.Inspect(source, includeGeneratedCode);
+        return BlazeDbTableInspector.InspectAsync(source, includeGeneratedCode, cancellationToken);
     }
 
     [HttpGet]

@@ -570,8 +570,9 @@ foreach (var issue in db.VerifyIntegrity())
 | A storage backend | Every commit flushed to it. Commits reach storage on the background flusher within `FlushInterval` (100 ms by default), or at once with `await db.FlushAsync()`; a crash loses what was committed since the last flush, never part of a commit. |
 | After a flush fails | Committed data stays in memory and the flusher retries; `db.LastBackgroundError` reports the standing failure. |
 
-Recovery replays the log up to its first torn or corrupt record and stops there, so the database comes back
-as of a commit boundary. Browser storage is the origin's to keep or evict: it can be cleared by the user,
+Recovery replays the log up to its first torn or corrupt record, or the first one out of sequence, and stops
+there, so the database comes back as of a commit boundary. A record that appears again, as a retried append
+can leave it, is applied once. Browser storage is the origin's to keep or evict: it can be cleared by the user,
 evicted under storage pressure, or unavailable in a private window - ask for persistence with
 `BlazeDbOpfsStorage.RequestPersistenceAsync()`, and keep exports of what must not be lost.
 

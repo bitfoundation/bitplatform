@@ -39,6 +39,7 @@ public static class BlazeDbServiceCollectionExtensions
             .TryAdd<IQueryContextFactory, BlazeDbQueryContextFactory>()
             .TryAdd<IQueryCompiler, BlazeDbQueryCompiler>()
             .TryAdd<IProviderConventionSetBuilder, BlazeDbConventionSetBuilder>()
+            .TryAdd<IModelValidator, BlazeDbModelValidator>()
             .TryAdd<ITypeMappingSource, BlazeDbTypeMappingSource>()
             .TryAdd<IValueGeneratorSelector, ValueGeneratorSelector>()
             .TryAddProviderSpecificServices(b =>

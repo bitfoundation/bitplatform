@@ -185,6 +185,33 @@ public class DurabilityTests
         Assert.AreSequenceEqual([1, 2], reopened.GetTable(PersonTable.Descriptor).Scan().Select(p => p.Id).Order());
     }
 
+    [TestMethod]
+    public async Task Records_A_Retried_Append_Wrote_Twice_Are_Replayed_Once()
+    {
+        var storage = new PartialWriteStorage();
+
+        var db = await OpenAsync(storage);
+        var people = db.GetTable(PersonTable.Descriptor);
+        people.Insert(new Person(1, "Ada", 36));
+        await db.FlushAsync();
+        var record = storage.Inner.GetFile("wal-1.blz")!.Length;
+
+        people.Insert(new Person(2, "Bob", 40));
+        people.Update(new Person(1, "Eve", 37));
+        storage.FailAfterBytes = record + 10;
+        await Assert.ThrowsExactlyAsync<IOException>(async () => await db.FlushAsync());
+
+        storage.FailAfterBytes = null;
+        await db.FlushAsync();
+        await db.DisposeAsync();
+        Assert.AreEqual(4 * record, storage.Inner.GetFile("wal-1.blz")!.Length);
+
+        await using var reopened = await OpenAsync(storage);
+        var recovered = reopened.GetTable(PersonTable.Descriptor);
+        Assert.AreEqual(new Person(1, "Eve", 37), recovered.Get(1));
+        Assert.AreEqual(new Person(2, "Bob", 40), recovered.Get(2));
+    }
+
     /// <summary>An in-memory backend whose appends can be made to write a prefix and then fail.</summary>
     private sealed class PartialWriteStorage : IBlazeDbStorage
     {

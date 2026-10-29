@@ -29,6 +29,14 @@ public static class BlazeDbTableInspector
     /// <summary>A table type is a few dozen lines; anything far past that was pasted by mistake.</summary>
     public const int MaxSourceLength = 50_000;
 
+    public const int MaxNameLength = 256;
+
+    public const int MaxAttributeTokens = 2_000;
+
+    private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(20);
+
+    private static readonly SemaphoreSlim _gate = new(2, 2);
+
     private const string TableAttribute = "Bit.BlazeDb.BlazeDbTableAttribute";
     private const string FieldAttribute = "Bit.BlazeDb.BlazeDbFieldAttribute";
     private const string KeyAttribute = "Bit.BlazeDb.BlazeDbKeyAttribute";
@@ -70,7 +78,23 @@ public static class BlazeDbTableInspector
         return references.ToImmutable();
     }
 
-    public static BlazeDbTableInspectionDto Inspect(string? source, bool includeGeneratedCode)
+    public static async Task<BlazeDbTableInspectionDto> InspectAsync(string? source, bool includeGeneratedCode, CancellationToken cancellationToken)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(_timeout);
+
+        await _gate.WaitAsync(timeout.Token);
+        try
+        {
+            return Inspect(source, includeGeneratedCode, timeout.Token);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    private static BlazeDbTableInspectionDto Inspect(string? source, bool includeGeneratedCode, CancellationToken cancellationToken)
     {
         source ??= string.Empty;
 
@@ -92,8 +116,13 @@ public static class BlazeDbTableInspector
             _references.Value,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
 
+        if (ExceedsLimits(compilation.GetSemanticModel(userTree), cancellationToken))
+        {
+            throw new ArgumentException("The source exceeds the inspector's limits.", nameof(source));
+        }
+
         GeneratorDriver driver = CSharpGeneratorDriver.Create(new BlazeDbTableGenerator()).WithUpdatedParseOptions(_parseOptions);
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updated, out _);
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updated, out _, cancellationToken);
 
         var run = driver.GetRunResult();
         var generated = run.Results.SelectMany(result => result.GeneratedSources).ToArray();
@@ -102,7 +131,7 @@ public static class BlazeDbTableInspector
 
         // Only what the compiler says is broken: a pasted fragment trips over nullable and unused-variable
         // warnings that say nothing about BlazeDb. Generator diagnostics are kept whatever their severity.
-        var compilerErrors = updated.GetDiagnostics()
+        var compilerErrors = updated.GetDiagnostics(cancellationToken)
             .Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
             .ToArray();
 
@@ -153,6 +182,29 @@ public static class BlazeDbTableInspector
             Notes = [.. notes],
             GeneratedCode = string.IsNullOrEmpty(generatedCode) ? null : generatedCode
         };
+    }
+
+    private static bool ExceedsLimits(SemanticModel model, CancellationToken cancellationToken)
+    {
+        var root = model.SyntaxTree.GetRoot(cancellationToken);
+
+        if (root.DescendantTokens().Any(token => token.IsKind(SyntaxKind.IdentifierToken) && token.ValueText.Length > MaxNameLength)) return true;
+
+        var attributes = root.DescendantNodes().OfType<AttributeListSyntax>().ToArray();
+
+        if (attributes.Sum(attribute => attribute.DescendantTokens().Count()) > MaxAttributeTokens) return true;
+
+        foreach (var type in root.DescendantNodes().OfType<BaseTypeDeclarationSyntax>())
+        {
+            if (model.GetDeclaredSymbol(type, cancellationToken)?.ToDisplayString().Length > MaxNameLength) return true;
+        }
+
+        foreach (var argument in attributes.SelectMany(attribute => attribute.DescendantNodes().OfType<AttributeArgumentSyntax>()))
+        {
+            if (model.GetConstantValue(argument.Expression, cancellationToken) is { HasValue: true, Value: string { Length: > MaxNameLength } }) return true;
+        }
+
+        return false;
     }
 
     private static BlazeDbInspectedTableDto[] FindTables(Compilation compilation, SyntaxTree userTree, GeneratedSourceResult[] generated)
