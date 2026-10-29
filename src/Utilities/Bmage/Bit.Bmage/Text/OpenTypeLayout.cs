@@ -40,6 +40,7 @@ internal sealed class GlyphBuffer
 
     private ShapingGlyph[] _items = new ShapingGlyph[16];
     private int _nextLigatureId;
+    private int[] _bases = [];
 
     public int Count { get; private set; }
 
@@ -70,6 +71,19 @@ internal sealed class GlyphBuffer
         Array.Copy(_items, index + 1, _items, index, Count - index - 1);
         Count--;
     }
+
+    public void FindBases()
+    {
+        if (_bases.Length < Count) _bases = new int[Count];
+        var last = -1;
+        for (var i = 0; i < Count; i++)
+        {
+            _bases[i] = last;
+            if (_items[i].GlyphClass != 3 && !_items[i].Hidden) last = i;
+        }
+    }
+
+    public int BaseBefore(int index) => _bases[index];
 }
 
 /// <summary>
@@ -352,6 +366,7 @@ internal sealed class OpenTypeLayout
     /// <summary>Runs the GPOS lookups of the features over the buffer, whose advances hold the glyphs' own widths.</summary>
     public void Position(GlyphBuffer buffer, uint script, (uint Tag, uint Mask)[] features)
     {
+        buffer.FindBases();
         foreach (var (index, mask) in CollectLookups(true, script, features))
         {
             var lookup = GetLookup(true, index);
@@ -802,8 +817,7 @@ internal sealed class OpenTypeLayout
             case 4:
             {
                 // The base is the nearest glyph before the mark that is not a mark.
-                target = i - 1;
-                while (target >= 0 && (buffer[target].GlyphClass == 3 || buffer[target].Hidden)) target--;
+                target = buffer.BaseBefore(i);
                 if (target < 0) return false;
                 var baseIndex = Coverage(d, sub + U16(d, sub + 4), buffer[target].Glyph);
                 if (baseIndex < 0) return false;
@@ -815,8 +829,7 @@ internal sealed class OpenTypeLayout
             }
             case 5:
             {
-                target = i - 1;
-                while (target >= 0 && (buffer[target].GlyphClass == 3 || buffer[target].Hidden)) target--;
+                target = buffer.BaseBefore(i);
                 if (target < 0) return false;
                 var ligatureIndex = Coverage(d, sub + U16(d, sub + 4), buffer[target].Glyph);
                 if (ligatureIndex < 0) return false;

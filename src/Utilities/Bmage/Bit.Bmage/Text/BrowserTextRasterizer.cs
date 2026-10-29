@@ -90,7 +90,7 @@ public sealed class BrowserTextRasterizer : IDisposable
         try
         {
             using var result = await _interop.InvokeForBytesAsync<TextRenderInfo>(
-                "renderText", cancellationToken, text, font, color, style.MaxWidth, style.LetterSpacing, style.LineHeight, align).ConfigureAwait(false);
+                "renderText", cancellationToken, text, font, color, style.MaxWidth, style.LetterSpacing, style.LineHeight, align, ImageLimits.Default.MaxPixels).ConfigureAwait(false);
             if (!result.HasValue || result.Info is not { Width: > 0, Height: > 0 } rendered)
                 throw new ImageException("The browser produced no pixels for this text.");
             info = rendered;

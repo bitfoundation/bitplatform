@@ -269,6 +269,19 @@ public sealed class PipelineOptimizerTests
     }
 
     [TestMethod]
+    public void AFusedResizeAndCropRefusesTheCanvasTheResizeAloneWouldRefuse()
+    {
+        using var source = TestImages.Gradient(40, 30);
+        var pipeline = ImagePipeline.Create().Resize(20000, 20000, ResizeMode.Stretch).Crop(0, 0, 10, 10);
+        Assert.IsExactInstanceOfType<ResizeCropOperation>(pipeline.Optimize(source.Size)[0]);
+        Assert.ThrowsExactly<ImageLimitExceededException>(() => pipeline.Execute(source, new PipelineExecutionOptions { Optimize = false }));
+        Assert.ThrowsExactly<ImageLimitExceededException>(() => pipeline.Execute(source, new PipelineExecutionOptions { Optimize = true }));
+
+        using var allowed = pipeline.Execute(source, new PipelineExecutionOptions { Optimize = true, Limits = ImageLimits.Unrestricted });
+        Assert.AreEqual(new Size(10, 10), allowed.Size);
+    }
+
+    [TestMethod]
     public void ResizeWithPaddingIsNotFusedWithACrop()
     {
         // Contain letterboxes, so part of the output is background the resampler never writes.

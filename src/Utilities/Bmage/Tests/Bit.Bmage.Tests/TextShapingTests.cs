@@ -121,6 +121,17 @@ public sealed class TextShapingTests
         Assert.IsTrue(fathaBounds.MinX >= behBounds.MinX - 1 && fathaBounds.MaxX <= behBounds.MaxX + 1, "the fatha is over the beh");
     }
 
+    [TestMethod]
+    public void ALongRunOfMarksHangsOnItsLetterAtOnce()
+    {
+        var codePoints = TextShaper.CodePoints("ب" + new string('\u064E', 60_000));
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        var buffer = TextShaper.ShapeRun(Vazirmatn, codePoints, 0, codePoints.Length, UnicodeScript.Arabic, rtl: true);
+        Assert.IsLessThan(2000, watch.ElapsedMilliseconds, $"Shaping took {watch.ElapsedMilliseconds} ms.");
+        Assert.AreEqual(codePoints.Length, buffer.Count);
+        Assert.AreEqual(0, buffer[1].AttachTo);
+    }
+
     private static (float MinX, float MinY, float MaxX, float MaxY) Bounds(PlacedGlyph glyph)
     {
         var builder = new PathBuilder();

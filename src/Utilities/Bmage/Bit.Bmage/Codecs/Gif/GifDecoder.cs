@@ -72,6 +72,7 @@ public sealed class GifDecoder : IImageDecoder
                 int fh = BinaryPrimitives.ReadUInt16LittleEndian(data[(pos + 6)..]);
                 var iflags = data[pos + 8];
                 pos += 9;
+                if (left + fw > width || top + fh > height) throw new ImageDecodeException("GIF frame lies outside the logical screen.");
                 var palette = globalPalette;
                 if ((iflags & 0x80) != 0)
                 {

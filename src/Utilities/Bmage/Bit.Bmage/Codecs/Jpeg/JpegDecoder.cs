@@ -120,6 +120,8 @@ internal sealed class HuffmanTable
 
 internal sealed class JpegDecoderCore
 {
+    private const int MaxProgressiveScans = 500;
+
     private sealed class Component
     {
         public int Id, H, V, Tq;
@@ -197,6 +199,7 @@ internal sealed class JpegDecoderCore
                     break;
                 case 0xDA:
                     if (!_frameSeen) throw new ImageDecodeException("JPEG scan before frame header.");
+                    if (scans == (_progressive ? MaxProgressiveScans : _components.Length)) throw new ImageDecodeException("JPEG has more scans than its frame allows.");
                     _pos = segEnd;
                     ReadScan(seg);
                     scans++;

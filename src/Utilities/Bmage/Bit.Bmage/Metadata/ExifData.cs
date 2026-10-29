@@ -365,8 +365,11 @@ public sealed class ExifData
     public ExifData StripSensitive()
     {
         var exif = Exif.Without(ExifTag.MakerNote, ExifTag.UserComment, ExifTag.ImageUniqueId, ExifTag.OwnerName, ExifTag.BodySerialNumber, ExifTag.LensSerialNumber);
-        return new ExifData(Primary.Without(ExifTag.GpsIfdPointer), exif, new ExifDirectory(), Interop, default);
+        return new ExifData(Primary.Without(ExifTag.GpsIfdPointer, WindowsComment, WindowsAuthor), exif, new ExifDirectory(), Interop, default);
     }
+
+    private const ushort WindowsComment = 0x9C9C;
+    private const ushort WindowsAuthor = 0x9C9D;
 
     /// <summary>Creates a minimal EXIF block with the given orientation.</summary>
     public static ExifData FromOrientation(Orientation orientation) => new ExifData().WithOrientation(orientation);

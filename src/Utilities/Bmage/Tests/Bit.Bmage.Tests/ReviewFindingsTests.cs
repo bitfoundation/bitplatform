@@ -282,6 +282,32 @@ public sealed class ReviewFindingsTests
     }
 
     [TestMethod]
+    public async Task AUrlServingMoreThanTheSourceLimitIsRefused()
+    {
+        var module = new FakeModule(_ => { });
+        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
+        var loader = new Input.ImageLoader(new Input.ImageProcessorFactory(interop, Capabilities.ManagedCapabilityProvider.Instance), interop, Capabilities.ManagedCapabilityProvider.Instance);
+
+        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await loader.LoadAsync(Input.ImageSource.FromUrl("https://photos.example/huge.jpg")));
+    }
+
+    [TestMethod]
+    public async Task TheBrowserDecoderChecksTheHeaderAgainstTheLimitsBeforeDecoding()
+    {
+        using var small = TestImages.Gradient(8, 8);
+        var png = Codecs.Png.PngEncoder.Encode(small).Data;
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(16), 20_000);
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(20), 20_000);
+        var called = new List<string>();
+        var module = new FakeModule(called.Add);
+        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
+        var decoder = new Codecs.Browser.BrowserImageDecoder(interop);
+
+        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await decoder.DecodeAsync(png, DecodeOptions.Default, PooledPixelAllocator.Shared));
+        CollectionAssert.DoesNotContain(called, "decode");
+    }
+
+    [TestMethod]
     public void ADocumentNestingMasksDeeplyIsRefused_AChainBuiltAStepAtATimeIsNot()
     {
         Mask nested = Mask.All();

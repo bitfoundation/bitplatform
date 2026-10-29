@@ -192,14 +192,30 @@ public sealed class AdversarialFilterTests
     {
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BlurFilter(-1f));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BlurFilter(float.NaN));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BlurFilter(float.PositiveInfinity));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new SharpenFilter(-1f));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new SharpenFilter(1f, 0f));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new SharpenFilter(1f, float.NaN));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new SharpenFilter(1f, float.PositiveInfinity));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new MedianFilter(0));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new MedianFilter(6));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new PosterizeFilter(1));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new PosterizeFilter(257));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new GammaAdjustment(0f));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new GammaAdjustment(-1f));
+    }
+
+    [TestMethod]
+    public void AnAbsurdBlurRadiusFinishesAtOnce()
+    {
+        using var src = Noise(600, 400, 5);
+        foreach (var filter in new IImageOperation[] { new BlurFilter(1e7f), new SharpenFilter(0.5f, 1e7f), new HighPassFilter(1e7f), new BlurFilter(5e8f, new Rectangle(10, 10, 3, 300)) })
+        {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            using var result = filter.Apply(src, OperationContext.Default);
+            Assert.IsLessThan(2000, watch.ElapsedMilliseconds, $"{filter.Name} took {watch.ElapsedMilliseconds} ms.");
+            Assert.AreEqual(src.Size, result.Size);
+        }
     }
 
     /// <summary>A blur must preserve the average colour of a flat region and must not tint it.</summary>

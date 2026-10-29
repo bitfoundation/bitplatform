@@ -226,6 +226,37 @@ public sealed class JpegCodecTests
         garbage[0] = 0xFF; garbage[1] = 0xD8; garbage[2] = 0xFF;
         Assert.ThrowsExactly<ImageDecodeException>(() => JpegDecoder.Decode(garbage));
     }
+
+    [TestMethod]
+    public void ABaselineJpegRepeatingItsScanIsRefused()
+    {
+        using var source = TestImages.Gradient(32, 24);
+        var encoded = JpegEncoder.Encode(source).Data;
+        var sos = encoded.AsSpan().IndexOf(new byte[] { 0xFF, 0xDA });
+        var header = encoded.AsSpan(sos, 2 + (encoded[sos + 2] << 8 | encoded[sos + 3])).ToArray();
+        var withScans = (int extra) => encoded[..^2].Concat(Enumerable.Repeat(header, extra).SelectMany(h => h)).Concat(new byte[] { 0xFF, 0xD9 }).ToArray();
+
+        using (JpegDecoder.Decode(withScans(2))) { }
+        Assert.ThrowsExactly<ImageDecodeException>(() => JpegDecoder.Decode(withScans(3)));
+    }
+
+    [TestMethod]
+    public void AProgressiveJpegWithAbsurdlyManyScansIsRefused()
+    {
+        static byte[] Progressive(int scans)
+        {
+            var jpeg = new List<byte> { 0xFF, 0xD8, 0xFF, 0xDB, 0x00, 0x43, 0x00 };
+            jpeg.AddRange(Enumerable.Repeat((byte)1, 64));
+            jpeg.AddRange([0xFF, 0xC2, 0x00, 0x0B, 0x08, 0x00, 0x08, 0x00, 0x08, 0x01, 0x01, 0x11, 0x00]);
+            jpeg.AddRange([0xFF, 0xC4, 0x00, 0x14, 0x00, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x00]);
+            for (var i = 0; i < scans; i++) jpeg.AddRange([0xFF, 0xDA, 0x00, 0x08, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00]);
+            jpeg.AddRange([0xFF, 0xD9]);
+            return [.. jpeg];
+        }
+
+        using (var decoded = JpegDecoder.Decode(Progressive(500))) Assert.AreEqual(8, decoded.Width);
+        Assert.ThrowsExactly<ImageDecodeException>(() => JpegDecoder.Decode(Progressive(501)));
+    }
 }
 
 [TestClass]
@@ -305,6 +336,18 @@ public sealed class GifCodecTests
         Assert.AreEqual(new Rgba32(0, 255, 0), img[3, 0]);
         Assert.AreEqual(new Rgba32(0, 0, 255), img[0, 3]);
         Assert.AreEqual(new Rgba32(255, 255, 255), img[3, 3]);
+    }
+
+    [TestMethod]
+    public void AFrameOutsideTheLogicalScreenIsRefused()
+    {
+        var shifted = SampleGif;
+        shifted[26] = 1;
+        Assert.ThrowsExactly<ImageDecodeException>(() => GifDecoder.Decode(shifted));
+
+        var huge = SampleGif;
+        huge[30] = 0xD0; huge[31] = 0x07; huge[32] = 0xD0; huge[33] = 0x07;
+        Assert.ThrowsExactly<ImageDecodeException>(() => GifDecoder.Decode(huge));
     }
 
     [TestMethod]

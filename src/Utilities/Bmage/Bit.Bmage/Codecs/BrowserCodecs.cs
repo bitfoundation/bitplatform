@@ -90,7 +90,8 @@ public sealed class BrowserImageDecoder : IImageDecoder
         // The browser can decode straight to a smaller bitmap, which is what keeps a 48 megapixel phone photo from
         // ever existing at full size on a memory constrained device. It only preserves the aspect ratio when told a
         // single axis, so pass the header dimensions along and let the browser side pick the constraining one.
-        var header = options.MaxSize is not null ? Identify(data.Span) : null;
+        var header = Identify(data.Span);
+        if (header is { Width: > 0, Height: > 0 }) options.Limits.Validate(header.Width, header.Height);
         var maxPixels = options.Limits.MaxPixels < long.MaxValue ? options.Limits.MaxPixels : (long?)null;
         if (OperatingSystem.IsBrowser())
         {

@@ -352,6 +352,86 @@ public sealed class AdversarialMetadataTests
     }
 
     [TestMethod]
+    public async Task StripSensitiveDropsTheWindowsCommentAndAuthor()
+    {
+        static ExifValue Utf16(string text)
+        {
+            var bytes = System.Text.Encoding.Unicode.GetBytes(text + "\0");
+            return new ExifValue(ExifType.Byte, bytes.Length, bytes);
+        }
+        var primary = new ExifDirectory()
+            .With(ExifTag.Make, ExifValue.FromString("TestCam"))
+            .With(0x9C9C, Utf16("private note"))
+            .With(0x9C9D, Utf16("Jane Doe"));
+        var exif = new ExifData(primary, null, null, null, default);
+
+        var stripped = exif.StripSensitive();
+        Assert.IsFalse(stripped.Primary.Contains(0x9C9C));
+        Assert.IsFalse(stripped.Primary.Contains(0x9C9D));
+        Assert.AreEqual("TestCam", stripped.Make);
+
+        var processor = new ImageProcessor();
+        using var img = AdversarialGeometryTests.Noise(32, 32, 19);
+        img.Metadata = new ImageMetadata(exif, sourceFormat: ImageFormat.Jpeg);
+        foreach (var format in new[] { ImageFormat.Jpeg, ImageFormat.Png })
+        {
+            var preserved = await processor.EncodeAsync(img, new ImageExportOptions { Format = format, Metadata = MetadataPolicy.Preserve });
+            var encoded = await processor.EncodeAsync(img, new ImageExportOptions { Format = format, Metadata = MetadataPolicy.StripSensitive });
+            foreach (var secret in new[] { "private note", "Jane Doe" })
+            {
+                var utf16 = System.Text.Encoding.Unicode.GetBytes(secret);
+                Assert.IsGreaterThanOrEqualTo(0, preserved.Data.AsSpan().IndexOf(utf16), $"{format} dropped {secret} even when preserving");
+                Assert.AreEqual(-1, encoded.Data.AsSpan().IndexOf(utf16), $"{format} kept {secret}");
+            }
+            using var reread = await processor.DecodeAsync(encoded.Data);
+            Assert.AreEqual("TestCam", reread.Metadata?.Exif?.Make);
+        }
+    }
+
+    [TestMethod]
+    public void EntriesSharingOneLargeValueAreCopiedOnlyUpToABudget()
+    {
+        const int entries = 300;
+        const int valueBytes = 1 << 20;
+        var valueOffset = 8 + 2 + entries * 12 + 4;
+        var tiff = new byte[valueOffset + valueBytes];
+        "II*\0"u8.CopyTo(tiff);
+        BinaryPrimitives.WriteUInt32LittleEndian(tiff.AsSpan(4), 8);
+        BinaryPrimitives.WriteUInt16LittleEndian(tiff.AsSpan(8), entries);
+        for (var i = 0; i < entries; i++)
+        {
+            var entry = tiff.AsSpan(10 + i * 12);
+            BinaryPrimitives.WriteUInt16LittleEndian(entry, (ushort)(0x1000 + i));
+            BinaryPrimitives.WriteUInt16LittleEndian(entry[2..], (ushort)ExifType.Undefined);
+            BinaryPrimitives.WriteUInt32LittleEndian(entry[4..], valueBytes);
+            BinaryPrimitives.WriteUInt32LittleEndian(entry[8..], (uint)valueOffset);
+        }
+
+        var exif = ExifData.Parse(tiff);
+
+        Assert.IsNotNull(exif);
+        Assert.IsGreaterThan(0, exif.Primary.Count);
+        Assert.IsLessThan(entries, exif.Primary.Count);
+        Assert.IsLessThanOrEqualTo(4L << 20, exif.Primary.Tags.Sum(t => (long)t.Value.Data.Length));
+    }
+
+    [TestMethod]
+    public void AnIccProfileThatInflatesPastTheCapIsDropped()
+    {
+        using var img = AdversarialGeometryTests.Noise(8, 8, 3);
+        var png = Codecs.Png.PngEncoder.Encode(img).Data;
+
+        var bomb = PngContainer.WriteMetadata(png, new ImageMetadata(null, new byte[5 << 20], default, ImageFormat.Png));
+        Assert.IsLessThan(64 * 1024, bomb.Length);
+        Assert.IsTrue(PngContainer.ReadMetadata(bomb).IccProfile.IsEmpty);
+
+        var profile = new byte[1 << 20];
+        new Random(5).NextBytes(profile);
+        var real = PngContainer.WriteMetadata(png, new ImageMetadata(null, profile, default, ImageFormat.Png));
+        CollectionAssert.AreEqual(profile, PngContainer.ReadMetadata(real).IccProfile.ToArray());
+    }
+
+    [TestMethod]
     public async Task PreservePolicyKeepsDescriptiveMetadataThroughAJpegRoundTrip()
     {
         var processor = new ImageProcessor();

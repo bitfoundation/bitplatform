@@ -208,8 +208,10 @@ public sealed class ImageLoader
             throw new ArgumentException($"The scheme '{uri.Scheme}' is not allowed for image URLs. Use http, https, blob or data.", nameof(url));
         try
         {
-            using var result = await _interop.InvokeForBytesAsync<ClipboardInfo>("fetchImage", cancellationToken, url, withCredentials).ConfigureAwait(false);
-            if (!result.HasValue || result.Bytes.Length == 0)
+            using var result = await _interop.InvokeForBytesAsync<ClipboardInfo>("fetchImage", cancellationToken, url, withCredentials, MaxSourceBytes).ConfigureAwait(false);
+            if (!result.HasValue)
+                throw new ImageLimitExceededException($"'{url}' exceeds the {MaxSourceBytes} byte limit for a single image.");
+            if (result.Bytes.Length == 0)
                 throw new ImageDecodeException($"Fetching '{url}' returned no data.");
             return await processor.DecodeAsync(result.Bytes.Memory, options, cancellationToken).ConfigureAwait(false);
         }
