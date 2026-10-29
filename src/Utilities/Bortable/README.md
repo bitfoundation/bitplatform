@@ -547,6 +547,11 @@ item stays where it was, and the pointer shows that it cannot be dropped there. 
 </Bortable>
 ```
 
+In swap mode it is asked about the item under the pointer, with the index the dragged item would take there; a swap
+across lists also asks the list the dragged item comes from about the item that would go back to it, so `Item` is
+then that item and `FromId` the list it leaves. A multi-drag asks once more on the drop, with the index the dragged
+item has once the rest of the selection is gathered next to it: a refusal puts every selected item back where it was.
+
 It runs while the pointer moves, so keep it fast and free of side effects.
 
 ### MaxItems
@@ -804,7 +809,8 @@ say - never holds up the next drag.
 A drag can also end before it is released: when its source list leaves the page (a tab or a panel closing over
 it), or when the browser never reports its end and the next drag starts. It ends where it is: a preview in another
 list is dropped, while a live reorder of the source list stays, and is reported like any other - `ItemsChanged`,
-`OnUpdate`, `OnSort` - followed by `OnEnd`.
+`OnUpdate`, `OnSort` - followed by `OnEnd`. When the next drag ends it, the destination's `ConfirmDrop` is asked
+first, as for a drop, and the next drag starts once it answers.
 
 A cancelled drag raises `OnEnd` alone, with `Canceled` set (see [cancelling a drag](#cancelling-a-drag)); one
 `ConfirmDrop` refused raises `ItemsChanged` for the lists it put back, then `OnEnd` with `Canceled`. With a

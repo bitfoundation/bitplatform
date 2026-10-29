@@ -93,6 +93,31 @@ public class LifecycleTests : BortableTestContext
     }
 
     [TestMethod]
+    public async Task ADragEndedByTheNextOneIsConfirmedBeforeTheNextOneStarts()
+    {
+        List<string> items = ["A", "B", "C"];
+        var log = new List<Raised<string>>();
+        BortableEventArgs<string>? asked = null;
+        var list = RenderList(items, "L1", p =>
+        {
+            Record(p, "L1", log);
+            p.Add(c => c.ConfirmDrop, e => { asked = e; return Task.FromResult(false); });
+        });
+
+        await DragStartAsync(list, "A");
+        await DragOverAsync(list, 3);
+        await DragStartAsync(list, "B");
+
+        Assert.IsNotNull(asked);
+        Assert.AreEqual("A", asked.Item);
+        Assert.AreSequenceEqual(["A", "B", "C"], items);
+        Assert.AreEqual("Start:L1 Change:L1 ItemsChanged:L1 End:L1 Start:L1", Sequence(log));
+        Assert.IsTrue(log[3].Args!.Canceled);
+        Assert.AreEqual("B", Coordinator.Context?.Item);
+        Assert.AreEqual(1, Coordinator.Context?.OldIndex);
+    }
+
+    [TestMethod]
     public async Task ASlowItemsChangedHandlerDoesNotHoldUpTheNextDrag()
     {
         List<string> items = ["A", "B", "C"];

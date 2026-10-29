@@ -120,6 +120,45 @@ public class SwapTests : BortableTestContext
     }
 
     [TestMethod]
+    public async Task CanDropRefusesASwapTarget()
+    {
+        List<string> items = ["A", "B", "C"];
+        var list = RenderSwapList(items, extra: p => p.Add(c => c.CanDrop, e => e.NewIndex != 2));
+
+        await DragStartAsync(list, "A");
+        Assert.AreEqual(-1, await OverResultAsync(list, 2));
+
+        Assert.AreEqual("", LabelsWithClass(list, Highlight));
+        await DropAsync(list);
+        Assert.AreSequenceEqual(["A", "B", "C"], items);
+    }
+
+    [TestMethod]
+    public async Task ACrossListSwapAsksTheSourceListAboutTheItemComingBack()
+    {
+        List<string> left = ["A", "B"], right = ["X", "Y"];
+        BortableEventArgs<string>? asked = null;
+        var l1 = RenderSwapList(left, "L1", extra: p => p.Add(c => c.CanDrop, e => { asked = e; return e.Item != "Y"; }));
+        var l2 = RenderSwapList(right, "L2");
+
+        await DragStartAsync(l1, "B");
+        Assert.AreEqual(-1, await OverResultAsync(l2, 1));
+
+        Assert.AreEqual("", LabelsWithClass(l2, Highlight));
+        Assert.IsNotNull(asked);
+        Assert.AreEqual("Y", asked.Item);
+        Assert.AreEqual("L2", asked.FromId);
+        Assert.AreEqual("L1", asked.ToId);
+        Assert.AreEqual(1, asked.OldIndex);
+        Assert.AreEqual(1, asked.NewIndex);
+
+        Assert.AreEqual(1, await OverResultAsync(l2, 0));
+        await DropAsync(l2);
+        Assert.AreSequenceEqual(["A", "X"], left);
+        Assert.AreSequenceEqual(["B", "Y"], right);
+    }
+
+    [TestMethod]
     public async Task SwappingAcrossListsOfAGroup()
     {
         List<string> left = ["A", "B", "C"], right = ["X", "Y"];
