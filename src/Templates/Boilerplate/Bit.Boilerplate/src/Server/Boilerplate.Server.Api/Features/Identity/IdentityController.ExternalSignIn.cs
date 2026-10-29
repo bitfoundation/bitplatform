@@ -46,7 +46,10 @@ public partial class IdentityController
 
         var localHttpNonceValue = Guid.Empty;
         if (localHttpPort is not null && Guid.TryParseExact(localHttpNonce, "N", out localHttpNonceValue) is false)
+        {
+            await Request.HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
             throw new BadRequestException().WithData("Reason", "localHttpNonce is invalid.");
+        }
 
         try
         {

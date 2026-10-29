@@ -669,8 +669,10 @@ public partial class UserController : AppControllerBase, IUserController
                 await membershipToLeave.ExecuteUpdateAsync(tu => tu.SetProperty(t => t.AcceptedOn, (DateTimeOffset?)null), cancellationToken);
             }
 
+            var grantedSessionIds = DbContext.OAuthGrants.Select(grant => grant.UserSessionId);
+
             await DbContext.UserSessions
-                .Where(us => us.UserId == userId && us.TenantId == tenantId && us.OAuthGrant != null)
+                .Where(us => us.UserId == userId && us.TenantId == tenantId && grantedSessionIds.Contains(us.Id))
                 .ExecuteDeleteAsync(cancellationToken);
 
             await DbContext.UserSessions

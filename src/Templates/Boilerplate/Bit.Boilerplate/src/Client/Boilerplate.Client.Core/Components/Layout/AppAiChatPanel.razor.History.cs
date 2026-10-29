@@ -137,10 +137,15 @@ public partial class AppAiChatPanel
 
         try
         {
-            await StopDictation();
-            await EndVoiceCall();
-
-            await ClearChat(); // Forgets the stored one too, under the current owner's name.
+            try
+            {
+                await StopDictation();
+                await EndVoiceCall();
+            }
+            finally
+            {
+                await ClearChat(); // Forgets the stored one too, under the current owner's name.
+            }
         }
         catch
         {

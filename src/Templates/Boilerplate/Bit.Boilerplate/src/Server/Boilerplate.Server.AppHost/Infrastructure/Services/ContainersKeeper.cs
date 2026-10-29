@@ -78,7 +78,7 @@ internal sealed class ContainersKeeper(string stateDirectory, ResourceNotificati
             {
                 keeperDirectory.UnixFileMode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute;
             }
-            catch (UnauthorizedAccessException)
+            catch (Exception exp) when (exp is UnauthorizedAccessException or IOException)
             {
                 return false;
             }
