@@ -150,6 +150,30 @@ public class RoutingExportAndRunTests : BunitContext
     }
 
     [TestMethod]
+    public void EdgesAskingForTheSameArrowheadShareOneMarkerNumberedInFirstUseOrder()
+    {
+        var nodes = new List<BlowNode>
+        {
+            new() { Id = "a", Width = 100, Height = 40 },
+            new() { Id = "b", Position = new(300, 0), Width = 100, Height = 40 },
+            new() { Id = "c", Position = new(300, 200), Width = 100, Height = 40 },
+        };
+        var edges = new List<BlowEdge>
+        {
+            new() { Id = "a-b", Source = "a", Target = "b" },
+            new() { Id = "a-c", Source = "a", Target = "c", MarkerStart = true, MarkerColor = "red" },
+            new() { Id = "b-c", Source = "b", Target = "c" },
+        };
+
+        var doc = XDocument.Parse(BlowSvgExport.ToSvg(nodes, edges));
+        var paths = doc.Descendants(Svg + "path").Where(p => p.Parent!.Name != Svg + "marker").ToList();
+
+        CollectionAssert.AreEqual(new[] { "m0", "m1" }, doc.Descendants(Svg + "marker").Select(m => m.Attribute("id")!.Value).ToArray());
+        CollectionAssert.AreEqual(new[] { "url(#m0)", "url(#m1)", "url(#m0)" }, paths.Select(p => p.Attribute("marker-end")?.Value).ToArray());
+        CollectionAssert.AreEqual(new[] { null, "url(#m1)", null }, paths.Select(p => p.Attribute("marker-start")?.Value).ToArray());
+    }
+
+    [TestMethod]
     public void NothingInAGraphBecomesMarkupOrAnUnsafeValueInTheExport()
     {
         var nodes = new List<BlowNode>

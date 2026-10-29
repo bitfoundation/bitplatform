@@ -230,6 +230,35 @@ public class KeyboardReconnectionReviewTests : BunitContext
     }
 
     [TestMethod]
+    public async Task AnApprovalHoldsOnlyForTheWiringItWasAskedAbout()
+    {
+        var (nodes, edges, measured) = Graph();
+        var asked = new List<BlowConnection>();
+        var pending = new Queue<TaskCompletionSource<bool>>();
+        var cut = Render(nodes, edges, measured, p => p.Add(c => c.OnBeforeConnect, connection =>
+        {
+            asked.Add(connection);
+            var answer = new TaskCompletionSource<bool>();
+            pending.Enqueue(answer);
+            return answer.Task;
+        }));
+
+        await EdgeKey(cut, "e", "c");
+        await Focus(cut, "c");
+        await NodeKey(cut, "c", "Enter");
+        await EdgeKey(cut, "e", "c");
+        await EdgeKey(cut, "e", "c");
+        await Focus(cut, "d");
+        await NodeKey(cut, "d", "Enter");
+        await cut.InvokeAsync(() => pending.Dequeue().SetResult(true));
+        await cut.InvokeAsync(() => pending.Dequeue().SetResult(true));
+
+        CollectionAssert.AreEqual(new[] { ("a", "c"), ("d", "b") }, asked.Select(c => (c.Source, c.Target)).ToArray());
+        Assert.AreEqual(("a", "c"), (edges[0].Source, edges[0].Target), "d -> c was applied, though only a -> c and d -> b were approved");
+        Assert.AreEqual(BlowAriaLabels.Default.ConnectionRejected(BlowConnectionRejection.RejectedByRule), Heard(cut));
+    }
+
+    [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
     public async Task ReconnectingTurnedOffMeanwhileIsRespected(bool onTheCanvas)

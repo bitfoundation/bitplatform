@@ -148,18 +148,14 @@ public static class BlowSvgExport
           .Append(Escape(o.Title)).Append("\">\n");
         sb.Append("<title>").Append(Escape(o.Title)).Append("</title>\n");
 
-        var markers = new Dictionary<string, (BlowMarkerType Type, string Paint, double Width, double Height)>(StringComparer.Ordinal);
+        var markers = new Dictionary<(BlowMarkerType Type, string Paint, double Width, double Height), string>();
         string? Marker(BlowEdge e, bool show)
         {
             if (!show) return null;
             var spec = e.ResolveMarker(null);
             var paint = Paint(spec.Color ?? e.Stroke, o.EdgeStroke);
-            var id = $"m{markers.Count}";
-            foreach (var (key, value) in markers)
-            {
-                if (value == (spec.Type, paint, spec.Width, spec.Height)) return key;
-            }
-            markers[id] = (spec.Type, paint, spec.Width, spec.Height);
+            var key = (spec.Type, paint, spec.Width, spec.Height);
+            if (!markers.TryGetValue(key, out var id)) markers[key] = id = $"m{markers.Count}";
             return id;
         }
 
@@ -184,7 +180,7 @@ public static class BlowSvgExport
         if (markers.Count > 0)
         {
             sb.Append("<defs>\n");
-            foreach (var (id, m) in markers)
+            foreach (var (m, id) in markers)
             {
                 sb.Append("<marker id=\"").Append(id).Append(F($"\" viewBox=\"0 0 12 12\" refX=\"9\" refY=\"6\" markerWidth=\"{m.Width:0.##}\" markerHeight=\"{m.Height:0.##}\" orient=\"auto-start-reverse\">"));
                 sb.Append(m.Type == BlowMarkerType.ArrowClosed
@@ -419,7 +415,7 @@ public static class BlowSvgExport
     {
         double x = node.Position.X, y = node.Position.Y;
         var seen = new HashSet<string>(StringComparer.Ordinal) { node.Id };
-        for (var current = node; current.ParentId is { } pid && index.TryGetValue(pid, out var parent) && seen.Add(pid); current = parent)
+        for (var current = node; seen.Count <= MaxDepth && current.ParentId is { } pid && index.TryGetValue(pid, out var parent) && seen.Add(pid); current = parent)
         {
             x += parent.Position.X;
             y += parent.Position.Y;
