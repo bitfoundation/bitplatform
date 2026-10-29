@@ -7,6 +7,9 @@ namespace Bit.Bmotion;
 /// </summary>
 internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
 {
+    internal const double MaxFastForwardMs = 10 * 60 * 1000;
+    internal const int MaxFastForwardFrames = (int)(MaxFastForwardMs / (1000.0 / 60)) + 2;
+
     private double _target;
     private double _from;
     private readonly double _origFrom;
@@ -145,9 +148,10 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
         {
             // Started part-way in: the skipped time is played frame by frame, so the spring is exactly where it would
             // have been had it played (one big step would integrate it far more coarsely than frames do).
-            double ahead = _fastForwardMs;
+            double ahead = Math.Min(_fastForwardMs, MaxFastForwardMs);
             _fastForwardMs = 0;
-            for (double t = timestamp - ahead; t < timestamp; t += 1000.0 / 60)
+            double t = timestamp - ahead;
+            for (int frame = 0; frame < MaxFastForwardFrames && t < timestamp; frame++, t += 1000.0 / 60)
                 if (Tick(t)) return true;
         }
 

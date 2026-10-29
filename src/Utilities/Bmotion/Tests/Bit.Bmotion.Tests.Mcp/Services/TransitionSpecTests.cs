@@ -410,6 +410,32 @@ public class TransitionSpecTests
     }
 
     [TestMethod]
+    [DataRow("spring(stiffness: 100, damping: 0, delay: -1e300)")]
+    [DataRow("spring(delay: -21)")]
+    [DataRow("tween(0.4, delay: 30)")]
+    [DataRow("inertia(velocity: 500, delay: -1e9)")]
+    [DataRow("spring(delay: NaN)")]
+    public void Parse_ADelayPastTheSimulatedTime_IsRefused(string spec)
+    {
+        var result = BmotionTransitionSpec.Parse(spec);
+
+        Assert.IsNull(result.Transition);
+        StringAssert.Contains(result.Error, "delay");
+    }
+
+    [TestMethod]
+    [DataRow("spring(delay: -0.5)")]
+    [DataRow("tween(0.4, delay: 300ms)")]
+    [DataRow("inertia(velocity: 500, delay: -20)")]
+    public void Parse_AnOrdinaryDelay_IsKept(string spec)
+    {
+        var result = BmotionTransitionSpec.Parse(spec);
+
+        Assert.IsNull(result.Error, $"'{spec}' was rejected: {result.Error}");
+        Assert.IsNotNull(result.Transition);
+    }
+
+    [TestMethod]
     public void Parse_IsTotal_NoInputThrows()
     {
         foreach (var spec in new[]

@@ -144,6 +144,12 @@ public static partial class BmotionTransitionSpec
             warnings.Add($"'{argument.Trim()}' was ignored: it is past the last positional argument of a {kind}.");
         }
 
+        if (named.TryGetValue("delay", out var delay) && TryParseNumber(delay, out var seconds) &&
+            seconds is not (>= -BmotionMotionLab.MaxSeconds and <= BmotionMotionLab.MaxSeconds))
+        {
+            return new Result(null, string.Empty, [], $"'delay' must be between -{BmotionMotionLab.MaxSeconds:0} and {BmotionMotionLab.MaxSeconds:0} seconds.");
+        }
+
         return kind switch
         {
             "spring" => BuildSpring(named, warnings),

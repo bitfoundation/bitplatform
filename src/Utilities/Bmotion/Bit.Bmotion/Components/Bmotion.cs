@@ -621,7 +621,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     {
         var props = ResolveProps(EffectiveInitial);
         if (props == null && EffectiveAnimate == null && VariantCtx?.InitialVariant is string initVariant)
-            props = Variants?.Get(initVariant, Custom) ?? VariantCtx.Variants?.Get(initVariant, Custom);
+            props = GuardCss(Variants?.Get(initVariant, Custom) ?? VariantCtx.Variants?.Get(initVariant, Custom));
         return props;
     }
 
@@ -747,7 +747,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
         if (VariantCtx?.ActiveVariant is string name && (Variants != null || VariantCtx.Variants != null))
         {
-            var props = Variants?.Get(name, Custom) ?? VariantCtx.Variants?.Get(name, Custom);
+            var props = GuardCss(Variants?.Get(name, Custom) ?? VariantCtx.Variants?.Get(name, Custom));
             if (props is null) return null;
             // Reduced motion drops the stagger delay, exactly as BuildEffectiveTransitionWithDelay does.
             // The reduced transition animates its retained properties with the normal one itself,
@@ -1075,7 +1075,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             if (VariantCtx.ActiveVariant is string inheritedVariant)
             {
                 _prevInheritedVariant = inheritedVariant;
-                var props = Variants?.Get(inheritedVariant, Custom) ?? VariantCtx.Variants?.Get(inheritedVariant, Custom);
+                var props = GuardCss(Variants?.Get(inheritedVariant, Custom) ?? VariantCtx.Variants?.Get(inheritedVariant, Custom));
                 if (props != null)
                 {
                     // A child animated by the cascade reports its animation like one with its own
@@ -1105,7 +1105,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         else if (VariantCtx?.ActiveVariant is string variant)
         {
             _prevInheritedVariant = variant;
-            if ((Variants?.Get(variant, Custom) ?? VariantCtx.Variants?.Get(variant, Custom)) is { } props)
+            if (GuardCss(Variants?.Get(variant, Custom) ?? VariantCtx.Variants?.Get(variant, Custom)) is { } props)
                 Engine.SetBaseAnimation(_id, props.ToJsDictionary(), BuildEffectiveTransition(props));
         }
     }
@@ -1185,7 +1185,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
                 _prevInheritedVariant = newVariant;
                 if (newVariant != null)
                 {
-                    var props = Variants?.Get(newVariant, Custom) ?? VariantCtx?.Variants?.Get(newVariant, Custom);
+                    var props = GuardCss(Variants?.Get(newVariant, Custom) ?? VariantCtx?.Variants?.Get(newVariant, Custom));
                     if (props != null)
                     {
                         // An element that rendered with a non-null Animate never claimed a slot in

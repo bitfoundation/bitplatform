@@ -211,6 +211,8 @@ public class McpController : ControllerBase
         return includeSamples ? results : [.. results.Select(result => result with { Samples = [] })];
     }
 
+    public const int MaxAnalyzedProperties = 64;
+
     [HttpGet]
     [McpServerTool(Name = nameof(AnalyzeBmotionAnimation))]
     [Description("Starts an animation on the real Bit.Bmotion engine, as Blazor WebAssembly and as Blazor Server, and reports where the engine played it: in the browser as a two-keyframe timeline, in the browser as a recording of the frames its own drivers draw, only on the C# per-frame loop, or at once. Both browser shapes play on Blazor Server; what only the frame loop can play silently collapses into an instant state change there - nothing in the build output or the browser console says which. Call it before finishing any animation for an app that is not WebAssembly-only. It also says why, what it costs - a recording sends more keyframes than a timeline - and what to change.")]
@@ -221,6 +223,9 @@ public class McpController : ControllerBase
         var names = (properties ?? string.Empty)
             .Split([',', ';', ' '], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .ToArray();
+
+        if (names.Length > MaxAnalyzedProperties)
+            throw new ArgumentException($"At most {MaxAnalyzedProperties} properties can be analyzed per call.", nameof(properties));
 
         return BmotionMotionLab.AnalyzePlaybackAsync(names, transition);
     }

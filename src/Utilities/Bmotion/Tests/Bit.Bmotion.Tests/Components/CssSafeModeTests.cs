@@ -96,6 +96,33 @@ public class CssSafeModeTests
     }
 
     [TestMethod]
+    public void ThrowMode_ChecksTheInheritedInitialVariant()
+    {
+        using var ctx = new BmotionTestContext();
+        ctx.Options.CssSafeMode = BmCssSafeMode.Throw;
+
+        var parentStates = new BmVariants { ["hidden"] = Bm.To(opacity: 0), ["visible"] = Bm.To(opacity: 1) };
+        var childStates = new BmVariants { ["hidden"] = Bm.To(boxShadow: $"0 0 4px {Injected}"), ["visible"] = Bm.To(boxShadow: "0 0 4px #000") };
+
+        var thrown = Assert.ThrowsExactly<InvalidOperationException>(() => ctx.Render<Bmotion>(ps => ps
+            .Add(p => p.Id, "parent")
+            .Add(p => p.Variants, parentStates)
+            .Add(p => p.InitialState, "hidden")
+            .Add(p => p.State, "visible")
+            .Add(p => p.ChildContent, (RenderFragment)(b =>
+            {
+                b.OpenElement(0, "div");
+                b.OpenComponent<Bmotion>(1);
+                b.AddComponentParameter(2, nameof(Bmotion.Id), "child");
+                b.AddComponentParameter(3, nameof(Bmotion.Variants), childStates);
+                b.AddComponentParameter(4, nameof(Bmotion.ChildContent), Div);
+                b.CloseComponent();
+                b.CloseElement();
+            }))));
+        StringAssert.Contains(thrown.Message, "boxShadow");
+    }
+
+    [TestMethod]
     public void ThrowMode_AcceptsCleanArraysAndDictionaries()
     {
         using var ctx = new BmotionTestContext();

@@ -160,6 +160,15 @@ public class MotionLabTests
         StringAssert.Contains(result.Transition, "swoosh");
     }
 
+    [TestMethod]
+    public async Task Simulate_AHugeNegativeDelay_IsRefusedRatherThanRun()
+    {
+        var result = await BmotionMotionLab.SimulateAsync("spring(stiffness: 100, damping: 0, delay: -1e300)", 0, 100);
+
+        Assert.IsNotNull(result.Error);
+        Assert.AreEqual(0, result.Samples.Length);
+    }
+
     /// <summary>
     /// Nothing in a simulation may depend on wall-clock time, on scheduling or on a previous run:
     /// the same question asked twice has to give the same answer, or an agent tuning a transition is

@@ -129,6 +129,43 @@ public class InertiaDriverTests
         Assert.AreEqual(0.0, values[1], 1e-5);
     }
 
+    [TestMethod]
+    [DataRow(-1e300)]
+    [DataRow(double.MinValue)]
+    public void Tick_AHugeNegativeDelay_ComesToRestOnTheFirstFrame(double delay)
+    {
+        double lastValue = double.NaN;
+        var config = new BmotionTransitionConfig
+        {
+            Delay = delay,
+            InertiaVelocity = 1000,
+            Power = 0.8,
+            TimeConstant = 700,
+            InertiaRestDelta = 0.5,
+        };
+        var driver = new BmotionInertiaDriver(0, config, v => lastValue = v);
+
+        Assert.IsTrue(driver.Tick(0));
+        Assert.AreEqual(800.0, lastValue, 1e-5);
+    }
+
+    [TestMethod]
+    public void Tick_AHugeNegativeDelay_OnAnUndampedBounce_CatchesUpABoundedNumberOfFrames()
+    {
+        int applied = 0;
+        var config = new BmotionTransitionConfig
+        {
+            Delay = -1e7,
+            InertiaVelocity = 1000,
+            InertiaMax = 100,
+            BounceDamping = 0,
+        };
+        var driver = new BmotionInertiaDriver(0, config, _ => applied++);
+
+        Assert.IsFalse(driver.Tick(0));
+        Assert.IsTrue(applied <= BmotionSpringDriver.MaxFastForwardFrames + 1, $"{applied} frames were applied");
+    }
+
     // ── Cancel ────────────────────────────────────────────────────────────────
 
     [TestMethod]
