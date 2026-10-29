@@ -406,7 +406,7 @@
       "prompt": "Confirmation emails aren't arriving for users in production.",
       "checks": [
         {
-          "skill": "ai-dlc"
+          "skill": "troubleshoot"
         },
         {
           "finalMatches": "dev-mcp"

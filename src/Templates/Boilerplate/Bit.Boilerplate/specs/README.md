@@ -23,3 +23,7 @@ A larger change gets one file in `changes/`, named with the date it started and 
 - any change to the plan, with its reason
 
 A plan stays after its pull request merges, as the record of how and why the change was made.
+
+## Workarounds
+
+`workarounds.md` lists the code that works around a defect in a library or a tool the app builds on: what goes wrong, where the workaround lives, the upstream report, and how to tell it can go. A workaround gets its entry when it is written, whether or not the defect is reported upstream, and leaves together with it.

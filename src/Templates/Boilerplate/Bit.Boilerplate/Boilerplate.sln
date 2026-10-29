@@ -53,12 +53,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "agents", "agents", "{4A5D6E
     ProjectSection(SolutionItems) = preProject
         .github\agents\ai-dlc.agent.md = .github\agents\ai-dlc.agent.md
         .github\agents\bitify-ui.agent.md = .github\agents\bitify-ui.agent.md
+        .github\agents\deploy.agent.md = .github\agents\deploy.agent.md
         .github\agents\localize-strings.agent.md = .github\agents\localize-strings.agent.md
         .github\agents\port.agent.md = .github\agents\port.agent.md
         .github\agents\rebrand.agent.md = .github\agents\rebrand.agent.md
         .github\agents\review.agent.md = .github\agents\review.agent.md
+        .github\agents\run-app.agent.md = .github\agents\run-app.agent.md
         .github\agents\scaffold-entity.agent.md = .github\agents\scaffold-entity.agent.md
-        .github\agents\upgrade.agent.md = .github\agents\upgrade.agent.md
+        .github\agents\template-diff.agent.md = .github\agents\template-diff.agent.md
+        .github\agents\troubleshoot.agent.md = .github\agents\troubleshoot.agent.md
+        .github\agents\write-tests.agent.md = .github\agents\write-tests.agent.md
     EndProjectSection
 EndProject
 #if (pipeline == "GitHub")
@@ -124,6 +128,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "specs", "specs", "{B4254654-25B2-4CD4-A83D-3B3CFD1011F0}"
 	ProjectSection(SolutionItems) = preProject
 		specs\README.md = specs\README.md
+		specs\workarounds.md = specs\workarounds.md
 	EndProjectSection
 EndProject
 Global

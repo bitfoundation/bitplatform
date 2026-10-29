@@ -30,12 +30,16 @@
   <Folder Name="/.SolutionItems/.github/agents/">
     <File Path=".github/agents/ai-dlc.agent.md" />
     <File Path=".github/agents/bitify-ui.agent.md" />
+    <File Path=".github/agents/deploy.agent.md" />
     <File Path=".github/agents/localize-strings.agent.md" />
     <File Path=".github/agents/port.agent.md" />
     <File Path=".github/agents/rebrand.agent.md" />
     <File Path=".github/agents/review.agent.md" />
+    <File Path=".github/agents/run-app.agent.md" />
     <File Path=".github/agents/scaffold-entity.agent.md" />
-    <File Path=".github/agents/upgrade.agent.md" />
+    <File Path=".github/agents/template-diff.agent.md" />
+    <File Path=".github/agents/troubleshoot.agent.md" />
+    <File Path=".github/agents/write-tests.agent.md" />
   </Folder>
   <Folder Name="/.SolutionItems/.docs/">
     <File Path=".docs/00- Wiki.md" />
@@ -89,6 +93,7 @@
   </Folder>
   <Folder Name="/.SolutionItems/specs/">
     <File Path="specs/README.md" />
+    <File Path="specs/workarounds.md" />
   </Folder>
   <Folder Name="/Client/">
     <Project Path="src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj" />

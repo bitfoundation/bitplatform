@@ -1,4 +1,4 @@
-description = "Drive any task that is not a small, obvious edit with the AI-Driven Development Lifecycle, sized to the task: reproduce, fix and validate a known bug or a change inside one feature; requirements, plan, design, implement, validate - with approval gates - for anything bigger."
+description = "Drive any task that is not a small, obvious edit with the AI-Driven Development Lifecycle, sized to the task: reproduce, fix and validate a known bug or a change inside one feature; requirements, plan, design, implement, validate - with approval gates - for anything bigger; then a pull request into develop, merged once CI passes."
 
 prompt = """
 Follow these instructions exactly:

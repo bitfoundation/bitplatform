@@ -1,0 +1,9 @@
+description = "Start the app and use it like a user to see a change working: wait until it is ready, sign in with the seeded account, drive the web, Windows and Android apps, read the console and the server's logs, and stop it cleanly."
+
+prompt = """
+Follow these instructions exactly:
+
+@{.github/agents/run-app.agent.md}
+
+What to run, try or check: {{args}}
+"""
