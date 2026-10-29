@@ -123,7 +123,12 @@ public class SearchLimitsTests
         var pastLimit = atLimit + "s";
 
         Assert.AreEqual(BaletteQuery.MaxLength, atLimit.Length);
-        Assert.IsNotNull(BaletteFuzzyMatcher.Default.Match(Settings, atLimit));
+
+        var match = BaletteFuzzyMatcher.Default.Match(Settings, atLimit);
+
+        Assert.IsNotNull(match);
+        Assert.IsTrue(match.Score > 0);
+        AssertSequence.AreEqual([6], match.TitlePositions);
         Assert.IsNull(BaletteFuzzyMatcher.Default.Match(Settings, pastLimit));
         Assert.IsNull(BaletteFuzzyMatcher.Default.Match(Settings, BaletteQuery.Parse(pastLimit)));
         Assert.IsEmpty(BaletteQuery.Parse(pastLimit).Terms);
