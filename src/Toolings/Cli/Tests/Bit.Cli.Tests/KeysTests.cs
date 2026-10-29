@@ -410,6 +410,8 @@ public class KeysTests
         Assert.AreEqual(CliApp.ExitFailed, await KeysCommand.AppleAsync(host.Services, new AppleKeysRequest("issuer-id", "KEY", "AuthKey.p8", "com.contoso.shop", null, null), CancellationToken.None, apple));
 
         StringAssert.Contains(host.Output, "didn't accept the API key");
+        StringAssert.Contains(host.FlatOutput, "bit was creating the App Store signing of com.contoso.shop with the App Store Connect API (https://api.appstoreconnect.apple.com/v1) and the API key KEY");
+        StringAssert.Contains(host.FlatOutput, "App Store provisioning profile (IOS_APP_STORE) \"com.contoso.shop App Store\"");
         Assert.IsFalse(File.Exists(Path.Combine(host.WorkingDirectory, "com.contoso.shop.p12")));
     }
 

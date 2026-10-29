@@ -101,11 +101,11 @@ public sealed class AdministratorSession : IAsyncDisposable
                 else if (response?.Exit is { } exitCode)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    return new ProcessResult { ExitCode = exitCode, Output = output.ToString(), Duration = stopwatch.Elapsed, NotFound = response.NotFound, TimedOut = response.TimedOut };
+                    return new ProcessResult { ExitCode = exitCode, Output = output.ToString(), Duration = stopwatch.Elapsed, NotFound = response.NotFound, TimedOut = response.TimedOut, Spec = spec };
                 }
             }
 
-            return new ProcessResult { ExitCode = -1, Output = output + "The administrator helper stopped.", Duration = stopwatch.Elapsed };
+            return new ProcessResult { ExitCode = -1, Output = output + "The administrator helper stopped.", Duration = stopwatch.Elapsed, Spec = spec };
         }
         finally
         {

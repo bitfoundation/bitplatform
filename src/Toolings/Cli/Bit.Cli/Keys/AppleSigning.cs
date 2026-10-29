@@ -34,6 +34,12 @@ public sealed partial class AppleSigning(HttpMessageHandler? handler = null)
 
     public static string DefaultProfileName(string bundleId) => $"{bundleId} App Store";
 
+    public static string Attempt(AppleApiKey key, string bundleId, string profileName)
+        => $"bit was creating the App Store signing of {bundleId} with the App Store Connect API ({ApiAddress}v1) and the API key {key.KeyId}: "
+            + $"register the bundle id if Apple doesn't have it, create an Apple Distribution certificate ({CertificateType}) for a new RSA 2048 key, "
+            + $"create the App Store provisioning profile ({ProfileType}) \"{profileName}\" for the two, and put the certificate and its key in a .p12. "
+            + "The same can be done by hand at https://developer.apple.com/account/resources.";
+
     public async Task<AppleSigningResult> CreateAppStoreSigningAsync(AppleApiKey key, string bundleId, string profileName, CancellationToken cancellationToken)
     {
         ImportKey(key.PrivateKey).Dispose();

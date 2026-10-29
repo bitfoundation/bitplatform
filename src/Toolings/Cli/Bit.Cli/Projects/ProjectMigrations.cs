@@ -37,6 +37,40 @@ public sealed partial class ProjectMigrations(CliServices cli, ProjectContext pr
 
     public string FollowUp(string directory, IReadOnlyList<string> arguments) => $"cd {ProcessSpec.Quote(directory)} && dotnet {string.Join(' ', new[] { "dnx", Tool, "--" }.Concat(arguments).Select(ProcessSpec.Quote))}";
 
+    public string Attempt(string directory, IReadOnlyList<string> arguments)
+        => $"bit was running EF Core's command-line tool, {Tool.Replace("@", " ", StringComparison.Ordinal)}, in {directory}: dotnet {string.Join(' ', new[] { "dnx", Tool, "--" }.Concat(arguments).Select(ProcessSpec.Quote))}";
+
+    public IReadOnlySet<string> MigrationFiles(bool offline)
+    {
+        var folder = Path.Combine(Project(offline), MigrationsFolder);
+
+        try
+        {
+            return Directory.Exists(folder) ? Directory.EnumerateFiles(folder, "*.cs").ToHashSet(StringComparer.OrdinalIgnoreCase) : new HashSet<string>();
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            return new HashSet<string>();
+        }
+    }
+
+    public async Task<StepResult> FormatAsync(bool offline, IReadOnlySet<string> before, Action<string> progress, CancellationToken cancellationToken)
+    {
+        var directory = Project(offline);
+        var added = MigrationFiles(offline).Where(f => before.Contains(f) is false).Select(f => Path.GetRelativePath(directory, f).Replace('\\', '/')).Order(StringComparer.Ordinal).ToList();
+
+        if (added.Count == 0)
+            return StepResult.Skipped("Skipped dotnet format", "the migration added no files");
+
+        string[] arguments = ["format", $"{Path.GetFileName(directory)}.csproj", "--no-restore", "--include", .. added];
+        var result = await cli.Runner.RunAsync(new ProcessSpec { FileName = "dotnet", Arguments = arguments, WorkingDirectory = directory, OnOutputLine = progress, Timeout = TimeSpan.FromMinutes(15) }, cancellationToken);
+        var followUp = $"cd {ProcessSpec.Quote(directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}";
+
+        return result.Succeeded
+            ? StepResult.Succeeded("Formatted the migration", string.Join(", ", added.Select(Path.GetFileName)))
+            : StepResult.FromProcess(result, "", "Couldn't format the migration", followUp) with { Status = StepStatus.Warning };
+    }
+
     public Task<StepResult> AddAsync(string name, bool offline, Action<string> progress, CancellationToken cancellationToken)
     {
         string[] arguments = ["migrations", "add", name, "--output-dir", MigrationsFolder, .. offline ? OfflineArguments : Array.Empty<string>()];
@@ -49,7 +83,7 @@ public sealed partial class ProjectMigrations(CliServices cli, ProjectContext pr
         var result = await RunAsync(Startup(offline), [.. arguments, .. diagnostics], progress, cancellationToken);
         var removed = RemovedMigrationRegex().Match(result.Output) is { Success: true } match ? match.Groups["name"].Value : Where(offline);
 
-        return Step(result, Startup(offline), arguments, "Removed the last migration", "Couldn't remove the last migration", removed);
+        return Step(result, Startup(offline), arguments, arguments, "Removed the last migration", "Couldn't remove the last migration", removed);
     }
 
     public Task<StepResult> OptimizeAsync(bool build, Action<string> progress, CancellationToken cancellationToken)
@@ -70,20 +104,22 @@ public sealed partial class ProjectMigrations(CliServices cli, ProjectContext pr
 
     private string Startup(bool offline) => offline ? project.ServerWebDirectory : project.ServerApiDirectory;
 
+    private string Project(bool offline) => offline ? project.ClientCoreDirectory : project.ServerApiDirectory;
+
     private string Where(bool offline) => offline ? "offline database, Client.Core" : $"{project.Database ?? "the"} database, Server.Api";
 
     private async Task<StepResult> StepAsync(string directory, string[] arguments, string[] runOnly, string succeeded, string failed, string detail, Action<string> progress, CancellationToken cancellationToken)
     {
         var result = await RunAsync(directory, [.. arguments, .. runOnly, .. diagnostics], progress, cancellationToken);
-        return Step(result, directory, arguments, succeeded, failed, detail);
+        return Step(result, directory, arguments, [.. arguments, .. runOnly], succeeded, failed, detail);
     }
 
-    private StepResult Step(ProcessResult result, string directory, string[] arguments, string succeeded, string failed, string detail)
+    private StepResult Step(ProcessResult result, string directory, string[] arguments, string[] ran, string succeeded, string failed, string detail)
     {
         var step = StepResult.FromProcess(result, succeeded, failed, FollowUp(directory, [.. arguments, "--verbose"]), detail);
 
         if (step.Status is StepStatus.Failed)
-            return step with { Hint = Errors(result.Output) ?? step.Hint };
+            return step with { Hint = Errors(result.Output) ?? step.Hint, Attempt = Attempt(directory, ran) };
 
         return Warnings(result.Output) is { } warnings ? StepResult.Warning(succeeded, detail, hint: warnings) : step;
     }

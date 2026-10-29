@@ -258,6 +258,19 @@ public class PipelineTests
     }
 
     [TestMethod]
+    public async Task ASecretThatCouldNotBeStored_Should_SayWhatBitRanButNotItsValue()
+    {
+        using var host = Repository();
+        Workflow(host, "cd.yml", "on: push\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: Production\n    steps:\n      - run: echo ${{ secrets.PUBLIC_VAPIDKEY }} ${{ secrets.PRIVATE_VAPIDKEY }}\n");
+        host.Runner.On("gh", "secret set", 1, "HTTP 403: Resource not accessible by integration");
+
+        Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("pipeline", "--yes"));
+
+        StringAssert.Contains(host.Output, $"bit ran this in {host.WorkingDirectory}, answering its prompts on standard input: gh secret set PUBLIC_VAPIDKEY --repo contoso/shop --env Production");
+        Assert.IsTrue(Stored(host).Values.All(v => host.Output.Contains(v, StringComparison.Ordinal) is false), host.Output);
+    }
+
+    [TestMethod]
     public async Task Pipeline_Should_RefuseARepositoryWithoutGitHubWorkflows()
     {
         using var host = Repository();

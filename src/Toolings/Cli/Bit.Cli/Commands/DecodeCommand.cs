@@ -64,7 +64,7 @@ public static partial class DecodeCommand
                 return cli.UsageError("map-not-minifier", $"{map} doesn't name the Bit.Minifier that wrote it: its first line should be \"# Bit.Minifier <version>\".");
             }
 
-            if ((FindMinifier(cli.Environment, version) ?? await RestoreMinifierAsync(cli, version, cancellationToken)) is not { } minifier)
+            if ((FindMinifier(cli.Environment, version) ?? await RestoreMinifierAsync(cli, version, trace is null ? [map] : [map, trace], cancellationToken)) is not { } minifier)
                 return CliApp.ExitFailed;
 
             var result = await cli.Runner.RunAsync(new ProcessSpec
@@ -118,7 +118,7 @@ public static partial class DecodeCommand
         return File.Exists(dll) ? dll : null;
     }
 
-    private static async Task<string?> RestoreMinifierAsync(CliServices cli, string version, CancellationToken cancellationToken)
+    private static async Task<string?> RestoreMinifierAsync(CliServices cli, string version, string[] files, CancellationToken cancellationToken)
     {
         cli.Console.Error.MarkupLine($"[grey]Restoring Bit.Minifier {Markup.Escape(version)}[/]");
         var folder = Directory.CreateTempSubdirectory("bit-decode-").FullName;
@@ -147,7 +147,9 @@ public static partial class DecodeCommand
             if (result.Succeeded && RestoredMinifier(folder, version) is { } dll)
                 return dll;
 
-            cli.Console.Fail($"Couldn't restore Bit.Minifier {version} from this machine's NuGet sources.");
+            cli.Console.Fail($"Couldn't restore Bit.Minifier {version} from this machine's NuGet sources.",
+                $"bit decodes with the Bit.Minifier that wrote the map, so it was downloading the Bit.Minifier {version} package to run: dotnet <the package>/tools/Bit.Minifier.dll --decode {string.Join(' ', files.Select(ProcessSpec.Quote))}. "
+                + $"The package is at https://www.nuget.org/packages/Bit.Minifier/{version}; a .nupkg is a zip file.");
 
             foreach (var line in result.OutputLines.Where(l => l.Contains("error", StringComparison.OrdinalIgnoreCase)))
             {

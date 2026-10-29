@@ -200,7 +200,9 @@ public sealed class NativeRun(CliServices cli, ProjectContext project)
             return StepResult.Failed(failed, "the Android SDK has no command-line tools", $"cd {ProcessSpec.Quote(project.Directory)} && bit setup --platforms android", resultCode: "android-sdk.tools-missing");
 
         if (InstalledSystemImage() is not { } image)
-            return StepResult.Failed(failed, "its system image isn't installed");
+            return StepResult.Failed(failed, "its system image isn't installed", CommandLineTool("sdkmanager") is { } sdkManager && SystemImageApis(targetPlatformVersion) is [var api, ..]
+                ? $"{ProcessSpec.Quote(sdkManager)} {ProcessSpec.Quote($"--sdk_root={sdk}")} --install {ProcessSpec.Quote(SystemImage(api))}"
+                : null);
 
         var name = OwnVirtualDevice;
         var folder = Path.Combine(VirtualDevicesDirectory, $"{name}.avd");

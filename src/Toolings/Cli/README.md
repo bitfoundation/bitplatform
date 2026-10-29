@@ -25,8 +25,8 @@ It needs a .NET 10 SDK or later. `dnx` asks once before it downloads the package
 4. Creates the project, with a development certificate of its own, and keeps only its `.slnx`: the `.sln` the template also ships for older Visual Studio versions is removed.
 5. Initializes git with `develop` and `main`, and commits. When git doesn't know your name yet, it commits as your user name and `<user name>@git.com`, set on this repository only. On Windows it also turns on git's own long path support (`core.longpaths`), which Windows long paths don't cover.
 6. Checks that `dotnet` picks an SDK the project's `global.json` accepts; when it doesn't, the steps that need one are skipped with a single note instead of failing one by one. With Aspire, it records in the AppHost's user secrets whether Docker or Podman runs the containers, whichever answers, since Aspire would otherwise pick again on every run and prefer a Docker Desktop that has hung over the Podman the containers are on. Then installs the build support the chosen platforms need (.NET workloads: WebAssembly, and the native apps'), restores NuGet packages, and builds, which also generates the CSS and JS. With only the web app it builds `Web.slnf`; once any native app is picked it builds the whole `.slnx`, every app the MAUI project targets on this OS included, so it also installs their build support and the Android SDK. When the build fails with Razor errors, it restarts the C# compiler server and builds once more: a compiler server that has gone bad reports Razor errors in files that are fine, and keeps doing so for every build until it restarts. Then it installs the Chromium that Playwright runs the UI tests with.
-7. Runs `dotnet format`, and commits that on its own.
-8. Adds the `Initial` EF Core migration, and commits it on its own. The app applies migrations when it starts.
+7. Runs `dotnet format` on the whole `.slnx`, without restoring it again, so a project whose build support isn't installed, such as the MAUI one in a web-only setup, still gets its whitespace fixed rather than failing the restore. It commits that on its own.
+8. Adds the `Initial` EF Core migration, formats it with `dotnet format`, and commits it on its own. The app applies migrations when it starts.
 9. With `--github-repo`, signs you in to GitHub when needed: it shows the one-time code, opens GitHub's device page in your browser, and Esc skips the sign-in and the repository if it gets stuck. Then it creates a private repository named after the project and pushes `develop` to it before `main`, so `develop` is the repository's only branch when GitHub picks its default branch. It then makes `develop` the default branch with the GitHub CLI too, points the local `origin/HEAD` at it, and warns when GitHub kept another default branch.
 10. Marks the folder as trusted for VS Code, Claude Code, Copilot CLI, Codex and Gemini CLI, so the project's tasks and MCP servers work without prompts. That works even when VS Code was just installed and has never run.
 11. Installs the VS Code extensions the project recommends, like the C# extension and Claude Code. Copilot is built into VS Code, so it isn't one of them. bit checks in VS Code that each one is really there afterwards, tries the missing ones once more, and names any it couldn't install.
@@ -261,6 +261,7 @@ Runs EF Core's `dotnet ef` for the project, in any folder of it, with the `dotne
 - `add <name>` adds a migration for the server's database to Server.Api, and `remove` removes the last one, as long as the development database doesn't have it yet. The app applies new migrations when it starts in Development.
 - `--offline` does the same for the offline database in Client.Core, then regenerates that database's compiled model, which the app needs outside Development and which goes stale after every model change. `bit migration optimize` regenerates it alone, e.g. before the first publish. EF Core's own build-time generation isn't used for it: in a library like Client.Core it reads the assembly of the build before, so its model lags one build behind.
 - `bundle` builds `efbundle` in Server.Api: one executable that applies the migrations to a deployed database. `--runtime` is the machine it runs on: `linux-x64` by default, or e.g. `win-x64` or `osx-arm64`.
+- `add` then runs `dotnet format` on the new migration's files alone, so it follows the project's code style.
 - When `dotnet ef` fails, bit shows its errors and the command to run it again. A project created with `--database Other` has no database provider until you add one, and bit says so.
 
 ## bit translate
@@ -426,6 +427,8 @@ gh attestation verify ~/.dotnet/tools/.store/bit.cli/<version>/bit.cli/<version>
 ```
 
 ## Exit codes
+
+When a step fails, bit says right under it what it was doing: the exact command it ran, in which folder, with the environment variables it set, or for an API what it was asking for. That's enough to do the step by hand, or to tell an AI agent what to do, while bit can't.
 
 | Code | Meaning |
 |---|---|

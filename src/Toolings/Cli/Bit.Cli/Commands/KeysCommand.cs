@@ -283,7 +283,7 @@ public static partial class KeysCommand
         }
         catch (AppleSigningException exp)
         {
-            cli.Console.Fail(exp.Message);
+            cli.Console.Fail(exp.Message, AppleSigning.Attempt(key, bundleId, profileName));
             return CliApp.ExitFailed;
         }
 

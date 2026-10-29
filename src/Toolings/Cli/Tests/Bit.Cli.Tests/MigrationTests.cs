@@ -123,7 +123,53 @@ public class MigrationTests
         StringAssert.Contains(host.FlatOutput, "Build failed. Use dotnet build to see the errors.");
         StringAssert.Contains(host.FlatOutput, "Didn't regenerate the compiled model");
         StringAssert.Contains(host.FlatOutput, $"dotnet dnx dotnet-ef@10.0.14 -- migrations add AddTodoTags --output-dir Infrastructure/Data/Migrations --context AppOfflineDbContext --project {ClientCoreProject} --verbose");
+        StringAssert.Contains(host.Output, $"bit was running EF Core's command-line tool, dotnet-ef 10.0.14, in {ServerWeb(project)}: dotnet dnx dotnet-ef@10.0.14 -- migrations add AddTodoTags --output-dir Infrastructure/Data/Migrations --context AppOfflineDbContext --project {ClientCoreProject}{Environment.NewLine}");
+        Assert.IsLessThan(host.Output.IndexOf("Build failed.", StringComparison.Ordinal), host.Output.IndexOf("bit was running EF Core's", StringComparison.Ordinal));
         Assert.IsFalse(host.Output.Contains("--prefix-output", StringComparison.Ordinal), host.Output);
+    }
+
+    [TestMethod]
+    public async Task AnAddedMigration_Should_BeFormattedOnItsOwn()
+    {
+        using var host = new TestHost();
+        var project = CreateProject(host);
+        var migrations = Directory.CreateDirectory(Path.Combine(ServerApi(project), "Infrastructure", "Data", "Migrations")).FullName;
+        File.WriteAllText(Path.Combine(migrations, "20260101000000_Initial.cs"), "");
+        host.Runner.On("dotnet", "dnx dotnet-ef@10.0.14 -- migrations add", spec =>
+        {
+            File.WriteAllText(Path.Combine(migrations, "20261029000000_AddProductRating.cs"), "");
+            File.WriteAllText(Path.Combine(migrations, "20261029000000_AddProductRating.Designer.cs"), "");
+            return new ProcessResult { ExitCode = 0 };
+        });
+
+        Assert.AreEqual(CliApp.ExitOk, await RunInAsync(host, project, "migration", "add", "AddProductRating"), host.Output);
+
+        var format = host.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() is "format");
+        Assert.AreEqual(ServerApi(project), format.WorkingDirectory);
+        CollectionAssert.AreEqual(new[] { "format", "Contoso.Server.Api.csproj", "--no-restore", "--include", "Infrastructure/Data/Migrations/20261029000000_AddProductRating.Designer.cs", "Infrastructure/Data/Migrations/20261029000000_AddProductRating.cs" }, format.Arguments.ToArray());
+        StringAssert.Contains(host.FlatOutput, "Formatted the migration");
+    }
+
+    [TestMethod]
+    public async Task AMigrationThatCouldNotBeFormatted_Should_StayAndSayHowToFormatIt()
+    {
+        using var host = new TestHost();
+        var project = CreateProject(host);
+        var migrations = Path.Combine(ServerApi(project), "Infrastructure", "Data", "Migrations");
+        host.Runner.On("dotnet", "dnx dotnet-ef@10.0.14 -- migrations add", spec =>
+        {
+            Directory.CreateDirectory(migrations);
+            File.WriteAllText(Path.Combine(migrations, "20261029000000_AddProductRating.cs"), "");
+            return new ProcessResult { ExitCode = 0 };
+        });
+        host.Runner.On("dotnet", "format", 1, "Could not find a MSBuild project file");
+
+        Assert.AreEqual(CliApp.ExitOk, await RunInAsync(host, project, "migration", "add", "AddProductRating"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "Couldn't format the migration");
+        StringAssert.Contains(host.Output, $"bit ran this in {ServerApi(project)}: dotnet format Contoso.Server.Api.csproj --no-restore --include Infrastructure/Data/Migrations/20261029000000_AddProductRating.cs");
+        StringAssert.Contains(host.FlatOutput, "To try again");
+        Assert.IsTrue(File.Exists(Path.Combine(migrations, "20261029000000_AddProductRating.cs")));
     }
 
     [TestMethod]

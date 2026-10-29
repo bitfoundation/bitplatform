@@ -42,7 +42,7 @@ public static class AppCertificateService
         // Retired certificates are checked too: a retired default would still be trusted for validation, so its
         // public private key could still be used to mint tokens this server accepts.
         if (AppEnvironment.IsDevelopment() is false && certs.Any(cert => cert.Subject.Contains("OU=Development", StringComparison.Ordinal)))
-            throw new InvalidOperationException("You are using a development certificate in non-development environment. Generate and use your own certificate using `openssl genrsa` and `openssl req` commands described in AppCertificate.md file.");
+            throw new InvalidOperationException("You are using a development certificate in non-development environment. Create your own certificate with `bit keys certificate --production`, as described in AppCertificate.md file.");
 
         return allAppCerts = [.. certs];
     }

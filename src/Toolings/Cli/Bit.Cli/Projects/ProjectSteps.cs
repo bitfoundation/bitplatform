@@ -283,7 +283,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     public async Task<StepResult> FormatAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        string[] arguments = ["format", Path.GetFileName(project.WebSolutionFilter), "--exclude-diagnostics", "BL0016"];
+        string[] arguments = ["format", Path.GetFileName(project.Solution), "--no-restore", "--exclude-diagnostics", "BL0016"];
         var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(30));
         var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments)}";
 
@@ -307,15 +307,21 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             return StepResult.Skipped("Skipped the initial migration", "the project already has migrations");
 
         var efTool = new ProjectMigrations(cli, project);
+        var before = efTool.MigrationFiles(offline: false);
         string[] arguments = ["migrations", "add", "Initial", "--output-dir", ProjectMigrations.MigrationsFolder];
         var result = await efTool.RunAsync(project.ServerApiDirectory, arguments, progress, cancellationToken);
 
         if (result.Succeeded is false)
-            return StepResult.FromProcess(result, "", "Couldn't add the initial migration", efTool.FollowUp(project.ServerApiDirectory, arguments));
+            return StepResult.FromProcess(result, "", "Couldn't add the initial migration", efTool.FollowUp(project.ServerApiDirectory, arguments)) with { Attempt = efTool.Attempt(project.ServerApiDirectory, arguments) };
 
         migrationAdded = true;
+        var formatted = await efTool.FormatAsync(offline: false, before, progress, cancellationToken);
         var committed = await CommitPathAsync(migrations, "Add the Initial EF Core migration", cancellationToken);
-        return StepResult.Succeeded("Added the Initial migration", $"{project.Database}{(committed is null ? "" : ", committed")}");
+        var detail = $"{project.Database}{(committed is null ? "" : ", committed")}";
+
+        return formatted.Status is StepStatus.Warning
+            ? formatted with { Title = "Added the Initial migration, but couldn't format it", Detail = detail }
+            : StepResult.Succeeded("Added the Initial migration", detail);
     }
 
     public RunningProject? Running { get; private set; }

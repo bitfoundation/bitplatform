@@ -24,6 +24,23 @@ public sealed record ProcessSpec
 
     public string CommandLine => string.Join(' ', new[] { FileName }.Concat(Arguments).Select(Quote));
 
+    public string Attempt
+    {
+        get
+        {
+            var variables = (Environment ?? new Dictionary<string, string?>())
+                .Where(v => v.Value is not null && v.Key is not ("DOTNET_NOLOGO" or "MSBUILDTERMINALLOGGER" or "DOTNET_CLI_UI_LANGUAGE") && v.Key.StartsWith("GIT_CONFIG_", StringComparison.Ordinal) is false)
+                .Select(v => $"{v.Key}={v.Value}")
+                .ToList();
+
+            var where = WorkingDirectory is null ? "" : $" in {WorkingDirectory}";
+            var with = variables.Count == 0 ? "" : $", with {string.Join(", ", variables)}";
+            var input = StandardInput is null ? "" : ", answering its prompts on standard input";
+
+            return $"bit ran this{where}{with}{input}: {CommandLine}";
+        }
+    }
+
     public string ShellCommandLine(HostOs os)
     {
         var line = string.Join(' ', new[] { FileName }.Concat(Arguments).Select(a => ShellQuote(a, os)));
@@ -62,6 +79,8 @@ public sealed record ProcessResult
     public bool NotFound { get; init; }
 
     public bool TimedOut { get; init; }
+
+    public ProcessSpec? Spec { get; init; }
 
     public bool Succeeded => ExitCode == 0 && NotFound is false && TimedOut is false;
 
@@ -115,6 +134,11 @@ public sealed class ProcessRunner(CliEnvironment environment, CliLog log) : IPro
     }
 
     public async Task<ProcessResult> RunAsync(ProcessSpec spec, CancellationToken cancellationToken = default)
+    {
+        return await RunCoreAsync(spec, cancellationToken) with { Spec = spec };
+    }
+
+    private async Task<ProcessResult> RunCoreAsync(ProcessSpec spec, CancellationToken cancellationToken)
     {
         var stopwatch = Stopwatch.StartNew();
         var executable = FindExecutable(spec.FileName) ?? spec.FileName;

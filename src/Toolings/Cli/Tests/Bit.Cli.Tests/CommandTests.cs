@@ -276,6 +276,7 @@ public class CommandTests
         Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("decode", map));
 
         StringAssert.Contains(host.FlatOutput, "Couldn't restore Bit.Minifier 99.0.0");
+        StringAssert.Contains(host.Output, $"--decode {map}. The package is at https://www.nuget.org/packages/Bit.Minifier/99.0.0");
         StringAssert.Contains(host.FlatOutput, "error NU1102");
         Assert.HasCount(1, host.Runner.Calls);
     }

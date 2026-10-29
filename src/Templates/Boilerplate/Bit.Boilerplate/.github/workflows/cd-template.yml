@@ -113,12 +113,14 @@ jobs:
           APP_CERTIFICATE: ${{ secrets.APP_CERTIFICATE }}
           APP_CERTIFICATE_RETIRED: ${{ secrets.APP_CERTIFICATE_RETIRED }}
         run: |
-          write_pair() {
-            printf '%s\n' "$2" | sed -n '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/p' > "$1.crt"
-            printf '%s\n' "$2" | sed -n '/-----BEGIN .*PRIVATE KEY-----/,/-----END .*PRIVATE KEY-----/p' > "$1.key"
-          }
-          if [ -n "$APP_CERTIFICATE" ]; then write_pair AppCertificate "$APP_CERTIFICATE"; fi
-          if [ -n "$APP_CERTIFICATE_RETIRED" ]; then write_pair AppCertificate.retired "$APP_CERTIFICATE_RETIRED"; fi
+          if [ -n "$APP_CERTIFICATE" ]; then
+            echo "$APP_CERTIFICATE" | openssl x509 -out AppCertificate.crt
+            echo "$APP_CERTIFICATE" | openssl pkey -out AppCertificate.key
+          fi
+          if [ -n "$APP_CERTIFICATE_RETIRED" ]; then
+            echo "$APP_CERTIFICATE_RETIRED" | openssl x509 -out AppCertificate.retired.crt
+            echo "$APP_CERTIFICATE_RETIRED" | openssl pkey -out AppCertificate.retired.key
+          fi
 #if (notification == true)
 
       - name: Use the environment's web push keys
@@ -249,12 +251,14 @@ jobs:
           APP_CERTIFICATE: ${{ secrets.APP_CERTIFICATE }}
           APP_CERTIFICATE_RETIRED: ${{ secrets.APP_CERTIFICATE_RETIRED }}
         run: |
-          write_pair() {
-            printf '%s\n' "$2" | sed -n '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/p' > "$1.crt"
-            printf '%s\n' "$2" | sed -n '/-----BEGIN .*PRIVATE KEY-----/,/-----END .*PRIVATE KEY-----/p' > "$1.key"
-          }
-          if [ -n "$APP_CERTIFICATE" ]; then write_pair AppCertificate "$APP_CERTIFICATE"; fi
-          if [ -n "$APP_CERTIFICATE_RETIRED" ]; then write_pair AppCertificate.retired "$APP_CERTIFICATE_RETIRED"; fi
+          if [ -n "$APP_CERTIFICATE" ]; then
+            echo "$APP_CERTIFICATE" | openssl x509 -out AppCertificate.crt
+            echo "$APP_CERTIFICATE" | openssl pkey -out AppCertificate.key
+          fi
+          if [ -n "$APP_CERTIFICATE_RETIRED" ]; then
+            echo "$APP_CERTIFICATE_RETIRED" | openssl x509 -out AppCertificate.retired.crt
+            echo "$APP_CERTIFICATE_RETIRED" | openssl pkey -out AppCertificate.retired.key
+          fi
 #if (notification == true)
 
       - name: Use the environment's web push keys

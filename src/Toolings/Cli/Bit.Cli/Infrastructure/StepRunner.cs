@@ -16,6 +16,8 @@ public sealed record StepResult
 
     public string? Hint { get; init; }
 
+    public string? Attempt { get; init; }
+
     public IReadOnlyList<string> Codes { get; init; } = [];
 
     public string? ResultCode { get; init; }
@@ -36,16 +38,16 @@ public sealed record StepResult
             return Succeeded(succeededTitle, succeededDetail);
 
         if (result.NotFound)
-            return Failed(failedTitle, "the command wasn't found", followUp, resultCode: "tool.missing");
+            return Failed(failedTitle, "the command wasn't found", followUp, resultCode: "tool.missing") with { Attempt = result.Spec?.Attempt };
 
         if (result.TimedOut)
-            return Failed(failedTitle, "it took too long and was stopped", followUp, resultCode: "timeout");
+            return Failed(failedTitle, "it took too long and was stopped", followUp, resultCode: "timeout") with { Attempt = result.Spec?.Attempt };
 
         var codes = DiagnosticCodes.Extract(result.Output);
         var firstError = DiagnosticCodes.FirstErrorLine(result.Output);
         var detail = codes.Count > 0 ? string.Join(" · ", codes) : $"exit code {result.ExitCode}";
 
-        return Failed(failedTitle, detail, followUp, codes, hint: firstError);
+        return Failed(failedTitle, detail, followUp, codes, hint: firstError) with { Attempt = result.Spec?.Attempt };
     }
 }
 
@@ -104,6 +106,7 @@ public sealed class StepRunner(CliServices cli)
         CliTelemetry.CompleteStep(activity, result.Status, result.Codes, result.ResultCode);
 
         cli.Console.Step(result.Status, result.Title, result.Detail, result.Status is StepStatus.Skipped ? null : stopwatch.Elapsed);
+        WriteAttempt(result);
 
         if (result.Hint is not null)
         {
@@ -118,6 +121,16 @@ public sealed class StepRunner(CliServices cli)
     public void Add(string id, StepResult result)
     {
         cli.Console.Step(result.Status, result.Title, result.Detail);
+        WriteAttempt(result);
         reports.Add(new StepReport(id, result, TimeSpan.Zero));
+    }
+
+    private void WriteAttempt(StepResult result)
+    {
+        if (result is { Attempt: not null, Status: StepStatus.Failed or StepStatus.Warning })
+        {
+            cli.Console.StepAttempt(result.Attempt);
+            cli.Log.Write(result.Attempt);
+        }
     }
 }

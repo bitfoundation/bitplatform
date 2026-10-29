@@ -37,7 +37,13 @@ public static class MigrationCommand
 
             return RunAsync(services(), offline, async (steps, migrations) =>
             {
+                var before = migrations.MigrationFiles(offline);
                 var added = await steps.RunAsync("migration-add", $"Adding the {name} migration", (progress, token) => migrations.AddAsync(name, offline, progress, token), cancellationToken);
+
+                if (added.Status is not StepStatus.Failed)
+                {
+                    await steps.RunAsync("migration-format", "Formatting the migration", (progress, token) => migrations.FormatAsync(offline, before, progress, token), cancellationToken);
+                }
 
                 if (offline)
                 {
@@ -157,7 +163,7 @@ public static class MigrationCommand
         var steps = new StepRunner(cli);
         await work(steps, migrations);
 
-        var failed = steps.Reports.Where(r => r.Result is { Status: StepStatus.Failed, FollowUp: not null }).ToList();
+        var failed = steps.Reports.Where(r => r.Result is { Status: StepStatus.Failed or StepStatus.Warning, FollowUp: not null }).ToList();
 
         if (failed.Count > 0)
         {

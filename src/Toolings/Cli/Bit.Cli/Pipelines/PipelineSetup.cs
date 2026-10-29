@@ -79,7 +79,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
 
         if (view.Succeeded is false || repository.Length == 0 || repository.Contains(' ', StringComparison.Ordinal))
         {
-            cli.Console.Fail("This repository isn't on GitHub, or git's remote doesn't point at it. Push it to GitHub first, e.g. with gh repo create.");
+            cli.Console.Fail("This repository isn't on GitHub, or git's remote doesn't point at it. Push it to GitHub first, e.g. with gh repo create.", view.Spec?.Attempt);
             return CliApp.ExitFailed;
         }
 
@@ -156,7 +156,10 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             cli.Console.Step(created.Succeeded ? StepStatus.Succeeded : StepStatus.Failed, created.Succeeded ? $"Created the {environment} environment" : $"Couldn't create the {environment} environment", created.Succeeded ? null : LastLine(created));
 
             if (created.Succeeded is false)
+            {
+                cli.Console.StepAttempt(created.Spec!.Attempt);
                 return CliApp.ExitFailed;
+            }
         }
 
         foreach (var scope in wanted.GroupBy(s => s.Environment))
@@ -329,7 +332,9 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             }
             catch (AppleSigningException exp)
             {
-                cli.Console.Step(StepStatus.Failed, "Couldn't create the App Store signing", exp.Message);
+                cli.Console.Step(StepStatus.Failed, "Couldn't create the App Store signing", Scope(environment));
+                cli.Console.StepAttempt($"{AppleSigning.Attempt(appleKey, bundleId, profileName)} {AppleCertificateFile} gets the .p12 in base64, and {AppleCertificatePassword} its password.");
+                cli.Console.StepHint(exp.Message);
                 failed = true;
                 return;
             }
@@ -460,7 +465,11 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             result.Succeeded ? $"Stored {name}" : $"Couldn't store {name}",
             result.Succeeded ? string.Join(", ", new[] { Scope(environment), detail }.OfType<string>()) : LastLine(result));
 
-        failed |= result.Succeeded is false;
+        if (result.Succeeded is false)
+        {
+            cli.Console.StepAttempt(result.Spec!.Attempt);
+            failed = true;
+        }
 
         if (result.Succeeded && environment is null)
         {
@@ -522,7 +531,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
         if (result.Succeeded)
             return result.OutputLines.Select(l => l.Trim()).Where(l => l.Length > 0).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        cli.Console.Fail($"Couldn't read the secrets of {Scope(environment)}: {LastLine(result)}. Storing secrets needs admin rights on {repository}.");
+        cli.Console.Fail($"Couldn't read the secrets of {Scope(environment)}: {LastLine(result)}. Storing secrets needs admin rights on {repository}.", result.Spec?.Attempt);
         return null;
     }
 

@@ -1009,6 +1009,34 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public async Task Format_Should_FormatTheWholeSolutionWithoutRestoringItAgain()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+
+        var result = await new ProjectSteps(host.Services, project).FormatAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status);
+        CollectionAssert.AreEqual(new[] { "format", "Contoso.slnx", "--no-restore", "--exclude-diagnostics", "BL0016" }, host.Runner.Calls.Single(c => c.FileName is "dotnet").Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task AFailedStep_Should_SayWhatBitRanBeforeTheError()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+        project.GitReady = true;
+        host.Runner.Executables["gh"] = "/usr/bin/gh";
+        host.Runner.On("git", "push -u origin develop", 128, "fatal: unable to access 'https://github.com/contoso-dev/Contoso.git/': Could not resolve host: github.com");
+
+        await new StepRunner(host.Services).RunAsync("github-repo", "Creating a private GitHub repo", new ProjectSteps(host.Services, project).GitHubRepositoryAsync, CancellationToken.None);
+
+        var attempt = $"bit ran this in {project.Directory}: git push -u origin develop";
+        StringAssert.Contains(host.Output, attempt);
+        Assert.IsLessThan(host.Output.IndexOf("fatal: unable to access", StringComparison.Ordinal), host.Output.IndexOf(attempt, StringComparison.Ordinal), host.Output);
+    }
+
+    [TestMethod]
     public async Task TheGitHubRepo_Should_SayWhenDevelopIsntItsDefaultBranch()
     {
         using var host = new TestHost();
