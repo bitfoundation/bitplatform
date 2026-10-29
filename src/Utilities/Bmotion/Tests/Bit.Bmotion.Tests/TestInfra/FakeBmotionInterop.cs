@@ -46,6 +46,21 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
         return PrerenderedAnimationElapsedMs;
     }
 
+    /// <summary>
+    /// What <see cref="GetWaapiPlayhead"/> answers: where the browser has really got with an offloaded animation, and
+    /// whether its start is final. Null (the default) is "can't tell", which leaves the engine on its own clock.
+    /// </summary>
+    public Func<string, int, (double PlayedMs, bool Final)?>? WaapiPlayhead { get; set; }
+
+    /// <summary>How many times the engine has asked <see cref="GetWaapiPlayhead"/>.</summary>
+    public int WaapiPlayheadReads { get; private set; }
+
+    public (double PlayedMs, bool Final)? GetWaapiPlayhead(string elementId, int token)
+    {
+        WaapiPlayheadReads++;
+        return WaapiPlayhead?.Invoke(elementId, token);
+    }
+
     /// <summary>Value returned by <see cref="PrefersReducedMotionAsync"/>.</summary>
     public bool PrefersReducedMotion { get; set; }
 
@@ -128,8 +143,16 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
     }
 
     // ── rAF loop ──────────────────────────────────────────────────────────────
+    /// <summary>How many of the next loop starts fail, as a bridge that isn't reachable yet makes them.</summary>
+    public int RafLoopStartFailures { get; set; }
+
     public ValueTask StartRafLoopAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef) where T : class
     {
+        if (RafLoopStartFailures > 0)
+        {
+            RafLoopStartFailures--;
+            return ValueTask.FromException(new JSException("the bridge isn't loaded yet"));
+        }
         RafLoopRef = dotnetRef.Value;
         RafLoopReference = dotnetRef;
         Record("startRafLoop");

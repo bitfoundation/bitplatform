@@ -157,13 +157,15 @@ public sealed class BmotionAnimateService
 
     /// <summary>
     /// Creates a derived motion value that spring-follows <paramref name="source"/> -
-    /// motion.dev's <c>useSpring</c>. Dispose the returned value to detach it.
+    /// motion.dev's <c>useSpring</c>. Dispose the returned value to detach it from its source (a spring
+    /// still moving when it is disposed finishes on its own).
     /// </summary>
     public BmValue<double> Spring(BmValue<double> source, BmSpring? spring = null)
     {
         ArgumentNullException.ThrowIfNull(source);
         var template = spring ?? new BmSpring();
         var follower = Bm.Value(source.Value);
+        IBmotionAnimationDriver? following = null;   // the spring this follower last started
 
         var subscription = source.Subscribe(target =>
         {
@@ -174,10 +176,17 @@ public sealed class BmotionAnimateService
                 return;
             }
 
-            var config = template.ToConfig();
-            config.Velocity = follower.GetVelocity(); // carry momentum across retargets
-            _engine.StartDetached(follower, follower.Value, target, config, v => follower.SetSync(v));
-            // Fire-and-forget loop start: a failure here surfaces on the next awaited animation.
+            // A spring still chasing the last target is pointed at this one: it keeps its position, its momentum and its
+            // clock, so a source that changes several times between two frames still lets it move on every frame.
+            if (!_engine.TryRetargetDetached(follower, following, target))
+            {
+                var config = template.ToConfig();
+                // Carry momentum into the new spring, unless the caller set the velocity it starts with (as AnimateAsync).
+                if (config.Velocity == 0) config.Velocity = follower.GetVelocity();
+                following = _engine.StartDetached(follower, follower.Value, target, config, v => follower.SetSync(v));
+            }
+            // Fire-and-forget loop start on every change, a retarget's included, so a start that failed is tried again
+            // by the next change. A failure here surfaces on the next awaited animation.
             _ = EnsureLoopSafeAsync();
         });
         follower.AttachUpstream(subscription);
