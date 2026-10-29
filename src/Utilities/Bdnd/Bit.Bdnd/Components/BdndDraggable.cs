@@ -20,7 +20,8 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
     [CascadingParameter] private BdndDropTargetScope? TargetScope { get; set; }
     [Inject] private IServiceProvider Services { get; set; } = default!;
 
-    // Resolved rather than injected, so the draggable also works when the app never called AddBitBdndServices.
+    // Resolved rather than injected, so the draggable also works on WebAssembly when the app lazy loads Bit.Bdnd and never
+    // called AddBitBdndServices. GetBdndInterop decides where the interop comes from, for the drop target as well.
     private BdndInterop Interop => field ??= Services.GetBdndInterop();
 
     /// <summary>Required. The item type used to match against drop-target <c>Accept</c> lists.</summary>

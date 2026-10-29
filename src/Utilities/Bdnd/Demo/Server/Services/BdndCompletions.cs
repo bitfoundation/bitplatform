@@ -30,8 +30,9 @@ public static class BdndCompletions
         "the no-drop cursor shows in the gaps between list items",
         "OnEnd reports DidDrop = false although I dropped on the list",
         "InvalidOperationException: must be placed inside a BdndProvider",
+        "Bit.Bdnd's services are not registered",
         "There is no registered service of type 'Bit.Bdnd.BdndInterop'",
-        "Could not load file or assembly 'Bit.Bdnd' after lazy loading it",
+        "Could not load file or assembly 'Bit.Bdnd' in an app that lazy loads it",
         "files dropped from the desktop open in the browser instead",
         "my custom drag preview flickers or blocks the drop",
     ];

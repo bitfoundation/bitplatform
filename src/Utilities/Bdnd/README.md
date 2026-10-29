@@ -237,8 +237,10 @@ its own and shares it with the components inside it.
 In a Blazor Web App with an interactive client, register it in both `Program.cs` files: the pages are prerendered on
 the server before they run in the browser, so anything a component injects has to resolve in both containers.
 
-The draggables and drop targets also work without the registration - they then create the interop themselves, once
-per browser connection - which is what lets a WebAssembly app [lazy load](#lazy-loading-on-webassembly) Bdnd.
+On WebAssembly the draggables and drop targets also work without the registration - they then create the interop
+themselves, once per runtime - which is what lets a WebAssembly app [lazy load](#lazy-loading-on-webassembly) Bdnd.
+Everywhere else the registration is required: on Blazor Server, in Blazor Hybrid and on the server of a Web App, a
+draggable or drop target without it throws `Bit.Bdnd's services are not registered` as soon as it runs interactively.
 
 ### A first drag and drop
 
@@ -1266,7 +1268,7 @@ and start working once the page becomes interactive. No browser API is called wh
 
 The draggables and drop targets also work without `AddBitBdndServices`, so a WebAssembly app can fetch Bdnd only when
 someone opens a part of the app that drags. When `BdndInterop` is not registered, they create it themselves, once per
-browser connection, and `IServiceProvider.GetBdndInterop()` hands the app's own code the same one. Mark the assembly as
+WebAssembly runtime, and `IServiceProvider.GetBdndInterop()` hands the app's own code the same one. Mark the assembly as
 lazy loaded in the project that runs in the browser, and load it before the first page that uses it renders:
 
 ```xml
@@ -1277,11 +1279,11 @@ lazy loaded in the project that runs in the browser, and load it before the firs
 
 ```razor
 @* App.razor - in a Blazor Web App, the client project's Routes.razor: the router waits for OnNavigateAsync
-   before it renders the page. *@
+   before it renders the page. typeof(Program) is the project the router's file is in, in either kind of app. *@
 @using Microsoft.AspNetCore.Components.WebAssembly.Services
 @inject LazyAssemblyLoader LazyAssemblyLoader
 
-<Router AppAssembly="typeof(App).Assembly" OnNavigateAsync="OnNavigateAsync">
+<Router AppAssembly="typeof(Program).Assembly" OnNavigateAsync="OnNavigateAsync">
     ...
 </Router>
 
@@ -1305,9 +1307,12 @@ the card of a [sortable list](#sortable-lists) - takes the interop from `GetBdnd
 @inject IServiceProvider Services
 
 @code {
+    // Taken once, as an injected service would be: HandleHover runs for every move over the card.
+    private BdndInterop Interop => field ??= Services.GetBdndInterop();
+
     private async Task HandleHover(BdndDropEventArgs<DragItem> e)
     {
-        var rect = await Services.GetBdndInterop().GetBoundingClientRectAsync(_element);
+        var rect = await Interop.GetBoundingClientRectAsync(_element);
         ...
     }
 }
@@ -1339,8 +1344,9 @@ the card of a [sortable list](#sortable-lists) - takes the interop from `GetBdnd
 | Symptom | Cause and fix |
 | --- | --- |
 | `InvalidOperationException: ... must be placed inside a BdndProvider` | Wrap the components in a `BdndProvider`. |
+| `Bit.Bdnd's services are not registered` | `AddBitBdndServices()` is missing - on Blazor Server, in Blazor Hybrid, or from the server's `Program.cs` of a Web App. Only WebAssembly goes without it, to [lazy load](#lazy-loading-on-webassembly) Bdnd. |
 | `There is no registered service of type 'Bit.Bdnd.BdndInterop'` | A component of your own injects `BdndInterop` and `AddBitBdndServices()` is missing - in a Web App, from one of the two `Program.cs` files. In an app that lazy loads Bdnd, take it from `Services.GetBdndInterop()` instead. |
-| `Could not load file or assembly 'Bit.Bdnd'` in an app that lazy loads it | Something used Bdnd's types before the assembly loaded: load it in `OnNavigateAsync` for every route that renders them, and keep them out of `Program.cs`, `App.razor` and the layouts every page shares. See [lazy loading](#lazy-loading-on-webassembly). |
+| `Could not load file or assembly 'Bit.Bdnd'` in an app that lazy loads it | Something used Bdnd's types before the assembly loaded: load it in `OnNavigateAsync` for every route that renders them, and keep them out of `Program.cs`, `App.razor` and the layouts every page shares. If it fails as the app starts and keeps failing once the assembly has loaded, a type in the app's own assembly derives from or implements one of Bdnd's - a component inheriting `BdndDragLayer`, an `IBdndMonitor` of your own: move it into a library that is lazy loaded together with Bit.Bdnd. See [lazy loading](#lazy-loading-on-webassembly). |
 | Nothing drags at all | The page is not interactive: add a render mode (`@rendermode InteractiveWebAssembly`), or render it from an interactive parent. |
 | The item drags but the target never lights up | The draggable's `Type` is not in the target's `Accept`/`AcceptTypes`, the target's `CanDropPredicate` answers false, or source and target are in different providers. |
 | The no-drop cursor shows in the gaps of a list | Make the list a drop target that accepts the item type too. |

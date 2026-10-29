@@ -8,7 +8,7 @@ namespace Bit.Bdnd;
 /// Thin wrapper around the <c>bit-bdnd.js</c> module. Registered as a scoped
 /// service by <c>AddBitBdndServices()</c> and used by the drag/drop components. Where it is not
 /// registered - an app that lazy loads Bit.Bdnd on WebAssembly - the components create one per
-/// browser connection, which <see cref="BitBdnd.GetBdndInterop"/> hands out.
+/// WebAssembly runtime, which <see cref="BitBdnd.GetBdndInterop"/> hands out.
 /// </summary>
 public sealed class BdndInterop : IAsyncDisposable
 {

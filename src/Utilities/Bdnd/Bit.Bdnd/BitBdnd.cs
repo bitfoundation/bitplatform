@@ -11,10 +11,11 @@ namespace Bit.Bdnd;
 /// </summary>
 public static class BitBdnd
 {
-    // One interop per browser connection for applications that never called AddBitBdndServices. Keyed weakly by the
-    // connection's IJSRuntime, so a closed Blazor Server circuit takes its interop with it. Never disposed, and nothing
-    // needs it to be: it lives as long as the connection, like a scope, and the one thing disposal would add, releasing
-    // the module reference held in the browser, has no page left to do it in by then.
+    // One interop per WebAssembly runtime for applications that lazy load Bit.Bdnd and so never call AddBitBdndServices.
+    // Keyed weakly by the runtime's IJSRuntime - on WebAssembly there is one for the life of the tab - so that every
+    // runtime in a process, as in the tests, has its own. Never disposed, and nothing needs it to be: it lives as long as
+    // the tab, like the runtime's one scope, and the one thing disposal would add, releasing the module reference held in
+    // the browser, has no page left to do it in by then.
     private static readonly ConditionalWeakTable<IJSRuntime, BdndInterop> _ownInterop = new();
 
     /// <summary>
@@ -24,7 +25,8 @@ public static class BitBdnd
     /// Call this in <c>Program.cs</c> before <c>builder.Build()</c>:
     /// <code>builder.Services.AddBitBdndServices();</code>
     /// A WebAssembly app that lazy loads Bit.Bdnd leaves it out: the draggables and drop targets then create the
-    /// interop themselves, once per browser connection, and <see cref="GetBdndInterop"/> hands out the same one.
+    /// interop themselves, once per WebAssembly runtime, and <see cref="GetBdndInterop"/> hands out the same one.
+    /// Everywhere else - Blazor Server, Blazor Hybrid, the server of a Blazor Web App - it is required.
     /// </summary>
     public static IServiceCollection AddBitBdndServices(this IServiceCollection services)
     {
@@ -43,16 +45,21 @@ public static class BitBdnd
 
     /// <summary>
     /// The <see cref="BdndInterop"/> the draggables and drop targets of this circuit or WebAssembly runtime use: the one
-    /// <see cref="AddBitBdndServices"/> registered, otherwise one Bdnd creates itself, once per browser connection.
-    /// Inject <see cref="BdndInterop"/> instead wherever the services are registered; this is for an app that lazy loads
-    /// Bit.Bdnd on WebAssembly and so cannot register them:
+    /// <see cref="AddBitBdndServices"/> registered, otherwise - on WebAssembly only - one Bdnd creates itself, once per
+    /// runtime. Inject <see cref="BdndInterop"/> instead wherever the services are registered; this is for an app that
+    /// lazy loads Bit.Bdnd on WebAssembly and so cannot register them:
     /// <code>
     /// @inject IServiceProvider Services
     ///
-    /// var rect = await Services.GetBdndInterop().GetBoundingClientRectAsync(element);
+    /// private BdndInterop Interop => field ??= Services.GetBdndInterop();
+    ///
+    /// var rect = await Interop.GetBoundingClientRectAsync(element);
     /// </code>
     /// </summary>
     /// <param name="services">The services of the component asking, as injected through <see cref="IServiceProvider"/>.</param>
+    /// <exception cref="InvalidOperationException">
+    /// The services are not registered, and <paramref name="services"/> do not belong to a WebAssembly runtime.
+    /// </exception>
     public static BdndInterop GetBdndInterop(this IServiceProvider services)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -63,9 +70,13 @@ public static class BitBdnd
 
         if (services.GetService<BdndInterop>() is { } registered) return registered;
 
-        var jsRuntime = services.GetService<IJSRuntime>() ?? throw new InvalidOperationException(
-            "Bit.Bdnd's services are not registered: call builder.Services.AddBitBdndServices() in Program.cs. " +
-            "Without them Bdnd creates its own interop for each browser connection, which needs the IJSRuntime of a Blazor app, and this container has none.");
+        // Only WebAssembly can lazy load Bit.Bdnd - everywhere else it is loaded with the application - so everywhere else
+        // a missing registration is a mistake, reported where it happens. The JS runtime tells WebAssembly apart: only
+        // there is it in-process; Blazor Server's and Blazor Hybrid's reach the browser over a connection, and a
+        // prerendering server has none that works.
+        if (services.GetService<IJSRuntime>() is not IJSInProcessRuntime jsRuntime) throw new InvalidOperationException(
+            "Bit.Bdnd's services are not registered: call builder.Services.AddBitBdndServices() in Program.cs - in a Blazor Web App, in both the server and the client project. " +
+            "Only a WebAssembly app that lazy loads Bit.Bdnd goes without, and takes the interop from IServiceProvider.GetBdndInterop() instead.");
 
         return _ownInterop.GetValue(jsRuntime, static js => new BdndInterop(js));
     }
