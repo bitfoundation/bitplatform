@@ -95,10 +95,14 @@ export class WebInteropApp {
         }
 
         // Blazor Hybrid:
-        await fetch(`http://localhost:${localHttpPort}/api/ExternalSignInCallback?urlToOpen=${encodeURIComponent(urlToOpen)}&nonce=${encodeURIComponent(localHttpNonce)}`, {
+        const response = await fetch(`http://localhost:${localHttpPort}/api/ExternalSignInCallback?urlToOpen=${encodeURIComponent(urlToOpen)}&nonce=${encodeURIComponent(localHttpNonce)}`, {
             method: 'POST',
             credentials: 'omit'
         });
+
+        if (!response.ok) {
+            throw new Error(`ExternalSignInCallback was refused with status ${response.status}.`);
+        }
     }
 
     /// The per-process token the local HTTP server requires on every request. It is placed in the interop URL by

@@ -16,6 +16,9 @@ public partial class IdentityController
     [HttpGet]
     public async Task<string> GetExternalSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, string? localHttpNonce = null, CancellationToken cancellationToken = default)
     {
+        if (localHttpPort is not null && string.IsNullOrEmpty(localHttpNonce))
+            throw new BadRequestException().WithData("Reason", "localHttpNonce is required with localHttpPort.");
+
         var uri = Url.Action(nameof(ExternalSignIn), new { provider, returnUrl, localHttpPort, localHttpNonce, origin = Request.GetWebAppUrl() })!;
         return new Uri(Request.GetBaseUrl(), uri).ToString();
     }

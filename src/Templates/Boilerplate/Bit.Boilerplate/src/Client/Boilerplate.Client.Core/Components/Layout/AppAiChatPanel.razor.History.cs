@@ -135,10 +135,22 @@ public partial class AppAiChatPanel
             return;
         }
 
-        await StopDictation();
-        await EndVoiceCall();
+        try
+        {
+            await StopDictation();
+            await EndVoiceCall();
 
-        await ClearChat(); // Forgets the stored one too, under the current owner's name.
+            await ClearChat(); // Forgets the stored one too, under the current owner's name.
+        }
+        catch
+        {
+            if (conversationOwner == owner)
+            {
+                conversationOwner = previousOwner;
+            }
+
+            throw;
+        }
     });
 
     /// <summary>Appends one settled message or card. Nothing on screen waits for it.</summary>

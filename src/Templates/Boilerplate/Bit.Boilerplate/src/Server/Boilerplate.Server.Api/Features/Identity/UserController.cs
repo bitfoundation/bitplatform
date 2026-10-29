@@ -670,6 +670,10 @@ public partial class UserController : AppControllerBase, IUserController
             }
 
             await DbContext.UserSessions
+                .Where(us => us.UserId == userId && us.TenantId == tenantId && us.OAuthGrant != null)
+                .ExecuteDeleteAsync(cancellationToken);
+
+            await DbContext.UserSessions
                 .Where(us => us.UserId == userId && us.TenantId == tenantId)
                 .ExecuteUpdateAsync(us => us.SetProperty(s => s.TenantId, nextTenantId).SetProperty(s => s.Privileged, false), cancellationToken);
 

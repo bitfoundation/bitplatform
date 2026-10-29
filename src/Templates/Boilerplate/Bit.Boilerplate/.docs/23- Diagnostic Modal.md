@@ -120,7 +120,7 @@ The two are meant to read almost identically, so the page shows one at a time: t
 
 #### ♻️ **Call GC** (Non-Browser Platforms Only)
 - Forces garbage collection on .NET MAUI and Windows platforms
-- In Blazor Server the button shows only in Development, so a visitor can't force full garbage collections on the server
+- In Blazor Server the button shows only in Development: there any visitor who opens the modal can force a full garbage collection on the server, outside Development nobody can
 - Shows memory usage **before** and **after** GC using SnackBar notifications
 - Performs aggressive GC with compaction:
   ```csharp

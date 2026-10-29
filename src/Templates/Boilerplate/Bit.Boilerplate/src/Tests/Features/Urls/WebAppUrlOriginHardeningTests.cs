@@ -113,6 +113,7 @@ public class WebAppUrlOriginHardeningTests
     [DataRow("https://app.example/", "https://app.example", false)]
     [DataRow("https://app.example/", "https://tenant.app.example", false)]
     [DataRow("https://app.example/", "http://app.example", true)]
+    [DataRow("https://app.example:443/", "https://app.example:8443", true)]
     public void TheRequestsOwnHost_Should_OnlyBeTrusted_UnderTheConfiguredWebAppUrl(string? webAppUrl, string requestOrigin, bool refused)
     {
         var requestUri = new Uri(requestOrigin);
@@ -122,7 +123,7 @@ public class WebAppUrlOriginHardeningTests
             RequestServices = new ServiceCollection().AddSingleton(new ServerApiSettings { WebAppUrl = webAppUrl }).BuildServiceProvider()
         };
         httpContext.Request.Scheme = requestUri.Scheme;
-        httpContext.Request.Host = new HostString(requestUri.Host);
+        httpContext.Request.Host = new HostString(requestUri.Host, requestUri.Port);
         httpContext.Request.Headers["X-Origin"] = requestOrigin;
 
         if (refused)

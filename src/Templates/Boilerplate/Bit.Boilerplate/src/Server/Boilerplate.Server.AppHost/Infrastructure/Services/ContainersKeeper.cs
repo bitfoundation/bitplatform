@@ -72,9 +72,16 @@ internal sealed class ContainersKeeper(string stateDirectory, ResourceNotificati
         if (OperatingSystem.IsWindows() is false)
         {
             if (keeperDirectory.LinkTarget is not null)
-                throw new InvalidOperationException($"{keeperDirectory.FullName} must be a directory, not a link.");
+                return false;
 
-            keeperDirectory.UnixFileMode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute;
+            try
+            {
+                keeperDirectory.UnixFileMode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
         }
 
         var stateDirectory = Directory.CreateDirectory(Path.Combine(keeperDirectory.FullName, GetAppHostId(builder.AppHostDirectory))).FullName;
