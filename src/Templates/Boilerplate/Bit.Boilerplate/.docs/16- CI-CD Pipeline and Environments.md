@@ -268,9 +268,9 @@ This is the **core deployment workflow** that handles building and deploying all
 4. **build_blazor_hybrid_iOS**: iOS app package (.ipa for App Store) and macOS app
 
 **Shared steps from bit platform**: three steps use short composite actions from
-[bitfoundation/bitplatform](https://github.com/bitfoundation/bitplatform/tree/develop/.github/actions/boilerplate), pinned
-to the commit of a bit platform release, so the workflows stay short and get their fixes with each upgrade:
-- `bit-setup` installs the bit CLI of that release and runs `bit setup`, which `ci.yml` uses too
+[bitfoundation/bitplatform](https://github.com/bitfoundation/bitplatform/tree/develop/.github/actions/boilerplate), at the
+release tag of the project's bit platform version, so the workflows stay short and get their fixes with each upgrade:
+- `bit-setup` installs the bit CLI of that version and runs `bit setup`, which `ci.yml` uses too
 - `app-certificate` writes the `APP_CERTIFICATE` and `APP_CERTIFICATE_RETIRED` secrets next to the server as the
   `AppCertificate` files, and fails the deploy when openssl can't read one
 - `artifact-signing` logs in to Azure with the job's OpenID Connect token and lets `vpk pack` sign with Artifact Signing
