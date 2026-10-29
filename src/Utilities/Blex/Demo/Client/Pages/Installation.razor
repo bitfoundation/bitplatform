@@ -201,7 +201,7 @@
 
     private static readonly IReadOnlyList<ApiTable.Row> ProviderRows =
     [
-        new("EnableDevTools", "<code>bool</code>, default <code>true</code>. Connects the Redux DevTools bridge on first render. Set to <code>false</code> in production."),
+        new("EnableDevTools", "<code>bool</code>, default <code>false</code>. Connects the Redux DevTools bridge on first render. Turn it on in development only."),
         new("PersistComponentState", "<code>bool</code>, default <code>true</code>. Hands prerendered store state to the interactive render through Blazor's <code>PersistentComponentState</code>, avoiding the prerender \"double render\" flicker. No effect when the framework service is unavailable."),
         new("ChildContent", "The application content rendered inside the provider."),
     ];

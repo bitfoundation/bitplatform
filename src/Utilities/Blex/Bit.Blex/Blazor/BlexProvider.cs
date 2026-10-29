@@ -29,7 +29,7 @@ public sealed class BlexProvider : ComponentBase, IAsyncDisposable
     [Inject] private IServiceProvider Services { get; set; } = default!;
 
     /// <summary>
-    /// Enables the Redux DevTools connection. Defaults to <c>true</c>.
+    /// Enables the Redux DevTools connection. Defaults to <c>false</c>.
     /// </summary>
     /// <remarks>
     /// When enabled, the entire application state tree is serialized and exposed to the Redux
@@ -37,7 +37,7 @@ public sealed class BlexProvider : ComponentBase, IAsyncDisposable
     /// this to <c>false</c> in production (for example, bind it to your host environment) to
     /// avoid leaking application state to an installed extension.
     /// </remarks>
-    [Parameter] public bool EnableDevTools { get; set; } = true;
+    [Parameter] public bool EnableDevTools { get; set; }
 
     /// <summary>
     /// Hands prerendered store state to the interactive render via Blazor's

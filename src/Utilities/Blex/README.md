@@ -1300,7 +1300,7 @@ descriptors are not generated (warning) · `BLEX021` two actions dispatched unde
 ## Time-travel debugging
 
 1. Install the [Redux DevTools](https://github.com/reduxjs/redux-devtools) browser extension.
-2. Run the app and open DevTools - you'll see an instance named after `DevToolsName`.
+2. Turn the bridge on with `<BlexProvider EnableDevTools="true">` (it is off by default), run the app and open DevTools - you'll see an instance named after `DevToolsName`.
 3. Every action streams in with its argument payload and the resulting state tree.
 4. Use the slider / jump buttons to rewind and replay your application state live.
 
@@ -1332,7 +1332,7 @@ while time-travel restores keep working - which is the point. Both are readable 
 moves, since neither is an action a component would re-render on - and disconnecting the bridge clears them, so
 a monitor closed while locked cannot leave the application permanently frozen.
 
-For production, set `<BlexProvider EnableDevTools="false">` to disable the connection entirely, or
+For production, keep `EnableDevTools` off (bind it to the host environment) so there is no connection at all, or
 redact sensitive values from the monitor with sanitizers:
 
 ```csharp

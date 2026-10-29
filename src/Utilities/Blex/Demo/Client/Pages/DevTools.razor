@@ -11,7 +11,7 @@
         <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Getting connected</h2>
         <ol class="bb-detail-list">
             <li>Install the <a href="https://github.com/reduxjs/redux-devtools" target="_blank" rel="noopener">Redux DevTools</a> browser extension.</li>
-            <li>Run the app with <code>&lt;BlexProvider&gt;</code> in place and <code>EnableDevTools</code> left at its default.</li>
+            <li>Run the app with <code>&lt;BlexProvider EnableDevTools="true"&gt;</code> in place; the bridge is off by default.</li>
             <li>Open the browser devtools and switch to the <strong>Redux</strong> tab. The instance is named after <code>options.DevToolsName</code>.</li>
             <li>Interact with the app. Every action arrives with its argument payload and the state that followed it.</li>
             <li>Drag the slider, or use the jump buttons, to rewind the application live.</li>
@@ -233,7 +233,8 @@
     <div class="bb-card">
         <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Turning it off</h2>
         <p>
-            For production, disable the connection outright. Nothing is serialized and nothing is sent.
+            The connection is off unless it is enabled. Bind it to the host environment so production never
+            turns it on: nothing is serialized and nothing is sent.
         </p>
         <CodeBlock Code="@Disable" Language="razor" />
     </div>
@@ -308,8 +309,8 @@
             options.RedactDevToolsKeys("Token");
         });
 
-        // App.razor - EnableDevTools defaults to true; the bridge connects on the provider's first render.
-        <BlexProvider>
+        // App.razor - EnableDevTools turned on; the bridge connects on the provider's first render.
+        <BlexProvider EnableDevTools="true">
             <Router ... />
         </BlexProvider>
 
