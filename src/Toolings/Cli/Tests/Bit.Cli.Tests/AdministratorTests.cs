@@ -105,6 +105,7 @@ public class AdministratorTests
             Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
             var call = host.Runner.Calls.Single();
             Assert.IsFalse(call.WorkingDirectory!.StartsWith(directory, StringComparison.OrdinalIgnoreCase), "The project's own build files would run as administrator.");
+            CollectionAssert.Contains(call.Arguments.ToArray(), "-t:InstallAndroidDependencies");
             CollectionAssert.Contains(call.Arguments.ToArray(), "-noAutoResponse");
             StringAssert.Contains(installer, "-android</TargetFramework>");
             StringAssert.Contains(globalJson, "\"10.0.100\"");
