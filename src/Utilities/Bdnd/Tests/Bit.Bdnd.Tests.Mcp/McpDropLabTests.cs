@@ -308,6 +308,43 @@ public class McpDropLabTests
     }
 
     [TestMethod]
+    public async Task A_longer_hover_id_two_edits_off_is_suggested_and_three_edits_off_is_not()
+    {
+        var two = await InspectAsync(Scenario("card", "backlgo-colum", Target("backlog-column", ["card"])));
+        var three = await InspectAsync(Scenario("card", "bcklgo-colum", Target("backlog-column", ["card"])));
+
+        Assert.Contains("Did you mean: 'backlog-column'", two.Error!);
+        Assert.DoesNotContain("Did you mean", three.Error!);
+    }
+
+    [TestMethod]
+    public async Task Names_too_long_to_be_a_typo_are_not_compared()
+    {
+        var name = new string('x', 100_000);
+
+        var hover = await InspectAsync(Scenario("card", name + "a", Target(name + "b", ["card"])));
+        var type = await InspectAsync(Scenario(name + "a", "zone", Target("zone", [name + "b"])));
+
+        Assert.IsFalse(hover.Valid);
+        Assert.DoesNotContain("Did you mean", hover.Error!);
+        Assert.IsTrue(type.Valid, type.Error);
+        Assert.IsFalse(type.Notes.Any(note => note.Contains("a typo here", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public async Task A_near_miss_at_the_length_limit_is_suggested_and_one_past_it_is_not()
+    {
+        var atLimit = new string('x', 127);
+        var pastLimit = new string('x', 128);
+
+        var at = await InspectAsync(Scenario("card", atLimit + "a", Target(atLimit + "b", ["card"])));
+        var past = await InspectAsync(Scenario("card", pastLimit + "a", Target(pastLimit + "b", ["card"])));
+
+        Assert.Contains("Did you mean", at.Error!);
+        Assert.DoesNotContain("Did you mean", past.Error!);
+    }
+
+    [TestMethod]
     public async Task A_misspelt_property_is_named_rather_than_silently_ignored()
     {
         var target = new JsonObject { ["id"] = "list", ["acept"] = "card" };

@@ -38,6 +38,8 @@ public static partial class BdndDropLab
     /// <summary>The most items one note lists by id before it says how many more there are.</summary>
     private const int MaxListed = 8;
 
+    private const int MaxNearMissLength = 128;
+
     /// <summary>
     /// The native drags, by the DataTransfer type the browser gives them - the table the README's
     /// "Native drags" section documents, and the one the components match their accept lists against.
@@ -749,32 +751,51 @@ public static partial class BdndDropLab
         if (string.Equals(a, b, StringComparison.OrdinalIgnoreCase)) return true;
 
         var shortest = Math.Min(a.Length, b.Length);
-        if (shortest < 3) return false;
+        if (shortest < 3 || Math.Max(a.Length, b.Length) > MaxNearMissLength) return false;
 
-        return Distance(a.ToLowerInvariant(), b.ToLowerInvariant()) <= (shortest < 6 ? 1 : 2);
+        var edits = shortest < 6 ? 1 : 2;
+
+        return Distance(a.ToLowerInvariant(), b.ToLowerInvariant(), edits) <= edits;
     }
 
     /// <summary>The optimal string alignment distance: insertions, deletions, substitutions and swaps of two neighbours.</summary>
-    private static int Distance(string a, string b)
+    private static int Distance(string a, string b, int max)
     {
-        var d = new int[a.Length + 1, b.Length + 1];
+        if (Math.Abs(a.Length - b.Length) > max) return max + 1;
 
-        for (var i = 0; i <= a.Length; i++) d[i, 0] = i;
-        for (var j = 0; j <= b.Length; j++) d[0, j] = j;
+        var twoBack = new int[b.Length + 1];
+        var previous = new int[b.Length + 1];
+        var current = new int[b.Length + 1];
+
+        for (var j = 0; j <= b.Length; j++) previous[j] = j;
 
         for (var i = 1; i <= a.Length; i++)
         {
-            for (var j = 1; j <= b.Length; j++)
+            var from = Math.Max(1, i - max);
+            var to = Math.Min(b.Length, i + max);
+
+            current[from - 1] = from == 1 ? i : max + 1;
+            if (to < b.Length) current[to + 1] = max + 1;
+
+            var best = current[from - 1];
+
+            for (var j = from; j <= to; j++)
             {
                 var cost = a[i - 1] == b[j - 1] ? 0 : 1;
 
-                d[i, j] = Math.Min(Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1), d[i - 1, j - 1] + cost);
+                current[j] = Math.Min(Math.Min(previous[j] + 1, current[j - 1] + 1), previous[j - 1] + cost);
 
-                if (i > 1 && j > 1 && a[i - 1] == b[j - 2] && a[i - 2] == b[j - 1]) d[i, j] = Math.Min(d[i, j], d[i - 2, j - 2] + 1);
+                if (i > 1 && j > 1 && a[i - 1] == b[j - 2] && a[i - 2] == b[j - 1]) current[j] = Math.Min(current[j], twoBack[j - 2] + 1);
+
+                best = Math.Min(best, current[j]);
             }
+
+            if (best > max) return max + 1;
+
+            (twoBack, previous, current) = (previous, current, twoBack);
         }
 
-        return d[a.Length, b.Length];
+        return previous[b.Length];
     }
 
     private static bool TryGet(JsonElement element, string name, out JsonElement value)
