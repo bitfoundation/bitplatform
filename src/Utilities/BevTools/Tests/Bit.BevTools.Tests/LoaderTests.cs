@@ -335,20 +335,27 @@ public class LoaderTests : BunitContext
     [TestMethod]
     public async Task Authorize_runs_as_BevTools_own_work()
     {
+        var authorization = new TaskCompletionSource<bool>();
         var resolved = new List<BevToolsSession?>();
         Services.AddBitBevToolsLoaderServices(o =>
         {
             o.RegisterAtStartup = true;
-            o.Authorize = _ =>
+            o.Authorize = async _ =>
             {
                 resolved.Add(SessionResolver.Resolve());
-                return ValueTask.FromResult(true);
+                await authorization.Task;
+                resolved.Add(SessionResolver.Resolve());
+                return true;
             };
         });
         var cut = RenderHost();
 
-        Assert.IsTrue(await Renderer.Dispatcher.InvokeAsync(() => cut.Instance.Loader.OpenAsync()));
-        Assert.IsNull(Assert.ContainsSingle(resolved), "requests, logs and activities of the callback are not the app's");
+        var opening = Renderer.Dispatcher.InvokeAsync(() => cut.Instance.Loader.OpenAsync());
+        authorization.SetResult(true);
+
+        Assert.IsTrue(await opening);
+        Assert.HasCount(2, resolved);
+        Assert.IsTrue(resolved.All(session => session is null), "requests, logs and activities of the callback are not the app's, before or after it awaits");
     }
 
     [TestMethod]
