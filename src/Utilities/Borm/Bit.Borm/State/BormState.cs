@@ -2609,10 +2609,11 @@ public sealed class BormState : IDisposable
         }
 
         var values = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
-        foreach (var (field, path) in EnumerateFieldPaths())
+        foreach (var (field, path, sensitive) in FieldPaths())
         {
             if (field.Type == BormFieldType.Object || field.IsPresentational) continue;
-            if (options.ExcludeSensitive && field.IsSensitive) continue;
+            if (field is { Type: BormFieldType.Array, ItemTemplate: not null }) continue;
+            if (options.ExcludeSensitive && sensitive) continue;
             if (hidden is not null && IsHidden(path, hidden)) continue;
             values[path] = Data.GetValue(path);
         }
@@ -2622,7 +2623,16 @@ public sealed class BormState : IDisposable
     // ---------------------------------------------------------------- drafts (see BormDraft)
 
     /// <summary>Every field of the schema with its live path, in schema order — what a draft walks.</summary>
-    internal IEnumerable<(BormFieldDefinition Field, string Path)> FieldPaths() => EnumerateFieldPaths();
+    internal IEnumerable<(BormFieldDefinition Field, string Path, bool Sensitive)> FieldPaths()
+    {
+        string? sensitive = null;
+        foreach (var (field, path) in EnumerateFieldPaths())
+        {
+            if (sensitive is not null && !BormPath.IsAtOrUnder(path, sensitive)) sensitive = null;
+            if (sensitive is null && field.IsSensitive) sensitive = path;
+            yield return (field, path, sensitive is not null);
+        }
+    }
 
     /// <summary>Whether the paths a draft restore writes are being written right now.</summary>
     private bool _restoring;

@@ -106,6 +106,18 @@ public partial class MarkdownAndSignatureTests : ComponentTestBase
     }
 
     [TestMethod]
+    public void Link_openers_that_share_one_far_parenthesis_cost_no_more_than_their_length()
+    {
+        var clock = Stopwatch.StartNew();
+        BormMarkdown.ToHtml(string.Concat(Enumerable.Repeat("[a](x", 40_000)) + ")");
+        BormMarkdown.ToHtml(string.Concat(Enumerable.Repeat("[a](https://x", 20_000)) + new string(' ', 100_000) + ")");
+
+        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(2), $"took {clock.Elapsed}");
+        StringAssert.Contains(BormMarkdown.ToHtml("[a](  https://x.y  )"), "<a href=\"https://x.y\"");
+        Assert.DoesNotContain("href", BormMarkdown.ToHtml("[a](https://x y)"));
+    }
+
+    [TestMethod]
     public void Plain_text_is_the_words_without_the_formatting()
         => Assert.AreEqual("Fixed two bugs. See the docs .", BormMarkdown.ToPlainText("Fixed **two** bugs.\n\nSee [the docs](https://x.y)."));
 

@@ -265,8 +265,10 @@ public static class BormMarkdown
             if (middle != judgedAt)
             {
                 judgedAt = middle;
-                var address = text[(middle + 2)..end].Trim();
-                judgedUrl = IsSafeUrl(address) ? address : null;
+                var address = text.AsSpan((middle + 2)..end).TrimStart();
+                var length = 0;
+                while (length < address.Length && length <= 2048 && !char.IsWhiteSpace(address[length])) length++;
+                judgedUrl = IsSafeUrl(address[..length]) && address[length..].IsWhiteSpace() ? address[..length].ToString() : null;
             }
             if (judgedUrl is not { } url) return false;
 
@@ -279,7 +281,7 @@ public static class BormMarkdown
     }
 
     /// <summary>An address a link may go to: http, https or mailto, with nothing in it that is not part of one.</summary>
-    private static bool IsSafeUrl(string url)
+    private static bool IsSafeUrl(ReadOnlySpan<char> url)
     {
         if (url.Length == 0 || url.Length > 2048) return false;
         foreach (var c in url)

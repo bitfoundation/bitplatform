@@ -432,8 +432,10 @@ The export writes the form these become (a choice and conditional fields), not t
 
 Use `TryImport` when the schema comes from a user. Besides malformed JSON, it reports a document that is not a
 schema, and one that goes past a budget no real form comes near: 10,000 fields, objects and arrays nested 32 levels
-deep, `allOf` nested 64 levels deep, or 80,000 `allOf`/`$ref` merges. A few hundred bytes of `$ref`s can describe
-millions of fields, and those documents are refused rather than built:
+deep, `allOf` nested 64 levels deep, 80,000 `allOf`/`$ref` merges, or 250,000 choices and suggestions (10,000,000
+characters of them) read across its fields. A property name with a `.`, `[` or `]` in it is refused too, since a field
+name is one step of a path. A few hundred bytes of `$ref`s can describe millions of fields, and those documents are
+refused rather than built:
 
 ```csharp
 if (BormJsonSchemaImporter.TryImport(json, out var definition, out var error))
@@ -1252,7 +1254,8 @@ in-app one asks `OnConfirm` (a dialog of yours) or the browser's `confirm()` wit
 
 `state.Snapshot(new BormSnapshotOptions { ExcludeHidden = true, ExcludeSensitive = true })` is the payload-shaped
 counterpart: a hidden answer is *retained* while the user can still toggle back to it, *cleared* when the field is
-`ClearOnHide`, and *excluded* from what is sent when the snapshot says so.
+`ClearOnHide`, and *excluded* from what is sent when the snapshot says so. A repeater comes row by row
+(`Lines[0].Product`) rather than as its whole list, and everything inside a sensitive list or group counts as sensitive.
 
 A draft is plain JSON holding personal data. Keep it where the user's other data is kept, and not in storage another
 user of the same machine can read.

@@ -234,6 +234,21 @@ public class McpSchemaLabTests
     }
 
     [TestMethod]
+    public async Task References_into_a_wide_definitions_object_are_checked_in_time_linear_in_their_number()
+    {
+        var definitions = new JsonObject();
+        for (var i = 0; i < 50_000; i++) definitions[$"d{i}"] = new JsonObject { ["$ref"] = $"#/$defs/d{i % 1000}" };
+        definitions["last"] = new JsonObject { ["$ref"] = "#/$defs/missing" };
+
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        var report = await InspectAsync(new JsonObject { ["type"] = "object", ["$defs"] = definitions }.ToJsonString());
+
+        Assert.IsTrue(report.Valid, report.Error);
+        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(3), $"took {clock.Elapsed}");
+        Note(report, "'#/$defs/missing' at /$defs/last", "point at nothing");
+    }
+
+    [TestMethod]
     public async Task An_empty_schema_is_a_form_with_no_fields_and_says_so()
     {
         var report = await InspectAsync("{}");

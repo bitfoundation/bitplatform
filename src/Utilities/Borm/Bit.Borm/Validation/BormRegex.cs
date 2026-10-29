@@ -21,6 +21,10 @@ internal static class BormRegex
     // uses a handful; past this many the cache starts again.
     private const int CacheLimit = 1024;
 
+    [ThreadStatic] private static int _timeouts;
+
+    public static int Timeouts => _timeouts;
+
     /// <summary>Returns a cached regex for <paramref name="pattern"/>, or null if the pattern does not compile.</summary>
     public static Regex? Create(string? pattern)
     {
@@ -53,6 +57,7 @@ internal static class BormRegex
         }
         catch (RegexMatchTimeoutException)
         {
+            _timeouts++;
             return null;
         }
     }
