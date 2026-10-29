@@ -14,9 +14,9 @@ public partial class IdentityController
     /// coming from another, sending the resulting sign-in link to the wrong origin.
     /// </summary>
     [HttpGet]
-    public async Task<string> GetExternalSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default)
+    public async Task<string> GetExternalSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, string? localHttpNonce = null, CancellationToken cancellationToken = default)
     {
-        var uri = Url.Action(nameof(ExternalSignIn), new { provider, returnUrl, localHttpPort, origin = Request.GetWebAppUrl() })!;
+        var uri = Url.Action(nameof(ExternalSignIn), new { provider, returnUrl, localHttpPort, localHttpNonce, origin = Request.GetWebAppUrl() })!;
         return new Uri(Request.GetBaseUrl(), uri).ToString();
     }
 
@@ -24,15 +24,16 @@ public partial class IdentityController
     public async Task<ActionResult> ExternalSignIn(string provider,
         string? returnUrl = null, /* Specifies the relative page address to navigate to after completion. */
         int? localHttpPort = null, /* Defines the local HTTP server port awaiting the external sign-in result on Windows/macOS/iOS versions of the app. */
+        string? localHttpNonce = null,
         [FromQuery] string? origin = null /* Indicates the base address URL for redirection after the process completes. */ )
     {
-        var redirectUrl = Url.Action(nameof(ExternalSignInCallback), "Identity", new { returnUrl, localHttpPort, origin });
+        var redirectUrl = Url.Action(nameof(ExternalSignInCallback), "Identity", new { returnUrl, localHttpPort, localHttpNonce, origin });
         var properties = signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
         return new ChallengeResult(provider, properties);
     }
 
     [HttpGet]
-    public async Task<ActionResult> ExternalSignInCallback(string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default)
+    public async Task<ActionResult> ExternalSignInCallback(string? returnUrl = null, int? localHttpPort = null, string? localHttpNonce = null, CancellationToken cancellationToken = default)
     {
         string? signInPageUri;
         ExternalLoginInfo? info = null;
@@ -175,7 +176,7 @@ public partial class IdentityController
         var redirectRelativeUrl = $"{PageUrls.WebInteropApp}?actionName=ExternalSignInCallback&url={Uri.EscapeDataString(signInPageUri!)}&localHttpPort={localHttpPort}";
 
         if (localHttpPort is not null)
-            return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), redirectRelativeUrl).ToString()); // Check out Client.web/wwwroot/web-interop-app.html's comments.
+            return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), $"{redirectRelativeUrl}&localHttpNonce={Uri.EscapeDataString(localHttpNonce ?? string.Empty)}").ToString()); // Check out Client.web/wwwroot/web-interop-app.html's comments.
 
         return Redirect(new Uri(Request.HttpContext.Request.GetWebAppUrl(), redirectRelativeUrl).ToString());
     }

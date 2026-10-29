@@ -143,6 +143,56 @@ public partial class RefreshTokenRotationTests
             "A retry moments after a lost rotation response must succeed instead of signing the device out.");
     }
 
+    [TestMethod]
+    public async Task ARetry_Should_NotExtendTheRetryWindow()
+    {
+        var (server, client, timeProvider) = await StartServerAndSignIn();
+        await using var _ = server;
+        await using var __ = client;
+
+        var identityController = client.GetController<IIdentityController>();
+        var (sessionId, supersededToken) = await ReadSession(client);
+
+        timeProvider.Advance(RefreshInterval);
+        await identityController.Refresh(new() { RefreshToken = supersededToken }, TestContext.CancellationToken);
+
+        timeProvider.Advance(TimeSpan.FromSeconds(8));
+        await identityController.Refresh(new() { RefreshToken = supersededToken }, TestContext.CancellationToken);
+
+        timeProvider.Advance(TimeSpan.FromSeconds(8));
+
+        await Assert.ThrowsExactlyAsync<UnauthorizedException>(
+            () => identityController.Refresh(new() { RefreshToken = supersededToken }, TestContext.CancellationToken),
+            "A retry must not move the rotation stamp, or replaying the superseded token every few seconds keeps it valid forever.");
+
+        Assert.IsFalse(await SessionExists(server, sessionId));
+    }
+
+    [TestMethod]
+    public async Task ATokenTwoRotationsOld_Should_BeRejected_InsideTheRetryWindow()
+    {
+        var (server, client, timeProvider) = await StartServerAndSignIn();
+        await using var _ = server;
+        await using var __ = client;
+
+        var identityController = client.GetController<IIdentityController>();
+        var (sessionId, oldestToken) = await ReadSession(client);
+
+        timeProvider.Advance(RefreshInterval);
+        var firstRotation = await identityController.Refresh(new() { RefreshToken = oldestToken }, TestContext.CancellationToken);
+
+        timeProvider.Advance(RefreshInterval);
+        await identityController.Refresh(new() { RefreshToken = firstRotation.RefreshToken }, TestContext.CancellationToken);
+
+        timeProvider.Advance(TimeSpan.FromSeconds(3));
+
+        await Assert.ThrowsExactlyAsync<UnauthorizedException>(
+            () => identityController.Refresh(new() { RefreshToken = oldestToken }, TestContext.CancellationToken),
+            "Only the token the last rotation replaced may be retried; an older one is reuse.");
+
+        Assert.IsFalse(await SessionExists(server, sessionId));
+    }
+
     /// <summary>
     /// <b>Currently failing by design - needs a schema change.</b>
     /// <para>

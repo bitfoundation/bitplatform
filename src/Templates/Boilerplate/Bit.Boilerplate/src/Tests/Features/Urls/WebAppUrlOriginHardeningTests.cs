@@ -1,3 +1,5 @@
+using Boilerplate.Server.Api;
+
 namespace Boilerplate.Tests.Features.Urls;
 
 /// <summary>
@@ -103,6 +105,35 @@ public class WebAppUrlOriginHardeningTests
         Assert.IsNotInstanceOfType<UnknownException>(exception, $"An origin is a 400 at worst, not a fault. Got: {exception}");
 
         Assert.AreEqual(refused, exception.Message.Contains("Invalid origin", StringComparison.OrdinalIgnoreCase), exception.Message);
+    }
+
+    [TestMethod]
+    [DataRow(null, "https://evil.example", false)]
+    [DataRow("https://app.example/", "https://evil.example", true)]
+    [DataRow("https://app.example/", "https://app.example", false)]
+    [DataRow("https://app.example/", "https://tenant.app.example", false)]
+    [DataRow("https://app.example/", "http://app.example", true)]
+    public void TheRequestsOwnHost_Should_OnlyBeTrusted_UnderTheConfiguredWebAppUrl(string? webAppUrl, string requestOrigin, bool refused)
+    {
+        var requestUri = new Uri(requestOrigin);
+
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = new ServiceCollection().AddSingleton(new ServerApiSettings { WebAppUrl = webAppUrl }).BuildServiceProvider()
+        };
+        httpContext.Request.Scheme = requestUri.Scheme;
+        httpContext.Request.Host = new HostString(requestUri.Host);
+        httpContext.Request.Headers["X-Origin"] = requestOrigin;
+
+        if (refused)
+        {
+            Assert.ThrowsExactly<BadRequestException>(() => httpContext.Request.GetWebAppUrl(),
+                "With WebAppUrl set, a forged Host header must not decide where e-mailed links point.");
+        }
+        else
+        {
+            Assert.AreEqual(requestUri, httpContext.Request.GetWebAppUrl());
+        }
     }
 
     public TestContext TestContext { get; set; } = default!;

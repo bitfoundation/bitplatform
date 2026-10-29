@@ -869,7 +869,8 @@
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/SyncService.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/OfflineTodoPage*",
                         "src/Shared/Infrastructure/Dtos/BaseDtoTableData.cs",
-                        "src/Tests/Features/Todo/OfflineTodoTests.cs"
+                        "src/Tests/Features/Todo/OfflineTodoTests.cs",
+                        "src/Tests/Features/Todo/OfflineDbScopeTests.cs"
                     ]
                 },
                 {

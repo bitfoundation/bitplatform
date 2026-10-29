@@ -364,6 +364,7 @@ This project includes a **client-side offline database** that allows the applica
 - Each client (web browser, mobile app, desktop app) has its **own local database**
 - Stored locally on the user's device
 - Independent of the server database
+- On the server (prerendering and Blazor Server circuits) it is an in-memory database per scope, so users never share it and it is gone when the circuit or request ends
 
 #### Manual Management Not Feasible
 - There will be **as many databases as there are clients** (potentially millions)

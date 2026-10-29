@@ -66,7 +66,15 @@ public partial class DevMcpQueryTools
             {
                 IQueryable query = SetOf(entityType);
                 if (string.IsNullOrWhiteSpace(filter) is false)
-                    query = query.Where(ParsingConfig, filter);
+                {
+                    var predicate = DynamicExpressionParser.ParseLambda(ParsingConfig, false, entityType.ClrType, typeof(bool), filter);
+
+                    var computedValueError = DevMcpQueryGuards.RejectComputedValues(predicate);
+                    if (computedValueError is not null)
+                        return DevMcpJson.Serialize(new { Error = computedValueError });
+
+                    query = query.Where(predicate);
+                }
 
                 query = query.OrderBy(ParsingConfig, orderBy);
 

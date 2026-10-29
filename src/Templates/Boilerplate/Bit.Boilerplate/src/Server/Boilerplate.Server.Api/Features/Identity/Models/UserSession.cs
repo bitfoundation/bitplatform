@@ -44,6 +44,8 @@ public partial class UserSession
     /// </summary>
     public long? RenewedOn { get; set; }
 
+    public long? PreviousRenewedOn { get; set; }
+
     public Guid UserId { get; set; }
 
     [ForeignKey(nameof(UserId))]

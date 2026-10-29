@@ -28,6 +28,20 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
 
     public string SessionToken { get; } = Guid.NewGuid().ToString("N");
 
+    private string? externalSignInNonce;
+
+    public string? CreateExternalSignInNonce() => externalSignInNonce = Guid.NewGuid().ToString("N");
+
+    private bool ConsumeExternalSignInNonce(string? nonce)
+    {
+        var expectedNonce = externalSignInNonce;
+
+        if (expectedNonce is null || string.Equals(nonce, expectedNonce, StringComparison.Ordinal) is false)
+            return false;
+
+        return ReferenceEquals(Interlocked.CompareExchange(ref externalSignInNonce, null, expectedNonce), expectedNonce);
+    }
+
     public int EnsureStarted()
     {
         if (localHttpServer?.State is WebServerState.Listening or WebServerState.Loading)
@@ -57,7 +71,7 @@ public partial class WindowsLocalHttpServer : ILocalHttpServer
             .WithCors("/api", webAppOrigin.GetLeftPart(UriPartial.Authority), "content-type", "get,post")
             .WithModule(new ActionModule("/api/ExternalSignInCallback", HttpVerbs.Post, async ctx =>
             {
-                if (IsRelativeUrl(ctx.Request.QueryString["urlToOpen"]) is false)
+                if (IsRelativeUrl(ctx.Request.QueryString["urlToOpen"]) is false || ConsumeExternalSignInNonce(ctx.Request.QueryString["nonce"]) is false)
                 {
                     ctx.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     return;

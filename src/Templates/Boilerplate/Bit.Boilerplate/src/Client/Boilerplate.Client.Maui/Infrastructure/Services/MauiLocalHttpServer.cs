@@ -28,6 +28,20 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
 
     public string SessionToken { get; } = Guid.NewGuid().ToString("N");
 
+    private string? externalSignInNonce;
+
+    public string? CreateExternalSignInNonce() => externalSignInNonce = Guid.NewGuid().ToString("N");
+
+    private bool ConsumeExternalSignInNonce(string? nonce)
+    {
+        var expectedNonce = externalSignInNonce;
+
+        if (expectedNonce is null || string.Equals(nonce, expectedNonce, StringComparison.Ordinal) is false)
+            return false;
+
+        return ReferenceEquals(Interlocked.CompareExchange(ref externalSignInNonce, null, expectedNonce), expectedNonce);
+    }
+
     public int EnsureStarted()
     {
         if (localHttpServer?.State is WebServerState.Listening or WebServerState.Loading)
@@ -87,7 +101,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
                 // CORS "simple request", so any page the user has open could reach this once it guessed the port;
                 // restricting the payload to a relative path is what stops it injecting an absolute sign-in url
                 // carrying an attacker's email/otp, which SignInPanel would then act on.
-                if (IsRelativeUrl(ctx.Request.QueryString["urlToOpen"]) is false)
+                if (IsRelativeUrl(ctx.Request.QueryString["urlToOpen"]) is false || ConsumeExternalSignInNonce(ctx.Request.QueryString["nonce"]) is false)
                 {
                     ctx.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     return;

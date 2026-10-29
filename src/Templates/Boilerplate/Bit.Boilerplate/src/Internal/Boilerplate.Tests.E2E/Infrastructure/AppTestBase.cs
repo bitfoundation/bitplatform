@@ -17,6 +17,15 @@ public abstract class AppTestBase : AppPageTest
     /// <summary>Stops what an <see cref="IAppOpener"/> launched, at the end of exactly this test.</summary>
     public void RegisterForCleanup(Func<Task> stop) => cleanups.Add(stop);
 
+    public override BrowserNewContextOptions ContextOptions()
+    {
+        var options = base.ContextOptions();
+
+        options.IgnoreHTTPSErrors = false;
+
+        return options;
+    }
+
     /// <summary>
     /// A live page of <paramref name="app"/>; inconclusive when it has no build on this platform, so a coverage gap
     /// shows up as skipped rather than hiding as a pass.

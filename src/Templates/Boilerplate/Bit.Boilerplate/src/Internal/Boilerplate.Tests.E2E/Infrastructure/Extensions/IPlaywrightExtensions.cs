@@ -45,6 +45,7 @@ public static class IPlaywrightExtensions
 
             // HEADED=1 is Playwright's own switch for watching a run, so a headed run shows the app too.
             var windowStyle = Environment.GetEnvironmentVariable("HEADED") is "1" ? ProcessWindowStyle.Normal : ProcessWindowStyle.Minimized;
+            Environment.SetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", $"--remote-debugging-port={port}");
             Process.Start(new ProcessStartInfo(exePath) { UseShellExecute = true, WindowStyle = windowStyle });
 
             var browser = await playwright.ConnectWithRetry($"http://localhost:{port}");

@@ -122,7 +122,7 @@ public partial class SignUpPage
 
             var port = localHttpServer.EnsureStarted();
 
-            var redirectUrl = await identityController.GetExternalSignInUri(provider, ReturnUrlQueryString, port is -1 ? null : port, CurrentCancellationToken);
+            var redirectUrl = await identityController.GetExternalSignInUri(provider, ReturnUrlQueryString, port is -1 ? null : port, localHttpServer.CreateExternalSignInNonce(), CurrentCancellationToken);
 
             await externalNavigationService.NavigateTo(redirectUrl);
         }

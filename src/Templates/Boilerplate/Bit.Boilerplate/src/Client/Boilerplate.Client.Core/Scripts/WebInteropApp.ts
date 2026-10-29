@@ -67,6 +67,7 @@ export class WebInteropApp {
         const urlParams = new URLSearchParams(location.search);
         const urlToOpen = urlParams.get('url')!.toString();
         const localHttpPort = urlParams.get('localHttpPort')?.toString();
+        const localHttpNonce = urlParams.get('localHttpNonce')?.toString() ?? '';
 
         try {
             const redirectUrl = new URL(urlToOpen, window.location.origin);
@@ -94,7 +95,7 @@ export class WebInteropApp {
         }
 
         // Blazor Hybrid:
-        await fetch(`http://localhost:${localHttpPort}/api/ExternalSignInCallback?urlToOpen=${encodeURIComponent(urlToOpen)}`, {
+        await fetch(`http://localhost:${localHttpPort}/api/ExternalSignInCallback?urlToOpen=${encodeURIComponent(urlToOpen)}&nonce=${encodeURIComponent(localHttpNonce)}`, {
             method: 'POST',
             credentials: 'omit'
         });

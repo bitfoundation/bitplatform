@@ -39,10 +39,21 @@ public static partial class HttpRequestExtensions
             if (origin.Query.Length > 0 || origin.Fragment.Length > 0 || PathBaseRegex().IsMatch(origin.AbsolutePath) is false)
                 throw new BadRequestException($"Invalid origin {origin}");
 
-            if (origin == serverUrl || settings.IsTrustedOrigin(origin))
+            if ((origin == serverUrl && IsUnderWebAppUrl(serverUrl, settings.WebAppUrl)) || settings.IsTrustedOrigin(origin))
                 return origin;
 
             throw new BadRequestException($"Invalid origin {origin}");
         }
+    }
+
+    private static bool IsUnderWebAppUrl(Uri url, string? webAppUrl)
+    {
+        if (Uri.TryCreate(webAppUrl, UriKind.Absolute, out var configuredWebAppUrl) is false)
+            return true;
+
+        return string.Equals(url.Scheme, configuredWebAppUrl.Scheme, StringComparison.OrdinalIgnoreCase)
+            && url.Port == configuredWebAppUrl.Port
+            && (string.Equals(url.Host, configuredWebAppUrl.Host, StringComparison.OrdinalIgnoreCase)
+                || url.Host.EndsWith($".{configuredWebAppUrl.Host}", StringComparison.OrdinalIgnoreCase));
     }
 }

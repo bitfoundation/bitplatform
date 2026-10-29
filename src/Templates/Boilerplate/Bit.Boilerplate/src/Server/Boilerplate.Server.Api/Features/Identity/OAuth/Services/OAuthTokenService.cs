@@ -65,6 +65,10 @@ public partial class OAuthTokenService(AppDbContext dbContext,
         if (await userManager.IsLockedOutAsync(user))
             throw new BadRequestException().WithData("Reason", "invalid_grant");
 
+        //#if (multitenant == true)
+        await EnsureActiveTenantMembership(user.Id, stored.TenantId, cancellationToken);
+        //#endif
+
         var client = await clientResolver.Resolve(stored.ClientId, cancellationToken);
 
         // A grant is a UserSession like any other sign-in, so Settings -> Sessions lists it and its revoke button ends
@@ -171,6 +175,10 @@ public partial class OAuthTokenService(AppDbContext dbContext,
         if (await userManager.IsLockedOutAsync(user))
             throw new BadRequestException().WithData("Reason", "invalid_grant");
 
+        //#if (multitenant == true)
+        await EnsureActiveTenantMembership(user.Id, userSession.TenantId, cancellationToken);
+        //#endif
+
         var refreshTokenId = Guid.CreateVersion7();
         var now = timeProvider.GetUtcNow().ToUnixTimeSeconds();
 
@@ -200,6 +208,17 @@ public partial class OAuthTokenService(AppDbContext dbContext,
 
         return await Issue(user, userSession, resource, scopes, clientId, sessionTenantId, amr, refreshTokenId);
     }
+
+    //#if (multitenant == true)
+    private async Task EnsureActiveTenantMembership(Guid userId, Guid? tenantId, CancellationToken cancellationToken)
+    {
+        if (tenantId is null)
+            return;
+
+        if (await dbContext.TenantUsers.AnyAsync(tu => tu.UserId == userId && tu.TenantId == tenantId && tu.AcceptedOn != null && tu.Tenant!.IsActive, cancellationToken) is false)
+            throw new BadRequestException().WithData("Reason", "invalid_grant");
+    }
+    //#endif
 
     /// <summary>
     /// Builds the narrowed principal and mints the pair. Writes nothing: the caller has already recorded

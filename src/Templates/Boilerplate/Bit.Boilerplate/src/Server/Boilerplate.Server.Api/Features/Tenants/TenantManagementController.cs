@@ -52,6 +52,9 @@ public partial class TenantManagementController : AppControllerBase, ITenantMana
 
         dto.Patch(entityToUpdate);
 
+        if (entityToUpdate.Id == TenantConfiguration.FallbackTenantId && entityToUpdate.IsActive is false)
+            throw new BadRequestException().WithData("Reason", "The fallback tenant can't be deactivated.");
+
         await Validate(entityToUpdate, cancellationToken);
 
         await DbContext.SaveChangesAsync(cancellationToken);

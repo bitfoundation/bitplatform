@@ -299,7 +299,7 @@ making it scoped compiles but fails at the first query.
   tenant to reject cross-tenant access) re-applies the check by hand immediately. Follow that shape.
 - **Background jobs have no tenant.** They must ignore the filter and apply their own predicate per tenant.
 - **The fallback tenant is fail-open.** Anonymous traffic on an unknown host lands there, so keep sensitive data
-  out of it.
+  out of it. For the same reason it can't be deactivated.
 - **The host that selects a tenant is not pinned by `AllowedHosts`.** Resolution goes through the request's
   web-app URL, which honours a client-supplied origin when that origin is trusted. The list that actually governs
   it is `TrustedOrigins`. A wildcard entry - which a per-tenant client app needs - deliberately lets any caller
@@ -345,6 +345,18 @@ A few rules sit on top of the mechanism:
 - **Asking for a code doesn't tell whether an account exists.** The endpoints that send one answer an unknown email
   or phone number the way they answer a known one. Signing up with an identifier that already has an account looks
   like any other sign-up, and the owner gets an email (or SMS) saying someone tried.
+- **A wrong code counts as a failed attempt.** That includes the codes that change the account's email and phone
+  number, so a few wrong guesses lock the account out for a while like a wrong password does.
+- **Signing up again can't change the password of an unconfirmed account.** Until the account is confirmed, a later
+  sign-up or sign-in with the same password keeps it, and anything else (another password, or asking for a one-time
+  code) removes it. Confirming still signs the owner in, so nobody who signs up again with someone else's address can
+  leave a password behind for the owner's confirmation.
+- **Links follow the request's host unless `WebAppUrl` is set.** Reset, confirmation and magic links are built from
+  `GetWebAppUrl()`, which falls back to the host the request came in on. Behind a host-routed proxy (Cloudflare,
+  App Service, an ingress) that host is always yours. Where any `Host` header reaches the app (Kestrel exposed
+  directly, a catch-all IIS binding, an nginx default server), set `WebAppUrl` in the server's configuration or narrow
+  `AllowedHosts`: with `WebAppUrl` set, a request may only name its own host when it is that host, one of its sub
+  domains or a `TrustedOrigins` entry.
 
 ---
 

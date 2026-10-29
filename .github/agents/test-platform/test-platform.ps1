@@ -621,6 +621,7 @@ function Update-WindowsApps {
         Write-Host "$($app.Id): at $before, opening it..."
 
         Stop-WindowsApps
+        $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = '--remote-debugging-port=9222'
         Start-Process $app.Exe -WindowStyle Minimized
 
         # The version button runs ForceUpdate: Velopack downloads the release and restarts the app into it.

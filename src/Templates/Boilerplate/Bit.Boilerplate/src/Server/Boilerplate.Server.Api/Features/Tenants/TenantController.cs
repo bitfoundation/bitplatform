@@ -187,6 +187,8 @@ public partial class TenantController : AppControllerBase, ITenantController
         await Task.WhenAll(sendMessagesTasks);
     }
 
+    private string? ConfiguredWebAppHost => Uri.TryCreate(AppSettings.WebAppUrl, UriKind.Absolute, out var webAppUrl) ? webAppUrl.Host : null;
+
     private async Task Validate(Tenant tenant, CancellationToken cancellationToken)
     {
         var entry = DbContext.Entry(tenant);
@@ -197,7 +199,7 @@ public partial class TenantController : AppControllerBase, ITenantController
         tenant.Domain = string.IsNullOrWhiteSpace(tenant.Domain) ? null : tenant.Domain.Trim().ToLowerInvariant();
 
         if ((entry.State is EntityState.Added || entry.Property(t => t.Name).IsModified)
-            && ReservedTenantNames.IsReserved(tenant.Name, [Request.GetBaseUrl().Host, Request.GetWebAppUrl().Host, .. serverSharedSettings.TrustedOrigins.Select(ServerSharedSettings.GetTrustedOriginHost)]))
+            && ReservedTenantNames.IsReserved(tenant.Name, [Request.GetBaseUrl().Host, Request.GetWebAppUrl().Host, ConfiguredWebAppHost, .. serverSharedSettings.TrustedOrigins.Select(ServerSharedSettings.GetTrustedOriginHost)]))
             throw new ResourceValidationException((nameof(TenantDto.Name), [Localizer[nameof(AppStrings.ReservedTenantName), tenant.Name!]]));
 
         // Remote validation example: Any errors thrown here will be displayed in the client's edit form component.
@@ -207,7 +209,7 @@ public partial class TenantController : AppControllerBase, ITenantController
 
         if (tenant.Domain is not null
             && (entry.State is EntityState.Added || entry.Property(t => t.Domain).IsModified)
-            && ReservedTenantNames.IsReservedDomain(tenant.Domain, [Request.GetBaseUrl().Host, Request.GetWebAppUrl().Host, .. serverSharedSettings.TrustedOrigins.Select(ServerSharedSettings.GetTrustedOriginHost)]))
+            && ReservedTenantNames.IsReservedDomain(tenant.Domain, [Request.GetBaseUrl().Host, Request.GetWebAppUrl().Host, ConfiguredWebAppHost, .. serverSharedSettings.TrustedOrigins.Select(ServerSharedSettings.GetTrustedOriginHost)]))
             throw new ResourceValidationException((nameof(TenantDto.Domain), [Localizer[nameof(AppStrings.ReservedTenantDomain), tenant.Domain]]));
 
         if (tenant.Domain is not null
