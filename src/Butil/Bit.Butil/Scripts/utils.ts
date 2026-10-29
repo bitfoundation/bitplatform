@@ -182,11 +182,16 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         }
 
         try {
-            return [false, JSON.stringify(data ?? null), null];
+            let budget = 32 * 1024 * 1024;
+            return [false, JSON.stringify(data ?? null, (key, value) => {
+                budget -= key.length + (typeof value === 'string' ? value.length : 8);
+                if (budget < 0) throw new RangeError();
+                return value;
+            }), null];
         } catch {
             // A cyclic graph, or a value JSON cannot represent (a function, a BigInt). Losing the
             // message entirely would be worse than losing its shape.
-            return [false, JSON.stringify(String(data)), null];
+            return [false, JSON.stringify(Array.isArray(data) ? '[object Array]' : String(data)), null];
         }
     }
 

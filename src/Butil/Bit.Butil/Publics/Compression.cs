@@ -46,15 +46,17 @@ public class Compression(IJSRuntime js)
     /// </summary>
     /// <param name="data">The compressed bytes.</param>
     /// <param name="format">The codec the data was compressed with. Defaults to gzip.</param>
+    /// <param name="maxLength">The most bytes the output may have; a payload that decompresses to more returns null. Defaults to 128 MB.</param>
     /// <returns>
     /// The original bytes, or null when the API is unavailable, the input is corrupt, or the format
     /// doesn't match what the data actually is. Nothing is thrown - a bad payload from the network
     /// is a normal outcome, not an exceptional one.
     /// </returns>
-    public ValueTask<byte[]?> Decompress(byte[] data, CompressionFormat format = CompressionFormat.Gzip)
+    public ValueTask<byte[]?> Decompress(byte[] data, CompressionFormat format = CompressionFormat.Gzip, int maxLength = 128 * 1024 * 1024)
     {
         ArgumentNullException.ThrowIfNull(data);
-        return js.Invoke<byte[]?>("BitButil.compression.decompress", data, ToName(format));
+        ArgumentOutOfRangeException.ThrowIfNegative(maxLength);
+        return js.Invoke<byte[]?>("BitButil.compression.decompress", data, ToName(format), maxLength);
     }
 
     /// <summary>
@@ -75,10 +77,11 @@ public class Compression(IJSRuntime js)
     /// </summary>
     /// <param name="data">The compressed bytes.</param>
     /// <param name="format">The codec the data was compressed with. Defaults to gzip.</param>
+    /// <param name="maxLength">The most bytes the decompressed UTF-8 may have; a payload that decompresses to more returns null. Defaults to 128 MB.</param>
     /// <returns>The text, or null when the payload couldn't be decompressed.</returns>
-    public async ValueTask<string?> DecompressText(byte[] data, CompressionFormat format = CompressionFormat.Gzip)
+    public async ValueTask<string?> DecompressText(byte[] data, CompressionFormat format = CompressionFormat.Gzip, int maxLength = 128 * 1024 * 1024)
     {
-        var bytes = await Decompress(data, format);
+        var bytes = await Decompress(data, format, maxLength);
         return bytes is null ? null : System.Text.Encoding.UTF8.GetString(bytes);
     }
 

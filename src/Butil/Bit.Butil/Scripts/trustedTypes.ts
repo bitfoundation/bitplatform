@@ -2,6 +2,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
 
 (function (butil: any) {
     const _policies: { [name: string]: any } = {};
+    const _policySanitizers = new Map<string, string | null>();
     const _listeners: { [id: string]: (event: Event) => void } = {};
 
     function api() { return (window as any).trustedTypes; }
@@ -89,6 +90,8 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                         throw new Error(`BitButil: policy '${name}' does not create scripts.`);
                     }
                 });
+                if (rules.sanitizeHtml === false) _policySanitizers.delete(name);
+                else _policySanitizers.set(name, sanitizerId ?? null);
                 return true;
             } catch {
                 // The CSP's trusted-types directive doesn't list this name, or the name is already
@@ -119,6 +122,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             const policy = _policies[name];
             if (!policy || !element) return false;
             try {
+                if (_policySanitizers.has(name)) return butil.sanitizer.sanitizeInto(element, value ?? '', _policySanitizers.get(name) ?? null);
                 element.innerHTML = policy.createHTML(value ?? '');
                 return true;
             } catch {

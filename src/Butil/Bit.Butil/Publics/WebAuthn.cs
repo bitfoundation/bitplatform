@@ -126,6 +126,8 @@ public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(WebAuthnVerifyUser))]
     public async Task<bool> Verify(bool forceCreate = false)
     {
+        if (js.IsJsRuntimeInvalid()) return false;
+
         try
         {
             var verifyRawId = await localStorage.GetItem(STORAGE_KEY);
@@ -148,11 +150,13 @@ public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
             }
             else
             {
-                await GetCredential(new WebAuthnVerifyOptions
+                var assertion = await GetCredential(new WebAuthnVerifyOptions
                 {
                     Challenge = "Butil Verify Challenge",
                     AllowCredentials = [new WebAuthnVerifyAllowCredential() { Id = verifyRawId, Type = "public-key" }]
                 });
+
+                if (string.IsNullOrWhiteSpace(assertion.GetProperty("rawId").ToString())) return false;
             }
 
             return true;
