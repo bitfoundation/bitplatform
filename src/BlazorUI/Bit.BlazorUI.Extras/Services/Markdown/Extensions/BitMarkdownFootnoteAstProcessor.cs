@@ -39,11 +39,11 @@ public sealed class BitMarkdownFootnoteAstProcessor : BitMarkdownAstProcessor
             // another footnote is picked up by the same sweep that numbered the first.
             document.Children.Add(section);
 
-            bool discovered;
-            do
+            BitMarkdownNode? scope = document;
+            int next = 0;
+            while (scope is not null)
             {
-                discovered = false;
-                foreach (var reference in BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownFootnoteReferenceNode>().ToList())
+                foreach (var reference in BitMarkdownAstHelper.Descendants(scope).OfType<BitMarkdownFootnoteReferenceNode>().ToList())
                 {
                     if (reference.Number != 0) continue;
                     if (definitions.TryGetValue(reference.Label, out var definition) is false) continue;
@@ -54,15 +54,15 @@ public sealed class BitMarkdownFootnoteAstProcessor : BitMarkdownAstProcessor
                         // readers expect from the printed markers.
                         definition.Number = section.Children.Count + 1;
                         section.Children.Add(definition);
-                        discovered = true;
                     }
 
                     definition.ReferenceCount++;
                     reference.Number = definition.Number;
                     reference.Occurrence = definition.ReferenceCount;
                 }
+
+                scope = next < section.Children.Count ? section.Children[next++] : null;
             }
-            while (discovered);
 
             // A document whose only footnote syntax was an uncited definition gets no section.
             if (section.Children.Count == 0)

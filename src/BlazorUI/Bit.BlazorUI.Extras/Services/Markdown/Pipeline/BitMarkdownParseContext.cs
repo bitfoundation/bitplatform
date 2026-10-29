@@ -28,7 +28,9 @@ internal sealed class BitMarkdownParseContext
     /// </summary>
     public IReadOnlySet<string> ReferenceLabels { get; }
 
+    public int TableCellBudget { get; set; } = 100_000;
+
     /// <summary>An empty context carrying the default limits, used by the parameterless parse overloads.</summary>
-    public static BitMarkdownParseContext Empty { get; } =
+    public static BitMarkdownParseContext Empty =>
         new(BitMarkdownParseOptions.Default, new HashSet<string>(StringComparer.Ordinal));
 }

@@ -8,6 +8,8 @@
 /// </summary>
 public sealed class BitMarkdownLinkReferenceAstProcessor : BitMarkdownAstProcessor
 {
+    private const int MaxExpandedUrlLength = 1 << 20;
+
     // Runs before every extension processor, so the flavors (task lists, autolinks, emoji,
     // auto identifiers) see a tree with no unresolved references left in it.
     public override int Order => 0;
@@ -28,16 +30,21 @@ public sealed class BitMarkdownLinkReferenceAstProcessor : BitMarkdownAstProcess
                     definitions.TryAdd(def.NormalizedLabel, def);
             }
 
-            for (int i = list.Count - 1; i >= 0; i--)
+            int kept = 0;
+            for (int i = 0; i < list.Count; i++)
             {
-                if (list[i] is BitMarkdownLinkReferenceDefinitionNode) list.RemoveAt(i);
+                if (list[i] is not BitMarkdownLinkReferenceDefinitionNode) list[kept++] = list[i];
             }
+
+            for (int i = list.Count - 1; i >= kept; i--) list.RemoveAt(i);
         });
 
         // Always run: a reference node can outlive its definition (a "[a]:" line the
         // pre-scan saw inside a code block, say), and it has to read as text either way.
         // The walk is a no-op for the documents - the overwhelming majority - that hold none.
-        BitMarkdownAstHelper.VisitChildLists(document, list => Resolve(list, definitions));
+        var imageUrls = new Dictionary<BitMarkdownLinkReferenceDefinitionNode, string>();
+        int remaining = MaxExpandedUrlLength;
+        BitMarkdownAstHelper.VisitChildLists(document, list => Resolve(list, definitions, imageUrls, ref remaining));
 
         if (definitions.Count == 0) return;
 
@@ -69,7 +76,8 @@ public sealed class BitMarkdownLinkReferenceAstProcessor : BitMarkdownAstProcess
         }
     }
 
-    private static void Resolve(IList<BitMarkdownNode> list, Dictionary<string, BitMarkdownLinkReferenceDefinitionNode> definitions)
+    private static void Resolve(IList<BitMarkdownNode> list, Dictionary<string, BitMarkdownLinkReferenceDefinitionNode> definitions,
+        Dictionary<BitMarkdownLinkReferenceDefinitionNode, string> imageUrls, ref int remaining)
     {
         int i = 0;
         while (i < list.Count)
@@ -82,9 +90,14 @@ public sealed class BitMarkdownLinkReferenceAstProcessor : BitMarkdownAstProcess
 
             if (definitions.TryGetValue(reference.Label, out var definition))
             {
-                list[i] = Build(reference, definition);
-                i++;
-                continue;
+                var url = reference.IsImage ? ImageUrl(definition, imageUrls) : definition.Url;
+                if (url.Length <= remaining)
+                {
+                    remaining -= url.Length;
+                    list[i] = Build(reference, definition, url);
+                    i++;
+                    continue;
+                }
             }
 
             // No such definition: put the source text back, so "[not a link]" reads exactly
@@ -100,23 +113,33 @@ public sealed class BitMarkdownLinkReferenceAstProcessor : BitMarkdownAstProcess
         }
     }
 
-    private static BitMarkdownNode Build(BitMarkdownLinkReferenceNode reference, BitMarkdownLinkReferenceDefinitionNode definition)
+    private static string ImageUrl(BitMarkdownLinkReferenceDefinitionNode definition, Dictionary<BitMarkdownLinkReferenceDefinitionNode, string> imageUrls)
+    {
+        if (imageUrls.TryGetValue(definition, out var url) is false)
+        {
+            // Sanitized from the destination as written, not from the link-sanitized one: the
+            // two sets of allowed schemes overlap but neither contains the other, so an
+            // embedded "data:image/png" - a valid image source, never a valid link - would
+            // already have been blanked by the first pass.
+            url = BitMarkdownUrlSanitizer.Sanitize(definition.RawUrl, isImage: true);
+            imageUrls[definition] = url;
+        }
+        return url;
+    }
+
+    private static BitMarkdownNode Build(BitMarkdownLinkReferenceNode reference, BitMarkdownLinkReferenceDefinitionNode definition, string url)
     {
         if (reference.IsImage)
         {
             return new BitMarkdownImageNode
             {
-                // Sanitized from the destination as written, not from the link-sanitized one: the
-                // two sets of allowed schemes overlap but neither contains the other, so an
-                // embedded "data:image/png" - a valid image source, never a valid link - would
-                // already have been blanked by the first pass.
-                Url = BitMarkdownUrlSanitizer.Sanitize(definition.RawUrl, isImage: true),
+                Url = url,
                 Title = definition.Title,
                 Alt = BitMarkdownInlineHelpers.PlainText(reference.Children)
             };
         }
 
-        var link = new BitMarkdownLinkNode { Url = definition.Url, Title = definition.Title };
+        var link = new BitMarkdownLinkNode { Url = url, Title = definition.Title };
         link.Children.AddRange(reference.Children);
         return link;
     }

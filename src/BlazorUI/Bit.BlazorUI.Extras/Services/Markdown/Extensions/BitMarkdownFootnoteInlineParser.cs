@@ -17,7 +17,7 @@ public sealed class BitMarkdownFootnoteInlineParser : BitMarkdownInlineParser
         int i = state.Pos;
         if (i + 1 >= s.Length || s[i] != '[' || s[i + 1] != '^') return false;
 
-        int labelEnd = BitMarkdownLinkHelpers.FindLabelEnd(s, i);
+        int labelEnd = state.FindLabelEnd(i);
         if (labelEnd < 0) return false;
 
         string label = BitMarkdownLinkHelpers.NormalizeLabel(s.Substring(i + 1, labelEnd - i - 1));
