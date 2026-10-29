@@ -57,6 +57,10 @@ public partial class McpSearchTests
     [
         ("a todo list that survives a page reload", ["Persistence guarantees", "Quick start"]),
         ("what survives a page reload", ["Persistence guarantees"]),
+        // "why" names the section called "Why", and split at its apostrophe "can't" is "can" and "t" - the "t" of
+        // every "t => ..." in a code sample. Neither says what the question is about.
+        ("why is my transaction slow", ["BlazeDbDatabase.BeginTransaction", "Transactions"]),
+        ("can't open the store", ["Opening the store"]),
     ];
 
     [TestMethod]
@@ -72,7 +76,7 @@ public partial class McpSearchTests
                 var result = await McpCall.StructuredAsync<BlazeDbSearchResultDto>("SearchBlazeDb", new() { ["query"] = query, ["limit"] = limit });
                 var first = result.Hits.FirstOrDefault()?.Title ?? string.Empty;
 
-                if (answers.Any(answer => first.Contains(answer, StringComparison.OrdinalIgnoreCase))) continue;
+                if (answers.Contains(first, StringComparer.OrdinalIgnoreCase)) continue;
 
                 misses.Add($"'{query}' (limit {limit}) ranked first: {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
             }
@@ -82,13 +86,26 @@ public partial class McpSearchTests
     }
 
     [TestMethod]
-    public async Task A_member_every_type_has_is_not_an_answer()
+    [DataRow("code")]
+    [DataRow("string")]
+    public async Task A_member_every_type_has_is_not_an_answer(string query)
     {
-        // Split into words, GetHashCode is "code": left in, it answers anything done from code.
-        var result = await McpCall.StructuredAsync<BlazeDbSearchResultDto>("SearchBlazeDb", new() { ["query"] = "code", ["limit"] = 50 });
+        // Split into words, GetHashCode is "code": left in, it answers anything done from code. And a record's
+        // Deconstruct names every property it has, so it answers a question about any one of them first.
+        var result = await McpCall.StructuredAsync<BlazeDbSearchResultDto>("SearchBlazeDb", new() { ["query"] = query, ["limit"] = 50 });
 
-        Assert.IsFalse(result.Hits.Any(hit => hit.Title.EndsWith(".GetHashCode", StringComparison.Ordinal) || hit.Title.EndsWith(".Equals", StringComparison.Ordinal)),
-            string.Join(" | ", result.Hits.Select(hit => hit.Title)));
+        Assert.IsFalse(result.Hits.Any(IsObjectPlumbing), $"'{query}': {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
+    }
+
+    /// <summary>
+    /// What the compiler writes for a record, and an override of what every object has that its type does not document
+    /// - which is a hit with nothing in its snippet. A documented ToString says what the type's text is, and stays.
+    /// </summary>
+    private static bool IsObjectPlumbing(BlazeDbSearchHitDto hit)
+    {
+        var member = hit.Title[(hit.Title.LastIndexOf('.') + 1)..];
+
+        return member is "Deconstruct" or "PrintMembers" || (member is "Equals" or "GetHashCode" or "ToString" && hit.Snippet.Length == 0);
     }
 
     [TestMethod]

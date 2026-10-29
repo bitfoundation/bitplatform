@@ -300,6 +300,11 @@ public static class BmageApiCatalog
             if (method.Name.Contains('<', StringComparison.Ordinal)) continue;
             if (method.DeclaringType == typeof(object)) continue;
             if (IsCompilerGenerated(method)) continue;
+            // An override of what every object has, which the type does not document, says nothing about the
+            // type - and split into words it answers questions it has nothing to do with: to a search,
+            // GetHashCode is "code", and the top hit for anything done from code.
+            var summary = BmageXmlDocs.GetSummary(DocumentationId(method));
+            if (summary is null && method.Name is "Equals" or "GetHashCode" or "ToString") continue;
 
             var signature = Signature(method.GetParameters(), method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute), false));
             if (seen.Add($"{method.Name}{signature}") is false) continue;
@@ -310,7 +315,7 @@ public static class BmageApiCatalog
                 Kind = "Method",
                 Type = FriendlyName(method.ReturnType),
                 Signature = signature,
-                Summary = BmageXmlDocs.GetSummary(DocumentationId(method)),
+                Summary = summary,
                 Remarks = BmageXmlDocs.GetRemarks(DocumentationId(method))
             };
         }

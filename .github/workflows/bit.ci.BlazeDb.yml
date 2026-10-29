@@ -9,6 +9,8 @@ on:
   pull_request:
     paths:
     - 'src/Utilities/BlazeDb/**'
+    # The MCP server's search ranking, linked in from there.
+    - 'src/Utilities/Shared/Mcp/**'
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true

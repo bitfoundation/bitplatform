@@ -38,6 +38,11 @@
         <InternalsVisibleTo Include="Bit.Blex.Tests.Mcp" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- The ranking SearchBlex answers with, which every utility's MCP server that searches this way shares. -->
+        <Compile Include="..\..\..\Shared\Mcp\*.cs" LinkBase="Services\Shared" />
+    </ItemGroup>
+
     <!-- Text the MCP server hands out. It is embedded rather than read from disk so the tools keep working
          from a published deployment, where none of these files exist next to the app. LogicalName is set
          explicitly because the resource name IS the path an MCP client asks for. -->
