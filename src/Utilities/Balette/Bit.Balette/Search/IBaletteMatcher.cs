@@ -56,13 +56,15 @@ public static class BaletteMatcherExtensions
         var terms = query.TermArray;
         if (terms.Length == 0)
         {
-            return new BaletteMatch(command, 0, [], [], null);
+            return query.IsTooLong ? null : new BaletteMatch(command, 0, [], [], null);
         }
 
         var normalize = Normalizes(matcher);
         double total = 0;
         int[]? titlePos = null;
         int[]? subtitlePos = null;
+        List<int>? titleAll = null;
+        List<int>? subtitleAll = null;
         string? matchedKeyword = null;
 
         for (var start = 0; start < terms.Length;)
@@ -119,19 +121,30 @@ public static class BaletteMatcherExtensions
             total += groupBest;
             if (groupTitle is { Length: > 0 })
             {
-                titlePos = titlePos is null ? groupTitle : [.. titlePos, .. groupTitle];
+                Collect(ref titlePos, ref titleAll, groupTitle);
             }
 
             if (groupSubtitle is { Length: > 0 })
             {
-                subtitlePos = subtitlePos is null ? groupSubtitle : [.. subtitlePos, .. groupSubtitle];
+                Collect(ref subtitlePos, ref subtitleAll, groupSubtitle);
             }
 
             matchedKeyword ??= groupKeyword;
             start = end;
         }
 
-        return new BaletteMatch(command, total, SortedDistinct(titlePos), SortedDistinct(subtitlePos), matchedKeyword);
+        return new BaletteMatch(command, total, SortedDistinct(titlePos, titleAll), SortedDistinct(subtitlePos, subtitleAll), matchedKeyword);
+    }
+
+    private static void Collect(ref int[]? first, ref List<int>? all, int[] positions)
+    {
+        if (first is null)
+        {
+            first = positions;
+            return;
+        }
+
+        (all ??= [.. first]).AddRange(positions);
     }
 
     /// <summary>
@@ -229,14 +242,14 @@ public static class BaletteMatcherExtensions
     }
 
     /// <summary>A sorted, de-duplicated copy (matchers usually return ascending positions already).</summary>
-    private static int[] SortedDistinct(int[]? positions)
+    private static int[] SortedDistinct(int[]? positions, List<int>? all)
     {
         if (positions is null)
         {
             return [];
         }
 
-        var copy = (int[])positions.Clone();
+        var copy = all is null ? (int[])positions.Clone() : all.ToArray();
         for (var i = 1; i < copy.Length; i++)
         {
             if (copy[i] <= copy[i - 1])
@@ -349,6 +362,10 @@ public sealed class BaletteQuery
     /// <summary>The query with no terms, which every command matches.</summary>
     public static BaletteQuery Empty { get; } = new([]);
 
+    internal const int MaxLength = 256;
+
+    private static readonly BaletteQuery TooLong = new([]) { IsTooLong = true };
+
     private BaletteQuery(BaletteQueryTerm[] terms) => TermArray = terms;
 
     /// <summary>The terms, in the order they were typed.</summary>
@@ -356,6 +373,8 @@ public sealed class BaletteQuery
 
     /// <summary>The terms as an array, for the matching loop.</summary>
     internal BaletteQueryTerm[] TermArray { get; }
+
+    internal bool IsTooLong { get; private init; }
 
     /// <summary>True when at least one term is matched by the matcher (not by an operator).</summary>
     internal bool HasFuzzyTerm(int minLength = 1)
@@ -383,6 +402,11 @@ public sealed class BaletteQuery
         if (string.IsNullOrWhiteSpace(query))
         {
             return Empty;
+        }
+
+        if (query.Length > MaxLength)
+        {
+            return TooLong;
         }
 
         var terms = new List<BaletteQueryTerm>();
@@ -511,7 +535,7 @@ internal sealed class BaletteTypoTolerantMatcher(IBaletteMatcher inner) : IBalet
     internal static BaletteFieldMatch Approximate(string query, string text, int maxEdits, bool normalize)
     {
         int p = query.Length, t = text.Length;
-        if (p - maxEdits > t)
+        if (p - maxEdits > t || (long)(p + 1) * (t + 1) > BaletteFuzzyMatcher.MaxCells)
         {
             return BaletteFieldMatch.None;
         }
