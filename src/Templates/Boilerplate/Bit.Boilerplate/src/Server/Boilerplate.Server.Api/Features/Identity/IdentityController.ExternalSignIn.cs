@@ -16,7 +16,7 @@ public partial class IdentityController
     [HttpGet]
     public async Task<string> GetExternalSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, string? localHttpNonce = null, CancellationToken cancellationToken = default)
     {
-        if (localHttpPort is not null && string.IsNullOrEmpty(localHttpNonce))
+        if (localHttpPort is not null && Guid.TryParseExact(localHttpNonce, "N", out _) is false)
             throw new BadRequestException().WithData("Reason", "localHttpNonce is required with localHttpPort.");
 
         var uri = Url.Action(nameof(ExternalSignIn), new { provider, returnUrl, localHttpPort, localHttpNonce, origin = Request.GetWebAppUrl() })!;
@@ -43,6 +43,10 @@ public partial class IdentityController
 
         if (localHttpPort is not null and (< 1 or > 65535))
             throw new BadRequestException().WithData("localHttpPort", localHttpPort);
+
+        var localHttpNonceValue = Guid.Empty;
+        if (localHttpPort is not null && Guid.TryParseExact(localHttpNonce, "N", out localHttpNonceValue) is false)
+            throw new BadRequestException().WithData("Reason", "localHttpNonce is invalid.");
 
         try
         {
@@ -179,7 +183,7 @@ public partial class IdentityController
         var redirectRelativeUrl = $"{PageUrls.WebInteropApp}?actionName=ExternalSignInCallback&url={Uri.EscapeDataString(signInPageUri!)}&localHttpPort={localHttpPort}";
 
         if (localHttpPort is not null)
-            return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), $"{redirectRelativeUrl}&localHttpNonce={Uri.EscapeDataString(localHttpNonce ?? string.Empty)}").ToString()); // Check out Client.web/wwwroot/web-interop-app.html's comments.
+            return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), $"{redirectRelativeUrl}&localHttpNonce={localHttpNonceValue:N}").ToString()); // Check out Client.web/wwwroot/web-interop-app.html's comments.
 
         return Redirect(new Uri(Request.HttpContext.Request.GetWebAppUrl(), redirectRelativeUrl).ToString());
     }
