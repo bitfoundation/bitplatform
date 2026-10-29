@@ -416,6 +416,50 @@ public sealed class AdversarialMetadataTests
     }
 
     [TestMethod]
+    public void ValuesAcrossDirectoriesAndTheThumbnailShareTheBudget()
+    {
+        const int valueBytes = 1 << 20;
+        const int exifOffset = 8 + 2 + 4 * 12 + 4;
+        const int ifd1Offset = exifOffset + 2 + 3 * 12 + 4;
+        const int valueOffset = ifd1Offset + 2 + 2 * 12 + 4;
+        var tiff = new byte[valueOffset + 2 * valueBytes];
+        "II*\0"u8.CopyTo(tiff);
+        BinaryPrimitives.WriteUInt32LittleEndian(tiff.AsSpan(4), 8);
+        void WriteDirectory(int at, int next, params (ushort Tag, ExifType Type, uint Count, uint Value)[] entries)
+        {
+            BinaryPrimitives.WriteUInt16LittleEndian(tiff.AsSpan(at), (ushort)entries.Length);
+            for (var i = 0; i < entries.Length; i++)
+            {
+                var entry = tiff.AsSpan(at + 2 + i * 12);
+                BinaryPrimitives.WriteUInt16LittleEndian(entry, entries[i].Tag);
+                BinaryPrimitives.WriteUInt16LittleEndian(entry[2..], (ushort)entries[i].Type);
+                BinaryPrimitives.WriteUInt32LittleEndian(entry[4..], entries[i].Count);
+                BinaryPrimitives.WriteUInt32LittleEndian(entry[8..], entries[i].Value);
+            }
+            BinaryPrimitives.WriteUInt32LittleEndian(tiff.AsSpan(at + 2 + entries.Length * 12), (uint)next);
+        }
+        WriteDirectory(8, ifd1Offset,
+            (ExifTag.ExifIfdPointer, ExifType.Long, 1, exifOffset),
+            (0x1001, ExifType.Undefined, valueBytes, valueOffset),
+            (0x1002, ExifType.Undefined, valueBytes, valueOffset),
+            (0x1003, ExifType.Undefined, valueBytes, valueOffset));
+        WriteDirectory(exifOffset, 0,
+            (0x2001, ExifType.Undefined, valueBytes, valueOffset),
+            (0x2002, ExifType.Undefined, valueBytes, valueOffset),
+            (0x2003, ExifType.Undefined, valueBytes, valueOffset));
+        WriteDirectory(ifd1Offset, 0,
+            (0x0201, ExifType.Long, 1, valueOffset),
+            (0x0202, ExifType.Long, 1, 2 * valueBytes));
+
+        var exif = ExifData.Parse(tiff);
+
+        Assert.IsNotNull(exif);
+        Assert.AreEqual(3, exif.Primary.Count);
+        var kept = exif.Primary.Tags.Concat(exif.Exif.Tags).Sum(t => (long)t.Value.Data.Length) + exif.Thumbnail.Length;
+        Assert.IsLessThanOrEqualTo(4L << 20, kept);
+    }
+
+    [TestMethod]
     public void AnIccProfileThatInflatesPastTheCapIsDropped()
     {
         using var img = AdversarialGeometryTests.Noise(8, 8, 3);

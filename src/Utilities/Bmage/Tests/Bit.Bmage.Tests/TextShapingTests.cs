@@ -130,6 +130,11 @@ public sealed class TextShapingTests
         Assert.IsLessThan(2000, watch.ElapsedMilliseconds, $"Shaping took {watch.ElapsedMilliseconds} ms.");
         Assert.AreEqual(codePoints.Length, buffer.Count);
         Assert.AreEqual(0, buffer[1].AttachTo);
+
+        var pair = TextShaper.CodePoints("ب" + new string('\u064E', 2));
+        var stacked = TextShaper.ShapeRun(Vazirmatn, pair, 0, pair.Length, UnicodeScript.Arabic, rtl: true)[2].AttachTo == 1;
+        var misplaced = Enumerable.Range(2, buffer.Count - 2).FirstOrDefault(i => buffer[i].AttachTo != (stacked ? i - 1 : 0), -1);
+        Assert.AreEqual(-1, misplaced, $"mark {misplaced} attaches to {(misplaced < 0 ? 0 : buffer[misplaced].AttachTo)}");
     }
 
     private static (float MinX, float MinY, float MaxX, float MaxY) Bounds(PlacedGlyph glyph)

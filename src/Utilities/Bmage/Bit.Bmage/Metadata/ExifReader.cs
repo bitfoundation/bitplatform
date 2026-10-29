@@ -43,7 +43,7 @@ public static class ExifReader
         if (nextIfd != 0 && nextIfd < data.Length)
         {
             var ifd1 = ReadIfd(data, nextIfd, bigEndian, visited, ref budget, out _);
-            if (ifd1?.Get(0x0201)?.GetDouble() is { } thOff && ifd1.Get(0x0202)?.GetDouble() is { } thLen && thOff >= 0 && thLen > 0 && thOff + thLen <= data.Length && thLen < MaxValueBytes)
+            if (ifd1?.Get(0x0201)?.GetDouble() is { } thOff && ifd1.Get(0x0202)?.GetDouble() is { } thLen && thOff >= 0 && thLen > 0 && thOff + thLen <= data.Length && thLen < MaxValueBytes && thLen <= budget)
                 thumbnail = data.Slice((int)thOff, (int)thLen).ToArray();
         }
 

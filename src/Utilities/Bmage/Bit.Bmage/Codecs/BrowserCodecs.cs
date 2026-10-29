@@ -91,7 +91,9 @@ public sealed class BrowserImageDecoder : IImageDecoder
         // ever existing at full size on a memory constrained device. It only preserves the aspect ratio when told a
         // single axis, so pass the header dimensions along and let the browser side pick the constraining one.
         var header = Identify(data.Span);
-        if (header is { Width: > 0, Height: > 0 }) options.Limits.Validate(header.Width, header.Height);
+        var scalable = options.Limits.MaxPixels > long.MaxValue / 4 ? long.MaxValue : options.Limits.MaxPixels * 4;
+        if (header is { Width: > 0, Height: > 0 } && (long)header.Width * header.Height > scalable)
+            throw new ImageLimitExceededException($"Image dimensions {header.Width}x{header.Height} exceed four times the configured limit of {options.Limits.MaxPixels} pixels.");
         var maxPixels = options.Limits.MaxPixels < long.MaxValue ? options.Limits.MaxPixels : (long?)null;
         if (OperatingSystem.IsBrowser())
         {
