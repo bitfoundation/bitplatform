@@ -70,16 +70,45 @@ public sealed class EditorServicesTests
                 Assert.IsInstanceOfType<Codecs.FallbackImageDecoder>(codecs.GetDecoder(ImageFormat.Jpeg));
                 Assert.IsInstanceOfType<Codecs.Png.PngEncoder>(codecs.GetEncoder(ImageFormat.Png));
                 Assert.IsInstanceOfType<Codecs.Jpeg.JpegEncoder>(codecs.GetEncoder(ImageFormat.Jpeg));
+                Assert.IsInstanceOfType<Codecs.FallbackImageDecoder>(codecs.GetDecoder(ImageFormat.WebP));
+                Assert.IsInstanceOfType<Codecs.WebP.WebPEncoder>(codecs.GetEncoder(ImageFormat.WebP));
+                Assert.IsInstanceOfType<Codecs.FallbackImageDecoder>(codecs.GetDecoder(ImageFormat.Avif));
+                // Only a browser writes this one.
+                Assert.IsInstanceOfType<Codecs.Browser.BrowserImageEncoder>(codecs.GetEncoder(ImageFormat.Avif));
             }
             else
             {
                 Assert.IsInstanceOfType<Codecs.Browser.BrowserImageDecoder>(codecs.GetDecoder(ImageFormat.Jpeg));
                 Assert.IsInstanceOfType<Codecs.Browser.BrowserImageEncoder>(codecs.GetEncoder(ImageFormat.Jpeg));
+                Assert.IsInstanceOfType<Codecs.Browser.BrowserImageDecoder>(codecs.GetDecoder(ImageFormat.WebP));
+                Assert.IsInstanceOfType<Codecs.Browser.BrowserImageEncoder>(codecs.GetEncoder(ImageFormat.WebP));
             }
-            // Only a browser has these, wherever it runs.
-            Assert.IsInstanceOfType<Codecs.Browser.BrowserImageDecoder>(codecs.GetDecoder(ImageFormat.WebP));
-            Assert.IsInstanceOfType<Codecs.Browser.BrowserImageEncoder>(codecs.GetEncoder(ImageFormat.WebP));
         }
+    }
+
+    [TestMethod]
+    public async Task InABrowserTheManagedCodecsCoverOnlyWhatTheBrowserLacks()
+    {
+        // A browser that decodes WebP but cannot write it, as Safari's canvas cannot: its own decoder keeps WebP, the
+        // managed encoder writes it, and the capabilities say so.
+        var probed = new HashSet<ImageFormat> { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.WebP };
+        var capabilities = new Capabilities.ImageCapabilities
+        {
+            Environment = Capabilities.ImageEnvironment.BrowserWebAssembly,
+            DecodableFormats = probed.Union(Capabilities.ImageCapabilities.ManagedDecodableFormats).ToHashSet(),
+            EncodableFormats = Capabilities.ImageCapabilities.ManagedEncodableFormats.Union([ImageFormat.Png, ImageFormat.Jpeg]).ToHashSet(),
+            NativeDecodableFormats = probed,
+            NativeEncodableFormats = new HashSet<ImageFormat> { ImageFormat.Png, ImageFormat.Jpeg },
+        };
+        await using var interop = new BrowserImageInterop(new NoJSRuntime());
+        var codecs = (await new ImageProcessorFactory(interop, new FixedCapabilities(capabilities)).GetAsync()).Codecs;
+
+        Assert.IsInstanceOfType<Codecs.Browser.BrowserImageDecoder>(codecs.GetDecoder(ImageFormat.WebP));
+        Assert.IsInstanceOfType<Codecs.WebP.WebPEncoder>(codecs.GetEncoder(ImageFormat.WebP));
+        Assert.IsInstanceOfType<Codecs.Gif.GifDecoder>(codecs.GetDecoder(ImageFormat.Gif), "the browser never claimed GIF, so it stays managed");
+        Assert.IsInstanceOfType<Codecs.Avif.AvifDecoder>(codecs.GetDecoder(ImageFormat.Avif), "a browser without AVIF still reads it, through the managed decoder");
+        Assert.IsTrue(capabilities.CanDecode(ImageFormat.Avif));
+        Assert.AreEqual(ImageFormat.WebP, capabilities.ChooseEncodableFormat([ImageFormat.WebP, ImageFormat.Jpeg]));
     }
 
     [TestMethod]

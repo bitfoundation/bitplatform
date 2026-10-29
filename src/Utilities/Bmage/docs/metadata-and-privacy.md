@@ -119,7 +119,7 @@ invisible until someone uploads an unusual photo.
 | JPEG | yes | yes | yes |
 | PNG | yes (`eXIf`) | yes (`iCCP`) | yes (`iTXt`) |
 | WebP | yes | yes | yes |
-| AVIF | not written by this library | no | no |
+| AVIF | read, not written | read, not written | read, not written |
 | BMP, GIF | no | no | no |
 
 Metadata is attached after encoding, by rewriting the container. The browser's encoders discard metadata, so it is

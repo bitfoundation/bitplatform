@@ -5,6 +5,7 @@ using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Running;
 using Bit.Bmage;
 using Bit.Bmage.Codecs.Jpeg;
+using Bit.Bmage.Codecs.WebP;
 using Bit.Bmage.Codecs.Png;
 using Bit.Bmage.Drawing;
 using Bit.Bmage.Geometry;
@@ -235,6 +236,8 @@ public class CodecBenchmarks
     private ImageBuffer _source = null!;
     private byte[] _png = [];
     private byte[] _jpeg = [];
+    private byte[] _webp = [];
+    private byte[] _webpLossless = [];
 
     [Params("1024x768", "3840x2160")]
     public string Size { get; set; } = "1024x768";
@@ -246,6 +249,8 @@ public class CodecBenchmarks
         _source = Images.Create(int.Parse(parts[0]), int.Parse(parts[1]));
         _png = PngEncoder.Encode(_source, new Codecs.ImageExportOptions { Format = ImageFormat.Png, PngCompressionLevel = 6 }).Data;
         _jpeg = JpegEncoder.Encode(_source, new Codecs.ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.85 }).Data;
+        _webp = WebPEncoder.Encode(_source, new Codecs.ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.85 }).Data;
+        _webpLossless = WebPEncoder.Encode(_source, new Codecs.ImageExportOptions { Format = ImageFormat.WebP, Lossless = true }).Data;
     }
 
     [GlobalCleanup]
@@ -271,6 +276,26 @@ public class CodecBenchmarks
     public int DecodeJpeg()
     {
         using var image = JpegDecoder.Decode(_jpeg);
+        return image.Width;
+    }
+
+    [Benchmark(Description = "WebP encode (q85)")]
+    public int EncodeWebP() => WebPEncoder.Encode(_source, new Codecs.ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.85 }).Data.Length;
+
+    [Benchmark(Description = "WebP encode (lossless)")]
+    public int EncodeWebPLossless() => WebPEncoder.Encode(_source, new Codecs.ImageExportOptions { Format = ImageFormat.WebP, Lossless = true }).Data.Length;
+
+    [Benchmark(Description = "WebP decode")]
+    public int DecodeWebP()
+    {
+        using var image = WebPDecoder.Decode(_webp);
+        return image.Width;
+    }
+
+    [Benchmark(Description = "WebP decode (lossless)")]
+    public int DecodeWebPLossless()
+    {
+        using var image = WebPDecoder.Decode(_webpLossless);
         return image.Width;
     }
 }

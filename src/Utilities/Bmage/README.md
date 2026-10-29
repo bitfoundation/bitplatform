@@ -25,7 +25,7 @@ That runs in the browser. The original file never leaves it, the phone's rotatio
 stripped, and the result is a WebP that fits the size budget you asked for.
 
 > Targets **.NET 10 and 11** · Everything works on **Blazor WebAssembly** and **Interactive Auto** once interactive.
-> **Interactive Server** works too: PNG, JPEG, BMP and GIF are coded on the server, while WebP, AVIF and editor previews
+> **Interactive Server** works too: images are decoded and encoded on the server, while AVIF exports and editor previews
 > cross the circuit. So does **Blazor Hybrid** (MAUI, WPF, Windows Forms), the same way but inside the app.
 > Prerendering, ASP.NET Core and console hosts get the headless API with the managed codecs.
 
@@ -60,7 +60,8 @@ Blazor-native image processing platform where the engine itself is C#.
 - **Non-destructive by construction.** An edit is a list of operations, not a mutated buffer. Undo costs a few hundred
   bytes, previews are cheap, and any earlier step can be changed without redoing the rest.
 - **The engine is this project.** The resampler, rasteriser, colour pipeline, TrueType text engine, and the PNG, JPEG,
-  BMP and GIF codecs are implemented here. The browser is used only for what only it can do: WebP and AVIF.
+  BMP, GIF and WebP codecs and an AVIF decoder are implemented here, so a server reads WebP and AVIF and writes WebP
+  with no native library. The browser is used only for what only it can do: writing AVIF, and colour management.
 - **Large images stay usable.** Interactive editing runs on a proxy sized for the display and replays at full resolution
   on export, so a 24 megapixel photo does not stall the interface.
 - **Privacy is the default.** Metadata is removed unless you ask for it. Location data cannot leak into an exported
@@ -174,8 +175,8 @@ Every part of its UI can be replaced while keeping the engine:
 | Area | What you get |
 | --- | --- |
 | Loading | `IBrowserFile`, byte arrays, streams, data URLs, object URLs, remote URLs, clipboard, drag and drop, camera |
-| Decoding | PNG, JPEG, BMP and GIF in managed code; PNG, JPEG, WebP, AVIF and GIF through the browser |
-| Encoding | PNG, JPEG and BMP in managed code; PNG, JPEG, WebP and AVIF through the browser |
+| Decoding | PNG, JPEG, BMP, GIF, WebP and AVIF in managed code; PNG, JPEG, WebP, AVIF and GIF through the browser |
+| Encoding | PNG, JPEG, BMP and WebP (lossy or lossless) in managed code; PNG, JPEG, WebP and AVIF through the browser |
 | Transforms | Crop, aspect crop, resize in six modes, rotate, flip, straighten, canvas size and margins, trim to content, skew, affine and perspective warps; annotations and layers stay on the content they mark |
 | Adjustments | Brightness, contrast, saturation, hue, exposure, gamma, levels, temperature, tint, vibrance, shadows, highlights, whites, blacks, white balance (picked or automatic), per-colour HSL, channel mixer, colorize, opacity |
 | Filters | Grayscale, black and white mixer, sepia, invert, posterize, threshold, gradient map and duotone, blur, motion blur, sharpen, high pass, pixelate, noise, median denoise, vignette, custom convolution and colour matrices |
@@ -218,7 +219,7 @@ median filter 8.5×. In the browser, decoding and encoding run in Web Workers, o
 | Blazor WebAssembly | Everything |
 | Blazor Web App, Interactive WebAssembly | Everything |
 | Blazor Web App, Interactive Auto | Everything once interactive |
-| Blazor Web App, Interactive Server | Everything; PNG, JPEG, BMP and GIF are coded on the server, WebP, AVIF and editor previews cross the circuit; see [docs/browser-support.md](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/browser-support.md) |
+| Blazor Web App, Interactive Server | Everything; images are coded on the server, AVIF exports and editor previews cross the circuit; see [docs/browser-support.md](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/browser-support.md) |
 | Blazor Hybrid (MAUI, WPF, Windows Forms) | Everything; as Interactive Server, but .NET runs in the app and reaches the WebView without a network; saving a file on Android and iOS is the app's job; see [docs/browser-support.md](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/browser-support.md#blazor-hybrid-maui-wpf-windows-forms) |
 | Prerendering | Managed codecs only, and capability detection reports `Prerendering`; call browser features from `OnAfterRenderAsync` |
 | ASP.NET Core, console, worker | Headless API with the managed codecs, no browser involved |

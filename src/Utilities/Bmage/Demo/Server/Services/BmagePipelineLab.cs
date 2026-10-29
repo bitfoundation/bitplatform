@@ -223,7 +223,7 @@ public static class BmagePipelineLab
     {
         var target = ParseFormat(format);
 
-        if (target is not (ImageFormat.Jpeg or ImageFormat.Png or ImageFormat.Bmp))
+        if (target is not (ImageFormat.Jpeg or ImageFormat.Png or ImageFormat.Bmp or ImageFormat.WebP))
         {
             return new BmageMetadataComparisonDto
             {
@@ -231,11 +231,10 @@ public static class BmagePipelineLab
                 Original = [],
                 Policies = [],
                 Reading = string.Empty,
-                Error = target is ImageFormat.WebP or ImageFormat.Avif
-                    ? $"{target} is encoded by the browser, which this server does not have. Bmage re-inserts metadata into a " +
-                      "browser-encoded WebP by rewriting its container, under the same policies - the answer for 'jpeg' is the " +
-                      "answer for WebP. AVIF is not written with metadata by this library at all."
-                    : $"'{format}' is not a format this can test. Use 'jpeg', 'png' or 'bmp'."
+                Error = target is ImageFormat.Avif
+                    ? "AVIF is encoded by the browser, which this server does not have, and it is not written with metadata by " +
+                      "this library at all: a browser's AVIF carries none."
+                    : $"'{format}' is not a format this can test. Use 'jpeg', 'png', 'bmp' or 'webp'."
             };
         }
 
@@ -401,19 +400,14 @@ public static class BmagePipelineLab
 
         foreach (var format in formats)
         {
-            if (format is ImageFormat.WebP or ImageFormat.Avif)
+            if (format == ImageFormat.Avif)
             {
-                var jpeg = results.FirstOrDefault(result => result.Format == "Jpeg" && result.Bytes is not null && result.Quality is >= 0.75 and <= 0.85);
-
                 results.Add(new BmageEncodingDto
                 {
                     Format = format.ToString(),
-                    Note = $"Not measured: {format} is a browser codec, and this server runs the managed ones a headless host has. " +
-                           (format == ImageFormat.WebP
-                               ? "Bmage's formats guide puts WebP at 0.8 roughly 25 to 35% smaller than JPEG at similar quality" +
-                                 (jpeg is not null ? $" - around {jpeg.Bytes * 0.65:N0} to {jpeg.Bytes * 0.75:N0} bytes against the JPEG at {jpeg.Quality:0.##} here." : ".") +
-                                 " Most browsers can encode it; export with EncodeWithFallbackAsync([WebP, Jpeg])."
-                               : "Few browsers can encode AVIF at all; always pair it with a fallback.")
+                    Note = "Not measured: AVIF is encoded only by a browser, and this server runs the managed codecs a headless " +
+                           "host has. Few browsers can encode AVIF at all; always pair it with a fallback, such as " +
+                           "EncodeWithFallbackAsync([Avif, WebP]) - WebP, measured here, encodes everywhere."
                 });
 
                 continue;

@@ -74,8 +74,8 @@ public static class BitBmage
     }
 
     /// <summary>
-    /// Adds Bmage without any browser integration, for server-side or console use. Only the managed codecs
-    /// (PNG, JPEG, BMP and GIF decoding) are available.
+    /// Adds Bmage without any browser integration, for server-side or console use. Only the managed codecs are
+    /// available: PNG, JPEG, BMP and WebP, lossy and lossless, and GIF and AVIF decoding.
     /// </summary>
     public static IServiceCollection AddBitBmageHeadlessServices(this IServiceCollection services, Action<BitBmageOptions>? configure = null)
     {

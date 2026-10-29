@@ -195,7 +195,7 @@ The editor needs a height. It fills its container, and a container with no heigh
 ## Without a browser
 
 The same engine runs on a server or in a console application with no JavaScript at all. Only the managed codecs are
-available there: PNG, JPEG, BMP and GIF for decoding, PNG, JPEG and BMP for encoding.
+available there: PNG, JPEG, BMP, GIF, WebP and AVIF for decoding, PNG, JPEG, BMP and WebP for encoding.
 
 ```csharp
 using Bit.Bmage;
@@ -240,5 +240,6 @@ something sensible and re-detects once interactive.
 
 - [Pipelines](pipelines.md) covers composing and optimising operations.
 - [The editor component](editor.md) covers theming, localisation and replacing parts of the UI.
-- [Formats and capabilities](formats.md) covers WebP, AVIF and what to do when a browser cannot write them.
+- [Formats and capabilities](formats.md) covers what each environment decodes and encodes, and what to do when a
+  browser cannot write a format.
 - [Metadata and privacy](metadata-and-privacy.md) covers EXIF, GPS and the three metadata policies.

@@ -76,8 +76,8 @@ public class SamplesHostingTests
         var html = await GetPageAsync(sample, "/capabilities");
 
         StringAssert.Contains(html, "<dd id=\"capabilities-environment\">Prerendering</dd>");
-        // AVIF and WebP need a browser; JPEG is the managed fallback.
-        StringAssert.Contains(html, "<dd id=\"capabilities-choice\">Jpeg</dd>");
+        // AVIF needs a browser; WebP is the first choice the managed codecs can write.
+        StringAssert.Contains(html, "<dd id=\"capabilities-choice\">WebP</dd>");
     }
 
     [TestMethod]

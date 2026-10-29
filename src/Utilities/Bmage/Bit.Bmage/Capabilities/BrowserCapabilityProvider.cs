@@ -78,8 +78,12 @@ public sealed class BrowserCapabilityProvider : IImageCapabilityProvider
             var format = ImageFormats.FromMimeType(mime);
             if (format != ImageFormat.Unknown) encodable.Add(format);
         }
-        // BMP encoding is always available through the managed encoder.
-        encodable.Add(ImageFormat.Bmp);
+        // What the browser lacks, the managed codecs may still cover: BMP encoding, WebP on a browser that cannot write
+        // it, such as Safari, and AVIF decoding on one that cannot read it.
+        var nativeDecodable = decodable.ToHashSet();
+        var nativeEncodable = encodable.ToHashSet();
+        decodable.UnionWith(ImageCapabilities.ManagedDecodableFormats);
+        encodable.UnionWith(ImageCapabilities.ManagedEncodableFormats);
 
         var environment = OperatingSystem.IsBrowser() ? ImageEnvironment.BrowserWebAssembly : ImageEnvironment.BrowserServer;
         var maxDimension = report.MaxCanvasDimension > 0 ? report.MaxCanvasDimension : 4096;
@@ -88,6 +92,8 @@ public sealed class BrowserCapabilityProvider : IImageCapabilityProvider
             Environment = environment,
             DecodableFormats = decodable,
             EncodableFormats = encodable,
+            NativeDecodableFormats = nativeDecodable,
+            NativeEncodableFormats = nativeEncodable,
             SupportsOffscreenCanvas = report.SupportsOffscreenCanvas,
             SupportsWebWorkers = report.SupportsWebWorkers,
             SupportsImageBitmap = report.SupportsImageBitmap,

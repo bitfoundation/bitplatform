@@ -8,17 +8,19 @@
 | JPEG | yes | yes | yes | yes |
 | BMP | yes | yes | yes | via managed |
 | GIF | first frame | no | first frame | no |
-| WebP | no | no | yes | usually |
-| AVIF | no | no | usually | rarely |
+| WebP | yes; first frame of an animation | lossy and lossless | yes | usually, lossy only |
+| AVIF | yes; no colour management | no | usually | rarely |
 | SVG | refused | no | refused | no |
 
 "Managed" means pure C#, working anywhere including a server. "Browser" means the platform's own codecs, which is the
-only way to reach WebP and AVIF in a browser.
+only way to write AVIF.
 
 When both are available the browser codec wins, because it is hardware accelerated and covers more formats. Over a Blazor
 Server circuit it is the other way round: the managed codecs handle every format they can on the server, because a
-browser codec would send every pixel across the network, and the browser only decodes WebP and AVIF, or a file the
-managed decoder rejects. The managed codecs are also the fallback that makes prerendering and server-side use work.
+browser codec would send every pixel across the network, and the browser only decodes a file the managed decoder
+rejects, or one whose colours need its colour management: a colour profile other than sRGB, or an AVIF that declares
+wide gamut or HDR colours. The managed codecs are also the fallback that makes prerendering and server-side use work, and that
+writes WebP in a browser whose canvas cannot, such as Safari's: the capabilities report WebP as encodable everywhere.
 
 ## Never assume, always probe
 
@@ -101,8 +103,9 @@ milliseconds and runs once.
 | Situation | Choose |
 | --- | --- |
 | Photographs, broad compatibility | JPEG at 0.8 to 0.85 |
-| Photographs, modern browsers | WebP at 0.8, roughly 25 to 35% smaller than JPEG at similar quality |
-| Anything needing transparency | WebP, or PNG for lossless |
+| Photographs | WebP at 0.8, roughly 25 to 35% smaller than JPEG at similar quality |
+| Anything needing transparency | WebP, lossy or lossless |
+| An original that must keep every pixel | WebP with `Lossless = true`, usually smaller than PNG |
 | Screenshots, diagrams, flat colour | PNG |
 | Smallest possible, where supported | AVIF, but always with a fallback |
 | Clipboard | PNG; most browsers accept nothing else |
@@ -167,6 +170,37 @@ Console.WriteLine($"{info.Width}×{info.Height} {info.Format}, displays as {info
 
 `DisplaySize` accounts for EXIF orientation, so a portrait photo from a phone reports portrait dimensions even though
 the stored pixels are landscape.
+
+## WebP
+
+The managed WebP codec reads every WebP: lossy and lossless, with or without alpha, the extended format's metadata, and
+the first frame of an animation, which, as with GIF, is the only frame decoded. It writes lossy WebP by default, with
+the alpha channel stored losslessly beside it when the image has transparency, and lossless WebP when asked:
+
+```csharp
+new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.8 }      // lossy
+new ImageExportOptions { Format = ImageFormat.WebP, Lossless = true }    // lossless; Quality is ignored
+```
+
+A browser's canvas writes only lossy WebP, so a lossless export is always made by the managed encoder, wherever it
+runs. WebP cannot hold an image wider or taller than 16383 pixels; encoding one throws `ImageEncodeException`.
+
+## AVIF
+
+The managed AVIF decoder reads the still images phones, browsers and encoders write: 8, 10 and 12 bits; 4:2:0, 4:2:2,
+4:4:4 and monochrome; alpha, premultiplied or not; film grain; grids of tiles; rotation, mirroring and clean aperture
+crops, which `AutoOrient` applies; EXIF, ICC and XMP; and the first frame of an image sequence. It implements the AV1
+intra coding tools and filters, and its reconstruction matches libaom's and dav1d's exactly; only the final rounding to
+8-bit RGB can differ by one.
+
+What it does not do:
+
+- **Colour management.** Pixels are converted from YUV with the matrix the file declares, but not from the file's
+  primaries or transfer to sRGB, so a Display P3, BT.2020 or HDR (PQ, HLG) image decodes with muted colours. In a
+  browser, and over a Blazor Server circuit, such files go to the browser's decoder, which converts them.
+- **Layers predicted from one another.** Progressive and layered AVIFs whose upper layers are inter frames decode to
+  their full-size base layer, or are refused when that layer is smaller.
+- **Encoding.** AVIF is written only by a browser that can, which few can; always pair it with a fallback.
 
 ## GIF and SVG
 

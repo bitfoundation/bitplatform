@@ -258,6 +258,23 @@ Allocation for the whole pipeline is about 238 KB against a 48 MB image, which i
 | PNG encode, level 1 | 19.2 ms | 198 ms | 98 MB |
 | PNG encode, level 6 | 68.0 ms | 720 ms | 46 MB |
 
+WebP was measured beside JPEG and PNG in one run on a 3840×2160 photo, separately from the table above, so the ratios
+are what carry over:
+
+| Operation | Time against | File size against |
+| --- | ---: | ---: |
+| WebP decode | 1.3× JPEG decode | - |
+| WebP decode, lossless | 0.6× PNG decode | - |
+| WebP encode, quality 85 | 12× JPEG encode, quality 85 | 0.35× the JPEG |
+| WebP encode, lossless | 2.9× PNG encode, level 6 | 0.77× the PNG |
+
+A 4000×3000 AVIF decodes in about half a second on one core with only the deblocking filter, and about a second with
+CDEF and loop restoration, the filters libaom's slower presets turn on.
+
+Lossy WebP encoding is the one slow codec path: the encoder picks every macroblock's prediction by trying the modes
+and weighing the bits each costs against the error it leaves, which is where its smaller files come from. On a server
+that is about a second for a 12 megapixel photo on one core.
+
 PNG compression level matters more than anything else here: level 6 is 3.6× slower than level 1 for a modest size gain.
 Level 1 is usually the right default for an interactive preview, and the library's default of 6 is right for a final
 export.

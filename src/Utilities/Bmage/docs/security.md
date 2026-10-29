@@ -57,6 +57,15 @@ different lengths and corrupt its offsets, asserting only that nothing escapes.
 The GIF LZW decoder bounds its code table and dictionary explicitly, because the classic GIF attack is a stream that
 drives the decoder past the end of its tables.
 
+The WebP decoder checks the canvas and every frame against `ImageLimits` before allocating, validates every prefix code
+it builds as complete, bounds every back reference by the pixels already decoded, and rejects a lossless stream that
+declares more prefix codes than its remaining data could describe, so a few bytes cannot ask for a large table. A lossy
+stream that ends before its last macroblock is truncated, not padded with zeros.
+
+The AVIF decoder checks the encoded size, every item's declared size, every AV1 frame header and a grid's output size
+against `ImageLimits` before it allocates a plane, and bounds every offset and length in the container by the file
+itself. A failure anywhere is an `ImageDecodeException`.
+
 Project files (`BmageProject`) are ZIP archives, which brings the archive attacks with it. A project is read from
 memory, never extracted to disk, so path traversal cannot write anything; even so only the files the manifest names
 are read, and only names under `images/` made of letters, digits, `-` and `_`. The files in the archive's directory are
