@@ -98,18 +98,26 @@ public class LifecycleTests : BortableTestContext
         List<string> items = ["A", "B", "C"];
         var log = new List<Raised<string>>();
         BortableEventArgs<string>? asked = null;
+        var answer = new TaskCompletionSource<bool>();
         var list = RenderList(items, "L1", p =>
         {
             Record(p, "L1", log);
-            p.Add(c => c.ConfirmDrop, e => { asked = e; return Task.FromResult(false); });
+            p.Add(c => c.ConfirmDrop, e => { asked = e; return answer.Task; });
         });
 
         await DragStartAsync(list, "A");
         await DragOverAsync(list, 3);
-        await DragStartAsync(list, "B");
+        var next = DragStartAsync(list, "B");
 
+        Assert.IsFalse(next.IsCompleted);
         Assert.IsNotNull(asked);
         Assert.AreEqual("A", asked.Item);
+        Assert.IsNull(Coordinator.Context);
+        Assert.IsNull(await DragStartAsync(list, "C"));
+
+        answer.SetResult(false);
+        Assert.IsNotNull(await next);
+
         Assert.AreSequenceEqual(["A", "B", "C"], items);
         Assert.AreEqual("Start:L1 Change:L1 ItemsChanged:L1 End:L1 Start:L1", Sequence(log));
         Assert.IsTrue(log[3].Args!.Canceled);

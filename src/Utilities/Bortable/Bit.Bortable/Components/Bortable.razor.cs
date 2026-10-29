@@ -1043,6 +1043,8 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     private bool AllowsDrop(BortableDragContext ctx, int newIndex)
         => CanDrop is null || CanDrop(ArgsOf(MoveInfo(ctx, this, newIndex)));
 
+    private bool AllowsMove(BortableMoveInfo info) => CanDrop is null || (info.Item is TItem && CanDrop(ArgsOf(info)));
+
     /// <summary>
     /// Whether the item currently being dragged (and, for a multi-drag, the rest of the
     /// selection) may be dropped into this list from another one.
@@ -1114,6 +1116,9 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     {
         if (Items is null) return Unchanged;
 
+        // A placeholder shown by a sorting list of the group no longer applies.
+        bool changed = ClearPlaceholder(ctx);
+
         bool home = ReferenceEquals(ctx.CurrentZone, this);
         object? target = null;
         if ((!home || AllowSort) && index >= 0 && index < Items.Count)
@@ -1122,19 +1127,30 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             bool valid = candidate is not null && (home
                 ? !Equals(candidate, ctx.Item)                                          // not the dragged item itself
                 : ctx.Source.Accepts(candidate) && ctx.Source.IndexOf(candidate) < 0);  // fits the source list
-            if (valid && !AllowsSwap(ctx, index, candidate!, home)) return Refused;
+            if (valid && !AllowsSwap(ctx, index, candidate!, home))
+            {
+                SetSwapTarget(ctx, null, null);
+                return Refused;
+            }
             if (valid) target = candidate;
         }
-
-        // A placeholder shown by a sorting list of the group no longer applies.
-        bool changed = ClearPlaceholder(ctx);
 
         return (SetSwapTarget(ctx, target is null ? null : this, target) | changed) ? Changed : Unchanged;
     }
 
     private bool AllowsSwap(BortableDragContext ctx, int index, object partner, bool home)
     {
-        if (!AllowsDrop(ctx, index)) return false;
+        var swapped = new BortableMoveInfo
+        {
+            Item = ctx.Item,
+            OldIndex = ctx.OldIndex,
+            NewIndex = index,
+            From = ctx.Source,
+            To = this,
+            Input = ctx.Input,
+            IsClone = IsCloneInto(ctx, this)
+        };
+        if (!AllowsMove(swapped)) return false;
         if (home) return true;
 
         var back = ctx.CurrentZone;
@@ -1904,7 +1920,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
     bool IBortableZone.AllowsDropAt(BortableDragContext ctx, int newIndex) => AllowsDrop(ctx, newIndex);
 
-    bool IBortableZone.AllowsMove(BortableMoveInfo info) => CanDrop is null || (info.Item is TItem && CanDrop(ArgsOf(info)));
+    bool IBortableZone.AllowsMove(BortableMoveInfo info) => AllowsMove(info);
 
     private Task RaiseEventAsync(BortableEventType type, BortableMoveInfo info)
     {

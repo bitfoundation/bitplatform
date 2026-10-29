@@ -236,6 +236,35 @@ public class MultiDragTests : BortableTestContext
         Assert.AreEqual("Start:L1 End:L1", Sequence(log));
     }
 
+    [TestMethod]
+    public async Task ASelectionGathersWhereCanDropAllowsIt()
+    {
+        List<string> items = ["A", "B", "C", "D", "E"];
+        var list = RenderMultiList(items, extra: p => p.Add(c => c.CanDrop, _ => true));
+        await ClickAsync(list, "B");
+        await ClickAsync(list, "D");
+
+        await DragStartAsync(list, "B");
+        await DragOverAsync(list, 5);
+        await DropAsync(list);
+
+        Assert.AreSequenceEqual(["A", "C", "E", "B", "D"], items);
+    }
+
+    [TestMethod]
+    public async Task ASelectionDroppedInPlaceGathersWhereCanDropAllowsIt()
+    {
+        List<string> items = ["A", "B", "C", "D", "E"];
+        var list = RenderMultiList(items, extra: p => p.Add(c => c.CanDrop, _ => true));
+        await ClickAsync(list, "A");
+        await ClickAsync(list, "E");
+
+        await DragStartAsync(list, "A");
+        await DropAsync(list);
+
+        Assert.AreSequenceEqual(["A", "E", "B", "C", "D"], items);
+    }
+
     // ---- across lists ----
 
     [TestMethod]

@@ -126,11 +126,30 @@ public class SwapTests : BortableTestContext
         var list = RenderSwapList(items, extra: p => p.Add(c => c.CanDrop, e => e.NewIndex != 2));
 
         await DragStartAsync(list, "A");
+        Assert.AreEqual(1, await OverResultAsync(list, 1));
         Assert.AreEqual(-1, await OverResultAsync(list, 2));
 
         Assert.AreEqual("", LabelsWithClass(list, Highlight));
         await DropAsync(list);
         Assert.AreSequenceEqual(["A", "B", "C"], items);
+    }
+
+    [TestMethod]
+    public async Task ASwapAsksCanDropAboutTheDraggedItemAlone()
+    {
+        IReadOnlyList<string>? asked = null;
+        var list = RenderSwapList(["A", "B", "C"], extra: p =>
+        {
+            p.Add(c => c.MultiDrag, true);
+            p.Add(c => c.CanDrop, e => { asked = e.Items; return true; });
+        });
+        await ClickAsync(list, "A");
+        await ClickAsync(list, "B");
+
+        await DragStartAsync(list, "A");
+        await HoverItemAsync(list, 2);
+
+        Assert.AreSequenceEqual(["A"], asked);
     }
 
     [TestMethod]

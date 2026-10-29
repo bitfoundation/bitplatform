@@ -809,8 +809,8 @@ say - never holds up the next drag.
 A drag can also end before it is released: when its source list leaves the page (a tab or a panel closing over
 it), or when the browser never reports its end and the next drag starts. It ends where it is: a preview in another
 list is dropped, while a live reorder of the source list stays, and is reported like any other - `ItemsChanged`,
-`OnUpdate`, `OnSort` - followed by `OnEnd`. When the next drag ends it, the destination's `ConfirmDrop` is asked
-first, as for a drop, and the next drag starts once it answers.
+`OnUpdate`, `OnSort` - followed by `OnEnd`. When the next drag ends one that changed a list, the destination's
+`ConfirmDrop` is asked first, as for a drop, and the next drag starts once it answers.
 
 A cancelled drag raises `OnEnd` alone, with `Canceled` set (see [cancelling a drag](#cancelling-a-drag)); one
 `ConfirmDrop` refused raises `ItemsChanged` for the lists it put back, then `OnEnd` with `Canceled`. With a
