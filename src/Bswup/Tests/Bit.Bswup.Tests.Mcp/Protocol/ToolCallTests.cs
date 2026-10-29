@@ -261,6 +261,14 @@ public class ToolCallTests
     }
 
     [TestMethod]
+    public async Task InspectBswupServiceWorker_RefusesAScriptPastTheLengthLimit()
+    {
+        var result = await _server.CallAsync("InspectBswupServiceWorker", new { script = new string(' ', 64_001) });
+
+        Assert.IsTrue(result.IsError is true);
+    }
+
+    [TestMethod]
     public async Task InspectBswupServiceWorker_DecidesTheUrlsItIsGiven()
     {
         var result = await _server.CallAsync("InspectBswupServiceWorker", new

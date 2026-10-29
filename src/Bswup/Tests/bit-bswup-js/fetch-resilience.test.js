@@ -12,6 +12,7 @@
 //   2. The managed path never rejects - it degrades cache -> network -> stale cache -> error.
 
 import { describe, it, expect } from 'vitest';
+import { createHash, webcrypto } from 'node:crypto';
 import { createServiceWorkerContext, ORIGIN, FakeBlob, FakeResponse, decodeBody } from './harness.js';
 
 function boot({ config = {}, assets = [{ url: 'app.js', hash: 'h1' }], fetchHandler, cacheStorageError, configure } = {}) {
@@ -386,6 +387,44 @@ describe('active-mode lazy heal respects integrity', () => {
         expect(seen).toHaveLength(1);
         expect(seen[0].includes('?v=')).toBe(false); // plain request, Range preserved
     });
+});
+
+describe('a full answer to a ranged request with integrity enabled', () => {
+    const TEXT = '0123456789';
+    const hash = `sha256-${createHash('sha256').update(TEXT).digest('base64')}`;
+    const includeMp4 = c => { c.self.assetsInclude = c.array([c.regex('\\.mp4$')]); };
+
+    const bootServing = (isPassive, body) => boot({
+        config: { isPassive, enableIntegrityCheck: true, crypto: webcrypto },
+        assets: [{ url: 'clip.mp4', hash }],
+        fetchHandler: async () => new FakeResponse(body, { status: 200, headers: { 'content-type': 'video/mp4' } }),
+        configure: includeMp4,
+    });
+
+    for (const isPassive of [false, true]) {
+        const mode = isPassive ? 'passive' : 'active';
+
+        it(`does not cache bytes that do not match the hash in ${mode} mode`, async () => {
+            const sw = bootServing(isPassive, 'tampered!!');
+
+            const { response } = await sw.fetchEvent({ url: `${ORIGIN}/clip.mp4`, headers: { range: 'bytes=2-5' } });
+            expect(response.status).toBe(200);
+            expect(decodeBody(response)).toBe('tampered!!');
+            expect(sw.caches.snapshot()[ASSET_CACHE] || []).toHaveLength(0);
+        });
+
+        it(`caches bytes that match the hash in ${mode} mode`, async () => {
+            const sw = bootServing(isPassive, TEXT);
+
+            const { response } = await sw.fetchEvent({ url: `${ORIGIN}/clip.mp4`, headers: { range: 'bytes=2-5' } });
+            expect(response.status).toBe(200);
+            expect(sw.caches.snapshot()[ASSET_CACHE]).toEqual([`${ORIGIN}/clip.mp4.${hash}`]);
+
+            const cached = await (await openAssetCache(sw)).match(`${ORIGIN}/clip.mp4.${hash}`);
+            expect(cached.status).toBe(200);
+            expect(decodeBody(cached)).toBe(TEXT);
+        });
+    }
 });
 
 // Offline navigation is the core feature: every route the user deep-links to must come back

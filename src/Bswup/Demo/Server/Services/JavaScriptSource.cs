@@ -19,6 +19,8 @@ public record JsAssignment(string Name, string Value, int Index);
 /// </summary>
 public static class JavaScriptSource
 {
+    private const int MaxAssignedValuesLength = 256_000;
+
     /// <summary>
     /// The script with every comment replaced by spaces. Same length and same line breaks as the
     /// original, so offsets and line numbers still line up with what the author wrote.
@@ -80,6 +82,7 @@ public static class JavaScriptSource
         var assignments = new List<JsAssignment>();
         var prefix = $"{target}.";
         var index = 0;
+        var valuesLength = 0;
 
         while (true)
         {
@@ -115,6 +118,9 @@ public static class JavaScriptSource
             }
 
             var valueEnd = FindStatementEnd(code, valueStart);
+
+            valuesLength += valueEnd - valueStart;
+            if (valuesLength > MaxAssignedValuesLength) throw new BadHttpRequestException("The script's assignments overlap too much to read.");
 
             assignments.Add(new JsAssignment(name, code[valueStart..valueEnd].Trim(), start));
 
