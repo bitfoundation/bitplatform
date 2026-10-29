@@ -124,6 +124,90 @@ public class RasterRobustnessTests
         Assert.IsLessThan(16L * 1024 * 1024, allocated, $"{allocated} bytes were allocated to draw a 10 by 10 thumbnail");
     }
 
+    [TestMethod]
+    public void A_huge_image_with_a_tiny_crop_is_not_decoded()
+    {
+        byte[] png = CreatePng(5000, 5000, colorType: 6, rows: CompressRows(5000, 5000, 4));
+        var document = new BinkDocument(new BinkDocumentSettings { Width = 100, Height = 100 });
+        document.AddElement(new BinkImageElement(BinkImageSource.FromBytes(png, "image/png", 5000, 5000), new BinkRect(0, 0, 100, 100)) { Crop = new BinkRect(0, 0, 10, 10) });
+
+        long before = GC.GetAllocatedBytesForCurrentThread();
+        BinkPngExportResult result = BinkPngExporter.ExportWithDetails(document);
+        long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        Assert.AreEqual(1, result.SkippedImages);
+        Assert.IsLessThan(16L * 1024 * 1024, allocated, $"{allocated} bytes were allocated to draw a 10 by 10 crop");
+    }
+
+    [TestMethod]
+    public void A_huge_image_drawn_mostly_off_the_page_is_not_decoded()
+    {
+        byte[] png = CreatePng(5000, 5000, colorType: 6, rows: CompressRows(5000, 5000, 4));
+        var document = new BinkDocument(new BinkDocumentSettings { Width = 100, Height = 100 });
+        document.AddElement(new BinkImageElement(BinkImageSource.FromBytes(png, "image/png", 5000, 5000), new BinkRect(-99_990, -99_990, 100_000, 100_000)));
+
+        long before = GC.GetAllocatedBytesForCurrentThread();
+        BinkPngExportResult result = BinkPngExporter.ExportWithDetails(document);
+        long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        Assert.AreEqual(1, result.SkippedImages);
+        Assert.IsLessThan(16L * 1024 * 1024, allocated, $"{allocated} bytes were allocated to draw a 10 by 10 corner");
+    }
+
+    [TestMethod]
+    public void An_image_that_fails_to_decode_still_uses_its_share_of_the_budget()
+    {
+        byte[] rows = new byte[400 * (400 * 4 + 1)];
+        rows[^(400 * 4 + 1)] = 9;
+        byte[] broken = CreatePng(400, 400, colorType: 6, rows: Compress(rows));
+        byte[] valid = TestData.CreatePng(400, 400, (_, _) => BinkColor.Black);
+        var document = new BinkDocument(new BinkDocumentSettings { Width = 100, Height = 100 });
+        document.AddElement(new BinkImageElement(BinkImageSource.FromBytes(broken, "image/png", 400, 400), new BinkRect(0, 0, 50, 50)));
+        document.AddElement(new BinkImageElement(BinkImageSource.FromBytes(valid, "image/png", 400, 400), new BinkRect(50, 50, 50, 50)));
+
+        BinkPngExportResult result = BinkPngExporter.ExportWithDetails(document, new BinkPngExportOptions { MaxPixels = 200_000 });
+
+        Assert.AreEqual(2, result.SkippedImages);
+        Assert.AreEqual(1, BinkPngExporter.ExportWithDetails(document, new BinkPngExportOptions { MaxPixels = 400_000 }).SkippedImages);
+    }
+
+    [TestMethod]
+    public void Edges_crossing_every_row_stop_at_the_raster_work_limit()
+    {
+        var document = new BinkDocument(new BinkDocumentSettings { Width = 500, Height = 500 });
+        var builder = new BinkPathBuilder(20_004).MoveTo(0, 0);
+        for (int i = 0; i < 20_000; i++) builder.LineTo(i / 40f, (i & 1) == 0 ? 500 : 0);
+        document.AddElement(new BinkPathElement(builder.Close().ToGeometry()) { Style = new BinkShapeStyle { FillColor = BinkColor.Black, StrokeWidth = 0 } });
+
+        Assert.ThrowsExactly<InvalidOperationException>(() => BinkPngExporter.Render(document, new BinkPngExportOptions { MaxRasterWork = 10_000_000 }, out _, out _));
+    }
+
+    [TestMethod]
+    public void Images_drawn_over_and_over_stop_at_the_raster_work_limit()
+    {
+        byte[] png = TestData.CreatePng(2, 2, (_, _) => BinkColor.Black);
+        var source = BinkImageSource.FromBytes(png, "image/png", 2, 2);
+        var document = new BinkDocument(new BinkDocumentSettings { Width = 500, Height = 500 });
+        for (int i = 0; i < 1000; i++) document.AddElement(new BinkImageElement(source, new BinkRect(0, 0, 500, 500)) { Opacity = 0.5f });
+
+        Assert.ThrowsExactly<InvalidOperationException>(() => BinkPngExporter.Render(document, new BinkPngExportOptions { MaxRasterWork = 10_000_000 }, out _, out _));
+    }
+
+    [TestMethod]
+    public void A_drawing_within_the_raster_work_limit_renders_exactly_as_without_one()
+    {
+        byte[] png = TestData.CreatePng(40, 30, (x, y) => new BinkColor((byte)(x * 6), (byte)(y * 8), 90));
+        var document = new BinkDocument(new BinkDocumentSettings { Width = 300, Height = 200, Background = BinkColor.White });
+        document.AddElement(TestData.Stroke(new Vector2(20, 20), new Vector2(280, 180), new BinkPenBrush { Width = 6f }));
+        document.AddElement(new BinkEllipseShape(new BinkRect(40, 60, 120, 80)) { Style = new BinkShapeStyle { FillColor = new BinkColor(200, 30, 30, 160), StrokeWidth = 3 } });
+        document.AddElement(new BinkImageElement(BinkImageSource.FromBytes(png, "image/png", 40, 30), new BinkRect(180, 20, 80, 60)) { Crop = new BinkRect(5, 5, 30, 20) });
+
+        byte[] unlimited = BinkPngExporter.Export(document);
+        byte[] limited = BinkPngExporter.Export(document, new BinkPngExportOptions { MaxRasterWork = 20_000_000 });
+
+        CollectionAssert.AreEqual(unlimited, limited);
+    }
+
     /// <summary>tRNS was honoured only for palette images; colour-key transparency in RGB and grey PNGs was ignored.</summary>
     [TestMethod]
     public void Colour_key_transparency_is_honoured_for_rgb_images()

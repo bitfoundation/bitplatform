@@ -124,6 +124,8 @@ public sealed record BinkSvgExportOptions : BinkExportOptions
 
     /// <summary>Scale factor applied through the <c>width</c>/<c>height</c> attributes; the view box is unchanged.</summary>
     public float Scale { get; init; } = 1f;
+
+    public long MaxLength { get; init; } = long.MaxValue;
 }
 
 /// <summary>
@@ -173,6 +175,7 @@ public static class BinkSvgExporter
         ArgumentNullException.ThrowIfNull(document);
         ArgumentNullException.ThrowIfNull(writer);
         options ??= BinkSvgExportOptions.Default;
+        if (options.MaxLength < long.MaxValue) writer = new LimitedWriter(writer, options.MaxLength);
 
         BinkRect region = options.ResolveRegion(document);
         if (region.IsEmpty) region = new BinkRect(region.X, region.Y, MathF.Max(region.Width, 1), MathF.Max(region.Height, 1));
@@ -441,9 +444,36 @@ public static class BinkSvgExporter
             result.Add(element);
         }
         // Leading erasers have nothing below them to erase and would only bloat the output.
-        while (result.Count > 0 && result[0] is BinkStroke { IsEraser: true }) result.RemoveAt(0);
+        int leading = 0;
+        while (leading < result.Count && result[leading] is BinkStroke { IsEraser: true }) leading++;
+        result.RemoveRange(0, leading);
         return result;
     }
 
     private static void WriteNumber(TextWriter writer, float value, int decimals) => BinkSvgNumber.Write(writer, value, decimals);
+
+    private sealed class LimitedWriter(TextWriter inner, long maxLength) : TextWriter(inner.FormatProvider)
+    {
+        private long _length;
+
+        public override Encoding Encoding => inner.Encoding;
+
+        public override void Write(char value) => Write(new ReadOnlySpan<char>(in value));
+
+        public override void Write(char[] buffer, int index, int count) => Write(buffer.AsSpan(index, count));
+
+        public override void Write(string? value) => Write(value.AsSpan());
+
+        public override void Write(ReadOnlySpan<char> buffer)
+        {
+            if (buffer.Length > maxLength - _length)
+            {
+                inner.Write(buffer[..(int)Math.Max(maxLength - _length, 0)]);
+                _length = Math.Max(_length, maxLength);
+                throw new InvalidOperationException($"The SVG is longer than the limit of {maxLength} characters.");
+            }
+            _length += buffer.Length;
+            inner.Write(buffer);
+        }
+    }
 }

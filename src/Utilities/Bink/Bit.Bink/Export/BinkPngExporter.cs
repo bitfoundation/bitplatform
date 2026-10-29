@@ -23,6 +23,8 @@ public sealed record BinkPngExportOptions : BinkExportOptions
     /// </summary>
     public long MaxPixels { get; init; } = 80_000_000;
 
+    public long MaxRasterWork { get; init; } = long.MaxValue;
+
     /// <summary>PNG compression level.</summary>
     public CompressionLevel Compression { get; init; } = CompressionLevel.Optimal;
 
@@ -109,6 +111,7 @@ public static class BinkPngExporter
             TextRasterizer = options.TextRasterizer,
             MaxImagePixels = options.MaxPixels,
             ImagePixelBudget = options.MaxPixels,
+            RasterWorkBudget = options.MaxRasterWork,
         };
 
         var renderOptions = new BinkRenderOptions

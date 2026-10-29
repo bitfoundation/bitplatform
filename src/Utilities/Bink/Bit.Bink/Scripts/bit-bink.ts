@@ -1464,7 +1464,7 @@ class Surface {
         if (lost) this.reportResourcesLost();
     }
 
-    async loadImage(uri: string): Promise<BinkImageMetrics> {
+    async loadImage(uri: string, keep = false): Promise<BinkImageMetrics> {
         if (this.images.has(uri)) {
             const existing = this.images.get(uri) as HTMLImageElement;
             if (existing.complete && existing.naturalWidth > 0) return { width: existing.naturalWidth, height: existing.naturalHeight };
@@ -1481,6 +1481,7 @@ class Surface {
         if (this.disposed) return { width: image.naturalWidth, height: image.naturalHeight };
         this.images.delete(uri);
         this.images.set(uri, image);
+        if (keep) this.imagesUsedThisFrame.add(uri);
         this.evictImages();
         return { width: image.naturalWidth, height: image.naturalHeight };
     }
@@ -1491,10 +1492,10 @@ class Surface {
     requestImage(uri: string): void {
         if (this.disposed || !uri || this.pendingImages.has(uri) || this.failedImages.has(uri)) return;
         this.pendingImages.add(uri);
-        this.loadImage(uri).then(
+        this.loadImage(uri, true).then(
             () => {
                 this.pendingImages.delete(uri);
-                this.requestRedraw();
+                if (this.images.has(uri)) this.requestRedraw();
             },
             () => {
                 this.pendingImages.delete(uri);

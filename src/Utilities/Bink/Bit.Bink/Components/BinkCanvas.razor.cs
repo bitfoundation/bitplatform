@@ -831,7 +831,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             ElementFilter = filter is { Count: > 0 } ? filter : null,
         });
 
-        await EnsureImagesLoadedAsync(cancellationToken).ConfigureAwait(true);
+        await EnsureImagesLoadedAsync(options.MaxPixels, cancellationToken).ConfigureAwait(true);
         string mimeType = MimeTypeOf(format);
         // Even an incompressible encoding stays within four bytes a pixel plus its headers.
         long maxBytes = (long)width * height * 4 + (1 << 20);
@@ -1001,6 +1001,13 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         {
             _previousToolParameter = Tool;
             SetTool(Tool);
+        }
+
+        if (ReadOnly && _textEditor is not null && _activeTool is BinkTextTool editing)
+        {
+            editing.CancelEdit(_toolContext);
+            _textEditor = null;
+            _uiDirty = true;
         }
 
         if (Brush is not null && !Equals(Brush, _brush))
@@ -1426,6 +1433,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         switch (sample.Phase)
         {
             case BinkPointerPhase.Down:
+                if (_touchPoints.Count >= BinkPanTool.MaxPointers && !_touchPoints.ContainsKey(sample.PointerId)) return true;
                 _touchPoints[sample.PointerId] = sample.Position;
                 if (!_gestureRouting && _touchPoints.Count >= 2)
                 {
@@ -1948,7 +1956,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             await TextPasted.InvokeAsync(content).ConfigureAwait(true);
             return;
         }
-        if (!ActiveLayerAdmits()) return;
+        if (ReadOnly || !ActiveLayerAdmits()) return;
         // Plain text becomes a text element in the middle of the view, styled like the text tool's when it is active.
         if (content.Length > BinkTextElement.MaxLength) content = content[..BinkTextElement.MaxLength];
         BinkTextStyle style = _activeTool is BinkTextTool textTool ? textTool.Style : BinkTextStyle.Default with { Color = _brush.Color };
@@ -2111,7 +2119,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         Vector2? measured = style is { } measuredStyle ? await MeasureTextAsync(value, measuredStyle).ConfigureAwait(true) : null;
         // Measuring is a browser round trip. On Blazor Server the user can navigate away during it, and writing
         // to a disposed document and history manager afterwards would throw on a fire-and-forget task.
-        if (_disposed) return;
+        if (_disposed || ReadOnly) return;
         tool.CommitEdit(_toolContext, elementId, value, measured);
         // The editor closes only if it is still the one this text was typed into.
         if (_textEditor?.ElementId == elementId) _textEditor = null;
@@ -2267,13 +2275,32 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         }
     }
 
-    private async Task EnsureImagesLoadedAsync(CancellationToken cancellationToken)
+    private async Task EnsureImagesLoadedAsync(long maxPixels, CancellationToken cancellationToken)
     {
         if (_interop is null) return;
+        var requested = new HashSet<object>(ReferenceEqualityComparer.Instance);
+        long remaining = maxPixels;
         foreach (BinkElement element in _document.AllElements)
         {
-            if (element is BinkImageElement { Source.IsOmitted: false } image) await _interop.LoadImageAsync(image.Source.Uri, cancellationToken).ConfigureAwait(true);
+            if (element is not BinkImageElement { Source.IsOmitted: false } image || !requested.Add(image.Source.Uri)) continue;
+            long pixels = ImagePixels(image.Source);
+            if (pixels > remaining) continue;
+            remaining -= pixels;
+            await _interop.LoadImageAsync(image.Source.Uri, cancellationToken).ConfigureAwait(true);
         }
+    }
+
+    private static long ImagePixels(BinkImageSource source)
+    {
+        Span<byte> header = stackalloc byte[24];
+        int comma = source.Uri.IndexOf(',', StringComparison.Ordinal);
+        if (source.IsEmbedded && comma > 0 && source.Uri.Length - comma > 32
+            && Convert.TryFromBase64Chars(source.Uri.AsSpan(comma + 1, 32), header, out _)
+            && BinkPngCodec.TryReadSize(header, out int width, out int height))
+        {
+            return (long)width * height;
+        }
+        return (long)source.Width * source.Height;
     }
 
     private string ContainerClass => string.Join(' ', new[] { "bit-bink-canvas", Class }.Where(static c => !string.IsNullOrWhiteSpace(c)));

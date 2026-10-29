@@ -37,6 +37,7 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
     private readonly Stack<GroupFrame> _groups = new();
     private readonly Dictionary<string, CachedImage> _imageCache = new(StringComparer.Ordinal);
     private long _decodedImagePixels;
+    private long _rasterWork;
     private State _state;
     private BinkRasterSurface _target;
 
@@ -106,6 +107,8 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
     /// </summary>
     public long ImagePixelBudget { get; init; } = 80_000_000;
 
+    internal long RasterWorkBudget { get; init; } = long.MaxValue;
+
     /// <summary>Number of text elements that could not be drawn.</summary>
     public int SkippedText { get; private set; }
 
@@ -152,14 +155,14 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
     {
         BinkRasterSurface target = _target;
         int left = int.MaxValue, top = int.MaxValue, right = int.MinValue, bottom = int.MinValue;
-        _rasterizer.Rasterize(_state.Clip, rule, (y, x, coverage) =>
+        _rasterWork += _rasterizer.Rasterize(_state.Clip, rule, (y, x, coverage) =>
         {
             target.Blend(y, x, coverage, color, opacity, blend);
             left = Math.Min(left, x);
             right = Math.Max(right, x + coverage.Length);
             top = Math.Min(top, y);
             bottom = Math.Max(bottom, y + 1);
-        });
+        }, RasterWorkBudget - _rasterWork);
         if (right > left) MarkDrawn(new BinkPixelRegion(left, top, right, bottom));
     }
 
@@ -215,17 +218,7 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
     {
         ArgumentNullException.ThrowIfNull(image);
         if (destination.IsEmpty || opacity <= 0 || _state.Clip.IsEmpty || image.IsOmitted) return;
-
-        BinkPngCodec.DecodedImage? decoded = GetImage(image, destination, sourceRect);
-        if (decoded is null)
-        {
-            SkippedImages++;
-            return;
-        }
-
-        BinkPngCodec.DecodedImage source = decoded.Value;
-        BinkRect crop = sourceRect ?? new BinkRect(0, 0, source.Width, source.Height);
-        if (crop.Width <= 0 || crop.Height <= 0) return;
+        if (sourceRect is { } requested && (requested.Width <= 0 || requested.Height <= 0)) return;
 
         // Map each destination device pixel back to a source pixel (bilinear), which handles rotation and scale.
         BinkRect deviceRect = destination.Transform(_state.Transform).Intersect(_state.Clip);
@@ -236,6 +229,19 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
         int y0 = Math.Max((int)MathF.Floor(deviceRect.Top), 0);
         int x1 = Math.Min((int)MathF.Ceiling(deviceRect.Right), _target.Width);
         int y1 = Math.Min((int)MathF.Ceiling(deviceRect.Bottom), _target.Height);
+        long samples = x1 > x0 && y1 > y0 ? (long)(x1 - x0) * (y1 - y0) * BinkRasterizer.SubSamples : 0;
+        if (samples > RasterWorkBudget - _rasterWork) throw new InvalidOperationException(BinkRasterizer.WorkLimitMessage);
+        _rasterWork += samples;
+
+        BinkPngCodec.DecodedImage? decoded = GetImage(image, destination, deviceRect);
+        if (decoded is null)
+        {
+            SkippedImages++;
+            return;
+        }
+
+        BinkPngCodec.DecodedImage source = decoded.Value;
+        BinkRect crop = sourceRect ?? new BinkRect(0, 0, source.Width, source.Height);
 
         float scaleX = crop.Width / destination.Width;
         float scaleY = crop.Height / destination.Height;
@@ -295,7 +301,7 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
     /// <see cref="SmallImagePixels"/>, a density sensible for where it is drawn. The size is read from the header
     /// first, so an image that is refused is never decompressed.
     /// </summary>
-    private BinkPngCodec.DecodedImage? GetImage(BinkImageSource image, BinkRect destination, BinkRect? sourceRect)
+    private BinkPngCodec.DecodedImage? GetImage(BinkImageSource image, BinkRect destination, BinkRect deviceRect)
     {
         byte[]? bytes = null;
         if (!_imageCache.TryGetValue(image.Uri, out CachedImage? entry))
@@ -313,8 +319,8 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
         if (pixels > SmallImagePixels)
         {
             float deviceArea = MathF.Abs(_state.Transform.GetDeterminant()) * destination.Width * destination.Height;
-            double shown = sourceRect is { } crop ? (double)MathF.Max(crop.Width, 0) * MathF.Max(crop.Height, 0) : pixels;
-            if (!(shown <= MaxSourcePixelsPerDevicePixel * (double)deviceArea)) return null;
+            double shown = Math.Min(deviceArea, (double)deviceRect.Width * deviceRect.Height);
+            if (!(pixels <= MaxSourcePixelsPerDevicePixel * shown)) return null;
         }
 
         if (bytes is null && !image.TryGetBytes(out bytes))
@@ -322,10 +328,10 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
             entry.Unusable = true;
             return null;
         }
+        _decodedImagePixels += pixels;
         try
         {
             entry.Image = BinkPngCodec.Decode(bytes, maxPixels: pixels);
-            _decodedImagePixels += pixels;
         }
         catch (Exception ex) when (ex is FormatException or InvalidDataException or ArgumentException or OutOfMemoryException)
         {

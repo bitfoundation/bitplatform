@@ -130,12 +130,13 @@ public class McpController : ControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(InspectBinkDocument), Title = "Inspect a Bink document", ReadOnly = true, OpenWorld = false, UseStructuredContent = true)]
     [Description("Runs Bit.Bink's own serializer and exporters on a saved Bink JSON document and reports what the library makes of it: whether BinkSerializer.TryDeserialize accepts it under the untrusted-input limits (and its error when not), its page, layers, element types, brush kinds and point encodings, content bounds, compact and readable sizes, whether a save round trip is stable, what the server-side PNG exporter has to skip, and optionally its SVG - with notes on what to change. Call it with no document for a sample document written by the library, the quickest way to see the format.")]
-    public BinkDocumentReportDto InspectBinkDocument(
+    public Task<BinkDocumentReportDto> InspectBinkDocument(
         [Description("The document's JSON, as BinkSerializer.Serialize writes it (up to 2 MB). Omit it to get a sample document instead.")] string? json = null,
         [Description("True to also return the document exported by BinkSvgExporter (truncated past 30,000 characters).")] bool includeSvg = false,
-        [Description("The region the SVG export covers: 'Page' (the default, the document's page) or 'Content' (the ink plus padding).")] string region = "Page")
+        [Description("The region the SVG export covers: 'Page' (the default, the document's page) or 'Content' (the ink plus padding).")] string region = "Page",
+        CancellationToken cancellationToken = default)
     {
-        return BinkDocumentLab.Inspect(json, includeSvg, region);
+        return BinkDocumentLab.InspectAsync(json, includeSvg, region, cancellationToken);
     }
 
     [HttpGet]

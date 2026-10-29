@@ -1552,6 +1552,11 @@ Images are the one external reference the output can contain: a `BinkImageElemen
 is written as an `image` element pointing at it. Embed images as data URIs, or refuse remote sources on load with
 `AllowRemoteImages = false`, if the exported file must be self-contained.
 
+An embedded image is written in full wherever it is drawn, so a document that shows one picture many times can
+export to far more text than it holds. A server that exports documents it did not write can cap the output with
+`MaxLength`, in characters: past it the export throws `InvalidOperationException` instead of writing more. There is
+no cap by default.
+
 Injecting arbitrary SVG into a page is a scripting risk regardless of this library. To bring SVG from elsewhere
 into a drawing, import it instead, which turns it into Bink elements and never puts its markup in the page.
 
@@ -1664,6 +1669,13 @@ Embedded images are decoded within the same limit: each image, and all images to
 `MaxPixels`, an image larger than 4096 by 4096 is only decoded where it is drawn at no more than eight source
 pixels per device pixel along each axis, and the decoder grows its buffers as data actually arrives, so a small
 file that claims a huge image cannot allocate for it. Anything refused is counted in `SkippedImages`.
+
+Rasterizing takes time in proportion to the geometry: every edge of a shape is tested on each sub-row of every
+pixel row it spans, and every element is drawn across its bounds. A document built to be expensive, with thousands
+of edges crossing every row or thousands of elements that each cover the page, can keep one export busy for
+minutes. A server that exports documents it did not write can cap that work with `MaxRasterWork`, counted in edge
+tests, sorted crossings and pixels touched: past it the export throws `InvalidOperationException`. There is no cap
+by default; a page of handwriting at screen size needs well under a hundred million.
 
 `Scale` is independent of the display the drawing was made on. A signature captured on a phone and one captured
 on a desktop export at exactly the same resolution.
