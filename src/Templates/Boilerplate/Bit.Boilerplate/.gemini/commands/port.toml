@@ -1,0 +1,9 @@
+description = "Bring an existing app's functionality into this project - from its code in any language, the running app, screenshots or manuals - rebuilt on the template instead of copied: identity, tenancy, further apps and packages mapped onto the template, and feature parity proven scenario by scenario."
+
+prompt = """
+Follow these instructions exactly:
+
+@{.github/agents/port.agent.md}
+
+Source app, scope and constraints: {{args}}
+"""

@@ -88,8 +88,12 @@ Apply changes to `.razor`, `.razor.cs`, and `.razor.scss`:
 
 ### Step 6: Verify
 
-Fix any build errors, then open the page in both the light and the dark theme: a hardcoded or non-token color only
-shows up in one of them.
+Fix any build errors, then use the page in the running app with the Playwright MCP tools (`AGENTS.md` section 4)
+rather than only looking at it: pick a value in every input you replaced, toggle every switch, open every dropdown and
+dialog, and submit each form empty and filled. A binding that broke in the swap shows only there - a `BitDropdown`
+whose `TValue` is `Guid?` while its items are `BitDropdownItem<Guid>` matches nothing, so its value shows empty and
+picking one gives null. Do it in both the light and the dark theme, since a hardcoded or non-token color only shows up
+in one of them, and once at phone width.
 
 ---
 

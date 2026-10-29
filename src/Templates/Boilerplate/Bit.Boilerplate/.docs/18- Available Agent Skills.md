@@ -105,6 +105,7 @@ To add a new skill: create `.github/agents/<your-skill>.agent.md` with the full 
 - Uses `::deep` selectors for proper component styling
 - Updates event handlers to use `WrapHandled` pattern
 - Ensures light/dark theme compatibility
+- Uses the page in the running app afterwards - every replaced input, dropdown, dialog and form, in both themes and at phone width - since a binding broken in the swap shows only there
 
 **Example usage**: `/bitify-ui UserProfile.razor`
 
@@ -149,7 +150,7 @@ It carries `context: fork` in its frontmatter, so tools that support forked skil
 - Phase 3 - Design of affected files, components, APIs and data models
 - Phase 4 - Implementation, one task at a time
 - On the full track, writes the agreed requirements into the feature specs in `specs/` and the approved plan into `specs/changes/` - design, a task checklist and plan changes, kept current - so the work can be resumed in another session or tool and reviewed with the code, and picks the work up from there when the branch already has a plan
-- Phase 5 - Validation via build, tests and the `review` skill
+- Phase 5 - Validation via build, tests, the `review` skill, and a walk through the change's acceptance criteria in the running app
 - Checks every request against the optional template features this project did not enable, so they are ported from `bitfoundation/bitplatform` instead of reinvented
 - Proposes the bit libraries this project doesn't use yet, which `AGENTS.md` lists with their MCP servers, when a request falls in their area
 - Delegates to `scaffold-entity` where it applies
@@ -201,6 +202,28 @@ Everything lives in the one skill file; it brings no scripts or tools of its own
 - Proves the result: build, formatting, tests, and the app running
 
 **Example usage**: `/upgrade` or `/upgrade to the newest prerelease`
+
+---
+
+### 8. Port (`port`)
+
+**Canonical file**: `.github/agents/port.agent.md`
+
+**What it does**: Brings an existing application's functionality into this project - its features, business rules, calculations, reports, permissions and workflows, with their UI and UX - rebuilt on this project's architecture instead of copied, and proves feature parity in the running app. `rebrand` decides how the result looks; `port` decides what it does.
+
+**When to use it**: When an existing product - an old .NET app, a site or app written in another language, a native mobile app, or one whose source code is gone - should be rebuilt on this project.
+
+**Key capabilities**:
+- Takes any source: code in any language, the running app, screenshots, videos, manuals or a database. When the source isn't C#, or there is no source code, it starts from a reverse-engineering pass - an installed reverse-engineering skill's, or its own by the same rules
+- Turns the source into one spec per feature and a parity table in the plan: each behavior, its source reference, where it lives now, its test and its status
+- Recommends how the source maps onto the template, with a reason for each: the template's identity when the source's is a subset of it, multi-tenancy brought in first when the source is multi-tenant and the project isn't, further apps as client and host projects of their own, the optional template features the source needs, and whether the source's data moves over
+- Replaces the source's heavy client packages with bit platform equivalents or light libraries, and moves as much of their work as it can to the server
+- Rewrites JavaScript in C# with Bit.Butil wherever C# can do the same, and keeps it only where it works the DOM heavily, such as canvas and SVG drawing
+- Keeps the native SDKs a source depends on, since Java, Kotlin, Swift and Objective-C libraries can be used from the MAUI app
+- Copies none of the source's code but the JavaScript it keeps, and gives the project new secrets instead of the source's unless one can't be reissued
+- Runs the work through `ai-dlc`, hands the look of each app to `rebrand`, and walks every row of the parity table in the running app, side by side with the source where it still runs
+
+**Example usage**: `/port our old Xamarin point of sale in ../Tradeer - the till and the back office`
 
 ---
 

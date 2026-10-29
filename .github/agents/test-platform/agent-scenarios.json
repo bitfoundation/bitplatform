@@ -112,6 +112,10 @@
         {
           "skill": "review",
           "long": true
+        },
+        {
+          "called": "browser_navigate",
+          "long": true
         }
       ]
     },
@@ -378,6 +382,9 @@
         },
         {
           "called": "SearchBitBlazorUI"
+        },
+        {
+          "called": "browser_navigate"
         },
         {
           "fileLacks": {
