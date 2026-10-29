@@ -15,6 +15,7 @@ public sealed class BevToolsLoader : IDisposable
     private readonly IJSRuntime _js;
     private IBevToolsAttachment? _attachment;
     private bool? _canOpen;
+    private bool _authorized;
 
     internal BevToolsLoader(BevToolsLoaderContext context, IServiceProvider services, IJSRuntime js)
     {
@@ -55,11 +56,13 @@ public sealed class BevToolsLoader : IDisposable
 
         // Asked before anything is downloaded or attached, and on every open: whoever is in the scope can change (a
         // sign-out in the same circuit), and a decision cached from before would outlive it.
-        if (!_context.RegisteredAtStartup && await AuthorizeAsync() is { } refusal)
+        if (await AuthorizeAsync() is { } refusal)
         {
+            _authorized = false;
             return Fail(refusal);
         }
 
+        _authorized = true;
         var entryPoint = await _context.LoadAsync(_js);
         if (entryPoint is null)
         {
@@ -92,14 +95,14 @@ public sealed class BevToolsLoader : IDisposable
 
     /// <summary>The panel to render: known once BevTools runs in this scope.</summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-    internal Type? PanelType => IsActive ? _context.EntryPoint?.PanelType : null;
+    internal Type? PanelType => IsActive && (_authorized || _context.Options.Authorize is null) ? _context.EntryPoint?.PanelType : null;
 
     /// <summary>
     /// Whether <see cref="BitBevToolsLoaderOptions.Authorize"/> accepts whoever is in this scope (true when none is
     /// set), on top of <see cref="CanOpen"/>. Use it to show the "Open dev tools" button only to the people allowed to
     /// press it; <see cref="OpenAsync"/> asks again either way.
     /// </summary>
-    public async Task<bool> IsAuthorizedAsync() => CanOpen && (_context.RegisteredAtStartup || await AuthorizeAsync() is null);
+    public async Task<bool> IsAuthorizedAsync() => CanOpen && await AuthorizeAsync() is null;
 
     /// <returns>Null when authorized, otherwise why not.</returns>
     private async Task<string?> AuthorizeAsync()

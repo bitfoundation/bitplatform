@@ -58,7 +58,7 @@ internal sealed class BevRenderProfile
 
     public required IReadOnlyList<BevProfileTypeTotals> Types { get; init; }
 
-    private static readonly Regex AssemblyQualification = new(@",\s*[^,\[\]]+,\s*Version=[^,\]]*,\s*Culture=[^,\]]*,\s*PublicKeyToken=[^,\]]*", RegexOptions.CultureInvariant);
+    private static readonly Regex AssemblyQualification = new(@",(?>\s*[^,\[\]]+),\s*Version=[^,\]]*,\s*Culture=[^,\]]*,\s*PublicKeyToken=[^,\]]*", RegexOptions.CultureInvariant);
 
     /// <summary>
     /// The name two recordings match a type by: the full name without the assembly versions a generic type's arguments

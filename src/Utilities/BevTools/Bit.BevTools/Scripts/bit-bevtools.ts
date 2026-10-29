@@ -192,7 +192,7 @@ const REDACTED = "«redacted»";
 // A JSON Web Token is a credential whatever key it is stored under, and "user"/"profile"/"session" are far more
 // common key names for one than "token" is.
 function looksLikeSecret(value: string) {
-    if (/ey[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}\./.test(value)) return true;
+    if (/(?:^|[^A-Za-z0-9_-])ey[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}\./.test(value)) return true;
     if (/\bBearer\s+\S+/i.test(value)) return true;
     if (/-----BEGIN [A-Z ]*PRIVATE KEY-----/i.test(value)) return true;
     if (/\b(?:AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{30,}|xox[abposr]-[A-Za-z0-9-]{10,}|[rs]k_(?:live|test)_[A-Za-z0-9]{16,})\b/.test(value)) return true;
@@ -844,6 +844,7 @@ function decodeBinary(s: BevSocketStats, direction: string, bytes: Uint8Array) {
             n++;
         } while ((b & 0x80) !== 0 && n < 5 && offset + n < bytes.length);
         const start = offset + n;
+        if (length < 0 || (b & 0x80) !== 0) break;
         const end = Math.min(start + length, bytes.length);
         // Seen mid-stream, after the handshake that names it: a circuit speaks blazorpack, an app's hub MessagePack.
         if (s.protocol === null) s.protocol = s.kind === "blazor-circuit" ? "blazorpack" : "messagepack";
@@ -1019,8 +1020,8 @@ function installPageListeners() {
             // component library, or a module import. Errors from elements do not bubble, hence the capture listener.
             const url = element.src || element.href || "";
             broadcast("OnJsError", {
-                message: "Failed to load <" + String(element.tagName).toLowerCase() + "> " + redactUrl(String(url)),
-                source: redactUrl(String(url)) || null,
+                message: ("Failed to load <" + String(element.tagName).toLowerCase() + "> " + redactUrl(String(url))).slice(0, 4000),
+                source: redactUrl(String(url)).slice(0, 4000) || null,
                 stack: null,
                 type: "ResourceLoadError",
             });
@@ -1029,8 +1030,8 @@ function installPageListeners() {
         const err = e.error;
         if (isConnectionDown(err)) return;
         broadcast("OnJsError", {
-            message: e.message || (err && err.message) || "Unknown error",
-            source: e.filename ? redactUrl(e.filename) + ":" + e.lineno + ":" + e.colno : null,
+            message: String(e.message || (err && err.message) || "Unknown error").slice(0, 4000),
+            source: e.filename ? (redactUrl(e.filename) + ":" + e.lineno + ":" + e.colno).slice(0, 4000) : null,
             stack: err && err.stack ? String(err.stack).slice(0, 4000) : null,
             type: err && err.name ? err.name : "Error",
         });
@@ -1039,7 +1040,7 @@ function installPageListeners() {
         const reason = e.reason;
         if (isConnectionDown(reason)) return;
         broadcast("OnJsError", {
-            message: reason && reason.message ? reason.message : String(reason),
+            message: String(reason && reason.message ? reason.message : reason).slice(0, 4000),
             source: null,
             stack: reason && reason.stack ? String(reason.stack).slice(0, 4000) : null,
             type: "UnhandledRejection",
@@ -1048,8 +1049,8 @@ function installPageListeners() {
     on(document, "securitypolicyviolation", (e: SecurityPolicyViolationEvent) => {
         // Blazor WebAssembly needs 'wasm-unsafe-eval' in script-src; a policy without it stops the runtime here.
         broadcast("OnJsError", {
-            message: "Content Security Policy blocked " + (e.blockedURI ? redactUrl(e.blockedURI) : "an inline resource") + " (" + (e.effectiveDirective || e.violatedDirective) + ")",
-            source: e.sourceFile ? redactUrl(e.sourceFile) + ":" + e.lineNumber + ":" + e.columnNumber : null,
+            message: ("Content Security Policy blocked " + (e.blockedURI ? redactUrl(e.blockedURI) : "an inline resource") + " (" + (e.effectiveDirective || e.violatedDirective) + ")").slice(0, 4000),
+            source: e.sourceFile ? (redactUrl(e.sourceFile) + ":" + e.lineNumber + ":" + e.columnNumber).slice(0, 4000) : null,
             stack: null,
             type: "CspViolation",
         });

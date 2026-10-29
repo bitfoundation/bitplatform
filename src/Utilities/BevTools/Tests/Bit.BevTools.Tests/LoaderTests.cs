@@ -283,6 +283,30 @@ public class LoaderTests : BunitContext
     }
 
     [TestMethod]
+    public async Task Authorize_decides_who_sees_a_BevTools_registered_at_startup_too()
+    {
+        var accepted = false;
+        Services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.RegisterAtStartup = true;
+            o.Authorize = _ => ValueTask.FromResult(accepted);
+        });
+        var cut = RenderHost();
+        var loader = cut.Instance.Loader;
+
+        Assert.IsTrue(loader.IsActive);
+        Assert.IsEmpty(cut.FindAll(".bev-root"));
+        Assert.IsFalse(await loader.IsAuthorizedAsync());
+        Assert.IsFalse(await Renderer.Dispatcher.InvokeAsync(() => loader.OpenAsync()));
+        StringAssert.Contains(loader.Problem, "did not accept");
+        Assert.IsEmpty(cut.FindAll(".bev-root"));
+
+        accepted = true;
+        Assert.IsTrue(await Renderer.Dispatcher.InvokeAsync(() => loader.OpenAsync()), loader.Problem);
+        cut.WaitForAssertion(() => Assert.IsNotEmpty(cut.FindAll(".bev-root")));
+    }
+
+    [TestMethod]
     public void By_default_BevTools_registers_at_startup_in_Development_only()
     {
         var development = new ServiceCollection().AddSingleton<IHostEnvironment>(new StubEnvironment("Development")).AddBitBevToolsLoaderServices();

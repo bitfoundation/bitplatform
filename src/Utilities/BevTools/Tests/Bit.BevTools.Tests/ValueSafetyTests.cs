@@ -44,6 +44,33 @@ public class ValueSafetyTests
     }
 
     [TestMethod]
+    [DataRow("Server=db;Password='P@ss word';User Id=sa", "Server=db;Password='" + BevRedactor.RedactedValue + "';User Id=sa")]
+    [DataRow("Server=db;Password='ab cd';User Id=sa", "Server=db;Password='" + BevRedactor.RedactedValue + "';User Id=sa")]
+    [DataRow("Server=db;Pwd=\"a;bcdef\";User Id=sa", "Server=db;Pwd=\"" + BevRedactor.RedactedValue + "\";User Id=sa")]
+    [DataRow("Server=db;Password='it''s';User Id=sa", "Server=db;Password='" + BevRedactor.RedactedValue + "';User Id=sa")]
+    [DataRow("{\"password\":\"a\\\"b c\",\"user\":\"ada\"}", "{\"password\":\"" + BevRedactor.RedactedValue + "\",\"user\":\"ada\"}")]
+    [DataRow("Server=db;Password='abc def", "Server=db;Password='" + BevRedactor.RedactedValue)]
+    public void A_quoted_value_is_redacted_up_to_its_closing_quote(string text, string expected)
+    {
+        Assert.IsTrue(BevRedactor.LooksLikeSecret(text));
+        Assert.AreEqual(expected, BevRedactor.RedactText(text));
+        Assert.IsFalse(BevRedactor.LooksLikeSecret(expected));
+    }
+
+    [TestMethod]
+    public void Text_built_to_make_the_credential_patterns_backtrack_is_checked_in_linear_time()
+    {
+        var text = string.Concat(Enumerable.Repeat("ey", 50_000));
+
+        var start = System.Diagnostics.Stopwatch.GetTimestamp();
+        Assert.IsFalse(BevRedactor.LooksLikeSecret(text));
+        Assert.AreSame(text, BevRedactor.RedactText(text));
+        var elapsed = System.Diagnostics.Stopwatch.GetElapsedTime(start);
+
+        Assert.IsTrue(elapsed.TotalMilliseconds < 1000, $"checking 100,000 characters took {elapsed.TotalMilliseconds:0} ms");
+    }
+
+    [TestMethod]
     public void A_credential_held_under_an_innocent_name_is_redacted()
     {
         var (session, scope) = TestHelpers.CreateSession();

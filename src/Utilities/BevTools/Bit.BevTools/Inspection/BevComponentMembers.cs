@@ -15,7 +15,8 @@ internal static class BevComponentMembers
 
     public static (PropertyInfo[] Parameters, PropertyInfo[] Cascading, PropertyInfo[] Injected) Of(Type type) => Cache.GetOrAdd(type, static t =>
     {
-        var all = t.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+        var all = t.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy)
+            .Where(p => !Attribute.IsDefined(p, typeof(BevToolsIgnoreAttribute), true)).ToArray();
         return (
             all.Where(p => p.IsDefined(typeof(ParameterAttribute), true)).OrderBy(p => p.Name).ToArray(),
             all.Where(p => p.IsDefined(typeof(CascadingParameterAttribute), true) || p.IsDefined(typeof(SupplyParameterFromQueryAttribute), true) || p.IsDefined(typeof(SupplyParameterFromFormAttribute), true)).OrderBy(p => p.Name).ToArray(),

@@ -210,6 +210,20 @@ public class ProtocolTests : BunitContext
         Assert.IsFalse(navigation.Title.Contains("abc123", StringComparison.Ordinal));
     }
 
+    [TestMethod]
+    public void A_JavaScript_error_longer_than_the_page_hub_ever_sends_is_refused()
+    {
+        var bridge = new BevJsBridge(Session, () => { });
+
+        bridge.OnJsError(new BevJsErrorPayload { Message = new string('e', 4001) });
+        bridge.OnJsError(new BevJsErrorPayload { Message = "TypeError: x is undefined", Stack = new string('s', 4001) });
+        bridge.OnJsError(new BevJsErrorPayload { Message = "TypeError: x is undefined", Source = new string('u', 4001) });
+        bridge.OnJsError(new BevJsErrorPayload { Message = "TypeError: x is undefined", Stack = "at app.js:1:1" });
+
+        Assert.AreEqual(1, Session.Browser.JsErrorCount);
+        Assert.ContainsSingle(Session.Errors.Snapshot());
+    }
+
     public sealed class SecretHolder : ComponentBase
     {
         [Parameter] public string ApiKey { get; set; } = "opaque-api-key";

@@ -237,7 +237,7 @@ public class BevTrackingJSRuntime : IJSRuntime
         if (record is not null)
         {
             var elapsed = Stopwatch.GetElapsedTime(record.StartTicks).TotalMilliseconds;
-            var error = exception is null ? null : exception.GetType().Name + ": " + exception.Message;
+            var error = exception is null ? null : exception.GetType().Name + ": " + BevRedactor.RedactText(exception.Message);
             Session.Interop.Complete(record, elapsed, exception is null, error);
             var severity = exception is not null ? BevToolsSeverity.Error : elapsed >= Session.Options.Diagnostics.SlowJsInteropMs ? BevToolsSeverity.Warning : BevToolsSeverity.Info;
             Session.Timeline.Complete(record.TimelineEventId, elapsed, exception is null ? null : "failed: " + error, severity);

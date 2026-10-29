@@ -111,7 +111,8 @@ loader repeats the few options it forwards (`ShowBadge`, `ToggleShortcut`, `Trac
 
 - **Registered at startup.** When `Bit.BevTools` is among the assemblies the app starts with and should run from the
   first render (`RegisterAtStartup`; Development by default), the loader registers it exactly as
-  `AddBitBevToolsServices` does and `<BevToolsLoaderPanel />` renders the panel from the start.
+  `AddBitBevToolsServices` does and `<BevToolsLoaderPanel />` renders the panel from the start; with `Authorize` set,
+  once an `OpenAsync` it accepted.
 - **Attached on demand.** Otherwise it installs hooks that cost next to nothing until BevTools is attached: a
   pass-through `IComponentActivator` (the renderer takes its activator when it is created, so this is the only way in
   without reflection), pass-through handlers in every `IHttpClientFactory` pipeline, the framework's ActivitySource and
