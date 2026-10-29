@@ -104,6 +104,7 @@ jobs:
           name: server-bundle
 #if (api == "Integrated")
 
+      # Writes APP_CERTIFICATE and APP_CERTIFICATE_RETIRED next to the server as the AppCertificate .crt and .key files.
       - name: Use the environment's app certificate
         uses: bitfoundation/bitplatform/.github/actions/boilerplate/app-certificate@1bd210c97dccce4c59b1b76dcae4ef9518e9681a # v-10.7.0
         with:
@@ -234,6 +235,7 @@ jobs:
         with:
           name: api-bundle
 
+      # Writes APP_CERTIFICATE and APP_CERTIFICATE_RETIRED next to the server as the AppCertificate .crt and .key files.
       - name: Use the environment's app certificate
         uses: bitfoundation/bitplatform/.github/actions/boilerplate/app-certificate@1bd210c97dccce4c59b1b76dcae4ef9518e9681a # v-10.7.0
         with:
@@ -324,6 +326,7 @@ jobs:
           ServerAddress: ${{ vars.SERVER_ADDRESS }}
           WindowsUpdate.FilesUrl: ${{ vars.WINDOWS_UPDATE_FILES_URL }}
 
+      # Logs in to Azure with the job's OIDC token and points vpk at the Artifact Signing account, so vpk pack signs the app.
       - name: Sign the app with Artifact Signing
         if: vars.CODE_SIGNING_ACCOUNT != ''
         uses: bitfoundation/bitplatform/.github/actions/boilerplate/artifact-signing@1bd210c97dccce4c59b1b76dcae4ef9518e9681a # v-10.7.0
