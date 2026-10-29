@@ -635,6 +635,18 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
     }
 }
 
+// The prefix and the suffix carry a fill of their own and sit flush against the ends of the frame, so without a
+// corner they draw a square block over its rounded ends, the same way the autofill cover of the input would.
+.bit-tfl-pre:first-child {
+    border-start-start-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+    border-end-start-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+}
+
+.bit-tfl-suf:last-child {
+    border-start-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+    border-end-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+}
+
 .bit-tfl-mln,
 .bit-tfl-mlf {
     .bit-tfl-fgp {
@@ -927,6 +939,20 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
         z-index: 1;
         position: relative;
         background: transparent;
+    }
+
+    // The input fills the frame at whichever end nothing else sits, so there its corners follow the frame's:
+    // what it paints - the cover over an autofilled value, the scrollbar of a multiline field - would otherwise
+    // be drawn square over the arcs of the border. The frame itself is not clipped instead, since that would
+    // cut off the focus rings of the buttons inside it and the required marker drawn outside it.
+    &:first-child .bit-tfl-inp {
+        border-start-start-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+        border-end-start-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+    }
+
+    &:last-child .bit-tfl-inp {
+        border-start-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
+        border-end-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
     }
 }
 
