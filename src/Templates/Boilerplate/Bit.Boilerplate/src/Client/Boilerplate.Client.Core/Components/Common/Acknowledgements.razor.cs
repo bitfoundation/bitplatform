@@ -187,7 +187,6 @@ public partial class Acknowledgements
     [
         //#if (pipeline == "GitHub")
         new("GitHub Actions", "https://github.com/features/actions", "https://github.com/actions/runner", "MIT"),
-        new("Azure WebApps Deploy", "https://github.com/Azure/webapps-deploy", "https://github.com/Azure/webapps-deploy", "MIT"),
         new("setup-xcode", "https://github.com/maxim-lobanov/setup-xcode", "https://github.com/maxim-lobanov/setup-xcode", "MIT"),
         new("Apple Actions", "https://github.com/Apple-Actions", "https://github.com/Apple-Actions", "MIT"),
         new("base64-to-file", "https://github.com/timheuer/base64-to-file", "https://github.com/timheuer/base64-to-file", "MIT"),

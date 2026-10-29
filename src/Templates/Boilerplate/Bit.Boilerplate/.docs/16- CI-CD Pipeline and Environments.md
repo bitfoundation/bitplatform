@@ -149,7 +149,6 @@ Configure it in Azure DevOps rather than GitHub:
    be set at queue time, which would freeze the version at whatever the template shipped.
 4. **Pipelines → Library → Secure files** → upload `Boilerplate.keystore` for the Android job, and add
    `ANDROID_RELEASE_KEYSTORE_PASSWORD` / `ANDROID_RELEASE_SIGNING_PASSWORD` as secret pipeline variables.
-   `bit keys android --alias Boilerplate` creates the keystore and shows its password, which both variables take.
 <!--#if (api == "Integrated" && database != "Sqlite" && database != "Other")-->
 5. **Pipelines → Edit → Variables** → add `DATABASE_CONNECTION_STRING` as a secret variable: a connection string to
    the production database with the rights to change its schema. `deploy_api_blazor` applies the database migrations
@@ -189,8 +188,8 @@ The project includes a complete CI/CD pipeline setup using GitHub Actions with *
 **Key Configuration**:
 - **Runner**: Ubuntu 24.04
 - **SDK Version**: Automatically detected from `global.json`
-- **Machine setup**: bit platform's `bit-setup` action, which installs the bit CLI and runs `bit setup`, which installs
-  only what the runner is missing
+- **Machine setup**: the bit CLI, installed once per job with `dotnet tool install Bit.Cli --version 11.0.0-pre-15`, then `bit setup`,
+  which installs only what the runner is missing
 - **Test Artifacts**: Retained for 14 days on failure
 
 **Important**: The CI workflow ensures that all code changes are validated before merging. It's the gatekeeper for code quality.
@@ -226,7 +225,7 @@ It runs `ci.yml` first, and only when its build and tests pass does it run the r
 **File**: [`/.github/workflows/cd-test.yml`](/.github/workflows/cd-test.yml)
 
 **Triggers**:
-- Push to `test` branch (automatic)
+- Push to `develop` branch (automatic): merging a pull request into `develop` updates the Test environment
 - Manual workflow dispatch
 
 **What It Does**:
@@ -239,6 +238,8 @@ secrets: inherit
 
 This triggers the same reusable template but with Test environment configuration. Unlike `cd-production.yml` it
 does not wait for `ci.yml`; copy its `ci` job and `needs: ci` here if Test deployments should wait for the tests too.
+Since `develop` should take changes only through pull requests whose CI passed, protect it with a required status
+check on `ci.yml`.
 
 **Pattern**: You can create similar files for Staging or any other environment you need (e.g., `cd-staging.yml`).
 
@@ -255,36 +256,28 @@ This is the **core deployment workflow** that handles building and deploying all
 - **Multi-Platform**: Builds server backend, Blazor WebAssembly, Android, iOS, macOS, and Windows
 - **Parallel Jobs**: All platform builds run in parallel for speed
 - **Artifact Storage**: Each platform produces an artifact that can be deployed independently
-- **Build Provenance**: In a public repository, each artifact gets a signed attestation of the commit and the run
-  that built it, which `gh attestation verify <downloaded artifact .zip> --repo <owner>/<repo>` checks. Private
+- **Build Provenance**: In a public repository, each artifact, and each server image by its digest, gets a signed
+  attestation of the commit and the run that built it, which `gh attestation verify <downloaded artifact .zip> --repo <owner>/<repo>` checks. Private
   repositories need GitHub Enterprise Cloud for attestations, so the step is skipped there. In a public repository
   the About page also shows the commit and the run that built the app, with a link to the attestations, and the
   Windows app shows who signed it once Windows has checked the signature
 
 **Jobs Overview**:
-1. **build_api_blazor** → **deploy_api_blazor**: Server backend + Blazor WebAssembly
-2. **build_blazor_hybrid_windows**: Windows desktop app (.exe installer)
-3. **build_blazor_hybrid_android**: Android app bundle (.aab for Google Play)
-4. **build_blazor_hybrid_iOS**: iOS app package (.ipa for App Store) and macOS app
-
-**Shared steps from bit platform**: three steps use short composite actions from
-[bitfoundation/bitplatform](https://github.com/bitfoundation/bitplatform/tree/develop/.github/actions/boilerplate), at the
-release tag of the project's bit platform version, so the workflows stay short and get their fixes with each upgrade:
-- `bit-setup` installs the bit CLI of that version and runs `bit setup`, which `ci.yml` uses too
-- `app-certificate` writes the `APP_CERTIFICATE` and `APP_CERTIFICATE_RETIRED` secrets next to the server as the
-  `AppCertificate` files, and fails the deploy when openssl can't read one
-- `artifact-signing` logs in to Azure with the job's OpenID Connect token and lets `vpk pack` sign with Artifact Signing
-
-Each is a few lines of YAML. To stop depending on that repository, copy one into your own `.github/actions` folder and
-point its step at the copy.
+<!--#if (aspire == true)-->
+- **build_server** → **deploy_server**: the server, as container images in GitHub Container Registry and a Docker Compose project that the environment's own server runs
+<!--#endif-->
+- **build_blazor_hybrid_windows**: Windows desktop app (.exe installer)
+- **build_blazor_hybrid_android**: Android app bundle (.aab for Google Play)
+- **build_blazor_hybrid_iOS**: iOS app package (.ipa for App Store) and macOS app
 
 ---
 
 ## 🏗️ Detailed Build and Deployment Pipeline
 
-### Job 1: Build API + Blazor WebAssembly
+<!--#if (aspire == true)-->
+### Job 1: Build the Server
 
-**Platform**: Ubuntu 24.04  
+**Platform**: Ubuntu, on a GitHub-hosted runner
 
 **Step-by-Step Process**:
 
@@ -292,8 +285,7 @@ point its step at the copy.
    ```yaml
    - Checkout source code
    - Setup .NET SDK (from global.json)
-   - bit setup --no-build: Node.js when the runner lacks it and the wasm-tools workload; the publish
-     that follows generates the CSS/JS from TypeScript and SCSS in its own build
+   - bit setup --no-build: Node.js when the runner lacks it and the wasm-tools workload
    ```
 
 2. **Localization with `bit translate`**
@@ -307,98 +299,72 @@ point its step at the copy.
    - Updates appsettings*.json files with environment variables
    - ServerAddress: Points to environment-specific API URL
    - BlazorMode: Set to 'BlazorWebAssembly'
-   - VAPID keys: For web push notifications
+   - VAPID public key: For web push notifications
    ```
+   - These values are built into the images, so each environment gets images of its own
 
-4. **Build Process**
+4. **Build and Push the Images**
    ```bash
-   # Publish self-contained Linux binary (Using Linux is optional)
-   dotnet publish -c Release --self-contained -r linux-x64 \
-     -p:Version="1.0.0" -p:Environment=Production
+   # The app host builds every project's container image and pushes it to GitHub Container Registry,
+   # as ghcr.io/<owner>/<repo>/serverweb:<environment>-<commit>
+   aspire do push
    ```
+   - The app version (`APP_VERSION`) and the environment reach the build through `Directory.Build.rsp`
 
-5. **Artifact Upload**
-<!--#if (api == "Integrated" && database != "Sqlite" && database != "Other")-->
-
-6. **Migrations Bundle**
+5. **Publish the Docker Compose Project**
    ```bash
-   dnx dotnet-ef@11.0.0-rc.2.26504.105 -- migrations bundle --self-contained --target-runtime linux-x64 --output efbundle
+   aspire publish -o aspire-output
    ```
-   - Packs the EF Core migrations into one executable, uploaded as the `migrations-bundle` artifact for Job 2
-<!--#endif-->
+   - Writes `docker-compose.yaml` and a `.env` that lists every value the deployment needs, uploaded as the
+     `compose` artifact
 
 ---
 
-### Job 2: Deploy API + Blazor WebAssembly
+### Job 2: Deploy the Server
 
-**Depends On**: Job `Build API + Blazor WebAssembly` job
+**Depends On**: Job `Build the Server`
 
-**Platform**: Ubuntu 24.04
+**Platform**: the environment's own server, through a self-hosted runner labeled `Test` or `Production`. The server
+needs Docker with its Compose plugin and curl, and nothing else: no SDK and no source code.
 
 **Step-by-Step Process**:
 
-1. **Download Build Artifact**
-   ```yaml
-   - Download server-bundle from previous job
-   - Contains complete self-contained application
-<!--#if (api == "Integrated")-->
-   - Write the environment's APP_CERTIFICATE secret (and APP_CERTIFICATE_RETIRED) next to it as the AppCertificate files
-<!--#if (notification == true)-->
-   - Put the environment's PRIVATE_VAPIDKEY and VAPID_SUBJECT secrets in its appsettings.json
+1. **Download the Compose Project**, and log in to GitHub Container Registry with the job's own read-only token
+2. **Write the Deploy Folder**, `~/deployments/<project>-<environment>`: the Compose file, a `.env` with every value
+   the Compose project lists (from the environment's secrets; a missing one stops the deployment), the app settings
+   files and the app certificate
+3. **Apply Database Migrations**: a one-shot `migrations` container runs the api's own image with
+   `MigrateDatabaseAndExit=true`. When it fails, the deployment stops and the running version keeps serving
+4. **Start the New Version**: `docker compose up --wait`, which fails unless every container is healthy, and none may
+   restart in the 30 seconds after
+5. **Check the Public Address**: poll `/alive` at `SERVER_ADDRESS` for up to five minutes
+<!--#if (cloudflare == true)-->
+6. **CDN Cache Purge**: purge the Cloudflare cache, so users get the new version immediately
 <!--#endif-->
-<!--#endif-->
-   ```
-<!--#if (api == "Integrated")-->
-   - The deploy job applies these secrets, not the build job: anyone who can read the repository can download its build artifacts
-<!--#endif-->
-
-<!--#if (api == "Integrated" && database != "Sqlite" && database != "Other")-->
-2. **Apply Database Migrations**
-   ```yaml
-   - Download the migrations bundle the build job made
-   - Run it against the database in the DATABASE_CONNECTION_STRING secret
-   - Stop here if a migration fails, so the new version never runs on an old database schema
-   ```
-
-3. **Azure Web App Deployment** (optional - you can use any hosting)
-<!--#else-->
-2. **Azure Web App Deployment** (optional - you can use any hosting)
-<!--#endif-->
-   ```yaml
-   - Deploy to Azure Web App
-   - Uses publish profile from secrets
-   - Deploys to production slot
-   - Returns webapp URL
-   ```
-
-<!--#if (api == "Integrated" && database != "Sqlite" && database != "Other")-->
-4. **CDN Cache Purge**
-<!--#else-->
-3. **CDN Cache Purge**
-<!--#endif-->
-   ```yaml
-   - Purge Cloudflare cache (if configured)
-   - Ensures users get the latest version immediately
-   - No stale cached responses
-   ```
 
 **Important Notes**:
-- ✅ **Azure is Optional**: You can deploy to AWS, Google Cloud, your own servers, Docker, Kubernetes, Windows/IIS etc.
-- ✅ **Cloudflare is Optional**: CDN cache purging is only needed if you're using a CDN
-- ⚠️ **Not Yet Aspire-Friendly**: The backend deployment workflow doesn't yet integrate with .NET Aspire orchestration
-<!--#if (api == "Standalone" && database != "Sqlite" && database != "Other")-->
-- ✅ **Database Migrations**: the api deploys in its own `deploy_api` job, which runs the migrations bundle `build_api` made against the database in the `DATABASE_CONNECTION_STRING` secret right before it deploys the api
-<!--#endif-->
-<!--#if (api == "Standalone" && notification == true)-->
-- ✅ **Secrets**: the api's own `deploy_api` job writes the environment's `APP_CERTIFICATE` (and `APP_CERTIFICATE_RETIRED`) next to the api, and its `PRIVATE_VAPIDKEY` and `VAPID_SUBJECT` into its appsettings.json, before the api or its migrations start
-<!--#elif (api == "Standalone")-->
-- ✅ **Secrets**: the api's own `deploy_api` job writes the environment's `APP_CERTIFICATE` (and `APP_CERTIFICATE_RETIRED`) next to the api before the api or its migrations start
-<!--#endif-->
-<!--#if (database == "Sqlite")-->
-- ✅ **Database Migrations**: the app applies them itself when it starts
-<!--#endif-->
+- ✅ **No Inbound Port**: the runner pulls its jobs from GitHub and the Cloudflare Tunnel's connector dials out, so
+  the server accepts no connection from the internet. The `deploy` agent skill (`.github/agents/deploy.agent.md`)
+  sets up the server, the runner, the tunnel and the secrets
+- ✅ **Database Migrations**: every deployment applies them before the new version starts, while the previous version
+  is still serving, so every migration has to keep that version working: add a column in one release and drop the old
+  one in a later release, rather than renaming it in one go. The project needs its first migration before the first
+  deployment (`bit new` creates `Initial`)
+- ⚠️ **A Short Outage**: Compose replaces the app's containers in place, so requests fail for the seconds the new
+  ones take to start
+- ✅ **Rollback**: deploy an earlier commit again, whose images are still in the registry. Migrations only go forward
+- ✅ **Data**: what the server stores lives in Docker volumes named after the Compose project, so back them up off the
+  server. Renaming the app host project renames the volumes
 <!--#if (database == "Other")-->
-- ⚠️ **The Database Is Not Migrated Here**: see "Applying Migrations to a Deployed Database" in `.docs/01- Entity Framework Core.md`
+- ⚠️ **Your Database Provider**: the app reads its connection string as `otherdb`, from the
+  `DATABASE_CONNECTION_STRING` secret, and the migrations container calls `MigrateAsync` on it
+<!--#endif-->
+<!--#else-->
+### The Server
+
+This project has no .NET Aspire app host, so the CD deploys no server: the server ships as a Docker Compose project
+that Aspire publishes from the app host. Bring .NET Aspire into the project, and the `deploy` agent skill
+(`.github/agents/deploy.agent.md`) sets up the rest.
 <!--#endif-->
 
 ---
@@ -481,7 +447,6 @@ Each signed file counts against the account's monthly quota. To sign only the ex
    - Configure keystore for release signing
    ```
    - The keystore is stored as a GitHub secret in base64 format for security
-   - `bit pipeline` creates the keystore and its three secrets, and `bit keys android` creates one as a file
 
 2. **Build Android App Bundle (AAB)**
 ```bash
@@ -546,8 +511,6 @@ dotnet publish -c Release \
    - Requires: Issuer ID, API Key ID, Private Key
    - Downloads profile for specified Bundle ID
    ```
-   - No Mac needed to make them: `bit pipeline` creates the distribution certificate, its `.p12` and the App Store
-     provisioning profile through the App Store Connect API and stores them, and `bit keys apple` writes them as files
 
 3. **Build iOS App Package (IPA)**
    ```bash
@@ -598,10 +561,10 @@ The workflow follows a **security-focused two-phase deployment** pattern that se
 - Uploads artifacts to GitHub (or Azure DevOps)
 - **No production access** - isolated from production systems
 
-> **The build phase does not run tests.** `cd-template.yml` goes straight from `bit setup` to
-> `dotnet publish`. The tests run in `ci.yml`, on every pull request and, through `cd-production.yml`, before every
+> **The build phase does not run tests.** `cd-template.yml` goes straight from `bit setup` to building the
+> images and the apps. The tests run in `ci.yml`, on every pull request and, through `cd-production.yml`, before every
 > production deployment. `cd-test.yml` does not wait for them, so to gate the Test environment as well, give it the
-> same `ci` job or protect the `test` branch with a required status check on `ci.yml`.
+> same `ci` job or protect the `develop` branch with a required status check on `ci.yml`.
 
 ### Phase 2: Deploy
 **Purpose**: Take pre-built artifacts and deploy them  
@@ -635,28 +598,30 @@ The workflow follows a **security-focused two-phase deployment** pattern that se
 3. **Separation of Concerns**: Build failures don't affect production; deployment issues don't corrupt build artifacts
 4. **Audit Trail**: Clear separation between what was built and what was deployed
 
+<!--#if (aspire == true)-->
 **Example from the Workflow**:
 ```yaml
 # Phase 1: Build (no production access)
-build_api_blazor:
+build_server:
   runs-on: ubuntu-26.04
   steps:
     - uses: actions/checkout@v7
     - uses: actions/setup-dotnet@v6
-    - run: dotnet tool install --global Bit.Cli --version 11.0.0-pre-15
     - run: bit setup --no-build --yes
-    - run: dotnet publish ...
-    - uses: actions/upload-artifact@v7  # Save artifact
+    - run: aspire do push                    # Build the images and push them to the registry
+    - run: aspire publish -o aspire-output   # The Docker Compose project
+    - uses: actions/upload-artifact@v7
 
 # Phase 2: Deploy (has production access)
-deploy_api_blazor:
-  needs: build_api_blazor  # Depends on Phase 1
-  runs-on: ubuntu-26.04
+deploy_server:
+  needs: build_server                     # Depends on Phase 1
+  runs-on: [self-hosted, Production]      # The environment's own server
   steps:
-    - uses: actions/download-artifact@v8  # Get pre-built artifact
-    - uses: azure/webapps-deploy@v3      # Deploy to production
+    - uses: actions/download-artifact@v8  # Get the Docker Compose project
+    - run: docker compose pull && docker compose run --rm migrations && docker compose up -d --wait
 ```
 
+<!--#endif-->
 **Result**: Even if an attacker compromises the build agent (which has many tools installed), they cannot access production. Conversely, if the deployment agent is compromised, the attacker cannot inject malicious code into the build process.
 
 ---
@@ -666,14 +631,6 @@ deploy_api_blazor:
 The CI/CD pipeline requires various secrets and variables to be configured in GitHub. These are stored per environment (Production, Test, Staging, etc.).
 
 ### How to Configure in GitHub
-
-Run `bit pipeline` in the repository. It reads the secrets the workflows use, the reusable workflows they call included,
-creates the environments they deploy to, and stores each secret in its environment. It creates what it can on its own:
-the VAPID key pair, the app certificate and the Android signing key, which it also adds to `assetlinks.json`, and with
-an App Store Connect API key you give it, the iOS app's signing certificate and provisioning profile. It asks for the
-rest, and an empty answer skips one. `bit pipeline --check` only lists what's missing.
-
-Or by hand:
 
 1. Navigate to your repository → **Settings** → **Environments**
 2. Create environment (e.g., "Production", "Test")
@@ -686,58 +643,66 @@ Or by hand:
 **Production Environment**:
 ```
 Variables:
-  SERVER_ADDRESS = https://api.myapp.com
+  SERVER_ADDRESS = https://myapp.com
   APP_VERSION = 1.0.0
   APP_TITLE = My App
   APP_ID = com.myapp                       (bundle id / Velopack package id)
-  APP_SERVICE_NAME = my-app-service        (Azure App Service name)
-  WINDOWS_UPDATE_FILES_URL = https://api.myapp.com/windows
+  WINDOWS_UPDATE_FILES_URL = https://myapp.com/windows
   OPENAI_ENDPOINT = <optional, only if you use bit translate>
 
 Secrets:
-  AZURE_PUBLISH_PROFILE = <production publish profile>
-  APP_CERTIFICATE = <the production AppCertificate, its .crt and .key in one PEM>
-  APP_CERTIFICATE_RETIRED = <optional - the certificate it replaced, see AppCertificate.md>
-  PUBLIC_VAPIDKEY = <production VAPID public key>
-  PRIVATE_VAPIDKEY = <production VAPID private key>
-  VAPID_SUBJECT = <mailto: address or https URL the push services can reach you at>
   OPENAI_APIKEY = <optional - when unset, the bit translate step translates nothing>
 ```
 
 The mobile/desktop jobs additionally need `ANDROID_RELEASE_KEYSTORE_FILE_BASE64`,
 `ANDROID_RELEASE_KEYSTORE_PASSWORD`, `ANDROID_RELEASE_SIGNING_PASSWORD` and, for iOS, the
 `APPSTORE_*` code-signing secrets plus the `IOS_CODE_SIGN_PROVISION` variable.
-<!--#if (api == "Standalone")-->
-Because this project uses `--api Standalone`, the api is deployed separately and also needs
-`API_APP_SERVICE_NAME` (variable) and `API_AZURE_PUBLISH_PROFILE` (secret).
-<!--#endif-->
-<!--#if (database != "Sqlite" && database != "Other")-->
-Every environment that deploys also needs the `DATABASE_CONNECTION_STRING` secret: a connection string to that
-environment's database with the rights to change its schema. The deploy job applies the database migrations with it
-before it deploys the new version, and stops the deployment when it is missing or wrong.
+<!--#if (aspire == true)-->
 
-The migrations bundle runs on the pipeline's runner, so the database has to accept connections from it; if it
-doesn't, use a self-hosted runner, or delete the two migration steps and migrate another way. The bundle starts the
-app's own startup code, so it runs inside the published folder, where it finds the app's settings and its
-`AppCertificate` files; if your certificate reaches the server some other way, put it next to the bundle as well.
-And since it runs while the previous version is still serving, every migration has to keep that version working:
-add a column in one release and drop the old one in a later release, rather than renaming it in one go.
+The server's deployment reads these too, set per environment:
+
+| Name | Kind | Holds |
+| --- | --- | --- |
+| `SMTP_CONNECTION_STRING` | secret | The SMTP server the app sends email through, such as `Endpoint=smtp://host:587;UserName=...;Password=...` |
+| `APP_CERTIFICATE_CRT`, `APP_CERTIFICATE_KEY` | secret | The PEM text of this environment's own `AppCertificate` pair, never the development one |
+| `SERVERWEB_SETTINGS` | secret, optional | Any other setting of the web app, one `Section__Key=value` line each |
+<!--#if (api == "Standalone")-->
+| `SERVERAPI_SETTINGS` | secret, optional | The same, for the api |
+<!--#endif-->
+<!--#if (database == "SqlServer")-->
+| `DATABASE_PASSWORD` | secret | The database server's password, which SQL Server holds to its complexity rules; it takes effect only while the database volume is still empty |
+<!--#elif (database == "PostgreSQL" || database == "MySql")-->
+| `DATABASE_PASSWORD` | secret | The database server's password; it takes effect only while the database volume is still empty |
+<!--#elif (database == "Other")-->
+| `DATABASE_CONNECTION_STRING` | secret | The connection string the app reads as `otherdb` |
+<!--#endif-->
+<!--#if (filesStorage == "S3")-->
+| `S3_CONNECTION_STRING` | secret | The S3-compatible storage, such as Cloudflare R2, in the format of the samples in the server's `appsettings.json` |
+<!--#elif (filesStorage == "AzureBlobStorage")-->
+| `AZURE_BLOB_STORAGE_CONNECTION_STRING` | secret | The Azure Storage account the files go to |
+<!--#endif-->
+<!--#if (redis == true)-->
+| `REDIS_CACHE_PASSWORD`, `REDIS_PERSISTENT_PASSWORD` | secret | The passwords of the two Redis containers |
+<!--#endif-->
+<!--#if (cloudflare == true)-->
+| `CLOUDFLARE_TUNNEL_TOKEN` | secret | The connector token of the environment's Cloudflare Tunnel |
+| `CLOUDFLARE_ZONE`, `CLOUDFLARE_TOKEN` | secret | The zone, and an API token that may purge its cache |
+<!--#endif-->
+<!--#if (notification == true)-->
+| `PUBLIC_VAPIDKEY`, `PRIVATE_VAPIDKEY` | secret | The environment's web push key pair |
+| `VAPID_SUBJECT` | variable | The contact the push services see, such as `mailto:you@example.com` |
+<!--#endif-->
 <!--#endif-->
 
 **Test Environment**:
 ```
 Variables:
-  SERVER_ADDRESS = https://test-api.myapp.com
+  SERVER_ADDRESS = https://test.myapp.com
   APP_VERSION = 1.0.0
   APP_TITLE = My App (Test)
-
-Secrets:
-  AZURE_PUBLISH_PROFILE = <test publish profile>
-  APP_CERTIFICATE = <the test environment's own AppCertificate>
-  PUBLIC_VAPIDKEY = <test VAPID public key>
-  PRIVATE_VAPIDKEY = <test VAPID private key>
-  VAPID_SUBJECT = <mailto: address or https URL>
 ```
+
+Every secret above gets a value of its own for Test: its own database password, certificate, keys and tunnel.
 
 This allows the same workflow to deploy different configurations to different environments.
 

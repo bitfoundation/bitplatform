@@ -19,6 +19,10 @@ namespace Boilerplate.Tests.Features.AppHost;
 /// The control below is the half that makes this test mean something: run mode must still import the realm, or the
 /// assertion would also pass if <c>WithRealmImport</c> were deleted outright.
 /// </para>
+/// <para>
+/// Keycloak itself is now development only too: a production Keycloak needs a hostname, TLS and a database of its own,
+/// so the published application model leaves it out, and that counts as the realm not being imported.
+/// </para>
 /// </summary>
 [TestClass, TestCategory("UnitTest")]
 public class KeycloakRealmImportTests
@@ -56,7 +60,13 @@ public class KeycloakRealmImportTests
         Assert.AreEqual(runMode, builder.ExecutionContext.IsRunMode,
             "The app host did not start in the mode this test asked for, so neither assertion would mean anything.");
 
-        var keycloak = builder.Resources.Single(resource => resource.Name is "keycloak");
+        var keycloak = builder.Resources.SingleOrDefault(resource => resource.Name is "keycloak");
+
+        if (keycloak is null)
+        {
+            Assert.IsFalse(runMode, "Run mode lost its keycloak resource, so there is nothing to sign in with during development.");
+            return false;
+        }
 
         // WithRealmImport stages the folder through WithContainerFiles, not through a bind mount - the mount this
         // resource does carry is WithDataVolume's, at /opt/keycloak/data. The manifest renders both as bindMounts,

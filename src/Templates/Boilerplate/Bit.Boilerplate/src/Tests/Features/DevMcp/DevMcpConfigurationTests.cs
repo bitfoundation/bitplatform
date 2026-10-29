@@ -47,6 +47,23 @@ public class DevMcpConfigurationTests
     }
 
     [TestMethod]
+    public async Task Handshake_Should_NameTheEnvironment()
+    {
+        await using var server = new AppTestServer();
+        await server.Build().Start(TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
+        await using var _ = grant;
+
+        await using var mcp = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(client), "dev-mcp", TestContext.CancellationToken);
+
+        // An agent has the dev-mcp of Test and of Production side by side; the handshake is where it learns which one answers.
+        Assert.Contains("(Development)", mcp.ServerInfo.Title ?? string.Empty);
+        Assert.Contains("the Development environment", mcp.ServerInstructions ?? string.Empty);
+    }
+
+    [TestMethod]
     public async Task GetHealth_Should_ReturnPerCheckStatus()
     {
         await using var server = new AppTestServer();

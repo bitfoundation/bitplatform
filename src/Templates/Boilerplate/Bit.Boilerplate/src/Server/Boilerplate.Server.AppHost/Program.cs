@@ -3,6 +3,11 @@ using Microsoft.Extensions.Hosting;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
+// `aspire publish` turns the application model into the Docker Compose project the CD deploys to the server; run mode
+// leaves this resource out of the model. See `ConfigureDockerComposePublishing` below.
+var compose = builder.AddDockerComposeEnvironment("compose")
+    .WithDashboard(false);
+
 // Check out appsettings.Development.json for credentials/passwords settings.
 
 //#if(redis == true)
@@ -29,7 +34,9 @@ var azureBlobStorage = builder.AddAzureStorage();
 var s3Storage = builder.AddS3Storage();
 //#endif
 
-var keycloak = builder.AddKeycloak();
+// Development only: its realm seeds accounts with well-known passwords, and a production Keycloak needs a hostname,
+// TLS and a database of its own (as published, `start --import-realm` exits with "Key material not provided").
+var keycloak = builder.ExecutionContext.IsRunMode ? builder.AddKeycloak() : null;
 
 //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
 var embedding = builder.AddTextEmbeddingsInference();
@@ -71,7 +78,10 @@ serverApiProject.WithReference(azureBlobStorage);
 //#elif (filesStorage == "S3")
 serverApiProject.WithReference(s3Storage);
 //#endif
-serverApiProject.WithReference(keycloak);
+if (keycloak is not null)
+{
+    serverApiProject.WithReference(keycloak);
+}
 //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
 serverApiProject.WithEnvironment("AI__HuggingFace__EmbeddingEndpoint", embedding.GetEndpoint("http"));
 //#endif
@@ -96,7 +106,10 @@ serverWebProject.WithReference(azureBlobStorage);
 //#elif (filesStorage == "S3")
 serverWebProject.WithReference(s3Storage);
 //#endif
-serverWebProject.WithReference(keycloak);
+if (keycloak is not null)
+{
+    serverWebProject.WithReference(keycloak);
+}
 //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
 serverWebProject.WithEnvironment("AI__HuggingFace__EmbeddingEndpoint", embedding.GetEndpoint("http"));
 //#endif
@@ -114,6 +127,14 @@ builder.AddCloudflareTunnels(serverWebProject
     //#endif
     );
 //#endif
+
+// Publish mode only: the registry the images go to, the migrations service, health checks, restart policies and the
+// settings the deployed server reads from the deploy job.
+builder.ConfigureDockerComposePublishing(compose, serverWebProject
+    //#if (api == "Standalone")
+    , serverApiProject
+    //#endif
+    );
 
 if (builder.ExecutionContext.IsRunMode) // The following project is only added for testing purposes.
 {

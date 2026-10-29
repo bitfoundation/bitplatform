@@ -17,11 +17,16 @@ permissions:
 
 jobs:
 
-  build_api_blazor:
-    name: build api + blazor web
+#if (aspire == true)
+  # The server is a Docker Compose project that .NET Aspire publishes from the app host. This job builds its images on
+  # a GitHub-hosted runner, pushes them to GitHub Container Registry tagged with the environment and the commit, and
+  # hands the Compose file to deploy_server, which runs on the environment's own server and builds nothing.
+  build_server:
+    name: build server
     runs-on: ubuntu-26.04
     permissions:
       contents: read
+      packages: write
       id-token: write
       attestations: write
     environment: ${{ inputs.ENV_NAME }}
@@ -37,10 +42,14 @@ jobs:
         with:
           global-json-file: global.json
 
+      - name: Install the bit CLI
+        shell: pwsh
+        run: |
+          dotnet tool install Bit.Cli --version 11.0.0-pre-15 --tool-path "$env:RUNNER_TEMP/bit-cli"
+          Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
+
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/boilerplate/bit-setup@v-11.0.0-pre-15
-        with:
-          arguments: --no-build
+        run: bit setup --no-build --yes
 
       - name: Translate .resx files
         env:
@@ -60,102 +69,237 @@ jobs:
           AdsPushVapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
 #endif
 
-      - name: Publish
-        run: dotnet publish src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj -c Release --self-contained -r linux-x64 -o server -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }}
-      - name: Upload server artifact
-        id: server_artifact
+      - name: Install the Aspire CLI
+        run: |
+          dotnet tool install Aspire.Cli --version 13.6.4 --tool-path "$RUNNER_TEMP/aspire-cli"
+          echo "$RUNNER_TEMP/aspire-cli" >> "$GITHUB_PATH"
+
+      - name: Log in to GitHub Container Registry
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$GITHUB_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+
+      - name: Build and push the images
+        env:
+          ENV_NAME: ${{ inputs.ENV_NAME }}
+          APP_VERSION: ${{ vars.APP_VERSION }}
+        run: |
+          # Every dotnet build and publish from here on reads Directory.Build.rsp - the ones Aspire runs to build the images
+          # included - which gives the images the version and the environment the other jobs pass with -p.
+          { if [ -n "$APP_VERSION" ]; then echo "-p:Version=$APP_VERSION"; fi; echo "-p:Environment=$ENV_NAME"; } > Directory.Build.rsp
+          export REGISTRY_ENDPOINT=ghcr.io REGISTRY_REPOSITORY="${GITHUB_REPOSITORY,,}" IMAGE_TAG="${ENV_NAME,,}-$GITHUB_SHA"
+          # shellcheck disable=SC1010 # `do` is the aspire subcommand here, not the shell keyword.
+          aspire do push --apphost src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj --environment "$ENV_NAME" --non-interactive
+
+      - name: Publish the Docker Compose project
+        env:
+          ENV_NAME: ${{ inputs.ENV_NAME }}
+        run: aspire publish --apphost src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj --environment "$ENV_NAME" --non-interactive --no-build --output-path aspire-output
+
+      - name: Upload the Docker Compose project
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: server-bundle
-          path: server
-          include-hidden-files: true # Required for wwwroot/.well-known folder
+          name: compose
+          path: |
+            aspire-output/docker-compose.yaml
+            aspire-output/.env
+          include-hidden-files: true # Required for .env, the list of values the deploy job has to supply
 
-      - name: Attest server artifact
+      - name: Find the digests of the pushed images
+        id: images
+        if: github.event.repository.visibility == 'public'
+        env:
+          ENV_NAME: ${{ inputs.ENV_NAME }}
+        run: |
+          repository="ghcr.io/${GITHUB_REPOSITORY,,}"
+          echo "repository=$repository" >> "$GITHUB_OUTPUT"
+          for image in serverweb serverapi; do
+            if docker image inspect "$repository/$image:${ENV_NAME,,}-$GITHUB_SHA" > /dev/null 2>&1; then
+              echo "$image=$(docker buildx imagetools inspect "$repository/$image:${ENV_NAME,,}-$GITHUB_SHA" --format '{{json .Manifest}}' | jq --raw-output .digest)" >> "$GITHUB_OUTPUT"
+            fi
+          done
+
+      - name: Attest the serverweb image
         if: github.event.repository.visibility == 'public'
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
-          subject-name: server-bundle
-          subject-digest: sha256:${{ steps.server_artifact.outputs.artifact-digest }}
-#if (api == "Integrated" && database != "Sqlite" && database != "Other")
+          subject-name: ${{ steps.images.outputs.repository }}/serverweb
+          subject-digest: ${{ steps.images.outputs.serverweb }}
+          push-to-registry: true
+#if (api == "Standalone")
 
-      - name: Create the database migrations bundle
-        run: dnx dotnet-ef@11.0.0-rc.2.26504.105 -- migrations bundle --project src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj --configuration Release --self-contained --target-runtime linux-x64 --output efbundle --verbose
-
-      - name: Upload migrations bundle
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      - name: Attest the serverapi image
+        if: github.event.repository.visibility == 'public'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
-          name: migrations-bundle
-          path: efbundle
+          subject-name: ${{ steps.images.outputs.repository }}/serverapi
+          subject-digest: ${{ steps.images.outputs.serverapi }}
+          push-to-registry: true
 #endif
 
-  deploy_api_blazor:
-    name: deploy api + blazor
-    needs: build_api_blazor
-    runs-on: ubuntu-26.04
+      - name: Log out of GitHub Container Registry
+        if: always()
+        run: docker logout ghcr.io
+
+  # Runs on the environment's own server: a self-hosted runner labeled with the environment's name (Test or
+  # Production) on a machine that has Docker and nothing else - no SDK and no source code. It keeps each environment's
+  # Compose project in ~/deployments/<project>-<environment> of the runner's user.
+  deploy_server:
+    name: deploy server
+    needs: build_server
+    runs-on: [self-hosted, "${{ inputs.ENV_NAME }}"]
+    permissions:
+      contents: read
+      packages: read
     environment:
       name: ${{ inputs.ENV_NAME }}
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
+      url: ${{ vars.SERVER_ADDRESS }}
     steps:
 
-      - name: Retrieve server bundle
+      - name: Retrieve the Docker Compose project
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          name: server-bundle
-#if (api == "Integrated")
+          name: compose
+          path: compose
 
-      # Writes APP_CERTIFICATE and APP_CERTIFICATE_RETIRED next to the server as the AppCertificate .crt and .key files.
-      - name: Use the environment's app certificate
-        uses: bitfoundation/bitplatform/.github/actions/boilerplate/app-certificate@v-11.0.0-pre-15
-        with:
-          certificate: ${{ secrets.APP_CERTIFICATE }}
-          retired-certificate: ${{ secrets.APP_CERTIFICATE_RETIRED }}
-#if (notification == true)
-
-      - name: Use the environment's web push keys
-        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
-        with:
-          files: 'appsettings*json'
+      - name: Log in to GitHub Container Registry
         env:
-          AdsPushVapid.PrivateKey: ${{ secrets.PRIVATE_VAPIDKEY }}
-          AdsPushVapid.Subject: ${{ secrets.VAPID_SUBJECT }}
-#endif
-#endif
-#if (api == "Integrated" && database != "Sqlite" && database != "Other")
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$GITHUB_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
 
-      - name: Retrieve migrations bundle
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          name: migrations-bundle
-
-      - name: Apply database migrations
+      - name: Deploy
         env:
+          ENV_NAME: ${{ inputs.ENV_NAME }}
+          SMTP: ${{ secrets.SMTP_CONNECTION_STRING }}
+          APP_CERTIFICATE_CRT: ${{ secrets.APP_CERTIFICATE_CRT }}
+          APP_CERTIFICATE_KEY: ${{ secrets.APP_CERTIFICATE_KEY }}
+          SERVERWEB_SETTINGS: ${{ secrets.SERVERWEB_SETTINGS }}
+#if (api == "Standalone")
+          SERVERAPI_SETTINGS: ${{ secrets.SERVERAPI_SETTINGS }}
+#endif
 #if (database == "SqlServer")
-          ConnectionStrings__mssqldb: ${{ secrets.DATABASE_CONNECTION_STRING }}
+          SQLSERVER_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+#elif (database == "PostgreSQL")
+          POSTGRESSERVER_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+#elif (database == "MySql")
+          MYSQLSERVER_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+#elif (database == "Other")
+          OTHERDB: ${{ secrets.DATABASE_CONNECTION_STRING }}
 #endif
-#if (database == "PostgreSQL")
-          ConnectionStrings__postgresdb: ${{ secrets.DATABASE_CONNECTION_STRING }}
+#if (filesStorage == "S3")
+          S3: ${{ secrets.S3_CONNECTION_STRING }}
+#elif (filesStorage == "AzureBlobStorage")
+          AZUREBLOBSTORAGE: ${{ secrets.AZURE_BLOB_STORAGE_CONNECTION_STRING }}
 #endif
-#if (database == "MySql")
-          ConnectionStrings__mysqldb: ${{ secrets.DATABASE_CONNECTION_STRING }}
+#if (redis == true)
+          REDIS_CACHE_PASSWORD: ${{ secrets.REDIS_CACHE_PASSWORD }}
+          REDIS_PERSISTENT_PASSWORD: ${{ secrets.REDIS_PERSISTENT_PASSWORD }}
+#endif
+#if (cloudflare == true)
+          CLOUDFLARE_TUNNEL_TUNNEL_TOKEN: ${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}
+#endif
+#if (notification == true)
+          VAPID_PRIVATE_KEY: ${{ secrets.PRIVATE_VAPIDKEY }}
+          VAPID_SUBJECT: ${{ vars.VAPID_SUBJECT }}
 #endif
         run: |
-          chmod +x efbundle
-          ./efbundle
-          rm efbundle
-#endif
+          set -euo pipefail
 
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@02a81bead70021f5284939794bcec79c271ab383 # v3.0.8
-        with:
-          app-name: ${{ vars.APP_SERVICE_NAME }}
-          slot-name: 'production'
-          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
-          package: .
-          clean: false
+          project="$(printf '%s' "boilerplate-$ENV_NAME" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9_\n-' '-')"
+          deploy_dir="$HOME/deployments/$project"
+          compose() { docker compose --project-name "$project" --project-directory "$deploy_dir" --file "$deploy_dir/docker-compose.yaml" "$@"; }
 
+          umask 077
+          mkdir -p "$deploy_dir"
+          cp compose/docker-compose.yaml "$deploy_dir/docker-compose.yaml"
+
+          # The .env that aspire publish wrote lists every value the Compose project reads: the images and ports, and the
+          # parameters this step's env carries. Single quotes keep Compose from expanding a $ inside a secret.
+          repository="ghcr.io/${GITHUB_REPOSITORY,,}"
+          missing=()
+          : > "$deploy_dir/.env.new"
+          while IFS= read -r key; do
+            case "$key" in
+              *_IMAGE) value="$repository/$(printf '%s' "${key%_IMAGE}" | tr '[:upper:]_' '[:lower:]-'):${ENV_NAME,,}-$GITHUB_SHA" ;;
+              *_PORT) value=8080 ;;
+              *) value="${!key:-}" ;;
+            esac
+            if [[ -z "$value" || "$value" == *"'"* ]]; then
+              missing+=("$key")
+              continue
+            fi
+            printf "%s='%s'\n" "$key" "$value" >> "$deploy_dir/.env.new"
+          done < <(grep -oE '^[A-Z0-9_]+' compose/.env)
+          if (( ${#missing[@]} > 0 )); then
+            echo "::error::These values are empty, or contain a single quote: ${missing[*]}"
+            exit 1
+          fi
+          mv "$deploy_dir/.env.new" "$deploy_dir/.env"
+
+          # The settings no parameter carries - serverweb.env (and serverapi.env) - from KEY=value lines, the same way.
+          while IFS= read -r file; do
+            settings="$(printf '%s' "${file%.env}" | tr '[:lower:]-' '[:upper:]_')_SETTINGS"
+            : > "$deploy_dir/$file"
+            while IFS= read -r line; do
+              line="${line%$'\r'}"
+              if [[ -z "$line" || "$line" == "#"* ]]; then
+                continue
+              fi
+              if [[ "$line" != *=* || "${line#*=}" == *"'"* ]]; then
+                echo "::error::$settings has a line that is not KEY=value, or whose value contains a single quote: ${line%%=*}"
+                exit 1
+              fi
+              printf "%s='%s'\n" "${line%%=*}" "${line#*=}" >> "$deploy_dir/$file"
+            done <<< "${!settings:-}"
+          done < <(grep -E '^ +- "?[a-z0-9-]+\.env"?$' compose/docker-compose.yaml | grep -oE '[a-z0-9-]+\.env' | sort -u)
+
+          # The environment's own AppCertificate pair (See AppCertificate.md), which the api reads next to its binaries.
+          if [[ -z "$APP_CERTIFICATE_CRT" || -z "$APP_CERTIFICATE_KEY" ]]; then
+            echo "::error::APP_CERTIFICATE_CRT and APP_CERTIFICATE_KEY are not set."
+            exit 1
+          fi
+          rm -f "$deploy_dir/AppCertificate.crt" "$deploy_dir/AppCertificate.key"
+          printf '%s\n' "$APP_CERTIFICATE_CRT" > "$deploy_dir/AppCertificate.crt"
+          printf '%s\n' "$APP_CERTIFICATE_KEY" > "$deploy_dir/AppCertificate.key"
+          # Readable by the container's non-root user; the folder around them stays private to the runner's user.
+          chmod 0444 "$deploy_dir/AppCertificate.crt" "$deploy_dir/AppCertificate.key"
+
+          compose pull --quiet
+
+          # The new version's migrations first, on their own: if they fail, this step fails and the running version of
+          # the app is left untouched. `up` would replace the app's container before finding out.
+          compose run --rm migrations
+
+          compose up --detach --wait --wait-timeout 600 --remove-orphans
+
+          # --wait only sees the moment it looks, and a service without a health check (cloudflared) passes it while it
+          # crash loops. A restart count that still moves half a minute later fails the deployment.
+          restarts() { for container in $(compose ps --all --quiet); do docker inspect --format '{{.Name}} {{.RestartCount}} {{.State.Status}}' "$container"; done | sort; }
+          before="$(restarts)"
+          sleep 30
+          after="$(restarts)"
+          compose ps --all
+          if [[ "$before" != "$after" ]] || grep -qE ' (restarting|dead)$' <<< "$after"; then
+            echo "::error::A service is restarting:"
+            diff <(echo "$before") <(echo "$after") || true
+            compose logs --tail 200
+            exit 1
+          fi
+
+      - name: Check the public address
+        env:
+          SERVER_ADDRESS: ${{ vars.SERVER_ADDRESS }}
+        run: |
+          for _ in $(seq 1 30); do
+            if curl --fail --silent --show-error --max-time 10 "${SERVER_ADDRESS%/}/alive"; then
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::${SERVER_ADDRESS%/}/alive did not answer for five minutes."
+          exit 1
 #if (cloudflare == true)
+
       - name: Purge Cloudflare cache
         uses: jakejarvis/cloudflare-purge-action@eee6dba0236093358f25bb1581bd615dc8b3d8e3 # v0.3.0
         env:
@@ -163,127 +307,12 @@ jobs:
           CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
 #endif
 
-#if (api == "Standalone")
-  build_api:
-    name: build api
-    runs-on: ubuntu-26.04
-    permissions:
-      contents: read
-      id-token: write
-      attestations: write
-    environment: ${{ inputs.ENV_NAME }}
-    steps:
-
-      - name: Checkout source code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-        with:
-          global-json-file: global.json
-
-      - name: Update core appsettings.json
-        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
-        with:
-          files: 'src/**/appsettings*json'
-        env:
-          ServerAddress: ${{ vars.SERVER_ADDRESS }}
-
-      - name: Publish
-        run: dotnet publish src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj -c Release --self-contained -r linux-x64 -o server-api -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }}
-
-      - name: Upload api artifact
-        id: api_artifact
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: api-bundle
-          path: server-api
-          include-hidden-files: true # Required for wwwroot/.well-known folder
-
-      - name: Attest api artifact
-        if: github.event.repository.visibility == 'public'
-        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
-        with:
-          subject-name: api-bundle
-          subject-digest: sha256:${{ steps.api_artifact.outputs.artifact-digest }}
-#if (database != "Sqlite" && database != "Other")
-
-      - name: Create the database migrations bundle
-        run: dnx dotnet-ef@11.0.0-rc.2.26504.105 -- migrations bundle --project src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj --configuration Release --self-contained --target-runtime linux-x64 --output efbundle --verbose
-
-      - name: Upload migrations bundle
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: migrations-bundle
-          path: efbundle
-#endif
-
-  deploy_api:
-    name: deploy api
-    needs: build_api
-    runs-on: ubuntu-26.04
-    environment:
-      name: ${{ inputs.ENV_NAME }}
-      url: ${{ steps.deploy-api-to-webapp.outputs.webapp-url }}
-
-    steps:
-
-      - name: Retrieve api bundle
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          name: api-bundle
-
-      # Writes APP_CERTIFICATE and APP_CERTIFICATE_RETIRED next to the server as the AppCertificate .crt and .key files.
-      - name: Use the environment's app certificate
-        uses: bitfoundation/bitplatform/.github/actions/boilerplate/app-certificate@v-11.0.0-pre-15
-        with:
-          certificate: ${{ secrets.APP_CERTIFICATE }}
-          retired-certificate: ${{ secrets.APP_CERTIFICATE_RETIRED }}
-#if (notification == true)
-
-      - name: Use the environment's web push keys
-        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
-        with:
-          files: 'appsettings*json'
-        env:
-          AdsPushVapid.PrivateKey: ${{ secrets.PRIVATE_VAPIDKEY }}
-          AdsPushVapid.Subject: ${{ secrets.VAPID_SUBJECT }}
-#endif
-#if (database != "Sqlite" && database != "Other")
-
-      - name: Retrieve migrations bundle
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          name: migrations-bundle
-
-      - name: Apply database migrations
-        env:
-#if (database == "SqlServer")
-          ConnectionStrings__mssqldb: ${{ secrets.DATABASE_CONNECTION_STRING }}
-#endif
-#if (database == "PostgreSQL")
-          ConnectionStrings__postgresdb: ${{ secrets.DATABASE_CONNECTION_STRING }}
-#endif
-#if (database == "MySql")
-          ConnectionStrings__mysqldb: ${{ secrets.DATABASE_CONNECTION_STRING }}
-#endif
-        run: |
-          chmod +x efbundle
-          ./efbundle
-          rm efbundle
-#endif
-
-      - name: Deploy to Azure Web App
-        id: deploy-api-to-webapp
-        uses: azure/webapps-deploy@02a81bead70021f5284939794bcec79c271ab383 # v3.0.8
-        with:
-          app-name: ${{ vars.API_APP_SERVICE_NAME }}
-          slot-name: 'production'
-          publish-profile: ${{ secrets.API_AZURE_PUBLISH_PROFILE }}
-          package: .
-          clean: false
+      - name: Log out of GitHub Container Registry
+        if: always()
+        run: docker logout ghcr.io
+#else
+  # This project has no .NET Aspire app host, so these workflows do not deploy the server. It deploys once .NET Aspire
+  # is in the project.
 #endif
 
   build_blazor_hybrid_windows:
@@ -306,10 +335,14 @@ jobs:
         with:
           global-json-file: global.json
 
+      - name: Install the bit CLI
+        shell: pwsh
+        run: |
+          dotnet tool install Bit.Cli --version 11.0.0-pre-15 --tool-path "$env:RUNNER_TEMP/bit-cli"
+          Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
+
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/boilerplate/bit-setup@v-11.0.0-pre-15
-        with:
-          arguments: --platforms windows --no-build
+        run: bit setup --platforms windows --no-build --yes
 
       - name: Translate .resx files
         env:
@@ -326,17 +359,22 @@ jobs:
           ServerAddress: ${{ vars.SERVER_ADDRESS }}
           WindowsUpdate.FilesUrl: ${{ vars.WINDOWS_UPDATE_FILES_URL }}
 
-      # Logs in to Azure with the job's OIDC token and points vpk at the Artifact Signing account, so vpk pack signs the app.
-      - name: Sign the app with Artifact Signing
+      - name: Log in to Azure for code signing
         if: vars.CODE_SIGNING_ACCOUNT != ''
-        uses: bitfoundation/bitplatform/.github/actions/boilerplate/artifact-signing@v-11.0.0-pre-15
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
-          endpoint: ${{ vars.CODE_SIGNING_ENDPOINT }}
-          account: ${{ vars.CODE_SIGNING_ACCOUNT }}
-          certificate-profile: ${{ vars.CODE_SIGNING_CERTIFICATE_PROFILE }}
           client-id: ${{ secrets.CODE_SIGNING_CLIENT_ID }}
           tenant-id: ${{ secrets.CODE_SIGNING_TENANT_ID }}
           subscription-id: ${{ secrets.CODE_SIGNING_SUBSCRIPTION_ID }}
+
+      # vpk signs through Azure's signing library, whose DefaultAzureCredential tries managed identity, Visual Studio,
+      # VS Code and others before the Azure CLI. On a runner they only cost time or could sign in as someone else, so only
+      # the az login above is left.
+      - name: Sign the app with Artifact Signing
+        if: vars.CODE_SIGNING_ACCOUNT != ''
+        run: |
+          @{ Endpoint = '${{ vars.CODE_SIGNING_ENDPOINT }}'; CodeSigningAccountName = '${{ vars.CODE_SIGNING_ACCOUNT }}'; CertificateProfileName = '${{ vars.CODE_SIGNING_CERTIFICATE_PROFILE }}'; ExcludeCredentials = @('ManagedIdentityCredential', 'WorkloadIdentityCredential', 'SharedTokenCacheCredential', 'VisualStudioCredential', 'VisualStudioCodeCredential') } | ConvertTo-Json | Set-Content "$env:RUNNER_TEMP\code-signing.json"
+          "VPK_AZURE_TRUSTED_SIGN_FILE=$env:RUNNER_TEMP\code-signing.json" >> $env:GITHUB_ENV
 
       - name: Publish
         run: |
@@ -378,10 +416,14 @@ jobs:
         with:
           global-json-file: global.json
 
+      - name: Install the bit CLI
+        shell: pwsh
+        run: |
+          dotnet tool install Bit.Cli --version 11.0.0-pre-15 --tool-path "$env:RUNNER_TEMP/bit-cli"
+          Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
+
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/boilerplate/bit-setup@v-11.0.0-pre-15
-        with:
-          arguments: --platforms android --no-build
+        run: bit setup --platforms android --no-build --yes
 
       - name: Extract Android signing key
         uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
@@ -446,10 +488,14 @@ jobs:
         with:
           xcode-version: '27.0'
 
+      - name: Install the bit CLI
+        shell: pwsh
+        run: |
+          dotnet tool install Bit.Cli --version 11.0.0-pre-15 --tool-path "$env:RUNNER_TEMP/bit-cli"
+          Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
+
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/boilerplate/bit-setup@v-11.0.0-pre-15
-        with:
-          arguments: --platforms ios --no-build
+        run: bit setup --platforms ios --no-build --yes
 
       - name: Translate .resx files
         env:

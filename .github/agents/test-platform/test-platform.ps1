@@ -1581,7 +1581,7 @@ function Invoke-AgentTurn([string] $folder, [string] $model, [string] $prompt, [
         '--permission-mode', 'auto', '--permission-prompts', 'none', '--max-budget-usd', "$budget",
         '--disallowedTools', 'mcp__aspire', 'Bash(aspire *)', 'PowerShell(aspire *)', 'Bash(git push *)', 'PowerShell(git push *)',
         '--allowedTools', 'Read', 'Glob', 'Grep', 'Edit', 'Write', 'TodoWrite', 'Skill', 'Agent', 'WebFetch', 'WebSearch', 'ToolSearch',
-        'mcp__bitplatform', 'mcp__playwright', 'mcp__dev-mcp')
+        'mcp__bitplatform', 'mcp__playwright', 'mcp__dev-mcp-test', 'mcp__dev-mcp-production')
 
     if ($session) {
         $arguments += '--resume', $session

@@ -3,7 +3,7 @@ name: Boilerplate Test CD
 on:
   workflow_dispatch:
   push:
-    branches: [ "test" ]
+    branches: [ "develop" ]
 
 # `environment:` gates approval but does NOT serialize runs, so without this two pushes in quick
 # succession can finish out of order and leave the OLDER commit deployed. Queue instead of cancelling:
@@ -19,6 +19,10 @@ jobs:
       contents: read
       id-token: write
       attestations: write
+#if (aspire == true)
+      # build_server pushes the server's images to GitHub Container Registry (write), and deploy_server pulls them (read).
+      packages: write
+#endif
     uses: ./.github/workflows/cd-template.yml
     with:
       ENV_NAME: Test
