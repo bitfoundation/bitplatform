@@ -12,7 +12,9 @@ namespace Bit.BlazorUI;
 /// </summary>
 internal static class BitPdfImage
 {
-    public static string? BuildDataUri(BitPdfBaseStream stream, IBitPdfXRef xref, BitPdfDict? resources, (byte R, byte G, byte B) fillColor, bool inline = false)
+    internal const long MaxImagePixels = 268_435_456L;
+
+    public static string? BuildDataUri(BitPdfBaseStream stream, IBitPdfXRef xref, BitPdfDict? resources, (byte R, byte G, byte B) fillColor, BitPdfBudget pixelBudget, bool inline = false)
     {
         BitPdfDict dict = stream.Dict!;
         int width = GetInt(dict, "Width", "W");
@@ -57,7 +59,7 @@ internal static class BitPdfImage
                 || xref.FetchIfRef(dict.Get("Mask")) is not null
                 || dict.Get("Decode", "D") is List<object?>;
 
-            if (needsCSharp && BitPdfJpegDecoder.Decode(data) is { } jpeg)
+            if (needsCSharp && pixelBudget.TrySpend((long)width * height) && BitPdfJpegDecoder.Decode(data) is { } jpeg)
             {
                 byte[]? jrgba = JpegToRgba(jpeg, dict, xref);
                 if (jrgba is not null)
@@ -94,13 +96,17 @@ internal static class BitPdfImage
         {
             bpc = 8;
         }
+        if (bpc is not (1 or 2 or 4 or 8 or 16))
+        {
+            return null;
+        }
 
         // Compute the RGBA size in `long` so a hostile Width×Height cannot wrap a
         // 32-bit multiply into a small allocation, and reject absurd images
         // outside a generous pixel budget (~268 M px). Wrap the pixel-producing
         // work in try/catch so one bad image is skipped, not fatal to the page.
         long pixels = (long)width * height;
-        if (pixels > 268_435_456L)
+        if (pixels > MaxImagePixels || !pixelBudget.TrySpend(pixels))
         {
             return null;
         }
@@ -400,7 +406,7 @@ internal static class BitPdfImage
         int mw = GetInt(smask.Dict, "Width", "W");
         int mh = GetInt(smask.Dict, "Height", "H");
         int mbpc = GetInt(smask.Dict, "BitsPerComponent", "BPC");
-        if (mw <= 0 || mh <= 0 || mbpc <= 0)
+        if (mw <= 0 || mh <= 0 || mbpc is not (1 or 2 or 4 or 8 or 16))
         {
             return;
         }

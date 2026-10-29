@@ -107,6 +107,10 @@ internal static class BitPdfJpegDecoder
                     frameHeight = (data[segStart + 1] << 8) | data[segStart + 2];
                     frameWidth = (data[segStart + 3] << 8) | data[segStart + 4];
                     int nc = data[segStart + 5];
+                    if (nc is < 1 or > 4 || (long)frameWidth * frameHeight * nc > BitPdfImage.MaxImagePixels)
+                    {
+                        return null;
+                    }
                     components = new Component[nc];
                     int cp = segStart + 6;
                     for (int i = 0; i < nc; i++)
@@ -118,6 +122,10 @@ internal static class BitPdfJpegDecoder
                             V = data[cp + 1] & 0x0F,
                             QuantId = data[cp + 2],
                         };
+                        if (components[i].H is < 1 or > 4 || components[i].V is < 1 or > 4)
+                        {
+                            return null;
+                        }
                         cp += 3;
                     }
                     break;

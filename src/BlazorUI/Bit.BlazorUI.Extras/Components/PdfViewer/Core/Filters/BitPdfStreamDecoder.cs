@@ -12,6 +12,8 @@ namespace Bit.BlazorUI;
 /// </summary>
 public static class BitPdfStreamDecoder
 {
+    internal const int MaxDecodedLength = 1 << 28;
+
     /// <summary>
     /// Returns the fully decoded bytes for <paramref name="stream"/>. The
     /// <c>/F</c> and <c>/DP</c> abbreviations for <c>/Filter</c>/<c>/DecodeParms</c>
@@ -124,6 +126,7 @@ public static class BitPdfStreamDecoder
     private static byte[] InflateIncremental(byte[] data, bool raw, int skipHeader)
     {
         using var output = new MemoryStream();
+        bool tooLarge = false;
         try
         {
             if (skipHeader > 0 && data.Length <= skipHeader)
@@ -138,12 +141,21 @@ public static class BitPdfStreamDecoder
             int read;
             while ((read = decompressor.Read(buffer, 0, buffer.Length)) > 0)
             {
+                if (read > MaxDecodedLength - output.Length)
+                {
+                    tooLarge = true;
+                    break;
+                }
                 output.Write(buffer, 0, read);
             }
         }
         catch
         {
             // Return the bytes decoded before the failure (may be empty).
+        }
+        if (tooLarge)
+        {
+            throw new BitPdfFormatException("Decoded stream too large.");
         }
         return output.ToArray();
     }
@@ -273,6 +285,10 @@ public static class BitPdfStreamDecoder
             else
             {
                 int count = 257 - length;
+                if (count > MaxDecodedLength - output.Count)
+                {
+                    throw new BitPdfFormatException("Decoded stream too large.");
+                }
                 if (i < data.Length)
                 {
                     byte value = data[i++];

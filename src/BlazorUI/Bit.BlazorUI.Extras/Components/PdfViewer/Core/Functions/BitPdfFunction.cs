@@ -31,13 +31,19 @@ public abstract class BitPdfFunction
     internal static BitPdfFunction? Create(object? obj, IBitPdfXRef xref, BitPdfResolveScope scope)
     {
         obj = xref.FetchIfRef(obj);
+        if (obj is not null && scope.Built.TryGetValue(obj, out var built))
+        {
+            return built as BitPdfFunction;
+        }
         if (obj is null || !scope.TryEnter(obj))
         {
             return null;
         }
         try
         {
-            return CreateCore(obj, xref, scope);
+            var function = CreateCore(obj, xref, scope);
+            scope.Built[obj] = function;
+            return function;
         }
         finally
         {

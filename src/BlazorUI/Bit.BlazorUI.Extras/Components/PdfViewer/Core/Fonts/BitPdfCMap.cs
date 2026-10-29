@@ -11,8 +11,12 @@ namespace Bit.BlazorUI;
 /// </summary>
 public sealed class BitPdfCMap
 {
+    private const long MaxRangeScanWork = 1L << 26;
+
     private readonly List<(long Lo, long Hi, int Cid)> _ranges = new();
     private readonly Dictionary<long, int> _chars = new();
+    private readonly BitPdfBudget _rangeScanWork = new(MaxRangeScanWork);
+    private (long Lo, long Hi, int Cid)[]? _disjointRanges;
 
     /// <summary>The byte length of a character code (1 or 2 for the common cases).</summary>
     public int CodeLength { get; private set; } = 2;
@@ -34,14 +38,51 @@ public sealed class BitPdfCMap
         {
             return cid;
         }
-        foreach (var (lo, hi, start) in _ranges)
+        _disjointRanges ??= SortDisjoint(_ranges);
+        if (_disjointRanges.Length > 0)
         {
-            if (code >= lo && code <= hi)
+            int low = 0, high = _disjointRanges.Length - 1;
+            while (low <= high)
             {
-                return (int)(start + (code - lo));
+                int mid = (low + high) >>> 1;
+                if (_disjointRanges[mid].Lo <= code)
+                {
+                    low = mid + 1;
+                }
+                else
+                {
+                    high = mid - 1;
+                }
+            }
+            if (high >= 0 && code <= _disjointRanges[high].Hi)
+            {
+                return (int)(_disjointRanges[high].Cid + (code - _disjointRanges[high].Lo));
+            }
+        }
+        else if (_rangeScanWork.TrySpend(_ranges.Count))
+        {
+            foreach (var (lo, hi, start) in _ranges)
+            {
+                if (code >= lo && code <= hi)
+                {
+                    return (int)(start + (code - lo));
+                }
             }
         }
         return (int)code; // fall back to identity for unmapped codes
+    }
+
+    private static (long Lo, long Hi, int Cid)[] SortDisjoint(List<(long Lo, long Hi, int Cid)> ranges)
+    {
+        var sorted = ranges.OrderBy(r => r.Lo).ToArray();
+        for (int i = 1; i < sorted.Length; i++)
+        {
+            if (sorted[i].Lo <= sorted[i - 1].Hi)
+            {
+                return [];
+            }
+        }
+        return sorted;
     }
 
     /// <summary>Parses an embedded CMap stream into a <see cref="BitPdfCMap"/>.</summary>

@@ -5,12 +5,15 @@ namespace Bit.BlazorUI;
 
 internal static class BitPdfEmbeddedFiles
 {
+    private const long MaxContentBytes = 1L << 28;
+
     public static IReadOnlyList<BitPdfAttachment> Build(IBitPdfXRef xref, BitPdfDict catalog, IReadOnlyList<BitPdfPage> pages)
     {
         var result = new List<BitPdfAttachment>();
         // The same file specification can be reachable both from the name tree and
         // from an annotation; the stream reference is what identifies it.
         var seen = new HashSet<object>(ReferenceEqualityComparer.Instance);
+        var budget = new BitPdfBudget(MaxContentBytes);
 
         if (xref.FetchIfRef(catalog.Get("Names")) is BitPdfDict names
             && xref.FetchIfRef(names.Get("EmbeddedFiles")) is BitPdfDict tree)
@@ -18,7 +21,7 @@ internal static class BitPdfEmbeddedFiles
             // A malformed (or hostile) /Kids graph can point back at a node it came
             // from; the depth guard alone would still walk it 2^32 ways.
             var visited = new HashSet<object>(ReferenceEqualityComparer.Instance);
-            CollectNameTree(xref, tree, result, seen, visited, pageNumber: null, depth: 0);
+            CollectNameTree(xref, tree, result, seen, visited, budget, pageNumber: null, depth: 0);
         }
 
         foreach (var page in pages)
@@ -32,7 +35,7 @@ internal static class BitPdfEmbeddedFiles
                 if (xref.FetchIfRef(item) is BitPdfDict annot
                     && BitPdfPrimitives.IsName(annot.Get("Subtype"), "FileAttachment"))
                 {
-                    Add(xref, annot.Get("FS"), result, seen, page.Number, fallbackName: null);
+                    Add(xref, annot.Get("FS"), result, seen, budget, page.Number, fallbackName: null);
                 }
             }
         }
@@ -41,7 +44,7 @@ internal static class BitPdfEmbeddedFiles
     }
 
     private static void CollectNameTree(IBitPdfXRef xref, BitPdfDict node, List<BitPdfAttachment> result,
-        HashSet<object> seen, HashSet<object> visited, int? pageNumber, int depth)
+        HashSet<object> seen, HashSet<object> visited, BitPdfBudget budget, int? pageNumber, int depth)
     {
         if (depth > 32 || visited.Add(node) is false)
         {
@@ -55,7 +58,7 @@ internal static class BitPdfEmbeddedFiles
             for (int i = 0; i + 1 < pairs.Count; i += 2)
             {
                 string? key = (xref.FetchIfRef(pairs[i]) as BitPdfString)?.AsText();
-                Add(xref, pairs[i + 1], result, seen, pageNumber, key);
+                Add(xref, pairs[i + 1], result, seen, budget, pageNumber, key);
             }
         }
 
@@ -65,14 +68,14 @@ internal static class BitPdfEmbeddedFiles
             {
                 if (xref.FetchIfRef(kid) is BitPdfDict child)
                 {
-                    CollectNameTree(xref, child, result, seen, visited, pageNumber, depth + 1);
+                    CollectNameTree(xref, child, result, seen, visited, budget, pageNumber, depth + 1);
                 }
             }
         }
     }
 
     private static void Add(IBitPdfXRef xref, object? fileSpecObj, List<BitPdfAttachment> result,
-        HashSet<object> seen, int? pageNumber, string? fallbackName)
+        HashSet<object> seen, BitPdfBudget budget, int? pageNumber, string? fallbackName)
     {
         if (xref.FetchIfRef(fileSpecObj) is not BitPdfDict spec)
         {
@@ -107,6 +110,10 @@ internal static class BitPdfEmbeddedFiles
         catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
         {
             // A broken attachment must not cost the document its other ones.
+            content = [];
+        }
+        if (budget.TrySpend(content.Length) is false)
+        {
             content = [];
         }
 

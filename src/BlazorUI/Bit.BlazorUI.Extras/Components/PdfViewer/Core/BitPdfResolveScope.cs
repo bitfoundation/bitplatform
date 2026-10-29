@@ -25,6 +25,8 @@ internal sealed class BitPdfResolveScope
     /// </summary>
     public int Refusals { get; private set; }
 
+    public Dictionary<object, object?> Built { get; } = new(ReferenceEqualityComparer.Instance);
+
     /// <param name="maxDepth">The longest chain of nested objects resolved.</param>
     /// <param name="budget">The most objects one resolution enters in total.</param>
     public BitPdfResolveScope(int maxDepth, int budget)

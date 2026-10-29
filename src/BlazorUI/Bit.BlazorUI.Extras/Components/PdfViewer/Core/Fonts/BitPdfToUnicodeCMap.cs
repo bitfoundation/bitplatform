@@ -10,6 +10,8 @@ namespace Bit.BlazorUI;
 /// </summary>
 public sealed class BitPdfToUnicodeCMap
 {
+    private const int MaxRangeDestinationBytes = 512;
+
     private readonly Dictionary<int, string> _single = new();
     private readonly List<(int Lo, int Hi, string Dst)> _ranges = new();
 
@@ -28,6 +30,10 @@ public sealed class BitPdfToUnicodeCMap
                 if (dst.Length == 0)
                 {
                     return string.Empty;
+                }
+                if (code == lo)
+                {
+                    return dst;
                 }
                 var chars = dst.ToCharArray();
                 chars[^1] = (char)(chars[^1] + (code - lo));
@@ -102,7 +108,10 @@ public sealed class BitPdfToUnicodeCMap
 
             if (dst is BitPdfString dstS)
             {
-                _ranges.Add((loCode, hiCode, Utf16Be(dstS)));
+                if (dstS.Bytes.Length <= MaxRangeDestinationBytes)
+                {
+                    _ranges.Add((loCode, hiCode, Utf16Be(dstS)));
+                }
             }
             else if (dst is List<object?> arr)
             {
