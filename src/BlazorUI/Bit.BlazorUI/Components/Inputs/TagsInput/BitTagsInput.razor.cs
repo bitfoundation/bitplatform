@@ -3113,7 +3113,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     private async Task<int> TryAddTags(string[] tags)
     {
         ClearInvalid();
-        _patternTimedOut = false;
 
         var list = GetTags();
         var addedTags = new List<string>();
@@ -3123,6 +3122,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             var text = NormalizeTag(tag);
             if (text.Length == 0) continue;
 
+            _patternTimedOut = false;
             if (IsValidTag(text, list, out var reason) is false)
             {
                 await ReportInvalid(text, reason);

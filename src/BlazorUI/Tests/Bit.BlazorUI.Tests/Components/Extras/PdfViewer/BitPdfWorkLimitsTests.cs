@@ -126,7 +126,7 @@ public class BitPdfWorkLimitsTests
         string html = new BitPdfHtmlRenderer(document.Pages[0], document.XRef).Render();
 
         Assert.IsTrue(watch.Elapsed < TimeSpan.FromSeconds(15), $"rendering took {watch.Elapsed}");
-        Assert.IsFalse(string.IsNullOrEmpty(html));
+        StringAssert.Contains(html, "inset:0;background:");
     }
 
     [TestMethod]
@@ -203,9 +203,16 @@ public class BitPdfWorkLimitsTests
 
         var overlapping = BitPdfCMap.Parse(Encoding.Latin1.GetBytes(
             "1 begincodespacerange <0000> <FFFF> endcodespacerange\n" +
-            "2 begincidrange <0000> <00FF> 100 <0010> <0020> 900 endcidrange"));
+            "3 begincidrange <0000> <00FF> 100 <0010> <0020> 900 <0080> <01FF> 2000 endcidrange"));
 
         Assert.AreEqual(116, overlapping.Lookup(0x0010));
+        Assert.AreEqual(228, overlapping.Lookup(0x0080));
+        Assert.AreEqual(2128, overlapping.Lookup(0x0100));
+        Assert.AreEqual(0x0300, overlapping.Lookup(0x0300));
+        for (int code = 0; code < 0x0200; code++)
+        {
+            Assert.AreEqual(code < 0x0100 ? 100 + code : 2000 + code - 0x0080, overlapping.Lookup(code));
+        }
     }
 
     [TestMethod]

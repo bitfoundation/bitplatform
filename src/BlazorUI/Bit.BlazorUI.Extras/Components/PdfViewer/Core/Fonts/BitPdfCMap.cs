@@ -11,12 +11,9 @@ namespace Bit.BlazorUI;
 /// </summary>
 public sealed class BitPdfCMap
 {
-    private const long MaxRangeScanWork = 1L << 26;
-
     private readonly List<(long Lo, long Hi, int Cid)> _ranges = new();
     private readonly Dictionary<long, int> _chars = new();
-    private readonly BitPdfBudget _rangeScanWork = new(MaxRangeScanWork);
-    private (long Lo, long Hi, int Cid)[]? _disjointRanges;
+    private (long Lo, long Hi, int Cid)[]? _segments;
 
     /// <summary>The byte length of a character code (1 or 2 for the common cases).</summary>
     public int CodeLength { get; private set; } = 2;
@@ -38,51 +35,69 @@ public sealed class BitPdfCMap
         {
             return cid;
         }
-        _disjointRanges ??= SortDisjoint(_ranges);
-        if (_disjointRanges.Length > 0)
+        _segments ??= Flatten(_ranges);
+        int low = 0, high = _segments.Length - 1;
+        while (low <= high)
         {
-            int low = 0, high = _disjointRanges.Length - 1;
-            while (low <= high)
+            int mid = (low + high) >>> 1;
+            if (_segments[mid].Lo <= code)
             {
-                int mid = (low + high) >>> 1;
-                if (_disjointRanges[mid].Lo <= code)
-                {
-                    low = mid + 1;
-                }
-                else
-                {
-                    high = mid - 1;
-                }
+                low = mid + 1;
             }
-            if (high >= 0 && code <= _disjointRanges[high].Hi)
+            else
             {
-                return (int)(_disjointRanges[high].Cid + (code - _disjointRanges[high].Lo));
+                high = mid - 1;
             }
         }
-        else if (_rangeScanWork.TrySpend(_ranges.Count))
+        if (high >= 0 && code <= _segments[high].Hi)
         {
-            foreach (var (lo, hi, start) in _ranges)
-            {
-                if (code >= lo && code <= hi)
-                {
-                    return (int)(start + (code - lo));
-                }
-            }
+            return (int)(_segments[high].Cid + (code - _segments[high].Lo));
         }
         return (int)code; // fall back to identity for unmapped codes
     }
 
-    private static (long Lo, long Hi, int Cid)[] SortDisjoint(List<(long Lo, long Hi, int Cid)> ranges)
+    private static (long Lo, long Hi, int Cid)[] Flatten(List<(long Lo, long Hi, int Cid)> ranges)
     {
-        var sorted = ranges.OrderBy(r => r.Lo).ToArray();
-        for (int i = 1; i < sorted.Length; i++)
+        var points = new List<(long At, int Index, bool Start)>(ranges.Count * 2);
+        for (int i = 0; i < ranges.Count; i++)
         {
-            if (sorted[i].Lo <= sorted[i - 1].Hi)
+            if (ranges[i].Lo <= ranges[i].Hi)
             {
-                return [];
+                points.Add((ranges[i].Lo, i, true));
+                points.Add((ranges[i].Hi + 1, i, false));
             }
         }
-        return sorted;
+        points.Sort((a, b) => a.At.CompareTo(b.At));
+
+        var active = new PriorityQueue<int, int>();
+        var ended = new bool[ranges.Count];
+        var segments = new List<(long Lo, long Hi, int Cid)>();
+        int p = 0;
+        while (p < points.Count)
+        {
+            long at = points[p].At;
+            for (; p < points.Count && points[p].At == at; p++)
+            {
+                if (points[p].Start)
+                {
+                    active.Enqueue(points[p].Index, points[p].Index);
+                }
+                else
+                {
+                    ended[points[p].Index] = true;
+                }
+            }
+            while (active.TryPeek(out int top, out _) && ended[top])
+            {
+                active.Dequeue();
+            }
+            if (p < points.Count && active.TryPeek(out int owner, out _))
+            {
+                var range = ranges[owner];
+                segments.Add((at, points[p].At - 1, (int)(range.Cid + (at - range.Lo))));
+            }
+        }
+        return [.. segments];
     }
 
     /// <summary>Parses an embedded CMap stream into a <see cref="BitPdfCMap"/>.</summary>

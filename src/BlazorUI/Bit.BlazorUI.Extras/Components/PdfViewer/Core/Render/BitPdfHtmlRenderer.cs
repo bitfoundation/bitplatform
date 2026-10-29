@@ -2487,7 +2487,10 @@ public sealed class BitPdfHtmlRenderer
         try
         {
             byte[] content = BitPdfStreamDecoder.Decode(patStream);
-            RunOps(new BitPdfContentParser(content).Parse());
+            if (_work.TrySpend(content.Length + ContentRunCost))
+            {
+                RunOps(new BitPdfContentParser(content).Parse());
+            }
         }
         catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
         {

@@ -11,6 +11,7 @@ public partial class BitPdfReaderLegacy : BitComponentBase
     private const int MaxRenderedPages = 10_000;
 
     private int _numberOfPages = 1;
+    private int RenderedPageCount => Math.Clamp(_numberOfPages, 0, MaxRenderedPages);
     private int _currentPageNumber = 1;
     private bool _parametersInitialized;
 
@@ -177,8 +178,7 @@ public partial class BitPdfReaderLegacy : BitComponentBase
 
             await _js.BitLegacyInitScripts(scripts, true);
 
-            var numberOfPages = await _js.BitPdfReaderSetup(Config);
-            _numberOfPages = RenderAllPages ? Math.Clamp(numberOfPages, 0, MaxRenderedPages) : numberOfPages;
+            _numberOfPages = await _js.BitPdfReaderSetup(Config);
 
             await OnPdfLoaded.InvokeAsync();
 
@@ -215,7 +215,7 @@ public partial class BitPdfReaderLegacy : BitComponentBase
 
         List<Task> tasks = [];
 
-        for (int i = 0; i < _numberOfPages; i++)
+        for (int i = 0; i < RenderedPageCount; i++)
         {
             tasks.Add(_js.BitPdfReaderRenderPage(Config.Id, i + 1).AsTask());
         }
@@ -238,7 +238,7 @@ public partial class BitPdfReaderLegacy : BitComponentBase
 
         List<Task> tasks = [];
 
-        for (int i = 0; i < _numberOfPages; i++)
+        for (int i = 0; i < RenderedPageCount; i++)
         {
             tasks.Add(_js.BitPdfReaderRefreshPage(Config, i + 1).AsTask());
         }

@@ -59,7 +59,7 @@ internal static class BitPdfImage
                 || xref.FetchIfRef(dict.Get("Mask")) is not null
                 || dict.Get("Decode", "D") is List<object?>;
 
-            if (needsCSharp && pixelBudget.TrySpend((long)width * height) && BitPdfJpegDecoder.Decode(data) is { } jpeg)
+            if (needsCSharp && BitPdfJpegDecoder.Decode(data, pixelBudget) is { } jpeg)
             {
                 byte[]? jrgba = JpegToRgba(jpeg, dict, xref);
                 if (jrgba is not null)

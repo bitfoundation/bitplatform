@@ -41,8 +41,12 @@ public abstract class BitPdfFunction
         }
         try
         {
+            int refusals = scope.Refusals;
             var function = CreateCore(obj, xref, scope);
-            scope.Built[obj] = function;
+            if (scope.Refusals == refusals)
+            {
+                scope.Built[obj] = function;
+            }
             return function;
         }
         finally

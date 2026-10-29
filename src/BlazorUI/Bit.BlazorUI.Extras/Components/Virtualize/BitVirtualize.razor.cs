@@ -1682,8 +1682,8 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         var endTrack = FindTrackAtOffset(Math.Max(offset, end - 0.01)) + 1;
 
         var newVisibleStart = Math.Min(startTrack * _lanes, _itemCount);
-        var newRenderStart = Math.Max(0, startTrack - Overscan) * _lanes;
-        var newRenderEnd = (int)Math.Min(_itemCount, Math.Min(((long)endTrack + Overscan) * _lanes, (long)newRenderStart + MaxRenderedItems));
+        var newRenderStart = Math.Max(0, startTrack - Math.Min(Overscan, MaxRenderedItems / _lanes)) * _lanes;
+        var newRenderEnd = (int)Math.Min(_itemCount, Math.Min(((long)endTrack + Overscan) * _lanes, (long)newVisibleStart + MaxRenderedItems));
         var newVisibleEnd = Math.Min(Math.Min(endTrack * _lanes, _itemCount), newRenderEnd);
 
         var rangeChanged = newVisibleStart != _visibleStart || newVisibleEnd != _visibleEnd;

@@ -39,11 +39,11 @@ internal static class BitPdfJpegDecoder
 
     /// <summary>Decodes a baseline JPEG, or returns <c>null</c> if the stream is
     /// progressive/unsupported or malformed.</summary>
-    public static BitPdfJpegImage? Decode(byte[] data)
+    public static BitPdfJpegImage? Decode(byte[] data, BitPdfBudget? pixelBudget = null)
     {
         try
         {
-            return DecodeCore(data);
+            return DecodeCore(data, pixelBudget);
         }
         catch
         {
@@ -51,7 +51,7 @@ internal static class BitPdfJpegDecoder
         }
     }
 
-    private static BitPdfJpegImage? DecodeCore(byte[] data)
+    private static BitPdfJpegImage? DecodeCore(byte[] data, BitPdfBudget? pixelBudget)
     {
         int pos = 0;
         var quant = new int[4][];
@@ -107,7 +107,8 @@ internal static class BitPdfJpegDecoder
                     frameHeight = (data[segStart + 1] << 8) | data[segStart + 2];
                     frameWidth = (data[segStart + 3] << 8) | data[segStart + 4];
                     int nc = data[segStart + 5];
-                    if (nc is < 1 or > 4 || (long)frameWidth * frameHeight * nc > BitPdfImage.MaxImagePixels)
+                    if (nc is < 1 or > 4 || (long)frameWidth * frameHeight * nc > BitPdfImage.MaxImagePixels
+                        || pixelBudget?.TrySpend((long)frameWidth * frameHeight) is false)
                     {
                         return null;
                     }
