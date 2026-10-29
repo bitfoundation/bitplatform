@@ -213,6 +213,12 @@ public class BitPdfWorkLimitsTests
         {
             Assert.AreEqual(code < 0x0100 ? 100 + code : 2000 + code - 0x0080, overlapping.Lookup(code));
         }
+
+        var topmost = BitPdfCMap.Parse(Encoding.Latin1.GetBytes(
+            "1 begincidrange <7FFFFFFFFFFFFFF0> <7FFFFFFFFFFFFFFF> 5 endcidrange"));
+
+        Assert.AreEqual(6, topmost.Lookup(0x7FFFFFFFFFFFFFF1));
+        Assert.AreEqual(19, topmost.Lookup(0x7FFFFFFFFFFFFFFE));
     }
 
     [TestMethod]

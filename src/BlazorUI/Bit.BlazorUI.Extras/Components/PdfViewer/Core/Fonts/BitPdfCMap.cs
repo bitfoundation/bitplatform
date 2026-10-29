@@ -64,7 +64,7 @@ public sealed class BitPdfCMap
             if (ranges[i].Lo <= ranges[i].Hi)
             {
                 points.Add((ranges[i].Lo, i, true));
-                points.Add((ranges[i].Hi + 1, i, false));
+                points.Add((ranges[i].Hi == long.MaxValue ? long.MaxValue : ranges[i].Hi + 1, i, false));
             }
         }
         points.Sort((a, b) => a.At.CompareTo(b.At));
