@@ -12,6 +12,7 @@ public class CodeReviewTests
         CollectionAssert.Contains(Rules("builder.Services.AddBelemetryServices();"), "BLM001");
         CollectionAssert.Contains(Rules("window.Belemetry.getContext()"), "BLM001");
         CollectionAssert.DoesNotContain(Rules("builder.Services.AddBitBelemetryServices(); BitBelemetry.getContext();"), "BLM001");
+        CollectionAssert.DoesNotContain(Rules("// builder.Services.AddBelemetryServices();"), "BLM001");
     }
 
     [TestMethod]

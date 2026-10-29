@@ -110,6 +110,8 @@ public static partial class BelemetryCodeReview
     {
         foreach (Match m in OldNamesRegex().Matches(code))
         {
+            if (IsCommented(code, m.Index)) continue;
+
             yield return (m.Index,
                           $"'{m.Value}' is the old name; it does not exist in Bit.Belemetry.",
                           m.Value.StartsWith("Add", StringComparison.Ordinal) ? "Call builder.Services.AddBitBelemetryServices(...)." : "The browser global is window.BitBelemetry (e.g. BitBelemetry.getContext()).");

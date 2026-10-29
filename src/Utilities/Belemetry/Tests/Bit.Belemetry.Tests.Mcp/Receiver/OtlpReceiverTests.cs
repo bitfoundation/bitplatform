@@ -267,6 +267,13 @@ public class OtlpReceiverTests
             {"resourceLogs":[{"scopeLogs":[{"logRecords":[{"attributes":[{{{repeated}}},{"key":"http.route","value":{"stringValue":"/orders"}}]}]}]}]}
             """).RootElement).Single();
         Assert.AreEqual("/orders", replaced.Attributes["http.route"], "A replaced value no longer counts against the budget.");
+
+        var many = string.Join(",", Enumerable.Range(0, 129).Select(i => $$$"""{"key":"a{{{i}}}","value":{"stringValue":"x"}}"""));
+        var counted = OtlpJsonDecoder.DecodeLogs(JsonDocument.Parse($$$"""
+            {"resourceLogs":[{"scopeLogs":[{"logRecords":[{"attributes":[{{{many}}},{"key":"session.id","value":{"stringValue":"0123456789abcdef"}}]}]}]}]}
+            """).RootElement).Single();
+        Assert.HasCount(128, counted.Attributes.Where(a => a.Key != "session.id"));
+        Assert.AreEqual("0123456789abcdef", counted.SessionId);
     }
 
     [TestMethod]
