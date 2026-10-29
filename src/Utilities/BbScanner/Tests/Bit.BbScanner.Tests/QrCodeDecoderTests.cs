@@ -278,4 +278,25 @@ public class QrCodeDecoderTests
 
         Assert.IsLessThan(TimeSpan.FromSeconds(60), watch.Elapsed, $"Took {watch.Elapsed}.");
     }
+
+    [TestMethod]
+    public void AnImageOfTallStripedColumnsIsGivenUpOnQuickly()
+    {
+        using var stripes = new BbBitMatrix(64, 100_000);
+        for (var y = 0; y < stripes.Height; y++)
+        {
+            for (var x = 0; x < stripes.Width; x++)
+            {
+                stripes[x, y] = (x % 8) is 0 or 2 or 3 or 4 or 6;
+            }
+        }
+
+        var finder = new BbQrFinderPatternFinder(stripes);
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        var found = finder.FindCandidates(tryHarder: true).Length;
+        watch.Stop();
+
+        Assert.AreEqual(0, found);
+        Assert.IsLessThan(TimeSpan.FromSeconds(10), watch.Elapsed, $"Took {watch.Elapsed}.");
+    }
 }
