@@ -137,7 +137,11 @@ public partial class BsqliteServiceTests
         var registered = await BsqliteStorageLab.PlanAsync("indexeddb", seventeen, null, null, false, null, null, null, null, TestContext.CancellationToken);
         var unavailable = await BsqliteStorageLab.PlanAsync("indexeddb", null, seventeen, null, false, null, null, null, null, TestContext.CancellationToken);
         var nonPersistent = await BsqliteStorageLab.PlanAsync("indexeddb", null, null, seventeen, false, null, null, null, null, TestContext.CancellationToken);
+        var sixteen = string.Join(",", Enumerable.Range(1, 15).Select(i => $"p{i}").Prepend("indexeddb"));
+        var atLimit = await BsqliteStorageLab.PlanAsync("indexeddb", sixteen, null, null, false, null, null, null, null, TestContext.CancellationToken);
 
+        Assert.IsTrue(atLimit.Opens);
+        Assert.HasCount(16, atLimit.Candidates);
         Assert.Contains("'candidates' names more than 16 backends", all.Error!);
         Assert.Contains("'registered' names more than 16 backends", registered.Error!);
         Assert.Contains("'unavailable' names more than 16 backends", unavailable.Error!);
