@@ -130,6 +130,30 @@ public class InertiaDriverTests
     }
 
     [TestMethod]
+    public void Tick_NegativeDelay_PlaysTheSkippedTimeFrameForFrame()
+    {
+        static BmotionTransitionConfig Config(double delay) => new()
+        {
+            Delay = delay,
+            InertiaVelocity = 1000,
+            Power = 0.8,
+            TimeConstant = 10_000,
+            InertiaMax = 600,
+        };
+
+        var played = new List<double>();
+        var driver = new BmotionInertiaDriver(0, Config(0), played.Add);
+        bool done = false;
+        for (double t = 5_000 - 15_000; t < 5_000 && !done; t += 1000.0 / 60) done = driver.Tick(t);
+        if (!done) driver.Tick(5_000);
+
+        var sought = new List<double>();
+        new BmotionInertiaDriver(0, Config(-15), sought.Add).Tick(5_000);
+
+        CollectionAssert.AreEqual(played, sought);
+    }
+
+    [TestMethod]
     [DataRow(-1e300)]
     [DataRow(double.MinValue)]
     public void Tick_AHugeNegativeDelay_ComesToRestOnTheFirstFrame(double delay)

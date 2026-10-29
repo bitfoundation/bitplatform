@@ -424,15 +424,16 @@ public class TransitionSpecTests
     }
 
     [TestMethod]
-    [DataRow("spring(delay: -0.5)")]
-    [DataRow("tween(0.4, delay: 300ms)")]
-    [DataRow("inertia(velocity: 500, delay: -20)")]
-    public void Parse_AnOrdinaryDelay_IsKept(string spec)
+    [DataRow("spring(delay: -0.5)", -0.5)]
+    [DataRow("tween(0.4, delay: 300ms)", 0.3)]
+    [DataRow("inertia(velocity: 500, delay: -20)", -20.0)]
+    public void Parse_AnOrdinaryDelay_IsKept(string spec, double delay)
     {
         var result = BmotionTransitionSpec.Parse(spec);
 
         Assert.IsNull(result.Error, $"'{spec}' was rejected: {result.Error}");
         Assert.IsNotNull(result.Transition);
+        Assert.AreEqual(delay, result.Transition.Delay, 1e-9);
     }
 
     [TestMethod]

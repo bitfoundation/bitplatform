@@ -316,6 +316,16 @@ public class McpControllerTests
         await Assert.ThrowsExactlyAsync<ArgumentException>(() => _controller.AnalyzeBmotionAnimation(many, "tween(0.4)"));
     }
 
+    [TestMethod]
+    public async Task AnalyzeBmotionAnimation_ExactlyTheCapOfProperties_IsAnswered()
+    {
+        var atCap = string.Join(", ", Enumerable.Range(0, McpController.MaxAnalyzedProperties).Select(i => $"unknown{i}"));
+
+        var result = await _controller.AnalyzeBmotionAnimation(atCap, "tween(0.4)");
+
+        Assert.AreEqual(McpController.MaxAnalyzedProperties, result.Properties.Length);
+    }
+
     /// <summary>
     /// The filters partition the measured catalog the way the verdict does: what the browser plays -
     /// as a timeline or as a recording, nothing else - and what only the frame loop plays.

@@ -126,15 +126,17 @@ public class SpringDriverTests
     }
 
     [TestMethod]
-    public void Tick_NegativeDelay_PlaysTheSkippedTimeFrameForFrame()
+    [DataRow(0.75, 8.0)]
+    [DataRow(15.0, 0.0)]
+    public void Tick_NegativeDelay_PlaysTheSkippedTimeFrameForFrame(double seconds, double damping)
     {
         var played = new List<double>();
-        var driver = new BmotionSpringDriver(0, 100, new BmotionTransitionConfig { Stiffness = 170, Damping = 8 }, played.Add);
-        for (double t = 5_000 - 750; t < 5_000; t += 1000.0 / 60) driver.Tick(t);
+        var driver = new BmotionSpringDriver(0, 100, new BmotionTransitionConfig { Stiffness = 170, Damping = damping }, played.Add);
+        for (double t = 5_000 - seconds * 1000; t < 5_000; t += 1000.0 / 60) driver.Tick(t);
         driver.Tick(5_000);
 
         var sought = new List<double>();
-        var seeking = new BmotionSpringDriver(0, 100, new BmotionTransitionConfig { Stiffness = 170, Damping = 8, Delay = -0.75 }, sought.Add);
+        var seeking = new BmotionSpringDriver(0, 100, new BmotionTransitionConfig { Stiffness = 170, Damping = damping, Delay = -seconds }, sought.Add);
         seeking.Tick(5_000);
 
         CollectionAssert.AreEqual(played, sought);
