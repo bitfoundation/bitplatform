@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
 using System.IO.Pipes;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using Bit.Cli.Infrastructure;
 using Bit.Cli.Projects;
 using Bit.Cli.Templates;
@@ -65,6 +67,59 @@ public class AdministratorTests
 
         await session.DisposeAsync();
         Assert.AreEqual(CliApp.ExitOk, await serving.WaitAsync(TimeSpan.FromSeconds(10)));
+    }
+
+    [TestMethod]
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public async Task TheAndroidSdk_Should_BeInstalledAsAdministratorFromBitsOwnProject()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        var sdk = Directory.CreateTempSubdirectory("bit-cli-android-sdk-");
+        var security = sdk.GetAccessControl();
+        var denied = new FileSystemAccessRule(WindowsIdentity.GetCurrent().User!, FileSystemRights.CreateFiles, AccessControlType.Deny);
+        security.AddAccessRule(denied);
+        sdk.SetAccessControl(security);
+
+        try
+        {
+            using var host = new TestHost(HostOs.Windows, new Dictionary<string, string> { ["ANDROID_HOME"] = sdk.FullName });
+            var directory = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "Contoso")).FullName;
+            File.WriteAllText(Path.Combine(directory, "global.json"), """{ "sdk": { "version": "10.0.100", "rollForward": "latestFeature", "paths": [ "sdk" ] } }""");
+            var project = new ProjectContext { Name = "Contoso", Directory = directory, Platforms = new HashSet<Platform> { Platform.Android } };
+            string? installer = null;
+            string? globalJson = null;
+            host.Runner.On("dotnet", "build", spec =>
+            {
+                installer = File.ReadAllText(Path.Combine(spec.WorkingDirectory!, "android.csproj"));
+                globalJson = File.ReadAllText(Path.Combine(spec.WorkingDirectory!, "global.json"));
+                return new ProcessResult { ExitCode = 0 };
+            });
+
+            var (session, serving) = await ConnectAsync(host);
+            host.Services.Administrator = session;
+
+            var result = await new ProjectSteps(host.Services, project).AndroidDependenciesAsync(_ => { }, CancellationToken.None);
+
+            Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
+            var call = host.Runner.Calls.Single();
+            Assert.IsFalse(call.WorkingDirectory!.StartsWith(directory, StringComparison.OrdinalIgnoreCase), "The project's own build files would run as administrator.");
+            CollectionAssert.Contains(call.Arguments.ToArray(), "-noAutoResponse");
+            StringAssert.Contains(installer, "-android</TargetFramework>");
+            StringAssert.Contains(globalJson, "\"10.0.100\"");
+            Assert.IsFalse(globalJson!.Contains("paths", StringComparison.Ordinal), globalJson);
+            Assert.IsFalse(Directory.Exists(call.WorkingDirectory));
+
+            await session.DisposeAsync();
+            Assert.AreEqual(CliApp.ExitOk, await serving.WaitAsync(TimeSpan.FromSeconds(10)));
+        }
+        finally
+        {
+            security.RemoveAccessRule(denied);
+            sdk.SetAccessControl(security);
+            sdk.Delete();
+        }
     }
 
     [TestMethod]

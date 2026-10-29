@@ -121,7 +121,7 @@ public static partial class DecodeCommand
     private static async Task<string?> RestoreMinifierAsync(CliServices cli, string version, string[] files, CancellationToken cancellationToken)
     {
         cli.Console.Error.MarkupLine($"[grey]Restoring Bit.Minifier {Markup.Escape(version)}[/]");
-        var folder = Directory.CreateTempSubdirectory("bit-decode-").FullName;
+        var folder = Directory.CreateDirectory(Path.Combine(cli.Environment.BitDirectory, "decode", Guid.NewGuid().ToString("N"))).FullName;
 
         try
         {
