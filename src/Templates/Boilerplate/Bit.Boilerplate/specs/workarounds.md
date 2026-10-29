@@ -19,6 +19,6 @@ Code that works around a defect in a library, a tool or the platform this app bu
 - **Symptom:** in the Docker Compose project `aspire publish` writes, the persistent Redis that holds Hangfire's jobs and the distributed lock runs with `appendonly no`, so a restart of its container loses them. Running the app with `aspire start` is not affected.
 - **Cause:** Aspire publishes Redis as `/bin/sh -c "redis-server ..."` and writes every `WithArgs` value after that string, where the shell takes them as its own positional parameters and `redis-server` never sees them.
 - **Workaround:** `PublishAsComposeRedis` in `src/Server/Boilerplate.Server.AppHost/Infrastructure/Extensions/DockerComposePublishingExtensions.cs` folds the arguments into the `-c` string, the way run mode does.
-- **Upstream:** not reported yet.
+- **Upstream:** https://github.com/microsoft/aspire/issues/21400 (Aspire 13.6.4, reported 2026-10-29).
 - **Remove when:** Aspire's published Redis passes `WithArgs` on to `redis-server`. To check, remove `PublishAsComposeRedis`, publish and deploy, then `CONFIG GET appendonly` on the persistent Redis must still answer `yes`.
 <!--#endif-->

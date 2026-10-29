@@ -69,9 +69,11 @@ jobs:
           AdsPushVapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
 #endif
 
+      # bit setup leaves the Aspire CLI out in CI, so it is installed here, at the version of the app host's Aspire SDK.
       - name: Install the Aspire CLI
         run: |
-          dotnet tool install Aspire.Cli --version 13.6.4 --tool-path "$RUNNER_TEMP/aspire-cli"
+          version="$(grep -oE 'Aspire\.AppHost\.Sdk/[^"]+' src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj | cut -d/ -f2)"
+          dotnet tool install Aspire.Cli --version "$version" --tool-path "$RUNNER_TEMP/aspire-cli"
           echo "$RUNNER_TEMP/aspire-cli" >> "$GITHUB_PATH"
 
       - name: Log in to GitHub Container Registry
@@ -105,6 +107,7 @@ jobs:
             aspire-output/.env
           include-hidden-files: true # Required for .env, the list of values the deploy job has to supply
 
+      # A public repository only: find each pushed image's digest, attest how it was built, and push that attestation to GHCR.
       - name: Find the digests of the pushed images
         id: images
         if: github.event.repository.visibility == 'public'
@@ -167,6 +170,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: echo "$GITHUB_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
 
+      # Writes the Compose project to ~/deployments/<project> - its .env, the apps' settings files and the AppCertificate,
+      # from this environment's secrets - then pulls the images, runs the migrations on their own so a failure leaves the
+      # running version alone, brings the project up, and fails when a container isn't healthy or keeps restarting.
       - name: Deploy
         env:
           ENV_NAME: ${{ inputs.ENV_NAME }}
