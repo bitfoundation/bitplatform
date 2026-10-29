@@ -19,7 +19,7 @@ public static partial class BelemetryCodeReview
 
     private const int MaxCodeLength = 64 * 1024;
 
-    private const int MaxFindings = 100;
+    private const int MaxFindingsPerRule = 10;
 
     private static readonly Rule[] _rules =
     [
@@ -59,11 +59,18 @@ public static partial class BelemetryCodeReview
 
         var text = code.Replace("\r\n", "\n", StringComparison.Ordinal);
         var findings = new List<BelemetryReviewFindingDto>();
+        var capped = false;
 
         foreach (var rule in _rules)
         {
-            foreach (var (index, message, fix) in rule.Check(text).Take(MaxFindings - findings.Count))
+            var count = 0;
+            foreach (var (index, message, fix) in rule.Check(text))
             {
+                if (++count > MaxFindingsPerRule)
+                {
+                    capped = true;
+                    break;
+                }
                 findings.Add(new(rule.Id, rule.Severity, index < 0 ? null : LineOf(text, index), message, fix));
             }
         }
@@ -76,7 +83,7 @@ public static partial class BelemetryCodeReview
 
         var summary = ordered.Length == 0
             ? "No problems found by the rules. They are textual: they catch the common mistakes, not every one - check consent and the exporter endpoints by running the app with options.Debug and Browser.Debug on."
-            : $"{errors} error(s), {warnings} warning(s), {infos} note(s).";
+            : $"{errors} error(s), {warnings} warning(s), {infos} note(s)." + (capped ? $" Each rule lists at most {MaxFindingsPerRule} of its findings." : "");
 
         return new(summary, ordered);
     }

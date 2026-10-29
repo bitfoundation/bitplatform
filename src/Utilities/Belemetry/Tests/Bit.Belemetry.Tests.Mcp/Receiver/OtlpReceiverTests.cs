@@ -251,15 +251,22 @@ public class OtlpReceiverTests
         var attributes = string.Join(",", Enumerable.Range(0, 1000).Select(i => $$$"""{"key":"k{{{i}}}","value":{"stringValue":"{{{value}}}"}}"""));
         var json = $$$"""
             {"resourceLogs":[{"resource":{"attributes":[{{{attributes}}}]},"scopeLogs":[{"logRecords":[
-              {"body":{"stringValue":"{{{new string('b', 100_000)}}}"},"attributes":[{{{attributes}}}]}]}]}]}
+              {"body":{"stringValue":"{{{new string('b', 100_000)}}}"},"attributes":[{{{attributes}}},{"key":"session.id","value":{"stringValue":"0123456789abcdef"}}]}]}]}]}
             """;
 
         var record = OtlpJsonDecoder.DecodeLogs(JsonDocument.Parse(json).RootElement).Single();
 
         var budget = 8 * 1024 + 2 * OtlpJsonDecoder.MaxValueLength;
         Assert.IsTrue(record.Resource.Sum(a => a.Key.Length + a.Value.Length) <= budget, "Every record of a batch carries its resource into the feed.");
-        Assert.IsTrue(record.Attributes.Sum(a => a.Key.Length + a.Value.Length) <= budget);
+        Assert.IsTrue(record.Attributes.Sum(a => a.Key.Length + a.Value.Length) <= budget + 64);
         Assert.AreEqual(OtlpJsonDecoder.MaxValueLength + 3, record.Body!.Length);
+        Assert.AreEqual("0123456789abcdef", record.SessionId, "A record past the budget still belongs to its session, not to the shared bucket.");
+
+        var repeated = string.Join(",", Enumerable.Repeat($$$"""{"key":"k","value":{"stringValue":"{{{value}}}"}}""", 20));
+        var replaced = OtlpJsonDecoder.DecodeLogs(JsonDocument.Parse($$$"""
+            {"resourceLogs":[{"scopeLogs":[{"logRecords":[{"attributes":[{{{repeated}}},{"key":"http.route","value":{"stringValue":"/orders"}}]}]}]}]}
+            """).RootElement).Single();
+        Assert.AreEqual("/orders", replaced.Attributes["http.route"], "A replaced value no longer counts against the budget.");
     }
 
     [TestMethod]

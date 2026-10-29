@@ -368,13 +368,14 @@ public static class OtlpJsonDecoder
 
         foreach (var attribute in Array(owner, "attributes"))
         {
-            if (result.Count >= MaxAttributes || length >= MaxAttributesLength) break;
             if (Text(attribute, "key") is not { Length: > 0 } key) continue;
+            if ((result.Count >= MaxAttributes || length >= MaxAttributesLength) && key != "session.id") continue;
             if (attribute.TryGetProperty("value", out var value) is false) continue;
 
             var text = Truncate(AnyValue(value));
             if (text is null) continue;
 
+            if (result.TryGetValue(key, out var previous)) length -= key.Length + previous.Length;
             result[key] = text;
             length += key.Length + text.Length;
         }

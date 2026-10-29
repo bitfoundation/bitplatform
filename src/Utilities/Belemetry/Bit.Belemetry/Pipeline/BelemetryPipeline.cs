@@ -132,7 +132,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
         _privacy.Apply(span);
         BelemetryValueLimit.Apply(span, Settings.Options.MaxValueLength);
-        if (Settings.IsServer is false) Enrich(span.Attributes);
+        if (Settings.IsServer is false) Enrich(span.Attributes, relayed);
 
         foreach (var processor in Settings.Options.Processors)
         {
@@ -169,7 +169,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
         _privacy.Apply(log);
         BelemetryValueLimit.Apply(log, Settings.Options.MaxValueLength);
-        if (Settings.IsServer is false) Enrich(log.Attributes);
+        if (Settings.IsServer is false) Enrich(log.Attributes, relayed);
 
         foreach (var processor in Settings.Options.Processors)
         {
@@ -311,7 +311,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         return requests;
     }
 
-    private void Enrich(BelemetryAttributes attributes)
+    private void Enrich(BelemetryAttributes attributes, bool relayed)
     {
         // After the privacy rules, which leave the ids alone - except an id the operator blocked, which is not added.
         if (_consent.SessionId is { } sessionId && _privacy.IsBlocked(BelemetrySemanticConventions.SessionId) is false)
@@ -330,6 +330,11 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
             {
                 attributes.SetIfAbsent(BelemetrySemanticConventions.UserId, userId);
             }
+        }
+        else if (relayed is false)
+        {
+            attributes.Remove(BelemetrySemanticConventions.EndUserPseudoId);
+            attributes.Remove(BelemetrySemanticConventions.UserId);
         }
     }
 

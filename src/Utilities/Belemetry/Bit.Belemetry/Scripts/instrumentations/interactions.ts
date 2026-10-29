@@ -37,11 +37,17 @@ export function xpath(element: Element): string {
     return '/' + parts.join('/');
 }
 
-function textOutsideIgnored(node: Node): string {
+function textOutsideIgnored(root: Node): string {
     let text = '';
-    for (let child = node.firstChild; child; child = child.nextSibling) {
-        if (child.nodeType === 3) text += child.nodeValue || '';
-        else if (child.nodeType === 1 && !(child as Element).hasAttribute('data-bit-belemetry-ignore')) text += textOutsideIgnored(child);
+    let node: Node | null = root.firstChild;
+    while (node) {
+        if (node.nodeType === 3) text += node.nodeValue || '';
+        if (node.nodeType === 1 && node.firstChild && !(node as Element).hasAttribute('data-bit-belemetry-ignore')) {
+            node = node.firstChild;
+            continue;
+        }
+        while (node && node !== root && !node.nextSibling) node = node.parentNode;
+        node = node && node !== root ? node.nextSibling : null;
     }
     return text;
 }

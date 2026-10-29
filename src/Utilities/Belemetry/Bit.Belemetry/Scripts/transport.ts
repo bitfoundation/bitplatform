@@ -101,8 +101,11 @@ export function fromBase64(text: string): Uint8Array {
 }
 
 async function readText(response: Response, max: number): Promise<string | null> {
-    if (Number(response.headers.get('Content-Length')) > max) return null;
     if (!response.body) return response.text();
+    if (Number(response.headers.get('Content-Length')) > max) {
+        response.body.cancel().catch(() => undefined);
+        return null;
+    }
     const reader = response.body.getReader();
     const chunks: Uint8Array[] = [];
     let size = 0;

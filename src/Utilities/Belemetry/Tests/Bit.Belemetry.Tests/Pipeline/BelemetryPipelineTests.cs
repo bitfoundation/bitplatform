@@ -528,20 +528,25 @@ public class BelemetryPipelineTests
     }
 
     [TestMethod]
-    public async Task Api_TakesTheIdsFromConsent_NeverFromTheAttributes()
+    public async Task WithoutUserTracking_NoRecordCarriesAUserId_WhoeverPassesOne()
     {
         await using var host = TestHost.Create(consentDefault: BelemetryFeatures.All & ~BelemetryFeatures.UserTracking);
         using var scope = host.Services.CreateScope();
         var api = (IBelemetry)ActivatorUtilities.CreateInstance<BelemetryService>(scope.ServiceProvider, new BelemetryJsBridge(
             host.Settings, host.Pipeline, host.Consent, host.Services.GetRequiredService<BelemetryBrowserBridgeRegistry>(), new Bunit.BunitJSInterop().JSRuntime));
+        var logger = host.StartLogging().CreateLogger("MyApp.Checkout");
 
         api.TrackEvent("checkout", new Dictionary<string, object?> { ["user.id"] = "jane@example.com", ["enduser.pseudo.id"] = "p", ["amount"] = 9.5 });
+        using (logger.BeginScope(new Dictionary<string, object?> { ["user.id"] = "jane@example.com", ["TenantId"] = "t1" }))
+        {
+            logger.LogInformation("Paid");
+        }
 
         await host.FlushAsync();
-        var attributes = host.Memory.Logs.Single().Attributes;
-        Assert.AreEqual(9.5, attributes["amount"]);
-        Assert.IsFalse(attributes.Contains("user.id"), "Without UserTracking there is no user id, whoever passes one.");
-        Assert.IsFalse(attributes.Contains("enduser.pseudo.id"));
+        var logs = host.Memory.Logs.ToList();
+        Assert.AreEqual(9.5, logs.Single(l => l.EventName == "checkout").Attributes["amount"]);
+        Assert.AreEqual("t1", logs.Single(l => l.Body == "Paid").Attributes["TenantId"]);
+        Assert.IsTrue(logs.All(l => l.Attributes.Contains("user.id") is false && l.Attributes.Contains("enduser.pseudo.id") is false), "Consent governs the user ids.");
     }
 
     [TestMethod]

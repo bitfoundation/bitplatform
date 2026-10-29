@@ -110,13 +110,15 @@ public class CodeReviewTests
     }
 
     [TestMethod]
-    public void AnOversizedSnippet_IsRefused_AndTheFindingsAreCapped()
+    public void AnOversizedSnippet_IsRefused_AndEachRulesFindingsAreCapped()
     {
         var oversized = BelemetryCodeReview.Review(new string('x', 64 * 1024 + 1));
         StringAssert.StartsWith(oversized.Summary, "Not reviewed");
         Assert.IsEmpty(oversized.Findings);
 
-        var repeated = BelemetryCodeReview.Review(string.Concat(Enumerable.Repeat("var a = \"http://c:4317\";\n", 500)));
-        Assert.HasCount(100, repeated.Findings);
+        var repeated = BelemetryCodeReview.Review(string.Concat(Enumerable.Repeat("builder.Services.AddBelemetryServices();\n", 500)) + "o.Consent.Default = BelemetryFeatures.All;");
+        Assert.HasCount(10, repeated.Findings.Where(f => f.Rule == "BLM001"));
+        CollectionAssert.Contains(repeated.Findings.Select(f => f.Rule).ToArray(), "BLM004", "A flood of one rule's findings does not hide another rule's.");
+        StringAssert.Contains(repeated.Summary, "at most 10");
     }
 }
