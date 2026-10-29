@@ -157,6 +157,10 @@ public class McpInspectStoreTests
         var result = await InspectAsync($"[BlexStore]\npublic partial class TallStore\n{{\n{states}    [BlexComputed] private int ComputeTotal() => S0;\n}}");
 
         Assert.IsTrue(result.IsValid, string.Join("; ", result.Diagnostics.Select(d => d.Message)));
+
+        var store = result.Stores.Single();
+        Assert.AreEqual("TallStore", store.Name);
+        Assert.IsTrue(store.Generated);
     }
 
     [TestMethod]
