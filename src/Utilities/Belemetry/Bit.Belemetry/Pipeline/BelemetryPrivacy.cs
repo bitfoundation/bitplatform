@@ -43,6 +43,7 @@ internal sealed partial class BelemetryPrivacy(BelemetryPrivacyOptions options)
         if (span.StatusMessage is not null) span.StatusMessage = Scrub(span.StatusMessage);
         if (LooksLikeUrl(span.Name)) span.Name = RedactUrl(span.Name);
         foreach (var e in span.Events) ApplyToAttributes(e.Attributes);
+        foreach (var link in span.Links) ApplyToAttributes(link.Attributes);
     }
 
     public void Apply(BelemetryLogRecord log)
@@ -53,6 +54,8 @@ internal sealed partial class BelemetryPrivacy(BelemetryPrivacyOptions options)
 
     /// <summary>Whether <paramref name="key"/> is one of <see cref="BelemetryPrivacyOptions.BlockedAttributes"/>: the enrichment step does not add a blocked id.</summary>
     public bool IsBlocked(string key) => _blocked.Count > 0 && _blocked.Contains(key);
+
+    public bool HidesValue(string key) => IsBlocked(key) || Rule(key) == KeyRule.Redacted;
 
     /// <summary>
     /// Removes the blocked attributes, replaces the values of the redacted names, redacts the URL attributes and
@@ -84,7 +87,10 @@ internal sealed partial class BelemetryPrivacy(BelemetryPrivacyOptions options)
                     break;
                 case KeyRule.Query when value is string query:
                     // The convention leaves the '?' out, but not every instrumentation does.
-                    next = Scrub(query.StartsWith('?') ? "?" + RedactQuery(query[1..]) : RedactQuery(query));
+                    next = RedactQueryValue(query);
+                    break;
+                case KeyRule.Url or KeyRule.Query when value is string[] values:
+                    next = RedactAll(values, rule);
                     break;
                 default:
                     if (value is string text) next = Scrub(text, addresses: rule != KeyRule.Version);
@@ -173,6 +179,23 @@ internal sealed partial class BelemetryPrivacy(BelemetryPrivacyOptions options)
 
         return scrubbed ?? texts;
     }
+
+    private string[] RedactAll(string[] values, KeyRule rule)
+    {
+        string[]? redacted = null;
+        for (var i = 0; i < values.Length; i++)
+        {
+            if (string.IsNullOrEmpty(values[i])) continue;
+            var value = rule == KeyRule.Url ? RedactUrl(values[i]) : RedactQueryValue(values[i]);
+            if (string.Equals(value, values[i], StringComparison.Ordinal)) continue;
+            redacted ??= (string[])values.Clone();
+            redacted[i] = value;
+        }
+
+        return redacted ?? values;
+    }
+
+    private string RedactQueryValue(string query) => Scrub(query.StartsWith('?') ? "?" + RedactQuery(query[1..]) : RedactQuery(query));
 
     /// <summary>Redacts sensitive query parameters, strips the query or fragment as configured, then scrubs patterns.</summary>
     public string RedactUrl(string url)

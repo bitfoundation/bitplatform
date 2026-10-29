@@ -139,7 +139,7 @@ function parseChoice(raw: string | null): number | null {
 
 /** Clears what is stored on the device for the revoked features. */
 export function purgeStorage(revoked: number): void {
-    if (revoked & Features.Persistence) removeItem('local', StorageKeys.queue);
+    if (revoked) removeItem('local', StorageKeys.queue);
     if (revoked & Features.Sessions) removeItem('session', StorageKeys.session);
     if (revoked & Features.UserTracking) {
         removeItem('local', StorageKeys.pseudoId);

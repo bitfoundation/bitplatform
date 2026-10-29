@@ -56,6 +56,8 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
     internal BelemetryExporterSet Exporters => _exporters ??= new BelemetryExporterSet(Settings, _services, this);
 
+    internal BelemetryPrivacy Privacy => _privacy;
+
     /// <summary>Belemetry's own health metrics (the <c>Bit.Belemetry</c> meter).</summary>
     internal BelemetrySelfTelemetry Self { get; } = new();
 
@@ -130,7 +132,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
         _privacy.Apply(span);
         BelemetryValueLimit.Apply(span, Settings.Options.MaxValueLength);
-        if (Settings.IsServer is false) Enrich(span.Attributes);
+        if (Settings.IsServer is false) Enrich(span.Attributes, relayed);
 
         foreach (var processor in Settings.Options.Processors)
         {
@@ -167,7 +169,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
         _privacy.Apply(log);
         BelemetryValueLimit.Apply(log, Settings.Options.MaxValueLength);
-        if (Settings.IsServer is false) Enrich(log.Attributes);
+        if (Settings.IsServer is false) Enrich(log.Attributes, relayed);
 
         foreach (var processor in Settings.Options.Processors)
         {
@@ -250,8 +252,12 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
             // Anyone can open a server's pages: a page describes itself (browser, language, its tab's instance id), but
             // which service it belongs to is the server's to say. And the server's own host, process and cloud
             // attributes describe the server, not the page, so they are not added - as with the Direct transport.
-            resource = new BelemetryResource(browser);
+            resource = new BelemetryResource();
             foreach (var name in _serviceIdentity) resource.Attributes.Set(name, Settings.Resource.Attributes[name]);
+            foreach (var (attribute, value) in browser)
+            {
+                if (Array.IndexOf(_serviceIdentity, attribute) < 0) resource.Attributes.Set(attribute, value);
+            }
         }
         else
         {
@@ -305,7 +311,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         return requests;
     }
 
-    private void Enrich(BelemetryAttributes attributes)
+    private void Enrich(BelemetryAttributes attributes, bool relayed)
     {
         // After the privacy rules, which leave the ids alone - except an id the operator blocked, which is not added.
         if (_consent.SessionId is { } sessionId && _privacy.IsBlocked(BelemetrySemanticConventions.SessionId) is false)
@@ -324,6 +330,11 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
             {
                 attributes.SetIfAbsent(BelemetrySemanticConventions.UserId, userId);
             }
+        }
+        else if (relayed is false)
+        {
+            attributes.Remove(BelemetrySemanticConventions.EndUserPseudoId);
+            attributes.Remove(BelemetrySemanticConventions.UserId);
         }
     }
 
@@ -407,7 +418,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
                 for (var node = _queue.First; node is not null;)
                 {
                     var next = node.Next;
-                    if (node.Value.PreConsented is false && (node.Value.Feature & revoked) != 0)
+                    if ((node.Value.Feature & revoked) != 0)
                     {
                         _queue.Remove(node);
                         if (node.Value.Record is BelemetrySpan) _queuedSpans--; else _queuedLogs--;
@@ -426,9 +437,19 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
                 }
                 _pending.Clear();
             }
+
+            if ((revoked & BelemetryFeatures.UserTracking) != 0)
+            {
+                foreach (var entry in _queue.Concat(_pending))
+                {
+                    var attributes = entry.Record is BelemetrySpan span ? span.Attributes : ((BelemetryLogRecord)entry.Record).Attributes;
+                    attributes.Remove(BelemetrySemanticConventions.EndUserPseudoId);
+                    attributes.Remove(BelemetrySemanticConventions.UserId);
+                }
+            }
         }
 
-        if ((revoked & BelemetryFeatures.Persistence) != 0) _ = ClearStoreAsync();
+        if (revoked != BelemetryFeatures.None) _ = ClearStoreAsync();
         Signal();
     }
 
@@ -542,6 +563,11 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
     private List<BelemetryMetric> RunMetricProcessors(List<BelemetryMetric> metrics)
     {
+        foreach (var metric in metrics)
+        {
+            foreach (var point in metric.Points) _privacy.ApplyToAttributes(point.Attributes);
+        }
+
         if (Settings.Options.Processors.Count == 0) return metrics;
 
         return metrics.Where(metric => Settings.Options.Processors.All(p =>

@@ -202,6 +202,13 @@ export function isRedacted(key: string, privacy: PrivacyConfig): boolean {
     return redacted;
 }
 
+function cleanText(key: string, value: string, privacy: PrivacyConfig): string {
+    const isUrl = URL_ATTRIBUTES.indexOf(key) >= 0;
+    let next = isUrl ? redactUrl(value, privacy) : key === URL_QUERY ? redactQuery(value, redactionNames(privacy)) : value;
+    if (privacy.scrubPatterns) next = isUrl ? scrubUrl(next) : scrub(next, !isVersionKey(key));
+    return next;
+}
+
 function clean(attributes: Attributes, privacy: PrivacyConfig): void {
     for (const key of Object.keys(attributes)) {
         if (isBlocked(key, privacy)) {
@@ -220,10 +227,9 @@ function clean(attributes: Attributes, privacy: PrivacyConfig): void {
         const value = attributes[key];
         if (typeof value === 'string') {
             if (HOST_ATTRIBUTES.indexOf(key) >= 0) continue;
-            const isUrl = URL_ATTRIBUTES.indexOf(key) >= 0;
-            let next = isUrl ? redactUrl(value, privacy) : key === URL_QUERY ? redactQuery(value, redactionNames(privacy)) : value;
-            if (privacy.scrubPatterns) next = isUrl ? scrubUrl(next) : scrub(next, !isVersionKey(key));
-            attributes[key] = next;
+            attributes[key] = cleanText(key, value, privacy);
+        } else if (Array.isArray(value) && typeof value[0] === 'string' && (URL_ATTRIBUTES.indexOf(key) >= 0 || key === URL_QUERY)) {
+            attributes[key] = (value as string[]).map(item => cleanText(key, item, privacy));
         } else if (privacy.scrubPatterns && Array.isArray(value) && typeof value[0] === 'string') {
             // Not .map(scrub): map passes the index as the second argument.
             const addresses = !isVersionKey(key);

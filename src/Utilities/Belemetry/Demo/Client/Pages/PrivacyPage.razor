@@ -104,9 +104,10 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Credential names</h3>
     <p>
         Some values are secret whatever they look like: a password has no pattern to recognize. The value of every
-        attribute named in <code>RedactedAttributes</code> becomes <code>REDACTED</code>, in every record and span
-        event, on both sides. A name matches a key whole or its last dot-separated segment, case-insensitively - so
-        the default <code>password</code> covers a structured log value <code>{Password}</code> and
+        attribute named in <code>RedactedAttributes</code> becomes <code>REDACTED</code>, in every record, span
+        event, span link and metric point, on both sides. A log message that renders such a value keeps its template
+        as the body, so the value is not in the message either. A name matches a key whole or its last dot-separated
+        segment, case-insensitively - so the default <code>password</code> covers a structured log value <code>{Password}</code> and
         <code>user.password</code> alike, and <code>authorization</code> covers
         <code>http.request.header.authorization</code>, while <code>password_policy</code> is left alone. A trailing
         <code>*</code> matches a prefix instead (<code>http.request.header.*</code>). The defaults:
@@ -150,10 +151,10 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Blocked attributes and the user agent</h3>
     <p>
-        <code>BlockedAttributes</code> removes attributes by exact key from every record and span event, on both
-        sides: the browser script gets the list in its configuration, and the .NET pipeline applies it to its own
-        logs and spans, <code>IBelemetry</code> calls, and browser records relayed to it. The ids
-        (<code>session.id</code>, <code>enduser.pseudo.id</code>, <code>user.id</code>) are governed by consent and
+        <code>BlockedAttributes</code> removes attributes by exact key from every record, span event, span link and
+        metric point, on both sides: the browser script gets the list in its configuration, and the .NET pipeline
+        applies it to its own logs, spans and metrics, <code>IBelemetry</code> calls, and browser records relayed to
+        it. The ids (<code>session.id</code>, <code>enduser.pseudo.id</code>, <code>user.id</code>) are governed by consent and
         untouched by every other privacy rule, but blocking one is the operator's explicit choice: a blocked id is
         never added to a record, and is removed from relayed browser records that carry it. Use a
         <a href="/processors">processor</a> for anything more selective.

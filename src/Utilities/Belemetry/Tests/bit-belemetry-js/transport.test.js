@@ -326,6 +326,15 @@ describe('Transport', () => {
         expect(JSON.parse(new TextDecoder().decode(fetch.calls[1].init.body))).toEqual([{ a: 1 }]);
     });
 
+    it('reads at most 4 MB of an Azure 206 response', async () => {
+        const items = [{ a: 0 }, { a: 1 }];
+        const padding = 'x'.repeat(4 * 1024 * 1024);
+        const fetch = mockFetch({ status: 206, body: JSON.stringify({ errors: [{ index: 1, statusCode: 500 }], padding }) }, 200);
+        vi.stubGlobal('fetch', fetch);
+        await transport().send(request({ exporter: 'azureMonitor', contentType: 'application/json', body: encodeUtf8(JSON.stringify(items)) }));
+        expect(fetch.calls).toHaveLength(1);
+    });
+
     it('parses Retry-After', () => {
         expect(parseRetryAfter('3')).toBe(3000);
         expect(parseRetryAfter(null)).toBeNull();

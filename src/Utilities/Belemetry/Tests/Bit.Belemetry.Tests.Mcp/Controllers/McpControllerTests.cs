@@ -154,6 +154,15 @@ public class McpControllerTests
     }
 
     [TestMethod]
+    public void Generator_RefusesAnOversizedArgument()
+    {
+        var result = _mcp.GenerateBelemetryConfiguration("server", string.Join(",", Enumerable.Range(0, 1000).Select(i => "x" + i)));
+
+        Assert.IsEmpty(result.Files);
+        StringAssert.StartsWith(result.Notes.Single(), "Not generated");
+    }
+
+    [TestMethod]
     public void Generator_Hybrid_FlushesOnSleep_AndHasNoScriptTag()
     {
         var result = _mcp.GenerateBelemetryConfiguration("hybrid");

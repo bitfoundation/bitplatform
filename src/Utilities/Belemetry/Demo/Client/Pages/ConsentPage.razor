@@ -195,8 +195,9 @@
         </li>
         <li>
             <strong>Revoking is immediate.</strong> Queued records of a revoked feature are discarded, and its
-            device storage cleared: revoking <code>Persistence</code> clears the offline queue,
-            <code>Sessions</code> the stored session, <code>UserTracking</code> the pseudo id and the user id.
+            device storage cleared: revoking any feature clears the offline queue (a stored request can hold that
+            feature's records), <code>Sessions</code> the stored session, <code>UserTracking</code> the pseudo id and
+            the user id, which also leave the records still queued.
         </li>
         <li>
             <strong>The choice is remembered</strong> (<code>Consent.Persist</code>, on by default) in

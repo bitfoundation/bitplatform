@@ -143,6 +143,19 @@ describe('public API', () => {
         expect(api.getContext().userId).toBe('alice'); // still the context .NET is kept in step with
     });
 
+    it('takes the ids of a record from consent, never from its attributes', async () => {
+        await load();
+        api.start(relayConfig({ consent: { default: 4095 & ~64 } }));
+        const dotnet = fakeDotNet();
+        api.attachDotNet(dotnet, { relay: true });
+        api.trackEvent('e', { 'user.id': 'jane@example.com', 'enduser.pseudo.id': 'p', 'app.kind': 'k' });
+        await api.flush();
+        const event = dotnet.calls.filter(c => c[0] === 'Belemetry.Relay').flatMap(c => c[1].logs).find(l => l.eventName === 'e');
+        expect(event.attributes['app.kind']).toBe('k');
+        expect(event.attributes['user.id']).toBeUndefined();
+        expect(event.attributes['enduser.pseudo.id']).toBeUndefined();
+    });
+
     it('purges queued records of revoked features', async () => {
         await load();
         api.start(relayConfig({ consent: { default: 0 } }));

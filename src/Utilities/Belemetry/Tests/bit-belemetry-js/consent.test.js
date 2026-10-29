@@ -178,6 +178,15 @@ describe('ConsentManager', () => {
         expect(localStorage.getItem('bit-belemetry-consent')).not.toBeNull();
     });
 
+    it('clears the stored requests whatever feature is revoked: they can hold its records', () => {
+        const consent = new ConsentManager(config());
+        consent.set(Features.All);
+        localStorage.setItem('bit-belemetry-queue', '[]');
+
+        consent.set(Features.All & ~Features.UserTracking);
+        expect(localStorage.getItem('bit-belemetry-queue')).toBeNull();
+    });
+
     it('notifies listeners with the previous and next grant', () => {
         const consent = new ConsentManager(config({ default: Features.Errors }));
         const changes = [];

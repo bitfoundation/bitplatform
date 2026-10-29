@@ -67,15 +67,21 @@ internal sealed class BelemetryLogger : ILogger
 
             if (state is IReadOnlyList<KeyValuePair<string, object?>> values)
             {
+                string? template = null;
+                var hidden = false;
                 foreach (var (key, value) in values)
                 {
                     if (key == OriginalFormat)
                     {
+                        template = value as string;
                         if (_options.IncludeMessageTemplate) record.Attributes.Set(BelemetrySemanticConventions.LogMessageTemplate, value);
                         continue;
                     }
+                    hidden |= value is not null && _pipeline.Privacy.HidesValue(key);
                     record.Attributes.Set(key, value);
                 }
+
+                if (hidden && template is not null) record.Body = template;
             }
 
             if (eventId.Id != 0) record.Attributes.Set(BelemetrySemanticConventions.LogEventId, eventId.Id);

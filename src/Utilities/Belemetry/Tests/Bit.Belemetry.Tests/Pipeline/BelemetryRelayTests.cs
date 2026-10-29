@@ -169,4 +169,49 @@ public class BelemetryRelayTests
         Assert.IsFalse(attributes.TryGetValue("enduser.pseudo.id", out _));
         Assert.IsFalse(attributes.TryGetValue("user.id", out _), "The page added it; the server's configuration keeps it out of the backend.");
     }
+
+    [TestMethod]
+    public async Task OnAServer_AResourceThatFillsEverySlot_StillCarriesTheServersIdentity()
+    {
+        await using var host = TestHost.Create(Server);
+        var filler = string.Join(", ", Enumerable.Range(0, BelemetryAttributes.DefaultLimit).Select(i => $$""" "page.{{i}}": "x" """));
+
+        await Bridge(host).RelayAsync(Batch(1, "{ " + filler + " }"));
+        await host.FlushAsync();
+
+        var resource = host.Memory.LastResource!.Attributes;
+        Assert.AreEqual("belemetry-tests", resource["service.name"], "A page cannot crowd the server's identity out of its own resource.");
+        Assert.AreEqual("1.2.3", resource["service.version"]);
+    }
+
+    [TestMethod]
+    public async Task OnAServer_TheUnloadDrain_HandsOutNothing()
+    {
+        await using var host = TestHost.Create(o =>
+        {
+            Server(o);
+            o.Server.CollectDotnetTelemetry = true;
+        });
+        host.Pipeline.Enqueue(Records.Log("another user's record"));
+
+        var drained = Bridge(host).DrainForUnload();
+        await host.FlushAsync();
+
+        Assert.AreEqual(0, drained.GetArrayLength(), "Any client of a circuit can call it, and the queue and the exporters' headers belong to every user.");
+        Assert.AreEqual("another user's record", host.Memory.Logs.Single().Body, "The queue is left to the server's own exports.");
+    }
+
+    [TestMethod]
+    public async Task InWebAssembly_TheUnloadDrain_TakesTheQueue()
+    {
+        await using var host = TestHost.Create();
+        var settings = new BelemetrySettings(host.Settings.Options, new BelemetryHostDetection(false), isBrowser: true);
+        var bridge = new BelemetryJsBridge(settings, host.Pipeline, host.Consent, host.Services.GetRequiredService<BelemetryBrowserBridgeRegistry>());
+        host.Pipeline.Enqueue(Records.Log("bye"));
+
+        bridge.DrainForUnload();
+        await host.FlushAsync();
+
+        Assert.IsEmpty(host.Memory.Logs, "The page sends what the drain handed it.");
+    }
 }
