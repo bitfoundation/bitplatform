@@ -128,6 +128,19 @@ public partial class BsqliteServiceTests
     }
 
     [TestMethod]
+    public async Task An_oversized_list_is_refused_before_any_provider_is_built()
+    {
+        var names = string.Join(",", Enumerable.Range(0, 1_000).Select(i => $"p{i}"));
+        var plan = await BsqliteStorageLab.PlanAsync(names, names, names, names, false, null, null, null, null, TestContext.CancellationToken);
+
+        Assert.IsFalse(plan.Opens);
+        Assert.Contains("'candidates' names more than 16 backends", plan.Error!);
+        Assert.IsEmpty(plan.Candidates);
+        Assert.IsEmpty(plan.Configuration);
+        Assert.IsEmpty(plan.Notes);
+    }
+
+    [TestMethod]
     public async Task The_planner_honours_the_database_name()
     {
         var plan = await BsqliteStorageLab.PlanAsync("indexeddb", null, "indexeddb", null, false, null, null, null, "orders.db", TestContext.CancellationToken);
