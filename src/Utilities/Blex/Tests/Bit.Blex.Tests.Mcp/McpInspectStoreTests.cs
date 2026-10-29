@@ -149,6 +149,17 @@ public class McpInspectStoreTests
     }
 
     [TestMethod]
+    public async Task A_store_with_many_states_and_one_computed_stays_within_the_budget()
+    {
+        var side = (int)Math.Sqrt(BlexStoreInspector.MaxStateComputedPairs) + 1;
+        var states = string.Concat(Enumerable.Range(0, side).Select(i => $"    [BlexState] private int _s{i};\n"));
+
+        var result = await InspectAsync($"[BlexStore]\npublic partial class TallStore\n{{\n{states}    [BlexComputed] private int ComputeTotal() => S0;\n}}");
+
+        Assert.IsTrue(result.IsValid, string.Join("; ", result.Diagnostics.Select(d => d.Message)));
+    }
+
+    [TestMethod]
     public async Task A_store_whose_type_names_multiply_past_the_budget_is_refused()
     {
         var ns = string.Join('.', Enumerable.Repeat(new string('N', 500), 40));

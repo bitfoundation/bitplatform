@@ -73,7 +73,7 @@ public sealed class BlexReduxDevToolsConnector : IBlexDevTools, IAsyncDisposable
         if (_manager is { } manager)
             manager.ReportError("devtools", exception, detail);
         else
-            Console.Error.WriteLine($"[Blex] {detail}: {exception.Message}");
+            Console.Error.WriteLine(BlexManager.EscapeControlCharacters($"[Blex] {detail}: {exception.Message}"));
     }
 
     /// <inheritdoc />

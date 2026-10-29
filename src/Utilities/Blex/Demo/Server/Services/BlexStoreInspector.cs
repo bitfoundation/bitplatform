@@ -140,7 +140,7 @@ public static class BlexStoreInspector
             .Concat(compilerErrors.Select(diagnostic => ToDto(diagnostic, "compiler", userTree)))
             .ToArray();
 
-        var stores = FindStores(updated, userTree, generatedTrees);
+        var stores = FindStores(updated, userTree, generatedTrees, cancellationToken);
 
         if (stores.Length == 0)
         {
@@ -178,14 +178,16 @@ public static class BlexStoreInspector
         };
     }
 
-    private static BlexInspectedStoreDto[] FindStores(Compilation compilation, SyntaxTree userTree, HashSet<SyntaxTree> generatedTrees)
+    private static BlexInspectedStoreDto[] FindStores(Compilation compilation, SyntaxTree userTree, HashSet<SyntaxTree> generatedTrees, CancellationToken cancellationToken)
     {
         var model = compilation.GetSemanticModel(userTree);
         var stores = new List<BlexInspectedStoreDto>();
 
-        foreach (var declaration in userTree.GetRoot().DescendantNodes().OfType<Microsoft.CodeAnalysis.CSharp.Syntax.TypeDeclarationSyntax>())
+        foreach (var declaration in userTree.GetRoot(cancellationToken).DescendantNodes().OfType<Microsoft.CodeAnalysis.CSharp.Syntax.TypeDeclarationSyntax>())
         {
-            if (model.GetDeclaredSymbol(declaration) is not INamedTypeSymbol type) continue;
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (model.GetDeclaredSymbol(declaration, cancellationToken) is not INamedTypeSymbol type) continue;
 
             var isStore = type.GetAttributes().Any(attribute => attribute.AttributeClass?.ToDisplayString() == "Bit.Blex.BlexStoreAttribute");
             if (isStore is false || stores.Any(store => store.Name == type.Name)) continue;

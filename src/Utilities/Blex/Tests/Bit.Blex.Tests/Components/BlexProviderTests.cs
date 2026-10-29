@@ -75,4 +75,12 @@ public class BlexProviderTests : BunitContext
 
         Assert.AreSame(first, Manager.Dispatcher);
     }
+
+    [TestMethod]
+    public void The_devtools_bridge_stays_off_unless_it_is_enabled()
+    {
+        Render<BlexProvider>(p => p.Add(x => x.ChildContent, (RenderFragment)(b => b.AddContent(0, "app"))));
+
+        Assert.IsFalse(JSInterop.Invocations.Any(invocation => invocation.Arguments.Contains("./_content/Bit.Blex/bit-blex-devtools.js")));
+    }
 }

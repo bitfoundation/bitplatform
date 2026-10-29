@@ -397,7 +397,7 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
         if (_manager is { } manager)
             manager.ReportError("subscriber", exception, Name);
         else
-            Console.Error.WriteLine($"[Blex] subscriber failed ({Name}): {exception.Message}");
+            Console.Error.WriteLine(BlexManager.EscapeControlCharacters($"[Blex] subscriber failed ({Name}): {exception.Message}"));
     }
 
     /// <summary>
@@ -1058,7 +1058,7 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
             if (_manager is { } manager)
                 manager.ReportError("dispose", ex, Name);
             else
-                Console.Error.WriteLine($"[Blex] dispose failed ({Name}): {ex.Message}");
+                Console.Error.WriteLine(BlexManager.EscapeControlCharacters($"[Blex] dispose failed ({Name}): {ex.Message}"));
         }
     }
 }

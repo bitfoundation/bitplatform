@@ -318,7 +318,7 @@ public sealed class BlexManager
         }
     }
 
-    private static string EscapeControlCharacters(string text)
+    internal static string EscapeControlCharacters(string text)
     {
         var escaped = new StringBuilder(text.Length);
         foreach (var c in text)

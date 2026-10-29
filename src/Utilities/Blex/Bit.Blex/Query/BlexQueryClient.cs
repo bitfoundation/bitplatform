@@ -1096,7 +1096,7 @@ public sealed class BlexQueryClient : IDisposable
         if (_manager is { } manager)
             manager.ReportError("query", exception, key?.ToString());
         else
-            Console.Error.WriteLine($"[Blex] query failed{(key is null ? "" : $" ({key})")}: {exception.Message}");
+            Console.Error.WriteLine(BlexManager.EscapeControlCharacters($"[Blex] query failed{(key is null ? "" : $" ({key})")}: {exception.Message}"));
     }
 
     /// <summary>The longest a timer can wait (about 49 days); a longer wait is made in more than one go.</summary>
