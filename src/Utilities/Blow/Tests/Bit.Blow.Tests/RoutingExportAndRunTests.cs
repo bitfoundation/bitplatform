@@ -163,14 +163,35 @@ public class RoutingExportAndRunTests : BunitContext
             new() { Id = "a-b", Source = "a", Target = "b" },
             new() { Id = "a-c", Source = "a", Target = "c", MarkerStart = true, MarkerColor = "red" },
             new() { Id = "b-c", Source = "b", Target = "c" },
+            new() { Id = "c-a", Source = "c", Target = "a", MarkerWidth = 12 },
         };
 
         var doc = XDocument.Parse(BlowSvgExport.ToSvg(nodes, edges));
         var paths = doc.Descendants(Svg + "path").Where(p => p.Parent!.Name != Svg + "marker").ToList();
+        var markers = doc.Descendants(Svg + "marker").ToList();
 
-        CollectionAssert.AreEqual(new[] { "m0", "m1" }, doc.Descendants(Svg + "marker").Select(m => m.Attribute("id")!.Value).ToArray());
-        CollectionAssert.AreEqual(new[] { "url(#m0)", "url(#m1)", "url(#m0)" }, paths.Select(p => p.Attribute("marker-end")?.Value).ToArray());
-        CollectionAssert.AreEqual(new[] { null, "url(#m1)", null }, paths.Select(p => p.Attribute("marker-start")?.Value).ToArray());
+        CollectionAssert.AreEqual(new[] { "m0", "m1", "m2" }, markers.Select(m => m.Attribute("id")!.Value).ToArray());
+        CollectionAssert.AreEqual(new[] { "7", "7", "12" }, markers.Select(m => m.Attribute("markerWidth")!.Value).ToArray());
+        CollectionAssert.AreEqual(new[] { "7", "7", "12" }, markers.Select(m => m.Attribute("markerHeight")!.Value).ToArray());
+        Assert.AreEqual("red", markers[1].Element(Svg + "path")!.Attribute("stroke")!.Value);
+        CollectionAssert.AreEqual(new[] { "url(#m0)", "url(#m1)", "url(#m0)", "url(#m2)" }, paths.Select(p => p.Attribute("marker-end")?.Value).ToArray());
+        CollectionAssert.AreEqual(new[] { null, "url(#m1)", null, null }, paths.Select(p => p.Attribute("marker-start")?.Value).ToArray());
+    }
+
+    [TestMethod]
+    public void ANodeWithTwoAncestorsIsPlacedByTheSumOfAllItsParents()
+    {
+        var nodes = new List<BlowNode>
+        {
+            new() { Id = "g", Type = "group", Label = "Group", Position = new(200, 0), Width = 400, Height = 300 },
+            new() { Id = "c", Label = "Child", ParentId = "g", Position = new(50, 50), Width = 200, Height = 150 },
+            new() { Id = "d", Label = "Grandchild", ParentId = "c", Position = new(10, 20), Width = 100, Height = 40 },
+        };
+
+        var doc = XDocument.Parse(BlowSvgExport.ToSvg(nodes, []));
+        var rect = doc.Descendants(Svg + "text").Single(t => t.Value == "Grandchild").Parent!.Element(Svg + "rect")!;
+
+        Assert.AreEqual(("260", "70"), (rect.Attribute("x")!.Value, rect.Attribute("y")!.Value));
     }
 
     [TestMethod]
