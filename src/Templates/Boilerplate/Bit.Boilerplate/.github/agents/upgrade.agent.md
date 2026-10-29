@@ -14,7 +14,7 @@ The work is yours to judge. Ask the user only what the code can't answer and wha
 - `bit.json` records the bit Boilerplate version the project comes from, its name and the value of every option it was created with. The MCP server configurations (`.mcp.json`, `.vscode/mcp.json`, `.cursor/mcp.json`, `.junie/mcp/mcp.json`, `.gemini/settings.json`, `.codex/config.toml`) pin the bit platform MCP server to a version too. `bit.json` is the one to go by: a team may move those, or the bit platform packages, without upgrading the template.
 - Check the recorded options against the code. The team may have turned something off after creation, switched the database provider, or removed a module, and the diff should be made with the options the project has today.
 - The target is the version the user names. Without one, it's the newest stable bit Boilerplate; take a prerelease only when the user asks. The release notes of every version in between say why things changed: the bit platform MCP server's `GetBitPlatformReleases` tool returns them, and its other tools answer questions about any of those versions.
-- Do the whole upgrade on a branch of its own, cut from `develop`, and never on `develop`, `main` or a feature branch: it stays one change the team reviews and merges like any other, and no other work mixes with it. Start from a clean working tree; if there are uncommitted changes, ask the user whether to commit or stash them first.
+- Do the whole upgrade on a branch of its own, cut from an up-to-date `develop`, and never on `develop`, `main` or a feature branch: it stays one change the team reviews and merges like any other, and no other work mixes with it. Start from a clean working tree; if there are uncommitted changes, ask the user whether to commit or stash them first.
 - The bit CLI must know the target version: update it, or run it through `dnx` at that version.
 
 ## 2. Get the upstream changes
@@ -39,21 +39,22 @@ Treat the version the project came from as the common ancestor of the newer vers
 Some changes need more than the text of the diff:
 
 - **Packages and SDKs.** Take the newer versions in `src/Directory.Packages.props`, `global.json` and the `package.json` files, keep the team's own additions, then restore. A package the team pinned on purpose stays pinned; mention it.
+- **Versions that travel together.** Some versions live outside those files and must equal the package they belong to, such as the EF Core and Velopack command-line tools the workflows and docs run, the Aspire SDK on the app host's first line, and the Playwright server the `.runsettings` files start. The template's own copies arrive with the diff; a workflow, doc or script the team wrote keeps its own. A package the team added to a family the upgrade moves, such as another EF Core or Aspire package, moves with it: a restore warning that a package was downgraded or is outside a dependency's version range means one was missed.
 - **Database.** When entities, their configurations or the seed data changed, add a new migration for every database context whose model changed, the way `AGENTS.md` describes. Never edit a migration the project already has.
 - **Settings.** New `appsettings` keys and new user secrets come in with their defaults; list the ones that need a real value for production.
-- **Generated code.** Regenerate what the build or a tool generates instead of merging it.
+- **Generated code.** Regenerate what the build or a tool generates instead of merging it. The npm lock files are such: `npm install` in the folder of a changed `package.json` rewrites its lock, which should come out the same from npm on Linux. npm on Windows can add a root name to it that Linux npm drops, and then every build in CI leaves the lock modified.
 - **Naming.** Upstream text arrives with this project's name already in it; keep the team's own names, branding and copy wherever they replaced the template's.
 
 ## 4. Update the version the project records
 
 - In `bit.json`, the version, so the next upgrade starts from here; keep the options the project really has.
 - The version in the bit platform MCP server URL in every MCP configuration listed above, and in any other agent configuration that pins it.
-- Search the project for the old version string and update every place that names the template or bit platform version, such as the package versions of the bit platform libraries. Leave a package the team pinned on purpose, and other packages that happen to share the number, alone.
+- Search the project for the old version string and update every place that names the template or bit platform version, such as the package versions of the bit platform libraries and the bit platform actions the workflows use. Leave a package the team pinned on purpose, and other packages that happen to share the number, alone.
 
 ## 5. Prove it
 
-- No conflict markers, no leftover patch rejects or originals, and nothing of the team's own that the diff doesn't touch has changed.
-- The whole solution builds without new warnings, and the code passes the project's formatting check.
+- No conflict markers, no leftover patch rejects or originals, and nothing of the team's own that the diff doesn't touch has changed. Every file keeps its encoding and line endings: a script that rewrites files can drop a byte order mark or change the line endings, and the whole file then shows as changed.
+- The whole solution builds without new warnings, and the code passes the project's formatting check. A NuGet vulnerability warning on a package the .NET shared framework also carries is no reason to add a reference to it: the framework's copy is the one that runs.
 - Every test passes: unit, integration and, where they can run, UI tests. A test that fails because upstream changed behavior on purpose is updated to the new behavior; any other failure is a bug in the upgrade.
 - The app starts. It signs in with a seeded account, the pages the changes touched work, and with Aspire the dashboard shows every resource the project uses as healthy.
 

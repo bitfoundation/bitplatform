@@ -48,6 +48,13 @@ public static class Platforms
         _ => [Platform.Web, Platform.Android]
     };
 
+    public static IReadOnlyList<Platform> RunnableOn(HostOs os) => os switch
+    {
+        HostOs.Windows => [Platform.Web, Platform.Android, Platform.Windows],
+        HostOs.MacOS => [Platform.Web, Platform.Android, Platform.Ios, Platform.MacOS],
+        _ => [Platform.Web, Platform.Android]
+    };
+
     public static IReadOnlyList<string> Workloads(IEnumerable<Platform> platforms, HostOs os)
     {
         var selected = platforms.ToHashSet();
@@ -55,11 +62,21 @@ public static class Platforms
 
         if (BuildsSolution(selected))
         {
-            workloads.Add(os is HostOs.Linux ? "maui-android" : "maui");
+            workloads.Add(MauiWorkload(os));
         }
 
         return workloads;
     }
+
+    public static string MauiWorkload(HostOs os) => os is HostOs.Linux ? "maui-android" : "maui";
+
+    public static string? MauiTarget(Platform platform) => platform switch
+    {
+        Platform.Android => "android",
+        Platform.Ios => "ios",
+        Platform.MacOS => "maccatalyst",
+        _ => null
+    };
 
     public static string BuildSupport(IEnumerable<Platform> platforms)
     {
@@ -73,4 +90,6 @@ public static class Platforms
     public static string BuildPath(string projectName, IEnumerable<Platform> platforms) => BuildsSolution(platforms) ? $"{projectName}.slnx" : $"{projectName}.Web.slnf";
 
     public static string MauiProject(string projectName) => $"src/Client/{projectName}.Client.Maui/{projectName}.Client.Maui.csproj";
+
+    public static string WindowsProject(string projectName) => $"src/Client/{projectName}.Client.Windows/{projectName}.Client.Windows.csproj";
 }

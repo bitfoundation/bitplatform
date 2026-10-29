@@ -74,6 +74,26 @@ public sealed partial class CliConsole(IAnsiConsole output, IAnsiConsole error)
 
     public void Fail(string text) => Error.MarkupLine($"[red]{FailSymbol}[/] {Markup.Escape(text)}");
 
+    public void Fail(string text, string? attempt)
+    {
+        Fail(text);
+
+        if (attempt is not null)
+        {
+            WriteUnwrapped(Error, "  ", attempt);
+        }
+    }
+
+    public void StepAttempt(string attempt) => WriteUnwrapped(Out, "      ", attempt);
+
+    private static void WriteUnwrapped(IAnsiConsole console, string indent, string text)
+    {
+        foreach (var line in text.Split('\n'))
+        {
+            console.Profile.Out.Writer.WriteLine(indent + line);
+        }
+    }
+
     public void Step(StepStatus status, string title, string? detail = null, TimeSpan? duration = null)
     {
         var (symbol, color) = status switch

@@ -434,7 +434,7 @@ public sealed partial class NewWorkflow(CliServices cli)
             var result = await source.CreateAsync(package, manifest, context.Name, context.Directory, arguments, progress, ct);
 
             if (result.Succeeded && context.Exists is false)
-                return StepResult.Failed($"Couldn't create {context.Name}", "dotnet new finished without creating the solution", hint: DiagnosticCodes.FirstErrorLine(result.Output));
+                return StepResult.Failed($"Couldn't create {context.Name}", "dotnet new finished without creating the solution", hint: DiagnosticCodes.FirstErrorLine(result.Output)) with { Attempt = result.Spec?.Attempt };
 
             var legacySolution = Path.ChangeExtension(context.Solution, ".sln");
             var readme = Path.Combine(context.Directory, "README.md");

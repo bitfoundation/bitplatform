@@ -37,14 +37,10 @@ jobs:
         with:
           global-json-file: global.json
 
-      - name: Install the bit CLI
-        shell: pwsh
-        run: |
-          dotnet tool install Bit.Cli --version 11.0.0-pre-15 --tool-path "$env:RUNNER_TEMP/bit-cli"
-          Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
-
       - name: Prepare this machine with bit setup
-        run: bit setup --no-build --yes
+        uses: bitfoundation/bitplatform/.github/actions/boilerplate/bit-setup@v-11.0.0-pre-15
+        with:
+          arguments: --no-build
 
       - name: Translate .resx files
         env:
@@ -106,6 +102,25 @@ jobs:
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: server-bundle
+#if (api == "Integrated")
+
+      # Writes APP_CERTIFICATE and APP_CERTIFICATE_RETIRED next to the server as the AppCertificate .crt and .key files.
+      - name: Use the environment's app certificate
+        uses: bitfoundation/bitplatform/.github/actions/boilerplate/app-certificate@v-11.0.0-pre-15
+        with:
+          certificate: ${{ secrets.APP_CERTIFICATE }}
+          retired-certificate: ${{ secrets.APP_CERTIFICATE_RETIRED }}
+#if (notification == true)
+
+      - name: Use the environment's web push keys
+        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
+        with:
+          files: 'appsettings*json'
+        env:
+          AdsPushVapid.PrivateKey: ${{ secrets.PRIVATE_VAPIDKEY }}
+          AdsPushVapid.Subject: ${{ secrets.VAPID_SUBJECT }}
+#endif
+#endif
 #if (api == "Integrated" && database != "Sqlite" && database != "Other")
 
       - name: Retrieve migrations bundle
@@ -219,6 +234,23 @@ jobs:
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: api-bundle
+
+      # Writes APP_CERTIFICATE and APP_CERTIFICATE_RETIRED next to the server as the AppCertificate .crt and .key files.
+      - name: Use the environment's app certificate
+        uses: bitfoundation/bitplatform/.github/actions/boilerplate/app-certificate@v-11.0.0-pre-15
+        with:
+          certificate: ${{ secrets.APP_CERTIFICATE }}
+          retired-certificate: ${{ secrets.APP_CERTIFICATE_RETIRED }}
+#if (notification == true)
+
+      - name: Use the environment's web push keys
+        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
+        with:
+          files: 'appsettings*json'
+        env:
+          AdsPushVapid.PrivateKey: ${{ secrets.PRIVATE_VAPIDKEY }}
+          AdsPushVapid.Subject: ${{ secrets.VAPID_SUBJECT }}
+#endif
 #if (database != "Sqlite" && database != "Other")
 
       - name: Retrieve migrations bundle
@@ -274,14 +306,10 @@ jobs:
         with:
           global-json-file: global.json
 
-      - name: Install the bit CLI
-        shell: pwsh
-        run: |
-          dotnet tool install Bit.Cli --version 11.0.0-pre-15 --tool-path "$env:RUNNER_TEMP/bit-cli"
-          Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
-
       - name: Prepare this machine with bit setup
-        run: bit setup --platforms windows --no-build --yes
+        uses: bitfoundation/bitplatform/.github/actions/boilerplate/bit-setup@v-11.0.0-pre-15
+        with:
+          arguments: --platforms windows --no-build
 
       - name: Translate .resx files
         env:
@@ -298,22 +326,17 @@ jobs:
           ServerAddress: ${{ vars.SERVER_ADDRESS }}
           WindowsUpdate.FilesUrl: ${{ vars.WINDOWS_UPDATE_FILES_URL }}
 
-      - name: Log in to Azure for code signing
+      # Logs in to Azure with the job's OIDC token and points vpk at the Artifact Signing account, so vpk pack signs the app.
+      - name: Sign the app with Artifact Signing
         if: vars.CODE_SIGNING_ACCOUNT != ''
-        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        uses: bitfoundation/bitplatform/.github/actions/boilerplate/artifact-signing@v-11.0.0-pre-15
         with:
+          endpoint: ${{ vars.CODE_SIGNING_ENDPOINT }}
+          account: ${{ vars.CODE_SIGNING_ACCOUNT }}
+          certificate-profile: ${{ vars.CODE_SIGNING_CERTIFICATE_PROFILE }}
           client-id: ${{ secrets.CODE_SIGNING_CLIENT_ID }}
           tenant-id: ${{ secrets.CODE_SIGNING_TENANT_ID }}
           subscription-id: ${{ secrets.CODE_SIGNING_SUBSCRIPTION_ID }}
-
-      # vpk signs through Azure's signing library, whose DefaultAzureCredential tries managed identity, Visual Studio,
-      # VS Code and others before the Azure CLI. On a runner they only cost time or could sign in as someone else, so only
-      # the az login above is left.
-      - name: Sign the app with Artifact Signing
-        if: vars.CODE_SIGNING_ACCOUNT != ''
-        run: |
-          @{ Endpoint = '${{ vars.CODE_SIGNING_ENDPOINT }}'; CodeSigningAccountName = '${{ vars.CODE_SIGNING_ACCOUNT }}'; CertificateProfileName = '${{ vars.CODE_SIGNING_CERTIFICATE_PROFILE }}'; ExcludeCredentials = @('ManagedIdentityCredential', 'WorkloadIdentityCredential', 'SharedTokenCacheCredential', 'VisualStudioCredential', 'VisualStudioCodeCredential') } | ConvertTo-Json | Set-Content "$env:RUNNER_TEMP\code-signing.json"
-          "VPK_AZURE_TRUSTED_SIGN_FILE=$env:RUNNER_TEMP\code-signing.json" >> $env:GITHUB_ENV
 
       - name: Publish
         run: |
@@ -355,14 +378,10 @@ jobs:
         with:
           global-json-file: global.json
 
-      - name: Install the bit CLI
-        shell: pwsh
-        run: |
-          dotnet tool install Bit.Cli --version 11.0.0-pre-15 --tool-path "$env:RUNNER_TEMP/bit-cli"
-          Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
-
       - name: Prepare this machine with bit setup
-        run: bit setup --platforms android --no-build --yes
+        uses: bitfoundation/bitplatform/.github/actions/boilerplate/bit-setup@v-11.0.0-pre-15
+        with:
+          arguments: --platforms android --no-build
 
       - name: Extract Android signing key
         uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
@@ -427,14 +446,10 @@ jobs:
         with:
           xcode-version: '27.0'
 
-      - name: Install the bit CLI
-        shell: pwsh
-        run: |
-          dotnet tool install Bit.Cli --version 11.0.0-pre-15 --tool-path "$env:RUNNER_TEMP/bit-cli"
-          Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
-
       - name: Prepare this machine with bit setup
-        run: bit setup --platforms ios --no-build --yes
+        uses: bitfoundation/bitplatform/.github/actions/boilerplate/bit-setup@v-11.0.0-pre-15
+        with:
+          arguments: --platforms ios --no-build
 
       - name: Translate .resx files
         env:

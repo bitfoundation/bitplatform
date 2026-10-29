@@ -206,6 +206,17 @@ public static class IDistributedApplicationBuilderExtensions
         }
         //#endif
 
+        //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
+        public IResourceBuilder<ContainerResource> AddTextEmbeddingsInference()
+        {
+            return builder.AddContainer("embedding", "ghcr.io/huggingface/text-embeddings-inference", "cpu-1.8")
+                .WithArgs("--model-id", "BAAI/bge-small-en-v1.5")
+                .WithVolume("tei-data", "/data")
+                .WithHttpEndpoint(targetPort: 80)
+                .WithExplicitStart();
+        }
+        //#endif
+
         //#if (cloudflare == true)
         /// <summary>
         /// Exposes the server projects through a Cloudflare Tunnel (cloudflared dials out, so the origin needs no

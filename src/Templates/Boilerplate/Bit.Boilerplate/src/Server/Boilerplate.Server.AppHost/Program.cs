@@ -31,6 +31,10 @@ var s3Storage = builder.AddS3Storage();
 
 var keycloak = builder.AddKeycloak();
 
+//#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
+var embedding = builder.AddTextEmbeddingsInference();
+//#endif
+
 var serverWebProject = builder.AddProject("serverweb", "../Boilerplate.Server.Web/Boilerplate.Server.Web.csproj")
     .WithExternalHttpEndpoints();
 
@@ -68,6 +72,9 @@ serverApiProject.WithReference(azureBlobStorage);
 serverApiProject.WithReference(s3Storage);
 //#endif
 serverApiProject.WithReference(keycloak);
+//#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
+serverApiProject.WithEnvironment("AI__HuggingFace__EmbeddingEndpoint", embedding.GetEndpoint("http"));
+//#endif
 //#if (redis == true)
 serverApiProject.WithReference(redisCache).WaitFor(redisCache);
 serverWebProject.WithReference(redisCache).WaitFor(redisCache);
@@ -90,6 +97,9 @@ serverWebProject.WithReference(azureBlobStorage);
 serverWebProject.WithReference(s3Storage);
 //#endif
 serverWebProject.WithReference(keycloak);
+//#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
+serverWebProject.WithEnvironment("AI__HuggingFace__EmbeddingEndpoint", embedding.GetEndpoint("http"));
+//#endif
 //#if (redis == true)
 serverWebProject.WithReference(redisCache).WaitFor(redisCache);
 serverWebProject.WithReference(redisPersistent).WaitFor(redisPersistent);
