@@ -1,5 +1,6 @@
 ﻿using Bit.Blex.Demo.Client;
 using Bit.Blex.Demo.Server.Dtos;
+using Bit.Blex.Demo.Server.Services;
 
 namespace Bit.Blex.Tests.Mcp;
 
@@ -133,6 +134,29 @@ public class McpInspectStoreTests
         var result = await InspectAsync(Counter + new string(' ', 60_000));
 
         StringAssert.StartsWith(result.Notes[0], "INCOMPLETE ANALYSIS");
+    }
+
+    [TestMethod]
+    public async Task A_store_whose_computeds_multiply_past_the_budget_is_refused()
+    {
+        var side = (int)Math.Sqrt(BlexStoreInspector.MaxStateComputedPairs) + 1;
+        var states = string.Concat(Enumerable.Range(0, side).Select(i => $"    [BlexState] private int _s{i};\n"));
+        var computeds = string.Concat(Enumerable.Range(0, side).Select(i => $"    [BlexComputed] private int ComputeC{i}() => S0;\n"));
+
+        var result = await McpCall.RawAsync("InspectBlexStore", new() { ["source"] = $"[BlexStore]\npublic partial class WideStore\n{{\n{states}{computeds}}}" });
+
+        Assert.IsTrue(result.IsError);
+    }
+
+    [TestMethod]
+    public async Task A_store_whose_type_names_multiply_past_the_budget_is_refused()
+    {
+        var ns = string.Join('.', Enumerable.Repeat(new string('N', 500), 40));
+        var states = string.Concat(Enumerable.Range(0, BlexStoreInspector.MaxTypeNameLength / ns.Length + 1).Select(i => $"    [BlexState] private int _s{i};\n"));
+
+        var result = await McpCall.RawAsync("InspectBlexStore", new() { ["source"] = $"namespace {ns};\n\n[BlexStore]\npublic partial class DeepStore\n{{\n{states}}}" });
+
+        Assert.IsTrue(result.IsError);
     }
 
     [TestMethod]

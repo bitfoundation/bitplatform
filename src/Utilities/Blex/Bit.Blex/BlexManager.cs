@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -303,7 +304,7 @@ public sealed class BlexManager
         var handler = OnError;
         if (handler is null)
         {
-            Console.Error.WriteLine($"[Blex] {source} failed{(detail is null ? "" : $" ({detail})")}: {exception.Message}");
+            Console.Error.WriteLine(EscapeControlCharacters($"[Blex] {source} failed{(detail is null ? "" : $" ({detail})")}: {exception.Message}"));
             return;
         }
 
@@ -315,6 +316,20 @@ public sealed class BlexManager
         {
             // The error handler is the last line of defense; nothing left to do.
         }
+    }
+
+    private static string EscapeControlCharacters(string text)
+    {
+        var escaped = new StringBuilder(text.Length);
+        foreach (var c in text)
+        {
+            if (char.IsControl(c) || char.GetUnicodeCategory(c) is UnicodeCategory.LineSeparator or UnicodeCategory.ParagraphSeparator)
+                escaped.Append("\\u").Append(((int)c).ToString("x4", CultureInfo.InvariantCulture));
+            else
+                escaped.Append(c);
+        }
+
+        return escaped.ToString();
     }
 
     /// <summary>

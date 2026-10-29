@@ -24,6 +24,16 @@ public static class BlexStoreInspector
     /// <summary>A store class is a few dozen lines; anything far past that was pasted by mistake.</summary>
     public const int MaxSourceLength = 50_000;
 
+    public const int MaxStateComputedPairs = 10_000;
+
+    public const int MaxTypeNameLength = 500_000;
+
+    public const int MaxGeneratedLength = 1_000_000;
+
+    public static readonly TimeSpan InspectionTimeout = TimeSpan.FromSeconds(15);
+
+    private static readonly SemaphoreSlim _gate = new(2, 2);
+
     // The usings a store file starts with in practice, so a pasted class without its header still
     // compiles - every sample on the site and in the README is written without them.
     private const string ImplicitUsings = """
@@ -57,7 +67,24 @@ public static class BlexStoreInspector
         return references.ToImmutable();
     }
 
-    public static BlexStoreInspectionDto Inspect(string? source, bool includeGeneratedCode)
+    public static async Task<BlexStoreInspectionDto> InspectAsync(string? source, bool includeGeneratedCode, CancellationToken cancellationToken)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(InspectionTimeout);
+
+        await _gate.WaitAsync(timeout.Token);
+
+        try
+        {
+            return Inspect(source, includeGeneratedCode, timeout.Token);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    private static BlexStoreInspectionDto Inspect(string? source, bool includeGeneratedCode, CancellationToken cancellationToken)
     {
         source ??= string.Empty;
 
@@ -79,22 +106,33 @@ public static class BlexStoreInspector
             _references.Value,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
 
+        if (ExceedsGenerationBudget(compilation, userTree, cancellationToken)) throw TooMuchGeneratedCode();
+
         GeneratorDriver driver = CSharpGeneratorDriver.Create(new BlexGenerator()).WithUpdatedParseOptions(_parseOptions);
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updated, out _);
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updated, out _, cancellationToken);
 
         var run = driver.GetRunResult();
+
+        if (run.Results.SelectMany(result => result.GeneratedSources).Sum(generated => (long)generated.SourceText.Length) > MaxGeneratedLength) throw TooMuchGeneratedCode();
+
         var generatedTrees = run.GeneratedTrees.ToHashSet();
+
+        var pragmas = userTree.GetRoot(cancellationToken).DescendantTrivia()
+            .Select(trivia => trivia.GetStructure())
+            .OfType<PragmaWarningDirectiveTriviaSyntax>()
+            .OrderBy(pragma => pragma.SpanStart)
+            .ToArray();
 
         // The driver hands its diagnostics back as reported; a build drops the warnings a #pragma silences
         // only when it reports them, so that filter is applied here - or a store that deliberately silences a
         // warning would be told about it all the same.
         var generatorDiagnostics = run.Results.SelectMany(result => result.Diagnostics)
-            .Where(diagnostic => IsSuppressedByPragma(diagnostic, userTree) is false)
+            .Where(diagnostic => IsSuppressedByPragma(diagnostic, userTree, pragmas) is false)
             .ToArray();
 
         // Only what the compiler says is broken: a pasted fragment trips over nullable and unused-variable
         // warnings that say nothing about Blex. Generator diagnostics are kept whatever their severity.
-        var compilerErrors = updated.GetDiagnostics()
+        var compilerErrors = updated.GetDiagnostics(cancellationToken)
             .Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
             .ToArray();
 
@@ -169,6 +207,60 @@ public static class BlexStoreInspector
         return [.. stores];
     }
 
+    private static bool ExceedsGenerationBudget(Compilation compilation, SyntaxTree userTree, CancellationToken cancellationToken)
+    {
+        var model = compilation.GetSemanticModel(userTree);
+        var seen = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+        long pairs = 0;
+        long names = 0;
+
+        foreach (var declaration in userTree.GetRoot(cancellationToken).DescendantNodes().OfType<TypeDeclarationSyntax>())
+        {
+            if (model.GetDeclaredSymbol(declaration, cancellationToken) is not INamedTypeSymbol type || seen.Add(type) is false) continue;
+
+            if (type.GetAttributes().Any(attribute => attribute.AttributeClass?.ToDisplayString() == "Bit.Blex.BlexStoreAttribute") is false) continue;
+
+            var storeName = type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat).Length;
+            long states = 0;
+            long computeds = 0;
+            names += storeName;
+
+            foreach (var member in type.GetMembers())
+            {
+                var attributes = member.GetAttributes().Select(attribute => attribute.AttributeClass?.ToDisplayString()).ToArray();
+
+                ITypeSymbol[] printed = member switch
+                {
+                    IFieldSymbol field when attributes.Contains("Bit.Blex.BlexStateAttribute") => [field.Type],
+                    IMethodSymbol method when attributes.Any(name => name is "Bit.Blex.BlexComputedAttribute" or "Bit.Blex.BlexActionAttribute" or "Bit.Blex.BlexEffectAttribute")
+                        => [method.ReturnType, .. method.Parameters.Select(parameter => parameter.Type)],
+                    _ => []
+                };
+
+                if (printed.Length == 0) continue;
+
+                if (member is IFieldSymbol) states++;
+                else if (attributes.Contains("Bit.Blex.BlexComputedAttribute")) computeds++;
+
+                foreach (var printedType in printed)
+                {
+                    names += storeName + printedType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat).Length;
+
+                    if (names > MaxTypeNameLength) return true;
+                }
+            }
+
+            pairs += states * computeds;
+
+            if (pairs > MaxStateComputedPairs || names > MaxTypeNameLength) return true;
+        }
+
+        return false;
+    }
+
+    private static ArgumentException TooMuchGeneratedCode()
+        => new("The stores in this source would make the generator emit more code than this server inspects.", "source");
+
     private static BlexGeneratedMemberDto? Describe(ISymbol member)
     {
         var format = SymbolDisplayFormat.MinimallyQualifiedFormat;
@@ -196,7 +288,7 @@ public static class BlexStoreInspector
     /// the last pragma before that point naming its id (or naming none, which means every warning) decides.
     /// Errors cannot be silenced this way, in a build or here.
     /// </summary>
-    private static bool IsSuppressedByPragma(Diagnostic diagnostic, SyntaxTree userTree)
+    private static bool IsSuppressedByPragma(Diagnostic diagnostic, SyntaxTree userTree, PragmaWarningDirectiveTriviaSyntax[] pragmas)
     {
         if (diagnostic.Severity != DiagnosticSeverity.Warning) return false;
 
@@ -207,13 +299,7 @@ public static class BlexStoreInspector
         var position = userTree.GetText().Lines.GetPosition(span.StartLinePosition);
         var suppressed = false;
 
-        var pragmas = userTree.GetRoot().DescendantTrivia()
-            .Select(trivia => trivia.GetStructure())
-            .OfType<PragmaWarningDirectiveTriviaSyntax>()
-            .Where(pragma => pragma.SpanStart < position)
-            .OrderBy(pragma => pragma.SpanStart);
-
-        foreach (var pragma in pragmas)
+        foreach (var pragma in pragmas.TakeWhile(pragma => pragma.SpanStart < position))
         {
             if (pragma.ErrorCodes.Count > 0 && pragma.ErrorCodes.Any(code => code.ToString().Trim() == diagnostic.Id) is false) continue;
 

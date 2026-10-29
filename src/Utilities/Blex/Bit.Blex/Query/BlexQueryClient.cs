@@ -576,6 +576,9 @@ public sealed class BlexQueryClient : IDisposable
         foreach (var entry in Match(Matcher(key, exact)))
             removed.Add(entry);
 
+        var text = key.ToString();
+        var prefix = text[..^1] + ",";
+
         lock (Gate)
         {
             for (var i = removed.Count - 1; i >= 0; i--)
@@ -585,6 +588,13 @@ public sealed class BlexQueryClient : IDisposable
                     _entries.Remove(removed[i].Key);
                 else
                     removed.RemoveAt(i);
+            }
+
+            string[] handedOver = [.. _hydration.Keys];
+            foreach (var pending in handedOver)
+            {
+                if (pending == text || (!exact && pending.StartsWith(prefix, StringComparison.Ordinal)))
+                    _hydration.Remove(pending);
             }
         }
 
