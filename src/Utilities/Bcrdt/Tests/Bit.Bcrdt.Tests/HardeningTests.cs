@@ -416,7 +416,12 @@ public class HardeningTests
         var whole = new BcrdtContentAny(values);
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => whole.Splice(-1));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => whole.Splice(101));
+        Assert.AreEqual(0, whole.Splice(100).Length);
         CollectionAssert.AreEqual(values, whole.GetContent().ToArray());
+
+        var slice = (BcrdtContentAny)new BcrdtContentAny(values).Splice(offset);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => slice.Splice(slice.Length + 1));
+        CollectionAssert.AreEqual(values[offset..], slice.GetContent().ToArray());
     }
 
     private static object?[] Written(BcrdtContentAny content)
