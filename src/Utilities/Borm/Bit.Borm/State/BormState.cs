@@ -2612,7 +2612,7 @@ public sealed class BormState : IDisposable
         foreach (var (field, path, sensitive) in FieldPaths())
         {
             if (field.Type == BormFieldType.Object || field.IsPresentational) continue;
-            if (field is { Type: BormFieldType.Array, ItemTemplate: not null }) continue;
+            if (field is { Type: BormFieldType.Array, ItemTemplate: not null } && (options.ExcludeSensitive || options.ExcludeHidden)) continue;
             if (options.ExcludeSensitive && sensitive) continue;
             if (hidden is not null && IsHidden(path, hidden)) continue;
             values[path] = Data.GetValue(path);

@@ -1254,8 +1254,9 @@ in-app one asks `OnConfirm` (a dialog of yours) or the browser's `confirm()` wit
 
 `state.Snapshot(new BormSnapshotOptions { ExcludeHidden = true, ExcludeSensitive = true })` is the payload-shaped
 counterpart: a hidden answer is *retained* while the user can still toggle back to it, *cleared* when the field is
-`ClearOnHide`, and *excluded* from what is sent when the snapshot says so. A repeater comes row by row
-(`Lines[0].Product`) rather than as its whole list, and everything inside a sensitive list or group counts as sensitive.
+`ClearOnHide`, and *excluded* from what is sent when the snapshot says so. A snapshot that leaves something out gives a
+repeater row by row (`Lines[0].Product`) rather than as its whole list, and everything inside a sensitive list or group
+counts as sensitive.
 
 A draft is plain JSON holding personal data. Keep it where the user's other data is kept, and not in storage another
 user of the same machine can read.

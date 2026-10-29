@@ -1056,6 +1056,33 @@ public class JsonSchemaRegressionTests
     }
 
     [TestMethod]
+    public void Examples_nested_in_one_list_count_every_member_against_the_choice_budget()
+    {
+        var json = new StringBuilder("""{"type":"object","properties":{"f":{"type":"array","items":{"type":"string"},"examples":[[""");
+        for (var i = 0; i < 260_000; i++) json.Append($"\"e{i}\",");
+        json.Length--;
+        json.Append("]]}}}");
+
+        Assert.IsFalse(BormJsonSchemaImporter.TryImport(json.ToString(), out _, out var error));
+        Assert.Contains("choices", error!, StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void A_labelled_enum_with_as_many_names_as_values_counts_each_choice_once()
+    {
+        var json = new StringBuilder("""{"type":"object","properties":{"f":{"type":"string","enum":[""");
+        for (var i = 0; i < 200_000; i++) json.Append($"\"v{i}\",");
+        json.Length--;
+        json.Append("],\"enumNames\":[");
+        for (var i = 0; i < 200_000; i++) json.Append($"\"Value {i}\",");
+        json.Length--;
+        json.Append("]}}}");
+
+        Assert.IsTrue(BormJsonSchemaImporter.TryImport(json.ToString(), out var form, out var error), error);
+        Assert.HasCount(200_000, form.Fields[0].Options);
+    }
+
+    [TestMethod]
     public void Many_distinct_examples_are_read_in_time_linear_in_their_number()
     {
         var json = new StringBuilder("""{"type":"object","properties":{"f":{"type":"string","examples":[""");

@@ -275,7 +275,10 @@ public class DraftTests
         var payload = state.Snapshot(new BormSnapshotOptions { ExcludeSensitive = true });
 
         CollectionAssert.AreEquivalent(new[] { "users[0].login" }, payload.Keys.ToArray());
-        Assert.DoesNotContain("hunter2", BormDraft.Serialize(state));
+        Assert.IsTrue(state.Snapshot(new BormSnapshotOptions()).ContainsKey("users"));
+        var draft = BormDraft.Serialize(state);
+        Assert.DoesNotContain("hunter2", draft);
+        StringAssert.Contains(draft, "\"users[0].login\":\"ada\"");
     }
 
     [TestMethod]

@@ -841,7 +841,10 @@ public class DataValidationRegressionTests
         Assert.IsTrue(store.LastWriteFailed);
 
         Assert.HasCount(1, tags);
-        Assert.HasCount(1, Assert.IsExactInstanceOfType<string[]>(data["codes"]));
+        Assert.AreEqual("a", tags[0]);
+        var codes = Assert.IsExactInstanceOfType<string[]>(data["codes"]);
+        Assert.HasCount(1, codes);
+        Assert.AreEqual("a", codes[0]);
     }
 
     [TestMethod]

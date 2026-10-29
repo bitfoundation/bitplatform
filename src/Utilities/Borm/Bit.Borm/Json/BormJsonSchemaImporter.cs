@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -549,7 +550,10 @@ public static class BormJsonSchemaImporter
     private static void ReadExamples(ImportContext ctx, JsonElement schema, IList<string> into)
     {
         if (!TryGet(schema, "examples", out var examples) || examples.ValueKind != JsonValueKind.Array) return;
-        ctx.ChargeChoices(examples);
+        var members = 0;
+        foreach (var example in examples.EnumerateArray())
+            members += example.ValueKind == JsonValueKind.Array ? example.GetArrayLength() : 1;
+        ctx.ChargeChoices(examples, members);
         var seen = new HashSet<string>(into, StringComparer.Ordinal);
 
         foreach (var example in examples.EnumerateArray())
@@ -712,10 +716,10 @@ public static class BormJsonSchemaImporter
         if (values.ValueKind != JsonValueKind.Array)
             return declaredType is "integer" or "number" or "boolean" ? declaredType : null;
 
-        ctx.ChargeChoices(values);
-        if (TryGet(schema, "enumNames", out var listedNames)) ctx.ChargeChoices(listedNames);
-        if (TryGet(schema, "x-enumGroups", out var listedGroups)) ctx.ChargeChoices(listedGroups);
-        if (TryGet(schema, "x-enumDisabled", out var listedDisabled)) ctx.ChargeChoices(listedDisabled);
+        ctx.ChargeChoices(values, values.GetArrayLength());
+        if (TryGet(schema, "enumNames", out var listedNames)) ctx.ChargeChoices(listedNames, 0);
+        if (TryGet(schema, "x-enumGroups", out var listedGroups)) ctx.ChargeChoices(listedGroups, 0);
+        if (TryGet(schema, "x-enumDisabled", out var listedDisabled)) ctx.ChargeChoices(listedDisabled, 0);
 
         var names = ReadStringArray(schema, "enumNames");
         var groups = ReadStringArray(schema, "x-enumGroups");
@@ -1354,10 +1358,10 @@ public static class BormJsonSchemaImporter
                     $"The schema needs more than {MaxMergeSteps} allOf and $ref merges; it is refused rather than built.");
         }
 
-        public void ChargeChoices(JsonElement list)
+        public void ChargeChoices(JsonElement list, int count)
         {
             if (list.ValueKind == JsonValueKind.Array)
-                ChargeChoices(list.GetArrayLength(), JsonMarshal.GetRawUtf8Value(list).Length);
+                ChargeChoices(count, Encoding.UTF8.GetCharCount(JsonMarshal.GetRawUtf8Value(list)));
         }
 
         public void ChargeChoices(int count, long text)
