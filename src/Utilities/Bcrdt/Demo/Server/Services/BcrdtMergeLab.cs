@@ -545,10 +545,14 @@ public static class BcrdtMergeLab
 
         var movers = steps.Where(step => step.Operation.Action == "move" && step.Update is not null).Select(step => step.Operation.Label).Distinct(StringComparer.Ordinal).ToArray();
 
+        var held = editors.Select(label => TryGet(before[label], path.Split('/'), out var node) && node is JsonArray list
+            ? list.GroupBy(item => item?.ToJsonString() ?? "null").ToDictionary(group => group.Key, group => group.Count())
+            : new Dictionary<string, int>()).ToArray();
+
         // An element the merge holds more often than any replica held it is a copy a concurrent move left behind.
         var duplicated = items is null ? [] : items
             .GroupBy(item => item?.ToJsonString() ?? "null")
-            .Where(group => group.Count() > editors.Max(label => TryGet(before[label], path.Split('/'), out var held) && held is JsonArray list ? list.Count(item => (item?.ToJsonString() ?? "null") == group.Key) : 0))
+            .Where(group => group.Count() > held.Max(counts => counts.GetValueOrDefault(group.Key)))
             .Select(group => group.Key)
             .ToArray();
 

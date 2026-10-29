@@ -25,6 +25,20 @@ public class HardeningTests
         }
     }
 
+    private static byte[] CollectedRange(ulong client, ulong clock, int length = 1, int count = 1) => Build((ref BcrdtBufferWriter writer) =>
+    {
+        writer.WriteVarUInt(1);
+        writer.WriteVarUInt((ulong)count);
+        writer.WriteVarUInt(client);
+        writer.WriteVarUInt(clock);
+        for (int i = 0; i < count; i++)
+        {
+            writer.WriteByte((byte)BcrdtContentRef.GarbageCollected);
+            writer.WriteVarUInt((ulong)length);
+        }
+        writer.WriteVarUInt(0);
+    });
+
     // ---------------------------------------------------------------- lengths and clocks
 
     [TestMethod]
@@ -110,6 +124,115 @@ public class HardeningTests
         Assert.AreEqual("abcde", doc.GetText("t").ToString());
         Assert.AreEqual(6L, doc.GetStateVector().Get(7), "the block right after the text was waiting for it and is now in");
         Assert.IsTrue(doc.HasPendingUpdates, "the far block still waits for the range before it");
+    }
+
+    [TestMethod]
+    public void Merging_blocks_further_apart_than_any_replica_writes_is_refused()
+    {
+        long limit = BcrdtUpdateCodec.MaxClockGap;
+
+        byte[] widest = BcrdtUpdateOperations.Merge(CollectedRange(7, 0), CollectedRange(7, (ulong)limit + 1));
+        Assert.AreEqual(limit + 1, BcrdtUpdateOperations.DecodeBlocks(widest)[7][^1].Id.Clock);
+
+        Assert.ThrowsExactly<BcrdtFormatException>(() => BcrdtUpdateOperations.Merge(CollectedRange(7, 0), CollectedRange(7, (ulong)limit + 2)));
+        Assert.ThrowsExactly<BcrdtFormatException>(() => BcrdtUpdateOperations.Merge(CollectedRange(7, 5), CollectedRange(7, 1UL << 62)));
+    }
+
+    [TestMethod]
+    public void A_block_far_ahead_of_its_authors_content_is_refused_before_anything_changes()
+    {
+        using BcrdtDocument source = Doc(7);
+        source.GetText("t").Insert(0, "abcde");
+
+        using BcrdtDocument doc = Doc(1);
+        doc.ApplyUpdate(source.EncodeStateAsUpdate());
+        doc.ApplyUpdate(CollectedRange(7, 10));
+        byte[] state = doc.EncodeStateAsUpdate();
+
+        byte[] hostile = Build((ref BcrdtBufferWriter writer) =>
+        {
+            writer.WriteVarUInt(2);
+            writer.WriteVarUInt(1);
+            writer.WriteVarUInt(9);
+            writer.WriteVarUInt(0);
+            writer.WriteByte((byte)BcrdtContentRef.GarbageCollected);
+            writer.WriteVarUInt(3);
+            writer.WriteVarUInt(1);
+            writer.WriteVarUInt(7);
+            writer.WriteVarUInt(1UL << 62);
+            writer.WriteByte((byte)BcrdtContentRef.GarbageCollected);
+            writer.WriteVarUInt(1);
+            writer.WriteVarUInt(0);
+        });
+
+        Assert.ThrowsExactly<BcrdtFormatException>(() => doc.ApplyUpdate(hostile));
+        Assert.ThrowsExactly<BcrdtFormatException>(() => doc.ApplyUpdate(CollectedRange(7, 6 + (ulong)BcrdtUpdateCodec.MaxClockGap)));
+        Assert.AreEqual(0L, doc.GetStateVector().Get(9));
+        CollectionAssert.AreEqual(state, doc.EncodeStateAsUpdate());
+
+        doc.ApplyUpdate(CollectedRange(7, 5 + (ulong)BcrdtUpdateCodec.MaxClockGap));
+        Assert.AreEqual("abcde", doc.GetText("t").ToString());
+        Assert.IsTrue(doc.HasPendingUpdates);
+    }
+
+    [TestMethod]
+    public void Waiting_blocks_on_both_sides_of_a_long_collected_range_are_kept_and_integrate()
+    {
+        const ulong Collected = 6UL * int.MaxValue;
+
+        using BcrdtDocument other = Doc(9);
+        other.GetText("t").Insert(0, "x");
+
+        using BcrdtDocument author = Doc(7);
+        author.ApplyUpdate(other.EncodeStateAsUpdate());
+        author.GetText("t").Insert(1, "y");
+        byte[] waitsForOther = author.EncodeStateAsUpdate(other.GetStateVector());
+
+        using BcrdtDocument doc = Doc(1);
+        doc.ApplyUpdate(waitsForOther);
+        doc.ApplyUpdate(CollectedRange(7, 0, int.MaxValue, 6));
+        doc.ApplyUpdate(CollectedRange(7, Collected + 1));
+        Assert.IsTrue(doc.HasPendingUpdates);
+
+        using BcrdtDocument peer = Doc(2);
+        peer.ApplyUpdate(doc.EncodeStateAsUpdate());
+        Assert.AreEqual((long)Collected, peer.GetStateVector().Get(7));
+
+        doc.ApplyUpdate(other.EncodeStateAsUpdate());
+        doc.ApplyUpdate(CollectedRange(7, Collected));
+        Assert.AreEqual((long)Collected + 2, doc.GetStateVector().Get(7));
+        Assert.IsFalse(doc.HasPendingUpdates);
+    }
+
+    [TestMethod]
+    public void An_update_whose_every_author_waits_is_held_whole_and_integrates_later()
+    {
+        const int Authors = 20_000;
+
+        static byte[] Groups(ulong clock) => Build((ref BcrdtBufferWriter writer) =>
+        {
+            writer.WriteVarUInt(Authors);
+            for (ulong client = 100; client < 100 + Authors; client++)
+            {
+                writer.WriteVarUInt(1);
+                writer.WriteVarUInt(client);
+                writer.WriteVarUInt(clock);
+                writer.WriteByte((byte)BcrdtContentRef.GarbageCollected);
+                writer.WriteVarUInt(1);
+            }
+            writer.WriteVarUInt(0);
+        });
+
+        using BcrdtDocument doc = Doc(1);
+        doc.ApplyUpdate(Groups(1));
+        Assert.IsTrue(doc.HasPendingUpdates);
+        Assert.AreEqual(0, doc.GetStateVector().Count);
+
+        doc.ApplyUpdate(Groups(0));
+        Assert.IsFalse(doc.HasPendingUpdates);
+        BcrdtStateVector state = doc.GetStateVector();
+        Assert.AreEqual(Authors, state.Count);
+        for (ulong client = 100; client < 100 + Authors; client++) Assert.AreEqual(2L, state.Get(client), $"client {client}");
     }
 
     // ---------------------------------------------------------------- nesting
@@ -230,6 +353,110 @@ public class HardeningTests
         peer.ApplyUpdate(doc.EncodeStateAsUpdate());
         Assert.AreEqual(Original, peer.GetText("t").ToString());
         BcrdtConvergenceHarness.AssertStructurallyIdentical(doc, peer);
+    }
+
+    [TestMethod]
+    public void Deleting_every_other_value_of_a_long_run_does_not_copy_it()
+    {
+        using BcrdtDocument source = Doc(1);
+        source.GetArray("a").Push([.. Enumerable.Range(0, 40_000).Select(i => (object?)(long)i)]);
+
+        var everyOther = new BcrdtDeleteSet();
+        for (int clock = 1; clock < 40_000; clock += 2) everyOther.Add(1, clock, 1);
+        byte[] deletions = Build((ref BcrdtBufferWriter writer) =>
+        {
+            writer.WriteVarUInt(0);
+            everyOther.Write(ref writer);
+        });
+
+        using BcrdtDocument doc = Doc(2);
+        doc.ApplyUpdate(source.EncodeStateAsUpdate());
+
+        long before = GC.GetAllocatedBytesForCurrentThread();
+        doc.ApplyUpdate(deletions);
+        long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        CollectionAssert.AreEqual(Enumerable.Range(0, 20_000).Select(i => (object?)(long)(2 * i)).ToList(), doc.GetArray("a").ToArray());
+        source.ApplyUpdate(deletions);
+        BcrdtConvergenceHarness.AssertStructurallyIdentical(source, doc);
+        Assert.IsLessThan(64_000_000L, allocated, $"twenty thousand deletions allocated {allocated:N0} bytes");
+    }
+
+    [TestMethod]
+    [DataRow(1)]
+    [DataRow(10)]
+    [DataRow(50)]
+    [DataRow(90)]
+    [DataRow(99)]
+    public void A_split_value_run_reads_grows_and_rejoins_exactly(int offset)
+    {
+        object?[] values = [.. Enumerable.Range(0, 100).Select(i => (object?)(long)i)];
+
+        var left = new BcrdtContentAny(values);
+        var right = (BcrdtContentAny)left.Splice(offset);
+        CollectionAssert.AreEqual(values[..offset], left.GetContent().ToArray());
+        CollectionAssert.AreEqual(values[offset..], right.GetContent().ToArray());
+        CollectionAssert.AreEqual(values[offset..], Written(right));
+        Assert.AreEqual(values[offset], right.GetContent()[0]);
+
+        Assert.IsTrue(right.TryMergeWith(new BcrdtContentAny(100L)));
+        Assert.IsTrue(left.TryMergeWith(right));
+        CollectionAssert.AreEqual(values.Append(100L).ToArray(), left.GetContent().ToArray());
+        CollectionAssert.AreEqual(values.Append(100L).ToArray(), Written(left));
+
+        var head = new BcrdtContentAny(values);
+        var tail = (BcrdtContentAny)head.Splice(offset);
+        IBcrdtContent copy = tail.Copy();
+        Assert.IsTrue(head.TryMergeWith(new BcrdtContentAny(-1L)));
+        Assert.IsTrue(tail.TryMergeWith(new BcrdtContentAny(100L)));
+        CollectionAssert.AreEqual(values[..offset].Append(-1L).ToArray(), head.GetContent().ToArray());
+        CollectionAssert.AreEqual(values[offset..].Append(100L).ToArray(), tail.GetContent().ToArray());
+        CollectionAssert.AreEqual(values[offset..], copy.GetContent().ToArray());
+
+        var whole = new BcrdtContentAny(values);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => whole.Splice(-1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => whole.Splice(101));
+        Assert.AreEqual(0, whole.Splice(100).Length);
+        CollectionAssert.AreEqual(values, whole.GetContent().ToArray());
+
+        var slice = (BcrdtContentAny)new BcrdtContentAny(values).Splice(offset);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => slice.Splice(slice.Length + 1));
+        CollectionAssert.AreEqual(values[offset..], slice.GetContent().ToArray());
+    }
+
+    private static object?[] Written(BcrdtContentAny content)
+    {
+        var writer = new BcrdtBufferWriter(64);
+        try
+        {
+            content.Write(ref writer, 0);
+            var reader = new BcrdtBufferReader(writer.ToArray());
+            return [.. BcrdtContentAny.Read(ref reader).GetContent()];
+        }
+        finally
+        {
+            writer.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public void A_root_keeps_its_name_through_an_upgrade_among_many_roots()
+    {
+        using BcrdtDocument source = Doc(1);
+        for (int i = 0; i < 5_000; i++) source.GetArray($"r{i}").Push((long)i);
+
+        using BcrdtDocument doc = Doc(2);
+        doc.ApplyUpdate(source.EncodeStateAsUpdate());
+
+        BcrdtAbstractType placeholder = doc.RootTypes["r7"];
+        Assert.AreEqual("r7", placeholder.FindRootKey());
+        BcrdtArray typed = doc.GetArray("r7");
+        Assert.AreEqual("r7", typed.FindRootKey());
+        Assert.ThrowsExactly<InvalidOperationException>(() => placeholder.FindRootKey());
+
+        using BcrdtDocument peer = Doc(3);
+        peer.ApplyUpdate(doc.EncodeStateAsUpdate());
+        BcrdtConvergenceHarness.AssertStructurallyIdentical(source, peer);
     }
 
     // ---------------------------------------------------------------- splitting updates

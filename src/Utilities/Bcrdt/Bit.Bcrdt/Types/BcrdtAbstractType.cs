@@ -99,6 +99,8 @@ public abstract class BcrdtAbstractType
 
     internal BcrdtDocument? AttachedDoc;
 
+    internal string? RootKey;
+
     /// <summary>
     /// The detached container this detached type is waiting in, if any. Lets a second container
     /// refuse it, and lets a container refuse to end up inside itself, before anything is integrated.
@@ -192,9 +194,10 @@ public abstract class BcrdtAbstractType
     /// <exception cref="InvalidOperationException">The type is not a root type.</exception>
     public string FindRootKey()
     {
-        foreach ((string name, BcrdtAbstractType type) in Doc.RootTypes)
+        BcrdtDocument doc = Doc;
+        if (RootKey is { } name && doc.RootTypes.TryGetValue(name, out BcrdtAbstractType? type) && ReferenceEquals(type, this))
         {
-            if (ReferenceEquals(type, this)) return name;
+            return name;
         }
         throw new InvalidOperationException("This type is not registered as a document root.");
     }
