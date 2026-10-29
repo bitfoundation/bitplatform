@@ -8,6 +8,8 @@ namespace Bit.BlazorUI.Legacy;
 public partial class BitPdfReaderLegacy : BitComponentBase
 {
     private bool _allPageRendered;
+    private const int MaxRenderedPages = 10_000;
+
     private int _numberOfPages = 1;
     private int _currentPageNumber = 1;
     private bool _parametersInitialized;
@@ -175,7 +177,8 @@ public partial class BitPdfReaderLegacy : BitComponentBase
 
             await _js.BitLegacyInitScripts(scripts, true);
 
-            _numberOfPages = await _js.BitPdfReaderSetup(Config);
+            var numberOfPages = await _js.BitPdfReaderSetup(Config);
+            _numberOfPages = RenderAllPages ? Math.Clamp(numberOfPages, 0, MaxRenderedPages) : numberOfPages;
 
             await OnPdfLoaded.InvokeAsync();
 
