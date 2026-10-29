@@ -425,6 +425,19 @@ describe('a full answer to a ranged request with integrity enabled', () => {
             expect(decodeBody(cached)).toBe(TEXT);
         });
     }
+
+    it('caches bytes that match a hash written without base64 padding', async () => {
+        const unpadded = hash.replace(/=+$/, '');
+        const sw = boot({
+            config: { isPassive: false, enableIntegrityCheck: true, crypto: webcrypto },
+            assets: [{ url: 'clip.mp4', hash: unpadded }],
+            fetchHandler: async () => new FakeResponse(TEXT, { status: 200 }),
+            configure: includeMp4,
+        });
+
+        await sw.fetchEvent({ url: `${ORIGIN}/clip.mp4`, headers: { range: 'bytes=2-5' } });
+        expect(sw.caches.snapshot()[ASSET_CACHE]).toEqual([`${ORIGIN}/clip.mp4.${unpadded}`]);
+    });
 });
 
 // Offline navigation is the core feature: every route the user deep-links to must come back

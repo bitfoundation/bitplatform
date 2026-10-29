@@ -1741,7 +1741,7 @@ async function matchesIntegrity(asset: any, body: ArrayBuffer) {
     let binary = '';
     for (let i = 0; i < digest.length; i++) binary += String.fromCharCode(digest[i]);
 
-    return btoa(binary) === sri[2];
+    return btoa(binary).replace(/=+$/, '') === sri[2].replace(/=+$/, '');
 }
 
 // The one gate every cache-pruning call site goes through. deleteOldCaches() spares only the
