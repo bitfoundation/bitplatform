@@ -60,6 +60,9 @@ public sealed class BcrdtContentAny : IBcrdtContent
     /// <inheritdoc/>
     public IBcrdtContent Splice(int offset)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(offset);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(offset, _count);
+
         var right = new BcrdtContentAny(_values, _start + offset, _count - offset);
         _count = offset;
         Detach();

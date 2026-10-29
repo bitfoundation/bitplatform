@@ -230,9 +230,9 @@ public class HardeningTests
 
         doc.ApplyUpdate(Groups(0));
         Assert.IsFalse(doc.HasPendingUpdates);
-        Assert.AreEqual(Authors, doc.GetStateVector().Count);
-        Assert.AreEqual(2L, doc.GetStateVector().Get(100));
-        Assert.AreEqual(2L, doc.GetStateVector().Get(100 + Authors - 1));
+        BcrdtStateVector state = doc.GetStateVector();
+        Assert.AreEqual(Authors, state.Count);
+        for (ulong client = 100; client < 100 + Authors; client++) Assert.AreEqual(2L, state.Get(client), $"client {client}");
     }
 
     // ---------------------------------------------------------------- nesting
@@ -359,7 +359,7 @@ public class HardeningTests
     public void Deleting_every_other_value_of_a_long_run_does_not_copy_it()
     {
         using BcrdtDocument source = Doc(1);
-        source.GetArray("a").Push([.. Enumerable.Repeat<object?>(null, 40_000)]);
+        source.GetArray("a").Push([.. Enumerable.Range(0, 40_000).Select(i => (object?)(long)i)]);
 
         var everyOther = new BcrdtDeleteSet();
         for (int clock = 1; clock < 40_000; clock += 2) everyOther.Add(1, clock, 1);
@@ -376,7 +376,7 @@ public class HardeningTests
         doc.ApplyUpdate(deletions);
         long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
 
-        Assert.AreEqual(20_000, doc.GetArray("a").Count);
+        CollectionAssert.AreEqual(Enumerable.Range(0, 20_000).Select(i => (object?)(long)(2 * i)).ToList(), doc.GetArray("a").ToArray());
         source.ApplyUpdate(deletions);
         BcrdtConvergenceHarness.AssertStructurallyIdentical(source, doc);
         Assert.IsLessThan(64_000_000L, allocated, $"twenty thousand deletions allocated {allocated:N0} bytes");
@@ -412,6 +412,11 @@ public class HardeningTests
         CollectionAssert.AreEqual(values[..offset].Append(-1L).ToArray(), head.GetContent().ToArray());
         CollectionAssert.AreEqual(values[offset..].Append(100L).ToArray(), tail.GetContent().ToArray());
         CollectionAssert.AreEqual(values[offset..], copy.GetContent().ToArray());
+
+        var whole = new BcrdtContentAny(values);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => whole.Splice(-1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => whole.Splice(101));
+        CollectionAssert.AreEqual(values, whole.GetContent().ToArray());
     }
 
     private static object?[] Written(BcrdtContentAny content)
