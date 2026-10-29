@@ -228,6 +228,7 @@
                 <Template Context="p">
                     <button type="button" class="cc-button" @onclick="() => _controlButtonClicks++">Edit</button>
                     <input class="cc-input" aria-label="Note" />
+                    <a class="cc-anchor" @onclick="() => _controlAnchorClicks++">Open</a>
                     <i class="cc-icon" data-bit-interactive @onclick="() => _controlIconClicks++">★</i>
                     <button type="button" class="cc-optout" data-bit-interactive="false" @onclick="() => _controlOptOutClicks++">Pick</button>
                     <label class="cc-label">@p.Category</label>
@@ -253,6 +254,7 @@
         selected <span id="cc-selection">@_controlSelection</span> |
         button <span id="cc-button-count">@_controlButtonClicks</span> |
         icon <span id="cc-icon-count">@_controlIconClicks</span> |
+        anchor <span id="cc-anchor-count">@_controlAnchorClicks</span> |
         opt-out <span id="cc-optout-count">@_controlOptOutClicks</span> |
         inner-row-click <span id="cc-inner-row-click-count">@_controlInnerRowClicks</span> |
         page-dblclick <span id="cc-page-dblclick-count">@_controlPageDoubleClicks</span>
@@ -521,7 +523,7 @@
     private readonly List<Product> _controlItems = Products().Take(2).ToList();
     private readonly List<Product> _controlInnerItems = Products().Skip(4).Take(1).ToList();
     private int _controlRowClicks, _controlRowDoubleClicks, _controlCellClicks, _controlCellDoubleClicks, _controlCellContextMenus;
-    private int _controlButtonClicks, _controlIconClicks, _controlOptOutClicks, _controlInnerRowClicks, _controlPageDoubleClicks;
+    private int _controlButtonClicks, _controlIconClicks, _controlAnchorClicks, _controlOptOutClicks, _controlInnerRowClicks, _controlPageDoubleClicks;
     private string _controlSelection = "";
 
     public BitDataGridE2E()

@@ -759,14 +759,16 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         await Expect(Text("cc-cell-click-count")).ToHaveTextAsync("1");
         await Expect(Text("cc-selection")).ToHaveTextAsync("Laptop");
 
-        // The template's button and field, an icon marked data-bit-interactive, a button in a shadow root, a row of a
-        // grid rendered in the cell: each is its own, and the inner grid's row is that grid's.
+        // The template's button and field, an anchor with no href, an icon marked data-bit-interactive, a button in a
+        // shadow root, a row of a grid rendered in the cell: each is its own, and the inner grid's row is that grid's.
         await DataRow(ControlsGrid, 1).Locator(".cc-button").ClickAsync();
         await DataRow(ControlsGrid, 1).Locator(".cc-input").ClickAsync();
+        await DataRow(ControlsGrid, 1).Locator(".cc-anchor").ClickAsync();
         await DataRow(ControlsGrid, 1).Locator(".cc-icon").ClickAsync();
         await DataRow(ControlsGrid, 1).Locator(".cc-shadow-button").ClickAsync();
         await DataRow("grid-cell-inner-2", 0).ClickAsync();
         await Expect(Text("cc-button-count")).ToHaveTextAsync("1");
+        await Expect(Text("cc-anchor-count")).ToHaveTextAsync("1");
         await Expect(Text("cc-icon-count")).ToHaveTextAsync("1");
         await Expect(Text("cc-inner-row-click-count")).ToHaveTextAsync("1");
 

@@ -25,9 +25,9 @@ row** carries `data-bit-interactive="false"`, and an element of a template the g
 icon with an `@onclick`) carries `data-bit-interactive` to keep its clicks from the row.
 
 The drag of a draggable `BitDialog` / `BitModal` goes by the same definition of a control: it no longer starts on an
-element marked `data-bit-interactive`, an element in the tab sequence or an ARIA widget it did not know
-(`menuitemcheckbox`, `menuitemradio`, `treeitem`, `searchbox`, a media player's controls), and now does start on a
-`label` without a control and on a `summary` that is not the first of a `details` element.
+element marked `data-bit-interactive`, an `a` without an `href`, an element in the tab sequence or an ARIA widget it
+did not know (`menuitemcheckbox`, `menuitemradio`, `treeitem`, `searchbox`, a media player's controls), and now does
+start on a `label` without a control and on a `summary` that is not the first of a `details` element.
 
 ## 10.7.0 (first shipped in 10.7.0-pre-01)
 

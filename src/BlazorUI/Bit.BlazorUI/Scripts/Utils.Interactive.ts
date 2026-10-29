@@ -2,10 +2,11 @@
     export namespace Utils {
 
         // What the browser itself activates on a click - a link, a form control, a disclosure's summary, a media
-        // player's controls, an editing host - and the ARIA widgets a component draws in its place. Only the first
-        // summary of a details element is its disclosure control; any other summary is plain content.
+        // player's controls, an editing host - and the ARIA widgets a component draws in its place. An anchor counts
+        // with no href too: a template makes one a control with an @onclick alone. Only the first summary of a
+        // details element is its disclosure control; any other summary is plain content.
         const interactiveSelector =
-            'a[href], button, input, select, textarea, details > summary:first-of-type, ' +
+            'a, button, input, select, textarea, details > summary:first-of-type, ' +
             'audio[controls], video[controls], [contenteditable]:not([contenteditable="false"]), ' +
             '[role="button"], [role="link"], [role="checkbox"], [role="radio"], [role="switch"], ' +
             '[role="slider"], [role="spinbutton"], [role="textbox"], [role="searchbox"], [role="combobox"], ' +
