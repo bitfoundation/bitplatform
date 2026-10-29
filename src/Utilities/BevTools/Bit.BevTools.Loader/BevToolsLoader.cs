@@ -16,6 +16,7 @@ public sealed class BevToolsLoader : IDisposable
     private IBevToolsAttachment? _attachment;
     private bool? _canOpen;
     private bool _authorized;
+    private int _openings;
 
     internal BevToolsLoader(BevToolsLoaderContext context, IServiceProvider services, IJSRuntime js)
     {
@@ -56,7 +57,14 @@ public sealed class BevToolsLoader : IDisposable
 
         // Asked before anything is downloaded or attached, and on every open: whoever is in the scope can change (a
         // sign-out in the same circuit), and a decision cached from before would outlive it.
-        if (await AuthorizeAsync() is { } refusal)
+        var opening = ++_openings;
+        var refusal = await AuthorizeAsync();
+        if (opening != _openings)
+        {
+            return false;
+        }
+
+        if (refusal is not null)
         {
             _authorized = false;
             return Fail(refusal);
@@ -64,6 +72,11 @@ public sealed class BevToolsLoader : IDisposable
 
         _authorized = true;
         var entryPoint = await _context.LoadAsync(_js);
+        if (opening != _openings)
+        {
+            return false;
+        }
+
         if (entryPoint is null)
         {
             return Fail(_context.LoadError ?? "Bit.BevTools could not be loaded.");
@@ -114,6 +127,7 @@ public sealed class BevToolsLoader : IDisposable
 
         try
         {
+            using var ownWork = _context.EntryPoint?.BeginOwnWork();
             return await authorize(_services) ? null : "BevTools is not opened here: BitBevToolsLoaderOptions.Authorize did not accept the current user.";
         }
         catch (Exception ex)
