@@ -134,6 +134,14 @@ public class McpSurfaceTests
     }
 
     [TestMethod]
+    public void No_tool_shares_a_name_with_the_library_API()
+    {
+        // The prose is checked for tool names with the library's own members left out (GetBdndInterop), so a tool
+        // named like one of them would pass unchecked - and an agent could not tell which of the two it is told to call.
+        foreach (var tool in _tools) Assert.DoesNotContain(tool.Name, ToolNames.LibraryMembers, $"'{tool.Name}' is also a member of Bit.Bdnd.");
+    }
+
+    [TestMethod]
     public void Every_tool_carries_a_title_and_a_description_worth_reading()
     {
         foreach (var tool in _tools)

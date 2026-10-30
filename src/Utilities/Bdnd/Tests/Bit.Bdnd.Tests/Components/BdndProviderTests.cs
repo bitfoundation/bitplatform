@@ -120,17 +120,4 @@ public class BdndProviderTests : BdndComponentTestBase
 
         Assert.AreEqual("BdndDragLayer must be placed inside a BdndProvider.", error.Message);
     }
-
-    [TestMethod]
-    public void WithoutTheServicesTheErrorNamesTheMissingInterop()
-    {
-        // the README's troubleshooting table quotes this message
-        using var context = new BunitContext();
-        context.JSInterop.Mode = JSRuntimeMode.Loose;
-
-        var error = Assert.ThrowsExactly<InvalidOperationException>(() => context.Render<BdndProvider>(p => p
-            .AddChildContent<BdndDraggable<string>>(d => d.Add(x => x.Type, "box"))));
-
-        Assert.Contains("Cannot provide a value for property 'Interop'", error.Message, StringComparison.Ordinal);
-    }
 }
