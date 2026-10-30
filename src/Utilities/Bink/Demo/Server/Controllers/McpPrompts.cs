@@ -96,7 +96,8 @@ public static class McpPrompts
             2. Call `SearchBink` with the symptom, and read the guide section it points to - "Hosting models" covers
                Blazor Server latency and wet ink, "Mobile, touch and stylus" covers touch that scrolls
                (`EnableTouchGestures`) and palm rejection, "Serialization" covers documents that do not load,
-               "SVG and PNG export" and "Cropping" cover exports.
+               "SVG and PNG export" and "Cropping" cover exports, and "Lazy loading on WebAssembly" covers an app that
+               cannot load Bit.Bink because it lazy loads it.
             3. For a document problem, pass the document to `InspectBinkDocument`: it runs the library's own serializer
                and exporters, and its notes name unregistered brush kinds, unknown elements, hidden layers, elements
                outside the page and the text and images the server-side PNG path skips.

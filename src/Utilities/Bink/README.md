@@ -49,7 +49,7 @@ re-rendered at any size and edited later, rather than being a picture of a drawi
 - **Accessibility**: a labelled, focusable, keyboard-operable canvas, a live text summary of the drawing and
   polite announcements.
 - Works unchanged on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, including while
-  prerendering.
+  prerendering, and can be [lazy loaded](#lazy-loading-on-webassembly) on WebAssembly.
 
 ## Quick start
 
@@ -1704,28 +1704,33 @@ No configuration is needed.
 A WebAssembly app can download Bink only when someone first opens a page that draws. Nothing has to be taken out of
 `Program.cs`, because nothing of Bink's is registered there: the canvas takes only the framework's `IJSRuntime` and
 `NavigationManager` from the app's container, and imports its browser module itself when it attaches. Mark the
-assembly as lazy loaded:
+assembly as lazy loaded in the project that runs in the browser:
 
 ```xml
-<ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' ">
+<ItemGroup>
   <BlazorWebAssemblyLazyLoad Include="Bit.Bink.wasm" />
 </ItemGroup>
 ```
 
-Then load it before the first component that uses Bink renders, typically from the router's `OnNavigateAsync`:
+Then load it before the first page that uses Bink renders, from the router's `OnNavigateAsync`:
 
 ```razor
+@* App.razor - in a Blazor Web App, the client project's Routes.razor: the router waits for OnNavigateAsync
+   before it renders the page. typeof(Program) is the project the router's file is in, in either kind of app. *@
 @using Microsoft.AspNetCore.Components.WebAssembly.Services
 @inject LazyAssemblyLoader LazyAssemblyLoader
 
-<Router AppAssembly="typeof(App).Assembly" OnNavigateAsync="LoadBinkAsync">
+<Router AppAssembly="typeof(Program).Assembly" OnNavigateAsync="OnNavigateAsync">
     ...
 </Router>
 
 @code {
-    private async Task LoadBinkAsync(NavigationContext context)
+    private async Task OnNavigateAsync(NavigationContext context)
     {
-        if (context.Path == "whiteboard") await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bink.wasm"]);
+        // The pages that draw: fetch Bink before they render. A second call loads nothing again. Routes match
+        // regardless of case, so /Whiteboard/2 is one of them too.
+        if (context.Path.StartsWith("whiteboard", StringComparison.OrdinalIgnoreCase))
+            await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bink.wasm"]);
     }
 }
 ```
@@ -1734,13 +1739,69 @@ Nothing else changes. The stylesheet and the initializer that injects it are sta
 the assembly, so they still load when the app starts, both small, and a canvas is laid out correctly from its first
 render. The zero-copy render path works from the lazily loaded assembly as well.
 
-Your own code that names a Bink type has to run after the load too: register custom brushes and element types
-(`BinkBrushRegistry.Default.Register`, `BinkElementRegistry.Default.Register`) right after `LoadAssembliesAsync`,
-not in `Program.cs`. Both replace an earlier registration of the same kind, so registering again on a later
-navigation does no harm.
+- Only what renders after the assembly has loaded may use Bink's types - the pages it is loaded for and a layout only
+  they use, not `App.razor`, `Routes.razor`, a layout every page shares or `Program.cs`. A page in the app's own
+  assembly can hold a `<BinkCanvas>` and a `BinkDocument` field, since the router loads Bink before it renders the
+  page. The method that calls `LoadAssembliesAsync` cannot use them either: WebAssembly resolves what a method refers
+  to when the method first runs, which is before the load, and does not retry what it failed to resolve.
+- No type in an assembly the router reads when the app starts - the app's own assembly first of all - may derive from
+  or implement one of Bink's: no custom `BinkBrush` or `BinkElement`, no `BinkElementConverter<T>`, no `IBinkTool` or
+  `BinkToolBase`, no `IBinkRenderContext`, `IBinkTextRasterizer`, `IBinkCollaborationTransport` or
+  `IBinkDocumentStore` of your own. The router reads the types of those assemblies at startup, and on WebAssembly a
+  type whose base type or interface lives in an assembly that is not loaded yet fails to load - and keeps failing after
+  Bit.Bink has loaded. Put such types in a library of your own that is lazy loaded together with Bit.Bink
+  (`LoadAssembliesAsync(["Bit.Bink.wasm", "MyApp.Drawing.wasm"])`).
+- Register custom brushes and element types from code that runs after the load, such as a method of that library
+  called from the drawing page. `BinkBrushRegistry.Default.Register` and `BinkElementRegistry.Default.Register`
+  replace an earlier registration of the same kind, so registering again each time the page opens does no harm:
 
-The condition leaves AOT builds out: AOT compiles every assembly into `dotnet.native.wasm`, so there is nothing left
-to download later, and lazy loading an AOT-compiled assembly can fail at startup.
+  ```csharp
+  // MyApp.Drawing, lazy loaded with Bit.Bink
+  public static class DrawingExtensions
+  {
+      public static void Register()
+      {
+          BinkBrushRegistry.Default.Register<DashedBrush>();
+          BinkElementRegistry.Default.Register(new StickyNoteConverter());
+      }
+  }
+  ```
+
+  ```razor
+  @* Whiteboard.razor *@
+  @code {
+      protected override void OnInitialized() => DrawingExtensions.Register();
+  }
+  ```
+
+- In a Blazor Web App only the browser lazy loads. Give `Routes` the `InteractiveWebAssembly` or `InteractiveAuto`
+  render mode in `App.razor`, so the router - and its `OnNavigateAsync` - runs in the browser; with per-page render
+  modes it renders statically on the server and never loads the assembly in the browser. The server project loads
+  Bink with the rest of the app, still with nothing of Bink's to register, and registers `LazyAssemblyLoader`, which
+  `Routes.razor` injects while it is prerendered there and which loads nothing outside the browser:
+  `builder.Services.AddScoped<LazyAssemblyLoader>()`.
+- Do not lazy load in an AOT build. AOT compiles every assembly into `dotnet.native.wasm`, so there is nothing left to
+  download later, and lazy loading an AOT-compiled assembly can fail at startup. A project published both ways marks
+  the assembly only outside AOT and then skips `LoadAssembliesAsync` in AOT builds as well, since loading an assembly
+  that is not marked throws. A runtime switch set next to the mark tells the router which build it is in:
+
+  ```xml
+  <ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' ">
+    <BlazorWebAssemblyLazyLoad Include="Bit.Bink.wasm" />
+    <RuntimeHostConfigurationOption Include="MyApp.LazyLoadsBink" Value="true" Trim="true" />
+  </ItemGroup>
+  ```
+
+  ```csharp
+  if (AppContext.TryGetSwitch("MyApp.LazyLoadsBink", out var lazy) && lazy && context.Path.StartsWith("whiteboard", StringComparison.OrdinalIgnoreCase))
+      await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bink.wasm"]);
+  ```
+
+- `Could not load file or assembly 'Bit.Bink'` means something used Bink's types before the assembly loaded: load it
+  in `OnNavigateAsync` for every route that renders them, and keep them out of `Program.cs`, `App.razor`, the layouts
+  every page shares and the method that loads it. If it fails as the app starts and keeps failing once the assembly
+  has loaded, a type in the app's own assembly derives from or implements one of Bink's: move it into the library
+  that is lazy loaded with Bit.Bink.
 
 ### Blazor Server
 
@@ -2458,7 +2519,9 @@ that is already on the dispatcher, such as the one the demo uses, needs nothing 
 ## Extending Bink
 
 Six extension points cover the things applications actually need to change. Each is a small interface or an
-abstract record, and none of them requires touching the engine.
+abstract record, and none of them requires touching the engine. An app that [lazy loads](#lazy-loading-on-webassembly)
+Bink on WebAssembly keeps its own implementations in a library lazy loaded together with it, never in the app's own
+assembly.
 
 ### A custom brush
 
