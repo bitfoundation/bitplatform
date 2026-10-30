@@ -3,18 +3,38 @@ namespace Boilerplate.Workbench.Infrastructure.Services;
 public partial class WorkbenchScenarioState
 {
     private int pendingLoads;
+    private long lastActivityTicks = DateTimeOffset.UtcNow.UtcTicks;
     private readonly ConcurrentDictionary<string, int> attempts = [];
 
     public WorkbenchScenario Scenario { get; private set; } = new();
 
-    public event Action? Settled;
-
     public bool IsSettled => Volatile.Read(ref pendingLoads) == 0;
+
+    public DateTimeOffset LastActivity => new(Interlocked.Read(ref lastActivityTicks), TimeSpan.Zero);
 
     public void Set(WorkbenchScenario scenario)
     {
         Scenario = scenario;
         attempts.Clear();
+        Touch();
+    }
+
+    public void Touch() => Interlocked.Exchange(ref lastActivityTicks, DateTimeOffset.UtcNow.UtcTicks);
+
+    public async Task<T> Track<T>(Task<T> task)
+    {
+        Interlocked.Increment(ref pendingLoads);
+        Touch();
+
+        try
+        {
+            return await task;
+        }
+        finally
+        {
+            Interlocked.Decrement(ref pendingLoads);
+            Touch();
+        }
     }
 
     public WorkbenchDataState ResolveState(string source)
@@ -39,6 +59,7 @@ public partial class WorkbenchScenarioState
     public async Task<T> Load<T>(string source, Func<T> live, Func<T> empty, CancellationToken cancellationToken = default)
     {
         Interlocked.Increment(ref pendingLoads);
+        Touch();
 
         try
         {
@@ -65,10 +86,8 @@ public partial class WorkbenchScenarioState
         }
         finally
         {
-            if (Interlocked.Decrement(ref pendingLoads) == 0)
-            {
-                Settled?.Invoke();
-            }
+            Interlocked.Decrement(ref pendingLoads);
+            Touch();
         }
     }
 

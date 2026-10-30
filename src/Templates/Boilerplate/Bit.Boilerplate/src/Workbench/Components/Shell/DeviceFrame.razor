@@ -10,7 +10,7 @@
     <div class="screen">
         @ChildContent
 
-        @if (ShowFrame && Landscape is false)
+        @if (ShowFrame && Device.IsLandscape(Rotated) is false)
         {
             @if (Device.Cutout is DeviceCutout.Island)
             {

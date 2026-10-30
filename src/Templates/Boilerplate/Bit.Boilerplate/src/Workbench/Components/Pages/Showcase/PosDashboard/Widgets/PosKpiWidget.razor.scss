@@ -1,0 +1,44 @@
+@import '../../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.kpi {
+    gap: 0.375rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.kpi-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+.kpi-change {
+    gap: 0.25rem;
+    display: flex;
+    font-size: 13px;
+    align-items: center;
+
+    &.good {
+        color: #22a06b;
+    }
+
+    &.bad {
+        color: #e5484d;
+    }
+
+    .kpi-percent {
+        font-weight: 600;
+    }
+
+    .kpi-compare {
+        color: $bit-color-foreground-secondary;
+    }
+}
+
+.kpi-trend {
+    height: 44px;
+    overflow: hidden;
+    margin-top: 0.25rem;
+}

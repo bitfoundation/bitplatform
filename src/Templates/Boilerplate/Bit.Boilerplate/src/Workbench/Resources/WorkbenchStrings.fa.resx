@@ -315,4 +315,328 @@
     <data name="ToggleWorkbenchTheme" xml:space="preserve">
         <value>جابه‌جایی میز کار بین روشن و تیره</value>
     </data>
+    <data name="PosStoreAll" xml:space="preserve">
+        <value>همه شعبه‌ها</value>
+    </data>
+    <data name="PosStoreAmsterdam" xml:space="preserve">
+        <value>آمستردام، یوردان</value>
+    </data>
+    <data name="PosStoreRotterdam" xml:space="preserve">
+        <value>روتردام، مارکت‌هال</value>
+    </data>
+    <data name="PosStoreUtrecht" xml:space="preserve">
+        <value>اوترخت، اودخراخت</value>
+    </data>
+    <data name="PosProductFlatWhite" xml:space="preserve">
+        <value>فلت وایت</value>
+    </data>
+    <data name="PosProductOatLatte" xml:space="preserve">
+        <value>لاته با شیر جو</value>
+    </data>
+    <data name="PosProductCroissant" xml:space="preserve">
+        <value>کروسان کره‌ای</value>
+    </data>
+    <data name="PosProductAppleTart" xml:space="preserve">
+        <value>پای سیب هلندی</value>
+    </data>
+    <data name="PosProductCappuccino" xml:space="preserve">
+        <value>کاپوچینو</value>
+    </data>
+    <data name="PosProductStroopwafel" xml:space="preserve">
+        <value>استروپ‌وافل</value>
+    </data>
+    <data name="PosProductSourdough" xml:space="preserve">
+        <value>نان خمیرترش</value>
+    </data>
+    <data name="PosProductColdBrew" xml:space="preserve">
+        <value>کلد برو</value>
+    </data>
+    <data name="PosStaffEmma" xml:space="preserve">
+        <value>الهام جعفری</value>
+    </data>
+    <data name="PosStaffLucas" xml:space="preserve">
+        <value>لیلا بهرامی</value>
+    </data>
+    <data name="PosStaffMila" xml:space="preserve">
+        <value>میلاد جهانی</value>
+    </data>
+    <data name="PosStaffSem" xml:space="preserve">
+        <value>سامان صدری</value>
+    </data>
+    <data name="PosPaymentCard" xml:space="preserve">
+        <value>کارت</value>
+    </data>
+    <data name="PosPaymentWallet" xml:space="preserve">
+        <value>کیف پول همراه</value>
+    </data>
+    <data name="PosPaymentCash" xml:space="preserve">
+        <value>نقد</value>
+    </data>
+    <data name="PosPaymentGiftCard" xml:space="preserve">
+        <value>کارت هدیه</value>
+    </data>
+    <data name="PosStockOatMilk" xml:space="preserve">
+        <value>شیر جو</value>
+    </data>
+    <data name="PosStockCroissantDough" xml:space="preserve">
+        <value>خمیر کروسان</value>
+    </data>
+    <data name="PosStockCoffeeBeans" xml:space="preserve">
+        <value>دانه قهوه اسپرسو</value>
+    </data>
+    <data name="PosStockCups" xml:space="preserve">
+        <value>لیوان بیرون‌بر</value>
+    </data>
+    <data name="PosNetSales" xml:space="preserve">
+        <value>فروش خالص</value>
+    </data>
+    <data name="PosTransactions" xml:space="preserve">
+        <value>تراکنش‌ها</value>
+    </data>
+    <data name="PosAverageSale" xml:space="preserve">
+        <value>میانگین هر فروش</value>
+    </data>
+    <data name="PosRefunds" xml:space="preserve">
+        <value>بازپرداخت‌ها</value>
+    </data>
+    <data name="PosSalesByHour" xml:space="preserve">
+        <value>فروش ساعت‌به‌ساعت</value>
+    </data>
+    <data name="PosPaymentMethods" xml:space="preserve">
+        <value>روش‌های پرداخت</value>
+    </data>
+    <data name="PosTopProducts" xml:space="preserve">
+        <value>پرفروش‌ترین‌ها</value>
+    </data>
+    <data name="PosDailyGoal" xml:space="preserve">
+        <value>هدف فروش</value>
+    </data>
+    <data name="PosRecentOrders" xml:space="preserve">
+        <value>سفارش‌های اخیر</value>
+    </data>
+    <data name="PosLowStock" xml:space="preserve">
+        <value>موجودی رو به اتمام</value>
+    </data>
+    <data name="PosTeam" xml:space="preserve">
+        <value>تیم</value>
+    </data>
+    <data name="PosPeakHours" xml:space="preserve">
+        <value>ساعت‌های شلوغ</value>
+    </data>
+    <data name="PosDragWidget" xml:space="preserve">
+        <value>جابه‌جا کردن {0}</value>
+    </data>
+    <data name="PosWidgetOptions" xml:space="preserve">
+        <value>گزینه‌های ویجت</value>
+    </data>
+    <data name="PosLoadingWidget" xml:space="preserve">
+        <value>در حال بارگذاری</value>
+    </data>
+    <data name="PosWidgetFailedTitle" xml:space="preserve">
+        <value>بارگذاری نشد</value>
+    </data>
+    <data name="PosWidgetFailedDescription" xml:space="preserve">
+        <value>بقیه داشبورد سالم است. کمی بعد دوباره امتحان کنید.</value>
+    </data>
+    <data name="PosRetry" xml:space="preserve">
+        <value>دوباره امتحان کنید</value>
+    </data>
+    <data name="PosNoDataYet" xml:space="preserve">
+        <value>هنوز چیزی نیست</value>
+    </data>
+    <data name="PosSizeSmall" xml:space="preserve">
+        <value>کوچک</value>
+    </data>
+    <data name="PosSizeMedium" xml:space="preserve">
+        <value>متوسط</value>
+    </data>
+    <data name="PosSizeLarge" xml:space="preserve">
+        <value>بزرگ</value>
+    </data>
+    <data name="PosMoveEarlier" xml:space="preserve">
+        <value>جابه‌جایی به عقب</value>
+    </data>
+    <data name="PosMoveLater" xml:space="preserve">
+        <value>جابه‌جایی به جلو</value>
+    </data>
+    <data name="PosHideWidget" xml:space="preserve">
+        <value>پنهان کردن</value>
+    </data>
+    <data name="PosNoSalesYet" xml:space="preserve">
+        <value>هنوز فروشی نیست</value>
+    </data>
+    <data name="PosNoSalesYetDescription" xml:space="preserve">
+        <value>با پرداخت اولین سفارش، عددها این‌جا نمایش داده می‌شوند.</value>
+    </data>
+    <data name="PosToday" xml:space="preserve">
+        <value>امروز</value>
+    </data>
+    <data name="PosThisPeriod" xml:space="preserve">
+        <value>این بازه</value>
+    </data>
+    <data name="PosLastWeek" xml:space="preserve">
+        <value>همین روز هفته قبل</value>
+    </data>
+    <data name="PosSalesByHourSubtitle" xml:space="preserve">
+        <value>در مقایسه با همین روز هفته قبل</value>
+    </data>
+    <data name="PosNoPaymentsYet" xml:space="preserve">
+        <value>هنوز پرداختی نیست</value>
+    </data>
+    <data name="PosTotal" xml:space="preserve">
+        <value>جمع</value>
+    </data>
+    <data name="PosUnitsSold" xml:space="preserve">
+        <value>{0} فروش</value>
+    </data>
+    <data name="PosNoGoalSet" xml:space="preserve">
+        <value>هدفی تعیین نشده</value>
+    </data>
+    <data name="PosNoGoalSetDescription" xml:space="preserve">
+        <value>یک هدف فروش تعیین کنید تا ببینید شعبه چقدر به آن نزدیک است.</value>
+    </data>
+    <data name="PosOfTarget" xml:space="preserve">
+        <value>از هدف {0}</value>
+    </data>
+    <data name="PosRemainingToGoal" xml:space="preserve">
+        <value>{0} مانده تا هدف</value>
+    </data>
+    <data name="PosRecentOrdersSubtitle" xml:space="preserve">
+        <value>آخرین سفارش‌های همه صندوق‌ها</value>
+    </data>
+    <data name="PosNoOrdersYet" xml:space="preserve">
+        <value>هنوز سفارشی نیست</value>
+    </data>
+    <data name="PosNoOrdersYetDescription" xml:space="preserve">
+        <value>سفارش‌ها همان لحظه‌ای که صندوق ثبتشان کند این‌جا می‌آیند.</value>
+    </data>
+    <data name="PosOrder" xml:space="preserve">
+        <value>سفارش</value>
+    </data>
+    <data name="PosTime" xml:space="preserve">
+        <value>زمان</value>
+    </data>
+    <data name="PosCashier" xml:space="preserve">
+        <value>صندوق‌دار</value>
+    </data>
+    <data name="PosItems" xml:space="preserve">
+        <value>اقلام</value>
+    </data>
+    <data name="PosPayment" xml:space="preserve">
+        <value>پرداخت</value>
+    </data>
+    <data name="PosStatus" xml:space="preserve">
+        <value>وضعیت</value>
+    </data>
+    <data name="PosOrderStatusPaid" xml:space="preserve">
+        <value>پرداخت شده</value>
+    </data>
+    <data name="PosOrderStatusRefunded" xml:space="preserve">
+        <value>بازپرداخت شده</value>
+    </data>
+    <data name="PosOrderStatusPending" xml:space="preserve">
+        <value>در انتظار</value>
+    </data>
+    <data name="PosMinutesAgo" xml:space="preserve">
+        <value>{0} دقیقه پیش</value>
+    </data>
+    <data name="PosLowStockSubtitle" xml:space="preserve">
+        <value>اقلام زیر حداقل موجودی</value>
+    </data>
+    <data name="PosStockAllGood" xml:space="preserve">
+        <value>همه‌چیز موجود است</value>
+    </data>
+    <data name="PosStockAllGoodDescription" xml:space="preserve">
+        <value>فعلا هیچ قلمی زیر حداقل نیست.</value>
+    </data>
+    <data name="PosInStock" xml:space="preserve">
+        <value>{0} مانده · حداقل {1}</value>
+    </data>
+    <data name="PosOutOfStock" xml:space="preserve">
+        <value>تمام شده</value>
+    </data>
+    <data name="PosLowStockBadge" xml:space="preserve">
+        <value>کم</value>
+    </data>
+    <data name="PosOrdered" xml:space="preserve">
+        <value>سفارش داده شد</value>
+    </data>
+    <data name="PosReorder" xml:space="preserve">
+        <value>سفارش مجدد</value>
+    </data>
+    <data name="PosNoShiftsYet" xml:space="preserve">
+        <value>کسی سر شیفت نیست</value>
+    </data>
+    <data name="PosNoShiftsYetDescription" xml:space="preserve">
+        <value>با ورود اولین نفر به شیفت، نتایج تیم این‌جا می‌آید.</value>
+    </data>
+    <data name="PosOrdersCount" xml:space="preserve">
+        <value>{0} سفارش</value>
+    </data>
+    <data name="PosTopSeller" xml:space="preserve">
+        <value>بهترین فروشنده</value>
+    </data>
+    <data name="PosPeakHoursSubtitle" xml:space="preserve">
+        <value>سفارش در هر ساعت در چهار هفته اخیر</value>
+    </data>
+    <data name="PosQuiet" xml:space="preserve">
+        <value>خلوت</value>
+    </data>
+    <data name="PosBusy" xml:space="preserve">
+        <value>شلوغ</value>
+    </data>
+    <data name="PosGreeting" xml:space="preserve">
+        <value>عصر بخیر، سارا</value>
+    </data>
+    <data name="PosStore" xml:space="preserve">
+        <value>شعبه</value>
+    </data>
+    <data name="PosPeriod" xml:space="preserve">
+        <value>بازه</value>
+    </data>
+    <data name="Pos7Days" xml:space="preserve">
+        <value>۷ روز</value>
+    </data>
+    <data name="Pos30Days" xml:space="preserve">
+        <value>۳۰ روز</value>
+    </data>
+    <data name="PosDone" xml:space="preserve">
+        <value>تمام</value>
+    </data>
+    <data name="PosCustomize" xml:space="preserve">
+        <value>شخصی‌سازی</value>
+    </data>
+    <data name="PosEditHint" xml:space="preserve">
+        <value>ویجت‌ها را با دستگیره‌شان جابه‌جا کنید، یا با منوی هرکدام اندازه، جا و نمایششان را عوض کنید. چیدمان روی همین دستگاه ذخیره می‌شود.</value>
+    </data>
+    <data name="PosAddWidget" xml:space="preserve">
+        <value>افزودن ویجت ({0})</value>
+    </data>
+    <data name="PosResetLayout" xml:space="preserve">
+        <value>بازگشت به چیدمان پیش‌فرض</value>
+    </data>
+    <data name="PosWidgetGallery" xml:space="preserve">
+        <value>ویجت‌های پنهان</value>
+    </data>
+    <data name="PosAdd" xml:space="preserve">
+        <value>افزودن</value>
+    </data>
+    <data name="PosGalleryEmpty" xml:space="preserve">
+        <value>همه ویجت‌ها روی داشبورد هستند.</value>
+    </data>
+    <data name="PosLast7Days" xml:space="preserve">
+        <value>۷ روز اخیر</value>
+    </data>
+    <data name="PosLast30Days" xml:space="preserve">
+        <value>۳۰ روز اخیر</value>
+    </data>
+    <data name="PosVsYesterday" xml:space="preserve">
+        <value>نسبت به دیروز</value>
+    </data>
+    <data name="PosVsPrevious7Days" xml:space="preserve">
+        <value>نسبت به ۷ روز قبل</value>
+    </data>
+    <data name="PosVsPrevious30Days" xml:space="preserve">
+        <value>نسبت به ۳۰ روز قبل</value>
+    </data>
 </root>

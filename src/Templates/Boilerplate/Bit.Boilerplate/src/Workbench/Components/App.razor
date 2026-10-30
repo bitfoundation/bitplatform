@@ -17,7 +17,7 @@
         DarkTheme = AppThemePresets.Dark,
         PersistedThemePair = isPreview ? null : HttpContext.Request.Cookies[BitThemeCookie.PairCookieName]
     };
-    var (insetTop, insetBottom) = scenario?.DevicePreset.GetSafeArea(scenario.Landscape) ?? (0, 0);
+    var (insetTop, insetBottom) = scenario?.DevicePreset.GetSafeArea(scenario.Rotated) ?? (0, 0);
     var insetStyle = scenario is null ? null : FormattableString.Invariant($"--bit-env-inset-top:{insetTop}px;--bit-env-inset-bottom:{insetBottom}px;--bit-env-inset-left:0px;--bit-env-inset-right:0px;");
 }
 

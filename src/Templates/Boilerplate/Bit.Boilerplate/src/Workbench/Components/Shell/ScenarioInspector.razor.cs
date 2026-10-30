@@ -29,7 +29,7 @@ public partial class ScenarioInspector
 
             deviceItems.AddRange(group.Select(device =>
             {
-                var (width, height) = device.GetPixels(landscape: false);
+                var (width, height) = device.GetPixels(rotated: false);
                 return new BitDropdownItem<string>
                 {
                     Value = device.Key,

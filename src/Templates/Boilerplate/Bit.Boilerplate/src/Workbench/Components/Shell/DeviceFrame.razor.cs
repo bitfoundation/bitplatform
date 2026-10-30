@@ -4,7 +4,7 @@ public partial class DeviceFrame
 {
     [Parameter] public DevicePreset Device { get; set; } = DevicePresets.Default;
 
-    [Parameter] public bool Landscape { get; set; }
+    [Parameter] public bool Rotated { get; set; }
 
     [Parameter] public bool ShowFrame { get; set; } = true;
 
@@ -28,9 +28,9 @@ public partial class DeviceFrame
         };
     }
 
-    public static (int Width, int Height) GetFrameSize(DevicePreset device, bool landscape, bool showFrame)
+    public static (int Width, int Height) GetFrameSize(DevicePreset device, bool rotated, bool showFrame)
     {
-        var (width, height) = device.GetViewport(landscape);
+        var (width, height) = device.GetViewport(rotated);
         var (left, top, right, bottom) = GetBezel(device, showFrame);
 
         return (width + left + right, height + top + bottom);
@@ -38,14 +38,14 @@ public partial class DeviceFrame
 
     private string GetClass()
     {
-        return $"device {Device.Kind.ToString().ToLowerInvariant()} {(ShowFrame ? "framed" : "bare")}{(Landscape ? " landscape" : null)}";
+        return $"device {Device.Kind.ToString().ToLowerInvariant()} {(ShowFrame ? "framed" : "bare")}{(Device.IsLandscape(Rotated) ? " landscape" : null)}";
     }
 
     private string GetStyle()
     {
-        var (width, height) = Device.GetViewport(Landscape);
+        var (width, height) = Device.GetViewport(Rotated);
         var (left, top, right, bottom) = GetBezel(Device, ShowFrame);
-        var (frameWidth, frameHeight) = GetFrameSize(Device, Landscape, ShowFrame);
+        var (frameWidth, frameHeight) = GetFrameSize(Device, Rotated, ShowFrame);
         var radius = ShowFrame ? Device.CornerRadius : 0;
 
         return FormattableString.Invariant($"width:{frameWidth}px;height:{frameHeight}px;--wb-screen-w:{width}px;--wb-screen-h:{height}px;--wb-screen-r:{radius}px;--wb-bezel-l:{left}px;--wb-bezel-t:{top}px;--wb-bezel-r:{right}px;--wb-bezel-b:{bottom}px;");

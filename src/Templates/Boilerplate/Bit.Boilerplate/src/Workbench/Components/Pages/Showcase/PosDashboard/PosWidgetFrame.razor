@@ -1,0 +1,81 @@
+@inherits WorkbenchComponentBase
+
+<Bmotion Initial="Bm.To(opacity: 0, y: 14)" Animate="Bm.To(opacity: 1, y: 0)" Transition="Bm.Spring(stiffness: 260, damping: 26)">
+    <section class="widget @(Dashboard.IsEditing ? "editing" : null)" aria-label="@Localizer[Definition.TitleKey]">
+        <header class="widget-header">
+            @if (Dashboard.IsEditing)
+            {
+                <button type="button" class="widget-handle" aria-label="@Localizer[nameof(WorkbenchStrings.PosDragWidget), Localizer[Definition.TitleKey]]">
+                    <BitIcon IconName="@BitIconName.GripperDotsVertical" Size="BitSize.Small" />
+                </button>
+            }
+            <span class="widget-icon">
+                <BitIcon IconName="@Definition.IconName" Size="BitSize.Small" />
+            </span>
+            <div class="widget-titles">
+                <BitText Typography="BitTypography.Subtitle2" Class="widget-title" NoWrap>@Localizer[Definition.TitleKey]</BitText>
+                @if (string.IsNullOrEmpty(Subtitle) is false)
+                {
+                    <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary" NoWrap>@Subtitle</BitText>
+                }
+            </div>
+            <BitSpacer />
+            @if (Dashboard.IsEditing)
+            {
+                <BitMenuButton IconOnly
+                               Variant="BitVariant.Text"
+                               Size="BitSize.Small"
+                               IconName="@BitIconName.MoreVertical"
+                               Title="@Localizer[nameof(WorkbenchStrings.PosWidgetOptions)]"
+                               Items="menuItems" />
+            }
+            else
+            {
+                @HeaderContent
+            }
+        </header>
+
+        <div class="widget-body">
+            @switch (Status)
+            {
+                case PosWidgetStatus.Loading:
+                    <div class="widget-loading" role="status" aria-label="@Localizer[nameof(WorkbenchStrings.PosLoadingWidget)]">
+                        @if (Skeleton is not null)
+                        {
+                            @Skeleton
+                        }
+                        else
+                        {
+                            <BitShimmer Height="1.25rem" Width="45%" />
+                            <BitShimmer Height="2.5rem" Width="70%" />
+                            <BitShimmer Height="1rem" Width="90%" />
+                        }
+                    </div>
+                    break;
+                case PosWidgetStatus.Failed:
+                    <div class="widget-state failed" role="alert">
+                        <span class="state-icon"><BitIcon IconName="@BitIconName.Warning" /></span>
+                        <BitText Typography="BitTypography.Subtitle2">@Localizer[nameof(WorkbenchStrings.PosWidgetFailedTitle)]</BitText>
+                        <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.PosWidgetFailedDescription)]</BitText>
+                        <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" IconName="@BitIconName.Refresh" OnClick="OnRetry">
+                            @Localizer[nameof(WorkbenchStrings.PosRetry)]
+                        </BitButton>
+                    </div>
+                    break;
+                case PosWidgetStatus.Empty:
+                    <div class="widget-state empty">
+                        <span class="state-icon"><BitIcon IconName="@(EmptyIconName ?? Definition.IconName)" /></span>
+                        <BitText Typography="BitTypography.Subtitle2">@Localizer[EmptyTitleKey]</BitText>
+                        @if (EmptyDescriptionKey is not null)
+                        {
+                            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[EmptyDescriptionKey]</BitText>
+                        }
+                    </div>
+                    break;
+                default:
+                    @ChildContent
+                    break;
+            }
+        </div>
+    </section>
+</Bmotion>

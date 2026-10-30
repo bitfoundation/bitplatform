@@ -7,15 +7,15 @@
             <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.Device)]</BitText>
             <BitDropdown Items="deviceItems"
                          Value="@Value.Device"
-                         ValueChanged="(string? device) => Update(Value with { Device = device ?? DevicePresets.DefaultKey })"
+                         ValueChanged="(string? device) => Update(Value with { Device = device ?? DevicePresets.DefaultKey, Rotated = false })"
                          AriaLabel="@Localizer[nameof(WorkbenchStrings.Device)]"
                          Responsive
                          FitWidth />
             <div class="segments two">
-                <BitButton Size="BitSize.Small" Variant="@VariantOf(Value.Landscape is false)" IconName="@BitIconName.CellPhone"
-                           OnClick="() => Update(Value with { Landscape = false })">@Localizer[nameof(WorkbenchStrings.Portrait)]</BitButton>
-                <BitButton Size="BitSize.Small" Variant="@VariantOf(Value.Landscape)" IconName="@BitIconName.Rotate"
-                           OnClick="() => Update(Value with { Landscape = true })">@Localizer[nameof(WorkbenchStrings.Landscape)]</BitButton>
+                <BitButton Size="BitSize.Small" Variant="@VariantOf(Value.DevicePreset.IsLandscape(Value.Rotated) is false)" IconName="@BitIconName.CellPhone"
+                           OnClick="() => Update(Value with { Rotated = Value.DevicePreset.IsLandscapeByDefault })">@Localizer[nameof(WorkbenchStrings.Portrait)]</BitButton>
+                <BitButton Size="BitSize.Small" Variant="@VariantOf(Value.DevicePreset.IsLandscape(Value.Rotated))" IconName="@BitIconName.Rotate"
+                           OnClick="() => Update(Value with { Rotated = Value.DevicePreset.IsLandscapeByDefault is false })">@Localizer[nameof(WorkbenchStrings.Landscape)]</BitButton>
             </div>
             <BitToggle Text="@Localizer[nameof(WorkbenchStrings.DeviceFrame)]" Value="Value.Frame" ValueChanged="(bool frame) => Update(Value with { Frame = frame })" />
             @if (ShowZoom)
@@ -78,7 +78,7 @@
     </section>
 
     <section class="actions">
-        <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Reset" OnClick="() => Update(new WorkbenchScenario { Device = Value.Device, Landscape = Value.Landscape })">
+        <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Reset" OnClick="() => Update(new WorkbenchScenario { Device = Value.Device, Rotated = Value.Rotated })">
             @Localizer[nameof(WorkbenchStrings.Reset)]
         </BitButton>
     </section>

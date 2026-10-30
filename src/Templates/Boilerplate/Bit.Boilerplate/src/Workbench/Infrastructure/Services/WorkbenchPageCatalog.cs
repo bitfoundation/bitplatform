@@ -1,4 +1,4 @@
-using Boilerplate.Workbench.Components.Pages.Showcase;
+using Boilerplate.Workbench.Components.Pages.Showcase.PosDashboard;
 
 namespace Boilerplate.Workbench.Infrastructure.Services;
 

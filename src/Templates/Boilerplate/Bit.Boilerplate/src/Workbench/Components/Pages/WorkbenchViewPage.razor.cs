@@ -116,9 +116,9 @@ public partial class WorkbenchViewPage
         var source = SelectedPane.Scenario;
         var next = source.DevicePreset.Kind switch
         {
-            DeviceKind.Phone or DeviceKind.Foldable => source with { Device = "ipad-pro-11", Landscape = false },
-            DeviceKind.Tablet => source with { Device = "desktop-1536", Landscape = false },
-            _ => source with { Device = DevicePresets.DefaultKey, Landscape = false }
+            DeviceKind.Phone or DeviceKind.Foldable => source with { Device = "ipad-pro-11", Rotated = false },
+            DeviceKind.Tablet => source with { Device = "desktop-1536", Rotated = false },
+            _ => source with { Device = DevicePresets.DefaultKey, Rotated = false }
         };
 
         var pane = new WorkbenchPane(NextPaneId(), next);
@@ -144,13 +144,13 @@ public partial class WorkbenchViewPage
 
     private void RotatePane(WorkbenchPane pane)
     {
-        panes = [.. panes.Select(p => p.Id == pane.Id ? p with { Scenario = p.Scenario with { Landscape = p.Scenario.Landscape is false } } : p)];
+        panes = [.. panes.Select(p => p.Id == pane.Id ? p with { Scenario = p.Scenario with { Rotated = p.Scenario.Rotated is false } } : p)];
         Apply();
     }
 
     private void Compare(string mode)
     {
-        var source = SelectedPane.Scenario with { Landscape = false };
+        var source = SelectedPane.Scenario with { Rotated = false };
 
         WorkbenchScenario[] scenarios = mode switch
         {

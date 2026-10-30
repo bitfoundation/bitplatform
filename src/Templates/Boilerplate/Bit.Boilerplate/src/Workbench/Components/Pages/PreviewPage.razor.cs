@@ -10,7 +10,6 @@ public partial class PreviewPage
     protected override void OnInitialized()
     {
         ScenarioState.Set(WorkbenchScenario.Parse(new Uri(NavigationManager.Uri).Query));
-        ScenarioState.Settled += OnSettled;
     }
 
     protected override void OnParametersSet()
@@ -18,22 +17,37 @@ public partial class PreviewPage
         pageInfo = WorkbenchPageCatalog.Find(PageKey);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnAfterRender(bool firstRender)
     {
-        if (firstRender && (ScenarioState.IsSettled || Scenario.Data is WorkbenchDataState.Loading))
+        if (firstRender)
         {
-            await ReportReady();
+            ScenarioState.Touch();
+            _ = WaitUntilReady();
         }
     }
 
-    private void OnSettled()
+    private async Task WaitUntilReady()
     {
-        _ = InvokeAsync(async () =>
+        var startedAt = DateTimeOffset.UtcNow;
+
+        try
         {
-            StateHasChanged();
-            await Task.Delay(150);
-            await ReportReady();
-        });
+            while (true)
+            {
+                await Task.Delay(100, CurrentCancellationToken);
+
+                var isQuiet = DateTimeOffset.UtcNow - ScenarioState.LastActivity > TimeSpan.FromMilliseconds(450);
+                var isSettled = Scenario.Data is WorkbenchDataState.Loading || ScenarioState.IsSettled;
+
+                if ((isQuiet && isSettled) || DateTimeOffset.UtcNow - startedAt > TimeSpan.FromSeconds(20))
+                    break;
+            }
+
+            await InvokeAsync(ReportReady);
+        }
+        catch (OperationCanceledException)
+        {
+        }
     }
 
     private async Task ReportReady()
@@ -46,10 +60,4 @@ public partial class PreviewPage
         await JSRuntime.InvokeVoidAsync("workbench.markReady");
     }
 
-    public override async ValueTask DisposeAsync()
-    {
-        ScenarioState.Settled -= OnSettled;
-
-        await base.DisposeAsync();
-    }
 }

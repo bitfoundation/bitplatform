@@ -56,7 +56,7 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
         scenario = scenario with { Frame = false };
 
         var device = scenario.DevicePreset;
-        var (width, height) = device.GetViewport(scenario.Landscape);
+        var (width, height) = device.GetViewport(scenario.Rotated);
 
         var png = await screenshotService.Capture(WorkbenchUrls.Preview(page.Key, scenario).TrimStart('/'),
                                                   width,
@@ -67,7 +67,7 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
                                                   scenario.Culture,
                                                   cancellationToken);
 
-        var (pixelWidth, pixelHeight) = device.GetPixels(scenario.Landscape);
+        var (pixelWidth, pixelHeight) = device.GetPixels(scenario.Rotated);
         var fileName = $"{page.Key}-{device.Key}-{pixelWidth}x{pixelHeight}-{scenario.Culture ?? CultureInfoManager.DefaultCulture.Name}-{scenario.Theme}-{scenario.Data}.png".ToLowerInvariant();
 
         return (png, fileName);

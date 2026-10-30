@@ -315,4 +315,328 @@
     <data name="ToggleWorkbenchTheme" xml:space="preserve">
         <value>Werkbank wisselen tussen licht en donker</value>
     </data>
+    <data name="PosStoreAll" xml:space="preserve">
+        <value>Alle winkels</value>
+    </data>
+    <data name="PosStoreAmsterdam" xml:space="preserve">
+        <value>Amsterdam, Jordaan</value>
+    </data>
+    <data name="PosStoreRotterdam" xml:space="preserve">
+        <value>Rotterdam, Markthal</value>
+    </data>
+    <data name="PosStoreUtrecht" xml:space="preserve">
+        <value>Utrecht, Oudegracht</value>
+    </data>
+    <data name="PosProductFlatWhite" xml:space="preserve">
+        <value>Flat white</value>
+    </data>
+    <data name="PosProductOatLatte" xml:space="preserve">
+        <value>Haverlatte</value>
+    </data>
+    <data name="PosProductCroissant" xml:space="preserve">
+        <value>Roomboter croissant</value>
+    </data>
+    <data name="PosProductAppleTart" xml:space="preserve">
+        <value>Appeltaart</value>
+    </data>
+    <data name="PosProductCappuccino" xml:space="preserve">
+        <value>Cappuccino</value>
+    </data>
+    <data name="PosProductStroopwafel" xml:space="preserve">
+        <value>Stroopwafel</value>
+    </data>
+    <data name="PosProductSourdough" xml:space="preserve">
+        <value>Zuurdesembrood</value>
+    </data>
+    <data name="PosProductColdBrew" xml:space="preserve">
+        <value>Cold brew</value>
+    </data>
+    <data name="PosStaffEmma" xml:space="preserve">
+        <value>Emma de Jong</value>
+    </data>
+    <data name="PosStaffLucas" xml:space="preserve">
+        <value>Lucas Bakker</value>
+    </data>
+    <data name="PosStaffMila" xml:space="preserve">
+        <value>Mila Janssen</value>
+    </data>
+    <data name="PosStaffSem" xml:space="preserve">
+        <value>Sem Smit</value>
+    </data>
+    <data name="PosPaymentCard" xml:space="preserve">
+        <value>Pinpas</value>
+    </data>
+    <data name="PosPaymentWallet" xml:space="preserve">
+        <value>Mobiel betalen</value>
+    </data>
+    <data name="PosPaymentCash" xml:space="preserve">
+        <value>Contant</value>
+    </data>
+    <data name="PosPaymentGiftCard" xml:space="preserve">
+        <value>Cadeaukaart</value>
+    </data>
+    <data name="PosStockOatMilk" xml:space="preserve">
+        <value>Havermelk</value>
+    </data>
+    <data name="PosStockCroissantDough" xml:space="preserve">
+        <value>Croissantdeeg</value>
+    </data>
+    <data name="PosStockCoffeeBeans" xml:space="preserve">
+        <value>Espressobonen</value>
+    </data>
+    <data name="PosStockCups" xml:space="preserve">
+        <value>Afhaalbekers</value>
+    </data>
+    <data name="PosNetSales" xml:space="preserve">
+        <value>Netto-omzet</value>
+    </data>
+    <data name="PosTransactions" xml:space="preserve">
+        <value>Transacties</value>
+    </data>
+    <data name="PosAverageSale" xml:space="preserve">
+        <value>Gemiddelde verkoop</value>
+    </data>
+    <data name="PosRefunds" xml:space="preserve">
+        <value>Terugbetalingen</value>
+    </data>
+    <data name="PosSalesByHour" xml:space="preserve">
+        <value>Omzet per uur</value>
+    </data>
+    <data name="PosPaymentMethods" xml:space="preserve">
+        <value>Betaalmethoden</value>
+    </data>
+    <data name="PosTopProducts" xml:space="preserve">
+        <value>Topproducten</value>
+    </data>
+    <data name="PosDailyGoal" xml:space="preserve">
+        <value>Omzetdoel</value>
+    </data>
+    <data name="PosRecentOrders" xml:space="preserve">
+        <value>Recente bestellingen</value>
+    </data>
+    <data name="PosLowStock" xml:space="preserve">
+        <value>Lage voorraad</value>
+    </data>
+    <data name="PosTeam" xml:space="preserve">
+        <value>Team</value>
+    </data>
+    <data name="PosPeakHours" xml:space="preserve">
+        <value>Drukke uren</value>
+    </data>
+    <data name="PosDragWidget" xml:space="preserve">
+        <value>{0} verslepen</value>
+    </data>
+    <data name="PosWidgetOptions" xml:space="preserve">
+        <value>Widgetopties</value>
+    </data>
+    <data name="PosLoadingWidget" xml:space="preserve">
+        <value>Laden</value>
+    </data>
+    <data name="PosWidgetFailedTitle" xml:space="preserve">
+        <value>Kon dit niet laden</value>
+    </data>
+    <data name="PosWidgetFailedDescription" xml:space="preserve">
+        <value>De rest van het dashboard werkt. Probeer het zo opnieuw.</value>
+    </data>
+    <data name="PosRetry" xml:space="preserve">
+        <value>Opnieuw proberen</value>
+    </data>
+    <data name="PosNoDataYet" xml:space="preserve">
+        <value>Nog niets te zien</value>
+    </data>
+    <data name="PosSizeSmall" xml:space="preserve">
+        <value>Klein</value>
+    </data>
+    <data name="PosSizeMedium" xml:space="preserve">
+        <value>Middel</value>
+    </data>
+    <data name="PosSizeLarge" xml:space="preserve">
+        <value>Groot</value>
+    </data>
+    <data name="PosMoveEarlier" xml:space="preserve">
+        <value>Naar voren</value>
+    </data>
+    <data name="PosMoveLater" xml:space="preserve">
+        <value>Naar achteren</value>
+    </data>
+    <data name="PosHideWidget" xml:space="preserve">
+        <value>Verbergen</value>
+    </data>
+    <data name="PosNoSalesYet" xml:space="preserve">
+        <value>Nog geen verkopen</value>
+    </data>
+    <data name="PosNoSalesYetDescription" xml:space="preserve">
+        <value>Cijfers verschijnen hier zodra de eerste bestelling is betaald.</value>
+    </data>
+    <data name="PosToday" xml:space="preserve">
+        <value>Vandaag</value>
+    </data>
+    <data name="PosThisPeriod" xml:space="preserve">
+        <value>Deze periode</value>
+    </data>
+    <data name="PosLastWeek" xml:space="preserve">
+        <value>Zelfde dag vorige week</value>
+    </data>
+    <data name="PosSalesByHourSubtitle" xml:space="preserve">
+        <value>Vergeleken met dezelfde dag vorige week</value>
+    </data>
+    <data name="PosNoPaymentsYet" xml:space="preserve">
+        <value>Nog geen betalingen</value>
+    </data>
+    <data name="PosTotal" xml:space="preserve">
+        <value>Totaal</value>
+    </data>
+    <data name="PosUnitsSold" xml:space="preserve">
+        <value>{0} verkocht</value>
+    </data>
+    <data name="PosNoGoalSet" xml:space="preserve">
+        <value>Geen doel ingesteld</value>
+    </data>
+    <data name="PosNoGoalSetDescription" xml:space="preserve">
+        <value>Stel een omzetdoel in om te zien hoe dichtbij de winkel is.</value>
+    </data>
+    <data name="PosOfTarget" xml:space="preserve">
+        <value>van doel {0}</value>
+    </data>
+    <data name="PosRemainingToGoal" xml:space="preserve">
+        <value>Nog {0} tot het doel</value>
+    </data>
+    <data name="PosRecentOrdersSubtitle" xml:space="preserve">
+        <value>Laatste bestellingen van alle kassa's</value>
+    </data>
+    <data name="PosNoOrdersYet" xml:space="preserve">
+        <value>Nog geen bestellingen</value>
+    </data>
+    <data name="PosNoOrdersYetDescription" xml:space="preserve">
+        <value>Bestellingen verschijnen hier zodra een kassa ze aanslaat.</value>
+    </data>
+    <data name="PosOrder" xml:space="preserve">
+        <value>Bestelling</value>
+    </data>
+    <data name="PosTime" xml:space="preserve">
+        <value>Tijd</value>
+    </data>
+    <data name="PosCashier" xml:space="preserve">
+        <value>Kassamedewerker</value>
+    </data>
+    <data name="PosItems" xml:space="preserve">
+        <value>Artikelen</value>
+    </data>
+    <data name="PosPayment" xml:space="preserve">
+        <value>Betaling</value>
+    </data>
+    <data name="PosStatus" xml:space="preserve">
+        <value>Status</value>
+    </data>
+    <data name="PosOrderStatusPaid" xml:space="preserve">
+        <value>Betaald</value>
+    </data>
+    <data name="PosOrderStatusRefunded" xml:space="preserve">
+        <value>Terugbetaald</value>
+    </data>
+    <data name="PosOrderStatusPending" xml:space="preserve">
+        <value>In behandeling</value>
+    </data>
+    <data name="PosMinutesAgo" xml:space="preserve">
+        <value>{0} min geleden</value>
+    </data>
+    <data name="PosLowStockSubtitle" xml:space="preserve">
+        <value>Artikelen onder hun minimum</value>
+    </data>
+    <data name="PosStockAllGood" xml:space="preserve">
+        <value>Alles is op voorraad</value>
+    </data>
+    <data name="PosStockAllGoodDescription" xml:space="preserve">
+        <value>Er zit nu niets onder zijn minimum.</value>
+    </data>
+    <data name="PosInStock" xml:space="preserve">
+        <value>Nog {0} · minimum {1}</value>
+    </data>
+    <data name="PosOutOfStock" xml:space="preserve">
+        <value>Uitverkocht</value>
+    </data>
+    <data name="PosLowStockBadge" xml:space="preserve">
+        <value>Laag</value>
+    </data>
+    <data name="PosOrdered" xml:space="preserve">
+        <value>Besteld</value>
+    </data>
+    <data name="PosReorder" xml:space="preserve">
+        <value>Bijbestellen</value>
+    </data>
+    <data name="PosNoShiftsYet" xml:space="preserve">
+        <value>Niemand heeft dienst</value>
+    </data>
+    <data name="PosNoShiftsYetDescription" xml:space="preserve">
+        <value>Teamresultaten verschijnen zodra iemand inklokt.</value>
+    </data>
+    <data name="PosOrdersCount" xml:space="preserve">
+        <value>{0} bestellingen</value>
+    </data>
+    <data name="PosTopSeller" xml:space="preserve">
+        <value>Topverkoper</value>
+    </data>
+    <data name="PosPeakHoursSubtitle" xml:space="preserve">
+        <value>Bestellingen per uur over de laatste vier weken</value>
+    </data>
+    <data name="PosQuiet" xml:space="preserve">
+        <value>Rustig</value>
+    </data>
+    <data name="PosBusy" xml:space="preserve">
+        <value>Druk</value>
+    </data>
+    <data name="PosGreeting" xml:space="preserve">
+        <value>Goedemiddag, Sanne</value>
+    </data>
+    <data name="PosStore" xml:space="preserve">
+        <value>Winkel</value>
+    </data>
+    <data name="PosPeriod" xml:space="preserve">
+        <value>Periode</value>
+    </data>
+    <data name="Pos7Days" xml:space="preserve">
+        <value>7 dagen</value>
+    </data>
+    <data name="Pos30Days" xml:space="preserve">
+        <value>30 dagen</value>
+    </data>
+    <data name="PosDone" xml:space="preserve">
+        <value>Klaar</value>
+    </data>
+    <data name="PosCustomize" xml:space="preserve">
+        <value>Aanpassen</value>
+    </data>
+    <data name="PosEditHint" xml:space="preserve">
+        <value>Versleep widgets aan hun greep, of gebruik hun menu om ze te vergroten, verplaatsen of verbergen. Je indeling wordt op dit apparaat bewaard.</value>
+    </data>
+    <data name="PosAddWidget" xml:space="preserve">
+        <value>Widget toevoegen ({0})</value>
+    </data>
+    <data name="PosResetLayout" xml:space="preserve">
+        <value>Indeling herstellen</value>
+    </data>
+    <data name="PosWidgetGallery" xml:space="preserve">
+        <value>Verborgen widgets</value>
+    </data>
+    <data name="PosAdd" xml:space="preserve">
+        <value>Toevoegen</value>
+    </data>
+    <data name="PosGalleryEmpty" xml:space="preserve">
+        <value>Alle widgets staan al op het dashboard.</value>
+    </data>
+    <data name="PosLast7Days" xml:space="preserve">
+        <value>Laatste 7 dagen</value>
+    </data>
+    <data name="PosLast30Days" xml:space="preserve">
+        <value>Laatste 30 dagen</value>
+    </data>
+    <data name="PosVsYesterday" xml:space="preserve">
+        <value>t.o.v. gisteren</value>
+    </data>
+    <data name="PosVsPrevious7Days" xml:space="preserve">
+        <value>t.o.v. vorige 7 dagen</value>
+    </data>
+    <data name="PosVsPrevious30Days" xml:space="preserve">
+        <value>t.o.v. vorige 30 dagen</value>
+    </data>
 </root>

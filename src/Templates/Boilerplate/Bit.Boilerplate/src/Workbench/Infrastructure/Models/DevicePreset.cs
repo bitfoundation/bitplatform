@@ -19,24 +19,22 @@ public sealed record DevicePreset(string Key,
 
     public bool IsLandscapeByDefault => Width > Height;
 
-    public (int Width, int Height) GetViewport(bool landscape)
-    {
-        var rotate = landscape != IsLandscapeByDefault;
-        return rotate ? (Height, Width) : (Width, Height);
-    }
+    public (int Width, int Height) GetViewport(bool rotated) => rotated ? (Height, Width) : (Width, Height);
 
-    public (int Width, int Height) GetPixels(bool landscape)
+    public bool IsLandscape(bool rotated) => GetViewport(rotated) is var (width, height) && width > height;
+
+    public (int Width, int Height) GetPixels(bool rotated)
     {
-        var (width, height) = GetViewport(landscape);
+        var (width, height) = GetViewport(rotated);
         return ((int)Math.Round(width * PixelRatio), (int)Math.Round(height * PixelRatio));
     }
 
-    public (int Top, int Bottom) GetSafeArea(bool landscape)
+    public (int Top, int Bottom) GetSafeArea(bool rotated)
     {
         if (IsHandheld is false)
             return (0, 0);
 
-        return GetViewport(landscape).Width > GetViewport(landscape).Height && Kind is DeviceKind.Phone
+        return IsLandscape(rotated) && Kind is DeviceKind.Phone
             ? (0, Math.Min(SafeAreaBottom, 21))
             : (SafeAreaTop, SafeAreaBottom);
     }

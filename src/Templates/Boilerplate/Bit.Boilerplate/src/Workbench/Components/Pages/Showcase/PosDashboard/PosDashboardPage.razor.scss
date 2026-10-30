@@ -1,0 +1,141 @@
+@import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_media-queries.scss';
+@import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.pos-dashboard {
+    gap: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-header {
+    gap: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
+.titles {
+    display: flex;
+    flex-direction: column;
+
+    ::deep .greeting {
+        font-weight: 700;
+        letter-spacing: -0.01em;
+    }
+}
+
+.toolbar {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+
+    ::deep .store-picker {
+        width: 13rem;
+    }
+}
+
+.range {
+    display: flex;
+
+    ::deep .bit-btn {
+        border-radius: 0;
+    }
+
+    ::deep .bit-btn:first-child {
+        border-start-start-radius: 8px;
+        border-end-start-radius: 8px;
+    }
+
+    ::deep .bit-btn:last-child {
+        border-start-end-radius: 8px;
+        border-end-end-radius: 8px;
+    }
+}
+
+.edit-bar {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    border-radius: 12px;
+    padding: 0.5rem 0.75rem;
+    color: $bit-color-primary;
+    border: 1px dashed color-mix(in srgb, #{$bit-color-primary} 45%, transparent);
+    background-color: color-mix(in srgb, #{$bit-color-primary} 7%, transparent);
+
+    ::deep .edit-hint {
+        flex: 1;
+        min-width: 12rem;
+        color: $bit-color-foreground-primary;
+    }
+}
+
+::deep {
+    .dashboard-grid {
+        gap: 1rem;
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+
+    .widget-small {
+        grid-column: span 3;
+    }
+
+    .widget-medium {
+        grid-column: span 6;
+    }
+
+    .widget-large {
+        grid-column: span 12;
+    }
+
+    @include lt-lg {
+        .widget-small {
+            grid-column: span 6;
+        }
+    }
+
+    @include lt-md {
+        .widget-medium {
+            grid-column: span 12;
+        }
+    }
+
+    @include lt-sm {
+        .dashboard-grid {
+            gap: 0.75rem;
+        }
+    }
+}
+
+.gallery {
+    gap: 0.75rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.gallery-item {
+    gap: 0.75rem;
+    display: flex;
+    padding: 0.75rem;
+    border-radius: 12px;
+    align-items: center;
+    border: 1px solid $bit-color-border-tertiary;
+
+    ::deep .gallery-title {
+        flex: 1;
+    }
+}
+
+.gallery-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    border-radius: 9px;
+    align-items: center;
+    justify-content: center;
+    color: $bit-color-primary;
+    background-color: color-mix(in srgb, #{$bit-color-primary} 12%, transparent);
+}

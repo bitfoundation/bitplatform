@@ -1,6 +1,6 @@
 @inherits WorkbenchComponentBase
 
-@if (ShowStatusBar && Scenario.DevicePreset.IsHandheld && Scenario.DevicePreset.GetSafeArea(Scenario.Landscape).Top > 0)
+@if (ShowStatusBar && Scenario.DevicePreset.IsHandheld && Scenario.DevicePreset.GetSafeArea(Scenario.Rotated).Top > 0)
 {
     <DeviceStatusBar Device="Scenario.DevicePreset" />
 }

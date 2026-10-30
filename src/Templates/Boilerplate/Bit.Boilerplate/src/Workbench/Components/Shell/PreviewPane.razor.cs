@@ -29,7 +29,7 @@ public partial class PreviewPane
     {
         get
         {
-            var (width, height) = device.GetViewport(Pane.Scenario.Landscape);
+            var (width, height) = device.GetViewport(Pane.Scenario.Rotated);
             return FormattableString.Invariant($"{width}×{height} · {device.PixelRatio:0.###}x");
         }
     }
@@ -42,7 +42,7 @@ public partial class PreviewPane
     {
         device = Pane.Scenario.DevicePreset;
         previewUrl = WorkbenchUrls.Preview(Page.Key, Pane.Scenario);
-        (frameWidth, frameHeight) = DeviceFrame.GetFrameSize(device, Pane.Scenario.Landscape, Pane.Scenario.Frame);
+        (frameWidth, frameHeight) = DeviceFrame.GetFrameSize(device, Pane.Scenario.Rotated, Pane.Scenario.Frame);
     }
 
     public static string GetDeviceIconName(DevicePreset device) => device.Kind switch

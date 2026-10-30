@@ -1,4 +1,5 @@
 using System.Threading.RateLimiting;
+using Boilerplate.Workbench.Components.Pages.Showcase.PosDashboard.Data;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace Boilerplate.Workbench.Infrastructure.Extensions;
@@ -13,6 +14,7 @@ public static class IWorkbenchServiceCollectionExtensions
         {
             services.AddScoped<WorkbenchScenarioState>();
             services.AddSingleton<WorkbenchScreenshotService>();
+            services.AddScoped<PosDashboardDataService>();
 
             services.AddRateLimiter(options =>
             {

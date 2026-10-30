@@ -16,7 +16,7 @@ public sealed record WorkbenchScenario
 
     public string Device { get; init; } = DevicePresets.DefaultKey;
 
-    public bool Landscape { get; init; }
+    public bool Rotated { get; init; }
 
     public bool Frame { get; init; } = true;
 
@@ -39,7 +39,7 @@ public sealed record WorkbenchScenario
             Chrome = bool.TryParse(Read("chrome"), out var chrome) ? chrome : defaults.Chrome,
             Auth = Enum.TryParse<WorkbenchAuthState>(Read("auth"), ignoreCase: true, out var auth) ? auth : defaults.Auth,
             Device = DevicePresets.Find(Read("device")).Key,
-            Landscape = bool.TryParse(Read("landscape"), out var landscape) ? landscape : defaults.Landscape,
+            Rotated = bool.TryParse(Read("rotated"), out var rotated) ? rotated : defaults.Rotated,
             Frame = bool.TryParse(Read("frame"), out var frame) ? frame : defaults.Frame
         };
     }
@@ -55,7 +55,7 @@ public sealed record WorkbenchScenario
         if (Chrome != defaults.Chrome) values["chrome"] = Chrome.ToString().ToLowerInvariant();
         if (Auth != defaults.Auth) values["auth"] = Auth.ToString().ToLowerInvariant();
         if (Device != defaults.Device) values["device"] = Device;
-        if (Landscape != defaults.Landscape) values["landscape"] = Landscape.ToString().ToLowerInvariant();
+        if (Rotated != defaults.Rotated) values["rotated"] = Rotated.ToString().ToLowerInvariant();
         if (Frame != defaults.Frame) values["frame"] = Frame.ToString().ToLowerInvariant();
 
         return QueryHelpers.AddQueryString(string.Empty, values);

@@ -1,0 +1,114 @@
+@import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.widget {
+    gap: 0.75rem;
+    height: 100%;
+    display: flex;
+    padding: 1rem;
+    min-height: 9rem;
+    border-radius: 16px;
+    flex-direction: column;
+    background-color: $bit-color-background-primary;
+    border: 1px solid $bit-color-border-tertiary;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px -8px rgba(0, 0, 0, 0.08);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+
+    &.editing {
+        border-style: dashed;
+        border-color: $bit-color-border-secondary;
+    }
+}
+
+.widget-header {
+    gap: 0.5rem;
+    display: flex;
+    min-width: 0;
+    align-items: center;
+}
+
+.widget-handle {
+    border: 0;
+    padding: 4px;
+    cursor: grab;
+    display: flex;
+    touch-action: none;
+    border-radius: 6px;
+    background: transparent;
+    color: $bit-color-foreground-secondary;
+
+    &:hover {
+        background-color: $bit-color-background-secondary;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $bit-color-primary;
+    }
+}
+
+.widget-icon {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    flex-shrink: 0;
+    border-radius: 9px;
+    align-items: center;
+    justify-content: center;
+    color: $bit-color-primary;
+    background-color: color-mix(in srgb, #{$bit-color-primary} 12%, transparent);
+}
+
+.widget-titles {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+
+    ::deep .widget-title {
+        font-weight: 600;
+    }
+}
+
+.widget-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.widget-loading {
+    gap: 0.625rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.widget-state {
+    flex: 1;
+    gap: 0.375rem;
+    display: flex;
+    padding: 0.5rem;
+    text-align: center;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+
+    .state-icon {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        font-size: 20px;
+        border-radius: 50%;
+        align-items: center;
+        margin-bottom: 0.25rem;
+        justify-content: center;
+        color: $bit-color-foreground-secondary;
+        background-color: $bit-color-background-secondary;
+    }
+
+    &.failed .state-icon {
+        color: $bit-color-warning;
+        background-color: color-mix(in srgb, #{$bit-color-warning} 14%, transparent);
+    }
+
+    ::deep .bit-btn {
+        margin-top: 0.5rem;
+    }
+}

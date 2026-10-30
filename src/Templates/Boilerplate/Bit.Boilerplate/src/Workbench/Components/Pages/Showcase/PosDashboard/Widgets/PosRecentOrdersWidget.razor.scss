@@ -1,0 +1,79 @@
+@import '../../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.orders-scroll {
+    overflow-x: auto;
+    margin-inline: -0.25rem;
+}
+
+.orders {
+    width: 100%;
+    font-size: 14px;
+    min-width: 36rem;
+    border-collapse: collapse;
+
+    th {
+        font-size: 12px;
+        font-weight: 600;
+        text-align: start;
+        white-space: nowrap;
+        padding: 0.5rem 0.25rem;
+        color: $bit-color-foreground-secondary;
+        border-bottom: 1px solid $bit-color-border-tertiary;
+    }
+
+    td {
+        white-space: nowrap;
+        padding: 0.5rem 0.25rem;
+        border-bottom: 1px solid $bit-color-border-tertiary;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    .numeric {
+        text-align: end;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .strong {
+        font-weight: 600;
+    }
+
+    .muted {
+        color: $bit-color-foreground-secondary;
+    }
+
+    .number {
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+.cashier {
+    gap: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+}
+
+.status {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 999px;
+
+    &.status-paid {
+        color: #1a7f53;
+        background-color: color-mix(in srgb, #22a06b 16%, transparent);
+    }
+
+    &.status-refunded {
+        color: #c4314b;
+        background-color: color-mix(in srgb, #e5484d 16%, transparent);
+    }
+
+    &.status-pending {
+        color: #a36a00;
+        background-color: color-mix(in srgb, #f5a524 20%, transparent);
+    }
+}

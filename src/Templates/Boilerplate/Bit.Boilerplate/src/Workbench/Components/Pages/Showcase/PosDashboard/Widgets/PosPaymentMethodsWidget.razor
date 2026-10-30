@@ -1,0 +1,43 @@
+@inherits PosWidgetBase<PosPaymentShare[]>
+
+<PosWidgetFrame Definition="Definition"
+                Layout="Layout"
+                Status="Status"
+                OnRetry="Reload"
+                Subtitle="@Localizer[Dashboard.PeriodKey]"
+                EmptyTitleKey="@nameof(WorkbenchStrings.PosNoPaymentsYet)"
+                EmptyDescriptionKey="@nameof(WorkbenchStrings.PosNoSalesYetDescription)">
+    <Skeleton>
+        <div class="payments">
+            <BitShimmer Shape="BitShape.Circle" Height="9rem" Width="9rem" />
+            <div class="legend">
+                @for (var i = 0; i < 4; i++)
+                {
+                    <BitShimmer Height="1rem" />
+                }
+            </div>
+        </div>
+    </Skeleton>
+    <ChildContent>
+        <div class="payments">
+            <div class="donut">
+                <BitChart Type="BitChartType.Doughnut" Data="chartData" Options="chartOptions" Description="@Localizer[Definition.TitleKey]" />
+                <div class="donut-center">
+                    <span class="donut-total">@PosFormat.CompactMoney(total)</span>
+                    <span class="donut-caption">@Localizer[nameof(WorkbenchStrings.PosTotal)]</span>
+                </div>
+            </div>
+            <ul class="legend">
+                @foreach (var share in Data!)
+                {
+                    <li>
+                        <span class="dot" style="background-color:@share.Color"></span>
+                        <span class="name">@Localizer[share.MethodKey]</span>
+                        <span class="percent">@PosFormat.Percent(total == 0 ? 0 : share.Amount / total)</span>
+                        <span class="amount">@PosFormat.Money(share.Amount, 0)</span>
+                    </li>
+                }
+            </ul>
+        </div>
+    </ChildContent>
+</PosWidgetFrame>
