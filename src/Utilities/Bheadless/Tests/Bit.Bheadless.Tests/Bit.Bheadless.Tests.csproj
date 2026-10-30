@@ -20,7 +20,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="MSTest" Version="4.5.1" />
+        <PackageReference Include="MSTest" Version="4.5.2" />
         <PackageReference Include="bunit" Version="2.13.3" />
         <!-- Runs the components on the shared framework the SDK ships rather than on whichever
              Microsoft.AspNetCore.Components package bUnit happens to depend on. -->

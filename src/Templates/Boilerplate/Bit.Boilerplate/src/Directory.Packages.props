@@ -17,9 +17,9 @@
         <PackageVersion Include="Bit.CodeAnalyzers" Version="11.0.0-pre-15" />
         <PackageVersion Include="Bit.SourceGenerators" Version="11.0.0-pre-15" />
         <PackageVersion Include="DistributedLock.FileSystem" Version="1.0.3" />
-        <PackageVersion Include="Fido2.AspNet" Version="4.3.1" />
+        <PackageVersion Include="Fido2.AspNet" Version="4.3.2" />
         <PackageVersion Include="HtmlSanitizer" Version="9.2.1039" />
-        <PackageVersion Include="libphonenumber-csharp" Version="9.0.41" />
+        <PackageVersion Include="libphonenumber-csharp" Version="9.0.42" />
         <PackageVersion Include="Asp.Versioning.Mvc" Version="10.2.1" />
         <PackageVersion Include="Asp.Versioning.Mvc.ApiExplorer" Version="10.2.1" />
         <PackageVersion Include="EmbedIO" Version="3.5.2" />
@@ -27,7 +27,7 @@
         <PackageVersion Include="AspNetCore.HealthChecks.System" Version="9.0.0" />
         <PackageVersion Include="AspNetCore.HealthChecks.Hangfire" Version="9.0.0" />
         <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
-        <PackageVersion Include="MSTest" Version="4.5.1" />
+        <PackageVersion Include="MSTest" Version="4.5.2" />
         <PackageVersion Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.20.1-beta.1" />
         <PackageVersion Include="OpenTelemetry.Instrumentation.Hangfire" Version="1.20.1-beta.1" />
         <PackageVersion Include="OpenTelemetry.Resources.Azure" Version="1.20.1-beta.1" />
@@ -40,7 +40,7 @@
         <PackageVersion Include="Plugin.Maui.AppRating" Version="1.3.0" />
         <!-- Not 118.3.1.1: it pulls AndroidX Fragment 1.9, whose classes clash with MAUI's Fragment.Ktx and break the Android build. -->
         <PackageVersion Include="Xamarin.GooglePlayServices.Auth.Api.Phone" Version="118.3.1" />
-        <PackageVersion Include="Scalar.AspNetCore" Version="2.18.3" />
+        <PackageVersion Include="Scalar.AspNetCore" Version="2.18.6" />
         <PackageVersion Include="Velopack" Version="1.3.39-g8d2844f" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageVersion Include="ModelContextProtocol" Version="2.3.0" />
@@ -100,7 +100,7 @@
         <PackageVersion Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="MySql.EntityFrameworkCore" Version="10.0.12" />
         <PackageVersion Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="FluentStorage.Azure.Blobs" Version="8.0.24" />
         <PackageVersion Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="FluentStorage.AWS" Version="8.0.24" />
-        <PackageVersion Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="AWSSDK.Core" Version="4.0.102.13" />
+        <PackageVersion Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="AWSSDK.Core" Version="4.0.102.15" />
         <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.Hosting.Redis" Version="13.6.4" />
         <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.StackExchange.Redis" Version="13.6.4" />
         <PackageVersion Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="ZiggyCreatures.FusionCache.Backplane.StackExchangeRedis" Version="2.9.0" />
@@ -146,23 +146,23 @@
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.3.26522.148" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="11.0.0-rc.3.26522.148" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="11.0.0-rc.3.26522.148" />
-        <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="11.0.0-rc.2.26504.105" />
+        <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="11.0.0-rc.3.26522.148" />
         <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="11.0.0-rc.3.26522.148" />
-        <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="11.0.0-rc.2.26504.105" />
+        <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="11.0.0-rc.3.26522.148" />
         <PackageVersion Include="Microsoft.Maui.Controls" Version="11.0.0-rc.2.26505.5" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView" Version="11.0.0-rc.3.26522.148" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="11.0.0-rc.2.26505.5" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="11.0.0-rc.2.26505.5" />
         <PackageVersion Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" Version="11.0.0-rc.3.26522.148" />
-        <PackageVersion Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" Version="11.0.0-rc.2.26504.105" />
-        <PackageVersion Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="11.0.0-rc.2" />
+        <PackageVersion Condition=" '$(database)' == 'SqlServer' OR '$(database)' == '' " Include="Microsoft.EntityFrameworkCore.SqlServer" Version="11.0.0-rc.3.26522.148" />
+        <PackageVersion Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="11.0.0-rc.3" />
         <PackageVersion Condition=" ('$(redis)' == 'true' OR '$(redis)' == '') AND ('$(signalR)' == 'true' OR '$(signalR)' == '')" Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="11.0.0-rc.3.26522.148" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="11.0.0-rc.3.26522.148" />
-        <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="11.0.0-rc.2.26504.105" />
-        <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="11.0.0-rc.2.26504.105" />
-        <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="11.0.0-rc.2.26504.105" />
-        <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="11.0.0-rc.2.26504.105" />
-        <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="11.0.0-rc.2.26504.105" />
+        <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="11.0.0-rc.3.26522.148" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="11.0.0-rc.3.26522.148" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="11.0.0-rc.3.26522.148" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="11.0.0-rc.3.26522.148" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="11.0.0-rc.3.26522.148" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Google" Version="11.0.0-rc.3.26522.148" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Twitter" Version="11.0.0-rc.3.26522.148" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.Facebook" Version="11.0.0-rc.3.26522.148" />

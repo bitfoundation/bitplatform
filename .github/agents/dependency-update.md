@@ -135,7 +135,8 @@ graph still brings `Fragment.Ktx` 1.8.9.x. R8 then fails the Android build with
 `Type androidx.fragment.app.FragmentKt is defined multiple times`. Move it only once something else in
 the graph already brings `Fragment.Ktx` 1.9.0 (an empty stub), rather than pinning Ktx in the template.
 `Xamarin.GooglePlayServices.Auth.Api.Phone` is held at 118.3.1 for the same reason: 118.3.1.1 pulls
-`GooglePlayServices.Basement` 118.10.0.3, which brings Fragment 1.9.0.
+`GooglePlayServices.Basement` 118.10.0.3, which brings Fragment 1.9.0. So do the `Xamarin.AndroidX.Camera.*`
+packages of `Bit.BbScanner.Maui`: 1.6.x's `Camera.View` pulls Fragment 1.9.0, so they stay on the newest 1.5.x.
 
 **EF Core in the Boilerplate follows its PostgreSQL provider.** A preview of
 `Npgsql.EntityFrameworkCore.PostgreSQL` asks for one exact EF Core version, and a provider built for another
@@ -198,7 +199,8 @@ unless the split is a TFM floor.
 
 ### npm
 
-Only four distinct dev dependencies exist: `typescript`, `sass`, `esbuild`, `vitest`. Read latest
+The direct dependencies are `typescript`, `sass`, `esbuild`, `vitest`, `happy-dom`, `@tailwindcss/cli` and
+`@web-alchemy/fonttools`; list them from every `package.json` rather than trusting this line. Read latest
 with `npm view <pkg> version` and `npm view <pkg> dist-tags --json`. After editing a `package.json`,
 run `npm install` in that directory so `package-lock.json` matches — a lock file left behind is the
 most common miss.
