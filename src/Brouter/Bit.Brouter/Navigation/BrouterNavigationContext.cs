@@ -9,13 +9,15 @@ namespace Bit.Brouter;
 public sealed class BrouterNavigationContext
 {
     private readonly bool _caseSensitive;
+    private readonly bool _ignoreTrailingSlash;
 
-    internal BrouterNavigationContext(BrouterLocation from, BrouterLocation to, CancellationToken cancellationToken, bool caseSensitive)
+    internal BrouterNavigationContext(BrouterLocation from, BrouterLocation to, CancellationToken cancellationToken, BrouterOptions options)
     {
         From = from;
         To = to;
         CancellationToken = cancellationToken;
-        _caseSensitive = caseSensitive;
+        _caseSensitive = options.CaseSensitive;
+        _ignoreTrailingSlash = options.IgnoreTrailingSlash;
     }
 
     /// <summary>Where the navigation is coming from.</summary>
@@ -92,6 +94,9 @@ public sealed class BrouterNavigationContext
     /// A route-relative <paramref name="url"/> (<c>./x</c>, <c>../x</c>) is resolved against the
     /// path of <see cref="To"/> - the location being navigated to - using segment math, so a guard
     /// on <c>/admin/secret</c> can redirect to <c>"../login"</c> to reach <c>/admin/login</c>.
+    /// A redirect to <see cref="To"/> itself is ignored and the navigation continues. The path is
+    /// compared by the routing rules (<see cref="BrouterOptions.CaseSensitive"/> and
+    /// <see cref="BrouterOptions.IgnoreTrailingSlash"/>), the query and hash exactly.
     /// </summary>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="url"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown when <paramref name="url"/> is empty or whitespace.</exception>
@@ -120,22 +125,45 @@ public sealed class BrouterNavigationContext
     /// Compared against both the absolute URI and the base-relative path+query+hash forms, since a
     /// redirect may be expressed either way.
     /// </summary>
+    /// <remarks>
+    /// Only the path takes part in route matching, so only the path follows the routing rules: a
+    /// path the matcher can't tell apart from the target's would just start the same navigation
+    /// again (under <see cref="BrouterOptions.IgnoreTrailingSlash"/>, a guard on <c>/login</c>
+    /// redirecting to <c>/login/</c> would loop forever), while one it can tell apart may reach another route (under
+    /// <see cref="BrouterOptions.CaseSensitive"/>, ignoring <c>/admin</c> from <c>/Admin</c> would let
+    /// the guarded route render). The query and hash are data the matcher never reads, so any change
+    /// to them - casing included - is a real redirect. Scheme and host are case-insensitive by spec.
+    /// </remarks>
     private bool IsCurrentTarget(string resolved)
     {
+        var queryAndHash = To.Query + To.Hash;
+        if (resolved.EndsWith(queryAndHash, StringComparison.Ordinal) is false) return false;
+
+        var path = resolved[..^queryAndHash.Length];
         var comparison = _caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
 
-        if (string.Equals(resolved, To.FullUri, StringComparison.OrdinalIgnoreCase))
-        {
-            var schemeEnd = resolved.IndexOf("://", StringComparison.Ordinal);
-            var pathStart = schemeEnd < 0 ? 0 : resolved.IndexOf('/', schemeEnd + 3);
-            if (pathStart < 0 || resolved.AsSpan(pathStart).Equals(To.FullUri.AsSpan(pathStart), comparison)) return true;
-        }
+        // Base-relative form, with or without the leading slash ("/users/1" or "users/1").
+        var relativePath = path.StartsWith('/') ? path : "/" + path;
+        if (TrimTrailingSlash(relativePath).Equals(TrimTrailingSlash(To.Path), comparison)) return true;
 
-        var pathQueryHash = To.Path + To.Query + To.Hash;
-        if (string.Equals(resolved, pathQueryHash, comparison)) return true;
+        // Absolute form.
+        var fullUri = To.FullUri;
+        if (fullUri.EndsWith(queryAndHash, StringComparison.Ordinal) is false) return false;
 
-        // Base-relative form without the leading slash ("users/1" vs "/users/1").
-        return resolved.Length > 0 && resolved[0] != '/' &&
-               string.Equals("/" + resolved, pathQueryHash, comparison);
+        var absolutePath = TrimTrailingSlash(path);
+        var targetAbsolutePath = TrimTrailingSlash(fullUri.AsSpan(0, fullUri.Length - queryAndHash.Length));
+        if (absolutePath.Length != targetAbsolutePath.Length) return false;
+
+        var schemeEnd = targetAbsolutePath.IndexOf("://", StringComparison.Ordinal);
+        if (schemeEnd < 0) return false;
+        var authorityLength = targetAbsolutePath[(schemeEnd + 3)..].IndexOf('/');
+        var pathStart = authorityLength < 0 ? targetAbsolutePath.Length : schemeEnd + 3 + authorityLength;
+
+        return absolutePath[..pathStart].Equals(targetAbsolutePath[..pathStart], StringComparison.OrdinalIgnoreCase) &&
+               absolutePath[pathStart..].Equals(targetAbsolutePath[pathStart..], comparison);
     }
+
+    // Mirrors the normalization Brouter applies when it builds a location's path.
+    private ReadOnlySpan<char> TrimTrailingSlash(ReadOnlySpan<char> path) =>
+        _ignoreTrailingSlash && path.Length > 1 && path[^1] == '/' ? path[..^1] : path;
 }

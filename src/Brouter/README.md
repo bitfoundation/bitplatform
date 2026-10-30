@@ -248,7 +248,10 @@ navigation is blocked. There is no address-bar flicker and no torn back/forward 
 implement a genuine "you have unsaved changes" prompt by cancelling from a guard or `OnNavigating`.
 
 A redirect to the URL the navigation is already heading to is treated as "continue", so guards like
-"always send anonymous users to `/login`" can't create redirect loops.
+"always send anonymous users to `/login`" can't create redirect loops. The path is compared the way
+routes are matched (`CaseSensitive`, `IgnoreTrailingSlash`), the query and hash exactly - so under
+case-sensitive routing a guard on `/Admin` can still redirect to `/admin`, and a redirect that only
+changes the query (`?tab=Users` to `?tab=users`) is honored.
 
 ## Leave guards (unsaved changes)
 

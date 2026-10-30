@@ -755,7 +755,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
         var location = CurrentLocation;
         var leaf = chain[^1];
-        var ctx = new BrouterNavigationContext(location, location, CancellationToken.None, Options.CaseSensitive)
+        var ctx = new BrouterNavigationContext(location, location, CancellationToken.None, Options)
         {
             NavigationType = BrouterNavigationType.Replace,
             Route = leaf,
@@ -1812,7 +1812,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 // no navigation here - the URL stays put - so the context describes a same-location
                 // "navigation".
                 NotifyChainDepartures(
-                    new BrouterNavigationContext(location, location, CancellationToken.None, Options.CaseSensitive),
+                    new BrouterNavigationContext(location, location, CancellationToken.None, Options),
                     _committedChain);
                 // A departure callback's synchronous prefix can start a new navigation (same
                 // re-entrancy FlushPendingLifecycle guards against) - that navigation owns the
@@ -1895,7 +1895,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         // do NOT touch _navCts / _navVersion in this phase - that machinery belongs to the commit
         // phase, and mixing the two would leak or double-cancel token sources.
         var token = context.CancellationToken;
-        var ctx = new BrouterNavigationContext(from, to, token, Options.CaseSensitive) { NavigationType = navType };
+        var ctx = new BrouterNavigationContext(from, to, token, Options) { NavigationType = navType };
         var service = _brouterService;
 
         // See _processingLocationChanging: marks the decision phase as in flight for the whole of
@@ -2057,7 +2057,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         try
         {
             await _brouterService.InvokeOnError(
-                new BrouterNavigationContext(from, to, CancellationToken.None, Options.CaseSensitive), ex);
+                new BrouterNavigationContext(from, to, CancellationToken.None, Options), ex);
         }
         catch { /* OnError must never crash the navigation handler */ }
     }
@@ -2262,7 +2262,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         oldCts?.Cancel();
         var token = newCts.Token;
 
-        var ctx = new BrouterNavigationContext(from, to, token, Options.CaseSensitive) { NavigationType = navType, IsReload = isReload };
+        var ctx = new BrouterNavigationContext(from, to, token, Options) { NavigationType = navType, IsReload = isReload };
         var service = _brouterService;
 
         // Awaited-navigation bookkeeping: capture the awaiter this pipeline is responsible for (the
@@ -2989,7 +2989,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         for (var node = match.Value.Route; node is not null; node = node.Parent) chain.Add(node);
         chain.Reverse();
 
-        var ctx = new BrouterNavigationContext(CurrentLocation, to, CancellationToken.None, Options.CaseSensitive)
+        var ctx = new BrouterNavigationContext(CurrentLocation, to, CancellationToken.None, Options)
         {
             NavigationType = BrouterNavigationType.Push,
             IsPreload = true,
@@ -3467,7 +3467,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         oldCts?.Cancel();
         var token = newCts.Token;
 
-        var ctx = new BrouterNavigationContext(to, to, token, Options.CaseSensitive)
+        var ctx = new BrouterNavigationContext(to, to, token, Options)
         {
             // The history entry is untouched; Replace is the closest classification and
             // IsRevalidation is the authoritative signal for loader logic.

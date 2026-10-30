@@ -37,6 +37,19 @@ public class GuardAndLoaderTests : BunitTestContext
     }
 
     [TestMethod]
+    public void Guard_redirect_to_the_current_target_with_a_trailing_slash_does_not_loop()
+    {
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
+        nav.NavigateTo("http://localhost/login");
+
+        var cut = RenderComponent<TrailingSlashGuardHost>();
+
+        cut.WaitForAssertion(() => Assert.IsNotNull(cut.Find("[data-testid=login]")));
+        Assert.AreEqual(1, cut.Instance.GuardCalls);
+        StringAssert.EndsWith(nav.Uri, "/login");
+    }
+
+    [TestMethod]
     [DataRow(true, "/Admin", "/Admin")]
     [DataRow(true, "http://localhost/Admin", "http://localhost/Admin")]
     [DataRow(true, "/admin", null)]
@@ -47,7 +60,7 @@ public class GuardAndLoaderTests : BunitTestContext
     public void Redirect_to_the_current_target_follows_the_routing_case_sensitivity(bool caseSensitive, string url, string? expected)
     {
         var to = new BrouterLocation("http://localhost/admin", "/admin", ["admin"], "", "");
-        var ctx = new BrouterNavigationContext(to, to, CancellationToken.None, caseSensitive);
+        var ctx = new BrouterNavigationContext(to, to, CancellationToken.None, new BrouterOptions { CaseSensitive = caseSensitive });
 
         ctx.Redirect(url);
 
@@ -58,11 +71,39 @@ public class GuardAndLoaderTests : BunitTestContext
     [DataRow(true, "/admin?tab=users#Top", "/admin?tab=users#Top")]
     [DataRow(true, "/admin?tab=Users#top", "/admin?tab=Users#top")]
     [DataRow(true, "/admin?tab=Users#Top", null)]
-    [DataRow(false, "/admin?tab=users#top", null)]
-    public void Redirect_to_the_current_target_compares_query_and_hash_by_the_routing_case_sensitivity(bool caseSensitive, string url, string? expected)
+    [DataRow(false, "/admin?tab=users#Top", "/admin?tab=users#Top")]
+    [DataRow(false, "/admin?tab=Users#top", "/admin?tab=Users#top")]
+    [DataRow(false, "http://localhost/admin?tab=users#Top", "http://localhost/admin?tab=users#Top")]
+    [DataRow(false, "/ADMIN?tab=Users#Top", null)]
+    [DataRow(false, "http://localhost/ADMIN?tab=Users#Top", null)]
+    [DataRow(false, "/admin", "/admin")]
+    public void Redirect_to_the_current_target_compares_query_and_hash_exactly(bool caseSensitive, string url, string? expected)
     {
         var to = new BrouterLocation("http://localhost/admin?tab=Users#Top", "/admin", ["admin"], "?tab=Users", "#Top");
-        var ctx = new BrouterNavigationContext(to, to, CancellationToken.None, caseSensitive);
+        var ctx = new BrouterNavigationContext(to, to, CancellationToken.None, new BrouterOptions { CaseSensitive = caseSensitive });
+
+        ctx.Redirect(url);
+
+        Assert.AreEqual(expected, ctx.RedirectUrl);
+    }
+
+    [TestMethod]
+    [DataRow(true, "/login", null)]
+    [DataRow(true, "/login/", null)]
+    [DataRow(true, "login/", null)]
+    [DataRow(true, "http://localhost/login", null)]
+    [DataRow(true, "http://localhost/login/", null)]
+    [DataRow(false, "/login/", null)]
+    [DataRow(false, "http://localhost/login/", null)]
+    [DataRow(false, "/login", "/login")]
+    [DataRow(false, "http://localhost/login", "http://localhost/login")]
+    public void Redirect_to_the_current_target_follows_the_routing_trailing_slash_rule(bool ignoreTrailingSlash, string url, string? expected)
+    {
+        // Built the way Brouter builds it for http://localhost/login/: the path loses its trailing
+        // slash only when trailing slashes are ignored.
+        var to = new BrouterLocation("http://localhost/login/", ignoreTrailingSlash ? "/login" : "/login/", ["login"], "", "",
+            hasTrailingSlash: ignoreTrailingSlash is false);
+        var ctx = new BrouterNavigationContext(to, to, CancellationToken.None, new BrouterOptions { IgnoreTrailingSlash = ignoreTrailingSlash });
 
         ctx.Redirect(url);
 
