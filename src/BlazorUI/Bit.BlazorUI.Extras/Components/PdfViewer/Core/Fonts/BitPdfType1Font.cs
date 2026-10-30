@@ -19,6 +19,9 @@ internal sealed class BitPdfType1Font
     /// <summary>Glyph name → raw (decrypted) Type1 charstring.</summary>
     public Dictionary<string, byte[]> CharStrings { get; } = new();
 
+    private const int MaxSubrDepth = 10;
+    private const int MaxCharstringOps = 100_000;
+
     private readonly List<byte[]> _subrs = new();
     private int _lenIV = 4;
 
@@ -154,6 +157,7 @@ internal sealed class BitPdfType1Font
         }
         // Entries: "dup <index> <len> RD <bytes> NP".
         int p = s;
+        int cs = IndexOf(priv, "/CharStrings"u8, s);
         while (true)
         {
             int dup = IndexOf(priv, "dup "u8, p);
@@ -162,7 +166,6 @@ internal sealed class BitPdfType1Font
                 break;
             }
             // Stop once we reach CharStrings.
-            int cs = IndexOf(priv, "/CharStrings"u8, s);
             if (cs >= 0 && dup > cs)
             {
                 break;
@@ -172,7 +175,7 @@ internal sealed class BitPdfType1Font
             SkipSpace(priv, ref q);
             int len = ReadInt(priv, ref q);
             q = SkipToBinaryStart(priv, q); // past RD/-| and one space
-            if (q < 0 || q + len > priv.Length)
+            if (q < 0 || len < 0 || len > priv.Length - q || index < 0 || index >= priv.Length)
             {
                 p = dup + 4;
                 continue;
@@ -218,7 +221,7 @@ internal sealed class BitPdfType1Font
             }
             int len = ReadInt(priv, ref q);
             int bin = SkipToBinaryStart(priv, q);
-            if (bin < 0 || bin + len > priv.Length)
+            if (bin < 0 || len < 0 || len > priv.Length - bin)
             {
                 p = slash + 1;
                 continue;
@@ -266,13 +269,23 @@ internal sealed class BitPdfType1Font
         public int FlexPointCount = -1; // >=0 while collecting flex points
         public readonly List<double> FlexPts = new();
         public bool Done;
+        public int Depth;
+        public int Ops;
     }
 
     private void Run(byte[] cs, InterpContext ctx)
     {
+        if (++ctx.Depth > MaxSubrDepth)
+        {
+            throw new BitPdfFormatException("Charstring subroutines nested too deep.");
+        }
         int i = 0;
         while (i < cs.Length && !ctx.Done)
         {
+            if (++ctx.Ops > MaxCharstringOps)
+            {
+                throw new BitPdfFormatException("Charstring too long to interpret.");
+            }
             int v = cs[i++];
             if (v >= 32)
             {
@@ -299,9 +312,10 @@ internal sealed class BitPdfType1Font
             }
             if (!Operator(v, cs, ref i, ctx))
             {
-                return; // return/endchar
+                break; // return/endchar
             }
         }
+        ctx.Depth--;
     }
 
     private bool Operator(int op, byte[] cs, ref int i, InterpContext ctx)
@@ -651,9 +665,9 @@ internal sealed class BitPdfType1Font
             {
                 break;
             }
-            int len = d[p + 2] | (d[p + 3] << 8) | (d[p + 4] << 16) | (d[p + 5] << 24);
+            uint len = (uint)(d[p + 2] | (d[p + 3] << 8) | (d[p + 4] << 16) | (d[p + 5] << 24));
             p += 6;
-            if (p + len > d.Length)
+            if (len > (uint)(d.Length - p))
             {
                 break;
             }
@@ -661,7 +675,7 @@ internal sealed class BitPdfType1Font
             {
                 outBytes.Add(d[p + i]);
             }
-            p += len;
+            p += (int)len;
         }
         return outBytes.ToArray();
     }

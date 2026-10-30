@@ -12,6 +12,9 @@ internal sealed class BitPdfOutlineBuilder
     private readonly IBitPdfXRef _xref;
     private readonly BitPdfDict _catalog;
     private readonly IReadOnlyDictionary<BitPdfDict, int> _pageIndex;
+    private readonly BitPdfBudget _nameTreeWork = new(MaxNameTreeWork);
+    private readonly Dictionary<BitPdfDict, Dictionary<string, object?>> _nameTreeLeaves = new();
+    private const long MaxNameTreeWork = 1L << 25;
 
     public BitPdfOutlineBuilder(IBitPdfXRef xref, BitPdfDict catalog, IReadOnlyDictionary<BitPdfDict, int> pageIndex)
     {
@@ -161,14 +164,14 @@ internal sealed class BitPdfOutlineBuilder
         if (_xref.FetchIfRef(_catalog.Get("Names")) is BitPdfDict names
             && _xref.FetchIfRef(names.Get("Dests")) is BitPdfDict destsTree)
         {
-            return SearchNameTree(destsTree, name, depth: 0);
+            return SearchNameTree(destsTree, name, new HashSet<object>(ReferenceEqualityComparer.Instance), depth: 0);
         }
         return null;
     }
 
-    private object? SearchNameTree(BitPdfDict node, string key, int depth)
+    private object? SearchNameTree(BitPdfDict node, string key, HashSet<object> visited, int depth)
     {
-        if (depth > 32)
+        if (depth > 32 || visited.Add(node) is false || _nameTreeWork.TrySpend(1) is false)
         {
             return null;
         }
@@ -176,12 +179,21 @@ internal sealed class BitPdfOutlineBuilder
         // Leaf: /Names is a flat [key1 value1 key2 value2 ...] array.
         if (_xref.FetchIfRef(node.Get("Names")) is List<object?> pairs)
         {
-            for (int i = 0; i + 1 < pairs.Count; i += 2)
+            if (_nameTreeLeaves.TryGetValue(node, out var leaf) is false)
             {
-                if (_xref.FetchIfRef(pairs[i]) is BitPdfString s && s.AsLatin1() == key)
+                leaf = new Dictionary<string, object?>(StringComparer.Ordinal);
+                for (int i = 0; i + 1 < pairs.Count; i += 2)
                 {
-                    return pairs[i + 1];
+                    if (_xref.FetchIfRef(pairs[i]) is BitPdfString s)
+                    {
+                        leaf.TryAdd(s.AsLatin1(), pairs[i + 1]);
+                    }
                 }
+                _nameTreeLeaves[node] = leaf;
+            }
+            if (leaf.TryGetValue(key, out var value))
+            {
+                return value;
             }
         }
 
@@ -203,7 +215,7 @@ internal sealed class BitPdfOutlineBuilder
                         continue;
                     }
                 }
-                object? found = SearchNameTree(kid, key, depth + 1);
+                object? found = SearchNameTree(kid, key, visited, depth + 1);
                 if (found is not null)
                 {
                     return found;

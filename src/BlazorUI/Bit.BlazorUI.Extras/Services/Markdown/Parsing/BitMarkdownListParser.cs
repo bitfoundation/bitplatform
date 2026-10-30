@@ -95,9 +95,8 @@ public sealed class BitMarkdownListParser : BitMarkdownBlockParser
                     while (j < lines.Count && BitMarkdownBlockProcessor.IsBlank(lines[j])) j++;
                     if (j < lines.Count && BitMarkdownBlockProcessor.GetIndent(lines[j]) >= markerIndent)
                     {
-                        itemLines.Add(string.Empty);
+                        for (; i < j; i++) itemLines.Add(string.Empty);
                         itemHadBlank = true;
-                        i++;
                         continue;
                     }
                     if (j < lines.Count && IsSameMarker(lines[j], ordered, markerChar))

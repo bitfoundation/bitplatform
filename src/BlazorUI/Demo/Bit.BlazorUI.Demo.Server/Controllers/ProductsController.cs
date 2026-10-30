@@ -1,10 +1,17 @@
-﻿namespace Bit.BlazorUI.Demo.Server.Controllers;
+﻿using Microsoft.AspNetCore.OData.Query.Validator;
+
+namespace Bit.BlazorUI.Demo.Server.Controllers;
 
 [ApiController]
 [Route("api/[controller]/[action]")]
 public partial class ProductsController : AppControllerBase
 {
     private static readonly Random _random = new Random();
+
+    private static readonly ODataValidationSettings _validationSettings = new()
+    {
+        AllowedFunctions = AllowedFunctions.AllFunctions & ~AllowedFunctions.MatchesPattern
+    };
 
     private static readonly ProductDto[] _products = Enumerable.Range(1, 500_000)
         .Select(i => new ProductDto { Id = i, Name = $"Product {i}", Price = _random.Next(1, 100) })
@@ -13,6 +20,8 @@ public partial class ProductsController : AppControllerBase
     [HttpGet]
     public async Task<PagedResult<ProductDto>> GetProducts(ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
     {
+        odataQuery.Validate(_validationSettings);
+
         var query = _products.AsQueryable();
 
         query = (IQueryable<ProductDto>)odataQuery.ApplyTo(query, ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
@@ -59,6 +68,8 @@ public partial class ProductsController : AppControllerBase
         // var query = _dbContext.Categories.Select(cat => new CategoryOrProductDto { CategoryId = cat.Id, Name = cat.Name })
         // .Union(_dbContext.Products.Select(prd => new CategoryOrProductDto { ProductId = prd.Id, Name = prd.Name, Price = prd.Price, CategoryId = prd.CategoryId })
         // .OrderBy(catOrPrd => catOrPrd.CategoryId);
+
+        odataQuery.Validate(_validationSettings);
 
         var query = _categoriesProducts.AsQueryable();
 

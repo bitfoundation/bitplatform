@@ -10,8 +10,14 @@ public sealed class BitMarkdownCodeSpanInlineParser : BitMarkdownInlineParser
         string s = state.Text;
         int start = state.Pos;
         int run = BitMarkdownInlineHelpers.CountRun(s, start, '`');
-        int close = FindClosing(s, start + run, run);
-        if (close < 0) return false;
+        int close = state.HasNoMatchFrom(this, run, start + run) ? -1 : FindClosing(s, start + run, run);
+        if (close < 0)
+        {
+            state.SetNoMatchFrom(this, run, start + run);
+            state.AppendText(new string('`', run));
+            state.Pos = start + run;
+            return true;
+        }
 
         string content = s.Substring(start + run, close - (start + run));
         state.AppendNode(new BitMarkdownCodeSpanNode { Content = Normalize(content) });

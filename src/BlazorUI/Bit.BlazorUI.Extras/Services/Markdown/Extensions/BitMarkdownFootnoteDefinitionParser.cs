@@ -39,8 +39,7 @@ public sealed class BitMarkdownFootnoteDefinitionParser : BitMarkdownBlockParser
                 while (j < lines.Count && BitMarkdownBlockProcessor.IsBlank(lines[j])) j++;
                 if (j < lines.Count && BitMarkdownBlockProcessor.GetIndent(lines[j]) >= 4)
                 {
-                    content.Add(string.Empty);
-                    i++;
+                    for (; i < j; i++) content.Add(string.Empty);
                     continue;
                 }
                 break;

@@ -407,6 +407,7 @@ internal static partial class BitRichTextEditorHtmlSanitizer
             foreach (var (name, value) in tag.Attributes)
             {
                 if (name.StartsWith("on", StringComparison.Ordinal)) continue;
+                if (tag.Name == "iframe" && name == "srcdoc") continue;
                 if (PlainAttributeName().IsMatch(name) is false) continue;
                 // A video's poster is an image the browser fetches like an img's src.
                 if ((name == "href" || name == "src" || name == "poster")

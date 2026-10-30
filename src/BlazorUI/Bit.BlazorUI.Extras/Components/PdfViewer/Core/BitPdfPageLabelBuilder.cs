@@ -11,6 +11,10 @@ namespace Bit.BlazorUI;
 /// </summary>
 internal static class BitPdfPageLabelBuilder
 {
+    private const long MaxLabelChars = 1L << 24;
+    private const int MaxAlphaNumber = 26 * 64;
+    private const int MaxRomanNumber = 100_000;
+
     public static IReadOnlyList<string> Build(IBitPdfXRef xref, BitPdfDict catalog, int pageCount)
     {
         var labels = new string[pageCount];
@@ -29,13 +33,14 @@ internal static class BitPdfPageLabelBuilder
 
         // Collect (startPageIndex -> labelDict) pairs from the number tree.
         var ranges = new SortedDictionary<int, BitPdfDict>();
-        CollectNums(xref, tree, ranges, depth: 0);
+        CollectNums(xref, tree, ranges, new HashSet<object>(ReferenceEqualityComparer.Instance), depth: 0);
         if (ranges.Count == 0)
         {
             return labels;
         }
 
         var keys = new List<int>(ranges.Keys);
+        var budget = new BitPdfBudget(MaxLabelChars);
         for (int r = 0; r < keys.Count; r++)
         {
             int start = Math.Max(0, keys[r]);
@@ -53,16 +58,21 @@ internal static class BitPdfPageLabelBuilder
                     continue;
                 }
                 int value = startAt + (p - start);
-                labels[p] = prefix + Format(style, value);
+                string number = Format(style, value);
+                if (budget.TrySpend(prefix.Length + number.Length) is false)
+                {
+                    return labels;
+                }
+                labels[p] = prefix + number;
             }
         }
 
         return labels;
     }
 
-    private static void CollectNums(IBitPdfXRef xref, BitPdfDict node, SortedDictionary<int, BitPdfDict> ranges, int depth)
+    private static void CollectNums(IBitPdfXRef xref, BitPdfDict node, SortedDictionary<int, BitPdfDict> ranges, HashSet<object> visited, int depth)
     {
-        if (depth > 32)
+        if (depth > 32 || visited.Add(node) is false)
         {
             return;
         }
@@ -85,7 +95,7 @@ internal static class BitPdfPageLabelBuilder
             {
                 if (xref.FetchIfRef(kidObj) is BitPdfDict kid)
                 {
-                    CollectNums(xref, kid, ranges, depth + 1);
+                    CollectNums(xref, kid, ranges, visited, depth + 1);
                 }
             }
         }
@@ -104,7 +114,7 @@ internal static class BitPdfPageLabelBuilder
 
     private static string ToRoman(int number)
     {
-        if (number <= 0)
+        if (number is <= 0 or > MaxRomanNumber)
         {
             return number.ToString();
         }
@@ -127,7 +137,7 @@ internal static class BitPdfPageLabelBuilder
     // each additional letter repeats: AA, BB, ... CCC).
     private static string ToAlpha(int number, bool uppercase)
     {
-        if (number <= 0)
+        if (number is <= 0 or > MaxAlphaNumber)
         {
             return number.ToString();
         }

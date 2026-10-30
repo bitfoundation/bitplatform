@@ -511,6 +511,36 @@ public class BitVirtualizeTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitVirtualizeShouldCapTheWindowAReportedViewportAsksFor()
+    {
+        SetupViewport(300);
+
+        var component = RenderList(100_000, 50);
+
+        await component.InvokeAsync(() => component.Instance._Scroll(0, 50_000_000));
+        Assert.IsTrue(RenderedIndices(component).Length <= 1_000);
+
+        var before = RenderedIndices(component).Length;
+        await component.InvokeAsync(() => component.Instance._Scroll(0, double.PositiveInfinity));
+        await component.InvokeAsync(() => component.Instance._Scroll(double.NaN, 300));
+        Assert.AreEqual(before, RenderedIndices(component).Length);
+    }
+
+    [TestMethod]
+    public async Task BitVirtualizeShouldKeepTheViewportRenderedWithAHugeOverscan()
+    {
+        SetupViewport(300);
+
+        var component = RenderList(100_000, 50, p => p.Add(x => x.OverscanCount, 5_000));
+
+        await component.InvokeAsync(() => component.Instance._Scroll(1_000_000, 300));
+
+        var rendered = RenderedIndices(component);
+        Assert.IsTrue(rendered.Length <= 2_000);
+        CollectionAssert.IsSubsetOf(Enumerable.Range(20_000, 6).ToArray(), rendered);
+    }
+
+    [TestMethod]
     public async Task BitVirtualizeShouldKeepTheActiveItemRenderedWhenItScrollsAway()
     {
         SetupViewport(300);

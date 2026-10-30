@@ -53,8 +53,7 @@ public sealed class BitMarkdownDefinitionListBlockParser : BitMarkdownBlockParse
                         while (j < lines.Count && BitMarkdownBlockProcessor.IsBlank(lines[j])) j++;
                         if (j < lines.Count && BitMarkdownBlockProcessor.GetIndent(lines[j]) >= contentColumn)
                         {
-                            content.Add(string.Empty);
-                            i++;
+                            for (; i < j; i++) content.Add(string.Empty);
                             continue;
                         }
                         break;

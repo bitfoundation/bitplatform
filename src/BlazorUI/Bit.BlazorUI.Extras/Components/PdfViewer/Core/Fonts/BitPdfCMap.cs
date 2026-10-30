@@ -13,6 +13,7 @@ public sealed class BitPdfCMap
 {
     private readonly List<(long Lo, long Hi, int Cid)> _ranges = new();
     private readonly Dictionary<long, int> _chars = new();
+    private (long Lo, long Hi, int Cid)[]? _segments;
 
     /// <summary>The byte length of a character code (1 or 2 for the common cases).</summary>
     public int CodeLength { get; private set; } = 2;
@@ -34,14 +35,69 @@ public sealed class BitPdfCMap
         {
             return cid;
         }
-        foreach (var (lo, hi, start) in _ranges)
+        _segments ??= Flatten(_ranges);
+        int low = 0, high = _segments.Length - 1;
+        while (low <= high)
         {
-            if (code >= lo && code <= hi)
+            int mid = (low + high) >>> 1;
+            if (_segments[mid].Lo <= code)
             {
-                return (int)(start + (code - lo));
+                low = mid + 1;
+            }
+            else
+            {
+                high = mid - 1;
             }
         }
+        if (high >= 0 && code <= _segments[high].Hi)
+        {
+            return (int)(_segments[high].Cid + (code - _segments[high].Lo));
+        }
         return (int)code; // fall back to identity for unmapped codes
+    }
+
+    private static (long Lo, long Hi, int Cid)[] Flatten(List<(long Lo, long Hi, int Cid)> ranges)
+    {
+        var points = new List<(long At, int Index, bool Start)>(ranges.Count * 2);
+        for (int i = 0; i < ranges.Count; i++)
+        {
+            if (ranges[i].Lo <= ranges[i].Hi)
+            {
+                points.Add((ranges[i].Lo, i, true));
+                points.Add((ranges[i].Hi == long.MaxValue ? long.MaxValue : ranges[i].Hi + 1, i, false));
+            }
+        }
+        points.Sort((a, b) => a.At.CompareTo(b.At));
+
+        var active = new PriorityQueue<int, int>();
+        var ended = new bool[ranges.Count];
+        var segments = new List<(long Lo, long Hi, int Cid)>();
+        int p = 0;
+        while (p < points.Count)
+        {
+            long at = points[p].At;
+            for (; p < points.Count && points[p].At == at; p++)
+            {
+                if (points[p].Start)
+                {
+                    active.Enqueue(points[p].Index, points[p].Index);
+                }
+                else
+                {
+                    ended[points[p].Index] = true;
+                }
+            }
+            while (active.TryPeek(out int top, out _) && ended[top])
+            {
+                active.Dequeue();
+            }
+            if (p < points.Count && active.TryPeek(out int owner, out _))
+            {
+                var range = ranges[owner];
+                segments.Add((at, points[p].At - 1, (int)(range.Cid + (at - range.Lo))));
+            }
+        }
+        return [.. segments];
     }
 
     /// <summary>Parses an embedded CMap stream into a <see cref="BitPdfCMap"/>.</summary>

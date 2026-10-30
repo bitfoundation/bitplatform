@@ -13,6 +13,7 @@ public sealed class BitMarkdownInlineProcessor
     private readonly StringBuilder _literal = new();
     private readonly List<Tok> _tokens = new();
     private Dictionary<(Type Parser, int Variant), int>? _noMatchFrom;
+    private Dictionary<int, int>? _labelEnds;
     // Set while a parser is being offered a position it may not take, so the pending text run can
     // be put back if it does not. See TryParsers.
     private bool _speculating;
@@ -64,11 +65,12 @@ public sealed class BitMarkdownInlineProcessor
         _literal.Clear();
         _tokens.Clear();
         _noMatchFrom?.Clear();
+        _labelEnds?.Clear();
         _speculating = false;
         _literalMark = 0;
         _literalBackup = null;
         Scan();
-        BitMarkdownDelimiterResolver.Process(_tokens, Pipeline);
+        BitMarkdownDelimiterResolver.Process(_tokens, Pipeline, Options.MaxDepth - Depth + 1);
         return ToNodes(_tokens);
     }
 
@@ -87,7 +89,7 @@ public sealed class BitMarkdownInlineProcessor
     public void AppendNode(BitMarkdownNode node)
     {
         Flush();
-        _tokens.Add(new Tok { Kind = TokKind.Node, Node = node });
+        _tokens.Add(new Tok { Kind = TokKind.Node, Node = node, Height = Height(node) });
     }
 
     /// <summary>
@@ -122,6 +124,36 @@ public sealed class BitMarkdownInlineProcessor
         => _noMatchFrom is not null
            && _noMatchFrom.TryGetValue((parser.GetType(), variant), out int known)
            && position >= known;
+
+    internal int FindLabelEnd(int openBracket)
+    {
+        if (_labelEnds is not null && _labelEnds.TryGetValue(openBracket, out int known)) return known;
+
+        _labelEnds ??= new Dictionary<int, int>();
+        var open = new Stack<int>();
+        string s = Text;
+        int i = openBracket;
+        while (i < s.Length)
+        {
+            char c = s[i];
+            if (c == '\\') { i += 2; continue; }
+            if (c == '`')
+            {
+                i = BitMarkdownLinkHelpers.SkipCodeSpan(s, i);
+                continue;
+            }
+            if (c == '[') open.Push(i);
+            else if (c == ']' && open.Count > 0)
+            {
+                _labelEnds[open.Pop()] = i;
+                if (open.Count == 0) return i;
+            }
+            i++;
+        }
+
+        foreach (int start in open) _labelEnds[start] = -1;
+        return -1;
+    }
 
     /// <summary>Removes trailing spaces from the pending text run and returns how many were removed.</summary>
     public int TrimPendingTrailingSpaces()
@@ -283,6 +315,24 @@ public sealed class BitMarkdownInlineProcessor
         public bool CanOpen;
         public bool CanClose;
         public bool Active = true;
+        public int Height;
+    }
+
+    private static int Height(BitMarkdownNode node)
+    {
+        int height = 0;
+        var stack = new Stack<(BitMarkdownNode Node, int Level)>();
+        stack.Push((node, 1));
+        while (stack.Count > 0)
+        {
+            var (current, level) = stack.Pop();
+            height = Math.Max(height, level);
+            foreach (var list in current.ChildLists)
+            {
+                foreach (var child in list) stack.Push((child, level + 1));
+            }
+        }
+        return height;
     }
 
     internal static List<BitMarkdownNode> ToNodes(List<Tok> tokens)
