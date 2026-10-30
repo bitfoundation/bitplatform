@@ -168,6 +168,9 @@
   <data name="UnknownException" xml:space="preserve">
     <value>Ett okänt fel har uppstått</value>
   </data>
+  <data name="ExternalSignInUnknownError" xml:space="preserve">
+    <value>Ett okänt fel har uppstått vid inloggning med ett socialt konto</value>
+  </data>
   <data name="UpdateConcurrencyException" xml:space="preserve">
     <value>Posten ändrades av en annan användare efter att du hämtade den ursprungliga informationen. Åtgärden avbröts.</value>
   </data>

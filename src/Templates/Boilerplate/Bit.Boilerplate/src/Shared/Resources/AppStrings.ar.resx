@@ -168,6 +168,9 @@
   <data name="UnknownException" xml:space="preserve">
     <value>حدث خطأ غير معروف</value>
   </data>
+  <data name="ExternalSignInUnknownError" xml:space="preserve">
+    <value>حدث خطأ غير معروف أثناء تسجيل الدخول عبر حساب اجتماعي</value>
+  </data>
   <data name="UpdateConcurrencyException" xml:space="preserve">
     <value>تم تعديل السجل بواسطة مستخدم آخر بعد الحصول على البيانات الأصلية. تم إلغاء العملية</value>
   </data>

@@ -221,7 +221,7 @@ public class SignInPanelCredentialStateTests
     /// <c>?error=</c> used to be echoed verbatim into an error snack bar, so any URL on the real domain could put
     /// attacker-authored text on screen as the application's own message. A resource key isn't safe there either: the
     /// link would pick one of the app's own messages, such as "Your password has been changed successfully", and show it
-    /// out of context. So the url's error only ever shows AppStrings.UnknownException; the text behind a key is shown
+    /// out of context. So the url's error only ever shows AppStrings.ExternalSignInUnknownError; the text behind a key is shown
     /// only for the external sign-in the page started (See <c>ExternalSignInErrorTests</c>).
     /// </summary>
     [TestMethod]
@@ -260,7 +260,7 @@ public class SignInPanelCredentialStateTests
         Assert.AreNotEqual(attackerText, shownTitle,
             "Text taken straight from the query string must not be shown as an application message.");
 
-        Assert.AreEqual(AppStrings.UnknownException, shownTitle,
-            "The url's error still shows an error, but only the generic one.");
+        Assert.AreEqual(AppStrings.ExternalSignInUnknownError, shownTitle,
+            "The url's error still shows an error, but only the generic one for social sign-in.");
     }
 }

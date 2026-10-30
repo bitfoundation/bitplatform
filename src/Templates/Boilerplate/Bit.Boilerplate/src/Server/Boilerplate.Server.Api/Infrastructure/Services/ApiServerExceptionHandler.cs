@@ -34,7 +34,7 @@ public partial class ApiServerExceptionHandler : SharedExceptionHandler, IProble
 
         if (exception is AuthenticationFailureException)
         {
-            httpContext.Response.Redirect($"{PageUrls.SignIn}?error={nameof(AppStrings.UnknownException)}");
+            httpContext.Response.Redirect($"{PageUrls.SignIn}?error={nameof(AppStrings.ExternalSignInUnknownError)}");
             return;
         }
 

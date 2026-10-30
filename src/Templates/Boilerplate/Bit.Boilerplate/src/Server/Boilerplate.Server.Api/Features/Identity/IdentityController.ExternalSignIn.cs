@@ -176,7 +176,7 @@ public partial class IdentityController
                                 ?? info?.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
 
             serverExceptionHandler.Handle(exp, new() { { "LoginProvider", info?.LoginProvider }, { "Principal", principalName } });
-            signInPageUri = $"{PageUrls.SignIn}?error={Uri.EscapeDataString(exp is KnownException { Key: not null } knownException ? knownException.Key : nameof(AppStrings.UnknownException))}";
+            signInPageUri = $"{PageUrls.SignIn}?error={Uri.EscapeDataString(exp is KnownException { Key: not null } knownException ? knownException.Key : nameof(AppStrings.ExternalSignInUnknownError))}";
         }
         finally
         {

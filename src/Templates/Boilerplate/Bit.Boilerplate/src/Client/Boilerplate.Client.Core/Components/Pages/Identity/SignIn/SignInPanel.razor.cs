@@ -78,9 +78,10 @@ public partial class SignInPanel
             }
         }
 
+        // Anyone's link can carry this, so it only gets the generic message; the real one comes through ExternalSignIn's callback.
         if (string.IsNullOrWhiteSpace(ErrorQueryString) is false)
         {
-            SnackBarService.Error(Localizer[nameof(AppStrings.UnknownException)]);
+            SnackBarService.Error(Localizer[nameof(AppStrings.ExternalSignInUnknownError)]);
         }
     }
 
@@ -246,7 +247,7 @@ public partial class SignInPanel
                 if (GetValue(error) is string errorKey)
                 {
                     var message = Localizer[errorKey];
-                    await InvokeAsync(() => SnackBarService.Error(message.ResourceNotFound ? Localizer[nameof(AppStrings.UnknownException)] : message));
+                    await InvokeAsync(() => SnackBarService.Error(message.ResourceNotFound ? Localizer[nameof(AppStrings.ExternalSignInUnknownError)] : message));
                 }
             });
 
