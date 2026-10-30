@@ -1733,10 +1733,18 @@ Then load it before the first page that uses Bink renders, from the router's `On
 
     private async Task OnNavigateAsync(NavigationContext context)
     {
-        // The pages that draw: fetch Bink before they render. A second call loads nothing again. Routes match
-        // regardless of case, so /Whiteboard/2 is one of them too.
-        if (LazyLoadsBink && context.Path.StartsWith("whiteboard", StringComparison.OrdinalIgnoreCase))
+        // The pages that draw: fetch Bink before they render. A second call loads nothing again.
+        if (LazyLoadsBink && IsDrawingPage(context.Path))
             await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bink.wasm"]);
+    }
+
+    // /whiteboard and the routes beneath it, such as /Whiteboard/2 (routes match regardless of case), but not
+    // /whiteboard-settings. Add every other route that renders Bink. The path keeps any query and fragment.
+    private static bool IsDrawingPage(string path)
+    {
+        path = path.Split('?', '#')[0];
+        return path.Equals("whiteboard", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith("whiteboard/", StringComparison.OrdinalIgnoreCase);
     }
 }
 ```

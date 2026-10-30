@@ -243,8 +243,17 @@ document.AddElement(<span class="k">new</span> BinkTextElement(<span class="k">n
     <span class="k">private async</span> Task OnNavigateAsync(NavigationContext context)
     {
         <span class="c">// The pages that draw: fetch Bink before they render. A second call loads nothing again.</span>
-        <span class="k">if</span> (LazyLoadsBink &amp;&amp; context.Path.StartsWith(<span class="s">"whiteboard"</span>, StringComparison.OrdinalIgnoreCase))
+        <span class="k">if</span> (LazyLoadsBink &amp;&amp; IsDrawingPage(context.Path))
             <span class="k">await</span> LazyAssemblyLoader.LoadAssembliesAsync([<span class="s">"Bit.Bink.wasm"</span>]);
+    }
+
+    <span class="c">// /whiteboard and the routes beneath it, such as /Whiteboard/2 (routes match regardless of case), but not
+    // /whiteboard-settings. Add every other route that renders Bink. The path keeps any query and fragment.</span>
+    <span class="k">private static bool</span> IsDrawingPage(<span class="k">string</span> path)
+    {
+        path = path.Split(<span class="s">'?'</span>, <span class="s">'#'</span>)[0];
+        <span class="k">return</span> path.Equals(<span class="s">"whiteboard"</span>, StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith(<span class="s">"whiteboard/"</span>, StringComparison.OrdinalIgnoreCase);
     }
 }</pre>
     <p class="bb-card-desc">
