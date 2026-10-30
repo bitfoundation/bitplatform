@@ -398,7 +398,7 @@ public partial class BitDropdownDemo
             Name = "Items",
             Type = "ICollection<TItem>?",
             DefaultValue = "null",
-            Description = "The list of items to display in the callout.",
+            Description = "The list of items to display in the callout. The items may carry the underlying type of a nullable TValue, like BitDropdownItem<Guid> items in a dropdown of Guid?.",
             LinkType = LinkType.Link,
             Href = "#dropdown-item"
         },

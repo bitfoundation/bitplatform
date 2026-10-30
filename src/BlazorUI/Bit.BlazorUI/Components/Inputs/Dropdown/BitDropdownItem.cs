@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public class BitDropdownItem<TValue>
+public class BitDropdownItem<TValue> : IBitDropdownItem
 {
     /// <summary>
     /// The aria label attribute for the dropdown item.
@@ -77,4 +77,18 @@ public class BitDropdownItem<TValue>
     /// Determines if the item is selected. This property's value is assigned by the component.
     /// </summary>
     public bool IsSelected { get; internal set; }
+
+
+
+    object? IBitDropdownItem.Value
+    {
+        get => Value;
+        set => Value = value is TValue tValue ? tValue : default;
+    }
+
+    bool IBitDropdownItem.IsSelected
+    {
+        get => IsSelected;
+        set => IsSelected = value;
+    }
 }

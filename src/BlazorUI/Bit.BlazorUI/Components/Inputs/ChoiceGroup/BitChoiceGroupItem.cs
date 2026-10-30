@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public class BitChoiceGroupItem<TValue>
+public class BitChoiceGroupItem<TValue> : IBitChoiceGroupItem
 {
     /// <summary>
     /// AriaLabel attribute for the BitChoiceGroup item.
@@ -115,4 +115,22 @@ public class BitChoiceGroupItem<TValue>
     /// Determines if the item is selected. This property's value is assigned by the component.
     /// </summary>
     public bool IsSelected { get; internal set; }
+
+
+
+    object? IBitChoiceGroupItem.Template => Template;
+
+    object? IBitChoiceGroupItem.Value => Value;
+
+    int IBitChoiceGroupItem.Index
+    {
+        get => Index;
+        set => Index = value;
+    }
+
+    bool IBitChoiceGroupItem.IsSelected
+    {
+        get => IsSelected;
+        set => IsSelected = value;
+    }
 }

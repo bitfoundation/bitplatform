@@ -305,6 +305,7 @@ public class BitDropdownParams<[DynamicallyAccessedMembers(DynamicallyAccessedMe
 
     /// <summary>
     /// The list of items to display in the callout.
+    /// The items may carry the underlying type of a nullable TValue, like BitDropdownItem&lt;Guid&gt; items in a dropdown of Guid?.
     /// </summary>
     public ICollection<TItem>? Items { get; set; }
 

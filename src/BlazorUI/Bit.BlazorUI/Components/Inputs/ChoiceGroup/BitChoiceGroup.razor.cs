@@ -7,6 +7,9 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
 {
+    // Why the built-in items of this TItem can never give a TValue (see BitItemValueType), worked out once per closed type.
+    private static readonly string? _itemValueTypeMismatch = BitItemValueType.GetMismatch(nameof(BitChoiceGroup<TItem, TValue>), typeof(TItem), typeof(TValue), typeof(BitChoiceGroupItem<>), typeof(BitChoiceGroupOption<>));
+
     private List<TItem> _items = [];
     private string _name = default!;
     private bool _autoFocusDone;
@@ -132,6 +135,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
     /// <summary>
     /// Sets the data source that populates the items of the list.
+    /// The items may carry the underlying type of a nullable TValue, like BitChoiceGroupItem&lt;Guid&gt; items in a ChoiceGroup of Guid?.
     /// </summary>
     [Parameter] public IEnumerable<TItem> Items { get; set; } = [];
 
@@ -373,6 +377,13 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
+
+        // A group in which no item could ever match a value is refused before it renders, unless the NameSelectors
+        // say how its items are read.
+        if (_itemValueTypeMismatch is not null && NameSelectors is null)
+        {
+            throw new InvalidOperationException(_itemValueTypeMismatch);
+        }
 
         base.OnParametersSet();
 
@@ -758,7 +769,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
     internal string? GetAriaLabel(TItem item)
     {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        if (item is IBitChoiceGroupItem choiceGroupItem)
         {
             return choiceGroupItem.AriaLabel;
         }
@@ -785,7 +796,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
     internal bool GetIsDisabled(TItem item)
     {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        if (item is IBitChoiceGroupItem choiceGroupItem)
         {
             return choiceGroupItem.IsDisabled;
         }
@@ -807,7 +818,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
     internal BitIconInfo? GetIcon(TItem item)
     {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        if (item is IBitChoiceGroupItem choiceGroupItem)
         {
             return BitIconInfo.From(choiceGroupItem.Icon, choiceGroupItem.IconName);
         }
@@ -844,7 +855,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
     internal string? GetImageSrc(TItem item)
     {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        if (item is IBitChoiceGroupItem choiceGroupItem)
         {
             return choiceGroupItem.ImageSrc;
         }
@@ -866,7 +877,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
     internal string? GetImageAlt(TItem item)
     {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        if (item is IBitChoiceGroupItem choiceGroupItem)
         {
             return choiceGroupItem.ImageAlt;
         }
@@ -890,7 +901,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     // to the 0x0 an unset size would otherwise render as.
     internal BitImageSize? GetImageSize(TItem item)
     {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        if (item is IBitChoiceGroupItem choiceGroupItem)
         {
             return choiceGroupItem.ImageSize;
         }
@@ -944,7 +955,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
     internal string? GetPrefix(TItem item)
     {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        if (item is IBitChoiceGroupItem choiceGroupItem)
         {
             return choiceGroupItem.Prefix;
         }
@@ -966,7 +977,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
     internal string? GetSuffix(TItem item)
     {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        if (item is IBitChoiceGroupItem choiceGroupItem)
         {
             return choiceGroupItem.Suffix;
         }
@@ -988,7 +999,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
     internal string? GetSelectedImageSrc(TItem item)
     {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        if (item is IBitChoiceGroupItem choiceGroupItem)
         {
             return choiceGroupItem.SelectedImageSrc;
         }
@@ -1010,7 +1021,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
     internal RenderFragment<TItem>? GetTemplate(TItem item)
     {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        if (item is IBitChoiceGroupItem choiceGroupItem)
         {
             return choiceGroupItem.Template as RenderFragment<TItem>;
         }
@@ -1032,7 +1043,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
     internal string? GetDescription(TItem item)
     {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        if (item is IBitChoiceGroupItem choiceGroupItem)
         {
             return choiceGroupItem.Description;
         }
@@ -1054,7 +1065,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
     internal string? GetText(TItem item)
     {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        if (item is IBitChoiceGroupItem choiceGroupItem)
         {
             return choiceGroupItem.Text;
         }
@@ -1076,7 +1087,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
     internal string? GetTitle(TItem item)
     {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        if (item is IBitChoiceGroupItem choiceGroupItem)
         {
             return choiceGroupItem.Title;
         }
@@ -1108,6 +1119,12 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
             return choiceGroupOption.Value;
         }
 
+        // An item of another T whose value is still a TValue, like the BitChoiceGroupItem<Guid> of a ChoiceGroup of Guid?.
+        if (item is IBitChoiceGroupItem otherItem && otherItem.Value is TValue otherValue)
+        {
+            return otherValue;
+        }
+
         if (NameSelectors is null) return default;
 
         if (NameSelectors.Value.Selector is not null)
@@ -1120,7 +1137,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private string? GetStyle(TItem item)
     {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        if (item is IBitChoiceGroupItem choiceGroupItem)
         {
             return choiceGroupItem.Style;
         }
@@ -1142,7 +1159,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private string? GetClass(TItem item)
     {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        if (item is IBitChoiceGroupItem choiceGroupItem)
         {
             return choiceGroupItem.Class;
         }
@@ -1164,7 +1181,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private string? GetId(TItem item)
     {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        if (item is IBitChoiceGroupItem choiceGroupItem)
         {
             return choiceGroupItem.Id;
         }
@@ -1186,7 +1203,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private void SetIndex(TItem item, int value)
     {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        if (item is IBitChoiceGroupItem choiceGroupItem)
         {
             choiceGroupItem.Index = value;
             return;
@@ -1205,7 +1222,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private void SetIsSelected(TItem item, bool value)
     {
-        if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
+        if (item is IBitChoiceGroupItem choiceGroupItem)
         {
             choiceGroupItem.IsSelected = value;
             return;
