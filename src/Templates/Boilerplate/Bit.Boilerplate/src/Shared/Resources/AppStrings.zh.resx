@@ -169,7 +169,7 @@
     <value>发生未知错误</value>
   </data>
   <data name="ExternalSignInUnknownError" xml:space="preserve">
-    <value>使用社交账号登录时发生未知错误</value>
+    <value>使用外部账号登录时发生未知错误</value>
   </data>
   <data name="UpdateConcurrencyException" xml:space="preserve">
     <value>在您获取原始数据后，记录已被其他用户修改。操作已取消。</value>

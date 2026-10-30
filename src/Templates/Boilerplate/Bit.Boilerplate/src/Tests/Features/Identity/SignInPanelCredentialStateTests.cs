@@ -261,6 +261,6 @@ public class SignInPanelCredentialStateTests
             "Text taken straight from the query string must not be shown as an application message.");
 
         Assert.AreEqual(AppStrings.ExternalSignInUnknownError, shownTitle,
-            "The url's error still shows an error, but only the generic one for social sign-in.");
+            "The url's error still shows an error, but only the generic one for external sign-in.");
     }
 }
