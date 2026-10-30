@@ -1,0 +1,48 @@
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_media-queries.scss';
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+::deep {
+    .app-menu-callout {
+        @include lt-sm {
+            height: unset;
+            box-shadow: none;
+            width: min(20rem, 75vw);
+            top: $bit-env-inset-top !important;
+            bottom: $bit-env-inset-bottom !important;
+            inset-inline-end: $bit-env-inset-inline-end !important;
+        }
+    }
+
+    .app-menu-card {
+        @include lt-sm {
+            box-shadow: none;
+        }
+    }
+
+    .persona {
+        max-width: 12rem;
+    }
+
+    .persona-details {
+        display: none;
+    }
+
+    .menu-chevron,
+    .menu-displayname {
+        @include lt-sm {
+            display: none;
+        }
+    }
+
+    .account-button {
+        .bit-acb-inn,
+        .bit-acb-con,
+        .bit-prs {
+            min-width: 0;
+        }
+    }
+
+    .accent-color-switcher {
+        padding: 0.25rem 0.5rem;
+    }
+}

@@ -129,4 +129,190 @@
     <data name="PosDashboardDescription" xml:space="preserve">
         <value>A point-of-sale dashboard whose widgets can be rearranged, resized, hidden and saved.</value>
     </data>
+    <data name="DemoUserSarah" xml:space="preserve">
+        <value>Sarah Johnson</value>
+    </data>
+    <data name="DemoUserDaan" xml:space="preserve">
+        <value>Daan Visser</value>
+    </data>
+    <data name="DemoUserNiloofar" xml:space="preserve">
+        <value>Niloofar Rahimi</value>
+    </data>
+    <data name="DemoTenantStore" xml:space="preserve">
+        <value>Amsterdam store</value>
+    </data>
+    <data name="DemoTenantHeadOffice" xml:space="preserve">
+        <value>Head office</value>
+    </data>
+    <data name="Rotate" xml:space="preserve">
+        <value>Rotate</value>
+    </data>
+    <data name="ScreenshotThisView" xml:space="preserve">
+        <value>Screenshot of this view (PNG)</value>
+    </data>
+    <data name="ScreenshotAllViews" xml:space="preserve">
+        <value>Screenshots of all views (ZIP)</value>
+    </data>
+    <data name="StoreScreenshots" xml:space="preserve">
+        <value>Store screenshots</value>
+    </data>
+    <data name="OpenInNewTab" xml:space="preserve">
+        <value>Open in a new tab</value>
+    </data>
+    <data name="RemoveView" xml:space="preserve">
+        <value>Remove this view</value>
+    </data>
+    <data name="NoChrome" xml:space="preserve">
+        <value>No chrome</value>
+    </data>
+    <data name="ThemeLight" xml:space="preserve">
+        <value>Light</value>
+    </data>
+    <data name="ThemeDark" xml:space="preserve">
+        <value>Dark</value>
+    </data>
+    <data name="ThemeSystem" xml:space="preserve">
+        <value>System</value>
+    </data>
+    <data name="DataLive" xml:space="preserve">
+        <value>Data</value>
+    </data>
+    <data name="DataLoading" xml:space="preserve">
+        <value>Loading</value>
+    </data>
+    <data name="DataEmpty" xml:space="preserve">
+        <value>Empty</value>
+    </data>
+    <data name="DataError" xml:space="preserve">
+        <value>Error</value>
+    </data>
+    <data name="DataMixed" xml:space="preserve">
+        <value>Mixed</value>
+    </data>
+    <data name="DataSlow" xml:space="preserve">
+        <value>Slow</value>
+    </data>
+    <data name="SignedOut" xml:space="preserve">
+        <value>Signed out</value>
+    </data>
+    <data name="SignedIn" xml:space="preserve">
+        <value>Signed in</value>
+    </data>
+    <data name="MultiAccount" xml:space="preserve">
+        <value>Accounts</value>
+    </data>
+    <data name="Device" xml:space="preserve">
+        <value>Device</value>
+    </data>
+    <data name="Portrait" xml:space="preserve">
+        <value>Portrait</value>
+    </data>
+    <data name="Landscape" xml:space="preserve">
+        <value>Landscape</value>
+    </data>
+    <data name="DeviceFrame" xml:space="preserve">
+        <value>Device frame</value>
+    </data>
+    <data name="Zoom" xml:space="preserve">
+        <value>Zoom</value>
+    </data>
+    <data name="ZoomFit" xml:space="preserve">
+        <value>Fit</value>
+    </data>
+    <data name="DataState" xml:space="preserve">
+        <value>Data</value>
+    </data>
+    <data name="DataStateHint" xml:space="preserve">
+        <value>Pages read their data from memory after a short delay, so every state can be shown here, even the ones that are hard to catch in a real app.</value>
+    </data>
+    <data name="AppSection" xml:space="preserve">
+        <value>App</value>
+    </data>
+    <data name="AppChrome" xml:space="preserve">
+        <value>App chrome</value>
+    </data>
+    <data name="AppChromeHint" xml:space="preserve">
+        <value>Navigation panel, header, account menu and bottom bar of the app.</value>
+    </data>
+    <data name="SignInState" xml:space="preserve">
+        <value>Sign-in</value>
+    </data>
+    <data name="Theme" xml:space="preserve">
+        <value>Theme</value>
+    </data>
+    <data name="Language" xml:space="preserve">
+        <value>Language</value>
+    </data>
+    <data name="Reset" xml:space="preserve">
+        <value>Reset</value>
+    </data>
+    <data name="DeviceGroupPhone" xml:space="preserve">
+        <value>Phones</value>
+    </data>
+    <data name="DeviceGroupFoldable" xml:space="preserve">
+        <value>Foldables</value>
+    </data>
+    <data name="DeviceGroupTablet" xml:space="preserve">
+        <value>Tablets</value>
+    </data>
+    <data name="DeviceGroupLaptop" xml:space="preserve">
+        <value>Laptops</value>
+    </data>
+    <data name="DeviceGroupDesktop" xml:space="preserve">
+        <value>Desktops</value>
+    </data>
+    <data name="DeviceGroupStore" xml:space="preserve">
+        <value>Store sizes</value>
+    </data>
+    <data name="Pages" xml:space="preserve">
+        <value>Pages</value>
+    </data>
+    <data name="SearchPages" xml:space="preserve">
+        <value>Search pages</value>
+    </data>
+    <data name="PageNotFound" xml:space="preserve">
+        <value>This page isn't in the workbench.</value>
+    </data>
+    <data name="BackToHome" xml:space="preserve">
+        <value>Back to the workbench home</value>
+    </data>
+    <data name="Tools" xml:space="preserve">
+        <value>Tools</value>
+    </data>
+    <data name="Close" xml:space="preserve">
+        <value>Close</value>
+    </data>
+    <data name="Compare" xml:space="preserve">
+        <value>Compare</value>
+    </data>
+    <data name="CompareSingle" xml:space="preserve">
+        <value>One view</value>
+    </data>
+    <data name="CompareDevices" xml:space="preserve">
+        <value>Phone, tablet and desktop</value>
+    </data>
+    <data name="CompareThemes" xml:space="preserve">
+        <value>Light and dark</value>
+    </data>
+    <data name="CompareLanguages" xml:space="preserve">
+        <value>Languages side by side</value>
+    </data>
+    <data name="CompareStates" xml:space="preserve">
+        <value>Every data state</value>
+    </data>
+    <data name="CompareSignIn" xml:space="preserve">
+        <value>Signed out, signed in, several accounts</value>
+    </data>
+    <data name="AddView" xml:space="preserve">
+        <value>Add view</value>
+    </data>
+    <data name="Screenshot" xml:space="preserve">
+        <value>Screenshot</value>
+    </data>
+    <data name="CopyLink" xml:space="preserve">
+        <value>Copy a link to this setup</value>
+    </data>
+    <data name="ToggleWorkbenchTheme" xml:space="preserve">
+        <value>Switch the workbench between light and dark</value>
+    </data>
 </root>

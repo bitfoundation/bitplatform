@@ -1,0 +1,96 @@
+@*+:cnd:noEmit*@
+@* [mirror] app chrome - nav panel, header, account menu and bottom bar - keep in sync with: *@
+@* - src/Client/Boilerplate.Client.Core/Components/Layout/AppShell.razor *@
+@* - src/Client/Boilerplate.Client.Core/Components/Layout/Header/Header.razor *@
+@* - src/Client/Boilerplate.Client.Core/Components/Layout/NavBar.razor *@
+@* - src/Client/Boilerplate.Client.Core/Components/Layout/MainLayout.razor.items.cs *@
+@inherits WorkbenchComponentBase
+
+<CascadingValue Value="this" IsFixed>
+    <BitAppShell PersistScroll ScrollPadding="5rem 0 4rem">
+        <main>
+            <div class="main-container">
+                <BitNavPanel @bind-IsOpen="isNavPanelOpen"
+                             @bind-IsToggled="isNavPanelToggled"
+                             IconNavUrl="#"
+                             Class="nav-panel"
+                             Items="navPanelItems"
+                             IconUrl="_content/Boilerplate.Client.Core/images/bit-logo.svg">
+                    <Footer>
+                        <BitStack Class="footer-stack">
+                            @if (IsSignedIn is false)
+                            {
+                                <BitActionButton IconOnly="isNavPanelToggled" IconName="@BitIconName.Signin" OnClick="SignIn">
+                                    @AppLocalizer[nameof(AppStrings.SignIn)]
+                                </BitActionButton>
+                                <BitActionButton IconOnly="isNavPanelToggled" IconName="@BitIconName.UserWindow" OnClick="SignIn">
+                                    @AppLocalizer[nameof(AppStrings.SignInByModal)]
+                                </BitActionButton>
+                                <BitActionButton IconOnly="isNavPanelToggled" IconName="@BitIconName.AddFriend" OnClick="SignIn">
+                                    @AppLocalizer[nameof(AppStrings.SignUp)]
+                                </BitActionButton>
+                            }
+                            @if (isNavPanelToggled is false)
+                            {
+                                @*#if (multitenant == true)*@
+                                @if (IsSignedIn)
+                                {
+                                    <BitActionButton Class="current-tenant" IconName="@BitIconName.Org" Title="@AppLocalizer[nameof(AppStrings.CurrentTenant)]" NoWrap>
+                                        <BitText Typography="BitTypography.Caption2">@Localizer[TenantKey]</BitText>
+                                    </BitActionButton>
+                                }
+                                @*#endif*@
+                                <BitActionButton Class="app-version">
+                                    <BitText Class="app-latin-digits" Typography="BitTypography.Caption2">1.0.0</BitText>
+                                </BitActionButton>
+                            }
+                        </BitStack>
+                    </Footer>
+                </BitNavPanel>
+
+                <div class="main-body">
+                    <header>
+                        <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0.25rem">
+                            <BitButton IconOnly FixedColor
+                                       Class="menu-btn"
+                                       Size="BitSize.Large"
+                                       OnClick="() => isNavPanelOpen = true"
+                                       Variant="BitVariant.Text"
+                                       Color="BitColor.SecondaryBackground"
+                                       IconName="@BitIconName.CollapseMenu"
+                                       Title="@AppLocalizer[nameof(AppStrings.OpenNavigationMenuTitle)]"
+                                       AriaLabel="@AppLocalizer[nameof(AppStrings.OpenNavigationMenuTitle)]" />
+
+                            <BitStack VerticalAlign="BitAlignment.Center" Gap="0.5rem" AutoSize>
+                                <BitText Typography="BitTypography.H5">@Localizer[Page.TitleKey]</BitText>
+                            </BitStack>
+
+                            <BitSpacer />
+
+                            <ChromeAppMenu />
+                        </BitStack>
+                    </header>
+
+                    <div class="body">
+                        @ChildContent
+                    </div>
+                </div>
+            </div>
+
+            <section class="nav-bar">
+                <BitNavBar FullWidth TItem="BitNavBarOption">
+                    <BitNavBarOption Text="@AppLocalizer[nameof(AppStrings.Home)]" IconName="@BitIconName.Home" Url="#home" />
+                    <BitNavBarOption Text="@Localizer[Page.TitleKey]" IconName="@Page.IconName" Url="@currentPageUrl" />
+                    @*#if (module == "Admin")*@
+                    @if (IsSignedIn)
+                    {
+                        <BitNavBarOption Text="@AppLocalizer[nameof(AppStrings.Products)]" IconName="@BitIconName.Product" Url="#products" />
+                    }
+                    @*#endif*@
+                    <BitNavBarOption Text="@AppLocalizer[nameof(AppStrings.Terms)]" IconName="@BitIconName.EntityExtraction" Url="#terms" />
+                    <BitNavBarOption Text="@AppLocalizer[nameof(AppStrings.About)]" IconName="@BitIconName.Info" Url="#about" />
+                </BitNavBar>
+            </section>
+        </main>
+    </BitAppShell>
+</CascadingValue>

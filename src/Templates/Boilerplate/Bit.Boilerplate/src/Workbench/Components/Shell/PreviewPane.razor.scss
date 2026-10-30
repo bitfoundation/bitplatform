@@ -1,0 +1,84 @@
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.pane {
+    gap: 0.5rem;
+    height: 100%;
+    display: flex;
+    min-width: 0;
+    flex-shrink: 0;
+    padding: 0.5rem;
+    border-radius: 14px;
+    flex-direction: column;
+    border: 1px solid transparent;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+
+    &.selected {
+        border-color: $bit-color-primary;
+        background-color: color-mix(in srgb, #{$bit-color-primary} 6%, transparent);
+    }
+
+    &:not(.selected):hover {
+        border-color: $bit-color-border-secondary;
+    }
+}
+
+.pane-header {
+    gap: 0.375rem;
+    row-gap: 0;
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    min-height: 2rem;
+    align-items: center;
+    padding-inline: 0.25rem;
+
+    ::deep .pane-device {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+.pane-chip {
+    font-size: 11px;
+    padding: 1px 8px;
+    white-space: nowrap;
+    border-radius: 999px;
+    color: $bit-color-primary;
+    border: 1px solid color-mix(in srgb, #{$bit-color-primary} 35%, transparent);
+}
+
+.pane-stage {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+    position: relative;
+    justify-content: center;
+    --wb-scale: 0.5;
+}
+
+.pane-scaler {
+    direction: ltr;
+    flex-shrink: 0;
+    width: calc(var(--wb-frame-w, 400px) * var(--wb-scale));
+    height: calc(var(--wb-frame-h, 800px) * var(--wb-scale));
+
+    ::deep > .device {
+        transform-origin: 0 0;
+        transform: scale(var(--wb-scale));
+    }
+}
+
+.pane-loading {
+    inset: 0;
+    display: flex;
+    position: absolute;
+    align-items: center;
+    pointer-events: none;
+    justify-content: center;
+    transition: opacity 0.2s ease;
+}
+
+.pane-stage.ready .pane-loading {
+    opacity: 0;
+}

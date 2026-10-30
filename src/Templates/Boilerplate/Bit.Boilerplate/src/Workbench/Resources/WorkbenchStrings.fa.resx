@@ -129,4 +129,190 @@
     <data name="PosDashboardDescription" xml:space="preserve">
         <value>داشبورد صندوق فروش با ویجت‌هایی که می‌شود جابه‌جا، کوچک و بزرگ، پنهان و ذخیره کرد.</value>
     </data>
+    <data name="DemoUserSarah" xml:space="preserve">
+        <value>سارا محمدی</value>
+    </data>
+    <data name="DemoUserDaan" xml:space="preserve">
+        <value>داوود کریمی</value>
+    </data>
+    <data name="DemoUserNiloofar" xml:space="preserve">
+        <value>نیلوفر رحیمی</value>
+    </data>
+    <data name="DemoTenantStore" xml:space="preserve">
+        <value>شعبه آمستردام</value>
+    </data>
+    <data name="DemoTenantHeadOffice" xml:space="preserve">
+        <value>دفتر مرکزی</value>
+    </data>
+    <data name="Rotate" xml:space="preserve">
+        <value>چرخاندن</value>
+    </data>
+    <data name="ScreenshotThisView" xml:space="preserve">
+        <value>اسکرین‌شات از این نما (PNG)</value>
+    </data>
+    <data name="ScreenshotAllViews" xml:space="preserve">
+        <value>اسکرین‌شات از همه نماها (ZIP)</value>
+    </data>
+    <data name="StoreScreenshots" xml:space="preserve">
+        <value>اسکرین‌شات فروشگاه‌ها</value>
+    </data>
+    <data name="OpenInNewTab" xml:space="preserve">
+        <value>باز کردن در زبانه جدید</value>
+    </data>
+    <data name="RemoveView" xml:space="preserve">
+        <value>حذف این نما</value>
+    </data>
+    <data name="NoChrome" xml:space="preserve">
+        <value>بدون قاب برنامه</value>
+    </data>
+    <data name="ThemeLight" xml:space="preserve">
+        <value>روشن</value>
+    </data>
+    <data name="ThemeDark" xml:space="preserve">
+        <value>تیره</value>
+    </data>
+    <data name="ThemeSystem" xml:space="preserve">
+        <value>سیستم</value>
+    </data>
+    <data name="DataLive" xml:space="preserve">
+        <value>داده</value>
+    </data>
+    <data name="DataLoading" xml:space="preserve">
+        <value>در حال بارگذاری</value>
+    </data>
+    <data name="DataEmpty" xml:space="preserve">
+        <value>خالی</value>
+    </data>
+    <data name="DataError" xml:space="preserve">
+        <value>خطا</value>
+    </data>
+    <data name="DataMixed" xml:space="preserve">
+        <value>ترکیبی</value>
+    </data>
+    <data name="DataSlow" xml:space="preserve">
+        <value>کند</value>
+    </data>
+    <data name="SignedOut" xml:space="preserve">
+        <value>خارج شده</value>
+    </data>
+    <data name="SignedIn" xml:space="preserve">
+        <value>وارد شده</value>
+    </data>
+    <data name="MultiAccount" xml:space="preserve">
+        <value>چند حساب</value>
+    </data>
+    <data name="Device" xml:space="preserve">
+        <value>دستگاه</value>
+    </data>
+    <data name="Portrait" xml:space="preserve">
+        <value>عمودی</value>
+    </data>
+    <data name="Landscape" xml:space="preserve">
+        <value>افقی</value>
+    </data>
+    <data name="DeviceFrame" xml:space="preserve">
+        <value>قاب دستگاه</value>
+    </data>
+    <data name="Zoom" xml:space="preserve">
+        <value>بزرگ‌نمایی</value>
+    </data>
+    <data name="ZoomFit" xml:space="preserve">
+        <value>جاشو</value>
+    </data>
+    <data name="DataState" xml:space="preserve">
+        <value>داده</value>
+    </data>
+    <data name="DataStateHint" xml:space="preserve">
+        <value>صفحه‌ها داده را با کمی تأخیر از حافظه می‌خوانند، پس هر حالتی را می‌شود این‌جا دید، حتی حالت‌هایی که در برنامه واقعی به‌سختی پیش می‌آیند.</value>
+    </data>
+    <data name="AppSection" xml:space="preserve">
+        <value>برنامه</value>
+    </data>
+    <data name="AppChrome" xml:space="preserve">
+        <value>قاب برنامه</value>
+    </data>
+    <data name="AppChromeHint" xml:space="preserve">
+        <value>پنل ناوبری، سربرگ، منوی حساب و نوار پایین برنامه.</value>
+    </data>
+    <data name="SignInState" xml:space="preserve">
+        <value>ورود</value>
+    </data>
+    <data name="Theme" xml:space="preserve">
+        <value>پوسته</value>
+    </data>
+    <data name="Language" xml:space="preserve">
+        <value>زبان</value>
+    </data>
+    <data name="Reset" xml:space="preserve">
+        <value>بازنشانی</value>
+    </data>
+    <data name="DeviceGroupPhone" xml:space="preserve">
+        <value>گوشی‌ها</value>
+    </data>
+    <data name="DeviceGroupFoldable" xml:space="preserve">
+        <value>تاشوها</value>
+    </data>
+    <data name="DeviceGroupTablet" xml:space="preserve">
+        <value>تبلت‌ها</value>
+    </data>
+    <data name="DeviceGroupLaptop" xml:space="preserve">
+        <value>لپ‌تاپ‌ها</value>
+    </data>
+    <data name="DeviceGroupDesktop" xml:space="preserve">
+        <value>رایانه‌های رومیزی</value>
+    </data>
+    <data name="DeviceGroupStore" xml:space="preserve">
+        <value>اندازه‌های فروشگاه</value>
+    </data>
+    <data name="Pages" xml:space="preserve">
+        <value>صفحه‌ها</value>
+    </data>
+    <data name="SearchPages" xml:space="preserve">
+        <value>جست‌وجوی صفحه‌ها</value>
+    </data>
+    <data name="PageNotFound" xml:space="preserve">
+        <value>این صفحه در میز کار نیست.</value>
+    </data>
+    <data name="BackToHome" xml:space="preserve">
+        <value>بازگشت به خانه میز کار</value>
+    </data>
+    <data name="Tools" xml:space="preserve">
+        <value>ابزارها</value>
+    </data>
+    <data name="Close" xml:space="preserve">
+        <value>بستن</value>
+    </data>
+    <data name="Compare" xml:space="preserve">
+        <value>مقایسه</value>
+    </data>
+    <data name="CompareSingle" xml:space="preserve">
+        <value>یک نما</value>
+    </data>
+    <data name="CompareDevices" xml:space="preserve">
+        <value>گوشی، تبلت و رومیزی</value>
+    </data>
+    <data name="CompareThemes" xml:space="preserve">
+        <value>روشن و تیره</value>
+    </data>
+    <data name="CompareLanguages" xml:space="preserve">
+        <value>زبان‌ها کنار هم</value>
+    </data>
+    <data name="CompareStates" xml:space="preserve">
+        <value>همه حالت‌های داده</value>
+    </data>
+    <data name="CompareSignIn" xml:space="preserve">
+        <value>خارج، وارد، چند حساب</value>
+    </data>
+    <data name="AddView" xml:space="preserve">
+        <value>افزودن نما</value>
+    </data>
+    <data name="Screenshot" xml:space="preserve">
+        <value>اسکرین‌شات</value>
+    </data>
+    <data name="CopyLink" xml:space="preserve">
+        <value>کپی پیوند این چیدمان</value>
+    </data>
+    <data name="ToggleWorkbenchTheme" xml:space="preserve">
+        <value>جابه‌جایی میز کار بین روشن و تیره</value>
+    </data>
 </root>

@@ -1,0 +1,19 @@
+@inherits WorkbenchComponentBase
+
+@if (ShowStatusBar && Scenario.DevicePreset.IsHandheld && Scenario.DevicePreset.GetSafeArea(Scenario.Landscape).Top > 0)
+{
+    <DeviceStatusBar Device="Scenario.DevicePreset" />
+}
+
+@if (Scenario.Chrome)
+{
+    <ChromeShell Page="Page">
+        <DynamicComponent Type="Page.ComponentType" />
+    </ChromeShell>
+}
+else
+{
+    <div class="bare-surface">
+        <DynamicComponent Type="Page.ComponentType" />
+    </div>
+}

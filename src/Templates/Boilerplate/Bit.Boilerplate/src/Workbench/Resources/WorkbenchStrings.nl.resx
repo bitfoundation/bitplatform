@@ -129,4 +129,190 @@
     <data name="PosDashboardDescription" xml:space="preserve">
         <value>Een kassadashboard met widgets die je kunt verplaatsen, vergroten, verbergen en opslaan.</value>
     </data>
+    <data name="DemoUserSarah" xml:space="preserve">
+        <value>Sanne de Vries</value>
+    </data>
+    <data name="DemoUserDaan" xml:space="preserve">
+        <value>Daan Visser</value>
+    </data>
+    <data name="DemoUserNiloofar" xml:space="preserve">
+        <value>Niloofar Rahimi</value>
+    </data>
+    <data name="DemoTenantStore" xml:space="preserve">
+        <value>Winkel Amsterdam</value>
+    </data>
+    <data name="DemoTenantHeadOffice" xml:space="preserve">
+        <value>Hoofdkantoor</value>
+    </data>
+    <data name="Rotate" xml:space="preserve">
+        <value>Draaien</value>
+    </data>
+    <data name="ScreenshotThisView" xml:space="preserve">
+        <value>Schermafbeelding van deze weergave (PNG)</value>
+    </data>
+    <data name="ScreenshotAllViews" xml:space="preserve">
+        <value>Schermafbeeldingen van alle weergaven (ZIP)</value>
+    </data>
+    <data name="StoreScreenshots" xml:space="preserve">
+        <value>Schermafbeeldingen voor stores</value>
+    </data>
+    <data name="OpenInNewTab" xml:space="preserve">
+        <value>Openen in een nieuw tabblad</value>
+    </data>
+    <data name="RemoveView" xml:space="preserve">
+        <value>Deze weergave verwijderen</value>
+    </data>
+    <data name="NoChrome" xml:space="preserve">
+        <value>Zonder app-kader</value>
+    </data>
+    <data name="ThemeLight" xml:space="preserve">
+        <value>Licht</value>
+    </data>
+    <data name="ThemeDark" xml:space="preserve">
+        <value>Donker</value>
+    </data>
+    <data name="ThemeSystem" xml:space="preserve">
+        <value>Systeem</value>
+    </data>
+    <data name="DataLive" xml:space="preserve">
+        <value>Gegevens</value>
+    </data>
+    <data name="DataLoading" xml:space="preserve">
+        <value>Laden</value>
+    </data>
+    <data name="DataEmpty" xml:space="preserve">
+        <value>Leeg</value>
+    </data>
+    <data name="DataError" xml:space="preserve">
+        <value>Fout</value>
+    </data>
+    <data name="DataMixed" xml:space="preserve">
+        <value>Gemengd</value>
+    </data>
+    <data name="DataSlow" xml:space="preserve">
+        <value>Traag</value>
+    </data>
+    <data name="SignedOut" xml:space="preserve">
+        <value>Afgemeld</value>
+    </data>
+    <data name="SignedIn" xml:space="preserve">
+        <value>Aangemeld</value>
+    </data>
+    <data name="MultiAccount" xml:space="preserve">
+        <value>Accounts</value>
+    </data>
+    <data name="Device" xml:space="preserve">
+        <value>Apparaat</value>
+    </data>
+    <data name="Portrait" xml:space="preserve">
+        <value>Staand</value>
+    </data>
+    <data name="Landscape" xml:space="preserve">
+        <value>Liggend</value>
+    </data>
+    <data name="DeviceFrame" xml:space="preserve">
+        <value>Apparaatkader</value>
+    </data>
+    <data name="Zoom" xml:space="preserve">
+        <value>Zoom</value>
+    </data>
+    <data name="ZoomFit" xml:space="preserve">
+        <value>Passend</value>
+    </data>
+    <data name="DataState" xml:space="preserve">
+        <value>Gegevens</value>
+    </data>
+    <data name="DataStateHint" xml:space="preserve">
+        <value>Pagina's lezen hun gegevens na een korte vertraging uit het geheugen, dus elke toestand is hier te zien, ook die in een echte app lastig te vangen zijn.</value>
+    </data>
+    <data name="AppSection" xml:space="preserve">
+        <value>App</value>
+    </data>
+    <data name="AppChrome" xml:space="preserve">
+        <value>App-kader</value>
+    </data>
+    <data name="AppChromeHint" xml:space="preserve">
+        <value>Navigatiepaneel, kopbalk, accountmenu en onderbalk van de app.</value>
+    </data>
+    <data name="SignInState" xml:space="preserve">
+        <value>Aanmelding</value>
+    </data>
+    <data name="Theme" xml:space="preserve">
+        <value>Thema</value>
+    </data>
+    <data name="Language" xml:space="preserve">
+        <value>Taal</value>
+    </data>
+    <data name="Reset" xml:space="preserve">
+        <value>Herstellen</value>
+    </data>
+    <data name="DeviceGroupPhone" xml:space="preserve">
+        <value>Telefoons</value>
+    </data>
+    <data name="DeviceGroupFoldable" xml:space="preserve">
+        <value>Vouwbare toestellen</value>
+    </data>
+    <data name="DeviceGroupTablet" xml:space="preserve">
+        <value>Tablets</value>
+    </data>
+    <data name="DeviceGroupLaptop" xml:space="preserve">
+        <value>Laptops</value>
+    </data>
+    <data name="DeviceGroupDesktop" xml:space="preserve">
+        <value>Desktops</value>
+    </data>
+    <data name="DeviceGroupStore" xml:space="preserve">
+        <value>Store-formaten</value>
+    </data>
+    <data name="Pages" xml:space="preserve">
+        <value>Pagina's</value>
+    </data>
+    <data name="SearchPages" xml:space="preserve">
+        <value>Pagina's zoeken</value>
+    </data>
+    <data name="PageNotFound" xml:space="preserve">
+        <value>Deze pagina staat niet op de werkbank.</value>
+    </data>
+    <data name="BackToHome" xml:space="preserve">
+        <value>Terug naar de start van de werkbank</value>
+    </data>
+    <data name="Tools" xml:space="preserve">
+        <value>Gereedschap</value>
+    </data>
+    <data name="Close" xml:space="preserve">
+        <value>Sluiten</value>
+    </data>
+    <data name="Compare" xml:space="preserve">
+        <value>Vergelijken</value>
+    </data>
+    <data name="CompareSingle" xml:space="preserve">
+        <value>Eén weergave</value>
+    </data>
+    <data name="CompareDevices" xml:space="preserve">
+        <value>Telefoon, tablet en desktop</value>
+    </data>
+    <data name="CompareThemes" xml:space="preserve">
+        <value>Licht en donker</value>
+    </data>
+    <data name="CompareLanguages" xml:space="preserve">
+        <value>Talen naast elkaar</value>
+    </data>
+    <data name="CompareStates" xml:space="preserve">
+        <value>Alle gegevenstoestanden</value>
+    </data>
+    <data name="CompareSignIn" xml:space="preserve">
+        <value>Afgemeld, aangemeld, meerdere accounts</value>
+    </data>
+    <data name="AddView" xml:space="preserve">
+        <value>Weergave toevoegen</value>
+    </data>
+    <data name="Screenshot" xml:space="preserve">
+        <value>Schermafbeelding</value>
+    </data>
+    <data name="CopyLink" xml:space="preserve">
+        <value>Link naar deze opstelling kopiëren</value>
+    </data>
+    <data name="ToggleWorkbenchTheme" xml:space="preserve">
+        <value>Werkbank wisselen tussen licht en donker</value>
+    </data>
 </root>

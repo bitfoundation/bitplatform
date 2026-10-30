@@ -1,9 +1,112 @@
 @page "/workbench/{PageKey}"
 @inherits WorkbenchComponentBase
 
-<PageTitle>@Localizer[pageInfo?.TitleKey ?? nameof(WorkbenchStrings.WorkbenchTitle)]</PageTitle>
+<PageTitle>@(pageInfo is null ? Localizer[nameof(WorkbenchStrings.WorkbenchTitle)] : $"{Localizer[pageInfo.TitleKey]} · {Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]}")</PageTitle>
 
-@if (pageInfo is not null)
+<BitMediaQuery ScreenQuery="BitScreenQuery.LtSm" OnChange="OnSmallScreenChanged" />
+
+@if (pageInfo is null)
 {
-    <iframe src="@($"preview/{pageInfo.Key}")" style="width:402px;height:874px;border:1px solid gray"></iframe>
+    <div class="not-found">
+        <BitText Typography="BitTypography.H5">@Localizer[nameof(WorkbenchStrings.PageNotFound)]</BitText>
+        <BitLink Href="/">@Localizer[nameof(WorkbenchStrings.BackToHome)]</BitLink>
+    </div>
+}
+else if (isSmallScreen)
+{
+    <div class="inline-surface">
+        <PreviewSurface @key="SelectedPane.Scenario" Page="pageInfo" />
+    </div>
+
+    <BitButton Float Rounded Draggable
+               FloatOffset="1.25rem"
+               FloatPosition="BitPosition.BottomEnd"
+               Class="tools-button"
+               IconName="@BitIconName.Design"
+               OnClick="() => isToolsOpen = true"
+               Title="@Localizer[nameof(WorkbenchStrings.Tools)]"
+               AriaLabel="@Localizer[nameof(WorkbenchStrings.Tools)]" />
+
+    <BitPanel @bind-IsOpen="isToolsOpen" ModeFull Position="BitPanelPosition.End" Class="tools-panel">
+        <Header>
+            <BitStack Horizontal VerticalAlign="BitAlignment.Center" Class="tools-header">
+                <img src="_content/Boilerplate.Client.Core/images/bit-logo.svg" alt="" width="24" height="24" />
+                <BitText Typography="BitTypography.H6">@Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]</BitText>
+                <BitSpacer />
+                <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.Cancel" OnClick="() => isToolsOpen = false"
+                           Title="@Localizer[nameof(WorkbenchStrings.Close)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.Close)]" />
+            </BitStack>
+        </Header>
+        <Body>
+            <ScenarioInspector Value="SelectedPane.Scenario" ValueChanged="OnScenarioChanged" ShowDevice="false" ShowZoom="false" />
+            <PageNavigator CurrentKey="@pageInfo.Key" Query="@currentQuery" OnNavigate="() => isToolsOpen = false" />
+        </Body>
+    </BitPanel>
+}
+else
+{
+    <div class="workbench">
+        <header class="topbar">
+            <a class="brand" href="/">
+                <img src="_content/Boilerplate.Client.Core/images/bit-logo.svg" alt="" width="26" height="26" />
+                <span>@Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]</span>
+            </a>
+            <span class="crumb-separator">/</span>
+            <BitText Typography="BitTypography.Body1" Class="crumb-title" NoWrap>@Localizer[pageInfo.TitleKey]</BitText>
+
+            <BitSpacer />
+
+            <BitMenuButton Text="@Localizer[nameof(WorkbenchStrings.Compare)]"
+                           IconName="@BitIconName.ViewAll2"
+                           Variant="BitVariant.Outline"
+                           Size="BitSize.Small"
+                           Items="compareItems" />
+
+            <BitButton Variant="BitVariant.Outline" Size="BitSize.Small" IconName="@BitIconName.Add" OnClick="AddPane">
+                @Localizer[nameof(WorkbenchStrings.AddView)]
+            </BitButton>
+
+            <BitMenuButton Text="@Localizer[nameof(WorkbenchStrings.Screenshot)]"
+                           IconName="@BitIconName.Camera"
+                           Variant="BitVariant.Fill"
+                           Size="BitSize.Small"
+                           Items="screenshotItems" />
+
+            <BitButton IconOnly Variant="BitVariant.Text" Size="BitSize.Small"
+                       IconName="@(isLinkCopied ? BitIconName.CheckMark : BitIconName.Link)"
+                       Title="@Localizer[nameof(WorkbenchStrings.CopyLink)]"
+                       AriaLabel="@Localizer[nameof(WorkbenchStrings.CopyLink)]"
+                       OnClick="CopyLink" />
+
+            <BitButton IconOnly Variant="BitVariant.Text" Size="BitSize.Small"
+                       IconName="@BitIconName.Contrast"
+                       Title="@Localizer[nameof(WorkbenchStrings.ToggleWorkbenchTheme)]"
+                       AriaLabel="@Localizer[nameof(WorkbenchStrings.ToggleWorkbenchTheme)]"
+                       OnClick="ToggleShellTheme" />
+        </header>
+
+        <aside class="sidebar navigator-column">
+            <PageNavigator CurrentKey="@pageInfo.Key" Query="@currentQuery" />
+        </aside>
+
+        <section class="canvas @(panes.Count > 1 ? "multi" : "single")">
+            @foreach (var pane in panes)
+            {
+                <PreviewPane @key="pane.Id"
+                             Pane="pane"
+                             Page="pageInfo"
+                             Zoom="@zoom"
+                             FitWidth="panes.Count == 1"
+                             CanRemove="panes.Count > 1"
+                             IsSelected="pane.Id == SelectedPane.Id && panes.Count > 1"
+                             OnSelect="SelectPane"
+                             OnRemove="RemovePane"
+                             OnRotate="RotatePane" />
+            }
+        </section>
+
+        <aside class="sidebar inspector-column">
+            <ScenarioInspector Value="SelectedPane.Scenario" ValueChanged="OnScenarioChanged" Zoom="@zoom" ZoomChanged="OnZoomChanged" />
+        </aside>
+    </div>
 }

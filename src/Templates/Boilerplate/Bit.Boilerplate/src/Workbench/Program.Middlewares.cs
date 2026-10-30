@@ -24,7 +24,12 @@ public static partial class Program
                     SupportedUICultures = supportedCultures
                 }.SetDefaultCulture(CultureInfoManager.DefaultCulture.Name);
 
-                options.RequestCultureProviders = [new QueryStringRequestCultureProvider(), new CookieRequestCultureProvider(), new AcceptLanguageHeaderRequestCultureProvider()];
+                options.RequestCultureProviders =
+                [
+                    new CustomRequestCultureProvider(context => Task.FromResult(GetPreviewCulture(context.Request))),
+                    new CookieRequestCultureProvider(),
+                    new AcceptLanguageHeaderRequestCultureProvider()
+                ];
 
                 app.UseRequestLocalization(options);
             }
@@ -38,5 +43,20 @@ public static partial class Program
             app.MapRazorComponents<Components.App>()
                 .AddInteractiveServerRenderMode();
         }
+    }
+
+    private static ProviderCultureResult? GetPreviewCulture(HttpRequest request)
+    {
+        var isPreview = request.Path.StartsWithSegments("/preview");
+
+        if (isPreview is false && request.Path.StartsWithSegments("/_blazor") is false)
+            return null;
+
+        var culture = CultureInfoManager.GetCultureInfo(request.Query["culture"].ToString());
+
+        if (culture is null)
+            return isPreview ? new ProviderCultureResult(CultureInfoManager.DefaultCulture.Name) : null;
+
+        return new ProviderCultureResult(culture.Name);
     }
 }
