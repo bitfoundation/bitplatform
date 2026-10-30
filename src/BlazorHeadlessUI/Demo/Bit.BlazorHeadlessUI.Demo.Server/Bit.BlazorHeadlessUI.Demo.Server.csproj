@@ -1,0 +1,63 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+
+        <!-- In Debug the app renders in Blazor Server mode (see AppRenderMode.Current), so building the Blazor
+             WebAssembly client on every inner-loop build is pure overhead. The WASM client is therefore only
+             referenced in Release builds, or on demand via `dotnet build/run -p:IncludeWasm=true`. Passing that
+             flag both bundles the WASM client and boots the app as Blazor WebAssembly in Debug (it defines
+             INCLUDE_WASM, which AppRenderMode.WasmEnabled reads), so it is all that's needed to run/debug the
+             WASM client. -->
+        <IncludeWasm Condition=" '$(IncludeWasm)' == '' And '$(Configuration)' == 'Release' ">true</IncludeWasm>
+        <IncludeWasm Condition=" '$(IncludeWasm)' == '' ">false</IncludeWasm>
+        <DefineConstants Condition=" '$(IncludeWasm)' == 'true' ">$(DefineConstants);INCLUDE_WASM</DefineConstants>
+
+        <!-- The MCP server reads Bit.BlazorHeadlessUI.xml (the library's XML documentation) from next to this
+             assembly at run time. A build copies it there from the library's output; this keeps it in a
+             publish too, whatever PublishDocumentationFiles is set to. -->
+        <PublishReferencesDocumentationFiles>true</PublishReferencesDocumentationFiles>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Serves the client's _framework payload. -->
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="11.0.0-rc.3.26522.148" />
+        <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
+        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.3.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Client\Bit.BlazorHeadlessUI.Demo.Client.Core\Bit.BlazorHeadlessUI.Demo.Client.Core.csproj" />
+        <ProjectReference Condition=" '$(IncludeWasm)' == 'true' " Include="..\Client\Bit.BlazorHeadlessUI.Demo.Client.Web\Bit.BlazorHeadlessUI.Demo.Client.Web.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Microsoft.AspNetCore.Mvc" />
+    </ItemGroup>
+
+    <!-- Text the MCP server answers from. It is embedded rather than read from disk so the tools keep working
+         from a published deployment, where none of these files exist next to the app. -->
+    <PropertyGroup>
+        <!-- The library guide. Overridable to build against another copy of it. -->
+        <BitBlazorHeadlessUIReadme Condition=" '$(BitBlazorHeadlessUIReadme)' == '' ">$(MSBuildThisFileDirectory)..\..\README.md</BitBlazorHeadlessUIReadme>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Without a README the guide tool says so and every other tool still answers. -->
+        <EmbeddedResource Include="$(BitBlazorHeadlessUIReadme)" Condition="Exists('$(BitBlazorHeadlessUIReadme)')" LogicalName="BitBlazorHeadlessUIDocs/README.md" />
+
+        <!-- The demo pages: their titles, their explanatory prose and which snippet constant each tab shows.
+             The snippets themselves are read off the compiled page types. Embedded here rather than in the
+             client, which would ship them to every WebAssembly visitor. -->
+        <EmbeddedResource Include="..\Client\Bit.BlazorHeadlessUI.Demo.Client.Core\Pages\**\*.razor">
+            <LogicalName>BitBlazorHeadlessUIDemoSource/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+
+        <!-- The custom variants (data-state-open: ...) the Tailwind examples are written with. -->
+        <EmbeddedResource Include="..\Client\Bit.BlazorHeadlessUI.Demo.Client.Core\tailwind\input.css" LogicalName="BitBlazorHeadlessUIDemoTailwind/input.css" />
+    </ItemGroup>
+
+</Project>

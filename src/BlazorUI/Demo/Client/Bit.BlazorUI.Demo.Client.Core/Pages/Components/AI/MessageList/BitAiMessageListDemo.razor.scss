@@ -1,0 +1,18 @@
+﻿// The classes handed to the list land on its own elements, reached from the plain height wrapper of the section.
+::deep {
+    // A list is transparent and its user bubbles take the secondary background, which is this page's own: on the
+    // primary background, as in a chat, they show. A class of an example comes later and still wins.
+    .bit-aimsl {
+        background-color: var(--bit-clr-bg-pri);
+    }
+
+    .custom-list {
+        border-radius: 1rem;
+        background: linear-gradient(180deg, var(--bit-clr-pri-tint), transparent 60%);
+    }
+
+    .custom-list-content {
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+}

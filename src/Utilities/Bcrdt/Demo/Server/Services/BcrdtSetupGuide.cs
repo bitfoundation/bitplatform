@@ -8,7 +8,8 @@ namespace Bit.Bcrdt.Demo.Server.Services;
 /// own sections on that model, and - for the Blazor Web App this demo is - the demo's real hosting files.
 /// <para>
 /// Collaboration fails in ways no compiler catches, and each hosting model has its own: a Blazor Web App
-/// that registers the services in only one of its two containers fails while prerendering; a relative hub
+/// that registers the services in only one of its two containers fails while prerendering when the server's
+/// is missing, and only in the browser, once the page is interactive, when the client's is; a relative hub
 /// URL is rejected when the SignalR connection is built; a bare <c>AddSignalR</c> disconnects every client
 /// once a document outgrows 32 KB; a WebSocket relay mapped without <c>UseWebSockets</c> answers a flat 400;
 /// a Blazor Server page that opens a document while prerendering opens it for a request that is already over;
@@ -116,7 +117,9 @@ public static partial class BcrdtSetupGuide
                 separate ASP.NET Core app - with CORS, because the app and the hub are on different origins - and the hub
                 address is absolute. With no transport at all the document is purely local, which is the right way to build
                 a feature first. `UseIndexedDbStore()` keeps documents in the browser, so they - and edits made offline -
-                survive a reload; with `UseInMemoryStore()` they last as long as the tab.
+                survive a reload; with `UseInMemoryStore()` they last as long as the tab. This is the setup for an app that
+                loads Bit.Bcrdt at startup; one that lazy loads it registers nothing and configures the service in a page
+                instead - a different setup, in `GetBcrdtGuideSection(heading: "Lazy loading on WebAssembly")`.
                 """,
                 UiChecklist,
                 ["Getting started", "Hosting models"],

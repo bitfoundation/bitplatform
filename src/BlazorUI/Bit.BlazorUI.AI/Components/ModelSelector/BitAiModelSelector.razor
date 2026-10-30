@@ -1,0 +1,26 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@if (_items.Count > 0)
+{
+    <div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+         id="@_Id"
+         style="@StyleBuilder.Value"
+         class="@ClassBuilder.Value"
+         dir="@Dir?.ToString().ToLower()">
+        @* The models of each family or provider sit under a header of their own, and the description of a model is the
+           tooltip of its option, which is where a picker says what sets one model apart from the next. *@
+        <BitDropdown TItem="BitDropdownItem<string>"
+                     TValue="string"
+                     Items="_items"
+                     Value="@_selected?.ModelId"
+                     ValueChanged="HandleOnValueChanged"
+                     AriaLabel="@Strings.Model"
+                     Title="@_selected?.Description"
+                     Disabled="Disabled"
+                     FitWidth
+                     Class="bit-aimds-drp"
+                     Styles="@Styles?.Dropdown"
+                     Classes="@Classes?.Dropdown" />
+    </div>
+}

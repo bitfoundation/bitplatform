@@ -10,9 +10,11 @@
      role="region"
      aria-label="@AriaLabel">
 
+    @* A transparent poster: an Android WebView paints a play button over a video element with nothing to play. *@
     <video id="@_videoElementId"
            class="bit-bbscanner__video"
            data-mirrored="@(_mirrored ? "true" : "false")"
+           poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
            playsinline
            muted
            autoplay
@@ -124,7 +126,9 @@
 
             @if (EnableFileScanning)
             {
-                <button type="button" class="bit-bbscanner__button" @onclick="OpenFilePickerAsync">@T.ScanImageButton</button>
+                @* Opened by the page's own click handler rather than a round trip through .NET: a browser opens a file
+                   picker only while the click is fresh, and under Blazor Server the round trip crosses a network. *@
+                <button type="button" class="bit-bbscanner__button" data-bit-bbscanner-pick="@_fileInputId" @onclick="OnPickClickedAsync">@T.ScanImageButton</button>
             }
 
             @ControlsContent

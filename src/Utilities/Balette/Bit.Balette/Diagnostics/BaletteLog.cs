@@ -40,4 +40,7 @@ internal static partial class BaletteLog
 
     [LoggerMessage(9, LogLevel.Warning, "Saving the command history failed; the change is kept for this session only.")]
     public static partial void HistorySaveFailed(ILogger logger, Exception exception);
+
+    [LoggerMessage(13, LogLevel.Warning, "Bit.Balette's services are not registered, so the palette creates its own: it runs on the default BaletteOptions, and history goes to the browser's localStorage. Call builder.Services.AddBitBaletteServices() in Program.cs - in a Blazor Web App, in both the server and the client project. An app that lazy loads Bit.Balette on WebAssembly cannot, and can ignore this warning.")]
+    public static partial void ServicesNotRegistered(ILogger logger);
 }

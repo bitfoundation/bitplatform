@@ -71,6 +71,8 @@ public class BitParamsIconCascadeBrowserTests : PerformanceTestBase
     [DataRow("error-boundary-empty-name", ".bit-erb-svg", ".bit-erb-ico")]
     [DataRow("message-box-own", Own, Cascaded)]
     [DataRow("phone-input-own", Own, CascadedTemplate)]
+    [DataRow("ai-empty-state-cascaded", Cascaded, null)]
+    [DataRow("ai-empty-state-own", Own, Cascaded)]
     public async Task BitParams_Icon_ShowsWhatTheComponentPicked(string section, string shown, string? notShown)
     {
         await Open();

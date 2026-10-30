@@ -93,7 +93,7 @@ public static class DocsCatalog
         [
             new("/getting-started", "Getting started",
                 "Install the package, register the service, and put a first draggable and drop target inside a BdndProvider.",
-                "install setup nuget package AddBitBdndServices quick start program.cs provider BdndProvider concepts items types monitor",
+                "install setup nuget package AddBitBdndServices quick start program.cs provider BdndProvider concepts items types monitor lazy load lazyassemblyloader blazorwebassemblylazyload GetBdndInterop aot",
                 typeof(Pages.GettingStarted)),
             new("/tutorial", "Chessboard tutorial",
                 "React DnD's canonical tutorial: a knight that may only be dropped on the squares a knight can move to, lit while it is in the air - by mouse, touch or keyboard.",

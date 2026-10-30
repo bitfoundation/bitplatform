@@ -1,0 +1,197 @@
+﻿@page "/tw/data-interactive"
+
+<PageTitle>DataInteractive — bit BlazorHeadlessUI · Tailwind</PageTitle>
+
+<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
+    <header class="mb-12">
+        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">DataInteractive</h1>
+        <p class="mt-2 text-zinc-500">
+            A wrapper that forwards <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-hover</code>, <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-active</code>, and <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-focus</code> attributes for consistent state styling.
+        </p>
+        <TwSectionSwitcher Slug="data-interactive" />
+    </header>
+
+    <TwDemoBlock Title="Basic Usage" Code="@_basicCode">
+        <Description>Style hover/focus/active via the data-attributes Tailwind variants.</Description>
+        <LiveContent>
+            <BitBhDataInteractive As="button"
+                               class="inline-flex items-center rounded-lg border border-zinc-200 bg-white px-5 py-2.5 text-sm font-medium cursor-pointer transition-all data-[hover]:bg-sky-50 data-[hover]:border-sky-300 data-[hover]:text-sky-700 data-active:bg-sky-500 data-active:border-sky-500 data-active:text-white data-active:scale-[0.97] data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-blue-600">
+                Hover, focus, or press me
+            </BitBhDataInteractive>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Link Wrapper" Code="@_linkCode">
+        <Description>Use <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">As="a"</code> for nav links.</Description>
+        <LiveContent>
+            <BitBhDataInteractive As="a" href="#"
+                               class="inline-block rounded-md px-4 py-2 text-sm text-blue-600 no-underline transition-all data-[hover]:bg-blue-50 data-[hover]:text-blue-700 data-active:bg-blue-100 data-active:text-blue-800 data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-blue-500">
+                Dashboard
+            </BitBhDataInteractive>
+            <BitBhDataInteractive As="a" href="#"
+                               class="inline-block rounded-md px-4 py-2 text-sm text-blue-600 no-underline transition-all data-[hover]:bg-blue-50 data-[hover]:text-blue-700 data-active:bg-blue-100 data-active:text-blue-800 data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-blue-500">
+                Settings
+            </BitBhDataInteractive>
+            <BitBhDataInteractive As="a" href="#"
+                               class="inline-block rounded-md px-4 py-2 text-sm text-blue-600 no-underline transition-all data-[hover]:bg-blue-50 data-[hover]:text-blue-700 data-active:bg-blue-100 data-active:text-blue-800 data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-blue-500">
+                Profile
+            </BitBhDataInteractive>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Render Context" Code="@_contextCode">
+        <Description>Access state programmatically via <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Context="state"</code>.</Description>
+        <LiveContent>
+            <BitBhDataInteractive As="button"
+                               class="inline-flex items-center gap-3 rounded-xl border-2 border-zinc-200 bg-white px-6 py-4 text-base cursor-pointer transition-all data-[hover]:border-violet-400 data-[hover]:bg-violet-50 data-active:border-violet-600 data-active:bg-violet-100 data-active:scale-[0.96] data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-violet-600">
+                <Template Context="state">
+                    <span class="text-2xl">@(state.Active ? "⚡" : state.Hover ? "👆" : "🖱️")</span>
+                    <span>
+                        @if (state.Active)    { <span>Pressing!</span> }
+                        else if (state.Hover) { <span>Hovering…</span> }
+                        else if (state.Focus) { <span>Focused (Tab here)</span> }
+                        else                  { <span>Interact with me</span> }
+                    </span>
+                </Template>
+            </BitBhDataInteractive>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Disabled State" Code="@_disabledCode">
+        <Description>When <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Disabled="true"</code>, all interactive states are suppressed.</Description>
+        <LiveContent>
+            <BitBhDataInteractive As="button" Disabled="true"
+                               class="inline-flex items-center rounded-lg border border-zinc-200 bg-white px-5 py-2.5 text-sm font-medium data-disabled:opacity-40 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+                I'm disabled
+            </BitBhDataInteractive>
+            <BitBhDataInteractive As="button"
+                               class="inline-flex items-center rounded-lg border border-zinc-200 bg-white px-5 py-2.5 text-sm font-medium cursor-pointer data-[hover]:bg-zinc-100">
+                I'm enabled
+            </BitBhDataInteractive>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Card Grid" Code="@_cardCode">
+        <Description>Build interactive cards.</Description>
+        <LiveContent>
+            <div class="grid w-full gap-4 grid-cols-[repeat(auto-fit,minmax(180px,1fr))]">
+                <BitBhDataInteractive As="div" tabindex="0"
+                                   class="rounded-xl border border-zinc-200 bg-white p-5 cursor-pointer transition-all data-[hover]:border-violet-400 data-[hover]:shadow-lg data-[hover]:-translate-y-0.5 data-active:border-violet-600 data-active:bg-violet-50 data-active:translate-y-0 data-active:shadow-none data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-violet-600">
+                    <div class="font-semibold mb-1 text-zinc-900">Analytics</div>
+                    <div class="text-xs text-zinc-500">View your dashboard metrics</div>
+                </BitBhDataInteractive>
+                <BitBhDataInteractive As="div" tabindex="0"
+                                   class="rounded-xl border border-zinc-200 bg-white p-5 cursor-pointer transition-all data-[hover]:border-violet-400 data-[hover]:shadow-lg data-[hover]:-translate-y-0.5 data-active:border-violet-600 data-active:bg-violet-50 data-active:translate-y-0 data-active:shadow-none data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-violet-600">
+                    <div class="font-semibold mb-1 text-zinc-900">Reports</div>
+                    <div class="text-xs text-zinc-500">Generate monthly reports</div>
+                </BitBhDataInteractive>
+                <BitBhDataInteractive As="div" tabindex="0"
+                                   class="rounded-xl border border-zinc-200 bg-white p-5 cursor-pointer transition-all data-[hover]:border-violet-400 data-[hover]:shadow-lg data-[hover]:-translate-y-0.5 data-active:border-violet-600 data-active:bg-violet-50 data-active:translate-y-0 data-active:shadow-none data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-violet-600">
+                    <div class="font-semibold mb-1 text-zinc-900">Settings</div>
+                    <div class="text-xs text-zinc-500">Configure your workspace</div>
+                </BitBhDataInteractive>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="State Inspector" Code="@_inspectorCode">
+        <Description>Live view of the data attributes.</Description>
+        <LiveContent>
+            <BitBhDataInteractive As="button"
+                               class="flex flex-col items-center gap-3 rounded-xl border-2 border-zinc-200 bg-zinc-50 px-8 py-6 cursor-pointer transition-all min-w-72 data-[hover]:border-blue-400 data-[hover]:bg-blue-50 data-active:border-blue-600 data-active:bg-blue-100 data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-blue-600">
+                <Template Context="s">
+                    <span class="font-medium">Interact with this button</span>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="@($"inline-block rounded px-2 py-1 text-xs font-mono border {(s.Hover ? "bg-emerald-100 text-emerald-800 border-emerald-300" : "bg-zinc-100 text-zinc-600 border-zinc-200")}")">data-hover: @(s.Hover ? "✓" : "✗")</span>
+                        <span class="@($"inline-block rounded px-2 py-1 text-xs font-mono border {(s.Focus ? "bg-emerald-100 text-emerald-800 border-emerald-300" : "bg-zinc-100 text-zinc-600 border-zinc-200")}")">data-focus: @(s.Focus ? "✓" : "✗")</span>
+                        <span class="@($"inline-block rounded px-2 py-1 text-xs font-mono border {(s.Active ? "bg-emerald-100 text-emerald-800 border-emerald-300" : "bg-zinc-100 text-zinc-600 border-zinc-200")}")">data-active: @(s.Active ? "✓" : "✗")</span>
+                    </div>
+                </Template>
+            </BitBhDataInteractive>
+        </LiveContent>
+    </TwDemoBlock>
+</div>
+
+@code {
+    private const string _basicCode = """
+<BitBhDataInteractive As="button"
+                   class="inline-flex items-center rounded-lg border border-zinc-200 bg-white px-5 py-2.5 text-sm font-medium cursor-pointer transition-all data-[hover]:bg-sky-50 data-[hover]:border-sky-300 data-[hover]:text-sky-700 data-active:bg-sky-500 data-active:border-sky-500 data-active:text-white data-active:scale-[0.97] data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-blue-600">
+    Hover, focus, or press me
+</BitBhDataInteractive>
+""";
+
+    private const string _linkCode = """
+<BitBhDataInteractive As="a" href="#"
+                   class="inline-block rounded-md px-4 py-2 text-sm text-blue-600 no-underline transition-all data-[hover]:bg-blue-50 data-[hover]:text-blue-700 data-active:bg-blue-100 data-active:text-blue-800 data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-blue-500">
+    Dashboard
+</BitBhDataInteractive>
+<BitBhDataInteractive As="a" href="#"
+                   class="inline-block rounded-md px-4 py-2 text-sm text-blue-600 no-underline transition-all data-[hover]:bg-blue-50 data-[hover]:text-blue-700 data-active:bg-blue-100 data-active:text-blue-800 data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-blue-500">
+    Settings
+</BitBhDataInteractive>
+<BitBhDataInteractive As="a" href="#"
+                   class="inline-block rounded-md px-4 py-2 text-sm text-blue-600 no-underline transition-all data-[hover]:bg-blue-50 data-[hover]:text-blue-700 data-active:bg-blue-100 data-active:text-blue-800 data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-blue-500">
+    Profile
+</BitBhDataInteractive>
+""";
+
+    private const string _contextCode = """
+<BitBhDataInteractive As="button"
+                   class="inline-flex items-center gap-3 rounded-xl border-2 border-zinc-200 bg-white px-6 py-4 text-base cursor-pointer transition-all data-[hover]:border-violet-400 data-[hover]:bg-violet-50 data-active:border-violet-600 data-active:bg-violet-100 data-active:scale-[0.96] data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-violet-600">
+    <Template Context="state">
+        <span class="text-2xl">@(state.Active ? "⚡" : state.Hover ? "👆" : "🖱️")</span>
+        <span>
+            @if (state.Active)    { <span>Pressing!</span> }
+            else if (state.Hover) { <span>Hovering…</span> }
+            else if (state.Focus) { <span>Focused (Tab here)</span> }
+            else                  { <span>Interact with me</span> }
+        </span>
+    </Template>
+</BitBhDataInteractive>
+""";
+
+    private const string _disabledCode = """
+<BitBhDataInteractive As="button" Disabled="true"
+                   class="inline-flex items-center rounded-lg border border-zinc-200 bg-white px-5 py-2.5 text-sm font-medium data-disabled:opacity-40 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+    I'm disabled
+</BitBhDataInteractive>
+<BitBhDataInteractive As="button"
+                   class="inline-flex items-center rounded-lg border border-zinc-200 bg-white px-5 py-2.5 text-sm font-medium cursor-pointer data-[hover]:bg-zinc-100">
+    I'm enabled
+</BitBhDataInteractive>
+""";
+
+    private const string _cardCode = """
+<div class="grid w-full gap-4 grid-cols-[repeat(auto-fit,minmax(180px,1fr))]">
+    <BitBhDataInteractive As="div" tabindex="0"
+                       class="rounded-xl border border-zinc-200 bg-white p-5 cursor-pointer transition-all data-[hover]:border-violet-400 data-[hover]:shadow-lg data-[hover]:-translate-y-0.5 data-active:border-violet-600 data-active:bg-violet-50 data-active:translate-y-0 data-active:shadow-none data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-violet-600">
+        <div class="font-semibold mb-1 text-zinc-900">Analytics</div>
+        <div class="text-xs text-zinc-500">View your dashboard metrics</div>
+    </BitBhDataInteractive>
+    <BitBhDataInteractive As="div" tabindex="0"
+                       class="rounded-xl border border-zinc-200 bg-white p-5 cursor-pointer transition-all data-[hover]:border-violet-400 data-[hover]:shadow-lg data-[hover]:-translate-y-0.5 data-active:border-violet-600 data-active:bg-violet-50 data-active:translate-y-0 data-active:shadow-none data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-violet-600">
+        <div class="font-semibold mb-1 text-zinc-900">Reports</div>
+        <div class="text-xs text-zinc-500">Generate monthly reports</div>
+    </BitBhDataInteractive>
+    <BitBhDataInteractive As="div" tabindex="0"
+                       class="rounded-xl border border-zinc-200 bg-white p-5 cursor-pointer transition-all data-[hover]:border-violet-400 data-[hover]:shadow-lg data-[hover]:-translate-y-0.5 data-active:border-violet-600 data-active:bg-violet-50 data-active:translate-y-0 data-active:shadow-none data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-violet-600">
+        <div class="font-semibold mb-1 text-zinc-900">Settings</div>
+        <div class="text-xs text-zinc-500">Configure your workspace</div>
+    </BitBhDataInteractive>
+</div>
+""";
+
+    private const string _inspectorCode = """
+<BitBhDataInteractive As="button"
+                   class="flex flex-col items-center gap-3 rounded-xl border-2 border-zinc-200 bg-zinc-50 px-8 py-6 cursor-pointer transition-all min-w-72 data-[hover]:border-blue-400 data-[hover]:bg-blue-50 data-active:border-blue-600 data-active:bg-blue-100 data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-blue-600">
+    <Template Context="s">
+        <span class="font-medium">Interact with this button</span>
+        <div class="flex flex-wrap gap-2">
+            <span class="@($"inline-block rounded px-2 py-1 text-xs font-mono border {(s.Hover ? "bg-emerald-100 text-emerald-800 border-emerald-300" : "bg-zinc-100 text-zinc-600 border-zinc-200")}")">data-hover: @(s.Hover ? "✓" : "✗")</span>
+            <span class="@($"inline-block rounded px-2 py-1 text-xs font-mono border {(s.Focus ? "bg-emerald-100 text-emerald-800 border-emerald-300" : "bg-zinc-100 text-zinc-600 border-zinc-200")}")">data-focus: @(s.Focus ? "✓" : "✗")</span>
+            <span class="@($"inline-block rounded px-2 py-1 text-xs font-mono border {(s.Active ? "bg-emerald-100 text-emerald-800 border-emerald-300" : "bg-zinc-100 text-zinc-600 border-zinc-200")}")">data-active: @(s.Active ? "✓" : "✗")</span>
+        </div>
+    </Template>
+</BitBhDataInteractive>
+""";
+}

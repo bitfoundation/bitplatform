@@ -24,6 +24,7 @@ on:
       - 'src/Utilities/Bonboarding/**'
       - 'src/Utilities/Bortable/**'
       - 'src/Brouter/**'
+      - 'src/BlazorHeadlessUI/**'
       - 'src/Bswup/**'
       - 'src/Butil/**'
       - 'src/Toolings/Cli/**'
@@ -36,8 +37,62 @@ permissions:
   contents: read
 
 jobs:
+  # The packages that target the MAUI platforms (Android, iOS, Mac Catalyst and Windows) need their workloads, and only
+  # Windows builds all four: iOS and Mac Catalyst class libraries build there without a Mac. They are packed here, with
+  # the same strong name key, and signed, attested and pushed by build-publish along with every other package.
+  pack-maui:
+    name: pack MAUI packages
+    runs-on: windows-2025
+    environment: code-signing
+    permissions:
+      contents: read
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: Delete AssemblyOriginatorKeyFile.snk
+      shell: bash
+      run: |
+        rm src/AssemblyOriginatorKeyFile.snk
+
+    - name: Extract strong sign certificate from env
+      uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
+      with:
+          fileDir: './src/'
+          fileName: 'AssemblyOriginatorKeyFile.snk'
+          encodedString: ${{ secrets.STRONG_SIGN_CERTIFICATE_BASE64 }}
+
+    - name: dotnet workload restore BbScanner.Maui
+      run: cd src/Utilities/BbScanner/Bit.BbScanner.Maui && dotnet workload restore
+
+    - name: dotnet build BbScanner.Maui
+      run: dotnet build src/Utilities/BbScanner/Bit.BbScanner.Maui/Bit.BbScanner.Maui.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BbScanner.Maui
+      run: dotnet pack src/Utilities/BbScanner/Bit.BbScanner.Maui/Bit.BbScanner.Maui.csproj --output ./maui-packages --configuration Release
+
+    - name: Upload the MAUI packages
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: maui-nupkg-files
+        path: ./maui-packages/*.nupkg
+        if-no-files-found: error
+
   build-publish:
     name: build & publish
+    needs: pack-maui
     runs-on: ubuntu-26.04
     environment: code-signing
     permissions:
@@ -126,6 +181,11 @@ jobs:
     - name: dotnet pack BlazorUI.Legacy
       run: dotnet pack src/BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj --output . --configuration Release
 
+    - name: dotnet build BlazorUI.AI
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.AI/Bit.BlazorUI.AI.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BlazorUI.AI
+      run: dotnet pack src/BlazorUI/Bit.BlazorUI.AI/Bit.BlazorUI.AI.csproj --output . --configuration Release
+
     - name: dotnet build BlazorUI.Assets
       run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack BlazorUI.Assets
@@ -155,6 +215,16 @@ jobs:
       run: dotnet build src/Brouter/Bit.Brouter.Generators/Bit.Brouter.Generators.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Brouter.Generators
       run: dotnet pack src/Brouter/Bit.Brouter.Generators/Bit.Brouter.Generators.csproj --output . --configuration Release
+
+    - name: dotnet build BlazorHeadlessUI
+      run: dotnet build src/BlazorHeadlessUI/Bit.BlazorHeadlessUI/Bit.BlazorHeadlessUI.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BlazorHeadlessUI
+      run: dotnet pack src/BlazorHeadlessUI/Bit.BlazorHeadlessUI/Bit.BlazorHeadlessUI.csproj --output . --configuration Release
+
+    - name: dotnet build BlazorHeadlessUI.Testing
+      run: dotnet build src/BlazorHeadlessUI/Bit.BlazorHeadlessUI.Testing/Bit.BlazorHeadlessUI.Testing.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BlazorHeadlessUI.Testing
+      run: dotnet pack src/BlazorHeadlessUI/Bit.BlazorHeadlessUI.Testing/Bit.BlazorHeadlessUI.Testing.csproj --output . --configuration Release
 
     - name: dotnet build BevTools.Loader
       run: dotnet build src/Utilities/BevTools/Bit.BevTools.Loader/Bit.BevTools.Loader.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -325,7 +395,13 @@ jobs:
 
     - name: dotnet pack BlazorEmpty
       run: dotnet pack src/Templates/BlazorEmpty/Bit.BlazorEmpty.ProjectTemplate.csproj --output . --configuration Release
-    
+
+    - name: Download the MAUI packages
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      with:
+        name: maui-nupkg-files
+        path: ./maui-packages
+
     # Copies every package into one folder and unzips their dlls, so the bit ones can be signed, attested and listed in the SBOM.
     - name: Collect the packages and their bit assemblies
       run: |

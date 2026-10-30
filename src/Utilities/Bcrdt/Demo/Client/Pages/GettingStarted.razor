@@ -275,8 +275,79 @@ document.Map.Set(<span class="s">"description"</span>, <span class="s">"..."</sp
         withdraw a user the moment the connection drops, call <code>builder.Services.AddBitBcrdtCircuitPresence()</code>
         from <code>Bit.Bcrdt.Server</code>: its <code>CircuitHandler</code> calls <code>document.Presence.Suspend()</code>
         on every open document when the connection goes down, and <code>Resume()</code> when it comes back. The engine
-        needs no JavaScript at all, so it runs as well in a background service or a console app.
+        needs no JavaScript at all, so it runs as well in a background service or a console app. Outside AOT builds, a
+        WebAssembly app can also <a href="getting-started#lazy-loading">lazy load</a> the library instead of registering it.
     </p>
+</div>
+
+<div class="bb-card" id="lazy-loading">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Lazy loading on WebAssembly</h3>
+    <p class="bb-card-desc">
+        A WebAssembly app can fetch Bcrdt only when someone opens a part of the app that collaborates. It then cannot
+        call <code>AddBitBcrdtServices</code> in the <code>Program.cs</code> of the project that runs in the browser,
+        and configures the collaboration service instead: <code>IServiceProvider.GetBcrdtCollaborationService(...)</code>
+        takes the builder <code>AddBitBcrdtServices</code> takes, and where no <code>IBcrdtCollaborationService</code>
+        is registered, <code>BcrdtCollaborationScope</code> - and the <code>Collaboration</code> property of every
+        <code>BcrdtComponentBase</code> - use the service it configured. That is WebAssembly only: everywhere else Bcrdt
+        is loaded with the app, so the registration is required there, and the components fail without it. Mark the
+        assembly as lazy loaded in the project that runs in the browser, and load it before the first page that uses it
+        renders:
+    </p>
+    <pre class="bb-code"><span class="c">&lt;!-- The browser project's .csproj --&gt;</span>
+&lt;<span class="k">ItemGroup</span>&gt;
+  &lt;<span class="k">BlazorWebAssemblyLazyLoad</span> Include=<span class="s">"Bit.Bcrdt.wasm"</span> /&gt;
+&lt;/<span class="k">ItemGroup</span>&gt;</pre>
+    <pre class="bb-code"><span class="c">@@* App.razor - in a Blazor Web App, the client project's Routes.razor: the router waits for OnNavigateAsync
+   before it renders the page. *@@</span>
+<span class="k">@@using</span> Microsoft.AspNetCore.Components.WebAssembly.Services
+<span class="k">@@inject</span> LazyAssemblyLoader LazyAssemblyLoader
+
+&lt;<span class="k">Router</span> AppAssembly=<span class="s">"typeof(App).Assembly"</span> OnNavigateAsync=<span class="s">"OnNavigateAsync"</span>&gt;
+    ...
+&lt;/<span class="k">Router</span>&gt;
+
+<span class="k">@@code</span> {
+    <span class="k">private async</span> Task OnNavigateAsync(NavigationContext context)
+    {
+        <span class="c">// The pages that collaborate: fetch Bcrdt before they render. A second call loads nothing again.</span>
+        <span class="k">if</span> (context.Path.StartsWith(<span class="s">"notes"</span>, StringComparison.OrdinalIgnoreCase))
+            <span class="k">await</span> LazyAssemblyLoader.LoadAssembliesAsync([<span class="s">"Bit.Bcrdt.wasm"</span>]);
+    }
+}</pre>
+    <p class="bb-card-desc">
+        Those pages, or a layout only they use, configure the service in <code>OnInitialized</code> - which runs before
+        the components inside them ask for it - with what <code>Program.cs</code> would otherwise have registered:
+    </p>
+    <pre class="bb-code"><span class="c">@@* NotesLayout.razor *@@</span>
+<span class="k">@@using</span> Bit.Bcrdt
+<span class="k">@@inherits</span> LayoutComponentBase
+<span class="k">@@inject</span> IServiceProvider Services
+<span class="k">@@inject</span> NavigationManager Navigation
+
+@@Body
+
+<span class="k">@@code</span> {
+    <span class="k">protected override void</span> OnInitialized() =&gt; Services.GetBcrdtCollaborationService(collaboration =&gt; collaboration
+        .UseTransport(<span class="k">new</span> BcrdtWebSocketTransportFactory(Navigation.BaseUri + <span class="s">"ws/bcrdt/{documentId}"</span>))
+        .UseIndexedDbStore());
+}</pre>
+    <ul class="bb-detail-list">
+        <li>Leave <code>AddBitBcrdtServices</code> out of that project's <code>Program.cs</code>: calling it references Bcrdt's types before the assembly is there. For the same reason only what renders after the assembly has loaded may use Bcrdt's types - the pages it is loaded for and a layout only they use, not <code>App.razor</code>, <code>Routes.razor</code>, a layout every page shares or <code>Program.cs</code>.</li>
+        <li>No type in an assembly the router reads when the app starts - the app's own assembly first of all - may derive from or implement one of Bcrdt's: no component that inherits <code>BcrdtComponentBase</code>, no transport, store or client id provider of your own. On WebAssembly such a type fails to load before Bit.Bcrdt is there, and keeps failing after it has loaded. Put it in a library that is lazy loaded together with Bit.Bcrdt. The router finds the routes of that library's pages only once it knows the assembly: load it in the same <code>LoadAssembliesAsync</code> call as <code>Bit.Bcrdt.wasm</code>, and add the assemblies the call returns to a list the <code>Router</code>'s <code>AdditionalAssemblies</code> is bound to.</li>
+        <li>Configure the service before anything asks for it: in <code>OnInitialized</code>, not after an <code>await</code> in <code>OnInitializedAsync</code>, which lets the layout's content render first. A component that asks before anything configured the service throws, naming both ways to provide one; nothing is created by that, so a configuration that comes later - on the next page, say - still takes effect.</li>
+        <li>Only the first configuration creates the service, so a page visited again gets the same service back. <code>GetBcrdtCollaborationService(_ =&gt; { })</code> configures a purely local one, with no transport and no store.</li>
+        <li>The builder's container holds the app's <code>IJSRuntime</code>, so <code>UseIndexedDbStore()</code> works, and nothing else of the application's: hand the transport and the store over as instances or delegates.</li>
+        <li>With the SignalR transport, lazy load <code>Bit.Bcrdt.SignalR.wasm</code> along with <code>Bit.Bcrdt.wasm</code> - and the SignalR client's own assemblies too, where nothing the app loads at startup uses them.</li>
+        <li>Do not lazy load in an AOT build. AOT compiles every assembly into <code>dotnet.native.wasm</code>, so there is nothing left to download later, and lazy loading an AOT-compiled assembly can fail at startup.</li>
+    </ul>
+    <p class="bb-card-desc">
+        In a Blazor Web App only the browser lazy loads; the server project loads Bcrdt with the rest of the app:
+    </p>
+    <ul class="bb-detail-list">
+        <li>The router has to run in the browser for <code>OnNavigateAsync</code> to load the assembly there: give <code>Routes</code> the <code>InteractiveWebAssembly</code> or <code>InteractiveAuto</code> render mode in <code>App.razor</code>. With per-page render modes the router and the layouts render statically on the server, so <code>OnNavigateAsync</code> never runs in the browser - and neither does a layout's <code>OnInitialized</code>.</li>
+        <li>The server project still calls <code>AddBitBcrdtServices</code>. Prerendering - and, with <code>InteractiveAuto</code>, the visits that run in a circuit - use that registration: <code>GetBcrdtCollaborationService(...)</code> returns it there without calling the configuration, so the same layout works on both sides.</li>
+        <li>The server project also registers <code>LazyAssemblyLoader</code>, which <code>Routes.razor</code> injects while it is prerendered there, and which loads nothing outside the browser: <code>builder.Services.AddScoped&lt;LazyAssemblyLoader&gt;()</code>.</li>
+    </ul>
 </div>
 
 <div class="bb-card">

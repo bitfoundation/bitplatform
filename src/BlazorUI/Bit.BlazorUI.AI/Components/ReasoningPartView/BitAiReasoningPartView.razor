@@ -1,0 +1,50 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    <BitAiCollapsible Open="@_open"
+                      OpenChanged="OnUserToggled"
+                      Classes="@Classes?.Collapsible"
+                      Styles="@Styles?.Collapsible">
+        <HeaderTemplate>
+            <span style="@Styles?.Header" class="bit-airpv-hdr @Classes?.Header">
+                @* The glyph ships with this package's own icon subset rather than with the icon font of the core
+                   library, so it is also drawn from that subset's classes. *@
+                <BitIcon IconName="Lightbulb"
+                         Style="@Styles?.Icon"
+                         Class="@($"bit-airpv-ico bit-icon-ai bit-icon-ai--Lightbulb {Classes?.Icon}")" />
+                <span style="@Styles?.Title" class="bit-airpv-ttl @Classes?.Title">@Title</span>
+                @* The dots only say what the title says already ("Reasoning"), from inside the button that opens the
+                   panel, so they are a picture rather than a status of their own: no live region, nothing announced. *@
+                @if (Part.IsStreaming)
+                {
+                    <BitBouncingDotsLoading Inline
+                                            Role="none"
+                                            Classes="@Classes?.Loading"
+                                            Styles="@Styles?.Loading" />
+                }
+            </span>
+        </HeaderTemplate>
+        <ChildContent>
+            @* Long reasoning scrolls inside the panel, and a scrolling box of text holds nothing that takes the focus - so it
+               takes the focus itself while it has something to scroll (data-bit-ai-scroll, see BitAiScrollStops.ts), which is
+               what lets a keyboard scroll it in an engine that does not make a scrolling box focusable on its own (WebKit). A
+               tab stop is announced by its name, so it is a group named for what it holds. *@
+            <div data-bit-ai-scroll
+                 role="group"
+                 aria-label="@Strings.Reasoning"
+                 style="@Styles?.Body"
+                 class="bit-airpv-bdy @Classes?.Body">
+                <BitAiStreamingMarkdown Text="@Part.Text"
+                                        IsStreaming="@Part.IsStreaming"
+                                        Classes="@Classes?.Markdown"
+                                        Styles="@Styles?.Markdown" />
+            </div>
+        </ChildContent>
+    </BitAiCollapsible>
+</div>

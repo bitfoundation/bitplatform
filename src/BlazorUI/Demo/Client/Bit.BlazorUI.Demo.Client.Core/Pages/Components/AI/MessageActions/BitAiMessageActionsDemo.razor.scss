@@ -1,0 +1,18 @@
+﻿// The classes handed to the row land on its own elements, reached from the plain wrapper of the section.
+::deep {
+    .custom-actions {
+        padding-block: 0.5rem;
+        border-block: 1px dashed var(--bit-clr-pri);
+    }
+
+    .custom-actions-group {
+        padding: 0.125rem;
+        border-radius: 1rem;
+        background-color: var(--bit-clr-pri-tint);
+    }
+
+    .custom-actions-model {
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+}

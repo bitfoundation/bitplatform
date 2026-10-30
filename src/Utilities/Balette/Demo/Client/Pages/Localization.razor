@@ -53,12 +53,14 @@
         palette above uses the parameter. <code>BaletteShortcutHint</code> takes a <code>Strings</code> parameter as well,
         for the word between the chords of a sequence.
     </p>
-    <pre class="bb-code">@OptionsExample</pre>
+    <CodeBlock Language="csharp" Code="@OptionsExample" />
+    <CodeBlock Code="@ParameterExample" />
     <p>
         Every property is <code>virtual</code>, so a subclass can read them from an <code>IStringLocalizer</code> - the usual
         resource files - instead:
     </p>
-    <pre class="bb-code">@LocalizerExample</pre>
+    <CodeBlock Language="csharp" Code="@LocalizerExample" />
+    <CodeBlock Code="@LocalizerMarkupExample" />
 </section>
 
 <section class="bb-card">
@@ -68,7 +70,7 @@
         <code>NoResultsAnnouncement</code>, <code>OneResultAnnouncement</code> or <code>ResultsAnnouncement</code>; a
         language whose plural forms one template per count cannot express overrides it. Polish has three:
     </p>
-    <pre class="bb-code">@PluralExample</pre>
+    <CodeBlock Language="csharp" Code="@PluralExample" />
     <p>
         The Persian strings above override it too, to announce the count in Persian digits
         (<code>@PersianDigits(12)</code>) - a screen reader reading Persian expects them.
@@ -83,7 +85,7 @@
         aliases. Give translated commands explicit ids, too: an id derived from the title would change with the language,
         and recents, pins and the active row with it.
     </p>
-    <pre class="bb-code">@CommandsExample</pre>
+    <CodeBlock Language="csharp" Code="@CommandsExample" />
 </section>
 
 <section class="bb-card" id="rtl">
@@ -101,6 +103,8 @@
             ranking</a>), and a shortcut such as <kbd>G</kbd> <kbd>S</kbd> works when a Persian layout types
             <code>ل</code> <code>س</code> (see <a href="keyboard#layouts">Keyboard</a>).</li>
     </ul>
+    <p>The palette at the top of this page turns around with the language it is handed:</p>
+    <CodeBlock Code="@RtlExample" />
     <p>
         This site's own palette goes right to left with the page: pick <em>Language › فارسی</em> or <em>العربية</em> in it, and
         the whole site turns around - the palette included.
@@ -371,8 +375,10 @@
                 ShortcutThen = "dann",
             };
         });
+        """;
 
-        // One palette.
+    private const string ParameterExample = """
+        @* One palette. *@
         <Balette Strings="_german" />
         """;
 
@@ -384,10 +390,30 @@
             public override string ResultsAnnouncement => localizer[nameof(ResultsAnnouncement)];
             // ...
         }
+        """;
 
+    private const string LocalizerMarkupExample = """
         @inject IStringLocalizer<LocalizedBaletteStrings> Localizer
 
         <Balette Strings="new LocalizedBaletteStrings(Localizer)" />
+        """;
+
+    private const string RtlExample = """
+        <div dir="@(_language.Rtl ? "rtl" : "ltr")" lang="@_language.Code">
+            <Balette Inline="true"
+                     IncludeRegisteredCommands="false"
+                     Strings="_language.Strings"
+                     Commands="_commands" />
+        </div>
+
+        @code {
+            // A new list on every switch: the palette re-reads Commands when it is handed a new collection.
+            private void SetLanguage(Language language)
+            {
+                _language = language;
+                _commands = BuildCommands();
+            }
+        }
         """;
 
     private const string PluralExample = """

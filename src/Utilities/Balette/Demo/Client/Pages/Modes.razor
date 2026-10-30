@@ -68,6 +68,7 @@
         </table>
     </div>
     <p>A mode scopes the registry and the sources; nested commands are never found from a mode.</p>
+    <CodeBlock Language="csharp" Code="@ModeExample" />
 </section>
 
 <section class="bb-card" id="sources">
@@ -119,6 +120,7 @@
         <a href="pages#navigating">nested pages</a>). Each search gets a <code>BaletteSourceContext</code>: the
         <code>ModePrefix</code>, the <code>ParentCommandId</code> of the page that asked, and the user's <code>Services</code>.
     </p>
+    <CodeBlock Language="csharp" Code="@OrderedSourceExample" />
 </section>
 
 <section class="bb-card">
@@ -130,6 +132,7 @@
         a slow API never shows stale results. A spinner replaces the search icon while any source is pending. Every call that
         did reach a source is listed here, newest first.
     </p>
+    <CodeBlock Language="csharp" Code="@DebounceExample" />
 
     <div class="bb-demo">
         <div class="bb-demo-bar">
@@ -182,7 +185,7 @@
         The <code>$</code> mode pages through @Packages.Length packages, @PageSize at a time, with a
         <code>BaletteDelegateSource</code> - the ready-made source over a delegate:
     </p>
-    <pre class="bb-code">@PagingExample</pre>
+    <CodeBlock Language="csharp" Code="@PagingExample" />
     <div class="bb-try">
         <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("$")'>Open in Packages mode</button>
         <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync("$acme")'>Search <code>$acme</code></button>
@@ -215,12 +218,12 @@
         A source that hangs is cancelled through its token when the timeout passes, so the call log above shows it
         <em>Cancelled</em> while the palette offers to try again.
     </p>
-    <pre class="bb-code">@StatusExample</pre>
+    <CodeBlock Language="csharp" Code="@StatusExample" />
 </section>
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Registering them</h3>
-    <pre class="bb-code">@RegistrationExample</pre>
+    <CodeBlock Language="csharp" Code="@RegistrationExample" />
     <p>
         <code>RegisterMode</code> and <code>RegisterSource</code> return a handle that removes what they added. This page's
         two are registered while it is on screen:
@@ -262,6 +265,57 @@
         ("hangs", "Never answers"),
     ];
 
+    private const string ModeExample = """
+        options.Modes.Add(new BaletteCommandMode
+        {
+            Prefix = ">",
+            Name = "Commands",
+            Description = "Run any command",
+            Placeholder = "Run a command…",
+            Tags = ["command"],            // only the commands tagged "command"
+        });
+        options.Modes.Add(new BaletteCommandMode { Prefix = "?", Name = "Help", Groups = ["Help"] });
+
+        // At runtime, until the handle is disposed: this page's $ mode.
+        _packagesMode = Palette.RegisterMode(new BaletteCommandMode
+        {
+            Prefix = "$",
+            Name = "Packages",
+            HideRegistryCommands = true,   // only its sources' rows
+            Sources = [packages],
+        });
+        """;
+
+    private const string OrderedSourceExample = """
+        // Ordered: the server already sorts by relevance, so its order is kept and its rows are one block.
+        public sealed class IssueSource(IssueClient issues) : IBaletteSource
+        {
+            public string Name => "Issues";
+            public int MinQueryLength => 0;     // asked on the empty query too, so # opens on a list
+
+            public async Task<IReadOnlyList<BaletteCommand>> SearchAsync(
+                string query, BaletteSourceContext context, CancellationToken cancellationToken)
+            {
+                // context.ModePrefix is "#" here, and context.Services the user's scope.
+                var found = await issues.SearchAsync(query, openFirst: true, cancellationToken);
+                return [.. found.Select(i => BaletteCmd.New($"#{i.Number} {i.Title}").Subtitle(i.State).Build())];
+            }
+        }
+        """;
+
+    private const string DebounceExample = """
+        options.DebounceMs = 150;   // the quiet time after the last keystroke before a source is asked
+
+        public async Task<IReadOnlyList<BaletteCommand>> SearchAsync(
+            string query, BaletteSourceContext context, CancellationToken cancellationToken)
+        {
+            // Cancelled when the next search starts: hand the token to whatever waits, and stale results never show.
+            var people = await http.GetFromJsonAsync<Person[]>($"api/people?q={Uri.EscapeDataString(query)}", cancellationToken);
+            // An id of its own: two people can share a name, and recents and pins go by the id.
+            return [.. people!.Select(p => BaletteCmd.New(p.Name).Id($"person:{p.Email}").Subtitle(p.Role).Build())];
+        }
+        """;
+
     private const string PagingExample = """
         options.Modes.Add(new BaletteCommandMode
         {
@@ -272,7 +326,7 @@
             [
                 new BaletteDelegateSource("Packages", async (query, cursor, context, ct) =>
                 {
-                    var page = await Api.SearchPackagesAsync(query, after: cursor, take: 10, ct);
+                    var page = await api.SearchPackagesAsync(query, after: cursor, take: 10, ct);
                     return new BaletteSourcePage([.. page.Items.Select(ToCommand)], page.NextCursor, page.Total);
                 }, minQueryLength: 0, maxResults: 10),
             ],
@@ -290,7 +344,7 @@
 
             public async Task<IReadOnlyList<BaletteCommand>> SearchAsync(string query, BaletteSourceContext context, CancellationToken ct)
             {
-                var services = await Api.GetStatusAsync(ct);     // throws, or never answers: a retry row
+                var services = await api.GetStatusAsync(ct);     // throws, or never answers: a retry row
                 return [.. services.Where(s => s.Name.Contains(query)).Select(ToCommand)];
             }
         }
@@ -328,7 +382,7 @@
             {
                 var people = await context.Services.GetRequiredService<PeopleClient>()
                     .SearchAsync(query, cancellationToken);
-                return [.. people.Select(p => BaletteCmd.New(p.Name).Subtitle(p.Role).Build())];
+                return [.. people.Select(p => BaletteCmd.New(p.Name).Id($"person:{p.Email}").Subtitle(p.Role).Build())];
             }
         }
         """;

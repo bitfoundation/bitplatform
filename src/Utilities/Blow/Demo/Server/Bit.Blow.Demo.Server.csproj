@@ -46,7 +46,7 @@
              not-found page teaches nothing about flows, and the code viewer (CodeBlock and its
              SyntaxHighlighter) is the site's chrome, not a flow. -->
         <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
-                          Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor;..\Client\Examples\CodeBlock.razor;..\Client\Examples\SyntaxHighlighter.cs">
+                          Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor;..\Client\Examples\CodeBlock.razor;..\Client\Examples\SyntaxHighlighter*.cs">
             <LogicalName>BlowSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
 

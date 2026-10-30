@@ -1,0 +1,96 @@
+﻿@page "/e2e/aimodelselector"
+
+<PageTitle>BitAiModelSelector E2E</PageTitle>
+
+<h1>BitAiModelSelector</h1>
+
+@* The catalog the host registers (E2EAiModels): E2E Large (the default) and E2E Fast under "E2E Provider", E2E Local
+   under "Local Runtime". *@
+
+<E2ESection Id="basic" Title="Basic (the registered catalog)">
+    <BitAiModelSelector Id="ms-basic" @bind-ModelId="_basicId" OnModelSelected="m => { _basicSelected = m.Name; _basicCount++; }" />
+    <p>
+        ModelId: <span id="ms-basic-id">@(_basicId ?? "-")</span> |
+        Selected: <span id="ms-basic-selected">@_basicSelected</span> |
+        OnModelSelected: <span id="ms-basic-count">@_basicCount</span>
+    </p>
+    <button id="ms-basic-after">After the picker</button>
+</E2ESection>
+
+<E2ESection Id="bound" Title="A bound ModelId">
+    <BitAiModelSelector Id="ms-bound" @bind-ModelId="_boundId" OnModelSelected="m => _boundCount++" />
+    <p>ModelId: <span id="ms-bound-id">@_boundId</span> | OnModelSelected: <span id="ms-bound-count">@_boundCount</span></p>
+    <button id="ms-bound-set" @onclick="@(() => _boundId = "e2e-local")">Bind E2E Local</button>
+</E2ESection>
+
+<E2ESection Id="unknown" Title="A ModelId naming no model">
+    <BitAiModelSelector Id="ms-unknown" @bind-ModelId="_unknownId" OnModelSelected="m => _unknownCount++" />
+    <p>ModelId: <span id="ms-unknown-id">@_unknownId</span> | OnModelSelected: <span id="ms-unknown-count">@_unknownCount</span></p>
+</E2ESection>
+
+<E2ESection Id="required" Title="RequiredCapabilities">
+    <BitAiModelSelector Id="ms-vision" RequiredCapabilities="BitAiModelCapabilities.Vision" @bind-ModelId="_visionId" />
+    <p>ModelId: <span id="ms-vision-id">@(_visionId ?? "-")</span></p>
+    <BitAiModelSelector Id="ms-tools" RequiredCapabilities="BitAiModelCapabilities.Tools" ModelId="e2e-local" ModelIdChanged="id => _toolsId = id" />
+    <p>ModelId: <span id="ms-tools-id">@(_toolsId ?? "-")</span></p>
+    <div id="ms-none-host">
+        <BitAiModelSelector Id="ms-none" RequiredCapabilities="BitAiModelCapabilities.Audio" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="models" Title="Models, ShowDeprecated and models with no group">
+    <BitAiModelSelector Id="ms-models" Models="_models" @bind-ModelId="_modelsId" />
+    <BitAiModelSelector Id="ms-deprecated" Models="_models" ShowDeprecated ModelId="old" />
+    <BitAiModelSelector Id="ms-flat" Models="_flatModels" />
+    <p>ModelId: <span id="ms-models-id">@(_modelsId ?? "-")</span></p>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitAiModelSelector Id="ms-dis" Disabled ModelId="e2e-fast" />
+</E2ESection>
+
+<E2ESection Id="style" Title="Styles and Classes">
+    <BitAiModelSelector Id="ms-style"
+                        Style="width: 260px"
+                        Classes="@(new() { Root = "ms-custom-root" })"
+                        Styles="@(new() { Dropdown = new() { Container = "border-color: rgb(1, 2, 3)" } })" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitAiModelSelector Id="ms-rtl" Dir="BitDir.Rtl" Style="width: 260px" />
+    <div dir="rtl">
+        <BitAiModelSelector Id="ms-rtl-inherited" Style="width: 260px" />
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly IReadOnlyList<BitAiModel> _models =
+    [
+        new("alpha", "Alpha") { Family = "Family A", Description = "The first one.", Capabilities = BitAiModelCapabilities.Streaming },
+        new("old", "Old Model") { Family = "Family A", IsDeprecated = true, Capabilities = BitAiModelCapabilities.Streaming },
+        new("loner", "Loner") { Description = "Belongs to no family.", Capabilities = BitAiModelCapabilities.Streaming },
+    ];
+
+    private static readonly IReadOnlyList<BitAiModel> _flatModels =
+    [
+        new("one", "One") { Capabilities = BitAiModelCapabilities.Streaming },
+        new("two", "Two") { Capabilities = BitAiModelCapabilities.Streaming },
+    ];
+
+    private string? _basicId;
+    private string _basicSelected = "-";
+    private int _basicCount;
+
+    private string? _boundId = "e2e-fast";
+    private int _boundCount;
+
+    private string? _unknownId = "no-such-model";
+    private int _unknownCount;
+
+    private string? _visionId;
+    private string? _toolsId;
+
+    private string? _modelsId;
+}

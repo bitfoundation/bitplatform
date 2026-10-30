@@ -11,13 +11,14 @@
         }
 
         // Keeps an Escape that cancels an IME composition (see isComposingKey) away from .NET. KeyboardEventArgs cannot
-        // tell such a press from any other - it carries no key code, and no composition state before .NET 9 - and the
-        // engines that report the real key for it (WebKit) would have every .NET handler that acts on Escape - a
-        // dropdown's search box, a picker's field, a callout around a field of the consumer's own - act on the press
-        // the user made to put a candidate back. Utils.Keys.ts adds it on the document element in the bubble phase, so
-        // every listener of the page's own elements has heard the key by then - the field's, the surfaces', which
-        // leave it alone themselves - and only Blazor's delegation on the document, and the listeners after it, do
-        // not: such a press then reaches .NET in no engine, where the others report it as the "Process" key anyway.
+        // tell such a press from any other - it carries no key code, which is all that marks it where the composition
+        // has already ended - and the engines that report the real key for it (WebKit) would have every .NET handler
+        // that acts on Escape - a dropdown's search box, a picker's field, a callout around a field of the consumer's
+        // own - act on the press the user made to put a candidate back. Utils.Keys.ts adds it on the document element
+        // in the bubble phase, so every listener of the page's own elements has heard the key by then - the field's,
+        // the surfaces', which leave it alone themselves - and only Blazor's delegation on the document, and the
+        // listeners after it, do not: such a press then reaches .NET in no engine, where the others report it as the
+        // "Process" key anyway.
         export function stopComposingEscape(e: KeyboardEvent) {
             if (e.key !== 'Escape' || !Utils.isComposingKey(e)) return;
 

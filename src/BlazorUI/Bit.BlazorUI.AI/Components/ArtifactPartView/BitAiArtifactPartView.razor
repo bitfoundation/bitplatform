@@ -1,0 +1,30 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @if (_artifact is not null)
+    {
+        <BitAiArtifactView Artifact="_artifact"
+                           InitialVersion="Part.ArtifactVersion"
+                           Classes="@Classes?.ArtifactView"
+                           Styles="@Styles?.ArtifactView" />
+    }
+    else
+    {
+        @* An artifact the conversation does not hold (yet) is named rather than dropped, so the turn still says it
+           produced one. The tag is a neutral one through BitTag's host-default class rather than a Color, which would be
+           a choice that outranks an app's --bit-Tag-* restyle. *@
+        <BitTag Text="@Strings.Artifact"
+                Title="@Part.ArtifactId"
+                IconName="MapLayers"
+                Variant="BitVariant.Outline"
+                Size="BitSize.Small"
+                Class="bit-aiapv-plh bit-tag-dft-ter"
+                Classes="@_PlaceholderClasses"
+                Styles="@Styles?.Placeholder" />
+    }
+</div>

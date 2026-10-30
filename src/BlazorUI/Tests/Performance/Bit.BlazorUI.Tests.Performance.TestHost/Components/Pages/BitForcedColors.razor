@@ -450,6 +450,35 @@
         case "pdfviewer":
             <BitPdfViewer Height="480px" />
             break;
+
+        // ---- AI ----
+
+        case "aicitationmarker":
+            @* A number on the primary tint, turned onto the primary fill under the pointer. *@
+            <BitAiCitationMarker Citation="_aiCitation" OnActivate="() => { }" />
+            <BitAiCitationMarker Citation="_aiCitation" Disabled />
+            break;
+
+        case "aiconversationlist":
+            @* The open conversation on the selection tint. *@
+            <div style="width: 320px;">
+                <BitAiConversationList Conversations="_aiConversations" SelectedId="c1" ShowNewButton OnSelect="_ => { }" OnNew="() => { }" OnDelete="_ => { }" />
+            </div>
+            break;
+
+        case "aipromptinput":
+            @* The send button on the primary fill, and the slash menu's options. *@
+            <div style="width: 480px;">
+                <BitAiPromptInput Value="Hello" Commands="_aiCommands" />
+            </div>
+            break;
+
+        case "aitoolapproval":
+            @* The approve action on the primary fill beside the neutral ones. *@
+            <div style="width: 480px;">
+                <BitAiToolApproval Call="_aiCall" OnDecision="_ => { }" />
+            </div>
+            break;
     }
 </div>
 
@@ -461,6 +490,19 @@
     private string _status = "Loading";
 
     private BitSnackBar? _snackBar;
+
+    private readonly BitAiCitation _aiCitation = new("c1", new BitAiCitationSource("s1", "Handbook") { Url = "https://example.com/handbook" }) { Number = 1 };
+    private readonly List<BitAiConversationSummary> _aiConversations = [new("c1", "Trip", DateTimeOffset.Now), new("c2", "Budget", DateTimeOffset.Now)];
+    private readonly List<BitAiSlashCommand> _aiCommands = [new("summarize", "Summarize the conversation"), new("translate", "Translate the last answer")];
+    private readonly BitAiToolCallPart _aiCall = AiApprovalCall();
+
+    private static BitAiToolCallPart AiApprovalCall()
+    {
+        var call = new BitAiToolCallPart("c1", "delete_records") { Definition = new("delete_records") { Title = "Delete records", Risk = BitAiToolRisk.Destructive } };
+        call.CompleteArguments(System.Text.Json.JsonDocument.Parse("{\"filter\":\"inactive\"}").RootElement);
+        call.SetStatus(BitAiToolCallStatus.AwaitingApproval);
+        return call;
+    }
 
     private static readonly DateTimeOffset _otherDay = new(DateTime.Today.AddDays(DateTime.Today.Day > 20 ? -3 : 3));
     private static readonly TimeSpan _time = new(9, 30, 0);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp.Dom;
 using Bunit;
@@ -146,21 +147,10 @@ public class BitDataGridTests : BunitTestContext
     [TestMethod]
     public async Task TemplateOnlyColumnSortsViaSortBy()
     {
-        var items = CreateRows();
-        RenderFragment columns = builder =>
-        {
-            builder.OpenComponent<BitDataGridColumn<TestRow>>(0);
-            builder.AddComponentParameter(1, "ColumnId", "custom");
-            builder.AddComponentParameter(2, "Title", "Custom");
-            builder.AddComponentParameter(3, "SortBy", (Func<TestRow, object?>)(r => r.Price));
-            builder.AddComponentParameter(4, "Template", (RenderFragment<TestRow>)(row => b => b.AddContent(0, row.Name)));
-            builder.CloseComponent();
-        };
-
         var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
         {
-            parameters.Add(p => p.Items, items);
-            parameters.Add(p => p.ChildContent, columns);
+            parameters.Add(p => p.Items, CreateRows());
+            parameters.Add(p => p.ChildContent, TemplateOnlyColumn("custom", sortBy: r => r.Price));
         });
 
         await component.InvokeAsync(() => component.Instance.SortByAsync("custom", BitDataGridSortDirection.Ascending));
@@ -168,6 +158,203 @@ public class BitDataGridTests : BunitTestContext
         // Ascending by price: Apple (-5) first, Cherry (10) last.
         Assert.AreEqual("Apple", FirstCellTexts(component)[0]);
         Assert.AreEqual("Cherry", FirstCellTexts(component)[^1]);
+    }
+
+    // A template-only column: no Field, so it has a sort key only through SortBy (in memory) or ServerSortable (server).
+    private static RenderFragment TemplateOnlyColumn(string? columnId, Func<TestRow, object?>? sortBy = null, bool? sortable = null,
+        bool serverSortable = false) => builder =>
+    {
+        builder.OpenComponent<BitDataGridColumn<TestRow>>(0);
+        builder.AddComponentParameter(1, "ColumnId", columnId);
+        builder.AddComponentParameter(2, "Title", "Custom");
+        builder.AddComponentParameter(3, "SortBy", sortBy);
+        builder.AddComponentParameter(4, "Sortable", sortable);
+        builder.AddComponentParameter(5, "ServerSortable", serverSortable);
+        builder.AddComponentParameter(6, "Template", (RenderFragment<TestRow>)(row => b => b.AddContent(0, row.Name)));
+        builder.CloseComponent();
+    };
+
+    // A server (OnRead) grid, or an infinite (OnLoadMore) one, recording every read request it makes.
+    private IRenderedComponent<BitDataGrid<TestRow>> RenderRemoteGrid(bool infinite, RenderFragment columns, List<BitDataGridReadRequest> reads)
+        => RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            if (infinite)
+            {
+                parameters.Add(p => p.Height, "300px");
+                parameters.Add(p => p.OnLoadMore, (Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TestRow>>>)(request =>
+                {
+                    reads.Add(request);
+                    return Task.FromResult(new BitDataGridReadResult<TestRow>(request.Skip == 0 ? CreateRows() : [], 0));
+                }));
+            }
+            else
+            {
+                parameters.Add(p => p.OnRead, (Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TestRow>>>)(request =>
+                {
+                    reads.Add(request);
+                    return Task.FromResult(new BitDataGridReadResult<TestRow>(CreateRows(), 5));
+                }));
+            }
+            parameters.Add(p => p.ChildContent, columns);
+        });
+
+    // A template-only column with a Sortable="true" but no SortBy has nothing an in-memory source could order it by,
+    // and ServerSortable means nothing there.
+    [TestMethod]
+    [DataRow(true, false, DisplayName = "Sortable=true")]
+    [DataRow(null, true, DisplayName = "ServerSortable")]
+    public async Task ClientModeLeavesATemplateOnlyColumnWithoutSortByUnsortable(bool? sortable, bool serverSortable)
+    {
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, CreateRows());
+            parameters.Add(p => p.ChildContent, TemplateOnlyColumn("custom", sortable: sortable, serverSortable: serverSortable));
+        });
+
+        Assert.AreEqual(0, component.FindAll("button.bit-dtg-htext").Count);
+
+        await component.InvokeAsync(() => component.Instance.SortByAsync("custom", BitDataGridSortDirection.Ascending));
+
+        Assert.AreEqual(0, component.Instance.ActiveSorts.Count);
+    }
+
+    // In server and infinite mode the grid forwards the sorted column's id, never its SortBy delegate, so a
+    // template-only column the app opted in with ServerSortable and named with a ColumnId sorts there: the server
+    // orders by that id (issue #14153).
+    [TestMethod]
+    [DataRow(false, false, null, DisplayName = "Server mode")]
+    [DataRow(false, true, true, DisplayName = "Server mode, with a SortBy and Sortable=true")]
+    [DataRow(true, false, null, DisplayName = "Infinite mode")]
+    [DataRow(true, true, true, DisplayName = "Infinite mode, with a SortBy and Sortable=true")]
+    public void RemoteModesSortAServerSortableTemplateOnlyColumnByItsId(bool infinite, bool withSortBy, bool? sortable)
+    {
+        var reads = new List<BitDataGridReadRequest>();
+        var component = RenderRemoteGrid(infinite,
+            TemplateOnlyColumn("UsedPercent", withSortBy ? r => r.Price : null, sortable, serverSortable: true), reads);
+
+        Assert.IsTrue(component.Find(".bit-dtg-hcell").ClassList.Contains("bit-dtg-sortable"));
+
+        component.Find("button.bit-dtg-htext").Click();
+
+        component.WaitForAssertion(() =>
+        {
+            var sort = reads[^1].Sorts.Single();
+            Assert.AreEqual("UsedPercent", sort.ColumnId);
+            Assert.AreEqual(BitDataGridSortDirection.Ascending, sort.Direction);
+        });
+    }
+
+    // A generated id means nothing to a server, and a template-only column the app did not opt in with ServerSortable
+    // stays as it always was: neither a SortBy nor a Sortable="true" makes a sort button of it, so a server is never
+    // sent an id it was not told to expect.
+    [TestMethod]
+    [DataRow(false, null, false, null, true, DisplayName = "Server mode, no ColumnId")]
+    [DataRow(false, "  ", false, null, true, DisplayName = "Server mode, a blank ColumnId")]
+    [DataRow(false, "UsedPercent", true, null, false, DisplayName = "Server mode, a SortBy without ServerSortable")]
+    [DataRow(false, "UsedPercent", false, true, false, DisplayName = "Server mode, Sortable=true without ServerSortable")]
+    [DataRow(false, "UsedPercent", false, false, true, DisplayName = "Server mode, Sortable=false")]
+    [DataRow(true, null, false, null, true, DisplayName = "Infinite mode, no ColumnId")]
+    [DataRow(true, "  ", false, null, true, DisplayName = "Infinite mode, a blank ColumnId")]
+    [DataRow(true, "UsedPercent", true, null, false, DisplayName = "Infinite mode, a SortBy without ServerSortable")]
+    [DataRow(true, "UsedPercent", false, true, false, DisplayName = "Infinite mode, Sortable=true without ServerSortable")]
+    [DataRow(true, "UsedPercent", false, false, true, DisplayName = "Infinite mode, Sortable=false")]
+    public void RemoteModesLeaveATemplateOnlyColumnUnsortableWithoutAnOptInOrAnId(bool infinite, string? columnId, bool withSortBy,
+        bool? sortable, bool serverSortable)
+    {
+        var reads = new List<BitDataGridReadRequest>();
+        var component = RenderRemoteGrid(infinite,
+            TemplateOnlyColumn(columnId, withSortBy ? r => r.Price : null, sortable, serverSortable), reads);
+
+        Assert.IsFalse(component.Find(".bit-dtg-hcell").ClassList.Contains("bit-dtg-sortable"));
+        Assert.AreEqual(0, component.FindAll("button.bit-dtg-htext").Count);
+    }
+
+    // The programmatic paths follow the header's rule: a server is not asked to order by an id it was not told to
+    // expect, and the header does not show a sort it offers no button to clear.
+    [TestMethod]
+    public async Task ProgrammaticSortsSkipATemplateOnlyColumnWithoutASortKey()
+    {
+        var reads = new List<BitDataGridReadRequest>();
+        var component = RenderRemoteGrid(false, TemplateOnlyColumn("actions"), reads);
+
+        await component.InvokeAsync(() => component.Instance.SortByAsync("actions", BitDataGridSortDirection.Ascending));
+
+        Assert.AreEqual(0, component.Instance.ActiveSorts.Count);
+
+        var state = component.Instance.GetState();
+        state.Sorts.Add(new BitDataGridSortDescriptor { ColumnId = "actions", Direction = BitDataGridSortDirection.Ascending, Priority = 1 });
+        await component.InvokeAsync(() => component.Instance.ApplyStateAsync(state));
+
+        Assert.AreEqual(0, component.Instance.ActiveSorts.Count);
+        Assert.IsTrue(reads.All(r => r.Sorts.Count == 0));
+    }
+
+    // A sorted column that loses its sort key from the parent - its ColumnId (falling back to a generated id) or its
+    // ServerSortable - drops the sort instead of having the server order by an id it does not know, behind a header
+    // that no longer offers a button to clear it.
+    [TestMethod]
+    [DataRow(null, true, DisplayName = "ColumnId cleared")]
+    [DataRow("UsedPercent", false, DisplayName = "ServerSortable cleared")]
+    public void ServerModeDropsTheSortOfATemplateOnlyColumnThatLosesItsSortKey(string? columnId, bool serverSortable)
+    {
+        var reads = new List<BitDataGridReadRequest>();
+        IReadOnlyList<BitDataGridSortDescriptor>? reported = null;
+        var component = RenderRemoteGrid(false, TemplateOnlyColumn("UsedPercent", serverSortable: true), reads);
+        component.Render(parameters => parameters.Add(p => p.OnSortChange, (IReadOnlyList<BitDataGridSortDescriptor> s) => reported = s));
+
+        component.Find("button.bit-dtg-htext").Click();
+        Assert.AreEqual("UsedPercent", reads[^1].Sorts.Single().ColumnId);
+
+        component.Render(parameters => parameters.Add(p => p.ChildContent, TemplateOnlyColumn(columnId, serverSortable: serverSortable)));
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(0, reads[^1].Sorts.Count);
+            Assert.AreEqual(0, component.Instance.ActiveSorts.Count);
+            Assert.AreEqual(0, reported!.Count);
+            Assert.AreEqual(0, component.FindAll("button.bit-dtg-htext").Count);
+        });
+    }
+
+    // The grid renders its header before its columns take their new parameters, so a SortBy coming or going from the
+    // parent has the header render again by itself, and a sort the column loses its key to goes, restoring the order.
+    [TestMethod]
+    public void ClientModeHeaderFollowsARuntimeSortByChange()
+    {
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, CreateRows());
+            parameters.Add(p => p.ChildContent, TemplateOnlyColumn("custom"));
+        });
+        Assert.AreEqual(0, component.FindAll("button.bit-dtg-htext").Count);
+
+        component.Render(parameters => parameters.Add(p => p.ChildContent, TemplateOnlyColumn("custom", sortBy: r => r.Price)));
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll("button.bit-dtg-htext").Count));
+
+        component.Find("button.bit-dtg-htext").Click();
+        Assert.AreEqual("Apple", FirstCellTexts(component)[0]);
+
+        component.Render(parameters => parameters.Add(p => p.ChildContent, TemplateOnlyColumn("custom")));
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(0, component.FindAll("button.bit-dtg-htext").Count);
+            Assert.AreEqual(0, component.Instance.ActiveSorts.Count);
+            Assert.AreEqual("Banana", FirstCellTexts(component)[0]);
+        });
+    }
+
+    // A queryable source composes an expression tree, which a SortBy delegate cannot give it, so a template-only
+    // column stays unsortable there whatever it asks for.
+    [TestMethod]
+    public void QueryableModeLeavesANamedTemplateOnlyColumnUnsortable()
+    {
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, CreateRows().AsQueryable());
+            parameters.Add(p => p.ChildContent, TemplateOnlyColumn("UsedPercent", r => r.Price, true, serverSortable: true));
+        });
+
+        Assert.AreEqual(0, component.FindAll("button.bit-dtg-htext").Count);
     }
 
     [TestMethod]
@@ -2426,6 +2613,327 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual(0, filters!.Count);
     }
 
+    // ------------------------------------------------------------- View rows
+
+    [TestMethod]
+    public async Task GetViewItemsReturnsTheFilteredSortedRowsOfEveryPage()
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.Pageable, true);
+            parameters.Add(p => p.PageSize, 2);
+        });
+
+        await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Price", BitDataGridFilterOperator.GreaterThan, 2.0));
+        await component.InvokeAsync(() => component.Instance.SortByAsync("Price", BitDataGridSortDirection.Descending));
+
+        Assert.AreEqual(2, FirstCellTexts(component).Count, "the page holds two rows");
+        CollectionAssert.AreEqual(new[] { "Cherry", "Date", "Banana" }, component.Instance.GetViewItems().Select(r => r.Name).ToList());
+    }
+
+    [TestMethod]
+    public async Task OnViewChangeReportsTheViewOnlyWhenItsRowsChange()
+    {
+        var items = CreateRows();
+        var views = new List<IReadOnlyList<TestRow>>();
+        var component = RenderGrid(items, parameters =>
+        {
+            parameters.Add(p => p.Pageable, true);
+            parameters.Add(p => p.PageSize, 2);
+            parameters.Add(p => p.OnViewChange, (IReadOnlyList<TestRow> rows) => views.Add(rows));
+        });
+
+        Assert.AreEqual(1, views.Count, "the first view is reported");
+        Assert.AreEqual(5, views[0].Count);
+
+        await component.InvokeAsync(() => component.Instance.GoToPageAsync(2));
+        component.Render(parameters => parameters.Add(p => p.Striped, false));
+        Assert.AreEqual(1, views.Count, "neither another page nor a render of the parent changes the view");
+
+        await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Price", BitDataGridFilterOperator.GreaterThan, 2.0));
+        Assert.AreEqual(2, views.Count);
+        CollectionAssert.AreEqual(new[] { "Banana", "Cherry", "Date" }, views[1].Select(r => r.Name).ToList());
+
+        await component.InvokeAsync(() => component.Instance.SortByAsync("Price", BitDataGridSortDirection.Descending));
+        Assert.AreEqual(3, views.Count, "a new order is a new view");
+        CollectionAssert.AreEqual(new[] { "Cherry", "Date", "Banana" }, views[2].Select(r => r.Name).ToList());
+
+        // A row added to the same list in place reaches the view on the parent's next render.
+        items.Add(new TestRow { Id = 6, Name = "Fig", Price = 20 });
+        component.Render(parameters => parameters.Add(p => p.Striped, true));
+        Assert.AreEqual(4, views.Count);
+        CollectionAssert.AreEqual(new[] { "Fig", "Cherry", "Date", "Banana" }, views[3].Select(r => r.Name).ToList());
+    }
+
+    [TestMethod]
+    public async Task ServerModeReadsTheWholeViewOnRequestAndRevealsOnlyLoadedRows()
+    {
+        BitDataGridReadRequest? lastRequest = null;
+        var views = 0;
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.OnRead, (Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TestRow>>>)(request =>
+            {
+                lastRequest = request;
+                var rows = CreateRows();
+                return Task.FromResult(new BitDataGridReadResult<TestRow>(
+                    rows.Skip(request.Skip).Take(request.Take ?? rows.Count).ToList(), rows.Count));
+            }));
+            parameters.Add(p => p.KeyField, (Func<TestRow, object>)(r => r.Id));
+            parameters.Add(p => p.Pageable, true);
+            parameters.Add(p => p.PageSize, 2);
+            parameters.Add(p => p.OnViewChange, (IReadOnlyList<TestRow> _) => views++);
+            parameters.Add(p => p.ChildContent, DefaultColumns());
+        });
+
+        Assert.AreEqual(2, component.Instance.GetViewItems().Count, "only the loaded page is at hand synchronously");
+
+        IReadOnlyList<TestRow> all = null!;
+        await component.InvokeAsync(async () => all = await component.Instance.GetViewItemsAsync());
+        Assert.AreEqual(5, all.Count);
+        Assert.IsNull(lastRequest!.Take);
+        Assert.AreEqual(0, views, "server mode holds only a window of the view, so it never reports one");
+
+        var rows = CreateRows();
+        var revealed = false;
+        await component.InvokeAsync(async () => revealed = await component.Instance.RevealItemAsync(rows[1]));
+        Assert.IsTrue(revealed, "a row of the loaded page can be revealed");
+
+        await component.InvokeAsync(async () => revealed = await component.Instance.RevealItemAsync(rows[4]));
+        Assert.IsFalse(revealed, "where an unloaded row is, only the server knows");
+        Assert.AreEqual(1, component.Instance.CurrentPage);
+    }
+
+    [TestMethod]
+    public async Task RevealItemAsyncGoesToThePageThatHoldsTheRowAndScrollsToIt()
+    {
+        var items = CreateRows();
+        var component = RenderGrid(items, parameters =>
+        {
+            parameters.Add(p => p.Pageable, true);
+            parameters.Add(p => p.PageSize, 2);
+        });
+
+        var revealed = false;
+        await component.InvokeAsync(async () => revealed = await component.Instance.RevealItemAsync(items[3]));
+
+        Assert.IsTrue(revealed);
+        Assert.AreEqual(2, component.Instance.CurrentPage);
+        CollectionAssert.AreEqual(new[] { "Cherry", "Date" }, FirstCellTexts(component).ToList());
+        var args = Context.JSInterop.Invocations["BitBlazorUI.DataGrid.revealRow"].Single().Arguments;
+        Assert.AreEqual(5, args[1], "the header row, then the fourth row of the view");
+        Assert.AreEqual(-1, args[2], "a row that is not virtualized is rendered, so no position is needed");
+
+        await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Name", BitDataGridFilterOperator.Contains, "an"));
+        await component.InvokeAsync(async () => revealed = await component.Instance.RevealItemAsync(items[3]));
+        Assert.IsFalse(revealed, "a row the filter leaves out is not in the view");
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.DataGrid.revealRow"].Count);
+    }
+
+    [TestMethod]
+    public async Task RevealItemAsyncPassesTheRowsPlaceInAVirtualizedBody()
+    {
+        var items = CreateRows();
+        var component = RenderGrid(items, parameters =>
+        {
+            parameters.Add(p => p.Virtualize, true);
+            parameters.Add(p => p.Height, "200px");
+        });
+
+        await component.InvokeAsync(() => component.Instance.RevealItemAsync(items[4]));
+
+        var args = Context.JSInterop.Invocations["BitBlazorUI.DataGrid.revealRow"].Single().Arguments;
+        Assert.AreEqual(4, args[2]);
+        Assert.AreEqual(36f, args[3]);
+    }
+
+    [TestMethod]
+    public async Task RevealItemAsyncOpensTheCollapsedGroupsTheRowIsIn()
+    {
+        var items = CreateRows();
+        var component = RenderGrid(items, parameters =>
+        {
+            parameters.Add(p => p.Groupable, true);
+            parameters.Add(p => p.GroupsInitiallyCollapsed, true);
+        });
+        await component.InvokeAsync(() => component.Instance.GroupByAsync("Name"));
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-group-row)").Count);
+
+        await component.InvokeAsync(() => component.Instance.RevealItemAsync(items[2]));
+
+        var rows = component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-group-row)");
+        Assert.AreEqual(1, rows.Count, "only the group holding the row opens");
+        Assert.AreEqual("Cherry", rows[0].QuerySelector(".bit-dtg-cell")!.TextContent.Trim());
+    }
+
+    [TestMethod]
+    public async Task RevealItemAsyncExpandsTheTreeBranchesTheRowIsUnder()
+    {
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<TreeNode>>(0);
+            builder.AddComponentParameter(1, "Field", "Name");
+            builder.CloseComponent();
+        };
+        var leaf = new TreeNode { Id = 111, Name = "leaf" };
+        var roots = new List<TreeNode>
+        {
+            new()
+            {
+                Id = 1, Name = "root",
+                Children = [new() { Id = 11, Name = "branch", Children = [leaf] }, new() { Id = 12, Name = "other" }],
+            },
+        };
+        var component = RenderComponent<BitDataGrid<TreeNode>>(parameters =>
+        {
+            parameters.Add(p => p.Items, roots);
+            parameters.Add(p => p.KeyField, (Func<TreeNode, object>)(n => n.Id));
+            parameters.Add(p => p.ChildrenSelector, (Func<TreeNode, IEnumerable<TreeNode>?>)(n => n.Children));
+            parameters.Add(p => p.ChildContent, columns);
+        });
+        Assert.AreEqual(1, component.FindAll(".bit-dtg-body > .bit-dtg-row").Count);
+
+        var revealed = false;
+        await component.InvokeAsync(async () => revealed = await component.Instance.RevealItemAsync(leaf));
+
+        Assert.IsTrue(revealed);
+        Assert.AreEqual(4, component.FindAll(".bit-dtg-body > .bit-dtg-row").Count, "root, branch, leaf and branch's sibling");
+
+        await component.InvokeAsync(async () => revealed = await component.Instance.RevealItemAsync(new TreeNode { Id = 99 }));
+        Assert.IsFalse(revealed, "a node that is not in the tree");
+    }
+
+    [TestMethod]
+    public async Task OnViewChangeTellsRowsApartByKeyRatherThanByInstance()
+    {
+        // Every read of the source makes new instances of the same rows, the way an untracked EF query does.
+        IQueryable<TestRow> Source() => CreateRows().AsQueryable().Select(r => new TestRow { Id = r.Id, Name = r.Name, Price = r.Price });
+        var views = 0;
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Source());
+            parameters.Add(p => p.KeyField, (Func<TestRow, object>)(r => r.Id));
+            parameters.Add(p => p.Pageable, true);
+            parameters.Add(p => p.PageSize, 2);
+            parameters.Add(p => p.OnViewChange, (IReadOnlyList<TestRow> _) => views++);
+            parameters.Add(p => p.ChildContent, DefaultColumns());
+        });
+        Assert.AreEqual(1, views, "the first view is reported once, however many columns register after it");
+
+        await component.InvokeAsync(() => component.Instance.GoToPageAsync(2));
+        await component.InvokeAsync(() => component.Instance.SetPageSizeAsync(3));
+        component.Render(parameters => parameters.Add(p => p.Items, Source()));
+        Assert.AreEqual(1, views, "another page, another page size or new instances of the same rows are not a new view");
+
+        await component.InvokeAsync(() => component.Instance.SortByAsync("Price", BitDataGridSortDirection.Descending));
+        Assert.AreEqual(2, views);
+    }
+
+    [TestMethod]
+    public void OnViewChangeHandsOverAReadOnlyListAndTellsAHandlerBoundAgain()
+    {
+        var views = new List<IReadOnlyList<TestRow>>();
+        Action<IReadOnlyList<TestRow>> handler = rows => views.Add(rows);
+        var component = RenderGrid(configure: parameters => parameters.Add(p => p.OnViewChange, handler));
+
+        Assert.AreEqual(1, views.Count);
+        Assert.ThrowsExactly<NotSupportedException>(() => ((IList<TestRow>)views[0])[0] = new TestRow(),
+            "the list the grid compares the next view with cannot be changed by the handler");
+
+        component.Render(parameters => parameters.Add(p => p.OnViewChange, default(EventCallback<IReadOnlyList<TestRow>>)));
+        component.Render(parameters => parameters.Add(p => p.OnViewChange, handler));
+
+        Assert.AreEqual(2, views.Count, "a handler bound again is told the view it has not seen");
+        Assert.AreEqual(5, views[1].Count);
+    }
+
+    [TestMethod]
+    public void OnViewChangeWalksASelfReferencingTreeOnce()
+    {
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<TreeNode>>(0);
+            builder.AddComponentParameter(1, "Field", "Name");
+            builder.CloseComponent();
+        };
+        var root = new TreeNode { Id = 1, Name = "root" };
+        root.Children = [new() { Id = 2, Name = "child", Children = [root] }];
+        IReadOnlyList<TreeNode>? view = null;
+
+        RenderComponent<BitDataGrid<TreeNode>>(parameters =>
+        {
+            parameters.Add(p => p.Items, new List<TreeNode> { root });
+            parameters.Add(p => p.KeyField, (Func<TreeNode, object>)(n => n.Id));
+            parameters.Add(p => p.ChildrenSelector, (Func<TreeNode, IEnumerable<TreeNode>?>)(n => n.Children));
+            parameters.Add(p => p.OnViewChange, (IReadOnlyList<TreeNode> rows) => view = rows);
+            parameters.Add(p => p.ChildContent, columns);
+        });
+
+        CollectionAssert.AreEqual(new[] { "root", "child" }, view!.Select(n => n.Name).ToList(), "the root beneath its child is the cycle, not a row");
+    }
+
+    [TestMethod]
+    public void OnViewChangeReportsTheChildrenALazyTreeLoadsButNotABranchOpeningOrClosing()
+    {
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<TreeNode>>(0);
+            builder.AddComponentParameter(1, "Field", "Name");
+            builder.CloseComponent();
+        };
+        var views = new List<IReadOnlyList<TreeNode>>();
+        var component = RenderComponent<BitDataGrid<TreeNode>>(parameters =>
+        {
+            parameters.Add(p => p.Items, new List<TreeNode> { new() { Id = 1, Name = "root", IsFolder = true } });
+            parameters.Add(p => p.KeyField, (Func<TreeNode, object>)(n => n.Id));
+            parameters.Add(p => p.HasChildrenSelector, (Func<TreeNode, bool>)(n => n.IsFolder));
+            parameters.Add(p => p.ChildrenProvider, (Func<TreeNode, Task<IEnumerable<TreeNode>?>>)(_ =>
+                Task.FromResult<IEnumerable<TreeNode>?>(new[] { new TreeNode { Id = 11, Name = "child" } })));
+            parameters.Add(p => p.OnViewChange, (IReadOnlyList<TreeNode> rows) => views.Add(rows));
+            parameters.Add(p => p.ChildContent, columns);
+        });
+        Assert.AreEqual(1, views.Count);
+
+        component.Find(".bit-dtg-tree-toggle").Click();
+        component.WaitForAssertion(() => Assert.AreEqual(2, views.Count));
+        Assert.AreEqual(2, views[1].Count, "the loaded child joins the view");
+
+        component.Find(".bit-dtg-tree-toggle").Click();
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-dtg-body > .bit-dtg-row").Count));
+        Assert.AreEqual(2, views.Count, "a collapsed branch is still in the view");
+    }
+
+    [TestMethod]
+    public async Task GetViewItemsAsyncReadsWithATokenTheCallerAndTheGridsDisposalCancel()
+    {
+        var tokens = new List<CancellationToken>();
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.OnRead, (Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TestRow>>>)(request =>
+            {
+                if (request.Take is not null) return Task.FromResult(new BitDataGridReadResult<TestRow>(CreateRows().Take(2).ToList(), 5));
+                // A read of the whole view that is still running.
+                tokens.Add(request.CancellationToken);
+                return new TaskCompletionSource<BitDataGridReadResult<TestRow>>().Task;
+            }));
+            parameters.Add(p => p.Pageable, true);
+            parameters.Add(p => p.PageSize, 2);
+            parameters.Add(p => p.ChildContent, DefaultColumns());
+        });
+
+        using var cts = new CancellationTokenSource();
+        await component.InvokeAsync(() => { _ = component.Instance.GetViewItemsAsync(cts.Token); });
+        await component.InvokeAsync(() => { _ = component.Instance.GetViewItemsAsync(); });
+        Assert.AreEqual(2, tokens.Count);
+
+        cts.Cancel();
+        Assert.IsTrue(tokens[0].IsCancellationRequested, "the caller's token reaches the provider");
+        Assert.IsFalse(tokens[1].IsCancellationRequested);
+
+        await component.InvokeAsync(async () => await component.Instance.DisposeAsync());
+        Assert.IsTrue(tokens[1].IsCancellationRequested, "a read still running goes with the grid");
+    }
+
     // ------------------------------------------------------- Column auto-fit
 
     [TestMethod]
@@ -2724,6 +3232,28 @@ public class BitDataGridTests : BunitTestContext
 
         Assert.AreEqual(0, component.FindAll(".bit-dtg-cell-wrap").Count);
         Assert.AreEqual(0, component.FindAll(".bit-dtg-hcell-wrap").Count);
+    }
+
+    [TestMethod]
+    public void VirtualizedRowsAreExactlyRowHeightTall()
+    {
+        // Virtualize, the grid's spacers and revealRow place every row RowHeight down from the last, so a row
+        // whose content made it taller would put the rows after it out of place: the height is pinned, not a minimum.
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.Virtualize, true);
+            parameters.Add(p => p.Height, "300px");
+            parameters.Add(p => p.RowHeight, 40f);
+        });
+
+        var rows = component.FindAll(".bit-dtg-body > .bit-dtg-row");
+        Assert.IsTrue(rows.Count > 0);
+        foreach (var row in rows)
+        {
+            var style = row.GetAttribute("style") ?? "";
+            StringAssert.Contains(style, ";height:40px;");
+            Assert.IsFalse(style.Contains("min-height"), style);
+        }
     }
 
     // -------------------------------------------------------------- Row events

@@ -72,6 +72,16 @@
     transform: scaleX(-1);
 }
 
+/* A native camera (Bit.BbScanner.Maui) draws its preview behind the page, where the video element is: the scanner lets
+   it show through, and the element itself stays only to say where that is. */
+.bit-bbscanner[data-native-preview="true"] {
+    background: transparent;
+}
+
+.bit-bbscanner[data-native-preview="true"] .bit-bbscanner__video {
+    visibility: hidden;
+}
+
 /* The dimmed surround is drawn with a single element and a hole punched by clip-path, which
    keeps the overlay to one composited layer no matter how the region is configured. */
 .bit-bbscanner__mask {

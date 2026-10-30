@@ -1,0 +1,897 @@
+﻿@page "/accessibility"
+@inject IBitBhAnnouncer Announcer
+
+<PageTitle>Accessibility Utilities — bit BlazorHeadlessUI</PageTitle>
+
+<div class="demo-page">
+    <header class="demo-header">
+        <h1>Accessibility Utilities</h1>
+        <p>The low-level building blocks the components are made of — hidden labels, separators, live regions, announcements, hotkeys, focus scopes, reading direction and roving focus.</p>
+        <SectionSwitcher Slug="accessibility" />
+    </header>
+
+    <DemoBlock Title="Visually hidden"
+               Code="@_hiddenCode"
+               Css="@_hiddenCss">
+        <Description>
+            <code>BitBhVisuallyHidden</code> hides content visually but keeps it in the accessibility
+            tree — the label of an icon-only button is read as "Edit", "Notifications", "Delete".
+            With <code>Focusable="true"</code> the content is revealed while keyboard focus is inside
+            it: Tab into this demo to uncover the skip link.
+        </Description>
+        <LiveContent>
+            <div class="a11y-stack">
+                <BitBhVisuallyHidden Focusable="true">
+                    <a href="accessibility#a11y-skip-target" class="a11y-skip-link"
+                       @onclick="SkipToContent" @onclick:preventDefault>Skip to content</a>
+                </BitBhVisuallyHidden>
+
+                <div class="a11y-row">
+                    <button type="button" class="a11y-icon-button">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                            <path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z" />
+                        </svg>
+                        <BitBhVisuallyHidden>Edit</BitBhVisuallyHidden>
+                    </button>
+                    <button type="button" class="a11y-icon-button">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                            <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21h4" />
+                        </svg>
+                        <BitBhVisuallyHidden>Notifications</BitBhVisuallyHidden>
+                    </button>
+                    <button type="button" class="a11y-icon-button">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                            <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />
+                        </svg>
+                        <BitBhVisuallyHidden>Delete</BitBhVisuallyHidden>
+                    </button>
+                </div>
+
+                <div id="a11y-skip-target" tabindex="-1" class="a11y-skip-target" @ref="skipTarget">
+                    Main content — the skip link moves focus here.
+                </div>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Separator"
+               Code="@_separatorCode"
+               Css="@_separatorCss">
+        <Description>
+            <code>BitBhSeparator</code> renders <code>role="separator"</code> (plus
+            <code>aria-orientation="vertical"</code> when <code>Orientation</code> is vertical) so
+            assistive tech announces the boundary between groups of content. When the line is purely
+            visual, <code>Decorative="true"</code> renders <code>role="none"</code> instead. Both emit
+            <code>data-orientation</code> for styling.
+        </Description>
+        <LiveContent>
+            <div class="a11y-stack">
+                <div class="a11y-sep-card">
+                    <p class="a11y-sep-title">bit BlazorHeadlessUI</p>
+                    <p class="a11y-sep-text">Unstyled, accessible components for Blazor.</p>
+                    <BitBhSeparator class="a11y-separator" />
+                    <div class="a11y-sep-row">
+                        <span>Docs</span>
+                        <BitBhSeparator Orientation="BitBhOrientation.Vertical" class="a11y-separator" />
+                        <span>Source</span>
+                        <BitBhSeparator Orientation="BitBhOrientation.Vertical" class="a11y-separator" />
+                        <span>Changelog</span>
+                    </div>
+                </div>
+
+                <div class="a11y-or">
+                    <BitBhSeparator Decorative="true" class="a11y-separator" />
+                    or
+                    <BitBhSeparator Decorative="true" class="a11y-separator" />
+                </div>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Live regions"
+               Code="@_liveRegionCode"
+               Css="@_liveRegionCss">
+        <Description>
+            <code>BitBhLiveRegion</code> is rendered from the first render (live regions must exist before
+            their content changes), so updating its content is announced. Polite regions
+            (<code>role="status"</code>) wait for the user to be idle; assertive ones
+            (<code>role="alert"</code>) interrupt — reserve them for urgent problems. Set
+            <code>VisuallyHidden="true"</code> to announce without showing.
+        </Description>
+        <LiveContent>
+            <div class="a11y-stack">
+                <div class="a11y-row">
+                    <BitBhButton OnClick="SaveDraft" class="btn">Save draft</BitBhButton>
+                    <BitBhLiveRegion class="a11y-status">@draftStatus</BitBhLiveRegion>
+                </div>
+                <div class="a11y-row">
+                    <BitBhButton OnClick="ToggleConnection" class="btn">
+                        @(offline ? "Reconnect" : "Simulate connection loss")
+                    </BitBhButton>
+                </div>
+                <BitBhLiveRegion Politeness="BitBhPoliteness.Assertive" class="a11y-alert">@alertText</BitBhLiveRegion>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Announcer"
+               Code="@_announcerCode"
+               Css="@_announcerCss">
+        <Description>
+            For fire-and-forget messages from code, inject <code>IBitBhAnnouncer</code> and call
+            <code>AnnounceAsync</code>. It writes to one shared, visually hidden live region (the one
+            toasts and drag-and-drop use too), so nothing needs to be rendered. The log below only
+            mirrors what a screen reader hears.
+        </Description>
+        <LiveContent>
+            <div class="a11y-stack">
+                <div class="a11y-products">
+                    @foreach (var product in Products)
+                    {
+                        <div class="a11y-product">
+                            <strong>@product</strong>
+                            <BitBhButton OnClick="() => AddToCartAsync(product)" class="btn">Add to cart</BitBhButton>
+                        </div>
+                    }
+                </div>
+                <div class="a11y-row">
+                    <span class="demo-output">Cart: <strong>@cartCount</strong> item(s)</span>
+                    <BitBhButton OnClick="EmptyCartAsync" class="btn btn-link">Empty cart (assertive)</BitBhButton>
+                </div>
+                <ol class="a11y-log" aria-label="Announcement log">
+                    @if (announcements.Count == 0)
+                    {
+                        <li class="a11y-log-empty">Nothing announced yet.</li>
+                    }
+                    @foreach (var line in announcements)
+                    {
+                        <li>@line</li>
+                    }
+                </ol>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Hotkeys"
+               Code="@_hotkeyCode"
+               Css="@_hotkeyCss">
+        <Description>
+            <code>BitBhHotkey</code> registers a global shortcut while it is rendered and renders nothing.
+            <code>mod</code> is ⌘ on Apple platforms and Ctrl elsewhere. Shortcuts without Ctrl / ⌘
+            (like <code>shift+?</code>) are ignored while typing in a text field unless
+            <code>AllowInInputs</code> is set. Advertise shortcuts with <code>aria-keyshortcuts</code>.
+        </Description>
+        <LiveContent>
+            <BitBhHotkey Keys="mod+k" OnTriggered="FocusSearchAsync" />
+            <BitBhHotkey Keys="shift+?" OnTriggered="ToggleShortcuts" />
+
+            <div class="a11y-stack">
+                <div class="a11y-search">
+                    <input @ref="searchInput" type="search" placeholder="Search components…"
+                           aria-label="Search components" aria-keyshortcuts="Control+K Meta+K"
+                           class="a11y-input" />
+                    <span class="a11y-search-hint" aria-hidden="true">
+                        <kbd class="a11y-kbd">Ctrl</kbd><kbd class="a11y-kbd">K</kbd>
+                    </span>
+                </div>
+                <div class="a11y-row">
+                    <BitBhButton OnClick="ToggleShortcuts" aria-expanded="@(showShortcuts ? "true" : "false")"
+                              aria-keyshortcuts="Shift+?" class="btn">
+                        Keyboard shortcuts <kbd class="a11y-kbd">?</kbd>
+                    </BitBhButton>
+                    <span class="demo-output">Last shortcut: <strong>@(lastHotkey ?? "(none)")</strong></span>
+                </div>
+                @if (showShortcuts)
+                {
+                    <section class="a11y-shortcuts" aria-label="Keyboard shortcuts">
+                        <h3>Keyboard shortcuts</h3>
+                        <dl>
+                            <dt><kbd class="a11y-kbd">Ctrl</kbd> <kbd class="a11y-kbd">K</kbd></dt>
+                            <dd>Focus search (⌘ K on macOS)</dd>
+                            <dt><kbd class="a11y-kbd">?</kbd></dt>
+                            <dd>Show / hide this list</dd>
+                        </dl>
+                    </section>
+                }
+            </div>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Focus scope and focus trap"
+               Code="@_focusScopeCode"
+               Css="@_focusScopeCss">
+        <Description>
+            <code>BitBhFocusScope</code> manages focus for a region: it moves focus inside when it
+            activates, can trap Tab / Shift+Tab (<code>Trapped</code>) or just wrap it
+            (<code>Loop</code>), and restores focus to where it was when it deactivates.
+            <code>BitBhFocusTrap</code> is the same component with <code>Trapped</code> on by default.
+            Click "Edit profile": focus lands on the first field and stays in the form; Save, Cancel
+            or Escape return it to the button.
+        </Description>
+        <LiveContent>
+            <div class="a11y-profile">
+                <div class="a11y-profile-header">
+                    <div>
+                        <strong>@profileName</strong>
+                        <span>@profileEmail</span>
+                    </div>
+                    <BitBhButton OnClick="StartEditing" aria-expanded="@(editing ? "true" : "false")" class="btn">
+                        Edit profile
+                    </BitBhButton>
+                </div>
+                @if (editing)
+                {
+                    <BitBhFocusScope Trapped="true" RestoreFocus="true" class="a11y-scope"
+                                  aria-label="Edit profile" role="group" @onkeydown="OnScopeKeyDown">
+                        <label class="a11y-field">
+                            <span>Name</span>
+                            <input class="a11y-input" @bind="draftName" />
+                        </label>
+                        <label class="a11y-field">
+                            <span>Email</span>
+                            <input class="a11y-input" type="email" @bind="draftEmail" />
+                        </label>
+                        <div class="a11y-actions">
+                            <button type="button" class="btn" @onclick="CancelEditing">Cancel</button>
+                            <button type="button" class="btn btn-primary" @onclick="SaveProfile">Save</button>
+                        </div>
+                    </BitBhFocusScope>
+                }
+            </div>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Reading direction"
+               Code="@_directionCode"
+               Css="@_directionCss">
+        <Description>
+            <code>BitBhDirectionProvider</code> cascades the reading direction to every component below
+            it. In RTL, Left / Right arrow keys are mirrored: ArrowLeft moves to the <em>next</em>
+            radio or tab. Set the HTML <code>dir</code> attribute as well so the layout flips; a
+            component's own <code>Dir</code> parameter takes precedence.
+        </Description>
+        <LiveContent>
+            <div class="a11y-stack">
+                <div class="a11y-segments" role="group" aria-label="Reading direction">
+                    <BitBhButton OnClick="() => direction = BitBhDirection.Ltr"
+                              aria-pressed="@(direction == BitBhDirection.Ltr ? "true" : "false")"
+                              class="a11y-segment">LTR</BitBhButton>
+                    <BitBhButton OnClick="() => direction = BitBhDirection.Rtl"
+                              aria-pressed="@(direction == BitBhDirection.Rtl ? "true" : "false")"
+                              class="a11y-segment">RTL</BitBhButton>
+                </div>
+
+                <div dir="@direction.ToAttribute()" class="a11y-dir-preview">
+                    <BitBhDirectionProvider Dir="direction">
+                        <BitBhRadioGroup Vertical="false" DefaultValue="m" aria-label="Size" class="a11y-radio-segments">
+                            <BitBhRadio Value="s" class="a11y-radio-segment">Small</BitBhRadio>
+                            <BitBhRadio Value="m" class="a11y-radio-segment">Medium</BitBhRadio>
+                            <BitBhRadio Value="l" class="a11y-radio-segment">Large</BitBhRadio>
+                        </BitBhRadioGroup>
+
+                        <BitBhTabGroup>
+                            <BitBhTabList aria-label="Project" class="a11y-tab-list">
+                                <BitBhTab class="a11y-tab">Overview</BitBhTab>
+                                <BitBhTab class="a11y-tab">Activity</BitBhTab>
+                                <BitBhTab class="a11y-tab">Settings</BitBhTab>
+                            </BitBhTabList>
+                            <BitBhTabPanels>
+                                <BitBhTabPanel class="a11y-tab-panel">Overview — focus a tab and press the arrow keys.</BitBhTabPanel>
+                                <BitBhTabPanel class="a11y-tab-panel">Activity — in RTL, ArrowLeft moved you here.</BitBhTabPanel>
+                                <BitBhTabPanel class="a11y-tab-panel">Settings — Home / End jump to the ends.</BitBhTabPanel>
+                            </BitBhTabPanels>
+                        </BitBhTabGroup>
+                    </BitBhDirectionProvider>
+                </div>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Roving focus"
+               Code="@_rovingCode"
+               Css="@_rovingCss">
+        <Description>
+            <code>BitBhRovingFocusGroup</code> + <code>BitBhRovingFocusItem</code> implement a roving
+            <code>tabindex</code> for your own composite widgets: the group is a single Tab stop, arrow
+            keys (per <code>Orientation</code>) and Home / End move between items, disabled items are
+            skipped and the last focused item is remembered. Give the group the role that matches your
+            widget — here a <code>toolbar</code> of toggle chips.
+        </Description>
+        <LiveContent>
+            <div class="a11y-stack">
+                <BitBhRovingFocusGroup role="toolbar" aria-label="Filter by tag" class="a11y-chips">
+                    @foreach (var tag in Tags)
+                    {
+                        <BitBhRovingFocusItem Disabled="@(tag == "Archived")"
+                                           aria-pressed="@(selectedTags.Contains(tag) ? "true" : "false")"
+                                           @onclick="() => ToggleTag(tag)"
+                                           class="a11y-chip">
+                            @tag
+                        </BitBhRovingFocusItem>
+                    }
+                </BitBhRovingFocusGroup>
+                <span class="demo-output">
+                    Filters: <strong>@(selectedTags.Count == 0 ? "(none)" : string.Join(", ", Tags.Where(selectedTags.Contains)))</strong>
+                </span>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+</div>
+
+@code {
+    // ── Visually hidden ────────────────────────────────────────────────────────
+    private ElementReference skipTarget;
+
+    private async Task SkipToContent() => await skipTarget.FocusAsync();
+
+    // ── Live regions ───────────────────────────────────────────────────────────
+    private string? draftStatus;
+    private string? alertText;
+    private bool offline;
+
+    private void SaveDraft() => draftStatus = $"Draft saved at {DateTime.Now:HH:mm:ss}.";
+
+    private void ToggleConnection()
+    {
+        offline = !offline;
+        alertText = offline ? "Connection lost. Changes will sync when you are back online." : null;
+    }
+
+    // ── Announcer ──────────────────────────────────────────────────────────────
+    private static readonly string[] Products = ["Notebook", "Fountain pen", "Desk lamp"];
+    private readonly List<string> announcements = new();
+    private int cartCount;
+
+    private async Task AddToCartAsync(string product)
+    {
+        cartCount++;
+        await AnnounceAsync($"{product} added to cart. {cartCount} item(s) in your cart.");
+    }
+
+    private async Task EmptyCartAsync()
+    {
+        cartCount = 0;
+        await AnnounceAsync("Cart emptied.", BitBhPoliteness.Assertive);
+    }
+
+    private async Task AnnounceAsync(string message, BitBhPoliteness politeness = BitBhPoliteness.Polite)
+    {
+        await Announcer.AnnounceAsync(message, politeness);
+        announcements.Insert(0, $"[{politeness.ToString().ToLowerInvariant()}] {message}");
+        if (announcements.Count > 4) announcements.RemoveAt(announcements.Count - 1);
+    }
+
+    // ── Hotkeys ────────────────────────────────────────────────────────────────
+    private ElementReference searchInput;
+    private bool showShortcuts;
+    private string? lastHotkey;
+
+    private async Task FocusSearchAsync()
+    {
+        lastHotkey = "mod+k";
+        await searchInput.FocusAsync();
+    }
+
+    private void ToggleShortcuts()
+    {
+        lastHotkey = "shift+?";
+        showShortcuts = !showShortcuts;
+    }
+
+    // ── Focus scope ────────────────────────────────────────────────────────────
+    private bool editing;
+    private string profileName = "Ada Lovelace";
+    private string profileEmail = "ada@example.com";
+    private string draftName = "";
+    private string draftEmail = "";
+
+    private void StartEditing()
+    {
+        draftName = profileName;
+        draftEmail = profileEmail;
+        editing = true;
+    }
+
+    private void SaveProfile()
+    {
+        profileName = draftName;
+        profileEmail = draftEmail;
+        editing = false;
+    }
+
+    private void CancelEditing() => editing = false;
+
+    private void OnScopeKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape") editing = false;
+    }
+
+    // ── Direction ──────────────────────────────────────────────────────────────
+    private BitBhDirection direction = BitBhDirection.Rtl;
+
+    // ── Roving focus ───────────────────────────────────────────────────────────
+    private static readonly string[] Tags = ["Design", "Engineering", "Marketing", "Archived", "Support"];
+    private readonly HashSet<string> selectedTags = new() { "Engineering" };
+
+    private void ToggleTag(string tag)
+    {
+        if (!selectedTags.Remove(tag)) selectedTags.Add(tag);
+    }
+
+    // ── Source snippets shown alongside each live demo ─────────────────────────
+
+    private const string _hiddenCode = """
+@* Skip link: hidden until it receives keyboard focus *@
+<BitBhVisuallyHidden Focusable="true">
+    <a href="accessibility#a11y-skip-target" class="a11y-skip-link"
+       @onclick="SkipToContent" @onclick:preventDefault>Skip to content</a>
+</BitBhVisuallyHidden>
+
+@* Icon-only buttons: the hidden text is the accessible name *@
+<button type="button" class="a11y-icon-button">
+    <svg viewBox="0 0 24 24" ... aria-hidden="true" focusable="false">…</svg>
+    <BitBhVisuallyHidden>Edit</BitBhVisuallyHidden>
+</button>
+<button type="button" class="a11y-icon-button">
+    <svg viewBox="0 0 24 24" ... aria-hidden="true" focusable="false">…</svg>
+    <BitBhVisuallyHidden>Notifications</BitBhVisuallyHidden>
+</button>
+
+<div id="a11y-skip-target" tabindex="-1" class="a11y-skip-target" @ref="skipTarget">
+    Main content — the skip link moves focus here.
+</div>
+
+@code {
+    private ElementReference skipTarget;
+
+    private async Task SkipToContent() => await skipTarget.FocusAsync();
+}
+""";
+
+    private const string _separatorCode = """
+<div class="a11y-sep-card">
+    <p class="a11y-sep-title">bit BlazorHeadlessUI</p>
+    <p class="a11y-sep-text">Unstyled, accessible components for Blazor.</p>
+
+    <BitBhSeparator class="a11y-separator" />                       @* role="separator" *@
+
+    <div class="a11y-sep-row">
+        <span>Docs</span>
+        <BitBhSeparator Orientation="BitBhOrientation.Vertical"          @* + aria-orientation="vertical" *@
+                     class="a11y-separator" />
+        <span>Source</span>
+        <BitBhSeparator Orientation="BitBhOrientation.Vertical" class="a11y-separator" />
+        <span>Changelog</span>
+    </div>
+</div>
+
+@* Purely visual divider: role="none" *@
+<div class="a11y-or">
+    <BitBhSeparator Decorative="true" class="a11y-separator" />
+    or
+    <BitBhSeparator Decorative="true" class="a11y-separator" />
+</div>
+""";
+
+    private const string _liveRegionCode = """
+<BitBhButton OnClick="SaveDraft" class="btn">Save draft</BitBhButton>
+
+@* Polite: role="status" aria-live="polite" *@
+<BitBhLiveRegion class="a11y-status">@draftStatus</BitBhLiveRegion>
+
+<BitBhButton OnClick="ToggleConnection" class="btn">
+    @(offline ? "Reconnect" : "Simulate connection loss")
+</BitBhButton>
+
+@* Assertive: role="alert" aria-live="assertive" *@
+<BitBhLiveRegion Politeness="BitBhPoliteness.Assertive" class="a11y-alert">@alertText</BitBhLiveRegion>
+
+@* Announce without showing anything *@
+@* <BitBhLiveRegion VisuallyHidden="true">@resultCount results</BitBhLiveRegion> *@
+
+@code {
+    private string? draftStatus;
+    private string? alertText;
+    private bool offline;
+
+    private void SaveDraft() => draftStatus = $"Draft saved at {DateTime.Now:HH:mm:ss}.";
+
+    private void ToggleConnection()
+    {
+        offline = !offline;
+        alertText = offline ? "Connection lost. Changes will sync when you are back online." : null;
+    }
+}
+""";
+
+    private const string _announcerCode = """
+@inject IBitBhAnnouncer Announcer
+
+@foreach (var product in Products)
+{
+    <div class="a11y-product">
+        <strong>@product</strong>
+        <BitBhButton OnClick="() => AddToCartAsync(product)" class="btn">Add to cart</BitBhButton>
+    </div>
+}
+<BitBhButton OnClick="EmptyCartAsync" class="btn btn-link">Empty cart (assertive)</BitBhButton>
+
+@code {
+    private static readonly string[] Products = ["Notebook", "Fountain pen", "Desk lamp"];
+    private int cartCount;
+
+    private async Task AddToCartAsync(string product)
+    {
+        cartCount++;
+        await Announcer.AnnounceAsync($"{product} added to cart. {cartCount} item(s) in your cart.");
+    }
+
+    private async Task EmptyCartAsync()
+    {
+        cartCount = 0;
+        await Announcer.AnnounceAsync("Cart emptied.", BitBhPoliteness.Assertive);
+    }
+}
+""";
+
+    private const string _hotkeyCode = """
+<BitBhHotkey Keys="mod+k" OnTriggered="FocusSearchAsync" />
+<BitBhHotkey Keys="shift+?" OnTriggered="ToggleShortcuts" />
+
+<div class="a11y-search">
+    <input @ref="searchInput" type="search" placeholder="Search components…"
+           aria-label="Search components" aria-keyshortcuts="Control+K Meta+K"
+           class="a11y-input" />
+    <span class="a11y-search-hint" aria-hidden="true">
+        <kbd class="a11y-kbd">Ctrl</kbd><kbd class="a11y-kbd">K</kbd>
+    </span>
+</div>
+
+<BitBhButton OnClick="ToggleShortcuts" aria-expanded="@(showShortcuts ? "true" : "false")"
+          aria-keyshortcuts="Shift+?" class="btn">
+    Keyboard shortcuts <kbd class="a11y-kbd">?</kbd>
+</BitBhButton>
+
+@if (showShortcuts)
+{
+    <section class="a11y-shortcuts" aria-label="Keyboard shortcuts">…</section>
+}
+
+@code {
+    private ElementReference searchInput;
+    private bool showShortcuts;
+
+    private async Task FocusSearchAsync() => await searchInput.FocusAsync();
+
+    private void ToggleShortcuts() => showShortcuts = !showShortcuts;
+}
+""";
+
+    private const string _focusScopeCode = """
+<BitBhButton OnClick="StartEditing" aria-expanded="@(editing ? "true" : "false")" class="btn">
+    Edit profile
+</BitBhButton>
+
+@if (editing)
+{
+    @* Auto-focuses the first field, traps Tab, and restores focus to
+       "Edit profile" when it is removed. <BitBhFocusTrap> = Trapped by default. *@
+    <BitBhFocusScope Trapped="true" RestoreFocus="true" class="a11y-scope"
+                  aria-label="Edit profile" role="group" @onkeydown="OnScopeKeyDown">
+        <label class="a11y-field">
+            <span>Name</span>
+            <input class="a11y-input" @bind="draftName" />
+        </label>
+        <label class="a11y-field">
+            <span>Email</span>
+            <input class="a11y-input" type="email" @bind="draftEmail" />
+        </label>
+        <div class="a11y-actions">
+            <button type="button" class="btn" @onclick="CancelEditing">Cancel</button>
+            <button type="button" class="btn btn-primary" @onclick="SaveProfile">Save</button>
+        </div>
+    </BitBhFocusScope>
+}
+
+@code {
+    private bool editing;
+
+    private void OnScopeKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape") editing = false;
+    }
+
+    // StartEditing / SaveProfile / CancelEditing toggle `editing`.
+}
+""";
+
+    private const string _directionCode = """
+<div dir="@direction.ToAttribute()" class="a11y-dir-preview">   @* flips the layout *@
+    <BitBhDirectionProvider Dir="direction">                      @* flips the arrow keys *@
+        <BitBhRadioGroup Vertical="false" DefaultValue="m" aria-label="Size" class="a11y-radio-segments">
+            <BitBhRadio Value="s" class="a11y-radio-segment">Small</BitBhRadio>
+            <BitBhRadio Value="m" class="a11y-radio-segment">Medium</BitBhRadio>
+            <BitBhRadio Value="l" class="a11y-radio-segment">Large</BitBhRadio>
+        </BitBhRadioGroup>
+
+        <BitBhTabGroup>
+            <BitBhTabList aria-label="Project" class="a11y-tab-list">
+                <BitBhTab class="a11y-tab">Overview</BitBhTab>
+                <BitBhTab class="a11y-tab">Activity</BitBhTab>
+                <BitBhTab class="a11y-tab">Settings</BitBhTab>
+            </BitBhTabList>
+            <BitBhTabPanels>
+                <BitBhTabPanel class="a11y-tab-panel">…</BitBhTabPanel>
+                <BitBhTabPanel class="a11y-tab-panel">…</BitBhTabPanel>
+                <BitBhTabPanel class="a11y-tab-panel">…</BitBhTabPanel>
+            </BitBhTabPanels>
+        </BitBhTabGroup>
+    </BitBhDirectionProvider>
+</div>
+
+@code {
+    private BitBhDirection direction = BitBhDirection.Rtl;
+}
+""";
+
+    private const string _rovingCode = """
+<BitBhRovingFocusGroup role="toolbar" aria-label="Filter by tag" class="a11y-chips">
+    @foreach (var tag in Tags)
+    {
+        <BitBhRovingFocusItem Disabled="@(tag == "Archived")"
+                           aria-pressed="@(selectedTags.Contains(tag) ? "true" : "false")"
+                           @onclick="() => ToggleTag(tag)"
+                           class="a11y-chip">
+            @tag
+        </BitBhRovingFocusItem>
+    }
+</BitBhRovingFocusGroup>
+
+@code {
+    private static readonly string[] Tags = ["Design", "Engineering", "Marketing", "Archived", "Support"];
+    private readonly HashSet<string> selectedTags = new() { "Engineering" };
+
+    private void ToggleTag(string tag)
+    {
+        if (!selectedTags.Remove(tag)) selectedTags.Add(tag);
+    }
+}
+""";
+
+    private const string _hiddenCss = """
+/* All styles are consumer-authored — the library ships zero CSS.
+   BitBhVisuallyHidden brings its own inline clipping style. */
+.a11y-icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    background: #fff;
+    color: #3f3f46;
+    cursor: pointer;
+}
+.a11y-icon-button:hover         { background: #f4f4f5; color: #18181b; }
+.a11y-icon-button:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+.a11y-icon-button svg           { width: 1.1rem; height: 1.1rem; }
+
+.a11y-skip-link {
+    display: inline-block;
+    padding: 0.45rem 0.85rem;
+    border-radius: 0.5rem;
+    background: #2563eb;
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.a11y-skip-target {
+    padding: 0.75rem 1rem;
+    border: 1px dashed #d4d4d8;
+    border-radius: 0.5rem;
+    color: #52525b;
+}
+.a11y-skip-target:focus { outline: 2px solid #2563eb; outline-offset: 2px; }
+""";
+
+    private const string _separatorCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.a11y-sep-card {
+    max-width: 22rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.75rem;
+    background: #fff;
+}
+
+.a11y-sep-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    height: 1.25rem;
+    font-size: 0.875rem;
+}
+
+/* BitBhSeparator emits data-orientation="horizontal|vertical" */
+.a11y-separator { flex-shrink: 0; background: #e4e4e7; }
+.a11y-separator[data-orientation="horizontal"] { height: 1px; width: 100%; margin: 0.85rem 0; }
+.a11y-separator[data-orientation="vertical"]   { width: 1px; height: 100%; }
+
+/* "— or —" divider */
+.a11y-or {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: 22rem;
+    color: #71717a;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+.a11y-or .a11y-separator { flex: 1 1 auto; margin: 0; }
+""";
+
+    private const string _liveRegionCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.a11y-status { color: #15803d; font-size: 0.875rem; }
+
+/* The alert region stays rendered (and empty) until there is something to say */
+.a11y-alert:not(:empty) {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #fecaca;
+    border-radius: 0.5rem;
+    background: #fef2f2;
+    color: #991b1b;
+    font-size: 0.875rem;
+}
+""";
+
+    private const string _announcerCss = """
+/* All styles are consumer-authored — the library ships zero CSS.
+   The announcer's live region is visually hidden — nothing to style. */
+.a11y-products { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+
+.a11y-product {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 10rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.75rem;
+    background: #fff;
+}
+
+.a11y-log {
+    padding: 0.6rem 0.85rem 0.6rem 2rem;
+    border-radius: 0.5rem;
+    background: #18181b;
+    color: #d4d4d8;
+    font-family: ui-monospace, monospace;
+    font-size: 0.75rem;
+}
+""";
+
+    private const string _hotkeyCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.a11y-search { position: relative; max-width: 20rem; }
+.a11y-search .a11y-input { width: 100%; padding: 0.45rem 4.5rem 0.45rem 0.7rem; }
+
+.a11y-search-hint {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 0.2rem;
+    pointer-events: none;
+}
+
+.a11y-kbd {
+    padding: 0.05rem 0.4rem;
+    border: 1px solid #d4d4d8;
+    border-bottom-width: 2px;
+    border-radius: 0.3rem;
+    background: #fafafa;
+    font-family: ui-monospace, monospace;
+    font-size: 0.75rem;
+}
+
+.a11y-shortcuts {
+    max-width: 20rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.75rem;
+    background: #fff;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+.a11y-shortcuts dl { display: grid; grid-template-columns: auto 1fr; gap: 0.4rem 1rem; }
+""";
+
+    private const string _focusScopeCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.a11y-profile {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 24rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.75rem;
+    background: #fff;
+}
+
+/* BitBhFocusScope emits data-state="active|inactive" */
+.a11y-scope {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 2px dashed #d4d4d8;
+    border-radius: 0.5rem;
+    outline: none;
+}
+.a11y-scope[data-state="active"] { border-color: #2563eb; background: #eff6ff; }
+
+.a11y-field   { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.8rem; font-weight: 600; }
+.a11y-actions { display: flex; justify-content: flex-end; gap: 0.5rem; }
+""";
+
+    private const string _directionCss = """
+/* All styles are consumer-authored — the library ships zero CSS.
+   Flexbox follows the dir attribute, so the layout mirrors on its own. */
+.a11y-radio-segments {
+    display: inline-flex;
+    gap: 0.25rem;
+    padding: 0.2rem;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.6rem;
+    background: #fff;
+}
+
+.a11y-radio-segment {
+    padding: 0.35rem 0.85rem;
+    border: 0;
+    border-radius: 0.45rem;
+    background: transparent;
+    color: #52525b;
+    cursor: pointer;
+}
+.a11y-radio-segment[data-state="checked"] { background: #2563eb; color: #fff; }
+.a11y-radio-segment:focus-visible         { outline: 2px solid #2563eb; outline-offset: 2px; }
+
+.a11y-tab-list { display: flex; gap: 0.25rem; border-bottom: 1px solid #e4e4e7; }
+
+.a11y-tab {
+    padding: 0.5rem 0.85rem;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: #71717a;
+    cursor: pointer;
+}
+.a11y-tab[data-state="active"] { color: #2563eb; border-bottom-color: #2563eb; }
+.a11y-tab:focus-visible        { outline: 2px solid #2563eb; outline-offset: -2px; }
+""";
+
+    private const string _rovingCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.a11y-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+.a11y-chip {
+    padding: 0.35rem 0.85rem;
+    border: 1px solid #d4d4d8;
+    border-radius: 999px;
+    background: #fff;
+    color: #3f3f46;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+.a11y-chip:focus-visible        { outline: 2px solid #2563eb; outline-offset: 2px; }
+.a11y-chip[aria-pressed="true"] { border-color: #2563eb; background: #eff6ff; color: #1d4ed8; }
+.a11y-chip[data-disabled]       { opacity: 0.45; cursor: not-allowed; }
+""";
+}

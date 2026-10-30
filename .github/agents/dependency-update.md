@@ -72,7 +72,7 @@ raises that minimum for no gain.
 <PackageReference Include="Microsoft.JSInterop" Version="10.0.0" Condition="'$(TargetFramework)' == 'net10.0'" />
 ```
 
-Applies to `Bit.BlazorUI` / `.Assets` / `.Extras` / `.Legacy`, `Bit.Bswup` and `Bit.Butil`
+Applies to `Bit.BlazorUI` / `.Assets` / `.Extras` / `.Legacy` / `.AI`, `Bit.Bswup` and `Bit.Butil`
 (Components.Web), and the `BlazorEmpty` template.
 
 The rule keys on the `.0` in a *shipped library*. A TFM-conditioned pin at a concrete patch —
@@ -110,10 +110,10 @@ worth checking for *any* action bump, not just this one — it is invisible in t
 **MAUI's resizetizer breaks on SVG filters.** MAUI 10.0.101 to 10.0.110 and 11.0.0-rc.2 bundle an `Svg.Skia` that
 calls a SkiaSharp overload missing from the SkiaSharp next to it, so any SVG it resizes that has a `<filter>` fails
 the build with `MAUIR0001` / `MissingMethodException: SKImageFilter.CreateMatrixConvolution`
-([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). 10.0.120 fixed it for .NET 10, and a .NET 10
-Boilerplate project takes develop's MAUI. On this branch MAUI can't stay behind for .NET 11: a MAUI built for an
+([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). 10.0.120 fixed it for .NET 10, which a .NET 10
+Boilerplate project uses. For .NET 11, MAUI can't stay behind: a MAUI built for an
 older preview doesn't compile against the newer preview's Android workload (CS1705 on `Java.Interop`). So MAUI
-follows the MAUI manifest of the SDK's newest workload set (`Microsoft.NET.Workloads.<band>` on NuGet) here, which
+follows the MAUI manifest of the SDK's newest workload set (`Microsoft.NET.Workloads.<band>` on NuGet), which
 can stay on the previous release candidate when a new one ships, together with Android and iOS; then MAUI stays
 too. The app icons of the Boilerplate and the BlazorUI demo carry no drop shadow (their
 `<filter>`) until a .NET 11 MAUI builds an app with the Boilerplate's `appicon.svg` as its icon.
@@ -126,9 +126,9 @@ version in each of the two framework groups at the end of the file: the 11.x one
 the one `Microsoft.Extensions.Telemetry.Abstractions` turns the framework's logging generator off with, depending
 on import order, and the build fails with CS0757. Every other package takes one version for both. The few literals that differ per framework are switch
 symbols in `template.json` (the SDK and its `rollForward`, the dev container image, the `dotnet-ef` version, the
-runner image), so they move together with the files they replace. A template line that came over from develop
-carries develop's .NET 10 value of such a literal, which no symbol maps, so look for the .NET 10 values in the
-template's files and give them the .NET 11 one.
+runner image), so they move together with the files they replace. A template line written with the .NET 10 value
+of such a literal is one no symbol maps, so look for the .NET 10 values in the template's files and give them the
+.NET 11 one.
 
 **`Xamarin.Firebase.Messaging` is held at 125.1.1.** 125.1.2 pulls `Xamarin.AndroidX.Fragment` 1.9.0
 (through `GooglePlayServices.Base` 118.10.1), which absorbed the ktx classes, while the rest of the
@@ -150,10 +150,9 @@ database's Sqlite above it, and the project's restore failed with NU1605.
 
 **Linux runners are on `ubuntu-26.04`**, in the GitHub workflows and the Azure DevOps `vmImage`. It
 defaults to JDK 25 (`(default)` in the image readme's Java table), which .NET for Android accepts from .NET 11
-RC2 on (`LatestSupportedJavaVersion` 25.0.99 in `Xamarin.Android.Common.props.in`). develop stays on
-`ubuntu-24.04`, since .NET for Android 10 accepts up to 21, so a runner pin that comes over from develop moves
-to `ubuntu-26.04` here, except in the jobs that build a .NET 10 Boilerplate project (the Todo and Sales CDs), which
-keep develop's runners.
+RC2 on (`LatestSupportedJavaVersion` 25.0.99 in `Xamarin.Android.Common.props.in`). .NET for Android 10 accepts up
+to 21, so the jobs that build a .NET 10 Boilerplate project (the Todo CD's Linux jobs) and a .NET 10 project's
+runner image in `template.json` stay on `ubuntu-24.04`.
 
 When a held pin's rationale no longer holds — the oldest supported SDK moved, TS 7 was adopted
 repo-wide — say so in the report rather than acting on it.
@@ -236,6 +235,11 @@ object instead of the commit does not work.
 
 Where the pin's comment is a moving major (`# v2`), rewrite it to the concrete release the SHA
 belongs to (`# v2.0.0`), so the comment records a version rather than a branch.
+
+**bit platform's own actions in the Boilerplate stay on a tag.** The template's workflows use
+`bitfoundation/bitplatform/.github/actions/boilerplate/<action>@v-<the in-development version>`, with no SHA and
+no comment. The release's commit only exists once its PR is squash merged, so a SHA pin would always be a release
+behind; the version bump moves the tag with every other version string instead. Leave them as they are.
 
 Runner images (`runs-on`) are part of this: no `ubuntu-latest`, pin the concrete image.
 

@@ -659,7 +659,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
         _itemsProvider = ItemsProvider;
 
-        _awaitsTakeOver = BitPrerender.IsHandOver(_services, _js);
+        _awaitsTakeOver = BitPrerender.IsHandOver(_services, IsStaticRender(_js));
 
         if (Preload)
         {

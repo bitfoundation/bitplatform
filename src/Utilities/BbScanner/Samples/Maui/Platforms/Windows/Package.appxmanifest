@@ -41,6 +41,8 @@
 
     <Capabilities>
         <rescap:Capability Name="runFullTrust" />
+        <!-- The scanner's camera, which the page opens through getUserMedia; WebView2 asks the user for it. -->
+        <DeviceCapability Name="webcam" />
     </Capabilities>
 
 </Package>

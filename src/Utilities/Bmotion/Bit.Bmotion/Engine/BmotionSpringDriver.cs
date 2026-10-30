@@ -10,13 +10,15 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
     private double _target;
     private double _from;
     private readonly double _origFrom;
-    private readonly double _origTarget;
+    private double _origTarget;        // moved by TryRetarget
     private readonly double _k;        // stiffness
     private readonly double _d;        // damping
     private readonly double _m;        // mass
     private readonly double _initialVel;
-    private readonly double _restSpeed;
-    private readonly double _restDelta;
+    private readonly double _baseRestSpeed;
+    private readonly double _baseRestDelta;
+    private double _restSpeed;
+    private double _restDelta;
     private readonly double _repeatDelayMs;
     private readonly double _maxSubDt;
     private readonly int _repeat;
@@ -83,17 +85,9 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
         // trap the spring (the rest test would never pass). Fall back to the default mass of 1.
         _m = config.Mass > 0 ? config.Mass : 1.0;
         _vel = _initialVel = config.Velocity;
-        // Rest thresholds are scaled by the animation's magnitude so large-range springs (e.g.
-        // x: 0→1000) settle in proportion to their distance instead of chasing an absolute 0.01px/
-        // 0.01px-per-sec target for many extra frames. Small ranges keep the absolute thresholds.
-        double range = Math.Abs(to - from);
-        double restScale = range > 1.0 ? range : 1.0;
-        // Clamp to a small positive floor: a non-positive RestSpeed/RestDelta would make the
-        // completion gate (Abs(vel) < restSpeed && Abs(pos-target) < restDelta) unsatisfiable,
-        // leaving the spring ticking forever.
-        const double minRest = 1e-4;
-        _restSpeed = Math.Max(config.RestSpeed * restScale, minRest);
-        _restDelta = Math.Max(config.RestDelta * restScale, minRest);
+        _baseRestSpeed = config.RestSpeed;
+        _baseRestDelta = config.RestDelta;
+        ScaleRestThresholds(to - from);
         // A negative delay starts the spring that far into its motion (WAAPI semantics, and what seeking a playing
         // animation relies on): the time is simulated on the first frame.
         _currentDelayMs = Math.Max(0, config.Delay * 1000);
@@ -108,6 +102,39 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
         _maxSubDt = Math.Max(0.001, Math.Min(
             _d > 0 ? 1.8 / _d : 1.0,
             _k > 0 ? 0.9 / Math.Sqrt(_k) : 1.0));
+    }
+
+    /// <summary>
+    /// Rest thresholds are scaled by the animation's magnitude so large-range springs (e.g.
+    /// x: 0→1000) settle in proportion to their distance instead of chasing an absolute 0.01px/
+    /// 0.01px-per-sec target for many extra frames. Small ranges keep the absolute thresholds.
+    /// </summary>
+    private void ScaleRestThresholds(double range)
+    {
+        range = Math.Abs(range);
+        double restScale = range > 1.0 ? range : 1.0;
+        // Clamp to a small positive floor: a non-positive RestSpeed/RestDelta would make the
+        // completion gate (Abs(vel) < restSpeed && Abs(pos-target) < restDelta) unsatisfiable,
+        // leaving the spring ticking forever.
+        const double minRest = 1e-4;
+        _restSpeed = Math.Max(_baseRestSpeed * restScale, minRest);
+        _restDelta = Math.Max(_baseRestDelta * restScale, minRest);
+    }
+
+    /// <summary>
+    /// Moves the target of the spring in flight, keeping where it is, how fast it is going and its clock - a follower
+    /// chasing a source that moves (<see cref="BmotionAnimateService.Spring"/>). Replaced by a new spring instead, it
+    /// would start from rest on its next frame, and a source that changes more often than frames are drawn would
+    /// replace it every time before it took a step. False for a spring that repeats or is cancelled, which a new one
+    /// replaces as before.
+    /// </summary>
+    internal bool TryRetarget(double to)
+    {
+        if (_cancelled || _isInfinite || _repeat > 0 || !double.IsFinite(to)) return false;
+        _target = _origTarget = to;
+        // The rest is judged against the distance left to go, as a new spring from here would judge it.
+        ScaleRestThresholds(to - _pos);
+        return true;
     }
 
     public bool Tick(double timestamp)
@@ -154,7 +181,11 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
 
         if (Math.Abs(_vel) < _restSpeed && Math.Abs(_pos - _target) < _restDelta)
         {
-            _apply(_target);
+            double target = _target;
+            _apply(target);
+            // A subscriber of the value can retarget the spring from inside that apply (a source it feeds changing):
+            // it is not done then, but heads for the new target from where it is.
+            if (_target != target) return false;
 
             if (_isInfinite || _iteration < _repeat)
             {

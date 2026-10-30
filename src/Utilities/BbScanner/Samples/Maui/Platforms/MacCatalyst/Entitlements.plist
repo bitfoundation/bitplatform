@@ -13,6 +13,9 @@
              InputFile and read the file chosen in it. -->
         <key>com.apple.security.files.user-selected.read-only</key>
         <true/>
+        <!-- When App Sandbox is enabled, this value is required for the scanner to open the camera. -->
+        <key>com.apple.security.device.camera</key>
+        <true/>
     </dict>
 </plist>
 

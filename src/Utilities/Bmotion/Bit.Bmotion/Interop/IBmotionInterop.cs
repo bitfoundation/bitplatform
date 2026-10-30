@@ -35,6 +35,17 @@ public interface IBmotionInterop : IAsyncDisposable
     /// </summary>
     double? GetPrerenderedAnimationElapsedMs(string elementId) => null;
 
+    /// <summary>
+    /// Where the browser has really got with the offloaded animation <paramref name="token"/> on
+    /// <paramref name="elementId"/>: how far it has played, in ms of animation time (its delay included), as
+    /// of now, and whether its start is final - nothing will move it any more, so the engine can correct its
+    /// own clock once and stop asking. Read synchronously, so <c>null</c> where that isn't possible (only
+    /// WebAssembly has synchronous interop), and when no such animation is playing. The engine's own clock for
+    /// an animation starts when it built it, which the browser can be well behind; see <c>waapiPlayhead</c> in
+    /// the bridge. Defaults to <c>null</c>.
+    /// </summary>
+    (double PlayedMs, bool Final)? GetWaapiPlayhead(string elementId, int token) => null;
+
     // Every generic T below propagates DotNetObjectReference<T>'s trim annotation so trimmed/AOT
     // apps keep T's public ([JSInvokable]) methods for the JS→.NET callbacks.
 

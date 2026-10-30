@@ -47,6 +47,7 @@
     <Project Path="Tests/Performance/Bit.BlazorUI.Tests.Performance.TestHost/Bit.BlazorUI.Tests.Performance.TestHost.csproj" />
     <Project Path="Tests/Performance/Bit.BlazorUI.Tests.Performance/Bit.BlazorUI.Tests.Performance.csproj" />
   </Folder>
+  <Project Path="Bit.BlazorUI.AI/Bit.BlazorUI.AI.csproj" />
   <Project Path="Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj" />
   <Project Path="Bit.BlazorUI.Build/Bit.BlazorUI.Build.csproj" />
   <Project Path="Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj" />

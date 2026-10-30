@@ -53,8 +53,8 @@ public sealed class ComponentCatalogItem
     public required string IconName { get; init; }
 
     /// <summary>
-    /// The NuGet package the component ships in - "Bit.BlazorUI", "Bit.BlazorUI.Extras" or
-    /// "Bit.BlazorUI.Legacy". Which package a component needs is one of the first things a reader
+    /// The NuGet package the component ships in - "Bit.BlazorUI", "Bit.BlazorUI.Extras",
+    /// "Bit.BlazorUI.AI" or "Bit.BlazorUI.Legacy". Which package a component needs is one of the first things a reader
     /// wants from an index, and until now it could only be learned by opening the page.
     /// </summary>
     public required string Package { get; init; }
@@ -66,6 +66,7 @@ public sealed class ComponentCatalogItem
     public string? PackageBadge => Package switch
     {
         "Bit.BlazorUI.Extras" => "Extras",
+        "Bit.BlazorUI.AI" => "AI",
         "Bit.BlazorUI.Legacy" => "Legacy",
         _ => null
     };

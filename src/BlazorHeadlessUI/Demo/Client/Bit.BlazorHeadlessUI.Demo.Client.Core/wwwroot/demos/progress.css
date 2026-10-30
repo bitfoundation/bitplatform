@@ -1,0 +1,189 @@
+﻿/* progress demo styles — plain CSS section. The library ships zero CSS. */
+
+/* ---- BitBhProgress ---------------------------------------------------------- */
+.progress {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 0.6rem;
+    border-radius: 999px;
+    background: var(--color-fill-strong);
+}
+
+/* --bit-bh-progress is a unitless 0–100 number set inline by BitBhProgress and
+   BitBhProgressIndicator; multiply by 1% to size the fill. */
+.progress-indicator {
+    width: calc(var(--bit-bh-progress, 0) * 1%);
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-primary);
+    transition: width 250ms ease, background-color 250ms ease;
+}
+
+/* data-state="loading | complete | indeterminate" */
+.progress-indicator[data-state="complete"] { background: #16a34a; }
+
+.progress-indicator[data-state="indeterminate"] {
+    width: 40%;
+    animation: progress-demo-slide 1.2s ease-in-out infinite;
+}
+
+@keyframes progress-demo-slide {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(250%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .progress-indicator[data-state="indeterminate"] { animation-duration: 3s; }
+}
+
+/* ---- Tall bar with the percentage drawn through BitBhProgress's Template ------ */
+.progress-lg { height: 1.25rem; }
+
+.progress-lg .progress-indicator                         { background: light-dark(#bfdbfe, #1e40af); }
+.progress-lg .progress-indicator[data-state="complete"]  { background: light-dark(#bbf7d0, #166534); }
+
+.progress-percent {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 0.6rem;
+    color: light-dark(#1e3a8a, #93c5fd);
+    font-size: 0.72rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---- Labelled progress / upload card ---------------------------------------- */
+.progress-card {
+    display: grid;
+    gap: 0.6rem;
+    width: 100%;
+    max-width: 24rem;
+    padding: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.6rem;
+    background: var(--color-surface);
+}
+
+.progress-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.875rem;
+}
+
+.progress-label { font-weight: 600; color: var(--color-text); }
+
+.progress-status {
+    color: var(--color-muted);
+    font-size: 0.8rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.progress-actions { display: flex; gap: 0.5rem; }
+
+.progress-btn {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.45rem;
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.progress-btn:hover         { background: var(--color-fill); }
+.progress-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.progress-btn:disabled      { opacity: 0.5; cursor: not-allowed; }
+
+.progress-btn-primary       { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+.progress-btn-primary:hover { background: var(--color-primary-hover); }
+
+/* ---- BitBhMeter -------------------------------------------------------------- */
+.meter {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: var(--color-fill-strong);
+}
+
+/* --bit-bh-meter (0–100) is set inline on the meter and inherited by the fill. */
+.meter-fill {
+    display: block;
+    width: calc(var(--bit-bh-meter) * 1%);
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-primary);
+    transition: width 250ms ease, background-color 250ms ease;
+}
+
+/* data-level="low | optimum | high" (below Low / between / above High) */
+.meter[data-level="low"]  .meter-fill { background: #16a34a; }
+.meter[data-level="high"] .meter-fill { background: var(--color-danger); }
+
+.meter-list {
+    display: grid;
+    gap: 1rem;
+    width: 100%;
+    max-width: 24rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.meter-row { display: grid; gap: 0.4rem; }
+
+/* ---- Password strength (segmented meter) ------------------------------------- */
+.strength {
+    display: grid;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 20rem;
+}
+
+.strength-input {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 0.45rem;
+    background: var(--color-surface);
+    font: inherit;
+    font-size: 0.9rem;
+}
+
+.strength-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
+
+.strength-meter {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.3rem;
+}
+
+.strength-segment {
+    height: 0.375rem;
+    border-radius: 999px;
+    background: var(--color-fill-strong);
+    transition: background-color 200ms ease;
+}
+
+.strength-meter[data-level="low"]     .strength-segment[data-filled] { background: var(--color-danger); }
+.strength-meter[data-level="optimum"] .strength-segment[data-filled] { background: #d97706; }
+.strength-meter[data-level="high"]    .strength-segment[data-filled] { background: #16a34a; }
+
+/* ---- Demo layout ------------------------------------------------------------- */
+.progress-demo {
+    display: grid;
+    gap: 1rem;
+    width: 100%;
+    max-width: 24rem;
+}

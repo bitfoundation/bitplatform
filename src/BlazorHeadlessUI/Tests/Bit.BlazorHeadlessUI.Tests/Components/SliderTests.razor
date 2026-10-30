@@ -1,0 +1,252 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using Microsoft.JSInterop
+@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    [TestMethod]
+    public void Thumb_exposes_value_range_and_text()
+    {
+        var cut = Render(
+            @<BitBhSlider DefaultValue="40" Min="0" Max="200" Step="10" ValueText="@(v => $"{v} px")">
+                <BitBhSliderTrack><BitBhSliderRange /></BitBhSliderTrack>
+                <BitBhSliderThumb aria-label="Width" />
+            </BitBhSlider>);
+
+        var thumb = cut.Find("[role=slider]");
+        Assert.AreEqual("0", thumb.GetAttribute("aria-valuemin"));
+        Assert.AreEqual("200", thumb.GetAttribute("aria-valuemax"));
+        Assert.AreEqual("40", thumb.GetAttribute("aria-valuenow"));
+        Assert.AreEqual("40 px", thumb.GetAttribute("aria-valuetext"));
+        Assert.AreEqual("horizontal", thumb.GetAttribute("aria-orientation"));
+        Assert.AreEqual("0", thumb.GetAttribute("tabindex"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Keyboard_steps_clamps_and_jumps()
+    {
+        var commits = new List<double>();
+        var cut = Render(
+            @<BitBhSlider DefaultValue="50" Step="5" LargeStep="20" OnValueCommit="v => commits.Add(v[0])">
+                <BitBhSliderTrack><BitBhSliderRange /></BitBhSliderTrack>
+                <BitBhSliderThumb aria-label="Volume" />
+            </BitBhSlider>);
+
+        string Now() => cut.Find("[role=slider]").GetAttribute("aria-valuenow")!;
+        cut.Find("[role=slider]").Press("ArrowRight");
+        Assert.AreEqual("55", Now());
+        cut.Find("[role=slider]").Press("ArrowDown");
+        Assert.AreEqual("50", Now());
+        cut.Find("[role=slider]").Press("PageUp");
+        Assert.AreEqual("70", Now());
+        cut.Find("[role=slider]").Press("ArrowUp", shift: true);
+        Assert.AreEqual("90", Now());
+        cut.Find("[role=slider]").Press("PageUp");
+        Assert.AreEqual("100", Now()); // clamped
+        cut.Find("[role=slider]").Press("Home");
+        Assert.AreEqual("0", Now());
+        cut.Find("[role=slider]").Press("End");
+        Assert.AreEqual("100", Now());
+        Assert.AreEqual(100, commits[^1]);
+    }
+
+    [TestMethod]
+    public void Range_part_follows_the_value()
+    {
+        var cut = Render(
+            @<BitBhSlider DefaultValue="20">
+                <BitBhSliderTrack><BitBhSliderRange /></BitBhSliderTrack>
+                <BitBhSliderThumb aria-label="Level" />
+            </BitBhSlider>);
+
+        string RangeStyle() => cut.Find("[role=slider]").ParentElement!.FirstElementChild!.FirstElementChild!.GetAttribute("style")!;
+        Assert.Contains("right:80%", RangeStyle());
+        cut.Find("[role=slider]").Press("End");
+        Assert.Contains("right:0%", RangeStyle());
+    }
+
+    [TestMethod]
+    public void Rtl_reverses_left_and_right()
+    {
+        var cut = Render(
+            @<BitBhSlider DefaultValue="50" Dir="BitBhDirection.Rtl">
+                <BitBhSliderThumb aria-label="Balance" />
+            </BitBhSlider>);
+        cut.Find("[role=slider]").Press("ArrowLeft");
+        Assert.AreEqual("51", cut.Find("[role=slider]").GetAttribute("aria-valuenow"));
+    }
+
+    [TestMethod]
+    public void Range_slider_keeps_thumbs_ordered()
+    {
+        IReadOnlyList<double>? values = null;
+        var cut = Render(
+            @<BitBhSlider DefaultValues="@(new double[] { 20, 30 })" MinStepsBetweenThumbs="5" ValuesChanged="v => values = v">
+                <BitBhSliderThumb aria-label="Minimum price" />
+                <BitBhSliderThumb aria-label="Maximum price" />
+            </BitBhSlider>);
+
+        var thumbs = cut.FindAll("[role=slider]");
+        Assert.AreEqual(2, thumbs.Count);
+        thumbs[0].Press("PageUp");
+        // The lower thumb can't pass the upper one minus the minimum gap.
+        Assert.AreEqual(25, values![0]);
+        Assert.AreEqual(30, values[1]);
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Disabled_slider_ignores_keys_and_leaves_the_tab_order()
+    {
+        var cut = Render(
+            @<BitBhSlider DefaultValue="10" Disabled="true">
+                <BitBhSliderThumb aria-label="Speed" />
+            </BitBhSlider>);
+        cut.Find("[role=slider]").Press("ArrowRight");
+        Assert.AreEqual("10", cut.Find("[role=slider]").GetAttribute("aria-valuenow"));
+        Assert.AreEqual("-1", cut.Find("[role=slider]").GetAttribute("tabindex"));
+        Assert.AreEqual("true", cut.Find("[role=slider]").GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void Slider_in_a_field_is_labelled()
+    {
+        var cut = Render(
+            @<BitBhField>
+                <BitBhLabel>Brightness</BitBhLabel>
+                <BitBhSlider DefaultValue="3" Max="10"><BitBhSliderThumb /></BitBhSlider>
+            </BitBhField>);
+        Assert.AreEqual("Brightness", cut.Find("[role=slider]").AccessibleName());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Controlled_keyboard_commit_reports_the_new_value_once_per_change()
+    {
+        // The parent's re-render with the new Value is only queued while the key is handled.
+        var commits = new List<double>();
+        var cut = Render(
+            @<Stateful T="double" Initial="99" Context="s">
+                <BitBhSlider Value="s.Value" ValueChanged="s.Set" OnValueCommit="v => commits.Add(v[0])">
+                    <BitBhSliderThumb aria-label="Volume" />
+                </BitBhSlider>
+            </Stateful>);
+
+        cut.Find("[role=slider]").Press("ArrowRight");
+        Assert.AreSequenceEqual(new[] { 100d }, commits);
+
+        // At the maximum nothing changes, so nothing is committed.
+        cut.Find("[role=slider]").Press("ArrowRight");
+        cut.Find("[role=slider]").Press("End");
+        Assert.AreSequenceEqual(new[] { 100d }, commits);
+    }
+
+    [TestMethod]
+    public void Inverted_slider_still_increases_on_Up_and_Right()
+    {
+        var cut = Render(
+            @<BitBhSlider DefaultValue="50" Inverted="true">
+                <BitBhSliderThumb aria-label="Level" />
+            </BitBhSlider>);
+
+        string Now() => cut.Find("[role=slider]").GetAttribute("aria-valuenow")!;
+        cut.Find("[role=slider]").Press("ArrowRight");
+        Assert.AreEqual("51", Now());
+        cut.Find("[role=slider]").Press("ArrowUp");
+        Assert.AreEqual("52", Now());
+        cut.Find("[role=slider]").Press("ArrowLeft");
+        Assert.AreEqual("51", Now());
+        cut.Find("[role=slider]").Press("ArrowDown");
+        Assert.AreEqual("50", Now());
+    }
+
+    private sealed class Settings
+    {
+        [Range(0d, 10d, ErrorMessage = "At most 10.")]
+        public double Level { get; set; } = 50;
+    }
+
+    [TestMethod]
+    public void Thumb_reports_validation()
+    {
+        var model = new Settings();
+        var cut = Render(
+            @<EditForm Model="model">
+                <DataAnnotationsValidator />
+                <BitBhField>
+                    <BitBhLabel>Level</BitBhLabel>
+                    <BitBhSlider @bind-Value="model.Level"><BitBhSliderThumb /></BitBhSlider>
+                    <BitBhErrorMessage />
+                </BitBhField>
+            </EditForm>);
+
+        Assert.IsNull(cut.Find("[role=slider]").GetAttribute("aria-invalid"));
+        cut.Find("form").Submit();
+        var thumb = cut.Find("[role=slider]");
+        Assert.AreEqual("true", thumb.GetAttribute("aria-invalid"));
+        Assert.IsTrue(thumb.HasAttribute("data-invalid"));
+        Assert.Contains("At most 10.", thumb.AccessibleDescription());
+    }
+
+    [TestMethod]
+    public void Disabled_slider_posts_nothing()
+    {
+        var cut = Render(
+            @<div>
+                <BitBhSlider DefaultValue="3" Name="on"><BitBhSliderThumb aria-label="On" /></BitBhSlider>
+                <BitBhSlider DefaultValue="3" Name="off" Disabled="true"><BitBhSliderThumb aria-label="Off" /></BitBhSlider>
+            </div>);
+        Assert.AreEqual("3", cut.Find("input[type=hidden][name=on]").GetAttribute("value"));
+        Assert.IsEmpty(cut.FindAll("input[type=hidden][name=off]"));
+    }
+
+    [TestMethod]
+    public void Disposed_while_attaching_detaches_what_the_attach_returns()
+    {
+        var module = JSInterop.SetupModule("./_content/Bit.BlazorHeadlessUI/bit-blazorheadlessui.js");
+        var attach = module.Setup<int>("slider.attach", _ => true);
+        var cut = Render(
+            @<Stateful T="bool" Initial="true" Context="s">
+                @if (s.Value)
+                {
+                    <BitBhSlider DefaultValue="5"><BitBhSliderThumb aria-label="Level" /></BitBhSlider>
+                }
+            </Stateful>);
+
+        // The runtime gets a callback object, not the component (whose callback would be public API).
+        var callbacks = attach.Invocations.Single().Arguments[0]!;
+        Assert.IsFalse(callbacks.GetType().GenericTypeArguments.Contains(typeof(BitBhSlider)));
+        Assert.IsFalse(typeof(BitBhSlider).GetMethods().Any(m => m.IsDefined(typeof(JSInvokableAttribute), true)));
+
+        var host = cut.FindComponent<Stateful<bool>>().Instance;
+        cut.InvokeAsync(() => host.Set(false));
+        attach.SetResult(7);
+
+        cut.WaitForAssertion(() =>
+            Assert.ContainsSingle(JSInterop.Invocations.Where(i => i.Identifier == "slider.detach" && Equals(i.Arguments[0], 7))));
+    }
+
+    [TestMethod]
+    public void A_step_that_is_not_positive_falls_back_to_1()
+    {
+        var cut = Render(@<BitBhSlider DefaultValue="50" Step="0"><BitBhSliderThumb aria-label="Level" /></BitBhSlider>);
+        cut.Find("[role=slider]").Press("ArrowRight");
+        Assert.AreEqual("51", cut.Find("[role=slider]").GetAttribute("aria-valuenow"));
+    }
+
+    [TestMethod]
+    public void The_runtime_mirrors_pointer_input_by_the_slider_direction()
+    {
+        var module = JSInterop.SetupModule("./_content/Bit.BlazorHeadlessUI/bit-blazorheadlessui.js");
+        var attach = module.Setup<int>("slider.attach", _ => true);
+        Render(
+            @<BitBhDirectionProvider Dir="BitBhDirection.Rtl">
+                <BitBhSlider DefaultValue="5"><BitBhSliderThumb aria-label="Level" /></BitBhSlider>
+            </BitBhDirectionProvider>);
+
+        // The thumbs are drawn from the provider, which sets no dir attribute the runtime could read.
+        var options = (IDictionary<string, object?>)attach.Invocations.Single().Arguments[3]!;
+        Assert.AreEqual(true, options["rtl"]);
+    }
+}

@@ -91,7 +91,7 @@ public static class DocsCatalog
         [
             new("/getting-started", "Getting started",
                 "Install the packages, register the services, map the relay and put a collaborative editor on a page.",
-                "install setup nuget package AddBitBcrdtServices AddBitBcrdtHub MapHub BcrdtHub AddBitBcrdtDocumentHost program.cs quick start five-minute data type store IndexedDB file system OpenAsync transaction BcrdtComponentBase Track websocket",
+                "install setup nuget package AddBitBcrdtServices AddBitBcrdtHub MapHub BcrdtHub AddBitBcrdtDocumentHost program.cs quick start five-minute data type store IndexedDB file system OpenAsync transaction BcrdtComponentBase Track websocket lazy load lazyassemblyloader blazorwebassemblylazyload GetBcrdtCollaborationService aot",
                 typeof(GettingStarted)),
         ]),
         new("Collaborating",

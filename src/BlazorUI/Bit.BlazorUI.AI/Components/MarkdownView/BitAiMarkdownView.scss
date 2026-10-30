@@ -1,0 +1,403 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor, or on the Style of a view inherits down to every Markdown view under it - the ones a reasoning panel or
+// an artifact renders inside a message included:
+//   --bit-AiMarkdownView-color                     text color of the prose                       (default: inherit)
+//   --bit-AiMarkdownView-font-size                 text size of the prose                        (default: inherit)
+//   --bit-AiMarkdownView-line-height               line height of the prose                      (default: 1.6)
+//   --bit-AiMarkdownView-block-spacing             room between two blocks (paragraphs, lists,
+//                                                  tables, code blocks, ...)                     (default: spacing(2))
+//   --bit-AiMarkdownView-heading-color             text color of the headings                    (default: inherit)
+//   --bit-AiMarkdownView-heading-font-weight       weight of the headings                        (default: $tg-fw-semibold)
+//   --bit-AiMarkdownView-link-color                text color of the links                       (default: $clr-pri-fg)
+//   --bit-AiMarkdownView-link-hover-color          text color of a link under the pointer        (default: the link color)
+//   --bit-AiMarkdownView-code-color                text color of the code spans and the math     (default: inherit)
+//   --bit-AiMarkdownView-code-background           background of the code spans and the math     (default: 8% of $clr-fg-pri)
+//   --bit-AiMarkdownView-code-radius               corner radius of the code spans and the math  (default: $shp-radius-sm)
+//   --bit-AiMarkdownView-code-font-family          font of the code spans and the math           (default: $tg-font-family-mono)
+//   --bit-AiMarkdownView-marker-color              bullets and numbers of the lists              (default: $clr-fg-ter)
+//   --bit-AiMarkdownView-quote-color               text color of the block quotes                (default: $clr-fg-sec)
+//   --bit-AiMarkdownView-quote-border-color        bar down the start edge of the block quotes   (default: $clr-brd-pri)
+//   --bit-AiMarkdownView-rule-color                thematic breaks, the line above the footnotes (default: $clr-brd-sec)
+//   --bit-AiMarkdownView-table-border-color        border of the tables and their rows           (default: $clr-brd-sec)
+//   --bit-AiMarkdownView-table-header-background   background of the header row                  (default: 4% of $clr-fg-pri)
+//   --bit-AiMarkdownView-table-font-size           text size of the tables                       (default: $tg-fs-sm)
+//   --bit-AiMarkdownView-table-radius              corner radius of the tables                   (default: $shp-radius-surface)
+//   --bit-AiMarkdownView-image-radius              corner radius of the images                   (default: $shp-radius-surface)
+//   --bit-AiMarkdownView-muted-color               the footnotes, the text of a blocked image    (default: $clr-fg-sec)
+//   --bit-AiMarkdownView-caret-color               the caret after streaming text                (default: $clr-pri)
+//   --bit-AiMarkdownView-scroll-margin             room kept above a heading, a footnote or a footnote reference an
+//                                                  in-page link scrolls to - the height of a sticky app bar
+//                                                                                                (default: spacing(3))
+//
+// The washes behind the code spans and the table header are translucent mixes of the text color rather than a
+// background token, so they read on whatever the message sits on - the page, a bubble, a card, a panel.
+//
+// Every element the view renders carries a class of its own, and every rule below is written for those classes only:
+// a code block, a chart or a diagram a renderer registered with the BitAiRendererRegistry draws, and the citation
+// chips, keep their own styles whatever the prose around them looks like.
+
+.bit-aimdv {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: var(--bit-AiMarkdownView-color, inherit);
+    font-size: var(--bit-AiMarkdownView-font-size, inherit);
+    line-height: var(--bit-AiMarkdownView-line-height, 1.6);
+}
+
+.bit-aimdv-par {
+    margin: 0;
+}
+
+// A heading is set off from the block above it by more room than two paragraphs are (see the block rhythm below).
+.bit-aimdv-hdg {
+    margin: 0;
+    line-height: 1.35;
+    color: var(--bit-AiMarkdownView-heading-color, inherit);
+    font-weight: var(--bit-AiMarkdownView-heading-font-weight, #{$tg-fw-semibold});
+}
+
+// What an in-page link scrolls to - a heading, a footnote from its reference, a reference back from its footnote - stops
+// a little below the top of the viewport, or as far below it as a page with a sticky app bar asks, so it is not left
+// under the bar.
+.bit-aimdv-hdg,
+.bit-aimdv-fnr,
+.bit-aimdv-fni {
+    scroll-margin-block-start: var(--bit-AiMarkdownView-scroll-margin, #{spacing(3)});
+}
+
+// The headings are rendered one level below the Markdown's own (a "#" is an h2), so the steps of the ramp follow
+// the rendered element.
+.bit-aimdv-hdg:where(h2) {
+    font-size: $tg-fs-2xl;
+}
+
+.bit-aimdv-hdg:where(h3) {
+    font-size: $tg-fs-xl;
+}
+
+.bit-aimdv-hdg:where(h4) {
+    font-size: $tg-fs-lg;
+}
+
+.bit-aimdv-hdg:where(h5, h6) {
+    font-size: $tg-fs-md;
+}
+
+.bit-aimdv-lst {
+    margin: 0;
+    padding-inline-start: spacing(3);
+}
+
+.bit-aimdv-itm::marker {
+    color: var(--bit-AiMarkdownView-marker-color, #{$clr-fg-ter});
+}
+
+// A task list draws its own box in place of the marker.
+.bit-aimdv-tsk {
+    list-style: none;
+    padding-inline-start: 0;
+}
+
+.bit-aimdv-tki {
+    display: flex;
+    gap: spacing(1);
+    align-items: flex-start;
+}
+
+// The box is sized and set in the type of the item, not in the browser's own smaller type of a form control, so the room
+// it is dropped by - half of what the first line of the item leaves over it, which centers it on that line rather than
+// setting it at its top - is measured in the item's terms. An engine without the lh unit keeps the room of the default
+// line height.
+.bit-aimdv-chk {
+    flex: none;
+    margin: 0;
+    width: 1em;
+    height: 1em;
+    font-size: inherit;
+    line-height: inherit;
+    margin-block-start: 0.3em;
+    margin-block-start: calc((1lh - 1em) / 2);
+    accent-color: $clr-pri;
+}
+
+.bit-aimdv-tkb {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+// The text of a task sits beside its box, on the same first line, so it takes none of the room the block rhythm (below)
+// gives the second child of an item.
+.bit-aimdv-tki > .bit-aimdv-tkb {
+    margin-block-start: 0;
+}
+
+.bit-aimdv-quo {
+    margin: 0;
+    padding-inline-start: spacing(2);
+    color: var(--bit-AiMarkdownView-quote-color, #{$clr-fg-sec});
+    border-inline-start: $shp-border-width-thick $shp-border-style var(--bit-AiMarkdownView-quote-border-color, #{$clr-brd-pri});
+}
+
+// Links are underlined at rest: a color difference alone does not tell a link from the text around it (WCAG 1.4.1).
+// The pointer is answered with a heavier line, and the hover moves the variable the link is painted from rather than
+// its color, so a link an app paints through a class of its own keeps that paint under the pointer.
+.bit-aimdv-lnk {
+    --bit-aimdv-lnk-clr: initial;
+    border-radius: $shp-radius-xs;
+    text-decoration-line: underline;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: $shp-border-width;
+    color: var(--bit-aimdv-lnk-clr, var(--bit-AiMarkdownView-link-color, #{$clr-pri-fg}));
+
+    &:hover {
+        --bit-aimdv-lnk-clr: var(--bit-AiMarkdownView-link-hover-color, var(--bit-AiMarkdownView-link-color, #{$clr-pri-fg}));
+        text-decoration-thickness: $shp-border-width-thick;
+    }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+}
+
+// A code span is a run inside a line of any size - a heading's as much as a paragraph's - so it is sized against
+// that line rather than taken from the ramp, which would shrink it to body size inside a heading.
+// An inline code span is code too: left to right and isolated from the sentence around it, so a right-to-left
+// paragraph neither reorders its punctuation nor lets it reorder the words next to it.
+.bit-aimdv-cod {
+    direction: ltr;
+    unicode-bidi: isolate;
+    padding: 0.15em 0.35em;
+    font-size: 0.875em;
+    overflow-wrap: break-word;
+    color: var(--bit-AiMarkdownView-code-color, inherit);
+    border-radius: var(--bit-AiMarkdownView-code-radius, #{$shp-radius-sm});
+    font-family: var(--bit-AiMarkdownView-code-font-family, #{$tg-font-family-mono});
+    background-color: var(--bit-AiMarkdownView-code-background, #{translucent($clr-fg-pri, 8%)});
+}
+
+// Drawn as a border rather than as a background, so it survives forced colors, where every background is painted over.
+.bit-aimdv-sep {
+    height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-block-start: $shp-border-width $shp-border-style var(--bit-AiMarkdownView-rule-color, #{$clr-brd-sec});
+}
+
+.bit-aimdv-img {
+    max-width: 100%;
+    height: auto;
+    vertical-align: middle;
+    border-radius: var(--bit-AiMarkdownView-image-radius, #{$shp-radius-surface});
+}
+
+.bit-aimdv-imb {
+    font-style: italic;
+    color: var(--bit-AiMarkdownView-muted-color, #{$clr-fg-sec});
+}
+
+// The table scrolls inside its container, which also draws its frame. The container takes the focus so a keyboard can
+// scroll it, and shows it with a ring drawn inside the frame, which nothing around the view can clip.
+.bit-aimdv-tbw {
+    overflow-x: auto;
+    border-radius: var(--bit-AiMarkdownView-table-radius, #{$shp-radius-surface});
+    border: $shp-border-width $shp-border-style var(--bit-AiMarkdownView-table-border-color, #{$clr-brd-sec});
+
+    &:focus-visible {
+        @include focus-ring-inset($clr-pri-focus);
+    }
+}
+
+// The prose breaks a word anywhere rather than overflow the message (see the root), but a cell that did so would only
+// ever get narrower: a table too wide for the view breaks its words where they end and scrolls instead.
+.bit-aimdv-tbl {
+    width: 100%;
+    border-collapse: collapse;
+    overflow-wrap: break-word;
+    font-size: var(--bit-AiMarkdownView-table-font-size, #{$tg-fs-sm});
+}
+
+.bit-aimdv-thc,
+.bit-aimdv-tdc {
+    text-align: start;
+    padding: spacing(1) spacing(1.5);
+    border-block-end: $shp-border-width $shp-border-style var(--bit-AiMarkdownView-table-border-color, #{$clr-brd-sec});
+}
+
+.bit-aimdv-thc {
+    white-space: nowrap;
+    font-weight: $tg-fw-semibold;
+    background-color: var(--bit-AiMarkdownView-table-header-background, #{translucent($clr-fg-pri, 4%)});
+}
+
+// The frame of the container already closes the table, so its last row draws no line of its own.
+.bit-aimdv-row:last-child > .bit-aimdv-tdc {
+    border-block-end: none;
+}
+
+// The alignment of a column, written as classes rather than inline styles so it holds under a strict
+// Content-Security-Policy. A right-aligned column is aligned to the end of the line, which follows the direction.
+.bit-aimdv-alc {
+    text-align: center;
+}
+
+.bit-aimdv-alr {
+    text-align: end;
+}
+
+// Mathematics is left as the source it is until a renderer registered for it typesets it; until then it at least
+// reads as something set apart from the prose.
+.bit-aimdv-mth {
+    padding: 0.1em 0.3em;
+    color: var(--bit-AiMarkdownView-code-color, inherit);
+    border-radius: var(--bit-AiMarkdownView-code-radius, #{$shp-radius-sm});
+    font-family: var(--bit-AiMarkdownView-code-font-family, #{$tg-font-family-mono});
+    background-color: var(--bit-AiMarkdownView-code-background, #{translucent($clr-fg-pri, 8%)});
+}
+
+.bit-aimdv-mtb {
+    display: block;
+    overflow-x: auto;
+    text-align: center;
+    padding: spacing(1.5);
+}
+
+// A renderer of the app's own that fails inside a line - inline math, a citation chip - leaves its notice in that line
+// rather than breaking the paragraph around it. The notice is a BitAiRendererBoundary's, a block of its own elsewhere,
+// so the rule weighs two classes of the view's own to be read ahead of the boundary's.
+.bit-aimdv .bit-aimdv-rbi {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+// Footnotes: listed after the text, typographically quieter than the body they annotate, each with a link back to
+// where it was cited.
+.bit-aimdv-fnr {
+    line-height: 1;
+    font-size: 0.75em;
+    vertical-align: super;
+}
+
+.bit-aimdv-fra,
+.bit-aimdv-fnb {
+    padding: 0 0.15em;
+    text-decoration: none;
+    border-radius: $shp-radius-xs;
+    color: var(--bit-AiMarkdownView-link-color, #{$clr-pri-fg});
+
+    &:hover {
+        text-decoration: underline;
+    }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+}
+
+.bit-aimdv-fns {
+    font-size: 0.875em;
+    padding-block-start: spacing(1.5);
+    color: var(--bit-AiMarkdownView-muted-color, #{$clr-fg-sec});
+    border-block-start: $shp-border-width $shp-border-style var(--bit-AiMarkdownView-rule-color, #{$clr-brd-sec});
+}
+
+.bit-aimdv-fnl {
+    margin: 0;
+    padding-inline-start: 1.5em;
+}
+
+// The last paragraph of a note runs on into its back-links rather than leaving them on a line of their own.
+.bit-aimdv-fni > .bit-aimdv-par:has(+ .bit-aimdv-fnb) {
+    display: inline;
+}
+
+// The caret that trails streaming text. It blinks on a loop of its own, which the looping motion factor of the theme
+// retunes; a reduced motion preference stops it (below) rather than slowing it.
+.bit-aimdv-crt {
+    width: 0.45em;
+    height: 1.05em;
+    display: inline-block;
+    vertical-align: text-bottom;
+    margin-inline-start: 1px;
+    border-radius: $shp-radius-xs;
+    background-color: var(--bit-AiMarkdownView-caret-color, #{$clr-pri});
+    animation: bit-aimdv-blink calc(1100ms * #{$mot-loop-factor}) steps(2, start) infinite;
+}
+
+@keyframes bit-aimdv-blink {
+    to {
+        visibility: hidden;
+    }
+}
+
+// The block rhythm. The room between two blocks is set on the block that follows another one in the same container -
+// the view itself, a quote, a list, a list item, a footnote - and only on the direct children of those, so the blocks
+// a registered renderer draws keep their own inner spacing. It comes after the rules above, which reset the margins
+// of the same elements at the same weight. The qualifier is in :where(), so the rule weighs one class.
+.bit-aimdv,
+.bit-aimdv-quo,
+.bit-aimdv-fni {
+    > :where(* + *) {
+        margin-block-start: var(--bit-AiMarkdownView-block-spacing, #{spacing(2)});
+    }
+}
+
+.bit-aimdv > :where(* + .bit-aimdv-hdg) {
+    margin-block-start: calc(var(--bit-AiMarkdownView-block-spacing, #{spacing(2)}) * 1.5);
+}
+
+.bit-aimdv-lst > :where(* + *),
+.bit-aimdv-itm > :where(* + *),
+.bit-aimdv-tkb > :where(* + *) {
+    margin-block-start: spacing(0.5);
+}
+
+// A loose list - one whose items were written with blank lines between them - is spaced out like paragraphs.
+.bit-aimdv-lse > :where(* + *) {
+    margin-block-start: spacing(1.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bit-aimdv-crt:where(:not(.bit-fam):not(.bit-fam *)) {
+        animation: none;
+        opacity: 0.8;
+    }
+}
+
+// Forced colors paint every background over with the canvas, so whatever a background was telling apart - a code
+// span, the math - gets an outline instead, and the caret is drawn in the system highlight.
+@media (forced-colors: active) {
+    .bit-aimdv-cod,
+    .bit-aimdv-mth {
+        outline: $shp-border-width solid transparent;
+    }
+
+    .bit-aimdv-crt {
+        forced-color-adjust: none;
+        background-color: Highlight;
+    }
+}
+
+// On paper a table or a quote split across a page break, and a heading stranded at the bottom of one, are what ruin a
+// printed answer.
+@media print {
+    .bit-aimdv-tbw,
+    .bit-aimdv-quo,
+    .bit-aimdv-img {
+        break-inside: avoid;
+    }
+
+    .bit-aimdv-hdg {
+        break-after: avoid;
+    }
+
+    .bit-aimdv-tbw {
+        overflow: visible;
+    }
+
+    .bit-aimdv-crt {
+        display: none;
+    }
+}

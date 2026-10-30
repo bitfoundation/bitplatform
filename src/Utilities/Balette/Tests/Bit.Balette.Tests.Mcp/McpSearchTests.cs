@@ -33,6 +33,8 @@ public partial class McpSearchTests
         ("why does my command rank low", "Inspect a search"),
         ("unstyled", "Unstyled"),
         ("frecency", "Priority and frecency"),
+        // The theme catalog's rows are one hit, so a word in all of them is in one place, not in dozens.
+        ("dark background shortcut", "Theme variable catalog"),
     ];
 
     [TestMethod]
@@ -52,6 +54,84 @@ public partial class McpSearchTests
 
         Assert.IsEmpty(misses, string.Join(Environment.NewLine, misses));
     }
+
+    /// <summary>
+    /// Questions that say what the app has to do rather than what the feature is called, and the titles
+    /// one of which has to be the first hit: an agent that trusts the first hit goes wherever it points.
+    /// </summary>
+    private static readonly (string Query, string[] Answers)[] _firstHits =
+    [
+        ("a command that asks for a name before it runs", ["Prompts", "BaletteCommandResult.Prompt"]),
+        ("ask the user for a value", ["BaletteCommandResult.Prompt", "Prompts"]),
+        ("open the palette from code", ["Open it"]),
+        ("hotkey", ["Global shortcuts", "BaletteCommand.Shortcut", "BaletteCommandBuilder.Shortcut"]),
+        // A plural reaches the synonym of its singular, though "alias" and "aliases" do not share a stem.
+        ("aliases", ["BaletteCommandBuilder.Keywords", "BaletteCommand.Keywords"]),
+    ];
+
+    [TestMethod]
+    public async Task A_question_in_plain_words_puts_its_answer_first()
+    {
+        var misses = new List<string>();
+
+        // However few hits were asked for, the first one is the same.
+        foreach (var (query, answers) in _firstHits)
+        {
+            foreach (var limit in new[] { 1, 3, 6 })
+            {
+                var result = await McpCall.StructuredAsync<BaletteSearchResultDto>("SearchBalette", new() { ["query"] = query, ["limit"] = limit });
+                var first = result.Hits.FirstOrDefault()?.Title ?? string.Empty;
+
+                if (answers.Contains(first, StringComparer.OrdinalIgnoreCase)) continue;
+
+                misses.Add($"'{query}' (limit {limit}) ranked first: {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
+            }
+        }
+
+        Assert.IsEmpty(misses, string.Join(Environment.NewLine, misses));
+    }
+
+    [TestMethod]
+    [DataRow("code")]
+    [DataRow("string")]
+    public async Task A_member_every_type_has_is_not_an_answer(string query)
+    {
+        // Split into words, GetHashCode is "code": left in, it answered "open the palette from code". And a record's
+        // Deconstruct names every property it has, so it answers a question about any one of them first.
+        var result = await McpCall.StructuredAsync<BaletteSearchResultDto>("SearchBalette", new() { ["query"] = query, ["limit"] = 50 });
+
+        Assert.IsFalse(result.Hits.Any(IsObjectPlumbing), $"'{query}': {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
+    }
+
+    /// <summary>
+    /// What the compiler writes for a record, and an override of what every object has that its type does not document
+    /// - which is a hit with nothing in its snippet. A documented ToString says what the type's text is, and stays.
+    /// </summary>
+    private static bool IsObjectPlumbing(BaletteSearchHitDto hit)
+    {
+        var member = hit.Title[(hit.Title.LastIndexOf('.') + 1)..];
+
+        return member is "Deconstruct" or "PrintMembers" || (member is "Equals" or "GetHashCode" or "ToString" && hit.Snippet.Length == 0);
+    }
+
+    [TestMethod]
+    public async Task A_snippet_starts_at_a_word_of_the_query_or_at_the_start()
+    {
+        // A one-letter term found only in a hit's name has nowhere in its body to be cut around, and the first "z"
+        // anywhere in the text is inside some other word.
+        var result = await McpCall.StructuredAsync<BaletteSearchResultDto>("SearchBalette", new() { ["query"] = "z", ["limit"] = 50 });
+
+        Assert.IsNotEmpty(result.Hits);
+
+        foreach (var hit in result.Hits)
+        {
+            Assert.IsTrue(hit.Snippet.StartsWith("...", StringComparison.Ordinal) is false || WholeZRegex().IsMatch(hit.Snippet),
+                $"'{hit.Title}' was cut somewhere 'z' is not a word: {hit.Snippet}");
+        }
+    }
+
+    [GeneratedRegex("(?<![A-Za-z0-9])[Zz](?![A-Za-z0-9])")]
+    private static partial Regex WholeZRegex();
 
     [TestMethod]
     public async Task A_word_inside_another_word_does_not_count()

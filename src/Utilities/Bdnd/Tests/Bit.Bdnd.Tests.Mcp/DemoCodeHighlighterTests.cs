@@ -29,7 +29,7 @@ public class DemoCodeHighlighterTests
     }
 
     [TestMethod]
-    public void A_language_other_than_razor_or_csharp_throws_rather_than_being_read_as_razor()
+    public void A_language_other_than_razor_csharp_css_or_json_throws_rather_than_being_read_as_razor()
     {
         Assert.ThrowsExactly<ArgumentException>(() => SyntaxHighlighter.Highlight("var x = a < b;", "cs"));
         Assert.ThrowsExactly<ArgumentException>(() => SyntaxHighlighter.HighlightOrThrow("var x = a < b;", "c#"));

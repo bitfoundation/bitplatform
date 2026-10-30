@@ -1,0 +1,10 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// No public CSS variables of its own: what is drawn is a BitTag, which the --bit-Tag-* variables restyle.
+
+.bit-aiasb {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    vertical-align: middle;
+}

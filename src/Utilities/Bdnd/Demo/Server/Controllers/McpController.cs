@@ -59,7 +59,7 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBdndSetupGuide), Title = "Setup guide for one render mode", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets the complete wiring needed to add Bit.Bdnd to a Blazor app in one render mode: 'server' (InteractiveServer), 'wasm' (InteractiveWebAssembly, which is how this demo is built and comes with its real files), 'auto' (InteractiveAuto), 'standalone-wasm' or 'hybrid' (MAUI, WPF, Windows Forms). Call this before writing setup code - builder.Services.AddBitBdndServices() is required (in a Blazor Web App in both Program.cs files), there is no stylesheet to link, every component must sit inside a BdndProvider, and the page must render interactively.")]
+    [Description("Gets the complete wiring needed to add Bit.Bdnd to a Blazor app in one render mode: 'server' (InteractiveServer), 'wasm' (InteractiveWebAssembly, which is how this demo is built and comes with its real files), 'auto' (InteractiveAuto), 'standalone-wasm' or 'hybrid' (MAUI, WPF, Windows Forms). Call this before writing setup code - builder.Services.AddBitBdndServices() belongs in every Program.cs that renders the components (in a Blazor Web App both; only a WebAssembly app that lazy loads Bit.Bdnd leaves it out), there is no stylesheet to link, every component must sit inside a BdndProvider, and the page must render interactively.")]
     public string GetBdndSetupGuide(
         // Declared rather than merely described: the values then sit in the JSON schema itself,
         // where a model cannot pass another one past them, and a client offers them as completions.

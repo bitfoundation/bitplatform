@@ -9,6 +9,12 @@
         // The inputs each open callout was positioned with, so that it can be laid out again without its
         // component having to hand them over a second time.
         export const _params: Map<string, BitCalloutParams> = new Map();
+        // When the page last scrolled (performance.now()), which tells a callout opened while a scroll was still
+        // running - a focus() bringing its trigger into view smoothly - from one the page is then scrolled under.
+        export let _lastScroll = -Infinity;
+        // How long in milliseconds the page goes without a scroll event before a scroll counts as stopped. A running
+        // scroll raises one every frame; a smooth one in a busy page can skip a few.
+        export const SCROLL_PAUSE = 100;
 
         // The innermost open callout, which is the one the page-level handlers speak for. It reads as the
         // single open callout it used to be for everything that never nests. A getter, defined on the namespace
@@ -74,6 +80,9 @@
         // Whether a scroll or a resize of the page leaves the callout open, following its component. A
         // callout that is not dismissed from outside at all is not dismissed by these either.
         noScrollDismiss?: boolean;
+        // Whether the page was still scrolling when the callout opened (see _lastScroll). The rest of that scroll
+        // re-anchors the callout instead of dismissing it, and only a scroll started after it has stopped dismisses it.
+        openedMidScroll?: boolean;
         dotnetObj?: DotNetObject;
         scrollContainerId?: string;
         responsiveMode?: BitResponsiveMode;

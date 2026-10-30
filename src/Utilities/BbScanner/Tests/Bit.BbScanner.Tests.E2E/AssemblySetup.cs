@@ -27,5 +27,6 @@ public static class AssemblySetup
     public static async Task CleanupAsync()
     {
         await PlaywrightSession.StopAsync();
+        await ServerSampleHost.StopAsync();
     }
 }

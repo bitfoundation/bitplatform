@@ -91,6 +91,17 @@ public class DiffTests
     }
 
     [TestMethod]
+    public async Task AFrameworkChange_Should_StartFromTheProjectsOwnFramework()
+    {
+        using var host = new Infrastructure.TestHost(HostOs.Linux);
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "bit.json"), """{ "version": "11.0.0-pre-14", "name": "Contoso", "options": { "framework": "net10.0" } }""");
+
+        await host.RunAsync("diff", "--framework", "net11.0");
+
+        StringAssert.Contains(host.FlatOutput, "from net10.0 to net11.0");
+    }
+
+    [TestMethod]
     public void FolderRemover_Should_RemoveALinkedFolderButNotWhatItLinksTo()
     {
         using var host = new Infrastructure.TestHost();

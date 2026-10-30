@@ -284,6 +284,7 @@ public class TranslationTests
 
         Assert.AreEqual(CliApp.ExitFailed, exitCode, host.Output);
         StringAssert.Contains(host.FlatOutput, "Couldn't translate Strings.fa.resx the model endpoint couldn't be reached");
+        StringAssert.Contains(host.FlatOutput, $"at http://127.0.0.1:{port}/v1 (OpenAI's chat completions API) to translate the 1 missing string of {Path.Combine("src", "Strings.resx")} from en to fa");
     }
 
     private static TestHost CreateProject(Dictionary<string, string> strings, string config = Config)

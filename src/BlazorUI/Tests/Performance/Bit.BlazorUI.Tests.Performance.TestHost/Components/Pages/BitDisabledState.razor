@@ -357,6 +357,105 @@
         case "richtexteditor-readonly":
             <BitRichTextEditor data-case-root Disabled="_disabled" ReadOnly @bind-Value="_html" Toolbar="BitRichTextEditorToolbar.AllExtended" />
             break;
+
+        // ---- AI ----
+
+        case "aijsonview":
+            <BitAiJsonView data-case-root Disabled="_disabled" Value="_json" @onclick="Hit" />
+            break;
+
+        case "aicitationmarker":
+            <BitAiCitationMarker data-case-root Disabled="_disabled" Citation="_citations[0]" OnActivate="Hit" />
+            break;
+
+        case "aisourcecard":
+            <BitAiSourceCard data-case-root Disabled="_disabled" Source="_citations[0].Source" Number="1" OnActivate="Hit" />
+            break;
+
+        case "aisourcelist":
+            <BitAiSourceList data-case-root Disabled="_disabled" Citations="_citations" OnSourceClick="Hit" />
+            break;
+
+        case "aiagentrunview":
+            <BitAiAgentRunView data-case-root Disabled="_disabled" Run="_aiRun" @onclick="Hit" />
+            break;
+
+        case "aiscrolltolatest":
+            <BitAiScrollToLatest data-case-root Disabled="_disabled" Visible OnClick="Hit" />
+            break;
+
+        case "aiconversationlist":
+            <BitAiConversationList data-case-root Disabled="_disabled" Conversations="_aiConversations" SelectedId="c1" ShowNewButton OnSelect="Hit" OnDelete="Hit" OnNew="Hit" />
+            break;
+
+        case "aitoolapproval":
+            <BitAiToolApproval data-case-root Disabled="_disabled" Call="_aiApprovalCall" OnDecision="Hit" />
+            break;
+
+        case "aierrorview":
+            <BitAiErrorView data-case-root Disabled="_disabled" Error="_aiError" OnRetry="Hit" />
+            break;
+
+        case "aicopybutton":
+            <BitAiCopyButton data-case-root Disabled="_disabled" Content="Copied text" ShowLabel />
+            break;
+
+        case "aiform":
+            <BitAiForm data-case-root Disabled="_disabled" Definition="_aiForm" OnSubmit="Hit" OnCancel="Hit" />
+            break;
+
+        case "aipromptinput":
+            <BitAiPromptInput data-case-root Disabled="_disabled" Value="hello" OnSubmit="Hit" />
+            break;
+
+        case "aimodelselector":
+            <BitAiModelSelector data-case-root Disabled="_disabled" Models="_aiModels" ModelId="alpha" @onclick="Hit" />
+            break;
+
+        case "aivoiceinput":
+            <BitAiVoiceInput data-case-root Disabled="_disabled" @onclick="Hit" />
+            break;
+
+        case "aiattachmentchip":
+            <BitAiAttachmentChip data-case-root Disabled="_disabled" Attachment="_aiAttachment" OnRemove="Hit" />
+            break;
+
+        case "aichat":
+            @* The registered transport (EchoAiTransport) answers the starter prompts. *@
+            <div style="height: 420px;">
+                <BitAiChat data-case-root Disabled="_disabled" Suggestions="_aiSuggestions" />
+            </div>
+            break;
+
+        case "aimessagelist":
+            <div style="display: flex; flex-direction: column; height: 320px;">
+                <BitAiMessageList data-case-root Disabled="_disabled" Conversation="_aiConversation" />
+            </div>
+            break;
+
+        case "aichatmessage":
+            <BitAiChatMessage data-case-root Disabled="_disabled" Message="_aiMessage" />
+            break;
+
+        case "aimessageactions":
+            <BitAiMessageActions data-case-root Disabled="_disabled" Message="_aiMessage" OnFeedback="Hit" />
+            break;
+
+        case "aiemptystate":
+            <BitAiEmptyState data-case-root Disabled="_disabled" Suggestions="_aiSuggestions" OnSuggestion="Hit" />
+            break;
+
+        case "aicollapsible":
+            <BitAiCollapsible data-case-root Disabled="_disabled" Title="Details"><p>Body</p></BitAiCollapsible>
+            break;
+
+        case "aitoolcallview":
+            <BitAiToolCallView data-case-root Disabled="_disabled" Call="_aiCompletedCall" />
+            break;
+
+        case "aiartifactview":
+            <BitAiArtifactView data-case-root Disabled="_disabled" Artifact="_aiArtifact" />
+            break;
     }
 </div>
 
@@ -410,6 +509,71 @@
     private string? _md = "hello";
     private string? _html = "<p>hello</p>";
     private BitPdfSource? _pdf;
+
+    // The AI components draw a value, a source, a run, a call, an artifact or a message, the way the activation contract
+    // hands them one (Tests/Bit.BlazorUI.Tests/Utils/BitDisabledActivationContractTests.cs).
+    private readonly System.Text.Json.JsonElement _json = System.Text.Json.JsonDocument.Parse("{\"a\":{\"b\":1},\"c\":[1,2]}").RootElement;
+    private readonly List<BitAiCitation> _citations =
+    [
+        new("c1", new BitAiCitationSource("s1", "Handbook") { Url = "https://example.com/handbook" }) { Number = 1 },
+        new("c2", new BitAiCitationSource("s2", "Guide") { Url = "https://example.com/guide" }) { Number = 2 },
+    ];
+    private readonly BitAiAgentRun _aiRun = AiRun();
+    private readonly List<BitAiConversationSummary> _aiConversations = [new("c1", "Trip", DateTimeOffset.Now), new("c2", "Budget", DateTimeOffset.Now)];
+    private readonly BitAiToolCallPart _aiApprovalCall = AiToolCall(BitAiToolCallStatus.AwaitingApproval);
+    private readonly BitAiToolCallPart _aiCompletedCall = AiToolCall(BitAiToolCallStatus.Completed);
+    private readonly BitAiError _aiError = new("The model is overloaded.") { Detail = "503", IsRetryable = true };
+    private readonly BitAiFormDefinition _aiForm = new() { Fields = [new BitAiFormField("city") { Required = true }, new BitAiFormField("notes")] };
+    private readonly List<BitAiModel> _aiModels = [new("alpha", "Alpha"), new("beta", "Beta")];
+    private readonly BitAiAttachment _aiAttachment = new("a1", "report.pdf") { Size = 2048 };
+    private readonly List<string> _aiSuggestions = ["Say hello", "Tell me more"];
+    private readonly BitAiArtifact _aiArtifact = AiArtifact();
+    private readonly BitAiConversation _aiConversation = AiConversation();
+    private readonly BitAiMessage _aiMessage = AiAssistantMessage();
+
+    private static BitAiAgentRun AiRun()
+    {
+        var run = new BitAiAgentRun("run_1", "Researcher");
+        run.SetPlan([new BitAiAgentPlanStep("search", "Search"), new BitAiAgentPlanStep("write", "Write")]);
+        run.GetOrAddStep("search").Start();
+        run.SetStatus(BitAiAgentRunStatus.Running);
+        // Waiting on the user, the one state in which the run view draws controls: the suggestions, the answer field and
+        // its button.
+        run.RequestInput("When should I run it?", ["Tonight", "Tomorrow"]);
+        return run;
+    }
+
+    private static BitAiToolCallPart AiToolCall(BitAiToolCallStatus status)
+    {
+        var call = new BitAiToolCallPart("c1", "search_docs");
+        call.CompleteArguments(System.Text.Json.JsonDocument.Parse("{\"query\":\"disabled\"}").RootElement);
+        call.SetStatus(status);
+        if (status is BitAiToolCallStatus.Completed) call.SetResult(BitAiToolOutcome.FromText("2 passages"));
+        return call;
+    }
+
+    private static BitAiArtifact AiArtifact()
+    {
+        var artifact = new BitAiConversation().GetOrAddArtifact("a1", BitAiArtifactKind.Document, "README");
+        artifact.SetContent("# Hello");
+        artifact.Complete();
+        return artifact;
+    }
+
+    private static BitAiConversation AiConversation()
+    {
+        var conversation = new BitAiConversation();
+        conversation.AddMessage(BitAiRole.User, "Hello");
+        conversation.AddMessage(AiAssistantMessage());
+        return conversation;
+    }
+
+    private static BitAiMessage AiAssistantMessage()
+    {
+        var message = new BitAiMessage(BitAiRole.Assistant);
+        message.AddPart(new BitAiTextPart("Hi there."));
+        return message;
+    }
 
     private void Hit() => _clicks++;
 

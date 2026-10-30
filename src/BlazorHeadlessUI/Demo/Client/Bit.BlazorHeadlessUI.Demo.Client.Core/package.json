@@ -1,0 +1,5 @@
+{
+    "devDependencies": {
+        "@tailwindcss/cli": "4.1.15"
+    }
+}

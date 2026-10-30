@@ -1,0 +1,274 @@
+﻿@page "/e2e/aipromptinput"
+@implements IAsyncDisposable
+
+<PageTitle>BitAiPromptInput E2E</PageTitle>
+
+<h1>BitAiPromptInput</h1>
+
+@* Every value a test reads back is written below its composer; a newline of the text is written as \n so a test reads
+   the exact text rather than one whose line breaks the page collapsed. *@
+
+<E2ESection Id="basic" Title="Basic">
+    <BitAiPromptInput Id="pi-basic" @bind-Value="_basicValue" OnSubmit="HandleBasicSubmit" />
+    <p>Value: <span id="pi-basic-value">@Escape(_basicValue)</span></p>
+    <p>Submissions: <span id="pi-basic-count">@_basicCount</span> | Sent: <span id="pi-basic-sent">@Escape(_basicSent)</span></p>
+    <BitAiPromptInput Id="pi-placeholder" Placeholder="Ask anything about your account..." />
+    <BitAiPromptInput Id="pi-aria" Placeholder="Shown placeholder" AriaLabel="Message the assistant" />
+</E2ESection>
+
+<E2ESection Id="submit-key" Title="SubmitOnEnter off">
+    <BitAiOptionsProvider UiOptions="_noEnterOptions">
+        <BitAiPromptInput Id="pi-noenter" @bind-Value="_noEnterValue" OnSubmit="HandleNoEnterSubmit" />
+    </BitAiOptionsProvider>
+    <p>Value: <span id="pi-noenter-value">@Escape(_noEnterValue)</span></p>
+    <p>Submissions: <span id="pi-noenter-count">@_noEnterCount</span> | Sent: <span id="pi-noenter-sent">@Escape(_noEnterSent)</span></p>
+</E2ESection>
+
+<E2ESection Id="resize" Title="Auto-resize">
+    <div style="width:420px">
+        <BitAiPromptInput Id="pi-resize" @bind-Value="_resizeValue" />
+    </div>
+    <BitAiOptionsProvider UiOptions="_cappedOptions">
+        <div style="width:420px">
+            <BitAiPromptInput Id="pi-resize-capped" @bind-Value="_cappedValue" />
+        </div>
+    </BitAiOptionsProvider>
+</E2ESection>
+
+<E2ESection Id="menu" Title="Slash commands and mentions">
+    @* Room above the composer, where its menu opens. *@
+    <div style="padding-top:220px;width:480px">
+        <BitAiPromptInput Id="pi-menu"
+                          @bind-Value="_menuValue"
+                          Commands="_commands"
+                          Mentions="_mentions"
+                          OnSubmit="HandleMenuSubmit" />
+    </div>
+    <p>Value: <span id="pi-menu-value">@Escape(_menuValue)</span></p>
+    <p>Cleared: <span id="pi-menu-cleared">@_clearCount</span> | Submissions: <span id="pi-menu-count">@_menuCount</span></p>
+</E2ESection>
+
+<E2ESection Id="escape" Title="Escape inside a BitDialog">
+    <button id="pi-open-dialog" @onclick="() => _dialogOpen = true">Open the dialog</button>
+    <p>Dialog: <span id="pi-dialog-open">@_dialogOpen</span></p>
+    <BitDialog @bind-IsOpen="_dialogOpen" Title="Composer in a dialog" ShowOkButton="false" ShowCancelButton="false">
+        <Body>
+            <div style="padding-top:220px;width:420px">
+                <BitAiPromptInput Id="pi-esc" Commands="_commands" Mentions="_mentions" />
+            </div>
+        </Body>
+    </BitDialog>
+</E2ESection>
+
+<E2ESection Id="session" Title="Session (a reply that streams until it is stopped)">
+    <BitAiPromptInput Id="pi-session" Session="_session" Commands="_commands" />
+    <p>
+        State: <span id="pi-session-state">@(_session.IsGenerating ? "generating" : "idle")</span> |
+        Messages: <span id="pi-session-messages">@_session.Conversation.Messages.Count</span> |
+        Reply: <span id="pi-session-reply">@LastReply</span> |
+        Reply status: <span id="pi-session-status">@(_session.Conversation.LastMessage?.Status.ToString())</span>
+    </p>
+</E2ESection>
+
+<E2ESection Id="generating" Title="Generating and OnStop">
+    <BitAiPromptInput Id="pi-gen" Generating="_generating" OnSubmit="HandleGeneratingSubmit" OnStop="HandleStop" />
+    <p>Generating: <span id="pi-gen-state">@_generating</span> | Stops: <span id="pi-gen-stops">@_stopCount</span></p>
+</E2ESection>
+
+<E2ESection Id="attachments" Title="Attachments">
+    <div style="width:520px">
+        <BitAiPromptInput Id="pi-att" OnSubmit="HandleAttachmentsSubmit" OnAttachmentRejected="r => _attRejected.Add(Rejection(r))" />
+    </div>
+    <p>Sent: <span id="pi-att-sent">@_attSent</span> | Sent text: <span id="pi-att-text">@_attText</span></p>
+    <p>Rejected: <span id="pi-att-rejected">@string.Join(";", _attRejected)</span></p>
+</E2ESection>
+
+<E2ESection Id="limits" Title="Accept, MaxAttachmentSize and MaxAttachments">
+    <div style="width:520px">
+        <BitAiPromptInput Id="pi-lim"
+                          Accept="image/*,.pdf"
+                          MaxAttachmentSize="1024"
+                          MaxAttachments="2"
+                          OnAttachmentRejected="r => _limRejected.Add(Rejection(r))" />
+    </div>
+    <p>Rejected: <span id="pi-lim-rejected">@string.Join(";", _limRejected)</span></p>
+</E2ESection>
+
+<E2ESection Id="no-attachments" Title="No attachments">
+    <BitAiPromptInput Id="pi-noatt" AllowAttachments="false" OnAttachmentRejected="r => _noAttRejected.Add(Rejection(r))" />
+    <BitAiPromptInput Id="pi-textonly" Capabilities="BitAiModelCapabilities.Streaming" />
+    <BitAiPromptInput Id="pi-vision" Capabilities="BitAiModelCapabilities.Vision" />
+    <p>Rejected: <span id="pi-noatt-rejected">@string.Join(";", _noAttRejected)</span></p>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitAiPromptInput Id="pi-dis"
+                      Disabled="_disabled"
+                      @bind-Value="_disabledValue"
+                      Commands="_commands"
+                      OnSubmit="HandleDisabledSubmit"
+                      OnAttachmentRejected="r => _disRejected.Add(Rejection(r))" />
+    <button id="pi-dis-toggle" @onclick="() => _disabled = !_disabled">Toggle Disabled</button>
+    <p>
+        Disabled: <span id="pi-dis-state">@_disabled</span> |
+        Value: <span id="pi-dis-value">@_disabledValue</span> |
+        Submissions: <span id="pi-dis-count">@_disabledCount</span> |
+        Rejected: <span id="pi-dis-rejected">@string.Join(";", _disRejected)</span>
+    </p>
+</E2ESection>
+
+<E2ESection Id="maxlength" Title="MaxLength">
+    <BitAiPromptInput Id="pi-max" MaxLength="20" @bind-Value="_maxValue" OnSubmit="HandleMaxSubmit" />
+    <p>Value: <span id="pi-max-value">@_maxValue</span> | Submissions: <span id="pi-max-count">@_maxCount</span></p>
+    <button id="pi-max-overfill" @onclick="@(() => _maxValue = new string('x', 25))">Fill past the limit</button>
+</E2ESection>
+
+<E2ESection Id="drafts" Title="Drafts">
+    <BitAiPromptInput Id="pi-draft" DraftKey="e2e-pi-draft" @bind-Value="_draftValue" OnSubmit="HandleDraftSubmit" />
+    <p>Value: <span id="pi-draft-value">@_draftValue</span> | Submissions: <span id="pi-draft-count">@_draftCount</span></p>
+</E2ESection>
+
+<E2ESection Id="dictation" Title="Dictation">
+    <BitAiPromptInput Id="pi-dict" AllowDictation DictationLanguage="en-GB" @bind-Value="_dictValue" />
+    <BitAiPromptInput Id="pi-dict-off" AllowDictation Capabilities="BitAiModelCapabilities.Vision" />
+    <p>Value: <span id="pi-dict-value">@_dictValue</span></p>
+</E2ESection>
+
+<E2ESection Id="style" Title="Public variables, Styles and Classes">
+    <BitAiPromptInput Id="pi-style"
+                      Style="--bit-AiPromptInput-background: rgb(1, 2, 3); --bit-AiPromptInput-border-color: rgb(4, 5, 6); --bit-AiPromptInput-border-width: 3px; --bit-AiPromptInput-radius: 7px; --bit-AiPromptInput-padding: 11px; --bit-AiPromptInput-color: rgb(7, 8, 9); --bit-AiPromptInput-font-size: 19px; --bit-AiPromptInput-shadow: rgb(10, 11, 12) 0px 0px 0px 2px" />
+    <div style="--bit-AiPromptInput-background: rgb(21, 22, 23); --bit-AiPromptInput-disabled-background: rgb(24, 25, 26)">
+        <BitAiPromptInput Id="pi-style-ancestor" />
+        <BitAiPromptInput Id="pi-style-ancestor-dis" Disabled />
+    </div>
+    <BitAiPromptInput Id="pi-style-parts"
+                      Styles="@(new() { Input = "letter-spacing: 3px", Body = "gap: 13px" })"
+                      Classes="@(new() { Root = "pi-custom-root", Input = "pi-custom-input" })" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitAiPromptInput Id="pi-rtl" Dir="BitDir.Rtl" Value="سلام" />
+    <div dir="rtl">
+        <BitAiPromptInput Id="pi-rtl-inherited" Value="سلام" />
+    </div>
+    <div dir="rtl" style="padding-top:220px;width:480px">
+        <BitAiPromptInput Id="pi-rtl-menu" Commands="_commands" />
+    </div>
+    <BitAiPromptInput Id="pi-ltr" Value="Hello" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly BitAiUiOptions _noEnterOptions = new() { SubmitOnEnter = false };
+    private static readonly BitAiUiOptions _cappedOptions = new() { MaxComposerRows = 3 };
+
+    private readonly BitAiChatSession _session = new(E2EAiTransport.For(E2EAiScripts.Hang));
+
+    private IReadOnlyList<BitAiSlashCommand> _commands = [];
+    private readonly IReadOnlyList<BitAiMentionItem> _mentions =
+    [
+        new("alice", "Alice", "Designer", "Contact"),
+        new("bob", "Bob", "Engineer", "Contact"),
+        new("docs", "Docs folder", "Folder", "FabricFolder"),
+    ];
+
+    private string _basicValue = string.Empty;
+    private int _basicCount;
+    private string _basicSent = "-";
+
+    private string _noEnterValue = string.Empty;
+    private int _noEnterCount;
+    private string _noEnterSent = "-";
+
+    private string _resizeValue = string.Empty;
+    private string _cappedValue = string.Empty;
+
+    private string _menuValue = string.Empty;
+    private int _clearCount;
+    private int _menuCount;
+
+    private bool _dialogOpen;
+
+    private bool _generating;
+    private int _stopCount;
+
+    private string _attSent = "-";
+    private string _attText = "-";
+    private readonly List<string> _attRejected = [];
+    private readonly List<string> _limRejected = [];
+    private readonly List<string> _noAttRejected = [];
+
+    private bool _disabled = true;
+    private string _disabledValue = "Locked text";
+    private int _disabledCount;
+    private readonly List<string> _disRejected = [];
+
+    private string _maxValue = string.Empty;
+    private int _maxCount;
+
+    private string _draftValue = string.Empty;
+    private int _draftCount;
+
+    private string _dictValue = string.Empty;
+
+    private string LastReply => _session.Conversation.Messages.LastOrDefault(m => m.Role.IsUser is false)?.GetText() ?? "-";
+
+    protected override void OnInitialized()
+    {
+        _commands =
+        [
+            new("summarize", "Summarize the conversation", "TextDocument") { Template = "Summarize this: " },
+            new("translate", "Translate the text"),
+            new("clear", "Clear the conversation") { Handler = () => { _clearCount++; StateHasChanged(); return Task.CompletedTask; } },
+        ];
+
+        _session.StateChanged += HandleSessionChanged;
+    }
+
+    private void HandleSessionChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private static string Escape(string? text) => (text ?? string.Empty).Replace("\n", "\\n");
+
+    private static string Rejection(BitAiAttachmentRejection r) => $"{r.FileName}:{r.Reason}";
+
+    private void HandleBasicSubmit(BitAiPromptSubmission submission)
+    {
+        _basicCount++;
+        _basicSent = submission.Text;
+    }
+
+    private void HandleNoEnterSubmit(BitAiPromptSubmission submission)
+    {
+        _noEnterCount++;
+        _noEnterSent = submission.Text;
+    }
+
+    private void HandleMenuSubmit(BitAiPromptSubmission submission) => _menuCount++;
+
+    private void HandleGeneratingSubmit(BitAiPromptSubmission submission) => _generating = true;
+
+    private void HandleStop()
+    {
+        _stopCount++;
+        _generating = false;
+    }
+
+    private void HandleAttachmentsSubmit(BitAiPromptSubmission submission)
+    {
+        _attText = submission.Text;
+        _attSent = string.Join(",", submission.Attachments.Select(a => $"{a.Name}:{a.Size}:{a.Kind}:{(a.HasInlineData ? "inline" : a.ContentFactory is not null ? "lazy" : "none")}"));
+    }
+
+    private void HandleDisabledSubmit(BitAiPromptSubmission submission) => _disabledCount++;
+
+    private void HandleMaxSubmit(BitAiPromptSubmission submission) => _maxCount++;
+
+    private void HandleDraftSubmit(BitAiPromptSubmission submission) => _draftCount++;
+
+    public async ValueTask DisposeAsync()
+    {
+        _session.StateChanged -= HandleSessionChanged;
+        await _session.DisposeAsync();
+    }
+}

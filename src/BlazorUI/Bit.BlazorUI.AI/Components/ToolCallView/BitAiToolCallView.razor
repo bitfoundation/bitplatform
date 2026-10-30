@@ -1,0 +1,118 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@{
+    @* The status of the call moves on between renders (it streams in from the transport), so the root classes and
+       the expansion it drives are brought up to date with it here, before anything below reads them. *@
+    SyncState();
+}
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @if (_custom is not null)
+    {
+        <BitAiRendererBoundary Label="@Strings.RendererFailed(Call.ToolName)">
+            @_custom
+        </BitAiRendererBoundary>
+    }
+    else
+    {
+        var isRunning = Call.Status is BitAiToolCallStatus.Running or BitAiToolCallStatus.Streaming;
+
+        <button @ref="_header"
+                type="button"
+                style="@Styles?.Header"
+                class="bit-aitcv-hdr @Classes?.Header"
+                disabled="@Disabled"
+                aria-disabled="@(Disabled ? "true" : null)"
+                aria-expanded="@(_open ? "true" : "false")"
+                aria-controls="@_BodyId"
+                @onclick="HandleOnHeaderClick">
+            <i aria-hidden="true" style="@Styles?.ExpanderIcon" class="bit-aitcv-chv @_ChevronIcon @Classes?.ExpanderIcon"></i>
+            <i aria-hidden="true" style="@Styles?.Icon" class="bit-aitcv-ico @_ToolIcon @Classes?.Icon"></i>
+            <span style="@Styles?.Title" class="bit-aitcv-ttl @Classes?.Title">@_Heading</span>
+            <span style="@Styles?.Status" class="bit-aitcv-sts @Classes?.Status">
+                @if (isRunning)
+                {
+                    @* The heading already says the call is running, so the dots are only its picture. *@
+                    <BitBouncingDotsLoading Inline="true"
+                                            aria-hidden="true"
+                                            Class="bit-aitcv-spn"
+                                            Styles="@Styles?.Spinner"
+                                            Classes="@Classes?.Spinner" />
+                }
+                else if (Call.Duration is { } duration)
+                {
+                    @Strings.FormatDuration(duration)
+                }
+            </span>
+        </button>
+
+        @if (Call.Progress is { } progress)
+        {
+            @* A progress without a fraction is one the tool cannot measure, which the bar says by sweeping. *@
+            <BitProgress Class="bit-aitcv-prg"
+                         AriaLabel="@progress.Message"
+                         Indeterminate="@(progress.Fraction is null)"
+                         Percent="@(progress.Fraction is { } fraction ? Math.Round(Math.Clamp(fraction, 0, 1) * 100) : 0)"
+                         Styles="@Styles?.Progress"
+                         Classes="@Classes?.Progress" />
+        }
+
+        @if (_open)
+        {
+            <div id="@_BodyId" style="@Styles?.Body" class="bit-aitcv-bdy @Classes?.Body">
+                @if (Call.Progress?.Message is { Length: > 0 } status)
+                {
+                    <div style="@Styles?.ProgressMessage" class="bit-aitcv-pms @Classes?.ProgressMessage">@status</div>
+                }
+
+                <div style="@Styles?.Section" class="bit-aitcv-sec @Classes?.Section">
+                    <div style="@Styles?.Label" class="bit-aitcv-shd @Classes?.Label">@Strings.Arguments</div>
+                    @if (Call.DisplayArguments is { } arguments)
+                    {
+                        <BitAiJsonView Value="arguments" />
+                    }
+                    else
+                    {
+                        <div style="@Styles?.RawText" class="bit-aitcv-raw @Classes?.RawText">@Call.RawArguments</div>
+                    }
+                </div>
+
+                @if (Call.Result is { } result)
+                {
+                    <div style="@Styles?.Section" class="bit-aitcv-sec @Classes?.Section">
+                        <div style="@Styles?.Label" class="bit-aitcv-shd @Classes?.Label">@Strings.Result</div>
+                        @if (result.IsSuccess is false && result.Error is { } error)
+                        {
+                            <BitAiErrorView Error="error" Compact="true" />
+                        }
+                        else if (result.Text is { Length: > 0 } resultText)
+                        {
+                            <div style="@Styles?.RawText" class="bit-aitcv-raw @Classes?.RawText">@resultText</div>
+                        }
+                        else if (result.Value is { } value)
+                        {
+                            <BitAiJsonView Value="value" />
+                        }
+                    </div>
+                }
+            </div>
+        }
+
+        @if (Call.Status is BitAiToolCallStatus.AwaitingApproval)
+        {
+            @* The decision takes the prompt away, and the button it was made with along with it (see HandleOnDecision). *@
+            <BitAiToolApproval Call="Call"
+                               Session="Session"
+                               OnDecision="HandleOnDecision"
+                               Disabled="Disabled"
+                               Class="bit-aitcv-apv"
+                               Styles="@Styles?.Approval"
+                               Classes="@Classes?.Approval" />
+        }
+    }
+</div>

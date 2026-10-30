@@ -45,9 +45,9 @@
     </dict>
     <key>XSAppIconAssets</key>
     <string>Assets.xcassets/appicon.appiconset</string>
-    <!-- The Images page's InputFile offers Take Photo on iOS, which opens the camera: without a usage description iOS
-         ends the app instead. -->
+    <!-- The scanner opens the camera, as does the Take Photo the Images page's InputFile offers: without a usage
+         description iOS ends the app instead. -->
     <key>NSCameraUsageDescription</key>
-    <string>Take a photo of a barcode to scan it.</string>
+    <string>Point the camera at a barcode to scan it.</string>
 </dict>
 </plist>

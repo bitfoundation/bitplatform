@@ -2096,13 +2096,15 @@
     <data name="SignOutOfAllAccounts" xml:space="preserve">
     <value>退出此设备上的所有账户</value>
   </data>
+  <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">
     <value>自助终端模式</value>
   </data>
     <data name="KioskMessage" xml:space="preserve">
-    <value>此应用已锁定在屏幕上：Windows 键、Alt+Tab、任务管理器和关闭窗口均已被阻止。请使用按钮退出。</value>
+    <value>此应用已锁定在屏幕上：Windows 键、Alt+Tab 和关闭窗口均已被阻止。请使用按钮退出。</value>
   </data>
     <data name="KioskExitApp" xml:space="preserve">
     <value>退出应用</value>
   </data>
+  <!--#endif -->
 </root>

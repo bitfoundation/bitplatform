@@ -149,6 +149,7 @@ Configure it in Azure DevOps rather than GitHub:
    be set at queue time, which would freeze the version at whatever the template shipped.
 4. **Pipelines → Library → Secure files** → upload `Boilerplate.keystore` for the Android job, and add
    `ANDROID_RELEASE_KEYSTORE_PASSWORD` / `ANDROID_RELEASE_SIGNING_PASSWORD` as secret pipeline variables.
+   `bit keys android --alias Boilerplate` creates the keystore and shows its password, which both variables take.
 <!--#if (api == "Integrated" && database != "Sqlite" && database != "Other")-->
 5. **Pipelines → Edit → Variables** → add `DATABASE_CONNECTION_STRING` as a secret variable: a connection string to
    the production database with the rights to change its schema. `deploy_api_blazor` applies the database migrations
@@ -188,8 +189,8 @@ The project includes a complete CI/CD pipeline setup using GitHub Actions with *
 **Key Configuration**:
 - **Runner**: Ubuntu 24.04
 - **SDK Version**: Automatically detected from `global.json`
-- **Machine setup**: the bit CLI, installed once per job with `dotnet tool install Bit.Cli --version 11.0.0-pre-15`, then `bit setup`,
-  which installs only what the runner is missing
+- **Machine setup**: bit platform's `bit-setup` action, which installs the bit CLI and runs `bit setup`, which installs
+  only what the runner is missing
 - **Test Artifacts**: Retained for 14 days on failure
 
 **Important**: The CI workflow ensures that all code changes are validated before merging. It's the gatekeeper for code quality.
@@ -266,6 +267,17 @@ This is the **core deployment workflow** that handles building and deploying all
 3. **build_blazor_hybrid_android**: Android app bundle (.aab for Google Play)
 4. **build_blazor_hybrid_iOS**: iOS app package (.ipa for App Store) and macOS app
 
+**Shared steps from bit platform**: three steps use short composite actions from
+[bitfoundation/bitplatform](https://github.com/bitfoundation/bitplatform/tree/develop/.github/actions/boilerplate), at the
+release tag of the project's bit platform version, so the workflows stay short and get their fixes with each upgrade:
+- `bit-setup` installs the bit CLI of that version and runs `bit setup`, which `ci.yml` uses too
+- `app-certificate` writes the `APP_CERTIFICATE` and `APP_CERTIFICATE_RETIRED` secrets next to the server as the
+  `AppCertificate` files, and fails the deploy when openssl can't read one
+- `artifact-signing` logs in to Azure with the job's OpenID Connect token and lets `vpk pack` sign with Artifact Signing
+
+Each is a few lines of YAML. To stop depending on that repository, copy one into your own `.github/actions` folder and
+point its step at the copy.
+
 ---
 
 ## 🏗️ Detailed Build and Deployment Pipeline
@@ -329,7 +341,16 @@ This is the **core deployment workflow** that handles building and deploying all
    ```yaml
    - Download server-bundle from previous job
    - Contains complete self-contained application
+<!--#if (api == "Integrated")-->
+   - Write the environment's APP_CERTIFICATE secret (and APP_CERTIFICATE_RETIRED) next to it as the AppCertificate files
+<!--#if (notification == true)-->
+   - Put the environment's PRIVATE_VAPIDKEY and VAPID_SUBJECT secrets in its appsettings.json
+<!--#endif-->
+<!--#endif-->
    ```
+<!--#if (api == "Integrated")-->
+   - The deploy job applies these secrets, not the build job: anyone who can read the repository can download its build artifacts
+<!--#endif-->
 
 <!--#if (api == "Integrated" && database != "Sqlite" && database != "Other")-->
 2. **Apply Database Migrations**
@@ -367,6 +388,11 @@ This is the **core deployment workflow** that handles building and deploying all
 - ⚠️ **Not Yet Aspire-Friendly**: The backend deployment workflow doesn't yet integrate with .NET Aspire orchestration
 <!--#if (api == "Standalone" && database != "Sqlite" && database != "Other")-->
 - ✅ **Database Migrations**: the api deploys in its own `deploy_api` job, which runs the migrations bundle `build_api` made against the database in the `DATABASE_CONNECTION_STRING` secret right before it deploys the api
+<!--#endif-->
+<!--#if (api == "Standalone" && notification == true)-->
+- ✅ **Secrets**: the api's own `deploy_api` job writes the environment's `APP_CERTIFICATE` (and `APP_CERTIFICATE_RETIRED`) next to the api, and its `PRIVATE_VAPIDKEY` and `VAPID_SUBJECT` into its appsettings.json, before the api or its migrations start
+<!--#elif (api == "Standalone")-->
+- ✅ **Secrets**: the api's own `deploy_api` job writes the environment's `APP_CERTIFICATE` (and `APP_CERTIFICATE_RETIRED`) next to the api before the api or its migrations start
 <!--#endif-->
 <!--#if (database == "Sqlite")-->
 - ✅ **Database Migrations**: the app applies them itself when it starts
@@ -455,6 +481,7 @@ Each signed file counts against the account's monthly quota. To sign only the ex
    - Configure keystore for release signing
    ```
    - The keystore is stored as a GitHub secret in base64 format for security
+   - `bit pipeline` creates the keystore and its three secrets, and `bit keys android` creates one as a file
 
 2. **Build Android App Bundle (AAB)**
 ```bash
@@ -519,6 +546,8 @@ dotnet publish -c Release \
    - Requires: Issuer ID, API Key ID, Private Key
    - Downloads profile for specified Bundle ID
    ```
+   - No Mac needed to make them: `bit pipeline` creates the distribution certificate, its `.p12` and the App Store
+     provisioning profile through the App Store Connect API and stores them, and `bit keys apple` writes them as files
 
 3. **Build iOS App Package (IPA)**
    ```bash
@@ -638,6 +667,14 @@ The CI/CD pipeline requires various secrets and variables to be configured in Gi
 
 ### How to Configure in GitHub
 
+Run `bit pipeline` in the repository. It reads the secrets the workflows use, the reusable workflows they call included,
+creates the environments they deploy to, and stores each secret in its environment. It creates what it can on its own:
+the VAPID key pair, the app certificate and the Android signing key, which it also adds to `assetlinks.json`, and with
+an App Store Connect API key you give it, the iOS app's signing certificate and provisioning profile. It asks for the
+rest, and an empty answer skips one. `bit pipeline --check` only lists what's missing.
+
+Or by hand:
+
 1. Navigate to your repository → **Settings** → **Environments**
 2. Create environment (e.g., "Production", "Test")
 3. Add **Secrets** (encrypted, never exposed) and **Variables** (plain text, visible)
@@ -659,7 +696,11 @@ Variables:
 
 Secrets:
   AZURE_PUBLISH_PROFILE = <production publish profile>
-  PUBLIC_VAPIDKEY = <production VAPID key>
+  APP_CERTIFICATE = <the production AppCertificate, its .crt and .key in one PEM>
+  APP_CERTIFICATE_RETIRED = <optional - the certificate it replaced, see AppCertificate.md>
+  PUBLIC_VAPIDKEY = <production VAPID public key>
+  PRIVATE_VAPIDKEY = <production VAPID private key>
+  VAPID_SUBJECT = <mailto: address or https URL the push services can reach you at>
   OPENAI_APIKEY = <optional - when unset, the bit translate step translates nothing>
 ```
 
@@ -692,7 +733,10 @@ Variables:
 
 Secrets:
   AZURE_PUBLISH_PROFILE = <test publish profile>
-  PUBLIC_VAPIDKEY = <test VAPID key>
+  APP_CERTIFICATE = <the test environment's own AppCertificate>
+  PUBLIC_VAPIDKEY = <test VAPID public key>
+  PRIVATE_VAPIDKEY = <test VAPID private key>
+  VAPID_SUBJECT = <mailto: address or https URL>
 ```
 
 This allows the same workflow to deploy different configurations to different environments.

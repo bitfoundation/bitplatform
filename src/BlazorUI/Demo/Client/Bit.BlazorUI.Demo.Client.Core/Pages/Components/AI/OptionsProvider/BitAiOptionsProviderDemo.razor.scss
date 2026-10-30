@@ -1,0 +1,33 @@
+﻿.example-row {
+    gap: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.example-regions {
+    gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    align-items: start;
+}
+
+.example-region {
+    gap: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem;
+    border: 1px solid var(--bit-clr-brd-sec);
+    border-radius: 0.5rem;
+}
+
+// The badge and the sources keep their own width, but a meter shrunk to its content would be a stub of a bar.
+.example-region ::deep .bit-aictm {
+    align-self: stretch;
+}
+
+.example-dark {
+    color: var(--bit-clr-fg-pri);
+    background-color: var(--bit-clr-bg-pri);
+}

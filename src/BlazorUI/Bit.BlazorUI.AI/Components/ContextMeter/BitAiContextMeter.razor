@@ -1,0 +1,39 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@if (_window is { } window && window > 0)
+{
+    var usage = Strings.ContextUsage(_used, window);
+    var percent = _Percent;
+
+    @* The bar is a meter rather than a progress bar: how full the context is is a reading that moves either way, never
+       a task that finishes. It is named after the readout beside it and told the count of tokens as its value text, so
+       a screen reader hears "1,500 / 10,000 tokens" rather than a bare percentage. Its value is the percentage cut to a
+       whole number, and capped at the full bar while the readout beside it goes on past 100%. *@
+    <div @ref="RootElement" @attributes="HtmlAttributes"
+         id="@_Id"
+         style="@StyleBuilder.Value"
+         class="@ClassBuilder.Value"
+         dir="@Dir?.ToString().ToLower()"
+         title="@(GetSplattedAttribute("title") ?? usage)">
+        <span style="@Styles?.Label" class="bit-aictm-ttl @Classes?.Label">@Strings.Context</span>
+
+        <BitProgress Meter="true"
+                     Percent="@Math.Min(100, percent)"
+                     AriaLabel="@Strings.Context"
+                     AriaValueText="@usage"
+                     Color="@_MeterColor"
+                     Disabled="Disabled"
+                     Class="bit-aictm-mtr"
+                     Styles="@Styles?.Meter"
+                     Classes="@Classes?.Meter" />
+
+        @* The same whole number as the value of the meter rather than a rounded one, so the readout never reaches a mark
+           the reading has not: 6,392 of 8,000 tokens is 79%, short of the 80% warning, not an 80% shown without one. *@
+        <span style="@Styles?.Percent" class="bit-aictm-pct @Classes?.Percent">@($"{percent}%")</span>
+
+        @* A live region only announces what changes inside one the screen reader is already watching, so it is here from
+           the first render and empty until the window is filling up. *@
+        <span role="status" style="@Styles?.Status" class="bit-aictm-sts @Classes?.Status">@_Announcement</span>
+    </div>
+}

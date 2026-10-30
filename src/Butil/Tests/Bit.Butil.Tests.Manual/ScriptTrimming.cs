@@ -85,7 +85,7 @@ internal static class ScriptTrimming
     /// another module. Anything else in the manifest that nothing calls is an orphan: JavaScript shipped
     /// for an API that no longer exists on the C# side.
     /// </summary>
-    private static readonly string[] DependencyOnlyModules = ["abortable", "abortSignals", "butil", "cryptoKeyMaterial", "fetchRequest", "utils"];
+    private static readonly string[] DependencyOnlyModules = ["abortable", "abortSignals", "butil", "cryptoKeyMaterial", "editableTarget", "fetchRequest", "utils"];
 
     public sealed record Report(
         string[] Referenced,

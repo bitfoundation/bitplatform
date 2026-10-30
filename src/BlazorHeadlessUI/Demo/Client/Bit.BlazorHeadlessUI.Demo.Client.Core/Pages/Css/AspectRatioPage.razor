@@ -1,0 +1,218 @@
+﻿@page "/aspect-ratio"
+
+<PageTitle>Aspect Ratio — bit BlazorHeadlessUI</PageTitle>
+
+<div class="demo-page">
+    <header class="demo-header">
+        <h1>Aspect Ratio</h1>
+        <p>Displays content within a desired ratio, regardless of the content's intrinsic size.</p>
+        <SectionSwitcher Slug="aspect-ratio" />
+    </header>
+
+    <DemoBlock Title="Basic (16 / 9)"
+               Code="@_basicCode"
+               Css="@_basicCss">
+        <Description>
+            Wrap any content in <code>BitBhAspectRatio</code> and set <code>Ratio</code> to the
+            desired <code>width / height</code>. The image fills the box at a constant 16:9
+            ratio no matter how wide the column gets.
+        </Description>
+        <LiveContent>
+            <div class="ratio-frame">
+                <BitBhAspectRatio Ratio="16d / 9d" class="ratio-box">
+                    <img class="ratio-media"
+                         src="https://images.unsplash.com/photo-1535025183041-0991a977e25b?w=800&dpr=2&q=80"
+                         alt="Landscape photograph" />
+                </BitBhAspectRatio>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Square (1 / 1)"
+               Code="@_squareCode"
+               Css="@_squareCss">
+        <Description>
+            The default ratio is <code>1</code> — a perfect square. Useful for avatars and
+            thumbnails. You can omit the <code>Ratio</code> parameter entirely.
+        </Description>
+        <LiveContent>
+            <div class="ratio-frame ratio-frame-sm">
+                <BitBhAspectRatio class="ratio-box">
+                    <img class="ratio-media"
+                         src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&dpr=2&q=80"
+                         alt="Portrait photograph" />
+                </BitBhAspectRatio>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Portrait (3 / 4)"
+               Code="@_portraitCode"
+               Css="@_portraitCss">
+        <Description>
+            Ratios smaller than <code>1</code> produce taller-than-wide boxes. Here
+            <code>3 / 4</code> creates a portrait frame.
+        </Description>
+        <LiveContent>
+            <div class="ratio-frame ratio-frame-sm">
+                <BitBhAspectRatio Ratio="3d / 4d" class="ratio-box">
+                    <img class="ratio-media"
+                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&dpr=2&q=80"
+                         alt="Portrait photograph" />
+                </BitBhAspectRatio>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Non-image content"
+               Code="@_contentCode"
+               Css="@_contentCss">
+        <Description>
+            The ratio box isn't limited to images — drop in any content. The inner element
+            is absolutely positioned to fill the reserved space, so flex centring works as
+            expected.
+        </Description>
+        <LiveContent>
+            <div class="ratio-frame">
+                <BitBhAspectRatio Ratio="2d / 1d" class="ratio-box ratio-card">
+                    <span>2 : 1</span>
+                </BitBhAspectRatio>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+</div>
+
+@code {
+    private const string _basicCode = """
+<div class="ratio-frame">
+    <BitBhAspectRatio Ratio="16d / 9d" class="ratio-box">
+        <img class="ratio-media" src="/landscape.jpg" alt="Landscape" />
+    </BitBhAspectRatio>
+</div>
+""";
+
+    private const string _basicCss = """
+/* The library ships zero CSS — these styles are consumer-authored. */
+.ratio-frame {
+    width: 100%;
+    max-width: 28rem;
+}
+
+.ratio-box {
+    overflow: hidden;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+}
+
+/* Make the media fill the ratio box */
+.ratio-media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+""";
+
+    private const string _squareCode = """
+@* Ratio defaults to 1 (square) — the parameter is optional *@
+<BitBhAspectRatio class="ratio-box">
+    <img class="ratio-media" src="/avatar.jpg" alt="Avatar" />
+</BitBhAspectRatio>
+""";
+
+    private const string _squareCss = """
+/* The library ships zero CSS — these styles are consumer-authored. */
+.ratio-frame {
+    width: 100%;
+    max-width: 28rem;
+}
+
+.ratio-box {
+    overflow: hidden;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+}
+
+/* Make the media fill the ratio box */
+.ratio-media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* A narrower frame suited to square avatars / thumbnails */
+.ratio-frame-sm {
+    max-width: 12rem;
+}
+""";
+
+    private const string _portraitCode = """
+<BitBhAspectRatio Ratio="3d / 4d" class="ratio-box">
+    <img class="ratio-media" src="/portrait.jpg" alt="Portrait" />
+</BitBhAspectRatio>
+""";
+
+    private const string _portraitCss = """
+/* The library ships zero CSS — these styles are consumer-authored. */
+.ratio-frame {
+    width: 100%;
+    max-width: 28rem;
+}
+
+.ratio-box {
+    overflow: hidden;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+}
+
+/* Make the media fill the ratio box */
+.ratio-media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* A narrower frame; a ratio below 1 yields a box taller than it is wide */
+.ratio-frame-sm {
+    max-width: 12rem;
+}
+""";
+
+    private const string _contentCode = """
+<BitBhAspectRatio Ratio="2d / 1d" class="ratio-box ratio-card">
+    <span>2 : 1</span>
+</BitBhAspectRatio>
+""";
+
+    private const string _contentCss = """
+/* The library ships zero CSS — these styles are consumer-authored. */
+.ratio-frame {
+    width: 100%;
+    max-width: 28rem;
+}
+
+.ratio-box {
+    overflow: hidden;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+}
+
+/* Make the media fill the ratio box */
+.ratio-media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* The inner element fills the ratio box, so flex centring works directly. */
+.ratio-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+""";
+}

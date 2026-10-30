@@ -14,8 +14,18 @@ public class CommandTests
         var root = CliApp.BuildRootCommand(() => throw new InvalidOperationException());
 
         CollectionAssert.AreEquivalent(
-            new[] { "new", "setup", "diff", "doctor", "trust", "clean", "rename", "remove", "translate", "decode", "aot-profile", "telemetry", "update", "about", "admin-helper" },
+            new[] { "new", "setup", "run", "diff", "doctor", "trust", "clean", "rename", "remove", "migration", "translate", "decode", "keys", "pipeline", "aot-profile", "telemetry", "update", "about", "admin-helper" },
             root.Subcommands.Select(c => c.Name).ToArray());
+    }
+
+    [TestMethod]
+    public void ANestedCommand_Should_BeNamedByItsWholePath()
+    {
+        var root = CliApp.BuildRootCommand(() => throw new InvalidOperationException());
+
+        CollectionAssert.AreEqual(new[] { "migration", "remove" }, CliApp.CommandPath(root.Parse(["migration", "remove"]).CommandResult, root).ToArray());
+        CollectionAssert.AreEqual(new[] { "remove" }, CliApp.CommandPath(root.Parse(["remove"]).CommandResult, root).ToArray());
+        Assert.IsEmpty(CliApp.CommandPath(root.Parse([]).CommandResult, root));
     }
 
     [TestMethod]
@@ -266,6 +276,7 @@ public class CommandTests
         Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("decode", map));
 
         StringAssert.Contains(host.FlatOutput, "Couldn't restore Bit.Minifier 99.0.0");
+        StringAssert.Contains(host.Output, $"--decode {map}. The package is at https://www.nuget.org/packages/Bit.Minifier/99.0.0");
         StringAssert.Contains(host.FlatOutput, "error NU1102");
         Assert.HasCount(1, host.Runner.Calls);
     }

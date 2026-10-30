@@ -1,0 +1,160 @@
+﻿@page "/components/ai/structureddataview"
+@implements IAsyncDisposable
+
+<PageOutlet Url="components/ai/structureddataview"
+            Title="AiStructuredDataView"
+            Description="BitAiStructuredDataView renders structured model output - by the renderer an app registered for its schema, or by the shape of the value - and fills in while the JSON is still streaming." />
+
+<DemoPage Name="AiStructuredDataView"
+          Description="BitAiStructuredDataView renders a structured output part of a message: the JSON value a model produced instead of prose. A renderer the app registered for the part's schema name draws it when there is one, inside an error boundary; otherwise the view reads the shape of the value - an array of objects becomes a table, an object a list of labelled values, anything else a collapsible tree. The value is re-parsed leniently on every delta, so all of them fill in while the model is still writing, and a part that has received nothing yet shows a thinking indicator."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="StructuredDataView/BitAiStructuredDataView.razor"
+          GitHubDemoUrl="AI/StructuredDataView/BitAiStructuredDataViewDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            BitAiStructuredDataView reads the renderers registered with <b>AddBitBlazorUIAIServices</b>
+            (<b>ConfigureRenderers</b>), so the app calls it at startup even where it registers none. Inside a
+            <BitLink Href="/components/ai/chat">BitAiChat</BitLink> it is rendered for every structured part on its own; render
+            it yourself to show a part outside a conversation. A session fills the part from the
+            <b>BitAiStructuredDataDeltaEvent</b>s of its transport - see the
+            <BitLink Href="/ai/scenarios/structured">Structured output</BitLink> and <BitLink Href="/ai/scenarios/forms">Forms</BitLink>
+            scenarios for the whole chat.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Give it a <b>Part</b>, a <b>BitAiStructuredDataPart</b> holding the value. An object is shown as a list of
+                labelled values: each key written as a label, a string as its text, a number or a boolean as its JSON, and a
+                missing value as a dash.
+            </div>
+            <br />
+            <BitAiStructuredDataView Part="flightPart" />
+        </DemoExample>
+
+        <DemoExample Title="Shapes" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                With no renderer registered for its schema, the view reads the shape of the value: an array of objects becomes a
+                <BitLink Href="/components/ai/datatable">BitAiDataTable</BitLink>, any other value - an array of scalars, a
+                number, a string - a <BitLink Href="/components/ai/jsonview">BitAiJsonView</BitLink>, and a nested object or
+                array inside a list of labelled values a tree opened one level deep.
+            </div>
+            <br />
+            <BitAiStructuredDataView Part="ordersPart" />
+            <br />
+            <BitAiStructuredDataView Part="tagsPart" />
+            <br />
+            <BitAiStructuredDataView Part="customerPart" />
+        </DemoExample>
+
+        <DemoExample Title="Streaming" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" CodeFiles="@example3CodeFiles" Id="example3">
+            <div>
+                A session gathers the JSON its transport streams into one structured part of the answer, and <b>Value</b>
+                re-parses what has arrived on every delta, repairing the truncated document. The table below fills in row by row
+                and cell by cell while the JSON is still open; <b>Message</b> hands the message the part belongs to on to a
+                registered renderer.
+            </div>
+            <br />
+            <BitButton OnClick="AskForOptionsAsync" Disabled="optionsSession.IsGenerating">Compare the options</BitButton>
+            <br /><br />
+            @if (OptionsAnswer is { } answer)
+            {
+                @foreach (var part in answer.PartsOf<BitAiStructuredDataPart>())
+                {
+                    <BitAiStructuredDataView Part="part" Message="answer" />
+                }
+            }
+        </DemoExample>
+
+        <DemoExample Title="Registered renderers" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" CodeFiles="@example4CodeFiles" Id="example4">
+            <div>
+                A part whose <b>SchemaName</b> has a renderer registered with <b>BitAiRendererRegistry.RegisterStructured</b>
+                (see the tables below) is drawn by it instead. The renderer is a <b>BitAiStructuredDataRenderer</b>, handed a
+                <b>BitAiStructuredDataContext</b>: the <b>Part</b>, which may still be streaming, and the <b>Message</b> it belongs
+                to. This site registers one at startup (<b>ConfigureRenderers</b> of <b>AddBitBlazorUIAIServices</b>, the
+                Program.cs tab) for <b>booking_form</b>, which turns the JSON Schema a model streams into a
+                <BitLink Href="/components/ai/form">BitAiForm</BitLink> for the user to check - so the transport proposing a
+                booking below gets a form rather than raw JSON. The renderer runs inside a
+                <BitLink Href="/components/ai/rendererboundary">BitAiRendererBoundary</BitLink>: one that throws is replaced
+                by a notice, and the answer around it stays. A region that wants renderers of its own cascades a registry of its
+                own; the whole registry is described on the
+                <BitLink Href="/components/ai/messagepartview#renderer-registry">AiMessagePartView</BitLink> page.
+            </div>
+            <br />
+            <BitButton OnClick="ProposeBookingAsync" Disabled="bookingSession.IsGenerating">Book a table for Friday</BitButton>
+            <br /><br />
+            @if (BookingAnswer is { } booking)
+            {
+                @foreach (var part in booking.PartsOf<BitAiStructuredDataPart>())
+                {
+                    <BitAiStructuredDataView Part="part" Message="booking" />
+                }
+            }
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>BitParams</b> with a <b>BitAiStructuredDataViewParams</b> sets the <b>Classes</b> and <b>Styles</b> of the parts
+                - and the parameters every component shares, such as <b>Dir</b> - of every view inside it, rather than the part and
+                the message a single view shows. A view keeps what it sets itself: the second one gives <b>Styles</b> of its own,
+                so the cascaded ones do not reach it.
+            </div>
+            <br />
+            <BitParams Parameters="structuredDataViewParams">
+                <BitAiStructuredDataView Part="flightPart" />
+                <br />
+                <BitAiStructuredDataView Part="flightPart" Styles="@(new() { Label = "font-style: italic" })" />
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> each part of the list of labelled
+                values. The public <b>--bit-AiStructuredDataView-*</b> variables (see the CSS variables table) inherit, so set on
+                <b>:root</b>, a container or a view's <b>Style</b> they re-skin every view below; a table and a tree are
+                restyled through the variables of BitAiDataTable and BitAiJsonView, which inherit the same way.
+            </div>
+            <br />
+            @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+            <div>
+                <BitAiStructuredDataView Part="flightPart"
+                                         Style="max-width: 24rem"
+                                         Styles="@(new() { List = "background-color: #1e1e2e; border-color: #1e1e2e", Label = "color: #89b4fa", Value = "color: #cdd6f4" })" />
+                <br />
+                <BitAiStructuredDataView Part="flightPart" Classes="@(new() { List = "custom-list", Entry = "custom-entry", Label = "custom-label" })" />
+                <br />
+                <div style="--bit-AiStructuredDataView-background: transparent; --bit-AiStructuredDataView-border-color: #d2691e; --bit-AiStructuredDataView-label-color: #d2691e; --bit-AiStructuredDataView-gap: 0.25rem">
+                    <BitAiStructuredDataView Part="flightPart" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                In right-to-left text the list of labelled values reads from the right - its labels and its values start
+                there - whether the direction comes from <b>Dir</b> or from a <b>dir</b> attribute around the view. A table
+                or a tree it renders instead follows the same direction.
+            </div>
+            <br />
+            <BitAiStructuredDataView Dir="BitDir.Rtl" Part="persianFlightPart" />
+            <br />
+            <div dir="rtl">
+                <BitAiStructuredDataView Part="persianFlightPart" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

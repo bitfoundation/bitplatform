@@ -31,6 +31,11 @@
         <InternalsVisibleTo Include="Bit.Balette.Tests.Mcp" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- The ranking SearchBalette answers with, which every utility's MCP server that searches this way shares. -->
+        <Compile Include="..\..\..\Shared\Mcp\*.cs" LinkBase="Services\Shared" />
+    </ItemGroup>
+
     <!-- Text the MCP server hands out. It is embedded rather than read from disk so the tools keep
          working from a published deployment, where none of these files exist next to the app.
          LogicalName is set explicitly because the resource name IS the path an MCP client asks for. -->
@@ -57,9 +62,12 @@
              sources they share, the palette host and the client half of the hosting. The MCP page
              describes this server rather than the library, and the not-found page teaches nothing
              about palettes. Neither does the site chrome: Layout\ and DocsCatalog.cs are the header,
-             docs shell, search and footer every Utilities demo shares, so they are left out too. -->
+             docs shell, search and footer every Utilities demo shares, so they are left out too. So is
+             the lexer of the code viewer that colours the pages' samples, Shared\SyntaxHighlighter*.cs;
+             the viewer itself, Shared\CodeBlock.razor, is served, since every page renders its samples
+             through it and says so on its first line: it is the demo's, not the library's. -->
         <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
-                          Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Layout\**;..\Client\DocsCatalog.cs;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor">
+                          Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Layout\**;..\Client\Shared\SyntaxHighlighter*.cs;..\Client\DocsCatalog.cs;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor">
             <LogicalName>BaletteSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
 

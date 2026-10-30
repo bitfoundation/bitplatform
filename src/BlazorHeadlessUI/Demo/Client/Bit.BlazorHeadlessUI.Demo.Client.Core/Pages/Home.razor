@@ -1,0 +1,66 @@
+﻿@page "/"
+
+<PageTitle>bit BlazorHeadlessUI</PageTitle>
+
+<div class="demo-page">
+    <header class="demo-header">
+        <h1>bit BlazorHeadlessUI</h1>
+        <p>A headless component library for Blazor — zero styles, full accessibility, complete control.</p>
+    </header>
+
+    <section class="demo-section">
+        <h2>Pick a styling section</h2>
+        <p>
+            The same demos are available styled two different ways. Pick the section that matches the
+            way you'd like to style headless components in your own app.
+        </p>
+        <div class="demo-row" style="margin-top:1rem">
+            <a href="" class="btn btn-primary" aria-current="page">Browse CSS demos →</a>
+            <a href="tw" class="btn">Browse Tailwind demos →</a>
+        </div>
+    </section>
+
+    <section class="demo-section">
+        <h2>What is this?</h2>
+        <p>
+            bit BlazorHeadlessUI provides accessible, behaviour-complete component primitives with no visual
+            opinion at all. The library ships zero CSS — you own every pixel.
+        </p>
+        <p style="margin-top:.75rem">
+            Each component handles WAI-ARIA wiring, keyboard navigation, focus management, and
+            data-attribute hooks (<code>data-state</code>, <code>data-disabled</code>) so you can style with
+            pure CSS selectors.
+        </p>
+    </section>
+
+    <section class="demo-section">
+        <h2>Get started</h2>
+        <p>
+            Add the <code>Bit.BlazorHeadlessUI</code> package, register its services (in the client project
+            too, for WebAssembly and Auto) and import the namespace:
+        </p>
+        <pre class="demo-code" style="margin-top:.75rem"><code>dotnet add package Bit.BlazorHeadlessUI
+
+builder.Services.AddBitBlazorHeadlessUIServices();
+
+@@using Bit.BlazorHeadlessUI</code></pre>
+        <p style="margin-top:.75rem">
+            The source, the guide and the issue tracker are on
+            <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/BlazorHeadlessUI" target="_blank" rel="noreferrer">GitHub</a>.
+            Coding agents can read the components, their parameters and every demo below from this site's
+            MCP server at <code>/mcp</code>.
+        </p>
+    </section>
+
+    <section class="demo-section">
+        <h2>Browse components (CSS)</h2>
+        <p>Pick a component to see live demos and the source code that produced them.</p>
+
+        <ul class="component-list">
+            @foreach (var entry in DemoCatalog.Components)
+            {
+                <li><a href="@entry.Slug">@entry.Label</a></li>
+            }
+        </ul>
+    </section>
+</div>

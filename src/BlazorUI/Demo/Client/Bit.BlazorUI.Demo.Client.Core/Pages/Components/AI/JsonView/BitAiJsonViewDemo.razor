@@ -1,0 +1,145 @@
+﻿@page "/components/ai/jsonview"
+
+<PageOutlet Url="components/ai/jsonview"
+            Title="AiJsonView"
+            Description="BitAiJsonView renders a JSON value as a collapsible tree - the view the AI components fall back to for tool arguments, tool results and structured output." />
+
+<DemoPage Name="AiJsonView"
+          SecondaryNames="@(["JsonViewer"])"
+          Description="BitAiJsonView renders a JSON value as a collapsible tree, colored by the kind of each value. It is what the AI components fall back to wherever they hold structured data and no better renderer: tool arguments, tool results, structured output. Containers below a depth, and containers too large to read at a glance, start collapsed, so a thousand-row result does not push the conversation off the screen. Every container's head is a button that toggles it, and a node is told apart by its path from the root, so toggling one never toggles another."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="JsonView/BitAiJsonView.razor"
+          GitHubDemoUrl="AI/JsonView/BitAiJsonViewDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            BitAiJsonView needs nothing but its <b>Value</b>: no session and no transport. It is a plain view of a
+            <b>JsonElement</b>, so it works the same over a value a tool returned, a payload a model streamed (see the
+            <BitLink Href="/ai/scenarios/structured">Structured output</BitLink> scenario) or anything an app parsed itself.
+            Each container's head is a native button carrying <b>aria-expanded</b>, named by its key - or, with no key, by
+            where it is: the root, or its index in an array (the <b>JsonRoot</b> and <b>JsonArrayItem</b> strings) - so the
+            tree is read and driven from the keyboard like any disclosure. Keys and strings are drawn the way JSON writes
+            them, a quote, a backslash or a line break in them escaped.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Give it a <b>Value</b>. The first two levels are open and the rest start collapsed, showing their entry count:
+                a click on the head of a container - its chevron, its key or its brace - opens or closes it. Strings, numbers,
+                booleans and null each take a color of their own.
+            </div>
+            <br />
+            <BitAiJsonView Value="order" />
+        </DemoExample>
+
+        <DemoExample Title="Expand depth" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                <b>DefaultExpandDepth</b> is how many levels open by themselves (2 by default): 0 shows the root collapsed, a
+                large number opens everything. A container the user toggled keeps the state they gave it when the depth
+                changes; the rest follow the new depth.
+            </div>
+            <br />
+            <BitSlider Label="DefaultExpandDepth" Min="0" Max="4" @bind-Value="expandDepth" />
+            <br />
+            <BitAiJsonView Value="order" DefaultExpandDepth="(int)expandDepth" />
+        </DemoExample>
+
+        <DemoExample Title="Large containers" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                A container holding more than <b>LargeContainerSize</b> entries (24 by default) starts collapsed at any depth,
+                so a long result costs one row until someone asks for it. The second tree raises the limit to 50 and opens the
+                same 30 readings.
+            </div>
+            <br />
+            <BitAiJsonView Value="readings" />
+            <br />
+            <BitAiJsonView Value="readings" LargeContainerSize="50" />
+        </DemoExample>
+
+        <DemoExample Title="Partial JSON" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                A model writes JSON a few characters at a time, so for most of a generation the payload is not valid JSON.
+                <b>BitAiPartialJson.TryParse</b> (see the tables below) repairs what has arrived into the closest valid document
+                - closing the open containers, keeping a string that is still being written - and the tree grows with it. Collapse a node while
+                it streams: the tree remembers it by its path.
+            </div>
+            <br />
+            <BitButton OnClick="StreamResultAsync" Disabled="isStreaming">Stream a tool result</BitButton>
+            <br /><br />
+            <BitAiJsonView Value="streamedValue" />
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                A disabled tree keeps its values readable and turns its toggles off: they stay where they are and drop the
+                page's activation handlers along with them.
+            </div>
+            <br />
+            <BitAiJsonView Value="order" Disabled />
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>BitParams</b> with a <b>BitAiJsonViewParams</b> sets what every tree inside it agrees on - how much of it starts
+                open (<b>DefaultExpandDepth</b>, <b>LargeContainerSize</b>), the <b>Classes</b> and <b>Styles</b> of its parts, and
+                the parameters every component shares, such as <b>Disabled</b> or <b>Dir</b> - rather than the value a single tree
+                shows. A tree keeps what it sets itself: here both trees take the bold keys, the first opens one level as the
+                cascade says, and the second sets <b>DefaultExpandDepth</b> back to 2 on its own.
+            </div>
+            <br />
+            <BitParams Parameters="jsonViewParams">
+                <BitAiJsonView Value="order" />
+                <br />
+                <BitAiJsonView Value="order" DefaultExpandDepth="2" />
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> each part. The public
+                <b>--bit-AiJsonView-*</b> variables (see the CSS variables table) inherit, so set on <b>:root</b>, a container
+                or an instance's <b>Style</b> they re-skin every tree below - a tree nested in another's value included.
+            </div>
+            <br />
+            @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+            <div>
+                <BitAiJsonView Value="order"
+                               Style="padding: 0.75rem; border-radius: 0.5rem; background-color: #1e1e2e; color: #cdd6f4"
+                               Styles="@(new() { Key = "color: #89b4fa", String = "color: #a6e3a1", Number = "color: #fab387", Boolean = "color: #cba6f7", Null = "color: #9399b2", Toggle = "color: #cdd6f4" })" />
+                <br />
+                <BitAiJsonView Value="order" Classes="@(new() { Root = "custom-json", Key = "custom-json-key" })" />
+                <br />
+                <div style="--bit-AiJsonView-key-color: light-dark(#7b2cbf, #c77dff); --bit-AiJsonView-string-color: light-dark(#a0522d, #f4a460);--bit-AiJsonView-indent: 2rem; --bit-AiJsonView-font-size: 0.75rem">
+                    <BitAiJsonView Value="order" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                In a right-to-left tree the entries indent from the right and the chevron of a collapsed container points left,
+                whether the direction comes from <b>Dir</b> or from a <b>dir</b> attribute around it.
+            </div>
+            <br />
+            <BitAiJsonView Dir="BitDir.Rtl" Value="persianOrder" />
+            <br />
+            <div dir="rtl">
+                <BitAiJsonView Value="persianOrder" DefaultExpandDepth="1" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

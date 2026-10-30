@@ -8,8 +8,9 @@ namespace Bit.Balette.Demo.Server.Services;
 /// hosting model, and - where the demo is that render mode - the demo's real hosting files.
 /// <para>
 /// Four things have to be in place before Ctrl+K opens anything, and each one fails quietly when it is
-/// missing: the services in every DI container that renders the palette (a missing one surfaces while
-/// prerendering, not at compile time), the stylesheet link (it is not injected - without it the palette
+/// missing: the services in every DI container that renders the palette (without them the palette runs on
+/// the default options and logs a warning, and code injecting IBaletteService fails while prerendering -
+/// nothing at compile time), the stylesheet link (it is not injected - without it the palette
 /// opens as unstyled markup at the top of the page), one <c>&lt;Balette /&gt;</c> in a layout that is
 /// rendered interactively (a statically rendered one never attaches its keyboard handling), and the
 /// namespace import. Handing over a known-good project instead of prose removes the guesswork about
@@ -180,9 +181,12 @@ public static partial class BaletteSetupGuide
         1. `dotnet add package Bit.Balette` - one package, everything under the `Bit.Balette` namespace. In a Blazor Web App
            with an interactive client, add it to the .Client project (the server project gets it through its reference).
         2. Call `builder.Services.AddBitBaletteServices(...)` in EVERY DI container that renders the palette. A Blazor Web App
-           with an interactive client has two of them, and a missing registration surfaces as a failure to resolve
-           `IBaletteService` while the page is prerendered. Share one extension method between the two `Program.cs` files so
-           both get the same options.
+           with an interactive client has two of them. Where it is missing, the palette still renders but on the default
+           options - the toggle shortcuts, group order and commands set in `Program.cs` are gone once the page turns
+           interactive - and logs a warning that the services are not registered; a component that injects
+           `IBaletteService` fails to resolve it while the page is prerendered. Share one extension method between the two
+           `Program.cs` files so both get the same options. (Only a WebAssembly app that lazy loads Bit.Balette leaves the
+           registration out - see the guide's lazy loading section.)
         3. Link the stylesheet from the host page - `App.razor` in a Web App, `wwwroot/index.html` otherwise - BEFORE your own
            stylesheet, so your overrides of its `--bit-balette-*` variables win:
            `<link rel="stylesheet" href="_content/Bit.Balette/bit-balette.css" />`. It is NOT injected for you: without it the

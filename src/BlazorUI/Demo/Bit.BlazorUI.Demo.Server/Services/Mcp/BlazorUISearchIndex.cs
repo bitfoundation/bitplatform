@@ -9,7 +9,7 @@ namespace Bit.BlazorUI.Demo.Server.Services.Mcp;
 /// <para>
 /// The name a task suggests is rarely the name the library chose - a "select" is
 /// <c>BitDropdown</c>, a "toast" is <c>BitSnackBar</c>, a "skeleton" is <c>BitShimmer</c>, an
-/// "expander" is <c>BitAccordion</c> - and with 110 components across five packages, working out
+/// "expander" is <c>BitAccordion</c> - and with 150 components across six packages, working out
 /// which corpus holds the answer is the actual task. This does it in one call, and every hit names
 /// the exact follow-up call that returns its full text, so one search is enough to know what to ask
 /// for next.
@@ -44,7 +44,7 @@ public static class BlazorUISearchIndex
         /// A component's answer already contains its parameters, its own enums and the titles of
         /// its examples, so a query that matches both the component and one of its members is
         /// better served by the component: the member hit is a subset of what the component hit
-        /// returns, and it costs the same call. Without this a query like "multi select chips"
+        /// returns. Without this a query like "multi select chips"
         /// fills its whole result with three of BitDropdown's parameters and never names
         /// BitDropdown.
         /// </para>
@@ -90,7 +90,7 @@ public static class BlazorUISearchIndex
     };
 
     /// <summary>
-    /// Builds the index ahead of the first query. Walking 110 demo pages and five assemblies takes
+    /// Builds the index ahead of the first query. Walking 150 demo pages and six assemblies takes
     /// long enough to be noticed, and the caller who happens to be first is the one who would wait.
     /// </summary>
     public static void Warm()
@@ -304,17 +304,25 @@ public static class BlazorUISearchIndex
                 AliasWords = [.. Aliases(component.Aliases).SelectMany(SplitWords).Select(word => word.ToLowerInvariant())]
             });
 
-            foreach (var parameter in component.Parameters)
-            {
-                entries.Add(new Entry("Parameter", $"{component.Name}.{parameter.Name}", component.Name, call,
-                    parameter.Description ?? string.Empty, parameter.Type));
-            }
+            // A hit below the component is answered with its own rows rather than with the whole
+            // reference: the section argument narrows to exactly the name the hit is about, which on
+            // the largest components is the difference between one table row and fifty thousand
+            // characters to search through.
+            string Narrowed(string section) => $"GetBitBlazorUIComponent(name: \"{component.Name}\", section: \"{section}\")";
 
-            foreach (var member in component.PublicMembers)
-            {
-                entries.Add(new Entry("Public member", $"{component.Name}.{member.Name}", component.Name, call,
-                    member.Description ?? string.Empty, member.Type));
-            }
+            // One entry per name rather than per overload, titled by the name alone: a signature's
+            // parameter names, types and defaults are not what the member is called, and as title words
+            // they made every method taking a `title` or a `value` a title hit for those words - once
+            // per overload. The section a hit names is matched on the same bare name. (A service's
+            // methods are in the table a component's parameters are in.)
+            IEnumerable<Entry> ByName(string kind, IReadOnlyList<ComponentMember> members)
+                => members.GroupBy(m => BlazorUIComponentCatalog.Bare(m.Name), StringComparer.Ordinal)
+                          .Select(overloads => new Entry(kind, $"{component.Name}.{overloads.Key}", component.Name, Narrowed(overloads.Key),
+                              string.Join(' ', overloads.Select(m => m.Description).Where(d => string.IsNullOrWhiteSpace(d) is false).Distinct(StringComparer.Ordinal)),
+                              string.Join(' ', overloads.Select(m => m.Type).Distinct(StringComparer.Ordinal))));
+
+            entries.AddRange(ByName(component.IsComponent ? "Parameter" : "Member", component.Parameters));
+            entries.AddRange(ByName("Public member", component.PublicMembers));
 
             // The custom properties are the half of a component's look that no parameter reaches, so
             // a search for "action button hover background" has to land on one rather than on the
@@ -322,7 +330,7 @@ public static class BlazorUISearchIndex
             // it is what names the global token the variable falls back to.
             foreach (var variable in component.CssVariables)
             {
-                entries.Add(new Entry("CSS variable", variable.Name, component.Name, call,
+                entries.Add(new Entry("CSS variable", variable.Name, component.Name, Narrowed(variable.Name),
                     variable.Description ?? string.Empty, variable.Default ?? string.Empty));
             }
 
@@ -332,7 +340,7 @@ public static class BlazorUISearchIndex
                 // is thirty part names, and boosting each of them made "BitDatePickerClassStyles"
                 // outrank BitDateRangePicker for "pick a date range". A body is capped as a whole,
                 // so the names can still find the type without winning on volume.
-                entries.Add(new Entry(type.IsEnum ? "Enum" : "Class", type.Name, component.Name, call,
+                entries.Add(new Entry(type.IsEnum ? "Enum" : "Class", type.Name, component.Name, Narrowed(type.Name),
                     $"{type.Description} {string.Join(' ', type.Members.Select(m => m.Name))}".Trim(), string.Empty));
             }
 
@@ -370,8 +378,17 @@ public static class BlazorUISearchIndex
 
         foreach (var model in BlazorUISetupGuide.HostingModels)
         {
+            // The words only a setup question is asked in, as aliases: a guide is titled by its hosting
+            // model rather than by what it answers, and its keywords as prose are capped like any body.
+            // Without them, the components whose descriptions mention what the app registered with
+            // AddBitBlazorUIAIServices outrank the guide for "register services stylesheet script".
+            // The generic words - package, services, script, tag - stay prose, or "tag" would put four
+            // setup guides between BitTag and its own parameters.
             entries.Add(new Entry("Setup guide", model, "Hosting model", $"GetBitBlazorUISetupGuide(hostingModel: \"{model}\")",
-                "install package nuget register services AddBitBlazorUIServices stylesheet script tag imports namespace setup wiring", string.Empty));
+                "install package nuget register services AddBitBlazorUIServices stylesheet script tag imports namespace setup wiring", string.Empty)
+            {
+                AliasPhrases = ["install", "nuget", "register", "addbitblazoruiservices", "stylesheet", "setup", "wiring"]
+            });
         }
 
         entries.Add(new Entry("Icons", "BitIconName", $"{BlazorUIIconCatalog.Count:N0} glyphs", "FindBitBlazorUIIcons(query: \"...\")",

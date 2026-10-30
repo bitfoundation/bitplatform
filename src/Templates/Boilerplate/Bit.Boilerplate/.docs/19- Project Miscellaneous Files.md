@@ -530,18 +530,16 @@ When you open the project in VS Code, you'll be prompted to install these extens
             "type": "dotnet",
             "request": "launch",
             "projectPath": "${workspaceFolder}/src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj"
-        },
-        {
-            "name": ".NET MAUI",
-            "type": "maui",
-            "request": "launch",
-            "preLaunchTask": "maui: Build"
         }
     ]
 }
 ```
 
 **How to use**: Press `F5` or go to Run and Debug panel → Select a configuration → Start debugging
+
+#### 6.3.5 `.vscode/tasks.json`
+
+**Run the Android app**: runs `bit run android` from *Terminal > Run Task*. See [Running the Native Apps](/.docs/21-%20.NET%20MAUI%20-%20Blazor%20Hybrid.md#running-the-native-apps).
 
 ---
 

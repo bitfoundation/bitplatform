@@ -1,0 +1,64 @@
+﻿@page "/e2e/aigenerativeuiview"
+@using System.Text.Json
+
+<PageTitle>BitAiGenerativeUiView E2E</PageTitle>
+
+<h1>BitAiGenerativeUiView</h1>
+
+<E2ESection Id="registered" Title="A registered component">
+    <BitAiGenerativeUiView Id="guv-card" Part="_cardPart" />
+</E2ESection>
+
+<E2ESection Id="stream" Title="Model output through a session">
+    <button id="btn-guv-generative" @onclick="GenerativeAsync">Show the numbers</button>
+    <p>Answers: <span id="guv-generative-answers">@Answers(_generativeSession)</span></p>
+    @if (Answer(_generativeSession) is { } answer)
+    {
+        <p id="guv-generative-text">@answer.GetText()</p>
+        <div id="guv-generative">
+            @foreach (var part in answer.PartsOf<BitAiGenerativeUiPart>())
+            {
+                <BitAiGenerativeUiView Part="part" />
+            }
+        </div>
+    }
+
+    <button id="btn-guv-unknown" @onclick="UnknownAsync">Show a made-up component</button>
+    <p>Answers: <span id="guv-unknown-answers">@Answers(_unknownSession)</span></p>
+    @if (Answer(_unknownSession) is { } unknownAnswer)
+    {
+        <div id="guv-unknown">
+            @foreach (var part in unknownAnswer.PartsOf<BitAiGenerativeUiPart>())
+            {
+                <BitAiGenerativeUiView Part="part" />
+            }
+        </div>
+    }
+</E2ESection>
+
+<E2ESection Id="names" Title="Only a registered name">
+    <BitAiGenerativeUiView Id="guv-type-name" Part="_typeNamePart" />
+    <BitAiGenerativeUiView Id="guv-full-type-name" Part="_fullTypeNamePart" />
+</E2ESection>
+
+<E2ESection Id="props" Title="Props streaming in">
+    <button id="btn-guv-props" @onclick="AppendProps">Append</button>
+    <span id="guv-props-step">@_propsStep</span>
+    <BitAiGenerativeUiView Id="guv-props" Part="_streamingPart" />
+    <button id="btn-guv-unknown-complete" @onclick="() => _streamingUnknownPart.Complete()">Complete the unknown one</button>
+    <BitAiGenerativeUiView Id="guv-streaming-unknown" Part="_streamingUnknownPart" />
+</E2ESection>
+
+<E2ESection Id="diagnostics" Title="Binding diagnostics">
+    <BitAiGenerativeUiView Id="guv-diagnostics" ShowBindingErrors Part="_badPart" />
+    <BitAiGenerativeUiView Id="guv-no-diagnostics" Part="_badPartQuiet" />
+    <BitAiGenerativeUiView Id="guv-diagnostics-vars" ShowBindingErrors Part="_badPartVars"
+                           Style="--bit-AiGenerativeUiView-diagnostics-gap: 17px; --bit-AiGenerativeUiView-diagnostics-margin: 23px" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitAiGenerativeUiView Id="guv-rtl" Dir="BitDir.Rtl" Part="_rtlPart" />
+    <BitAiGenerativeUiView Id="guv-rtl-unknown" Dir="BitDir.Rtl" Part="_rtlUnknownPart" />
+</E2ESection>
+
+<E2EStatus />

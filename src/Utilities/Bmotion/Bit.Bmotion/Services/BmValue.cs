@@ -25,6 +25,17 @@ public class BmValue<T> : IDisposable
     // ── Velocity tracking (numeric values only) ───────────────────────────────
     private double _velocityPerSec;
     private long _lastSetMs = -1;
+    // The gap between the last two changes: the pace the value is updated at, which tells a value that has
+    // stopped from one that is merely updated slowly - on Blazor Server a scroll position arrives a round trip
+    // apart, several frames rather than one.
+    private long _lastIntervalMs = -1;
+
+    // A value counts as standing still once it has gone this many of its own update intervals without a change,
+    // within these bounds: a few frames for one set every frame (motion.dev uses 30 ms), and never longer than the
+    // gap TrackVelocity already treats as carrying no velocity.
+    private const int StaleIntervals = 3;
+    private const long MinStaleMs = 40;
+    private const long MaxStaleMs = 250;
 
     // Millisecond clock behind velocity tracking; injectable so tests can drive the
     // elapsed-time intervals deterministically instead of sleeping.
@@ -46,9 +57,19 @@ public class BmValue<T> : IDisposable
 
     /// <summary>
     /// The value's current velocity in units per second (numeric value types only; always 0
-    /// otherwise). Tracked across <see cref="SetSync"/>/<see cref="SetAsync"/> updates.
+    /// otherwise). Tracked across <see cref="SetSync"/>/<see cref="SetAsync"/> updates, and 0 once the
+    /// value has stopped changing - when no change has arrived for a few of its own update intervals
+    /// (motion.dev's <c>getVelocity</c>, which goes to 0 after 30 ms, for a value updated every frame).
     /// </summary>
-    public double GetVelocity() => _velocityPerSec;
+    public double GetVelocity()
+        => _velocityPerSec != 0 && MsUntilStill() < 0 ? 0 : _velocityPerSec;
+
+    /// <summary>
+    /// How much longer the velocity of the last change still counts as current, in ms by <see cref="TimeSource"/>:
+    /// negative once the value counts as standing still.
+    /// </summary>
+    internal long MsUntilStill()
+        => Math.Clamp(StaleIntervals * _lastIntervalMs, MinStaleMs, MaxStaleMs) - (TimeSource() - _lastSetMs);
 
     /// <summary>
     /// Sets the value and notifies subscribers, but resets velocity to zero - use for
@@ -77,7 +98,10 @@ public class BmValue<T> : IDisposable
             if (dt >= 0.25)
                 _velocityPerSec = 0;
             else if (dt > 0)
+            {
                 _velocityPerSec = (Convert.ToDouble(newValue) - Convert.ToDouble(oldValue)) / dt;
+                _lastIntervalMs = now - _lastSetMs;
+            }
         }
         _lastSetMs = now;
     }

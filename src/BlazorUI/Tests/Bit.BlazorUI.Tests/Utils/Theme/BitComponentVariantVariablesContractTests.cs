@@ -182,7 +182,7 @@ public sealed class BitComponentVariantVariablesContractTests
     /// </summary>
     private static IEnumerable<VariantStylesheet> EnumerateVariantStylesheets()
     {
-        var projects = new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Legacy" };
+        var projects = new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Legacy", "Bit.BlazorUI.AI" };
 
         foreach (var componentsDir in projects.Select(p => SourceFiles.GetDirectory(p, "Components")))
         {

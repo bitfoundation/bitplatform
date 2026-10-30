@@ -12,6 +12,8 @@ builder.Services.AddScoped<Microsoft.AspNetCore.Components.Server.Circuits.Circu
 // The services the components read of the library's own - the theme and the accent color switchers, the page
 // visibility the carousels pause on - and the HttpClient BitFileUpload uploads with.
 builder.Services.AddBitBlazorUIExtrasServices();
+// The AI package's services, over a transport that echoes what it is sent (the AI components of the regression pages).
+builder.Services.AddBitBlazorUIAIServices(ai => ai.UseTransport<Bit.BlazorUI.Tests.Performance.TestHost.EchoAiTransport>());
 builder.Services.AddScoped(_ => new HttpClient());
 
 builder.Services.AddRazorComponents()

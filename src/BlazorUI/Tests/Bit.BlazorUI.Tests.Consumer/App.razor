@@ -35,6 +35,16 @@
             <BitThemeSwitcher />
             <BitCountryPicker @bind-Value="_country" />
             <BitTimeZonePicker @bind-Value="_timeZone" />
+
+            @* The AI package: a chat over the transport Program.cs registers, with starter prompts and a model picker
+               bound two ways in its header template. The chat takes the height of its container. *@
+            <div style="height: 360px;">
+                <BitAiChat EmptyTitle="Ask me anything" Suggestions="_suggestions">
+                    <HeaderTemplate>
+                        <BitAiModelSelector Models="_models" @bind-ModelId="_modelId" />
+                    </HeaderTemplate>
+                </BitAiChat>
+            </div>
         </BitStack>
     </BitParams>
 </BitThemeProvider>
@@ -55,6 +65,14 @@
     private string? _timeZone;
     private string? _theme = BitThemePresets.Light;
     private bool _isModalOpen;
+    private string? _modelId = "fast";
+
+    private readonly List<string> _suggestions = ["What can you do?", "Say hello"];
+    private readonly List<BitAiModel> _models =
+    [
+        new("fast", "Fast") { Capabilities = BitAiModelCapabilities.Streaming },
+        new("large", "Large") { Capabilities = BitAiModelCapabilities.Streaming | BitAiModelCapabilities.Tools },
+    ];
 
     private readonly List<BitDropdownItem<string>> _colors =
     [

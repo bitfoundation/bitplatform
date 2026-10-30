@@ -1,0 +1,18 @@
+﻿::deep {
+    .custom-class {
+        padding: 0.25rem;
+        border-radius: 0.5rem;
+        background-color: var(--bit-clr-bg-sec);
+    }
+
+    .custom-container {
+        border-width: 2px;
+        border-color: var(--bit-clr-pri);
+    }
+
+    .custom-header {
+        font-weight: bold;
+        text-transform: uppercase;
+        color: var(--bit-clr-pri);
+    }
+}

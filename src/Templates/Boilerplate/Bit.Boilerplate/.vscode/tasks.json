@@ -1,0 +1,12 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run the Android app",
+            "detail": "bit run android: a connected device or a running emulator, else the Android emulator, which bit sets up the first time",
+            "type": "shell",
+            "command": "bit run android",
+            "problemMatcher": []
+        }
+    ]
+}

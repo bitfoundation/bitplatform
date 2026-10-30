@@ -11,8 +11,9 @@ public static class IServiceCollectionExtensions
 {
     public static IServiceCollection AddDemoServices(this IServiceCollection services)
     {
-        // The draggables and drop targets inject BdndInterop, and so does the sortable card,
-        // which measures the hovered card through it.
+        // Required on the server, which runs the components of the Blazor Server page. In the browser the
+        // draggables and drop targets would create BdndInterop themselves, but two pages inject it: the
+        // sortable card, to measure the hovered card, and the custom drag layer.
         services.AddBitBdndServices();
 
         return services;

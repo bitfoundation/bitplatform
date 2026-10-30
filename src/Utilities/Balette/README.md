@@ -61,8 +61,8 @@ natively for Blazor.
 - **Failures handled**: a handler or a page loader that throws is logged and reported in the palette, never ends a
   Blazor Server circuit, and a page that failed to load offers a retry.
 - **Theming through CSS variables**, light and dark, eight templates, or a fully unstyled mode.
-- Works on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, on .NET 10 and 11, and is
-  trimming and AOT friendly.
+- Works on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, on .NET 10 and 11, is
+  trimming and AOT friendly, and can be lazy loaded on WebAssembly.
 
 ## Quick start
 
@@ -222,7 +222,8 @@ builder.Services.AddBitBaletteServices(options =>
 ```
 
 The options are a singleton. The registry, the open state and the history are scoped: one per circuit on Blazor
-Server, one per application on WebAssembly.
+Server, one per application on WebAssembly. A WebAssembly app that downloads Balette only when it is needed skips this
+step - see [lazy loading](#lazy-loading-on-webassembly).
 
 ### Reference the stylesheet
 
@@ -995,6 +996,10 @@ to the same keys: with Vim bindings on, `Ctrl+K` moves up rather than closing.
 | `IsOpen`, `IsMac`, `Commands`, `Modes`, `Sources` | State. |
 | `CommandsChanged`, `Opened`, `Closed`, `CommandExecuted`, `CommandFailed`, `PlatformDetected` | Events. |
 
+Where the services are not registered - an app that [lazy loads](#lazy-loading-on-webassembly) Balette on
+WebAssembly - `IServiceProvider.GetBaletteService()` returns the one the palette uses; where they are, it returns the
+registered one, so code that has to work both ways can always call it.
+
 `CommandExecuted` reports the command, the result and how long the handler took. The `Balette` component exposes the
 same `OpenAsync`, `CloseAsync` and `ToggleAsync`, plus `SetQueryAsync`, `Query` and `ActiveCommand`, and an `Open`
 parameter for two-way binding:
@@ -1168,7 +1173,95 @@ them remains the measure.
 Register the services in `Program.cs`, link the stylesheet in `index.html`, and place `<Balette />` in
 `MainLayout.razor`. Searching runs on the browser's one thread, so on every keystroke whose search took longer than
 a frame the palette lets the keystroke paint first and folds keys typed meanwhile into one search - typing stays
-responsive with thousands of commands.
+responsive with thousands of commands. An app that is not compiled ahead of time can download the library only when
+a page with the palette opens - see [lazy loading](#lazy-loading-on-webassembly).
+
+### Lazy loading on WebAssembly
+
+The components also work without `AddBitBaletteServices`, so a WebAssembly app can fetch Balette only when someone
+opens a part of the app that has a palette. When the services are not registered, `Balette`, `BaletteTrigger` and
+`BaletteCommands` create every service they need themselves, once per browser connection, and
+`IServiceProvider.GetBaletteService()` hands the app's own code the same `IBaletteService`. Mark the assembly as lazy
+loaded in the project that runs in the browser, and load it before the first page that uses it renders:
+
+```xml
+<ItemGroup>
+  <BlazorWebAssemblyLazyLoad Include="Bit.Balette.wasm" />
+</ItemGroup>
+```
+
+```razor
+@* App.razor: the router waits for OnNavigateAsync before it renders the page. *@
+@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@inject LazyAssemblyLoader LazyAssemblyLoader
+
+<Router AppAssembly="typeof(App).Assembly" OnNavigateAsync="OnNavigateAsync">
+    ...
+</Router>
+
+@code {
+    private async Task OnNavigateAsync(NavigationContext context)
+    {
+        // The pages with the palette: fetch Balette before they render. A second call loads nothing again. Routes
+        // match regardless of case, so /Admin/users is one of them too.
+        if (context.Path.StartsWith("admin", StringComparison.OrdinalIgnoreCase))
+            await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Balette.wasm"]);
+    }
+}
+```
+
+Those pages, or a layout only they use, hold the palette and register commands through `GetBaletteService()` instead
+of injecting `IBaletteService`:
+
+```razor
+@* AdminLayout.razor *@
+@inherits LayoutComponentBase
+@inject IServiceProvider Services
+@implements IDisposable
+
+<BaletteTrigger Label="Search…" />
+@Body
+<Balette />
+
+@code {
+    private IDisposable? _commands;
+
+    protected override void OnInitialized()
+        => _commands = Services.GetBaletteService().Register(
+            BaletteCmd.Navigate("Users", "/admin/users").Group("Navigation"),
+            BaletteCmd.Navigate("Billing", "/admin/billing").Group("Navigation"));
+
+    public void Dispose() => _commands?.Dispose();
+}
+```
+
+The stylesheet is a plain `<link>`, served whether the assembly has loaded or not, and the palette imports its
+JavaScript module the first time it renders.
+
+- Leave `AddBitBaletteServices` out of that project's `Program.cs`: calling it references Balette's types before the
+  assembly is there. For the same reason only what renders after the assembly has loaded may use Balette's types -
+  the pages it is loaded for and a layout only they use, not `App.razor`, a layout every page shares or `Program.cs`.
+- No type in an assembly the router reads when the app starts - the app's own assembly first of all - may derive from
+  or implement one of Balette's: no `IBaletteSource` class, no `IBaletteHistoryStore`, no component that inherits
+  `Balette`. The router reads the types of those assemblies at startup, and on WebAssembly a type whose base type or
+  interface lives in an assembly that is not loaded yet fails to load - and keeps failing after Bit.Balette has loaded,
+  breaking the app's use of it for the rest of the session. Put such a class in a library that is lazy loaded together
+  with Bit.Balette.
+- Without the registration the palette runs on the default `BaletteOptions`. Its parameters override most of them
+  per instance (`Strings`, `ToggleShortcut`, `Theme`, `Density`, `Loop`, `EnableHistory`, ...) - a `BaletteTrigger`
+  shows and announces the toggle shortcut and the strings of the palette it opens - and modes, sources and commands are
+  registered through `GetBaletteService()` instead of `options.Modes`, `options.Sources` and `options.Commands`. The
+  rest - such as `GroupOrder`, `AdditionalToggleShortcuts`, the field weights, the matcher and `AllowedUrlSchemes` -
+  keep their defaults; an app that needs them registers the services rather than lazy loading.
+- The history store cannot be replaced either: recents, pins and frecency go to the browser's `localStorage` under the
+  default `HistoryStorageKey`, `bit-balette.history`, which every app on the same origin shares. An app that must not
+  write to the browser sets `EnableHistory="false"` on its palettes.
+- The palette logs one warning that the services are not registered - expected here; it is what tells an app that
+  should have registered them, such as the client project of a Blazor Web App that forgot to, why its options are
+  ignored. `builder.Logging.AddFilter("Bit.Balette.BitBalette", LogLevel.None)` in `Program.cs` silences it without
+  referencing Balette's types.
+- Do not lazy load in an AOT build. AOT compiles every assembly into `dotnet.native.wasm`, so there is nothing left to
+  download later, and lazy loading an AOT-compiled assembly can fail at startup.
 
 ### Blazor Server
 
@@ -1273,9 +1366,13 @@ registries of different sizes. With very large lists, also turn on `Virtualize`,
 
 ## Troubleshooting
 
-**`Ctrl+K` does nothing.** The palette is not interactive: it is in a statically rendered layout, or the services
-are registered in only one project of a Blazor Web App. Also check that no other script calls `preventDefault` on
-the key first.
+**`Ctrl+K` does nothing.** The palette is not interactive: it is in a statically rendered layout. Also check that no
+other script calls `preventDefault` on the key first.
+
+**Options from `Program.cs` stop working once the page turns interactive** - a toggle shortcut, the group order,
+commands added through `options.Commands`. The services are registered in only one project of a Blazor Web App, and
+the palette in the other runs on the default options; it logs a warning saying the services are not registered. Call
+`AddBitBaletteServices` in both, through one shared method.
 
 **The palette opens unstyled.** The stylesheet link is missing: add
 `<link rel="stylesheet" href="_content/Bit.Balette/bit-balette.css" />` to the host page.

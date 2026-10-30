@@ -36,6 +36,92 @@ public partial class McpSearchTests
         }
     }
 
+    /// <summary>
+    /// Questions that say what the app has to do rather than what the feature is called, and the titles
+    /// one of which has to be the first hit: an agent that trusts the first hit goes wherever it points.
+    /// </summary>
+    private static readonly (string Query, string[] Answers)[] _firstHits =
+    [
+        ("a step that waits for a panel that loads later", ["How waiting works", "Missing-target strategies"]),
+        ("wait for an element that appears later", ["How waiting works", "Missing-target strategies"]),
+        ("start a tour from code", ["3. Start it"]),
+        ("tour across several pages", ["Multi-page tours"]),
+        // "3" names nothing: it is only the number of a numbered heading.
+        ("show the hint 3 times", ["A one-step hint"]),
+        // A section a synonym names does not outrank the one the word is the name of.
+        ("load", ["Surviving a full page load"]),
+    ];
+
+    [TestMethod]
+    public async Task A_question_in_plain_words_puts_its_answer_first()
+    {
+        var misses = new List<string>();
+
+        // However few hits were asked for, the first one is the same.
+        foreach (var (query, answers) in _firstHits)
+        {
+            foreach (var limit in new[] { 1, 3, 6 })
+            {
+                var result = await McpCall.StructuredAsync<BonboardingSearchResultDto>("SearchBonboarding", new() { ["query"] = query, ["limit"] = limit });
+                var first = result.Hits.FirstOrDefault()?.Title ?? string.Empty;
+
+                if (answers.Contains(first, StringComparer.OrdinalIgnoreCase)) continue;
+
+                misses.Add($"'{query}' (limit {limit}) ranked first: {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
+            }
+        }
+
+        Assert.IsEmpty(misses, string.Join(Environment.NewLine, misses));
+    }
+
+    [TestMethod]
+    [DataRow("code")]
+    [DataRow("string")]
+    [DataRow("start a tour from code")]
+    public async Task A_member_every_type_has_is_not_an_answer(string query)
+    {
+        // Split into words, GetHashCode is "code": left in, it answered "start a tour from code". And a record's
+        // Deconstruct names every property it has, so it answers a question about any one of them first.
+        var result = await McpCall.StructuredAsync<BonboardingSearchResultDto>("SearchBonboarding", new() { ["query"] = query, ["limit"] = 50 });
+
+        Assert.IsFalse(result.Hits.Any(IsObjectPlumbing), $"'{query}': {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
+    }
+
+    /// <summary>
+    /// What the compiler writes for a record, and an override of what every object has that its type does not document
+    /// - which is a hit with nothing in its snippet. A documented ToString says what the type's text is, and stays.
+    /// </summary>
+    private static bool IsObjectPlumbing(BonboardingSearchHitDto hit)
+    {
+        var member = hit.Title[(hit.Title.LastIndexOf('.') + 1)..];
+
+        return member is "Deconstruct" or "PrintMembers" || (member is "Equals" or "GetHashCode" or "ToString" && hit.Snippet.Length == 0);
+    }
+
+    [TestMethod]
+    public async Task A_contraction_is_not_searched_for_its_letters()
+    {
+        // Split at the apostrophe, "it's" is "it" and "s" - and the "s" of "the library's" in a heading would make
+        // it a name to search by.
+        var filler = await McpCall.StructuredAsync<BonboardingSearchResultDto>("SearchBonboarding", new() { ["query"] = "it's" });
+
+        Assert.IsEmpty(filler.Hits, string.Join(" | ", filler.Hits.Select(hit => hit.Title)));
+
+        var possessive = await McpCall.StructuredAsync<BonboardingSearchResultDto>("SearchBonboarding", new() { ["query"] = "what's the tour's target", ["limit"] = 6 });
+
+        Assert.IsFalse(possessive.Hits.Any(hit => hit.Title.Contains("library's", StringComparison.Ordinal)), string.Join(" | ", possessive.Hits.Select(hit => hit.Title)));
+    }
+
+    [TestMethod]
+    public async Task A_word_is_not_cut_down_to_the_start_of_another()
+    {
+        // "speed" is not "spe" + "ed": cut that far, it found every section that says "specific".
+        var result = await McpCall.StructuredAsync<BonboardingSearchResultDto>("SearchBonboarding", new() { ["query"] = "speed", ["limit"] = 50 });
+
+        Assert.IsFalse(result.Hits.Any(hit => $"{hit.Title} {hit.Snippet}".Contains("speed", StringComparison.OrdinalIgnoreCase) is false),
+            string.Join(" | ", result.Hits.Select(hit => hit.Title)));
+    }
+
     [TestMethod]
     public async Task A_query_of_filler_words_is_told_what_to_search_for()
     {

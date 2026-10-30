@@ -1,0 +1,127 @@
+﻿@page "/e2e/aitokenusageview"
+@implements IAsyncDisposable
+
+<PageTitle>BitAiTokenUsageView E2E</PageTitle>
+
+<h1>BitAiTokenUsageView</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitAiTokenUsageView Id="tuv-basic" Usage="_full" />
+</E2ESection>
+
+<E2ESection Id="cost" Title="Cost">
+    <div><BitAiTokenUsageView Id="tuv-cost-usd" Usage="@(new BitAiTokenUsage { InputTokens = 10, Cost = 1.5m, Currency = "USD" })" /></div>
+    <div><BitAiTokenUsageView Id="tuv-cost-default" Usage="@(new BitAiTokenUsage { InputTokens = 10, Cost = 0.5m })" /></div>
+    <div><BitAiTokenUsageView Id="tuv-cost-eur" Usage="@(new BitAiTokenUsage { InputTokens = 10, Cost = 0.25m, Currency = "EUR" })" /></div>
+    <div><BitAiTokenUsageView Id="tuv-cost-gbp" Usage="@(new BitAiTokenUsage { InputTokens = 10, Cost = 2m, Currency = "GBP" })" /></div>
+    <div><BitAiTokenUsageView Id="tuv-cost-other" Usage="@(new BitAiTokenUsage { InputTokens = 10, Cost = 120m, Currency = "JPY" })" /></div>
+    <div><BitAiTokenUsageView Id="tuv-cost-fraction" Usage="@(new BitAiTokenUsage { InputTokens = 10, Cost = 0.0042m, Currency = "USD" })" /></div>
+    <div><BitAiTokenUsageView Id="tuv-cost-cent" Usage="@(new BitAiTokenUsage { InputTokens = 10, Cost = 0.01m, Currency = "USD" })" /></div>
+    <div><BitAiTokenUsageView Id="tuv-cost-none" Usage="@(new BitAiTokenUsage { InputTokens = 10 })" /></div>
+</E2ESection>
+
+<E2ESection Id="tokens" Title="Tokens">
+    <div><BitAiTokenUsageView Id="tuv-small" Usage="@(new BitAiTokenUsage { InputTokens = 999 })" /></div>
+    <div><BitAiTokenUsageView Id="tuv-thousand" Usage="@(new BitAiTokenUsage { InputTokens = 1000 })" /></div>
+    <div><BitAiTokenUsageView Id="tuv-million" Usage="@(new BitAiTokenUsage { InputTokens = 1_000_000, OutputTokens = 200_000 })" /></div>
+    <div><BitAiTokenUsageView Id="tuv-output-only" Usage="@(new BitAiTokenUsage { OutputTokens = 42 })" /></div>
+    <div id="tuv-empty-host"><BitAiTokenUsageView Id="tuv-empty" Usage="default" /></div>
+</E2ESection>
+
+@* The speed and the latency come from the metadata: 85 output tokens over the 2 seconds after the first one. *@
+<E2ESection Id="speed" Title="Speed and latency">
+    <div><BitAiTokenUsageView Id="tuv-speed" Usage="_full" Metadata="_metadata" /></div>
+    <div><BitAiTokenUsageView Id="tuv-latency" Usage="_full" Metadata="_metadata" ShowLatency="true" /></div>
+    <div><BitAiTokenUsageView Id="tuv-no-speed" Usage="_full" Metadata="_metadata" ShowSpeed="false" ShowLatency="true" /></div>
+    <div><BitAiTokenUsageView Id="tuv-latency-seconds" Usage="_full" Metadata="_slowStart" ShowLatency="true" /></div>
+    <div><BitAiTokenUsageView Id="tuv-no-metadata" Usage="_full" ShowLatency="true" /></div>
+</E2ESection>
+
+@* The usage script through a session: the readout of the reply's usage once the turn is in. *@
+<E2ESection Id="session" Title="The usage of a reply">
+    <button id="btn-session-ask" @onclick="Ask">Ask</button>
+    <p>Reply: <span id="tuv-session-reply">@_reply?.GetText()</span></p>
+    @if (_reply?.Metadata is { Usage.IsEmpty: false } metadata)
+    {
+        <BitAiTokenUsageView Id="tuv-session" Usage="metadata.Usage" ShowSpeed="false" />
+    }
+</E2ESection>
+
+<E2ESection Id="splatted" Title="A title of the page's">
+    <BitAiTokenUsageView Id="tuv-title" Usage="_full" title="The page's own breakdown" />
+</E2ESection>
+
+<E2ESection Id="vars" Title="Public variables, Styles and Classes">
+    <div style="--bit-AiTokenUsageView-color: rgb(1, 2, 3); --bit-AiTokenUsageView-font-size: 19px; --bit-AiTokenUsageView-gap: 23px;">
+        <BitAiTokenUsageView Id="tuv-vars" Usage="_full" />
+    </div>
+    <BitAiTokenUsageView Id="tuv-styles"
+                         Usage="_full"
+                         Metadata="_metadata"
+                         Styles="@(new() { Cost = "color: rgb(40, 41, 42)", Speed = "font-weight: 700" })"
+                         Classes="@(new() { Tokens = "e2e-tuv-tokens", Root = "e2e-tuv-root" })" />
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitAiTokenUsageView Id="tuv-disabled" Usage="_full" Disabled="true" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div><BitAiTokenUsageView Id="tuv-rtl" Dir="BitDir.Rtl" Usage="_full" /></div>
+    <div dir="rtl"><BitAiTokenUsageView Id="tuv-rtl-inherited" Usage="_full" /></div>
+    <div><BitAiTokenUsageView Id="tuv-ltr" Usage="_full" /></div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly BitAiTokenUsage _full = new()
+    {
+        InputTokens = 1200,
+        OutputTokens = 300,
+        CachedInputTokens = 400,
+        ReasoningTokens = 50,
+        Cost = 0.0081m,
+        Currency = "USD",
+    };
+
+    private static readonly DateTimeOffset _start = new(2026, 1, 2, 3, 4, 5, TimeSpan.Zero);
+
+    private static readonly BitAiGenerationMetadata _metadata = new()
+    {
+        Usage = new BitAiTokenUsage { OutputTokens = 85 },
+        StartedAt = _start,
+        CompletedAt = _start.AddSeconds(2.5),
+        TimeToFirstToken = TimeSpan.FromMilliseconds(500),
+    };
+
+    private static readonly BitAiGenerationMetadata _slowStart = _metadata with { TimeToFirstToken = TimeSpan.FromSeconds(1.5) };
+
+    private BitAiChatSession? _session;
+    private BitAiMessage? _reply;
+
+    private async Task Ask()
+    {
+        await DisposeAsync();
+
+        _reply = null;
+        _session = new BitAiChatSession(E2EAiTransport.For(E2EAiScripts.Usage));
+        _session.StateChanged += OnSessionChanged;
+        _ = _session.SubmitAsync("Which model answered?");
+    }
+
+    private void OnSessionChanged()
+    {
+        _reply = _session?.Conversation.Messages.LastOrDefault(m => m.Role == BitAiRole.Assistant);
+        InvokeAsync(StateHasChanged);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_session is null) return;
+
+        _session.StateChanged -= OnSessionChanged;
+        await _session.DisposeAsync();
+        _session = null;
+    }
+}

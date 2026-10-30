@@ -1,0 +1,126 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every JSON tree,
+// one set on an ancestor the trees inside it, and one set on the Style of a tree that tree and the trees nested in it:
+//   --bit-AiJsonView-font-size        size of the text                                 (default: $tg-fs-sm)
+//   --bit-AiJsonView-line-height      height of a row                                  (default: 1.5)
+//   --bit-AiJsonView-indent           indent of the entries of an open container       (default: spacing(2))
+//   --bit-AiJsonView-key-color        color of the property keys                       (default: $clr-wrn-fg)
+//   --bit-AiJsonView-string-color     color of the string values                       (default: $clr-suc-fg)
+//   --bit-AiJsonView-number-color     color of the number values                       (default: $clr-sec-fg)
+//   --bit-AiJsonView-boolean-color    color of true and false                          (default: $clr-pri-fg)
+//   --bit-AiJsonView-null-color       color of null                                    (default: $clr-fg-ter)
+//   --bit-AiJsonView-toggle-color     color of the chevrons and braces of the toggles  (default: $clr-fg-sec)
+//   --bit-AiJsonView-chevron-size     size of the chevron of a toggle                  (default: $tg-fs-2xs)
+// The tree takes no parameter that sets any of them, so each one restyles every tree it reaches.
+
+.bit-aijsv {
+    font-family: $tg-font-family-mono;
+    font-size: var(--bit-AiJsonView-font-size, #{$tg-fs-sm});
+    line-height: var(--bit-AiJsonView-line-height, 1.5);
+}
+
+// The rows are spans, so a tree written inside a paragraph or a label is still valid markup, drawn as blocks of their
+// own. A long string wraps anywhere rather than widening whatever the tree sits in.
+.bit-aijsv-row {
+    display: block;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.bit-aijsv-grp {
+    display: block;
+    padding-inline-start: var(--bit-AiJsonView-indent, #{spacing(2)});
+}
+
+// The head of a container - its chevron, its key and its brace - is the button that toggles it: nothing of a button's
+// own look is kept but the cursor and the focus ring, so the row reads as the line of JSON it is.
+.bit-aijsv-tgl {
+    margin: 0;
+    padding: 0;
+    border: none;
+    font: inherit;
+    cursor: pointer;
+    text-align: start;
+    white-space: inherit;
+    overflow-wrap: inherit;
+    background-color: transparent;
+    border-radius: $shp-radius-xs;
+    color: var(--bit-AiJsonView-toggle-color, #{$clr-fg-sec});
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+
+    &:disabled,
+    &[aria-disabled="true"] {
+        cursor: default;
+    }
+}
+
+// The turn of an open container is the one change of the chevron that animates: it is the transform, and the mirror of
+// a right-to-left tree below is the scale property, which is not transitioned - so a tree changing direction flips its
+// chevrons at once rather than spinning them round.
+.bit-aijsv-tic {
+    font-size: var(--bit-AiJsonView-chevron-size, #{$tg-fs-2xs});
+    margin-inline-end: spacing(0.5);
+    transition: transform $mot-duration-short $mot-easing;
+}
+
+.bit-aijsv-top {
+    transform: rotate(90deg);
+}
+
+// The chevron of a collapsed container points along the reading direction: on a right-to-left tree it points left.
+// It is mirrored rather than turned: the scale applies after the transform, so an open chevron, turned down first,
+// still points down once mirrored, and the turn opening a container is the mirror image of the left-to-right one.
+// :dir() rather than the bit-rtl class, which only Dir on the tree itself sets, so a page or an ancestor turned right
+// to left turns it too.
+.bit-aijsv-tic:dir(rtl) {
+    scale: -1 1;
+}
+
+// An engine without :dir() drops the rule above, so it reads the class an explicit Dir renders on the tree instead.
+// Only there: the chevrons are deep inside the tree, so a descendant selector would also turn the chevrons of a tree
+// nested in this one that reads the other way, which :dir() gets right wherever it is supported.
+@supports not selector(:dir(rtl)) {
+    .bit-aijsv.bit-rtl .bit-aijsv-tic {
+        scale: -1 1;
+    }
+}
+
+.bit-aijsv-key {
+    color: var(--bit-AiJsonView-key-color, #{$clr-wrn-fg});
+}
+
+.bit-aijsv-str {
+    color: var(--bit-AiJsonView-string-color, #{$clr-suc-fg});
+}
+
+.bit-aijsv-num {
+    color: var(--bit-AiJsonView-number-color, #{$clr-sec-fg});
+}
+
+.bit-aijsv-bln {
+    color: var(--bit-AiJsonView-boolean-color, #{$clr-pri-fg});
+}
+
+.bit-aijsv-nul {
+    color: var(--bit-AiJsonView-null-color, #{$clr-fg-ter});
+}
+
+// A disabled tree keeps its text readable and only says its toggles do nothing.
+.bit-aijsv.bit-dis .bit-aijsv-tgl {
+    color: $clr-fg-dis;
+}
+
+// A forced palette draws every value in the text color, so the toggles are told apart as the buttons they are.
+@media (forced-colors: active) {
+    .bit-aijsv-tgl {
+        color: ButtonText;
+    }
+
+    .bit-aijsv.bit-dis .bit-aijsv-tgl {
+        color: GrayText;
+    }
+}

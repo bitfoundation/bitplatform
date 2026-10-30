@@ -1,4 +1,4 @@
-﻿# bit Brouter
+# bit Brouter
 A modern, declarative, nestable router for Blazor with async guards, data loaders,
 named routes, programmatic navigation, query string binding, and global navigation hooks.
 
@@ -1302,6 +1302,12 @@ anything else. For types outside that set, use Brouter's opt-in `[BrouterQuery]`
 
 > Discovery reflects over the given assemblies, so - like the built-in Blazor `Router` - keep your routable
 > components preserved when trimming.
+
+> A type that can't be loaded - because it, or one of its attributes, needs an assembly that is missing or isn't
+> loaded yet - is skipped, along with any routes it declares, and Brouter logs a warning saying why. On WebAssembly,
+> don't mark an assembly that a scanned assembly's types need as `BlazorWebAssemblyLazyLoad`: discovery reads every
+> type at startup, and once that assembly has failed to load, the scanned assembly's code can't use it even after
+> it's loaded.
 
 ## Migrating from the built-in Router
 

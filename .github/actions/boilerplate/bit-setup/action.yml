@@ -1,0 +1,34 @@
+name: bit setup
+description: Installs the bit CLI, puts it on the PATH and runs bit setup, which installs what a bit Boilerplate project needs and the runner lacks, such as Node.js, the .NET workloads, the Android SDK and Playwright's browsers.
+
+inputs:
+  arguments:
+    description: More arguments for bit setup, e.g. --platforms android --no-build. It always gets --yes, since no one is there to answer its questions.
+    default: ''
+  version:
+    description: The bit CLI's version. It defaults to the bit platform version of this action.
+    default: 11.0.0-pre-15
+
+runs:
+  using: composite
+
+  steps:
+
+    - name: Install the bit CLI
+      shell: pwsh
+      env:
+        BIT_CLI_VERSION: ${{ inputs.version }}
+      run: |
+        $PSNativeCommandUseErrorActionPreference = $true
+        $tools = Join-Path $env:RUNNER_TEMP 'bit-cli'
+        dotnet tool install Bit.Cli --version $env:BIT_CLI_VERSION --tool-path $tools
+        Add-Content $env:GITHUB_PATH $tools
+
+    - name: Run bit setup
+      shell: pwsh
+      env:
+        BIT_SETUP_ARGUMENTS: ${{ inputs.arguments }}
+      run: |
+        $PSNativeCommandUseErrorActionPreference = $true
+        $arguments = @($env:BIT_SETUP_ARGUMENTS -split '\s+' | Where-Object { $_ })
+        bit setup --yes @arguments

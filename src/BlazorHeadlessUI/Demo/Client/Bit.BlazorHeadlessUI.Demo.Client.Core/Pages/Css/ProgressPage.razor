@@ -1,0 +1,629 @@
+﻿@page "/progress"
+@implements IDisposable
+
+<PageTitle>Progress / Meter — bit BlazorHeadlessUI</PageTitle>
+
+<div class="demo-page">
+    <header class="demo-header">
+        <h1>Progress / Meter</h1>
+        <p>Report task completion with a progress bar, or a measurement within a known range with a meter.</p>
+        <SectionSwitcher Slug="progress" />
+    </header>
+
+    <DemoBlock Title="Determinate progress"
+               Code="@_determinateCode"
+               Css="@_determinateCss">
+        <Description>
+            <code>BitBhProgress</code> renders <code>role="progressbar"</code> with
+            <code>aria-valuenow</code>/<code>min</code>/<code>max</code> and a percentage
+            <code>aria-valuetext</code>. It exposes <code>--bit-bh-progress</code> (a unitless 0–100 number) and
+            <code>data-state="loading|complete"</code>; size the <code>BitBhProgressIndicator</code> with
+            <code>calc(var(--bit-bh-progress) * 1%)</code>. Name it with <code>aria-labelledby</code>.
+        </Description>
+        <LiveContent>
+            <div class="progress-card">
+                <div class="progress-header">
+                    <span class="progress-label" id="profile-label">Profile completion</span>
+                    <span class="progress-status">@profile%</span>
+                </div>
+                <BitBhProgress Value="profile" aria-labelledby="profile-label" class="progress">
+                    <BitBhProgressIndicator class="progress-indicator" />
+                </BitBhProgress>
+                <div class="progress-actions">
+                    <button type="button" class="progress-btn" @onclick="() => profile = Math.Max(0, profile - 20)">− 20%</button>
+                    <button type="button" class="progress-btn" @onclick="() => profile = Math.Min(100, profile + 20)">+ 20%</button>
+                </div>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Simulated upload"
+               Code="@_uploadCode"
+               Css="@_uploadCss">
+        <Description>
+            A timer drives <code>Value</code> in megabytes against <code>Max="8"</code>; <code>ValueText</code>
+            turns it into "2.4 of 8 MB uploaded" for screen readers. The upload starts with
+            <code>Value="null"</code> (indeterminate) while "preparing". <code>Template</code> receives the
+            computed percentage (<code>double?</code>) to draw the label inside the bar. The page
+            implements <code>IDisposable</code> to stop the timer.
+        </Description>
+        <LiveContent>
+            <div class="progress-card">
+                <div class="progress-header">
+                    <span class="progress-label" id="upload-label">quarterly-report.pdf</span>
+                    <span class="progress-status">@UploadStatus()</span>
+                </div>
+                <BitBhProgress Value="uploaded" Max="FileSizeMb"
+                            ValueText="@((v, max) => $"{v:0.0} of {max:0} MB uploaded")"
+                            aria-labelledby="upload-label" class="progress progress-lg">
+                    <Template Context="percent">
+                        <BitBhProgressIndicator class="progress-indicator" />
+                        <span class="progress-percent">@(percent is null ? "" : $"{percent:0}%")</span>
+                    </Template>
+                </BitBhProgress>
+                <div class="progress-actions">
+                    <button type="button" class="progress-btn progress-btn-primary"
+                            disabled="@uploading" @onclick="StartUpload">
+                        @(uploaded >= FileSizeMb ? "Upload again" : "Start upload")
+                    </button>
+                    <button type="button" class="progress-btn"
+                            disabled="@(!uploading)" @onclick="CancelUpload">Cancel</button>
+                </div>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Indeterminate"
+               Code="@_indeterminateCode"
+               Css="@_indeterminateCss">
+        <Description>
+            Leave <code>Value</code> unset (<code>null</code>) when the duration is unknown:
+            <code>aria-valuenow</code> is omitted, <code>data-state="indeterminate"</code> is set and
+            <code>--bit-bh-progress</code> is absent, so CSS can switch to an animation. Honor
+            <code>prefers-reduced-motion</code>.
+        </Description>
+        <LiveContent>
+            <div class="progress-card">
+                <div class="progress-header">
+                    <span class="progress-label" id="sync-label">Syncing mailbox</span>
+                    <span class="progress-status">Waiting for the server…</span>
+                </div>
+                <BitBhProgress aria-labelledby="sync-label" class="progress">
+                    <BitBhProgressIndicator class="progress-indicator" />
+                </BitBhProgress>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Meter: disk usage"
+               Code="@_meterCode"
+               Css="@_meterCss">
+        <Description>
+            <code>BitBhMeter</code> (<code>role="meter"</code>) shows a scalar within a known range — not task
+            progress. <code>Low</code> and <code>High</code> split the range into
+            <code>data-level="low|optimum|high"</code>, and <code>--bit-bh-meter</code> (0–100) sizes the fill.
+            <code>ValueText</code> gives a readable value.
+        </Description>
+        <LiveContent>
+            <ul class="meter-list">
+                @foreach (var drive in drives)
+                {
+                    <li class="meter-row">
+                        <div class="progress-header">
+                            <span class="progress-label" id="@($"drive-{drive.Id}")">@drive.Name</span>
+                            <span class="progress-status">@drive.Used of 256 GB</span>
+                        </div>
+                        <BitBhMeter Value="drive.Used" Max="256" Low="64" High="200"
+                                 ValueText="@(v => $"{v} of 256 GB used")"
+                                 aria-labelledby="@($"drive-{drive.Id}")" class="meter">
+                            <span class="meter-fill"></span>
+                        </BitBhMeter>
+                    </li>
+                }
+            </ul>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Meter: password strength"
+               Code="@_strengthCode"
+               Css="@_strengthCss">
+        <Description>
+            A 0–4 score with <code>Low="2"</code> and <code>High="3"</code>: weak scores are
+            <code>low</code>, fair ones <code>optimum</code>, a full score <code>high</code>.
+            <code>BitBhMeter</code>'s <code>Template</code> receives the percentage, used here to fill
+            four segments.
+        </Description>
+        <LiveContent>
+            <div class="strength">
+                <label for="pw" class="progress-label">Choose a password</label>
+                <input id="pw" type="password" class="strength-input" autocomplete="new-password"
+                       @bind="password" @bind:event="oninput" aria-describedby="pw-strength" />
+                <BitBhMeter Value="Score()" Max="4" Low="2" High="3"
+                         ValueText="@(v => StrengthLabels[(int)v])"
+                         aria-label="Password strength" class="strength-meter">
+                    <Template Context="percent">
+                        @for (var i = 1; i <= 4; i++)
+                        {
+                            <span class="strength-segment" data-filled="@(percent >= i * 25)"></span>
+                        }
+                    </Template>
+                </BitBhMeter>
+                <span class="progress-status" id="pw-strength">Strength: <strong>@(StrengthLabels[Score()])</strong></span>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+</div>
+
+@code {
+    // Determinate
+    private double profile = 60;
+
+    // Simulated upload
+    private const double FileSizeMb = 8;
+    private double? uploaded = 0;
+    private bool uploading;
+    private int uploadTicks;
+    private System.Threading.Timer? uploadTimer;
+
+    // Meter
+    private readonly (string Id, string Name, double Used)[] drives =
+        [("system", "System", 231), ("projects", "Projects", 118), ("backup", "Backup", 37)];
+
+    // Password strength
+    private string password = "";
+    private static readonly string[] StrengthLabels = ["Very weak", "Weak", "Fair", "Good", "Strong"];
+
+    private string UploadStatus()
+    {
+        if (uploaded is null) return "Preparing…";
+        if (uploaded >= FileSizeMb) return "Complete";
+        if (!uploading) return "Ready";
+        return $"{uploaded:0.0} of {FileSizeMb:0} MB";
+    }
+
+    private void StartUpload()
+    {
+        uploadTimer?.Dispose();
+        uploading = true;
+        uploaded = null;   // indeterminate while "preparing"
+        uploadTicks = 0;
+        uploadTimer = new System.Threading.Timer(_ => InvokeAsync(UploadTick), null, 150, 150);
+    }
+
+    private void UploadTick()
+    {
+        if (!uploading) return;
+        uploadTicks++;
+        if (uploadTicks > 6)   // ~1 s of "preparing" first
+        {
+            uploaded = Math.Min(FileSizeMb, (uploaded ?? 0) + 0.2);
+            if (uploaded >= FileSizeMb) StopTimer();
+        }
+        StateHasChanged();
+    }
+
+    private void CancelUpload()
+    {
+        StopTimer();
+        uploaded = 0;
+    }
+
+    private void StopTimer()
+    {
+        uploading = false;
+        uploadTimer?.Dispose();
+        uploadTimer = null;
+    }
+
+    public void Dispose() => uploadTimer?.Dispose();
+
+    private int Score()
+    {
+        if (password.Length == 0) return 0;
+        var score = 0;
+        if (password.Length >= 8) score++;
+        if (password.Any(char.IsUpper) && password.Any(char.IsLower)) score++;
+        if (password.Any(char.IsDigit)) score++;
+        if (password.Any(c => !char.IsLetterOrDigit(c))) score++;
+        return score;
+    }
+
+    // ── Source snippets shown alongside each live demo ─────────────────────────
+
+    private const string _determinateCode = """
+<div class="progress-card">
+    <div class="progress-header">
+        <span class="progress-label" id="profile-label">Profile completion</span>
+        <span class="progress-status">@profile%</span>
+    </div>
+    <BitBhProgress Value="profile" aria-labelledby="profile-label" class="progress">
+        <BitBhProgressIndicator class="progress-indicator" />
+    </BitBhProgress>
+    <div class="progress-actions">
+        <button type="button" class="progress-btn" @onclick="() => profile = Math.Max(0, profile - 20)">− 20%</button>
+        <button type="button" class="progress-btn" @onclick="() => profile = Math.Min(100, profile + 20)">+ 20%</button>
+    </div>
+</div>
+
+@code {
+    private double profile = 60;
+}
+""";
+
+    private const string _uploadCode = """
+@implements IDisposable
+
+<div class="progress-card">
+    <div class="progress-header">
+        <span class="progress-label" id="upload-label">quarterly-report.pdf</span>
+        <span class="progress-status">@UploadStatus()</span>
+    </div>
+    <BitBhProgress Value="uploaded" Max="FileSizeMb"
+                ValueText="@((v, max) => $"{v:0.0} of {max:0} MB uploaded")"
+                aria-labelledby="upload-label" class="progress progress-lg">
+        <Template Context="percent">
+            <BitBhProgressIndicator class="progress-indicator" />
+            <span class="progress-percent">@(percent is null ? "" : $"{percent:0}%")</span>
+        </Template>
+    </BitBhProgress>
+    <div class="progress-actions">
+        <button type="button" class="progress-btn progress-btn-primary"
+                disabled="@uploading" @onclick="StartUpload">
+            @(uploaded >= FileSizeMb ? "Upload again" : "Start upload")
+        </button>
+        <button type="button" class="progress-btn"
+                disabled="@(!uploading)" @onclick="CancelUpload">Cancel</button>
+    </div>
+</div>
+
+@code {
+    private const double FileSizeMb = 8;
+    private double? uploaded = 0;          // null = indeterminate
+    private bool uploading;
+    private int uploadTicks;
+    private System.Threading.Timer? uploadTimer;
+
+    private string UploadStatus()
+    {
+        if (uploaded is null) return "Preparing…";
+        if (uploaded >= FileSizeMb) return "Complete";
+        if (!uploading) return "Ready";
+        return $"{uploaded:0.0} of {FileSizeMb:0} MB";
+    }
+
+    private void StartUpload()
+    {
+        uploadTimer?.Dispose();
+        uploading = true;
+        uploaded = null;   // indeterminate while "preparing"
+        uploadTicks = 0;
+        uploadTimer = new System.Threading.Timer(_ => InvokeAsync(UploadTick), null, 150, 150);
+    }
+
+    private void UploadTick()
+    {
+        if (!uploading) return;
+        uploadTicks++;
+        if (uploadTicks > 6)   // ~1 s of "preparing" first
+        {
+            uploaded = Math.Min(FileSizeMb, (uploaded ?? 0) + 0.2);
+            if (uploaded >= FileSizeMb) StopTimer();
+        }
+        StateHasChanged();
+    }
+
+    private void CancelUpload()
+    {
+        StopTimer();
+        uploaded = 0;
+    }
+
+    private void StopTimer()
+    {
+        uploading = false;
+        uploadTimer?.Dispose();
+        uploadTimer = null;
+    }
+
+    public void Dispose() => uploadTimer?.Dispose();
+}
+""";
+
+    private const string _indeterminateCode = """
+<div class="progress-card">
+    <div class="progress-header">
+        <span class="progress-label" id="sync-label">Syncing mailbox</span>
+        <span class="progress-status">Waiting for the server…</span>
+    </div>
+    @* No Value: indeterminate *@
+    <BitBhProgress aria-labelledby="sync-label" class="progress">
+        <BitBhProgressIndicator class="progress-indicator" />
+    </BitBhProgress>
+</div>
+""";
+
+    private const string _meterCode = """
+<ul class="meter-list">
+    @foreach (var drive in drives)
+    {
+        <li class="meter-row">
+            <div class="progress-header">
+                <span class="progress-label" id="@($"drive-{drive.Id}")">@drive.Name</span>
+                <span class="progress-status">@drive.Used of 256 GB</span>
+            </div>
+            <BitBhMeter Value="drive.Used" Max="256" Low="64" High="200"
+                     ValueText="@(v => $"{v} of 256 GB used")"
+                     aria-labelledby="@($"drive-{drive.Id}")" class="meter">
+                <span class="meter-fill"></span>
+            </BitBhMeter>
+        </li>
+    }
+</ul>
+
+@code {
+    private readonly (string Id, string Name, double Used)[] drives =
+        [("system", "System", 231), ("projects", "Projects", 118), ("backup", "Backup", 37)];
+}
+""";
+
+    private const string _strengthCode = """
+<div class="strength">
+    <label for="pw" class="progress-label">Choose a password</label>
+    <input id="pw" type="password" class="strength-input" autocomplete="new-password"
+           @bind="password" @bind:event="oninput" aria-describedby="pw-strength" />
+    <BitBhMeter Value="Score()" Max="4" Low="2" High="3"
+             ValueText="@(v => StrengthLabels[(int)v])"
+             aria-label="Password strength" class="strength-meter">
+        <Template Context="percent">
+            @for (var i = 1; i <= 4; i++)
+            {
+                <span class="strength-segment" data-filled="@(percent >= i * 25)"></span>
+            }
+        </Template>
+    </BitBhMeter>
+    <span class="progress-status" id="pw-strength">Strength: <strong>@(StrengthLabels[Score()])</strong></span>
+</div>
+
+@code {
+    private string password = "";
+    private static readonly string[] StrengthLabels = ["Very weak", "Weak", "Fair", "Good", "Strong"];
+
+    private int Score()
+    {
+        if (password.Length == 0) return 0;
+        var score = 0;
+        if (password.Length >= 8) score++;
+        if (password.Any(char.IsUpper) && password.Any(char.IsLower)) score++;
+        if (password.Any(char.IsDigit)) score++;
+        if (password.Any(c => !char.IsLetterOrDigit(c))) score++;
+        return score;
+    }
+}
+""";
+
+    // ── CSS (mirrors wwwroot/demos/progress.css) ───────────────────────────────
+
+    private const string _progressCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.progress {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 0.6rem;
+    border-radius: 999px;
+    background: #e4e4e7;
+}
+
+/* --bit-bh-progress is a unitless 0–100 number set inline by BitBhProgress and
+   BitBhProgressIndicator; multiply by 1% to size the fill. */
+.progress-indicator {
+    width: calc(var(--bit-bh-progress, 0) * 1%);
+    height: 100%;
+    border-radius: inherit;
+    background: #2563eb;
+    transition: width 250ms ease, background-color 250ms ease;
+}
+
+/* data-state="loading | complete | indeterminate" */
+.progress-indicator[data-state="complete"] { background: #16a34a; }
+""";
+
+    private const string _cardCss = """
+
+
+/* Labelled card around the bar */
+.progress-card {
+    display: grid;
+    gap: 0.6rem;
+    width: 100%;
+    max-width: 24rem;
+    padding: 1rem;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.6rem;
+    background: #fff;
+}
+
+.progress-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.875rem;
+}
+
+.progress-label { font-weight: 600; color: #18181b; }
+
+.progress-status {
+    color: #71717a;
+    font-size: 0.8rem;
+    font-variant-numeric: tabular-nums;
+}
+""";
+
+    private const string _buttonsCss = """
+
+
+.progress-actions { display: flex; gap: 0.5rem; }
+
+.progress-btn {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.45rem;
+    background: #fff;
+    color: #3f3f46;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.progress-btn:hover         { background: #f4f4f5; }
+.progress-btn:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+.progress-btn:disabled      { opacity: 0.5; cursor: not-allowed; }
+""";
+
+    private const string _indeterminateRulesCss = """
+
+
+.progress-indicator[data-state="indeterminate"] {
+    width: 40%;
+    animation: progress-demo-slide 1.2s ease-in-out infinite;
+}
+
+@keyframes progress-demo-slide {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(250%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .progress-indicator[data-state="indeterminate"] { animation-duration: 3s; }
+}
+""";
+
+    private const string _determinateCss = _progressCss + _cardCss + _buttonsCss;
+
+    private const string _uploadCss = _progressCss + _indeterminateRulesCss + """
+
+
+/* Tall bar with the percentage drawn through BitBhProgress's Template */
+.progress-lg { height: 1.25rem; }
+
+.progress-lg .progress-indicator                         { background: #bfdbfe; }
+.progress-lg .progress-indicator[data-state="complete"]  { background: #bbf7d0; }
+
+.progress-percent {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 0.6rem;
+    color: #1e3a8a;
+    font-size: 0.72rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+""" + _cardCss + _buttonsCss + """
+
+
+.progress-btn-primary       { background: #2563eb; border-color: #2563eb; color: #fff; }
+.progress-btn-primary:hover { background: #1d4ed8; }
+""";
+
+    private const string _indeterminateCss = _progressCss + _indeterminateRulesCss + _cardCss;
+
+    private const string _meterCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.meter {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: #e4e4e7;
+}
+
+/* --bit-bh-meter (0–100) is set inline on the meter and inherited by the fill. */
+.meter-fill {
+    display: block;
+    width: calc(var(--bit-bh-meter) * 1%);
+    height: 100%;
+    border-radius: inherit;
+    background: #2563eb;
+    transition: width 250ms ease, background-color 250ms ease;
+}
+
+/* data-level="low | optimum | high" (below Low / between / above High) */
+.meter[data-level="low"]  .meter-fill { background: #16a34a; }
+.meter[data-level="high"] .meter-fill { background: #dc2626; }
+
+.meter-list {
+    display: grid;
+    gap: 1rem;
+    width: 100%;
+    max-width: 24rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.meter-row { display: grid; gap: 0.4rem; }
+
+.progress-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.875rem;
+}
+
+.progress-label  { font-weight: 600; color: #18181b; }
+.progress-status { color: #71717a; font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+""";
+
+    private const string _strengthCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.strength {
+    display: grid;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 20rem;
+}
+
+.strength-input {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d4d4d8;
+    border-radius: 0.45rem;
+    background: #fff;
+    font: inherit;
+    font-size: 0.9rem;
+}
+
+.strength-input:focus-visible { outline: 2px solid #2563eb; outline-offset: 1px; }
+
+/* BitBhMeter root laid out as four segments */
+.strength-meter {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.3rem;
+}
+
+.strength-segment {
+    height: 0.375rem;
+    border-radius: 999px;
+    background: #e4e4e7;
+    transition: background-color 200ms ease;
+}
+
+/* data-level from Low="2" / High="3"; data-filled from the Template */
+.strength-meter[data-level="low"]     .strength-segment[data-filled] { background: #dc2626; }
+.strength-meter[data-level="optimum"] .strength-segment[data-filled] { background: #d97706; }
+.strength-meter[data-level="high"]    .strength-segment[data-filled] { background: #16a34a; }
+
+.progress-label  { font-weight: 600; color: #18181b; }
+.progress-status { color: #71717a; font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+""";
+}

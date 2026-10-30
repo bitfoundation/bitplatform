@@ -1,0 +1,14 @@
+﻿// A plain element of this page, so it carries the scope attribute itself and is styled without ::deep.
+.turn {
+    gap: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    margin-block-end: 1rem;
+}
+
+::deep {
+    .custom-placeholder {
+        font-style: italic;
+        border-style: dashed;
+    }
+}

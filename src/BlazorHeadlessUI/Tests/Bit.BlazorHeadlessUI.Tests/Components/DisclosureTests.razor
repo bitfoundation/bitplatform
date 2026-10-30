@@ -1,0 +1,142 @@
+﻿@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    [TestMethod]
+    public void Disclosure_button_controls_its_panel()
+    {
+        var cut = Render(
+            @<BitBhDisclosure>
+                <BitBhDisclosureButton>Details</BitBhDisclosureButton>
+                <BitBhDisclosurePanel>Hidden details</BitBhDisclosurePanel>
+            </BitBhDisclosure>);
+
+        var button = cut.Find("button");
+        Assert.AreEqual("false", button.GetAttribute("aria-expanded"));
+        // Closed panels stay in the DOM (for exit animations / find-in-page) but hidden.
+        Assert.IsTrue(cut.Find($"[id='{button.GetAttribute("aria-controls")}']").HasAttribute("hidden"));
+
+        button.Click();
+        button = cut.Find("button");
+        Assert.AreEqual("true", button.GetAttribute("aria-expanded"));
+        var panel = cut.Find($"[id='{button.GetAttribute("aria-controls")}']");
+        Assert.IsFalse(panel.HasAttribute("hidden"));
+        Assert.AreEqual("Hidden details", panel.TextContent);
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Collapsible_trigger_toggles_and_reports_state()
+    {
+        var changes = new List<bool>();
+        var cut = Render(
+            @<BitBhCollapsible OnOpenChange="o => changes.Add(o)">
+                <BitBhCollapsibleTrigger>More</BitBhCollapsibleTrigger>
+                <BitBhCollapsibleContent>Body</BitBhCollapsibleContent>
+            </BitBhCollapsible>);
+
+        cut.Find("button").Click();
+        Assert.AreEqual("open", cut.Find("button").GetAttribute("data-state"));
+        Assert.AreEqual("true", cut.Find("button").GetAttribute("aria-expanded"));
+        cut.Find("button").Click();
+        Assert.AreSequenceEqual(new[] { true, false }, changes);
+    }
+
+    [TestMethod]
+    public void Disabled_collapsible_does_not_toggle()
+    {
+        var cut = Render(
+            @<BitBhCollapsible Disabled="true">
+                <BitBhCollapsibleTrigger>More</BitBhCollapsibleTrigger>
+                <BitBhCollapsibleContent>Body</BitBhCollapsibleContent>
+            </BitBhCollapsible>);
+        Assert.IsTrue(cut.Find("button").HasAttribute("disabled"));
+        Assert.AreEqual("false", cut.Find("button").GetAttribute("aria-expanded"));
+    }
+
+    private RenderFragment Accordion(BitBhAccordionType type = BitBhAccordionType.Single, bool collapsible = false) =>
+        @<BitBhAccordion Type="type" Collapsible="collapsible">
+            @foreach (var (value, title) in new[] { ("a", "Shipping"), ("b", "Returns"), ("c", "Warranty") })
+            {
+                <BitBhAccordionItem Value="@value" Disabled="@(value == "b")">
+                    <BitBhAccordionHeader>
+                        <BitBhAccordionTrigger>@title</BitBhAccordionTrigger>
+                    </BitBhAccordionHeader>
+                    <BitBhAccordionContent>@title content</BitBhAccordionContent>
+                </BitBhAccordionItem>
+            }
+        </BitBhAccordion>;
+
+    [TestMethod]
+    public void Accordion_triggers_are_headed_buttons_controlling_regions()
+    {
+        var cut = Render(Accordion());
+        var triggers = cut.FindAll("button");
+        Assert.AreEqual(3, triggers.Count);
+        foreach (var t in triggers) Assert.AreEqual("heading", t.ParentElement!.Role());
+        foreach (var t in triggers) Assert.AreEqual("false", t.GetAttribute("aria-expanded"));
+
+        triggers[0].Click();
+        var trigger = cut.FindAll("button")[0];
+        Assert.AreEqual("true", trigger.GetAttribute("aria-expanded"));
+        var region = cut.Find($"[id='{trigger.GetAttribute("aria-controls")}']");
+        Assert.AreEqual("region", region.GetAttribute("role"));
+        Assert.AreEqual("Shipping", region.AccessibleName());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Single_accordion_closes_the_other_item_and_locks_open_when_not_collapsible()
+    {
+        var cut = Render(Accordion());
+        cut.FindAll("button")[0].Click();
+        cut.FindAll("button")[2].Click();
+        Assert.AreEqual("false", cut.FindAll("button")[0].GetAttribute("aria-expanded"));
+        Assert.AreEqual("true", cut.FindAll("button")[2].GetAttribute("aria-expanded"));
+
+        // Not collapsible: the open panel's trigger can't close it (aria-disabled per APG).
+        cut.FindAll("button")[2].Click();
+        Assert.AreEqual("true", cut.FindAll("button")[2].GetAttribute("aria-expanded"));
+        Assert.AreEqual("true", cut.FindAll("button")[2].GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void Collapsible_single_accordion_can_close_everything()
+    {
+        var cut = Render(Accordion(collapsible: true));
+        cut.FindAll("button")[0].Click();
+        cut.FindAll("button")[0].Click();
+        Assert.AreEqual("false", cut.FindAll("button")[0].GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void Multiple_accordion_keeps_several_items_open()
+    {
+        var cut = Render(Accordion(BitBhAccordionType.Multiple));
+        cut.FindAll("button")[0].Click();
+        cut.FindAll("button")[2].Click();
+        Assert.AreEqual("true", cut.FindAll("button")[0].GetAttribute("aria-expanded"));
+        Assert.AreEqual("true", cut.FindAll("button")[2].GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void Arrow_keys_move_between_enabled_triggers()
+    {
+        var cut = Render(Accordion());
+        cut.FindAll("button")[0].Press("ArrowDown");
+        Assert.AreEqual(cut.FindAll("button")[2].Id, this.LastFocusRequest());
+        cut.FindAll("button")[2].Press("Home");
+        Assert.AreEqual(cut.FindAll("button")[0].Id, this.LastFocusRequest());
+        cut.FindAll("button")[0].Press("End");
+        Assert.AreEqual(cut.FindAll("button")[2].Id, this.LastFocusRequest());
+    }
+
+    [TestMethod]
+    public void Disabled_item_cannot_be_opened()
+    {
+        var cut = Render(Accordion());
+        cut.FindAll("button")[1].Click();
+        Assert.AreEqual("false", cut.FindAll("button")[1].GetAttribute("aria-expanded"));
+        Assert.IsTrue(cut.FindAll("button")[1].HasAttribute("disabled") || cut.FindAll("button")[1].GetAttribute("aria-disabled") == "true");
+    }
+}

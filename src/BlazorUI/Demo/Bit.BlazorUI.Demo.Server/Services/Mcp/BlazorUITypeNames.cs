@@ -66,28 +66,72 @@ public static class BlazorUITypeNames
         return constraints.Count == 0 ? null : $"where {argument.Name} : {string.Join(", ", constraints)}";
     }
 
-    public static string Of(Type type)
+    public static string Of(Type type) => Of(type, null);
+
+    /// <summary>
+    /// The type of a method's parameter or of its return value, with the <c>?</c> its nullable
+    /// annotations put on a reference type. A signature is read for which arguments may be null, and
+    /// <c>string name = null</c> reads as a contradiction where <c>string? name = null</c> is what the
+    /// method declares.
+    /// <para>
+    /// The <c>?</c> of an argument is whether a caller may pass null, which is the write state rather
+    /// than the read state: the two part under <c>[AllowNull] string name</c>, which takes the null its
+    /// type does not show, and <c>[DisallowNull] string? name</c>, which turns one down. What comes back
+    /// - the return value, an <c>out</c> argument - is read, so it is the read state.
+    /// </para>
+    /// <para>
+    /// <paramref name="context"/> is one context reused across the parameters of a whole listing: it
+    /// caches what it has read off each member, and one per parameter re-reads them every time.
+    /// </para>
+    /// </summary>
+    public static string Of(ParameterInfo parameter, NullabilityInfoContext? context = null)
+    {
+        NullabilityInfo? nullability;
+
+        try
+        {
+            nullability = (context ?? new NullabilityInfoContext()).Create(parameter);
+        }
+        catch (Exception)
+        {
+            // A parameter whose annotations cannot be read is still named, just without them.
+            nullability = null;
+        }
+
+        var state = parameter.Position >= 0 && parameter.IsOut is false ? nullability?.WriteState : nullability?.ReadState;
+
+        return Of(parameter.ParameterType.IsByRef ? parameter.ParameterType.GetElementType()! : parameter.ParameterType, nullability, state);
+    }
+
+    private static string Of(Type type, NullabilityInfo? nullability) => Of(type, nullability, nullability?.ReadState);
+
+    private static string Of(Type type, NullabilityInfo? nullability, NullabilityState? state)
     {
         var nullable = Nullable.GetUnderlyingType(type);
 
         if (nullable is not null) return $"{Of(nullable)}?";
 
-        if (_aliases.TryGetValue(type, out var alias)) return alias;
+        var annotated = type.IsValueType is false && state is NullabilityState.Nullable ? "?" : null;
 
-        if (type.IsArray) return $"{Of(type.GetElementType()!)}[]";
+        if (_aliases.TryGetValue(type, out var alias)) return $"{alias}{annotated}";
+
+        if (type.IsArray) return $"{Of(type.GetElementType()!, nullability?.ElementType)}[]{annotated}";
 
         if (type.IsGenericType)
         {
             var name = type.Name[..type.Name.IndexOf('`', StringComparison.Ordinal)];
+            var arguments = type.GetGenericArguments();
+            var annotations = nullability?.GenericTypeArguments.Length == arguments.Length ? nullability.GenericTypeArguments : null;
+            var names = arguments.Select((argument, i) => Of(argument, annotations?[i]));
 
             // A tuple is written as a tuple: `(double, double, double)` is what a caller declares
             // the variable as, and `ValueTuple<double, double, double>` is the name of the type
             // behind it rather than anything anyone writes.
             return name == "ValueTuple"
-                ? $"({string.Join(", ", type.GetGenericArguments().Select(Of))})"
-                : $"{name}<{string.Join(", ", type.GetGenericArguments().Select(Of))}>";
+                ? $"({string.Join(", ", names)})"
+                : $"{name}<{string.Join(", ", names)}>{annotated}";
         }
 
-        return type.Name;
+        return $"{type.Name}{annotated}";
     }
 }

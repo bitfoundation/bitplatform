@@ -1,0 +1,135 @@
+﻿@page "/tw/alert-dialog"
+
+<PageTitle>Alert Dialog — bit BlazorHeadlessUI · Tailwind</PageTitle>
+
+<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
+    <header class="mb-12">
+        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">Alert Dialog</h1>
+        <p class="mt-2 text-zinc-500">A modal that interrupts the user and expects a deliberate response. No overlay-click dismiss.</p>
+        <TwSectionSwitcher Slug="alert-dialog" />
+    </header>
+
+    <TwDemoBlock Title="Basic Alert Dialog" Code="@_basicCode">
+        <Description>Overlay click does <strong>not</strong> dismiss. Focus lands on Cancel, Escape closes, focus returns to the trigger.</Description>
+        <LiveContent>
+            <BitBhAlertDialog>
+                <BitBhAlertDialogTrigger class="inline-flex items-center gap-2 rounded-lg border border-red-600 bg-red-600 px-4 py-2 text-sm font-medium text-white cursor-pointer hover:bg-red-700">
+                    Delete account
+                </BitBhAlertDialogTrigger>
+                <BitBhAlertDialogOverlay class="bg-black/50" />
+                <BitBhAlertDialogContent class="w-[calc(100vw-2rem)] max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
+                    <BitBhAlertDialogTitle class="text-lg font-semibold text-zinc-900">Are you absolutely sure?</BitBhAlertDialogTitle>
+                    <BitBhAlertDialogDescription class="text-sm text-zinc-500">
+                        This action cannot be undone. This will permanently delete your
+                        account and remove your data from our servers.
+                    </BitBhAlertDialogDescription>
+                    <div class="mt-2 flex justify-end gap-2">
+                        <BitBhAlertDialogCancel class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">
+                            Cancel
+                        </BitBhAlertDialogCancel>
+                        <BitBhAlertDialogAction OnClick="HandleDelete"
+                                             class="inline-flex items-center gap-2 rounded-lg border border-red-600 bg-red-600 px-4 py-2 text-sm font-medium text-white cursor-pointer hover:bg-red-700">
+                            Yes, delete account
+                        </BitBhAlertDialogAction>
+                    </div>
+                </BitBhAlertDialogContent>
+            </BitBhAlertDialog>
+            <span class="text-sm text-zinc-500">@basicResult</span>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Controlled state" Code="@_controlledCode">
+        <Description>Drive open state with <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Open</code> + <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">OnOpenChange</code>.</Description>
+        <LiveContent>
+            <BitBhButton OnClick="() => discardOpen = true"
+                      class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">
+                Discard changes
+            </BitBhButton>
+            <span class="text-sm text-zinc-500">@discardResult</span>
+            <BitBhAlertDialog Open="discardOpen" OnOpenChange="v => discardOpen = v">
+                <BitBhAlertDialogOverlay class="bg-black/50" />
+                <BitBhAlertDialogContent class="w-[calc(100vw-2rem)] max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
+                    <BitBhAlertDialogTitle class="text-lg font-semibold text-zinc-900">Discard changes?</BitBhAlertDialogTitle>
+                    <BitBhAlertDialogDescription class="text-sm text-zinc-500">
+                        You have unsaved changes. If you leave now, they will be lost.
+                    </BitBhAlertDialogDescription>
+                    <div class="mt-2 flex justify-end gap-2">
+                        <BitBhAlertDialogCancel OnClick='() => discardResult = "Kept editing."'
+                                             class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">
+                            Keep editing
+                        </BitBhAlertDialogCancel>
+                        <BitBhAlertDialogAction OnClick='() => discardResult = "Changes discarded."'
+                                             class="inline-flex items-center gap-2 rounded-lg border border-red-600 bg-red-600 px-4 py-2 text-sm font-medium text-white cursor-pointer hover:bg-red-700">
+                            Discard
+                        </BitBhAlertDialogAction>
+                    </div>
+                </BitBhAlertDialogContent>
+            </BitBhAlertDialog>
+        </LiveContent>
+    </TwDemoBlock>
+</div>
+
+@code {
+    private bool discardOpen;
+    private string? basicResult;
+    private string? discardResult;
+
+    private void HandleDelete() => basicResult = "Account deleted (just kidding).";
+
+    private const string _basicCode = """
+<BitBhAlertDialog>
+    <BitBhAlertDialogTrigger class="inline-flex items-center gap-2 rounded-lg border border-red-600 bg-red-600 px-4 py-2 text-sm font-medium text-white cursor-pointer hover:bg-red-700">
+        Delete account
+    </BitBhAlertDialogTrigger>
+    <BitBhAlertDialogOverlay class="bg-black/50" />
+    <BitBhAlertDialogContent class="w-[calc(100vw-2rem)] max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
+        <BitBhAlertDialogTitle class="text-lg font-semibold text-zinc-900">Are you absolutely sure?</BitBhAlertDialogTitle>
+        <BitBhAlertDialogDescription class="text-sm text-zinc-500">
+            This action cannot be undone. This will permanently delete your
+            account and remove your data from our servers.
+        </BitBhAlertDialogDescription>
+        <div class="mt-2 flex justify-end gap-2">
+            <BitBhAlertDialogCancel class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">
+                Cancel
+            </BitBhAlertDialogCancel>
+            <BitBhAlertDialogAction OnClick="HandleDelete"
+                                 class="inline-flex items-center gap-2 rounded-lg border border-red-600 bg-red-600 px-4 py-2 text-sm font-medium text-white cursor-pointer hover:bg-red-700">
+                Yes, delete account
+            </BitBhAlertDialogAction>
+        </div>
+    </BitBhAlertDialogContent>
+</BitBhAlertDialog>
+
+@code {
+    private void HandleDelete() { /* perform the destructive action */ }
+}
+""";
+
+    private const string _controlledCode = """
+<BitBhButton OnClick="() => isOpen = true"
+          class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">
+    Discard changes
+</BitBhButton>
+<BitBhAlertDialog Open="isOpen" OnOpenChange="v => isOpen = v">
+    <BitBhAlertDialogOverlay class="bg-black/50" />
+    <BitBhAlertDialogContent class="w-[calc(100vw-2rem)] max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
+        <BitBhAlertDialogTitle class="text-lg font-semibold text-zinc-900">Discard changes?</BitBhAlertDialogTitle>
+        <BitBhAlertDialogDescription class="text-sm text-zinc-500">
+            You have unsaved changes. If you leave now, they will be lost.
+        </BitBhAlertDialogDescription>
+        <div class="mt-2 flex justify-end gap-2">
+            <BitBhAlertDialogCancel class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">
+                Keep editing
+            </BitBhAlertDialogCancel>
+            <BitBhAlertDialogAction class="inline-flex items-center gap-2 rounded-lg border border-red-600 bg-red-600 px-4 py-2 text-sm font-medium text-white cursor-pointer hover:bg-red-700">
+                Discard
+            </BitBhAlertDialogAction>
+        </div>
+    </BitBhAlertDialogContent>
+</BitBhAlertDialog>
+
+@code {
+    private bool isOpen;
+}
+""";
+}

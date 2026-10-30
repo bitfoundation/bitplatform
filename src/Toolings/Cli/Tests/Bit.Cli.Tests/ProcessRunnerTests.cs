@@ -7,6 +7,21 @@ namespace Bit.Cli.Tests;
 public class ProcessRunnerTests
 {
     [TestMethod]
+    public void Attempt_Should_SayWhereAndWithWhatButNotTheStandardInput()
+    {
+        var spec = new ProcessSpec
+        {
+            FileName = "gh",
+            Arguments = ["secret", "set", "APP_CERTIFICATE", "--repo", "contoso/shop"],
+            WorkingDirectory = "/src/shop",
+            Environment = new Dictionary<string, string?> { ["DOTNET_NOLOGO"] = "1", ["GIT_CONFIG_COUNT"] = "2", ["ANDROID_HOME"] = "/opt/android", ["JAVA_HOME"] = null },
+            StandardInput = "-----BEGIN CERTIFICATE-----"
+        };
+
+        Assert.AreEqual("bit ran this in /src/shop, with ANDROID_HOME=/opt/android, answering its prompts on standard input: gh secret set APP_CERTIFICATE --repo contoso/shop", spec.Attempt);
+    }
+
+    [TestMethod]
     public async Task AMissingCommand_Should_BeReportedAsNotFound()
     {
         var runner = new ProcessRunner(CliEnvironment.FromProcess(), CliLog.None);

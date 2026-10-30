@@ -1,0 +1,82 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every citation
+// marker, one set on an ancestor the markers inside it, and one set on the Style of an instance that one alone:
+//   --bit-AiCitationMarker-color               number at rest                       (default: $clr-pri-fg)
+//   --bit-AiCitationMarker-background          chip at rest                         (default: $clr-pri-tint)
+//   --bit-AiCitationMarker-hover-color         number under the pointer             (default: $clr-pri-text)
+//   --bit-AiCitationMarker-hover-background    chip under the pointer               (default: $clr-pri)
+//   --bit-AiCitationMarker-radius              corner of the chip                   (default: $shp-radius-xs)
+
+// The paint the hover state moves the marker to (see the state rule below), unset on every marker so a marker never
+// inherits the state of another one.
+$aicmk-private-properties: sfg, sbg;
+
+.bit-aicmk {
+    @each $name in $aicmk-private-properties {
+        --bit-aicmk-#{$name}: initial;
+    }
+    // Sized in em of the text it sits in rather than off the type ramp: a marker follows the claim it attributes,
+    // in a heading as in a footnote, and is set as a superscript of it.
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: 1.15em;
+    height: 1.15em;
+    padding: 0 0.3em;
+    margin: 0 0.12em;
+    border: none;
+    font-family: inherit;
+    font-size: 0.7em;
+    font-weight: $tg-fw-semibold;
+    line-height: 1;
+    vertical-align: super;
+    cursor: pointer;
+    text-decoration: none;
+    font-variant-numeric: tabular-nums;
+    border-radius: var(--bit-AiCitationMarker-radius, #{$shp-radius-xs});
+    color: var(--bit-aicmk-sfg, var(--bit-AiCitationMarker-color, #{$clr-pri-fg}));
+    background-color: var(--bit-aicmk-sbg, var(--bit-AiCitationMarker-background, #{$clr-pri-tint}));
+    transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
+
+    &:hover {
+        --bit-aicmk-sfg: var(--bit-AiCitationMarker-hover-color, #{$clr-pri-text});
+        --bit-aicmk-sbg: var(--bit-AiCitationMarker-hover-background, #{$clr-pri});
+    }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+
+    &:disabled,
+    &[aria-disabled="true"] {
+        cursor: default;
+        color: $clr-pri-dis-text;
+        background-color: $clr-pri-dis;
+    }
+}
+
+@media (forced-colors: active) {
+    // The chip is a fill and nothing else, which the mode takes away, so the button is given the edge of one.
+    .bit-aicmk {
+        border: $shp-border-width $shp-border-style ButtonText;
+
+        // The pointer moves the paint to the primary fill under its on-color - LinkText under a Canvas number here, the
+        // very pair the backplate Chromium draws behind the text hides - so the paint is set back to the one at rest,
+        // and the state is carried by the system Highlight on the edge instead, as a core button does. Ahead of the
+        // disabled rule, which keeps its GrayText edge under the pointer too.
+        &:hover,
+        &:active {
+            --bit-aicmk-sfg: initial;
+            --bit-aicmk-sbg: initial;
+            border-color: Highlight;
+        }
+
+        &:disabled,
+        &[aria-disabled="true"] {
+            color: GrayText;
+            border-color: GrayText;
+        }
+    }
+}

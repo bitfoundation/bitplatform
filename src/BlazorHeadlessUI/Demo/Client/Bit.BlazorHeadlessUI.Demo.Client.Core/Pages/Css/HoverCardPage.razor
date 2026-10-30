@@ -1,0 +1,418 @@
+﻿@page "/hover-card"
+
+<PageTitle>Hover Card — bit BlazorHeadlessUI</PageTitle>
+
+<div class="demo-page">
+    <header class="demo-header">
+        <h1>Hover Card</h1>
+        <p>For sighted users to preview content available behind a link.</p>
+        <SectionSwitcher Slug="hover-card" />
+    </header>
+
+    <DemoBlock Title="Basic"
+               Code="@_basicCode"
+               Css="@_basicCss">
+        <Description>
+            Hover or focus the link to open the card after a short delay. Moving the pointer
+            into the card keeps it open; leaving both the trigger and the card closes it.
+        </Description>
+        <LiveContent>
+            <BitBhHoverCard class="hover-card">
+                <BitBhHoverCardTrigger class="hover-card-trigger" href="https://github.com/radix-ui" target="_blank" rel="noreferrer">
+                    @@radix-ui
+                </BitBhHoverCardTrigger>
+                <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 8 })"
+                                    class="hover-card-content">
+                    <div class="hc-profile">
+                        <div class="hc-avatar">R</div>
+                        <div class="hc-body">
+                            <div class="hc-name">Radix</div>
+                            <div class="hc-handle">@@radix-ui</div>
+                            <p class="hc-bio">Components, icons, colors, and templates for building high-quality, accessible UI.</p>
+                            <div class="hc-meta">
+                                <span><strong>0</strong> Following</span>
+                                <span><strong>2,900</strong> Followers</span>
+                            </div>
+                        </div>
+                    </div>
+                    <BitBhHoverCardArrow class="hover-card-arrow" />
+                </BitBhHoverCardContent>
+            </BitBhHoverCard>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Custom delays"
+               Code="@_delayCode"
+               Css="@_delayCss">
+        <Description>
+            Tune <code>OpenDelay</code> and <code>CloseDelay</code> (milliseconds). Here the
+            card opens instantly and lingers for a second after you leave.
+        </Description>
+        <LiveContent>
+            <BitBhHoverCard OpenDelay="0" CloseDelay="1000" class="hover-card">
+                <BitBhHoverCardTrigger class="hover-card-trigger" href="#" @onclick:preventDefault>
+                    Quick open, slow close
+                </BitBhHoverCardTrigger>
+                <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 8 })"
+                                    class="hover-card-content">
+                    <p class="hc-bio">Opens with no delay and stays for a full second after the pointer leaves.</p>
+                    <BitBhHoverCardArrow class="hover-card-arrow" />
+                </BitBhHoverCardContent>
+            </BitBhHoverCard>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Placement"
+               Code="@_sidesCode"
+               Css="@_sidesCss">
+        <Description>
+            The <code>Anchor</code> on <code>BitBhHoverCardContent</code> supports
+            <code>top</code>, <code>right</code>, <code>bottom</code>, <code>left</code> with
+            optional <code>start</code> / <code>end</code> alignment. The engine flips and
+            shifts to keep the card in view.
+        </Description>
+        <LiveContent>
+            <div class="hover-card-row">
+                <BitBhHoverCard class="hover-card">
+                    <BitBhHoverCardTrigger class="hover-card-trigger" href="#" @onclick:preventDefault>Top</BitBhHoverCardTrigger>
+                    <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 8 })" class="hover-card-content">
+                        <p class="hc-bio">Anchored to the top.</p>
+                        <BitBhHoverCardArrow class="hover-card-arrow" />
+                    </BitBhHoverCardContent>
+                </BitBhHoverCard>
+
+                <BitBhHoverCard class="hover-card">
+                    <BitBhHoverCardTrigger class="hover-card-trigger" href="#" @onclick:preventDefault>Right</BitBhHoverCardTrigger>
+                    <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "right", Gap = 8 })" class="hover-card-content">
+                        <p class="hc-bio">Anchored to the right.</p>
+                        <BitBhHoverCardArrow class="hover-card-arrow" />
+                    </BitBhHoverCardContent>
+                </BitBhHoverCard>
+
+                <BitBhHoverCard class="hover-card">
+                    <BitBhHoverCardTrigger class="hover-card-trigger" href="#" @onclick:preventDefault>Bottom</BitBhHoverCardTrigger>
+                    <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 8 })" class="hover-card-content">
+                        <p class="hc-bio">Anchored to the bottom.</p>
+                        <BitBhHoverCardArrow class="hover-card-arrow" />
+                    </BitBhHoverCardContent>
+                </BitBhHoverCard>
+
+                <BitBhHoverCard class="hover-card">
+                    <BitBhHoverCardTrigger class="hover-card-trigger" href="#" @onclick:preventDefault>Left</BitBhHoverCardTrigger>
+                    <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "left", Gap = 8 })" class="hover-card-content">
+                        <p class="hc-bio">Anchored to the left.</p>
+                        <BitBhHoverCardArrow class="hover-card-arrow" />
+                    </BitBhHoverCardContent>
+                </BitBhHoverCard>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Controlled"
+               Code="@_controlledCode"
+               Css="@_controlledCss">
+        <Description>
+            Drive the open state externally with <code>Open</code> and
+            <code>OnOpenChange</code>. Hovering still works; the button reflects and toggles
+            the same state.
+        </Description>
+        <LiveContent>
+            <div class="hover-card-row">
+                <BitBhButton OnClick="() => cardOpen = !cardOpen" class="btn">
+                    @(cardOpen ? "Hide card" : "Show card")
+                </BitBhButton>
+                <BitBhHoverCard Open="cardOpen" OnOpenChange="v => cardOpen = v" class="hover-card">
+                    <BitBhHoverCardTrigger class="hover-card-trigger" href="#" @onclick:preventDefault>Target</BitBhHoverCardTrigger>
+                    <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 8 })" class="hover-card-content">
+                        <p class="hc-bio">Driven from outside via the Open parameter.</p>
+                        <BitBhHoverCardArrow class="hover-card-arrow" />
+                    </BitBhHoverCardContent>
+                </BitBhHoverCard>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+</div>
+
+@code {
+    private bool cardOpen;
+
+    private const string _basicCode = """
+<BitBhHoverCard class="hover-card">
+    <BitBhHoverCardTrigger class="hover-card-trigger"
+                        href="https://github.com/radix-ui" target="_blank" rel="noreferrer">
+        @@radix-ui
+    </BitBhHoverCardTrigger>
+    <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 8 })"
+                        class="hover-card-content">
+        <div class="hc-profile">
+            <div class="hc-avatar">R</div>
+            <div class="hc-body">
+                <div class="hc-name">Radix</div>
+                <div class="hc-handle">@@radix-ui</div>
+                <p class="hc-bio">Components, icons, colors, and templates...</p>
+            </div>
+        </div>
+        <BitBhHoverCardArrow class="hover-card-arrow" />
+    </BitBhHoverCardContent>
+</BitBhHoverCard>
+""";
+
+    private const string _delayCode = """
+<BitBhHoverCard OpenDelay="0" CloseDelay="1000" class="hover-card">
+    <BitBhHoverCardTrigger class="hover-card-trigger" href="#">
+        Quick open, slow close
+    </BitBhHoverCardTrigger>
+    <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 8 })"
+                        class="hover-card-content">
+        <p class="hc-bio">Opens with no delay and lingers for a second.</p>
+        <BitBhHoverCardArrow class="hover-card-arrow" />
+    </BitBhHoverCardContent>
+</BitBhHoverCard>
+""";
+
+    private const string _sidesCode = """
+<BitBhHoverCard class="hover-card">
+    <BitBhHoverCardTrigger class="hover-card-trigger" href="#">Top</BitBhHoverCardTrigger>
+    <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 8 })" class="hover-card-content">
+        <p class="hc-bio">Anchored to the top.</p>
+        <BitBhHoverCardArrow class="hover-card-arrow" />
+    </BitBhHoverCardContent>
+</BitBhHoverCard>
+
+@* ...repeat with To = "right" | "bottom" | "left" *@
+""";
+
+    private const string _controlledCode = """
+<BitBhButton OnClick="() => cardOpen = !cardOpen" class="btn">
+    @(cardOpen ? "Hide card" : "Show card")
+</BitBhButton>
+
+<BitBhHoverCard Open="cardOpen" OnOpenChange="v => cardOpen = v" class="hover-card">
+    <BitBhHoverCardTrigger class="hover-card-trigger" href="#">Target</BitBhHoverCardTrigger>
+    <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 8 })" class="hover-card-content">
+        <p class="hc-bio">Driven from outside via the Open parameter.</p>
+        <BitBhHoverCardArrow class="hover-card-arrow" />
+    </BitBhHoverCardContent>
+</BitBhHoverCard>
+
+@code {
+    private bool cardOpen;
+}
+""";
+
+    private const string _basicCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.hover-card { display: inline-block; }
+
+.hover-card-trigger {
+    color: #2563eb;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    border-radius: 0.25rem;
+}
+.hover-card-trigger:hover         { text-decoration: underline; }
+.hover-card-trigger:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+
+.hover-card-content {
+    position: relative;
+    z-index: 50;
+    width: 20rem;
+    max-width: calc(100vw - 1rem);
+    padding: 1rem;
+    background: #fff;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.6rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+.hover-card-content[hidden] { display: none; }
+
+/* Open / close styling hook */
+.hover-card-content[data-state="open"] { animation: hc-fade 150ms ease; }
+
+@keyframes hc-fade {
+    from { opacity: 0; transform: translateY(2px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Arrow — positioned from the resolved data-anchor side */
+.hover-card-arrow { fill: #e4e4e7; filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.25)); }
+.hover-card-content[data-anchor^="top"]    .hover-card-arrow { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); }
+.hover-card-content[data-anchor^="bottom"] .hover-card-arrow { position: absolute; top: -6px; left: 50%; transform: translateX(-50%) rotate(180deg); }
+.hover-card-content[data-anchor^="left"]   .hover-card-arrow { position: absolute; right: -9px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
+.hover-card-content[data-anchor^="right"]  .hover-card-arrow { position: absolute; left: -9px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+
+/* Profile card content */
+.hc-profile { display: flex; gap: 0.85rem; }
+.hc-avatar {
+    flex-shrink: 0;
+    width: 3rem; height: 3rem;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 100%;
+    background: #18181b; color: #fff;
+    font-weight: 700;
+}
+.hc-name   { font-weight: 700; }
+.hc-handle { color: #71717a; font-size: 0.85rem; margin-bottom: 0.4rem; }
+.hc-bio    { font-size: 0.875rem; line-height: 1.4; margin: 0 0 0.5rem; }
+.hc-meta   { display: flex; gap: 1rem; font-size: 0.8rem; color: #52525b; }
+.hc-meta strong { color: #18181b; }
+
+.hover-card-row { display: flex; gap: 1.25rem; align-items: center; flex-wrap: wrap; }
+""";
+
+    private const string _delayCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.hover-card { display: inline-block; }
+
+.hover-card-trigger {
+    color: #2563eb;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    border-radius: 0.25rem;
+}
+.hover-card-trigger:hover         { text-decoration: underline; }
+.hover-card-trigger:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+
+.hover-card-content {
+    position: relative;
+    z-index: 50;
+    width: 20rem;
+    max-width: calc(100vw - 1rem);
+    padding: 1rem;
+    background: #fff;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.6rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+.hover-card-content[hidden] { display: none; }
+
+/* Open / close styling hook */
+.hover-card-content[data-state="open"] { animation: hc-fade 150ms ease; }
+
+@keyframes hc-fade {
+    from { opacity: 0; transform: translateY(2px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Arrow — positioned from the resolved data-anchor side */
+.hover-card-arrow { fill: #e4e4e7; filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.25)); }
+.hover-card-content[data-anchor^="top"]    .hover-card-arrow { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); }
+.hover-card-content[data-anchor^="bottom"] .hover-card-arrow { position: absolute; top: -6px; left: 50%; transform: translateX(-50%) rotate(180deg); }
+.hover-card-content[data-anchor^="left"]   .hover-card-arrow { position: absolute; right: -9px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
+.hover-card-content[data-anchor^="right"]  .hover-card-arrow { position: absolute; left: -9px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+
+.hc-bio { font-size: 0.875rem; line-height: 1.4; margin: 0; }
+""";
+
+    private const string _sidesCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.hover-card { display: inline-block; }
+
+.hover-card-trigger {
+    color: #2563eb;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    border-radius: 0.25rem;
+}
+.hover-card-trigger:hover         { text-decoration: underline; }
+.hover-card-trigger:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+
+.hover-card-content {
+    position: relative;
+    z-index: 50;
+    width: 20rem;
+    max-width: calc(100vw - 1rem);
+    padding: 1rem;
+    background: #fff;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.6rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+.hover-card-content[hidden] { display: none; }
+
+/* Open / close styling hook */
+.hover-card-content[data-state="open"] { animation: hc-fade 150ms ease; }
+
+@keyframes hc-fade {
+    from { opacity: 0; transform: translateY(2px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Arrow — positioned from the resolved data-anchor side */
+.hover-card-arrow { fill: #e4e4e7; filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.25)); }
+.hover-card-content[data-anchor^="top"]    .hover-card-arrow { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); }
+.hover-card-content[data-anchor^="bottom"] .hover-card-arrow { position: absolute; top: -6px; left: 50%; transform: translateX(-50%) rotate(180deg); }
+.hover-card-content[data-anchor^="left"]   .hover-card-arrow { position: absolute; right: -9px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
+.hover-card-content[data-anchor^="right"]  .hover-card-arrow { position: absolute; left: -9px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+
+.hc-bio { font-size: 0.875rem; line-height: 1.4; margin: 0; }
+
+/* Lay the four triggers out in a row */
+.hover-card-row { display: flex; gap: 1.25rem; align-items: center; flex-wrap: wrap; }
+""";
+
+    private const string _controlledCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.hover-card { display: inline-block; }
+
+.hover-card-trigger {
+    color: #2563eb;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    border-radius: 0.25rem;
+}
+.hover-card-trigger:hover         { text-decoration: underline; }
+.hover-card-trigger:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+
+.hover-card-content {
+    position: relative;
+    z-index: 50;
+    width: 20rem;
+    max-width: calc(100vw - 1rem);
+    padding: 1rem;
+    background: #fff;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.6rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+.hover-card-content[hidden] { display: none; }
+
+/* Open / close styling hook */
+.hover-card-content[data-state="open"] { animation: hc-fade 150ms ease; }
+
+@keyframes hc-fade {
+    from { opacity: 0; transform: translateY(2px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Arrow — positioned from the resolved data-anchor side */
+.hover-card-arrow { fill: #e4e4e7; filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.25)); }
+.hover-card-content[data-anchor^="top"]    .hover-card-arrow { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); }
+.hover-card-content[data-anchor^="bottom"] .hover-card-arrow { position: absolute; top: -6px; left: 50%; transform: translateX(-50%) rotate(180deg); }
+.hover-card-content[data-anchor^="left"]   .hover-card-arrow { position: absolute; right: -9px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
+.hover-card-content[data-anchor^="right"]  .hover-card-arrow { position: absolute; left: -9px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+
+.hc-bio { font-size: 0.875rem; line-height: 1.4; margin: 0; }
+
+/* Trigger button + hover card laid out in a row */
+.hover-card-row { display: flex; gap: 1.25rem; align-items: center; flex-wrap: wrap; }
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    background: #fff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+.btn:hover { background: #f4f4f5; }
+""";
+}

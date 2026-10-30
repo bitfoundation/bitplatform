@@ -1,0 +1,569 @@
+﻿@page "/switch"
+
+<PageTitle>Switch — bit BlazorHeadlessUI</PageTitle>
+
+<div class="demo-page">
+    <header class="demo-header">
+        <h1>Switch</h1>
+        <p>An accessible on/off toggle with full keyboard support and zero visual opinion.</p>
+        <SectionSwitcher Slug="switch" />
+    </header>
+
+    <DemoBlock Title="Basic Switch (Uncontrolled)"
+               Code="@_basicCode"
+               Css="@_switchCss">
+        <Description>
+            Renders a native <code>&lt;button&gt;</code> with <code>role="switch"</code> and
+            <code>aria-checked</code>. Click or press Space/Enter to toggle.
+            <code>DefaultChecked</code> seeds the initial state.
+        </Description>
+        <LiveContent>
+            <BitBhSwitch aria-label="Wi-Fi" DefaultChecked="false" class="switch">
+                <BitBhSwitchThumb class="switch-thumb" />
+            </BitBhSwitch>
+
+            <BitBhSwitch aria-label="Bluetooth" DefaultChecked="true" class="switch">
+                <BitBhSwitchThumb class="switch-thumb" />
+            </BitBhSwitch>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Controlled"
+               Code="@_controlledCode"
+               Css="@_controlledCss">
+        <Description>
+            Drive the state externally with <code>Checked</code> + <code>OnCheckedChange</code>.
+            Clicking either control updates the same state.
+        </Description>
+        <LiveContent>
+            <div style="display:flex; align-items:center; gap:1rem;">
+                <BitBhSwitch aria-label="Notifications" Checked="@notificationsOn"
+                         OnCheckedChange="v => notificationsOn = v"
+                         class="switch">
+                    <BitBhSwitchThumb class="switch-thumb" />
+                </BitBhSwitch>
+
+                <span class="demo-output">
+                    Notifications: <strong>@(notificationsOn ? "on" : "off")</strong>
+                </span>
+
+                <BitBhButton OnClick="() => notificationsOn = !notificationsOn" class="btn">
+                    Toggle from outside
+                </BitBhButton>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Disabled"
+               Code="@_disabledCode"
+               Css="@_disabledCss">
+        <Description>
+            Set <code>Disabled="true"</code> to block interaction. The button receives
+            the native <code>disabled</code> attribute and a <code>data-disabled</code> hook.
+        </Description>
+        <LiveContent>
+            <BitBhSwitch aria-label="Airplane mode" DefaultChecked="false" Disabled="true" class="switch">
+                <BitBhSwitchThumb class="switch-thumb" />
+            </BitBhSwitch>
+
+            <BitBhSwitch aria-label="Location services" DefaultChecked="true" Disabled="true" class="switch">
+                <BitBhSwitchThumb class="switch-thumb" />
+            </BitBhSwitch>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="With label"
+               Code="@_labelCode"
+               Css="@_labelCss">
+        <Description>
+            Wrap the switch in a <code>&lt;label&gt;</code> to make the label clickable.
+            Clicking the label text toggles the switch — standard HTML behaviour.
+        </Description>
+        <LiveContent>
+            <label class="switch-label">
+                <BitBhSwitch DefaultChecked="true" class="switch">
+                    <BitBhSwitchThumb class="switch-thumb" />
+                </BitBhSwitch>
+                <span>Email me about updates</span>
+            </label>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="As a non-native element"
+               Code="@_polymorphicCode"
+               Css="@_polymorphicCss">
+        <Description>
+            Set <code>As="div"</code> to render as a div. The component automatically adds
+            <code>role="switch"</code>, <code>tabindex="0"</code>, and Space/Enter keyboard
+            handling so the switch remains fully accessible.
+        </Description>
+        <LiveContent>
+            <BitBhSwitch aria-label="Dark mode" As="div" DefaultChecked="false" class="switch">
+                <BitBhSwitchThumb class="switch-thumb" />
+            </BitBhSwitch>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Form Submission"
+               Code="@_formCode"
+               Css="@_formCss">
+        <Description>
+            Set <code>Name</code> to render an adjacent <code>&lt;input type="hidden"&gt;</code>
+            so the switch participates in plain form posts. The hidden input is only present
+            when the switch is checked, mirroring native checkbox behaviour.
+        </Description>
+        <LiveContent>
+            <form @onsubmit="HandleFormSubmit"
+                  @onsubmit:preventDefault="true"
+                  style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+                <label class="switch-label">
+                    <BitBhSwitch Name="newsletter" Value="yes"
+                             DefaultChecked="false"
+                             class="switch">
+                        <BitBhSwitchThumb class="switch-thumb" />
+                    </BitBhSwitch>
+                    <span>Subscribe to newsletter</span>
+                </label>
+
+                <button type="submit" class="btn btn-primary">Submit</button>
+
+                @if (lastSubmittedValue is not null)
+                {
+                    <span class="demo-output">Posted value: <code>@lastSubmittedValue</code></span>
+                }
+            </form>
+        </LiveContent>
+    </DemoBlock>
+</div>
+
+@code {
+    private bool notificationsOn = true;
+    private string? lastSubmittedValue;
+
+    private void HandleFormSubmit()
+    {
+        // In a real app the browser would post the hidden input; here we read it
+        // back from the model to demonstrate which value would be submitted.
+        // For demo purposes we'll just show whatever is currently in the form.
+        lastSubmittedValue = "(submitted — check the network tab in a real form)";
+    }
+
+    // ── Source snippets shown alongside each live demo ─────────────────────────
+
+    private const string _basicCode = """
+<BitBhSwitch aria-label="Wi-Fi" DefaultChecked="false" class="switch">
+    <BitBhSwitchThumb class="switch-thumb" />
+</BitBhSwitch>
+""";
+
+    private const string _controlledCode = """
+<BitBhSwitch aria-label="Notifications" Checked="@notificationsOn"
+         OnCheckedChange="v => notificationsOn = v"
+         class="switch">
+    <BitBhSwitchThumb class="switch-thumb" />
+</BitBhSwitch>
+
+@code {
+    private bool notificationsOn = true;
+}
+""";
+
+    private const string _disabledCode = """
+<BitBhSwitch aria-label="Location services" DefaultChecked="true" Disabled="true" class="switch">
+    <BitBhSwitchThumb class="switch-thumb" />
+</BitBhSwitch>
+""";
+
+    private const string _labelCode = """
+<label class="switch-label">
+    <BitBhSwitch DefaultChecked="true" class="switch">
+        <BitBhSwitchThumb class="switch-thumb" />
+    </BitBhSwitch>
+    <span>Email me about updates</span>
+</label>
+""";
+
+    private const string _polymorphicCode = """
+<BitBhSwitch aria-label="Dark mode" As="div" DefaultChecked="false" class="switch">
+    <BitBhSwitchThumb class="switch-thumb" />
+</BitBhSwitch>
+""";
+
+    private const string _formCode = """
+<form method="post">
+    <label class="switch-label">
+        <BitBhSwitch Name="newsletter" Value="yes"
+                 DefaultChecked="false"
+                 class="switch">
+            <BitBhSwitchThumb class="switch-thumb" />
+        </BitBhSwitch>
+        <span>Subscribe to newsletter</span>
+    </label>
+
+    <button type="submit">Submit</button>
+</form>
+
+@* When checked, posts:  newsletter=yes *@
+""";
+
+    private const string _switchCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.switch {
+    /* Reset native button */
+    all: unset;
+    box-sizing: border-box;
+
+    /* Track */
+    position: relative;
+    display: inline-block;
+    width: 2.5rem;
+    height: 1.4rem;
+    border-radius: 999px;
+    background: #d4d4d8;
+    cursor: pointer;
+    transition: background 150ms ease;
+
+    /* Focus ring */
+    outline: none;
+}
+
+.switch:focus-visible {
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2563eb;
+}
+
+/* Hooks emitted by BitBhSwitch */
+.switch[data-state="checked"]   { background: #2563eb; }
+.switch[data-disabled]          { opacity: 0.5; cursor: not-allowed; }
+
+/* Thumb — driven by data-state on the inner element */
+.switch-thumb {
+    position: absolute;
+    top: 50%;
+    left: 0.15rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    background: #fff;
+    border-radius: 999px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    transform: translateY(-50%);
+    transition: left 150ms ease;
+}
+
+.switch-thumb[data-state="checked"] {
+    left: calc(100% - 1.1rem - 0.15rem);
+}
+""";
+
+    private const string _labelCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.switch {
+    /* Reset native button */
+    all: unset;
+    box-sizing: border-box;
+
+    /* Track */
+    position: relative;
+    display: inline-block;
+    width: 2.5rem;
+    height: 1.4rem;
+    border-radius: 999px;
+    background: #d4d4d8;
+    cursor: pointer;
+    transition: background 150ms ease;
+
+    /* Focus ring */
+    outline: none;
+}
+
+.switch:focus-visible {
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2563eb;
+}
+
+/* Hooks emitted by BitBhSwitch */
+.switch[data-state="checked"]   { background: #2563eb; }
+.switch[data-disabled]          { opacity: 0.5; cursor: not-allowed; }
+
+/* Thumb — driven by data-state on the inner element */
+.switch-thumb {
+    position: absolute;
+    top: 50%;
+    left: 0.15rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    background: #fff;
+    border-radius: 999px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    transform: translateY(-50%);
+    transition: left 150ms ease;
+}
+
+.switch-thumb[data-state="checked"] {
+    left: calc(100% - 1.1rem - 0.15rem);
+}
+
+/* Wrapper that aligns the switch with its text label */
+.switch-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.9rem;
+}
+""";
+
+    private const string _controlledCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.switch {
+    /* Reset native button */
+    all: unset;
+    box-sizing: border-box;
+
+    /* Track */
+    position: relative;
+    display: inline-block;
+    width: 2.5rem;
+    height: 1.4rem;
+    border-radius: 999px;
+    background: #d4d4d8;
+    cursor: pointer;
+    transition: background 150ms ease;
+
+    /* Focus ring */
+    outline: none;
+}
+
+.switch:focus-visible {
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2563eb;
+}
+
+/* Hooks emitted by BitBhSwitch */
+.switch[data-state="checked"]   { background: #2563eb; }
+.switch[data-disabled]          { opacity: 0.5; cursor: not-allowed; }
+
+/* Thumb — driven by data-state on the inner element */
+.switch-thumb {
+    position: absolute;
+    top: 50%;
+    left: 0.15rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    background: #fff;
+    border-radius: 999px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    transform: translateY(-50%);
+    transition: left 150ms ease;
+}
+
+.switch-thumb[data-state="checked"] {
+    left: calc(100% - 1.1rem - 0.15rem);
+}
+
+/* Controlled mode adds no special CSS hooks — data-state simply reflects
+   whatever Checked value you bind to. Below are the external controls. */
+.demo-output { font-size: 0.875rem; color: #71717a; }
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    background: #fff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+.btn:hover { background: #f4f4f5; }
+""";
+
+    private const string _disabledCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.switch {
+    /* Reset native button */
+    all: unset;
+    box-sizing: border-box;
+
+    /* Track */
+    position: relative;
+    display: inline-block;
+    width: 2.5rem;
+    height: 1.4rem;
+    border-radius: 999px;
+    background: #d4d4d8;
+    cursor: pointer;
+    transition: background 150ms ease;
+
+    /* Focus ring */
+    outline: none;
+}
+
+.switch:focus-visible {
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2563eb;
+}
+
+/* Hooks emitted by BitBhSwitch */
+.switch[data-state="checked"]   { background: #2563eb; }
+
+/* Hooks emitted when Disabled="true". The disabled state still respects the
+   checked appearance, so the thumb stays in the "on" position on a
+   disabled-checked switch. */
+.switch[data-disabled]          { opacity: 0.5; cursor: not-allowed; }
+
+/* Thumb — driven by data-state on the inner element */
+.switch-thumb {
+    position: absolute;
+    top: 50%;
+    left: 0.15rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    background: #fff;
+    border-radius: 999px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    transform: translateY(-50%);
+    transition: left 150ms ease;
+}
+
+.switch-thumb[data-state="checked"] {
+    left: calc(100% - 1.1rem - 0.15rem);
+}
+""";
+
+    private const string _polymorphicCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.switch {
+    /* Reset native button */
+    all: unset;
+    box-sizing: border-box;
+
+    /* Track */
+    position: relative;
+    display: inline-block;
+    width: 2.5rem;
+    height: 1.4rem;
+    border-radius: 999px;
+    background: #d4d4d8;
+    cursor: pointer;
+    transition: background 150ms ease;
+
+    /* Focus ring */
+    outline: none;
+}
+
+/* When rendered with As="div" (or any non-native element) BitBhSwitch automatically
+   adds tabindex="0" and a Space/Enter keydown handler — the focus ring still
+   needs your :focus-visible rule to appear. */
+.switch:focus-visible {
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2563eb;
+}
+
+/* Hooks emitted by BitBhSwitch */
+.switch[data-state="checked"]   { background: #2563eb; }
+.switch[data-disabled]          { opacity: 0.5; cursor: not-allowed; }
+
+/* Thumb — driven by data-state on the inner element */
+.switch-thumb {
+    position: absolute;
+    top: 50%;
+    left: 0.15rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    background: #fff;
+    border-radius: 999px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    transform: translateY(-50%);
+    transition: left 150ms ease;
+}
+
+.switch-thumb[data-state="checked"] {
+    left: calc(100% - 1.1rem - 0.15rem);
+}
+""";
+
+    private const string _formCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.switch {
+    /* Reset native button */
+    all: unset;
+    box-sizing: border-box;
+
+    /* Track */
+    position: relative;
+    display: inline-block;
+    width: 2.5rem;
+    height: 1.4rem;
+    border-radius: 999px;
+    background: #d4d4d8;
+    cursor: pointer;
+    transition: background 150ms ease;
+
+    /* Focus ring */
+    outline: none;
+}
+
+.switch:focus-visible {
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2563eb;
+}
+
+/* Hooks emitted by BitBhSwitch */
+.switch[data-state="checked"]   { background: #2563eb; }
+.switch[data-disabled]          { opacity: 0.5; cursor: not-allowed; }
+
+/* Thumb — driven by data-state on the inner element */
+.switch-thumb {
+    position: absolute;
+    top: 50%;
+    left: 0.15rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    background: #fff;
+    border-radius: 999px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    transform: translateY(-50%);
+    transition: left 150ms ease;
+}
+
+.switch-thumb[data-state="checked"] {
+    left: calc(100% - 1.1rem - 0.15rem);
+}
+
+/* Wrapper that aligns the switch with its text label */
+.switch-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.9rem;
+}
+
+/* When Name is set BitBhSwitch renders an <input type="hidden"> sibling that is
+   always invisible by default — no extra CSS needed for that. */
+.demo-output { font-size: 0.875rem; color: #71717a; }
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    background: #fff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+.btn:hover { background: #f4f4f5; }
+
+.btn-primary {
+    color: #fff;
+    background: #2563eb;
+    border-color: #2563eb;
+}
+.btn-primary:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+}
+""";
+}

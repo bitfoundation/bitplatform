@@ -64,8 +64,8 @@ public static class McpPrompts
                screen. Do this even where a component name comes to mind: this library's name for a thing is
                often not the one the task suggests, and the search returns the aliases as well as the names.
             2. Call `GetBitBlazorUIComponent` for every component you settled on. Match parameter names,
-               types and defaults exactly - and check the package line: a component from Extras needs its
-               package, its registration and its two tags before it renders at all.
+               types and defaults exactly - and check the package line: a component from Extras or AI needs
+               its package, its registration and its two tags before it renders at all.
             3. Call `GetBitBlazorUIComponentExamples` for anything with a shape you would otherwise guess at -
                templated items, data binding, validation inside an EditForm, a service-driven modal or panel.
                Follow the example's shape rather than inventing one.
@@ -154,7 +154,7 @@ public static class McpPrompts
                stylesheet is missing), the interactive components - callouts, dropdowns, tooltips, the modal -
                never open (the script is missing), and injecting a service throws (the registration is missing
                from one of the app's DI containers, usually the server half of a Blazor Web App).
-            2. If a component from Extras or Legacy is involved, confirm its own package, registration and two
+            2. If a component from Extras, AI or Legacy is involved, confirm its own package, registration and two
                tags are present as well: the core ones are not enough for it.
             3. Confirm the parameter with `GetBitBlazorUIComponent` before concluding it is a bug - check the
                exact name, the type and the DEFAULT, which is where "it does nothing" usually comes from, and

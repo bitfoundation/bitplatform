@@ -98,6 +98,8 @@ public sealed class TranslationRun(CliServices cli, Func<ResxTranslatorSettings,
         foreach (var item in pending)
         {
             var name = Path.GetFileName(item.Pair.TargetPath);
+            var attempt = $"bit was asking {settings.OpenAI.Model} at {settings.OpenAI.Endpoint?.ToString() ?? "https://api.openai.com/v1"} (OpenAI's chat completions API) to translate the {item.Missing.Count} missing string{(item.Missing.Count == 1 ? "" : "s")} of {Path.GetRelativePath(settings.RootDirectory, item.Pair.BasePath)} from {item.Pair.Source.Name} to {item.Pair.Target.Name}, "
+                + $"and to write them to {Path.GetRelativePath(settings.RootDirectory, item.Pair.TargetPath)} as <data> entries with the same names.";
 
             await steps.RunAsync("translate", $"Translating {name}", async (progress, ct) =>
             {
@@ -113,19 +115,19 @@ public sealed class TranslationRun(CliServices cli, Func<ResxTranslatorSettings,
                 catch (Exception exp) when (LastTry(exp) is ClientResultException { Status: > 0 } answer)
                 {
                     cli.Telemetry.SetTag(TelemetryFields.HttpStatus, answer.Status);
-                    return StepResult.Failed($"Couldn't translate {name}", $"the model endpoint answered {answer.Status}", "bit translate", resultCode: $"translate.http.{answer.Status}", hint: answer.Message.Split('\n')[0]);
+                    return StepResult.Failed($"Couldn't translate {name}", $"the model endpoint answered {answer.Status}", "bit translate", resultCode: $"translate.http.{answer.Status}", hint: answer.Message.Split('\n')[0]) with { Attempt = attempt };
                 }
                 catch (Exception exp) when (LastTry(exp) is ClientResultException or HttpRequestException)
                 {
-                    return StepResult.Failed($"Couldn't translate {name}", "the model endpoint couldn't be reached", "bit translate", resultCode: "translate.network", hint: LastTry(exp).Message);
+                    return StepResult.Failed($"Couldn't translate {name}", "the model endpoint couldn't be reached", "bit translate", resultCode: "translate.network", hint: LastTry(exp).Message) with { Attempt = attempt };
                 }
                 catch (Exception exp) when (LastTry(exp) is TaskCanceledException && ct.IsCancellationRequested is false)
                 {
-                    return StepResult.Failed($"Couldn't translate {name}", "the model endpoint didn't answer in time", "bit translate", resultCode: "translate.timeout", hint: LastTry(exp).Message);
+                    return StepResult.Failed($"Couldn't translate {name}", "the model endpoint didn't answer in time", "bit translate", resultCode: "translate.timeout", hint: LastTry(exp).Message) with { Attempt = attempt };
                 }
                 catch (InvalidOperationException exp)
                 {
-                    return StepResult.Failed($"Couldn't translate {name}", "the model's answer wasn't usable", "bit translate", resultCode: "translate.response", hint: exp.Message);
+                    return StepResult.Failed($"Couldn't translate {name}", "the model's answer wasn't usable", "bit translate", resultCode: "translate.response", hint: exp.Message) with { Attempt = attempt };
                 }
             }, cancellationToken);
         }

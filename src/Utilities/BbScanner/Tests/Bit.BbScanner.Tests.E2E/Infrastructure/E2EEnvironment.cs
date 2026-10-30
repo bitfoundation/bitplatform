@@ -25,6 +25,12 @@ public static class E2EEnvironment
     public static string? BaseUrl { get; } = Read("BBSCANNER_E2E_BASE_URL")?.TrimEnd('/');
 
     /// <summary>
+    /// <c>BBSCANNER_E2E_SERVER_BASE_URL</c>: an already running Blazor Server sample. When set the Blazor Server tests
+    /// drive that instead of booting the sample from its build output.
+    /// </summary>
+    public static string? ServerSampleBaseUrl { get; } = Read("BBSCANNER_E2E_SERVER_BASE_URL")?.TrimEnd('/');
+
+    /// <summary>
     /// <c>BBSCANNER_E2E_CHANNEL</c>: e.g. chrome / msedge, to use an installed browser. Without it the suite
     /// uses the full Chromium build Playwright installed and falls back to an installed Chrome, then Edge.
     /// </summary>

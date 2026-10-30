@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Bit.BlazorUI;
 using Bunit;
@@ -1603,6 +1604,158 @@ public class BitMapTests : BunitTestContext
 
         CollectionAssert.AreEqual(new[] { "a" }, markerClicks);
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == CLUSTER_EXPAND));
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldRaiseOnMarkerDoubleClickWithTheMarkerId()
+    {
+        SetupSuccessfulMount();
+
+        var doubleClicks = new List<string>();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.OnMarkerDoubleClick,
+                Microsoft.AspNetCore.Components.EventCallback.Factory.Create<string>(this, id => doubleClicks.Add(id)));
+        });
+
+        await component.Instance._OnMarkerDoubleClick("a");
+
+        CollectionAssert.AreEqual(new[] { "a" }, doubleClicks);
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldNotReportADoubleClickOnAClusterBubbleAsAMarker()
+    {
+        // A bubble is not one of the caller's markers, and the click of the pair that expands it
+        // has already been reported - so its double-click is nobody's.
+        SetupSuccessfulMount();
+
+        var doubleClicks = new List<string>();
+        var clusterClicks = 0;
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.Clustering, new BitMapClustering());
+            parameters.Add(p => p.OnMarkerDoubleClick,
+                Microsoft.AspNetCore.Components.EventCallback.Factory.Create<string>(this, id => doubleClicks.Add(id)));
+            parameters.Add(p => p.OnClusterClick,
+                Microsoft.AspNetCore.Components.EventCallback.Factory.Create<BitMapClusterClickArgs>(this, _ => clusterClicks++));
+        });
+
+        await component.Instance._OnMarkerDoubleClick(CLUSTER_ID);
+
+        Assert.AreEqual(0, doubleClicks.Count);
+        Assert.AreEqual(0, clusterClicks);
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == CLUSTER_EXPAND));
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldSurviveAThrowingOnMarkerDoubleClick()
+    {
+        // The handler runs inside a [JSInvokable] callback, so letting it throw would come back as
+        // an unhandled interop exception - on Blazor Server, a torn-down circuit.
+        SetupSuccessfulMount();
+
+        var errors = new List<BitMapInteropErrorArgs>();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.OnMarkerDoubleClick,
+                Microsoft.AspNetCore.Components.EventCallback.Factory.Create<string>(this, (Action<string>)(_ => throw new InvalidOperationException("boom"))));
+            parameters.Add(p => p.OnInteropError,
+                Microsoft.AspNetCore.Components.EventCallback.Factory.Create<BitMapInteropErrorArgs>(this, e => errors.Add(e)));
+        });
+
+        await component.Instance._OnMarkerDoubleClick("a");
+
+        Assert.IsTrue(errors.Any(e => e.Source == BitMapInteropErrorSource.Callback
+                                   && e.Context == nameof(BitMap<BitLeafletMapProvider>.OnMarkerDoubleClick)));
+    }
+
+    private const string LEAFLET_SET_MARKER_DOUBLE_CLICK = "BitBlazorUI.BitMapLeaflet.setMarkerDoubleClick";
+
+    [TestMethod]
+    public void BitMapShouldGiveAMarkersDoubleClickToTheMarkerOnlyWhileOnMarkerDoubleClickHasAHandler()
+    {
+        // Taking the double-click from the map costs it its OnDoubleClick and its zoom over every marker, so a map that
+        // does not listen for the marker's keeps them - and pays no round trip to say so, since a map is built with it off.
+        SetupSuccessfulMount();
+
+        RenderComponent<BitMap<BitLeafletMapProvider>>();
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == LEAFLET_SET_MARKER_DOUBLE_CLICK));
+
+        RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.OnMarkerDoubleClick, Microsoft.AspNetCore.Components.EventCallback.Factory.Create<string>(this, _ => { }));
+        });
+        var calls = Context.JSInterop.Invocations.Where(i => i.Identifier == LEAFLET_SET_MARKER_DOUBLE_CLICK).ToList();
+        Assert.AreEqual(1, calls.Count);
+        Assert.AreEqual(true, calls[0].Arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitMapShouldTellTheProviderWhenOnMarkerDoubleClickGainsOrLosesItsHandler()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        component.Render(parameters =>
+            parameters.Add(p => p.OnMarkerDoubleClick, Microsoft.AspNetCore.Components.EventCallback.Factory.Create<string>(this, _ => { })));
+        // A re-render that changes nothing about it sends nothing.
+        component.Render(parameters => parameters.Add(p => p.AriaLabel, "Map"));
+        component.Render(parameters =>
+            parameters.Add(p => p.OnMarkerDoubleClick, default(Microsoft.AspNetCore.Components.EventCallback<string>)));
+
+        var calls = Context.JSInterop.Invocations.Where(i => i.Identifier == LEAFLET_SET_MARKER_DOUBLE_CLICK).ToList();
+        Assert.AreEqual(2, calls.Count);
+        Assert.AreEqual(true, calls[0].Arguments[1]);
+        Assert.AreEqual(false, calls[1].Arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitMapShouldTellTheNewProviderAboutOnMarkerDoubleClickAfterAProviderSwap()
+    {
+        // A swap builds a new map, which starts with a marker's double-click the map's again.
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<TestMapProviderA>>(parameters =>
+        {
+            parameters.Add(p => p.Provider, new TestMapProviderA());
+            parameters.Add(p => p.OnMarkerDoubleClick, Microsoft.AspNetCore.Components.EventCallback.Factory.Create<string>(this, _ => { }));
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Provider, new TestMapProviderB()));
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.TestProviderA.setMarkerDoubleClick"));
+        var calls = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.TestProviderB.setMarkerDoubleClick").ToList();
+        Assert.AreEqual(1, calls.Count);
+        Assert.AreEqual(true, calls[0].Arguments[1]);
+    }
+
+    // BitMap calls a provider's script through the JsObjectName the provider names (BitMapJsRuntimeExtensions), which
+    // nothing resolves before run time - so a built-in provider without the call would only show as an OnInteropError
+    // in an app that handles OnMarkerDoubleClick. What the providers do with it is for the E2E suite, which double-clicks
+    // their markers.
+    [TestMethod,
+        DataRow(typeof(BitLeafletMapProvider)),
+        DataRow(typeof(BitMapLibreMapProvider)),
+        DataRow(typeof(BitMapboxMapProvider)),
+        DataRow(typeof(BitOpenLayersMapProvider)),
+        DataRow(typeof(BitArcGisMapProvider)),
+        DataRow(typeof(BitAzureMapsMapProvider)),
+        DataRow(typeof(BitCesiumMapProvider))]
+    public void BitMapProvidersShouldTakeTheMarkerDoubleClickSwitch(Type providerType)
+    {
+        var jsObjectName = ((IBitMapProvider)Activator.CreateInstance(providerType)!).JsObjectName;
+        var script = SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "Map", "Providers", $"{jsObjectName}.ts");
+
+        // Without its comments, so that one merely naming the method cannot stand in for it.
+        var code = Regex.Replace(script, @"/\*.*?\*/|//[^\n]*", "", RegexOptions.Singleline);
+        Assert.IsTrue(Regex.IsMatch(code, $@"\bexport\s+class\s+{jsObjectName}\b"), $"{jsObjectName}.ts does not export {jsObjectName}.");
+        Assert.IsTrue(Regex.IsMatch(code, @"\bpublic\s+static\s+setMarkerDoubleClick\s*\(\s*id\s*:\s*string\s*,\s*enabled\s*:\s*boolean\s*\)"),
+                      $"{jsObjectName} has no setMarkerDoubleClick(id, enabled).");
     }
 
     [TestMethod]

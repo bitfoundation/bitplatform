@@ -14,7 +14,7 @@
     <Badges>
         <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Publish only" />
         <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text=".NET 10 and 11" />
-        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Core, Extras, Legacy, Icons" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Core, Extras, AI, Legacy, Icons" />
     </Badges>
 
     <Actions>
@@ -58,12 +58,12 @@
                         <tbody>
                             <tr>
                                 <th scope="row">Scripts</th>
-                                <td><code>bit.blazorui.js</code>, <code>bit.blazorui.extras.js</code>, <code>bit.blazorui.legacy.js</code></td>
+                                <td><code>bit.blazorui.js</code>, <code>bit.blazorui.extras.js</code>, <code>bit.blazorui.ai.js</code>, <code>bit.blazorui.legacy.js</code></td>
                                 <td>The scripts the app's code can call, the scripts those use, and the few every app needs</td>
                             </tr>
                             <tr>
                                 <th scope="row">Stylesheets</th>
-                                <td><code>bit.blazorui.css</code> and its <code>fluent</code>, <code>fluent-dark</code> and <code>fluent-light</code> variants, <code>bit.blazorui.extras.css</code>, <code>bit.blazorui.legacy.css</code></td>
+                                <td><code>bit.blazorui.css</code> and its <code>fluent</code>, <code>fluent-dark</code> and <code>fluent-light</code> variants, <code>bit.blazorui.extras.css</code>, <code>bit.blazorui.ai.css</code>, <code>bit.blazorui.legacy.css</code></td>
                                 <td>The stylesheets of the components the app can render, around the bundle's own general rules and theme</td>
                             </tr>
                             <tr>
@@ -450,6 +450,7 @@ Bit.BlazorUI: _content/Bit.BlazorUI.Legacy/pdf.js/ -> left out (2 files): nothin
                     <CodeBox Language="html">&lt;!-- No longer needed: -->
 &lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js">&lt;/script>
 &lt;script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js">&lt;/script>
+&lt;script src="_content/Bit.BlazorUI.AI/scripts/bit.blazorui.ai.js">&lt;/script>
 &lt;script src="_content/Bit.BlazorUI.Legacy/scripts/bit.blazorui.legacy.js">&lt;/script></CodeBox>
                     <BitText Element="p">
                         The property drops the bundles from the app's static web assets and turns the mode on at runtime,

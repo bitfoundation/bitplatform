@@ -53,6 +53,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI.Icons\Bit.BlazorUI.Icons.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI.Assets\Bit.BlazorUI.Assets.csproj" />
     </ItemGroup>
@@ -63,6 +64,7 @@
          answer. -->
     <Import Project="..\..\Bit.BlazorUI\buildTransitive\Bit.BlazorUI.targets" />
     <Import Project="..\..\Bit.BlazorUI.Extras\buildTransitive\Bit.BlazorUI.Extras.targets" />
+    <Import Project="..\..\Bit.BlazorUI.AI\buildTransitive\Bit.BlazorUI.AI.targets" />
     <Import Project="..\..\Bit.BlazorUI.Icons\buildTransitive\Bit.BlazorUI.Icons.targets" />
 
 </Project>

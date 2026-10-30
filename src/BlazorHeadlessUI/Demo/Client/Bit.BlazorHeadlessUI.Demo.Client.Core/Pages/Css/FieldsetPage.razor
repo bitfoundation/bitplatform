@@ -1,0 +1,510 @@
+﻿@page "/fieldset"
+
+<PageTitle>Fieldset — bit BlazorHeadlessUI</PageTitle>
+
+<div class="demo-page">
+    <header class="demo-header">
+        <h1>Fieldset</h1>
+        <p>
+            Group a set of form controls together with a fully accessible but
+            much easier-to-style version of the native <code>fieldset</code> and
+            <code>legend</code> elements.
+        </p>
+        <SectionSwitcher Slug="fieldset" />
+    </header>
+
+    <DemoBlock Title="Basic example"
+               Code="@_basicCode"
+               Css="@_basicCss">
+        <Description>
+            Use <code>BitBhFieldset</code> and <code>BitBhLegend</code> to group a set of
+            form controls together with a title. The fieldset uses the native
+            <code>&lt;fieldset&gt;</code> element while the legend renders as a
+            <code>&lt;div&gt;</code> (since native <code>&lt;legend&gt;</code> is
+            notoriously hard to style).
+        </Description>
+        <LiveContent>
+            <BitBhFieldset class="fieldset">
+                <div class="fieldset-header">
+                    <BitBhLegend class="fieldset-legend">Shipping details</BitBhLegend>
+                    <p class="fieldset-hint">Where should we deliver your order?</p>
+                </div>
+
+                <BitBhField class="field">
+                    <BitBhLabel class="field-label">Street address</BitBhLabel>
+                    <BitBhInput name="address" placeholder="123 Main St" class="field-input" />
+                </BitBhField>
+
+                <BitBhField class="field">
+                    <BitBhLabel class="field-label">Country</BitBhLabel>
+                    <BitBhSelect name="country" class="field-input field-select">
+                        <option>Canada</option>
+                        <option>Mexico</option>
+                        <option>United States</option>
+                    </BitBhSelect>
+                </BitBhField>
+
+                <BitBhField class="field">
+                    <BitBhLabel class="field-label">Delivery notes</BitBhLabel>
+                    <BitBhTextarea name="notes" rows="3"
+                               placeholder="Leave at front door…"
+                               class="field-input field-textarea" />
+                </BitBhField>
+            </BitBhFieldset>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Disabling a fieldset"
+               Code="@_disabledCode"
+               Css="@_disabledCss">
+        <Description>
+            Set <code>Disabled="true"</code> on the <code>BitBhFieldset</code> to
+            disable every form control inside. The fieldset, legend, and all
+            nested fields receive <code>data-disabled</code> for CSS hooks, and
+            the native <code>disabled</code> attribute on the fieldset prevents
+            interaction.
+        </Description>
+        <LiveContent>
+            <BitBhFieldset Disabled="true" class="fieldset">
+                <div class="fieldset-header">
+                    <BitBhLegend class="fieldset-legend">Account (locked)</BitBhLegend>
+                    <p class="fieldset-hint">Verify your email to edit these fields.</p>
+                </div>
+
+                <BitBhField class="field">
+                    <BitBhLabel class="field-label">Username</BitBhLabel>
+                    <BitBhInput type="text" value="alice" class="field-input" />
+                </BitBhField>
+
+                <BitBhField class="field">
+                    <BitBhLabel class="field-label">Email</BitBhLabel>
+                    <BitBhInput type="email" value="alice@example.com" class="field-input" />
+                </BitBhField>
+            </BitBhFieldset>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Toggling at runtime"
+               Code="@_toggleCode"
+               Css="@_toggleCss">
+        <Description>
+            Bind <code>Disabled</code> to a state value to enable or disable the
+            entire group dynamically. Every nested input reflects the change
+            through both the native <code>disabled</code> attribute and
+            <code>data-disabled</code>.
+        </Description>
+        <LiveContent>
+            <div class="fieldset-toolbar">
+                <span class="fieldset-status" data-active="@(!_disabled)">
+                    <span class="fieldset-status-dot"></span>
+                    @(_disabled ? "Read-only" : "Editing")
+                </span>
+                <BitBhButton class="btn" OnClick="@(() => _disabled = !_disabled)">
+                    @(_disabled ? "Enable" : "Disable")
+                </BitBhButton>
+            </div>
+
+            <BitBhFieldset Disabled="_disabled" class="fieldset">
+                <div class="fieldset-header">
+                    <BitBhLegend class="fieldset-legend">Profile</BitBhLegend>
+                    <p class="fieldset-hint">Shown publicly on your profile page.</p>
+                </div>
+
+                <BitBhField class="field">
+                    <BitBhLabel class="field-label">Display name</BitBhLabel>
+                    <BitBhInput type="text" placeholder="Alice Anderson" class="field-input" />
+                </BitBhField>
+
+                <BitBhField class="field">
+                    <BitBhLabel class="field-label">Bio</BitBhLabel>
+                    <BitBhTextarea rows="2" placeholder="Tell us about yourself…"
+                               class="field-input field-textarea" />
+                </BitBhField>
+            </BitBhFieldset>
+        </LiveContent>
+    </DemoBlock>
+</div>
+
+@code {
+    private bool _disabled;
+
+    // ── Source snippets ───────────────────────────────────────────────────────
+
+    private const string _basicCode = """
+<BitBhFieldset class="fieldset">
+    <div class="fieldset-header">
+        <BitBhLegend class="fieldset-legend">Shipping details</BitBhLegend>
+        <p class="fieldset-hint">Where should we deliver your order?</p>
+    </div>
+
+    <BitBhField class="field">
+        <BitBhLabel class="field-label">Street address</BitBhLabel>
+        <BitBhInput name="address" class="field-input" />
+    </BitBhField>
+
+    <BitBhField class="field">
+        <BitBhLabel class="field-label">Country</BitBhLabel>
+        <BitBhSelect name="country" class="field-input field-select">
+            <option>Canada</option>
+            <option>Mexico</option>
+            <option>United States</option>
+        </BitBhSelect>
+    </BitBhField>
+
+    <BitBhField class="field">
+        <BitBhLabel class="field-label">Delivery notes</BitBhLabel>
+        <BitBhTextarea name="notes" rows="3" class="field-input field-textarea" />
+    </BitBhField>
+</BitBhFieldset>
+
+@* Rendered HTML:
+   <fieldset id="h-xxxx" aria-labelledby="h-xxxx-legend">
+       <div class="fieldset-header">
+           <div id="h-xxxx-legend" role="legend">Shipping details</div>
+           <p class="fieldset-hint">Where should we deliver your order?</p>
+       </div>
+       <div id="h-xxxx-field-1" class="field">
+           <label for="h-xxxx-input-1" id="h-xxxx-label-1">Street address</label>
+           <input id="h-xxxx-input-1" name="address" />
+       </div>
+       <div id="h-xxxx-field-2" class="field">
+           <label for="h-xxxx-input-2" id="h-xxxx-label-2">Country</label>
+           <select id="h-xxxx-input-2" name="country">…options…</select>
+       </div>
+       <div id="h-xxxx-field-3" class="field">
+           <label for="h-xxxx-input-3" id="h-xxxx-label-3">Delivery notes</label>
+           <textarea id="h-xxxx-input-3" name="notes"></textarea>
+       </div>
+   </fieldset>
+*@
+""";
+
+    private const string _disabledCode = """
+<BitBhFieldset Disabled="true" class="fieldset">
+    <div class="fieldset-header">
+        <BitBhLegend class="fieldset-legend">Account (locked)</BitBhLegend>
+        <p class="fieldset-hint">Verify your email to edit these fields.</p>
+    </div>
+
+    <BitBhField class="field">
+        <BitBhLabel class="field-label">Username</BitBhLabel>
+        <BitBhInput type="text" value="alice" class="field-input" />
+    </BitBhField>
+
+    <BitBhField class="field">
+        <BitBhLabel class="field-label">Email</BitBhLabel>
+        <BitBhInput type="email" value="alice@example.com" class="field-input" />
+    </BitBhField>
+</BitBhFieldset>
+
+@* The native <fieldset disabled> attribute disables every nested control,
+   and data-disabled cascades to the legend and each BitBhField for styling. *@
+""";
+
+    private const string _toggleCode = """
+@code {
+    private bool _disabled;
+}
+
+<div class="fieldset-toolbar">
+    <span class="fieldset-status" data-active="@(!_disabled)">
+        <span class="fieldset-status-dot"></span>
+        @(_disabled ? "Read-only" : "Editing")
+    </span>
+    <BitBhButton OnClick="@(() => _disabled = !_disabled)" class="btn">
+        @(_disabled ? "Enable" : "Disable")
+    </BitBhButton>
+</div>
+
+<BitBhFieldset Disabled="_disabled" class="fieldset">
+    <div class="fieldset-header">
+        <BitBhLegend class="fieldset-legend">Profile</BitBhLegend>
+        <p class="fieldset-hint">Shown publicly on your profile page.</p>
+    </div>
+
+    <BitBhField class="field">
+        <BitBhLabel class="field-label">Display name</BitBhLabel>
+        <BitBhInput type="text" class="field-input" />
+    </BitBhField>
+
+    <BitBhField class="field">
+        <BitBhLabel class="field-label">Bio</BitBhLabel>
+        <BitBhTextarea rows="2" class="field-input field-textarea" />
+    </BitBhField>
+</BitBhFieldset>
+""";
+
+    // ── Styles (these are appended to wwwroot/app.css; here they're shown for documentation) ──
+
+    private const string _basicCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.fieldset {
+    /* Reset native <fieldset> defaults and re-style as a card */
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin: 0;
+    background: var(--color-surface);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    max-width: 28rem;
+}
+
+.fieldset-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid #f4f4f5;
+}
+
+.fieldset-legend {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.fieldset-hint {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--color-muted);
+}
+
+/* Field primitives used inside the fieldset */
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    width: 100%;
+}
+
+.field-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #18181b;
+}
+
+.field-label[data-disabled] { opacity: 0.5; }
+
+.field-input {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d4d4d8;
+    border-radius: 0.4rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+    color: #18181b;
+    background: #fff;
+    transition: border-color 120ms ease;
+}
+
+.field-input:hover          { border-color: #a1a1af; }
+.field-input:focus-visible  { outline: 2px solid #2563eb; outline-offset: 1px; }
+.field-input[data-disabled] { opacity: 0.5; cursor: not-allowed; background: #fafafa; }
+
+.field-select   { appearance: none; padding-right: 2rem; }
+.field-textarea { resize: vertical; min-height: 4rem; }
+""";
+
+    private const string _disabledCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.fieldset {
+    /* Reset native <fieldset> defaults and re-style as a card */
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin: 0;
+    background: var(--color-surface);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    max-width: 28rem;
+}
+
+.fieldset-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid #f4f4f5;
+}
+
+.fieldset-legend {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.fieldset-hint {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--color-muted);
+}
+
+/* Field primitives used inside the fieldset */
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    width: 100%;
+}
+
+.field-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #18181b;
+}
+
+.field-label[data-disabled] { opacity: 0.5; }
+
+.field-input {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d4d4d8;
+    border-radius: 0.4rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+    color: #18181b;
+    background: #fff;
+    transition: border-color 120ms ease;
+}
+
+.field-input:hover          { border-color: #a1a1af; }
+.field-input:focus-visible  { outline: 2px solid #2563eb; outline-offset: 1px; }
+.field-input[data-disabled] { opacity: 0.5; cursor: not-allowed; background: #fafafa; }
+
+.field-select   { appearance: none; padding-right: 2rem; }
+.field-textarea { resize: vertical; min-height: 4rem; }
+
+/* Hooks cascaded from BitBhFieldset Disabled="true" */
+.fieldset[data-disabled] {
+    background: #fafafa;
+    box-shadow: none;
+}
+
+.fieldset[data-disabled] .field-input,
+.fieldset[data-disabled] .field-input:disabled {
+    background: #f4f4f5;
+    color: var(--color-muted);
+    cursor: not-allowed;
+}
+
+.fieldset-legend[data-disabled] {
+    color: var(--color-muted);
+}
+""";
+
+    private const string _toggleCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.fieldset {
+    /* Reset native <fieldset> defaults and re-style as a card */
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin: 0;
+    background: var(--color-surface);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    max-width: 28rem;
+}
+
+.fieldset-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid #f4f4f5;
+}
+
+.fieldset-legend {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.fieldset-hint {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--color-muted);
+}
+
+/* Field primitives used inside the fieldset */
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    width: 100%;
+}
+
+.field-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #18181b;
+}
+
+.field-label[data-disabled] { opacity: 0.5; }
+
+.field-input {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d4d4d8;
+    border-radius: 0.4rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+    color: #18181b;
+    background: #fff;
+    transition: border-color 120ms ease;
+}
+
+.field-input:hover          { border-color: #a1a1af; }
+.field-input:focus-visible  { outline: 2px solid #2563eb; outline-offset: 1px; }
+.field-input[data-disabled] { opacity: 0.5; cursor: not-allowed; background: #fafafa; }
+
+.field-select   { appearance: none; padding-right: 2rem; }
+.field-textarea { resize: vertical; min-height: 4rem; }
+
+/* Toolbar above the fieldset that toggles the disabled state */
+.fieldset-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 28rem;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem 0.85rem;
+    background: #f9fafb;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+}
+
+.fieldset-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-muted);
+}
+
+.fieldset-status[data-active="true"]                    { color: #15803d; }
+.fieldset-status-dot                                    { width: .5rem; height: .5rem; border-radius: 999px; background: #a1a1af; }
+.fieldset-status[data-active="true"] .fieldset-status-dot { background: #22c55e; }
+
+/* Enable / Disable button */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    background: #fff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+.btn:hover { background: #f4f4f5; }
+""";
+}

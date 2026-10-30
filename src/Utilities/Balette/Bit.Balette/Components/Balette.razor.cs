@@ -101,10 +101,15 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     [Inject] private IJSRuntime JS { get; set; } = default!;
     [Inject] private NavigationManager Navigation { get; set; } = default!;
     [Inject] private IServiceProvider Services { get; set; } = default!;
-    [Inject] private BaletteService Service { get; set; } = default!;
-    [Inject] private BaletteOptions Options { get; set; } = default!;
-    [Inject] private BaletteRanker Ranker { get; set; } = default!;
-    [Inject] private BaletteHistory History { get; set; } = default!;
+
+    // Resolved rather than injected, so the palette also works when the app never called AddBitBaletteServices. Null
+    // until first used: DisposeAsync leaves alone what was never resolved.
+    private BaletteRuntime? _runtime;
+    private BaletteRuntime Runtime => _runtime ??= BaletteRuntime.Of(Services);
+    private BaletteService Service => Runtime.Service;
+    private BaletteOptions Options => Runtime.Options;
+    private BaletteRanker Ranker => Runtime.Ranker;
+    private BaletteHistory History => Runtime.History;
 
     // ---- Parameters -------------------------------------------------------------------------
 
@@ -315,6 +320,9 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             return;
         }
 
+        // A trigger shows and announces the shortcut and the strings of the palette it opens, not the options.
+        Service.SetModalPalette(this, EffectiveToggleShortcut, S);
+
         if (Open && !_isOpen)
         {
             await OpenCoreAsync(null, null);
@@ -413,12 +421,17 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        Service.OpenRequested -= OpenFromServiceAsync;
-        Service.CloseRequested -= CloseFromServiceAsync;
-        Service.ExecuteRequested -= ExecuteFromServiceAsync;
-        Service.CommandsChanged -= OnRegistryChanged;
-        Service.RefreshRequested -= OnRefreshRequested;
-        History.Changed -= OnHistoryChanged;
+        if (_runtime is not null)
+        {
+            _runtime.Service.OpenRequested -= OpenFromServiceAsync;
+            _runtime.Service.CloseRequested -= CloseFromServiceAsync;
+            _runtime.Service.ExecuteRequested -= ExecuteFromServiceAsync;
+            _runtime.Service.CommandsChanged -= OnRegistryChanged;
+            _runtime.Service.RefreshRequested -= OnRefreshRequested;
+            _runtime.Service.ClearModalPalette(this);
+            _runtime.History.Changed -= OnHistoryChanged;
+        }
+
         Navigation.LocationChanged -= OnLocationChanged;
         _debounceCts?.Cancel();
         _executeCts?.Cancel();
@@ -2505,18 +2518,18 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             return toggles;
         }
 
-        if (ToggleShortcut is not null && BaletteKeyboardShortcut.TryParse(ToggleShortcut, out var ts))
+        if (EffectiveToggleShortcut is { } toggle)
         {
-            toggles.Add(ts.Normalized);
-        }
-        else if (Options.ToggleShortcut is not null)
-        {
-            toggles.Add(Options.ToggleShortcut.Normalized);
+            toggles.Add(toggle.Normalized);
         }
 
         toggles.AddRange(Options.AdditionalToggleShortcuts.Select(s => s.Normalized));
         return toggles;
     }
+
+    /// <summary>The <see cref="ToggleShortcut"/> parameter when it parses, otherwise <see cref="BaletteOptions.ToggleShortcut"/>.</summary>
+    private BaletteKeyboardShortcut? EffectiveToggleShortcut
+        => ToggleShortcut is not null && BaletteKeyboardShortcut.TryParse(ToggleShortcut, out var toggle) ? toggle : Options.ToggleShortcut;
 
     /// <summary>Passes on the parameters the browser layer acts on by itself when they changed since <c>init</c>.</summary>
     private void SyncBrowserOptions()

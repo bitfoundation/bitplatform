@@ -61,6 +61,7 @@
     <Import Project="MSBuild\DemoSharedEnumDocs.targets" />
 
     <ItemGroup>
+        <ProjectReference Include="..\..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Assets\Bit.BlazorUI.Assets.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Icons\Bit.BlazorUI.Icons.csproj" />

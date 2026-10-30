@@ -43,6 +43,10 @@ on:
         description: Brouter solution
         type: boolean
         default: true
+      blazorheadlessui:
+        description: BlazorHeadlessUI solution
+        type: boolean
+        default: true
       e2e:
         description: E2E suites
         type: boolean
@@ -464,6 +468,11 @@ jobs:
         dotnet build src/BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj --output ./packages --configuration Release
 
+    - name: Build and pack BlazorUI.AI
+      run: |
+        dotnet build src/BlazorUI/Bit.BlazorUI.AI/Bit.BlazorUI.AI.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazorUI/Bit.BlazorUI.AI/Bit.BlazorUI.AI.csproj --output ./packages --configuration Release
+
     - name: Build and pack BlazorUI.Assets
       run: |
         dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -493,6 +502,16 @@ jobs:
       run: |
         dotnet build src/Brouter/Bit.Brouter.Generators/Bit.Brouter.Generators.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Brouter/Bit.Brouter.Generators/Bit.Brouter.Generators.csproj --output ./packages --configuration Release
+
+    - name: Build and pack BlazorHeadlessUI
+      run: |
+        dotnet build src/BlazorHeadlessUI/Bit.BlazorHeadlessUI/Bit.BlazorHeadlessUI.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazorHeadlessUI/Bit.BlazorHeadlessUI/Bit.BlazorHeadlessUI.csproj --output ./packages --configuration Release
+
+    - name: Build and pack BlazorHeadlessUI.Testing
+      run: |
+        dotnet build src/BlazorHeadlessUI/Bit.BlazorHeadlessUI.Testing/Bit.BlazorHeadlessUI.Testing.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazorHeadlessUI/Bit.BlazorHeadlessUI.Testing/Bit.BlazorHeadlessUI.Testing.csproj --output ./packages --configuration Release
 
     - name: Pack Boilerplate template
       run: dotnet pack src/Templates/Boilerplate/Bit.Boilerplate.ProjectTemplate.csproj --output ./packages --configuration Release
@@ -548,6 +567,16 @@ jobs:
     name: brouter e2e
     if: ${{ inputs.brouter && inputs.e2e }}
     uses: ./.github/workflows/bit.ci.Brouter.e2e.yml
+
+  blazorheadlessui:
+    name: blazorheadlessui
+    if: ${{ inputs.blazorheadlessui }}
+    uses: ./.github/workflows/bit.ci.BlazorHeadlessUI.yml
+
+  blazorheadlessui_e2e:
+    name: blazorheadlessui e2e
+    if: ${{ inputs.blazorheadlessui && inputs.e2e }}
+    uses: ./.github/workflows/bit.ci.BlazorHeadlessUI.e2e.yml
 
   toolings:
     name: toolings

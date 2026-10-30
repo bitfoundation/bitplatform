@@ -1,0 +1,34 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@if (_supported)
+{
+    <span @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+          id="@_Id"
+          style="@StyleBuilder.Value"
+          class="@ClassBuilder.Value"
+          dir="@Dir?.ToString().ToLower()">
+        @* The name says what a press does next - Dictate, or Stop dictation - and that is the one thing announced: a
+           pressed state on top of a name that changes with it would say the same twice and read ambiguously ("Stop
+           dictation, pressed"), so the toggle button leaves aria-pressed out, as it does by default for a name that
+           changes. The live region beside it says that the microphone is on. *@
+        <BitToggleButton IconName="Microphone"
+                         IsChecked="@_listening"
+                         OnClick="ToggleAsync"
+                         Disabled="Disabled"
+                         Variant="BitVariant.Text"
+                         OnAriaLabel="@Strings.StopDictation"
+                         OffAriaLabel="@Strings.StartDictation"
+                         OnTitle="@Strings.StopDictation"
+                         OffTitle="@Strings.StartDictation"
+                         Class="bit-aivci-btn"
+                         Styles="@Styles?.Button"
+                         Classes="_ButtonClasses" />
+
+        @* The name of the button does not say that the microphone is live; this does, politely. *@
+        <span role="status"
+              aria-live="polite"
+              style="@Styles?.LiveRegion"
+              class="bit-aivci-sts @Classes?.LiveRegion">@_status</span>
+    </span>
+}

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Components;
@@ -6,89 +7,184 @@ using Microsoft.AspNetCore.Components;
 namespace Bit.Bdnd.Demo.Client.Examples;
 
 /// <summary>
-/// A small, dependency-free Razor/C# syntax highlighter for the demo's code snippets. It returns HTML in
-/// which every token is wrapped in a <c>&lt;span class="tok-*"&gt;</c> and all text is already encoded, to
+/// A small, dependency-free syntax highlighter for the demo's code snippets - Razor, C#, CSS and JSON. It returns
+/// HTML in which every token is wrapped in a <c>&lt;span class="tok-*"&gt;</c> and all text is already encoded, to
 /// render inside the site kit's <c>pre.bb-code</c>; the token colours are in wwwroot/demo.css.
 /// <para>
 /// It reads a .razor file the way the Razor compiler does - markup, with C# behind every <c>@</c>: an
 /// <c>@code</c> block, a control statement whose body switches back to markup on a line that starts with a
 /// tag, an expression inside an attribute value, a render-fragment template. It is pragmatic rather than a
 /// full lexer: it covers the constructs the demo pages use, and tells a type from a member by the shape of
-/// the code around it and by the names the source itself declares, rather than by knowing the types. The
-/// one thing it does look up is the parameters of the components it can find, since only those say whether
-/// an attribute's value is text or C#.
+/// the code around it and by the names the source itself declares, rather than by knowing the types. What it
+/// does look up is the parameters of the components a snippet names, since only those say whether an
+/// attribute's value is text or C#, and the services the demo's own components inject, which a snippet written
+/// as code in one of them uses without declaring.
 /// </para>
 /// <para>
-/// The Bdnd and Blow demos share this file, and CodeBlock.razor with it, byte for byte but for the namespace:
-/// it names no library of its own, and finds the components through the demo's references. Change it in one
-/// demo and copy it to the other.
+/// The Bdnd, Blow and Balette demos share this file, SyntaxHighlighter.CssJson.cs and CodeBlock.razor byte for
+/// byte but for the namespace: they name no library of their own, and find the components through the demo's
+/// references. Change them in one demo and copy them to the other two.
 /// </para>
 /// </summary>
-public static class SyntaxHighlighter
+public static partial class SyntaxHighlighter
 {
-    // The parameters of the components a snippet can render - the library's, the demo's own and the framework's - by
-    // component name, then parameter name: whether each one takes a string. Razor reads a string parameter's value
-    // as text and any other's as C#, so `Type="note"` is text and `Item="note"` is C#, alike as they read.
-    private static readonly Lazy<Dictionary<string, Dictionary<string, bool>>> Components = new(FindComponents);
+    // The HTML of the snippets highlighted so far. A page's snippets are constants, so each is lexed once per process
+    // - once on the server that prerenders it, once in the browser - rather than on every visit to the page.
+    private static readonly ConcurrentDictionary<(string Code, Language Language), string> Highlighted = new();
+
+    // A snippet built from a page's state is one per combination of its settings: past this many, a new snippet is
+    // lexed every time rather than kept, so a server that prerenders for every visitor holds a bounded number.
+    private const int MaxHighlighted = 1024;
+
+    // The assemblies whose components a snippet can render: the ones the demo references that are built on Blazor's
+    // components - the library's and the framework's - and then the demo itself, so a library's component keeps its
+    // name over a demo's of the same name.
+    private static readonly Lazy<Assembly[]> ComponentAssemblies = new(FindComponentAssemblies);
+
+    // The components of each of those assemblies by tag name, listed the first time a snippet names a component the
+    // assemblies before it lack.
+    private static readonly ConcurrentDictionary<Assembly, Dictionary<string, Type>> ComponentTypes = new();
+
+    // The parameters of each component a snippet names, by component name, then parameter name: whether each one
+    // takes a string. Razor reads a string parameter's value as text and any other's as C#, so `Type="note"` is text
+    // and `Item="note"` is C#, alike as they read. Null for a name that is no component, or one whose parameters
+    // cannot be read.
+    private static readonly ConcurrentDictionary<string, Dictionary<string, bool>?> ComponentParameters = new(StringComparer.Ordinal);
+
+    // The names the demo's own components inject a service as - `@inject NavigationManager Nav` - which a snippet
+    // written as code in one of them uses as the member it is there: `Nav.NavigateTo(...)` calls the service, not a
+    // static method of a type named Nav.
+    private static readonly Lazy<HashSet<string>> InjectedNames = new(FindInjectedNames);
+
+    // Reflection over a trimmed app can fail in more ways than it documents, and a failure must not stop the
+    // highlighting: none of the lookups below throws, and none caches an exception. A component, an assembly or a
+    // service that cannot be read is only coloured by the shape of the code around it instead.
+
+    private static Dictionary<string, bool>? ParametersOf(string component)
+    {
+        return ComponentParameters.GetOrAdd(component, static name =>
+        {
+            foreach (var assembly in ComponentAssemblies.Value)
+            {
+                if (ComponentTypes.GetOrAdd(assembly, FindComponents).TryGetValue(name, out var type))
+                {
+                    return ReadParameters(type);
+                }
+            }
+            return null;
+        });
+    }
+
+    // A reference a published app trimmed away is skipped.
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "A reference trimming removed renders no component a snippet can name, and is skipped.")]
+    private static Assembly[] FindComponentAssemblies()
+    {
+        var demo = typeof(SyntaxHighlighter).Assembly;
+        var blazor = typeof(IComponent).Assembly.GetName().Name;
+        var assemblies = new List<Assembly>();
+        try
+        {
+            foreach (var reference in demo.GetReferencedAssemblies())
+            {
+                try
+                {
+                    var assembly = Assembly.Load(reference);
+                    if (reference.Name == blazor || assembly.GetReferencedAssemblies().Any(r => r.Name == blazor))
+                    {
+                        assemblies.Add(assembly);
+                    }
+                }
+                catch
+                {
+                    // Trimmed away, or not loadable here.
+                }
+            }
+        }
+        catch
+        {
+            // The references cannot be listed: the demo's own components are still there.
+        }
+        assemblies.Add(demo);
+        return [.. assemblies];
+    }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The demo renders the components its snippets show, so trimming keeps them; one it removed is coloured by the shape of its values instead.")]
-    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "A rendered component keeps its public properties: OpenComponent<TComponent> preserves them for parameter binding.")]
-    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "A rendered component keeps its public properties: OpenComponent<TComponent> preserves them for parameter binding.")]
-    private static Dictionary<string, Dictionary<string, bool>> FindComponents()
+    private static Dictionary<string, Type> FindComponents(Assembly assembly)
     {
-        var components = new Dictionary<string, Dictionary<string, bool>>(StringComparer.Ordinal);
-        foreach (var assembly in ComponentAssemblies())
+        var components = new Dictionary<string, Type>(StringComparer.Ordinal);
+        foreach (var type in LoadableTypes(assembly))
         {
-            foreach (var type in LoadableTypes(assembly))
+            try
             {
                 if (type.IsAbstract || !typeof(IComponent).IsAssignableFrom(type))
                 {
                     continue;
                 }
 
-                // Like the binding, a parameter's name is matched regardless of case.
-                var parameters = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
-                foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
-                {
-                    if (property.IsDefined(typeof(ParameterAttribute), inherit: true))
-                    {
-                        parameters[property.Name] = property.PropertyType == typeof(string);
-                    }
-                }
-
                 // A generic component's tag has no arity: Virtualize`1 is <Virtualize>.
                 var tick = type.Name.IndexOf('`');
-                components.TryAdd(tick < 0 ? type.Name : type.Name[..tick], parameters);
+                components.TryAdd(tick < 0 ? type.Name : type.Name[..tick], type);
+            }
+            catch
+            {
+                // A type whose base types or interfaces did not load.
             }
         }
         return components;
     }
 
-    // The assemblies whose components the demo can render: the ones it references that are built on Blazor's
-    // components - the library's and the framework's - and then the demo itself, so a library's component keeps
-    // its name over a demo's of the same name. One a published app trimmed away is skipped.
-    private static IEnumerable<Assembly> ComponentAssemblies()
+    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "A rendered component keeps its public properties: OpenComponent<TComponent> preserves them for parameter binding.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "A rendered component keeps its public properties: OpenComponent<TComponent> preserves them for parameter binding.")]
+    private static Dictionary<string, bool>? ReadParameters(Type component)
     {
-        var demo = typeof(SyntaxHighlighter).Assembly;
-        var blazor = typeof(IComponent).Assembly.GetName().Name;
-        foreach (var reference in demo.GetReferencedAssemblies())
+        try
         {
-            Assembly assembly;
+            // Like the binding, a parameter's name is matched regardless of case.
+            var parameters = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+            foreach (var property in component.GetProperties(BindingFlags.Instance | BindingFlags.Public))
+            {
+                if (property.IsDefined(typeof(ParameterAttribute), inherit: true))
+                {
+                    parameters[property.Name] = property.PropertyType == typeof(string);
+                }
+            }
+            return parameters;
+        }
+        catch
+        {
+            // A property whose type, or an attribute whose type, did not load.
+            return null;
+        }
+    }
+
+    // Only the demo's own components are read: a snippet is written as code in one of them.
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The demo renders its own components, so trimming keeps them; one it removed injects nothing.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "A rendered component keeps its injected properties: the component activator sets them.")]
+    private static HashSet<string> FindInjectedNames()
+    {
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var type in LoadableTypes(typeof(SyntaxHighlighter).Assembly))
+        {
             try
             {
-                assembly = Assembly.Load(reference);
+                if (!typeof(IComponent).IsAssignableFrom(type))
+                {
+                    continue;
+                }
+                foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
+                {
+                    if (property.IsDefined(typeof(InjectAttribute), inherit: false))
+                    {
+                        names.Add(property.Name);
+                    }
+                }
             }
-            catch (Exception e) when (e is FileNotFoundException or FileLoadException or BadImageFormatException)
+            catch
             {
-                continue;
-            }
-
-            if (reference.Name == blazor || assembly.GetReferencedAssemblies().Any(r => r.Name == blazor))
-            {
-                yield return assembly;
+                // A component whose properties did not load.
             }
         }
-        yield return demo;
+        return names;
     }
 
     // The types of an assembly that load. Trimming can remove a type another one depends on, which makes GetTypes
@@ -104,64 +200,131 @@ public static class SyntaxHighlighter
         {
             return e.Types.OfType<Type>();
         }
+        catch
+        {
+            return [];
+        }
     }
 
     /// <summary>
-    /// Highlights <paramref name="code"/> - <c>razor</c> (a .razor file, the default) or <c>csharp</c> (plain C#,
-    /// such as a Program.cs excerpt) - and returns HTML that is safe to render verbatim.
+    /// Highlights <paramref name="code"/> - <c>razor</c> (a .razor file, the default), <c>csharp</c> (plain C#,
+    /// such as a Program.cs excerpt), <c>css</c> or <c>json</c> - and returns HTML that is safe to render verbatim.
     /// </summary>
-    /// <exception cref="ArgumentException"><paramref name="language"/> is neither <c>razor</c> nor <c>csharp</c>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="language"/> is none of <c>razor</c>, <c>csharp</c>, <c>css</c> and <c>json</c>.</exception>
     public static string Highlight(string code, string language = "razor")
     {
         // Outside the safety net: a language it cannot read is the caller's mistake, not the snippet's.
-        var csharp = IsCSharp(language);
+        var kind = LanguageOf(language);
+        if (Highlighted.TryGetValue((code, kind), out var html))
+        {
+            return html;
+        }
+
         try
         {
-            return Highlight(Normalize(code), csharp);
+            html = Highlight(Normalize(code), kind);
         }
         catch
         {
             // A snippet the lexer trips over is still worth showing, uncoloured.
-            return System.Net.WebUtility.HtmlEncode(Normalize(code));
+            html = System.Net.WebUtility.HtmlEncode(Normalize(code));
         }
+
+        if (Highlighted.Count < MaxHighlighted)
+        {
+            Highlighted.TryAdd((code, kind), html);
+        }
+        return html;
     }
 
     /// <summary>
     /// <see cref="Highlight(string, string)"/> without its safety net: a lexer bug throws instead of leaving the
     /// snippet uncoloured, which is how the demo's tests find one.
     /// </summary>
-    /// <exception cref="ArgumentException"><paramref name="language"/> is neither <c>razor</c> nor <c>csharp</c>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="language"/> is none of <c>razor</c>, <c>csharp</c>, <c>css</c> and <c>json</c>.</exception>
     public static string HighlightOrThrow(string code, string language = "razor")
     {
-        return Highlight(Normalize(code), IsCSharp(language));
+        return Highlight(Normalize(code), LanguageOf(language));
     }
 
-    private static string Highlight(string code, bool csharp)
+    private enum Language
     {
+        Razor,
+        CSharp,
+        Css,
+        Json,
+    }
+
+    private static string Highlight(string code, Language language)
+    {
+        switch (language)
+        {
+            case Language.Css:
+                return new CssLexer(code).Run();
+            case Language.Json:
+                return new JsonLexer(code).Run();
+        }
+
         // Two passes: the first learns the names the source declares, which the second colours by - a page's
         // markup uses the members of the @code block under it.
+        var csharp = language == Language.CSharp;
         var declared = new Lexer(code, null).Collect(csharp);
         return new Lexer(code, declared).Run(csharp);
     }
 
-    // Whether `language` is C# rather than Razor. Any other name throws rather than falling back to Razor, which
-    // would take every `<` after a `;` or a `}` in a C# snippet for a tag.
-    private static bool IsCSharp(string language)
+    // The language `language` names. Any other name throws rather than falling back to Razor, which would take every
+    // `<` after a `;` or a `}` in a C# snippet for a tag.
+    private static Language LanguageOf(string language)
     {
-        if (string.Equals(language, "csharp", StringComparison.OrdinalIgnoreCase))
+        return language?.ToLowerInvariant() switch
         {
-            return true;
-        }
-        if (string.Equals(language, "razor", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-        throw new ArgumentException($"The highlighter reads \"razor\" or \"csharp\", not \"{language}\".", nameof(language));
+            "razor" => Language.Razor,
+            "csharp" => Language.CSharp,
+            "css" => Language.Css,
+            "json" => Language.Json,
+            _ => throw new ArgumentException($"The highlighter reads \"razor\", \"csharp\", \"css\" or \"json\", not \"{language}\".", nameof(language)),
+        };
     }
 
     private static string Normalize(string code)
     {
         return code.Replace("\r\n", "\n").Replace('\r', '\n');
+    }
+
+    // Writes `s[start..end]` to `html`, encoded, in a token's span when `cls` is one: the one way any of the lexers
+    // writes the source out.
+    private static void Emit(StringBuilder html, string? cls, string s, int start, int end)
+    {
+        if (end <= start)
+        {
+            return;
+        }
+        if (cls is not null)
+        {
+            html.Append("<span class=\"").Append(cls).Append("\">");
+        }
+        for (var k = start; k < end && k < s.Length; k++)
+        {
+            switch (s[k])
+            {
+                case '&': html.Append("&amp;"); break;
+                case '<': html.Append("&lt;"); break;
+                case '>': html.Append("&gt;"); break;
+                default: html.Append(s[k]); break;
+            }
+        }
+        if (cls is not null)
+        {
+            html.Append("</span>");
+        }
+    }
+
+    // Where a comment that opens at `from` with an opener `openLength` characters long ends: after its `close`, or at
+    // the end of the source when it is never closed.
+    private static int DelimitedEnd(string s, int from, int openLength, string close)
+    {
+        var end = s.IndexOf(close, Math.Min(from + openLength, s.Length), StringComparison.Ordinal);
+        return end < 0 ? s.Length : end + close.Length;
     }
 
     // The names a source declares - its fields, properties, parameters and locals - and its methods.
@@ -256,6 +419,15 @@ public static class SyntaxHighlighter
         private bool _openGeneric;
         // Inside an attribute's brackets at the start of a member, `[Parameter, EditorRequired]`.
         private bool _attribute;
+        // In the header of a type's declaration, from its name to its body: `record Note(string Text) : Base(Text), INote`.
+        private bool _typeHeader;
+        // How deep the lexer is in that header's brackets - a primary constructor's parameters, a base's arguments.
+        private int _headerDepth;
+        // Past the header's ':', where it lists the types it derives from and its constraints.
+        private bool _baseList;
+
+        // A name in the base list, outside its brackets, is a type: `: IDisposable`, `: Base(Text)`, `where T : INote`.
+        private bool InBaseList => _baseList && _headerDepth == 0;
 
         public string Run(bool csharp)
         {
@@ -469,8 +641,9 @@ public static class SyntaxHighlighter
             }
 
             var typeArgument = attribute[0] == 'T' && (attribute.Length == 1 || char.IsUpper(attribute[1]));
+            var parameters = ParametersOf(component);
             bool csharp;
-            if (Components.Value.TryGetValue(component, out var parameters) && parameters.TryGetValue(attribute, out var text))
+            if (parameters is not null && parameters.TryGetValue(attribute, out var text))
             {
                 csharp = !text;
                 typeArgument = false;
@@ -978,6 +1151,28 @@ public static class SyntaxHighlighter
                 _generic = 0;
             }
 
+            // A type's header ends where its body, or the `;` of a record without one, starts.
+            if (c is ';' or '{' or '}')
+            {
+                _typeHeader = false;
+                _baseList = false;
+            }
+            else if (_typeHeader)
+            {
+                if (c is '(' or '[')
+                {
+                    _headerDepth++;
+                }
+                else if (c is ')' or ']')
+                {
+                    _headerDepth--;
+                }
+                else if (c == ':' && _headerDepth == 0)
+                {
+                    _baseList = true;
+                }
+            }
+
             // An attribute opens a member or follows another one; a '[' anywhere else is an index or a collection.
             if (c == '[' && _last is '{' or '}' or ';' or ']' or '@')
             {
@@ -1028,15 +1223,23 @@ public static class SyntaxHighlighter
             }
             else if (_last == '.')
             {
-                cls = call ? "tok-fn" : upper && (_generic > 0 || _attribute) ? "tok-type" : null;
+                // A base's constructor, `: Base(Text)`, is called by the type's name.
+                cls = call && !InBaseList ? "tok-fn" : upper && (_generic > 0 || _attribute || InBaseList) ? "tok-type" : null;
             }
             else if (_prevWord is not null && TypeIntroducers.Contains(_prevWord))
             {
                 cls = "tok-type";
+                if (_prevWord is "class" or "record" or "struct" or "interface" or "enum")
+                {
+                    // The name a type is declared by: its header follows.
+                    _typeHeader = true;
+                    _headerDepth = 0;
+                    _baseList = false;
+                }
             }
             else if (call)
             {
-                cls = _attribute ? "tok-type" : "tok-fn";
+                cls = _attribute || InBaseList ? "tok-type" : "tok-fn";
             }
             else if (_declared.Methods.Contains(word))
             {
@@ -1063,16 +1266,16 @@ public static class SyntaxHighlighter
         }
 
         // Whether a capitalised name that is not called is used as a type: in type arguments (unless it names a
-        // tuple's element there) or an attribute, or followed by a declared name, type arguments, a nullable or
-        // array mark, or a member access - unless the source declares it, which makes `Card.Text` a member's
-        // member where `ItemTypes.Box` is a type's.
+        // tuple's element there), an attribute or a base list, or followed by a declared name, type arguments, a
+        // nullable or array mark, or a member access - unless the source declares it or the demo's components inject
+        // a service by that name, which makes `Card.Text` a member's member where `ItemTypes.Box` is a type's.
         private bool IsTypePosition(string word, int next, char nc)
         {
             if (_generic > 0 && AfterType())
             {
                 return false;
             }
-            if (_generic > 0 || _attribute)
+            if (_generic > 0 || _attribute || InBaseList)
             {
                 return true;
             }
@@ -1098,7 +1301,7 @@ public static class SyntaxHighlighter
             }
             if (nc == '.')
             {
-                return !_declared.Names.Contains(word);
+                return !_declared.Names.Contains(word) && !InjectedNames.Value.Contains(word);
             }
             return IsIdentStart(nc) && !OperatorWords.Contains(ReadIdent(next));
         }
@@ -1375,6 +1578,8 @@ public static class SyntaxHighlighter
             _generic = 0;
             _openGeneric = false;
             _attribute = false;
+            _typeHeader = false;
+            _baseList = false;
         }
 
         // A literal was the last token: it ends whatever came before it.
@@ -1447,8 +1652,7 @@ public static class SyntaxHighlighter
         // An opener of `openLength` characters, then everything through `close`: a comment.
         private void Delimited(string cls, int openLength, string close)
         {
-            var end = s.IndexOf(close, Math.Min(_i + openLength, s.Length), StringComparison.Ordinal);
-            Take(cls, (end < 0 ? s.Length : end + close.Length) - _i);
+            Take(cls, DelimitedEnd(s, _i, openLength, close) - _i);
         }
 
         private void Whitespace()
@@ -1468,13 +1672,10 @@ public static class SyntaxHighlighter
 
         private void Span(string cls, int start, int end)
         {
-            if (end <= start || _collecting)
+            if (!_collecting)
             {
-                return;
+                Emit(_sb, cls, s, start, end);
             }
-            _sb.Append("<span class=\"").Append(cls).Append("\">");
-            Plain(start, end);
-            _sb.Append("</span>");
         }
 
         // Emits the next `length` characters uncoloured and moves past them.
@@ -1486,19 +1687,9 @@ public static class SyntaxHighlighter
 
         private void Plain(int start, int end)
         {
-            if (_collecting)
+            if (!_collecting)
             {
-                return;
-            }
-            for (var k = start; k < end && k < s.Length; k++)
-            {
-                switch (s[k])
-                {
-                    case '&': _sb.Append("&amp;"); break;
-                    case '<': _sb.Append("&lt;"); break;
-                    case '>': _sb.Append("&gt;"); break;
-                    default: _sb.Append(s[k]); break;
-                }
+                Emit(_sb, null, s, start, end);
             }
         }
     }

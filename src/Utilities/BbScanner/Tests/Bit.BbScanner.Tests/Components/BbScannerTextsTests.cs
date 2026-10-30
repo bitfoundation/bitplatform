@@ -1,5 +1,7 @@
 ﻿using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 
 namespace Bit.BbScanner.Tests.Components;
 
@@ -22,6 +24,9 @@ public class BbScannerTextsTests : BunitContext
     public BbScannerTextsTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
+
+        // A page that offers no camera API, which an interactive scanner reports as NotSupported.
+        Services.AddSingleton<IJSRuntime>(new FakeScannerPage { Capabilities = 2 });
         SetRendererInfo(new RendererInfo("Static", isInteractive: false));
     }
 
@@ -63,7 +68,7 @@ public class BbScannerTextsTests : BunitContext
         Assert.AreEqual("El escáner no está disponible aquí.", scanner.Find(".bit-bbscanner__message--error").TextContent.Trim());
         Assert.AreEqual("El escáner no está disponible aquí.", scanner.Find("[role=alert]").TextContent);
         Assert.IsNotNull(error);
-        Assert.Contains("WebAssembly", error.Message, "OnError receives the exception with its message untouched.");
+        Assert.Contains("camera API", error.Message, "OnError receives the exception with its message untouched.");
     }
 
     [TestMethod]

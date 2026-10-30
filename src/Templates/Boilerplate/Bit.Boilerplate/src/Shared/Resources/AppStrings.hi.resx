@@ -2096,13 +2096,15 @@
     <data name="SignOutOfAllAccounts" xml:space="preserve">
     <value>इस डिवाइस के सभी खातों से साइन आउट करें</value>
   </data>
+  <!--#if (framework == 'net11.0') -->
     <data name="KioskTitle" xml:space="preserve">
     <value>कियोस्क मोड</value>
   </data>
     <data name="KioskMessage" xml:space="preserve">
-    <value>यह ऐप स्क्रीन पर लॉक है: Windows की, Alt+Tab, Task Manager और विंडो बंद करना सभी अवरुद्ध हैं। बाहर निकलने के लिए बटन का उपयोग करें।</value>
+    <value>यह ऐप स्क्रीन पर लॉक है: Windows की, Alt+Tab और विंडो बंद करना सभी अवरुद्ध हैं। बाहर निकलने के लिए बटन का उपयोग करें।</value>
   </data>
     <data name="KioskExitApp" xml:space="preserve">
     <value>ऐप से बाहर निकलें</value>
   </data>
+  <!--#endif -->
 </root>

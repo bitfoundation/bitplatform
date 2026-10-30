@@ -19,7 +19,7 @@ namespace Bit.BlazorUI.Tests.Utils;
 [TestClass]
 public sealed partial class BitItemPropertyReadersContractTests
 {
-    private static readonly Assembly[] Packages = [typeof(BitButton).Assembly, typeof(BitDataGrid<>).Assembly];
+    private static readonly Assembly[] Packages = [typeof(BitButton).Assembly, typeof(BitDataGrid<>).Assembly, typeof(BitAiChat).Assembly];
 
     [TestMethod]
     public void EveryComponentThatReadsItemsByPropertyNameShouldKeepThePropertiesOfItsItemType()
@@ -50,7 +50,7 @@ public sealed partial class BitItemPropertyReadersContractTests
     // Every generic type declared (in any of its partial files) in a source file that reads an item's property by name.
     private static IEnumerable<(Type Type, string File)> FindReaders()
     {
-        var roots = new[] { SourceFiles.GetDirectory("Bit.BlazorUI"), SourceFiles.GetDirectory("Bit.BlazorUI.Extras") };
+        var roots = new[] { SourceFiles.GetDirectory("Bit.BlazorUI"), SourceFiles.GetDirectory("Bit.BlazorUI.Extras"), SourceFiles.GetDirectory("Bit.BlazorUI.AI") };
         var types = Packages.SelectMany(a => a.GetTypes()).Where(t => t.IsGenericTypeDefinition).ToArray();
         var seen = new HashSet<Type>();
 

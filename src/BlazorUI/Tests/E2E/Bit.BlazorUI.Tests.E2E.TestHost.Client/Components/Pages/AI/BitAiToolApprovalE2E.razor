@@ -1,0 +1,103 @@
+﻿@page "/e2e/aitoolapproval"
+@inject IBitAiToolRegistry ToolRegistry
+
+<PageTitle>BitAiToolApproval E2E</PageTitle>
+
+<h1>BitAiToolApproval</h1>
+
+@* Every decision of a prompt with no session is appended here as prompt:decision:status-of-its-call, in order. *@
+<p>Log: <span id="tap-log">@string.Join(",", _log)</span> <button id="tap-reset" @onclick="Reset">Reset the calls</button></p>
+
+@* Without a session the decision is recorded on the call itself. delete_records is destructive, send_email writes and
+   says why it asks. *@
+<E2ESection Id="basic" Title="Basic">
+    <div style="width:560px">
+        <BitAiToolApproval Id="tap-destructive" Call="_destructiveCall" OnDecision="d => Log(_destructiveCall, d)" />
+        <BitAiToolApproval Id="tap-write" Call="_writeCall" OnDecision="d => Log(_writeCall, d)" />
+        <BitAiToolApproval Id="tap-unnamed" Call="_unnamedCall" OnDecision="d => Log(_unnamedCall, d)" />
+        <BitAiToolApproval Id="tap-aria" Call="_writeCall" AriaLabel="Confirm sending the email" />
+    </div>
+</E2ESection>
+
+@* The keyboard: the answers are the next three stops after this button, from the most cautious on. *@
+<E2ESection Id="keyboard" Title="Keyboard">
+    <button id="tap-kb-before">Before the prompt</button>
+    <div style="width:560px">
+        <BitAiToolApproval Id="tap-kb" Call="_keyboardCall" OnDecision="d => Log(_keyboardCall, d)" />
+    </div>
+    <button id="tap-kb-after">After the prompt</button>
+</E2ESection>
+
+@* A session waiting on delete_records: the prompt hands the decision to it, and the turn goes on. The prompt is shown
+   for as long as a call of the conversation waits, inside a form whose submits are counted. *@
+<E2ESection Id="session" Title="In a session">
+    <form @onsubmit="() => _submits++">
+        <button type="button" id="ss-ask" @onclick="AskAsync">Delete the inactive users</button>
+        <p>Submits: <span id="ss-submits">@_submits</span></p>
+        <p>Approval requests: <span id="ss-requests">@_requests</span></p>
+        <p>Session: <span id="ss-state">@(_session.IsGenerating ? "Generating" : "Idle")</span></p>
+        <p>Calls: <span id="ss-calls">@string.Join(",", CallsOf(_session).Select(c => $"{c.ToolCallId}:{c.Status}:{c.Approval}"))</span></p>
+        <p>Answer: <span id="ss-answer">@(_session.Conversation.Messages.LastOrDefault(m => m.Role.IsAssistant)?.GetText())</span></p>
+        <div style="width:560px">
+            @foreach (var call in CallsOf(_session).Where(c => c.Status is BitAiToolCallStatus.AwaitingApproval))
+            {
+                <BitAiToolApproval @key="call.PartId" Id="@($"tap-ss-{call.ToolCallId}")" Call="call" Session="_session" OnDecision="d => _decisions.Add(d.ToString())" />
+            }
+        </div>
+        <p>Decisions: <span id="ss-decisions">@string.Join(",", _decisions)</span></p>
+    </form>
+</E2ESection>
+
+@* Disabled answers nothing, and drops the page's activation handlers from its root; an enabled one keeps them. *@
+<E2ESection Id="disabled" Title="Disabled">
+    <p>Root clicks: <span id="tap-root-clicks">@_rootClicks</span></p>
+    <div style="width:560px">
+        <BitAiToolApproval Id="tap-dis" Disabled Call="_disabledCall" OnDecision="d => Log(_disabledCall, d)" @onclick="() => _rootClicks++" />
+        <BitAiToolApproval Id="tap-enabled" Call="_enabledCall" @onclick="() => _rootClicks++" />
+        <BitParams Parameters="_disabledParams">
+            <BitAiToolApproval Id="tap-dis-params" Call="_paramsCall" />
+            <BitAiToolApproval Id="tap-dis-override" Disabled="false" Call="_paramsCall" />
+        </BitParams>
+    </div>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style">
+    <div style="width:560px">
+        <div id="tap-vars"
+             style="--bit-AiToolApproval-color: rgb(1, 2, 3); --bit-AiToolApproval-background: rgb(4, 5, 6); --bit-AiToolApproval-destructive-background: rgb(7, 8, 9); --bit-AiToolApproval-radius: 11px; --bit-AiToolApproval-padding: 13px; --bit-AiToolApproval-gap: 17px;">
+            <BitAiToolApproval Id="tap-vars-write" Call="_writeCall" />
+            <BitAiToolApproval Id="tap-vars-destructive" Call="_destructiveCall" />
+        </div>
+        @* The surface of every prompt alone: a destructive one keeps the error tint of its own. *@
+        <div style="--bit-AiToolApproval-background: rgb(4, 5, 6);">
+            <BitAiToolApproval Id="tap-bg-write" Call="_writeCall" />
+            <BitAiToolApproval Id="tap-bg-destructive" Call="_destructiveCall" />
+        </div>
+        @* The buttons are BitButtons: their own variables still win over the defaults the prompt gives them. *@
+        <div style="--bit-Button-background: rgb(20, 21, 22); --bit-Button-border-color: rgb(23, 24, 25);">
+            <BitAiToolApproval Id="tap-buttons" Call="_destructiveCall" />
+        </div>
+        <BitAiToolApproval Id="tap-styles" Call="_writeCall"
+                           Styles="@(new() { Text = "color: rgb(200, 0, 0)", Actions = "gap: 3px" })"
+                           Classes="@(new() { Root = "e2e-tap-root", ApproveButton = new() { Root = "e2e-tap-allow" } })" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div style="width:560px">
+        <BitAiToolApproval Id="tap-ltr" Call="_writeCall" />
+        <BitAiToolApproval Id="tap-rtl" Dir="BitDir.Rtl" Call="_writeCall" />
+        <div dir="rtl">
+            <BitAiToolApproval Id="tap-rtl-inherited" Call="_writeCall" />
+        </div>
+    </div>
+</E2ESection>
+
+@* A narrow box: the question keeps a readable width and the answers wrap onto a line of their own. *@
+<E2ESection Id="narrow" Title="Narrow">
+    <div style="width:240px">
+        <BitAiToolApproval Id="tap-narrow" Call="_writeCall" />
+    </div>
+</E2ESection>
+
+<E2EStatus />

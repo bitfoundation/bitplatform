@@ -1,0 +1,133 @@
+﻿namespace Bit.BlazorUI;
+
+/// <summary>
+/// BitAiDataTable renders a JSON array of objects as a table, one row per object and one column per key.
+/// </summary>
+/// <remarks>
+/// The column set is the union of the keys seen, in the order they first appear. The union matters while streaming:
+/// early rows often have fewer fields than later ones, and a table built from the first row alone would drop columns
+/// as they appear. A nested object or array is shown as its JSON text, and a missing or null field as an empty cell.
+/// </remarks>
+public partial class BitAiDataTable : BitAiComponentBase
+{
+    private readonly List<string> _columns = [];
+    private readonly HashSet<string> _columnNames = new(StringComparer.Ordinal);
+    private JsonElement[] _rows = [];
+    // The value the table was last built from, and its kind as it was read then. Blazor takes a JsonElement for changed on
+    // every render of the parent, so the table is built again only when Rows is another element (see IsBuiltFrom).
+    private JsonElement _builtFrom;
+    private JsonValueKind _builtKind;
+
+
+
+    /// <summary>
+    /// Gets or sets the cascading parameters for the data table component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings to be applied to multiple data table components
+    /// through the <see cref="BitParams"/> component.
+    /// </remarks>
+    [CascadingParameter(Name = BitAiDataTableParams.ParamName)]
+    public BitAiDataTableParams? CascadingParameters { get; set; }
+
+
+
+    /// <summary>
+    /// Custom CSS classes for different parts of the data table.
+    /// </summary>
+    [Parameter, ResetClassBuilder] public BitAiDataTableClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// The JSON array of objects to render. Anything but an array renders an empty table, and an item of the array that
+    /// is not an object renders an empty row.
+    /// </summary>
+    [Parameter, EditorRequired] public JsonElement Rows { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the data table.
+    /// </summary>
+    [Parameter, ResetStyleBuilder] public BitAiDataTableClassStyles? Styles { get; set; }
+
+
+
+    protected override string RootElementClass => "bit-aidtb";
+
+    protected override void RegisterCssClasses()
+    {
+        ClassBuilder.Register(() => Classes?.Root);
+    }
+
+    protected override void RegisterCssStyles()
+    {
+        StyleBuilder.Register(() => Styles?.Root);
+    }
+
+    protected override void OnParametersSet()
+    {
+        CascadingParameters?.UpdateParameters(this);
+
+        if (IsBuiltFrom(Rows) is false)
+        {
+            _builtFrom = Rows;
+            _builtKind = Rows.ValueKind;
+            _columns.Clear();
+            _columnNames.Clear();
+
+            if (Rows.ValueKind is not JsonValueKind.Array)
+            {
+                _rows = [];
+            }
+            else
+            {
+                _rows = Rows.EnumerateArray().ToArray();
+
+                foreach (var row in _rows)
+                {
+                    if (row.ValueKind is not JsonValueKind.Object) continue;
+
+                    foreach (var property in row.EnumerateObject())
+                    {
+                        if (_columnNames.Add(property.Name)) _columns.Add(property.Name);
+                    }
+                }
+            }
+        }
+
+        base.OnParametersSet();
+    }
+
+
+
+    // Whether the table was built from this very element. JsonElement defines no equality of its own - its static
+    // DeepEquals walks the contents - so Equals falls to ValueType.Equals, which compares the two private fields of the
+    // struct, the document and the index into it, through reflection: the same element of the same document, which is
+    // what is wanted, since a document never changes once parsed. The kinds are compared first, which settles no rows at
+    // all (the default element) and rows of another kind without it. The kind of the element built from is the one read
+    // then, as its document may have been disposed of since.
+    private bool IsBuiltFrom(JsonElement rows)
+    {
+        var kind = rows.ValueKind;
+
+        if (kind != _builtKind) return false;
+        if (kind is JsonValueKind.Undefined) return true;
+
+        return rows.Equals(_builtFrom);
+    }
+
+    private static string Cell(JsonElement row, string column)
+    {
+        if (row.ValueKind is not JsonValueKind.Object) return string.Empty;
+        if (row.TryGetProperty(column, out var value) is false) return string.Empty;
+
+        return value.ValueKind switch
+        {
+            JsonValueKind.String => value.GetString() ?? string.Empty,
+            JsonValueKind.Null or JsonValueKind.Undefined => string.Empty,
+            JsonValueKind.Object or JsonValueKind.Array => value.GetRawText(),
+            // A number or a boolean as the JSON it was written as: JsonElement.ToString() spells true as "True".
+            _ => value.GetRawText(),
+        };
+    }
+}

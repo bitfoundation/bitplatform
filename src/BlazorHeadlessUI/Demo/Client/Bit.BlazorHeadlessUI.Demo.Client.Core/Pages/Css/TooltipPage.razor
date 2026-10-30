@@ -1,0 +1,520 @@
+﻿@page "/tooltip"
+
+<PageTitle>Tooltip — bit BlazorHeadlessUI</PageTitle>
+
+<div class="demo-page">
+    <header class="demo-header">
+        <h1>Tooltip</h1>
+        <p>A small popup that surfaces information about a control on hover or focus.</p>
+        <SectionSwitcher Slug="tooltip" />
+    </header>
+
+    <DemoBlock Title="Basic Tooltip"
+               Code="@_basicCode"
+               Css="@_tooltipCss">
+        <Description>
+            Hover or focus the trigger to open the tooltip. Pointer leave, blur,
+            or pressing Escape closes it. <code>aria-describedby</code> wires the
+            content to the trigger automatically.
+        </Description>
+        <LiveContent>
+            <BitBhTooltipProvider DelayDuration="200">
+                <BitBhTooltip class="tooltip">
+                    <BitBhTooltipTrigger class="tooltip-trigger">+ Add to library</BitBhTooltipTrigger>
+                    <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
+                                      class="tooltip-content">
+                        Adds the item to your library
+                        <BitBhTooltipArrow class="tooltip-arrow" />
+                    </BitBhTooltipContent>
+                </BitBhTooltip>
+            </BitBhTooltipProvider>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Provider configuration"
+               Code="@_providerCode"
+               Css="@_providerCss">
+        <Description>
+            Use <code>BitBhTooltipProvider</code> to set <code>DelayDuration</code> and
+            <code>SkipDelayDuration</code> globally. Hover one trigger then move
+            quickly to the next — the second tooltip opens instantly because
+            the recently-closed window is still active.
+        </Description>
+        <LiveContent>
+            <BitBhTooltipProvider DelayDuration="500" SkipDelayDuration="500">
+                <div class="tooltip-row">
+                    <BitBhTooltip class="tooltip">
+                        <BitBhTooltipTrigger class="tooltip-trigger">Save</BitBhTooltipTrigger>
+                        <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
+                                          class="tooltip-content">
+                            Save changes
+                            <BitBhTooltipArrow class="tooltip-arrow" />
+                        </BitBhTooltipContent>
+                    </BitBhTooltip>
+                    <BitBhTooltip class="tooltip">
+                        <BitBhTooltipTrigger class="tooltip-trigger">Edit</BitBhTooltipTrigger>
+                        <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
+                                          class="tooltip-content">
+                            Edit this item
+                            <BitBhTooltipArrow class="tooltip-arrow" />
+                        </BitBhTooltipContent>
+                    </BitBhTooltip>
+                    <BitBhTooltip class="tooltip">
+                        <BitBhTooltipTrigger class="tooltip-trigger">Delete</BitBhTooltipTrigger>
+                        <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
+                                          class="tooltip-content">
+                            Permanently delete
+                            <BitBhTooltipArrow class="tooltip-arrow" />
+                        </BitBhTooltipContent>
+                    </BitBhTooltip>
+                </div>
+            </BitBhTooltipProvider>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Show instantly"
+               Code="@_instantCode"
+               Css="@_instantCss">
+        <Description>
+            Set <code>DelayDuration="0"</code> on a tooltip to have it open
+            immediately on hover or focus.
+        </Description>
+        <LiveContent>
+            <BitBhTooltip DelayDuration="0" class="tooltip">
+                <BitBhTooltipTrigger class="tooltip-trigger">No delay</BitBhTooltipTrigger>
+                <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
+                                  class="tooltip-content">
+                    I open instantly
+                    <BitBhTooltipArrow class="tooltip-arrow" />
+                </BitBhTooltipContent>
+            </BitBhTooltip>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Anchor sides and alignment"
+               Code="@_sidesCode"
+               Css="@_sidesCss">
+        <Description>
+            The <code>Anchor</code> on <code>BitBhTooltipContent</code> supports
+            <code>top</code>, <code>right</code>, <code>bottom</code>, <code>left</code>
+            with optional <code>start</code> / <code>end</code> alignment. The
+            engine flips and shifts to keep the tooltip in view.
+        </Description>
+        <LiveContent>
+            <BitBhTooltipProvider DelayDuration="200">
+                <div class="tooltip-row">
+                    <BitBhTooltip class="tooltip">
+                        <BitBhTooltipTrigger class="tooltip-trigger">Top</BitBhTooltipTrigger>
+                        <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
+                                          class="tooltip-content">Top
+                            <BitBhTooltipArrow class="tooltip-arrow" /></BitBhTooltipContent>
+                    </BitBhTooltip>
+                    <BitBhTooltip class="tooltip">
+                        <BitBhTooltipTrigger class="tooltip-trigger">Right</BitBhTooltipTrigger>
+                        <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "right", Gap = 6 })"
+                                          class="tooltip-content">Right
+                            <BitBhTooltipArrow class="tooltip-arrow" /></BitBhTooltipContent>
+                    </BitBhTooltip>
+                    <BitBhTooltip class="tooltip">
+                        <BitBhTooltipTrigger class="tooltip-trigger">Bottom</BitBhTooltipTrigger>
+                        <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 6 })"
+                                          class="tooltip-content">Bottom
+                            <BitBhTooltipArrow class="tooltip-arrow" /></BitBhTooltipContent>
+                    </BitBhTooltip>
+                    <BitBhTooltip class="tooltip">
+                        <BitBhTooltipTrigger class="tooltip-trigger">Left</BitBhTooltipTrigger>
+                        <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "left", Gap = 6 })"
+                                          class="tooltip-content">Left
+                            <BitBhTooltipArrow class="tooltip-arrow" /></BitBhTooltipContent>
+                    </BitBhTooltip>
+                </div>
+            </BitBhTooltipProvider>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Controlled"
+               Code="@_controlledCode"
+               Css="@_controlledCss">
+        <Description>
+            Drive the open state externally with <code>Open</code> and
+            <code>OnOpenChange</code>. Useful for guided tours or programmatic
+            highlighting.
+        </Description>
+        <LiveContent>
+            <div class="tooltip-row">
+                <BitBhButton OnClick="ToggleControlled" class="btn">
+                    @(controlledOpen ? "Hide tooltip" : "Show tooltip")
+                </BitBhButton>
+                <BitBhTooltip Open="controlledOpen"
+                           OnOpenChange="v => controlledOpen = v"
+                           class="tooltip">
+                    <BitBhTooltipTrigger class="tooltip-trigger">Target</BitBhTooltipTrigger>
+                    <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
+                                      class="tooltip-content">
+                        Driven from outside
+                        <BitBhTooltipArrow class="tooltip-arrow" />
+                    </BitBhTooltipContent>
+                </BitBhTooltip>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+</div>
+
+@code {
+    private bool controlledOpen;
+
+    private void ToggleControlled() => controlledOpen = !controlledOpen;
+
+    private const string _basicCode = """
+<BitBhTooltipProvider DelayDuration="200">
+    <BitBhTooltip class="tooltip">
+        <BitBhTooltipTrigger class="tooltip-trigger">+ Add to library</BitBhTooltipTrigger>
+        <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
+                          class="tooltip-content">
+            Adds the item to your library
+            <BitBhTooltipArrow class="tooltip-arrow" />
+        </BitBhTooltipContent>
+    </BitBhTooltip>
+</BitBhTooltipProvider>
+""";
+
+    private const string _providerCode = """
+<BitBhTooltipProvider DelayDuration="500" SkipDelayDuration="500">
+    <div class="tooltip-row">
+        <BitBhTooltip class="tooltip">
+            <BitBhTooltipTrigger class="tooltip-trigger">Save</BitBhTooltipTrigger>
+            <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
+                              class="tooltip-content">
+                Save changes
+                <BitBhTooltipArrow class="tooltip-arrow" />
+            </BitBhTooltipContent>
+        </BitBhTooltip>
+        <BitBhTooltip class="tooltip">
+            <BitBhTooltipTrigger class="tooltip-trigger">Edit</BitBhTooltipTrigger>
+            <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
+                              class="tooltip-content">
+                Edit this item
+                <BitBhTooltipArrow class="tooltip-arrow" />
+            </BitBhTooltipContent>
+        </BitBhTooltip>
+        <BitBhTooltip class="tooltip">
+            <BitBhTooltipTrigger class="tooltip-trigger">Delete</BitBhTooltipTrigger>
+            <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
+                              class="tooltip-content">
+                Permanently delete
+                <BitBhTooltipArrow class="tooltip-arrow" />
+            </BitBhTooltipContent>
+        </BitBhTooltip>
+    </div>
+</BitBhTooltipProvider>
+""";
+
+    private const string _instantCode = """
+<BitBhTooltip DelayDuration="0" class="tooltip">
+    <BitBhTooltipTrigger class="tooltip-trigger">No delay</BitBhTooltipTrigger>
+    <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
+                      class="tooltip-content">
+        I open instantly
+        <BitBhTooltipArrow class="tooltip-arrow" />
+    </BitBhTooltipContent>
+</BitBhTooltip>
+""";
+
+    private const string _sidesCode = """
+<BitBhTooltipProvider DelayDuration="200">
+    <BitBhTooltip class="tooltip">
+        <BitBhTooltipTrigger class="tooltip-trigger">Top</BitBhTooltipTrigger>
+        <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })" class="tooltip-content">
+            Top<BitBhTooltipArrow class="tooltip-arrow" />
+        </BitBhTooltipContent>
+    </BitBhTooltip>
+
+    <BitBhTooltip class="tooltip">
+        <BitBhTooltipTrigger class="tooltip-trigger">Right</BitBhTooltipTrigger>
+        <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "right", Gap = 6 })" class="tooltip-content">
+            Right<BitBhTooltipArrow class="tooltip-arrow" />
+        </BitBhTooltipContent>
+    </BitBhTooltip>
+
+    <BitBhTooltip class="tooltip">
+        <BitBhTooltipTrigger class="tooltip-trigger">Bottom</BitBhTooltipTrigger>
+        <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 6 })" class="tooltip-content">
+            Bottom<BitBhTooltipArrow class="tooltip-arrow" />
+        </BitBhTooltipContent>
+    </BitBhTooltip>
+
+    <BitBhTooltip class="tooltip">
+        <BitBhTooltipTrigger class="tooltip-trigger">Left</BitBhTooltipTrigger>
+        <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "left", Gap = 6 })" class="tooltip-content">
+            Left<BitBhTooltipArrow class="tooltip-arrow" />
+        </BitBhTooltipContent>
+    </BitBhTooltip>
+</BitBhTooltipProvider>
+""";
+
+    private const string _controlledCode = """
+<BitBhButton OnClick="ToggleControlled" class="btn">
+    @(controlledOpen ? "Hide tooltip" : "Show tooltip")
+</BitBhButton>
+
+<BitBhTooltip Open="controlledOpen"
+           OnOpenChange="v => controlledOpen = v"
+           class="tooltip">
+    <BitBhTooltipTrigger class="tooltip-trigger">Target</BitBhTooltipTrigger>
+    <BitBhTooltipContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 6 })"
+                      class="tooltip-content">
+        Driven from outside
+        <BitBhTooltipArrow class="tooltip-arrow" />
+    </BitBhTooltipContent>
+</BitBhTooltip>
+
+@code {
+    private bool controlledOpen;
+
+    private void ToggleControlled() => controlledOpen = !controlledOpen;
+}
+""";
+
+    private const string _tooltipCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.tooltip          { display: inline-block; }
+
+.tooltip-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    border: 1px solid #d4d4d8;
+    border-radius: 0.5rem;
+    background: #fff;
+    font-size: 0.875rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 120ms ease;
+}
+
+.tooltip-trigger:hover         { border-color: #a1a1af; }
+.tooltip-trigger:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+
+.tooltip-content {
+    position: relative;
+    z-index: 50;
+    padding: 0.4rem 0.6rem;
+    background: #18181b;
+    color: #fafafa;
+    font-size: 0.8rem;
+    line-height: 1.2;
+    border-radius: 0.35rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    pointer-events: auto;
+}
+
+.tooltip-content[hidden] { display: none; }
+
+.tooltip-arrow { fill: #18181b; }
+
+.tooltip-content[data-anchor^="top"]    .tooltip-arrow { position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); }
+.tooltip-content[data-anchor^="bottom"] .tooltip-arrow { position: absolute; top: -4px; left: 50%; transform: translateX(-50%) rotate(180deg); }
+.tooltip-content[data-anchor^="left"]   .tooltip-arrow { position: absolute; right: -7px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
+.tooltip-content[data-anchor^="right"]  .tooltip-arrow { position: absolute; left: -7px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+""";
+
+    private const string _providerCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.tooltip          { display: inline-block; }
+
+.tooltip-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    border: 1px solid #d4d4d8;
+    border-radius: 0.5rem;
+    background: #fff;
+    font-size: 0.875rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 120ms ease;
+}
+
+.tooltip-trigger:hover         { border-color: #a1a1af; }
+.tooltip-trigger:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+
+.tooltip-content {
+    position: relative;
+    z-index: 50;
+    padding: 0.4rem 0.6rem;
+    background: #18181b;
+    color: #fafafa;
+    font-size: 0.8rem;
+    line-height: 1.2;
+    border-radius: 0.35rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    pointer-events: auto;
+}
+
+.tooltip-content[hidden] { display: none; }
+
+.tooltip-arrow { fill: #18181b; }
+
+.tooltip-content[data-anchor^="top"]    .tooltip-arrow { position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); }
+.tooltip-content[data-anchor^="bottom"] .tooltip-arrow { position: absolute; top: -4px; left: 50%; transform: translateX(-50%) rotate(180deg); }
+.tooltip-content[data-anchor^="left"]   .tooltip-arrow { position: absolute; right: -7px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
+.tooltip-content[data-anchor^="right"]  .tooltip-arrow { position: absolute; left: -7px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+
+/* Lay the three triggers out in a row */
+.tooltip-row { display: flex; gap: 0.5rem; align-items: center; }
+""";
+
+    private const string _instantCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.tooltip          { display: inline-block; }
+
+.tooltip-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    border: 1px solid #d4d4d8;
+    border-radius: 0.5rem;
+    background: #fff;
+    font-size: 0.875rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 120ms ease;
+}
+
+.tooltip-trigger:hover         { border-color: #a1a1af; }
+.tooltip-trigger:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+
+.tooltip-content {
+    position: relative;
+    z-index: 50;
+    padding: 0.4rem 0.6rem;
+    background: #18181b;
+    color: #fafafa;
+    font-size: 0.8rem;
+    line-height: 1.2;
+    border-radius: 0.35rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    pointer-events: auto;
+}
+
+.tooltip-content[hidden] { display: none; }
+
+.tooltip-arrow { fill: #18181b; }
+
+.tooltip-content[data-anchor^="top"]    .tooltip-arrow { position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); }
+.tooltip-content[data-anchor^="bottom"] .tooltip-arrow { position: absolute; top: -4px; left: 50%; transform: translateX(-50%) rotate(180deg); }
+.tooltip-content[data-anchor^="left"]   .tooltip-arrow { position: absolute; right: -7px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
+.tooltip-content[data-anchor^="right"]  .tooltip-arrow { position: absolute; left: -7px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+""";
+
+    private const string _sidesCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.tooltip          { display: inline-block; }
+
+.tooltip-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    border: 1px solid #d4d4d8;
+    border-radius: 0.5rem;
+    background: #fff;
+    font-size: 0.875rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 120ms ease;
+}
+
+.tooltip-trigger:hover         { border-color: #a1a1af; }
+.tooltip-trigger:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+
+.tooltip-content {
+    position: relative;
+    z-index: 50;
+    padding: 0.4rem 0.6rem;
+    background: #18181b;
+    color: #fafafa;
+    font-size: 0.8rem;
+    line-height: 1.2;
+    border-radius: 0.35rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    pointer-events: auto;
+}
+
+.tooltip-content[hidden] { display: none; }
+
+.tooltip-arrow { fill: #18181b; }
+
+.tooltip-content[data-anchor^="top"]    .tooltip-arrow { position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); }
+.tooltip-content[data-anchor^="bottom"] .tooltip-arrow { position: absolute; top: -4px; left: 50%; transform: translateX(-50%) rotate(180deg); }
+.tooltip-content[data-anchor^="left"]   .tooltip-arrow { position: absolute; right: -7px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
+.tooltip-content[data-anchor^="right"]  .tooltip-arrow { position: absolute; left: -7px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+
+/* Lay the four triggers out in a row */
+.tooltip-row { display: flex; gap: 0.5rem; align-items: center; }
+""";
+
+    private const string _controlledCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.tooltip          { display: inline-block; }
+
+.tooltip-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    border: 1px solid #d4d4d8;
+    border-radius: 0.5rem;
+    background: #fff;
+    font-size: 0.875rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 120ms ease;
+}
+
+.tooltip-trigger:hover         { border-color: #a1a1af; }
+.tooltip-trigger:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+
+.tooltip-content {
+    position: relative;
+    z-index: 50;
+    padding: 0.4rem 0.6rem;
+    background: #18181b;
+    color: #fafafa;
+    font-size: 0.8rem;
+    line-height: 1.2;
+    border-radius: 0.35rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    pointer-events: auto;
+}
+
+.tooltip-content[hidden] { display: none; }
+
+.tooltip-arrow { fill: #18181b; }
+
+.tooltip-content[data-anchor^="top"]    .tooltip-arrow { position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); }
+.tooltip-content[data-anchor^="bottom"] .tooltip-arrow { position: absolute; top: -4px; left: 50%; transform: translateX(-50%) rotate(180deg); }
+.tooltip-content[data-anchor^="left"]   .tooltip-arrow { position: absolute; right: -7px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
+.tooltip-content[data-anchor^="right"]  .tooltip-arrow { position: absolute; left: -7px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+
+/* Trigger button + tooltip laid out in a row */
+.tooltip-row { display: flex; gap: 0.5rem; align-items: center; }
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    background: #fff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+.btn:hover { background: #f4f4f5; }
+""";
+}

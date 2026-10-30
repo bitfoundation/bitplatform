@@ -1,0 +1,167 @@
+﻿@page "/e2e/aitoolcallview"
+@inject IBitAiToolRegistry ToolRegistry
+@inject BitAiRendererRegistry Renderers
+
+<PageTitle>BitAiToolCallView E2E</PageTitle>
+
+<h1>BitAiToolCallView</h1>
+
+@* One call the page moves through its life a step per button: what the model streams, what the session does with it,
+   and how it ends. The first card starts collapsed, as every card does; the second is the same call under options that
+   open every card, so the arguments can be read as they stream in. The status line is written by the page's own
+   renders only, so a step taken in the background (lc-background) leaves it where it was. *@
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    <div>
+        <button id="lc-start" @onclick="StartLifecycle">Start a call</button>
+        <button id="lc-append" @onclick="AppendLifecycle">Append arguments</button>
+        <button id="lc-complete" @onclick="CompleteLifecycle">Complete the arguments</button>
+        <button id="lc-run" @onclick="RunLifecycle">Run</button>
+        <button id="lc-progress" @onclick="() => _lcCall?.SetProgress(new BitAiToolProgress(0.4, LifecycleProgressMessage))">Progress 40%</button>
+        <button id="lc-progress-unknown" @onclick="() => _lcCall?.SetProgress(new BitAiToolProgress(null, LifecycleUnknownMessage))">Progress unknown</button>
+        <button id="lc-succeed" @onclick="SucceedLifecycle">Succeed</button>
+        <button id="lc-fail" @onclick="FailLifecycle">Fail</button>
+        <button id="lc-background" @onclick="StartInBackground">Run a call in the background</button>
+    </div>
+    <p>Page status: <span id="lc-status">@(_lcCall?.Status.ToString() ?? "-")</span></p>
+    @if (_lcCall is not null)
+    {
+        <div style="width:520px">
+            <BitAiToolCallView @key="_lcCall" Id="tcv-lc" Call="_lcCall" />
+            <BitAiOptionsProvider UiOptions="_expanded">
+                <BitAiToolCallView @key="_lcCall" Id="tcv-lc-open" Call="_lcCall" />
+            </BitAiOptionsProvider>
+        </div>
+    }
+</E2ESection>
+
+@* A session playing the tool script at a pace: get_weather is streamed, run by the session and answered from. *@
+<E2ESection Id="session" Title="In a session">
+    <button id="ss-ask" @onclick="AskWeatherAsync">Ask for the weather</button>
+    <p>Session: <span id="ss-state">@(_toolSession.IsGenerating ? "Generating" : "Idle")</span></p>
+    <p>Answer: <span id="ss-answer">@AnswerOf(_toolSession)</span></p>
+    <div style="width:520px">
+        @foreach (var (message, call) in CallsOf(_toolSession))
+        {
+            <BitAiToolCallView @key="call.PartId" Id="@($"tcv-ss-{call.ToolCallId}")" Call="call" Message="message" Session="_toolSession" />
+        }
+        <BitAiOptionsProvider UiOptions="_expanded">
+            @foreach (var (message, call) in CallsOf(_toolSession))
+            {
+                <BitAiToolCallView @key="call.PartId" Id="@($"tcv-ssx-{call.ToolCallId}")" Call="call" Message="message" Session="_toolSession" />
+            }
+        </BitAiOptionsProvider>
+    </div>
+</E2ESection>
+
+@* delete_records is destructive, so the session waits for a decision on it. The cards sit inside a form whose submits
+   are counted: an answer of the prompt must never submit it. *@
+<E2ESection Id="approval" Title="Approval">
+    <form @onsubmit="() => _approvalSubmits++">
+        <button type="button" id="apv-ask" @onclick="AskApprovalAsync">Delete the inactive users</button>
+        <p>Submits: <span id="apv-submits">@_approvalSubmits</span></p>
+        <p>Session: <span id="apv-state">@(_approvalSession.IsGenerating ? "Generating" : "Idle")</span></p>
+        <p>Answer: <span id="apv-answer">@AnswerOf(_approvalSession)</span></p>
+        <div style="width:520px">
+            @foreach (var (message, call) in CallsOf(_approvalSession))
+            {
+                <BitAiToolCallView @key="call.PartId" Id="@($"tcv-apv-{call.ToolCallId}")" Call="call" Message="message" Session="_approvalSession" />
+            }
+        </div>
+    </form>
+</E2ESection>
+
+@* Two get_weather calls of one round, run side by side. *@
+<E2ESection Id="parallel" Title="Parallel calls">
+    <button id="par-ask" @onclick="AskParallelAsync">Compare Oslo and Lisbon</button>
+    <p>Answer: <span id="par-answer">@AnswerOf(_parallelSession)</span></p>
+    <div style="width:520px">
+        @foreach (var (message, call) in CallsOf(_parallelSession))
+        {
+            <BitAiToolCallView @key="call.PartId" Id="@($"tcv-par-{call.ToolCallId}")" Call="call" Message="message" Session="_parallelSession" />
+        }
+    </div>
+</E2ESection>
+
+@* A renderer registered for e2e_tcv_custom (a tool no script calls) draws the call in the card's place; it reads the
+   call as it renders, so it follows the call through the card's own renders. *@
+<E2ESection Id="custom" Title="Custom renderer">
+    <div>
+        <button id="cst-complete" @onclick="() => _customCall.CompleteArguments(E2EAiScriptRun.Json(CustomArguments))">Complete the arguments</button>
+        <button id="cst-run" @onclick="() => _customCall.SetStatus(BitAiToolCallStatus.Running)">Run</button>
+        <button id="cst-succeed" @onclick="() => _customCall.SetResult(BitAiToolOutcome.FromText(CustomResult))">Succeed</button>
+    </div>
+    <div style="width:520px">
+        <BitAiToolCallView Id="tcv-cst" Call="_customCall" Message="_customMessage" Class="e2e-tcv-cst-root" />
+        <BitAiToolCallView Id="tcv-cst-plain" Call="_plainCall" />
+    </div>
+</E2ESection>
+
+@* Calls that ended: a failure (opened by itself), one the user declined and one stopped while it ran. *@
+<E2ESection Id="ended" Title="Ended calls">
+    <button id="ended-rerender" @onclick="() => _renders++">Re-render the page (@_renders)</button>
+    <div style="width:520px">
+        <BitAiToolCallView Id="tcv-failed" Call="_failedCall" />
+        <BitAiToolCallView Id="tcv-declined" Call="_declinedCall" />
+        <BitAiToolCallView Id="tcv-cancelled" Call="_cancelledCall" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <div style="width:520px">
+        <BitAiToolCallView Id="tcv-dis" Disabled Call="_awaitingCall" />
+        <BitParams Parameters="_disabledParams">
+            <BitAiToolCallView Id="tcv-dis-params" Call="_doneCall" />
+            <BitAiToolCallView Id="tcv-dis-override" Disabled="false" Call="_doneCall" />
+        </BitParams>
+    </div>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style">
+    <div style="width:520px">
+        <div id="tcv-defaults">
+            <BitAiOptionsProvider UiOptions="_expanded">
+                <BitAiToolCallView Id="tcv-def-done" Call="_doneCall" />
+            </BitAiOptionsProvider>
+            <BitAiToolCallView Id="tcv-def-run" Call="_runningCall" />
+            <BitAiToolCallView Id="tcv-def-fail" Call="_failedCall" />
+            <BitAiToolCallView Id="tcv-def-apr" Call="_awaitingCall" />
+        </div>
+        <div id="tcv-vars"
+             style="--bit-AiToolCallView-background: rgb(1, 2, 3); --bit-AiToolCallView-border-color: rgb(4, 5, 6); --bit-AiToolCallView-radius: 9px; --bit-AiToolCallView-header-color: rgb(7, 8, 9); --bit-AiToolCallView-body-background: rgb(10, 11, 12); --bit-AiToolCallView-label-color: rgb(13, 14, 15); --bit-AiToolCallView-header-hover-color: rgb(16, 17, 18); --bit-AiToolCallView-header-hover-background: rgb(19, 20, 21); --bit-AiToolCallView-running-border-color: rgb(30, 31, 32); --bit-AiToolCallView-failed-border-color: rgb(33, 34, 35); --bit-AiToolCallView-approval-border-color: rgb(36, 37, 38);">
+            <BitAiOptionsProvider UiOptions="_expanded">
+                <BitAiToolCallView Id="tcv-vars-done" Call="_doneCall" />
+            </BitAiOptionsProvider>
+            <BitAiToolCallView Id="tcv-vars-run" Call="_runningCall" />
+            <BitAiToolCallView Id="tcv-vars-fail" Call="_failedCall" />
+            <BitAiToolCallView Id="tcv-vars-apr" Call="_awaitingCall" />
+        </div>
+        @* Only the outline at rest is set here: a status still outlines its card in its own color. *@
+        <div style="--bit-AiToolCallView-border-color: rgb(4, 5, 6);">
+            <BitAiToolCallView Id="tcv-rest-fail" Call="_failedCall" />
+            <BitAiToolCallView Id="tcv-rest-done" Call="_doneCall" />
+        </div>
+        <BitAiToolCallView Id="tcv-instance" Call="_doneCall" Style="--bit-AiToolCallView-background: rgb(40, 41, 42);" />
+        <BitAiToolCallView Id="tcv-styles" Call="_doneCall"
+                           Styles="@(new() { Title = "color: rgb(200, 0, 0)", Status = "color: rgb(0, 120, 0)" })"
+                           Classes="@(new() { Header = "e2e-tcv-header", Root = "e2e-tcv-root" })" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div style="width:520px">
+        <BitAiToolCallView Id="tcv-ltr" Call="_doneCall" />
+        <BitAiToolCallView Id="tcv-rtl" Dir="BitDir.Rtl" Call="_doneCall" />
+        <div dir="rtl">
+            <BitAiToolCallView Id="tcv-rtl-inherited" Call="_doneCall" />
+        </div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="icon" Title="Icons">
+    <div style="width:520px">
+        <BitAiToolCallView Id="tcv-icon-default" Call="_doneCall" />
+        <BitAiToolCallView Id="tcv-icon-definition" Call="_iconCall" />
+    </div>
+</E2ESection>
+
+<E2EStatus />

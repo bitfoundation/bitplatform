@@ -17,7 +17,7 @@ namespace Bit.BlazorUI.Tests.Utils.Theme;
 [TestClass]
 public partial class BitVisuallyHiddenContractTests
 {
-    private static readonly string[] Projects = ["Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Legacy"];
+    private static readonly string[] Projects = ["Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Legacy", "Bit.BlazorUI.AI"];
 
     [TestMethod]
     public void VisuallyHiddenShouldClipOnePixelOutOfTheFlow()

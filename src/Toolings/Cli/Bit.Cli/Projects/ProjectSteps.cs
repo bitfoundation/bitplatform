@@ -1,6 +1,4 @@
-﻿using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.RegularExpressions;
 using Bit.Cli.Infrastructure;
 using Bit.Cli.Telemetry;
@@ -60,15 +58,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         return Task.FromResult(StepResult.Succeeded("Created a unique app certificate", "development only"));
     }
 
-    public static void WriteDevelopmentCertificate(string directory)
-    {
-        using var rsa = RSA.Create(3072);
-        var request = new CertificateRequest(DevelopmentCertificateSubject, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-        using var certificate = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(5));
-
-        AtomicFile.WriteAllText(Path.Combine(directory, "AppCertificate.crt"), certificate.ExportCertificatePem().ReplaceLineEndings("\n") + "\n");
-        AtomicFile.WriteAllText(Path.Combine(directory, "AppCertificate.key"), rsa.ExportPkcs8PrivateKeyPem().ReplaceLineEndings("\n") + "\n");
-    }
+    public static void WriteDevelopmentCertificate(string directory) => Keys.AppCertificates.Write(directory, Keys.AppCertificates.ActiveName, Keys.AppCertificates.CreateDevelopment());
 
     public async Task<StepResult> GitAsync(Action<string> progress, CancellationToken cancellationToken)
     {
@@ -293,7 +283,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     public async Task<StepResult> FormatAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        string[] arguments = ["format", Path.GetFileName(project.WebSolutionFilter), "--exclude-diagnostics", "BL0016"];
+        string[] arguments = ["format", Path.GetFileName(project.Solution), "--no-restore", "--exclude-diagnostics", "BL0016"];
         var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(30));
         var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments)}";
 
@@ -316,33 +306,29 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         if (System.IO.Directory.Exists(migrations) && System.IO.Directory.EnumerateFiles(migrations, "*.cs").Any())
             return StepResult.Skipped("Skipped the initial migration", "the project already has migrations");
 
-        var version = project.PackageVersion("Microsoft.EntityFrameworkCore.Design") ?? project.PackageVersion("Microsoft.EntityFrameworkCore");
-        var tool = version is null ? "dotnet-ef" : $"dotnet-ef@{version}";
-        string[] arguments = ["dnx", tool, "--", "migrations", "add", "Initial", "--output-dir", "Infrastructure/Data/Migrations"];
-        var followUp = $"cd {ProcessSpec.Quote(project.ServerApiDirectory)} && dotnet {string.Join(' ', arguments)}";
-
-        var result = await Runner.RunAsync(new ProcessSpec
-        {
-            FileName = "dotnet",
-            Arguments = arguments,
-            WorkingDirectory = project.ServerApiDirectory,
-            OnOutputLine = progress,
-            Timeout = TimeSpan.FromMinutes(30)
-        }, cancellationToken);
+        var efTool = new ProjectMigrations(cli, project);
+        var before = efTool.MigrationFiles(offline: false);
+        string[] arguments = ["migrations", "add", "Initial", "--output-dir", ProjectMigrations.MigrationsFolder];
+        var result = await efTool.RunAsync(project.ServerApiDirectory, arguments, progress, cancellationToken);
 
         if (result.Succeeded is false)
-            return StepResult.FromProcess(result, "", "Couldn't add the initial migration", followUp);
+            return StepResult.FromProcess(result, "", "Couldn't add the initial migration", efTool.FollowUp(project.ServerApiDirectory, arguments)) with { Attempt = efTool.Attempt(project.ServerApiDirectory, arguments) };
 
         migrationAdded = true;
+        var formatted = await efTool.FormatAsync(offline: false, before, progress, cancellationToken);
         var committed = await CommitPathAsync(migrations, "Add the Initial EF Core migration", cancellationToken);
-        return StepResult.Succeeded("Added the Initial migration", $"{project.Database}{(committed is null ? "" : ", committed")}");
+        var detail = $"{project.Database}{(committed is null ? "" : ", committed")}";
+
+        return formatted.Status is StepStatus.Warning
+            ? formatted with { Title = "Added the Initial migration, but couldn't format it", Detail = detail }
+            : StepResult.Succeeded("Added the Initial migration", detail);
     }
 
     public RunningProject? Running { get; private set; }
 
     public Func<Uri, CancellationToken, Task<bool>> AliveProbe { get; init; } = IsAliveAsync;
 
-    private string ServerWebDirectory => Path.Combine(project.Directory, "src", "Server", $"{project.Name}.Server.Web");
+    private string ServerWebDirectory => project.ServerWebDirectory;
 
     public Task<StepResult> AspireStartAsync(Action<string> progress, CancellationToken cancellationToken) => AspireStartAsync(keepRunning: false, progress, cancellationToken);
 
@@ -1005,7 +991,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
     public async Task<StepResult> GitHubRepositoryAsync(Action<string> progress, CancellationToken cancellationToken)
     {
         const string title = "Couldn't create the GitHub repo";
-        var push = "git push -u origin develop main && gh repo edit --default-branch develop";
+        var push = "git push -u origin develop && git push -u origin main && gh repo edit --default-branch develop";
         var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && gh repo create {ProcessSpec.Quote(project.Name)} --private --source . --remote origin && gh auth setup-git && {push}";
 
         if (project.GitReady is false)
@@ -1023,15 +1009,25 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             return StepResult.FromProcess(create, "", title, followUp);
 
         await Gh(["auth", "setup-git"], cancellationToken);
-        var pushed = await Git(["push", "-u", "origin", "develop", "main"], cancellationToken);
+        var pushed = await Git(["push", "-u", "origin", "develop"], cancellationToken);
+
+        if (pushed.Succeeded)
+        {
+            pushed = await Git(["push", "-u", "origin", "main"], cancellationToken);
+        }
 
         if (pushed.Succeeded is false)
             return StepResult.FromProcess(pushed, "", "Couldn't push to the GitHub repo", $"cd {ProcessSpec.Quote(project.Directory)} && {push}");
 
-        await Gh(["repo", "edit", "--default-branch", "develop"], cancellationToken);
+        var defaultBranch = await Gh(["repo", "edit", "--default-branch", "develop"], cancellationToken);
+        await Git(["remote", "set-head", "origin", "develop"], cancellationToken);
         var url = await Gh(["repo", "view", "--json", "url", "--jq", ".url"], cancellationToken);
+        var detail = url.Succeeded && url.Output.Trim().Length > 0 ? url.Output.Trim().Replace("https://", "", StringComparison.Ordinal) : "develop and main pushed";
 
-        return StepResult.Succeeded("Created a private GitHub repo", url.Succeeded && url.Output.Trim().Length > 0 ? url.Output.Trim().Replace("https://", "", StringComparison.Ordinal) : "develop and main pushed");
+        if (defaultBranch.Succeeded is false && (await Gh(["repo", "view", "--json", "defaultBranchRef", "--jq", ".defaultBranchRef.name"], cancellationToken)).Output.Trim() is not "develop")
+            return StepResult.Warning("Created a private GitHub repo, but develop isn't its default branch", detail, $"cd {ProcessSpec.Quote(project.Directory)} && gh repo edit --default-branch develop", resultCode: "github.default-branch");
+
+        return StepResult.Succeeded("Created a private GitHub repo", detail);
     }
 
     private async Task<string?> CommitPathAsync(string path, string message, CancellationToken cancellationToken)

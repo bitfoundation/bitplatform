@@ -251,6 +251,44 @@ public class BmApiTests
         Assert.AreEqual(0, value.GetVelocity());
     }
 
+    [TestMethod]
+    public void Value_VelocityIsZero_OnceTheValueHasStoppedChanging()
+    {
+        // motion.dev's getVelocity: a value that has not changed for a while is standing still, whatever speed
+        // its last change had. Updated every frame, "a while" is a few frames.
+        var value = Bm.Value(0.0);
+        long nowMs = 0;
+        value.TimeSource = () => nowMs;
+
+        value.SetSync(0);
+        nowMs = 16; value.SetSync(16);
+        nowMs = 32; value.SetSync(32);
+
+        nowMs = 40;
+        Assert.AreEqual(1000, value.GetVelocity(), 1e-9);   // still moving: the next frame isn't due yet
+        nowMs = 500;
+        Assert.AreEqual(0, value.GetVelocity());
+    }
+
+    [TestMethod]
+    public void Value_VelocityStaysCurrent_BetweenTheChangesOfASlowerSource()
+    {
+        // On Blazor Server a scroll position arrives a round trip apart: 80 ms between changes is that value's
+        // normal pace, not a stop, so a read half-way to the next change still sees the speed.
+        var value = Bm.Value(0.0);
+        long nowMs = 0;
+        value.TimeSource = () => nowMs;
+
+        value.SetSync(0);
+        nowMs = 80; value.SetSync(80);
+        nowMs = 160; value.SetSync(160);
+
+        nowMs = 200;
+        Assert.AreEqual(1000, value.GetVelocity(), 1e-9);
+        nowMs = 1_000;
+        Assert.AreEqual(0, value.GetVelocity());
+    }
+
     // ── BmDrag ─────────────────────────────────────────────────────────────────
 
     [TestMethod]

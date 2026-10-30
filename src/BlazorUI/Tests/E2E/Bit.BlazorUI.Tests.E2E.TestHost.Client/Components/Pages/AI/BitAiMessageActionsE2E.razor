@@ -1,0 +1,147 @@
+﻿@page "/e2e/aimessageactions"
+@implements IAsyncDisposable
+
+<PageTitle>BitAiMessageActions E2E</PageTitle>
+
+<h1>BitAiMessageActions</h1>
+
+@* The row of a finished answer, on its own, with a session so regeneration is offered. *@
+<E2ESection Id="basic" Title="Basic">
+    <BitAiMessageActions Id="mac-basic" Pinned Message="_basicAnswer" Session="_session" />
+</E2ESection>
+
+<E2ESection Id="feedback" Title="Feedback">
+    <BitAiMessageActions Id="mac-feedback" Pinned Message="_feedbackAnswer" OnFeedback="HandleOnFeedback" />
+    <span id="mac-feedback-log">@string.Join(",", _feedbackLog)</span>
+    <span id="mac-feedback-state">@_feedbackAnswer.Feedback</span>
+</E2ESection>
+
+@* The row of the newest answer of a conversation over an echo session; the page shows what regenerating did to it. *@
+<E2ESection Id="regenerate" Title="Regenerate">
+    @if (_regenerateSession.Conversation.LastMessage is { Role.IsAssistant: true } latest)
+    {
+        <BitAiMessageActions @key="latest.MessageId" Id="mac-regen" Pinned Message="latest" Session="_regenerateSession" />
+        <span id="mac-regen-text">@latest.GetText()</span>
+        <span id="mac-regen-id">@latest.MessageId</span>
+    }
+    <span id="mac-regen-count">@_regenerateSession.Conversation.Messages.Count</span>
+</E2ESection>
+
+<E2ESection Id="reveal" Title="Reveal">
+    <BitAiMessageActions Id="mac-hover" Message="_basicAnswer" />
+    <BitAiMessageActions Id="mac-pinned" Pinned Message="_basicAnswer" />
+</E2ESection>
+
+<E2ESection Id="metadata" Title="Metadata">
+    <BitAiOptionsProvider UiOptions="_metadataOptions">
+        <BitAiMessageActions Id="mac-meta" Message="_metadataAnswer" />
+    </BitAiOptionsProvider>
+    <BitAiOptionsProvider UiOptions="_noActionsOptions">
+        <BitAiMessageActions Id="mac-noactions" Message="_metadataAnswer" />
+    </BitAiOptionsProvider>
+</E2ESection>
+
+<E2ESection Id="options" Title="Options">
+    <BitAiMessageActions Id="mac-nofeedback" Pinned ShowFeedback="false" Message="_basicAnswer" Session="_session" />
+    <BitAiMessageActions Id="mac-noregen" Pinned CanRegenerate="false" Message="_basicAnswer" Session="_session" />
+    <BitAiMessageActions Id="mac-extra" Pinned Message="_basicAnswer">
+        <ExtraActionsTemplate>
+            <button id="mac-extra-btn" @onclick="() => _extraClicks++">Share</button>
+        </ExtraActionsTemplate>
+    </BitAiMessageActions>
+    <span id="mac-extra-clicks">@_extraClicks</span>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitAiMessageActions Id="mac-disabled" Pinned Disabled Message="_disabledAnswer" Session="_session" OnFeedback="HandleOnDisabledFeedback" />
+    <span id="mac-disabled-log">@_disabledFeedbacks</span>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style & Class">
+    <BitAiOptionsProvider UiOptions="_metadataOptions">
+        <div id="mac-vars" style="--bit-AiMessageActions-gap:25px;--bit-AiMessageActions-actions-gap:9px;--bit-AiMessageActions-color:rgb(90, 80, 70);--bit-AiMessageActions-font-size:19px">
+            <BitAiMessageActions Id="mac-var" Pinned Message="_metadataAnswer" />
+        </div>
+    </BitAiOptionsProvider>
+    <BitAiMessageActions Id="mac-classes"
+                         Pinned
+                         Message="_basicAnswer"
+                         Session="_session"
+                         Class="e2e-mac-root"
+                         Styles="@(new() { Actions = "outline: 2px solid rgb(3, 2, 1)" })"
+                         Classes="@(new() { Actions = "e2e-mac-actions", RegenerateButton = new() { Root = "e2e-mac-regen", Icon = "e2e-mac-regen-icon" } })" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitAiMessageActions Id="mac-rtl" Dir="BitDir.Rtl" Pinned Message="_basicAnswer" Session="_session" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly BitAiChatSession _session = new(E2EAiTransport.For(E2EAiScripts.Echo));
+    private readonly BitAiChatSession _regenerateSession = new(E2EAiTransport.For(E2EAiScripts.Echo), Conversation());
+
+    private readonly BitAiMessage _basicAnswer = Answer("mac-a1", "An answer to copy, regenerate and rate.");
+    private readonly BitAiMessage _feedbackAnswer = Answer("mac-a2", "An answer to rate.");
+    private readonly BitAiMessage _disabledAnswer = Answer("mac-a3", "A disabled answer.");
+    private readonly BitAiMessage _metadataAnswer = WithMetadata();
+
+    private readonly BitAiUiOptions _metadataOptions = BitAiUiOptions.Default with { ShowModelName = true, ShowUsage = true, ShowTimestamps = true };
+    private readonly BitAiUiOptions _noActionsOptions = BitAiUiOptions.Default with { ShowMessageActions = false, ShowModelName = true };
+
+    private readonly List<BitAiFeedbackKind> _feedbackLog = [];
+    private int _disabledFeedbacks;
+    private int _extraClicks;
+
+    private static BitAiMessage Answer(string id, string text)
+    {
+        var message = new BitAiMessage(BitAiRole.Assistant, id);
+        message.AddPart(new BitAiTextPart(text));
+        return message;
+    }
+
+    private static BitAiMessage WithMetadata()
+    {
+        var message = new BitAiMessage(BitAiRole.Assistant, "mac-meta") { CreatedAt = new DateTimeOffset(2026, 3, 4, 9, 30, 0, TimeSpan.Zero) };
+        message.AddPart(new BitAiTextPart("An answer with its metadata."));
+        message.MergeMetadata(new BitAiGenerationMetadata
+        {
+            ModelId = E2EAiModels.DefaultModelId,
+            Usage = new BitAiTokenUsage { InputTokens = 1200, OutputTokens = 300 },
+        });
+        return message;
+    }
+
+    private static BitAiConversation Conversation()
+    {
+        var conversation = new BitAiConversation("regen-conversation");
+        conversation.AddMessage(new BitAiMessage(BitAiRole.User, "regen-u1")).AddPart(new BitAiTextPart("The question"));
+        conversation.AddMessage(Answer("regen-a1", "The original answer"));
+        return conversation;
+    }
+
+    protected override void OnInitialized()
+    {
+        // The page shows the text of the newest answer itself, so it re-renders as messages come and go and as they grow.
+        _regenerateSession.Conversation.Changed += OnConversationChanged;
+        _regenerateSession.Conversation.MessageUpdated += OnMessageUpdated;
+    }
+
+    private void OnConversationChanged(BitAiConversation conversation) => _ = InvokeAsync(StateHasChanged);
+
+    private void OnMessageUpdated(BitAiConversation conversation, BitAiMessage message) => _ = InvokeAsync(StateHasChanged);
+
+    private void HandleOnFeedback(BitAiFeedbackKind feedback) => _feedbackLog.Add(feedback);
+
+    private void HandleOnDisabledFeedback(BitAiFeedbackKind feedback) => _disabledFeedbacks++;
+
+    public async ValueTask DisposeAsync()
+    {
+        _regenerateSession.Conversation.Changed -= OnConversationChanged;
+        _regenerateSession.Conversation.MessageUpdated -= OnMessageUpdated;
+
+        await _session.DisposeAsync();
+        await _regenerateSession.DisposeAsync();
+    }
+}

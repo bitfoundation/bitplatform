@@ -24,8 +24,12 @@ namespace Bit.Bmotion;
 /// <para>
 /// <b>Accessibility:</b> by default the container carries the full text as an <c>aria-label</c> and
 /// every split unit is <c>aria-hidden</c>, so assistive technology reads the sentence once instead
-/// of spelling it out. Set <see cref="Accessible"/> to <c>false</c> to opt out (e.g. when the text
-/// is already labelled by an ancestor).
+/// of spelling it out. A generic container (the default <c>span</c>, a <c>div</c>, a <c>p</c>, …) also
+/// gets <c>role="text"</c>, which is what makes its label read; any other element - a heading
+/// (<c>As="h1"</c>), a link (<c>As="a"</c> with an <c>href</c>), a button, a list item, a table cell - keeps
+/// its own role, which its label names. An <c>a</c> without an <c>href</c> is no link, only a generic
+/// container, so it gets <c>role="text"</c> too. Set <see cref="Accessible"/> to <c>false</c> to opt out
+/// (e.g. when the text is already labelled by an ancestor).
 /// </para>
 /// <para>
 /// Every unit is a real animated element, so <see cref="BmSplitBy.Chars"/> on a long paragraph
@@ -92,8 +96,15 @@ public sealed class BmotionSplitText : ComponentBase
     [Parameter] public string? UnitClass { get; set; }
 
     /// <summary>
+    /// Any other attribute, rendered on the container element - the <c>href</c> of an <c>As="a"</c>, an <c>id</c>,
+    /// a <c>data-*</c>, ...
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    /// <summary>
     /// Adds <c>aria-label</c> to the container and <c>aria-hidden</c> to the split units so the
-    /// text is announced once as a sentence. Default <c>true</c>.
+    /// text is announced once as a sentence - with <c>role="text"</c> on a generic container, so the
+    /// label is read; any other element (a heading, a list item, ...) keeps its own role. Default <c>true</c>.
     /// </summary>
     [Parameter] public bool Accessible { get; set; } = true;
 
@@ -142,8 +153,12 @@ public sealed class BmotionSplitText : ComponentBase
             builder.AddAttribute(3, "aria-label", Text);
             // A bare span with aria-label is not reliably announced; role="text" makes the
             // container a single accessible text node instead of a bag of hidden fragments.
-            builder.AddAttribute(4, "role", "text");
+            // Any other container keeps its own role, which the label names: a heading stays a
+            // heading in the page's outline, a list item stays in its list, a cell in its table.
+            if (_textContainers.Contains(As) || IsAnchorWithoutHref()) builder.AddAttribute(4, "role", "text");
         }
+        // Last, so an attribute the caller sets on purpose wins over the ones above.
+        builder.AddMultipleAttributes(5, AdditionalAttributes);
 
         // In Chars mode the characters of one word live inside a nowrap inline-block, so the word
         // wraps as a unit instead of breaking between two of its letters.
@@ -158,7 +173,7 @@ public sealed class BmotionSplitText : ComponentBase
         int lastToFinish = LastToFinish(stagger);
 
         int unitIndex = 0;
-        int seq = 5;
+        int seq = 6;
         foreach (var chunk in _chunks)
         {
             if (chunk.IsGap)
@@ -230,6 +245,23 @@ public sealed class BmotionSplitText : ComponentBase
     }
 
     private static readonly BmStagger _defaultStagger = new(0.03);
+
+    // The containers whose own role can't take a name - generic ones, and those ARIA forbids naming (a paragraph,
+    // emphasis, code, ...): an aria-label there is only read with role="text", and there is no role worth keeping.
+    // Every other element's role (a heading, a link, a list item, a cell, a label, ...) is what a screen reader
+    // navigates by, and role="text" would replace it.
+    private static readonly HashSet<string> _textContainers = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "span", "div", "p", "b", "i", "u", "s", "small", "em", "strong", "code", "del", "ins", "sub", "sup",
+        "q", "samp", "bdi", "bdo", "data", "pre",
+    };
+
+    // An anchor is a link - a role that takes a name - only with an href; without one it is as generic as a span. An
+    // href of null or false renders no attribute at all, so it counts as none.
+    private bool IsAnchorWithoutHref()
+        => string.Equals(As, "a", StringComparison.OrdinalIgnoreCase)
+           && AdditionalAttributes?.Any(a => string.Equals(a.Key, "href", StringComparison.OrdinalIgnoreCase)
+                                             && a.Value is not (null or false)) != true;
 
     /// <summary>The index of the unit that finishes last: the one with the longest stagger delay.</summary>
     private int LastToFinish(BmStagger stagger)

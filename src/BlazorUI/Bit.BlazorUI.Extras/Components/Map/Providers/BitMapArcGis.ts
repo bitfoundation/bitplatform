@@ -18,8 +18,20 @@
             tileOverlays: { [k: string]: any },
             scaleBar: any,
             suppressBrowserContextMenu: boolean,
+            /**
+             * BitMapProviderBase.DoubleClickZoom. MapView's actionMap has no entry for it, so the view's double-click
+             * handler honours it (_wireEvents).
+             */
+            doubleClickZoom: boolean,
+            /** Whether a marker's double-click is the marker's: only while OnMarkerDoubleClick has a handler. */
+            markerDoubleClick: boolean,
+            /** The marker the view's popup was last opened for - the one it shows while it is visible. */
+            popupMarkerId?: string | null,
             dragHandlersWired?: boolean,
         } } = {};
+
+        /** What each marker's graphic was last built from, which an update compares against (_updateMarker). */
+        private static _built = new WeakMap<object, any>();
 
         public static async init(id: string, canvasId: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
             element = await BitMapHelpers.resolveMapCanvas(canvasId, element);
@@ -42,12 +54,9 @@
                 },
             });
 
-            // ArcGIS MapView has no first-class actionMap entry for double-click zoom, so
-            // honor that public option via best-effort event interception instead of
-            // silently ignoring it. Keyboard navigation needs nothing here: BitMapChrome
-            // pans and zooms from the keyboard on the canvas, and takes the view surface
-            // whose handlers ArcGIS would otherwise use out of the tab order.
-            BitMapArcGis._applyInteractivity(view, element, o);
+            // Keyboard navigation needs nothing here: BitMapChrome pans and zooms from the
+            // keyboard on the canvas, and takes the view surface whose handlers ArcGIS would
+            // otherwise use out of the tab order.
 
             const markerLayer = new esri.GraphicsLayer({ listMode: 'hide' });
             map.add(markerLayer);
@@ -61,6 +70,8 @@
                 tileOverlays: {} as any,
                 scaleBar: null as any,
                 suppressBrowserContextMenu: !!o.suppressBrowserContextMenu,
+                doubleClickZoom: o.doubleClickZoom !== false,
+                markerDoubleClick: false,
             };
 
             BitMapArcGis._ensureScaleBar(state, !!o.showScaleControl);
@@ -72,13 +83,9 @@
             } catch (err) {
                 // view.when() rejected after we registered the partially-built state.
                 // Roll back so a stale instance isn't left in BitMapArcGis._maps and
-                // the DOM listeners + scaleBar wired by _applyInteractivity / _ensureScaleBar
+                // the DOM listener + scaleBar wired by _wireEvents / _ensureScaleBar
                 // are torn down. Then rethrow so initialization still fails upstream.
                 try { if (state.scaleBar) state.scaleBar.destroy(); } catch { /* ignore */ }
-                if (element) {
-                    const dblHandler = (view as any).__bmDblClickHandler;
-                    if (dblHandler) try { element.removeEventListener('dblclick', dblHandler, true); } catch { /* ignore */ }
-                }
                 // The contextmenu listener goes on the view's container rather than the element
                 // above, so it needs the same removal dispose() does - otherwise a failed init
                 // leaves a handler on the DOM node holding a destroyed view.
@@ -126,11 +133,9 @@
                 }
             }
 
-            // doubleClickZoom isn't part of actionMap, so re-apply it via the same
-            // best-effort path used during init().
+            // doubleClickZoom isn't part of actionMap; the view's double-click handler reads it.
             if (Object.prototype.hasOwnProperty.call(o, 'doubleClickZoom')) {
-                const container = s.view.container as HTMLElement | null | undefined;
-                if (container) BitMapArcGis._applyInteractivity(s.view, container, o);
+                s.doubleClickZoom = o.doubleClickZoom !== false;
             }
         }
 
@@ -138,17 +143,13 @@
             const s = BitMapArcGis._maps[id];
             if (!s) return;
 
-            // Remove DOM listeners that _applyInteractivity attached to the
-            // container BEFORE destroying the view (which may null out
-            // s.view.container), so dblclick handlers don't outlive
-            // the map and stay attached to the user's element.
+            // Remove the DOM listener _wireEvents attached to the container BEFORE
+            // destroying the view (which may null out s.view.container), so the
+            // contextmenu handler doesn't outlive the map and stay attached to the
+            // user's element.
             const container = s.view?.container as HTMLElement | null | undefined;
             if (container) {
                 const view = s.view as any;
-                if (view.__bmDblClickHandler) {
-                    try { container.removeEventListener('dblclick', view.__bmDblClickHandler, true); } catch { /* ignore */ }
-                    view.__bmDblClickHandler = null;
-                }
                 if (view.__bmContextMenuHandler) {
                     try { container.removeEventListener('contextmenu', view.__bmContextMenuHandler); } catch { /* ignore */ }
                     view.__bmContextMenuHandler = null;
@@ -251,29 +252,21 @@
             opts = BitMapHelpers.withDefaultIcon(id, opts);
             const s = BitMapArcGis._require(id);
             const esri = s.esri;
-            // A picture symbol is centred on its point; the offsets move the icon's anchor - a pin's tip by
-            // default - onto the coordinate instead, as on every other provider. Pixels, not ArcGIS' points.
-            const w = opts.iconWidth || 32, h = opts.iconHeight || 32;
-            const [ax, ay] = BitMapHelpers.readIconAnchor(opts, w, h);
-            const sym = new esri.PictureMarkerSymbol({
-                url: BitMapArcGis._base64DataUri(opts.iconUrl),
-                width: `${w}px`,
-                height: `${h}px`,
-                xoffset: `${w / 2 - ax}px`,
-                yoffset: `${ay - h / 2}px`,
-            });
-            const graphic = new esri.Graphic({
-                geometry: new esri.Point({ longitude: opts.lng, latitude: opts.lat }),
-                symbol: sym,
-                attributes: {
-                    markerId, popupHtml: opts.popupHtml || '', popupText: opts.popupText || '',
-                    title: opts.title || '', draggable: !!opts.draggable,
-                },
-            });
+            // A marker already on the map is updated where it stands rather than replaced, as on every provider:
+            // taking the graphic off the layer and putting a new one on would make it flicker.
             const existing = s.markers[markerId];
-            if (existing) try { s.markerLayer.remove(existing); } catch { /* ignore */ }
-            s.markerLayer.add(graphic);
-            s.markers[markerId] = graphic;
+            if (existing) {
+                BitMapArcGis._updateMarker(s, markerId, existing, opts);
+            } else {
+                const graphic = new esri.Graphic({
+                    geometry: new esri.Point({ longitude: opts.lng, latitude: opts.lat }),
+                    symbol: BitMapArcGis._markerSymbol(esri, opts),
+                    attributes: BitMapArcGis._markerAttributes(markerId, opts),
+                });
+                BitMapArcGis._built.set(graphic, opts);
+                s.markerLayer.add(graphic);
+                s.markers[markerId] = graphic;
+            }
 
             if (opts.draggable) {
                 BitMapArcGis._ensureDragHandlers(s);
@@ -297,10 +290,23 @@
         public static syncMarkers(id: string, markerIds: string[], markers: any[]) {
             const s = BitMapArcGis._maps[id];
             if (!s) return;
-            s.markerLayer.removeAll();
-            s.markers = {};
-            const len = Math.min(markerIds?.length ?? 0, markers?.length ?? 0);
-            for (let i = 0; i < len; i++) BitMapArcGis.addMarker(id, markerIds[i], markers[i]);
+            BitMapHelpers.syncMarkers(s.markers, markerIds, markers,
+                markerId => BitMapArcGis.removeMarker(id, markerId),
+                (markerId, opts) => BitMapArcGis.addMarker(id, markerId, opts),
+                ids => {
+                    // A layer draws its graphics in the order of its collection, the last on top.
+                    const graphics = s.markerLayer.graphics;
+                    ids.forEach((markerId, k) => {
+                        const g = s.markers[markerId];
+                        if (g && graphics.getItemAt(k) !== g) graphics.reorder(g, k);
+                    });
+                });
+        }
+
+        /** Makes a marker's double-click the marker's (OnMarkerDoubleClick) or leaves it the map's. */
+        public static setMarkerDoubleClick(id: string, enabled: boolean) {
+            const s = BitMapArcGis._maps[id];
+            if (s) s.markerDoubleClick = enabled;
         }
 
         public static setMarkerPosition(id: string, markerId: string, lat: number, lng: number) {
@@ -314,16 +320,7 @@
             const s = BitMapArcGis._maps[id];
             if (!s) return;
             const g = s.markers[markerId];
-            if (!g) return;
-            const html = g.attributes?.popupHtml;
-            const text = g.attributes?.popupText;
-            if (html) {
-                BitMapArcGis._openPopup(s.view, { content: html, title: g.attributes?.title || '', location: g.geometry });
-            } else if (text) {
-                const el = document.createElement('span');
-                el.textContent = text;
-                BitMapArcGis._openPopup(s.view, { content: el, title: g.attributes?.title || '', location: g.geometry });
-            }
+            if (g) BitMapArcGis._openMarkerPopup(s, g);
         }
 
         /** Closes the view's popup, if it is open. Returns whether it was. */
@@ -361,6 +358,88 @@
         private static _openPopup(view: any, options: any) {
             if (typeof view.openPopup === 'function') view.openPopup(options);
             else view.popup?.open?.(options);
+        }
+
+        /** Opens the view's popup on a marker, when the marker has something to show in one. */
+        private static _openMarkerPopup(s: any, g: any) {
+            const a = g.attributes;
+            const content = BitMapArcGis._popupContent(a);
+            if (!content) return;
+            BitMapArcGis._openPopup(s.view, { content, title: a.title || '', location: g.geometry });
+            s.popupMarkerId = a.markerId;
+        }
+
+        /** What a marker's popup shows, or null when it has nothing to: PopupText goes in as text, never as markup. */
+        private static _popupContent(a: any): string | HTMLElement | null {
+            if (a?.popupHtml) return a.popupHtml;
+            if (!a?.popupText) return null;
+            const el = document.createElement('span');
+            el.textContent = a.popupText;
+            return el;
+        }
+
+        /**
+         * A picture symbol is centred on its point; the offsets move the icon's anchor - a pin's tip by
+         * default - onto the coordinate instead, as on every other provider. Pixels, not ArcGIS' points.
+         */
+        private static _markerSymbol(esri: any, opts: any): any {
+            const w = opts.iconWidth || 32, h = opts.iconHeight || 32;
+            const [ax, ay] = BitMapHelpers.readIconAnchor(opts, w, h);
+            return new esri.PictureMarkerSymbol({
+                url: BitMapArcGis._base64DataUri(opts.iconUrl),
+                width: `${w}px`,
+                height: `${h}px`,
+                xoffset: `${w / 2 - ax}px`,
+                yoffset: `${ay - h / 2}px`,
+            });
+        }
+
+        private static _markerAttributes(markerId: string, opts: any): any {
+            const w = opts.iconWidth || 32, h = opts.iconHeight || 32;
+            const [ax, ay] = BitMapHelpers.readIconAnchor(opts, w, h);
+            return {
+                markerId, popupHtml: opts.popupHtml || '', popupText: opts.popupText || '',
+                title: opts.title || '', draggable: !!opts.draggable,
+                // Where the icon is drawn around its point, for the hit test a double-click needs (_markerAt).
+                bmIconBox: [w, h, ax, ay],
+            };
+        }
+
+        /**
+         * Brings a marker's graphic in line with a new payload without replacing it (see addMarker), touching only
+         * what changed - a new symbol is a new image for the layer to draw.
+         */
+        private static _updateMarker(s: any, markerId: string, g: any, opts: any) {
+            const was = BitMapArcGis._built.get(g);
+            BitMapArcGis._built.set(g, opts);
+            const changed = (...fields: string[]) => BitMapHelpers.markerChanged(was, opts, ...fields);
+
+            // Measured against where the marker is rather than the last payload: a drag or setMarkerPosition moves a
+            // marker without one.
+            const moved = g.geometry?.latitude !== opts.lat || g.geometry?.longitude !== opts.lng;
+            if (moved) g.geometry = new s.esri.Point({ longitude: opts.lng, latitude: opts.lat });
+            const iconChanged = changed(...BitMapHelpers.markerIconFields);
+            if (iconChanged) g.symbol = BitMapArcGis._markerSymbol(s.esri, opts);
+            const popupChanged = changed(...BitMapHelpers.markerPopupFields, 'title');
+            if (iconChanged || popupChanged || changed('draggable')) g.attributes = BitMapArcGis._markerAttributes(markerId, opts);
+
+            // The view's popup open on this marker was opened with what it said and where it was then, so it follows:
+            // to where it went, with what it now says - or away, when it has nothing left to say.
+            const popup = s.view.popup;
+            if (s.popupMarkerId !== markerId || !popup?.visible || (!moved && !popupChanged)) return;
+            const content = BitMapArcGis._popupContent(g.attributes);
+            if (!content) {
+                if (typeof s.view.closePopup === 'function') s.view.closePopup();
+                else popup.close?.();
+                return;
+            }
+            try {
+                if (popupChanged) {
+                    popup.content = content;
+                    popup.title = g.attributes.title || '';
+                }
+                if (moved) popup.location = g.geometry;
+            } catch { /* ignore */ }
         }
 
         public static addPolyline(id: string, layerId: string, latlngs: BitMapLL[], style: any) {
@@ -622,33 +701,6 @@
             }
         }
 
-        /**
-         * ArcGIS MapView's actionMap exposes mouseWheel/dragPrimary/etc. but has no
-         * first-class entry for double-click zoom, so honor
-         * BitMapProviderBase.DoubleClickZoom via best-effort event interception. Only
-         * applied when the caller supplied it, and a previous override is torn down
-         * before a new one is wired so partial sync()s don't leak listeners.
-         *
-         * KeyboardNavigation used to be handled here too, by pinning the container -
-         * BitMap's own canvas - at tabindex -1 and swallowing every key inside it,
-         * Tab included. BitMapChrome owns the keyboard now and honours the option.
-         */
-        private static _applyInteractivity(view: any, container: HTMLElement, o: any) {
-            const has = (k: string) => Object.prototype.hasOwnProperty.call(o, k);
-
-            if (has('doubleClickZoom')) {
-                if (view.__bmDblClickHandler) {
-                    container.removeEventListener('dblclick', view.__bmDblClickHandler, true);
-                    view.__bmDblClickHandler = null;
-                }
-                if (o.doubleClickZoom === false) {
-                    const handler = (ev: Event) => { ev.stopPropagation(); ev.preventDefault(); };
-                    container.addEventListener('dblclick', handler, true);
-                    view.__bmDblClickHandler = handler;
-                }
-            }
-        }
-
         private static _readView(s: any) {
             const view = s.view, esri = s.esri;
             const center = view.center;
@@ -770,6 +822,110 @@
             });
         }
 
+        /**
+         * The id of the marker a point of the view is on, or null: the topmost marker whose icon covers it, unless a
+         * shape or a GeoJSON feature is drawn over it there. Those are the view's own graphics, drawn above every
+         * layer - the markers' included - and the click goes by hitTest, which answers with the topmost, so a marker
+         * under a shape is the shape's to click and to double-click alike. Worked out synchronously from where each
+         * graphic is drawn, where hitTest answers in a promise.
+         */
+        private static _markerAt(s: any, x: number, y: number): string | null {
+            if (typeof x !== 'number' || typeof y !== 'number') return null;
+            // Zoomed out far enough, a wrapping view draws the world - and each graphic - more than once side by side,
+            // where toScreen places only one copy; the others are a whole world's width of pixels away from it.
+            const sr = s.view.spatialReference;
+            const worldWidth = sr?.isWrappable && sr.isWebMercator && s.view.resolution > 0
+                ? 2 * 20037508.342789244 / s.view.resolution
+                : 0;
+            // Drawn in the layer's order, so the last one covering the point is the one on top.
+            const graphics = s.markerLayer.graphics.toArray();
+            for (let i = graphics.length - 1; i >= 0; i--) {
+                const g = graphics[i];
+                const a = g?.attributes;
+                if (!a?.markerId || s.markers[a.markerId] !== g || !Array.isArray(a.bmIconBox)) continue;
+                const p = s.view.toScreen(g.geometry);
+                if (!p) continue;
+                const [w, h, ax, ay] = a.bmIconBox;
+                const top = p.y - ay;
+                if (y < top || y > top + h) continue;
+                let dx = x - (p.x - ax);
+                if (worldWidth > w) dx = ((dx % worldWidth) + worldWidth) % worldWidth;
+                if (dx < 0 || dx > w) continue;
+                for (const shape of s.view.graphics.toArray()) {
+                    if (BitMapArcGis._covers(s, shape, x, y, worldWidth)) return null;
+                }
+                return a.markerId;
+            }
+            return null;
+        }
+
+        /**
+         * Whether one of the view's own graphics - a shape or a GeoJSON feature - is drawn over a point of the view: a
+         * polygon's fill or outline, a line's stroke or a point's symbol, give or take the few pixels hitTest allows.
+         */
+        private static _covers(s: any, graphic: any, x: number, y: number, worldWidth: number): boolean {
+            const geometry = graphic?.geometry;
+            const symbol = graphic?.symbol;
+            // Symbol sizes are in points.
+            const pixels = (points: any) => (Number(points) || 0) * 4 / 3;
+            const slack = 3;
+            // Where the point falls on each copy of the world that has some of [left, right] in it.
+            const copies = (left: number, right: number) => {
+                if (!(worldWidth > 0)) return x >= left && x <= right ? [x] : [];
+                const xs: number[] = [];
+                for (let k = Math.ceil((left - x) / worldWidth); x + k * worldWidth <= right; k++) xs.push(x + k * worldWidth);
+                return xs;
+            };
+
+            if (geometry?.type === 'point') {
+                const p = s.view.toScreen(geometry);
+                if (!p) return false;
+                const radius = pixels(symbol?.size) / 2 + pixels(symbol?.outline?.width) / 2 + slack;
+                return copies(p.x - radius, p.x + radius).some(cx => Math.hypot(cx - p.x, y - p.y) <= radius);
+            }
+
+            const isPolygon = geometry?.type === 'polygon';
+            const lines: number[][][] | undefined = isPolygon ? geometry.rings : geometry?.type === 'polyline' ? geometry.paths : undefined;
+            if (!lines) return false;
+            const screenLines: { x: number, y: number }[][] = [];
+            let left = Infinity, right = -Infinity;
+            for (const line of lines) {
+                const screenLine: { x: number, y: number }[] = [];
+                for (const [lng, lat] of line) {
+                    const p = s.view.toScreen(new s.esri.Point({ longitude: lng, latitude: lat }));
+                    if (!p) continue;
+                    screenLine.push(p);
+                    left = Math.min(left, p.x);
+                    right = Math.max(right, p.x);
+                }
+                screenLines.push(screenLine);
+            }
+            const halfStroke = pixels(isPolygon ? symbol?.outline?.width : symbol?.width) / 2 + slack;
+
+            for (const cx of copies(left - halfStroke, right + halfStroke)) {
+                let inside = false;
+                for (const line of screenLines) {
+                    // A ring closes back on its first vertex whether or not it repeats it.
+                    const edges = isPolygon ? line.length : line.length - 1;
+                    for (let i = 0; i < edges; i++) {
+                        const a = line[i], b = line[(i + 1) % line.length];
+                        if (BitMapArcGis._distanceToSegment(cx, y, a, b) <= halfStroke) return true;
+                        // Even-odd: a ray to the right of the point crosses the edge.
+                        if (isPolygon && (a.y > y) !== (b.y > y) && cx < a.x + (y - a.y) * (b.x - a.x) / (b.y - a.y)) inside = !inside;
+                    }
+                }
+                if (inside) return true;
+            }
+            return false;
+        }
+
+        private static _distanceToSegment(x: number, y: number, a: { x: number, y: number }, b: { x: number, y: number }): number {
+            const dx = b.x - a.x, dy = b.y - a.y;
+            const lengthSquared = dx * dx + dy * dy;
+            const t = lengthSquared > 0 ? Math.max(0, Math.min(1, ((x - a.x) * dx + (y - a.y) * dy) / lengthSquared)) : 0;
+            return Math.hypot(x - (a.x + t * dx), y - (a.y + t * dy));
+        }
+
         private static _wireEvents(s: any) {
             const view = s.view;
             // Read s.dotnetObj at dispatch time. dispose() nulls it, and the hitTest
@@ -786,13 +942,7 @@
                         if (a.markerId && s.markers[a.markerId]) {
                             hit = true;
                             dn()?.invokeMethodAsync('OnMarkerClick', a.markerId);
-                            if (a.popupHtml) {
-                                BitMapArcGis._openPopup(view, { content: a.popupHtml, title: a.title || '', location: g.geometry });
-                            } else if (a.popupText) {
-                                const el = document.createElement('span');
-                                el.textContent = a.popupText;
-                                BitMapArcGis._openPopup(view, { content: el, title: a.title || '', location: g.geometry });
-                            }
+                            BitMapArcGis._openMarkerPopup(s, g);
                             break;
                         }
                         if (a._bmKind === 'geojson' && a._bmLayerId && s.geoJsonLayers[a._bmLayerId]) {
@@ -834,7 +984,31 @@
             }
 
             view.on('double-click', (event: any) => {
+                // The view zooms in on a double-click unless its propagation is stopped before this handler returns -
+                // which is where DoubleClickZoom is honoured, and too early for hitTest's promise, hence _markerAt.
+                if (!s.doubleClickZoom) event.stopPropagation();
+                // A bubble always keeps its double-click; a marker only while OnMarkerDoubleClick has a handler. With
+                // neither in play there is nothing to look for.
+                const markerId = s.markerDoubleClick || BitMapCluster.hasClusterIds(s.markers)
+                    ? BitMapArcGis._markerAt(s, event.x, event.y)
+                    : null;
+                if (markerId && BitMapCluster.isClusterId(markerId)) {
+                    event.stopPropagation();
+                    // The view holds a click back until it knows it is not the start of a double-click, and drops both
+                    // clicks of one - so the click that expands a cluster bubble is reported now, or it never is.
+                    dn()?.invokeMethodAsync('OnMarkerClick', markerId);
+                    return;
+                }
+                if (markerId && s.markerDoubleClick) {
+                    event.stopPropagation();
+                    dn()?.invokeMethodAsync('OnMarkerDoubleClick', markerId);
+                    return;
+                }
                 if (event.mapPoint) dn()?.invokeMethodAsync('OnDoubleClick', { lat: event.mapPoint.latitude, lng: event.mapPoint.longitude });
+            });
+            // A double-click with Control held zooms out, and reaches the handlers registered for that modifier.
+            view.on('double-click', ['Control'], (event: any) => {
+                if (!s.doubleClickZoom) event.stopPropagation();
             });
             let viewTimer: any = null;
             s.esri.reactiveUtils?.watch(

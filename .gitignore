@@ -261,6 +261,11 @@ _book
 /src/BlazorUI/Bit.BlazorUI.Legacy/wwwroot/**/*.css.gz
 !/src/BlazorUI/Bit.BlazorUI.Legacy/wwwroot/quilljs/*.css
 
+/src/BlazorUI/Bit.BlazorUI.AI/**/*.css
+/src/BlazorUI/Bit.BlazorUI.AI/Scripts/*.js
+/src/BlazorUI/Bit.BlazorUI.AI/wwwroot/scripts/*.js
+/src/BlazorUI/Bit.BlazorUI.AI/wwwroot/**/*.css.gz
+
 /src/BlazorUI/Bit.BlazorUI.Assets/**/*.css
 /src/BlazorUI/Bit.BlazorUI.Assets/wwwroot/scripts/*.js
 /src/BlazorUI/Bit.BlazorUI.Assets/wwwroot/**/*.css.gz
@@ -278,6 +283,10 @@ _book
 
 /src/Brouter/Bit.Brouter/Scripts/**/*.js
 /src/Brouter/Bit.Brouter/wwwroot/**/*.js
+
+/src/BlazorHeadlessUI/Bit.BlazorHeadlessUI/Scripts/**/*.js
+/src/BlazorHeadlessUI/Bit.BlazorHeadlessUI/wwwroot/**/*.js
+/src/BlazorHeadlessUI/Demo/Client/Bit.BlazorHeadlessUI.Demo.Client.Core/wwwroot/tailwind.css
 
 /src/Utilities/Bmotion/Bit.Bmotion/Scripts/**/*.js
 /src/Utilities/Bmotion/Bit.Bmotion/wwwroot/**/*.js

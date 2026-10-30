@@ -1,0 +1,400 @@
+﻿/* accessibility demo styles — plain CSS section. The library ships zero CSS. */
+
+/* ---- Shared layout helpers ---- */
+.a11y-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+}
+
+.a11y-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.a11y-kbd {
+    display: inline-block;
+    min-width: 1.4em;
+    padding: 0.05rem 0.4rem;
+    border: 1px solid var(--color-border-strong);
+    border-bottom-width: 2px;
+    border-radius: 0.3rem;
+    background: var(--color-subtle);
+    color: var(--color-text-secondary);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.a11y-input {
+    width: 100%;
+    padding: 0.45rem 0.7rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 0.4rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 0.875rem;
+}
+
+.a11y-input:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 1px;
+}
+
+/* ---- Visually hidden: icon buttons + skip link ---- */
+.a11y-icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}
+
+.a11y-icon-button:hover         { background: var(--color-fill); color: var(--color-text); }
+.a11y-icon-button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.a11y-icon-button svg           { width: 1.1rem; height: 1.1rem; }
+
+.a11y-skip-link {
+    display: inline-block;
+    padding: 0.45rem 0.85rem;
+    border-radius: 0.5rem;
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.a11y-skip-link:focus-visible { outline: 2px solid light-dark(#1d4ed8, #60a5fa); outline-offset: 2px; }
+
+.a11y-skip-target {
+    padding: 0.75rem 1rem;
+    border: 1px dashed var(--color-border-strong);
+    border-radius: 0.5rem;
+    color: var(--color-text-tertiary);
+    font-size: 0.875rem;
+}
+
+.a11y-skip-target:focus {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    border-color: transparent;
+}
+
+/* ---- Separator ---- */
+.a11y-sep-card {
+    width: 100%;
+    max-width: 22rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-surface);
+}
+
+.a11y-sep-title { margin: 0; font-weight: 600; }
+.a11y-sep-text  { margin: 0.15rem 0 0; color: var(--color-muted); font-size: 0.875rem; }
+
+.a11y-sep-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    height: 1.25rem;
+    font-size: 0.875rem;
+}
+
+/* BitBhSeparator emits data-orientation="horizontal|vertical" */
+.a11y-separator {
+    flex-shrink: 0;
+    background: var(--color-border);
+}
+
+.a11y-separator[data-orientation="horizontal"] { height: 1px; width: 100%; margin: 0.85rem 0; }
+.a11y-separator[data-orientation="vertical"]   { width: 1px; height: 100%; }
+
+.a11y-or {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 22rem;
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.a11y-or .a11y-separator { flex: 1 1 auto; margin: 0; }
+
+/* ---- Live regions ---- */
+.a11y-status {
+    color: var(--color-success-text);
+    font-size: 0.875rem;
+}
+
+.a11y-alert:not(:empty) {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-danger-border);
+    border-radius: 0.5rem;
+    background: var(--color-danger-subtle);
+    color: light-dark(#991b1b, #fca5a5);
+    font-size: 0.875rem;
+}
+
+/* ---- Announcer ---- */
+.a11y-products {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.a11y-product {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 10rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-surface);
+    font-size: 0.875rem;
+}
+
+.a11y-product strong { font-size: 0.95rem; }
+
+.a11y-log {
+    margin: 0;
+    padding: 0.6rem 0.85rem 0.6rem 2rem;
+    border-radius: 0.5rem;
+    background: var(--color-code-bg);
+    color: #d4d4d8;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.75rem;
+}
+
+.a11y-log-empty { list-style: none; margin-left: -1.15rem; color: #a1a1aa; }
+
+/* ---- Hotkeys ---- */
+.a11y-search {
+    position: relative;
+    width: 100%;
+    max-width: 20rem;
+}
+
+.a11y-search .a11y-input { padding-right: 4.5rem; }
+
+.a11y-search-hint {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 0.2rem;
+    pointer-events: none;
+}
+
+.a11y-shortcuts {
+    width: 100%;
+    max-width: 20rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-surface);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    font-size: 0.875rem;
+}
+
+.a11y-shortcuts h3 { margin: 0 0 0.5rem; font-size: 0.9rem; }
+
+.a11y-shortcuts dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.4rem 1rem;
+    margin: 0;
+}
+
+.a11y-shortcuts dd { margin: 0; color: var(--color-text-tertiary); }
+
+/* ---- Focus scope ---- */
+.a11y-profile {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    max-width: 24rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-surface);
+}
+
+.a11y-profile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.a11y-profile-header div  { display: flex; flex-direction: column; }
+.a11y-profile-header span { color: var(--color-muted); font-size: 0.85rem; }
+
+/* BitBhFocusScope emits data-state="active|inactive" */
+.a11y-scope {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 2px dashed var(--color-border-strong);
+    border-radius: 0.5rem;
+    outline: none;
+}
+
+.a11y-scope[data-state="active"] {
+    border-color: var(--color-primary);
+    background: var(--color-accent-subtle);
+}
+
+.a11y-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.a11y-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+/* ---- Direction ---- */
+.a11y-segments {
+    display: inline-flex;
+    padding: 0.2rem;
+    border-radius: 0.6rem;
+    background: var(--color-fill);
+}
+
+.a11y-segment {
+    padding: 0.3rem 0.8rem;
+    border: 0;
+    border-radius: 0.45rem;
+    background: transparent;
+    color: var(--color-text-tertiary);
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.a11y-segment[aria-pressed="true"] {
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.a11y-segment:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+.a11y-dir-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-subtle);
+}
+
+/* Radio group rendered as a segmented control (radios emit data-state) */
+.a11y-radio-segments {
+    display: inline-flex;
+    align-self: flex-start;
+    gap: 0.25rem;
+    padding: 0.2rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.6rem;
+    background: var(--color-surface);
+}
+
+.a11y-radio-segment {
+    padding: 0.35rem 0.85rem;
+    border: 0;
+    border-radius: 0.45rem;
+    background: transparent;
+    color: var(--color-text-tertiary);
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.a11y-radio-segment[data-state="checked"] { background: var(--color-primary); color: #fff; }
+.a11y-radio-segment:focus-visible         { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+.a11y-tab-list {
+    display: flex;
+    gap: 0.25rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.a11y-tab {
+    padding: 0.5rem 0.85rem;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--color-muted);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.a11y-tab[data-state="active"] { color: var(--color-primary-text); border-bottom-color: var(--color-primary); }
+.a11y-tab:focus-visible        { outline: 2px solid var(--color-focus); outline-offset: -2px; border-radius: 0.25rem; }
+
+.a11y-tab-panel {
+    padding-top: 0.75rem;
+    color: var(--color-text-tertiary);
+    font-size: 0.875rem;
+}
+
+.a11y-tab-panel:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: 0.25rem; }
+
+/* ---- Roving focus chips ---- */
+.a11y-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.a11y-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.85rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.a11y-chip:hover            { border-color: var(--color-border-hover); }
+.a11y-chip:focus-visible    { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.a11y-chip[aria-pressed="true"] { border-color: var(--color-primary); background: var(--color-accent-subtle); color: var(--color-accent-text); }
+.a11y-chip[data-disabled]   { opacity: 0.45; cursor: not-allowed; }

@@ -16,6 +16,8 @@
             tileOverlays: { [k: string]: string },
             zoomControl: any, scaleControl: any,
             suppressBrowserContextMenu: boolean,
+            /** Whether a marker's double-click is the marker's: only while OnMarkerDoubleClick has a handler. */
+            markerDoubleClick: boolean,
         } } = {};
 
         public static async init(id: string, canvasId: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
@@ -48,6 +50,7 @@
                 markers: {} as any, layers: {} as any, geoJsonLayers: {} as any, tileOverlays: {} as any,
                 zoomControl: null as any, scaleControl: null as any,
                 suppressBrowserContextMenu: !!o.suppressBrowserContextMenu,
+                markerDoubleClick: false,
             };
             BitMapAzureMaps._ensureZoom(state, o.zoomControl !== false);
             BitMapAzureMaps._ensureScale(state, !!o.showScaleControl);
@@ -182,94 +185,66 @@
         public static addMarker(id: string, markerId: string, opts: any) {
             opts = BitMapHelpers.withDefaultIcon(id, opts);
             const s = BitMapAzureMaps._require(id);
-            const atlas = s.atlas;
-            // Popup content is built as real DOM rather than an HTML string so plain-text
-            // content goes through textContent (no escaping to get wrong) and so the
-            // padding comes from a class in BitMap.scss instead of an inline style
-            // attribute, which a strict CSP without 'unsafe-inline' would strip.
-            let popup: any = null;
-            if (opts.popupHtml || opts.popupText) {
-                const content = document.createElement('div');
-                content.className = 'bit-map-popup-content';
-                if (opts.popupHtml) content.innerHTML = String(opts.popupHtml);
-                else content.textContent = String(opts.popupText);
-                popup = new atlas.Popup({ content, pixelOffset: [0, -28], closeButton: true });
+            // A marker already on the map is updated where it stands rather than replaced: a new one would come
+            // with a new element, which takes an open popup or tooltip, and the second click of a double-click,
+            // with the old one.
+            const existing = s.markers[markerId];
+            if (existing) {
+                BitMapAzureMaps._updateMarker(s, existing, opts);
+                return;
             }
+            const atlas = s.atlas;
+            const popup = BitMapAzureMaps._buildPopup(s, opts);
             const markerOpts: any = { position: [opts.lng, opts.lat], draggable: !!opts.draggable };
+            let icon: HTMLImageElement | null = null;
             if (opts.iconUrl) {
-                const w = opts.iconWidth || 32, h = opts.iconHeight || 32;
                 const div = document.createElement('div');
-                // Size is per-marker data so it stays inline (CSP style-src does not
-                // block the style *property*, only a style *attribute* in parsed HTML);
-                // everything static lives in the .bit-map-marker-icon class.
+                // Everything static lives in the .bit-map-marker-icon class; the size is set by _applyIcon.
                 div.className = 'bit-map-marker-icon';
-                div.style.width = `${w}px`;
-                div.style.height = `${h}px`;
-                const img = document.createElement('img');
-                img.src = opts.iconUrl;
-                img.width = w;
-                img.height = h;
+                icon = document.createElement('img');
                 // The accessible name of a marker is its title; the image itself is
                 // decorative, so keep it out of the accessibility tree.
-                img.alt = '';
-                div.appendChild(img);
+                icon.alt = '';
+                div.appendChild(icon);
+                BitMapAzureMaps._applyIcon(icon, opts);
                 markerOpts.htmlContent = div;
             }
             if (opts.title) markerOpts.title = opts.title;
             if (popup) markerOpts.popup = popup;
 
             const marker = new atlas.HtmlMarker(markerOpts);
-            const tooltip = BitMapAzureMaps._buildTooltip(s, opts);
-            const existing = s.markers[markerId];
-            if (existing) {
-                if (existing.popup) {
-                    try { s.map.popups.remove(existing.popup); } catch { /* ignore */ }
-                    try { existing.popup.remove(); } catch { /* ignore */ }
-                }
-                // The tooltip is a second popup, so a replaced marker leaks one the same way a
-                // replaced popup would - and an open one would hang over the map with no marker.
-                if (existing.tooltip) {
-                    try { s.map.popups.remove(existing.tooltip); } catch { /* ignore */ }
-                    try { existing.tooltip.remove(); } catch { /* ignore */ }
-                }
-                try { s.map.markers.remove(existing.marker); } catch { /* ignore */ }
-            }
             s.map.markers.add(marker);
-            s.markers[markerId] = { marker, popup, tooltip };
+            // The icon is kept so an update can draw into the image the marker already shows (_updateMarker).
+            const entry = { marker, popup, tooltip: BitMapAzureMaps._buildTooltip(s, opts), icon, opts };
+            s.markers[markerId] = entry;
 
-            if (tooltip) {
-                // Atlas has no tooltip concept, so it is a second popup shown on hover - and on
-                // focus too, so a keyboard user reaches the same label.
-                // The position is read at open time, not captured: a draggable marker has moved
-                // by the time the pointer comes back, and a captured one would label empty map.
-                const show = () => {
-                    try {
-                        tooltip.setOptions({ position: marker.getOptions().position ?? [opts.lng, opts.lat] });
-                        tooltip.open(s.map);
-                    } catch { /* ignore */ }
-                };
-                const hide = () => { try { tooltip.close(); } catch { /* ignore */ } };
-                if (opts.tooltipPermanent) {
-                    show();
-                } else {
-                    s.map.events.add('mouseenter', marker, show);
-                    s.map.events.add('mouseleave', marker, hide);
-                }
-            }
+            // Atlas has no tooltip concept, so it is a second popup shown on hover. The entry is read at
+            // dispatch time: an update can replace the tooltip or make it permanent.
+            s.map.events.add('mouseenter', marker, () => { if (!entry.opts.tooltipPermanent) BitMapAzureMaps._showTooltip(s, entry); });
+            s.map.events.add('mouseleave', marker, () => { if (!entry.opts.tooltipPermanent) BitMapAzureMaps._hideTooltip(entry); });
+            if (opts.tooltipPermanent) BitMapAzureMaps._showTooltip(s, entry);
 
             // Read s.dotnetObj at dispatch time rather than capturing it: dispose() nulls
             // the field, and a stale capture would invoke a released .NET reference.
-            s.map.events.add('click', marker, (e: any) => {
-                e.originalEvent?.stopPropagation?.();
-                s.dotnetObj?.invokeMethodAsync('OnMarkerClick', markerId);
-                if (popup) marker.togglePopup();
-            });
-            if (opts.draggable) {
-                s.map.events.add('dragend', marker, () => {
-                    const p = marker.getOptions().position ?? [0, 0];
-                    s.dotnetObj?.invokeMethodAsync('OnMarkerDragEnd', markerId, { lat: p[1], lng: p[0] });
+            // The element sits in the map's canvas container, so its click and double-click go on to the map's own
+            // listeners, which tell them apart as this marker's (_markerIdOf) - its click raises no OnClick, which
+            // would also close a MarkerPopupTemplate popup the marker click has just opened, and its double-click is
+            // reported there. Neither is stopped on the element: the page's own listeners still hear them.
+            const element = marker.getElement();
+            if (element) {
+                element._bmMarkerId = markerId;
+                element.addEventListener('click', (ev: MouseEvent) => {
+                    // A double-click on a bubble is one click of it: the first of the pair has expanded it already.
+                    if (ev.detail > 1 && BitMapCluster.isClusterId(markerId)) return;
+                    s.dotnetObj?.invokeMethodAsync('OnMarkerClick', markerId);
+                    if (entry.popup) marker.togglePopup();
                 });
             }
+            // Only a draggable marker raises it, and an update can make one draggable.
+            s.map.events.add('dragend', marker, () => {
+                const p = marker.getOptions().position ?? [0, 0];
+                s.dotnetObj?.invokeMethodAsync('OnMarkerDragEnd', markerId, { lat: p[1], lng: p[0] });
+            });
         }
 
         public static removeMarker(id: string, markerId: string) {
@@ -277,34 +252,30 @@
             if (!s) return;
             const e = s.markers[markerId];
             if (!e) return;
-            if (e.popup) e.popup.remove();
-            if (e.tooltip) e.tooltip.remove();
-            s.map.markers.remove(e.marker);
+            BitMapAzureMaps._removeEntry(s, e);
             delete s.markers[markerId];
         }
 
         public static clearMarkers(id: string) {
             const s = BitMapAzureMaps._maps[id];
             if (!s) return;
-            for (const k in s.markers) {
-                if (s.markers[k].popup) s.markers[k].popup.remove();
-                if (s.markers[k].tooltip) s.markers[k].tooltip.remove();
-                s.map.markers.remove(s.markers[k].marker);
-            }
+            for (const k in s.markers) BitMapAzureMaps._removeEntry(s, s.markers[k]);
             s.markers = {};
         }
 
         public static syncMarkers(id: string, markerIds: string[], markers: any[]) {
             const s = BitMapAzureMaps._maps[id];
             if (!s) return;
-            for (const k in s.markers) {
-                if (s.markers[k].popup) s.markers[k].popup.remove();
-                if (s.markers[k].tooltip) s.markers[k].tooltip.remove();
-                s.map.markers.remove(s.markers[k].marker);
-            }
-            s.markers = {};
-            const len = Math.min(markerIds?.length ?? 0, markers?.length ?? 0);
-            for (let i = 0; i < len; i++) BitMapAzureMaps.addMarker(id, markerIds[i], markers[i]);
+            BitMapHelpers.syncMarkers(s.markers, markerIds, markers,
+                markerId => BitMapAzureMaps.removeMarker(id, markerId),
+                (markerId, opts) => BitMapAzureMaps.addMarker(id, markerId, opts),
+                ids => BitMapHelpers.orderElements(ids.map(markerId => s.markers[markerId]?.marker.getElement())));
+        }
+
+        /** Makes a marker's double-click the marker's (OnMarkerDoubleClick) or leaves it the map's. */
+        public static setMarkerDoubleClick(id: string, enabled: boolean) {
+            const s = BitMapAzureMaps._maps[id];
+            if (s) s.markerDoubleClick = enabled;
         }
 
         public static setMarkerPosition(id: string, markerId: string, lat: number, lng: number) {
@@ -490,6 +461,82 @@
             return s;
         }
 
+        /**
+         * Brings a marker on the map in line with a new payload without replacing it (see addMarker), touching only
+         * what changed. A new icon is drawn into the image the marker already shows.
+         */
+        private static _updateMarker(s: any, entry: any, opts: any) {
+            const was = entry.opts;
+            entry.opts = opts;
+            const changed = (...fields: string[]) => BitMapHelpers.markerChanged(was, opts, ...fields);
+            const marker = entry.marker;
+
+            // Measured against where the marker is rather than the last payload: a drag or setMarkerPosition moves a
+            // marker without one.
+            const at = marker.getOptions().position;
+            if (!at || at[0] !== opts.lng || at[1] !== opts.lat) {
+                const position = [opts.lng, opts.lat];
+                marker.setOptions({ position });
+                // The popups are positioned independently of their marker, so an open one has to follow.
+                if (entry.popup?.isOpen?.()) try { entry.popup.setOptions({ position }); } catch { /* ignore */ }
+                if (entry.tooltip) try { entry.tooltip.setOptions({ position }); } catch { /* ignore */ }
+            }
+            if (entry.icon && changed(...BitMapHelpers.markerIconFields)) BitMapAzureMaps._applyIcon(entry.icon, opts);
+            if (changed('title')) marker.setOptions({ title: opts.title || '' });
+            if (changed('draggable')) marker.setOptions({ draggable: !!opts.draggable });
+            if (changed(...BitMapHelpers.markerPopupFields)) {
+                if (entry.popup && (opts.popupHtml || opts.popupText)) {
+                    // New content in the popup it has, which keeps an open one open.
+                    entry.popup.setOptions({ content: BitMapAzureMaps._popupContent(opts) });
+                } else {
+                    if (entry.popup) BitMapAzureMaps._removePopup(s, entry.popup);
+                    entry.popup = BitMapAzureMaps._buildPopup(s, opts);
+                    // The marker holds the popup it toggles, so it is handed the new one - or, with null, lets go of
+                    // the old one, which takes it back to having none.
+                    marker.setOptions({ popup: entry.popup });
+                }
+            }
+            if (changed(...BitMapHelpers.markerTooltipFields)) {
+                if (entry.tooltip) BitMapAzureMaps._removePopup(s, entry.tooltip);
+                entry.tooltip = BitMapAzureMaps._buildTooltip(s, opts);
+                // Opened again while the pointer is over the marker, as it was.
+                if (opts.tooltipPermanent || BitMapHelpers.isEngaged(marker.getElement())) BitMapAzureMaps._showTooltip(s, entry);
+            }
+        }
+
+        private static _applyIcon(img: HTMLImageElement, opts: any) {
+            const w = opts.iconWidth || 32, h = opts.iconHeight || 32;
+            // Size is per-marker data so it stays inline (CSP style-src does not
+            // block the style *property*, only a style *attribute* in parsed HTML).
+            const div = img.parentElement;
+            if (div) {
+                div.style.width = `${w}px`;
+                div.style.height = `${h}px`;
+            }
+            img.src = opts.iconUrl;
+            img.width = w;
+            img.height = h;
+        }
+
+        private static _buildPopup(s: any, opts: any): any {
+            if (!opts.popupHtml && !opts.popupText) return null;
+            return new s.atlas.Popup({ content: BitMapAzureMaps._popupContent(opts), pixelOffset: [0, -28], closeButton: true });
+        }
+
+        /**
+         * Popup content is built as real DOM rather than an HTML string so plain-text
+         * content goes through textContent (no escaping to get wrong) and so the
+         * padding comes from a class in BitMap.scss instead of an inline style
+         * attribute, which a strict CSP without 'unsafe-inline' would strip.
+         */
+        private static _popupContent(opts: any): HTMLElement {
+            const content = document.createElement('div');
+            content.className = 'bit-map-popup-content';
+            if (opts.popupHtml) content.innerHTML = String(opts.popupHtml);
+            else content.textContent = String(opts.popupText);
+            return content;
+        }
+
         /** Builds the hover tooltip popup for a marker, or undefined when it has no tooltip. */
         private static _buildTooltip(s: any, opts: any): any {
             if (!opts.tooltipHtml && !opts.tooltipText) return undefined;
@@ -498,6 +545,38 @@
             if (opts.tooltipHtml) content.innerHTML = String(opts.tooltipHtml);
             else content.textContent = String(opts.tooltipText);
             return new s.atlas.Popup({ content, pixelOffset: [0, -32], closeButton: false });
+        }
+
+        /**
+         * The position is read at open time, not captured: a draggable marker has moved
+         * by the time the pointer comes back, and a captured one would label empty map.
+         */
+        private static _showTooltip(s: any, entry: any) {
+            if (!entry.tooltip) return;
+            try {
+                entry.tooltip.setOptions({ position: entry.marker.getOptions().position ?? [entry.opts.lng, entry.opts.lat] });
+                entry.tooltip.open(s.map);
+            } catch { /* ignore */ }
+        }
+
+        private static _hideTooltip(entry: any) {
+            if (entry.tooltip) try { entry.tooltip.close(); } catch { /* ignore */ }
+        }
+
+        /** Takes a popup - a marker's own, or its tooltip - off the map for good. */
+        private static _removePopup(s: any, popup: any) {
+            try { s.map.popups.remove(popup); } catch { /* ignore */ }
+            try { popup.remove(); } catch { /* ignore */ }
+        }
+
+        /**
+         * Takes a marker off the map with both its popups: either one would otherwise hang over the map with no
+         * marker, an open one in sight.
+         */
+        private static _removeEntry(s: any, entry: any) {
+            if (entry.popup) BitMapAzureMaps._removePopup(s, entry.popup);
+            if (entry.tooltip) BitMapAzureMaps._removePopup(s, entry.tooltip);
+            try { s.map.markers.remove(entry.marker); } catch { /* ignore */ }
         }
 
         private static _removeExisting(s: any, layerId: string) {
@@ -561,6 +640,8 @@
             // Read s.dotnetObj at dispatch time; dispose() nulls it.
             const dn = () => s.dotnetObj;
             map.events.add('click', (e: any) => {
+                // A marker's click, which its element's own listener has reported (see addMarker).
+                if (BitMapAzureMaps._markerIdOf(s, e.originalEvent?.target) !== null) return;
                 if (e.shapes && e.shapes.length > 0) {
                     const shape = e.shapes[0];
                     const props = shape.getProperties ? shape.getProperties() : (shape.properties ?? {});
@@ -582,6 +663,15 @@
                 if (e.position) dn()?.invokeMethodAsync('OnClick', { lat: e.position[1], lng: e.position[0] });
             });
             map.events.add('dblclick', (e: any) => {
+                // Preventing the event is what keeps the map's double-click zoom off a marker's. A bubble always keeps
+                // its double-click; a marker only while OnMarkerDoubleClick has a handler.
+                const markerId = BitMapAzureMaps._markerIdOf(s, e.originalEvent?.target);
+                if (markerId !== null && (s.markerDoubleClick || BitMapCluster.isClusterId(markerId))) {
+                    e.preventDefault?.();
+                    // A bubble's has been reported already, as the click of the pair that expanded it.
+                    if (!BitMapCluster.isClusterId(markerId)) dn()?.invokeMethodAsync('OnMarkerDoubleClick', markerId);
+                    return;
+                }
                 if (e.position) dn()?.invokeMethodAsync('OnDoubleClick', { lat: e.position[1], lng: e.position[0] });
             });
             map.events.add('contextmenu', (e: any) => {
@@ -590,6 +680,16 @@
             });
             let viewTimer: any = null;
             map.events.add('moveend', () => { clearTimeout(viewTimer); viewTimer = setTimeout(() => BitMapAzureMaps._notifyView(s), 80); });
+        }
+
+        /** The id of the marker whose element holds a DOM node - the target of a map event - or null. */
+        private static _markerIdOf(s: any, node: any): string | null {
+            const container = s.map.getCanvasContainer?.();
+            for (; node && node !== container; node = node.parentNode) {
+                const markerId = node._bmMarkerId;
+                if (typeof markerId === 'string' && s.markers[markerId]?.marker.getElement() === node) return markerId;
+            }
+            return null;
         }
 
         private static _notifyView(s: any) {

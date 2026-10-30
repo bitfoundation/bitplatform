@@ -41,17 +41,17 @@ public sealed class FakeProcessRunner : IProcessRunner
         return On(fileName, "", new ProcessResult { ExitCode = -1, NotFound = true });
     }
 
-    public Task<ProcessResult> RunAsync(ProcessSpec spec, CancellationToken cancellationToken = default)
+    public async Task<ProcessResult> RunAsync(ProcessSpec spec, CancellationToken cancellationToken = default)
     {
         Calls.Add(spec);
 
         foreach (var (match, result) in rules.AsEnumerable().Reverse())
         {
             if (match(spec))
-                return result(spec, cancellationToken);
+                return await result(spec, cancellationToken) with { Spec = spec };
         }
 
-        return Task.FromResult(Default);
+        return Default with { Spec = spec };
     }
 
     public bool StartDetached(ProcessSpec spec)

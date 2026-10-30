@@ -1,0 +1,74 @@
+﻿@page "/e2e/aiemptystate"
+
+<PageTitle>BitAiEmptyState E2E</PageTitle>
+
+<h1>BitAiEmptyState</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <div style="width:600px">
+        <BitAiEmptyState Id="ems-basic" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="suggestions" Title="Suggestions">
+    <div style="width:600px">
+        <BitAiEmptyState Id="ems-suggestions" Suggestions="_suggestions" OnSuggestion="HandleOnSuggestion" />
+    </div>
+    <span id="ems-log">@string.Join("|", _chosen)</span>
+    <div style="width:240px">
+        <BitAiEmptyState Id="ems-narrow" Suggestions="_suggestions" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="custom" Title="Custom">
+    <div style="width:600px">
+        <BitAiEmptyState Id="ems-custom" Title="Hi, I am the docs assistant" Body="Ask about any component." IconName="@BitIconName.Robot" />
+        <BitAiEmptyState Id="ems-child" Title="Welcome back">
+            <span id="ems-child-content">Pick up <b>where you left off</b>.</span>
+        </BitAiEmptyState>
+        <BitAiEmptyState Id="ems-icon-template">
+            <IconTemplate>
+                <span id="ems-icon-template-content">*</span>
+            </IconTemplate>
+        </BitAiEmptyState>
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <div style="width:600px">
+        <BitAiEmptyState Id="ems-disabled" Disabled Suggestions="_suggestions" OnSuggestion="HandleOnDisabledSuggestion" />
+    </div>
+    <span id="ems-disabled-log">@_disabledChosen</span>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style & Class">
+    <div id="ems-vars" style="width:600px;--bit-AiEmptyState-gap:23px;--bit-AiEmptyState-padding:31px 32px;--bit-AiEmptyState-color:rgb(21, 22, 23);--bit-AiEmptyState-icon-color:rgb(200, 0, 100);--bit-AiEmptyState-icon-size:50px;--bit-AiEmptyState-title-color:rgb(31, 32, 33);--bit-AiEmptyState-title-font-size:27px;--bit-AiEmptyState-title-font-weight:300;--bit-AiEmptyState-suggestions-gap:15px">
+        <BitAiEmptyState Id="ems-var" Suggestions="_suggestions" />
+    </div>
+    <div style="width:600px">
+        <BitAiEmptyState Id="ems-classes"
+                         Suggestions="_suggestions"
+                         Class="e2e-ems-root"
+                         Styles="@(new() { Title = "letter-spacing: 4px", Suggestion = new() { Root = "outline: 2px solid rgb(6, 7, 8)" } })"
+                         Classes="@(new() { Title = "e2e-ems-title", Body = "e2e-ems-body", Icon = "e2e-ems-icon", Suggestions = "e2e-ems-sgs", Suggestion = new() { Root = "e2e-ems-suggestion" } })" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div style="width:600px">
+        <BitAiEmptyState Id="ems-rtl" Dir="BitDir.Rtl" Title="چطور می‌توانم کمک کنم؟" Suggestions="_suggestions" />
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly string[] _suggestions = ["Summarize this page", "Write a haiku", "Explain render modes"];
+
+    private readonly List<string> _chosen = [];
+    private int _disabledChosen;
+
+    private void HandleOnSuggestion(string suggestion) => _chosen.Add(suggestion);
+
+    private void HandleOnDisabledSuggestion(string suggestion) => _disabledChosen++;
+}

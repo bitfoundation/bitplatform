@@ -111,8 +111,13 @@ Before implementing any changes, you **MUST** complete the following:
 <!--#endif-->
 -   **Assume hot reload is working**: `.cs`, `.razor`, `.scss` and `.ts` changes are picked up automatically by the running app, so after an edit do NOT rebuild the project and do NOT reload/refresh the web app. Only rebuild or refresh if you can't see what you were expecting after your change.
 -   **Run tests**: Run `dotnet test` in the src/Tests directory.
--   **Add new migrations**: Run `dnx dotnet-ef@11.0.0-rc.2.26504.105 -- migrations add <MigrationName> --output-dir Infrastructure/Data/Migrations --verbose` in src/Server/Boilerplate.Server.Api project directory.
+<!--#if (offlineDb == true)-->
+-   **Add new migrations**: Run `bit migration add <MigrationName>` in any folder of the project, with `--offline` for the offline database.
+<!--#else-->
+-   **Add new migrations**: Run `bit migration add <MigrationName>` in any folder of the project.
+<!--#endif-->
 -   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in the src/Shared directory.
+-   **Use the bit CLI for the rest**: besides `bit setup` for a fresh clone, `bit keys` creates the project's keys and certificates, `bit pipeline` fills in the secrets of the GitHub Actions workflows, `bit migration` adds EF Core migrations and `bit run` starts the native apps; `bit --help` lists them all.
 
 ## 5. Coding Conventions & Best Practices
 

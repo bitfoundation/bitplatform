@@ -1,0 +1,39 @@
+﻿.invoice-card {
+    gap: 0.5rem;
+    display: flex;
+    max-width: 22rem;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    color: var(--bit-clr-fg-pri);
+    background-color: var(--bit-clr-bg-sec);
+    border: 1px solid var(--bit-clr-brd-sec);
+}
+
+.invoice-card-head {
+    gap: 0.5rem;
+    display: flex;
+    font-weight: 600;
+    align-items: center;
+}
+
+.invoice-card-lines {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.invoice-card-lines > li,
+.invoice-card-total {
+    gap: 1rem;
+    display: flex;
+    justify-content: space-between;
+    font-variant-numeric: tabular-nums;
+}
+
+.invoice-card-total {
+    font-weight: 600;
+    padding-block-start: 0.5rem;
+    border-block-start: 1px solid var(--bit-clr-brd-sec);
+}

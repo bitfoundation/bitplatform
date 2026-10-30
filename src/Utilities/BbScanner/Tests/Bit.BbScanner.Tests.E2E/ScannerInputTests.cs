@@ -152,7 +152,7 @@ public class ScannerInputTests : BbScannerTest
     /// Draws symbols on a white canvas in the page and returns it as a PNG, so the suite needs no image library.
     /// Each symbol is drawn at six pixels a module from its top-left position, quiet zone included.
     /// </summary>
-    private static async Task<byte[]> RenderPngAsync(ScannerSession session, int width, int height, params (BbBitMatrix Matrix, int X, int Y)[] symbols)
+    internal static async Task<byte[]> RenderPngAsync(ScannerSession session, int width, int height, params (BbBitMatrix Matrix, int X, int Y)[] symbols)
     {
         var shapes = symbols.Select(symbol =>
         {

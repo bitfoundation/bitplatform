@@ -12,6 +12,7 @@ public sealed class WebAssemblyTrimmingTests
 {
     private const string Core = "Bit.BlazorUI";
     private const string Extras = "Bit.BlazorUI.Extras";
+    private const string AI = "Bit.BlazorUI.AI";
 
     private static PublishResult Published => Publisher.Publish(Publisher.Consumer);
 
@@ -20,11 +21,12 @@ public sealed class WebAssemblyTrimmingTests
     {
         Published.AssertSucceeded();
 
-        // The app renders some two dozen components; the full bundles hold every one of them.
+        // The app renders some two dozen components; the full bundles hold every one of them. (Its AI chat draws a source
+        // of a citation with a BitCard, so the card is kept with it.)
         var styles = Published.KeptStyles(Core);
         Assert.IsTrue(styles.Count is > 10 and < 60, $"The trimmed core stylesheet keeps {styles.Count} components: {string.Join(", ", styles)}");
         foreach (var expected in new[] { "BitButton", "BitTextField", "BitDropdown", "BitDatePicker", "BitNav", "BitModal" }) CollectionAssert.Contains(styles, expected);
-        foreach (var unexpected in new[] { "BitCard", "BitCarousel", "BitSplitter", "BitScrollablePane" }) CollectionAssert.DoesNotContain(styles, unexpected);
+        foreach (var unexpected in new[] { "BitCarousel", "BitSplitter", "BitScrollablePane", "BitSwiper" }) CollectionAssert.DoesNotContain(styles, unexpected);
 
         var scripts = Published.KeptScripts(Core);
         foreach (var expected in new[] { "general", "Utils.Keys", "Callouts", "BitTextField", "BitNav" }) CollectionAssert.Contains(scripts, expected);
@@ -34,7 +36,11 @@ public sealed class WebAssemblyTrimmingTests
         CollectionAssert.DoesNotContain(Published.KeptStyles(Extras), "BitPdfViewer");
         CollectionAssert.DoesNotContain(Published.KeptScripts(Extras), "BitPdfViewer");
 
-        foreach (var package in new[] { Core, Extras })
+        // The AI chat, with the transcript, the composer and the messages it draws, and their scripts.
+        foreach (var expected in new[] { "BitAiChat", "BitAiMessageList", "BitAiChatMessage", "BitAiPromptInput" }) CollectionAssert.Contains(Published.KeptStyles(AI), expected);
+        foreach (var expected in new[] { "BitAiPromptInput", "BitAiMessageList" }) CollectionAssert.Contains(Published.KeptScripts(AI), expected);
+
+        foreach (var package in new[] { Core, Extras, AI })
         {
             Published.AssertScriptsAreThePiecesInOrder(package);
             Published.AssertStylesAreThePiecesInOrder(package);
@@ -86,7 +92,7 @@ public sealed class WebAssemblyTrimmingTests
         await session.WaitForAsync("() => [...document.querySelectorAll('.bit-btn')].some(b => b.textContent.trim() === 'Open' && b.classList.contains('bit-btn-otl'))",
                                    "The Outline variant the app cascades through BitParams did not reach its Open button");
 
-        await session.AssertEveryComponentIsStyledAsync(Published, Core, Extras);
+        await session.AssertEveryComponentIsStyledAsync(Published, Core, Extras, AI);
 
         // The components whose scripts the trimming had to keep for them, each doing what it relies on its scripts for.
         // A callout - the script with the most moving parts of all - opens and closes on Escape, from each kind of field.
@@ -119,6 +125,9 @@ public sealed class WebAssemblyTrimmingTests
 
         // The data grid's rows, read through the names of the app's own record.
         await session.WaitForAsync("() => document.querySelector('.bit-dtg')?.textContent.includes('Ada')", "BitDataGrid rendered no rows");
+
+        // The AI chat answers a prompt sent from its composer.
+        await session.AssertAiChatAnswersAsync();
 
         session.AssertNoErrors($"The trimmed app in {engine}");
     }

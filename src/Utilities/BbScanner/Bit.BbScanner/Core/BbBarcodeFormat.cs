@@ -85,10 +85,10 @@ public enum BbBarcodeFormat
     /// </summary>
     MicroQrCode = 1 << 17,
 
-    /// <summary>All linear (one dimensional) symbologies.</summary>
+    /// <summary>All linear (one dimensional, 1D) symbologies.</summary>
     AllLinear = Code128 | Code39 | Ean13 | Ean8 | UpcA | UpcE | Itf | Codabar | Code93 | DataBar | DataBarLimited | DataBarExpanded,
 
-    /// <summary>All matrix (two dimensional) symbologies.</summary>
+    /// <summary>All matrix (two dimensional, 2D) symbologies.</summary>
     AllMatrix = QrCode | DataMatrix | Pdf417 | Aztec | MaxiCode | MicroQrCode,
 
     /// <summary>Every supported symbology.</summary>

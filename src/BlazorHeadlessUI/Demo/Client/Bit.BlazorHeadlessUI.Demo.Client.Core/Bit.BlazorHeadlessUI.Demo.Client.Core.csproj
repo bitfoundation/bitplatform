@@ -1,0 +1,69 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <!-- -p:IncludeWasm=true is a global (command-line) property, so it flows into this project too.
+             Defining INCLUDE_WASM here lets AppRenderMode.WasmEnabled know the WASM client is part of the
+             build and boot the app as Blazor WebAssembly even in Debug. -->
+        <DefineConstants Condition=" '$(IncludeWasm)' == 'true' ">$(DefineConstants);INCLUDE_WASM</DefineConstants>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\Bit.BlazorHeadlessUI\Bit.BlazorHeadlessUI.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Remove="package.json;package-lock.json" />
+        <None Include="package.json;package-lock.json;tailwind\input.css" />
+    </ItemGroup>
+
+    <!-- ============================================================
+         Tailwind v4: tailwind/input.css is compiled into wwwroot/tailwind.css by the @tailwindcss/cli
+         package pinned in package.json - no binary download, the same npm toolchain the library's own
+         TypeScript build uses. wwwroot/tailwind.css and node_modules are generated (git-ignored).
+         ============================================================ -->
+    <ItemGroup>
+        <!-- Everything the @source globs of tailwind/input.css scan: a class added to any of them has to
+             rebuild the stylesheet. -->
+        <TailwindSources Include="tailwind\input.css;Pages\**\*.razor;Pages\**\*.cs;Shared\**\*.razor;Shared\**\*.cs;Layout\**\*.razor;Layout\**\*.cs" />
+    </ItemGroup>
+
+    <!-- npm ci (not npm install) keeps the installed tree exactly what the checked-in lockfile says. -->
+    <Target Name="InstallNodejsDependencies" Inputs="package.json;package-lock.json" Outputs="node_modules\.package-lock.json">
+        <Exec Command="npm ci" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <!-- The lockfile is an input too: a different CLI version may emit different CSS for the same classes. -->
+    <Target Name="BuildTailwindCss"
+            DependsOnTargets="InstallNodejsDependencies"
+            Inputs="@(TailwindSources);package-lock.json"
+            Outputs="wwwroot\tailwind.css">
+        <Exec Command="node node_modules/@tailwindcss/cli/dist/index.mjs --input tailwind/input.css --output wwwroot/tailwind.css --minify"
+              StandardOutputImportance="high" StandardErrorImportance="high" />
+        <!-- The CLI leaves the file untouched when its content did not change, which would leave the
+             Outputs check above taking it for stale on every build. -->
+        <Touch Files="wwwroot\tailwind.css" />
+    </Target>
+
+    <!-- wwwroot/tailwind.css is generated. On a clean build it does not exist when the default wwwroot/**
+         Content glob is evaluated, so static web asset discovery would miss it and the app would answer
+         _content/Bit.BlazorHeadlessUI.Demo.Client.Core/tailwind.css with a 404. Generating it before
+         ResolveProjectStaticWebAssets and adding it to Content explicitly makes discovery pick it up (Remove
+         first keeps a single entry). Design-time builds skip it: the IDE must not run npm. -->
+    <Target Name="IncludeTailwindCssAsStaticWebAsset"
+            BeforeTargets="ResolveProjectStaticWebAssets"
+            DependsOnTargets="BuildTailwindCss"
+            Condition=" '$(DesignTimeBuild)' != 'true' ">
+        <ItemGroup>
+            <Content Remove="wwwroot\tailwind.css" />
+            <Content Include="wwwroot\tailwind.css" />
+        </ItemGroup>
+    </Target>
+
+</Project>

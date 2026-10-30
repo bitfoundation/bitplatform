@@ -20,6 +20,10 @@
         private static readonly VIRTUALIZE_SETTLE_TIME = 1000;
         private static readonly VIRTUALIZE_SETTLE_FRAMES = 10;
 
+        // How long the focus waits for a callout that opened hidden to be shown (see _waitForShown): about as long as a
+        // smooth scroll of the page takes to bring its trigger into view.
+        private static readonly SHOW_WAIT_TIME = 1000;
+
         // The number of items PageDown/PageUp move the focus by when the whole list is rendered (in
         // virtualize mode the jump is a scroll of one visible window instead, see _scrollFor).
         private static readonly PAGE_STEP = 10;
@@ -195,6 +199,15 @@
             const generation = (Dropdowns._focusGenerations.get(callout) ?? 0) + 1;
             Dropdowns._focusGenerations.set(callout, generation);
 
+            // A callout opened while the page was still scrolling its trigger into view - an Enter pressed right after
+            // the Tab - is hidden until the trigger is on the screen (Callouts.reposition), and a hidden row takes no
+            // focus, which would leave it on the trigger with the list open.
+            if (callout.style.visibility === 'hidden') {
+                if (await Dropdowns._waitForShown(callout) === false) return;
+
+                if (Dropdowns._focusGenerations.get(callout) !== generation) return;
+            }
+
             // Only the jump that opens a virtualized list on its selection waits for that list: it is the
             // one whose rows are rendered by the very reveal it follows, and the one that has a row to
             // reach. Everywhere else an empty list is an empty list, and a wait would only hold the focus
@@ -246,6 +259,17 @@
         // means "not yet" rather than "nothing to focus", and giving up on it is what would leave that
         // first opening on the top of the list with the focus still on the trigger. A list that really
         // is empty costs the frames below once and focuses nothing either way.
+        // Whether the callout was shown before the wait ran out, rather than closed or still hidden.
+        private static async _waitForShown(callout: HTMLElement) {
+            const deadline = performance.now() + Dropdowns.SHOW_WAIT_TIME;
+
+            while (callout.style.visibility === 'hidden' && callout.style.display !== 'none' && performance.now() < deadline) {
+                await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+            }
+
+            return callout.style.visibility !== 'hidden' && callout.style.display !== 'none';
+        }
+
         private static async _waitForItems(callout: HTMLElement) {
             let items = Dropdowns._getItems(callout);
 
