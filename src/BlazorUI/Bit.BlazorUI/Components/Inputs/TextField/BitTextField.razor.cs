@@ -533,7 +533,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// <summary>
     /// Shows the custom prefix for text field.
     /// </summary>
-    [Parameter] public RenderFragment? PrefixTemplate { get; set; }
+    [Parameter, ResetClassBuilder] public RenderFragment? PrefixTemplate { get; set; }
 
     /// <summary>
     /// Prevents the enter to add new line character into the input in the Multiline mode.
@@ -630,7 +630,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// <summary>
     /// Shows the custom suffix for text field.
     /// </summary>
-    [Parameter] public RenderFragment? SuffixTemplate { get; set; }
+    [Parameter, ResetClassBuilder] public RenderFragment? SuffixTemplate { get; set; }
 
     /// <summary>
     /// A more descriptive title of the text field, shown by the browser as its tooltip.
@@ -792,6 +792,13 @@ public partial class BitTextField : BitTextInputBase<string?>
         ClassBuilder.Register(() => FullWidth ? "bit-tfl-fwd" : string.Empty);
 
         ClassBuilder.Register(() => PermanentGhost ? "bit-tfl-pgt" : string.Empty);
+
+        // The parts at an end of the frame take its corners only while nothing else sits beyond them, which the
+        // stylesheet reads off their position - except for a template, which may leave nothing but text there, and
+        // text is a thing no selector can see. These classes are what tell it that a template holds that end.
+        ClassBuilder.Register(() => PrefixTemplate is not null ? "bit-tfl-ptm" : string.Empty);
+
+        ClassBuilder.Register(() => SuffixTemplate is not null ? "bit-tfl-stm" : string.Empty);
 
         // Size, Accent, Background and Border publish nothing while they are unset, which is what lets the stylesheet
         // tell a default from a choice: the public --bit-TextField-* variables restyle the default and never an explicit value.

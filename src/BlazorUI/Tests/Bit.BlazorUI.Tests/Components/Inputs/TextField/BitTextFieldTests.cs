@@ -4591,6 +4591,42 @@ public class BitTextFieldTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitTextFieldMarksTheEndsItsTemplatesHold()
+    {
+        // A template may leave nothing but text at its end of the frame, which no selector can see, so the root is what
+        // tells the stylesheet that the parts beside it are not at that end of the frame - plain text affixes are parts
+        // of the field, which say so themselves.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Prefix, "https://");
+            parameters.Add(p => p.Suffix, ".com");
+        });
+
+        var root = component.Find(".bit-tfl");
+        Assert.IsFalse(root.ClassList.Contains("bit-tfl-ptm"));
+        Assert.IsFalse(root.ClassList.Contains("bit-tfl-stm"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.PrefixTemplate, (RenderFragment)(builder => builder.AddContent(0, "https://")));
+        });
+
+        root = component.Find(".bit-tfl");
+        Assert.IsTrue(root.ClassList.Contains("bit-tfl-ptm"));
+        Assert.IsFalse(root.ClassList.Contains("bit-tfl-stm"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.PrefixTemplate, (RenderFragment?)null);
+            parameters.Add(p => p.SuffixTemplate, (RenderFragment)(builder => builder.AddContent(0, ".com")));
+        });
+
+        root = component.Find(".bit-tfl");
+        Assert.IsFalse(root.ClassList.Contains("bit-tfl-ptm"));
+        Assert.IsTrue(root.ClassList.Contains("bit-tfl-stm"));
+    }
+
+    [TestMethod]
     public void BitTextFieldDescriptionTemplateWinsOverTheText()
     {
         var component = RenderComponent<BitTextField>(parameters =>
