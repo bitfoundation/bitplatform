@@ -259,9 +259,9 @@ project up, and fails unless every container is healthy and the public address a
 ## 9. First deployment and hand-back
 
 - Start the first deployment to Test: merge the settings change into `develop` through ai-dlc's phase 7, or run the
-  Test CD by hand (`gh workflow run`). Watch the run. The deploy job already fails when a container isn't healthy,
-  restarts, or the public address doesn't answer; when it does, read that container's logs (`docker compose logs` in
-  the deploy folder) before you change anything. Then check the environment at its public address: the home page,
+  Test CD by hand (`gh workflow run`). Watch the run. The deploy job already fails when a container isn't healthy or
+  the public address doesn't answer; when it does, read that container's logs (`docker compose logs` in the deploy
+  folder) before you change anything. Then check the environment at its public address: the home page,
   signing up with its email, and a file upload. Read whatever can't be seen from outside through that environment's
   dev-mcp.
 - Then ask that environment's dev-mcp for its health (`GetHealth`), after the sign-in the troubleshoot skill

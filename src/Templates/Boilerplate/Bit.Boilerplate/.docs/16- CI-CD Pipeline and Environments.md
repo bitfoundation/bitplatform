@@ -337,8 +337,8 @@ needs Docker with its Compose plugin and curl, and nothing else: no SDK and no s
    files and the app certificate
 3. **Apply Database Migrations**: a one-shot `migrations` container runs the api's own image with
    `MigrateDatabaseAndExit=true`. When it fails, the deployment stops and the running version keeps serving
-4. **Start the New Version**: `docker compose up --wait`, which fails unless every container is healthy, and none may
-   restart in the 30 seconds after
+4. **Start the New Version**: `docker compose up --wait`, which fails unless every container is healthy, and prints
+   the containers' logs when it does
 5. **Check the Public Address**: poll `/alive` at `SERVER_ADDRESS` for up to five minutes
 <!--#if (cloudflare == true)-->
 6. **CDN Cache Purge**: purge the Cloudflare cache, so users get the new version immediately

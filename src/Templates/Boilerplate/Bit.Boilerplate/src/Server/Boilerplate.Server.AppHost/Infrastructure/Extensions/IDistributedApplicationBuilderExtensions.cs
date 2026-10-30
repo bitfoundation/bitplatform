@@ -1,5 +1,5 @@
 //+:cnd:noEmit
-//#if (database == "SqlServer" || database == "PostgreSQL" || filesStorage == "AzureBlobStorage")
+//#if (filesStorage == "AzureBlobStorage")
 using Aspire.Hosting.Azure;
 //#endif
 using Boilerplate.Server.AppHost.Infrastructure.Services;
@@ -79,26 +79,15 @@ public static class IDistributedApplicationBuilderExtensions
         /// Adds a SQL Server instance with DbGate management UI and a database named <c>mssqldb</c>.
         /// Uses SQL Server 2025 which supports embedded vector search.
         /// </summary>
-        public IResourceBuilder<IResourceWithConnectionString> AddSqlServer()
+        public IResourceBuilder<SqlServerDatabaseResource> AddSqlServer()
         {
-            // RunAsContainer does nothing in publish mode, so the Azure resource would be published as Azure SQL (Bicep)
-            // and the Docker Compose project would have no database at all. Published, it is the same container instead.
-            if (builder.ExecutionContext.IsPublishMode)
-                return ConfigureContainer(builder.AddSqlServer("sqlserver"))
-                    .PublishAsHealthyComposeService("/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q \"SELECT 1\" -b -o /dev/null")
-                    .AddDatabase("mssqldb");
-
-            return builder.AddAzureSqlServer("sqlserver")
-                .RunAsContainer(sqlServer => ConfigureContainer(sqlServer)) // Remove this RunAsContainer and related configuration to use actual Azure SQL Server instance
+            return builder.AddSqlServer("sqlserver")
+                .WithDbGate(dbGate => dbGate.WithDataVolume().WithExplicitStart())
+                .WithDataVolume()
+                .WithImage("mssql/server", "2025-latest") // Sql server 2025 supports embedded vector search.
+                .WithOtlpExporter()
+                .PublishAsHealthyComposeService("/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q \"SELECT 1\" -b -o /dev/null")
                 .AddDatabase("mssqldb");
-
-            static IResourceBuilder<SqlServerServerResource> ConfigureContainer(IResourceBuilder<SqlServerServerResource> sqlServer)
-            {
-                return sqlServer.WithDbGate(dbGate => dbGate.WithDataVolume().WithExplicitStart())
-                    .WithDataVolume()
-                    .WithImage("mssql/server", "2025-latest") // Sql server 2025 supports embedded vector search.
-                    .WithOtlpExporter();
-            }
         }
         //#endif
 
@@ -107,28 +96,16 @@ public static class IDistributedApplicationBuilderExtensions
         /// Adds a PostgreSQL Server instance with pgAdmin and a database named <c>postgresdb</c>.
         /// Uses pgvector (pg18) image which supports embedded vector search.
         /// </summary>
-        public IResourceBuilder<IResourceWithConnectionString> AddPostgreSQL()
+        public IResourceBuilder<PostgresDatabaseResource> AddPostgreSQL()
         {
-            // RunAsContainer does nothing in publish mode, so the Azure resource would be published as Azure Database for
-            // PostgreSQL (Bicep) and the Docker Compose project would have no database at all. Published, it is the same
-            // container instead.
-            if (builder.ExecutionContext.IsPublishMode)
-                return ConfigureContainer(builder.AddPostgres("postgresserver"))
-                    .PublishAsHealthyComposeService("pg_isready -U postgres -d postgres")
-                    .AddDatabase("postgresdb");
-
-            return builder.AddAzurePostgresFlexibleServer("postgresserver")
-                .RunAsContainer(postgres => ConfigureContainer(postgres)) // Remove this RunAsContainer and related configuration to use actual Azure PostgreSQL instance
+            return builder.AddPostgres("postgresserver")
+                .WithPgAdmin(pgAdmin => pgAdmin.WithExplicitStart())
+                .WithV18DataVolume()
+                .WithOptimizedSetup()
+                .WithImage("pgvector/pgvector", "pg18") // pgvector supports embedded vector search.
+                .WithOtlpExporter()
+                .PublishAsHealthyComposeService("pg_isready -U postgres -d postgres")
                 .AddDatabase("postgresdb");
-
-            static IResourceBuilder<PostgresServerResource> ConfigureContainer(IResourceBuilder<PostgresServerResource> postgres)
-            {
-                return postgres.WithPgAdmin(pgAdmin => pgAdmin.WithExplicitStart())
-                    .WithV18DataVolume()
-                    .WithOptimizedSetup()
-                    .WithImage("pgvector/pgvector", "pg18") // pgvector supports embedded vector search.
-                    .WithOtlpExporter();
-            }
         }
         //#endif
 

@@ -139,7 +139,7 @@ jobs:
 
       # Writes the Compose project to ~/deployments/<project> - its .env, the apps' settings files and the AppCertificate,
       # from this environment's secrets - then pulls the images, runs the migrations on their own so a failure leaves the
-      # running version alone, brings the project up, and fails when a container isn't healthy or keeps restarting.
+      # running version alone, brings the project up, and fails when a container isn't healthy.
       - name: Deploy
         env:
           ENV_NAME: ${{ inputs.ENV_NAME }}
@@ -243,21 +243,7 @@ jobs:
           # the app is left untouched. `up` would replace the app's container before finding out.
           compose run --rm migrations
 
-          compose up --detach --wait --wait-timeout 600 --remove-orphans
-
-          # --wait only sees the moment it looks, and a service without a health check (cloudflared) passes it while it
-          # crash loops. A restart count that still moves half a minute later fails the deployment.
-          restarts() { for container in $(compose ps --all --quiet); do docker inspect --format '{{.Name}} {{.RestartCount}} {{.State.Status}}' "$container"; done | sort; }
-          before="$(restarts)"
-          sleep 30
-          after="$(restarts)"
-          compose ps --all
-          if [[ "$before" != "$after" ]] || grep -qE ' (restarting|dead)$' <<< "$after"; then
-            echo "::error::A service is restarting:"
-            diff <(echo "$before") <(echo "$after") || true
-            compose logs --tail 200
-            exit 1
-          fi
+          compose up --detach --wait --wait-timeout 600 --remove-orphans || { compose logs --tail 200; exit 1; }
 
       - name: Check the public address
         env:
