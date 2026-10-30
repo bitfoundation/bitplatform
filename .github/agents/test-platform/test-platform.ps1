@@ -577,7 +577,7 @@ function Get-WebAppVersions {
 
 #region Windows
 
-# Every Client.Windows app starts WebView2 with --remote-debugging-port=9222, so only one of them may run while one is
+# The helper starts every Client.Windows app with --remote-debugging-port=9222, so only one of them may run while one is
 # driven over CDP - a leftover instance would be the one answering. /T takes its WebView2 processes along.
 function Stop-WindowsApps {
     $deadline = (Get-Date).AddSeconds(30)

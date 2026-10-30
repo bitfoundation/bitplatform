@@ -23,9 +23,10 @@ public static class IPlaywrightExtensions
     {
         /// <summary>
         /// Starts the installed Client.Windows app identified by <paramref name="windowsAppId"/>
-        /// (e.g. <see cref="DeployedApps.TodoWindowsAppId"/>) and attaches to it. Every Client.Windows app hard-codes
-        /// <c>--remote-debugging-port=9222</c>, so a leftover instance of any of them would be the one answering on
-        /// the port - hence every running Client.Windows process is killed first, then its data cleared (see
+        /// (e.g. <see cref="DeployedApps.TodoWindowsAppId"/>) and attaches to it. The app opens its CDP port only because
+        /// this sets <c>WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS</c>, and every launcher asks for 9222, so a leftover
+        /// instance of any of them would be the one answering on the port - hence every running Client.Windows process
+        /// is killed first, then its data cleared (see
         /// <see cref="WindowsAppData"/>) unless <paramref name="clearAppData"/> is false - for the caller testing what
         /// the app remembers. Started minimized unless the run is headed, so a run leaves the machine's screen alone.
         /// </summary>

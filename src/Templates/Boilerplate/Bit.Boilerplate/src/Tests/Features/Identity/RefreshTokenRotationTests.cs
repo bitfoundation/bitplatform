@@ -194,20 +194,21 @@ public partial class RefreshTokenRotationTests
     }
 
     /// <summary>
-    /// <b>Currently failing by design - needs a schema change.</b>
+    /// <b>Currently failing by design - needs a per token id.</b>
     /// <para>
-    /// The consequence of keeping a single rotation timestamp. When two rotations happen less than 30 seconds apart -
-    /// which the app does to itself, since <c>AuthManager.SwitchTenant</c> and <c>TryEnterElevatedAccessMode</c> each
-    /// force an extra refresh right after a routine one - the oldest token's <c>iat</c> is still within the tolerance of
-    /// the newest <c>RenewedOn</c>. So a token that was superseded twice is still accepted.
+    /// The consequence of matching tokens by timestamp. When two rotations happen less than 30 seconds apart - which the
+    /// app does to itself, since <c>AuthManager.SwitchTenant</c> and <c>TryEnterElevatedAccessMode</c> each force an
+    /// extra refresh right after a routine one - the oldest token's <c>iat</c> is still within the tolerance of the
+    /// newest <c>RenewedOn</c>. So a token that was superseded twice is still accepted.
     /// </para>
     /// <para>
-    /// Closing it means recording which rotation minted the presented token rather than only when the last rotation
-    /// happened - e.g. a <c>UserSession.PreviousRenewedOn</c> alongside <c>RenewedOn</c>, so <c>iat</c> can be matched
-    /// against the current and the immediately preceding stamp instead of against a time window.
+    /// <c>UserSession.PreviousRenewedOn</c> doesn't close it: it limits retries to the previous rotation, but the
+    /// tolerance itself has to stay, since the token a retry mints up to 10 seconds after <c>RenewedOn</c> is a current
+    /// one. Closing it means storing an id of the last issued refresh token on the session and matching the presented
+    /// token by that id instead of by time.
     /// </para>
     /// </summary>
-    [TestMethod, Ignore("Needs UserSession.PreviousRenewedOn (and a migration); see the remarks above.")]
+    [TestMethod, Ignore("Timestamps can't tell this token from a current one; needs a per token id on the session. See the remarks above.")]
     public async Task TwoRotationsWithinTheTolerance_Should_StillRejectTheOldestToken()
     {
         var (server, client, timeProvider) = await StartServerAndSignIn();
