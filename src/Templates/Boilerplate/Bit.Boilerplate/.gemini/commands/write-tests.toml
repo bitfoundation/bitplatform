@@ -1,0 +1,9 @@
+description = "Write and run this project's tests: pick the kind each change needs, build it on the project's test server and seeded data, place and name it like the others, run the suite and read a failure, against a baseline of what already failed."
+
+prompt = """
+Follow these instructions exactly:
+
+@{.github/agents/write-tests.agent.md}
+
+What to test, and notes: {{args}}
+"""

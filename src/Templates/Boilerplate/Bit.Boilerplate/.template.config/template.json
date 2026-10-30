@@ -273,27 +273,6 @@
                 }
             ]
         },
-        "pipeline": {
-            "displayName": "CI-CD pipeline",
-            "type": "parameter",
-            "datatype": "choice",
-            "replaces": "bit-option-pipeline",
-            "defaultValue": "GitHub",
-            "choices": [
-                {
-                    "choice": "GitHub",
-                    "description": "GitHub actions"
-                },
-                {
-                    "choice": "Azure",
-                    "description": "Azure DevOps pipelines"
-                },
-                {
-                    "choice": "None",
-                    "description": "None"
-                }
-            ]
-        },
         "module": {
             "displayName": "Module",
             "type": "parameter",
@@ -723,105 +702,6 @@
             },
             "replaces": "use-your-api-server-url-here.com"
         },
-        "devMcpRemoteUrl": {
-            "type": "generated",
-            "generator": "regex",
-            "dataType": "string",
-            "parameters": {
-                "source": "normalizedServerUrl",
-                "steps": [
-                    {
-                        "regex": "^use-your-api-server-url-here\\.com$",
-                        "replacement": "none"
-                    },
-                    {
-                        "regex": "^(?!none$)(.+)$",
-                        "replacement": "https://$1/dev-mcp"
-                    }
-                ]
-            }
-        },
-        "devMcpWebUrl": {
-            "type": "generated",
-            "generator": "join",
-            "parameters": {
-                "symbols": [
-                    {
-                        "type": "const",
-                        "value": "http://localhost:"
-                    },
-                    {
-                        "type": "ref",
-                        "value": "serverWebPortGenerated"
-                    },
-                    {
-                        "type": "const",
-                        "value": "/dev-mcp"
-                    }
-                ]
-            }
-        },
-        "devMcpApiAndUrl": {
-            "type": "generated",
-            "generator": "join",
-            "parameters": {
-                "symbols": [
-                    {
-                        "type": "ref",
-                        "value": "api"
-                    },
-                    {
-                        "type": "const",
-                        "value": "|http://localhost:"
-                    },
-                    {
-                        "type": "ref",
-                        "value": "serveApiPortGenerated"
-                    },
-                    {
-                        "type": "const",
-                        "value": "/dev-mcp"
-                    }
-                ]
-            }
-        },
-        "devMcpApiUrl": {
-            "type": "generated",
-            "generator": "regex",
-            "dataType": "string",
-            "parameters": {
-                "source": "devMcpApiAndUrl",
-                "steps": [
-                    {
-                        "regex": "^Standalone\\|",
-                        "replacement": ""
-                    },
-                    {
-                        "regex": "^[^|]*\\|.*$",
-                        "replacement": "none"
-                    }
-                ]
-            }
-        },
-        "devMcpLocalUrl": {
-            "type": "generated",
-            "generator": "coalesce",
-            "parameters": {
-                "sourceVariableName": "devMcpApiUrl",
-                "defaultValue": "none",
-                "fallbackVariableName": "devMcpWebUrl"
-            }
-        },
-        "devMcpUrl": {
-            "type": "generated",
-            "generator": "coalesce",
-            "parameters": {
-                "sourceVariableName": "devMcpRemoteUrl",
-                "defaultValue": "none",
-                "fallbackVariableName": "devMcpLocalUrl"
-            },
-            "replaces": "https://use-your-api-server-url-here.com/dev-mcp"
-        },
         "webAppUrl": {
             "displayName": "web app url",
             "type": "parameter",
@@ -914,18 +794,6 @@
                         "src/Tests/Features/Caching/ProductResponseCacheTests.cs",
                         // Only that test uses it.
                         "src/Tests/Features/Caching/ReplayCountingOutputCacheStore.cs"
-                    ]
-                },
-                {
-                    "condition": "(pipeline != GitHub)",
-                    "exclude": [
-                        ".github/workflows**"
-                    ]
-                },
-                {
-                    "condition": "(pipeline != Azure)",
-                    "exclude": [
-                        ".azure-devops/**"
                     ]
                 },
                 {
@@ -1132,7 +1000,6 @@
                         "src/Tests/Features/TemplateConfig/TemplateConfigurationTests.cs",
                         "src/Tests/Features/Documentation/DocumentationTruthTests.cs",
                         "src/Tests/Features/TemplateConfig/SolutionAndRepoFilesTests.cs",
-                        "src/Tests/Features/TemplateConfig/PipelineFilesTests.cs",
                         "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
                         "src/Tests/Features/OpenApi/OpenApiParameterContractTests.cs",
                         "src/Tests/Features/Urls/WebAppUrlOriginHardeningTests.cs",

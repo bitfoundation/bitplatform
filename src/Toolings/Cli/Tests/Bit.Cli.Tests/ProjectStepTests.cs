@@ -1,4 +1,7 @@
-﻿using System.Security.Cryptography.X509Certificates;
+﻿using System.Buffers.Text;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
 using Bit.Cli.Infrastructure;
 using Bit.Cli.Projects;
 using Bit.Cli.Templates;
@@ -29,6 +32,49 @@ public class ProjectStepTests
         Assert.IsGreaterThan(DateTime.Now.AddYears(4), certificate.NotAfter);
         Assert.AreNotEqual(certificate.Thumbprint, other.Thumbprint);
         StringAssert.StartsWith(File.ReadAllText(Path.Combine(first, "AppCertificate.key")), "-----BEGIN PRIVATE KEY-----\n");
+    }
+
+    [TestMethod]
+    public void TheTemplatesSampleVapidKeys_Should_GiveWayToOnePairOfTheProjectsOwn()
+    {
+        using var host = new TestHost();
+        var project = Path.Combine(host.WorkingDirectory, "Shop");
+        string[] files = [Path.Combine("src", "Client", "Boilerplate.Client.Web", "appsettings.json"), Path.Combine("src", "Server", "Boilerplate.Server.Api", "appsettings.json"), Path.Combine("src", "Server", "Boilerplate.Server.Web", "appsettings.json")];
+
+        foreach (var file in files)
+        {
+            var template = File.ReadAllText(Path.Combine(TemplateDirectory(), file));
+            Assert.IsTrue(template.Contains(Keys.VapidKeys.Sample.PublicKey, StringComparison.Ordinal) || template.Contains(Keys.VapidKeys.Sample.PrivateKey, StringComparison.Ordinal), $"{file} no longer has a key of the sample pair VapidKeys.Sample names");
+            Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(project, file))!);
+            File.WriteAllText(Path.Combine(project, file), template);
+        }
+
+        var serverApi = File.ReadAllText(Path.Combine(project, files[1]));
+        StringAssert.Contains(serverApi, Keys.VapidKeys.Sample.PrivateKey);
+
+        var built = Path.Combine(project, "src", "Server", "Boilerplate.Server.Api", "bin", "appsettings.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(built)!);
+        File.WriteAllText(built, serverApi);
+
+        Assert.IsTrue(ProjectSteps.ReplaceSampleVapidKeys(project));
+
+        var publicKey = Regex.Match(File.ReadAllText(Path.Combine(project, files[0])), @"""PublicKey"":\s*""(?<key>[^""]+)""").Groups["key"].Value;
+        var privateKey = Regex.Match(File.ReadAllText(Path.Combine(project, files[1])), @"""PrivateKey"":\s*""(?<key>[^""]+)""").Groups["key"].Value;
+
+        foreach (var file in files)
+        {
+            var text = File.ReadAllText(Path.Combine(project, file));
+            Assert.IsFalse(text.Contains(Keys.VapidKeys.Sample.PublicKey, StringComparison.Ordinal) || text.Contains(Keys.VapidKeys.Sample.PrivateKey, StringComparison.Ordinal), file);
+            Assert.AreEqual(File.ReadAllText(Path.Combine(TemplateDirectory(), file)).Replace(Keys.VapidKeys.Sample.PublicKey, publicKey, StringComparison.Ordinal).Replace(Keys.VapidKeys.Sample.PrivateKey, privateKey, StringComparison.Ordinal), text, $"{file} changed beyond its keys");
+        }
+
+        // The private key is the public key's own: P-256 derives the same point from it.
+        using var key = ECDsa.Create(new ECParameters { Curve = ECCurve.NamedCurves.nistP256, D = Base64Url.DecodeFromChars(privateKey) });
+        var derived = key.ExportParameters(includePrivateParameters: false);
+        CollectionAssert.AreEqual(Base64Url.DecodeFromChars(publicKey), (byte[])[0x04, .. derived.Q.X!, .. derived.Q.Y!]);
+
+        Assert.AreEqual(serverApi, File.ReadAllText(built), "a build output was touched");
+        Assert.IsFalse(ProjectSteps.ReplaceSampleVapidKeys(project), "nothing is left to replace");
     }
 
     [TestMethod]
@@ -1282,5 +1328,18 @@ public class ProjectStepTests
         using var host = new TestHost(variables: RealPath());
         var result = await new ProcessRunner(host.Environment, CliLog.None).RunAsync(new ProcessSpec { FileName = "git", Arguments = ["--version"] });
         return result.Succeeded;
+    }
+
+    private static string TemplateDirectory()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+
+        while (directory is not null && Directory.Exists(Path.Combine(directory.FullName, "src", "Templates", "Boilerplate", "Bit.Boilerplate", ".github", "workflows")) is false)
+        {
+            directory = directory.Parent;
+        }
+
+        Assert.IsNotNull(directory);
+        return Path.Combine(directory.FullName, "src", "Templates", "Boilerplate", "Bit.Boilerplate");
     }
 }

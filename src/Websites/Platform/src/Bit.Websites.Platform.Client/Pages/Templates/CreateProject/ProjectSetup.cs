@@ -8,7 +8,6 @@ public class ProjectSetup
     public string Database { get; set; } = "Sqlite";
     public string FilesStorage { get; set; } = "Local";
     public string Api { get; set; } = "Integrated";
-    public string Pipeline { get; set; } = "GitHub";
     public bool GitHubRepo { get; set; } = true;
     public string Module { get; set; } = "None";
     public string Captcha { get; set; } = "None";
@@ -39,7 +38,6 @@ public class ProjectSetup
         Database = other.Database;
         FilesStorage = other.FilesStorage;
         Api = other.Api;
-        Pipeline = other.Pipeline;
         GitHubRepo = other.GitHubRepo;
         Module = other.Module;
         Captcha = other.Captcha;
@@ -76,9 +74,8 @@ public class ProjectSetup
         StringBuilder command = new(withName ? $"bit new {Name} " : "bit new ");
 
         Choice(command, "captcha", Captcha, defaults.Captcha);
-        Choice(command, "pipeline", Pipeline, defaults.Pipeline);
 
-        if (Pipeline is "GitHub" && GitHubRepo)
+        if (GitHubRepo)
         {
             command.Append("--github-repo ");
         }

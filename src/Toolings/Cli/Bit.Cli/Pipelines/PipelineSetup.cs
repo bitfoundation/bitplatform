@@ -25,18 +25,25 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
     public const string AppleCertificateFile = "APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64";
     public const string AppleCertificatePassword = "APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD";
 
-    private static readonly string[] createdByBit = [PublicVapidKey, PrivateVapidKey, AppCertificate, AndroidKeystoreFile, AndroidKeystorePassword, AndroidSigningPassword, AppleCertificateFile, AppleCertificatePassword];
+    /// <summary>
+    /// The passwords of the containers the server's Docker Compose project runs, which only the deployment itself uses.
+    /// </summary>
+    private static readonly string[] containerPasswords = ["DATABASE_PASSWORD", "REDIS_CACHE_PASSWORD", "REDIS_PERSISTENT_PASSWORD"];
+
+    private static readonly string[] createdByBit = [PublicVapidKey, PrivateVapidKey, AppCertificate, AndroidKeystoreFile, AndroidKeystorePassword, AndroidSigningPassword, AppleCertificateFile, AppleCertificatePassword, .. containerPasswords];
 
     private static readonly string[] apple = [AppleIssuerId, AppleKeyId, ApplePrivateKey, AppleCertificateFile, AppleCertificatePassword];
 
-    private static readonly string[] optional = [RetiredAppCertificate];
+    private static readonly string[] optional = [RetiredAppCertificate, "SERVERWEB_SETTINGS", "SERVERAPI_SETTINGS"];
 
     private static readonly Dictionary<string, string> hints = new(StringComparer.Ordinal)
     {
         [VapidSubject] = "a mailto: address or https URL the browsers' push services can reach you at",
         ["DATABASE_CONNECTION_STRING"] = "the connection string of this environment's database, with the rights to change its schema",
-        ["AZURE_PUBLISH_PROFILE"] = "the publish profile of the App Service: the XML its Download publish profile button gives",
-        ["API_AZURE_PUBLISH_PROFILE"] = "the publish profile of the API's App Service: the XML its Download publish profile button gives",
+        ["SMTP_CONNECTION_STRING"] = "the SMTP server the app sends email through, as Endpoint=smtp://host:587;UserName=...;Password=...",
+        ["S3_CONNECTION_STRING"] = "the S3-compatible storage the files go to, such as Cloudflare R2; appsettings.json has samples",
+        ["AZURE_BLOB_STORAGE_CONNECTION_STRING"] = "the connection string of the Azure Storage account the files go to",
+        ["CLOUDFLARE_TUNNEL_TOKEN"] = "the connector token of this environment's Cloudflare Tunnel",
         ["OPENAI_APIKEY"] = "an OpenAI compatible API key for bit translate; without it nothing is translated",
         ["CLOUDFLARE_ZONE"] = "the zone id on your domain's Cloudflare overview page",
         ["CLOUDFLARE_TOKEN"] = "a Cloudflare API token that can purge the zone's cache",
@@ -218,6 +225,13 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             var pair = AppCertificates.CreateProduction();
             AppCertificates.Write(BackupFolder(environment), AppCertificates.ActiveName, pair);
             await SetAsync(environment, AppCertificate, pair.Pem, "created by bit", cancellationToken);
+        }
+
+        // Letters and digits only: DbGate gets the Redis ones inside a URL that nothing encodes, and StackExchange.Redis
+        // can't take a comma.
+        foreach (var name in containerPasswords.Where(absent.Contains))
+        {
+            await SetAsync(environment, name, KeyFolder.NewPassword(), "created by bit", cancellationToken);
         }
 
         if (absent.Contains(AndroidKeystoreFile))

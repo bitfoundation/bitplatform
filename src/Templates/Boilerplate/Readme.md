@@ -50,7 +50,7 @@ Comprehensive **Data and Response caching**:
 - **ASP.NET Core 10 or 11**, **C# 14**, **.NET Aspire**
 - **Entity Framework Core** with multiple database support (SQL Server, PostgreSQL, MySQL, SQLite)
 - Flexible file storage (Local, S3, Azure Blob Storage)
-- CI/CD pipelines for GitHub Actions and Azure DevOps
+- CI/CD pipelines for GitHub Actions
 
 ### And more...
 All features can be **selectively chosen during project creation** to match your specific requirements!

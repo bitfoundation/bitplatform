@@ -1,7 +1,10 @@
 [mcp_servers.bitplatform]
 url = "https://bitplatform.dev/mcp?v=11.0.0"
 
-[mcp_servers.dev-mcp]
+[mcp_servers.dev-mcp-test]
+url = "https://use-your-test-api-server-url-here.com/dev-mcp"
+
+[mcp_servers.dev-mcp-production]
 url = "https://use-your-api-server-url-here.com/dev-mcp"
 
 [mcp_servers.aspire]

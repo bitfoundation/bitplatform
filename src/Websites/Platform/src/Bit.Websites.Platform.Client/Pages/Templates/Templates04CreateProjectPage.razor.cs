@@ -338,19 +338,14 @@ public partial class Templates04CreateProjectPage
         IsRecommended = () => Baseline.Sentry == sentry && Baseline.AppInsights == appInsights
     };
 
-    private Answer Delivery(string pipeline, bool githubRepo, string text, string hint, string summary) => new()
+    private Answer Delivery(bool githubRepo, string text, string hint, string summary) => new()
     {
         Text = text,
         Hint = hint,
         Summary = summary,
-        IsNone = pipeline is "None",
-        IsChosen = () => setup.Pipeline == pipeline && (pipeline is not "GitHub" || setup.GitHubRepo == githubRepo),
-        Choose = () =>
-        {
-            setup.Pipeline = pipeline;
-            setup.GitHubRepo = githubRepo;
-        },
-        IsRecommended = () => Baseline.Pipeline == pipeline && (pipeline is not "GitHub" || Baseline.GitHubRepo == githubRepo)
+        IsChosen = () => setup.GitHubRepo == githubRepo,
+        Choose = () => setup.GitHubRepo = githubRepo,
+        IsRecommended = () => Baseline.GitHubRepo == githubRepo
     };
 
     private static Answer Platform(string text, string hint, Func<bool> get, Action<bool> set) => new()
@@ -666,29 +661,27 @@ public partial class Templates04CreateProjectPage
         {
             Key = "code",
             Label = "Code and deployment",
-            Question = "Where should the code live and deploy from?",
+            Question = "Who creates the project's GitHub repository?",
             Groups =
             [
                 new()
                 {
-                    Keys = ["pipeline", "githubRepo"],
+                    Keys = ["githubRepo"],
                     Answers =
                     [
-                        Delivery("GitHub", true, "GitHub, create a private repo for me", "Creates the repo, pushes the code and sets up build and deploy. Asks you to sign in to GitHub if needed.", "GitHub, repo created for you"),
-                        Delivery("GitHub", false, "GitHub, I'll create the repo myself", "Sets up build and deploy for GitHub. You create and push the repo.", "GitHub, your own repo"),
-                        Delivery("Azure", true, "Azure DevOps", "Sets up build and deploy on Azure DevOps.", "Azure DevOps"),
-                        Delivery("None", true, "Nowhere yet", "No build and deploy setup for now.", "Nowhere yet")
+                        Delivery(true, "Create a private repo for me", "Creates the repo and pushes the code, with its build and deploy workflows. Asks you to sign in to GitHub if needed.", "GitHub, repo created for you"),
+                        Delivery(false, "I'll create the repo myself", "The build and deploy workflows are in the project. You create the repo and push it.", "GitHub, your own repo")
                     ]
                 }
             ],
             Faqs =
             [
                 new("What do the GitHub pipelines do?",
-                    "On every pull request, CI checks the code style, builds everything and runs the tests. On every push to `main` or `test`, CD deploys the web app, and the API when it runs on its own server, to Azure App Service, and builds a signed Windows installer and Android and iOS packages for you to download. Store uploads are up to you."),
+                    "On every pull request, CI checks the code style, builds everything and runs the tests. A push to `develop` deploys the Test environment and a push to `main` the Production one: the server's images go to GitHub Container Registry and run with Docker Compose on your own Linux server, and the Windows installer and the Android and iOS packages are built and signed for you to download. Store uploads are up to you."),
                 new("Where can I deploy my project?",
-                    "The pipelines deploy to Azure App Service by default, but the server is a regular ASP.NET Core app: it runs on AWS, Google Cloud, your own Linux servers, Windows with IIS, Docker or Kubernetes."),
+                    "The pipelines deploy the server to your own Linux server with Docker Compose, and the project's `deploy` agent skill sets that server up. The server is a regular ASP.NET Core app, so it also runs on AWS, Google Cloud, Azure, Windows with IIS or Kubernetes."),
                 new("My code is on GitLab. What should I pick?",
-                    "Pick \"GitHub, I'll create the repo myself\" and use its workflows in `.github/workflows` as a starting point. Most of their steps are plain command line commands, so your AI assistant can turn them into GitLab, Bitbucket or Jenkins pipelines, for example `/ai-dlc create GitLab pipelines that do what the GitHub workflows do`.")
+                    "Pick \"I'll create the repo myself\" and use its workflows in `.github/workflows` as a starting point. Most of their steps are plain command line commands, so your AI assistant can turn them into GitLab, Bitbucket or Jenkins pipelines, for example `/ai-dlc create GitLab pipelines that do what the GitHub workflows do`.")
             ]
         },
         new()

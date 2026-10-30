@@ -1,0 +1,9 @@
+description = "Deploy this project to the user's own Linux VM: Docker and a self-hosted GitHub Actions runner on it, the project's external services and their GitHub secrets, images built into GitHub Container Registry and run on Docker Compose, and the user's domain through a free Cloudflare Tunnel with no inbound port open - Test from develop, Production from main."
+
+prompt = """
+Follow these instructions exactly:
+
+@{.github/agents/deploy.agent.md}
+
+Server, domain and environments: {{args}}
+"""

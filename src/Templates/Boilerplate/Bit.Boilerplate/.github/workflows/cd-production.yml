@@ -26,6 +26,10 @@ jobs:
       contents: read
       id-token: write
       attestations: write
+#if (aspire == true)
+      # build_server pushes the server's images to GitHub Container Registry (write), and deploy_server pulls them (read).
+      packages: write
+#endif
     uses: ./.github/workflows/cd-template.yml
     with:
       ENV_NAME: Production

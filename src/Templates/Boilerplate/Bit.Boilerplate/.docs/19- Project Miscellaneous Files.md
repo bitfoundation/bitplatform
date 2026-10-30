@@ -575,7 +575,7 @@ When you open the project in VS Code, you'll be prompted to install these extens
 
 **Location**: [`/README.md`](/README.md)
 
-**Purpose**: The project's **welcome file** displayed on GitHub/Azure DevOps.
+**Purpose**: The project's **welcome file** displayed on GitHub.
 
 **Contains**:
 - Welcome message
@@ -588,7 +588,7 @@ When you open the project in VS Code, you'll be prompted to install these extens
 
 **Purpose**: Records how the project was created, for the [bit CLI](https://www.nuget.org/packages/Bit.Cli) and for you: the template (`bit-bp`), its version, the project's name, and the value of every template option.
 
-**Who uses it**: `bit diff` and the `upgrade` skill read the version and the options to create the project again with the old and the new template version. An upgrade updates the version in it, and new options arrive through the diff like any other change.
+**Who uses it**: `bit diff` and the `template-diff` skill read the version and the options to create the project again on either side of a change: the old and the new template version, the old and the new .NET version, or one feature switched off and on. The skill updates what changed in it - the version, the framework or the feature's option - and new options arrive through the diff like any other change.
 
 **Keep it**: the bit CLI may keep more of what it needs to know about the project here. Edit an option's value when you change the project in a way that matches another option, such as removing Aspire, so the next upgrade compares the right templates.
 
@@ -674,7 +674,7 @@ slnf
 **Note**: The current workflows are configured for client platforms (Android, iOS, Windows, macOS) but are not yet fully Aspire-friendly for backend deployment. Backend CI/CD may need additional configuration.
 
 **Best Practice**: The workflows use a **2-phase deployment**:
-1. **Build Phase**: Build the project and upload artifacts to GitHub/Azure DevOps
+1. **Build Phase**: Build the project and upload artifacts to GitHub
 2. **Deployment Phase**: Download artifacts and deploy to target environment
 
 **Why 2 phases?**: 

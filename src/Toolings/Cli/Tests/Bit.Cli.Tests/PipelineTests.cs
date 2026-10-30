@@ -20,7 +20,7 @@ public class PipelineTests
         {
             var names = scan.Secrets.Where(s => s.Environment == environment).Select(s => s.Name).ToList();
 
-            foreach (var name in new[] { "PUBLIC_VAPIDKEY", "PRIVATE_VAPIDKEY", "VAPID_SUBJECT", "APP_CERTIFICATE", "APP_CERTIFICATE_RETIRED", "AZURE_PUBLISH_PROFILE", "ANDROID_RELEASE_KEYSTORE_FILE_BASE64", "APPSTORE_API_KEY_ID" })
+            foreach (var name in new[] { "PUBLIC_VAPIDKEY", "PRIVATE_VAPIDKEY", "VAPID_SUBJECT", "APP_CERTIFICATE", "APP_CERTIFICATE_RETIRED", "SMTP_CONNECTION_STRING", "DATABASE_PASSWORD", "REDIS_CACHE_PASSWORD", "CLOUDFLARE_TUNNEL_TOKEN", "ANDROID_RELEASE_KEYSTORE_FILE_BASE64", "APPSTORE_API_KEY_ID" })
             {
                 CollectionAssert.Contains(names, name, $"{environment}: {string.Join(", ", names)}");
             }
@@ -149,6 +149,22 @@ public class PipelineTests
         Assert.IsTrue(File.Exists(Path.Combine(host.Home, ".bitplatform", "keys", "contoso-shop", "Contoso.keystore")));
         Assert.IsTrue(File.Exists(Path.Combine(host.Home, ".bitplatform", "keys", "contoso-shop-Production", "AppCertificate.key")));
         StringAssert.Contains(host.FlatOutput, "Skipped DATABASE_CONNECTION_STRING");
+    }
+
+    [TestMethod]
+    public async Task Pipeline_Should_CreateTheContainerPasswordsInLettersAndDigits()
+    {
+        using var host = Repository();
+        Workflow(host, "cd.yml", "on: push\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: Production\n    steps:\n      - run: echo ${{ secrets.DATABASE_PASSWORD }} ${{ secrets.REDIS_CACHE_PASSWORD }} ${{ secrets.REDIS_PERSISTENT_PASSWORD }} ${{ secrets.SERVERWEB_SETTINGS }}\n");
+        host.Runner.On("gh", "api repos/contoso/shop/environments/Production --silent", 0, "");
+
+        Assert.AreEqual(0, await host.RunAsync("pipeline", "--yes"));
+
+        var stored = Stored(host);
+        CollectionAssert.AreEquivalent(new[] { "DATABASE_PASSWORD", "REDIS_CACHE_PASSWORD", "REDIS_PERSISTENT_PASSWORD" }, stored.Keys.ToArray(), host.Output);
+        Assert.IsTrue(stored.Values.All(password => password.Length == 32 && password.All(char.IsAsciiLetterOrDigit)), string.Join(", ", stored.Values));
+        Assert.AreEqual(3, stored.Values.Distinct().Count());
+        Assert.IsFalse(host.FlatOutput.Contains("Skipped SERVERWEB_SETTINGS", StringComparison.Ordinal), host.Output);
     }
 
     [TestMethod]

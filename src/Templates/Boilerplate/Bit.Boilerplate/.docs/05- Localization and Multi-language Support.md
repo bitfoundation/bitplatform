@@ -634,8 +634,7 @@ That's why `bit translate` is added to the project CD pipelines. Here's how it's
     bit translate
 ```
 
-An earlier step of the job installs the bit CLI: bit platform's `bit-setup` action on GitHub, and
-`dotnet tool install Bit.Cli --version 11.0.0-pre-15` on Azure DevOps.
+An earlier step of the job installs the bit CLI, with bit platform's `bit-setup` action.
 
 > The secret is named **`OPENAI_APIKEY`** (no underscore between `API` and `KEY`) and the endpoint comes from
 > the repository **variable** `OPENAI_ENDPOINT`. Both names have to match exactly: with no key configured the

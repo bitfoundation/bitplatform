@@ -91,6 +91,7 @@
         <PackageReference Include="Scalar.AspNetCore" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
         <PackageReference Include="Microsoft.Identity.Web" />
+        <PackageReference Condition=" '$(framework)' == 'net10.0' " Include="System.Security.Cryptography.Pkcs" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" />

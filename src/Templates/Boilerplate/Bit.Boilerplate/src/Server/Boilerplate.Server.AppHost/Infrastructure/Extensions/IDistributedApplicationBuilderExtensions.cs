@@ -1,9 +1,6 @@
 //+:cnd:noEmit
-//#if (database == "SqlServer" || database == "PostgreSQL" || redis == true || filesStorage == "AzureBlobStorage")
+//#if (filesStorage == "AzureBlobStorage")
 using Aspire.Hosting.Azure;
-//#endif
-//#if (redis == true)
-using Azure.Provisioning.RedisEnterprise;
 //#endif
 using Boilerplate.Server.AppHost.Infrastructure.Services;
 
@@ -39,73 +36,39 @@ public static class IDistributedApplicationBuilderExtensions
         /// Adds a Redis instance configured for FusionCache hybrid caching (L2 cache) and SignalR backplane.
         /// No persistence is needed for this cache instance.
         /// </summary>
-        public IResourceBuilder<AzureManagedRedisResource> AddRedisCache()
+        public IResourceBuilder<RedisResource> AddRedisCache()
         {
-            return builder.AddAzureManagedRedis("redis-cache")
-                .RunAsContainer(redis => // Remove this RunAsContainer and related configuration to use actual Azure Redis instance
-                {
-                    redis.WithRedisInsight(redisInsight => redisInsight.WithExplicitStart())
-                        .WithRedisCommander(redisCommander => redisCommander.WithExplicitStart())
-                        .WithImage("redis", "8")
-                        .WithArgs(
-                         "--save", "",                        // Backend API has its own L1 in-memory cache, no need to have RDB snapshots for the L2 redis cache in case of failures.
-                         "--appendonly", "no",                // Disables AOF persistence as well for the same reason.
-                         "--maxmemory-policy", "allkeys-lru"  // Documents the Azure-side EvictionPolicy below. Inert in the container: no maxmemory is set, so nothing is ever evicted.
-                     ).WithOtlpExporter();
-                }).ConfigureInfrastructure(infra =>
-                {
-                    var db = infra.GetProvisionableResources()
-                        .OfType<RedisEnterpriseDatabase>()
-                        .Single();
-
-                    db.Persistence = new()
-                    {
-                        IsAofEnabled = false,
-                        IsRdbEnabled = false
-                    };
-
-                    db.EvictionPolicy = RedisEnterpriseEvictionPolicy.AllKeysLru;
-                });
+            return builder.AddRedis("redis-cache")
+                .WithDbGate()
+                .WithImage("redis", "8")
+                .WithArgs(
+                    "--save", "",                        // Backend API has its own L1 in-memory cache, no need to have RDB snapshots for the L2 redis cache in case of failures.
+                    "--appendonly", "no",                // Disables AOF persistence as well for the same reason.
+                    "--maxmemory-policy", "allkeys-lru"  // Evicts the least recently used keys once a --maxmemory is set. Without one, nothing is evicted.
+                )
+                .WithOtlpExporter()
+                .PublishAsComposeRedis();
         }
 
         /// <summary>
         /// Adds a Redis instance configured for Hangfire background jobs and distributed locking.
         /// This instance uses AOF persistence for durability.
         /// </summary>
-        public IResourceBuilder<AzureManagedRedisResource> AddRedisPersistent()
+        public IResourceBuilder<RedisResource> AddRedisPersistent()
         {
-            return builder.AddAzureManagedRedis("redis-persistent")
-                .RunAsContainer(redis => // Remove this RunAsContainer and related configuration to use actual Azure Redis instance
-                {
-                    redis.WithRedisInsight(redisInsight => redisInsight.WithExplicitStart())
-                        .WithRedisCommander(redisCommander => redisCommander.WithExplicitStart())
-                        .WithImage("redis", "8")
-                        .WithDataVolume()
-                        .WithArgs(
-                            "--dir", "/data",
-                            "--appendonly", "yes",             // Enable AOF (Append only file) for data durability
-                            "--appendfsync", "always",         // Sync to disk on every write for maximum durability. Temporarily disable it programmatically using C# code during bulk operations if needed.
-                            "--save", "",                      // Disables RDB snapshots
-                            "--maxmemory-policy", "noeviction" // Raise error when memory limit is reached instead of evicting keys
-                        ).WithOtlpExporter();
-                })
-                .ConfigureInfrastructure(infra =>
-                {
-                    var db = infra.GetProvisionableResources()
-                        .OfType<RedisEnterpriseDatabase>()
-                        .Single();
-
-                    // --appendonly yes + --appendfsync always
-                    db.Persistence = new()
-                    {
-                        IsAofEnabled = true,
-                        AofFrequency = PersistenceSettingAofFrequency.Always,
-                        IsRdbEnabled = false  // --save ""
-                    };
-
-                    // --maxmemory-policy noeviction
-                    db.EvictionPolicy = RedisEnterpriseEvictionPolicy.NoEviction;
-                });
+            return builder.AddRedis("redis-persistent")
+                .WithDbGate()
+                .WithImage("redis", "8")
+                .WithDataVolume()
+                .WithArgs(
+                    "--dir", "/data",
+                    "--appendonly", "yes",             // Enable AOF (Append only file) for data durability
+                    "--appendfsync", "always",         // Sync to disk on every write for maximum durability. Temporarily disable it programmatically using C# code during bulk operations if needed.
+                    "--save", "",                      // Disables RDB snapshots
+                    "--maxmemory-policy", "noeviction" // Raise error when memory limit is reached instead of evicting keys
+                )
+                .WithOtlpExporter()
+                .PublishAsComposeRedis();
         }
         //#endif
 
@@ -114,68 +77,114 @@ public static class IDistributedApplicationBuilderExtensions
         /// Adds a SQL Server instance with DbGate management UI and a database named <c>mssqldb</c>.
         /// Uses SQL Server 2025 which supports embedded vector search.
         /// </summary>
-        public IResourceBuilder<AzureSqlDatabaseResource> AddSqlServer()
+        public IResourceBuilder<SqlServerDatabaseResource> AddSqlServer()
         {
-            return builder.AddAzureSqlServer("sqlserver")
-                .RunAsContainer(sqlServer => // Remove this RunAsContainer and related configuration to use actual Azure SQL Server instance
-                {
-                    sqlServer.WithDbGate(dbGate => dbGate.WithDataVolume().WithExplicitStart())
-                        .WithDataVolume()
-                        .WithImage("mssql/server", "2025-latest") // Sql server 2025 supports embedded vector search.
-                        .WithOtlpExporter();
-                })
+            return builder.AddSqlServer("sqlserver")
+                .WithDbGate()
+                .WithDataVolume()
+                .WithImage("mssql/server", "2025-latest") // Sql server 2025 supports embedded vector search.
+                .WithOtlpExporter()
+                .PublishAsHealthyComposeService("/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q \"SELECT 1\" -b -o /dev/null")
                 .AddDatabase("mssqldb");
         }
         //#endif
 
         //#if (database == "PostgreSQL")
         /// <summary>
-        /// Adds a PostgreSQL Server instance with pgAdmin and a database named <c>postgresdb</c>.
+        /// Adds a PostgreSQL Server instance with DbGate management UI and a database named <c>postgresdb</c>.
         /// Uses pgvector (pg18) image which supports embedded vector search.
         /// </summary>
-        public IResourceBuilder<AzurePostgresFlexibleServerDatabaseResource> AddPostgreSQL()
+        public IResourceBuilder<PostgresDatabaseResource> AddPostgreSQL()
         {
-            return builder.AddAzurePostgresFlexibleServer("postgresserver")
-                .RunAsContainer(postgresDatabase => // Remove this RunAsContainer and related configuration to use actual Azure PostgreSQL instance
-                {
-                    postgresDatabase.WithPgAdmin(pgAdmin => pgAdmin.WithExplicitStart())
-                        .WithV18DataVolume()
-                        .WithOptimizedSetup()
-                        .WithImage("pgvector/pgvector", "pg18") // pgvector supports embedded vector search.
-                        .WithOtlpExporter();
-                })
+            return builder.AddPostgres("postgresserver")
+                .WithDbGate()
+                .WithV18DataVolume()
+                .WithOptimizedSetup()
+                .WithImage("pgvector/pgvector", "pg18") // pgvector supports embedded vector search.
+                .WithOtlpExporter()
+                .PublishAsHealthyComposeService("pg_isready -U postgres -d postgres")
                 .AddDatabase("postgresdb");
         }
         //#endif
 
         //#if (database == "MySql")
         /// <summary>
-        /// Adds a MySQL server instance with phpMyAdmin and a database named <c>mysqldb</c>.
+        /// Adds a MySQL server instance with DbGate management UI and a database named <c>mysqldb</c>.
         /// </summary>
         public IResourceBuilder<MySqlDatabaseResource> AddMySql()
         {
             return builder.AddMySql("mysqlserver")
-                .WithPhpMyAdmin(phpMyAdmin => phpMyAdmin.WithExplicitStart())
+                .WithDbGate()
                 .WithDataVolume()
                 .WithOtlpExporter()
+                .PublishAsHealthyComposeService("mysqladmin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent")
                 .AddDatabase("mysqldb");
         }
         //#endif
 
         //#if (database == "Sqlite")
         /// <summary>
-        /// Adds a SQLite database instance with a web-based management UI.
+        /// Adds a SQLite database instance with DbGate management UI.
         /// </summary>
-        public IResourceBuilder<SqliteResource> AddSqlite()
+        public IResourceBuilder<IResourceWithConnectionString> AddSqlite()
         {
-            return builder.AddSqlite("sqlite", databaseFileName: "BoilerplateDb.db")
-                .WithSqliteWeb(sqliteWeb => sqliteWeb.WithExplicitStart());
+            // Published, the database file lives in the /container_volume named volume (See ConfigureDockerComposePublishing).
+            if (builder.ExecutionContext.IsPublishMode)
+                return builder.AddConnectionString("sqlite", ReferenceExpression.Create($"Data Source=/container_volume/App_Data/BoilerplateDb.db;"));
+
+            var databasePath = Path.GetTempPath();
+
+            // DbGate's Aspire integration has no WithDbGate for SQLite, so the database's folder is mounted into it and the
+            // connection is added the way WithDbGate adds the others.
+            builder.AddDbGate("dbgate")
+                .WithBindMount(databasePath, "/sqlite")
+                .WithEnvironment(context =>
+                {
+                    context.EnvironmentVariables["LABEL_sqlite"] = "sqlite";
+                    context.EnvironmentVariables["ENGINE_sqlite"] = "sqlite@dbgate-plugin-sqlite";
+                    context.EnvironmentVariables["FILE_sqlite"] = "/sqlite/BoilerplateDb.db";
+                    context.EnvironmentVariables["CONNECTIONS"] = context.EnvironmentVariables.TryGetValue("CONNECTIONS", out var connections) ? $"{connections},sqlite" : "sqlite";
+                });
+
+            return builder.AddSqlite("sqlite", databasePath, "BoilerplateDb.db");
+        }
+        //#endif
+
+        //#if (database != "Other" || redis == true)
+        /// <summary>
+        /// DbGate is the one web UI for the database and both Redis instances, which join it with <c>WithDbGate</c>, so call
+        /// this after adding them. In run mode it starts from the dashboard; published, it runs on the server too (See
+        /// ConfigureDockerComposePublishing).
+        /// </summary>
+        public IDistributedApplicationBuilder ConfigureDbGate()
+        {
+            if (builder.Resources.OfType<DbGateContainerResource>().SingleOrDefault() is not { } dbGate)
+                return builder;
+
+            builder.CreateResourceBuilder(dbGate)
+                .WithImageTag("7.3.3")
+                .WithDataVolume()
+                .WithExplicitStart();
+            //#if (redis == true)
+
+            // In run mode Aspire serves Redis over TLS with the developer certificate, which DbGate doesn't trust (See
+            // specs/workarounds.md). It only reaches the containers on this machine, so it skips the check there.
+            if (builder.ExecutionContext.IsRunMode)
+                builder.CreateResourceBuilder(dbGate).WithEnvironment("NODE_TLS_REJECT_UNAUTHORIZED", "0");
+            //#endif
+
+            return builder;
         }
         //#endif
 
         //#if (filesStorage == "AzureBlobStorage")
-        public IResourceBuilder<AzureBlobStorageResource> AddAzureStorage()
+        public IResourceBuilder<IResourceWithConnectionString> AddAzureStorage()
         {
+            // Published: an Azure Storage account outside the Docker Compose project, given as the `azureblobstorage`
+            // connection string.
+            if (builder.ExecutionContext.IsPublishMode)
+                return builder.AddConnectionString("azureblobstorage");
+
             return builder.AddAzureStorage("storage")
                 .RunAsEmulator(azurite => // Remove this RunAsEmulator and related configuration to use actual Azure Blob Storage instance
                 {
@@ -197,6 +206,11 @@ public static class IDistributedApplicationBuilderExtensions
         /// </summary>
         public IResourceBuilder<IResourceWithConnectionString> AddS3Storage()
         {
+            // Published: an S3-compatible store outside the Docker Compose project (Cloudflare R2 for example), given as
+            // the `s3` connection string.
+            if (builder.ExecutionContext.IsPublishMode)
+                return builder.AddConnectionString("s3");
+
             var rustFs = builder.AddRustFs("s3")
                 .WithDataVolume();
 
@@ -229,6 +243,21 @@ public static class IDistributedApplicationBuilderExtensions
             //#endif
             )
         {
+            if (builder.ExecutionContext.IsPublishMode)
+            {
+                // Published: one cloudflared container in the Docker Compose project, started with the connector token of
+                // a tunnel created once in Cloudflare (the `cloudflare-tunnel-tunnel-token` parameter). There, the tunnel's
+                // public hostnames route to http://serverweb:8080 (and http://serverapi:8080), so the server opens no
+                // inbound port. The hostnames below are only recorded: a connector makes no Cloudflare API call.
+                var tunnel = builder.AddCloudflareTunnelConnector("cloudflare-tunnel")
+                    .PublishAsDockerComposeService((_, service) => service.Restart = "unless-stopped");
+                serverWebProject.WithCloudflareTunnel(tunnel, hostname: "use-your-web-app-url-here.com", endpointName: "http", routeName: "serverweb-route");
+                //#if (api == "Standalone")
+                serverApiProject.WithCloudflareTunnel(tunnel, hostname: "use-your-api-server-url-here.com", endpointName: "http", routeName: "serverapi-route");
+                //#endif
+                return;
+            }
+
             var serverWebDomain = builder.Configuration["Parameters:cloudflare-tunnel-web-domain"];
             if (string.IsNullOrWhiteSpace(serverWebDomain) is false)
             {

@@ -17,13 +17,16 @@ permissions:
 
 jobs:
 
-  build_api_blazor:
-    name: build api + blazor web
+#if (aspire == true)
+  # The server is a Docker Compose project that .NET Aspire publishes from the app host. This job builds its images on
+  # a GitHub-hosted runner, pushes them to GitHub Container Registry tagged with the environment and the commit, and
+  # hands the Compose file to deploy_server, which runs on the environment's own server and builds nothing.
+  build_server:
+    name: build server
     runs-on: ubuntu-26.04
     permissions:
       contents: read
-      id-token: write
-      attestations: write
+      packages: write
     environment: ${{ inputs.ENV_NAME }}
     steps:
 
@@ -60,102 +63,208 @@ jobs:
           AdsPushVapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
 #endif
 
-      - name: Publish
-        run: dotnet publish src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj -c Release --self-contained -r linux-x64 -o server -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }}
-      - name: Upload server artifact
-        id: server_artifact
+      # bit setup leaves the Aspire CLI out in CI, so it is installed here, at the version of the app host's Aspire SDK.
+      - name: Install the Aspire CLI
+        run: |
+          version="$(grep -oE 'Aspire\.AppHost\.Sdk/[^"]+' src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj | cut -d/ -f2)"
+          dotnet tool install Aspire.Cli --version "$version" --tool-path "$RUNNER_TEMP/aspire-cli"
+          echo "$RUNNER_TEMP/aspire-cli" >> "$GITHUB_PATH"
+
+      - name: Log in to GitHub Container Registry
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$GITHUB_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+
+      - name: Build and push the images
+        env:
+          ENV_NAME: ${{ inputs.ENV_NAME }}
+          APP_VERSION: ${{ vars.APP_VERSION }}
+        run: |
+          # Every dotnet build and publish from here on reads Directory.Build.rsp - the ones Aspire runs to build the images
+          # included - which gives the images the version and the environment the other jobs pass with -p.
+          { if [ -n "$APP_VERSION" ]; then echo "-p:Version=$APP_VERSION"; fi; echo "-p:Environment=$ENV_NAME"; } > Directory.Build.rsp
+          export REGISTRY_ENDPOINT=ghcr.io REGISTRY_REPOSITORY="${GITHUB_REPOSITORY,,}" IMAGE_TAG="${ENV_NAME,,}-$GITHUB_SHA"
+          # shellcheck disable=SC1010 # `do` is the aspire subcommand here, not the shell keyword.
+          aspire do push --apphost src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj --environment "$ENV_NAME" --non-interactive
+
+      - name: Publish the Docker Compose project
+        env:
+          ENV_NAME: ${{ inputs.ENV_NAME }}
+        run: aspire publish --apphost src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj --environment "$ENV_NAME" --non-interactive --no-build --output-path aspire-output
+
+      - name: Upload the Docker Compose project
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: server-bundle
-          path: server
-          include-hidden-files: true # Required for wwwroot/.well-known folder
+          name: compose
+          path: |
+            aspire-output/docker-compose.yaml
+            aspire-output/.env
+          include-hidden-files: true # Required for .env, the list of values the deploy job has to supply
 
-      - name: Attest server artifact
-        if: github.event.repository.visibility == 'public'
-        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
-        with:
-          subject-name: server-bundle
-          subject-digest: sha256:${{ steps.server_artifact.outputs.artifact-digest }}
-#if (api == "Integrated" && database != "Sqlite" && database != "Other")
+      # In a public repository, also find each pushed image's digest, attest it with actions/attest-build-provenance, and push the attestation to GHCR.
 
-      - name: Create the database migrations bundle
-        run: dnx dotnet-ef@11.0.0-rc.2.26504.105 -- migrations bundle --project src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj --configuration Release --self-contained --target-runtime linux-x64 --output efbundle --verbose
+      - name: Log out of GitHub Container Registry
+        if: always()
+        run: docker logout ghcr.io
 
-      - name: Upload migrations bundle
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: migrations-bundle
-          path: efbundle
-#endif
-
-  deploy_api_blazor:
-    name: deploy api + blazor
-    needs: build_api_blazor
-    runs-on: ubuntu-26.04
+  # Runs on the environment's own server: a self-hosted runner labeled with the environment's name (Test or
+  # Production) on a machine that has Docker and nothing else - no SDK and no source code. It keeps each environment's
+  # Compose project in ~/deployments/<project>-<environment> of the runner's user.
+  deploy_server:
+    name: deploy server
+    needs: build_server
+    runs-on: [self-hosted, "${{ inputs.ENV_NAME }}"]
+    permissions:
+      contents: read
+      packages: read
     environment:
       name: ${{ inputs.ENV_NAME }}
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
+      url: ${{ vars.SERVER_ADDRESS }}
     steps:
 
-      - name: Retrieve server bundle
+      - name: Retrieve the Docker Compose project
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          name: server-bundle
-#if (api == "Integrated")
+          name: compose
+          path: compose
 
-      # Writes APP_CERTIFICATE and APP_CERTIFICATE_RETIRED next to the server as the AppCertificate .crt and .key files.
-      - name: Use the environment's app certificate
-        uses: bitfoundation/bitplatform/.github/actions/boilerplate/app-certificate@v-11.0.0-pre-15
-        with:
-          certificate: ${{ secrets.APP_CERTIFICATE }}
-          retired-certificate: ${{ secrets.APP_CERTIFICATE_RETIRED }}
-#if (notification == true)
-
-      - name: Use the environment's web push keys
-        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
-        with:
-          files: 'appsettings*json'
+      - name: Log in to GitHub Container Registry
         env:
-          AdsPushVapid.PrivateKey: ${{ secrets.PRIVATE_VAPIDKEY }}
-          AdsPushVapid.Subject: ${{ secrets.VAPID_SUBJECT }}
-#endif
-#endif
-#if (api == "Integrated" && database != "Sqlite" && database != "Other")
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$GITHUB_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
 
-      - name: Retrieve migrations bundle
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          name: migrations-bundle
-
-      - name: Apply database migrations
+      # Writes the Compose project to ~/deployments/<project> - its .env, the apps' settings files and the AppCertificate,
+      # from this environment's secrets - then pulls the images, runs the migrations on their own so a failure leaves the
+      # running version alone, brings the project up, and fails when a container isn't healthy.
+      - name: Deploy
         env:
+          ENV_NAME: ${{ inputs.ENV_NAME }}
+          SMTP: ${{ secrets.SMTP_CONNECTION_STRING }}
+          APP_CERTIFICATE: ${{ secrets.APP_CERTIFICATE }}
+          APP_CERTIFICATE_RETIRED: ${{ secrets.APP_CERTIFICATE_RETIRED }}
+          SERVERWEB_SETTINGS: ${{ secrets.SERVERWEB_SETTINGS }}
+#if (api == "Standalone")
+          SERVERAPI_SETTINGS: ${{ secrets.SERVERAPI_SETTINGS }}
+#endif
 #if (database == "SqlServer")
-          ConnectionStrings__mssqldb: ${{ secrets.DATABASE_CONNECTION_STRING }}
+          SQLSERVER_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+#elif (database == "PostgreSQL")
+          POSTGRESSERVER_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+#elif (database == "MySql")
+          MYSQLSERVER_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+#elif (database == "Other")
+          OTHERDB: ${{ secrets.DATABASE_CONNECTION_STRING }}
 #endif
-#if (database == "PostgreSQL")
-          ConnectionStrings__postgresdb: ${{ secrets.DATABASE_CONNECTION_STRING }}
+#if (filesStorage == "S3")
+          S3: ${{ secrets.S3_CONNECTION_STRING }}
+#elif (filesStorage == "AzureBlobStorage")
+          AZUREBLOBSTORAGE: ${{ secrets.AZURE_BLOB_STORAGE_CONNECTION_STRING }}
 #endif
-#if (database == "MySql")
-          ConnectionStrings__mysqldb: ${{ secrets.DATABASE_CONNECTION_STRING }}
+#if (redis == true)
+          REDIS_CACHE_PASSWORD: ${{ secrets.REDIS_CACHE_PASSWORD }}
+          REDIS_PERSISTENT_PASSWORD: ${{ secrets.REDIS_PERSISTENT_PASSWORD }}
+#endif
+#if (cloudflare == true)
+          CLOUDFLARE_TUNNEL_TUNNEL_TOKEN: ${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}
+#endif
+#if (notification == true)
+          VAPID_PRIVATE_KEY: ${{ secrets.PRIVATE_VAPIDKEY }}
+          VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
 #endif
         run: |
-          chmod +x efbundle
-          ./efbundle
-          rm efbundle
-#endif
+          set -euo pipefail
 
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@02a81bead70021f5284939794bcec79c271ab383 # v3.0.8
-        with:
-          app-name: ${{ vars.APP_SERVICE_NAME }}
-          slot-name: 'production'
-          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
-          package: .
-          clean: false
+          project="$(printf '%s' "boilerplate-$ENV_NAME" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9_\n-' '-')"
+          deploy_dir="$HOME/deployments/$project"
+          compose() { docker compose --project-name "$project" --project-directory "$deploy_dir" --file "$deploy_dir/docker-compose.yaml" "$@"; }
 
+          umask 077
+          mkdir -p "$deploy_dir"
+          cp compose/docker-compose.yaml "$deploy_dir/docker-compose.yaml"
+
+          # The .env that aspire publish wrote lists every value the Compose project reads: the images and ports, and the
+          # parameters this step's env carries. Single quotes keep Compose from expanding a $ inside a secret.
+          repository="ghcr.io/${GITHUB_REPOSITORY,,}"
+          missing=()
+          : > "$deploy_dir/.env.new"
+          while IFS= read -r key; do
+            case "$key" in
+              *_IMAGE) value="$repository/$(printf '%s' "${key%_IMAGE}" | tr '[:upper:]_' '[:lower:]-'):${ENV_NAME,,}-$GITHUB_SHA" ;;
+              *_PORT) value=8080 ;;
+              *) value="${!key:-}" ;;
+            esac
+            if [[ -z "$value" || "$value" == *"'"* ]]; then
+              missing+=("$key")
+              continue
+            fi
+            printf "%s='%s'\n" "$key" "$value" >> "$deploy_dir/.env.new"
+          done < <(grep -oE '^[A-Z0-9_]+' compose/.env)
+          if (( ${#missing[@]} > 0 )); then
+            echo "::error::These values are empty, or contain a single quote: ${missing[*]}"
+            exit 1
+          fi
+          mv "$deploy_dir/.env.new" "$deploy_dir/.env"
+
+          # The settings no parameter carries - serverweb.env (and serverapi.env) - from KEY=value lines, the same way.
+          while IFS= read -r file; do
+            settings="$(printf '%s' "${file%.env}" | tr '[:lower:]-' '[:upper:]_')_SETTINGS"
+            : > "$deploy_dir/$file"
+            while IFS= read -r line; do
+              line="${line%$'\r'}"
+              if [[ -z "$line" || "$line" == "#"* ]]; then
+                continue
+              fi
+              if [[ "$line" != *=* || "${line#*=}" == *"'"* ]]; then
+                echo "::error::$settings has a line that is not KEY=value, or whose value contains a single quote: ${line%%=*}"
+                exit 1
+              fi
+              printf "%s='%s'\n" "${line%%=*}" "${line#*=}" >> "$deploy_dir/$file"
+            done <<< "${!settings:-}"
+          done < <(grep -E '^ +- "?[a-z0-9-]+\.env"?$' compose/docker-compose.yaml | grep -oE '[a-z0-9-]+\.env' | sort -u)
+
+          # The environment's own AppCertificate, and the retired one it replaced while that one still validates tokens
+          # (See AppCertificate.md), in the folder the api mounts. Each secret is a .crt and its .key in one PEM, which openssl
+          # splits, failing the step on one it can't read. The files are replaced in place, so a running container never
+          # finds the folder empty.
+          if [[ -z "$APP_CERTIFICATE" ]]; then
+            echo "::error::APP_CERTIFICATE is not set."
+            exit 1
+          fi
+          certificates="$deploy_dir/app-certificate"
+          mkdir -p "$certificates"
+          rm -f "$certificates"/AppCertificate.*
+          printf '%s\n' "$APP_CERTIFICATE" | openssl x509 -out "$certificates/AppCertificate.crt"
+          printf '%s\n' "$APP_CERTIFICATE" | openssl pkey -out "$certificates/AppCertificate.key"
+          if [[ -n "$APP_CERTIFICATE_RETIRED" ]]; then
+            printf '%s\n' "$APP_CERTIFICATE_RETIRED" | openssl x509 -out "$certificates/AppCertificate.retired.crt"
+            printf '%s\n' "$APP_CERTIFICATE_RETIRED" | openssl pkey -out "$certificates/AppCertificate.retired.key"
+          fi
+          # Readable by the container's non-root user; the folder around them stays private to the runner's user.
+          chmod 0755 "$certificates"
+          chmod 0444 "$certificates"/AppCertificate.*
+
+          compose pull --quiet
+
+          # The new version's migrations first, on their own: if they fail, this step fails and the running version of
+          # the app is left untouched. `up` would replace the app's container before finding out.
+          compose run --rm migrations
+
+          compose up --detach --wait --wait-timeout 600 --remove-orphans || { compose logs --tail 200; exit 1; }
+
+      - name: Check the public address
+        env:
+          SERVER_ADDRESS: ${{ vars.SERVER_ADDRESS }}
+        run: |
+          for _ in $(seq 1 30); do
+            if curl --fail --silent --show-error --max-time 10 "${SERVER_ADDRESS%/}/alive"; then
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::${SERVER_ADDRESS%/}/alive did not answer for five minutes."
+          exit 1
 #if (cloudflare == true)
+
       - name: Purge Cloudflare cache
         uses: jakejarvis/cloudflare-purge-action@eee6dba0236093358f25bb1581bd615dc8b3d8e3 # v0.3.0
         env:
@@ -163,127 +272,12 @@ jobs:
           CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
 #endif
 
-#if (api == "Standalone")
-  build_api:
-    name: build api
-    runs-on: ubuntu-26.04
-    permissions:
-      contents: read
-      id-token: write
-      attestations: write
-    environment: ${{ inputs.ENV_NAME }}
-    steps:
-
-      - name: Checkout source code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-        with:
-          global-json-file: global.json
-
-      - name: Update core appsettings.json
-        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
-        with:
-          files: 'src/**/appsettings*json'
-        env:
-          ServerAddress: ${{ vars.SERVER_ADDRESS }}
-
-      - name: Publish
-        run: dotnet publish src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj -c Release --self-contained -r linux-x64 -o server-api -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }}
-
-      - name: Upload api artifact
-        id: api_artifact
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: api-bundle
-          path: server-api
-          include-hidden-files: true # Required for wwwroot/.well-known folder
-
-      - name: Attest api artifact
-        if: github.event.repository.visibility == 'public'
-        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
-        with:
-          subject-name: api-bundle
-          subject-digest: sha256:${{ steps.api_artifact.outputs.artifact-digest }}
-#if (database != "Sqlite" && database != "Other")
-
-      - name: Create the database migrations bundle
-        run: dnx dotnet-ef@11.0.0-rc.2.26504.105 -- migrations bundle --project src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj --configuration Release --self-contained --target-runtime linux-x64 --output efbundle --verbose
-
-      - name: Upload migrations bundle
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: migrations-bundle
-          path: efbundle
-#endif
-
-  deploy_api:
-    name: deploy api
-    needs: build_api
-    runs-on: ubuntu-26.04
-    environment:
-      name: ${{ inputs.ENV_NAME }}
-      url: ${{ steps.deploy-api-to-webapp.outputs.webapp-url }}
-
-    steps:
-
-      - name: Retrieve api bundle
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          name: api-bundle
-
-      # Writes APP_CERTIFICATE and APP_CERTIFICATE_RETIRED next to the server as the AppCertificate .crt and .key files.
-      - name: Use the environment's app certificate
-        uses: bitfoundation/bitplatform/.github/actions/boilerplate/app-certificate@v-11.0.0-pre-15
-        with:
-          certificate: ${{ secrets.APP_CERTIFICATE }}
-          retired-certificate: ${{ secrets.APP_CERTIFICATE_RETIRED }}
-#if (notification == true)
-
-      - name: Use the environment's web push keys
-        uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
-        with:
-          files: 'appsettings*json'
-        env:
-          AdsPushVapid.PrivateKey: ${{ secrets.PRIVATE_VAPIDKEY }}
-          AdsPushVapid.Subject: ${{ secrets.VAPID_SUBJECT }}
-#endif
-#if (database != "Sqlite" && database != "Other")
-
-      - name: Retrieve migrations bundle
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          name: migrations-bundle
-
-      - name: Apply database migrations
-        env:
-#if (database == "SqlServer")
-          ConnectionStrings__mssqldb: ${{ secrets.DATABASE_CONNECTION_STRING }}
-#endif
-#if (database == "PostgreSQL")
-          ConnectionStrings__postgresdb: ${{ secrets.DATABASE_CONNECTION_STRING }}
-#endif
-#if (database == "MySql")
-          ConnectionStrings__mysqldb: ${{ secrets.DATABASE_CONNECTION_STRING }}
-#endif
-        run: |
-          chmod +x efbundle
-          ./efbundle
-          rm efbundle
-#endif
-
-      - name: Deploy to Azure Web App
-        id: deploy-api-to-webapp
-        uses: azure/webapps-deploy@02a81bead70021f5284939794bcec79c271ab383 # v3.0.8
-        with:
-          app-name: ${{ vars.API_APP_SERVICE_NAME }}
-          slot-name: 'production'
-          publish-profile: ${{ secrets.API_AZURE_PUBLISH_PROFILE }}
-          package: .
-          clean: false
+      - name: Log out of GitHub Container Registry
+        if: always()
+        run: docker logout ghcr.io
+#else
+  # This project has no .NET Aspire app host, so these workflows do not deploy the server. It deploys once .NET Aspire
+  # is in the project.
 #endif
 
   build_blazor_hybrid_windows:

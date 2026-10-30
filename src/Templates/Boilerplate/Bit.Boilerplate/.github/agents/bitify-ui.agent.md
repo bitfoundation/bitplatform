@@ -23,6 +23,9 @@ Read the `.razor`, `.razor.cs`, and `.razor.scss` files in parallel. Identify:
 - Hardcoded colors, font sizes, spacing, and non-theme-aware CSS
 - Flexbox/grid layout containers
 - Event handlers and data-bound fields
+- Every attribute that carries behavior rather than looks: an `id` or class that JavaScript or a test finds the element
+  by, `name` and `@formname` on a statically rendered form, `autocomplete`, `aria-*`, `title`, `tabindex`, `data-*`.
+  The UI tests in `src/Tests` find elements by title, placeholder, accessible name and text, so search them too
 
 ### Step 2: Find the Replacement for Each Element
 
@@ -34,6 +37,11 @@ the full catalog.
 
 Layout containers are components too: `BitStack`, `BitGrid`, `BitCard`, `BitSeparator`, `BitSpacer` and `BitText`
 replace nearly every `<div>` written for flexbox, grid, spacing or typography.
+
+When nothing in bit BlazorUI does what an element does, keep the hand-written element, and tell the user that the
+missing component deserves an issue on bit BlazorUI and that you will write its details yourself: what the control
+does, the closest component and what it lacks, and the API that would cover it. File it once they agree (`AGENTS.md`
+section 6), and write the hand-written element into `specs/workarounds.md` either way.
 
 ### Step 3: Inspect Exact APIs and Examples
 
@@ -58,12 +66,17 @@ is almost never "write CSS".
 
 ### Step 5: Implement Replacements
 
-Apply changes to `.razor`, `.razor.cs`, and `.razor.scss`:
+Apply changes to `.razor`, `.razor.cs`, and `.razor.scss`, with the app running as the **run-app** skill
+(`.github/agents/run-app.agent.md`) describes: hot reload brings each edit to the open page, and run-app says what
+needs a restart instead.
 
 **Razor markup:**
 - Replace HTML elements with the chosen Bit.BlazorUI components
 - Use the `@bind-` form the component declares (`@bind-Value`, `@bind-IsOpen`, `@bind-SelectedItem`) - not
   `value=`, not plain `@bind`, and not a one-way parameter plus a hand-written change callback
+- Keep every attribute Step 1 listed working on its replacement, through the component's own parameter when it has
+  one (`GetBitBlazorUIComponent`): an attribute it doesn't know lands on its root element, so an `autocomplete` meant
+  for a text field's `<input>` reaches its wrapper and autofill stops working
 - Use `BitButtonType.Button` on non-submit buttons inside forms to prevent accidental form submission
 - Disable with `Disabled` (never the native `disabled` attribute) and hide with
   `Visibility="BitVisibility.Hidden"` or `BitVisibility.Collapsed` (never `display:none`) - both are
@@ -88,8 +101,12 @@ Apply changes to `.razor`, `.razor.cs`, and `.razor.scss`:
 
 ### Step 6: Verify
 
-Fix any build errors, then open the page in both the light and the dark theme: a hardcoded or non-token color only
-shows up in one of them.
+Fix any build errors, then use the page in the running app, driving it as the run-app skill describes, rather
+than only looking at it: pick a value in every input you
+replaced, toggle every switch, open every dropdown and dialog, and submit each form empty and filled, since a binding
+that broke in the swap shows only there. Do it in both the light and the dark theme, since a hardcoded or non-token
+color only shows up in one of them, and once at phone width. Read the browser console and the server's logs as you
+go.
 
 ---
 

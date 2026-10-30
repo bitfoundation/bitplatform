@@ -231,6 +231,8 @@ custom.aprof
 /src/Client/Boilerplate.Client.Maui/Platforms/Android/google-services.json
 
 .env
+# `aspire publish` and `aspire do` output, which `aspire do prepare-compose` fills with resolved secrets.
+aspire-output/
 .playwright-mcp/
 # Podman on Windows has ssh write its known hosts to NUL, which Git's own ssh makes a real file that git add -A then fails on.
 NUL

@@ -112,6 +112,10 @@
         {
           "skill": "review",
           "long": true
+        },
+        {
+          "called": "browser_navigate",
+          "long": true
         }
       ]
     },
@@ -380,6 +384,9 @@
           "called": "SearchBitBlazorUI"
         },
         {
+          "called": "browser_navigate"
+        },
+        {
           "fileLacks": {
             "path": "src/Client/AgentsApp.Client.Core/Components/Common/FeedbackForm.razor",
             "patterns": [
@@ -399,7 +406,7 @@
       "prompt": "Confirmation emails aren't arriving for users in production.",
       "checks": [
         {
-          "skill": "ai-dlc"
+          "skill": "troubleshoot"
         },
         {
           "finalMatches": "dev-mcp"

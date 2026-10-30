@@ -45,7 +45,8 @@ A copy of an entity that already works here, renamed and reshaped, beats code wr
 ## Done means
 
 - The solution builds, and the migration applies to a fresh database.
-- In the running app, a seeded user with the permission can list, add, edit and delete rows; saving a row someone else changed in the meantime is refused; a user without the permission sees neither the menu item nor the data.
+- In the running app (the **run-app** skill, `.github/agents/run-app.agent.md`), a seeded user with the permission can list, add, edit and delete rows; saving a row someone else changed in the meantime is refused; a user without the permission sees neither the menu item nor the data. None of it leaves an error in the browser console or the server's logs.
+- The grid and the add/edit pages match the pages of the entity they were copied from: the header, the toolbar, the empty state, the delete confirmation, and amounts that keep their unit on the same line in RTL.
 <!--#if (multitenant == true)-->
 - A user of another tenant sees none of the rows.
 <!--#endif-->

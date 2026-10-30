@@ -558,7 +558,7 @@ A failure is fixed in the template like a CI failure, and the next `aspire -Sha`
 ## 7. bit diff
 
 `bit diff` creates a project with two bit Boilerplate versions into one git repository in the temp folder, so its
-second commit is the upgrade, and the template's `upgrade` skill applies that to a project. The helper has no command
+second commit is the upgrade, and the template's `template-diff` skill applies that to a project. The helper has no command
 for it, so check it by hand, with bit and the template of the commit under test, or nuget.org's:
 
 - In a lab folder outside the repository and the scratchpad, with `BIT_CLI_HOME` pointing into it, create a project

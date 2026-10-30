@@ -179,27 +179,18 @@ public partial class Acknowledgements
     ];
 
     /// <summary>
-    /// CI/CD and deployment tooling taken from the pipeline definitions: GitHub Actions (.github/workflows) or
-    /// Azure Pipelines (.azure-devops), plus the optional Cloudflare CDN integration. Everything here is build/deploy
-    /// time only and never ships inside the app.
+    /// CI/CD and deployment tooling taken from the pipeline definitions in .github/workflows, plus the optional
+    /// Cloudflare CDN integration. Everything here is build/deploy time only and never ships inside the app.
     /// </summary>
     private static readonly Dependency[] Deployment =
     [
-        //#if (pipeline == "GitHub")
         new("GitHub Actions", "https://github.com/features/actions", "https://github.com/actions/runner", "MIT"),
-        new("Azure WebApps Deploy", "https://github.com/Azure/webapps-deploy", "https://github.com/Azure/webapps-deploy", "MIT"),
         new("setup-xcode", "https://github.com/maxim-lobanov/setup-xcode", "https://github.com/maxim-lobanov/setup-xcode", "MIT"),
         new("Apple Actions", "https://github.com/Apple-Actions", "https://github.com/Apple-Actions", "MIT"),
         new("base64-to-file", "https://github.com/timheuer/base64-to-file", "https://github.com/timheuer/base64-to-file", "MIT"),
         new("variable-substitution", "https://github.com/devops-actions/variable-substitution", "https://github.com/devops-actions/variable-substitution", "MIT"),
-        //#endif
-        //#if (pipeline == "Azure")
-        new("Azure Pipelines", "https://azure.microsoft.com/products/devops/pipelines", null, "Proprietary"),
-        //#endif
         //#if (cloudflare == true)
         new("Cloudflare", "https://www.cloudflare.com", null, "Proprietary"),
-        //#endif
-        //#if (pipeline == "GitHub" && cloudflare == true)
         new("cloudflare-purge-action", "https://github.com/jakejarvis/cloudflare-purge-action", "https://github.com/jakejarvis/cloudflare-purge-action", "MIT"),
         //#endif
     ];

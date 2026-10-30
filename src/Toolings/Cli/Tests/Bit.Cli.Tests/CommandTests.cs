@@ -144,13 +144,10 @@ public class CommandTests
     }
 
     [TestMethod]
-    public async Task AGitHubRepo_Should_NeedTheGitHubPipelineAndGit()
+    public async Task AGitHubRepo_Should_NeedGit()
     {
         using var host = new TestHost(HostOs.Linux);
         host.AllToolsInstalled();
-
-        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", "Contoso", "--pipeline", "Azure", "--github-repo", "--dry-run", "--yes"), host.Output);
-        StringAssert.Contains(host.Output, "--github-repo needs the GitHub pipeline");
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", "Contoso", "--github-repo", "--no-git", "--dry-run", "--yes"), host.Output);
         StringAssert.Contains(host.Output, "can't go with --no-git");

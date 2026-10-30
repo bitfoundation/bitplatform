@@ -7,7 +7,6 @@ public static class TemplateLabels
         ["database"] = "Database",
         ["filesStorage"] = "Files storage",
         ["api"] = "API hosting",
-        ["pipeline"] = "CI/CD pipeline",
         ["module"] = "Module",
         ["multitenant"] = "Multi-tenancy",
         ["captcha"] = "Captcha",

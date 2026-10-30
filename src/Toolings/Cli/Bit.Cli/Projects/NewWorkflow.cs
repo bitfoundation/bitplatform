@@ -46,9 +46,6 @@ public sealed partial class NewWorkflow(CliServices cli)
         if (ProjectName.Validate(name, typeNames) is { } nameError)
             return cli.UsageError("name-invalid", $"{nameError} Try: bit new {ProjectName.Suggest(name, typeNames)}");
 
-        if (request.GitHubRepo && string.Equals(selection["pipeline"], "GitHub", StringComparison.OrdinalIgnoreCase) is false)
-            return cli.UsageError("github-repo-needs-github", "--github-repo needs the GitHub pipeline (--pipeline GitHub).");
-
         if (request.GitHubRepo && request.NoGit)
             return cli.UsageError("github-repo-no-git", "--github-repo pushes the project's git repository, so it can't go with --no-git.");
 
@@ -126,7 +123,7 @@ public sealed partial class NewWorkflow(CliServices cli)
 
             if (request.NoCertificate is false)
             {
-                await RunProjectStepAsync(steps, context, "certificate", "Creating a unique app certificate", projectSteps.AppCertificateAsync, cancellationToken);
+                await RunProjectStepAsync(steps, context, "certificate", "Creating a unique app certificate and web push keys", projectSteps.AppCertificateAsync, cancellationToken);
             }
 
             if (request.NoGit is false)
@@ -483,7 +480,7 @@ public sealed partial class NewWorkflow(CliServices cli)
         }
 
         var stepsList = new List<string> { "create" };
-        if (request.NoCertificate is false) stepsList.Add("unique app certificate");
+        if (request.NoCertificate is false) stepsList.Add("unique app certificate and web push keys");
         if (request.NoGit is false) stepsList.Add("git with develop and main");
         stepsList.Add(".NET SDK check");
         if (selection.Aspire && cli.Environment.IsCI is false) stepsList.Add("container runtime for Aspire");
