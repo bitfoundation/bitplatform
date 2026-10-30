@@ -1,0 +1,11 @@
+@page "/"
+@inherits WorkbenchComponentBase
+
+<PageTitle>@Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]</PageTitle>
+
+<BitText Typography="BitTypography.H3">@Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]</BitText>
+
+@foreach (var page in WorkbenchPageCatalog.Pages)
+{
+    <BitLink Href="@($"workbench/{page.Key}")">@Localizer[page.TitleKey]</BitLink>
+}

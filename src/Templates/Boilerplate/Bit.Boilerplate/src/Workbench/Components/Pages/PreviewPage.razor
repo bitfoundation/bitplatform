@@ -1,0 +1,9 @@
+@page "/preview/{PageKey}"
+@layout PreviewLayout
+@inherits WorkbenchComponentBase
+
+@if (pageInfo is not null)
+{
+    <PageTitle>@Localizer[pageInfo.TitleKey]</PageTitle>
+    <DynamicComponent Type="pageInfo.ComponentType" />
+}

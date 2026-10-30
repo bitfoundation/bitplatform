@@ -1,0 +1,9 @@
+@page "/workbench/{PageKey}"
+@inherits WorkbenchComponentBase
+
+<PageTitle>@Localizer[pageInfo?.TitleKey ?? nameof(WorkbenchStrings.WorkbenchTitle)]</PageTitle>
+
+@if (pageInfo is not null)
+{
+    <iframe src="@($"preview/{pageInfo.Key}")" style="width:402px;height:874px;border:1px solid gray"></iframe>
+}
