@@ -83,9 +83,9 @@
     @* ============================== Proof strip ============================== *@
 
     <section class="bb-proof">
-        <div><strong>Engine in C#</strong><span>resampler, rasteriser, colour pipeline and four codecs</span></div>
+        <div><strong>Engine in C#</strong><span>resampler, rasteriser, colour pipeline and six codecs, WebP and AVIF among them</span></div>
         <div><strong>On the device</strong><span>the original never leaves the browser</span></div>
-        <div><strong>WebP and AVIF</strong><span>from the browser's codecs, probed rather than assumed</span></div>
+        <div><strong>AVIF exports</strong><span>from the browser's codecs, probed rather than assumed</span></div>
         <div><strong>Private by default</strong><span>metadata is removed unless you keep it</span></div>
     </section>
 
@@ -203,8 +203,9 @@
                     <h3>Decode, process, encode</h3>
                     <p>
                         The browser decodes the upload and applies the phone's rotation, a pipeline does the
-                        pixel work, and the exporter writes WebP where it can - falling back to JPEG where
-                        it cannot, rather than guessing.
+                        pixel work, and the exporter writes WebP through the browser's encoder - or, in
+                        WebAssembly where the browser cannot write WebP, such as Safari's, the JPEG next in
+                        the list. On a server, Bmage's own WebP encoder writes it.
                     </p>
                     <a href="pipelines">Pipelines →</a>
                 </div>
@@ -316,9 +317,11 @@
             <details>
                 <summary>Can it write WebP and AVIF?</summary>
                 <p>
-                    Through the browser's own codecs, wherever the browser can - which Bmage probes rather
-                    than assumes. Ask for a preference order with <code>EncodeWithFallbackAsync</code>, or
-                    get an <code>ImageCapabilityException</code> instead of a silently substituted PNG.
+                    WebP everywhere, a server included: Bmage has its own WebP encoder, lossy and lossless,
+                    for wherever the browser has none. AVIF through the browser's own codecs, wherever the
+                    browser can - which Bmage probes rather than assumes. Ask for a preference order with
+                    <code>EncodeWithFallbackAsync</code>, or get an <code>ImageCapabilityException</code>
+                    instead of a silently substituted PNG.
                 </p>
             </details>
             <details>

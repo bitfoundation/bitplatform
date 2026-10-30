@@ -47,11 +47,11 @@ public class PipelineLabTests
     }
 
     [TestMethod]
-    public async Task Run_BrowserFormats_AreReportedWithGuidance_NotMeasured()
+    public async Task Run_WebPIsMeasured_AvifAndGif_AreReportedWithGuidance()
     {
         var run = await BmagePipelineLab.RunAsync("MaxSize(200, 200)", "photo", 400, 300, "jpeg, webp, avif, gif", "0.8");
 
-        foreach (var format in new[] { "WebP", "Avif", "Gif" })
+        foreach (var format in new[] { "Avif", "Gif" })
         {
             var encoding = run.Encodings.Single(entry => entry.Format == format);
 
@@ -59,8 +59,11 @@ public class PipelineLabTests
             Assert.IsFalse(string.IsNullOrWhiteSpace(encoding.Note));
         }
 
-        // WebP's estimate is drawn from the JPEG measured beside it.
-        StringAssert.Contains(run.Encodings.Single(entry => entry.Format == "WebP").Note, "against the JPEG at 0.8");
+        // The managed encoder writes WebP on the server, so it is measured like JPEG, and comes out smaller.
+        var webp = run.Encodings.Single(entry => entry.Format == "WebP");
+        var jpeg = run.Encodings.Single(entry => entry.Format == "Jpeg");
+        Assert.IsNotNull(webp.Bytes);
+        Assert.IsLessThan(jpeg.Bytes!.Value, webp.Bytes!.Value);
     }
 
     [TestMethod]
@@ -229,7 +232,18 @@ public class PipelineLabTests
     [TestMethod]
     public async Task Metadata_ABrowserOrUnknownFormat_IsExplained()
     {
-        StringAssert.Contains((await BmagePipelineLab.CompareMetadataPoliciesAsync("webp")).Error, "browser");
-        StringAssert.Contains((await BmagePipelineLab.CompareMetadataPoliciesAsync("tiff")).Error, "'jpeg', 'png' or 'bmp'");
+        StringAssert.Contains((await BmagePipelineLab.CompareMetadataPoliciesAsync("avif")).Error, "browser");
+        StringAssert.Contains((await BmagePipelineLab.CompareMetadataPoliciesAsync("tiff")).Error, "'jpeg', 'png', 'bmp' or 'webp'");
+    }
+
+    [TestMethod]
+    public async Task Metadata_WebP_IsWrittenAndReadBackOnTheServer()
+    {
+        var comparison = await BmagePipelineLab.CompareMetadataPoliciesAsync("webp");
+        var policies = comparison.Policies.ToDictionary(policy => policy.Policy);
+
+        Assert.IsNull(comparison.Error);
+        Assert.IsFalse(policies["Remove"].LeaksLocation);
+        Assert.IsTrue(policies["Preserve"].LeaksLocation);
     }
 }

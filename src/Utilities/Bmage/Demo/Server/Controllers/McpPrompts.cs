@@ -35,7 +35,7 @@ public static class McpPrompts
             1. If the hosting model is 'unknown', determine it from the project before writing anything: look for
                AddInteractiveServerComponents / AddInteractiveWebAssemblyComponents in Program.cs, a separate .Client
                project, AddMauiBlazorWebView in MauiProgram.cs (hybrid), or no Blazor at all (an API, a console app). It
-               decides which registration to use and whether WebP/AVIF exist at all.
+               decides which registration to use and whether AVIF can be written at all.
             2. Call `GetBmageRecipes` and look for a recipe that already covers the request. If one does, fetch it with
                `GetBmageRecipe` and follow its shape - including its Notes, which carry the caveat the code cannot show.
                If none fits, call `SearchBmage` with the request as written.
@@ -47,7 +47,7 @@ public static class McpPrompts
                may export and two or three qualities (and maxFileSize if there is a byte budget), on the source kind
                that matches the content. Pick the dimensions, format and quality from the measured bytes.
             6. Write the code. Browser work goes in event handlers or OnAfterRenderAsync, every ImageBuffer you are
-               handed is disposed, WebP/AVIF go through EncodeWithFallbackAsync, and user files keep the default
+               handed is disposed, AVIF goes through EncodeWithFallbackAsync, and user files keep the default
                MetadataPolicy.Remove unless there is a reason.
             7. Call `ReviewBmageCode` on everything you wrote - components, Program.cs, the .csproj, App.razor - and fix
                every Error and Warning it reports.
@@ -114,10 +114,10 @@ public static class McpPrompts
                format (PNG for flat graphics and transparency, JPEG or WebP for photographs), a lower quality, or a
                reordered pipeline (cap the dimensions before the adjustments; group adjustments so they fuse). Measure
                each with `RunBmagePipeline`.
-            4. WebP cannot be measured on the server. If WebP is the choice, plan it as
-               `EncodeWithFallbackAsync([WebP, Jpeg])` and use the JPEG numbers as the upper bound.
+            4. AVIF cannot be measured on the server. If AVIF is the choice, plan it as
+               `EncodeWithFallbackAsync([Avif, WebP])` and use the WebP numbers as the upper bound.
             5. Check the export options you settle on with `GetBmageApiDetails` (typeName 'ImageExportOptions'), then
-               call `ReviewBmageCode` on the final code - an unhandled ImageEncodeException from a budget, or WebP on a
+               call `ReviewBmageCode` on the final code - an unhandled ImageEncodeException from a budget, or AVIF on a
                server, are the usual findings.
 
             Give me the replacement pipeline and ImageExportOptions, the before-and-after bytes and timings, and one
@@ -139,7 +139,7 @@ public static class McpPrompts
             1. Call `ReviewBmageCode` on the component involved, and on Program.cs (both of them in a Blazor Web App),
                the .csproj and App.razor/index.html. Its rules check exactly the silent causes: browser calls in
                OnInitialized during prerendering, the wrong registration for the host, @inject ImageProcessor in a
-               browser app, the missing stylesheet, undisposed or double-disposed buffers, WebP without a fallback.
+               browser app, the missing stylesheet, undisposed or double-disposed buffers, AVIF without a fallback.
             2. Call `GetBmageDocument` with name 'troubleshooting' and find the symptom: it lists the exact exception
                messages ("Could not load the Bmage browser module", "This browser cannot encode Avif", "Cannot reach N
                bytes") with their causes.

@@ -23,6 +23,9 @@
             <span class="bit-dtg-cell-text">@(Grid.RowDataIndex(Item) + 1)</span>
         </div>
     }
+    @* The grid's own control cells - reorder, detail, select, command - keep their clicks from the row. Their
+       double-clicks and right-clicks are not stopped, so a handler of the page around the grid hears them: the
+       script tells the row they are not its own (see BitDataGrid.ts, reportCellControlClick). *@
     @if (Grid.RowReorderEnabled)
     {
         specialColIndex++;
@@ -275,9 +278,11 @@
             ? column.GetFormattedValue(Item)
             : null;
 
-    private Task OnRowClick() => Grid.HandleRowClickAsync(Item);
+    // A click on a control in a cell - a template's Edit or Delete button, say - is the control's, not the row's
+    // (see BitDataGrid.ClickOnCellControl). Only the pointer is gated: the row's own Enter and Space go on below.
+    private Task OnRowClick() => Grid.ClickOnCellControl ? Task.CompletedTask : Grid.HandleRowClickAsync(Item);
 
-    private Task OnRowDoubleClick() => Grid.HandleRowDoubleClickAsync(Item);
+    private Task OnRowDoubleClick() => Grid.ClickOnCellControl ? Task.CompletedTask : Grid.HandleRowDoubleClickAsync(Item);
 
     // Keyboard activation of the row-as-toggle: Enter and Space do exactly what a click does (so the
     // edit guard, the single-selection and the expansion all stay in one place, and aria-expanded keeps

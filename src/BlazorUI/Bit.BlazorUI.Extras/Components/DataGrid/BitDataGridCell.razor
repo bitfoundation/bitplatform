@@ -6,18 +6,21 @@
    reference-capture frames (which break render-tree diffing).
    data-bit-esc claims the Escape HandleKeyDown cancels an open edit with (see Utils.claimEscape), on the cell
    whose handler hears it from the editor inside it as well, so a dialog the grid sits in does not close on the
-   same press. *@
+   same press.
+   data-bit-dtg-contextmenu has the script suppress the browser's context menu while the grid raises OnCellContextMenu,
+   for a right-click on the cell itself only: a @oncontextmenu:preventDefault would also take the menu of a link or
+   a field of the cell's template away from it (see BitDataGrid.ts, reportCellControlClick). *@
 <div @ref="_el" class="@CssClass" role="@(Column.RowHeader ? "rowheader" : "gridcell")" style="@Style" tabindex="@TabIndex" title="@Title"
      aria-colindex="@Grid.AriaColIndex(ColIndex)"
      aria-colspan="@(ColSpan > 1 ? ColSpan : (int?)null)"
      data-bit-dtg-edit="@(ShowsEditor ? Column.Id : null)"
      data-bit-dtg-edit-version="@(ShowsEditor && Grid.IsCellEditMode ? Grid.EditVersion : (int?)null)"
      data-bit-dtg-typable="@(Grid.OpensEditorByTyping(Column) ? (Column.EffectiveDataType == BitDataGridColumnDataType.Number ? "number" : "text") : null)"
+     data-bit-dtg-contextmenu="@(Grid.OnCellContextMenu.HasDelegate ? "true" : null)"
      data-bit-esc="@EscapeClaim"
      @onclick="HandleClick"
      @ondblclick="HandleDoubleClick"
      @oncontextmenu="HandleContextMenu"
-     @oncontextmenu:preventDefault="Grid.OnCellContextMenu.HasDelegate"
      @onfocusin="HandleFocusIn"
      @onkeydown="HandleKeyDown">
     @ChildContent
@@ -69,9 +72,10 @@
         }
     }
 
-    private Task HandleClick(MouseEventArgs e) => Grid.HandleCellClickAsync(Column, Item, e);
-    private Task HandleDoubleClick(MouseEventArgs e) => Grid.HandleCellDoubleClickAsync(Column, Item, e);
-    private Task HandleContextMenu(MouseEventArgs e) => Grid.HandleCellContextMenuAsync(Column, Item, e);
+    // A click or a right-click on a control in the cell is the control's, not the cell's (see BitDataGrid.ClickOnCellControl).
+    private Task HandleClick(MouseEventArgs e) => Grid.ClickOnCellControl ? Task.CompletedTask : Grid.HandleCellClickAsync(Column, Item, e);
+    private Task HandleDoubleClick(MouseEventArgs e) => Grid.ClickOnCellControl ? Task.CompletedTask : Grid.HandleCellDoubleClickAsync(Column, Item, e);
+    private Task HandleContextMenu(MouseEventArgs e) => Grid.ClickOnCellControl ? Task.CompletedTask : Grid.HandleCellContextMenuAsync(Column, Item, e);
 
     private void HandleFocusIn()
     {

@@ -2,16 +2,6 @@
     export class DragDrop {
         private static _listeners: { [key: string]: any } = {};
 
-        // What a pointerdown must not turn into a drag. The drag surface of a Dialog or a Modal can be the
-        // whole container, which puts every control the consumer put inside it under the same handler:
-        // without this, reaching for a field, dragging a slider or selecting a word would move the window.
-        private static readonly _interactives =
-            'a[href], button, input, select, textarea, label, summary, ' +
-            '[contenteditable]:not([contenteditable="false"]), ' +
-            '[role="button"], [role="link"], [role="checkbox"], [role="radio"], [role="switch"], ' +
-            '[role="slider"], [role="spinbutton"], [role="textbox"], [role="combobox"], ' +
-            '[role="tab"], [role="menuitem"], [role="option"]';
-
         public static setup(key: string, containerSelector: string, dragElementSelector: string) {
             DragDrop.remove(key, dragElementSelector);
 
@@ -120,13 +110,16 @@
         }
 
         // Whether the pointerdown landed on something the user was reaching for rather than on the drag
-        // surface itself. The walk stops at the drag element, which is excluded: it is the handle, and on a
+        // surface itself (Utils.isInteractive), which must not turn into a drag. The drag surface of a Dialog
+        // or a Modal can be the whole container, which puts every control the consumer put inside it under
+        // the same handler: without this, reaching for a field, dragging a slider or selecting a word would
+        // move the window. The walk stops at the drag element, which is excluded: it is the handle, and on a
         // fully draggable surface it is the container - which carries a tabindex of its own.
         private static isInteractive(target: Element | null, dragElement: HTMLElement) {
             try {
                 let node = target;
                 while (node && node !== dragElement) {
-                    if (node.matches?.(DragDrop._interactives)) return true;
+                    if (Utils.isInteractive(node)) return true;
                     node = node.parentElement;
                 }
                 return false;

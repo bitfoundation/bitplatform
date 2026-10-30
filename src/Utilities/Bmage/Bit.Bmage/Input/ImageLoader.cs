@@ -272,22 +272,33 @@ public sealed class ImageProcessorFactory
     }
 
     /// <summary>
-    /// True when the file embeds a colour profile that is not sRGB, such as the Display P3 most phones now shoot in. The
-    /// managed decoders read the stored values as sRGB, so those colours need the browser's colour management.
+    /// True when the file embeds a colour profile that is not sRGB, such as the Display P3 most phones now shoot in, or,
+    /// for AVIF, signals wide gamut or HDR colours without one. The managed decoders read the stored values as sRGB, so
+    /// those colours need the browser's colour management.
     /// </summary>
-    private static bool HasWideGamutProfile(ImageFormat format, ReadOnlySpan<byte> data)
+    private static bool HasWideGamutProfile(ImageFormat format, ReadOnlyMemory<byte> data)
     {
         try
         {
-            var metadata = format switch
+            ReadOnlyMemory<byte> profile;
+            if (format == ImageFormat.Avif)
             {
-                ImageFormat.Jpeg => JpegContainer.ReadMetadata(data),
-                ImageFormat.Png => PngContainer.ReadMetadata(data),
-                _ => null,
-            };
-            if (metadata is null || metadata.IccProfile.IsEmpty) return false;
+                // One parse, in place, for both the colours the file signals and the profile it embeds.
+                if (Codecs.Avif.AvifDecoder.HasNonSrgbColors(data, out profile)) return true;
+            }
+            else
+            {
+                var metadata = format switch
+                {
+                    ImageFormat.Jpeg => JpegContainer.ReadMetadata(data.Span),
+                    ImageFormat.Png => PngContainer.ReadMetadata(data.Span),
+                    ImageFormat.WebP => WebPContainer.ReadMetadata(data.Span),
+                    _ => null,
+                };
+                profile = metadata?.IccProfile ?? default;
+            }
             // Anything not recognised as sRGB goes to the browser, which costs bandwidth but never colour.
-            return !IsSrgbProfile(metadata.IccProfile.Span);
+            return !profile.IsEmpty && !IsSrgbProfile(profile.Span);
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
@@ -372,10 +383,12 @@ public sealed class ImageProcessorFactory
             if (_processor is { } existing) return existing;
             var capabilities = await _capabilities.GetAsync(cancellationToken).ConfigureAwait(false);
             var registry = ImageCodecRegistry.CreateDefault();
+            var nativeDecodable = capabilities.NativeDecodableFormats ?? capabilities.DecodableFormats;
+            var nativeEncodable = capabilities.NativeEncodableFormats ?? capabilities.EncodableFormats;
             if (capabilities.Environment == ImageEnvironment.BrowserWebAssembly)
             {
-                var decodable = capabilities.DecodableFormats.Where(f => f != ImageFormat.Svg).ToArray();
-                var encodable = capabilities.EncodableFormats.Where(f => f != ImageFormat.Bmp).ToArray();
+                var decodable = nativeDecodable.Where(f => f != ImageFormat.Svg).ToArray();
+                var encodable = nativeEncodable.Where(f => f != ImageFormat.Bmp).ToArray();
                 if (decodable.Length > 0) registry.AddDecoder(new BrowserImageDecoder(_interop, decodable));
                 if (encodable.Length > 0) registry.AddEncoder(new BrowserImageEncoder(_interop, encodable));
             }
@@ -383,18 +396,18 @@ public sealed class ImageProcessorFactory
             {
                 // Over a circuit, every pixel a browser codec touches crosses the network: a 12 megapixel photo is
                 // 48 MB of RGBA each way. The server's own codecs need only the file, so they handle every format they
-                // can, and the browser only what they cannot (WebP, AVIF), a file the managed decoder rejects or that
-                // is over the limits, which the browser scales down to instead, and a photo with a colour profile other
-                // than sRGB, which only the browser converts.
-                var browser = new BrowserImageDecoder(_interop, capabilities.DecodableFormats.Where(f => f != ImageFormat.Svg));
+                // can, and the browser only what they cannot: a file the managed decoder rejects or that is over the
+                // limits, which the browser scales down to instead, and a photo with a colour profile other than sRGB,
+                // which only the browser converts.
+                var browser = new BrowserImageDecoder(_interop, nativeDecodable.Where(f => f != ImageFormat.Svg));
                 foreach (var format in browser.Formats)
                 {
                     var managed = registry.GetDecoder(format);
                     registry.AddDecoder(managed is null
                         ? new BrowserImageDecoder(_interop, [format])
-                        : new FallbackImageDecoder(format, managed, browser, data => HasWideGamutProfile(format, data.Span)));
+                        : new FallbackImageDecoder(format, managed, browser, data => HasWideGamutProfile(format, data)));
                 }
-                var encodable = capabilities.EncodableFormats.Where(f => f != ImageFormat.Bmp && !registry.CanEncode(f)).ToArray();
+                var encodable = nativeEncodable.Where(f => f != ImageFormat.Bmp && !registry.CanEncode(f)).ToArray();
                 if (encodable.Length > 0) registry.AddEncoder(new BrowserImageEncoder(_interop, encodable));
             }
             var processor = new ImageProcessor(registry, _options.Allocator ?? PooledPixelAllocator.Shared, _options.Limits) { MaxDegreeOfParallelism = _options.MaxDegreeOfParallelism };

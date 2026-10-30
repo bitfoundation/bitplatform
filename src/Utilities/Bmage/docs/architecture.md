@@ -209,9 +209,9 @@ Pixel and file bytes never cross as base64. On WebAssembly the module is called 
 memory (`BrowserPixels`), so a 12 megapixel image is copied exactly once in each direction, straight between a .NET
 buffer and a typed array, with no 48 MB array allocated for the call. Over a Blazor Server circuit the browser is in
 another process: a JS call returns a small handle object, .NET reads a tiny JSON descriptor from it and streams the
-payload, then releases it. On Server the managed codecs decode and encode PNG, JPEG, BMP and GIF on the server itself,
-so those pixels never cross the network; the browser is used for WebP and AVIF, and for a file the managed decoder
-rejects.
+payload, then releases it. On Server the managed codecs decode PNG, JPEG, BMP, GIF, WebP and AVIF and encode all but GIF
+and AVIF on the server itself, so those pixels never cross the network; the browser is used to write AVIF, for a photo
+whose colours need its colour management, and for a file the managed decoder rejects.
 
 ## Memory
 

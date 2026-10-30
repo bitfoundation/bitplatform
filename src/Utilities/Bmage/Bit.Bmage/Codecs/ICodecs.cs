@@ -62,6 +62,17 @@ public sealed record ImageExportOptions
     /// <summary>Quality for lossy formats in [0,1]. Ignored by lossless formats. Default 0.85.</summary>
     public double Quality { get; init; } = 0.85;
 
+    /// <summary>
+    /// Encode losslessly with formats that can do either: WebP, which the managed encoder then writes wherever this runs,
+    /// since no browser's canvas writes lossless WebP. In Blazor WebAssembly that is on the UI thread, which a large photo
+    /// holds for seconds. <see cref="Quality"/> then does not apply, and a <see cref="MaxFileSize"/> is met by shrinking
+    /// the dimensions. Other formats ignore it. Default false.
+    /// </summary>
+    public bool Lossless { get; init; }
+
+    /// <summary>True when <see cref="Lossless"/> applies, that is, <see cref="Format"/> is one that can encode either way.</summary>
+    internal bool EncodesLosslessly => Lossless && Format == ImageFormat.WebP;
+
     /// <summary>Which metadata to keep. Defaults to <see cref="MetadataPolicy.Remove"/> for privacy and size.</summary>
     public MetadataPolicy Metadata { get; init; } = MetadataPolicy.Remove;
 
@@ -159,7 +170,7 @@ public sealed class ImageCodecRegistry
     private readonly List<IImageDecoder> _decoders = [];
     private readonly List<IImageEncoder> _encoders = [];
 
-    /// <summary>Creates a registry with the built-in managed codecs (PNG, JPEG, BMP, GIF decode).</summary>
+    /// <summary>Creates a registry with the built-in managed codecs: PNG, JPEG, BMP and WebP, and GIF and AVIF decoding.</summary>
     public static ImageCodecRegistry CreateDefault()
     {
         var r = new ImageCodecRegistry();
@@ -170,6 +181,9 @@ public sealed class ImageCodecRegistry
         r.AddDecoder(new Jpeg.JpegDecoder());
         r.AddEncoder(new Jpeg.JpegEncoder());
         r.AddDecoder(new Gif.GifDecoder());
+        r.AddDecoder(new WebP.WebPDecoder());
+        r.AddEncoder(new WebP.WebPEncoder());
+        r.AddDecoder(new Avif.AvifDecoder());
         return r;
     }
 

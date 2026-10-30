@@ -262,6 +262,7 @@ public class CommandTests
 
         StringAssert.Contains(project, "<PackageDownload Include=\"Bit.Minifier\" Version=\"[10.8.0]\" />");
         CollectionAssert.Contains(host.Runner.Calls[0].Arguments.ToArray(), $"-p:RestoreRootConfigDirectory={host.WorkingDirectory}");
+        Assert.AreEqual(Path.Combine(host.Environment.BitDirectory, "decode"), Path.GetDirectoryName(host.Runner.Calls[0].WorkingDirectory), "Others can plant build files in the shared temp folder.");
         Assert.IsFalse(Directory.Exists(host.Runner.Calls[0].WorkingDirectory));
         CollectionAssert.AreEqual(new[] { minifier, "--decode", map }, host.Runner.Calls[1].Arguments.ToArray());
     }
