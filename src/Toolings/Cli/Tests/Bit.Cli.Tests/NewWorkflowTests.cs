@@ -19,11 +19,36 @@ public class NewWorkflowTests
 
         Assert.AreEqual(0, exitCode, host.Output);
         Assert.IsTrue(File.Exists(Path.Combine(host.WorkingDirectory, "Contoso", "src", "Server", "Contoso.Server.Api", "AppCertificate.key")));
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "workload" or "restore" or "build"), Calls(host));
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "workload" or "restore" or "build" or "dnx"), Calls(host));
         Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "git" or "node" or "docker" or "aspire"), Calls(host));
         StringAssert.Contains(host.Output, "bit setup");
+        StringAssert.Contains(host.Output, "bit setup adds it");
         Assert.IsTrue(File.Exists(Path.Combine(host.WorkingDirectory, "Contoso", "Contoso.slnx")));
         Assert.IsFalse(File.Exists(Path.Combine(host.WorkingDirectory, "Contoso", "Contoso.sln")));
+    }
+
+    [TestMethod]
+    public async Task Setup_Should_AddTheInitialMigrationThatNoSetupLeftOut()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.AllToolsInstalled();
+        GeneratesProjects(host);
+        host.Runner.On("dotnet", "workload list", 0, "Installed Workload Id\n---\nwasm-tools   10.0.12/10.0.100   SDK 10.0.400\n");
+        var project = Path.Combine(host.WorkingDirectory, "Contoso");
+
+        Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--template-package", FakeTemplatePackage(host), "--yes", "--no-setup", "--no-git", "--no-trust"), host.Output);
+        Assert.AreEqual(0, await host.RunAsync("setup", project, "--yes", "--no-run"), host.Output);
+
+        var dotnetCalls = host.Runner.Calls.Where(c => c.FileName is "dotnet").Select(c => string.Join(' ', c.Arguments)).ToList();
+        var restore = dotnetCalls.FindIndex(call => call.StartsWith("restore", StringComparison.Ordinal));
+        var migration = dotnetCalls.FindIndex(call => call.Contains("migrations add Initial", StringComparison.Ordinal));
+
+        Assert.IsTrue(restore >= 0 && migration > restore, string.Join(Environment.NewLine, dotnetCalls));
+
+        File.WriteAllText(Path.Combine(Directory.CreateDirectory(Path.Combine(project, "src", "Server", "Contoso.Server.Api", "Infrastructure", "Data", "Migrations")).FullName, "Initial.cs"), "");
+
+        Assert.AreEqual(0, await host.RunAsync("setup", project, "--yes", "--no-run"), host.Output);
+        Assert.AreEqual(1, host.Runner.Calls.Count(c => c.Arguments.Contains("Initial")), Calls(host));
     }
 
     [TestMethod]

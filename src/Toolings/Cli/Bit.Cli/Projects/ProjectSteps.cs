@@ -325,6 +325,12 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         return StepResult.Succeeded("Formatted the code", await CommitAllAsync("Format the code with dotnet format", cancellationToken));
     }
 
+    private string MigrationsDirectory => Path.Combine(project.ServerApiDirectory, "Infrastructure", "Data", "Migrations");
+
+    private bool HasMigrations => System.IO.Directory.Exists(MigrationsDirectory) && System.IO.Directory.EnumerateFiles(MigrationsDirectory, "*.cs").Any();
+
+    public bool LacksInitialMigration => project.Database is not "Other" && System.IO.Directory.Exists(project.ServerApiDirectory) && HasMigrations is false;
+
     public async Task<StepResult> MigrationAsync(Action<string> progress, CancellationToken cancellationToken)
     {
         if (project.Database is "Other")
@@ -333,9 +339,9 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         if (System.IO.Directory.Exists(project.ServerApiDirectory) is false)
             return StepResult.Skipped("Skipped the initial migration", "the project has no Server.Api folder");
 
-        var migrations = Path.Combine(project.ServerApiDirectory, "Infrastructure", "Data", "Migrations");
+        var migrations = MigrationsDirectory;
 
-        if (System.IO.Directory.Exists(migrations) && System.IO.Directory.EnumerateFiles(migrations, "*.cs").Any())
+        if (HasMigrations)
             return StepResult.Skipped("Skipped the initial migration", "the project already has migrations");
 
         var efTool = new ProjectMigrations(cli, project);
