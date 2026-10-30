@@ -53,7 +53,6 @@
     <!-- Lazy loading can cause trouble in AOT builds, and next to the size of an AOT app it saves little. -->
     <ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' AND '$(PublishAot)' != 'true' ">
         <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.wasm" />
-        <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.Blazor.wasm" />
         <BlazorWebAssemblyLazyLoad Condition=" '$(Environment)' != 'Development' " Include="Bit.BevTools.wasm" />
         <!--#if (signalR == true)-->
         <BlazorWebAssemblyLazyLoad Include="Microsoft.AspNetCore.SignalR.Client.wasm" />
