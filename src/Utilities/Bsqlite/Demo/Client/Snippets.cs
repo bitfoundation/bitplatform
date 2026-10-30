@@ -512,17 +512,19 @@ internal static class Snippets
 
         public const string Import =
             """
-            // Close the worker first so it cannot keep writing the image being replaced.
-            await Database.CloseSessionAsync();
+            // The worker is closed for the whole of the work, so it cannot keep writing the image
+            // being replaced - and nothing can reopen the database halfway through.
+            await Database.WhileClosedAsync(async ct =>
+            {
+                await provider.Admin.ImportAsync("app.db", bytes, ct);
 
-            await provider.Admin.ImportAsync("app.db", bytes);
+                // Record the sticky binding, or the next open would create an empty file on the
+                // preferred backend and the import would look like it vanished.
+                await Database.Bindings.SetProviderNameAsync("app.db", provider.Name, ct);
+            });
 
-            // Record the sticky binding, or the next open would create an empty file on the
-            // preferred backend and the import would look like it vanished.
-            await Database.Bindings.SetProviderNameAsync("app.db", provider.Name);
-
-            // Reopen once so migrations run before the pages come back for the database. The
-            // open raises Opened, which is how every page hears it should reload.
+            // The reopen raises Opened, which is how every page hears it should reload; a context
+            // runs the migrations before they come back for the database.
             await using (await Database.OpenContextAsync())
             {
             }
@@ -530,11 +532,13 @@ internal static class Snippets
 
         public const string Delete =
             """
-            await Database.CloseSessionAsync();
-            await provider.Admin.DeleteAsync("app.db");
+            await Database.WhileClosedAsync(async ct =>
+            {
+                await provider.Admin.DeleteAsync("app.db", ct);
 
-            // Forget the binding so selection is free to pick the preferred backend again.
-            await Database.Bindings.RemoveAsync("app.db");
+                // Forget the binding so selection is free to pick the preferred backend again.
+                await Database.Bindings.RemoveAsync("app.db", ct);
+            });
 
             // Migrates and reseeds the now-empty database.
             await using (await Database.OpenContextAsync())

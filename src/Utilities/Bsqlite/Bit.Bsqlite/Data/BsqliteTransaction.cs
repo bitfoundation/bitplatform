@@ -23,10 +23,15 @@ namespace Bit.Bsqlite.Data;
 /// for, so abandoning the wait would leave the engine in a transaction no object here owns - holding
 /// the write lock against every other tab, and swallowing every later write into it.
 /// </para>
+/// <para>
+/// From <c>BEGIN</c> until its <c>COMMIT</c> or <c>ROLLBACK</c> has run, the transaction holds its
+/// transport's turn: another context's statements wait for it rather than run inside it.
+/// </para>
 /// </remarks>
 public sealed class BsqliteTransaction : DbTransaction
 {
     private readonly BsqliteConnection _connection;
+    private IDisposable? _turn;
     private int _savepointCounter;
     private bool _completed;
 
@@ -48,7 +53,8 @@ public sealed class BsqliteTransaction : DbTransaction
     /// <summary>Whether the transaction has been committed or rolled back.</summary>
     public bool IsCompleted => _completed;
 
-    internal async Task BeginAsync(CancellationToken cancellationToken)
+    /// <summary>Sends <c>BEGIN</c>, holding <paramref name="turn"/> from then on until the transaction ends.</summary>
+    internal async Task BeginAsync(IDisposable turn, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -57,6 +63,7 @@ public sealed class BsqliteTransaction : DbTransaction
             IsolationLevel == IsolationLevel.Serializable ? "BEGIN IMMEDIATE" : "BEGIN",
             CancellationToken.None).ConfigureAwait(false);
         _connection.DiscardPendingWrites();
+        _turn = turn;
     }
 
     public override void Commit()
@@ -121,6 +128,7 @@ public sealed class BsqliteTransaction : DbTransaction
                 // leaving the block is the more useful error, so this one is not thrown over it.
                 Detach();
                 _connection.DiscardPendingWrites();
+                ReleaseTurn();
             }
         }
 
@@ -132,7 +140,8 @@ public sealed class BsqliteTransaction : DbTransaction
         if (disposing && !_completed)
         {
             // Cannot wait here; see the remarks. The request is queued in order behind whatever is
-            // in flight, and the connection is detached immediately so a new BEGIN is allowed.
+            // in flight, and the connection is detached immediately so a new BEGIN is allowed - it
+            // waits for the turn, which this transaction keeps until the ROLLBACK has run.
             Detach();
             _connection.DiscardPendingWrites();
             _ = RollbackQuietlyAsync();
@@ -150,6 +159,10 @@ public sealed class BsqliteTransaction : DbTransaction
         catch (Exception)
         {
             // Nothing can observe this failure; the engine rolls back on close regardless.
+        }
+        finally
+        {
+            ReleaseTurn();
         }
     }
 
@@ -171,19 +184,40 @@ public sealed class BsqliteTransaction : DbTransaction
             // and nothing it wrote is reported as committed.
             Detach();
             _connection.DiscardPendingWrites();
+
+            if (statement == "COMMIT")
+            {
+                // A COMMIT that fails busy - another window or process reading the file - leaves the
+                // transaction open in the engine. Ended here, before the turn passes on, so the next
+                // context's writes do not land in it, unreported, to be lost when the session closes.
+                // Where the engine has already ended it, the ROLLBACK fails and changes nothing.
+                await RollbackQuietlyAsync().ConfigureAwait(false);
+            }
+            else
+            {
+                ReleaseTurn();
+            }
+
             throw;
         }
 
         Detach();
 
-        // Live queries hear about the transaction's writes only now, and only if it committed.
-        if (statement == "COMMIT")
+        try
         {
-            _connection.CommitPendingWrites();
+            // Live queries hear about the transaction's writes only now, and only if it committed.
+            if (statement == "COMMIT")
+            {
+                _connection.CommitPendingWrites();
+            }
+            else
+            {
+                _connection.DiscardPendingWrites();
+            }
         }
-        else
+        finally
         {
-            _connection.DiscardPendingWrites();
+            ReleaseTurn();
         }
     }
 
@@ -195,6 +229,9 @@ public sealed class BsqliteTransaction : DbTransaction
             _connection.CurrentTransaction = null;
         }
     }
+
+    /// <summary>Lets the next context's statement or transaction run. Once only.</summary>
+    private void ReleaseTurn() => Interlocked.Exchange(ref _turn, null)?.Dispose();
 
     private void ThrowIfCompleted()
     {

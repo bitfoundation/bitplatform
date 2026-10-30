@@ -161,18 +161,31 @@
     private string _pattern = "northwind|alpine";
     private bool _busy;
 
-    private async Task LoadAsync()
+    private async Task LoadAsync(CancellationToken cancellationToken)
     {
         _error = null;
         try
         {
-            _context = await Database.OpenContextAsync();
+            var context = await Database.OpenContextAsync();
+            if (cancellationToken.IsCancellationRequested)
+            {
+                // Torn down while the context opened, so the teardown had nothing to dispose yet.
+                await context.DisposeAsync();
+                return;
+            }
+
+            _context = context;
             _live = _context.Orders
                 .Include(o => o.Customer)
                 .OrderByDescending(o => o.Id)
                 .AsLiveQuery();
             _live.Changed += OnChanged;
             _liveRows = await _live.RefreshAsync();
+        }
+        catch (Exception) when (cancellationToken.IsCancellationRequested)
+        {
+            // Torn down while it loaded - the reader left, or the session is closing - which disposed what
+            // the load was running on. There is no page left to show that on.
         }
         catch (Exception ex)
         {

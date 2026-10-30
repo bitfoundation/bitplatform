@@ -1,8 +1,18 @@
-﻿namespace Bit.Bsqlite.Demo.Client;
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace Bit.Bsqlite.Demo.Client;
 
 internal static class SampleFormat
 {
     public static string YesNo(bool value) => value ? "yes" : "no";
+
+    /// <summary>
+    /// What a page shows for a failed call. EF wraps a failed save in a <see cref="DbUpdateException"/>
+    /// whose own message only says to see the inner exception; the inner one is SQLite's, and names the
+    /// constraint that refused the write.
+    /// </summary>
+    public static string Error(Exception exception)
+        => exception is DbUpdateException { InnerException: { } inner } ? inner.Message : exception.Message;
 
     public static string Bytes(long? value)
         => value is null ? "unknown" : Bytes(value.Value);

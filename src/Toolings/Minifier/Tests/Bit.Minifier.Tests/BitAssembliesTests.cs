@@ -10,7 +10,7 @@ public class BitAssembliesTests
         while (src is not null && File.Exists(Path.Combine(src.FullName, "Bit.slnx")) is false) src = src.Parent;
         Assert.IsNotNull(src, "No src/Bit.slnx above the tests.");
 
-        string[] products = ["BlazorUI", "Brouter", "Bswup", "Butil", "Besql", "Utilities"];
+        string[] products = ["BlazorUI", "Brouter", "Bswup", "Butil", "Utilities"];
         var packages = products
             .SelectMany(product => Directory.EnumerateFiles(Path.Combine(src.FullName, product), "Bit.*.csproj", SearchOption.AllDirectories))
             .Where(project => Path.GetRelativePath(src.FullName, project).Split(Path.DirectorySeparatorChar)

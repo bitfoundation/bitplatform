@@ -22,6 +22,6 @@ public static class SiteMapUrls
     /// </summary>
     public static readonly string[] NonCanonicalUrls =
     [
-        "/demo", "/templates/overview", "/templates/development-prerequisites", "/besql/overview"
+        "/demo", "/templates/overview", "/templates/development-prerequisites"
     ];
 }

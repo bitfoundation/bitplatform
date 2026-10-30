@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Unit tests for the parts of Bit.Bsqlite/Scripts that need no browser: the .NET decimal arithmetic, the host's change-notification filter and the WebAssembly function-table patch",
+  "description": "Unit tests for the parts of Bit.Bsqlite/Scripts that need no browser: the .NET decimal arithmetic, the host's change-notification filter, the WebAssembly function-table patch and the OPFS stale-handle retry",
   "scripts": {
     "test": "vitest run",
     "watch": "vitest"

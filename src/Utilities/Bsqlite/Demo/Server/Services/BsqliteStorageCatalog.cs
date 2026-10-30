@@ -7,11 +7,12 @@ using Bit.Bsqlite.Demo.Server.Dtos;
 using Bit.Bsqlite.Storage.InMemory;
 using Bit.Bsqlite.Storage.IndexedDb;
 using Bit.Bsqlite.Storage.CacheStorage;
+using Bit.Bsqlite.Storage.FileSystem;
 
 namespace Bit.Bsqlite.Demo.Server.Services;
 
 /// <summary>
-/// The four first-party storage backends, read out of the library itself: every name, module URL and
+/// The five first-party storage backends, read out of the library itself: every name, module URL and
 /// capability comes from an instance of the provider type, every capability's meaning from the XML
 /// documentation of the property that declares it, and every refused statement from running the
 /// library's own guards under the limits the session factory derives from those capabilities.
@@ -23,9 +24,9 @@ namespace Bit.Bsqlite.Demo.Server.Services;
 /// remembers from another version.
 /// </para>
 /// <para>
-/// The providers are built without an <c>IJSRuntime</c>, which every first-party constructor
-/// accepts: there is no browser here, and nothing on this server ever probes one. Name, capabilities
-/// and modules are declarations, not discoveries, so they do not need one.
+/// The providers are built without an <c>IJSRuntime</c>, which every first-party browser constructor
+/// accepts, and the file system one without options: there is no browser here, and nothing on this server
+/// ever probes one. Name, capabilities and modules are declarations, not discoveries, so they do not need one.
 /// </para>
 /// </summary>
 public static class BsqliteStorageCatalog
@@ -47,11 +48,15 @@ public static class BsqliteStorageCatalog
         new BsqliteIndexedDbStorageProvider(),
         new BsqliteCacheStorageProvider(),
         new BsqliteInMemoryStorageProvider(),
+        new BsqliteFileSystemStorageProvider(),
     ]);
 
     private static readonly Lazy<BsqliteStorageProviderDto[]> _providers = new(() => [.. _instances.Value.Select(Describe)]);
 
-    /// <summary>The four backends, in the order the README recommends them: fastest first, volatile last.</summary>
+    /// <summary>
+    /// The five backends, in the order the README lists them: the browser's fastest first and its volatile one last,
+    /// then the one Blazor Hybrid apps keep their databases on.
+    /// </summary>
     public static BsqliteStorageProviderDto[] Providers => _providers.Value;
 
     /// <summary>
@@ -84,9 +89,10 @@ public static class BsqliteStorageCatalog
         var capabilities = CapabilityProperties();
 
         builder.AppendLine("# Bit.Bsqlite storage backends").AppendLine();
-        builder.AppendLine("The four first-party backends, each with the capabilities its provider type really declares - what selection, ")
+        builder.AppendLine("The five first-party backends, each with the capabilities its provider type really declares - what selection, ")
                .AppendLine("the SQL guards and the migrator act on. Call `GetBsqliteStorageProviders(provider: \"...\")` for one of them in full, ")
-               .AppendLine("with its namespace, its modules and what each capability means. All four ship in the `Bit.Bsqlite` package.")
+               .AppendLine("with its namespace, its modules and what each capability means. All five ship in the `Bit.Bsqlite` package: four ")
+               .AppendLine("serve the browser, and `file-system` - registered and selected automatically - serves Blazor Hybrid apps.")
                .AppendLine();
 
         builder.Append("| Name | Namespace |");
@@ -162,9 +168,11 @@ public static class BsqliteStorageCatalog
 
         builder.AppendLine().AppendLine("## Modules").AppendLine();
 
-        builder.AppendLine(provider.VfsModule is null
-            ? "- VFS: none - the storage is the engine's own memory, so there is no JavaScript to load."
-            : $"- VFS module: `{provider.VfsModule}`{(provider.VfsName is null ? null : $" (registers the `{provider.VfsName}` VFS)")}");
+        builder.AppendLine(provider.VfsModule is not null
+            ? $"- VFS module: `{provider.VfsModule}`{(provider.VfsName is null ? null : $" (registers the `{provider.VfsName}` VFS)")}"
+            : provider.Name == BsqliteFileSystemStorageProvider.ProviderName
+                ? "- VFS: none - the database is a file on the device, opened in-process by the native SQLite engine, so it persists and there is no JavaScript to load."
+                : "- VFS: none - the storage is the engine's own memory, so there is no JavaScript to load.");
 
         if (provider.AdminModule is not null) builder.AppendLine($"- Probe and admin module, imported on the main thread: `{provider.AdminModule}`");
 

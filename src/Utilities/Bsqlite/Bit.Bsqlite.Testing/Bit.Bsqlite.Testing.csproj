@@ -6,7 +6,7 @@
         <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
         <RootNamespace>Bit.Bsqlite</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
-        <Description>Test support for bit Bsqlite: an in-process IBsqliteTransport backed by Microsoft.Data.Sqlite, so the stack can be unit-tested on desktop .NET without a browser, and the MSTest conformance kit every storage provider must pass - inherit its test classes in your provider's test project and hand them your provider.</Description>
+        <Description>Test support for bit Bsqlite: an in-process IBsqliteTransport backed by Microsoft.Data.Sqlite - the native transport Blazor Hybrid apps run on, recording what it executes - so the stack can be unit-tested on desktop .NET without a browser, and the MSTest conformance kit every storage provider must pass - inherit its test classes in your provider's test project and hand them your provider.</Description>
         <PackageDescription>$(Description)</PackageDescription>
         <PackageTags>Bit;Bsqlite;SQLite;EF Core;Testing;MSTest;Conformance</PackageTags>
     </PropertyGroup>
@@ -16,15 +16,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- The full engine, not Sqlite.Core: these run on desktop .NET, where the bundled e_sqlite3 is what
-             executes the SQL the in-process transport is handed. Same floating ranges as Bit.Bsqlite's EF Core
-             references, so a test project resolves the provider version its application uses. -->
-        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.Data.Sqlite" Version="[10.0.0,11.0.0)" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.Data.Sqlite" Version="[11.0.0-rc.1.26425.128,12.0.0)" />
-
-        <!-- Lifted to match the SQLitePCLRaw.core Bit.Bsqlite compiles against: a native provider from an older
-             bundle cannot implement the newer core's ISQLite3Provider, and the in-process transport snapshots the
-             database through raw.sqlite3_serialize, which the older ones do not expose. -->
+        <!-- The native engine the in-process transport runs on - Bit.Bsqlite's native transport, which leaves the engine
+             to the app, as a Blazor Hybrid app brings it. These run on desktop .NET, where the bundled e_sqlite3 is
+             what executes the SQL. Lifted to match the SQLitePCLRaw.core Bit.Bsqlite compiles against: a native
+             provider from an older bundle cannot implement the newer core's ISQLite3Provider, and the transport
+             snapshots the database through raw.sqlite3_serialize, which the older ones do not expose. -->
         <PackageReference Condition="'$(TargetFramework)' != 'net11.0'" Include="SQLitePCLRaw.bundle_e_sqlite3" Version="[2.1.13,3.0.0)" />
         <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="SQLitePCLRaw.bundle_e_sqlite3" Version="[3.0.5,4.0.0)" />
 

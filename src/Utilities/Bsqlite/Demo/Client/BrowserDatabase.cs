@@ -62,6 +62,14 @@ public sealed class BrowserDatabase(
         => contexts.CreateDbContextAsync(cancellationToken);
 
     /// <summary>
+    /// Whether the data can be moved between the two backends. A non-persistent backend keeps the
+    /// database in the worker's own heap, where its admin API cannot reach: a move onto it would delete
+    /// the source and open an empty database, and a move off it would have nothing to copy.
+    /// </summary>
+    public static bool CanMoveBetween(IBsqliteStorageProvider? source, IBsqliteStorageProvider target)
+        => source is null || (source.Capabilities.IsPersistent && target.Capabilities.IsPersistent);
+
+    /// <summary>
     /// Moves or recreates <see cref="DatabaseName"/> on <paramref name="targetProviderName"/>.
     /// </summary>
     public async Task SwitchStorageAsync(
@@ -75,7 +83,14 @@ public sealed class BrowserDatabase(
             string.Equals(p.Name, targetProviderName, StringComparison.OrdinalIgnoreCase))
             ?? throw new InvalidOperationException($"No registered provider named '{targetProviderName}'.");
 
-        var source = Resolution?.Provider ?? await ProviderFromBindingAsync(cancellationToken);
+        var source = Resolution?.Provider ?? await BoundProviderAsync(cancellationToken);
+
+        if (mode is StorageSwitchMode.Migrate && !CanMoveBetween(source, target))
+        {
+            throw new InvalidOperationException(
+                $"The data cannot move between {source!.Name} and {target.Name}: a database on a "
+                + "non-persistent backend lives in the worker's memory, out of reach of the copy. Start empty instead.");
+        }
 
         await Database.WhileClosedAsync(async ct =>
         {
@@ -97,10 +112,12 @@ public sealed class BrowserDatabase(
     }
 
     /// <summary>
-    /// Tears the worker down so admin import/delete can replace the file without racing an open
-    /// connection. The next <see cref="OpenContextAsync"/> opens a fresh session.
+    /// Runs <paramref name="work"/> with the worker torn down, so admin import/delete can replace the
+    /// file without racing an open connection - or a page reopening it halfway through - then reopens
+    /// if it was open.
     /// </summary>
-    public Task CloseSessionAsync() => Database.CloseAsync();
+    public Task WhileClosedAsync(Func<CancellationToken, Task> work, CancellationToken cancellationToken = default)
+        => Database.WhileClosedAsync(work, cancellationToken);
 
     public async Task<object?> ExecuteScalarAsync(
         string sql,
@@ -122,8 +139,12 @@ public sealed class BrowserDatabase(
         await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
-    private async Task<IBsqliteStorageProvider?> ProviderFromBindingAsync(
-        CancellationToken cancellationToken)
+    /// <summary>
+    /// The provider the sticky binding names, whether or not a session is open - which is how a
+    /// database that no longer opens can still be found, and deleted.
+    /// </summary>
+    public async Task<IBsqliteStorageProvider?> BoundProviderAsync(
+        CancellationToken cancellationToken = default)
     {
         var name = await Bindings.GetProviderNameAsync(DatabaseName, cancellationToken);
         return name is null

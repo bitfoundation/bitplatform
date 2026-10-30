@@ -1,5 +1,7 @@
 ﻿using Bit.Bsqlite.Data;
 using Bit.Bsqlite.Testing;
+using Microsoft.Data.Sqlite;
+using SQLitePCL;
 
 namespace Bit.Bsqlite.Interop.Tests;
 
@@ -132,6 +134,99 @@ public sealed class BsqliteTransactionTests
     }
 
     /// <summary>
+    /// A COMMIT that fails busy - another window or process reading the file - leaves the transaction
+    /// open in the engine. Unless it is ended there, the next context's writes run inside it,
+    /// unreported, and are lost when the session closes.
+    /// </summary>
+    [TestMethod]
+    public async Task Commit_ThatFails_LeavesNoTransactionOpenInTheEngine()
+    {
+        await using var inner = new BsqliteInProcessTransport();
+        await using var transport = new BusyCommitTransport(inner);
+        await using var connection = new BsqliteConnection(transport, "tx.db");
+        await connection.OpenAsync(Ct);
+        await ExecuteAsync(connection, "CREATE TABLE product (id INTEGER PRIMARY KEY, name TEXT)");
+
+        var transaction = await connection.BeginTransactionAsync(Ct);
+        await ExecuteAsync(connection, "INSERT INTO product (name) VALUES ('Blocked')");
+        await Assert.ThrowsAsync<SqliteException>(() => transaction.CommitAsync(Ct));
+        await transaction.DisposeAsync();
+
+        Assert.AreEqual(1, raw.sqlite3_get_autocommit(inner.Connection!.Handle!));
+
+        await ExecuteAsync(connection, "INSERT INTO product (name) VALUES ('Kept')");
+        Assert.AreEqual(1L, await CountAsync(connection));
+        Assert.AreEqual(1, raw.sqlite3_get_autocommit(inner.Connection!.Handle!));
+    }
+
+    /// <summary>
+    /// Two connections over one transport are one SQLite connection in the engine, so a statement
+    /// from the second would run inside the first one's transaction - and roll back with it. It
+    /// waits for the transaction to end instead, as it would for a second connection's file lock.
+    /// </summary>
+    [TestMethod]
+    public async Task AnotherConnectionsCommand_WaitsForTheTransaction_AndOutlivesItsRollback()
+    {
+        await using var transport = new BsqliteInProcessTransport();
+        await using var first = new BsqliteConnection(transport, "tx.db");
+        await using var second = new BsqliteConnection(transport, "tx.db");
+        await first.OpenAsync(Ct);
+        await second.OpenAsync(Ct);
+        await ExecuteAsync(first, "CREATE TABLE product (id INTEGER PRIMARY KEY, name TEXT)");
+
+        await using (var transaction = await first.BeginTransactionAsync(Ct))
+        {
+            await ExecuteAsync(first, "INSERT INTO product (name) VALUES ('Ghost')");
+
+            var insert = ExecuteAsync(second, "INSERT INTO product (name) VALUES ('Kept')");
+            await Task.Delay(100, Ct);
+            Assert.IsFalse(insert.IsCompleted);
+
+            await transaction.RollbackAsync(Ct);
+            await insert;
+        }
+
+        Assert.AreEqual(1L, await CountAsync(first));
+    }
+
+    [TestMethod]
+    public async Task ABeginOnTheSameConnection_FromOtherCode_WaitsForTheTransaction()
+    {
+        await using var transport = new BsqliteInProcessTransport();
+        await using var connection = new BsqliteConnection(transport, "tx.db");
+        await connection.OpenAsync(Ct);
+
+        // Begun in a flow of its own - another context sharing the session's connection, say - so
+        // this method is not the code holding it, which would be refused at once instead.
+        var transaction = await BeginInItsOwnFlowAsync(connection);
+
+        var begin = connection.BeginTransactionAsync(Ct).AsTask();
+        await Task.Delay(100, Ct);
+        Assert.IsFalse(begin.IsCompleted);
+
+        await transaction.CommitAsync(Ct);
+        await using var next = await begin;
+        await next.CommitAsync(Ct);
+    }
+
+    [TestMethod]
+    public async Task ABeginOnTheSameConnection_FromTheCodeHoldingTheTransaction_IsRefused()
+    {
+        await using var transport = new BsqliteInProcessTransport();
+        await using var connection = new BsqliteConnection(transport, "tx.db");
+        await connection.OpenAsync(Ct);
+
+        await using var transaction = await connection.BeginTransactionAsync(Ct);
+
+        // Including from work it started: waiting there would wait on the transaction's own holder.
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(
+            () => Task.Run(async () => await connection.BeginTransactionAsync(Ct), Ct));
+    }
+
+    private async Task<System.Data.Common.DbTransaction> BeginInItsOwnFlowAsync(BsqliteConnection connection)
+        => await connection.BeginTransactionAsync(Ct);
+
+    /// <summary>
     /// Runs every batch, then - for the statement it watches - cancels the caller's token and stops
     /// waiting on it, which is what Blazor interop does when a token fires after the call went out.
     /// </summary>
@@ -160,6 +255,28 @@ public sealed class BsqliteTransactionTests
 
             return results;
         }
+
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+
+    /// <summary>
+    /// Fails every COMMIT busy without running it, so the engine stays in the transaction - what SQLite
+    /// does when a COMMIT cannot get the file to itself.
+    /// </summary>
+    private sealed class BusyCommitTransport(BsqliteInProcessTransport inner) : IBsqliteTransport
+    {
+        public Task OpenAsync(string databaseName, CancellationToken cancellationToken = default)
+            => inner.OpenAsync(databaseName, cancellationToken);
+
+        public Task CloseAsync(CancellationToken cancellationToken = default)
+            => inner.CloseAsync(cancellationToken);
+
+        public Task<IReadOnlyList<BsqliteCommandResult>> ExecuteAsync(
+            IReadOnlyList<BsqliteCommandRequest> batch,
+            CancellationToken cancellationToken = default)
+            => batch[0].CommandText == "COMMIT"
+                ? throw new SqliteException("database is locked", raw.SQLITE_BUSY)
+                : inner.ExecuteAsync(batch, cancellationToken);
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }

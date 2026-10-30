@@ -220,7 +220,7 @@
                     <td class="bq-nowrap"><span class="bq-storage-dot" data-name="opfs" aria-hidden="true"></span> opfs</td>
                     <td>Storage.Opfs</td>
                     <td><span class="bb-badge bb-badge-success">yes</span></td>
-                    <td>yes</td>
+                    <td>no</td>
                     <td>The default. Real files, the synchronous engine build, no COOP/COEP headers needed.</td>
                 </tr>
                 <tr>
@@ -234,19 +234,24 @@
                     <td class="bq-nowrap"><span class="bq-storage-dot" data-name="cache-storage" aria-hidden="true"></span> cache-storage</td>
                     <td>Storage.CacheStorage</td>
                     <td><span class="bb-badge bb-badge-success">yes</span></td>
-                    <td>no</td>
+                    <td>yes</td>
                     <td>The migration path off Bit.Besql. Persistence cost scales with database size.</td>
                 </tr>
                 <tr>
                     <td class="bq-nowrap"><span class="bq-storage-dot" data-name="in-memory" aria-hidden="true"></span> in-memory</td>
                     <td>Storage.InMemory</td>
                     <td><span class="bb-badge bq-badge-neutral">no</span></td>
-                    <td>yes</td>
+                    <td>no</td>
                     <td>Trying the engine, or tests. Gone when the tab closes - and only with an explicit opt-in.</td>
                 </tr>
                 </tbody>
             </table>
         </div>
+        <p class="bb-section-sub">
+            In a Blazor Hybrid app - MAUI, WPF, Windows Forms - the same registration keeps the database in a fifth,
+            <code>file-system</code> (<code>Storage.FileSystem</code>): a SQLite file on the device, opened in-process by the
+            native SQLite the package brings, and selected for it automatically.
+        </p>
     </section>
 
     @* ============================== Comparison ============================== *@
@@ -321,9 +326,11 @@
             <details>
                 <summary>Which hosting models does it run on?</summary>
                 <p>
-                    Blazor WebAssembly, and a Blazor Web App on Interactive WebAssembly - or Interactive Auto once the page
-                    runs on WebAssembly - on .NET 10 and 11. Prerendered pages render on the server and open their
-                    database once interactive. Interactive Server is not supported: the engine runs in the user's tab.
+                    Blazor WebAssembly, a Blazor Web App on Interactive WebAssembly - or Interactive Auto once the page
+                    runs on WebAssembly - and Blazor Hybrid apps on MAUI, WPF and Windows Forms, on .NET 10 and 11.
+                    Prerendered pages render on the server and open their database once interactive. A Hybrid app keeps
+                    its database in a file on the device, with the same registration. Interactive Server is not
+                    supported: a user's database lives in their browser, not on the server.
                 </p>
             </details>
             <details>
@@ -400,12 +407,20 @@
     private string _persist = "opening…";
     private string? _error;
 
-    private async Task LoadAsync()
+    private async Task LoadAsync(CancellationToken cancellationToken)
     {
         _error = null;
         try
         {
-            _context = await Database.OpenContextAsync();
+            var context = await Database.OpenContextAsync();
+            if (cancellationToken.IsCancellationRequested)
+            {
+                // Torn down while the context opened, so the teardown had nothing to dispose yet.
+                await context.DisposeAsync();
+                return;
+            }
+
+            _context = context;
             var persistent = Database.Resolution?.Provider.Capabilities.IsPersistent == true;
             _persist = persistent ? "persists across reload" : "gone when this tab closes";
             _products = await _context.Products.CountAsync();
@@ -417,6 +432,11 @@
             _live.Changed += OnChanged;
             _liveRows = await _live.RefreshAsync();
             _backend = Database.Resolution?.Provider.Name;
+        }
+        catch (Exception) when (cancellationToken.IsCancellationRequested)
+        {
+            // Torn down while it loaded - the reader left, or the session is closing - which disposed what
+            // the load was running on. There is no page left to show that on.
         }
         catch (Exception ex)
         {

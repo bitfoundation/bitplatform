@@ -24,8 +24,8 @@ public static class McpPrompts
     public static string AddBsqliteToApp(
         // The values go into the prompt's own argument schema, which is what a client offers as
         // completions - so picking the hosting model is a choice from a list rather than a spelling test.
-        [AllowedValues("unknown", "standalone-wasm", "wasm", "auto", "server")]
-        [Description("How the app is hosted: standalone-wasm, wasm (Blazor Web App on InteractiveWebAssembly), auto or server. Pass 'unknown' to have it determined from the project first.")] string hosting = "unknown")
+        [AllowedValues("unknown", "standalone-wasm", "wasm", "auto", "server", "hybrid")]
+        [Description("How the app is hosted: standalone-wasm, wasm (Blazor Web App on InteractiveWebAssembly), auto, server or hybrid (Blazor Hybrid on MAUI, WPF or Windows Forms). Pass 'unknown' to have it determined from the project first.")] string hosting = "unknown")
     {
         return $"""
             Add Bit.Bsqlite to this Blazor app. Its hosting model is: {hosting}.
@@ -34,12 +34,16 @@ public static class McpPrompts
 
             1. If the hosting model is 'unknown', determine it from the project first: look for
                WebAssemblyHostBuilder (standalone-wasm), AddInteractiveWebAssemblyComponents and a .Client project (wasm),
-               both of those plus AddInteractiveServerComponents (auto), or only AddInteractiveServerComponents (server).
+               both of those plus AddInteractiveServerComponents (auto), only AddInteractiveServerComponents (server), or
+               AddMauiBlazorWebView, AddWpfBlazorWebView or AddWindowsFormsBlazorWebView (hybrid).
             2. Call `GetBsqliteSetupGuide` with that scenario and follow it. For 'server' it explains why the pages that use
                the database have to run on WebAssembly - do not try to make Interactive Server work.
             3. Call `GetBsqliteStorageProviders` and pick the backends: OPFS first and IndexedDB as its fallback is the
                default answer; in-memory only with `AllowNonPersistentFallback()`. Then call `PlanBsqliteStorageSelection`
                with that preference order - once as is and once with 'opfs' unavailable - and check where the database lands.
+               For 'hybrid', do not plan the native app: the host registers and selects the `file-system` backend itself, so
+               its databases are files on the device whatever the browser preference says, and `PlanBsqliteStorageSelection`
+               models the browser only. Plan only a WebAssembly client the same registration also serves.
             4. In a Blazor Web App, register the services in BOTH the client and the server project (one shared extension
                method), and open the database only once `RendererInfo.IsInteractive` is true. Missing either is the most
                common mistake: it fails during prerendering, not at compile time.
@@ -72,7 +76,9 @@ public static class McpPrompts
                the new version for the first time) the database must open on 'cache-storage'. Any other backend ranked
                first gives every returning user an empty database there, silently.
             4. Remove Bit.Besql's script tag and its `ConfigureSqliteJournalMode()` calls, move `dbContextInitializer` work
-               to `OnFirstUse` (migrations already run by default) and a compiled model to `options.Configure`.
+               to `OnFirstUse` (migrations already run by default) and a compiled model to `options.Configure`. If the
+               project lazy loads `System.Private.Xml.wasm`, keep it and load it in `BeforeFirstOpen` on the builder:
+               opening any Bsqlite connection needs it.
             5. Replace every synchronous EF call with its async overload: they worked under Besql and throw
                `BsqliteSynchronousApiNotSupportedException` under Bsqlite. Search the code for `SaveChanges()`,
                `.ToList()`, `.First(`, `.Single(`, `.Count()` and `CreateDbContext()`.

@@ -4,6 +4,7 @@ using Bit.Bsqlite.Storage.CacheStorage;
 using Bit.Bsqlite.Storage.InMemory;
 using Bit.Bsqlite.Storage.IndexedDb;
 using Bit.Bsqlite.Storage.Opfs;
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -43,6 +44,10 @@ public static class IServiceCollectionExtensions
                 .Fallback(BsqliteCacheStorageProvider.ProviderName)
                 .Fallback(BsqliteInMemoryStorageProvider.ProviderName)
                 .AllowNonPersistentFallback())
+            // System.Private.Xml.wasm is lazy loaded (see the project file): opening a database needs it, so it
+            // downloads right before the first open instead of with the app. Only the browser ever opens one.
+            .BeforeFirstOpen((sp, _) => sp.GetRequiredService<LazyAssemblyLoader>()
+                .LoadAssembliesAsync(["System.Private.Xml.wasm"]))
             .AddDatabase(BrowserDatabase.DatabaseName));
 
         // Contexts come from a factory bound to that database. Migrations run once per session, then the

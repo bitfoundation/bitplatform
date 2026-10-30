@@ -220,5 +220,38 @@ public sealed class OpfsTests : BsqliteTest
         }
     }
 
+    /// <summary>
+    /// A tab closed while it held the file. Firefox lets go of a closed tab's Web Lock at once but of the sync
+    /// access handle its worker held only later, so the tab left behind can win the lock and still find the
+    /// file taken: its next statement has to wait that out rather than fail with NoModificationAllowedError.
+    /// </summary>
+    [TestMethod]
+    public async Task A_tab_closed_while_it_held_the_file_does_not_lock_the_others_out()
+    {
+        await SkipUnlessOpfsAsync(Page);
+
+        var databaseName = UniqueName("opfs-closed");
+        var context = await NewContextAsync();
+        var staying = await context.NewPageAsync();
+        var closing = await context.NewPageAsync();
+
+        try
+        {
+            await OpenOpfsAsync(staying, databaseName);
+            await ExecAsync(staying, "CREATE TABLE product (id INTEGER PRIMARY KEY, name TEXT)");
+
+            // The closing tab takes the file over - its write needs the access handle - and goes away holding it.
+            await OpenOpfsAsync(closing, databaseName);
+            await ExecAsync(closing, "INSERT INTO product (name) VALUES ('Written before closing')");
+            await closing.CloseAsync();
+
+            AssertJson.AreEqual("""[["Written before closing"]]""", (await QueryAsync(staying, "SELECT name FROM product")).Rows);
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
     private static Task<HostVersion> OpenOpfsAsync(IPage page, string databaseName) => OpenHostAsync(page, Storages.Opfs(databaseName));
 }

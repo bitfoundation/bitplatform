@@ -37,10 +37,6 @@
         {
             "name": "bit Templates",
             "url": "/templates"
-        },
-        {
-            "name": "bit Besql",
-            "url": "/besql"
         }
     ]
 }

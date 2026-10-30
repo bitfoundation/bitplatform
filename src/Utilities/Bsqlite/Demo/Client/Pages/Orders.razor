@@ -209,18 +209,31 @@
         _ => "bb-badge",
     };
 
-    private async Task LoadAsync()
+    private async Task LoadAsync(CancellationToken cancellationToken)
     {
         _error = null;
         try
         {
-            _context = await Database.OpenContextAsync();
+            var context = await Database.OpenContextAsync();
+            if (cancellationToken.IsCancellationRequested)
+            {
+                // Torn down while the context opened, so the teardown had nothing to dispose yet.
+                await context.DisposeAsync();
+                return;
+            }
+
+            _context = context;
             await RefreshAsync();
+        }
+        catch (Exception) when (cancellationToken.IsCancellationRequested)
+        {
+            // Torn down while it loaded - the reader left, or the session is closing - which disposed what
+            // the load was running on. There is no page left to show that on.
         }
         catch (Exception ex)
         {
             SampleLog.Exception(ex);
-            _error = ex.Message;
+            _error = SampleFormat.Error(ex);
         }
     }
 
@@ -252,10 +265,10 @@
             .ToListAsync();
         _newProductId = _products.FirstOrDefault()?.Id ?? 0;
         var id = keepId ?? _selected?.Id;
-        _selected = id is int found ? _orders.FirstOrDefault(o => o.Id == found) : null;
-        if (_selected is not null)
+        _selected = null;
+        if (id is int found && _orders.FirstOrDefault(o => o.Id == found) is { } order)
         {
-            _status = _selected.Status;
+            Select(order);
         }
     }
 
@@ -273,9 +286,25 @@
         _status = OrderStatus.Draft;
     }
 
+    /// <summary>
+    /// The editor works on a copy, as Catalog's and Customers' do: bound to the row itself, an edit would
+    /// show in the grid before it was saved, and stay there when the reader moved on without saving.
+    /// The lines are shared - they are changed through their own buttons, never through the form.
+    /// </summary>
     private void Select(SalesOrder order)
     {
-        _selected = order;
+        _selected = new SalesOrder
+        {
+            Id = order.Id,
+            Number = order.Number,
+            CustomerId = order.CustomerId,
+            Customer = order.Customer,
+            Status = order.Status,
+            OrderedAt = order.OrderedAt,
+            ShipBy = order.ShipBy,
+            Notes = order.Notes,
+            Lines = order.Lines,
+        };
         _status = order.Status;
     }
 
@@ -312,7 +341,7 @@
         catch (Exception ex)
         {
             SampleLog.Exception(ex);
-            _error = ex.Message;
+            _error = SampleFormat.Error(ex);
             _context.ChangeTracker.Clear();
         }
         finally
@@ -352,7 +381,7 @@
         catch (Exception ex)
         {
             SampleLog.Exception(ex);
-            _error = ex.Message;
+            _error = SampleFormat.Error(ex);
             _context.ChangeTracker.Clear();
         }
         finally
@@ -381,7 +410,7 @@
         catch (Exception ex)
         {
             SampleLog.Exception(ex);
-            _error = ex.Message;
+            _error = SampleFormat.Error(ex);
             _context.ChangeTracker.Clear();
         }
         finally
@@ -411,7 +440,7 @@
         catch (Exception ex)
         {
             SampleLog.Exception(ex);
-            _error = ex.Message;
+            _error = SampleFormat.Error(ex);
             _context.ChangeTracker.Clear();
         }
         finally

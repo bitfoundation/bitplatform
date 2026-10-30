@@ -17,7 +17,7 @@ public partial class CodebaseMemoryCli
     /// </summary>
     internal static readonly string[] IndexedPaths =
     [
-        "src/Besql",
+        "src/Besql", // retired, replaced by Bit.Bsqlite; still indexed for the releases that have it
         "src/ResxTranslator",
         "src/Templates/Boilerplate/Bit.Boilerplate",
         "src/Toolings/BlazorES2019",

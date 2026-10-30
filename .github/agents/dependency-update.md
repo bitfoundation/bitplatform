@@ -72,9 +72,8 @@ raises that minimum for no gain.
 <PackageReference Include="Microsoft.JSInterop" Version="10.0.0" Condition="'$(TargetFramework)' == 'net10.0'" />
 ```
 
-Applies to `Bit.Besql` (JSInterop, Components.WebAssembly, EF Core Sqlite), `Bit.BlazorUI` /
-`.Assets` / `.Extras` / `.Legacy` / `.AI`, `Bit.Bswup` and `Bit.Butil` (Components.Web), and the
-`BlazorEmpty` template.
+Applies to `Bit.BlazorUI` / `.Assets` / `.Extras` / `.Legacy` / `.AI`, `Bit.Bswup` and `Bit.Butil`
+(Components.Web), and the `BlazorEmpty` template.
 
 The rule keys on the `.0` in a *shipped library*. A TFM-conditioned pin at a concrete patch —
 `Bit.BlazorUI.Tests` on Components.WebView `10.0.x` — is not a floor: nothing

@@ -1,0 +1,50 @@
+﻿<Project>
+
+    <!-- A Blazor Hybrid app brings the native SQLite engine (SQLitePCLRaw.bundle_e_sqlite3) Bit.Bsqlite opens its
+         databases with in-process - and when it does so from a Razor class library it shares with a WebAssembly client,
+         that client gets the bundle too. In the browser the engine is wa-sqlite in a worker instead, and nothing of the
+         bundle is wanted there:
+
+         - its e_sqlite3.a, a NativeFileReference for browser-wasm, would turn on WebAssembly native relinking
+           (WasmBuildNative) wherever the wasm-tools workload is installed, warn where it is not, and be published
+           under _framework besides;
+         - its provider assembly declares P/Invokes into e_sqlite3, which a natively relinked runtime - AOT, or
+           InvariantGlobalization - would bind to symbols that are not there and abort on the first call, which
+           Microsoft.Data.Sqlite makes on its own when it finds the bundle.
+
+         So a browser build drops the bundle's native library and its two assemblies, and runs exactly as it would
+         without the package's Blazor Hybrid support - unless the app set WasmBuildNative itself, as an app that still
+         runs SQLite through Microsoft.Data.Sqlite in the browser (Bit.Besql, say) does.
+
+         In targets rather than at evaluation, so they see the items whatever order the packages' targets were imported
+         in: the native reference before the WebAssembly SDK reads it, and the copy-local files once NuGet has resolved
+         them, for build and for publish. -->
+    <Target Name="_BitBsqliteRemoveBrowserNativeSqlite"
+            BeforeTargets="_CheckBrowserWorkloadNeededButNotAvailable;_SetWasmBuildNativeDefaults;Build"
+            Condition=" '$(RuntimeIdentifier)' == 'browser-wasm' And '$(WasmBuildNative)' != 'true' ">
+        <ItemGroup>
+            <NativeFileReference Remove="@(NativeFileReference)" Condition=" '%(Filename)%(Extension)' == 'e_sqlite3.a' " />
+        </ItemGroup>
+    </Target>
+
+    <!-- A target runs once per build, so each item list is filtered after the target that produces it. -->
+    <Target Name="_BitBsqliteRemoveBrowserNativeSqlitePackageAssets" AfterTargets="ResolvePackageAssets" Condition=" '$(RuntimeIdentifier)' == 'browser-wasm' And '$(WasmBuildNative)' != 'true' ">
+        <ItemGroup>
+            <NativeCopyLocalItems Remove="@(NativeCopyLocalItems)" Condition=" '%(Filename)%(Extension)' == 'e_sqlite3.a' Or '%(Filename)%(Extension)' == 'SQLitePCLRaw.batteries_v2.dll' Or '%(Filename)%(Extension)' == 'SQLitePCLRaw.provider.e_sqlite3.dll' " />
+            <RuntimeCopyLocalItems Remove="@(RuntimeCopyLocalItems)" Condition=" '%(Filename)%(Extension)' == 'e_sqlite3.a' Or '%(Filename)%(Extension)' == 'SQLitePCLRaw.batteries_v2.dll' Or '%(Filename)%(Extension)' == 'SQLitePCLRaw.provider.e_sqlite3.dll' " />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="_BitBsqliteRemoveBrowserNativeSqliteCopyLocal" AfterTargets="ResolveLockFileCopyLocalFiles" Condition=" '$(RuntimeIdentifier)' == 'browser-wasm' And '$(WasmBuildNative)' != 'true' ">
+        <ItemGroup>
+            <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition=" '%(Filename)%(Extension)' == 'e_sqlite3.a' Or '%(Filename)%(Extension)' == 'SQLitePCLRaw.batteries_v2.dll' Or '%(Filename)%(Extension)' == 'SQLitePCLRaw.provider.e_sqlite3.dll' " />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="_BitBsqliteRemoveBrowserNativeSqlitePublishAssets" AfterTargets="_ComputeResolvedCopyLocalPublishAssets" Condition=" '$(RuntimeIdentifier)' == 'browser-wasm' And '$(WasmBuildNative)' != 'true' ">
+        <ItemGroup>
+            <_ResolvedCopyLocalPublishAssets Remove="@(_ResolvedCopyLocalPublishAssets)" Condition=" '%(Filename)%(Extension)' == 'e_sqlite3.a' Or '%(Filename)%(Extension)' == 'SQLitePCLRaw.batteries_v2.dll' Or '%(Filename)%(Extension)' == 'SQLitePCLRaw.provider.e_sqlite3.dll' " />
+        </ItemGroup>
+    </Target>
+
+</Project>

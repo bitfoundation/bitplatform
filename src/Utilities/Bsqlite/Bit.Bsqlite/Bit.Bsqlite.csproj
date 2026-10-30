@@ -8,9 +8,9 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <!-- Static assets only; no Razor components, so no need to scan for them. -->
         <AddRazorSupportForMvc>false</AddRazorSupportForMvc>
-        <Description>bit Bsqlite: SQLite in the browser for Blazor, with EF Core on top. The ADO.NET surface with live queries, the worker transport (storage selection, engine-build negotiation, binary framing, batching, lifecycle), the storage provider contract, the EF Core integration (UseBitBsqlite() on the stock SQLite provider), the storage backends - OPFS (OPFSCoopSyncVFS), IndexedDB (IDBBatchAtomicVFS), Cache Storage (which imports a database Bit.Besql left behind) and in-memory - and the browser half: worker host, wa-sqlite engine builds and VFSes, each downloaded only when the backend that needs it is selected.</Description>
+        <Description>bit Bsqlite: SQLite in the browser - and on the device in Blazor Hybrid - for Blazor, with EF Core on top. The ADO.NET surface with live queries, the worker transport (storage selection, engine-build negotiation, binary framing, batching, lifecycle), the storage provider contract, the EF Core integration (UseBitBsqlite() on the stock SQLite provider), the storage backends - OPFS (OPFSCoopSyncVFS), IndexedDB (IDBBatchAtomicVFS), Cache Storage (which imports a database Bit.Besql left behind), in-memory, and the file system a Blazor Hybrid app keeps its databases on with the native SQLite engine it brings - and the browser half: worker host, wa-sqlite engine builds and VFSes, each downloaded only when the backend that needs it is selected.</Description>
         <PackageDescription>$(Description)</PackageDescription>
-        <PackageTags>Bit;Bsqlite;Blazor;WebAssembly;SQLite;EF Core;Entity Framework Core;ADO.NET;Offline;Live query;OPFS;Origin private file system;IndexedDB;Cache Storage;Besql;Storage;Migration</PackageTags>
+        <PackageTags>Bit;Bsqlite;Blazor;WebAssembly;Blazor Hybrid;MAUI;SQLite;EF Core;Entity Framework Core;ADO.NET;Offline;Live query;OPFS;Origin private file system;IndexedDB;Cache Storage;Besql;Storage;Migration</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
@@ -24,8 +24,10 @@
         <!-- Floating low-bound version ranges so consumers can pin to any patch release on their TFM;
              the upper bound keeps a major-version package that targets a newer TFM out.
 
-             Sqlite.Core rather than the full Sqlite package: WebAssembly must not pull in a native
-             e_sqlite3. Desktop tests get a real engine through Bit.Bsqlite.Testing's Microsoft.Data.Sqlite. -->
+             Sqlite.Core rather than the full Sqlite package, and no native SQLitePCLRaw bundle either: the browser
+             runs wa-sqlite in the worker, a server never opens a database, and a Blazor Hybrid app brings the engine
+             it opens its files with - SQLitePCLRaw.bundle_e_sqlite3, or the bundle it already uses, such as
+             bundle_e_sqlcipher, which a second bundle would collide with over SQLitePCLRaw.batteries_v2. -->
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="[10.0.0,11.0.0)" />
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.JSInterop" Version="[10.0.0,11.0.0)" />
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.Extensions.Logging.Abstractions" Version="[10.0.0,11.0.0)" />
@@ -45,6 +47,13 @@
              band would pick on its own. -->
         <PackageReference Condition="'$(TargetFramework)' != 'net11.0'" Include="SQLitePCLRaw.core" Version="[2.1.13,3.0.0)" />
         <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="SQLitePCLRaw.core" Version="[3.0.5,4.0.0)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Under buildTransitive/ (what NuGet imports for direct and transitive references alike) and build/ (older
+             tooling that only looks there): keeps the native bundle a Razor class library shared with a Blazor Hybrid
+             app brings out of the WebAssembly client's build. -->
+        <None Include="buildTransitive\Bit.Bsqlite.targets" Pack="true" PackagePath="buildTransitive\;build\" />
     </ItemGroup>
 
     <ItemGroup>

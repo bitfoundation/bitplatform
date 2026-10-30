@@ -60,11 +60,11 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBsqliteSetupGuide), Title = "Setup guide for one scenario", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets the complete wiring for one Bit.Bsqlite scenario, with real code: 'standalone-wasm' (Blazor WebAssembly), 'wasm' (Blazor Web App on InteractiveWebAssembly with prerendering - how this demo is built, with its real files), 'auto' (InteractiveAuto), 'server' (InteractiveServer: not supported, and what to do instead), 'storage' (choosing and adding storage backends), 'move-from-besql' (keeping a Bit.Besql app's data), 'testing' (Bit.Bsqlite.Testing: the in-process transport and the conformance kit) or 'custom-provider' (writing a storage backend). Call this before writing setup code: where the services are registered, when a page may open the database, and which backend is first are the mistakes that compile.")]
+    [Description("Gets the complete wiring for one Bit.Bsqlite scenario, with real code: 'standalone-wasm' (Blazor WebAssembly), 'wasm' (Blazor Web App on InteractiveWebAssembly with prerendering - how this demo is built, with its real files), 'auto' (InteractiveAuto), 'server' (InteractiveServer: not supported, and what to do instead), 'hybrid' (Blazor Hybrid on MAUI, WPF or Windows Forms: the same registration, databases on the device), 'storage' (choosing and adding storage backends), 'move-from-besql' (keeping a Bit.Besql app's data), 'testing' (Bit.Bsqlite.Testing: the in-process transport and the conformance kit) or 'custom-provider' (writing a storage backend). Call this before writing setup code: where the services are registered, when a page may open the database, and which backend is first are the mistakes that compile.")]
     public string GetBsqliteSetupGuide(
         // Declared rather than merely described: the values then sit in the JSON schema itself, where a
         // model cannot pass another one past them.
-        [AllowedValues("standalone-wasm", "wasm", "auto", "server", "storage", "move-from-besql", "testing", "custom-provider")]
+        [AllowedValues("standalone-wasm", "wasm", "auto", "server", "hybrid", "storage", "move-from-besql", "testing", "custom-provider")]
         [Description("The scenario.")] string scenario)
     {
         var guide = BsqliteSetupGuide.Get(scenario);
@@ -135,7 +135,7 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBsqliteStorageProviders), Title = "Storage backends and their capabilities", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets the four first-party storage backends - opfs, indexeddb, cache-storage, in-memory - read out of their provider types: each one's package and namespace, the engine build it needs, whether it persists, the rest of its declared capabilities with what each means, its VFS module, and which statements the library's guards refuse on it (WAL, ATTACH, PRAGMA page_size). Omit the provider for the table of all four. Use it to pick backends and their order; PlanBsqliteStorageSelection then predicts which one a database lands on.")]
+    [Description("Gets the five first-party storage backends - opfs, indexeddb, cache-storage and in-memory in the browser, and file-system, the device files a Blazor Hybrid app gets automatically - read out of their provider types: each one's package and namespace, the engine build it needs, whether it persists, the rest of its declared capabilities with what each means, its VFS module, and which statements the library's guards refuse on it (WAL, ATTACH, PRAGMA page_size). Omit the provider for the table of all five. Use it to pick backends and their order; PlanBsqliteStorageSelection then predicts which one a database lands on.")]
     public string GetBsqliteStorageProviders(
         [Description("The backend's name, e.g. 'opfs' or 'indexeddb' (its provider type, e.g. 'BsqliteOpfsStorageProvider', also works). Omit it for the table of every backend.")] string? provider = null)
     {

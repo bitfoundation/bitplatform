@@ -60,8 +60,10 @@
     </p>
     <CodeBlock Title="A page that is prerendered" Language="csharp" Code="@Snippets.Start.Prerendered" Collapsible="false" />
     <p class="bb-card-desc">
-        Interactive Server is not supported: the engine runs in the user's tab, and EF Core on the server would need a
-        native SQLite of its own.
+        Interactive Server is not supported: a user's database lives in their browser, and Bsqlite will not keep one
+        file on the server for every user. A Blazor Hybrid app - MAUI, WPF, Windows Forms - is supported with the same
+        registration: its database is a SQLite file on the device, on the <code>file-system</code> backend, which is
+        registered and selected for it automatically.
     </p>
 </section>
 
