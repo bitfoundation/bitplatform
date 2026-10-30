@@ -101,6 +101,11 @@ public static class SetupCommand
                 await AdministratorNeeds.EndAsync(cli);
             }
 
+            if (sdkReady && parseResult.GetValue(shared.NoRestore) is false && projectSteps.LacksInitialMigration)
+            {
+                await NewWorkflow.RunProjectStepAsync(steps, context, "migration", "Adding the Initial EF Core migration", projectSteps.MigrationAsync, cancellationToken);
+            }
+
             if (cli.Environment.IsCI is false && IdeLocator.FindVsCode(cli.Environment, cli.Runner) is not null)
             {
                 await NewWorkflow.RunProjectStepAsync(steps, context, "vscode-extensions", "Installing VS Code extensions", projectSteps.VsCodeExtensionsAsync, cancellationToken);

@@ -148,7 +148,11 @@ public sealed partial class NewWorkflow(CliServices cli)
             await RunProjectStepAsync(steps, context, "format", "Formatting the code", projectSteps.FormatAsync, cancellationToken);
         }
 
-        if (sdkReady && request.NoMigration is false)
+        if (sdkReady && request.NoMigration is false && request.NoRestore && selection.Database is not "Other")
+        {
+            steps.Add("migration", StepResult.Skipped("Skipped the initial migration", "bit setup adds it"));
+        }
+        else if (sdkReady && request.NoMigration is false)
         {
             await RunProjectStepAsync(steps, context, "migration", "Adding the Initial EF Core migration", projectSteps.MigrationAsync, cancellationToken);
         }
@@ -490,7 +494,7 @@ public sealed partial class NewWorkflow(CliServices cli)
         if (request.NoBuild is false) stepsList.Add("build");
         if (request.NoBuild is false && request.NoBrowsers is false) stepsList.Add(cli.Environment.IsCI ? "Playwright's browsers" : "Chromium for UI tests");
         if (request.NoFormat is false) stepsList.Add("dotnet format");
-        if (request.NoMigration is false && selection.Database is not "Other") stepsList.Add("initial migration");
+        if (request.NoMigration is false && request.NoRestore is false && selection.Database is not "Other") stepsList.Add("initial migration");
         if (request.GitHubRepo) stepsList.Add("private GitHub repository");
         if (request.NoTrust is false) stepsList.Add("trust for VS Code and AI tools");
         if (ide is IdeLocator.VsCode) stepsList.Add("VS Code extensions");
