@@ -20,7 +20,10 @@ Server circuit it is the other way round: the managed codecs handle every format
 browser codec would send every pixel across the network, and the browser only decodes a file the managed decoder
 rejects, or one whose colours need its colour management: a colour profile other than sRGB, or an AVIF that declares
 wide gamut or HDR colours. The managed codecs are also the fallback that makes prerendering and server-side use work, and that
-writes WebP in a browser whose canvas cannot, such as Safari's: the capabilities report WebP as encodable everywhere.
+writes WebP in a browser whose canvas cannot, such as Safari's. Over a circuit, where that encoder runs on the server, the
+capabilities report WebP as encodable everywhere. In Blazor WebAssembly it would run on the UI thread, many times slower
+than the canvas, so there they report only what the canvas writes and `EncodeWithFallbackAsync` moves on to a format it
+does; asking for WebP explicitly still works.
 
 ## Never assume, always probe
 
@@ -183,7 +186,7 @@ new ImageExportOptions { Format = ImageFormat.WebP, Lossless = true }    // loss
 ```
 
 A browser's canvas writes only lossy WebP, so a lossless export is always made by the managed encoder, wherever it
-runs. WebP cannot hold an image wider or taller than 16383 pixels; encoding one throws `ImageEncodeException`.
+runs; in Blazor WebAssembly that is on the UI thread, which a large photo holds for seconds. WebP cannot hold an image wider or taller than 16383 pixels; encoding one throws `ImageEncodeException`.
 
 ## AVIF
 
@@ -197,7 +200,9 @@ What it does not do:
 
 - **Colour management.** Pixels are converted from YUV with the matrix the file declares, but not from the file's
   primaries or transfer to sRGB, so a Display P3, BT.2020 or HDR (PQ, HLG) image decodes with muted colours. In a
-  browser, and over a Blazor Server circuit, such files go to the browser's decoder, which converts them.
+  browser, and over a Blazor Server circuit, such files go to the browser's decoder, which converts them. The colours
+  are read where the decoder reads them: the `nclx` colour box, or, when there is none or it leaves everything
+  unspecified, the AV1 sequence header.
 - **Layers predicted from one another.** Progressive and layered AVIFs whose upper layers are inter frames decode to
   their full-size base layer, or are refused when that layer is smaller.
 - **Encoding.** AVIF is written only by a browser that can, which few can; always pair it with a fallback.

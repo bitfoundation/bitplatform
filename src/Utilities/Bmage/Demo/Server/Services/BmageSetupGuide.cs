@@ -353,7 +353,7 @@ public static class BmageSetupGuide
         |---|---|
         | Loading from files, drag and drop, clipboard, camera, URLs | Full, once interactive |
         | PNG, JPEG, WebP, AVIF, GIF decode | The browser's codecs, probed at runtime |
-        | WebP encode | Everywhere - the browser's encoder, or Bmage's managed one where the browser has none |
+        | WebP encode | Everywhere - the browser's encoder, or Bmage's managed one where the browser has none, which runs on the UI thread, so the capabilities leave it out and `EncodeWithFallbackAsync` moves on |
         | AVIF encode | Rarely - always with a fallback |
         | Pipelines, drawing, annotations, editor | Full, in C# on the user's device |
         | During prerendering | Managed codecs only, `Environment = Prerendering`, no JS bridge |

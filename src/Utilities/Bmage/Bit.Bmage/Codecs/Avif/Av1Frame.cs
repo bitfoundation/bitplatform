@@ -93,6 +93,10 @@ internal sealed class Av1Frame : IDisposable
         {
             Planes[0] = new Av1Plane(lumaW, lumaH);
             for (var p = 1; p < NumPlanes; p++) Planes[p] = new Av1Plane(lumaW >> SubX, lumaH >> SubY);
+            // Intra block copy is the one tool that reads samples back from this frame. Its vectors are checked to point
+            // at decoded ones, and the pooled planes are cleared as well, so no earlier decode can ever show through.
+            if (hdr.AllowIntrabc)
+                foreach (var plane in Planes) plane.Data.AsSpan(0, plane.Stride * plane.Height).Clear();
         }
         catch
         {

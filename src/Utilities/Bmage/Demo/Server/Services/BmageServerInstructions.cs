@@ -54,7 +54,8 @@ public static class BmageServerInstructions
           event handlers or `OnAfterRenderAsync`, never `OnInitialized(Async)`: there is no browser during prerendering.
         - Dispose every `ImageBuffer` you are handed (`using var`): they are pooled, and large.
         - AVIF is encoded only by browsers: export it with `EncodeWithFallbackAsync`, and never on a server. WebP, lossy
-          or lossless, encodes everywhere.
+          or lossless, encodes everywhere when named; in WebAssembly a fallback list passes it over where the browser
+          cannot write it, as Bmage's own encoder would hold the UI thread.
         - Metadata is removed by default. `MetadataPolicy.Preserve` keeps GPS; use `StripSensitive` to keep camera data.
         - Look up a type with `GetBmageApiDetails` before using it - its types are spread over a dozen namespaces.
         - Choose formats, qualities and size budgets with `RunBmagePipeline`, which measures them on the real engine,

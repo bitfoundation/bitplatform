@@ -1,4 +1,6 @@
-﻿namespace Bit.Bmage.Codecs.WebP;
+﻿using System.Runtime.InteropServices;
+
+namespace Bit.Bmage.Codecs.WebP;
 
 /// <summary>
 /// Decoder for the WebP lossless bitstream (RFC 9649 section 3): prefix-coded ARGB with LZ77 back references, a colour
@@ -31,7 +33,7 @@ internal sealed class Vp8LDecoder
     private readonly Vp8LBitReader _br;
     private readonly CancellationToken _ct;
 
-    private Vp8LDecoder(ReadOnlySpan<byte> data, CancellationToken ct)
+    private Vp8LDecoder(ReadOnlyMemory<byte> data, CancellationToken ct)
     {
         _br = new Vp8LBitReader(data);
         _ct = ct;
@@ -46,10 +48,10 @@ internal sealed class Vp8LDecoder
         return ((int)(bits & 0x3FFF) + 1, (int)((bits >> 14) & 0x3FFF) + 1, ((bits >> 28) & 1) != 0);
     }
 
-    /// <summary>Decodes a complete VP8L chunk payload (signature and header included) into <paramref name="argb"/>.</summary>
-    public static void Decode(ReadOnlySpan<byte> data, int width, int height, Span<uint> argb, CancellationToken ct)
+    /// <summary>Decodes a complete VP8L chunk payload (signature and header included), read in place, into <paramref name="argb"/>.</summary>
+    public static void Decode(ReadOnlyMemory<byte> data, int width, int height, Span<uint> argb, CancellationToken ct)
     {
-        if (ReadHeader(data) is not { } header || header.Width != width || header.Height != height)
+        if (ReadHeader(data.Span) is not { } header || header.Width != width || header.Height != height)
             throw new ImageDecodeException("Invalid WebP lossless header.");
         var decoder = new Vp8LDecoder(data[5..], ct);
         decoder.DecodeImageStream(width, height, argb);
@@ -59,7 +61,7 @@ internal sealed class Vp8LDecoder
     /// Decodes a headerless image stream of known dimensions, as an 'ALPH' chunk stores it, keeping only the green
     /// channel, which is where the alpha values live.
     /// </summary>
-    public static void DecodeAlpha(ReadOnlySpan<byte> data, int width, int height, Span<byte> alpha, CancellationToken ct)
+    public static void DecodeAlpha(ReadOnlyMemory<byte> data, int width, int height, Span<byte> alpha, CancellationToken ct)
     {
         var argb = new uint[(long)width * height];
         new Vp8LDecoder(data, ct).DecodeImageStream(width, height, argb);
@@ -520,26 +522,33 @@ internal sealed class Vp8LBitReader
 {
     private readonly byte[] _data;
     private int _pos;
+    private readonly int _end;
+    private readonly int _length;
     private ulong _buffer;
     private int _bits;
     private long _consumed;
 
-    public Vp8LBitReader(ReadOnlySpan<byte> data)
+    public Vp8LBitReader(ReadOnlyMemory<byte> data)
     {
-        _data = data.ToArray();
+        // The caller's array is read in place; only memory no array backs is copied.
+        var segment = MemoryMarshal.TryGetArray(data, out var array) ? array : new ArraySegment<byte>(data.ToArray());
+        _data = segment.Array!;
+        _pos = segment.Offset;
+        _end = segment.Offset + segment.Count;
+        _length = segment.Count;
         Fill();
     }
 
     /// <summary>True once more bits were read than the data holds; they read as zeros.</summary>
-    public bool IsOverrun => _consumed > (long)_data.Length * 8;
+    public bool IsOverrun => _consumed > (long)_length * 8;
 
-    public long RemainingBits => (long)_data.Length * 8 - _consumed;
+    public long RemainingBits => (long)_length * 8 - _consumed;
 
     private void Fill()
     {
         while (_bits <= 56)
         {
-            var b = _pos < _data.Length ? _data[_pos] : (byte)0;
+            var b = _pos < _end ? _data[_pos] : (byte)0;
             _pos++;
             _buffer |= (ulong)b << _bits;
             _bits += 8;

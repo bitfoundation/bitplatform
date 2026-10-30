@@ -1148,8 +1148,44 @@ internal sealed partial class Av1TileDecoder
         if (mvJoint is 1 or 3) diffCol = ReadMvComponent(mvCtx, 1);
         _mvRow = predRow + diffRow;
         _mvCol = predCol + diffCol;
-        if (Math.Abs(_mvRow) >= 1 << 14 || Math.Abs(_mvCol) >= 1 << 14)
-            throw new ImageDecodeException("Invalid AV1 intra block copy vector.");
+        if (!IsMvValid()) throw new ImageDecodeException("Invalid AV1 intra block copy vector.");
+    }
+
+    /// <summary>
+    /// is_mv_valid for intra block copy: a whole pixel vector to a source inside the tile and in superblocks decoded at
+    /// least INTRABC_DELAY_SB64 ago. Conformance requires it, and it is what keeps the copy from reading samples this
+    /// frame has not written, which in pooled planes would be another image's.
+    /// </summary>
+    private bool IsMvValid()
+    {
+        const int intrabcDelaySb64 = 4;
+        if (Math.Abs(_mvRow) >= 1 << 14 || Math.Abs(_mvCol) >= 1 << 14) return false;
+        if ((_mvRow & 7) != 0 || (_mvCol & 7) != 0) return false;
+        var srcTopEdge = _miRow * 4 + (_mvRow >> 3);
+        var srcLeftEdge = _miCol * 4 + (_mvCol >> 3);
+        var srcBottomEdge = srcTopEdge + _bh4 * 4;
+        var srcRightEdge = srcLeftEdge + _bw4 * 4;
+        if (_hasChroma)
+        {
+            // A chroma block of a sub 8x8 block also covers its neighbour's half.
+            if (_bw4 < 2 && _f.SubX != 0) srcLeftEdge -= 4;
+            if (_bh4 < 2 && _f.SubY != 0) srcTopEdge -= 4;
+        }
+        if (srcTopEdge < _miRowStart * 4 || srcLeftEdge < _miColStart * 4 || srcBottomEdge > _miRowEnd * 4 || srcRightEdge > _miColEnd * 4)
+            return false;
+        var sbH = _sbSize4 * 4;
+        var activeSbRow = _miRow * 4 / sbH;
+        var activeSb64Col = (_miCol * 4) >> 6;
+        var srcSbRow = (srcBottomEdge - 1) / sbH;
+        var srcSb64Col = (srcRightEdge - 1) >> 6;
+        var totalSb64PerRow = ((_miColEnd - _miColStart - 1) >> 4) + 1;
+        var activeSb64 = activeSbRow * totalSb64PerRow + activeSb64Col;
+        var srcSb64 = srcSbRow * totalSb64PerRow + srcSb64Col;
+        if (srcSb64 >= activeSb64 - intrabcDelaySb64) return false;
+        // The wavefront constraint: only the area up and to the left, so hardware can decode superblock rows in parallel.
+        var gradient = 1 + intrabcDelaySb64 + (sbH == 128 ? 1 : 0);
+        var wfOffset = gradient * (activeSbRow - srcSbRow);
+        return srcSbRow <= activeSbRow && srcSb64Col < activeSb64Col - intrabcDelaySb64 + wfOffset;
     }
 
     private int ReadMvComponent(int ctx, int comp)

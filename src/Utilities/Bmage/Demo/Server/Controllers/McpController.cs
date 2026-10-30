@@ -88,7 +88,9 @@ public class McpController : ControllerBase
               `Clone` return buffers you own: `using var`. Buffers you read from a property (`Session.Preview`) are not
               yours. `BmageEditor.LoadImageAsync(buffer)` takes ownership.
             - **AVIF is encoded only by browsers.** Export it with `EncodeWithFallbackAsync([Avif, WebP])`; never on a
-              server, where PNG, JPEG, BMP and WebP encode. WebP, lossy or lossless, works everywhere.
+              server, where PNG, JPEG, BMP and WebP encode. WebP, lossy or lossless, encodes everywhere when named; in
+              WebAssembly a fallback list passes it over where the browser cannot write it, as Bmage's encoder would
+              hold the UI thread.
             - **Privacy is the default.** Export metadata is `Remove` unless you ask; `StripSensitive` keeps camera data
               without GPS; `Preserve` keeps the location. Redact with `RedactionMode.Solid`.
             - **Cap dimensions first.** `.AutoOrient().MaxSize(...)` before adjustments and filters; group adjustments

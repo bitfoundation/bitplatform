@@ -51,12 +51,21 @@ public sealed class WebPDecoder : IImageDecoder
     }
 
     public ValueTask<ImageBuffer> DecodeAsync(ReadOnlyMemory<byte> data, DecodeOptions options, IPixelAllocator allocator, CancellationToken cancellationToken = default)
-        => new(Decode(data.Span, options, allocator, cancellationToken));
+        => new(DecodeCore(data, options, allocator, cancellationToken));
 
     public static ImageBuffer Decode(ReadOnlySpan<byte> data, DecodeOptions? options = null, IPixelAllocator? allocator = null, CancellationToken cancellationToken = default)
     {
+        // The bitstream readers read the file in place, which a span cannot be kept for, so it is copied, once it is
+        // known not to be over the limit.
+        (options ?? DecodeOptions.Default).Limits.ValidateEncodedSize(data.Length);
+        return DecodeCore(data.ToArray(), options, allocator, cancellationToken);
+    }
+
+    private static ImageBuffer DecodeCore(ReadOnlyMemory<byte> file, DecodeOptions? options, IPixelAllocator? allocator, CancellationToken cancellationToken)
+    {
         options ??= DecodeOptions.Default;
         allocator ??= PooledPixelAllocator.Shared;
+        var data = file.Span;
         options.Limits.ValidateEncodedSize(data.Length);
         if (ImageFormats.Detect(data) != ImageFormat.WebP) throw new ImageDecodeException("Invalid WebP: missing RIFF/WEBP header.");
         var chunks = WebPContainer.EnumerateChunks(data);
@@ -72,10 +81,10 @@ public sealed class WebPDecoder : IImageDecoder
             var height = 1 + (header[7] | header[8] << 8 | header[9] << 16);
             options.Limits.Validate(width, height);
             image = (header[0] & AnimationFlag) != 0
-                ? DecodeFirstFrame(data, chunks, width, height, options, allocator, cancellationToken)
-                : DecodeStill(data, chunks, width, height, options, allocator, cancellationToken);
+                ? DecodeFirstFrame(file, chunks, width, height, options, allocator, cancellationToken)
+                : DecodeStill(file, chunks, width, height, options, allocator, cancellationToken);
         }
-        else image = DecodeStill(data, chunks, 0, 0, options, allocator, cancellationToken);
+        else image = DecodeStill(file, chunks, 0, 0, options, allocator, cancellationToken);
 
         try
         {
@@ -105,7 +114,7 @@ public sealed class WebPDecoder : IImageDecoder
     /// Decodes a still image: a lone 'VP8 ' or 'VP8L' chunk, or, in the extended format, the image chunk with the 'ALPH'
     /// chunk before it. <paramref name="canvasWidth"/> is 0 for the simple format, which has no canvas.
     /// </summary>
-    private static ImageBuffer DecodeStill(ReadOnlySpan<byte> data, List<WebPContainer.Chunk> chunks, int canvasWidth, int canvasHeight, DecodeOptions options, IPixelAllocator allocator, CancellationToken ct)
+    private static ImageBuffer DecodeStill(ReadOnlyMemory<byte> data, List<WebPContainer.Chunk> chunks, int canvasWidth, int canvasHeight, DecodeOptions options, IPixelAllocator allocator, CancellationToken ct)
     {
         WebPContainer.Chunk? alpha = null, bitstream = null;
         foreach (var c in chunks)
@@ -116,7 +125,7 @@ public sealed class WebPDecoder : IImageDecoder
         if (bitstream is not { } b) throw new ImageDecodeException("Invalid WebP: no image data.");
         var payload = data.Slice(b.DataOffset, b.DataLength);
         var alphaData = alpha is { } a ? data.Slice(a.DataOffset, a.DataLength) : default;
-        var (width, height) = ReadFrameSize(b.FourCc, payload);
+        var (width, height) = ReadFrameSize(b.FourCc, payload.Span);
         if (canvasWidth != 0 && (width != canvasWidth || height != canvasHeight))
             throw new ImageDecodeException("Invalid WebP: the image size does not match the canvas size.");
         options.Limits.Validate(width, height);
@@ -138,12 +147,12 @@ public sealed class WebPDecoder : IImageDecoder
     /// Decodes the first frame of an animation onto a transparent canvas. Later frames are not decoded: like GIF, an
     /// animated WebP becomes a still of its opening frame.
     /// </summary>
-    private static ImageBuffer DecodeFirstFrame(ReadOnlySpan<byte> data, List<WebPContainer.Chunk> chunks, int canvasWidth, int canvasHeight, DecodeOptions options, IPixelAllocator allocator, CancellationToken ct)
+    private static ImageBuffer DecodeFirstFrame(ReadOnlyMemory<byte> data, List<WebPContainer.Chunk> chunks, int canvasWidth, int canvasHeight, DecodeOptions options, IPixelAllocator allocator, CancellationToken ct)
     {
         WebPContainer.Chunk? frame = null;
         foreach (var c in chunks) if (c.FourCc == "ANMF") { frame = c; break; }
         if (frame is not { } f || f.DataLength < 16) throw new ImageDecodeException("Invalid WebP: animation without frames.");
-        var header = data.Slice(f.DataOffset, 16);
+        var header = data.Span.Slice(f.DataOffset, 16);
         var x = 2 * (header[0] | header[1] << 8 | header[2] << 16);
         var y = 2 * (header[3] | header[4] << 8 | header[5] << 16);
         var frameWidth = 1 + (header[6] | header[7] << 8 | header[8] << 16);
@@ -152,7 +161,7 @@ public sealed class WebPDecoder : IImageDecoder
             throw new ImageDecodeException("Invalid WebP: the first frame lies outside the canvas.");
 
         // The frame's own chunks follow its 16 byte header, laid out like the top level ones.
-        var frameData = data.Slice(f.DataOffset + 16, f.DataLength - 16);
+        var frameData = data.Span.Slice(f.DataOffset + 16, f.DataLength - 16);
         WebPContainer.Chunk? alpha = null, bitstream = null;
         var pos = 0;
         while (pos + 8 <= frameData.Length)
@@ -167,7 +176,7 @@ public sealed class WebPDecoder : IImageDecoder
         }
         if (bitstream is not { } b) throw new ImageDecodeException("Invalid WebP: the first frame has no image data.");
         var payload = data.Slice(b.DataOffset, b.DataLength);
-        var (width, height) = ReadFrameSize(b.FourCc, payload);
+        var (width, height) = ReadFrameSize(b.FourCc, payload.Span);
         if (width != frameWidth || height != frameHeight) throw new ImageDecodeException("Invalid WebP: the frame size does not match its header.");
 
         var image = ImageBuffer.Create(canvasWidth, canvasHeight, allocator, clear: true, options.Limits);
@@ -192,7 +201,7 @@ public sealed class WebPDecoder : IImageDecoder
     }
 
     /// <summary>Decodes one bitstream chunk into the rectangle of <paramref name="image"/> at (<paramref name="x"/>, <paramref name="y"/>).</summary>
-    private static void DecodeFrame(string fourcc, ReadOnlySpan<byte> payload, bool hasAlphaChunk, ReadOnlySpan<byte> alphaChunk, int width, int height, ImageBuffer image, int x, int y, CancellationToken ct)
+    private static void DecodeFrame(string fourcc, ReadOnlyMemory<byte> payload, bool hasAlphaChunk, ReadOnlyMemory<byte> alphaChunk, int width, int height, ImageBuffer image, int x, int y, CancellationToken ct)
     {
         if (fourcc == "VP8L")
         {
@@ -225,10 +234,10 @@ public sealed class WebPDecoder : IImageDecoder
     private static uint ArgbToRgba(uint v) => (v & 0xFF00FF00u) | ((v >> 16) & 0xFFu) | ((v & 0xFFu) << 16);
 
     /// <summary>Decodes an 'ALPH' chunk: raw or losslessly compressed values, then the spatial filter undone.</summary>
-    internal static byte[] DecodeAlpha(ReadOnlySpan<byte> chunk, int width, int height, CancellationToken ct)
+    internal static byte[] DecodeAlpha(ReadOnlyMemory<byte> chunk, int width, int height, CancellationToken ct)
     {
         if (chunk.Length < 1) throw new ImageDecodeException("Invalid WebP: empty alpha chunk.");
-        var header = chunk[0];
+        var header = chunk.Span[0];
         var compression = header & 3;
         var filter = (header >> 2) & 3;
         var alpha = new byte[(long)width * height];
@@ -236,7 +245,7 @@ public sealed class WebPDecoder : IImageDecoder
         {
             case 0:
                 if (chunk.Length - 1 < alpha.Length) throw new ImageDecodeException("Truncated WebP alpha data.");
-                chunk.Slice(1, alpha.Length).CopyTo(alpha);
+                chunk.Span.Slice(1, alpha.Length).CopyTo(alpha);
                 break;
             case 1:
                 Vp8LDecoder.DecodeAlpha(chunk[1..], width, height, alpha, ct);

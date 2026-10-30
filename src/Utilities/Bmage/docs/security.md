@@ -64,7 +64,10 @@ stream that ends before its last macroblock is truncated, not padded with zeros.
 
 The AVIF decoder checks the encoded size, every item's declared size, every AV1 frame header and a grid's output size
 against `ImageLimits` before it allocates a plane, and bounds every offset and length in the container by the file
-itself. A failure anywhere is an `ImageDecodeException`.
+itself. Its sample planes come from a shared pool, so the one tool that copies samples within a frame, intra block copy,
+is held to the vectors the AV1 specification allows, which point only at samples already decoded, and a frame that
+enables it starts from cleared planes besides: no earlier image, another user's included, can show through. A failure
+anywhere, a grid tile decoded on another thread included, is an `ImageDecodeException`.
 
 Project files (`BmageProject`) are ZIP archives, which brings the archive attacks with it. A project is read from
 memory, never extracted to disk, so path traversal cannot write anything; even so only the files the manifest names

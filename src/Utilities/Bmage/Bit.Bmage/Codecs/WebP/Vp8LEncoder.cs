@@ -308,7 +308,9 @@ internal static class Vp8LEncoder
         var total = pixels.Length;
         var tokens = new List<Token>();
         if (total < MinMatch + 1) return tokens;
-        var head = new int[1 << HashBits];
+        // No more heads than positions, so a palette or a transform's sub-image does not fill a table sized for a photo.
+        var hashBits = Math.Min(HashBits, BitOperations.Log2((uint)total - 1) + 1);
+        var head = new int[1 << hashBits];
         Array.Fill(head, -1);
         var chain = new int[total];
         var maxDistance = (1 << 20) - 120;
@@ -326,7 +328,7 @@ internal static class Vp8LEncoder
                 if (width < pos) Try(width);
                 if (pos + 1 < total)
                 {
-                    var candidate = head[Hash(pixels[pos], pixels[pos + 1])];
+                    var candidate = head[Hash(pixels[pos], pixels[pos + 1], hashBits)];
                     for (var steps = 0; candidate >= 0 && steps < MaxChain && bestLength < limit; steps++)
                     {
                         var distance = pos - candidate;
@@ -347,7 +349,7 @@ internal static class Vp8LEncoder
             for (var i = 0; i < advance; i++, pos++)
             {
                 if (pos + 1 >= total) continue;
-                var h = Hash(pixels[pos], pixels[pos + 1]);
+                var h = Hash(pixels[pos], pixels[pos + 1], hashBits);
                 chain[pos] = head[h];
                 head[h] = pos;
             }
@@ -366,7 +368,7 @@ internal static class Vp8LEncoder
         return tokens;
     }
 
-    private static int Hash(uint a, uint b) => (int)((((a * 0x9E3779B1u) ^ (b * 0x85EBCA6Bu)) * 0xC2B2AE35u) >> (32 - HashBits));
+    private static int Hash(uint a, uint b, int bits) => (int)((((a * 0x9E3779B1u) ^ (b * 0x85EBCA6Bu)) * 0xC2B2AE35u) >> (32 - bits));
 
     /// <summary>Picks the colour cache size that minimises the estimated size of the coded literals.</summary>
     private static int ChooseCacheBits(List<Token> tokens, uint[] pixels)

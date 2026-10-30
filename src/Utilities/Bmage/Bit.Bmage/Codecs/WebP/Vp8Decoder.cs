@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace Bit.Bmage.Codecs.WebP;
 
@@ -93,9 +94,10 @@ internal sealed class Vp8Decoder
         return width > 0 && height > 0 ? (width, height) : null;
     }
 
-    /// <summary>Decodes a 'VP8 ' chunk payload. The caller has validated the dimensions against its limits.</summary>
-    public static Vp8Frame Decode(ReadOnlySpan<byte> data, CancellationToken ct)
+    /// <summary>Decodes a 'VP8 ' chunk payload, read in place. The caller has validated the dimensions against its limits.</summary>
+    public static Vp8Frame Decode(ReadOnlyMemory<byte> payload, CancellationToken ct)
     {
+        var data = payload.Span;
         if (ReadHeader(data) is not { } size) throw new ImageDecodeException("Invalid WebP lossy header: not a VP8 key frame.");
         var tag = data[0] | data[1] << 8 | data[2] << 16;
         var version = (tag >> 1) & 7;
@@ -106,8 +108,8 @@ internal sealed class Vp8Decoder
         if (firstPartitionSize > data.Length - 10) throw new ImageDecodeException("Truncated WebP lossy data.");
 
         var decoder = new Vp8Decoder(size.Width, size.Height, ct);
-        var br = new Vp8BoolDecoder(data.Slice(10, firstPartitionSize));
-        var partitions = decoder.ParseHeader(br, data[(10 + firstPartitionSize)..]);
+        var br = new Vp8BoolDecoder(payload.Slice(10, firstPartitionSize));
+        var partitions = decoder.ParseHeader(br, payload[(10 + firstPartitionSize)..]);
         decoder.DecodeMacroblocks(br, partitions);
         decoder.LoopFilter();
         return decoder._frame;
@@ -115,7 +117,7 @@ internal sealed class Vp8Decoder
 
     // ------------------------------------------------------------------ frame header
 
-    private Vp8BoolDecoder[] ParseHeader(Vp8BoolDecoder br, ReadOnlySpan<byte> rest)
+    private Vp8BoolDecoder[] ParseHeader(Vp8BoolDecoder br, ReadOnlyMemory<byte> rest)
     {
         br.ReadLiteral(1); // colour space: only YUV is defined
         br.ReadLiteral(1); // clamping type: reconstruction always clamps
@@ -149,10 +151,11 @@ internal sealed class Vp8Decoder
         var sizesLength = 3 * (count - 1);
         if (rest.Length < sizesLength) throw new ImageDecodeException("Truncated WebP lossy data.");
         var partitions = new Vp8BoolDecoder[count];
+        var sizes = rest.Span;
         var start = sizesLength;
         for (var p = 0; p < count; p++)
         {
-            var length = p < count - 1 ? rest[3 * p] | rest[3 * p + 1] << 8 | rest[3 * p + 2] << 16 : rest.Length - start;
+            var length = p < count - 1 ? sizes[3 * p] | sizes[3 * p + 1] << 8 | sizes[3 * p + 2] << 16 : rest.Length - start;
             length = Math.Min(length, rest.Length - start);
             partitions[p] = new Vp8BoolDecoder(rest.Slice(start, length));
             start += length;
@@ -560,6 +563,8 @@ internal sealed class Vp8Decoder
 
     private void LoopFilter()
     {
+        // A frame level of 0 turns the filter off whatever the segments and deltas say, as in libvpx and libwebp.
+        if (_filterLevel == 0) return;
         var levels = new byte[_mbSegment.Length];
         var inner = new bool[_mbSegment.Length];
         for (var mb = 0; mb < levels.Length; mb++)
@@ -677,13 +682,18 @@ internal sealed class Vp8BoolDecoder
 {
     private readonly byte[] _data;
     private int _pos;
+    private readonly int _end;
     private ulong _value; // unread bits, most significant first
     private int _bits;    // how many of _value's bits are real data
     private uint _range = 255;
 
-    public Vp8BoolDecoder(ReadOnlySpan<byte> data)
+    public Vp8BoolDecoder(ReadOnlyMemory<byte> data)
     {
-        _data = data.ToArray();
+        // The caller's array is read in place; only memory no array backs is copied.
+        var segment = MemoryMarshal.TryGetArray(data, out var array) ? array : new ArraySegment<byte>(data.ToArray());
+        _data = segment.Array!;
+        _pos = segment.Offset;
+        _end = segment.Offset + segment.Count;
         Fill();
     }
 
@@ -692,7 +702,7 @@ internal sealed class Vp8BoolDecoder
 
     private void Fill()
     {
-        while (_bits <= 56 && _pos < _data.Length)
+        while (_bits <= 56 && _pos < _end)
         {
             _value |= (ulong)_data[_pos++] << (56 - _bits);
             _bits += 8;

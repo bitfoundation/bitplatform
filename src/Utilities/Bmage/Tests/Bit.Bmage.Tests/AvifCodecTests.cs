@@ -385,6 +385,156 @@ public sealed class AvifCodecTests
         Assert.AreEqual(ImageFormat.Avif, decoded.Metadata!.SourceFormat);
     }
 
+    [TestMethod]
+    [DataRow(-1, true)]  // no colr: the sequence header's BT.2020 PQ is what the decoder goes by
+    [DataRow(2, true)]   // an nclx leaving everything unspecified says nothing either
+    [DataRow(1, false)]  // an nclx that says BT.709 is believed over the bitstream
+    public void TellsWhenTheSequenceHeaderSaysTheColoursAreNotSrgb(int nclxPrimaries, bool expected)
+    {
+        var source = AvifContainer.Parse(Asset("photo-420.avif"));
+        var item = source.GetItem(1)!;
+        var obus = Obus(source.GetItemData(item, int.MaxValue));
+        var stream = obus.SelectMany(o => Obu(o.Type, o.Type == 1 ? RewriteSequenceHeader(o.Payload, unreduce: false, color: (9, 16, 9)) : o.Payload)).ToArray();
+        var properties = CopyProperties(source, item);
+        if (nclxPrimaries >= 0)
+        {
+            var nclx = new byte[11];
+            "nclx"u8.CopyTo(nclx);
+            BinaryPrimitives.WriteUInt16BigEndian(nclx.AsSpan(4), (ushort)nclxPrimaries);
+            BinaryPrimitives.WriteUInt16BigEndian(nclx.AsSpan(6), (ushort)(nclxPrimaries == 2 ? 2 : 13));
+            BinaryPrimitives.WriteUInt16BigEndian(nclx.AsSpan(8), (ushort)(nclxPrimaries == 2 ? 2 : 1));
+            properties.Add(Box("colr", nclx));
+        }
+        var file = new AvifBuilder().Add(new AvifBuilder.Item(1, "av01", stream, properties, [])).Build(primary: 1);
+
+        Assert.AreEqual(expected, AvifDecoder.HasNonSrgbColors(file));
+    }
+
+    [TestMethod]
+    public void ShowsAFrameAgainFromItsReferenceSlot()
+    {
+        // The still rewritten without its reduced header, then shown a second time with show_existing_frame, as an
+        // encoder may end a stream: a shown key frame fills every reference slot, so slot 0 holds it.
+        var source = AvifContainer.Parse(Asset("photo-420.avif"));
+        var item = source.GetItem(1)!;
+        var obus = Obus(source.GetItemData(item, int.MaxValue));
+        var seqPayload = obus.First(o => o.Type == 1).Payload;
+        var seq = Av1SequenceHeader.Parse(seqPayload);
+        byte[] stream =
+        [
+            .. Obu(2, []),
+            .. Obu(1, RewriteSequenceHeader(seqPayload, unreduce: true, color: null)),
+            .. Obu(6, UnreduceFrame(obus.First(o => o.Type == 6).Payload, seq)),
+            .. Obu(3, [0b1000_1000]), // show_existing_frame, frame_to_show_map_idx 0, trailing bits
+        ];
+        var file = new AvifBuilder().Add(new AvifBuilder.Item(1, "av01", stream, CopyProperties(source, item), [])).Build(primary: 1);
+        using var plain = DecodeLikeLibheif(Asset("photo-420.avif"));
+
+        using var decoded = DecodeLikeLibheif(file);
+        Assert.AreEqual(0, TestImages.MaxChannelDifference(plain, decoded));
+    }
+
+    [TestMethod]
+    public void GridTileFailuresAreDecodeErrorsWhateverTheThreads()
+    {
+        // The last tiles decode side by side; one that is cut short must still fail as the sequential loop would, as an
+        // ImageDecodeException a host can fall back on, not wrapped in an AggregateException.
+        var source = AvifContainer.Parse(Asset("photo-420.avif"));
+        var tile = source.GetItem(1)!;
+        var data = source.GetItemData(tile, int.MaxValue);
+        var grid = new byte[8];
+        grid[2] = 1;
+        grid[3] = 1;
+        BinaryPrimitives.WriteUInt16BigEndian(grid.AsSpan(4), 192);
+        BinaryPrimitives.WriteUInt16BigEndian(grid.AsSpan(6), 128);
+        var file = new AvifBuilder()
+            .Add(new AvifBuilder.Item(1, "grid", grid, [Ispe(192, 128)], [("dimg", [2, 2, 3, 3])]))
+            .Add(new AvifBuilder.Item(2, "av01", data, CopyProperties(source, tile), []))
+            .Add(new AvifBuilder.Item(3, "av01", data[..(data.Length / 2)], CopyProperties(source, tile), []))
+            .Build(primary: 1);
+
+        foreach (var threads in new[] { 1, 4 })
+            Assert.ThrowsExactly<ImageDecodeException>(() => AvifDecoder.Decode(file, new DecodeOptions { MaxDegreeOfParallelism = threads }), $"{threads} threads");
+    }
+
+    [TestMethod]
+    [DataRow(2, -1)] // turned half way round: no axes swap, but the clap still follows a transform
+    [DataRow(-1, 0)] // mirrored
+    public void IdentifyIgnoresACleanApertureAfterATransformAsDecodingDoes(int irot, int imir)
+    {
+        var clap = new byte[32];
+        BinaryPrimitives.WriteUInt32BigEndian(clap, 50);
+        BinaryPrimitives.WriteUInt32BigEndian(clap.AsSpan(4), 1);
+        BinaryPrimitives.WriteUInt32BigEndian(clap.AsSpan(8), 30);
+        BinaryPrimitives.WriteUInt32BigEndian(clap.AsSpan(12), 1);
+        BinaryPrimitives.WriteUInt32BigEndian(clap.AsSpan(20), 1);
+        BinaryPrimitives.WriteUInt32BigEndian(clap.AsSpan(28), 1);
+        var properties = new List<byte[]>();
+        if (irot >= 0) properties.Add(Box("irot", [(byte)irot]));
+        if (imir >= 0) properties.Add(Box("imir", [(byte)imir]));
+        properties.Add(Box("clap", clap));
+        var file = Rebuild("photo-420.avif", properties);
+
+        using var decoded = DecodeLikeLibheif(file);
+        var info = new AvifDecoder().Identify(file)!;
+        Assert.AreEqual((96, 64), (decoded.Width, decoded.Height));
+        Assert.AreEqual((decoded.Width, decoded.Height), (info.Width, info.Height));
+    }
+
+    [TestMethod]
+    public void IgnoresCleanAperturesWhoseEdgesOverflow()
+    {
+        // 1.5e9 wide, centred 1.75e9 to the right: the right edge is past int's range, which must not wrap into it.
+        var clap = new byte[32];
+        BinaryPrimitives.WriteUInt32BigEndian(clap, 1_500_000_000);
+        BinaryPrimitives.WriteUInt32BigEndian(clap.AsSpan(4), 1);
+        BinaryPrimitives.WriteUInt32BigEndian(clap.AsSpan(8), 30);
+        BinaryPrimitives.WriteUInt32BigEndian(clap.AsSpan(12), 1);
+        BinaryPrimitives.WriteInt32BigEndian(clap.AsSpan(16), 1_750_000_000);
+        BinaryPrimitives.WriteUInt32BigEndian(clap.AsSpan(20), 1);
+        BinaryPrimitives.WriteUInt32BigEndian(clap.AsSpan(28), 1);
+        var file = Rebuild("photo-420.avif", [Box("clap", clap)]);
+
+        using var decoded = DecodeLikeLibheif(file);
+        var info = new AvifDecoder().Identify(file)!;
+        Assert.AreEqual((96, 64), (decoded.Width, decoded.Height));
+        Assert.AreEqual((96, 64), (info.Width, info.Height));
+    }
+
+    [TestMethod]
+    public void ReadsOnlyTheItemInfoEntriesTheCountGives()
+    {
+        // A grid and its tile, with iinf's entry_count cut to 1: the tile's infe that follows is not an entry, so the
+        // tile has no type, as other parsers see it, and the grid is refused.
+        var source = AvifContainer.Parse(Asset("photo-420.avif"));
+        var tile = source.GetItem(1)!;
+        var grid = new byte[8];
+        BinaryPrimitives.WriteUInt16BigEndian(grid.AsSpan(4), 96);
+        BinaryPrimitives.WriteUInt16BigEndian(grid.AsSpan(6), 64);
+        var file = new AvifBuilder()
+            .Add(new AvifBuilder.Item(1, "grid", grid, [Ispe(96, 64)], [("dimg", [2])]))
+            .Add(new AvifBuilder.Item(2, "av01", source.GetItemData(tile, int.MaxValue), CopyProperties(source, tile), []))
+            .Build(primary: 1);
+        using (var whole = AvifDecoder.Decode(file)) Assert.AreEqual(96, whole.Width);
+
+        var iinf = file.AsSpan().IndexOf("iinf"u8);
+        Assert.AreEqual(2, BinaryPrimitives.ReadUInt16BigEndian(file.AsSpan(iinf + 8)));
+        BinaryPrimitives.WriteUInt16BigEndian(file.AsSpan(iinf + 8), 1);
+        Assert.ThrowsExactly<ImageDecodeException>(() => AvifDecoder.Decode(file));
+    }
+
+    [TestMethod]
+    public async Task DecodesASliceOfALargerBufferInPlace()
+    {
+        // Through the decoder interface the file is read where it lies, so every offset is relative to the slice.
+        var asset = Asset("alpha.avif");
+        var padded = new byte[asset.Length + 64];
+        asset.CopyTo(padded, 32);
+        using var expected = AvifDecoder.Decode(asset);
+        using var decoded = await new AvifDecoder().DecodeAsync(padded.AsMemory(32, asset.Length), DecodeOptions.Default, Memory.PooledPixelAllocator.Shared);
+        Assert.AreEqual(0, TestImages.MaxChannelDifference(expected, decoded));
+    }
+
     private static void AssertFailsCleanly(byte[] data)
     {
         try
@@ -398,6 +548,151 @@ public sealed class AvifCodecTests
         }
         catch (ImageLimitExceededException)
         {
+        }
+    }
+
+    // ------------------------------------------------------------------ rewriting AV1 streams
+
+    /// <summary>The OBUs of an AV1 stream, each with its size field.</summary>
+    private static List<(int Type, byte[] Payload)> Obus(byte[] data)
+    {
+        var obus = new List<(int, byte[])>();
+        var pos = 0;
+        while (pos < data.Length)
+        {
+            var header = data[pos];
+            Assert.AreEqual(2, header & 6, "an OBU with a size field and no extension");
+            pos += 1 + Av1BitReader.ReadLeb128(data, pos + 1, out var size);
+            obus.Add(((header >> 3) & 15, data[pos..(pos + (int)size)]));
+            pos += (int)size;
+        }
+        return obus;
+    }
+
+    private static byte[] Obu(int type, byte[] payload)
+    {
+        var size = new List<byte>();
+        var v = payload.Length;
+        do
+        {
+            size.Add((byte)((v & 0x7F) | (v > 0x7F ? 0x80 : 0)));
+            v >>= 7;
+        } while (v > 0);
+        return [(byte)(type << 3 | 2), .. size, .. payload];
+    }
+
+    /// <summary>
+    /// The assets' reduced still picture sequence header, rewritten bit by bit: in full, so frames may be shown again
+    /// from reference slots, and, when <paramref name="color"/> is given, describing those colours.
+    /// </summary>
+    private static byte[] RewriteSequenceHeader(byte[] payload, bool unreduce, (int Primaries, int Transfer, int Matrix)? color)
+    {
+        var seq = Av1SequenceHeader.Parse(payload);
+        var b = new BitCopy(payload);
+        var profile = b.Copy(3);
+        b.Copy(1); // still_picture
+        Assert.AreEqual(1, b.Skip(1), "the assets have reduced still picture headers");
+        b.Write(unreduce ? 0 : 1, 1);
+        var level = b.Skip(5);
+        if (unreduce)
+        {
+            b.Write(0, 1);  // timing_info_present_flag
+            b.Write(0, 1);  // initial_display_delay_present_flag
+            b.Write(0, 5);  // operating_points_cnt_minus_1
+            b.Write(0, 12); // operating_point_idc[0]
+        }
+        b.Write(level, 5);
+        if (unreduce && level > 7) b.Write(0, 1); // seq_tier[0]
+        b.Copy(8 + seq.FrameWidthBits + seq.FrameHeightBits);
+        if (unreduce) b.Write(0, 1); // frame_id_numbers_present_flag
+        b.Copy(3); // use_128x128_superblock, enable_filter_intra, enable_intra_edge_filter
+        if (unreduce)
+        {
+            b.Write(0, 5); // no inter-intra or masked compound, warped motion, dual filter or order hints
+            b.Write(1, 1); // seq_choose_screen_content_tools, which the reduced header implies
+            b.Write(1, 1); // seq_choose_integer_mv, likewise
+        }
+        b.Copy(3); // enable_superres, enable_cdef, enable_restoration
+        var highBitdepth = b.Copy(1);
+        if (profile == 2 && highBitdepth == 1) b.Copy(1); // twelve_bit
+        if (profile != 1) Assert.AreEqual(0, b.Copy(1), "mono_chrome");
+        if (color is { } c)
+        {
+            // Only the description changes: BT.2020 is not sRGB's special case, so the fields after it stay as they are.
+            if (b.Skip(1) == 1) Assert.AreNotEqual((1, 13, 0), (b.Skip(8), b.Skip(8), b.Skip(8)));
+            b.Write(1, 1);
+            b.Write(c.Primaries, 8);
+            b.Write(c.Transfer, 8);
+            b.Write(c.Matrix, 8);
+        }
+        b.CopyTo(b.TrailingBit);
+        return b.ToBytes(trailingBit: true);
+    }
+
+    /// <summary>A reduced still picture's frame OBU rewritten for the full sequence header <see cref="RewriteSequenceHeader"/> makes.</summary>
+    private static byte[] UnreduceFrame(byte[] payload, Av1SequenceHeader reduced)
+    {
+        // The tile data starts at the byte after the header ends.
+        var reader = new Av1BitReader(payload);
+        var hdr = Av1FrameHeader.Parse(ref reader, reduced, 0, 0);
+        var headerEnd = (int)reader.BitPosition;
+        var b = new BitCopy(payload);
+        b.Write(0, 1); // show_existing_frame
+        b.Write(0, 2); // KEY_FRAME
+        b.Write(1, 1); // show_frame
+        var disableCdfUpdate = b.Copy(1);
+        if (b.Copy(1) == 1) b.Copy(1); // allow_screen_content_tools, force_integer_mv
+        b.Write(0, 1); // frame_size_override_flag
+        if (reduced.EnableSuperres && b.Copy(1) == 1) b.Copy(3);
+        if (b.Copy(1) == 1) b.Copy(32); // render_size
+        if (hdr.AllowScreenContentTools && hdr.UpscaledWidth == hdr.FrameWidth) b.Copy(1); // allow_intrabc
+        if (disableCdfUpdate == 0) b.Write(1, 1); // disable_frame_end_update_cdf
+        b.CopyTo(headerEnd);
+        return [.. b.ToBytes(trailingBit: false), .. payload.AsSpan((headerEnd + 7) / 8)];
+    }
+
+    /// <summary>Copies bits, most significant first, from a source to an output, with some written in between.</summary>
+    private sealed class BitCopy(byte[] source)
+    {
+        private readonly List<bool> _output = [];
+        private int _pos;
+
+        /// <summary>Where the source's trailing bits start: its last set bit.</summary>
+        public int TrailingBit => Enumerable.Range(0, source.Length * 8).Last(Bit);
+
+        private bool Bit(int i) => ((source[i >> 3] >> (7 - (i & 7))) & 1) != 0;
+
+        public int Skip(int count)
+        {
+            var v = 0;
+            for (var i = 0; i < count; i++) v = v << 1 | (Bit(_pos++) ? 1 : 0);
+            return v;
+        }
+
+        public int Copy(int count)
+        {
+            var v = Skip(count);
+            Write(v, count);
+            return v;
+        }
+
+        public void CopyTo(int end)
+        {
+            while (_pos < end) Copy(1);
+        }
+
+        public void Write(int value, int count)
+        {
+            for (var i = count - 1; i >= 0; i--) _output.Add(((value >> i) & 1) != 0);
+        }
+
+        public byte[] ToBytes(bool trailingBit)
+        {
+            if (trailingBit) _output.Add(true);
+            var bytes = new byte[(_output.Count + 7) / 8];
+            for (var i = 0; i < _output.Count; i++)
+                if (_output[i]) bytes[i >> 3] |= (byte)(0x80 >> (i & 7));
+            return bytes;
         }
     }
 

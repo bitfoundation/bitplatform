@@ -27,7 +27,7 @@ public sealed class AvifDecoder : IImageDecoder
         if (ImageFormats.Detect(data) != ImageFormat.Avif) return null;
         try
         {
-            var file = AvifContainer.Parse(data.ToArray());
+            var file = AvifContainer.ParseHeaders(data);
             var primary = PrimaryItem(file);
             if (primary is null)
             {
@@ -40,20 +40,8 @@ public sealed class AvifDecoder : IImageDecoder
             var width = (int)Math.Min(BinaryPrimitives.ReadUInt32BigEndian(p[4..]), int.MaxValue);
             var height = (int)Math.Min(BinaryPrimitives.ReadUInt32BigEndian(p[8..]), int.MaxValue);
             if (width <= 0 || height <= 0) return null;
-            var transposed = false;
-            foreach (var property in primary.Properties)
-            {
-                if (property.Type == AvifContainer.Clap && CleanAperture(file.PropertyData(property), width, height) is { } crop && !transposed)
-                {
-                    width = crop.Width;
-                    height = crop.Height;
-                }
-                else if (property.Type == AvifContainer.Irot && property.Length >= 1 && (file.PropertyData(property)[0] & 1) == 1)
-                {
-                    (width, height) = (height, width);
-                    transposed = !transposed;
-                }
-            }
+            var (crop, orientation) = Transforms(file, primary, width, height);
+            (width, height) = orientation.SwapsDimensions() ? (crop.Height, crop.Width) : (crop.Width, crop.Height);
             return new ImageInfo(width, height, ImageFormat.Avif, Orientation.Normal, FindAlpha(file, primary) is not null);
         }
         catch (Exception ex) when (ex is ImageException or ArgumentException or IndexOutOfRangeException or OverflowException)
@@ -63,21 +51,26 @@ public sealed class AvifDecoder : IImageDecoder
     }
 
     public ValueTask<ImageBuffer> DecodeAsync(ReadOnlyMemory<byte> data, DecodeOptions options, IPixelAllocator allocator, CancellationToken cancellationToken = default)
-        => new(Decode(data.Span, options, allocator, cancellationToken));
+        => new(Decode(data, options, allocator, nearestChroma: false, cancellationToken));
 
     public static ImageBuffer Decode(ReadOnlySpan<byte> data, DecodeOptions? options = null, IPixelAllocator? allocator = null, CancellationToken cancellationToken = default)
-        => Decode(data, options, allocator, nearestChroma: false, cancellationToken);
+    {
+        // The container reads the file in place, which a span cannot be kept for, so it is copied, once it is known
+        // not to be over the limit.
+        (options ?? DecodeOptions.Default).Limits.ValidateEncodedSize(data.Length);
+        return Decode(data.ToArray(), options, allocator, nearestChroma: false, cancellationToken);
+    }
 
     /// <summary>The decode, with chroma optionally upsampled by repetition (as libheif does) so tests can compare exactly.</summary>
-    internal static ImageBuffer Decode(ReadOnlySpan<byte> data, DecodeOptions? options, IPixelAllocator? allocator, bool nearestChroma, CancellationToken cancellationToken = default)
+    internal static ImageBuffer Decode(ReadOnlyMemory<byte> data, DecodeOptions? options, IPixelAllocator? allocator, bool nearestChroma, CancellationToken cancellationToken = default)
     {
         options ??= DecodeOptions.Default;
         allocator ??= PooledPixelAllocator.Shared;
         options.Limits.ValidateEncodedSize(data.Length);
-        if (ImageFormats.Detect(data) != ImageFormat.Avif) throw new ImageDecodeException("Not an AVIF image.");
+        if (ImageFormats.Detect(data.Span) != ImageFormat.Avif) throw new ImageDecodeException("Not an AVIF image.");
         try
         {
-            return DecodeCore(data.ToArray(), options, allocator, nearestChroma, cancellationToken);
+            return DecodeCore(data, options, allocator, nearestChroma, cancellationToken);
         }
         catch (Exception ex) when (ex is ArgumentException or IndexOutOfRangeException or OverflowException)
         {
@@ -86,9 +79,9 @@ public sealed class AvifDecoder : IImageDecoder
         }
     }
 
-    private static ImageBuffer DecodeCore(byte[] bytes, DecodeOptions options, IPixelAllocator allocator, bool nearestChroma, CancellationToken cancellationToken)
+    private static ImageBuffer DecodeCore(ReadOnlyMemory<byte> data, DecodeOptions options, IPixelAllocator allocator, bool nearestChroma, CancellationToken cancellationToken)
     {
-        var file = AvifContainer.Parse(bytes);
+        var file = AvifContainer.Parse(data);
         var primary = PrimaryItem(file);
         ImageBuffer image;
         var orientation = Orientation.Normal;
@@ -96,7 +89,7 @@ public sealed class AvifDecoder : IImageDecoder
         {
             if (file.FirstTrackSample is not { } sample || file.TrackAv1C is not { } config)
                 throw new ImageDecodeException("The AVIF file has no primary image item and no image sequence.");
-            using var frame = DecodeAv1(Concat(file.Data.AsSpan(config.Offset, config.Length), file.Data.AsSpan(sample.Offset, sample.Length)), options, cancellationToken);
+            using var frame = DecodeAv1(Concat(data.Span.Slice(config.Offset, config.Length), data.Span.Slice(sample.Offset, sample.Length)), options, cancellationToken);
             image = ImageBuffer.Create(frame.Width, frame.Height, allocator, clear: false, options.Limits);
             try
             {
@@ -126,36 +119,12 @@ public sealed class AvifDecoder : IImageDecoder
                     DecodeAlpha(file, alphaItem, image, options, allocator, cancellationToken);
                     if (IsPremultiplied(primary, alphaItem)) AvifColor.Unpremultiply(image);
                 }
-                foreach (var property in primary.Properties)
+                (var crop, orientation) = Transforms(file, primary, image.Width, image.Height);
+                if (crop.Width != image.Width || crop.Height != image.Height)
                 {
-                    if (property.Type == AvifContainer.Clap)
-                    {
-                        // MIAF puts clap before irot and imir; one listed after them is ignored.
-                        if (orientation != Orientation.Normal) continue;
-                        if (CleanAperture(file.PropertyData(property), image.Width, image.Height) is { } crop
-                            && (crop.Width != image.Width || crop.Height != image.Height))
-                        {
-                            var cropped = image.CopyRegion(crop, allocator);
-                            image.Dispose();
-                            image = cropped;
-                        }
-                    }
-                    else if (property.Type == AvifContainer.Irot && property.Length >= 1)
-                    {
-                        // irot turns anti-clockwise by multiples of 90 degrees.
-                        orientation = orientation.Then((file.PropertyData(property)[0] & 3) switch
-                        {
-                            1 => Orientation.Rotate270,
-                            2 => Orientation.Rotate180,
-                            3 => Orientation.Rotate90,
-                            _ => Orientation.Normal,
-                        });
-                    }
-                    else if (property.Type == AvifContainer.Imir && property.Length >= 1)
-                    {
-                        // Axis (named mode in the 2022 edition of HEIF) 0 exchanges top and bottom, 1 left and right.
-                        orientation = orientation.Then((file.PropertyData(property)[0] & 1) == 0 ? Orientation.FlipVertical : Orientation.FlipHorizontal);
-                    }
+                    var cropped = image.CopyRegion(crop, allocator);
+                    image.Dispose();
+                    image = cropped;
                 }
             }
             catch
@@ -214,10 +183,10 @@ public sealed class AvifDecoder : IImageDecoder
         }
     }
 
-    /// <summary>Extracts EXIF, ICC and XMP from an AVIF. Missing pieces are null or empty.</summary>
-    internal static ImageMetadata ReadMetadata(ReadOnlySpan<byte> avif, string? fileName = null)
+    /// <summary>Extracts EXIF, ICC and XMP from an AVIF, read in place. Missing pieces are null or empty.</summary>
+    internal static ImageMetadata ReadMetadata(ReadOnlyMemory<byte> avif, string? fileName = null)
     {
-        var file = AvifContainer.Parse(avif.ToArray());
+        var file = AvifContainer.Parse(avif);
         return ReadMetadata(file, PrimaryItem(file), fileName);
     }
 
@@ -227,17 +196,8 @@ public sealed class AvifDecoder : IImageDecoder
         ReadOnlyMemory<byte> icc = default, xmp = default;
         if (primary is not null)
         {
-            foreach (var property in primary.Properties)
-            {
-                if (property.Type != AvifContainer.Colr || property.Length < 4) continue;
-                var p = file.PropertyData(property);
-                var colourType = BinaryPrimitives.ReadUInt32BigEndian(p);
-                if (colourType == AvifContainer.Prof || colourType == AvifContainer.Ricc)
-                {
-                    icc = p[4..].ToArray();
-                    break;
-                }
-            }
+            // A copy, so the metadata does not keep the whole file alive.
+            icc = IccProfile(file, primary).ToArray();
             foreach (var item in file.Items.Values)
             {
                 var describes = item.References.Any(r => r.Type == AvifContainer.Cdsc && r.To == primary.Id);
@@ -260,28 +220,66 @@ public sealed class AvifDecoder : IImageDecoder
         return new ImageMetadata(exif, icc, xmp, ImageFormat.Avif, fileName);
     }
 
+    /// <inheritdoc cref="HasNonSrgbColors(ReadOnlyMemory{byte}, out ReadOnlyMemory{byte})"/>
+    internal static bool HasNonSrgbColors(ReadOnlyMemory<byte> avif) => HasNonSrgbColors(avif, out _);
+
     /// <summary>
     /// True when the file says its colours are not sRGB's: wide gamut primaries such as Display P3 or BT.2020, or an HDR
-    /// or linear transfer. This decoder does not convert them, so a host that can should let the browser decode these.
+    /// or linear transfer, in the description the decoder goes by: the nclx, or, where there is none or it leaves
+    /// everything unspecified, the AV1 sequence header. This decoder does not convert them, so a host that can should let
+    /// the browser decode these. The file is read in place, and its ICC profile, if any, is returned for the caller to
+    /// judge, so one parse answers both questions.
     /// </summary>
-    internal static bool HasNonSrgbColors(ReadOnlySpan<byte> avif)
+    internal static bool HasNonSrgbColors(ReadOnlyMemory<byte> avif, out ReadOnlyMemory<byte> iccProfile)
     {
-        var file = AvifContainer.Parse(avif.ToArray());
-        if (PrimaryItem(file) is not { } item) return false;
+        var file = AvifContainer.Parse(avif);
+        var primary = PrimaryItem(file);
+        iccProfile = default;
+        AvifNclx? color;
+        if (primary is null)
+        {
+            color = file.TrackAv1C is { } config && Av1Decoder.FindSequenceHeader(ConfigObus(avif.Span.Slice(config.Offset, config.Length))) is { } seq
+                ? ColorOf(file, null, seq)
+                : null;
+        }
+        else
+        {
+            if (IccProperty(file, primary) is { } icc) iccProfile = avif.Slice(icc.Offset + 4, icc.Length - 4);
+            // As DecodeItem picks it: a grid's own colr, else its first tile's, and the sequence header of that tile.
+            var coded = primary;
+            if (primary.Type == AvifContainer.Grid
+                && primary.References.FirstOrDefault(r => r.Type == AvifContainer.Dimg) is { To: var firstTile }
+                && file.GetItem(firstTile) is { } tile)
+                coded = tile;
+            var colorItem = file.FindProperty(primary, AvifContainer.Colr) is not null ? primary : coded;
+            color = ItemColor(file, colorItem) ?? (SequenceHeaderOf(file, coded) is { } seq ? ColorOf(file, null, seq) : null);
+        }
+        // BT.709 (sRGB's), unspecified, and BT.601's two, which differ from them too little to see; then linear, PQ and HLG.
+        return color is { } c && (c.ColorPrimaries is not (1 or 2 or 5 or 6) || c.TransferCharacteristics is 8 or 16 or 18);
+    }
+
+    /// <summary>An av01 item's sequence header: av1C's copy, else the one the item's data starts with.</summary>
+    private static Av1SequenceHeader? SequenceHeaderOf(AvifContainer file, HeifItem item)
+    {
+        if (item.Type != AvifContainer.Av01) return null;
+        if (file.FindProperty(item, AvifContainer.Av1C) is { } config && Av1Decoder.FindSequenceHeader(ConfigObus(file.PropertyData(config))) is { } seq)
+            return seq;
+        return Av1Decoder.FindSequenceHeader(file.GetItemDataStart(item));
+    }
+
+    private static HeifProperty? IccProperty(AvifContainer file, HeifItem item)
+    {
         foreach (var property in item.Properties)
         {
-            if (property.Type != AvifContainer.Colr || property.Length < 11) continue;
-            var p = file.PropertyData(property);
-            if (BinaryPrimitives.ReadUInt32BigEndian(p) != AvifContainer.Nclx) continue;
-            int primaries = BinaryPrimitives.ReadUInt16BigEndian(p[4..]);
-            int transfer = BinaryPrimitives.ReadUInt16BigEndian(p[6..]);
-            // BT.709 (sRGB's), unspecified, and BT.601's two, which differ from them too little to see.
-            if (primaries is not (1 or 2 or 5 or 6)) return true;
-            // Linear, PQ and HLG.
-            if (transfer is 8 or 16 or 18) return true;
+            if (property.Type != AvifContainer.Colr || property.Length < 4) continue;
+            var colourType = BinaryPrimitives.ReadUInt32BigEndian(file.PropertyData(property));
+            if (colourType == AvifContainer.Prof || colourType == AvifContainer.Ricc) return property;
         }
-        return false;
+        return null;
     }
+
+    private static ReadOnlySpan<byte> IccProfile(AvifContainer file, HeifItem item)
+        => IccProperty(file, item) is { } icc ? file.PropertyData(icc)[4..] : default;
 
     private static HeifItem? PrimaryItem(AvifContainer file)
     {
@@ -394,7 +392,7 @@ public sealed class AvifDecoder : IImageDecoder
                 else AvifColor.WriteRgb(first, color, result, 0, 0, nearestChroma);
             }
             if (parallelism > 1 && tiles.Length > 2)
-                Parallel.For(1, tiles.Length, new ParallelOptions { MaxDegreeOfParallelism = parallelism, CancellationToken = cancellationToken }, DecodeTile);
+                ParallelRows.For(1, tiles.Length, new ParallelOptions { MaxDegreeOfParallelism = parallelism, CancellationToken = cancellationToken }, DecodeTile);
             else
                 for (var i = 1; i < tiles.Length; i++) DecodeTile(i);
             return result;
@@ -411,10 +409,9 @@ public sealed class AvifDecoder : IImageDecoder
 
     private static Av1Image DecodeAv1Item(AvifContainer file, HeifItem item, DecodeOptions options, CancellationToken cancellationToken)
     {
-        var data = file.GetItemData(item, options.Limits.MaxEncodedBytes);
         // The sequence header normally travels in the item too, but av1C's copy comes first in case it does not.
-        var config = file.FindProperty(item, AvifContainer.Av1C);
-        var obus = config is { Length: > 4 } c ? Concat(file.PropertyData(c), data) : data;
+        var config = file.FindProperty(item, AvifContainer.Av1C) is { } c ? ConfigObus(file.PropertyData(c)) : default;
+        var obus = file.GetItemData(item, options.Limits.MaxEncodedBytes, config);
         var frame = DecodeAv1(obus, options, cancellationToken);
         // A layered image whose enhancement layers predict from the base layer decodes to its base layer only, which is
         // acceptable when that is the full picture (a quality layer) and not when it is a smaller preview.
@@ -433,10 +430,13 @@ public sealed class AvifDecoder : IImageDecoder
     private static Av1Image DecodeAv1(byte[] obus, DecodeOptions options, CancellationToken cancellationToken)
         => Av1Decoder.Decode(obus, 0, obus.Length, options.Limits, cancellationToken);
 
-    /// <summary>The av1C configOBUs (after its four header bytes) followed by the sample's OBUs.</summary>
+    /// <summary>The av1C configOBUs, after its four header bytes.</summary>
+    private static ReadOnlySpan<byte> ConfigObus(ReadOnlySpan<byte> av1C) => av1C.Length > 4 ? av1C[4..] : default;
+
+    /// <summary>The av1C configOBUs followed by the sample's OBUs.</summary>
     private static byte[] Concat(ReadOnlySpan<byte> av1C, ReadOnlySpan<byte> sample)
     {
-        var configObus = av1C.Length > 4 ? av1C[4..] : default;
+        var configObus = ConfigObus(av1C);
         var result = new byte[configObus.Length + sample.Length];
         configObus.CopyTo(result);
         sample.CopyTo(result.AsSpan(configObus.Length));
@@ -445,23 +445,60 @@ public sealed class AvifDecoder : IImageDecoder
 
     /// <summary>The item's nclx colour, range included, else the AV1 sequence header's.</summary>
     private static AvifNclx ColorOf(AvifContainer file, HeifItem? item, Av1SequenceHeader seq)
+        => (item is null ? null : ItemColor(file, item))
+           ?? new AvifNclx(seq.ColorPrimaries, seq.TransferCharacteristics, seq.MatrixCoefficients, seq.FullRange);
+
+    /// <summary>The item's nclx colour, range included, or null when it has none that says anything.</summary>
+    private static AvifNclx? ItemColor(AvifContainer file, HeifItem item)
     {
-        if (item is not null)
+        foreach (var property in item.Properties)
         {
-            foreach (var property in item.Properties)
+            if (property.Type != AvifContainer.Colr || property.Length < 11) continue;
+            var p = file.PropertyData(property);
+            if (BinaryPrimitives.ReadUInt32BigEndian(p) != AvifContainer.Nclx) continue;
+            var nclx = new AvifNclx(BinaryPrimitives.ReadUInt16BigEndian(p[4..]), BinaryPrimitives.ReadUInt16BigEndian(p[6..]),
+                BinaryPrimitives.ReadUInt16BigEndian(p[8..]), (p[10] & 0x80) != 0);
+            // An nclx that leaves primaries, transfer and matrix unspecified says nothing reliable, its range flag
+            // included (early writers set it regardless), so the bitstream's description is used, as libheif does.
+            return nclx is { ColorPrimaries: 2, TransferCharacteristics: 2, MatrixCoefficients: 2 } ? null : nclx;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// The part of the decoded image an item keeps, and how to turn it upright, from its clap, irot and imir properties
+    /// in the order listed. Decoding and identifying both go by this, so they agree on the size.
+    /// </summary>
+    private static (Rectangle Crop, Orientation Orientation) Transforms(AvifContainer file, HeifItem item, int width, int height)
+    {
+        var crop = new Rectangle(0, 0, width, height);
+        var orientation = Orientation.Normal;
+        foreach (var property in item.Properties)
+        {
+            if (property.Type == AvifContainer.Clap)
             {
-                if (property.Type != AvifContainer.Colr || property.Length < 11) continue;
-                var p = file.PropertyData(property);
-                if (BinaryPrimitives.ReadUInt32BigEndian(p) != AvifContainer.Nclx) continue;
-                var nclx = new AvifNclx(BinaryPrimitives.ReadUInt16BigEndian(p[4..]), BinaryPrimitives.ReadUInt16BigEndian(p[6..]),
-                    BinaryPrimitives.ReadUInt16BigEndian(p[8..]), (p[10] & 0x80) != 0);
-                // An nclx that leaves primaries, transfer and matrix unspecified says nothing reliable, its range flag
-                // included (early writers set it regardless), so the bitstream's description is used, as libheif does.
-                if (nclx is { ColorPrimaries: 2, TransferCharacteristics: 2, MatrixCoefficients: 2 }) break;
-                return nclx;
+                // MIAF puts clap before irot and imir; one listed after them is ignored.
+                if (orientation == Orientation.Normal && CleanAperture(file.PropertyData(property), crop.Width, crop.Height) is { } c)
+                    crop = new Rectangle(crop.X + c.X, crop.Y + c.Y, c.Width, c.Height);
+            }
+            else if (property.Type == AvifContainer.Irot && property.Length >= 1)
+            {
+                // irot turns anti-clockwise by multiples of 90 degrees.
+                orientation = orientation.Then((file.PropertyData(property)[0] & 3) switch
+                {
+                    1 => Orientation.Rotate270,
+                    2 => Orientation.Rotate180,
+                    3 => Orientation.Rotate90,
+                    _ => Orientation.Normal,
+                });
+            }
+            else if (property.Type == AvifContainer.Imir && property.Length >= 1)
+            {
+                // Axis (named mode in the 2022 edition of HEIF) 0 exchanges top and bottom, 1 left and right.
+                orientation = orientation.Then((file.PropertyData(property)[0] & 1) == 0 ? Orientation.FlipVertical : Orientation.FlipHorizontal);
             }
         }
-        return new AvifNclx(seq.ColorPrimaries, seq.TransferCharacteristics, seq.MatrixCoefficients, seq.FullRange);
+        return (crop, orientation);
     }
 
     /// <summary>The rectangle a clap property keeps, or null when it is invalid or reaches outside the image.</summary>
@@ -473,14 +510,14 @@ public sealed class AvifDecoder : IImageDecoder
         double horizN = BinaryPrimitives.ReadInt32BigEndian(p[16..]), horizD = BinaryPrimitives.ReadUInt32BigEndian(p[20..]);
         double vertN = BinaryPrimitives.ReadInt32BigEndian(p[24..]), vertD = BinaryPrimitives.ReadUInt32BigEndian(p[28..]);
         if (widthD == 0 || heightD == 0 || horizD == 0 || vertD == 0) return null;
-        var cropW = widthN / widthD;
-        var cropH = heightN / heightD;
-        // The aperture is centred on the image centre plus the offset.
-        var left = horizN / horizD + (width - cropW) / 2;
-        var top = vertN / vertD + (height - cropH) / 2;
-        var rect = new Rectangle((int)Math.Round(left), (int)Math.Round(top), (int)Math.Round(cropW), (int)Math.Round(cropH));
-        if (rect.Width <= 0 || rect.Height <= 0 || rect.X < 0 || rect.Y < 0 || rect.Right > width || rect.Bottom > height) return null;
-        return rect;
+        // The aperture is centred on the image centre plus the offset. The bounds are checked before anything becomes an
+        // int, since a crafted offset puts the edges far outside int's range.
+        var w = Math.Round(widthN / widthD);
+        var h = Math.Round(heightN / heightD);
+        var x = Math.Round(horizN / horizD + (width - widthN / widthD) / 2);
+        var y = Math.Round(vertN / vertD + (height - heightN / heightD) / 2);
+        if (w <= 0 || h <= 0 || x < 0 || y < 0 || x + w > width || y + h > height) return null;
+        return new Rectangle((int)x, (int)y, (int)w, (int)h);
     }
 
     private static string FourCcName(uint type) => new([(char)(type >> 24), (char)((type >> 16) & 0xFF), (char)((type >> 8) & 0xFF), (char)(type & 0xFF)]);

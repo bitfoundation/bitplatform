@@ -276,22 +276,29 @@ public sealed class ImageProcessorFactory
     /// for AVIF, signals wide gamut or HDR colours without one. The managed decoders read the stored values as sRGB, so
     /// those colours need the browser's colour management.
     /// </summary>
-    private static bool HasWideGamutProfile(ImageFormat format, ReadOnlySpan<byte> data)
+    private static bool HasWideGamutProfile(ImageFormat format, ReadOnlyMemory<byte> data)
     {
         try
         {
-            if (format == ImageFormat.Avif && Codecs.Avif.AvifDecoder.HasNonSrgbColors(data)) return true;
-            var metadata = format switch
+            ReadOnlyMemory<byte> profile;
+            if (format == ImageFormat.Avif)
             {
-                ImageFormat.Jpeg => JpegContainer.ReadMetadata(data),
-                ImageFormat.Png => PngContainer.ReadMetadata(data),
-                ImageFormat.WebP => WebPContainer.ReadMetadata(data),
-                ImageFormat.Avif => Codecs.Avif.AvifDecoder.ReadMetadata(data),
-                _ => null,
-            };
-            if (metadata is null || metadata.IccProfile.IsEmpty) return false;
+                // One parse, in place, for both the colours the file signals and the profile it embeds.
+                if (Codecs.Avif.AvifDecoder.HasNonSrgbColors(data, out profile)) return true;
+            }
+            else
+            {
+                var metadata = format switch
+                {
+                    ImageFormat.Jpeg => JpegContainer.ReadMetadata(data.Span),
+                    ImageFormat.Png => PngContainer.ReadMetadata(data.Span),
+                    ImageFormat.WebP => WebPContainer.ReadMetadata(data.Span),
+                    _ => null,
+                };
+                profile = metadata?.IccProfile ?? default;
+            }
             // Anything not recognised as sRGB goes to the browser, which costs bandwidth but never colour.
-            return !IsSrgbProfile(metadata.IccProfile.Span);
+            return !profile.IsEmpty && !IsSrgbProfile(profile.Span);
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
@@ -398,7 +405,7 @@ public sealed class ImageProcessorFactory
                     var managed = registry.GetDecoder(format);
                     registry.AddDecoder(managed is null
                         ? new BrowserImageDecoder(_interop, [format])
-                        : new FallbackImageDecoder(format, managed, browser, data => HasWideGamutProfile(format, data.Span)));
+                        : new FallbackImageDecoder(format, managed, browser, data => HasWideGamutProfile(format, data)));
                 }
                 var encodable = nativeEncodable.Where(f => f != ImageFormat.Bmp && !registry.CanEncode(f)).ToArray();
                 if (encodable.Length > 0) registry.AddEncoder(new BrowserImageEncoder(_interop, encodable));

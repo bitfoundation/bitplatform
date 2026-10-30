@@ -608,7 +608,7 @@ public static partial class BmageCodeReview
             Message = $"{format} is exported with no capability check and no fallback. Few browsers can encode AVIF, and Bmage " +
                       "refuses the PNG a browser silently substitutes: EncodeAsync throws ImageCapabilityException on the others.",
             Fix = "Exporter.EncodeWithFallbackAsync(image, [ImageFormat.Avif, ImageFormat.WebP], options) - it picks the first " +
-                  "format this browser can really encode and reports it on encoded.Format; WebP encodes everywhere. Or check " +
+                  "format this browser can really encode and reports it on encoded.Format, JPEG when it can write none. Or check " +
                   "capabilities.CanEncode(format) first."
         });
     }

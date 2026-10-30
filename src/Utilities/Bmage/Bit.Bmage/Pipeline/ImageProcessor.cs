@@ -83,7 +83,7 @@ public class ImageProcessor
     private async ValueTask<EncodedImage> EncodeWithinSizeAsync(IImageEncoder encoder, ImageBuffer image, ImageExportOptions options, long maxBytes, CancellationToken ct)
     {
         if (maxBytes <= 0) throw new ArgumentOutOfRangeException(nameof(options), "MaxFileSize must be positive.");
-        var lossy = options.Format.IsLossy() && !(options.Lossless && options.Format == ImageFormat.WebP);
+        var lossy = options.Format.IsLossy() && !options.EncodesLosslessly;
         var minQuality = Math.Clamp(options.MinQuality, 0.05, options.Quality);
         EncodedImage? best = null;
 

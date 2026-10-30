@@ -407,7 +407,8 @@ public static class BmagePipelineLab
                     Format = format.ToString(),
                     Note = "Not measured: AVIF is encoded only by a browser, and this server runs the managed codecs a headless " +
                            "host has. Few browsers can encode AVIF at all; always pair it with a fallback, such as " +
-                           "EncodeWithFallbackAsync([Avif, WebP]) - WebP, measured here, encodes everywhere."
+                           "EncodeWithFallbackAsync([Avif, WebP]) - WebP, measured here, encodes on every server and in every " +
+                           "browser whose canvas writes it."
                 });
 
                 continue;

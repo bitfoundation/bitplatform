@@ -36,18 +36,26 @@ public sealed record ImageCapabilities
     /// <summary>Formats that can be decoded here.</summary>
     public IReadOnlySet<ImageFormat> DecodableFormats { get; init; } = new HashSet<ImageFormat>();
 
-    /// <summary>Formats that can be encoded here.</summary>
+    /// <summary>
+    /// Formats that can be encoded here. In Blazor WebAssembly a format only the managed encoders write, such as WebP on
+    /// Safari, is left out: they would run on the UI thread, many times slower than the browser's own encoders. Encoding
+    /// one explicitly still works.
+    /// </summary>
     public IReadOnlySet<ImageFormat> EncodableFormats { get; init; } = new HashSet<ImageFormat>();
 
     /// <summary>
     /// The part of <see cref="DecodableFormats"/> the browser's own codecs cover, as probed, or null when no browser was
     /// asked. The browser codecs are registered for these only, so a format only the managed decoders read never goes
-    /// to a browser that cannot.
+    /// to a browser that cannot. When it is null in a browser, all of <see cref="DecodableFormats"/> is taken as the
+    /// browser's, so a provider that wraps another, or builds its result from another's, should carry it over.
     /// </summary>
-    internal IReadOnlySet<ImageFormat>? NativeDecodableFormats { get; init; }
+    public IReadOnlySet<ImageFormat>? NativeDecodableFormats { get; init; }
 
-    /// <summary>The part of <see cref="EncodableFormats"/> the browser's own codecs cover, as probed, or null.</summary>
-    internal IReadOnlySet<ImageFormat>? NativeEncodableFormats { get; init; }
+    /// <summary>
+    /// The part of <see cref="EncodableFormats"/> the browser's own codecs cover, as probed, or null. As with
+    /// <see cref="NativeDecodableFormats"/>, null in a browser means all of <see cref="EncodableFormats"/>.
+    /// </summary>
+    public IReadOnlySet<ImageFormat>? NativeEncodableFormats { get; init; }
 
     /// <summary><c>OffscreenCanvas</c> is available, so rendering can move off the main thread.</summary>
     public bool SupportsOffscreenCanvas { get; init; }

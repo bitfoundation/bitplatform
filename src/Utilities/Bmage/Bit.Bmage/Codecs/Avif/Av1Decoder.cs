@@ -39,7 +39,9 @@ internal static class Av1Decoder
         Av1TileDecoder? tiles = null;
         Av1Image? shown = null;
         var nextTile = 0;
-        // Frames refreshed into reference slots but not shown, kept in case a show_existing_frame displays one.
+        // The frames refresh_frame_flags put in the reference slots, shown or not, kept in case a show_existing_frame
+        // displays one. An image may sit in several slots and be the shown one too, so each is disposed only once none
+        // of them holds it.
         var slots = new Av1Image?[8];
         try
         {
@@ -107,10 +109,9 @@ internal static class Av1Decoder
                         if (hdr.ShowExistingFrame)
                         {
                             var existing = slots[hdr.FrameToShowMapIdx] ?? throw new ImageDecodeException("The AV1 stream shows a frame it never decoded.");
-                            for (var i = 0; i < slots.Length; i++)
-                                if (ReferenceEquals(slots[i], existing)) slots[i] = null;
-                            shown?.Dispose();
+                            var previous = shown;
                             shown = existing;
+                            Release(previous, shown, slots);
                             hdr = null;
                             break;
                         }
@@ -118,7 +119,7 @@ internal static class Av1Decoder
                         {
                             if (shown is null) throw new ImageDecodeException("The AV1 image uses inter prediction, which still image decoding does not support.");
                             shown.SkippedFrames = true;
-                            return Take(ref shown);
+                            return Take(ref shown, slots);
                         }
                         limits.Validate(hdr.UpscaledWidth, hdr.FrameHeight);
                         frame?.Dispose();
@@ -141,53 +142,84 @@ internal static class Av1Decoder
                         break;
                 }
             }
-            return shown is not null ? Take(ref shown) : throw new ImageDecodeException("The AV1 data holds no complete frame.");
+            return shown is not null ? Take(ref shown, slots) : throw new ImageDecodeException("The AV1 data holds no complete frame.");
         }
         finally
         {
             frame?.Dispose();
-            shown?.Dispose();
             var disposed = new HashSet<Av1Image>(ReferenceEqualityComparer.Instance);
+            if (shown is not null && disposed.Add(shown)) shown.Dispose();
             foreach (var slot in slots)
                 if (slot is not null && disposed.Add(slot)) slot.Dispose();
         }
     }
 
-    private static Av1Image Take(ref Av1Image? image)
+    /// <summary>Hands the image to the caller, taking it out of the slots, which are released afterwards.</summary>
+    private static Av1Image Take(ref Av1Image? image, Av1Image?[] slots)
     {
         var taken = image!;
         image = null;
+        for (var i = 0; i < slots.Length; i++)
+            if (ReferenceEquals(slots[i], taken)) slots[i] = null;
         return taken;
+    }
+
+    /// <summary>Disposes an image that is neither shown nor in any slot any more.</summary>
+    private static void Release(Av1Image? image, Av1Image? shown, Av1Image?[] slots)
+    {
+        if (image is not null && !ReferenceEquals(image, shown) && Array.IndexOf(slots, image) < 0) image.Dispose();
     }
 
     private static void Finish(ref Av1Frame? frame, ref Av1FrameHeader? hdr, ref Av1Image? shown, Av1Image?[] slots, CancellationToken cancellationToken)
     {
         var image = FinishFrame(frame!, cancellationToken);
         frame = null;
-        if (hdr!.ShowFrame)
-        {
-            shown?.Dispose();
-            shown = image;
-        }
-        else
-        {
-            StoreInSlots(slots, image, hdr.RefreshFrameFlags);
-        }
+        var previous = shown;
+        if (hdr!.ShowFrame) shown = image;
+        // Shown or not, the frame goes to the slots refresh_frame_flags names, all of them for a shown key frame.
+        StoreInSlots(slots, image, hdr.RefreshFrameFlags, shown);
+        Release(previous, shown, slots);
         hdr = null;
     }
 
-    private static void StoreInSlots(Av1Image?[] slots, Av1Image image, int refreshFrameFlags)
+    private static void StoreInSlots(Av1Image?[] slots, Av1Image image, int refreshFrameFlags, Av1Image? shown)
     {
-        var stored = false;
         for (var i = 0; i < 8; i++)
         {
             if ((refreshFrameFlags & (1 << i)) == 0) continue;
             var old = slots[i];
             slots[i] = image;
-            stored = true;
-            if (old is not null && Array.IndexOf(slots, old) < 0) old.Dispose();
+            Release(old, shown, slots);
         }
-        if (!stored) image.Dispose();
+        Release(image, shown, slots);
+    }
+
+    /// <summary>The first sequence header among <paramref name="obus"/>, or null when there is none.</summary>
+    public static Av1SequenceHeader? FindSequenceHeader(ReadOnlySpan<byte> obus)
+    {
+        var pos = 0;
+        while (pos < obus.Length)
+        {
+            var header = obus[pos];
+            if ((header & 0x80) != 0) return null;
+            var p = pos + 1 + ((header & 4) != 0 ? 1 : 0);
+            long size;
+            if ((header & 2) != 0)
+            {
+                var n = Av1BitReader.ReadLeb128(obus, p, out var value);
+                if (n == 0) return null;
+                p += n;
+                size = (long)Math.Min(value, int.MaxValue);
+            }
+            else
+            {
+                size = obus.Length - p;
+            }
+            if (p > obus.Length || size > obus.Length - p) return null;
+            if (((header >> 3) & 15) == ObuSequenceHeader) return Av1SequenceHeader.Parse(obus.Slice(p, (int)size));
+            pos = p + (int)size;
+        }
+        return null;
     }
 
     /// <summary>Decodes the tiles of one tile group, returning true when it was the last of the frame.</summary>

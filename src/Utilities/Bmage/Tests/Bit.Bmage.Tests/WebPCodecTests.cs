@@ -88,6 +88,56 @@ public sealed class WebPCodecTests
     }
 
     [TestMethod]
+    public void PicksTheAlphaFilterByEstimateRatherThanByEncodingEach()
+    {
+        // A steep ramp of many values: its neighbours predict it where the running mean that stands for no filter lags
+        // behind, so a filter is estimated to pay. A two value mask is left unfiltered without estimating. Either way the
+        // alpha comes back exactly.
+        static ImageBuffer WithAlpha(int width, int height, Func<int, int, byte> alpha)
+        {
+            var image = ImageBuffer.Create(width, height);
+            for (var y = 0; y < height; y++)
+                for (var x = 0; x < width; x++)
+                    image[x, y] = new Rgba32(90, 120, 150, alpha(x, y));
+            return image;
+        }
+        static int AlphaFilter(byte[] webp) => (webp[webp.AsSpan().IndexOf("ALPH"u8) + 8] >> 2) & 3;
+
+        var ramp = new byte[64 * 40];
+        for (var i = 0; i < ramp.Length; i++) ramp[i] = (byte)(4 * (i % 64));
+        Assert.AreNotEqual(0, WebPEncoder.EstimateBestFilter(ramp, 64, 40));
+
+        foreach (var (source, mask) in new[] { (WithAlpha(64, 40, (x, y) => (byte)(4 * x)), false), (WithAlpha(64, 40, (x, y) => x < 30 ? (byte)0 : (byte)255), true) })
+        {
+            using (source)
+            {
+                var encoded = WebPEncoder.Encode(source, ImageExportOptions.WebP);
+                if (mask) Assert.AreEqual(0, AlphaFilter(encoded.Data));
+                using var decoded = WebPDecoder.Decode(encoded.Data);
+                for (var y = 0; y < source.Height; y++)
+                    for (var x = 0; x < source.Width; x++)
+                        Assert.AreEqual(source[x, y].A, decoded[x, y].A);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task DecodesASliceOfALargerBufferInPlace()
+    {
+        // Through the decoder interface the bitstream readers read the file where it lies, so every offset is relative
+        // to the slice.
+        foreach (var name in new[] { "lossy-alpha", "lossless", "animated" })
+        {
+            var asset = Asset(name + ".webp");
+            var padded = new byte[asset.Length + 64];
+            asset.CopyTo(padded, 32);
+            using var expected = WebPDecoder.Decode(asset);
+            using var decoded = await new WebPDecoder().DecodeAsync(padded.AsMemory(32, asset.Length), DecodeOptions.Default, Memory.PooledPixelAllocator.Shared);
+            Assert.AreEqual(0, TestImages.MaxChannelDifference(expected, decoded), name);
+        }
+    }
+
+    [TestMethod]
     public void OpaqueLossyImagesUseTheSimpleFormat()
     {
         using var source = TestImages.Gradient(16, 16);

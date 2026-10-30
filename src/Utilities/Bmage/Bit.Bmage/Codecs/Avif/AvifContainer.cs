@@ -35,7 +35,9 @@ internal sealed class AvifContainer
         Clap = FourCc("clap"), Irot = FourCc("irot"), Imir = FourCc("imir"), Dimg = FourCc("dimg"), Auxl = FourCc("auxl"),
         Cdsc = FourCc("cdsc"), Prem = FourCc("prem"), Nclx = FourCc("nclx"), Prof = FourCc("prof"), Ricc = FourCc("rICC");
 
-    private readonly byte[] _data;
+    private readonly ReadOnlyMemory<byte> _data;
+    /// <summary>The length of the whole file, which <see cref="ParseHeaders"/> holds only the start of.</summary>
+    private readonly long _fileLength;
     private int _idatOffset = -1;
     private int _idatLength;
 
@@ -50,33 +52,54 @@ internal sealed class AvifContainer
     /// <summary>The width and height of that track's av01 sample entry.</summary>
     public (int Width, int Height) TrackSize { get; private set; }
 
-    private AvifContainer(byte[] data) => _data = data;
-
-    public byte[] Data => _data;
-
-    public static AvifContainer Parse(byte[] data)
+    private AvifContainer(ReadOnlyMemory<byte> data, long fileLength)
     {
-        var c = new AvifContainer(data);
+        _data = data;
+        _fileLength = fileLength;
+    }
+
+    /// <summary>The whole file, which the container reads in place.</summary>
+    public ReadOnlyMemory<byte> Data => _data;
+
+    public static AvifContainer Parse(ReadOnlyMemory<byte> data) => Parse(data, data.Length);
+
+    private static AvifContainer Parse(ReadOnlyMemory<byte> data, long fileLength)
+    {
+        var c = new AvifContainer(data, fileLength);
         c.ParseTop();
         return c;
+    }
+
+    /// <summary>
+    /// Parses a file held only as a span, copying its ftyp, meta and moov boxes but not the media data writers put
+    /// after them, for callers that read the file's structure and none of its items' data.
+    /// </summary>
+    public static AvifContainer ParseHeaders(ReadOnlySpan<byte> data)
+    {
+        var end = 0;
+        foreach (var (type, offset, length) in Boxes(data, 0, data.Length))
+            if (type == FourCc("ftyp") || type == FourCc("meta") || type == FourCc("moov")) end = offset + length;
+        return Parse(data[..end].ToArray(), data.Length);
     }
 
     private static ImageDecodeException Corrupt(string what) => new($"Invalid AVIF file: {what}.");
 
     /// <summary>Iterates boxes in [start, end): yields type, payload offset and payload length.</summary>
-    private List<(uint Type, int Offset, int Length)> Boxes(int start, int end)
+    private List<(uint Type, int Offset, int Length)> Boxes(int start, int end) => Boxes(_data.Span, start, end);
+
+    private static List<(uint Type, int Offset, int Length)> Boxes(ReadOnlySpan<byte> data, int start, int end)
     {
         var list = new List<(uint, int, int)>();
         var pos = start;
         while (pos + 8 <= end)
         {
-            long size = BinaryPrimitives.ReadUInt32BigEndian(_data.AsSpan(pos));
-            var type = BinaryPrimitives.ReadUInt32BigEndian(_data.AsSpan(pos + 4));
+            long size = BinaryPrimitives.ReadUInt32BigEndian(data[pos..]);
+            var type = BinaryPrimitives.ReadUInt32BigEndian(data[(pos + 4)..]);
             var header = 8;
             if (size == 1)
             {
                 if (pos + 16 > end) throw Corrupt("truncated box");
-                size = (long)BinaryPrimitives.ReadUInt64BigEndian(_data.AsSpan(pos + 8));
+                size = (long)BinaryPrimitives.ReadUInt64BigEndian(data[(pos + 8)..]);
                 header = 16;
             }
             else if (size == 0)
@@ -119,7 +142,7 @@ internal sealed class AvifContainer
     {
         foreach (var (type, offset, length) in Boxes(start, end))
         {
-            var span = _data.AsSpan(offset, length);
+            var span = _data.Span.Slice(offset, length);
             if (type == FourCc("pitm"))
             {
                 if (length < 6) throw Corrupt("short pitm");
@@ -147,7 +170,7 @@ internal sealed class AvifContainer
         return item;
     }
 
-    private sealed class Cursor(byte[] data, int pos, int end)
+    private sealed class Cursor(ReadOnlyMemory<byte> data, int pos, int end)
     {
         public int Pos = pos;
 
@@ -155,8 +178,9 @@ internal sealed class AvifContainer
         {
             if (bytes == 0) return 0;
             if (bytes > 8 || Pos + bytes > end) throw Corrupt("truncated box");
+            var span = data.Span;
             ulong v = 0;
-            for (var i = 0; i < bytes; i++) v = (v << 8) | data[Pos++];
+            for (var i = 0; i < bytes; i++) v = (v << 8) | span[Pos++];
             return v;
         }
 
@@ -166,9 +190,10 @@ internal sealed class AvifContainer
 
         public string CString()
         {
+            var span = data.Span;
             var start = Pos;
-            while (Pos < end && data[Pos] != 0) Pos++;
-            var s = Encoding.UTF8.GetString(data, start, Pos - start);
+            while (Pos < end && span[Pos] != 0) Pos++;
+            var s = Encoding.UTF8.GetString(span[start..Pos]);
             if (Pos < end) Pos++;
             return s;
         }
@@ -219,7 +244,10 @@ internal sealed class AvifContainer
         var start = c.Pos;
         foreach (var (type, boxOffset, boxLength) in Boxes(start, offset + length))
         {
+            // entry_count infe boxes, whatever their version; any after them are not entries.
+            if (count == 0) break;
             if (type != FourCc("infe")) continue;
+            count--;
             var e = new Cursor(_data, boxOffset, boxOffset + boxLength);
             var infeVersion = e.U8();
             e.Read(3);
@@ -230,13 +258,12 @@ internal sealed class AvifContainer
             item.Type = e.U32();
             e.CString(); // item_name
             if (item.Type == Mime && !e.AtEnd) item.ContentType = e.CString();
-            if (count-- == 0) break;
         }
     }
 
     private void ParseIref(int offset, int length)
     {
-        var version = _data[offset];
+        var version = _data.Span[offset];
         foreach (var (type, boxOffset, boxLength) in Boxes(offset + 4, offset + length))
         {
             var c = new Cursor(_data, boxOffset, boxOffset + boxLength);
@@ -304,7 +331,7 @@ internal sealed class AvifContainer
                     foreach (var (et, eo, el) in Boxes(c.Pos, o + l))
                     {
                         if (et != Av01 || el < 78) continue;
-                        size = (BinaryPrimitives.ReadUInt16BigEndian(_data.AsSpan(eo + 24)), BinaryPrimitives.ReadUInt16BigEndian(_data.AsSpan(eo + 26)));
+                        size = (BinaryPrimitives.ReadUInt16BigEndian(_data.Span[(eo + 24)..]), BinaryPrimitives.ReadUInt16BigEndian(_data.Span[(eo + 26)..]));
                         foreach (var (ct, co, cl) in Boxes(eo + 78, eo + el))
                             if (ct == Av1C) av1C = (co, cl);
                         break;
@@ -338,7 +365,7 @@ internal sealed class AvifContainer
             }
             // The first sample is always the first sample of the first chunk, whatever stsc says about the others.
             if (av1C is null || firstSize is null || firstChunkOffset is null) continue;
-            if (firstChunkOffset < 0 || firstSize <= 0 || firstChunkOffset + firstSize > _data.Length) throw Corrupt("track sample outside the file");
+            if (firstChunkOffset < 0 || firstSize <= 0 || firstChunkOffset + firstSize > _fileLength) throw Corrupt("track sample outside the file");
             FirstTrackSample = ((int)firstChunkOffset.Value, (int)firstSize.Value);
             TrackAv1C = av1C;
             TrackSize = size;
@@ -372,10 +399,34 @@ internal sealed class AvifContainer
         return null;
     }
 
-    public ReadOnlySpan<byte> PropertyData(HeifProperty p) => _data.AsSpan(p.Offset, p.Length);
+    public ReadOnlySpan<byte> PropertyData(HeifProperty p) => _data.Span.Slice(p.Offset, p.Length);
 
-    /// <summary>The bytes of an item, its extents concatenated, checked against the file and the size limit.</summary>
-    public byte[] GetItemData(HeifItem item, long maxBytes)
+    /// <summary>
+    /// The bytes of an item, its extents concatenated, checked against the file and the size limit, after
+    /// <paramref name="prefix"/> when one is given.
+    /// </summary>
+    public byte[] GetItemData(HeifItem item, long maxBytes, ReadOnlySpan<byte> prefix = default)
+    {
+        var (extents, total) = ResolveExtents(item, maxBytes);
+        var result = new byte[prefix.Length + total];
+        prefix.CopyTo(result);
+        var pos = prefix.Length;
+        foreach (var (start, length) in extents)
+        {
+            _data.Span.Slice(start, length).CopyTo(result.AsSpan(pos));
+            pos += length;
+        }
+        return result;
+    }
+
+    /// <summary>The first extent of an item's data, read in place: where an AV1 item starts with its sequence header.</summary>
+    public ReadOnlySpan<byte> GetItemDataStart(HeifItem item)
+    {
+        var (extents, _) = ResolveExtents(item, long.MaxValue);
+        return _data.Span.Slice(extents[0].Start, extents[0].Length);
+    }
+
+    private ((int Start, int Length)[] Extents, int Total) ResolveExtents(HeifItem item, long maxBytes)
     {
         if (!item.HasLocation || item.Extents.Count == 0) throw Corrupt($"item {item.Id} has no data");
         int sourceStart, sourceLength;
@@ -408,13 +459,6 @@ internal sealed class AvifContainer
             total += (long)len;
             if (total > Math.Min(maxBytes, int.MaxValue)) throw new ImageLimitExceededException("The AVIF item is larger than the configured limit.");
         }
-        var result = new byte[total];
-        var pos = 0;
-        foreach (var (start, length) in resolved)
-        {
-            _data.AsSpan(start, length).CopyTo(result.AsSpan(pos));
-            pos += length;
-        }
-        return result;
+        return (resolved, (int)total);
     }
 }

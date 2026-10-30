@@ -78,14 +78,17 @@ public sealed class BrowserCapabilityProvider : IImageCapabilityProvider
             var format = ImageFormats.FromMimeType(mime);
             if (format != ImageFormat.Unknown) encodable.Add(format);
         }
-        // What the browser lacks, the managed codecs may still cover: BMP encoding, WebP on a browser that cannot write
-        // it, such as Safari, and AVIF decoding on one that cannot read it.
+        // What the browser lacks, the managed codecs may still cover: AVIF decoding on a browser that cannot read it, BMP
+        // encoding, and, where they run on a server, WebP on a browser that cannot write it, such as Safari. In WebAssembly
+        // they would run on the UI thread, many times slower than the canvas, so a format only they write is not offered
+        // there, and a choice such as EncodeWithFallbackAsync's falls to one the canvas writes. Asked for anyway, it works.
+        var environment = OperatingSystem.IsBrowser() ? ImageEnvironment.BrowserWebAssembly : ImageEnvironment.BrowserServer;
         var nativeDecodable = decodable.ToHashSet();
         var nativeEncodable = encodable.ToHashSet();
         decodable.UnionWith(ImageCapabilities.ManagedDecodableFormats);
-        encodable.UnionWith(ImageCapabilities.ManagedEncodableFormats);
+        if (environment == ImageEnvironment.BrowserWebAssembly) encodable.Add(ImageFormat.Bmp);
+        else encodable.UnionWith(ImageCapabilities.ManagedEncodableFormats);
 
-        var environment = OperatingSystem.IsBrowser() ? ImageEnvironment.BrowserWebAssembly : ImageEnvironment.BrowserServer;
         var maxDimension = report.MaxCanvasDimension > 0 ? report.MaxCanvasDimension : 4096;
         return new ImageCapabilities
         {

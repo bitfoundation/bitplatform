@@ -63,11 +63,15 @@ public sealed record ImageExportOptions
     public double Quality { get; init; } = 0.85;
 
     /// <summary>
-    /// Encode losslessly with formats that can do either: WebP, which the managed encoder then writes wherever this runs.
-    /// <see cref="Quality"/> then does not apply, and a <see cref="MaxFileSize"/> is met by shrinking the dimensions.
-    /// Other formats ignore it. Default false.
+    /// Encode losslessly with formats that can do either: WebP, which the managed encoder then writes wherever this runs,
+    /// since no browser's canvas writes lossless WebP. In Blazor WebAssembly that is on the UI thread, which a large photo
+    /// holds for seconds. <see cref="Quality"/> then does not apply, and a <see cref="MaxFileSize"/> is met by shrinking
+    /// the dimensions. Other formats ignore it. Default false.
     /// </summary>
     public bool Lossless { get; init; }
+
+    /// <summary>True when <see cref="Lossless"/> applies, that is, <see cref="Format"/> is one that can encode either way.</summary>
+    internal bool EncodesLosslessly => Lossless && Format == ImageFormat.WebP;
 
     /// <summary>Which metadata to keep. Defaults to <see cref="MetadataPolicy.Remove"/> for privacy and size.</summary>
     public MetadataPolicy Metadata { get; init; } = MetadataPolicy.Remove;

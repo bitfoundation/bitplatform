@@ -273,7 +273,10 @@ CDEF and loop restoration, the filters libaom's slower presets turn on.
 
 Lossy WebP encoding is the one slow codec path: the encoder picks every macroblock's prediction by trying the modes
 and weighing the bits each costs against the error it leaves, which is where its smaller files come from. On a server
-that is about a second for a 12 megapixel photo on one core.
+that is about a second for a 12 megapixel photo on one core. A transparent image adds a lossless encode of its alpha,
+after the spatial filter libwebp's default effort would estimate, rather than one encode per filter; only an alpha of
+more than 192 values is also tried unfiltered. In Blazor WebAssembly the capabilities do not offer WebP where the
+canvas cannot write it, so a fallback export never lands on this path by accident.
 
 PNG compression level matters more than anything else here: level 6 is 3.6× slower than level 1 for a modest size gain.
 Level 1 is usually the right default for an interactive preview, and the library's default of 6 is right for a final
