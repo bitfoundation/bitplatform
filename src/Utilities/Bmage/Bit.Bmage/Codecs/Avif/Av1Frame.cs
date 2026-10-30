@@ -97,61 +97,62 @@ internal sealed class Av1Frame : IDisposable
             // at decoded ones, and the pooled planes are cleared as well, so no earlier decode can ever show through.
             if (hdr.AllowIntrabc)
                 foreach (var plane in Planes) plane.Data.AsSpan(0, plane.Stride * plane.Height).Clear();
+
+            var mi = MiRows * MiCols;
+            MiSizes = new byte[mi];
+            YModes = new byte[mi];
+            UVModes = new byte[mi];
+            RefFrames0 = new sbyte[mi];
+            RefFrames0.AsSpan().Fill(-1);
+            IsInters = new byte[mi];
+            Skips = new byte[mi];
+            InterTxSizes = new byte[mi];
+            SegmentIds = new byte[mi];
+            PaletteSizesY = new byte[mi];
+            PaletteSizesUV = new byte[mi];
+            TxTypes = new byte[mi];
+            if (hdr.AllowIntrabc)
+            {
+                MvRows = new short[mi];
+                MvCols = new short[mi];
+            }
+            if (hdr.DeltaLfPresent) DeltaLFs = new sbyte[mi * 4];
+            LoopfilterTxSizes = new byte[NumPlanes][];
+            LfStride = new int[NumPlanes];
+            for (var p = 0; p < NumPlanes; p++)
+            {
+                var sx = p == 0 ? 0 : SubX;
+                var sy = p == 0 ? 0 : SubY;
+                LfStride[p] = (MiCols + sx) >> sx;
+                LoopfilterTxSizes[p] = new byte[LfStride[p] * ((MiRows + sy) >> sy)];
+            }
+            CdefStride = (MiCols + 15) >> 4;
+            CdefIdx = new sbyte[CdefStride * ((MiRows + 15) >> 4)];
+            CdefIdx.AsSpan().Fill(-1);
+
+            if (hdr.UsesLr)
+            {
+                for (var p = 0; p < NumPlanes; p++)
+                {
+                    if (hdr.FrameRestorationType[p] == Av1FrameHeader.RestoreNone) continue;
+                    var sx = p == 0 ? 0 : SubX;
+                    var sy = p == 0 ? 0 : SubY;
+                    var unitSize = hdr.LoopRestorationSize[p];
+                    LrUnitRows[p] = CountUnits(unitSize, Round2(hdr.FrameHeight, sy));
+                    LrUnitCols[p] = CountUnits(unitSize, Round2(hdr.UpscaledWidth, sx));
+                    var units = LrUnitRows[p] * LrUnitCols[p];
+                    LrType[p] = new byte[units];
+                    LrWiener[p] = new sbyte[units * 6];
+                    LrSgrSet[p] = new byte[units];
+                    LrSgrXqd[p] = new short[units * 2];
+                }
+            }
         }
         catch
         {
+            // Pooled planes go back to the pool whichever allocation failed.
             foreach (var plane in Planes) plane?.Dispose();
             throw;
-        }
-
-        var mi = MiRows * MiCols;
-        MiSizes = new byte[mi];
-        YModes = new byte[mi];
-        UVModes = new byte[mi];
-        RefFrames0 = new sbyte[mi];
-        RefFrames0.AsSpan().Fill(-1);
-        IsInters = new byte[mi];
-        Skips = new byte[mi];
-        InterTxSizes = new byte[mi];
-        SegmentIds = new byte[mi];
-        PaletteSizesY = new byte[mi];
-        PaletteSizesUV = new byte[mi];
-        TxTypes = new byte[mi];
-        if (hdr.AllowIntrabc)
-        {
-            MvRows = new short[mi];
-            MvCols = new short[mi];
-        }
-        if (hdr.DeltaLfPresent) DeltaLFs = new sbyte[mi * 4];
-        LoopfilterTxSizes = new byte[NumPlanes][];
-        LfStride = new int[NumPlanes];
-        for (var p = 0; p < NumPlanes; p++)
-        {
-            var sx = p == 0 ? 0 : SubX;
-            var sy = p == 0 ? 0 : SubY;
-            LfStride[p] = (MiCols + sx) >> sx;
-            LoopfilterTxSizes[p] = new byte[LfStride[p] * ((MiRows + sy) >> sy)];
-        }
-        CdefStride = (MiCols + 15) >> 4;
-        CdefIdx = new sbyte[CdefStride * ((MiRows + 15) >> 4)];
-        CdefIdx.AsSpan().Fill(-1);
-
-        if (hdr.UsesLr)
-        {
-            for (var p = 0; p < NumPlanes; p++)
-            {
-                if (hdr.FrameRestorationType[p] == Av1FrameHeader.RestoreNone) continue;
-                var sx = p == 0 ? 0 : SubX;
-                var sy = p == 0 ? 0 : SubY;
-                var unitSize = hdr.LoopRestorationSize[p];
-                LrUnitRows[p] = CountUnits(unitSize, Round2(hdr.FrameHeight, sy));
-                LrUnitCols[p] = CountUnits(unitSize, Round2(hdr.UpscaledWidth, sx));
-                var units = LrUnitRows[p] * LrUnitCols[p];
-                LrType[p] = new byte[units];
-                LrWiener[p] = new sbyte[units * 6];
-                LrSgrSet[p] = new byte[units];
-                LrSgrXqd[p] = new short[units * 2];
-            }
         }
     }
 

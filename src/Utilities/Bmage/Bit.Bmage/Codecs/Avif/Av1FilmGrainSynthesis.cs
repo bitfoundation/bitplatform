@@ -3,7 +3,7 @@
 /// <summary>The reference film grain synthesis process (spec 7.18.3), applied to the output planes.</summary>
 internal static class Av1FilmGrainSynthesis
 {
-    public static void Apply(Av1Image image, Av1FilmGrain g)
+    public static void Apply(Av1Image image, Av1FilmGrain g, CancellationToken cancellationToken)
     {
         var bitDepth = image.BitDepth;
         var mono = image.MonoChrome;
@@ -276,6 +276,7 @@ internal static class Av1FilmGrainSynthesis
             var outV = image.Planes[2];
             for (var y = 0; y < (h + subY) >> subY; y++)
             {
+                if ((y & 15) == 0) cancellationToken.ThrowIfCancellationRequested();
                 for (var x = 0; x < (w + subX) >> subX; x++)
                 {
                     var lumaX = x << subX;
@@ -323,6 +324,7 @@ internal static class Av1FilmGrainSynthesis
         {
             for (var y = 0; y < h; y++)
             {
+                if ((y & 15) == 0) cancellationToken.ThrowIfCancellationRequested();
                 for (var x = 0; x < w; x++)
                 {
                     int orig = outY.Data[y * outY.Stride + x];

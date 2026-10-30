@@ -61,7 +61,9 @@ Blazor-native image processing platform where the engine itself is C#.
   bytes, previews are cheap, and any earlier step can be changed without redoing the rest.
 - **The engine is this project.** The resampler, rasteriser, colour pipeline, TrueType text engine, and the PNG, JPEG,
   BMP, GIF and WebP codecs and an AVIF decoder are implemented here, so a server reads WebP and AVIF and writes WebP
-  with no native library. The browser is used only for what only it can do: writing AVIF, and colour management.
+  with no native library. In Blazor WebAssembly the browser's own codecs also decode PNG and JPEG, and WebP and AVIF
+  where it supports them, and encode PNG, JPEG and WebP, because they are faster there; only the browser writes AVIF,
+  and only it manages colour.
 - **Large images stay usable.** Interactive editing runs on a proxy sized for the display and replays at full resolution
   on export, so a 24 megapixel photo does not stall the interface.
 - **Privacy is the default.** Metadata is removed unless you ask for it. Location data cannot leak into an exported

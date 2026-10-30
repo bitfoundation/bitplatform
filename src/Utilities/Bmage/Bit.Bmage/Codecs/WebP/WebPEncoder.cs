@@ -12,8 +12,11 @@ public sealed class WebPEncoder : IImageEncoder
     private static readonly ImageFormat[] SupportedFormats = [ImageFormat.WebP];
     public IReadOnlyCollection<ImageFormat> Formats => SupportedFormats;
 
-    /// <summary>The largest width or height a WebP can store.</summary>
+    /// <summary>The largest width or height a lossy WebP can store.</summary>
     public const int MaxDimension = 16383;
+
+    /// <summary>The largest width or height a lossless WebP can store, one more than a lossy one.</summary>
+    public const int MaxLosslessDimension = 16384;
 
     public ValueTask<EncodedImage> EncodeAsync(ImageBuffer image, ImageExportOptions options, CancellationToken cancellationToken = default)
         => new(Encode(image, options, cancellationToken));
@@ -22,8 +25,9 @@ public sealed class WebPEncoder : IImageEncoder
     {
         ArgumentNullException.ThrowIfNull(image);
         options ??= ImageExportOptions.WebP;
-        if (image.Width > MaxDimension || image.Height > MaxDimension)
-            throw new ImageEncodeException($"WebP cannot store a {image.Width}x{image.Height} image: neither side may exceed {MaxDimension} pixels. Resize it first, or choose another format.");
+        var maxDimension = options.Lossless ? MaxLosslessDimension : MaxDimension;
+        if (image.Width > maxDimension || image.Height > maxDimension)
+            throw new ImageEncodeException($"{(options.Lossless ? "A lossless" : "A lossy")} WebP cannot store a {image.Width}x{image.Height} image: neither side may exceed {maxDimension} pixels. Resize it first, or choose another format.");
 
         var quality = Math.Clamp(options.Quality, 0.0, 1.0);
         var hasAlpha = image.HasTransparency();

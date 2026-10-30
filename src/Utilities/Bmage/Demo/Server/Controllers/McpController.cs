@@ -372,7 +372,7 @@ public class McpController : ControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(CompareBmageMetadataPolicies), Title = "Compare metadata export policies",
                    ReadOnly = true, Destructive = false, Idempotent = true, OpenWorld = false)]
-    [Description("Encodes a camera photo carrying a GPS position, a serial number, the owner's name, camera, lens, ISO, a date and a copyright through the real Bit.Bmage encoder under each MetadataPolicy (Remove, StripSensitive, Preserve), decodes every file again, and reports which fields survived - so a privacy decision rests on what the exported file contains rather than on what a policy name suggests. Pass format 'jpeg' (default), 'png' or 'bmp'.")]
+    [Description("Encodes a camera photo carrying a GPS position, a serial number, the owner's name, camera, lens, ISO, a date and a copyright through the real Bit.Bmage encoder under each MetadataPolicy (Remove, StripSensitive, Preserve), decodes every file again, and reports which fields survived - so a privacy decision rests on what the exported file contains rather than on what a policy name suggests. Pass format 'jpeg' (default), 'png', 'bmp' or 'webp'.")]
     public Task<BmageMetadataComparisonDto> CompareBmageMetadataPolicies(
         [Description("The export format: 'jpeg' (default), 'png', 'bmp' or 'webp'.")] string format = "jpeg",
         CancellationToken cancellationToken = default)

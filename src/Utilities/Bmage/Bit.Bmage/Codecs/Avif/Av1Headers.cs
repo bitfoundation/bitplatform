@@ -234,6 +234,8 @@ internal sealed class Av1FrameHeader
 
     public bool ShowExistingFrame;
     public int FrameToShowMapIdx;
+    public int DisplayFrameId; // when frame_id_numbers_present_flag, the id of the frame shown again
+    public int CurrentFrameId; // when frame_id_numbers_present_flag, this frame's id
     public int FrameType;
     public bool ShowFrame;
     public bool ShowableFrame;
@@ -337,7 +339,7 @@ internal sealed class Av1FrameHeader
             {
                 h.FrameToShowMapIdx = r.Read(3);
                 if (seq.DecoderModelInfoPresent && !seq.EqualPictureInterval) r.ReadBits(seq.FramePresentationTimeLength);
-                if (seq.FrameIdNumbersPresent) r.ReadBits(idLen);
+                if (seq.FrameIdNumbersPresent) h.DisplayFrameId = (int)r.ReadBits(idLen);
                 return h;
             }
             h.FrameType = r.Read(2);
@@ -351,7 +353,7 @@ internal sealed class Av1FrameHeader
         h.AllowScreenContentTools = seq.ForceScreenContentTools == 2 ? r.ReadFlag() : seq.ForceScreenContentTools == 1;
         if (h.AllowScreenContentTools && seq.ForceIntegerMv == 2) r.ReadBit();
         h.ForceIntegerMv = true;
-        if (seq.FrameIdNumbersPresent) r.ReadBits(idLen); // current_frame_id
+        if (seq.FrameIdNumbersPresent) h.CurrentFrameId = (int)r.ReadBits(idLen);
         var frameSizeOverride = !seq.ReducedStillPictureHeader && r.ReadFlag();
         r.ReadBits(seq.OrderHintBits); // order_hint
         if (seq.DecoderModelInfoPresent && r.ReadFlag())

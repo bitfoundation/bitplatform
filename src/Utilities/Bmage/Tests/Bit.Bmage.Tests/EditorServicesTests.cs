@@ -1,4 +1,5 @@
-﻿using Bit.Bmage.Input;
+﻿using System.Text.Json;
+using Bit.Bmage.Input;
 using Bit.Bmage.Interop;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
@@ -126,6 +127,32 @@ public sealed class EditorServicesTests
     }
 
     [TestMethod]
+    public async Task TheBrowsersOwnFormatsAreWhatItsProbeReported()
+    {
+        // The probe's answer as the module returns it: a type no format has is passed over, and PNG, JPEG and BMP, which
+        // every browser that runs Blazor decodes, are taken as read.
+        const string report = """
+            {
+              "decodableMimeTypes": ["image/webp", "image/avif", "image/gif", "image/x-unknown"],
+              "encodableMimeTypes": ["image/png", "image/webp"],
+              "maxCanvasDimension": 16384
+            }
+            """;
+        var jsRuntime = new ProbedJSRuntime(report);
+        await using var interop = new BrowserImageInterop(jsRuntime);
+        var capabilities = await new Capabilities.BrowserCapabilityProvider(interop, jsRuntime).GetAsync();
+
+        CollectionAssert.AreEquivalent(
+            new[] { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.Bmp, ImageFormat.WebP, ImageFormat.Avif, ImageFormat.Gif },
+            capabilities.NativeDecodableFormats!.ToArray());
+        CollectionAssert.AreEquivalent(new[] { ImageFormat.Png, ImageFormat.WebP }, capabilities.NativeEncodableFormats!.ToArray());
+        // Off WebAssembly the managed codecs join the full sets, never the browser's own.
+        Assert.AreEqual(Capabilities.ImageEnvironment.BrowserServer, capabilities.Environment);
+        Assert.IsTrue(capabilities.CanEncode(ImageFormat.Jpeg));
+        Assert.IsTrue(capabilities.CanEncode(ImageFormat.Bmp));
+    }
+
+    [TestMethod]
     public async Task TheBrowserDecodesWhatTheManagedDecoderRefusesOrIsToldToLeave()
     {
         var managed = new FakeDecoder("managed");
@@ -173,5 +200,26 @@ public sealed class EditorServicesTests
     {
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => throw new NotSupportedException();
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args) => throw new NotSupportedException();
+    }
+
+    /// <summary>
+    /// A browser whose module answers the capability probe with a fixed report, read as the real one is, and does nothing
+    /// for the calls that return nothing, such as releasing its resources.
+    /// </summary>
+    private sealed class ProbedJSRuntime(string report) : IJSRuntime
+    {
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => InvokeAsync<TValue>(identifier, CancellationToken.None, args);
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+            => identifier == "import" ? ValueTask.FromResult((TValue)(object)new Module(report)) : throw new NotSupportedException();
+
+        private sealed class Module(string report) : IJSObjectReference
+        {
+            public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => InvokeAsync<TValue>(identifier, CancellationToken.None, args);
+            public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+                => identifier == "getCapabilities" ? ValueTask.FromResult(JsonSerializer.Deserialize<TValue>(report)!)
+                    : typeof(TValue) == typeof(Microsoft.JSInterop.Infrastructure.IJSVoidResult) ? ValueTask.FromResult(default(TValue)!)
+                    : throw new NotSupportedException();
+            public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+        }
     }
 }

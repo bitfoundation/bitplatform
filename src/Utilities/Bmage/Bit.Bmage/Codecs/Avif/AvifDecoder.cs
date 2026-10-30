@@ -361,6 +361,15 @@ public sealed class AvifDecoder : IImageDecoder
             tileItems[i] = file.GetItem(tiles[i]) ?? throw new ImageDecodeException("An AVIF grid tile does not exist.");
             if (tileItems[i].Type != AvifContainer.Av01) throw new ImageDecodeException("AVIF grid tiles must be AV1 images.");
         }
+        // A grid may name one item for many cells. Each item is decoded once, by one thread, and written to all of its cells
+        // before it is released, so a small file cannot demand decoding out of proportion to its size.
+        var cellsOf = new Dictionary<uint, List<int>>();
+        var groups = new List<List<int>>();
+        for (var i = 0; i < tiles.Length; i++)
+        {
+            if (!cellsOf.TryGetValue(tiles[i], out var cells)) groups.Add(cellsOf[tiles[i]] = cells = []);
+            cells.Add(i);
+        }
         if (alphaOnly && (target!.Width != outW || target.Height != outH)) throw new ImageDecodeException("The AVIF alpha image does not match the colour image's size.");
         var result = alphaOnly ? target! : ImageBuffer.Create(outW, outH, allocator, clear: true, options.Limits);
         try
@@ -369,14 +378,22 @@ public sealed class AvifDecoder : IImageDecoder
             var tileH = 0;
             var color = default(AvifNclx);
             var parallelism = Math.Max(1, options.MaxDegreeOfParallelism ?? OperationContext.DefaultMaxDegreeOfParallelism);
-            void DecodeTile(int i)
+            void WriteCells(Av1Image frame, List<int> cells)
             {
-                using var frame = DecodeAv1Item(file, tileItems[i], options, cancellationToken);
+                foreach (var i in cells)
+                {
+                    var x = i % cols * tileW;
+                    var y = i / cols * tileH;
+                    if (alphaOnly) AvifColor.WriteAlpha(frame, result, x, y);
+                    else AvifColor.WriteRgb(frame, color, result, x, y, nearestChroma);
+                }
+            }
+            void DecodeTile(int g)
+            {
+                var cells = groups[g];
+                using var frame = DecodeAv1Item(file, tileItems[cells[0]], options, cancellationToken);
                 if (frame.Width != tileW || frame.Height != tileH) throw new ImageDecodeException("AVIF grid tiles differ in size.");
-                var x = i % cols * tileW;
-                var y = i / cols * tileH;
-                if (alphaOnly) AvifColor.WriteAlpha(frame, result, x, y);
-                else AvifColor.WriteRgb(frame, color, result, x, y, nearestChroma);
+                WriteCells(frame, cells);
             }
             // The first tile sets the tile size and colour; the others can then decode side by side.
             using (var first = DecodeAv1Item(file, tileItems[0], options, cancellationToken))
@@ -388,13 +405,12 @@ public sealed class AvifDecoder : IImageDecoder
                 if ((long)tileW * cols < outW || (long)tileH * rows < outH || (long)tileW * (cols - 1) >= outW || (long)tileH * (rows - 1) >= outH)
                     throw new ImageDecodeException("The AVIF image grid tiles do not match the image size.");
                 color = ColorOf(file, file.FindProperty(item, AvifContainer.Colr) is not null ? item : tileItems[0], first.Seq);
-                if (alphaOnly) AvifColor.WriteAlpha(first, result, 0, 0);
-                else AvifColor.WriteRgb(first, color, result, 0, 0, nearestChroma);
+                WriteCells(first, groups[0]);
             }
-            if (parallelism > 1 && tiles.Length > 2)
-                ParallelRows.For(1, tiles.Length, new ParallelOptions { MaxDegreeOfParallelism = parallelism, CancellationToken = cancellationToken }, DecodeTile);
+            if (parallelism > 1 && groups.Count > 2)
+                ParallelRows.For(1, groups.Count, new ParallelOptions { MaxDegreeOfParallelism = parallelism, CancellationToken = cancellationToken }, DecodeTile);
             else
-                for (var i = 1; i < tiles.Length; i++) DecodeTile(i);
+                for (var g = 1; g < groups.Count; g++) DecodeTile(g);
             return result;
         }
         catch

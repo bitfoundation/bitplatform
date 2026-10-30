@@ -93,10 +93,13 @@
     </div>
     <p>
         "Managed" means pure C#, working anywhere including a server. "Browser" means the platform's
-        own codecs, the only way to write AVIF. When both are available the browser codec wins,
-        because it is hardware accelerated and colour manages; the managed codecs remain the fallback,
-        which is what makes prerendering and server-side use work, and what writes WebP where a
-        browser cannot. The
+        own codecs, the only way to write AVIF. In WebAssembly the browser codec wins when both are
+        available, because it is hardware accelerated and colour manages; the managed codecs remain the
+        fallback, which is what makes prerendering and server-side use work. Over Interactive Server and
+        in a Blazor Hybrid app it is the other way round, because pixels a browser codec touches cross
+        the circuit or the WebView: the managed codecs decode and encode first, the browser decodes only
+        what they reject, what is over the limits and wide gamut photos, and it encodes only AVIF and
+        whatever else the managed codecs cannot write. The
         <a href="/capabilities">Capabilities</a> page shows the probe's answer for this browser.
     </p>
 </div>

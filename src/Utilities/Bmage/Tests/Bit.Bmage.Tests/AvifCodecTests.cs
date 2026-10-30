@@ -229,11 +229,28 @@ public sealed class AvifCodecTests
             .Add(new AvifBuilder.Item(1, "av01", source.GetItemData(color, int.MaxValue), CopyProperties(source, color), [("prem", [2])]))
             .Add(new AvifBuilder.Item(2, "av01", source.GetItemData(alpha, int.MaxValue), CopyProperties(source, alpha), [("auxl", [1])]))
             .Build(primary: 1);
-        using var expected = DecodeLikeLibheif(Asset("alpha.avif"));
-        AvifColor.Unpremultiply(expected);
+        // Without prem the same samples decode to the premultiplied colour; with it, each partly transparent pixel is
+        // that colour divided by its alpha, worked out here rather than by the decoder's own helper.
+        using var stored = DecodeLikeLibheif(Asset("alpha.avif"));
+        static byte Straight(byte c, byte a) => (byte)Math.Min(255, Math.Round(c * 255.0 / a, MidpointRounding.AwayFromZero));
 
         using var decoded = DecodeLikeLibheif(file);
-        Assert.AreEqual(0, TestImages.MaxChannelDifference(expected, decoded));
+        var partial = 0;
+        for (var y = 0; y < stored.Height; y++)
+        {
+            for (var x = 0; x < stored.Width; x++)
+            {
+                var p = stored[x, y];
+                if (p.A is 0 or 255)
+                {
+                    Assert.AreEqual(p, decoded[x, y], $"({x}, {y})");
+                    continue;
+                }
+                partial++;
+                Assert.AreEqual(new Rgba32(Straight(p.R, p.A), Straight(p.G, p.A), Straight(p.B, p.A), p.A), decoded[x, y], $"({x}, {y})");
+            }
+        }
+        Assert.IsGreaterThan(0, partial, "the asset has partly transparent pixels to undo");
     }
 
     [TestMethod]
@@ -413,32 +430,53 @@ public sealed class AvifCodecTests
     [TestMethod]
     public void ShowsAFrameAgainFromItsReferenceSlot()
     {
-        // The still rewritten without its reduced header, then shown a second time with show_existing_frame, as an
-        // encoder may end a stream: a shown key frame fills every reference slot, so slot 0 holds it.
+        using var plain = DecodeLikeLibheif(Asset("photo-420.avif"));
+
+        using var decoded = DecodeLikeLibheif(ShownAgain(frameId: null, displayFrameId: null));
+        Assert.AreEqual(0, TestImages.MaxChannelDifference(plain, decoded));
+    }
+
+    [TestMethod]
+    public void ShowsAgainOnlyTheFrameTheStreamNames()
+    {
+        // A stream that numbers its frames names the one it shows again, and the slot must hold that one.
+        using var plain = DecodeLikeLibheif(Asset("photo-420.avif"));
+        using (var decoded = DecodeLikeLibheif(ShownAgain(frameId: 5, displayFrameId: 5)))
+            Assert.AreEqual(0, TestImages.MaxChannelDifference(plain, decoded));
+
+        Assert.ThrowsExactly<ImageDecodeException>(() => AvifDecoder.Decode(ShownAgain(frameId: 5, displayFrameId: 6)));
+    }
+
+    /// <summary>
+    /// The still rewritten without its reduced header, then shown a second time with show_existing_frame, as an encoder
+    /// may end a stream: a shown key frame fills every reference slot, so slot 0 holds it. With a <paramref name="frameId"/>
+    /// the stream numbers its frames with 3 bit ids, and the frame is shown again by <paramref name="displayFrameId"/>.
+    /// </summary>
+    private static byte[] ShownAgain(int? frameId, int? displayFrameId)
+    {
         var source = AvifContainer.Parse(Asset("photo-420.avif"));
         var item = source.GetItem(1)!;
         var obus = Obus(source.GetItemData(item, int.MaxValue));
         var seqPayload = obus.First(o => o.Type == 1).Payload;
         var seq = Av1SequenceHeader.Parse(seqPayload);
+        // show_existing_frame, frame_to_show_map_idx 0, display_frame_id when there is one, trailing bits.
+        var showAgain = displayFrameId is { } id ? (byte)(0b1000_0001 | id << 1) : (byte)0b1000_1000;
         byte[] stream =
         [
             .. Obu(2, []),
-            .. Obu(1, RewriteSequenceHeader(seqPayload, unreduce: true, color: null)),
-            .. Obu(6, UnreduceFrame(obus.First(o => o.Type == 6).Payload, seq)),
-            .. Obu(3, [0b1000_1000]), // show_existing_frame, frame_to_show_map_idx 0, trailing bits
+            .. Obu(1, RewriteSequenceHeader(seqPayload, unreduce: true, color: null, frameIds: frameId is not null)),
+            .. Obu(6, UnreduceFrame(obus.First(o => o.Type == 6).Payload, seq, frameId)),
+            .. Obu(3, [showAgain]),
         ];
-        var file = new AvifBuilder().Add(new AvifBuilder.Item(1, "av01", stream, CopyProperties(source, item), [])).Build(primary: 1);
-        using var plain = DecodeLikeLibheif(Asset("photo-420.avif"));
-
-        using var decoded = DecodeLikeLibheif(file);
-        Assert.AreEqual(0, TestImages.MaxChannelDifference(plain, decoded));
+        return new AvifBuilder().Add(new AvifBuilder.Item(1, "av01", stream, CopyProperties(source, item), [])).Build(primary: 1);
     }
 
     [TestMethod]
     public void GridTileFailuresAreDecodeErrorsWhateverTheThreads()
     {
-        // The last tiles decode side by side; one that is cut short must still fail as the sequential loop would, as an
-        // ImageDecodeException a host can fall back on, not wrapped in an AggregateException.
+        // The tiles after the first decode side by side, each item once however many cells name it; one that is cut short
+        // must still fail as the sequential loop would, as an ImageDecodeException a host can fall back on, not wrapped in
+        // an AggregateException.
         var source = AvifContainer.Parse(Asset("photo-420.avif"));
         var tile = source.GetItem(1)!;
         var data = source.GetItemData(tile, int.MaxValue);
@@ -448,9 +486,10 @@ public sealed class AvifCodecTests
         BinaryPrimitives.WriteUInt16BigEndian(grid.AsSpan(4), 192);
         BinaryPrimitives.WriteUInt16BigEndian(grid.AsSpan(6), 128);
         var file = new AvifBuilder()
-            .Add(new AvifBuilder.Item(1, "grid", grid, [Ispe(192, 128)], [("dimg", [2, 2, 3, 3])]))
+            .Add(new AvifBuilder.Item(1, "grid", grid, [Ispe(192, 128)], [("dimg", [2, 4, 3, 3])]))
             .Add(new AvifBuilder.Item(2, "av01", data, CopyProperties(source, tile), []))
             .Add(new AvifBuilder.Item(3, "av01", data[..(data.Length / 2)], CopyProperties(source, tile), []))
+            .Add(new AvifBuilder.Item(4, "av01", data, CopyProperties(source, tile), []))
             .Build(primary: 1);
 
         foreach (var threads in new[] { 1, 4 })
@@ -585,7 +624,7 @@ public sealed class AvifCodecTests
     /// The assets' reduced still picture sequence header, rewritten bit by bit: in full, so frames may be shown again
     /// from reference slots, and, when <paramref name="color"/> is given, describing those colours.
     /// </summary>
-    private static byte[] RewriteSequenceHeader(byte[] payload, bool unreduce, (int Primaries, int Transfer, int Matrix)? color)
+    private static byte[] RewriteSequenceHeader(byte[] payload, bool unreduce, (int Primaries, int Transfer, int Matrix)? color, bool frameIds = false)
     {
         var seq = Av1SequenceHeader.Parse(payload);
         var b = new BitCopy(payload);
@@ -604,7 +643,11 @@ public sealed class AvifCodecTests
         b.Write(level, 5);
         if (unreduce && level > 7) b.Write(0, 1); // seq_tier[0]
         b.Copy(8 + seq.FrameWidthBits + seq.FrameHeightBits);
-        if (unreduce) b.Write(0, 1); // frame_id_numbers_present_flag
+        if (unreduce)
+        {
+            b.Write(frameIds ? 1 : 0, 1); // frame_id_numbers_present_flag
+            if (frameIds) b.Write(0, 7); // delta_frame_id_length_minus_2 and additional_frame_id_length_minus_1: 3 bit ids
+        }
         b.Copy(3); // use_128x128_superblock, enable_filter_intra, enable_intra_edge_filter
         if (unreduce)
         {
@@ -630,7 +673,7 @@ public sealed class AvifCodecTests
     }
 
     /// <summary>A reduced still picture's frame OBU rewritten for the full sequence header <see cref="RewriteSequenceHeader"/> makes.</summary>
-    private static byte[] UnreduceFrame(byte[] payload, Av1SequenceHeader reduced)
+    private static byte[] UnreduceFrame(byte[] payload, Av1SequenceHeader reduced, int? frameId = null)
     {
         // The tile data starts at the byte after the header ends.
         var reader = new Av1BitReader(payload);
@@ -642,6 +685,7 @@ public sealed class AvifCodecTests
         b.Write(1, 1); // show_frame
         var disableCdfUpdate = b.Copy(1);
         if (b.Copy(1) == 1) b.Copy(1); // allow_screen_content_tools, force_integer_mv
+        if (frameId is { } id) b.Write(id, 3); // current_frame_id
         b.Write(0, 1); // frame_size_override_flag
         if (reduced.EnableSuperres && b.Copy(1) == 1) b.Copy(3);
         if (b.Copy(1) == 1) b.Copy(32); // render_size

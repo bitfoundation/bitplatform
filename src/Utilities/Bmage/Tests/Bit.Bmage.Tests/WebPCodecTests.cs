@@ -231,6 +231,13 @@ public sealed class WebPCodecTests
     {
         using var wide = ImageBuffer.Create(WebPEncoder.MaxDimension + 1, 1, limits: ImageLimits.Unrestricted);
         Assert.ThrowsExactly<ImageEncodeException>(() => WebPEncoder.Encode(wide, ImageExportOptions.WebP));
+
+        // The lossless format has a pixel more: its header stores the size less one in 14 bits.
+        var lossless = new ImageExportOptions { Format = ImageFormat.WebP, Lossless = true };
+        var encoded = WebPEncoder.Encode(wide, lossless);
+        Assert.AreEqual(WebPEncoder.MaxLosslessDimension, new WebPDecoder().Identify(encoded.Data)!.Width);
+        using var wider = ImageBuffer.Create(WebPEncoder.MaxLosslessDimension + 1, 1, limits: ImageLimits.Unrestricted);
+        Assert.ThrowsExactly<ImageEncodeException>(() => WebPEncoder.Encode(wider, lossless));
     }
 
     [TestMethod]

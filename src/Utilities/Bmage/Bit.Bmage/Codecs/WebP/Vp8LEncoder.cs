@@ -221,7 +221,7 @@ internal static class Vp8LEncoder
     private static void WriteEntropyCodedImage(BitWriter bw, uint[] pixels, int width, int height, bool isMain, CancellationToken ct)
     {
         var tokens = FindBackReferences(pixels, width, ct);
-        var cacheBits = ChooseCacheBits(tokens, pixels);
+        var cacheBits = ChooseCacheBits(tokens, pixels, ct);
         bw.Write(cacheBits > 0 ? 1u : 0u, 1);
         if (cacheBits > 0) bw.Write((uint)cacheBits, 4);
         if (isMain) bw.Write(0, 1); // one set of prefix codes for the whole image
@@ -229,6 +229,7 @@ internal static class Vp8LEncoder
         var cacheSize = cacheBits > 0 ? 1 << cacheBits : 0;
         var histograms = new[] { new int[280 + cacheSize], new int[256], new int[256], new int[256], new int[40] };
         var distanceCodes = new DistanceCodes(width);
+        ct.ThrowIfCancellationRequested();
         Walk(tokens, pixels, cacheBits, distanceCodes, histograms, null, null);
 
         var codes = new PrefixCode[5];
@@ -237,6 +238,7 @@ internal static class Vp8LEncoder
             codes[i] = PrefixCode.Build(histograms[i], MaxCodeLength);
             codes[i].Write(bw);
         }
+        ct.ThrowIfCancellationRequested();
         Walk(tokens, pixels, cacheBits, distanceCodes, null, codes, bw);
     }
 
@@ -371,12 +373,13 @@ internal static class Vp8LEncoder
     private static int Hash(uint a, uint b, int bits) => (int)((((a * 0x9E3779B1u) ^ (b * 0x85EBCA6Bu)) * 0xC2B2AE35u) >> (32 - bits));
 
     /// <summary>Picks the colour cache size that minimises the estimated size of the coded literals.</summary>
-    private static int ChooseCacheBits(List<Token> tokens, uint[] pixels)
+    private static int ChooseCacheBits(List<Token> tokens, uint[] pixels, CancellationToken ct)
     {
         var best = 0;
         var bestBits = double.MaxValue;
         foreach (var bits in (ReadOnlySpan<int>)[0, 3, 5, 7, 9, 10, 11])
         {
+            ct.ThrowIfCancellationRequested();
             var size = bits > 0 ? 1 << bits : 0;
             var histograms = new[] { new int[280 + size], new int[256], new int[256], new int[256], new int[40] };
             // The distances do not depend on the cache, so any mapping counts them the same.

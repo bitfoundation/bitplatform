@@ -12,6 +12,9 @@ internal sealed class Av1Image : IDisposable
     public required Av1SequenceHeader Seq { get; init; }
     public required Av1Plane[] Planes { get; init; }
 
+    /// <summary>The frame's current_frame_id, by which a stream that numbers its frames names it to show it again.</summary>
+    public int FrameId { get; init; }
+
     /// <summary>True when frames after this one were left undecoded because they use inter prediction.</summary>
     public bool SkippedFrames { get; set; }
 
@@ -109,6 +112,8 @@ internal static class Av1Decoder
                         if (hdr.ShowExistingFrame)
                         {
                             var existing = slots[hdr.FrameToShowMapIdx] ?? throw new ImageDecodeException("The AV1 stream shows a frame it never decoded.");
+                            if (seq.FrameIdNumbersPresent && existing.FrameId != hdr.DisplayFrameId)
+                                throw new ImageDecodeException("The AV1 stream shows a frame other than the one it names.");
                             var previous = shown;
                             shown = existing;
                             Release(previous, shown, slots);
@@ -273,31 +278,30 @@ internal static class Av1Decoder
     /// <summary>decode_frame_wrapup and the output process: loop filter, CDEF, superres, loop restoration and film grain.</summary>
     private static Av1Image FinishFrame(Av1Frame frame, CancellationToken cancellationToken)
     {
+        // The planes made on the way, each released at the end unless it is what the image is made of, whether or not
+        // decoding got that far.
+        Av1Plane[]? cdef = null, upscaledCurr = null, upscaledCdef = null, planes = null;
         try
         {
             var hdr = frame.Hdr;
             if (hdr.LoopFilterLevel[0] != 0 || hdr.LoopFilterLevel[1] != 0) Av1LoopFilter.Apply(frame, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
-            var cdef = Av1Cdef.Apply(frame, cancellationToken); // null when CDEF changes nothing
+            cdef = Av1Cdef.Apply(frame, cancellationToken); // null when CDEF changes nothing
             cancellationToken.ThrowIfCancellationRequested();
-            Av1Plane[] planes;
             if (hdr.UseSuperres)
             {
-                var upscaledCurr = Av1Restoration.Upscale(frame, frame.Planes);
-                Av1Plane[]? upscaledCdef = null;
+                upscaledCurr = Av1Restoration.Upscale(frame, frame.Planes);
                 if (cdef is not null)
                 {
                     upscaledCdef = Av1Restoration.Upscale(frame, cdef);
                     foreach (var plane in cdef) plane.Dispose();
+                    cdef = null;
                 }
                 planes = Av1Restoration.Apply(frame, upscaledCurr, upscaledCdef ?? upscaledCurr, cancellationToken);
-                if (!ReferenceEquals(planes, upscaledCurr)) foreach (var plane in upscaledCurr) plane.Dispose();
-                if (upscaledCdef is not null && !ReferenceEquals(planes, upscaledCdef)) foreach (var plane in upscaledCdef) plane.Dispose();
             }
             else
             {
                 planes = Av1Restoration.Apply(frame, frame.Planes, cdef ?? frame.Planes, cancellationToken);
-                if (cdef is not null && !ReferenceEquals(planes, cdef)) foreach (var plane in cdef) plane.Dispose();
             }
             var keepFramePlanes = ReferenceEquals(planes, frame.Planes);
             var image = new Av1Image
@@ -310,18 +314,35 @@ internal static class Av1Decoder
                 MonoChrome = frame.Seq.MonoChrome,
                 Seq = frame.Seq,
                 Planes = keepFramePlanes ? (Av1Plane[])planes.Clone() : planes,
+                FrameId = hdr.CurrentFrameId,
             };
             if (keepFramePlanes)
             {
                 // The image now owns the frame's planes.
                 for (var i = 0; i < frame.Planes.Length; i++) frame.Planes[i] = new Av1Plane(1, 1);
             }
-            if (hdr.FilmGrain.ApplyGrain) Av1FilmGrainSynthesis.Apply(image, hdr.FilmGrain);
+            try
+            {
+                if (hdr.FilmGrain.ApplyGrain) Av1FilmGrainSynthesis.Apply(image, hdr.FilmGrain, cancellationToken);
+            }
+            catch
+            {
+                image.Dispose();
+                throw;
+            }
             return image;
         }
         finally
         {
+            DisposeUnlessKept(cdef, planes);
+            DisposeUnlessKept(upscaledCurr, planes);
+            DisposeUnlessKept(upscaledCdef, planes);
             frame.Dispose();
         }
+    }
+
+    private static void DisposeUnlessKept(Av1Plane[]? planes, Av1Plane[]? kept)
+    {
+        if (planes is not null && !ReferenceEquals(planes, kept)) foreach (var plane in planes) plane.Dispose();
     }
 }

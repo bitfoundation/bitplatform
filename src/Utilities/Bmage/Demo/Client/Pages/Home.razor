@@ -203,8 +203,9 @@
                     <h3>Decode, process, encode</h3>
                     <p>
                         The browser decodes the upload and applies the phone's rotation, a pipeline does the
-                        pixel work, and the exporter writes WebP - through the browser's encoder where it has
-                        one, and Bmage's own where it does not, such as Safari's.
+                        pixel work, and the exporter writes WebP through the browser's encoder - or, in
+                        WebAssembly where the browser cannot write WebP, such as Safari's, the JPEG next in
+                        the list. On a server, Bmage's own WebP encoder writes it.
                     </p>
                     <a href="pipelines">Pipelines →</a>
                 </div>

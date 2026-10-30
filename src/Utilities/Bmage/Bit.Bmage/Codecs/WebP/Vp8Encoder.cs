@@ -757,6 +757,7 @@ internal sealed class Vp8Encoder
         Span<short> levels = stackalloc short[16];
         for (var mby = 0; mby < _mbHeight; mby++)
         {
+            _ct.ThrowIfCancellationRequested();
             nzLeft.Clear();
             for (var mbx = 0; mbx < _mbWidth; mbx++)
             {
