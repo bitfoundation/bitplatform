@@ -117,6 +117,14 @@ public partial class SignUpPage
                 var url = uriString?.ToString();
                 if (Uri.IsAppRelativeUrl(url) is false) return;
 
+                var queryIndex = url.IndexOf('?');
+                if (queryIndex >= 0 && AppQueryStringCollection.Parse(url[queryIndex..]).TryGetValue("error", out var error) && error?.ToString() is { Length: > 0 } errorKey)
+                {
+                    var message = Localizer[errorKey];
+                    await InvokeAsync(() => SnackBarService.Error(message.ResourceNotFound ? Localizer[nameof(AppStrings.UnknownException)] : message));
+                    return;
+                }
+
                 NavigationManager.NavigateTo(url, replace: true);
             });
 

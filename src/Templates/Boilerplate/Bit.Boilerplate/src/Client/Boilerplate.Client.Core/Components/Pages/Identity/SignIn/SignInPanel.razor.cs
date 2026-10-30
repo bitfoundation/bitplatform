@@ -80,8 +80,7 @@ public partial class SignInPanel
 
         if (string.IsNullOrWhiteSpace(ErrorQueryString) is false)
         {
-            var error = Localizer[ErrorQueryString];
-            SnackBarService.Error(error.ResourceNotFound ? Localizer[nameof(AppStrings.UnknownException)] : error);
+            SnackBarService.Error(Localizer[nameof(AppStrings.UnknownException)]);
         }
     }
 
@@ -240,9 +239,15 @@ public partial class SignInPanel
                 queryParams.TryGetValue("otp", out var otp);
                 OtpQueryString = GetValue(otp);
                 queryParams.TryGetValue("error", out var error);
-                ErrorQueryString = GetValue(error);
+                ErrorQueryString = null;
 
                 await InvokeAsync(OnInitAsync);
+
+                if (GetValue(error) is string errorKey)
+                {
+                    var message = Localizer[errorKey];
+                    await InvokeAsync(() => SnackBarService.Error(message.ResourceNotFound ? Localizer[nameof(AppStrings.UnknownException)] : message));
+                }
             });
 
             var port = localHttpServer.EnsureStarted();
