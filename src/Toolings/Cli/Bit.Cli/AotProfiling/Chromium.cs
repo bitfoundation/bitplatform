@@ -87,8 +87,7 @@ public sealed class Chromium : IAsyncDisposable
 
     public static async Task<Chromium> LaunchAsync(string executable, CliLog log, CancellationToken cancellationToken)
     {
-        var userDataDirectory = Path.Combine(Path.GetTempPath(), "bit-aot-profile", "browser-" + Guid.NewGuid().ToString("N")[..8]);
-        Directory.CreateDirectory(userDataDirectory);
+        var userDataDirectory = Directory.CreateTempSubdirectory("bit-aot-profile-browser-").FullName;
 
         var headless = Path.GetFileName(executable).Contains("headless", StringComparison.OrdinalIgnoreCase) ? "--headless" : "--headless=new";
         var start = new ProcessStartInfo(executable) { UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true, CreateNoWindow = true };

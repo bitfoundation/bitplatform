@@ -141,6 +141,14 @@ public class HttpMirrorTests
     }
 
     [TestMethod]
+    public async Task PostWithAScriptPastTheLengthLimit_IsRejected()
+    {
+        var response = await _server.Http.PostAsJsonAsync("/api/mcp/InspectBswupServiceWorker", new { script = new string(' ', 64_001) });
+
+        Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [TestMethod]
     public async Task TheSitesOwnRoutesAreNotShadowedByTheApi()
     {
         // /api/... and /mcp are literal routes no page owns, and the site still answers on its own.

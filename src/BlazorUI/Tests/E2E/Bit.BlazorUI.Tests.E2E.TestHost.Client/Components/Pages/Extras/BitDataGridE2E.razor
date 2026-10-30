@@ -208,6 +208,59 @@
     </p>
 </E2ESection>
 
+@* A click on a control in a cell is the control's: the template's own controls, one marked data-bit-interactive, one
+   in an open shadow root, and a grid in a cell keep their clicks from the outer cell and row, a control marked
+   data-bit-interactive="false" and a bare label do not. The page's double-click handler around the grid hears the
+   double-clicks of the grid's own control cells. *@
+<E2ESection Id="cell-controls" Title="Clicks on a control in a cell">
+    <div id="cell-controls-page" @ondblclick="() => _controlPageDoubleClicks++">
+        <BitDataGrid TItem="Product" Id="grid-cell-controls" Items="@_controlItems" SelectionMode="BitSelectionMode.Single" RowReorderable="true"
+                     SelectedItemsChanged="items => _controlSelection = string.Join(',', items.Select(i => i.Name))"
+                     OnRowClick="_ => _controlRowClicks++"
+                     OnRowDoubleClick="_ => _controlRowDoubleClicks++"
+                     OnCellClick="_ => _controlCellClicks++"
+                     OnCellDoubleClick="_ => _controlCellDoubleClicks++"
+                     OnCellContextMenu="_ => _controlCellContextMenus++">
+            <BitDataGridColumn ColumnId="Text" Title="Text">
+                <Template Context="p"><span class="cc-text">@p.Name</span></Template>
+            </BitDataGridColumn>
+            <BitDataGridColumn ColumnId="Controls" Title="Controls">
+                <Template Context="p">
+                    <button type="button" class="cc-button" @onclick="() => _controlButtonClicks++">Edit</button>
+                    <input class="cc-input" aria-label="Note" />
+                    <a class="cc-anchor" @onclick="() => _controlAnchorClicks++">Open</a>
+                    <i class="cc-icon" data-bit-interactive @onclick="() => _controlIconClicks++">★</i>
+                    <button type="button" class="cc-optout" data-bit-interactive="false" @onclick="() => _controlOptOutClicks++">Pick</button>
+                    <label class="cc-label">@p.Category</label>
+                    <cc-shadow class="cc-shadow"></cc-shadow>
+                </Template>
+            </BitDataGridColumn>
+            <BitDataGridColumn ColumnId="Inner" Title="Inner">
+                <Template Context="p">
+                    <BitDataGrid TItem="Product" Id="@($"grid-cell-inner-{p.Id}")" Items="@_controlInnerItems" ShowHeader="false"
+                                 OnRowClick="_ => _controlInnerRowClicks++">
+                        <BitDataGridColumn Property="x => x.Name" />
+                    </BitDataGrid>
+                </Template>
+            </BitDataGridColumn>
+        </BitDataGrid>
+    </div>
+    <p>
+        row-click <span id="cc-row-click-count">@_controlRowClicks</span> |
+        row-dblclick <span id="cc-row-dblclick-count">@_controlRowDoubleClicks</span> |
+        cell-click <span id="cc-cell-click-count">@_controlCellClicks</span> |
+        cell-dblclick <span id="cc-cell-dblclick-count">@_controlCellDoubleClicks</span> |
+        cell-contextmenu <span id="cc-cell-contextmenu-count">@_controlCellContextMenus</span> |
+        selected <span id="cc-selection">@_controlSelection</span> |
+        button <span id="cc-button-count">@_controlButtonClicks</span> |
+        icon <span id="cc-icon-count">@_controlIconClicks</span> |
+        anchor <span id="cc-anchor-count">@_controlAnchorClicks</span> |
+        opt-out <span id="cc-optout-count">@_controlOptOutClicks</span> |
+        inner-row-click <span id="cc-inner-row-click-count">@_controlInnerRowClicks</span> |
+        page-dblclick <span id="cc-page-dblclick-count">@_controlPageDoubleClicks</span>
+    </p>
+</E2ESection>
+
 <E2ESection Id="style-class" Title="Id, Class, Style, Styles, Classes and HtmlAttributes">
     <BitDataGrid Id="grid-styled" Items="@_basic" Class="custom-root" Style="margin-top: 7px;"
                  data-e2e="styled-root"
@@ -466,6 +519,12 @@
 
     private int _rowClicks, _rowDoubleClicks, _cellClicks, _cellDoubleClicks, _cellContextMenus;
     private string? _rowClickArg, _rowDoubleClickArg, _cellClickArg, _cellDoubleClickArg, _cellContextMenuArg;
+
+    private readonly List<Product> _controlItems = Products().Take(2).ToList();
+    private readonly List<Product> _controlInnerItems = Products().Skip(4).Take(1).ToList();
+    private int _controlRowClicks, _controlRowDoubleClicks, _controlCellClicks, _controlCellDoubleClicks, _controlCellContextMenus;
+    private int _controlButtonClicks, _controlIconClicks, _controlAnchorClicks, _controlOptOutClicks, _controlInnerRowClicks, _controlPageDoubleClicks;
+    private string _controlSelection = "";
 
     public BitDataGridE2E()
     {

@@ -328,16 +328,18 @@ public class CodeReviewTests
     // -- formats ------------------------------------------------------------------------------
 
     [TestMethod]
-    public void Formats_WebPInTheBrowserWithNoCheck_IsAWarning()
+    public void Formats_AvifInTheBrowserWithNoCheck_IsAWarning()
     {
         var review = Review("""
             @inject ImageExporter Exporter
-            var encoded = await Exporter.EncodeAsync(image, new ImageExportOptions { Format = ImageFormat.WebP });
+            var encoded = await Exporter.EncodeAsync(image, new ImageExportOptions { Format = ImageFormat.Avif });
             """);
 
         Assert.AreEqual(2, Single(review, "format-without-capability-check").Line);
 
-        None(Review("@inject ImageExporter Exporter\nawait Exporter.EncodeWithFallbackAsync(image, [ImageFormat.WebP, ImageFormat.Jpeg]);"), "format-without-capability-check");
+        // WebP encodes everywhere: where the browser cannot, the managed encoder does.
+        None(Review("@inject ImageExporter Exporter\nvar encoded = await Exporter.EncodeAsync(image, ImageExportOptions.WebP);"), "format-without-capability-check");
+        None(Review("@inject ImageExporter Exporter\nawait Exporter.EncodeWithFallbackAsync(image, [ImageFormat.Avif, ImageFormat.WebP]);"), "format-without-capability-check");
         None(Review("@inject ImageExporter Exporter\nif (caps.CanEncode(ImageFormat.Avif)) await Exporter.EncodeAsync(image, ImageExportOptions.Avif);"), "format-without-capability-check");
         None(Review("@inject ImageExporter Exporter\ntry { await Exporter.EncodeAsync(image, ImageExportOptions.Avif); }\ncatch (ImageCapabilityException) { _fallback = true; }"), "format-without-capability-check");
 
@@ -346,12 +348,12 @@ public class CodeReviewTests
     }
 
     [TestMethod]
-    public void Formats_WebPOnAServer_IsAnError()
+    public void Formats_AvifOnAServer_IsAnError()
     {
         var review = Review("""
             app.MapPost("/thumb", async (IFormFile file, ImageProcessor processor) =>
             {
-                var result = await processor.ProcessAsync(bytes, pipeline, new ImageExportOptions { Format = ImageFormat.WebP });
+                var result = await processor.ProcessAsync(bytes, pipeline, new ImageExportOptions { Format = ImageFormat.Avif });
             });
             """);
 
@@ -361,6 +363,7 @@ public class CodeReviewTests
         Assert.AreEqual(3, finding.Line);
 
         None(Review("app.MapPost(\"/thumb\", async (IFormFile file, ImageProcessor processor) => await processor.ProcessAsync(bytes, pipeline, ImageExportOptions.Jpeg));"), "browser-format-on-server");
+        None(Review("app.MapPost(\"/thumb\", async (IFormFile file, ImageProcessor processor) => await processor.ProcessAsync(bytes, pipeline, ImageExportOptions.WebP));"), "browser-format-on-server");
     }
 
     // -- privacy ------------------------------------------------------------------------------

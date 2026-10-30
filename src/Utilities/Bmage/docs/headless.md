@@ -63,8 +63,38 @@ app.MapPost("/upload", async (IFormFile file, ImageProcessor processor) =>
 });
 ```
 
-Only the managed codecs exist here: PNG, JPEG, BMP and GIF for decoding, PNG, JPEG and BMP for encoding. Asking for WebP
-throws `ImageCapabilityException` with a message saying so.
+Only the managed codecs exist here: PNG, JPEG, BMP, GIF, WebP and AVIF for decoding, PNG, JPEG, BMP and WebP for
+encoding. Asking to encode AVIF throws `ImageCapabilityException` with a message saying so.
+
+### WebP on a server
+
+WebP is decoded and encoded in C#, lossy or lossless, with its alpha channel, its EXIF, ICC and XMP metadata, and the
+first frame of an animation. Nothing native is loaded, and the decoder checks the declared size against `ImageLimits`
+before it allocates a pixel, like the others.
+
+```csharp
+using var image = await processor.DecodeAsync(bytes);
+
+// The original, losslessly: every pixel kept, the metadata removed.
+var original = await processor.EncodeAsync(image, new ImageExportOptions { Format = ImageFormat.WebP, Lossless = true });
+
+// A display copy, lossy; transparency survives, so a circular avatar keeps its corners clear.
+var avatar = await processor.ProcessAsync(
+    bytes,
+    ImagePipeline.Create().AutoOrient().Cover(256, 256),
+    new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.8 });
+```
+
+`Quality` works as it does for JPEG, and `MaxFileSize` searches it the same way. With `Lossless`, quality does not
+apply, and a size budget is met by shrinking the dimensions instead.
+
+### AVIF uploads
+
+AVIF is decoded in C# too, so an upload in AVIF can be resized and stored as WebP like any other. The decoder covers the
+still images phones, browsers and encoders write: 8, 10 and 12 bits, every chroma subsampling, alpha, film grain, grids
+of tiles, rotation, mirroring and clean aperture crops, and the first frame of an image sequence. It reads the colours
+as stored and does not colour manage them, so a wide gamut (Display P3, BT.2020) or HDR file decodes with muted
+colours; see [Formats](formats.md#avif).
 
 ## The pieces
 

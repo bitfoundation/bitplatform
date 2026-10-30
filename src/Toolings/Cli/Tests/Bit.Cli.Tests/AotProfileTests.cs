@@ -214,6 +214,27 @@ public class AotProfileTests
     }
 
     [TestMethod]
+    public async Task ThePublish_Should_GoToAFolderOfItsOwnInTheTempFolder()
+    {
+        using var host = new TestHost();
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "App.Client.csproj"), "<Project />");
+        var browser = Path.Combine(host.Root, "chrome.exe");
+        File.WriteAllText(browser, "");
+        string? work = null;
+        host.Runner.On("dotnet", "publish", spec =>
+        {
+            work = Path.GetDirectoryName(spec.Arguments[spec.Arguments.ToList().IndexOf("-o") + 1]);
+            return new ProcessResult { ExitCode = 1 };
+        });
+
+        Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("aot-profile", "--browser", browser));
+
+        Assert.AreEqual(Path.TrimEndingDirectorySeparator(Path.GetTempPath()), Path.GetDirectoryName(work), "Others can own a shared parent folder in the temp folder.");
+        StringAssert.StartsWith(Path.GetFileName(work), "bit-aot-profile-");
+        Assert.IsFalse(Directory.Exists(work));
+    }
+
+    [TestMethod]
     public async Task AnUnknownStep_Should_BeRefusedBeforePublishing()
     {
         using var host = new TestHost();

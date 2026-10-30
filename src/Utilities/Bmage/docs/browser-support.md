@@ -15,9 +15,10 @@
 ### Interactive Server
 
 Everything works, because JavaScript interop works over the circuit. What changes is where the bytes travel. PNG, JPEG,
-BMP and GIF are decoded and encoded on the server by the managed codecs, so only the file crosses the circuit. WebP and
-AVIF can only be decoded or encoded by a browser: their pixels are streamed between the browser and the server, which
-for a 4000 × 3000 photo is 48 MB. The editor's preview also has to be sent to the browser each time it changes, 12.6 MB
+BMP and WebP are decoded and encoded on the server by the managed codecs, and GIF and AVIF decoded, so only the file
+crosses the circuit. Encoding AVIF needs the browser, and so does decoding a photo whose colours need colour management
+(a non-sRGB colour profile, or a wide gamut or HDR AVIF): its pixels are streamed between the browser and the server,
+which for a 4000 × 3000 photo is 48 MB. The editor's preview also has to be sent to the browser each time it changes, 12.6 MB
 for a 2048 pixel proxy.
 
 On a local network this is unremarkable; over a poor mobile connection it is not.
@@ -36,8 +37,9 @@ The library does not pretend a browser API works where it does not: `IImageCapab
 
 Everything works. The components run in compiled .NET inside the app's own process and render into a WebView, which
 Bmage reaches over JavaScript interop - the same position as Interactive Server, so `IImageCapabilityProvider` reports
-`ImageEnvironment.BrowserServer` and the codecs are chosen the same way. PNG, JPEG, BMP and GIF are decoded and encoded
-by the managed codecs in the app; WebP, AVIF and photos with a colour profile other than sRGB go through the WebView.
+`ImageEnvironment.BrowserServer` and the codecs are chosen the same way. PNG, JPEG, BMP and WebP are decoded and
+encoded by the managed codecs in the app, and GIF and AVIF decoded; AVIF exports and photos whose colours need colour management go
+through the WebView.
 Nothing crosses a network, but those pixels, and the editor's previews, are copied through the WebView's message
 channel, so the managed formats are the cheaper ones here.
 

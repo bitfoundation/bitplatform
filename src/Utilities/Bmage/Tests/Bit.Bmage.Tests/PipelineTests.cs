@@ -316,8 +316,8 @@ public sealed class ImageProcessorTests
     public async Task ThrowsACapabilityErrorForUnavailableEncoders()
     {
         using var source = TestImages.Gradient(8, 8);
-        var ex = await Assert.ThrowsExactlyAsync<ImageCapabilityException>(async () => await Processor.EncodeAsync(source, ImageExportOptions.WebP));
-        Assert.Contains("WebP", ex.Message, StringComparison.Ordinal);
+        var ex = await Assert.ThrowsExactlyAsync<ImageCapabilityException>(async () => await Processor.EncodeAsync(source, ImageExportOptions.Avif));
+        Assert.Contains("Avif", ex.Message, StringComparison.Ordinal);
     }
 
     [TestMethod]

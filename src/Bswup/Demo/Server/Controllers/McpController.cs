@@ -65,6 +65,8 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
     /// </summary>
     private const int MaxAssetUrlsLength = 64_000;
 
+    private const int MaxScriptLength = 64_000;
+
     private static readonly char[] AssetUrlSeparators = ['\n', '\r', ',', ';'];
 
     [HttpGet]
@@ -141,6 +143,8 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
         [Description("The full content of the service-worker.js (or service-worker.published.js) file to check, verbatim.")] string script,
         [Description("Optional asset URLs to decide under this file, written as they appear in service-worker-assets.js (e.g. '_framework/blazor.boot.json', 'css/app.css') - one per line, or comma- or semicolon-separated. Pass the handful the question is about, including one that must NOT be cached; do not paste a whole manifest.")] string? assetUrls = null)
     {
+        if (script?.Length > MaxScriptLength) throw new BadHttpRequestException($"The script is longer than {MaxScriptLength} characters.");
+
         var inspection = BswupServiceWorkerInspector.Inspect(script);
 
         if (string.IsNullOrWhiteSpace(assetUrls)) return inspection;

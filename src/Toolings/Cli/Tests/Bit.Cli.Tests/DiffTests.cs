@@ -80,6 +80,18 @@ public class DiffTests
     }
 
     [TestMethod]
+    public async Task ANameThatIsAPath_Should_BeRefusedBeforeItCreatesAnything()
+    {
+        using var host = new Infrastructure.TestHost(HostOs.Linux);
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "bit.json"), """{ "version": "10.6.0", "name": "../../Shop" }""");
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("diff", "10.6.0", "10.7.0"), host.Output);
+        StringAssert.Contains(host.FlatOutput, "isn't a project name");
+        Assert.IsEmpty(host.Runner.Calls);
+        Assert.IsFalse(Directory.Exists(Path.Combine(host.Environment.BitDirectory, "diff")));
+    }
+
+    [TestMethod]
     public async Task AnOptionDiffDoesntHave_Should_StopBeforeItCreatesAnything()
     {
         using var host = new Infrastructure.TestHost(HostOs.Linux);

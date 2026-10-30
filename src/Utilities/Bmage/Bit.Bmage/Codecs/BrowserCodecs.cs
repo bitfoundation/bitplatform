@@ -52,7 +52,8 @@ public sealed class BrowserImageDecoder : IImageDecoder
             ImageFormat.Jpeg => new Jpeg.JpegDecoder().Identify(data),
             ImageFormat.Bmp => new Bmp.BmpDecoder().Identify(data),
             ImageFormat.Gif => new Gif.GifDecoder().Identify(data),
-            ImageFormat.WebP => WebPContainer.ReadSize(data) is { } size ? new ImageInfo(size.Width, size.Height, ImageFormat.WebP) : null,
+            ImageFormat.WebP => new WebP.WebPDecoder().Identify(data),
+            ImageFormat.Avif => new Avif.AvifDecoder().Identify(data),
             _ => null,
         };
     }
@@ -107,7 +108,7 @@ public sealed class BrowserImageDecoder : IImageDecoder
             }
             try
             {
-                decoded.Metadata = ReadMetadata(data.Span, format, options);
+                decoded.Metadata = ReadMetadata(data, format, options);
                 return decoded;
             }
             catch
@@ -151,7 +152,7 @@ public sealed class BrowserImageDecoder : IImageDecoder
             try
             {
                 result.Bytes.Span.CopyTo(image.Bytes);
-                image.Metadata = ReadMetadata(data.Span, format, options);
+                image.Metadata = ReadMetadata(data, format, options);
                 return image;
             }
             catch
@@ -169,16 +170,17 @@ public sealed class BrowserImageDecoder : IImageDecoder
     /// Parses metadata from the original file. The browser strips it during decode, and it must survive to the export
     /// step so a caller asking for <see cref="MetadataPolicy.Preserve"/> actually gets their copyright and camera data.
     /// </summary>
-    private static ImageMetadata ReadMetadata(ReadOnlySpan<byte> data, ImageFormat format, DecodeOptions options)
+    private static ImageMetadata ReadMetadata(ReadOnlyMemory<byte> data, ImageFormat format, DecodeOptions options)
     {
         if (!options.ReadMetadata) return new ImageMetadata(sourceFormat: format, fileName: options.FileName);
         try
         {
             var metadata = format switch
             {
-                ImageFormat.Jpeg => JpegContainer.ReadMetadata(data, options.FileName),
-                ImageFormat.Png => PngContainer.ReadMetadata(data, options.FileName),
-                ImageFormat.WebP => WebPContainer.ReadMetadata(data, options.FileName),
+                ImageFormat.Jpeg => JpegContainer.ReadMetadata(data.Span, options.FileName),
+                ImageFormat.Png => PngContainer.ReadMetadata(data.Span, options.FileName),
+                ImageFormat.WebP => WebPContainer.ReadMetadata(data.Span, options.FileName),
+                ImageFormat.Avif => Avif.AvifDecoder.ReadMetadata(data, options.FileName),
                 _ => new ImageMetadata(sourceFormat: format, fileName: options.FileName),
             };
             // The browser already applied the orientation, so record that the pixels are upright.
@@ -235,6 +237,8 @@ public sealed class BrowserImageEncoder : IImageEncoder
         options ??= ImageExportOptions.Png;
         if (!_formats.Contains(options.Format))
             throw new ImageCapabilityException($"The browser encoder is not configured for {options.Format}.");
+        // A canvas only writes lossy WebP, so a lossless one, the only lossless choice there is, is the managed encoder's.
+        if (options.EncodesLosslessly) return WebP.WebPEncoder.Encode(image, options, cancellationToken);
 
         // Formats without alpha need an explicit backdrop; otherwise browsers composite over black. The browser draws it
         // behind the pixels, which leaves opaque ones untouched, so there is no need to scan for transparency first.

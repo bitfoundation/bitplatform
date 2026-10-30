@@ -749,7 +749,7 @@ async function serveAssetCore(e: any, req: Request, asset: any, start: string) {
             return await lastResort(bitBswupCache, req, asset);
         }
 
-        lazyFill(e, bitBswupCache, cacheUrl, response, asset);
+        lazyFill(e, bitBswupCache, cacheUrl, response, asset, healRequest);
 
         diagFetch('+++ serveAsset ended - active-mode cache miss, lazily (re)caching asset:', start, asset);
         return response;
@@ -795,7 +795,7 @@ async function serveAssetCore(e: any, req: Request, asset: any, start: string) {
         return await lastResort(bitBswupCache, req, asset);
     }
 
-    lazyFill(e, bitBswupCache, cacheUrl, response, asset);
+    lazyFill(e, bitBswupCache, cacheUrl, response, asset, request);
 
     diagFetch('+++ serveAsset ended - lazily caching asset:', start, asset, e, req);
 
@@ -813,7 +813,7 @@ async function serveAssetCore(e: any, req: Request, asset: any, start: string) {
 // breaking the in-flight response is not. Note that browsers pad opaque entries heavily in
 // quota accounting (Chromium reserves megabytes per entry) - the price of caching responses
 // whose real size is deliberately hidden.
-function lazyFill(e: any, cache: any, cacheUrl: string, response: Response, asset: any) {
+function lazyFill(e: any, cache: any, cacheUrl: string, response: Response, asset: any, request: Request) {
     if (!cache) return;
     // A 206 Partial Content body (the server honoring a Range header the page sent) must
     // never be written under the asset's cache key: response.ok is true for 206, so without
@@ -823,10 +823,31 @@ function lazyFill(e: any, cache: any, cacheUrl: string, response: Response, asse
     if ((response as any).status === 206) return;
     if (!response.ok && (response as any).type !== 'opaque') return;
 
-    const cachePut = cache.put(cacheUrl, response.clone()).catch((err: any) => {
+    const unverified = asset.reqUrl && asset.hash?.startsWith('sha') && self.enableIntegrityCheck
+        && (request as any).integrity !== asset.hash;
+    if (unverified && !response.ok) return;
+
+    const write = unverified
+        ? putIfIntegrityMatches(cache, cacheUrl, response.clone(), asset)
+        : cache.put(cacheUrl, response.clone());
+    const cachePut = write.catch((err: any) => {
         diagFetch('+++ serveAsset - lazy-fill put failed:', err, asset);
     });
     e.waitUntil(cachePut);
+}
+
+async function putIfIntegrityMatches(cache: any, cacheUrl: string, response: Response, asset: any) {
+    const body = await response.arrayBuffer();
+    if (!(await matchesIntegrity(asset, body))) {
+        diagFetch('+++ serveAsset - lazy fill skipped, the bytes do not match the asset hash:', asset);
+        return;
+    }
+
+    await cache.put(cacheUrl, new Response(body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers,
+    }));
 }
 
 // Matches the `<hash>` tail of a `reqUrl.<hash>` cache key: an SRI-style digest (sha256-...,
@@ -1685,6 +1706,8 @@ function createNewAssetRequest(asset: any, noCors = false, skipIntegrity = false
     return new Request(assetUrl, requestInit);
 }
 
+const SRI_HASH = /^sha(256|384|512)-([A-Za-z0-9+\/]+=*)$/;
+
 // Whether the bytes the host serves for an asset do not match its SRI hash. Called only after an
 // integrity-checked download was rejected with an error that does not say why: downloads the asset
 // once more WITHOUT the integrity attribute and compares the digest itself. A mismatch is
@@ -1694,7 +1717,7 @@ function createNewAssetRequest(asset: any, noCors = false, skipIntegrity = false
 // the failure on the transient path it was on before. The unverified bytes are only hashed, never
 // cached or served.
 async function isIntegrityMismatch(asset: any) {
-    const sri = /^sha(256|384|512)-([A-Za-z0-9+\/]+=*)$/.exec(String((asset && asset.hash) || ''));
+    const sri = SRI_HASH.exec(String((asset && asset.hash) || ''));
     const subtle = (self as any).crypto && (self as any).crypto.subtle;
     if (!sri || !subtle) return false;
 
@@ -1702,15 +1725,23 @@ async function isIntegrityMismatch(asset: any) {
         const response = await fetch(createNewAssetRequest(asset, false, true));
         if (!response || !response.ok) return false;
 
-        const digest = new Uint8Array(await subtle.digest(`SHA-${sri[1]}`, await response.arrayBuffer()));
-        let binary = '';
-        for (let i = 0; i < digest.length; i++) binary += String.fromCharCode(digest[i]);
-
-        return btoa(binary) !== sri[2];
+        return !(await matchesIntegrity(asset, await response.arrayBuffer()));
     } catch (err) {
         diag('*** isIntegrityMismatch - could not compare the served bytes:', err, asset && asset.reqUrl);
         return false;
     }
+}
+
+async function matchesIntegrity(asset: any, body: ArrayBuffer) {
+    const sri = SRI_HASH.exec(String((asset && asset.hash) || ''));
+    const subtle = (self as any).crypto && (self as any).crypto.subtle;
+    if (!sri || !subtle) return false;
+
+    const digest = new Uint8Array(await subtle.digest(`SHA-${sri[1]}`, body));
+    let binary = '';
+    for (let i = 0; i < digest.length; i++) binary += String.fromCharCode(digest[i]);
+
+    return btoa(binary).replace(/=+$/, '') === sri[2].replace(/=+$/, '');
 }
 
 // The one gate every cache-pruning call site goes through. deleteOldCaches() spares only the

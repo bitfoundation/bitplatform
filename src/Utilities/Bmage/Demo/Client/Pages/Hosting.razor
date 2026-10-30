@@ -121,8 +121,8 @@
         Everything works. The components run in compiled .NET inside the app's own process and render
         into a WebView, which Bmage reaches over JavaScript interop - the same position as Interactive
         Server, so <code>IImageCapabilityProvider</code> reports <code>ImageEnvironment.BrowserServer</code>
-        and picks codecs the same way: PNG, JPEG, BMP and GIF are coded by .NET in the app, and WebP,
-        AVIF and photos with a colour profile other than sRGB by the WebView. Nothing crosses a network,
+        and picks codecs the same way: images are decoded and encoded by .NET in the app, and AVIF
+        exports and photos whose colours need colour management by the WebView. Nothing crosses a network,
         but those pixels and the editor's previews are copied through the WebView's message channel.
     </p>
     <p>
