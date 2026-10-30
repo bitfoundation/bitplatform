@@ -709,6 +709,51 @@ public class BitMapTests : BunitTestContext
         Assert.AreEqual(true, ((Dictionary<string, object?>)attaches[1].Arguments[4]!)["overlay"]);
     }
 
+    // Attaching the chrome again drops the anchor of an open popup with the rest of its state, so the popup is
+    // anchored again right after - without re-arming the pan its open spent.
+    [TestMethod]
+    public async Task BitMapShouldAnchorAnOpenPopupAgainWhenTheChromeIsAttachedAgain()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.MarkerPopupTemplate, EmptyPopupTemplate);
+        });
+
+        await component.Instance.AddMarker(new BitMapMarker { Id = "a", Position = new(50.45, 30.52) });
+        await component.Instance._OnMarkerClick("a");
+
+        var anchorsBefore = Context.JSInterop.Invocations.Count(i => i.Identifier == TRACK_ANCHOR);
+
+        component.Render(parameters => parameters.AddChildContent("<div>legend</div>"));
+
+        var invocations = Context.JSInterop.Invocations.ToList();
+        var anchors = invocations.Where(i => i.Identifier == TRACK_ANCHOR).ToList();
+        Assert.AreEqual(anchorsBefore + 1, anchors.Count, "The open popup is anchored again");
+        Assert.IsTrue(invocations.IndexOf(anchors[^1]) > invocations.FindLastIndex(i => i.Identifier == CHROME_ATTACH),
+                      "Anchored after the attach that dropped it");
+        Assert.AreEqual(50.45, anchors[^1].Arguments[2]);
+        Assert.AreEqual(30.52, anchors[^1].Arguments[3]);
+        Assert.AreEqual(false, anchors[^1].Arguments[4], "A re-attach does not pan the map to the popup");
+    }
+
+    [TestMethod]
+    public void BitMapShouldNotAnchorAPopupWhenTheChromeIsAttachedAgainWithNoneOpen()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.MarkerPopupTemplate, EmptyPopupTemplate);
+        });
+
+        component.Render(parameters => parameters.AddChildContent("<div>legend</div>"));
+
+        Assert.AreEqual(2, Context.JSInterop.Invocations.Count(i => i.Identifier == CHROME_ATTACH));
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == TRACK_ANCHOR));
+    }
+
     [TestMethod]
     public void BitMapShouldTranslateTheRoleDescription()
     {

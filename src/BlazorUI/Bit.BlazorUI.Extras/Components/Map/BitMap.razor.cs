@@ -2383,6 +2383,18 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         {
             // The chrome is an enhancement; a failure here must not take the map down with it.
             await RaiseInteropError(BitMapInteropErrorSource.Init, ex, nameof(AttachChromeAsync));
+            return;
+        }
+
+        // Attaching starts from a clean slate, which drops the anchor of an open popup with the rest, so
+        // the popup would stay frozen where it was last drawn. No auto-pan: a re-attach follows an option
+        // change, not the user opening the popup.
+        if (_openPopupMarker is { } marker)
+        {
+            await SafeInvokeAsync(
+                _js.BitMapChromeTrackAnchor(_Id, _popupAnchorId, marker.Position.Latitude, marker.Position.Longitude,
+                                            false, ShouldAnimate(true, false)),
+                nameof(AttachChromeAsync));
         }
     }
 
