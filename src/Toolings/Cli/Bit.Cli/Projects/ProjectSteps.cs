@@ -55,10 +55,40 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             return Task.FromResult(StepResult.Skipped("Skipped the app certificate", "the project has no Server.Api folder"));
 
         WriteDevelopmentCertificate(project.ServerApiDirectory);
-        return Task.FromResult(StepResult.Succeeded("Created a unique app certificate", "development only"));
+
+        return Task.FromResult(ReplaceSampleVapidKeys(project.Directory)
+            ? StepResult.Succeeded("Created a unique app certificate and web push keys", "development only")
+            : StepResult.Succeeded("Created a unique app certificate", "development only"));
     }
 
     public static void WriteDevelopmentCertificate(string directory) => Keys.AppCertificates.Write(directory, Keys.AppCertificates.ActiveName, Keys.AppCertificates.CreateDevelopment());
+
+    /// <summary>
+    /// Gives the project a web push key pair of its own in every appsettings file that has the template's sample pair, which
+    /// every other project created from the template shares. False when no file has it, as without the notification option.
+    /// </summary>
+    public static bool ReplaceSampleVapidKeys(string projectDirectory)
+    {
+        var sample = Keys.VapidKeys.Sample;
+
+        var files = System.IO.Directory.EnumerateFiles(Path.Combine(projectDirectory, "src"), "appsettings*.json", SearchOption.AllDirectories)
+            .Where(file => file.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Any(part => part is "bin" or "obj" or "node_modules") is false)
+            .Select(file => (Path: file, Text: File.ReadAllText(file)))
+            .Where(file => file.Text.Contains(sample.PublicKey, StringComparison.Ordinal) || file.Text.Contains(sample.PrivateKey, StringComparison.Ordinal))
+            .ToList();
+
+        if (files.Count == 0)
+            return false;
+
+        var keys = Keys.VapidKeys.Create();
+
+        foreach (var file in files)
+        {
+            AtomicFile.WriteAllText(file.Path, file.Text.Replace(sample.PublicKey, keys.PublicKey, StringComparison.Ordinal).Replace(sample.PrivateKey, keys.PrivateKey, StringComparison.Ordinal));
+        }
+
+        return true;
+    }
 
     public async Task<StepResult> GitAsync(Action<string> progress, CancellationToken cancellationToken)
     {

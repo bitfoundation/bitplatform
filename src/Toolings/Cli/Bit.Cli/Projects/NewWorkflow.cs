@@ -123,7 +123,7 @@ public sealed partial class NewWorkflow(CliServices cli)
 
             if (request.NoCertificate is false)
             {
-                await RunProjectStepAsync(steps, context, "certificate", "Creating a unique app certificate", projectSteps.AppCertificateAsync, cancellationToken);
+                await RunProjectStepAsync(steps, context, "certificate", "Creating a unique app certificate and web push keys", projectSteps.AppCertificateAsync, cancellationToken);
             }
 
             if (request.NoGit is false)
@@ -480,7 +480,7 @@ public sealed partial class NewWorkflow(CliServices cli)
         }
 
         var stepsList = new List<string> { "create" };
-        if (request.NoCertificate is false) stepsList.Add("unique app certificate");
+        if (request.NoCertificate is false) stepsList.Add("unique app certificate and web push keys");
         if (request.NoGit is false) stepsList.Add("git with develop and main");
         stepsList.Add(".NET SDK check");
         if (selection.Aspire && cli.Environment.IsCI is false) stepsList.Add("container runtime for Aspire");

@@ -86,7 +86,7 @@ public static class NewCommand
         var templatePackageOption = new Option<string?>("--template-package") { Description = "Create the project from a local Bit.Boilerplate .nupkg, or from the template's folder in a bitplatform checkout, the way its CI does." };
         var dryRunOption = new Option<bool>("--dry-run") { Description = "Show what would happen, and change nothing." };
         var noSetup = new Option<bool>("--no-setup") { Description = "Only create the project: no tools, workloads, restore or build. Run bit setup in its folder later." };
-        var noCertificate = new Option<bool>("--no-certificate") { Description = "Keep the template's shared development certificate." };
+        var noCertificate = new Option<bool>("--no-certificate") { Description = "Keep the template's shared development certificate and web push keys." };
         var noGit = new Option<bool>("--no-git") { Description = "Don't initialize git." };
         var noFormat = new Option<bool>("--no-format") { Description = "Don't run dotnet format." };
         var noMigration = new Option<bool>("--no-migration") { Description = "Don't add the initial EF Core migration." };
