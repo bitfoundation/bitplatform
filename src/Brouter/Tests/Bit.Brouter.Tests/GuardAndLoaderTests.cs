@@ -1,5 +1,6 @@
 ﻿using Bunit;
 using Bunit.TestDoubles;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -37,36 +38,128 @@ public class GuardAndLoaderTests : BunitTestContext
     }
 
     [TestMethod]
-    [DataRow(true, "/Admin", "/Admin")]
-    [DataRow(true, "http://localhost/Admin", "http://localhost/Admin")]
-    [DataRow(true, "/admin", null)]
-    [DataRow(true, "admin", null)]
-    [DataRow(true, "HTTP://LOCALHOST/admin", null)]
-    [DataRow(false, "/Admin", null)]
-    [DataRow(false, "http://localhost/Admin", null)]
-    public void Redirect_to_the_current_target_follows_the_routing_case_sensitivity(bool caseSensitive, string url, string? expected)
+    [DataRow("/login", "/login/", 2)]
+    [DataRow("/login", "/login?returnUrl=%2Fmy%20page", 2)]
+    [DataRow("/login?returnUrl=%2Fmy%20page", "/login?returnUrl=%2Fmy%20page", 1)]
+    [DataRow("/caf%C3%A9", "/caf%C3%A9", 1)]
+    [DataRow("/caf%C3%A9", "/café", 1)]
+    public void Guard_redirect_to_its_own_target_does_not_loop_on_the_initial_load(string url, string redirectUrl, int guardCalls)
     {
-        var to = new BrouterLocation("http://localhost/admin", "/admin", ["admin"], "", "");
-        var ctx = new BrouterNavigationContext(to, to, CancellationToken.None, caseSensitive);
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
+        nav.NavigateTo(url);
 
-        ctx.Redirect(url);
+        var cut = RenderComponent<SelfRedirectGuardHost>(p => p.Add(h => h.RedirectUrl, redirectUrl));
 
-        Assert.AreEqual(expected, ctx.RedirectUrl);
+        AssertLandedOnTheRedirectTarget(cut, nav, redirectUrl, guardCalls);
     }
 
     [TestMethod]
-    [DataRow(true, "/admin?tab=users#Top", "/admin?tab=users#Top")]
-    [DataRow(true, "/admin?tab=Users#top", "/admin?tab=Users#top")]
-    [DataRow(true, "/admin?tab=Users#Top", null)]
-    [DataRow(false, "/admin?tab=users#top", null)]
-    public void Redirect_to_the_current_target_compares_query_and_hash_by_the_routing_case_sensitivity(bool caseSensitive, string url, string? expected)
+    [DataRow("/login", "/login/", 2)]
+    [DataRow("/login", "/login?returnUrl=%2Fmy%20page", 2)]
+    [DataRow("/login?returnUrl=%2Fmy%20page", "/login?returnUrl=%2Fmy%20page", 1)]
+    [DataRow("/caf%C3%A9", "/caf%C3%A9", 1)]
+    [DataRow("/caf%C3%A9", "/café", 1)]
+    public void Guard_redirect_to_its_own_target_does_not_loop_on_an_in_app_navigation(string url, string redirectUrl, int guardCalls)
     {
-        var to = new BrouterLocation("http://localhost/admin?tab=Users#Top", "/admin", ["admin"], "?tab=Users", "#Top");
-        var ctx = new BrouterNavigationContext(to, to, CancellationToken.None, caseSensitive);
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
+        nav.NavigateTo("/home");
+        var cut = RenderComponent<SelfRedirectGuardHost>(p => p.Add(h => h.RedirectUrl, redirectUrl));
+        cut.WaitForAssertion(() => Assert.IsNotNull(cut.Find("[data-testid=home]")));
+
+        // Decided in the LocationChanging phase, whose target location is built from the
+        // unescaped Uri.ToString() form of the URL.
+        nav.NavigateTo(url);
+
+        AssertLandedOnTheRedirectTarget(cut, nav, redirectUrl, guardCalls);
+    }
+
+    private static void AssertLandedOnTheRedirectTarget(IRenderedComponent<SelfRedirectGuardHost> cut, NavigationManager nav, string redirectUrl, int guardCalls)
+    {
+        cut.WaitForAssertion(() =>
+        {
+            Assert.IsNotNull(cut.Find("[data-testid=target]"));
+            Assert.AreEqual(nav.ToAbsoluteUri(redirectUrl).AbsoluteUri, new Uri(nav.Uri).AbsoluteUri);
+        });
+        Assert.AreEqual(guardCalls, cut.Instance.GuardCalls);
+    }
+
+    [TestMethod]
+    [DataRow("http://localhost/admin?tab=Users#Top", "/admin?tab=Users#Top")]
+    [DataRow("http://localhost/admin?tab=Users#Top", "admin?tab=Users#Top")]
+    [DataRow("http://localhost/admin?tab=Users#Top", ".?tab=Users#Top")]
+    [DataRow("http://localhost/admin?tab=Users#Top", "http://localhost/admin?tab=Users#Top")]
+    [DataRow("http://localhost/admin?tab=Users#Top", "HTTP://LOCALHOST:80/admin?tab=Users#Top")]
+    [DataRow("http://localhost/admin?tab=Users#Top", "//localhost/admin?tab=Users#Top")]
+    [DataRow("http://localhost/admin", "/admin?")]
+    [DataRow("http://localhost/admin", "/admin#")]
+    [DataRow("http://localhost/login/", "/login/")]
+    [DataRow("http://localhost/caf%C3%A9?returnUrl=%2Fmy%20page", "/café?returnUrl=%2Fmy page")]
+    [DataRow("http://localhost/caf%C3%A9?returnUrl=%2Fmy%20page", "/caf%c3%a9?returnUrl=%2Fmy%20page")]
+    // The unescaped form the LocationChanging phase builds its target location from.
+    [DataRow("http://localhost/café?returnUrl=%2Fmy page", "/caf%C3%A9?returnUrl=%2Fmy%20page")]
+    [DataRow("http://localhost/app/admin", "admin", "http://localhost/app/")]
+    [DataRow("http://localhost/app/admin", "http://localhost/app/admin", "http://localhost/app/")]
+    public void Redirect_to_the_current_target_is_a_continue(string toUri, string url, string baseUri = "http://localhost/")
+    {
+        var ctx = CreateContext(toUri, baseUri);
 
         ctx.Redirect(url);
 
-        Assert.AreEqual(expected, ctx.RedirectUrl);
+        Assert.IsNull(ctx.RedirectUrl);
+    }
+
+    [TestMethod]
+    [DataRow("http://localhost/admin?tab=Users#Top", "/Admin?tab=Users#Top")]
+    [DataRow("http://localhost/admin?tab=Users#Top", "http://localhost/ADMIN?tab=Users#Top")]
+    [DataRow("http://localhost/admin?tab=Users#Top", "/admin/?tab=Users#Top")]
+    [DataRow("http://localhost/admin?tab=Users#Top", "/admin?tab=users#Top")]
+    [DataRow("http://localhost/admin?tab=Users#Top", "/admin?tab=Users#top")]
+    [DataRow("http://localhost/admin?tab=Users#Top", "/admin")]
+    [DataRow("http://localhost/admin?tab=Users#Top", "https://localhost/admin?tab=Users#Top")]
+    [DataRow("http://localhost/admin?tab=Users#Top", "http://localhost:5000/admin?tab=Users#Top")]
+    [DataRow("http://localhost/products/Blue-Shirt", "/products/blue-shirt")]
+    [DataRow("http://localhost/login/", "/login")]
+    [DataRow("http://localhost/login/", "http://localhost/login")]
+    [DataRow("http://localhost/login", "/login/")]
+    [DataRow("http://localhost/admin", "http://[localhost/admin")]
+    // NavigateTo resolves "/admin" against the host root, off the base path.
+    [DataRow("http://localhost/app/admin", "/admin", "http://localhost/app/")]
+    [DataRow("http://localhost/app/admin", "http://localhost/APP/admin", "http://localhost/app/")]
+    public void Redirect_that_changes_the_url_is_honored(string toUri, string url, string baseUri = "http://localhost/")
+    {
+        var ctx = CreateContext(toUri, baseUri);
+
+        ctx.Redirect(url);
+
+        Assert.AreEqual(url, ctx.RedirectUrl);
+    }
+
+    [TestMethod]
+    public void Redirect_to_the_current_target_clears_an_earlier_redirect()
+    {
+        var ctx = CreateContext("http://localhost/admin");
+
+        ctx.Redirect("/other");
+        ctx.Redirect("/admin");
+
+        Assert.IsNull(ctx.RedirectUrl);
+    }
+
+    private static BrouterNavigationContext CreateContext(string toUri, string baseUri = "http://localhost/")
+    {
+        var navManager = new TestNavigationManager(baseUri, toUri);
+        // Redirect reads only the full URI and the base-relative path (for route-relative URLs).
+        var path = "/" + navManager.ToBaseRelativePath(toUri).Split('?', '#')[0];
+        var to = new BrouterLocation(toUri, path, path.Split('/', StringSplitOptions.RemoveEmptyEntries), "", "");
+        return new BrouterNavigationContext(to, to, CancellationToken.None, navManager);
+    }
+
+    private sealed class TestNavigationManager : NavigationManager
+    {
+        public TestNavigationManager(string baseUri, string uri)
+        {
+            Initialize(baseUri, uri);
+        }
     }
 
     [TestMethod]

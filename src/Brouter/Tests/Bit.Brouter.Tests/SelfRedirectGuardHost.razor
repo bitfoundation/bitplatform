@@ -1,0 +1,26 @@
+﻿@using Bit.Brouter
+
+<Brouter>
+    <Broute Path="/home">
+        <Content><div data-testid="home">home</div></Content>
+    </Broute>
+    <Broute Path="/login" Guard="@RedirectToTarget">
+        <Content><div data-testid="target">login</div></Content>
+    </Broute>
+    <Broute Path="/café" Guard="@RedirectToTarget">
+        <Content><div data-testid="target">café</div></Content>
+    </Broute>
+</Brouter>
+
+@code {
+    [Parameter] public string RedirectUrl { get; set; } = default!;
+
+    public int GuardCalls { get; private set; }
+
+    private ValueTask RedirectToTarget(BrouterNavigationContext ctx)
+    {
+        // Bounded so a redirect loop fails the test instead of hanging the run.
+        if (++GuardCalls < 10) ctx.Redirect(RedirectUrl);
+        return ValueTask.CompletedTask;
+    }
+}

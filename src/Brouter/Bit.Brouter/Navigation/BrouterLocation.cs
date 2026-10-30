@@ -84,6 +84,19 @@ public sealed class BrouterLocation
     public IReadOnlyList<string> GetQueryAll(string key) =>
         QueryParams.TryGetValue(key, out var values) ? values : [];
 
+    /// <summary>
+    /// The form of <paramref name="uri"/> under which two spellings of the same URL compare equal
+    /// (ordinally): escaped, with the scheme and host lowercased, the default port and dot segments
+    /// removed, percent-encoding normalized, and an empty query or hash dropped. Path, query and hash
+    /// keep their casing.
+    /// </summary>
+    internal static string ToCanonicalUri(Uri uri)
+    {
+        var query = uri.Query.Length > 1 ? uri.Query : string.Empty;
+        var hash = uri.Fragment.Length > 1 ? uri.Fragment : string.Empty;
+        return uri.GetLeftPart(UriPartial.Path) + query + hash;
+    }
+
 
     private static IReadOnlyDictionary<string, IReadOnlyList<string>> ParseQuery(string query)
     {

@@ -8,14 +8,14 @@ namespace Bit.Brouter;
 /// </summary>
 public sealed class BrouterNavigationContext
 {
-    private readonly bool _caseSensitive;
+    private readonly NavigationManager _navManager;
 
-    internal BrouterNavigationContext(BrouterLocation from, BrouterLocation to, CancellationToken cancellationToken, bool caseSensitive)
+    internal BrouterNavigationContext(BrouterLocation from, BrouterLocation to, CancellationToken cancellationToken, NavigationManager navManager)
     {
         From = from;
         To = to;
         CancellationToken = cancellationToken;
-        _caseSensitive = caseSensitive;
+        _navManager = navManager;
     }
 
     /// <summary>Where the navigation is coming from.</summary>
@@ -92,6 +92,12 @@ public sealed class BrouterNavigationContext
     /// A route-relative <paramref name="url"/> (<c>./x</c>, <c>../x</c>) is resolved against the
     /// path of <see cref="To"/> - the location being navigated to - using segment math, so a guard
     /// on <c>/admin/secret</c> can redirect to <c>"../login"</c> to reach <c>/admin/login</c>.
+    /// A redirect to the URL <see cref="To"/> already denotes is "continue": it clears any earlier
+    /// redirect and the navigation proceeds. Both URLs are resolved the way
+    /// <see cref="NavigationManager.NavigateTo(string, bool)"/> resolves them and compared in full -
+    /// any change to the path (casing and trailing slash included), query or hash is a real redirect,
+    /// while a different spelling of the same URL (absolute or base-relative, percent-encoding, host
+    /// casing, default port, an empty query or hash) is not.
     /// </summary>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="url"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown when <paramref name="url"/> is empty or whitespace.</exception>
@@ -105,37 +111,42 @@ public sealed class BrouterNavigationContext
 
         var resolved = BrouterRelativeUrl.ResolveIfRelative(To.Path, url);
 
-        // A redirect to the exact location this navigation is already heading to is "continue",
-        // not a redirect. Honoring it would cancel this navigation and start an identical one,
-        // whose guards run again and redirect again - an infinite navigation loop. Treating it
-        // as a no-op makes guards like "always send anonymous users to /login" safe to write
-        // without a "unless we're already going to /login" clause.
-        if (IsCurrentTarget(resolved)) return;
-
-        RedirectUrl = resolved;
+        // A redirect to the URL this navigation is already heading to (however it is spelled) is
+        // "continue", not a redirect. Honoring it would cancel this navigation and start an
+        // identical one, whose guards run again and redirect again - an infinite navigation loop.
+        // Treating it as a continue makes guards like "always send anonymous users to /login" safe
+        // to write without a "unless we're already going to /login" clause.
+        RedirectUrl = IsCurrentTarget(resolved) ? null : resolved;
     }
 
     /// <summary>
-    /// Whether <paramref name="resolved"/> denotes the same location this navigation is heading to.
-    /// Compared against both the absolute URI and the base-relative path+query+hash forms, since a
-    /// redirect may be expressed either way.
+    /// Whether <paramref name="url"/> denotes the URL this navigation is heading to. Both are
+    /// resolved by <see cref="NavigationManager.ToAbsoluteUri"/> - as
+    /// <see cref="NavigationManager.NavigateTo(string, bool)"/> resolves a redirect - and compared in
+    /// canonical form.
     /// </summary>
-    private bool IsCurrentTarget(string resolved)
+    /// <remarks>
+    /// The comparison is on the URL, not on the route it matches. Only a redirect that would land on
+    /// this very URL again can loop, so only that one is a no-op. Any other redirect is honored, even
+    /// one the matcher can't tell apart from <see cref="To"/> (a different path casing or trailing
+    /// slash under the default options): it still changes the address bar and the casing of route
+    /// parameter values, and the navigation it starts heads to the URL that redirect denotes, so
+    /// repeating it there is a no-op. <see cref="To"/>'s <see cref="BrouterLocation.FullUri"/> is
+    /// re-resolved rather than taken verbatim because it may be the unescaped form
+    /// <c>Uri.ToString()</c> produces.
+    /// </remarks>
+    private bool IsCurrentTarget(string url)
     {
-        var comparison = _caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-
-        if (string.Equals(resolved, To.FullUri, StringComparison.OrdinalIgnoreCase))
+        try
         {
-            var schemeEnd = resolved.IndexOf("://", StringComparison.Ordinal);
-            var pathStart = schemeEnd < 0 ? 0 : resolved.IndexOf('/', schemeEnd + 3);
-            if (pathStart < 0 || resolved.AsSpan(pathStart).Equals(To.FullUri.AsSpan(pathStart), comparison)) return true;
+            return string.Equals(BrouterLocation.ToCanonicalUri(_navManager.ToAbsoluteUri(url)),
+                                 BrouterLocation.ToCanonicalUri(_navManager.ToAbsoluteUri(To.FullUri)),
+                                 StringComparison.Ordinal);
         }
-
-        var pathQueryHash = To.Path + To.Query + To.Hash;
-        if (string.Equals(resolved, pathQueryHash, comparison)) return true;
-
-        // Base-relative form without the leading slash ("users/1" vs "/users/1").
-        return resolved.Length > 0 && resolved[0] != '/' &&
-               string.Equals("/" + resolved, pathQueryHash, comparison);
+        catch (Exception ex) when (ex is ArgumentException or UriFormatException or InvalidOperationException)
+        {
+            // A URL that can't be resolved isn't the current target; navigating to it surfaces the problem.
+            return false;
+        }
     }
 }
