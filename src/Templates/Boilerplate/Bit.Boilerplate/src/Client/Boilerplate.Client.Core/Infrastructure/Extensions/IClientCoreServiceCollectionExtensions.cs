@@ -3,6 +3,12 @@
 using BlazorApplicationInsights;
 using BlazorApplicationInsights.Interfaces;
 //#endif
+//#if (offlineDb == true)
+using Bit.Bsqlite.Storage.Opfs;
+using Bit.Bsqlite.Storage.InMemory;
+using Bit.Bsqlite.Storage.IndexedDb;
+using Bit.Bsqlite.EntityFrameworkCore;
+//#endif
 using Bit.BevTools;
 using Boilerplate.Client.Core;
 using Microsoft.Extensions.Options;
@@ -117,37 +123,7 @@ public static partial class IClientCoreServiceCollectionExtensions
             });
 
             //#if (offlineDb == true)
-            services.AddBesqlDbContextFactory<AppOfflineDbContext>((sp, optionsBuilder) =>
-            {
-                var isRunningInsideDocker = Directory.Exists("/container_volume"); // Blazor Server - Docker (It's supposed to be a mounted volume named /container_volume)
-                var dirPath = isRunningInsideDocker ? "/container_volume"
-                                                    : AppPlatform.IsBlazorHybrid ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AC87AA5B-4B37-4E52-8468-2D5DF24AF256")
-                                                    : Directory.GetCurrentDirectory(); // Blazor server (Non docker Linux, macOS or Windows) OR Blazor WASM
-
-                dirPath = Path.Combine(dirPath, "App_Data");
-
-                Directory.CreateDirectory(dirPath);
-
-                var dbPath = Path.Combine(dirPath, "AppOffline.db");
-
-                optionsBuilder.UseSqlite($"Data Source={dbPath}", dbOptions =>
-                {
-
-                });
-
-                optionsBuilder.EnableSensitiveDataLogging(AppEnvironment.IsDevelopment())
-                        .EnableDetailedErrors(AppEnvironment.IsDevelopment());
-
-            }
-            , dbContextInitializer: async (_, dbContext) =>
-            {
-                if (AppEnvironment.IsDevelopment() is false && dbContext.Model.GetType() == typeof(EntityFrameworkCore.Metadata.RuntimeModel))
-                    throw new InvalidOperationException("AppOfflineDbContext has not been optimized. Run 'bit migration optimize' before publishing and after every model change; 'bit migration add <Name> --offline' and 'bit migration remove --offline' run it for you. See Boilerplate.Client.Core/Infrastructure/Data/README.md.");
-
-                await Task.Run(async () => await dbContext.Database.MigrateAsync());
-            }
-            , lifetime: ServiceLifetime.Scoped);
-            services.AddScoped<SyncService>();
+            services.AddOfflineDb();
             //#endif
 
             //#if (appInsights == true)
@@ -167,6 +143,62 @@ public static partial class IClientCoreServiceCollectionExtensions
 
             return services;
         }
+
+        //#if (offlineDb == true)
+        private void AddOfflineDb()
+        {
+            if (AppPlatform.IsBlazorHybridOrBrowser)
+            {
+                services.AddBitBsqliteServices(sqlite => sqlite
+                    .AddStorageProvider<BsqliteOpfsStorageProvider>()
+                    .AddStorageProvider<BsqliteIndexedDbStorageProvider>()
+                    .AddStorageProvider<BsqliteInMemoryStorageProvider>()
+                    .UseStorage(storage => storage
+                        .Prefer(BsqliteOpfsStorageProvider.ProviderName)
+                        .Fallback(BsqliteIndexedDbStorageProvider.ProviderName)
+                        .Fallback(BsqliteInMemoryStorageProvider.ProviderName)
+                        .AllowNonPersistentFallback())
+                    .BeforeFirstOpen(async (sp, _) =>
+                    {
+                        if (AppPlatform.IsBrowser)
+                        {
+                            await sp.GetRequiredService<LazyAssemblyLoader>().LoadAssembliesAsync(["System.Private.Xml.wasm"]);
+                        }
+                    })
+                    .AddDatabase("AppOffline.db"));
+
+                services.AddBitBsqliteDbContext<AppOfflineDbContext>(options =>
+                {
+                    options.Schema = BsqliteSchemaStrategy.None;
+                    options.Configure = (_, optionsBuilder) => optionsBuilder
+                        .EnableSensitiveDataLogging(AppEnvironment.IsDevelopment())
+                        .EnableDetailedErrors(AppEnvironment.IsDevelopment());
+                    options.OnFirstUse = (dbContext, cancellationToken) => dbContext.InitializeAsync(cancellationToken);
+                });
+            }
+            else
+            {
+                services.AddDbContextFactory<AppOfflineDbContext, AppOfflineDbContextFactory>(optionsBuilder =>
+                {
+                    var isRunningInsideDocker = Directory.Exists("/container_volume"); // Blazor Server - Docker (It's supposed to be a mounted volume named /container_volume)
+                    var dirPath = isRunningInsideDocker ? "/container_volume"
+                                                        : Directory.GetCurrentDirectory(); // Blazor server (Non docker Linux, macOS or Windows)
+
+                    dirPath = Path.Combine(dirPath, "App_Data");
+
+                    Directory.CreateDirectory(dirPath);
+
+                    var dbPath = Path.Combine(dirPath, "AppOffline.db");
+
+                    optionsBuilder.UseSqlite($"Data Source={dbPath}");
+
+                    optionsBuilder.EnableSensitiveDataLogging(AppEnvironment.IsDevelopment())
+                            .EnableDetailedErrors(AppEnvironment.IsDevelopment());
+                }, ServiceLifetime.Scoped);
+            }
+            services.AddScoped<SyncService>();
+        }
+        //#endif
 
         /// <summary>
         /// Blazor Server creates one scope for each connected user's client app.

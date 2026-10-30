@@ -1,23 +1,12 @@
-## bit entity framework core sqlite [bit Besql](https://bitplatform.dev/besql)
+## bit entity framework core sqlite [bit Bsqlite](https://bsqlite.bitplatform.dev)
 
-How to use `Bit.Besql`:
+How to use `Bit.Bsqlite`:
 
-The usage of `Bit.Besql` is exactly the same as the regular usage of `Microsoft.EntityFrameworkCore.Sqlite` with [IDbContextFactory](https://learn.microsoft.com/en-us/aspnet/core/blazor/blazor-ef-core?view=aspnetcore-10.0#new-dbcontext-instances).
+The usage of `Bit.Bsqlite` is the same as the regular usage of `Microsoft.EntityFrameworkCore.Sqlite` with [IDbContextFactory](https://learn.microsoft.com/en-us/aspnet/core/blazor/blazor-ef-core?view=aspnetcore-10.0#new-dbcontext-instances), with EF Core's async API only: in the browser and in Blazor Hybrid, synchronous calls such as `ToList()` and `SaveChanges()` throw.
 
-In order to download sqlite db file from browser cache storage in blazor WebAssembly run the followings in browser console:
-```js
-const cache = await caches.open('bit-Besql');
-const resp = await cache.match('/data/cache/App_Data/AppOffline.db');
-const blob = await resp.blob();
-const urlToDownload = URL.createObjectURL(blob);
-const a = document.createElement('a');
-a.href = urlToDownload;
-a.download = 'AppOffline.db';
-a.click();
-URL.revokeObjectURL(urlToDownload);
+The database lives on the user's device: in the browser on OPFS, falling back to IndexedDB and then to memory, and in Blazor Hybrid in a SQLite file of the app's own. Blazor Server, pre-rendering and the design-time tools open a plain SQLite file in `App_Data` on the server instead.
 
-https://inloop.github.io/sqlite-viewer/
-```
+To get the database out of the browser, inject `BsqliteDatabase` and call `ExportAsync()`, which returns a consistent SQLite file to open in https://inloop.github.io/sqlite-viewer/
 
 **Migration**
 

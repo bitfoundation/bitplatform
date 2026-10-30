@@ -545,7 +545,7 @@ public partial class Templates04CreateProjectPage
             Faqs =
             [
                 new("How does the app sync with the server?",
-                    "It keeps a SQLite database on the device, in the browser too, with bit Besql. The offline Todo sample syncs it with CommunityToolkit.Datasync: what people change offline is sent to the server once they're back online. Your own data needs the same setup."),
+                    "It keeps a SQLite database on the device, in the browser too, with bit Bsqlite. The offline Todo sample syncs it with CommunityToolkit.Datasync: what people change offline is sent to the server once they're back online. Your own data needs the same setup."),
                 new("How much heavier does it make the web app?",
                     "About 2 MB more for the web app to download."),
                 new("Can I add it later?",

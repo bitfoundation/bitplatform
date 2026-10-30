@@ -35,7 +35,7 @@ azurewebsites
 validatable
 preconnect
 sqlite
-Besql
+Bsqlite
 Sessioned
 appsettings
 Butil
