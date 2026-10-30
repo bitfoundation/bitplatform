@@ -310,7 +310,11 @@ and each job of a CD or CI run with `prerelease_packages` takes the newest unexp
 prerelease run that finishes in the middle of a CD run hands the jobs that start after it another build, maybe of
 another branch: compare the jobs' notices. The prerelease run also pushes its packages to nuget.org, skipping every
 version nuget.org already has, so a second run at the same version changes nothing there and its build lives only in
-its artifact. All CI's `prerelease_packages` option works the same way for its template and website jobs.
+its artifact. All CI's `prerelease_packages` option works the same way for its template and website jobs. So when a
+template fix uses a library change that nuget.org's build of the version doesn't have, everything here passes while
+the fix's own PR, built with nuget.org's packages, fails until the next prerelease version: say so in the report and in
+the PR. The push also stops at the first package nuget.org refuses, and every package after it stays off nuget.org:
+compare the artifact's packages with nuget.org's before calling a package published.
 
 ## 3. The E2E suite
 
