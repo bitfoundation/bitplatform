@@ -104,7 +104,8 @@ public static class McpPrompts
                edges to missing nodes, missing parents and parent cycles, and edges naming a handle the node lacks.
             3. Call `SearchBlow` with the symptom and read the guide section it points to - "Nodes", "Handles and
                connections", "Edges", "Sub-flows and grouping", "Saving and restoring" and "Errors and diagnostics" cover
-               the usual causes.
+               the usual causes, and "Lazy loading on WebAssembly" covers an app that cannot load Bit.Blow because it
+               lazy loads it.
             4. If the page does not update after an edit, check how the change happened: the canvas edits the lists in
                place and re-renders only itself, so markup that reads the graph needs `NodesChanged`/`EdgesChanged`
                bound, a change made outside a render of your component needs `Refresh(remeasure: true)` (or

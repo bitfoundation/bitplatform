@@ -77,6 +77,8 @@ public static partial class BlowSetupGuide
                 first frame from your Nodes and Edges and comes alive once WebAssembly starts. Reference `Bit.Blow` from
                 the .Client project (the server gets it transitively), and link the stylesheet from the server's
                 `App.razor`, which is the host page. The demo's `AddDemoServices` registers nothing - Blow has no services.
+                A client that lazy loads Bit.Blow gives `Routes` the InteractiveWebAssembly render mode and registers
+                `LazyAssemblyLoader` on the server - see `GetBlowGuideSection(heading: "Lazy loading on WebAssembly")`.
                 """,
                 ["Install", "Blazor Web App", "Blazor WebAssembly", "Prerendering", "Content security policy"],
                 null,
@@ -90,7 +92,12 @@ public static partial class BlowSetupGuide
                 afterwards. Nothing about the wiring changes between the two: there are no services to register in either
                 container, but the pages must live in the .Client project. The demo below uses InteractiveWebAssembly; for
                 InteractiveAuto add `AddInteractiveServerComponents()` and `AddInteractiveServerRenderMode()` to the
-                server's `Program.cs` and use `@rendermode="InteractiveAuto"` in `App.razor` - nothing else changes.
+                server's `Program.cs` and use `@rendermode="InteractiveAuto"` in `App.razor` - nothing else changes for an
+                app that loads Bit.Blow with the rest of the client. A client that lazy loads it does so only in the
+                browser, so only from the second visit on; the server loads it with the rest of the app and registers
+                `LazyAssemblyLoader` (`builder.Services.AddScoped<LazyAssemblyLoader>()`), because `Routes` injects it on
+                the server both while prerendering and over the first visit's circuit - see
+                `GetBlowGuideSection(heading: "Lazy loading on WebAssembly")`.
                 """,
                 ["Install", "Blazor Web App", "Blazor WebAssembly", "Blazor Server", "Prerendering", "Content security policy"],
                 null,
@@ -100,7 +107,9 @@ public static partial class BlowSetupGuide
                 "standalone Blazor WebAssembly",
                 """
                 One project and no prerendering: the canvas runs in the browser from the first render. The host page is
-                `wwwroot/index.html`, so that is where the stylesheet link goes.
+                `wwwroot/index.html`, so that is where the stylesheet link goes. With nothing to register, the app can
+                also download Bit.Blow only when a page with a canvas first opens - see
+                `GetBlowGuideSection(heading: "Lazy loading on WebAssembly")`.
                 """,
                 ["Install", "Blazor WebAssembly", "Content security policy"],
                 StandaloneFiles,
@@ -168,7 +177,8 @@ public static partial class BlowSetupGuide
         1. `dotnet add package Bit.Blow` - one package, everything under the `Bit.Blow` namespace. In a Blazor Web App
            with an interactive client, add it to the .Client project.
         2. Add `@using Bit.Blow` to `_Imports.razor`.
-        3. There are NO services to register - do not look for an `AddBlow...` method, there is none.
+        3. There are NO services to register - do not look for an `AddBlow...` method, there is none. That is also
+           what lets a WebAssembly app lazy load `Bit.Blow.wasm` (see the guide's "Lazy loading on WebAssembly").
         4. Link the stylesheet from the host page - it is REQUIRED, and nothing adds it for you:
            `<link rel="stylesheet" href="_content/Bit.Blow/bit-blow.css" />` (in a Blazor Web App's `App.razor`,
            `@Assets["_content/Bit.Blow/bit-blow.css"]`). Without it nodes are not positioned, handles do not sit on their

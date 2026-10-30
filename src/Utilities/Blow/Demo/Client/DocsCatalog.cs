@@ -98,7 +98,7 @@ public static class DocsCatalog
         [
             new("/getting-started", "Getting Started",
                 "Install the package, link the stylesheet, give the canvas a height and put a first flow on a page.",
-                "install setup nuget package quick start stylesheet bit-blow.css _Imports render mode first flow container height",
+                "install setup nuget package quick start stylesheet bit-blow.css _Imports render mode first flow container height lazy loading lazyassemblyloader blazorwebassemblylazyload aot",
                 typeof(GettingStarted)),
             new("/basic-flow", "Basic Flow",
                 "Nodes, edges and the default gestures: drag, connect, select, box-select, delete, pan and zoom.",

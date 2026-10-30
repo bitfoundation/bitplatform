@@ -23,6 +23,9 @@ register: the script module, `_content/Bit.Blow/bit-blow.js`, is imported by the
 <link rel="stylesheet" href="_content/Bit.Blow/bit-blow.css" />
 ```
 
+Having nothing to register also lets a WebAssembly app lazy load `Bit.Blow.wasm`; see
+[lazy loading](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Blow#lazy-loading-on-webassembly).
+
 ```razor
 <div style="height: 500px">
     <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
@@ -81,7 +84,8 @@ Give nodes your own markup with `NodeTemplate` and `BlowHandle`, and edges with 
   read by screen readers, reduced motion, high contrast and localizable strings.
 - `OnError` diagnostics for malformed graphs instead of exceptions.
 - Theming through `--bit-blow-*` CSS custom properties, with light, dark and system colour modes.
-- Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 10 and 11.
+- Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 10 and 11; lazy loadable on
+  WebAssembly.
 
 ## For AI agents
 
