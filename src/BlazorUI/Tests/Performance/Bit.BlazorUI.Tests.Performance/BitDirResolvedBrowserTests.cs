@@ -75,9 +75,9 @@ public class BitDirResolvedBrowserTests : PerformanceTestBase
             'searchbox': () => style('searchbox', 'i.bit-srb-dsi')?.transform,
             'phoneinput': () => style('phoneinput', '.bit-phi-inp')?.textAlign,
             'persona': initials,
-            'aijsonview': () => style('aijsonview', '.bit-aijsv-tcl')?.transform,
+            'aijsonview': () => style('aijsonview', '.bit-aijsv-tcl')?.scale,
             'aipromptinput': () => style('aipromptinput', '.bit-aipri-snd > .bit-btn-icn')?.transform,
-            'aitoolcallview': () => style('aitoolcallview', '.bit-aitcv-chv')?.transform
+            'aitoolcallview': () => style('aitoolcallview', '.bit-aitcv-chv')?.scale
         };
         const result = {};
         for (const [probe, reader] of Object.entries(read)) {

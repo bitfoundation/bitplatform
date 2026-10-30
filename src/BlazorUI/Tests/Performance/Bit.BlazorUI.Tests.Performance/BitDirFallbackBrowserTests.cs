@@ -71,9 +71,9 @@ public class BitDirFallbackBrowserTests : PerformanceTestBase
             'card': () => style('card', '.bit-crd-skb', '::after')?.animationDirection,
             'datagrid': () => style('datagrid', '.bit-dtg-dir-glyph')?.transform,
             'rte': () => style('rte', 'svg.bit-rte-flip')?.transform,
-            'aijsonview': () => style('aijsonview', '.bit-aijsv-tcl')?.transform,
+            'aijsonview': () => style('aijsonview', '.bit-aijsv-tcl')?.scale,
             'aipromptinput': () => style('aipromptinput', '.bit-aipri-snd > .bit-btn-icn')?.transform,
-            'aitoolcallview': () => style('aitoolcallview', '.bit-aitcv-chv')?.transform
+            'aitoolcallview': () => style('aitoolcallview', '.bit-aitcv-chv')?.scale
         };
         function chart(probe) {
             const [legend, sub, title] = ['lgd', 'sub', 'ttl'].map(part => style(probe, `.bit-cht-mid > .bit-cht-${part}`));
