@@ -70,8 +70,10 @@ commands themselves are in `AGENTS.md` section 4.
 
 Each one renders inside a WebView with remote debugging on, so drive it like the web app:
 
-- **Windows** (`Boilerplate.Client.Windows`): the app starts WebView2 with `--remote-debugging-port=9222`, so attach
-  Playwright over CDP with `chromium.connectOverCDP('http://localhost:9222')` and use the page it already has.
+- **Windows** (`Boilerplate.Client.Windows`): the app opens WebView2's debugging port only when its launcher asks, so
+  start it with the `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS` environment variable set to `--remote-debugging-port=9222`,
+  then attach Playwright over CDP with `chromium.connectOverCDP('http://localhost:9222')` and use the page it already
+  has. A copy already running without that variable has no port: close it and start it again this way.
 - **Android**: the WebView's CDP endpoint is a local abstract socket on the device. Find the app's process id with
   `adb shell pidof <applicationId>`, forward it with `adb forward tcp:9222 localabstract:webview_devtools_remote_<pid>`
   (another local port if the Windows app already holds 9222), and attach the same way with Playwright's `noDefaults`

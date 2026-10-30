@@ -168,6 +168,9 @@
   <data name="UnknownException" xml:space="preserve">
     <value>Onbekende fout is opgetreden</value>
   </data>
+  <data name="ExternalSignInUnknownError" xml:space="preserve">
+    <value>Onbekende fout is opgetreden bij het aanmelden met een extern account</value>
+  </data>
   <data name="UpdateConcurrencyException" xml:space="preserve">
     <value>Het record is gewijzigd door een andere gebruiker nadat u de oorspronkelijke gegevens hebt ontvangen. De bewerking is geannuleerd.</value>
   </data>

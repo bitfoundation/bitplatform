@@ -324,6 +324,8 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         }
         else
         {
+            await EnsureCallerCanGrantRole(role, cancellationToken);
+
             await DbContext.UserRoles.AddAsync(new() { UserId = user.Id, RoleId = role.Id, TenantId = role.TenantId }, cancellationToken);
         }
 
@@ -348,6 +350,8 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         }
         else
         {
+            await EnsureCallerCanGrantRole(role, cancellationToken);
+
             var result = await userManager.AddToRoleAsync(user, role.Name!);
             if (result.Succeeded is false)
                 throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray());
@@ -485,6 +489,20 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
             if (claims.Count(c => c.ClaimType == claimType) > 1)
                 throw new BadRequestException().WithData("Reason", $"'{claimType}' may only be sent once - a role holds a single value for it.");
         }
+    }
+
+    /// <summary>Joining a role hands over everything it grants, so the caller must be able to grant each of its claims and the features its name implies.</summary>
+    private async Task EnsureCallerCanGrantRole(Role role, CancellationToken cancellationToken)
+    {
+        var roleClaims = await DbContext.RoleClaims
+            .Where(rc => rc.RoleId == role.Id && (rc.ClaimType == AppClaimTypes.FEATURES || rc.ClaimType == AppClaimTypes.MAX_PRIVILEGED_SESSIONS))
+            .Select(rc => new ClaimDto { ClaimType = rc.ClaimType, ClaimValue = rc.ClaimValue })
+            .ToListAsync(cancellationToken);
+
+        var impliedFeatures = AppFeatures.GetRoleImpliedFeatures(roleName => roleName == role.Name)
+            .Select(feature => new ClaimDto { ClaimType = AppClaimTypes.FEATURES, ClaimValue = feature.Value });
+
+        EnsureCallerCanGrantClaims([.. roleClaims, .. impliedFeatures]);
     }
 
     /// <summary>

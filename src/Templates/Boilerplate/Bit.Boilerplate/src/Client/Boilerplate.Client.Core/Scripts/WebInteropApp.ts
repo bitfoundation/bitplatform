@@ -67,6 +67,7 @@ export class WebInteropApp {
         const urlParams = new URLSearchParams(location.search);
         const urlToOpen = urlParams.get('url')!.toString();
         const localHttpPort = urlParams.get('localHttpPort')?.toString();
+        const localHttpNonce = urlParams.get('localHttpNonce')?.toString() ?? '';
 
         try {
             const redirectUrl = new URL(urlToOpen, window.location.origin);
@@ -94,10 +95,14 @@ export class WebInteropApp {
         }
 
         // Blazor Hybrid:
-        await fetch(`http://localhost:${localHttpPort}/api/ExternalSignInCallback?urlToOpen=${encodeURIComponent(urlToOpen)}`, {
+        const response = await fetch(`http://localhost:${localHttpPort}/api/ExternalSignInCallback?urlToOpen=${encodeURIComponent(urlToOpen)}&nonce=${encodeURIComponent(localHttpNonce)}`, {
             method: 'POST',
             credentials: 'omit'
         });
+
+        if (!response.ok) {
+            throw new Error(`ExternalSignInCallback was refused with status ${response.status}.`);
+        }
     }
 
     /// The per-process token the local HTTP server requires on every request. It is placed in the interop URL by

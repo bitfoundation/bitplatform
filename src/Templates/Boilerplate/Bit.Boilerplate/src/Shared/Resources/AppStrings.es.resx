@@ -168,6 +168,9 @@
   <data name="UnknownException" xml:space="preserve">
     <value>Ha ocurrido un error desconocido</value>
   </data>
+  <data name="ExternalSignInUnknownError" xml:space="preserve">
+    <value>Ha ocurrido un error desconocido al iniciar sesión con una cuenta externa</value>
+  </data>
   <data name="UpdateConcurrencyException" xml:space="preserve">
     <value>El registro fue modificado por otro usuario después de que obtuvo los datos originales. La operación fue cancelada.</value>
   </data>

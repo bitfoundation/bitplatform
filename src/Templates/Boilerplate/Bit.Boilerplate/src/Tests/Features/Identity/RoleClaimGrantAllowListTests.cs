@@ -1,3 +1,8 @@
+using Boilerplate.Shared.Features.Identity.Dtos;
+//#if (multitenant == true)
+using Boilerplate.Server.Api.Features.Tenants;
+//#endif
+
 namespace Boilerplate.Tests.Features.Identity;
 
 /// <summary>
@@ -98,6 +103,62 @@ public class RoleClaimGrantAllowListTests
             "Neither claim may be written: the legitimate one must not act as a carrier for the forbidden one.");
     }
 
+    /// <summary>
+    /// Joining a role hands over everything the role holds, so <c>ToggleUserRole</c> asks what <c>AddClaims</c> asks.
+    /// Otherwise a delegated role manager (a custom role with <c>Roles_Manage</c>) joins a richer role and gets the
+    /// features they could never grant one by one.
+    /// </summary>
+    [TestMethod]
+    public async Task ToggleUserRole_Should_RefuseARole_WhoseFeaturesTheCallerLacks()
+    {
+        await using var server = await StartServer();
+        await using var adminClient = server.CreateAppClient();
+        await using var managerClient = server.CreateAppClient();
+        var (roleManagementController, grant) = await SignInAsGlobalAdmin(adminClient);
+        await using var globalAdminGrant = grant;
+
+        var managersRoleId = await CreateRole(roleManagementController, AppFeatures.Management.Roles_Manage);
+        var leanerRoleId = await CreateRole(roleManagementController, AppFeatures.Management.Roles_Manage);
+        var richerRoleId = await CreateRole(roleManagementController, AppFeatures.Management.Users_Manage);
+
+        var (managerEmail, managerId) = await TestAccountUtils.CreateAndSignIn(managerClient, TestContext.CancellationToken);
+
+        //#if (multitenant == true)
+        await AcceptIntoFallbackTenant(server, managerId);
+        //#endif
+
+        await roleManagementController.ToggleUserRole(new() { UserId = managerId, RoleId = managersRoleId }, TestContext.CancellationToken);
+
+        //#if (multitenant == true)
+        Assert.IsTrue(await managerClient.AuthManager.SwitchTenant(TenantConfiguration.FallbackTenantId, TestContext.CancellationToken),
+            "The manager is an accepted member of the seeded tenant, so switching into it must work.");
+        //#endif
+
+        await TestAccountUtils.Elevate(managerClient, managerEmail, TestContext.CancellationToken);
+
+        var managerRoleManagementController = managerClient.GetController<IRoleManagementController>();
+
+        await managerRoleManagementController.ToggleUserRole(new() { UserId = managerId, RoleId = leanerRoleId }, TestContext.CancellationToken);
+
+        await Assert.ThrowsExactlyAsync<UnauthorizedException>(
+            () => managerRoleManagementController.ToggleUserRole(new() { UserId = managerId, RoleId = richerRoleId }, TestContext.CancellationToken),
+            "The manager lacks Users_Manage, so joining a role that holds it must be refused.");
+
+        //#if (multitenant == true)
+        var tenantAdminRoleId = await ReadFallbackTenantAdminRoleId(server);
+
+        await Assert.ThrowsExactlyAsync<UnauthorizedException>(
+            () => managerRoleManagementController.ToggleUserRole(new() { UserId = managerId, RoleId = tenantAdminRoleId }, TestContext.CancellationToken),
+            "t-admin holds no feature rows; the features its name implies must count too.");
+
+        Assert.IsFalse(await IsInRole(server, managerId, tenantAdminRoleId), "A refused join must write nothing.");
+        //#endif
+
+        Assert.IsTrue(await IsInRole(server, managerId, leanerRoleId),
+            "The control: a role that holds only what the manager holds can be joined, so the refusals above are the feature check.");
+        Assert.IsFalse(await IsInRole(server, managerId, richerRoleId), "A refused join must write nothing.");
+    }
+
 
     private async Task<AppTestServer> StartServer()
     {
@@ -121,13 +182,50 @@ public class RoleClaimGrantAllowListTests
         return (client.GetController<IRoleManagementController>(), grant);
     }
 
-    private async Task<Guid> CreateRole(IRoleManagementController roleManagementController)
+    private async Task<Guid> CreateRole(IRoleManagementController roleManagementController, params string[] features)
     {
         var role = await roleManagementController.Create(
             new() { Id = Guid.CreateVersion7(), Name = $"ops-{Guid.NewGuid():N}" }, TestContext.CancellationToken);
 
+        if (features.Length > 0)
+        {
+            await roleManagementController.AddClaims(role.Id,
+                [.. features.Select(feature => new ClaimDto { ClaimType = AppClaimTypes.FEATURES, ClaimValue = feature })], TestContext.CancellationToken);
+        }
+
         return role.Id;
     }
+
+    private async Task<bool> IsInRole(AppTestServer server, Guid userId, Guid roleId)
+    {
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        return await dbContext.UserRoles.AnyAsync(ur => ur.UserId == userId && ur.RoleId == roleId, TestContext.CancellationToken);
+    }
+
+    //#if (multitenant == true)
+    private async Task AcceptIntoFallbackTenant(AppTestServer server, Guid userId)
+    {
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await dbContext.TenantUsers.AddAsync(new() { TenantId = TenantConfiguration.FallbackTenantId, UserId = userId, AcceptedOn = DateTimeOffset.UtcNow }, TestContext.CancellationToken);
+
+        await dbContext.SaveChangesAsync(TestContext.CancellationToken);
+    }
+
+    private async Task<Guid> ReadFallbackTenantAdminRoleId(AppTestServer server)
+    {
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        return await dbContext.Roles
+            .Where(r => r.Name == AppRoles.TenantAdmin && r.TenantId == TenantConfiguration.FallbackTenantId)
+            .Select(r => r.Id)
+            .SingleAsync(TestContext.CancellationToken);
+    }
+    //#endif
 
     private async Task<int> CountClaims(AppTestServer server, Guid roleId)
     {

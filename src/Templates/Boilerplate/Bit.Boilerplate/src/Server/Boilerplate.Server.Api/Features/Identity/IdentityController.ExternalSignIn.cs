@@ -14,9 +14,12 @@ public partial class IdentityController
     /// coming from another, sending the resulting sign-in link to the wrong origin.
     /// </summary>
     [HttpGet]
-    public async Task<string> GetExternalSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default)
+    public async Task<string> GetExternalSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, string? localHttpNonce = null, CancellationToken cancellationToken = default)
     {
-        var uri = Url.Action(nameof(ExternalSignIn), new { provider, returnUrl, localHttpPort, origin = Request.GetWebAppUrl() })!;
+        if (localHttpPort is not null && Guid.TryParseExact(localHttpNonce, "N", out _) is false)
+            throw new BadRequestException().WithData("Reason", "localHttpNonce is required with localHttpPort.");
+
+        var uri = Url.Action(nameof(ExternalSignIn), new { provider, returnUrl, localHttpPort, localHttpNonce, origin = Request.GetWebAppUrl() })!;
         return new Uri(Request.GetBaseUrl(), uri).ToString();
     }
 
@@ -24,21 +27,29 @@ public partial class IdentityController
     public async Task<ActionResult> ExternalSignIn(string provider,
         string? returnUrl = null, /* Specifies the relative page address to navigate to after completion. */
         int? localHttpPort = null, /* Defines the local HTTP server port awaiting the external sign-in result on Windows/macOS/iOS versions of the app. */
+        string? localHttpNonce = null,
         [FromQuery] string? origin = null /* Indicates the base address URL for redirection after the process completes. */ )
     {
-        var redirectUrl = Url.Action(nameof(ExternalSignInCallback), "Identity", new { returnUrl, localHttpPort, origin });
+        var redirectUrl = Url.Action(nameof(ExternalSignInCallback), "Identity", new { returnUrl, localHttpPort, localHttpNonce, origin });
         var properties = signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
         return new ChallengeResult(provider, properties);
     }
 
     [HttpGet]
-    public async Task<ActionResult> ExternalSignInCallback(string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default)
+    public async Task<ActionResult> ExternalSignInCallback(string? returnUrl = null, int? localHttpPort = null, string? localHttpNonce = null, CancellationToken cancellationToken = default)
     {
         string? signInPageUri;
         ExternalLoginInfo? info = null;
 
         if (localHttpPort is not null and (< 1 or > 65535))
             throw new BadRequestException().WithData("localHttpPort", localHttpPort);
+
+        var localHttpNonceValue = Guid.Empty;
+        if (localHttpPort is not null && Guid.TryParseExact(localHttpNonce, "N", out localHttpNonceValue) is false)
+        {
+            await Request.HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+            throw new BadRequestException().WithData("Reason", "localHttpNonce is invalid.");
+        }
 
         try
         {
@@ -165,7 +176,7 @@ public partial class IdentityController
                                 ?? info?.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
 
             serverExceptionHandler.Handle(exp, new() { { "LoginProvider", info?.LoginProvider }, { "Principal", principalName } });
-            signInPageUri = $"{PageUrls.SignIn}?error={Uri.EscapeDataString(exp is KnownException ? Localizer[exp.Message] : Localizer[nameof(AppStrings.UnknownException)])}";
+            signInPageUri = $"{PageUrls.SignIn}?error={Uri.EscapeDataString(exp is KnownException { Key: not null } knownException ? knownException.Key : nameof(AppStrings.ExternalSignInUnknownError))}";
         }
         finally
         {
@@ -175,7 +186,7 @@ public partial class IdentityController
         var redirectRelativeUrl = $"{PageUrls.WebInteropApp}?actionName=ExternalSignInCallback&url={Uri.EscapeDataString(signInPageUri!)}&localHttpPort={localHttpPort}";
 
         if (localHttpPort is not null)
-            return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), redirectRelativeUrl).ToString()); // Check out Client.web/wwwroot/web-interop-app.html's comments.
+            return Redirect(new Uri(new Uri($"http://localhost:{localHttpPort}"), $"{redirectRelativeUrl}&localHttpNonce={localHttpNonceValue:N}").ToString()); // Check out Client.web/wwwroot/web-interop-app.html's comments.
 
         return Redirect(new Uri(Request.HttpContext.Request.GetWebAppUrl(), redirectRelativeUrl).ToString());
     }

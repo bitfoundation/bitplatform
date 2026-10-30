@@ -67,7 +67,24 @@ internal sealed class ContainersKeeper(string stateDirectory, ResourceNotificati
     /// <exception cref="InvalidOperationException">The previous keeper is still stopping the containers after 2 minutes.</exception>
     public static bool Start(IDistributedApplicationBuilder builder, TimeSpan idleTimeout)
     {
-        var stateDirectory = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "aspire-containers-keeper", GetAppHostId(builder.AppHostDirectory))).FullName;
+        var keeperDirectory = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "aspire-containers-keeper"));
+
+        if (OperatingSystem.IsWindows() is false)
+        {
+            if (keeperDirectory.LinkTarget is not null)
+                return false;
+
+            try
+            {
+                keeperDirectory.UnixFileMode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute;
+            }
+            catch (Exception exp) when (exp is UnauthorizedAccessException or IOException)
+            {
+                return false;
+            }
+        }
+
+        var stateDirectory = Directory.CreateDirectory(Path.Combine(keeperDirectory.FullName, GetAppHostId(builder.AppHostDirectory))).FullName;
 
         // App hosts of the same project may start together (e.g. aspire start and dotnet test), and only one of them may start a keeper.
         using var mutex = new Mutex(initiallyOwned: false, $"aspire-containers-keeper-{Path.GetFileName(stateDirectory)}");

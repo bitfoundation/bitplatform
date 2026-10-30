@@ -168,6 +168,9 @@
     <data name="UnknownException" xml:space="preserve">
     <value>خطای ناشناخته رخ داده است</value>
   </data>
+    <data name="ExternalSignInUnknownError" xml:space="preserve">
+    <value>هنگام ورود از طریق سرویس خارجی خطای ناشناخته رخ داده است</value>
+  </data>
     <data name="UpdateConcurrencyException" xml:space="preserve">
     <value>رکورد توسط یک کاربر دیگر پس از دریافت داده های اصلی تغییر یافته است. عملیات لغو شد.</value>
   </data>

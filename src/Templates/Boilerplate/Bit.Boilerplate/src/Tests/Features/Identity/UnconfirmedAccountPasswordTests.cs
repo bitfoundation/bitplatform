@@ -33,7 +33,7 @@ public class UnconfirmedAccountPasswordTests
     }
 
     [TestMethod]
-    public async Task TheOwnersSignUp_Should_ReplaceThePasswordSetBeforeIt()
+    public async Task TheOwnersSignUp_Should_RemoveThePasswordSetBeforeIt()
     {
         await using var server = await StartServer();
         await using var client = server.CreateAppClient();
@@ -46,6 +46,38 @@ public class UnconfirmedAccountPasswordTests
 
         await Assert.ThrowsExactlyAsync<UnauthorizedException>(
             () => client.AuthManager.SignIn(new() { Email = email, Password = AttackerPassword }, TestContext.CancellationToken));
+        await Assert.ThrowsExactlyAsync<UnauthorizedException>(
+            () => client.AuthManager.SignIn(new() { Email = email, Password = OwnerPassword }, TestContext.CancellationToken));
+    }
+
+    [TestMethod]
+    public async Task ASignUpAfterTheOwners_Should_NotLeaveItsPasswordForTheOwnersConfirmation()
+    {
+        await using var server = await StartServer();
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>();
+        var email = MagicLinkSignInUtils.NewTestEmail();
+
+        await identityController.SignUp(NewSignUpRequest(email, OwnerPassword), TestContext.CancellationToken);
+        await identityController.SignUp(NewSignUpRequest(email, AttackerPassword), TestContext.CancellationToken);
+        await ConfirmEmail(server, identityController, email);
+
+        await Assert.ThrowsExactlyAsync<UnauthorizedException>(
+            () => client.AuthManager.SignIn(new() { Email = email, Password = AttackerPassword }, TestContext.CancellationToken));
+    }
+
+    [TestMethod]
+    public async Task SigningUpTwiceWithTheSamePassword_Should_KeepIt()
+    {
+        await using var server = await StartServer();
+        await using var client = server.CreateAppClient();
+        var identityController = client.GetController<IIdentityController>();
+        var email = MagicLinkSignInUtils.NewTestEmail();
+
+        await identityController.SignUp(NewSignUpRequest(email, OwnerPassword), TestContext.CancellationToken);
+        await identityController.SignUp(NewSignUpRequest(email, OwnerPassword), TestContext.CancellationToken);
+        await ConfirmEmail(server, identityController, email);
+
         Assert.IsFalse(await client.AuthManager.SignIn(new() { Email = email, Password = OwnerPassword }, TestContext.CancellationToken));
     }
 

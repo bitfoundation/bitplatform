@@ -168,6 +168,9 @@
   <data name="UnknownException" xml:space="preserve">
     <value>Une erreur inconnue s’est produite</value>
   </data>
+  <data name="ExternalSignInUnknownError" xml:space="preserve">
+    <value>Une erreur inconnue s’est produite lors de la connexion avec un compte externe</value>
+  </data>
   <data name="UpdateConcurrencyException" xml:space="preserve">
     <value>L’enregistrement a été modifié par un autre utilisateur après que vous ayez obtenu les données originales. L’opération a été annulée.</value>
   </data>

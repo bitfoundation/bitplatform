@@ -117,12 +117,21 @@ public partial class SignUpPage
                 var url = uriString?.ToString();
                 if (Uri.IsAppRelativeUrl(url) is false) return;
 
+                // Shown here, since the sign-in page only gives an error in its url the generic message.
+                var queryIndex = url.IndexOf('?');
+                if (queryIndex >= 0 && AppQueryStringCollection.Parse(url[queryIndex..]).TryGetValue("error", out var error) && error?.ToString() is { Length: > 0 } errorKey)
+                {
+                    var message = Localizer[errorKey];
+                    await InvokeAsync(() => SnackBarService.Error(message.ResourceNotFound ? Localizer[nameof(AppStrings.ExternalSignInUnknownError)] : message));
+                    return;
+                }
+
                 NavigationManager.NavigateTo(url, replace: true);
             });
 
             var port = localHttpServer.EnsureStarted();
 
-            var redirectUrl = await identityController.GetExternalSignInUri(provider, ReturnUrlQueryString, port is -1 ? null : port, CurrentCancellationToken);
+            var redirectUrl = await identityController.GetExternalSignInUri(provider, ReturnUrlQueryString, port is -1 ? null : port, localHttpServer.CreateExternalSignInNonce(), CurrentCancellationToken);
 
             await externalNavigationService.NavigateTo(redirectUrl);
         }

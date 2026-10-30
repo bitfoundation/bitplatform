@@ -218,27 +218,21 @@ public class SignInPanelCredentialStateTests
     }
 
     /// <summary>
-    /// BP-412 is OPEN, so this test is ignored rather than deleted - it is the executable form of the finding.
-    ///
-    /// <c>?error=</c> is echoed verbatim into an error snack bar, so any URL on the real domain can put
-    /// attacker-authored text on screen as the application's own message. It cannot be fixed on the client
-    /// alone: <c>IdentityController.ExternalSignIn</c> is the only legitimate producer and it emits free-form
-    /// localized prose, not a key, so a client-side allow-list would blank out every genuine external-sign-in
-    /// failure message.
-    ///
-    /// To unblock: change the server to emit a resource KEY (<c>?error=ExternalSignInFailed</c>), then resolve
-    /// it here only for keys in a known set and fall back to AppStrings.UnknownException. Both halves must land
-    /// in one commit. Remove [Ignore] at that point - the assertion below is already the right one.
+    /// <c>?error=</c> used to be echoed verbatim into an error snack bar, so any URL on the real domain could put
+    /// attacker-authored text on screen as the application's own message. A resource key isn't safe there either: the
+    /// link would pick one of the app's own messages, such as "Your password has been changed successfully", and show it
+    /// out of context. So the url's error only ever shows AppStrings.ExternalSignInUnknownError; the text behind a key is shown
+    /// only for the external sign-in the page started (See <c>ExternalSignInErrorTests</c>).
     /// </summary>
-    [TestMethod, Ignore("BP-412 is open: needs the coordinated server change to error KEYS first. See the summary.")]
-    public async Task SignInPanel_Should_NotDisplayArbitraryTextFromTheErrorQueryString()
+    [TestMethod]
+    [DataRow("Your account was suspended. Call +1-555-0100 to restore access.", DisplayName = "attacker text")]
+    [DataRow(nameof(AppStrings.PasswordChangedSuccessfullyMessage), DisplayName = "one of the app's own message keys")]
+    public async Task SignInPanel_Should_NotDisplayArbitraryTextFromTheErrorQueryString(string attackerText)
     {
         await using var server = new AppTestServer();
         await server.Build().Start(CancellationToken.None);
 
         await using var ctx = server.CreateBunitContext();
-
-        const string attackerText = "Your account was suspended. Call +1-555-0100 to restore access.";
 
         // The snack bar is rendered by AppSnackBar in the layout, NOT inside this panel, so asserting on
         // cut.Markup would pass no matter what the panel does. What the panel actually controls - and what the
@@ -265,5 +259,8 @@ public class SignInPanelCredentialStateTests
 
         Assert.AreNotEqual(attackerText, shownTitle,
             "Text taken straight from the query string must not be shown as an application message.");
+
+        Assert.AreEqual(AppStrings.ExternalSignInUnknownError, shownTitle,
+            "The url's error still shows an error, but only the generic one for external sign-in.");
     }
 }

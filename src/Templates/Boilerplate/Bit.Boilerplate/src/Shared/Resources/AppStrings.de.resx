@@ -168,6 +168,9 @@
   <data name="UnknownException" xml:space="preserve">
     <value>Unbekannter Fehler ist aufgetreten</value>
   </data>
+  <data name="ExternalSignInUnknownError" xml:space="preserve">
+    <value>Bei der Anmeldung über ein externes Konto ist ein unbekannter Fehler aufgetreten</value>
+  </data>
   <data name="UpdateConcurrencyException" xml:space="preserve">
     <value>Der Datensatz wurde von einem anderen Benutzer nach dem Abruf der Originaldaten geändert. Der Vorgang wurde abgebrochen.</value>
   </data>

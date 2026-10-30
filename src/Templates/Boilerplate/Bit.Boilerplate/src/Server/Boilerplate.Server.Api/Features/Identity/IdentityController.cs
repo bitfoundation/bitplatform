@@ -173,6 +173,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         await DbContext.UserSessions.AddAsync(userSession, cancellationToken);
         user.TwoFactorTokenRequestedOn = null;
         await DbContext.SaveChangesAsync(cancellationToken);
+
+        await EnforcePrivilegedSessionsCap(userSession, cancellationToken);
     }
 
     private BadRequestException UserLockedOutException(User user)
@@ -286,7 +288,26 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, isPrivileged ? "true" : "false"));
         userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.MAX_PRIVILEGED_SESSIONS, maxPrivilegedSessionsCount.ToString(CultureInfo.InvariantCulture)));
 
+        if (isPrivileged && hasUnlimitedPrivilegedSessions is false && userSession.Privileged is false)
+        {
+            privilegedSessionsCapToEnforce = maxPrivilegedSessionsCount;
+        }
+
         userSession.Privileged = isPrivileged;
+    }
+
+    private int? privilegedSessionsCapToEnforce;
+
+    private async Task EnforcePrivilegedSessionsCap(UserSession userSession, CancellationToken cancellationToken)
+    {
+        if (privilegedSessionsCapToEnforce is not int maxPrivilegedSessionsCount)
+            return;
+
+        if (await DbContext.UserSessions.CountAsync(us => us.UserId == userSession.UserId && us.Privileged == true, cancellationToken) <= maxPrivilegedSessionsCount)
+            return;
+
+        userSession.Privileged = false;
+        await DbContext.SaveChangesAsync(cancellationToken);
     }
 
     /// <summary>
@@ -328,7 +349,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             long issuedAtClaimValue = refreshTicket.Principal.GetClaimValue<long>("iat");
             long lastRotatedOn = userSession.RenewedOn ?? userSession.StartedOn;
             long difference = Math.Abs(issuedAtClaimValue - lastRotatedOn);
-            if (difference > 30 && (TimeProvider.GetUtcNow().ToUnixTimeSeconds() - lastRotatedOn) > 10)
+            var isRetryOfPreviousToken = difference > 30
+                && userSession.PreviousRenewedOn is long previousRotatedOn
+                && Math.Abs(issuedAtClaimValue - previousRotatedOn) <= 30
+                && (TimeProvider.GetUtcNow().ToUnixTimeSeconds() - lastRotatedOn) <= 10;
+            if (difference > 30 && isRetryOfPreviousToken is false)
                 throw new UnauthorizedException().WithData("Reason", "Refresh token rotation detected.");
 
             var user = userSession.User!;
@@ -351,7 +376,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
                 var tokenIsValid = (elevatedAccessTokenExpired is false
                         && await userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultPhoneProvider, FormattableString.Invariant($"ElevatedAccess:{userSession.Id},{user.ElevatedAccessTokenRequestedOn!.Value.ToUniversalTime()}"), request.ElevatedAccessToken))
-                    || await userManager.VerifyTwoFactorTokenAsync(user, userManager.Options.Tokens.AuthenticatorTokenProvider, request.ElevatedAccessToken);
+                    || (user.TwoFactorEnabled && await userManager.VerifyTwoFactorTokenAsync(user, userManager.Options.Tokens.AuthenticatorTokenProvider, request.ElevatedAccessToken));
                 if (tokenIsValid is false)
                 {
                     await userManager.AccessFailedAsync(user);
@@ -424,7 +449,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.AMR, "mfa"));
             }
 
-            userSession.RenewedOn = TimeProvider.GetUtcNow().ToUnixTimeSeconds();
+            if (isRetryOfPreviousToken is false)
+            {
+                userSession.PreviousRenewedOn = lastRotatedOn;
+                userSession.RenewedOn = TimeProvider.GetUtcNow().ToUnixTimeSeconds();
+            }
             // Relying on Cloudflare cdn to retrieve address.
             // https://developers.cloudflare.com/rules/transform/managed-transforms/reference/#add-visitor-location-headers
             (userSession.IP, userSession.Address) = (HttpContext.Connection.RemoteIpAddress?.ToString(), $"{Request.Headers["cf-ipcountry"]}, {Request.Headers["cf-ipcity"]}");
@@ -436,6 +465,8 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             var newPrincipal = await signInManager.CreateUserPrincipalAsync(user!);
 
             await DbContext.SaveChangesAsync(cancellationToken);
+
+            await EnforcePrivilegedSessionsCap(userSession, cancellationToken);
 
             return SignIn(newPrincipal, authenticationScheme: IdentityConstants.BearerScheme);
         }
@@ -668,7 +699,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     /// <summary>
-    /// Whoever last asks an unconfirmed account for its confirmation decides its password: the one they typed, or none.
+    /// An unconfirmed account keeps its password only while every later sign-up or sign-in brings that same password;
+    /// anything else (another password, or a one-time code) removes it, and nothing here ever sets one. So nobody can
+    /// leave a password behind for the owner's confirmation.
     /// Set through the store, so the security stamp and the confirmation code already sent stay valid.
     /// </summary>
     private async Task SetUnconfirmedAccountPassword(User user, string? password, CancellationToken cancellationToken)
@@ -678,7 +711,11 @@ public partial class IdentityController : AppControllerBase, IIdentityController
             await ValidatePassword(user, password);
         }
 
-        await ((IUserPasswordStore<User>)userStore).SetPasswordHashAsync(user, string.IsNullOrEmpty(password) ? null : userManager.PasswordHasher.HashPassword(user, password), cancellationToken);
+        if (user.PasswordHash is null
+            || (string.IsNullOrEmpty(password) is false && userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, password) is not PasswordVerificationResult.Failed))
+            return;
+
+        await ((IUserPasswordStore<User>)userStore).SetPasswordHashAsync(user, null, cancellationToken);
 
         var result = await userManager.UpdateAsync(user);
 

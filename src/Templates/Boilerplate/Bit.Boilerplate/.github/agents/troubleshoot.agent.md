@@ -81,6 +81,9 @@ without one of them, knowing what it hides.
 - Reproduce the problem before you change anything: locally on the deployed commit when you can, with the same shape
   of data and the same settings (the run-app skill, `.github/agents/run-app.agent.md`), in the Test environment when
   you can't. A fix for a cause you haven't seen is a second bug.
+- A problem seen in the Windows app is reproduced in the Windows app, an installed copy included. It opens no
+  debugging port unless started with `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS` set to `--remote-debugging-port=9222`;
+  start it that way, then read and drive its page as the run-app skill's section 6 says.
 - Write a test that fails the way the environment does - an integration test under `src/Tests` for what the server
   does, a UI test for what the user saw - then fix the cause rather than the symptom.
 - The fix goes through ai-dlc's short track, or its full track when it turns out bigger, on a branch of its own off

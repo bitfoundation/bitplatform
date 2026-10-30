@@ -583,6 +583,9 @@ namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
                     b.Property<int?>("PlatformType")
                         .HasColumnType("INTEGER");
 
+                    b.Property<long?>("PreviousRenewedOn")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("Privileged")
                         .HasColumnType("INTEGER");
 

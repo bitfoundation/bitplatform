@@ -6,6 +6,7 @@ internal static class DevMcpLimits
     public const int MaxTake = 100;
     public const int DefaultTake = 25;
     public const int MaxPayloadBytes = 256 * 1024;
+    public const int MaxFilterLength = 4096;
     public const int HangfireMaxTake = 50;
     public const int HangfireFilterScanCap = 500;
 }

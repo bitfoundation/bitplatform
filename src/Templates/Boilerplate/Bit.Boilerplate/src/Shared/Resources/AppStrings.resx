@@ -168,6 +168,9 @@
     <data name="UnknownException" xml:space="preserve">
     <value>Unknown error has occurred</value>
   </data>
+    <data name="ExternalSignInUnknownError" xml:space="preserve">
+    <value>Unknown error has occurred during external sign-in</value>
+  </data>
     <data name="UpdateConcurrencyException" xml:space="preserve">
     <value>The record was modified by another user after you got the original data. the operation was canceled.</value>
   </data>

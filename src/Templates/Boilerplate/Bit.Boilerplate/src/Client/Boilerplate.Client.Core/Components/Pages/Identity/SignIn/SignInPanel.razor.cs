@@ -78,9 +78,10 @@ public partial class SignInPanel
             }
         }
 
+        // Anyone's link can carry this, so it only gets the generic message; the real one comes through ExternalSignIn's callback.
         if (string.IsNullOrWhiteSpace(ErrorQueryString) is false)
         {
-            SnackBarService.Error(ErrorQueryString);
+            SnackBarService.Error(Localizer[nameof(AppStrings.ExternalSignInUnknownError)]);
         }
     }
 
@@ -239,14 +240,20 @@ public partial class SignInPanel
                 queryParams.TryGetValue("otp", out var otp);
                 OtpQueryString = GetValue(otp);
                 queryParams.TryGetValue("error", out var error);
-                ErrorQueryString = GetValue(error);
+                ErrorQueryString = null;
 
                 await InvokeAsync(OnInitAsync);
+
+                if (GetValue(error) is string errorKey)
+                {
+                    var message = Localizer[errorKey];
+                    await InvokeAsync(() => SnackBarService.Error(message.ResourceNotFound ? Localizer[nameof(AppStrings.ExternalSignInUnknownError)] : message));
+                }
             });
 
             var port = localHttpServer.EnsureStarted();
 
-            var redirectUrl = await identityController.GetExternalSignInUri(provider, GetSafeReturnUrl(), port is -1 ? null : port, CurrentCancellationToken);
+            var redirectUrl = await identityController.GetExternalSignInUri(provider, GetSafeReturnUrl(), port is -1 ? null : port, localHttpServer.CreateExternalSignInNonce(), CurrentCancellationToken);
 
             await externalNavigationService.NavigateTo(redirectUrl);
         }

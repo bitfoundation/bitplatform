@@ -7,7 +7,7 @@ namespace Boilerplate.Tests.E2E.Features.Kiosk;
 /// .github/workflows/admin-sample.cd.yml) - so Todo and Sales are here as the contrast that proves each assertion is
 /// about the kiosk rather than about every Client.Windows app.
 /// <para>
-/// Not parallelized: every Client.Windows app answers on the same hard-coded CDP port 9222 (see
+/// Not parallelized: every session starts its Client.Windows app on the same CDP port 9222 (see
 /// <see cref="Features.Smoke.WindowsSmokeTests"/>).
 /// </para>
 /// </summary>
