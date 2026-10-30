@@ -23,10 +23,9 @@ public class ExternalSignInErrorTests
     [TestMethod]
     public async Task SignInPanel_Should_ShowTheCallbacksMessage_OnlyForTheExternalSignInItStarted()
     {
-        await using var server = new AppTestServer();
-        await server.Build().Start(TestContext.CancellationToken);
+        await using var server = await StartServer();
 
-        await using var ctx = CreateContext(server);
+        await using var ctx = server.CreateBunitContext();
         var (shownTitles, keepAlive) = CaptureSnackBars(ctx);
 
         var cut = ctx.Render<CascadingAuthenticationState>(parameters => parameters
@@ -49,10 +48,9 @@ public class ExternalSignInErrorTests
     [TestMethod]
     public async Task SignUpPage_Should_ShowTheCallbacksMessage_InsteadOfLeavingForTheSignInPage()
     {
-        await using var server = new AppTestServer();
-        await server.Build().Start(TestContext.CancellationToken);
+        await using var server = await StartServer();
 
-        await using var ctx = CreateContext(server);
+        await using var ctx = server.CreateBunitContext();
         var (shownTitles, keepAlive) = CaptureSnackBars(ctx);
 
         var navigationManager = ctx.Services.GetRequiredService<NavigationManager>();
@@ -71,13 +69,15 @@ public class ExternalSignInErrorTests
         GC.KeepAlive(keepAlive);
     }
 
-    private static BunitContext CreateContext(AppTestServer server)
+    private async Task<AppTestServer> StartServer()
     {
-        var ctx = server.CreateBunitContext();
+        var server = new AppTestServer();
 
-        ctx.Services.AddScoped<IExternalNavigationService>(sp => new CallbackNavigationService(sp.GetRequiredService<PubSubService>()));
+        await server.Build(configureTestWebAppServices: services =>
+            services.AddScoped<IExternalNavigationService>(sp => new CallbackNavigationService(sp.GetRequiredService<PubSubService>())))
+            .Start(TestContext.CancellationToken);
 
-        return ctx;
+        return server;
     }
 
     private static (List<string> ShownTitles, Func<object?, Task> KeepAlive) CaptureSnackBars(BunitContext ctx)
