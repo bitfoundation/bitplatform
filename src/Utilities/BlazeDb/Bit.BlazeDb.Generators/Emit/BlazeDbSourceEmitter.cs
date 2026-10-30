@@ -23,11 +23,28 @@ internal static class BlazeDbSourceEmitter
     private static string Members(params string[] names) =>
         "new string[] { " + string.Join(", ", Array.ConvertAll(names, Literal)) + " }";
 
+    /// <summary>
+    /// The prefix of every member the generated partial declares besides <c>Table</c> and <c>Indexes</c>. Each of
+    /// these names would collide with a member of the same name declared by the type, or with the type's own name.
+    /// </summary>
+    private const string ReservedPrefix = "__Blaze";
+
     /// <summary>The nested class whose fields hold the descriptor and the index definitions; see <see cref="Emit"/>.</summary>
-    private const string Holder = "__BlazeTable";
+    private const string Holder = ReservedPrefix + "Table";
 
     /// <summary>The holder's field for the index named <paramref name="indexName"/>.</summary>
     private static string HolderField(string indexName) => "Index_" + indexName;
+
+    /// <summary>Whether the generated partial declares a member named <paramref name="name"/>, or may.</summary>
+    public static bool IsReserved(string name) =>
+        name == "Table" || name == "Indexes" || name.StartsWith(ReservedPrefix, StringComparison.Ordinal);
+
+    /// <summary>
+    /// <paramref name="name"/> as an identifier in generated code. An index name only has to be a valid
+    /// identifier, and a keyword such as <c>event</c> is one, but only when it is escaped.
+    /// </summary>
+    private static string Identifier(string name) =>
+        SyntaxFacts.GetKeywordKind(name) == SyntaxKind.None ? name : "@" + name;
 
     public static string Emit(BlazeDbTableModel model)
     {
@@ -101,7 +118,7 @@ internal static class BlazeDbSourceEmitter
             foreach (var index in indexes)
             {
                 // Qualified: inside Indexes, an index named after the holder would hide it.
-                sb.AppendLine($"{indent}        public static {index.Type} {index.Name} => {self}.{Holder}.{HolderField(index.Name)};");
+                sb.AppendLine($"{indent}        public static {index.Type} {Identifier(index.Name)} => {self}.{Holder}.{HolderField(index.Name)};");
             }
             sb.AppendLine($"{indent}    }}");
             sb.AppendLine();

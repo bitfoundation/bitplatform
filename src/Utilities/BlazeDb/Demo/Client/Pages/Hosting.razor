@@ -158,6 +158,7 @@
         <Panel Title="What may run before the assembly is there" IconName="info">
             <ul class="bb-detail-list">
                 <li><strong>Table types, yes.</strong> The code the generator adds keeps the engine's types out of a <code>[BlazeDbTable]</code> type's fields, so a layout every page shares can create one and read its properties. Only <code>Table</code> and <code>Indexes</code> need the assembly, and serializing one with System.Text.Json does too: it reads the BlazeDb attributes.</li>
+                <li><strong>Engine code behind a check, no.</strong> The interpreter compiles a whole method the first time it is called and loads every type it names, so a layout every page shares cannot use the database even in a branch that never runs on the other pages.</li>
                 <li><strong>A field of an engine type, no.</strong> Registering a service in <code>Program.cs</code> lays it out, and a field whose type cannot be loaded yet fails the app as it starts - hence the nested <code>Opened</code> class. Its methods may take and return the engine's types, and the pages the assembly is loaded for may keep them in fields.</li>
                 <li><strong>A public type deriving from or implementing one of the engine's, no.</strong> The router reads the app's public types at startup: make an <code>IBlazeDbStorage</code> wrapper of your own <code>internal</code>, or lazy load it with Bit.BlazeDb.</li>
                 <li><strong>EF Core.</strong> Lazy load <code>Bit.BlazeDb.EntityFrameworkCore.wasm</code> in the same call. <code>AddDbContext</code> with <code>UseBlazeDb()</code> can stay in <code>Program.cs</code>; a persistent store takes the opened database, <code>UseBlazeDb(await Database.GetAsync())</code>, as this site's <a href="efcore">EF Core page</a> does.</li>
@@ -167,9 +168,10 @@
     <Callout Tone="warn" Title="A failed attempt is final.">
         Once the runtime has tried to load Bit.BlazeDb before it was there - even in code that caught the exception - it
         does not try again, and the pages that use the database fail after the assembly has loaded too. In a Blazor Web App
-        give <code>Routes</code> an <code>InteractiveWebAssembly</code> or <code>InteractiveAuto</code> render mode so the
-        router loads it in the browser, and register <code>LazyAssemblyLoader</code> in the server's <code>Program.cs</code>
-        for the prerender. Do not lazy load in an AOT build: AOT compiles every assembly into <code>dotnet.native.wasm</code>.
+        give <code>Routes</code> the <code>InteractiveWebAssembly</code> render mode so the router loads it in the browser,
+        and register <code>LazyAssemblyLoader</code> in the server's <code>Program.cs</code> for the prerender. Under
+        <code>InteractiveAuto</code> the first visit runs the router in a server circuit, which loads nothing in the
+        browser. Do not lazy load in an AOT build: AOT compiles every assembly into <code>dotnet.native.wasm</code>.
     </Callout>
 </Section>
 
@@ -297,11 +299,15 @@
         {
             private Opened? _opened;   // not a Task<BlazeDbDatabase>: Program.cs names AppDatabase first
 
-            public Task<BlazeDbDatabase> GetAsync() => (_opened ??= new Opened()).Database;
+            public Task<BlazeDbDatabase> GetAsync()
+            {
+                if (_opened is null || _opened.Failed) _opened = new Opened(); // a failed open is tried again
+                return _opened.Database;
+            }
 
             public async ValueTask DisposeAsync()
             {
-                if (_opened is not null) await _opened.DisposeAsync();
+                if (_opened is { Failed: false }) await _opened.DisposeAsync();
             }
 
             // The engine's types live here, laid out only once a page asks for the database.
@@ -313,16 +319,32 @@
 
                 public Task<BlazeDbDatabase> Database { get; }
 
+                public bool Failed => Database.IsFaulted || Database.IsCanceled;
+
                 private async Task<BlazeDbDatabase> OpenAsync()
                 {
                     _storage = await BlazeDbOpfsStorage.CreateAsync("app");
-                    return await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = _storage }.AddTable(TodoItem.Table));
+                    try
+                    {
+                        return await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = _storage }.AddTable(TodoItem.Table));
+                    }
+                    catch
+                    {
+                        _storage.Dispose();   // releases the lock, for the next attempt or tab
+                        throw;
+                    }
                 }
 
                 public async ValueTask DisposeAsync()
                 {
-                    await (await Database).DisposeAsync();
-                    _storage?.Dispose();
+                    try
+                    {
+                        await (await Database).DisposeAsync();
+                    }
+                    finally
+                    {
+                        _storage?.Dispose();
+                    }
                 }
             }
         }

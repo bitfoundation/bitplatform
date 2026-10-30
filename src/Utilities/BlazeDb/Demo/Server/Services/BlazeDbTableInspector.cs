@@ -182,10 +182,11 @@ public static class BlazeDbTableInspector
     /// <summary>The table the generated partial of <paramref name="type"/> describes, read off its syntax.</summary>
     private static BlazeDbInspectedTableDto Describe(INamedTypeSymbol type, Compilation compilation, SyntaxTree generatedTree)
     {
-        // The descriptor and the index definitions are fields of the nested holder class the generator emits; the
-        // type's Table and its Indexes class only expose them as properties.
-        var holder = generatedTree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault(c => c.Identifier.ValueText == "__BlazeTable");
-        var descriptor = holder?.Members.OfType<FieldDeclarationSyntax>().SelectMany(field => field.Declaration.Variables).FirstOrDefault(v => v.Identifier.ValueText == "Descriptor");
+        // The descriptor and the index definitions are fields of a nested class the generator emits; the type's
+        // Table and its Indexes class only expose them as properties. Following Table to the field it returns finds
+        // that class without naming anything the generator keeps to itself.
+        var descriptor = DescriptorField(type, compilation, generatedTree);
+        var holder = descriptor?.FirstAncestorOrSelf<ClassDeclarationSyntax>();
         var tableArguments = (descriptor?.Initializer?.Value as BaseObjectCreationExpressionSyntax)?.ArgumentList?.Arguments;
 
         var tableName = tableArguments is { Count: > 0 } ? (tableArguments.Value[0].Expression as LiteralExpressionSyntax)?.Token.ValueText : null;
@@ -215,6 +216,23 @@ public static class BlazeDbTableInspector
             Indexes = indexes,
             GeneratedMembers = members
         };
+    }
+
+    /// <summary>
+    /// The field the generated <c>Table</c> property of <paramref name="type"/> returns, as the compiler binds it -
+    /// not the <c>Table</c> index an <c>Indexes</c> class may declare.
+    /// </summary>
+    private static VariableDeclaratorSyntax? DescriptorField(INamedTypeSymbol type, Compilation compilation, SyntaxTree generatedTree)
+    {
+        if (compilation.ContainsSyntaxTree(generatedTree) is false) return null;
+
+        var table = generatedTree.GetRoot().DescendantNodes().OfType<PropertyDeclarationSyntax>()
+            .FirstOrDefault(property => property.Identifier.ValueText == "Table" && property.Parent is TypeDeclarationSyntax parent && parent.Identifier.ValueText == type.Name);
+        if (table?.ExpressionBody is null) return null;
+
+        var field = compilation.GetSemanticModel(generatedTree).GetSymbolInfo(table.ExpressionBody.Expression).Symbol as IFieldSymbol;
+
+        return field?.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() as VariableDeclaratorSyntax;
     }
 
     /// <summary>
@@ -342,7 +360,8 @@ public static class BlazeDbTableInspector
                     Unique = unique,
                     Members = members,
                     KeyType = KeyTypeOf(type, members, definition.TypeArgumentList.Arguments[1]),
-                    Reference = $"{type.Name}.Indexes.{name.Token.ValueText}"
+                    // An index named after a keyword is a member the generator escapes: Indexes.@event.
+                    Reference = $"{type.Name}.Indexes.{(SyntaxFacts.GetKeywordKind(name.Token.ValueText) is SyntaxKind.None ? "" : "@")}{name.Token.ValueText}"
                 });
             }
         }

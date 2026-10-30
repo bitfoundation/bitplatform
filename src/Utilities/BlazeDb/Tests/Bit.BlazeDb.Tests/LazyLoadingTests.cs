@@ -56,7 +56,9 @@ public class LazyLoadingTests
         // instance the descriptor was built with - as the static readonly fields they replace did.
         foreach (var table in TableTypes())
         {
-            var tableProperty = table.GetProperty("Table", BindingFlags.Public | BindingFlags.Static)!;
+            // A type the generator rejects - one declared to test a diagnostic, say - has no Table to read.
+            if (table.GetProperty("Table", BindingFlags.Public | BindingFlags.Static) is not { } tableProperty) continue;
+
             var descriptor = tableProperty.GetValue(null)!;
             Assert.AreSame(descriptor, tableProperty.GetValue(null), $"{table.Name}.Table");
 
@@ -79,16 +81,20 @@ public class LazyLoadingTests
         await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(GeneratedNames.Table));
         var rows = db.GetTable(GeneratedNames.Table);
 
-        rows.Insert(new GeneratedNames { Id = 1, Kind = "a", Rank = 2, Flag = true });
-        rows.Insert(new GeneratedNames { Id = 2, Kind = "b", Rank = 1, Flag = false });
+        rows.Insert(new GeneratedNames { Id = 1, Kind = "a", Rank = 2, Flag = true, Priority = 5 });
+        rows.Insert(new GeneratedNames { Id = 2, Kind = "b", Rank = 1, Flag = false, Priority = 7 });
 
         Assert.AreEqual(1, rows.Lookup(GeneratedNames.Indexes.Descriptor, "a").Single().Id);
         CollectionAssert.AreEqual(new[] { 2, 1 }, rows.OrderBy(GeneratedNames.Indexes.Table).Select(row => row.Id).ToArray());
         Assert.AreEqual(1, rows.Lookup(GeneratedNames.Indexes.__BlazeTable, true).Single().Id);
+        Assert.AreEqual(2, rows.Lookup(GeneratedNames.Indexes.@event, 7).Single().Id);
     }
 }
 
-/// <summary>Indexes named after what the generator emits next to them: none of them may collide with it.</summary>
+/// <summary>
+/// Indexes named after what the generator emits next to them, none of which may collide with it, and after a keyword,
+/// which the generator has to escape.
+/// </summary>
 [BlazeDbTable("generated-names")]
 public partial class GeneratedNames
 {
@@ -99,4 +105,6 @@ public partial class GeneratedNames
     [BlazeDbOrderedIndex(Name = "Table")] public int Rank { get; set; }
 
     [BlazeDbIndex(Name = "__BlazeTable")] public bool Flag { get; set; }
+
+    [BlazeDbIndex(Name = "event")] public int Priority { get; set; }
 }

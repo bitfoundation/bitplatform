@@ -211,6 +211,7 @@
                         its own a reload could not restore. A <code>required</code> member BlazeDb does not store is refused
                         too (BLZ018).
                     </li>
+                    <li>A member - or the type itself - named <code>Table</code>, <code>Indexes</code> or <code>__Blaze…</code>: the generated partial declares those (BLZ019).</li>
                 </ul>
                 <p class="bb-muted">
                     Properties with a setter or an <code>init</code> are stored, and so are get-only properties the
@@ -230,7 +231,7 @@
 </Section>
 
 <Section Title="Generator diagnostics"
-         Lead="Misuse is caught at build time, on the attribute or property at fault. An error on the type itself - BLZ001, 002, 004, 006, 007, 010, 011, 012 or 018, or a BLZ003 on a property its constructor takes - leaves it with no generated partial at all, so the diagnostic arrives together with errors saying the type does not contain a definition for Table wherever it is used: fix the BLZ one first. The other errors leave out only the property or index at fault. Open any row for the cause, a rejected table type and the fix.">
+         Lead="Misuse is caught at build time, on the attribute or property at fault. An error on the type itself - BLZ001, 002, 004, 006, 007, 010, 011, 012, 018 or 019, or a BLZ003 on a property its constructor takes - leaves it with no generated partial at all, so the diagnostic arrives together with errors saying the type does not contain a definition for Table wherever it is used: fix the BLZ one first. The other errors leave out only the property or index at fault. Open any row for the cause, a rejected table type and the fix.">
     <div class="bb-faq bd-diagnostics">
         @foreach (var diagnostic in DiagnosticsCatalog.All)
         {

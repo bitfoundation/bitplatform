@@ -87,6 +87,26 @@ public class McpInspectorTests
     }
 
     [TestMethod]
+    public async Task An_index_named_after_a_keyword_compiles_and_is_referenced_escaped()
+    {
+        var report = await InspectAsync("""
+            [BlazeDbTable("occurrences")]
+            public partial class Occurrence
+            {
+                [BlazeDbKey] public int Id { get; set; }
+                [BlazeDbIndex(Name = "event")] public string Kind { get; set; } = "";
+            }
+            """);
+
+        Assert.IsTrue(report.IsValid, string.Join(Environment.NewLine, report.Diagnostics.Select(d => $"{d.Id}: {d.Message}")));
+
+        var index = report.Tables.Single().Indexes.Single();
+
+        Assert.AreEqual("event", index.Name);
+        Assert.AreEqual("Occurrence.Indexes.@event", index.Reference);
+    }
+
+    [TestMethod]
     public async Task The_generated_code_is_returned_only_when_asked_for()
     {
         var without = await InspectAsync(_modelsSource.Value);

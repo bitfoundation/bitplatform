@@ -62,6 +62,13 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
             return result;
         }
 
+        if (FindReservedName(symbol) is { } reserved)
+        {
+            result.Diagnostics.Add(new BlazeDbDiagnosticInfo(
+                BlazeDbDiagnostics.ReservedName, reserved.Locations.FirstOrDefault() ?? location, typeName, reserved.Name));
+            return result;
+        }
+
         if (FindInheritedProperty(symbol) is { } inherited)
         {
             result.Diagnostics.Add(new BlazeDbDiagnosticInfo(
@@ -384,6 +391,16 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
         }
         return valid;
     }
+
+    /// <summary>
+    /// The type, or the first of its own members, named like a member the generated partial declares. Emitting
+    /// anyway would surface as a duplicate member (CS0102) or a member named after its type (CS0542) in generated
+    /// code, instead of as a diagnostic on the declaration at fault.
+    /// </summary>
+    private static ISymbol? FindReservedName(INamedTypeSymbol symbol) =>
+        BlazeDbSourceEmitter.IsReserved(symbol.Name)
+            ? symbol
+            : symbol.GetMembers().FirstOrDefault(member => BlazeDbSourceEmitter.IsReserved(member.Name));
 
     /// <summary>
     /// The first property a table type inherits that a reader would expect to be persisted. The
