@@ -3,9 +3,6 @@
 using BlazorApplicationInsights;
 using BlazorApplicationInsights.Interfaces;
 //#endif
-//#if (offlineDb == true)
-using Microsoft.Data.Sqlite;
-//#endif
 using Bit.BevTools;
 using Boilerplate.Client.Core;
 using Microsoft.Extensions.Options;
@@ -120,22 +117,8 @@ public static partial class IClientCoreServiceCollectionExtensions
             });
 
             //#if (offlineDb == true)
-            services.AddKeyedScoped(nameof(AppOfflineDbContext), (_, _) =>
-            {
-                var connection = new SqliteConnection($"Data Source={Guid.NewGuid():N};Mode=Memory;Cache=Shared;Pooling=False");
-                connection.Open();
-                return connection;
-            });
             services.AddBesqlDbContextFactory<AppOfflineDbContext>((sp, optionsBuilder) =>
             {
-                if (AppPlatform.IsBlazorHybridOrBrowser is false)
-                {
-                    optionsBuilder.UseSqlite(sp.GetRequiredKeyedService<SqliteConnection>(nameof(AppOfflineDbContext)).ConnectionString)
-                                  .EnableSensitiveDataLogging(AppEnvironment.IsDevelopment())
-                                  .EnableDetailedErrors(AppEnvironment.IsDevelopment());
-                    return;
-                }
-
                 var isRunningInsideDocker = Directory.Exists("/container_volume"); // Blazor Server - Docker (It's supposed to be a mounted volume named /container_volume)
                 var dirPath = isRunningInsideDocker ? "/container_volume"
                                                     : AppPlatform.IsBlazorHybrid ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AC87AA5B-4B37-4E52-8468-2D5DF24AF256")

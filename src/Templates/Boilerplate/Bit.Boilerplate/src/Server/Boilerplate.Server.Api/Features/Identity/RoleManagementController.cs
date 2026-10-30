@@ -491,6 +491,7 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         }
     }
 
+    /// <summary>Joining a role hands over everything it grants, so the caller must be able to grant each of its claims and the features its name implies.</summary>
     private async Task EnsureCallerCanGrantRole(Role role, CancellationToken cancellationToken)
     {
         var roleClaims = await DbContext.RoleClaims

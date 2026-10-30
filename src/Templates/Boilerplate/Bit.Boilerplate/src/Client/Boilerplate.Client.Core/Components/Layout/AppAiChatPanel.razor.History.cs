@@ -137,6 +137,7 @@ public partial class AppAiChatPanel
 
         try
         {
+            // The previous owner's messages leave the screen even if stopping their dictation or call fails.
             try
             {
                 await StopDictation();
@@ -163,6 +164,7 @@ public partial class AppAiChatPanel
     {
         if (historyDb is null) return;
 
+        // Another tab handed the stored conversation to someone else, so this one must not be written under their name.
         if (await historyDb.Get<string>(OwnerStore, OwnerKey) != historyOwner)
         {
             CloseHistory();

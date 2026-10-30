@@ -52,6 +52,8 @@ public partial class TenantManagementController : AppControllerBase, ITenantMana
 
         dto.Patch(entityToUpdate);
 
+        // You don't have to keep a fallback tenant at all, but before removing this check, decide what an anonymous visitor
+        // gets on your own domain (not a tenant's sub domain or custom domain): today that is the fallback tenant.
         if (entityToUpdate.Id == TenantConfiguration.FallbackTenantId && entityToUpdate.IsActive is false)
             throw new BadRequestException().WithData("Reason", "The fallback tenant can't be deactivated.");
 

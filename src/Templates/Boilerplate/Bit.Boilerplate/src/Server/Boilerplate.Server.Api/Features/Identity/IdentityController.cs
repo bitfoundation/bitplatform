@@ -699,7 +699,9 @@ public partial class IdentityController : AppControllerBase, IIdentityController
     }
 
     /// <summary>
-    /// Whoever last asks an unconfirmed account for its confirmation decides its password: the one they typed, or none.
+    /// An unconfirmed account keeps its password only while every later sign-up or sign-in brings that same password;
+    /// anything else (another password, or a one-time code) removes it, and nothing here ever sets one. So nobody can
+    /// leave a password behind for the owner's confirmation.
     /// Set through the store, so the security stamp and the confirmation code already sent stay valid.
     /// </summary>
     private async Task SetUnconfirmedAccountPassword(User user, string? password, CancellationToken cancellationToken)

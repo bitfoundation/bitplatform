@@ -34,7 +34,7 @@ public partial class ApiServerExceptionHandler : SharedExceptionHandler, IProble
 
         if (exception is AuthenticationFailureException)
         {
-            httpContext.Response.Redirect($"{PageUrls.SignIn}?error={Uri.EscapeDataString(exception.Message)}");
+            httpContext.Response.Redirect($"{PageUrls.SignIn}?error={nameof(AppStrings.UnknownException)}");
             return;
         }
 

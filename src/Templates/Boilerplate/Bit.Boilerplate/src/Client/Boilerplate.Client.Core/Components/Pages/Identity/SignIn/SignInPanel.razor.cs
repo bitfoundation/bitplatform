@@ -80,7 +80,8 @@ public partial class SignInPanel
 
         if (string.IsNullOrWhiteSpace(ErrorQueryString) is false)
         {
-            SnackBarService.Error(ErrorQueryString);
+            var error = Localizer[ErrorQueryString];
+            SnackBarService.Error(error.ResourceNotFound ? Localizer[nameof(AppStrings.UnknownException)] : error);
         }
     }
 

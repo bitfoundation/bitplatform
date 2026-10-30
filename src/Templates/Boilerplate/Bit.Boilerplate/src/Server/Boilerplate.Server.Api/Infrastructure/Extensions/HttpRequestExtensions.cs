@@ -46,6 +46,9 @@ public static partial class HttpRequestExtensions
         }
     }
 
+    // With WebAppUrl https://app.example.com: https://app.example.com and https://t1.app.example.com are true, while
+    // http://app.example.com, https://app.example.com:8443, https://myapp.example.com and https://app.example.com.evil.com are false.
+    // With no WebAppUrl every url is true.
     private static bool IsUnderWebAppUrl(Uri url, string? webAppUrl)
     {
         if (Uri.TryCreate(webAppUrl, UriKind.Absolute, out var configuredWebAppUrl) is false)

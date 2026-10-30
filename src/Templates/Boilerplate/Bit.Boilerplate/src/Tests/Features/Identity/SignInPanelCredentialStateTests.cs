@@ -218,19 +218,12 @@ public class SignInPanelCredentialStateTests
     }
 
     /// <summary>
-    /// BP-412 is OPEN, so this test is ignored rather than deleted - it is the executable form of the finding.
-    ///
-    /// <c>?error=</c> is echoed verbatim into an error snack bar, so any URL on the real domain can put
-    /// attacker-authored text on screen as the application's own message. It cannot be fixed on the client
-    /// alone: <c>IdentityController.ExternalSignIn</c> is the only legitimate producer and it emits free-form
-    /// localized prose, not a key, so a client-side allow-list would blank out every genuine external-sign-in
-    /// failure message.
-    ///
-    /// To unblock: change the server to emit a resource KEY (<c>?error=ExternalSignInFailed</c>), then resolve
-    /// it here only for keys in a known set and fall back to AppStrings.UnknownException. Both halves must land
-    /// in one commit. Remove [Ignore] at that point - the assertion below is already the right one.
+    /// <c>?error=</c> used to be echoed verbatim into an error snack bar, so any URL on the real domain could put
+    /// attacker-authored text on screen as the application's own message. The server now sends a resource key
+    /// (<c>IdentityController.ExternalSignInCallback</c>, <c>ApiServerExceptionHandler</c>) and the panel shows its
+    /// own text for it, or AppStrings.UnknownException for anything that isn't one.
     /// </summary>
-    [TestMethod, Ignore("BP-412 is open: needs the coordinated server change to error KEYS first. See the summary.")]
+    [TestMethod]
     public async Task SignInPanel_Should_NotDisplayArbitraryTextFromTheErrorQueryString()
     {
         await using var server = new AppTestServer();
@@ -265,5 +258,8 @@ public class SignInPanelCredentialStateTests
 
         Assert.AreNotEqual(attackerText, shownTitle,
             "Text taken straight from the query string must not be shown as an application message.");
+
+        Assert.AreEqual(AppStrings.UnknownException, shownTitle,
+            "Anything that isn't a resource key still shows an error, in the app's own words.");
     }
 }

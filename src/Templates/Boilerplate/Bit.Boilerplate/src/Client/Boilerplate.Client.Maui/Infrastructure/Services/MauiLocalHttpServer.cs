@@ -32,6 +32,7 @@ public partial class MauiLocalHttpServer : ILocalHttpServer
 
     public string? CreateExternalSignInNonce() => externalSignInNonce = Guid.NewGuid().ToString("N");
 
+    /// <summary>True only for the pending sign-in's nonce, and only once: a match clears it, so a replayed callback is refused.</summary>
     private bool ConsumeExternalSignInNonce(string? nonce)
     {
         var expectedNonce = externalSignInNonce;

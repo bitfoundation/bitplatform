@@ -76,6 +76,7 @@ public static partial class DevMcpQueryGuards
         return finder.Error;
     }
 
+    /// <summary>Finds a call or a new object that doesn't read the row: EF would run it in this process, not in SQL. Building dates, times and Guids is allowed.</summary>
     private sealed class ComputedValueFinder : ExpressionVisitor
     {
         public string? Error { get; private set; }
