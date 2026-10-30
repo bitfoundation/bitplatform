@@ -1,6 +1,8 @@
 name: Workbench demo CD
 
 on:
+  push:
+    branches: [ yasmoradi/workbench/add-workbench-project ]
   workflow_dispatch:
     inputs:
       prerelease_packages:
