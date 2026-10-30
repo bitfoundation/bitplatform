@@ -17,7 +17,9 @@ dotnet add package Bit.Bink
 ```
 
 No services to register and no stylesheet to reference: the package's Blazor initializer injects
-`_content/Bit.Bink/bit-bink.css` automatically.
+`_content/Bit.Bink/bit-bink.css` automatically. Having nothing to register also lets a WebAssembly app lazy load
+`Bit.Bink.wasm`; see
+[lazy loading](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bink#lazy-loading-on-webassembly).
 
 ```razor
 <BinkCanvas @ref="_canvas" Height="180px" AriaLabel="Sign here"
@@ -61,7 +63,8 @@ Pick what pointer input does with `Tool` (`BinkDrawTool`, `BinkEraserTool`, `Bin
 - Retained rendering: the browser keeps every path it has drawn, so redrawing a large page costs a few numbers per
   element, over WebAssembly and over a Blazor Server circuit alike.
 - A labelled, keyboard-operable canvas with a live text summary for screen readers.
-- Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 10 and 11.
+- Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 10 and 11; lazy loadable on
+  WebAssembly.
 
 ## For AI agents
 

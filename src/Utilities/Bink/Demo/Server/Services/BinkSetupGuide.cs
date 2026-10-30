@@ -76,7 +76,9 @@ public static partial class BinkSetupGuide
                 downloaded to the browser; the server project prerenders the same page, where the canvas renders inert
                 markup and attaches once WebAssembly starts. Reference `Bit.Bink` from the .Client project (the server
                 gets it transitively). This is exactly how the demo is built, so the files below are its own; its
-                `AddDemoServices` registers a download helper of the demo's, not anything Bink needs.
+                `AddDemoServices` registers a download helper of the demo's, not anything Bink needs. A client that lazy
+                loads Bit.Bink gives `Routes` the InteractiveWebAssembly render mode and registers `LazyAssemblyLoader` on
+                the server - see `GetBinkGuideSection(heading: "Lazy loading on WebAssembly")`.
                 """,
                 ["Blazor Web App", "Blazor WebAssembly"],
                 null,
@@ -91,7 +93,11 @@ public static partial class BinkSetupGuide
                 register in either container - but the component must live in the .Client project. The demo below uses
                 InteractiveWebAssembly; for InteractiveAuto add `AddInteractiveServerComponents()` and
                 `AddInteractiveServerRenderMode()` to the server's `Program.cs` and use `@rendermode="InteractiveAuto"` in
-                `App.razor` - nothing else changes.
+                `App.razor` - nothing else changes for an app that loads Bit.Bink with the rest of the client. A client
+                that lazy loads it does so only in the browser, so only from the second visit on; the server loads it with
+                the rest of the app and registers `LazyAssemblyLoader` (`builder.Services.AddScoped<LazyAssemblyLoader>()`),
+                because `Routes` injects it on the server both while prerendering and over the first visit's circuit -
+                see `GetBinkGuideSection(heading: "Lazy loading on WebAssembly")`.
                 """,
                 ["Blazor Web App", "Blazor WebAssembly", "Blazor Server"],
                 null,
@@ -101,7 +107,8 @@ public static partial class BinkSetupGuide
                 "standalone Blazor WebAssembly",
                 """
                 One project and no prerendering: the engine runs in the browser from the first render, over the
-                zero-copy render path.
+                zero-copy render path. With nothing to register, the app can also download Bit.Bink only when a page
+                that draws first opens - see `GetBinkGuideSection(heading: "Lazy loading on WebAssembly")`.
                 """,
                 ["Blazor WebAssembly"],
                 StandaloneFiles,

@@ -91,7 +91,7 @@ public static class DocsCatalog
         [
             new("/getting-started", "Getting started",
                 "Install the package and put a canvas on a page - no services to register and no stylesheet to link.",
-                "install setup nuget package quick start BinkCanvas _Imports render mode InteractiveWebAssembly stylesheet initializer brush tool undo keyboard save export headless Unavailable AttachFailed CSP lazy loading eyedropper",
+                "install setup nuget package quick start BinkCanvas _Imports render mode InteractiveWebAssembly stylesheet initializer brush tool undo keyboard save export headless Unavailable AttachFailed CSP lazy loading lazyassemblyloader blazorwebassemblylazyload aot eyedropper",
                 typeof(GettingStarted)),
         ]),
         new("Use cases",
