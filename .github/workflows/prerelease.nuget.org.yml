@@ -215,6 +215,11 @@ jobs:
     - name: dotnet pack Bmage
       run: dotnet pack src/Utilities/Bmage/Bit.Bmage/Bit.Bmage.csproj --output . --configuration Release
 
+    - name: dotnet build Bmage.Blazor
+      run: dotnet build src/Utilities/Bmage/Bit.Bmage.Blazor/Bit.Bmage.Blazor.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bmage.Blazor
+      run: dotnet pack src/Utilities/Bmage/Bit.Bmage.Blazor/Bit.Bmage.Blazor.csproj --output . --configuration Release
+
     - name: dotnet build Bsqlite
       run: dotnet build src/Utilities/Bsqlite/Bit.Bsqlite/Bit.Bsqlite.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bsqlite

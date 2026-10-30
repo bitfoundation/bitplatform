@@ -1,6 +1,5 @@
 ﻿using System.Buffers;
 using Bit.Bmage.Codecs;
-using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.Bmage.Input;
 
@@ -8,6 +7,10 @@ namespace Bit.Bmage.Input;
 /// Where an image comes from. Covers every practical browser source so developers never have to convert to base64 or
 /// write their own file plumbing.
 /// </summary>
+/// <remarks>
+/// Bit.Bmage.Blazor adds <c>ImageSource.FromBrowserFile</c> for an <c>IBrowserFile</c> from an <c>InputFile</c>
+/// component or a drop zone.
+/// </remarks>
 /// <example>
 /// <code>
 /// // From a file input
@@ -30,13 +33,6 @@ public abstract class ImageSource
 
     /// <summary>Reads the encoded bytes. The returned buffer is pooled; dispose it when done.</summary>
     public abstract ValueTask<PooledBuffer> ReadAsync(long maxBytes, CancellationToken cancellationToken = default);
-
-    /// <summary>Wraps an <see cref="IBrowserFile"/> from an <c>InputFile</c> component or a drop zone.</summary>
-    public static ImageSource FromBrowserFile(IBrowserFile file)
-    {
-        ArgumentNullException.ThrowIfNull(file);
-        return new BrowserFileSource(file);
-    }
 
     /// <summary>Wraps raw encoded bytes already in memory.</summary>
     public static ImageSource FromBytes(ReadOnlyMemory<byte> bytes, string? fileName = null, string? contentType = null)
@@ -82,27 +78,6 @@ public abstract class ImageSource
             throw new ArgumentException("The data URL payload is not valid base64.", nameof(dataUrl), ex);
         }
         return new MemorySource(bytes, null, string.IsNullOrWhiteSpace(contentType) ? null : contentType);
-    }
-
-    private sealed class BrowserFileSource : ImageSource
-    {
-        private readonly IBrowserFile _file;
-
-        public BrowserFileSource(IBrowserFile file)
-        {
-            _file = file;
-            FileName = file.Name;
-            ContentType = file.ContentType;
-            Length = file.Size;
-        }
-
-        public override async ValueTask<PooledBuffer> ReadAsync(long maxBytes, CancellationToken cancellationToken = default)
-        {
-            if (_file.Size > maxBytes)
-                throw new ImageLimitExceededException($"'{_file.Name}' is {_file.Size} bytes, which exceeds the {maxBytes} byte limit for a single image.");
-            await using var stream = _file.OpenReadStream(maxBytes, cancellationToken);
-            return await PooledBuffer.ReadAllAsync(stream, (int)_file.Size, maxBytes, cancellationToken).ConfigureAwait(false);
-        }
     }
 
     private sealed class MemorySource : ImageSource
@@ -165,7 +140,7 @@ public abstract class ImageSource
         }
 
         public override ValueTask<PooledBuffer> ReadAsync(long maxBytes, CancellationToken cancellationToken = default)
-            => throw new InvalidOperationException("A URL source is fetched by the browser. Use ImageLoader.LoadAsync, which routes it through JavaScript interop.");
+            => throw new InvalidOperationException("A URL source is fetched by the browser. Use ImageLoader.LoadAsync from Bit.Bmage.Blazor, which routes it through JavaScript interop.");
     }
 
     /// <summary>True when this source must be fetched by the browser rather than read in .NET.</summary>

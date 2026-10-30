@@ -76,9 +76,10 @@ public class McpController : ControllerBase
 
             ## Rules of thumb when writing Bmage code
 
-            - **Register for the host.** `AddBitBmageServices` in a browser app - in BOTH the server and the client
-              container of a Blazor Web App, because the prerender pass instantiates every component on the server.
-              `AddBitBmageHeadlessServices` on a server, in a console app or a worker. They register different things.
+            - **Install and register for the host.** `Bit.Bmage.Blazor` and `AddBitBmageServices` in a browser app - in
+              BOTH the server and the client container of a Blazor Web App, because the prerender pass instantiates every
+              component on the server. `Bit.Bmage` alone and `AddBitBmageHeadlessServices` on a server, in a console app
+              or a worker. They register different things.
             - **No `@inject ImageProcessor` in a browser app.** Get it from `ImageProcessorFactory.GetAsync()`, or use
               `ImageLoader` and `ImageExporter`, which do that for you.
             - **Browser work after the first render.** Capabilities, downloads, object URLs, the clipboard and paste
@@ -97,7 +98,7 @@ public class McpController : ControllerBase
               together so the optimiser fuses them into one pass.
             - **AOT the browser project.** `<RunAOTCompilation>true</RunAOTCompilation>`: the interpreter runs the pixel
               loops 10 to 35 times slower.
-            - **The editor** needs `_content/Bit.Bmage/bit-bmage-editor.css` in the page head and a container
+            - **The editor** needs `_content/Bit.Bmage.Blazor/bit-bmage-editor.css` in the page head and a container
               with a height.
             """);
 
@@ -107,7 +108,7 @@ public class McpController : ControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(SearchBmage), Title = "Search everything about Bit.Bmage",
                    ReadOnly = true, Destructive = false, Idempotent = true, OpenWorld = false)]
-    [Description("Start here. Searches everything known about Bit.Bmage at once - every guide section, every public type and member of the package, the setup guides, the ready-made recipes, the code-review rules and the demo's source files - and returns the best matches, each with the exact follow-up tool call that returns its full text. Call it whenever you do not already know which guide, type or recipe holds the answer. Example queries: 'avatar under 100 KB', 'strip gps from uploads', 'paste a screenshot and redact it', 'why is the editor unstyled', 'thumbnail on the server'.")]
+    [Description("Start here. Searches everything known about Bit.Bmage at once - every guide section, every public type and member of the packages, the setup guides, the ready-made recipes, the code-review rules and the demo's source files - and returns the best matches, each with the exact follow-up tool call that returns its full text. Call it whenever you do not already know which guide, type or recipe holds the answer. Example queries: 'avatar under 100 KB', 'strip gps from uploads', 'paste a screenshot and redact it', 'why is the editor unstyled', 'thumbnail on the server'.")]
     public BmageSearchHitDto[] SearchBmage(
         [Description("What you are trying to do or what went wrong, in your own words, e.g. 'crop an avatar to a circle' or 'AVIF export fails on Safari'.")] string query,
         [Description("How many hits to return, 1 to 50. Default 12.")] int limit = 12)
@@ -197,9 +198,9 @@ public class McpController : ControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(GetBmageApiList), Title = "List the public types",
                    ReadOnly = true, Destructive = false, Idempotent = true, OpenWorld = false)]
-    [Description("Lists the public types of Bit.Bmage - pipelines, operations, codecs, options, metadata, drawing, annotations, editing, the browser services and the editor components - with the namespace to import, its kind and a one-line summary. Narrow it with 'filter' (a namespace, a kind or any part of a name) rather than reading all of it, then pass a name to GetBmageApiDetails.")]
+    [Description("Lists the public types of Bit.Bmage and Bit.Bmage.Blazor - pipelines, operations, codecs, options, metadata, drawing, annotations, editing, the browser services and the editor components - with the namespace to import, the package, its kind and a one-line summary. Narrow it with 'filter' (a namespace, a package, a kind or any part of a name) rather than reading all of it, then pass a name to GetBmageApiDetails.")]
     public BmageApiTypeDto[] GetBmageApiList(
-        [Description("Optional. A namespace ('Bit.Bmage.Annotations', or 'Bit.Bmage.Editor' for every editor namespace), a kind ('Enum', 'Component', 'Record', 'Exception') or any substring of a type name ('Export'). Omitted, every type is returned.")] string? filter = null)
+        [Description("Optional. A namespace ('Bit.Bmage.Annotations', or 'Bit.Bmage.Editor' for every editor namespace), a package ('Bit.Bmage.Blazor'), a kind ('Enum', 'Component', 'Record', 'Exception') or any substring of a type name ('Export'). Omitted, every type is returned.")] string? filter = null)
     {
         var types = BmageApiCatalog.TypeSummaries;
 

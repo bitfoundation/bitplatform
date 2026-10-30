@@ -81,7 +81,7 @@
 
 @code {
     // Resolved rather than injected, so the canvas also works when the app never called AddBitBmageServices.
-    private Interop.BrowserImageInterop Interop => field ??= BitBmage.GetEditorServices(Services).GetRequiredService<Interop.BrowserImageInterop>();
+    private Interop.BrowserImageInterop Interop => field ??= BitBmageBlazor.GetEditorServices(Services).GetRequiredService<Interop.BrowserImageInterop>();
 
     private readonly string _id = $"bi-{Guid.NewGuid():N}";
     private ElementReference _hostElement;

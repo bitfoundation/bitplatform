@@ -9,7 +9,7 @@ internal sealed class MinifierOptions
         "Bit.Balette", "Bit.BbScanner", "Bit.BbScanner.Maui", "Bit.Bcrdt", "Bit.Bcrdt.Server", "Bit.Bcrdt.SignalR", "Bit.Bcrdt.Testing", "Bit.Bdnd", "Bit.Belemetry",
         "Bit.Belemetry.EntityFrameworkCore", "Bit.Belemetry.Hangfire", "Bit.BevTools", "Bit.BevTools.Loader", "Bit.BevTools.Server", "Bit.Bheadless",
         "Bit.Bheadless.Testing", "Bit.Bink", "Bit.BlazeDb", "Bit.BlazeDb.EntityFrameworkCore", "Bit.Blex", "Bit.Blex.Maui", "Bit.Blex.Testing", "Bit.Blow",
-        "Bit.Bmage", "Bit.Bmotion", "Bit.Bonboarding", "Bit.Borm", "Bit.Borm.FluentValidation", "Bit.Bortable", "Bit.Bsqlite", "Bit.Bsqlite.Testing"
+        "Bit.Bmage", "Bit.Bmage.Blazor", "Bit.Bmotion", "Bit.Bonboarding", "Bit.Borm", "Bit.Borm.FluentValidation", "Bit.Bortable", "Bit.Bsqlite", "Bit.Bsqlite.Testing"
     ];
 
     /// <summary>The folder holding the trimmed assemblies (ILLink's output) and everything they reference.</summary>

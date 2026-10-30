@@ -192,24 +192,27 @@ public class CodeReviewTests
     [TestMethod]
     public void Stylesheet_TheRightLink_IsFine_AndAWrongPathIsAnError()
     {
-        None(Review("<head>\n<link rel=\"stylesheet\" href=\"_content/Bit.Bmage/bit-bmage-editor.css\" />\n</head>\n<BmageEditor />"), "editor-stylesheet-missing");
-        None(Review("<link rel=\"stylesheet\" href=\"/_content/Bit.Bmage/bit-bmage-editor.css\" />"), "editor-stylesheet-wrong-path");
+        None(Review("<head>\n<link rel=\"stylesheet\" href=\"_content/Bit.Bmage.Blazor/bit-bmage-editor.css\" />\n</head>\n<BmageEditor />"), "editor-stylesheet-missing");
+        None(Review("<link rel=\"stylesheet\" href=\"/_content/Bit.Bmage.Blazor/bit-bmage-editor.css\" />"), "editor-stylesheet-wrong-path");
 
         // The demo's own stylesheets are not the editor's, and must not be mistaken for a wrong path to it.
         None(Review("<link rel=\"stylesheet\" href=\"css/bmage-samples.css\" />"), "editor-stylesheet-wrong-path");
         // Nor are those of an app project that happens to be called Bit.Bmage.Something, like the samples' shared pages.
         None(Review("<link rel=\"stylesheet\" href=\"_content/Bit.Bmage.Samples.Core/app.css\" />"), "editor-stylesheet-wrong-path");
 
-        // The editor ships inside Bit.Bmage: there is no Bit.Bmage.Editor package, so no _content folder of that name.
+        // The editor ships inside Bit.Bmage.Blazor: there is no Bit.Bmage.Editor package, so no _content folder of that name.
         Assert.AreEqual("Error", Single(Review("<link rel=\"stylesheet\" href=\"_content/Bit.Bmage.Editor/bit-bmage-editor.css\" />"), "editor-stylesheet-wrong-path").Severity);
-        Single(Review("<link rel=\"stylesheet\" href=\"_content/Bit.Bmage/bit-bmage.css\" />"), "editor-stylesheet-wrong-path");
+        Single(Review("<link rel=\"stylesheet\" href=\"_content/Bit.Bmage.Blazor/bit-bmage.css\" />"), "editor-stylesheet-wrong-path");
+        // Nor in Bit.Bmage, the engine's package, which has no static web assets: a link left from before the browser
+        // integration moved to Bit.Bmage.Blazor.
+        Single(Review("<link rel=\"stylesheet\" href=\"_content/Bit.Bmage/bit-bmage-editor.css\" />"), "editor-stylesheet-wrong-path");
         Single(Review("<link rel=\"stylesheet\" href=\"_content/Bit.Bmage.Editor/editor.css\" />"), "editor-stylesheet-wrong-path");
     }
 
     [TestMethod]
     public void Script_ATagForTheBridge_IsReported()
     {
-        Single(Review("<script src=\"_content/Bit.Bmage/bit-bmage.js\"></script>"), "bridge-script-tag");
+        Single(Review("<script src=\"_content/Bit.Bmage.Blazor/bit-bmage.js\"></script>"), "bridge-script-tag");
 
         None(Review("<script src=\"_framework/blazor.web.js\"></script>"), "bridge-script-tag");
     }
@@ -311,6 +314,7 @@ public class CodeReviewTests
         Assert.AreEqual(1, Single(review, "aot-not-enabled").Line);
 
         Single(Review("<Project Sdk=\"Microsoft.NET.Sdk.BlazorWebAssembly\">\n<PackageReference Include=\"Bit.Bmage\" />\n<RunAOTCompilation>false</RunAOTCompilation>"), "aot-not-enabled");
+        Single(Review("<Project Sdk=\"Microsoft.NET.Sdk.BlazorWebAssembly\">\n<PackageReference Include=\"Bit.Bmage.Blazor\" />"), "aot-not-enabled");
     }
 
     [TestMethod]

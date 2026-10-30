@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Bit.Bmage\Bit.Bmage.csproj" />
+    <ProjectReference Include="..\..\Bit.Bmage.Blazor\Bit.Bmage.Blazor.csproj" />
     <ProjectReference Include="..\Client\Bit.Bmage.Demo.Client.csproj" />
   </ItemGroup>
 

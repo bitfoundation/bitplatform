@@ -16,7 +16,7 @@ namespace Bit.Bmage.Interop;
 /// </remarks>
 public sealed class BrowserImageInterop : IAsyncDisposable
 {
-    private const string ModulePath = "./_content/Bit.Bmage/bit-bmage.js";
+    private const string ModulePath = "./_content/Bit.Bmage.Blazor/bit-bmage.js";
 
     /// <summary>Members the JSON serialiser needs on interop result types, so trimming keeps them.</summary>
     private const DynamicallyAccessedMemberTypes JsonMembers =

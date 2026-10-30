@@ -36,12 +36,12 @@ public class XmlDocsTests
     [TestMethod]
     public void CodeSamples_KeepTheirLines_AndLoseTheCommentsIndentation()
     {
-        var example = BmageXmlDocs.GetSummary("M:Bit.Bmage.BitBmage.AddBitBmageServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Bit.Bmage.BitBmageOptions})");
+        var example = BmageXmlDocs.GetSummary("M:Bit.Bmage.BitBmageBlazor.AddBitBmageServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Bit.Bmage.BitBmageOptions})");
 
         // The <example> is not part of the summary; the remarks are, and they are paragraphs.
         Assert.IsNotNull(example);
 
-        var remarks = BmageXmlDocs.GetRemarks("M:Bit.Bmage.BitBmage.AddBitBmageServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Bit.Bmage.BitBmageOptions})")!;
+        var remarks = BmageXmlDocs.GetRemarks("M:Bit.Bmage.BitBmageBlazor.AddBitBmageServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Bit.Bmage.BitBmageOptions})")!;
 
         StringAssert.Contains(remarks, "\n\n", "The remarks' paragraphs ran together.");
         StringAssert.Contains(remarks, "Interactive Server");

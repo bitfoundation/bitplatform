@@ -16,7 +16,7 @@ public class JsModuleContractTests : DemoTest
     {
         var script = $$"""
             async () => {
-                const m = await import('/_content/Bit.Bmage/bit-bmage.js');
+                const m = await import('/_content/Bit.Bmage.Blazor/bit-bmage.js');
                 {{body}}
             }
             """;
@@ -371,7 +371,7 @@ public class EditorLifecycleTests : DemoTest
         // The module must still work after all that churn.
         var stillWorks = await page.EvaluateAsync<bool>("""
             async () => {
-                const m = await import('/_content/Bit.Bmage/bit-bmage.js');
+                const m = await import('/_content/Bit.Bmage.Blazor/bit-bmage.js');
                 const caps = await m.getCapabilities();
                 return caps.encodableMimeTypes.includes('image/png');
             }

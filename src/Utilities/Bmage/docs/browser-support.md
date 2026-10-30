@@ -60,7 +60,7 @@ Setting it up differs from a Web App in three places:
 
 - **The stylesheet goes in `wwwroot/index.html`**, the page the WebView hosts, as in standalone WebAssembly. Do not add
   a script tag for `bit-bmage.js`: the library imports it on demand, and the codec workers load from the same
-  `_content/Bit.Bmage/` folder of the app package.
+  `_content/Bit.Bmage.Blazor/` folder of the app package.
 - **Saving a file is the platform's job on mobile.** `ImageExporter.DownloadAsync` and the editor's download hand the
   file to the WebView. WebView2 on Windows saves it as Edge would; Android's WebView and iOS's WKWebView leave
   downloads to the app, so there encode with `EncodeWithFallbackAsync` (or the editor's `ExportAsync`) and save the
@@ -175,9 +175,9 @@ thread exactly as before. To keep everything on the page's thread, or to cap the
 builder.Services.AddBitBmageServices(options => options.MaxCodecWorkers = 0);   // or 1, 2, ...
 ```
 
-The worker is served next to the module as `_content/Bit.Bmage/bit-bmage-worker.js`. A Content Security Policy that
-lists sources explicitly must allow it with `worker-src 'self'` (or a `script-src 'self'` it falls back to); blob URLs
-are never used for workers.
+The worker is served next to the module as `_content/Bit.Bmage.Blazor/bit-bmage-worker.js`. A Content Security Policy
+that lists sources explicitly must allow it with `worker-src 'self'` (or a `script-src 'self'` it falls back to); blob
+URLs are never used for workers.
 
 ## What is not used yet
 

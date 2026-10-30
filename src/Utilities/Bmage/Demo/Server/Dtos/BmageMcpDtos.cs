@@ -32,7 +32,7 @@ public record BmageApiTypeDto
     /// <summary>The namespace to import, e.g. "Bit.Bmage.Pipeline".</summary>
     public required string Namespace { get; init; }
 
-    /// <summary>The NuGet package that ships it: Bit.Bmage, which holds the editor components too.</summary>
+    /// <summary>The NuGet package that ships it: Bit.Bmage (the engine) or Bit.Bmage.Blazor (the browser integration and the editor components).</summary>
     public required string Package { get; init; }
 
     /// <summary>Component, Interface, Enum, Attribute, Delegate, Static class, Class, Struct or Record.</summary>

@@ -9,8 +9,8 @@ namespace Bit.Bmage.Demo.Server.Services;
 
 /// <summary>
 /// Builds the API reference the MCP tools serve, by reflecting over the public surface of the
-/// Bit.Bmage assembly - the engine, the browser integration and the editor components - and pairing
-/// every type and member with its XML documentation.
+/// Bit.Bmage assembly - the engine - and the Bit.Bmage.Blazor assembly - the browser integration and
+/// the editor components - and pairing every type and member with its XML documentation.
 /// <para>
 /// Reflection rather than a hand-maintained table: the reference then cannot drift from the shipped
 /// library - a new pipeline method shows up the moment it is written, with its real parameter list
@@ -26,12 +26,13 @@ public static class BmageApiCatalog
     private const BindingFlags Declared = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
 
     /// <summary>
-    /// The assemblies whose types are listed: Bit.Bmage alone, which ships the engine, the browser
-    /// integration and the editor components.
+    /// The assemblies whose types are listed: Bit.Bmage, which ships the engine, and Bit.Bmage.Blazor,
+    /// which ships the browser integration and the editor components.
     /// </summary>
     public static readonly Assembly[] Assemblies =
     [
         typeof(BitBmage).Assembly,
+        typeof(BitBmageBlazor).Assembly,
     ];
 
     private static readonly Lazy<Type[]> _publicTypes = new(() =>
