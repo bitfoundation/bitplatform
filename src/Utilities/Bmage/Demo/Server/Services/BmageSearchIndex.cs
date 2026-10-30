@@ -252,7 +252,7 @@ public static class BmageSearchIndex
         entries.Add(new Entry("Tool", "Review Bmage code for runtime mistakes", "Checks code",
             "ReviewBmageCode(code: \"...\")",
             "Finds the mistakes that compile cleanly: browser calls during prerendering, undisposed buffers, missing registrations, " +
-            "missing stylesheet, WebP without a fallback or on a server, Preserve leaking GPS.",
+            "missing stylesheet, AVIF without a fallback or on a server, Preserve leaking GPS.",
             "review check lint audit bug mistake wrong error"));
 
         foreach (var recipe in BmageRecipeCatalog.All)

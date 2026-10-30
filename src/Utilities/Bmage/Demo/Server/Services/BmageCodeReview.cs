@@ -54,9 +54,9 @@ public static partial class BmageCodeReview
         new() { Id = "aot-not-enabled", Severity = "Warning", Source = "performance",
                 Catches = "A Blazor WebAssembly project using Bmage without RunAOTCompilation: pixel loops run 10 to 35 times slower." },
         new() { Id = "format-without-capability-check", Severity = "Warning", Source = "formats",
-                Catches = "Exporting WebP or AVIF in a browser with no capability check or fallback: browsers that cannot write it throw ImageCapabilityException." },
+                Catches = "Exporting AVIF in a browser with no capability check or fallback: most browsers cannot write it and throw ImageCapabilityException." },
         new() { Id = "browser-format-on-server", Severity = "Error", Source = "headless",
-                Catches = "WebP or AVIF with the headless/managed codecs, which cannot encode either - ImageCapabilityException at the first request." },
+                Catches = "AVIF with the headless/managed codecs, which cannot encode it - ImageCapabilityException at the first request." },
         new() { Id = "metadata-preserve-keeps-location", Severity = "Warning", Source = "metadata-and-privacy",
                 Catches = "MetadataPolicy.Preserve, which keeps GPS, serial numbers and owner names in the exported file." },
         new() { Id = "autoorient-off-without-rotation", Severity = "Warning", Source = "metadata-and-privacy",
@@ -191,7 +191,7 @@ public static partial class BmageCodeReview
                     Message = $"{match.Groups["call"].Value} in {method} runs during prerendering too. It does not throw there: " +
                               "IImageCapabilityProvider answers with the managed capability set (Environment = Prerendering), " +
                               "and ImageProcessorFactory/ImageExporter fall back to the managed codecs - so a format chosen here " +
-                              "is JPEG or PNG on every browser, and WebP is reported unsupported.",
+                              "never picks AVIF on any browser, and the browser's own codecs are never used.",
                     Fix = "Read capabilities and encode in OnAfterRenderAsync(firstRender) when RendererInfo.IsInteractive, or in an " +
                           "event handler; render a 'probing' state until then."
                 });
@@ -464,7 +464,7 @@ public static partial class BmageCodeReview
                 Rule = "headless-services-in-browser",
                 Line = headless + 1,
                 Message = "AddBitBmageHeadlessServices in a WebAssembly host registers only the managed engine: no ImageLoader, no " +
-                          "ImageExporter, no ImageProcessorFactory, no browser codecs - so no WebP or AVIF, no clipboard, no " +
+                          "ImageExporter, no ImageProcessorFactory, no browser codecs - so no AVIF export, no clipboard, no " +
                           "downloads, and the editor cannot be resolved.",
                 Fix = "builder.Services.AddBitBmageServices() in the browser project. The headless registration is for servers, " +
                       "console apps and workers."
@@ -563,7 +563,10 @@ public static partial class BmageCodeReview
         });
     }
 
-    /// <summary>WebP/AVIF without a capability check in a browser, or at all on a server.</summary>
+    /// <summary>
+    /// AVIF without a capability check in a browser, or at all on a server. WebP needs neither: the managed encoder writes
+    /// it wherever the browser cannot.
+    /// </summary>
     private static void CheckFormats(string text, string[] lines, List<BmageReviewFindingDto> findings)
     {
         var line = Array.FindIndex(lines, line => BrowserFormatRegex().IsMatch(line));
@@ -580,11 +583,12 @@ public static partial class BmageCodeReview
                 Severity = "Error",
                 Rule = "browser-format-on-server",
                 Line = line + 1,
-                Message = $"{format} is a browser codec. With no browser - AddBitBmageHeadlessServices, new ImageProcessor(), a " +
-                          "server endpoint - only the managed codecs exist (PNG, JPEG, BMP encode), and asking for " +
+                Message = $"{format} is encoded only by a browser. With no browser - AddBitBmageHeadlessServices, new ImageProcessor(), " +
+                          "a server endpoint - only the managed codecs exist (PNG, JPEG, BMP and WebP encode), and asking for " +
                           $"{format} throws ImageCapabilityException: \"No encoder is registered for {format} in this environment\".",
-                Fix = "Encode JPEG (photos) or PNG (graphics, transparency) on the server. If the file must be WebP, encode it in " +
-                      "the browser before upload with ImageExporter.EncodeWithFallbackAsync."
+                Fix = "Encode WebP on the server instead: lossy for photos and transparency (Quality), lossless for originals " +
+                      "(Lossless = true). If the file must be AVIF, encode it in the browser before upload with " +
+                      "ImageExporter.EncodeWithFallbackAsync([ImageFormat.Avif, ImageFormat.WebP])."
             });
 
             return;
@@ -601,11 +605,10 @@ public static partial class BmageCodeReview
             Severity = "Warning",
             Rule = "format-without-capability-check",
             Line = line + 1,
-            Message = $"{format} is exported with no capability check and no fallback. Encoding support varies by browser - AVIF " +
-                      "encoding is rarely available, older Safari cannot write WebP - and Bmage refuses the PNG a browser silently " +
-                      "substitutes: EncodeAsync throws ImageCapabilityException on those browsers.",
-            Fix = "Exporter.EncodeWithFallbackAsync(image, [ImageFormat.WebP, ImageFormat.Jpeg], options) - it picks the first " +
-                  "format this browser can really encode and reports it on encoded.Format. Or check " +
+            Message = $"{format} is exported with no capability check and no fallback. Few browsers can encode AVIF, and Bmage " +
+                      "refuses the PNG a browser silently substitutes: EncodeAsync throws ImageCapabilityException on the others.",
+            Fix = "Exporter.EncodeWithFallbackAsync(image, [ImageFormat.Avif, ImageFormat.WebP], options) - it picks the first " +
+                  "format this browser can really encode and reports it on encoded.Format, JPEG when it can write none. Or check " +
                   "capabilities.CanEncode(format) first."
         });
     }
@@ -999,7 +1002,7 @@ public static partial class BmageCodeReview
     [GeneratedRegex(@"<RunAOTCompilation>\s*false\s*</RunAOTCompilation>", RegexOptions.IgnoreCase)]
     private static partial Regex AotDisabledRegex();
 
-    [GeneratedRegex(@"\b(?:ImageFormat|ImageExportOptions)\.(?<format>WebP|Avif)\b")]
+    [GeneratedRegex(@"\b(?:ImageFormat|ImageExportOptions)\.(?<format>Avif)\b")]
     private static partial Regex BrowserFormatRegex();
 
     [GeneratedRegex(@"EncodeWithFallbackAsync|\.CanEncode\s*\(|SupportsWebP|SupportsAvif|ChooseEncodableFormat")]

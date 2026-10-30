@@ -12,8 +12,8 @@
 <div class="bb-intro">
     <h1>Formats</h1>
     <p class="bb-subtitle">
-        PNG, JPEG, BMP and GIF are decoded by C# that runs anywhere; WebP and AVIF come from the browser's
-        own codecs. Support varies by browser, version and platform, so Bmage <strong>probes instead of
+        PNG, JPEG, BMP, GIF, WebP and AVIF are decoded by C# that runs anywhere, and PNG, JPEG, BMP and
+        WebP encoded by it; AVIF is written only by the browser's own codecs. Support varies by browser, version and platform, so Bmage <strong>probes instead of
         assuming</strong> - and refuses to pass off a substitute as the format you asked for.
     </p>
 </div>
@@ -85,17 +85,21 @@
                 <tr><th scope="row">JPEG</th><td>yes</td><td>yes</td><td>yes</td><td>yes</td></tr>
                 <tr><th scope="row">BMP</th><td>yes</td><td>yes</td><td>yes</td><td>via managed</td></tr>
                 <tr><th scope="row">GIF</th><td>first frame</td><td>no</td><td>first frame</td><td>no</td></tr>
-                <tr><th scope="row">WebP</th><td>no</td><td>no</td><td>yes</td><td>usually</td></tr>
-                <tr><th scope="row">AVIF</th><td>no</td><td>no</td><td>usually</td><td>rarely</td></tr>
+                <tr><th scope="row">WebP</th><td>yes; first frame of an animation</td><td>lossy and lossless</td><td>yes</td><td>usually, lossy only</td></tr>
+                <tr><th scope="row">AVIF</th><td>yes; no colour management</td><td>no</td><td>usually</td><td>rarely</td></tr>
                 <tr><th scope="row">SVG</th><td>refused</td><td>no</td><td>refused</td><td>no</td></tr>
             </tbody>
         </table>
     </div>
     <p>
         "Managed" means pure C#, working anywhere including a server. "Browser" means the platform's
-        own codecs, the only way to reach WebP and AVIF in a browser. When both are available the
-        browser codec wins, because it is hardware accelerated and covers more formats; the managed
-        codecs remain the fallback, which is what makes prerendering and server-side use work. The
+        own codecs, the only way to write AVIF. In WebAssembly the browser codec wins when both are
+        available, because it is hardware accelerated and colour manages; the managed codecs remain the
+        fallback, which is what makes prerendering and server-side use work. Over Interactive Server and
+        in a Blazor Hybrid app it is the other way round, because pixels a browser codec touches cross
+        the circuit or the WebView: the managed codecs decode and encode first, the browser decodes only
+        what they reject, what is over the limits and wide gamut photos, and it encodes only AVIF and
+        whatever else the managed codecs cannot write. The
         <a href="/capabilities">Capabilities</a> page shows the probe's answer for this browser.
     </p>
 </div>
@@ -205,8 +209,8 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> GIF and SVG</h3>
     <p>
         GIF decodes its first frame, with palettes, interlacing and transparency; animation is out of
-        scope, and GIF encoding is supported by no browser canvas and is not implemented - use WebP or
-        PNG.
+        scope, as it is for an animated WebP, and GIF encoding is supported by no browser canvas and is
+        not implemented - use WebP or PNG.
     </p>
     <p>
         SVG is refused with an explanatory error rather than rasterised. Rendering untrusted SVG can

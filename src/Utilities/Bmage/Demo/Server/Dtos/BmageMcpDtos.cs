@@ -298,7 +298,7 @@ public record BmagePipelineRunDto
 /// <summary>One measured encode.</summary>
 public record BmageEncodingDto
 {
-    /// <summary>Jpeg, Png, Bmp - or WebP/Avif, which are reported as browser-only and not measured.</summary>
+    /// <summary>Jpeg, Png, Bmp, WebP - or Avif, which is reported as browser-only and not measured.</summary>
     public required string Format { get; init; }
 
     /// <summary>The quality asked for; null for a lossless format.</summary>

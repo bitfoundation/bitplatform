@@ -450,8 +450,8 @@ public static class BmageRecipeCatalog
                     "against memory, not cores alone. Every item comes back with its own outcome (result.Succeeded, " +
                     "result.Failed); StopOnFirstError is opt-in. Cancelling the token throws BatchCancelledException, an " +
                     "OperationCanceledException that keeps what finished in its Result; the items it never reached are Result.Cancelled. " +
-                    "JPEG is used here because it encodes everywhere - for WebP check the capabilities first, as the batch " +
-                    "options take one fixed format."
+                    "JPEG is used here for the widest compatibility of the files; WebP encodes everywhere too, while AVIF " +
+                    "needs the capabilities checked first, as the batch options take one fixed format."
         },
         new()
         {
