@@ -51,6 +51,7 @@ Some changes need more than the text of the diff:
 
 - **Packages and SDKs.** Take the newer versions in `src/Directory.Packages.props`, `global.json` and the `package.json` files, keep the team's own additions, then restore. A package the team pinned on purpose stays pinned; mention it.
 - **Versions that travel together.** Some versions live outside those files and must equal the package they belong to, such as the EF Core and Velopack command-line tools the workflows and docs run, the Aspire SDK on the app host's first line, and the Playwright server the `.runsettings` files start. The template's own copies arrive with the diff; a workflow, doc or script the team wrote keeps its own. A package the team added to a family the upgrade moves, such as another EF Core or Aspire package, moves with it: a restore warning that a package was downgraded or is outside a dependency's version range means one was missed.
+- **Workarounds.** A newer package, tool or SDK may fix what an entry of `specs/workarounds.md` works around. For each entry whose library the change updates, run its **Remove when** check: once the fix is in, remove the workaround and its entry together, and otherwise keep both.
 - **Database.** When entities, their configurations or the seed data changed, add a new migration for every database context whose model changed, the way `AGENTS.md` describes. Never edit a migration the project already has.
 - **Settings.** New `appsettings` keys and new user secrets come in with their defaults; list the ones that need a real value for production.
 - **Generated code.** Regenerate what the build or a tool generates instead of merging it. The npm lock files are such: `npm install` in the folder of a changed `package.json` rewrites its lock, which should come out the same from npm on Linux. npm on Windows can add a root name to it that Linux npm drops, and then every build in CI leaves the lock modified.
@@ -76,6 +77,7 @@ Commit the change on its branch, then tell the user, briefly:
 - what changed: from which version to which, to which .NET version, or which feature came in or went out, and the branch it is on;
 - what came in, grouped by area, with the user-visible changes first;
 - what was left out and why;
+- the workarounds that came out because the fix arrived, and the ones still needed;
 - the decisions that are theirs, and the migrations, settings and secrets that need their attention;
 - that nothing is merged or pushed until they say so.
 
