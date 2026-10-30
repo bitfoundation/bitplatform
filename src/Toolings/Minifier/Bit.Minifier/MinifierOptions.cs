@@ -5,8 +5,8 @@ internal sealed class MinifierOptions
     /// <summary>The bit libraries: packages an app installs, wherever this repository builds them from source.</summary>
     public static readonly IReadOnlyList<string> BitAssemblies =
     [
-        "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Assets", "Bit.BlazorUI.Icons", "Bit.BlazorUI.Legacy", "Bit.Butil", "Bit.Bswup", "Bit.Brouter", "Bit.Besql",
-        "Bit.Balette", "Bit.BbScanner", "Bit.Bcrdt", "Bit.Bcrdt.Server", "Bit.Bcrdt.SignalR", "Bit.Bcrdt.Testing", "Bit.Bdnd", "Bit.Belemetry",
+        "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Assets", "Bit.BlazorUI.Icons", "Bit.BlazorUI.Legacy", "Bit.BlazorUI.AI", "Bit.Butil", "Bit.Bswup", "Bit.Brouter", "Bit.Besql",
+        "Bit.Balette", "Bit.BbScanner", "Bit.BbScanner.Maui", "Bit.Bcrdt", "Bit.Bcrdt.Server", "Bit.Bcrdt.SignalR", "Bit.Bcrdt.Testing", "Bit.Bdnd", "Bit.Belemetry",
         "Bit.Belemetry.EntityFrameworkCore", "Bit.Belemetry.Hangfire", "Bit.BevTools", "Bit.BevTools.Loader", "Bit.BevTools.Server", "Bit.Bheadless",
         "Bit.Bheadless.Testing", "Bit.Bink", "Bit.BlazeDb", "Bit.BlazeDb.EntityFrameworkCore", "Bit.Blex", "Bit.Blex.Maui", "Bit.Blex.Testing", "Bit.Blow",
         "Bit.Bmage", "Bit.Bmotion", "Bit.Bonboarding", "Bit.Borm", "Bit.Borm.FluentValidation", "Bit.Bortable", "Bit.Bsqlite", "Bit.Bsqlite.Testing"
