@@ -76,7 +76,7 @@
         <!-- Minify into a temp file and move it into place: an interrupted in-place minify would leave a half-written
              script that the Outputs check above takes for up to date. format=esm keeps the named exports the interop's
              import() resolves. -->
-        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node node_modules/esbuild/bin/esbuild wwwroot/bit-bheadless.js --minify --format=esm --outfile=wwwroot/bit-bheadless.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bheadless.js --minify --format=esm --outfile=wwwroot/bit-bheadless.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Move Condition=" '$(Configuration)' == 'Release' " SourceFiles="wwwroot/bit-bheadless.min.js" DestinationFiles="wwwroot/bit-bheadless.js" OverwriteReadOnlyFiles="true" />
 
         <!-- Only Release minifies, so a per-configuration stamp keeps a Debug (unminified) script from being taken for
