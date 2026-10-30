@@ -93,8 +93,11 @@ public static partial class BinkSetupGuide
                 register in either container - but the component must live in the .Client project. The demo below uses
                 InteractiveWebAssembly; for InteractiveAuto add `AddInteractiveServerComponents()` and
                 `AddInteractiveServerRenderMode()` to the server's `Program.cs` and use `@rendermode="InteractiveAuto"` in
-                `App.razor` - nothing else changes. A client that lazy loads Bit.Bink does so only in the browser; the
-                server loads it with the rest of the app - see `GetBinkGuideSection(heading: "Lazy loading on WebAssembly")`.
+                `App.razor` - nothing else changes for an app that loads Bit.Bink with the rest of the client. A client
+                that lazy loads it does so only in the browser, so only from the second visit on; the server loads it with
+                the rest of the app and registers `LazyAssemblyLoader` (`builder.Services.AddScoped<LazyAssemblyLoader>()`),
+                because `Routes` injects it on the server both while prerendering and over the first visit's circuit -
+                see `GetBinkGuideSection(heading: "Lazy loading on WebAssembly")`.
                 """,
                 ["Blazor Web App", "Blazor WebAssembly", "Blazor Server"],
                 null,
