@@ -727,7 +727,7 @@ function Invoke-E2EStages {
         $buildArguments = @()
 
         if ($PrereleasePackages) {
-            $lab = Join-Path ([IO.Path]::GetTempPath()) 'test-platform-e2e'
+            $lab = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'test-platform-e2e'
             $feed = Join-Path $lab 'feed'
             $env:NUGET_PACKAGES = Join-Path $lab 'packages'
             Remove-Item $feed -Recurse -Force -ErrorAction SilentlyContinue
@@ -737,6 +737,10 @@ function Invoke-E2EStages {
             Set-BitUnderTestFeed $lab $feed
 
             dotnet restore --nologo -v q --configfile (Join-Path $lab 'nuget.config') > (Join-Path $results 'restore.log')
+
+            if ($LASTEXITCODE -ne 0 -and (Select-String -Path (Join-Path $results 'restore.log') -Pattern 'NU1202' -Quiet)) {
+                dotnet restore --nologo -v q --configfile (Join-Path $lab 'nuget.config') > (Join-Path $results 'restore.log')
+            }
 
             if ($LASTEXITCODE -ne 0) {
                 Select-String -Path (Join-Path $results 'restore.log') -Pattern ': error ' | ForEach-Object Line | Select-Object -Unique | Write-Host
@@ -1078,7 +1082,7 @@ function Remove-BitUnderTest([string] $lab) {
 function Invoke-DevContainerTest {
     Assert-DockerLinux
 
-    $lab = Join-Path ([IO.Path]::GetTempPath()) ('bit-devcontainer-{0:yyyyMMdd-HHmmss}' -f (Get-Date))
+    $lab = Join-Path ([IO.Path]::GetTempPath()) ('bit-devcontainer-{0:MM-dd-HH-mm-ss}' -f (Get-Date))
     $feed = Join-Path $lab 'feed'
     $project = Join-Path $lab 'DevApp'
     New-Item -ItemType Directory -Force $lab | Out-Null
@@ -1280,7 +1284,9 @@ function Remove-AspireContainers([string[]] $names, [string] $appHostName) {
 
     docker rm -f -v $containers.Id | Out-Null
 
-    foreach ($volume in $containers.Volumes | Where-Object { $_ -like "$($appHostName.ToLowerInvariant())-*" } | Sort-Object -Unique) {
+    $prefixes = $containers.Volumes | Where-Object { $_ -like "$($appHostName.ToLowerInvariant())-*" } | ForEach-Object { $_ -replace "^($([regex]::Escape($appHostName.ToLowerInvariant()))-[^-]+)-.*", '$1' } | Sort-Object -Unique
+
+    foreach ($volume in docker volume ls --format '{{.Name}}' | Where-Object { $name = $_; $prefixes | Where-Object { $name.StartsWith("$_-") } }) {
         docker volume rm $volume 2>&1 | Out-Null
     }
 
@@ -1290,7 +1296,7 @@ function Remove-AspireContainers([string[]] $names, [string] $appHostName) {
 function Invoke-AspireTest {
     Assert-DockerLinux
 
-    $lab = Join-Path ([IO.Path]::GetTempPath()) ('bit-aspire-{0:yyyyMMdd-HHmmss}' -f (Get-Date))
+    $lab = Join-Path ([IO.Path]::GetTempPath()) ('bit-aspire-{0:MM-dd-HH-mm-ss}' -f (Get-Date))
     $appHostName = 'AspireApp.Server.AppHost'
     New-Item -ItemType Directory -Force $lab | Out-Null
 
@@ -1715,7 +1721,7 @@ function Invoke-AgentsTest {
         throw "No scenario $id in $agentScenariosFile."
     }
 
-    $lab = Join-Path ([IO.Path]::GetTempPath()) ('bit-agents-{0:MMdd-HHmm}' -f (Get-Date))
+    $lab = Join-Path ([IO.Path]::GetTempPath()) ('bit-agents-{0:MM-dd-HH-mm-ss}' -f (Get-Date))
     New-Item -ItemType Directory -Force $lab | Out-Null
     $nugetPackages = $env:NUGET_PACKAGES
     $runs = foreach ($id in $ids) {

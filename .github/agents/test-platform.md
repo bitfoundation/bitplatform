@@ -260,10 +260,17 @@ version; a run at a new version that leaves an app out leaves that app behind, a
 **Web.** The deploy jobs mirror each bundle into `C:\inetpub\<site>` and restart its app pool, and the WebAssembly
 standalone apps go to Azure Static Web Apps. There is nothing to do but check.
 
+**The demos' database is never migrated by a deploy.** The CD creates the demos with `--no-migration`, and their
+servers migrate only in Development, so a change to the database model - even one made inside the Initial
+migration - reaches the database the Boilerplate demos share only by hand. Until it does, every sign-in and token
+refresh of those demos fails with a 500 whose Application log line names the missing column or table. Check the
+CD's commit for migration changes since the last one; applying them to that database changes the machine, so ask
+first.
+
 **A deploy job that finds no app pool of its name** deploys a demo whose IIS site was never made on this machine,
 usually a library demo added since the host was set up. Creating it changes the machine, so ask first; then add it
-the way the other library demos are set up and add it to the README's exports. Re-running the deploy job, or that
-demo's own CD, delivers it.
+the way the other library demos are set up, with its site's folder at the `site-path` its CD deploys to, and add it
+to the README's exports. Re-running the deploy job, or that demo's own CD, delivers it.
 
 **Android.** `android -CdRun <run>`. Every Android job uploads an artifact called `android-bundle`, and a re-run job
 adds another, so the helper tells them apart by package and takes the newest of each. The device is the AVD with the
@@ -432,7 +439,9 @@ from its deployed site, `https://<name>.bitplatform.dev/mcp`, whichever tag was 
 does not serve silently gets the newest one it does.
 
 1. **What it should serve.** The plain `v-X.Y.Z` tags of
-   `git ls-remote --tags https://github.com/bitfoundation/bitplatform.git 'v-*'`. Check that the newest
+   `git ls-remote --tags https://github.com/bitfoundation/bitplatform.git 'v-*'`, from the `Mcp:MinimumVersion` of
+   the site's own `appsettings.json` under `C:\inetpub` up: the host can raise it above the repository's, and then a
+   `?v=` below it answers from the newest release by design. Check that the newest
    `feat(release): v-X.Y.Z` commit on `develop` has its tag: an untagged release is answered by the previous one,
    without a word. The site reads the tags again every few hours, so a tag pushed during the run isn't served yet.
 2. **What it does serve.** `mcp -McpVersion X.Y.Z -AllLibraries` for each, and once without `-AllLibraries`, whose
