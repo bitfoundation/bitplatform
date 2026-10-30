@@ -248,10 +248,11 @@ navigation is blocked. There is no address-bar flicker and no torn back/forward 
 implement a genuine "you have unsaved changes" prompt by cancelling from a guard or `OnNavigating`.
 
 A redirect to the URL the navigation is already heading to is treated as "continue", so guards like
-"always send anonymous users to `/login`" can't create redirect loops. The path is compared the way
-routes are matched (`CaseSensitive`, `IgnoreTrailingSlash`), the query and hash exactly - so under
-case-sensitive routing a guard on `/Admin` can still redirect to `/admin`, and a redirect that only
-changes the query (`?tab=Users` to `?tab=users`) is honored.
+"always send anonymous users to `/login`" can't create redirect loops. Both URLs are resolved the way
+`NavigationManager.NavigateTo` resolves them, so a different spelling of the same URL (absolute or
+base-relative, percent-encoded or not, host casing, default port) is still "continue", while any change
+to the path, query or hash is honored - including one routing doesn't see, such as `/Admin` to `/admin`
+or `/login` to `/login/` under the default options.
 
 ## Leave guards (unsaved changes)
 

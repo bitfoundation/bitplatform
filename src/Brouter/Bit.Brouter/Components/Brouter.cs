@@ -755,7 +755,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
         var location = CurrentLocation;
         var leaf = chain[^1];
-        var ctx = new BrouterNavigationContext(location, location, CancellationToken.None, Options)
+        var ctx = new BrouterNavigationContext(location, location, CancellationToken.None, _navManager)
         {
             NavigationType = BrouterNavigationType.Replace,
             Route = leaf,
@@ -1702,8 +1702,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         _approvedTargetUri = null;
         var approvedType = _approvedNavigationType;
         _approvedNavigationType = null;
-        var decisionAlreadyMade =
-            approved is not null && string.Equals(approved, to.FullUri, StringComparison.Ordinal);
+        var decisionAlreadyMade = approved is not null && IsSameUri(approved, to.FullUri);
 
         // When the changing phase already ran, re-use the type it resolved and stashed alongside the
         // approval. Otherwise (initial load races, forceLoad, a nav that outran interception) resolve it
@@ -1812,7 +1811,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 // no navigation here - the URL stays put - so the context describes a same-location
                 // "navigation".
                 NotifyChainDepartures(
-                    new BrouterNavigationContext(location, location, CancellationToken.None, Options),
+                    new BrouterNavigationContext(location, location, CancellationToken.None, _navManager),
                     _committedChain);
                 // A departure callback's synchronous prefix can start a new navigation (same
                 // re-entrancy FlushPendingLifecycle guards against) - that navigation owns the
@@ -1895,7 +1894,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         // do NOT touch _navCts / _navVersion in this phase - that machinery belongs to the commit
         // phase, and mixing the two would leak or double-cancel token sources.
         var token = context.CancellationToken;
-        var ctx = new BrouterNavigationContext(from, to, token, Options) { NavigationType = navType };
+        var ctx = new BrouterNavigationContext(from, to, token, _navManager) { NavigationType = navType };
         var service = _brouterService;
 
         // See _processingLocationChanging: marks the decision phase as in flight for the whole of
@@ -2052,12 +2051,29 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// </summary>
     internal void SetPendingNavigationType(BrouterNavigationType type) => _pendingNavigationType = type;
 
+    /// <summary>
+    /// Whether two absolute URIs denote the same URL. The changing phase builds its target from
+    /// <c>Uri.ToString()</c>, which unescapes (<c>/caf%C3%A9</c> becomes <c>/café</c>), while the
+    /// committed <c>NavigationManager.Uri</c> keeps the escaping, so the two can't be compared as
+    /// strings.
+    /// </summary>
+    private static bool IsSameUri(string x, string y)
+    {
+        if (Uri.TryCreate(x, UriKind.Absolute, out var xUri) is false ||
+            Uri.TryCreate(y, UriKind.Absolute, out var yUri) is false)
+        {
+            return string.Equals(x, y, StringComparison.Ordinal);
+        }
+
+        return string.Equals(BrouterLocation.ToCanonicalUri(xUri), BrouterLocation.ToCanonicalUri(yUri), StringComparison.Ordinal);
+    }
+
     private async ValueTask SafeInvokeOnError(BrouterLocation from, BrouterLocation to, Exception ex)
     {
         try
         {
             await _brouterService.InvokeOnError(
-                new BrouterNavigationContext(from, to, CancellationToken.None, Options), ex);
+                new BrouterNavigationContext(from, to, CancellationToken.None, _navManager), ex);
         }
         catch { /* OnError must never crash the navigation handler */ }
     }
@@ -2262,7 +2278,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         oldCts?.Cancel();
         var token = newCts.Token;
 
-        var ctx = new BrouterNavigationContext(from, to, token, Options) { NavigationType = navType, IsReload = isReload };
+        var ctx = new BrouterNavigationContext(from, to, token, _navManager) { NavigationType = navType, IsReload = isReload };
         var service = _brouterService;
 
         // Awaited-navigation bookkeeping: capture the awaiter this pipeline is responsible for (the
@@ -2989,7 +3005,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         for (var node = match.Value.Route; node is not null; node = node.Parent) chain.Add(node);
         chain.Reverse();
 
-        var ctx = new BrouterNavigationContext(CurrentLocation, to, CancellationToken.None, Options)
+        var ctx = new BrouterNavigationContext(CurrentLocation, to, CancellationToken.None, _navManager)
         {
             NavigationType = BrouterNavigationType.Push,
             IsPreload = true,
@@ -3467,7 +3483,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         oldCts?.Cancel();
         var token = newCts.Token;
 
-        var ctx = new BrouterNavigationContext(to, to, token, Options)
+        var ctx = new BrouterNavigationContext(to, to, token, _navManager)
         {
             // The history entry is untouched; Replace is the closest classification and
             // IsRevalidation is the authoritative signal for loader logic.
