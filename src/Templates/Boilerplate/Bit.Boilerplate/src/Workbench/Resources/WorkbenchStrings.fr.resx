@@ -1344,4 +1344,109 @@ Here is each day:</value>
     <data name="DeployLiveDescription" xml:space="preserve">
         <value>Everyone now uses the new version. The store apps update the way each store delivers them.</value>
     </data>
+    <data name="StructureTitle" xml:space="preserve">
+        <value>Project structure</value>
+    </data>
+    <data name="StructureDescription" xml:space="preserve">
+        <value>Every project of the solution and how they reference each other, with what lives in each one.</value>
+    </data>
+    <data name="StructureCaption" xml:space="preserve">
+        <value>Every part in its place</value>
+    </data>
+    <data name="StructureHeading" xml:space="preserve">
+        <value>How your project fits together</value>
+    </data>
+    <data name="StructureIntro" xml:space="preserve">
+        <value>Each box is a project of the solution and each line a reference. Select one to see what lives there.</value>
+    </data>
+    <data name="StructureSelectHint" xml:space="preserve">
+        <value>Select a project to see what lives there.</value>
+    </data>
+    <data name="StructureLoadFailed" xml:space="preserve">
+        <value>The project structure couldn't be loaded.</value>
+    </data>
+    <data name="StructureEmpty" xml:space="preserve">
+        <value>No projects to show.</value>
+    </data>
+    <data name="StructureReferences" xml:space="preserve">
+        <value>References: {0}</value>
+    </data>
+    <data name="StructureKindClient" xml:space="preserve">
+        <value>Client</value>
+    </data>
+    <data name="StructureKindServer" xml:space="preserve">
+        <value>Server</value>
+    </data>
+    <data name="StructureKindShared" xml:space="preserve">
+        <value>Shared</value>
+    </data>
+    <data name="StructureKindTools" xml:space="preserve">
+        <value>Tools</value>
+    </data>
+    <data name="StructureClientWebRole" xml:space="preserve">
+        <value>Runs in the browser</value>
+    </data>
+    <data name="StructureClientWebDescription" xml:space="preserve">
+        <value>The WebAssembly head: it runs the app in the browser, works offline and installs as a web app.</value>
+    </data>
+    <data name="StructureClientMauiRole" xml:space="preserve">
+        <value>Android, iOS, macOS, Windows</value>
+    </data>
+    <data name="StructureClientMauiDescription" xml:space="preserve">
+        <value>The native app for Android, iOS, macOS and Windows, with the same pages running inside it.</value>
+    </data>
+    <data name="StructureClientWindowsRole" xml:space="preserve">
+        <value>Windows desktop app</value>
+    </data>
+    <data name="StructureClientWindowsDescription" xml:space="preserve">
+        <value>A light Windows desktop app with automatic updates, running the same pages.</value>
+    </data>
+    <data name="StructureWorkbenchRole" xml:space="preserve">
+        <value>Designs pages on sample data</value>
+    </data>
+    <data name="StructureWorkbenchDescription" xml:space="preserve">
+        <value>This app: pages designed on sample data with the client's components and theme. It is never deployed with the app.</value>
+    </data>
+    <data name="StructureClientCoreRole" xml:space="preserve">
+        <value>Pages, components, services</value>
+    </data>
+    <data name="StructureClientCoreDescription" xml:space="preserve">
+        <value>The heart of the client: every page, component, layout and client service, with the app's styles and scripts. Every client runs it.</value>
+    </data>
+    <data name="StructureServerWebRole" xml:space="preserve">
+        <value>Hosts and renders the app</value>
+    </data>
+    <data name="StructureServerWebDescription" xml:space="preserve">
+        <value>The startup project: it renders pages on the server, runs Blazor Server and serves the WebAssembly files.</value>
+    </data>
+    <data name="StructureServerApiRole" xml:space="preserve">
+        <value>API, data and jobs</value>
+    </data>
+    <data name="StructureServerApiDescription" xml:space="preserve">
+        <value>The API controllers, the database and its migrations, email templates, background jobs and real-time hubs.</value>
+    </data>
+    <data name="StructureSharedRole" xml:space="preserve">
+        <value>DTOs and resources</value>
+    </data>
+    <data name="StructureSharedDescription" xml:space="preserve">
+        <value>What the server and every client share: data contracts, enums, errors, shared services and the translated texts.</value>
+    </data>
+    <data name="StructureServerSharedRole" xml:space="preserve">
+        <value>Health, telemetry, defaults</value>
+    </data>
+    <data name="StructureServerSharedDescription" xml:space="preserve">
+        <value>What both server projects share, such as health checks, telemetry and service defaults.</value>
+    </data>
+    <data name="StructureAppHostRole" xml:space="preserve">
+        <value>Runs everything locally</value>
+    </data>
+    <data name="StructureAppHostDescription" xml:space="preserve">
+        <value>Starts the projects and the database and services they need for development, and writes the Docker Compose project for deployment.</value>
+    </data>
+    <data name="StructureTestsRole" xml:space="preserve">
+        <value>UI and integration tests</value>
+    </data>
+    <data name="StructureTestsDescription" xml:space="preserve">
+        <value>UI and integration tests that run the real server in memory, with test data and a real browser.</value>
+    </data>
 </root>

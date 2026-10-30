@@ -119,30 +119,3 @@
     display: flex;
     flex-direction: column;
 }
-
-::deep .themed-flow {
-    --bit-blow-bg: #{$bit-color-background-secondary};
-    --bit-blow-node-bg: #{$bit-color-background-primary};
-    --bit-blow-node-border: #{$bit-color-border-secondary};
-    --bit-blow-node-input-border: #{$bit-color-primary};
-    --bit-blow-node-output-border: #{$bit-color-primary};
-    --bit-blow-node-color: #{$bit-color-foreground-primary};
-    --bit-blow-node-selected: #{$bit-color-primary};
-    --bit-blow-edge-stroke: #{$bit-color-border-secondary};
-    --bit-blow-edge-selected: #{$bit-color-primary};
-    --bit-blow-connection-stroke: #{$bit-color-primary};
-    --bit-blow-handle-bg: #{$bit-color-foreground-secondary};
-    --bit-blow-surface: #{$bit-color-background-primary};
-    --bit-blow-surface-hover: #{$bit-color-background-secondary};
-    --bit-blow-surface-muted: #{$bit-color-background-secondary};
-    --bit-blow-surface-muted-hover: #{$bit-color-background-tertiary};
-    --bit-blow-surface-translucent: color-mix(in srgb, #{$bit-color-background-primary} 90%, transparent);
-    --bit-blow-border: #{$bit-color-border-tertiary};
-    --bit-blow-border-subtle: #{$bit-color-border-tertiary};
-    --bit-blow-text: #{$bit-color-foreground-primary};
-    --bit-blow-text-muted: #{$bit-color-foreground-secondary};
-    --bit-blow-shadow: color-mix(in srgb, #{$bit-color-foreground-primary} 14%, transparent);
-    --bit-blow-group-bg: color-mix(in srgb, #{$bit-color-primary} 5%, transparent);
-    --bit-blow-group-border: color-mix(in srgb, #{$bit-color-primary} 35%, transparent);
-    --bit-blow-background-pattern: #{$bit-color-border-secondary};
-}

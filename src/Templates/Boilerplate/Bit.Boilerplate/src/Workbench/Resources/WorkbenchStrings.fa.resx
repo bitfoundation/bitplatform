@@ -1344,4 +1344,109 @@
     <data name="DeployLiveDescription" xml:space="preserve">
         <value>اکنون همه از نسخه تازه استفاده می‌کنند. برنامه‌های فروشگاهی به همان روشی به‌روز می‌شوند که هر فروشگاه تحویلشان می‌دهد.</value>
     </data>
+    <data name="StructureTitle" xml:space="preserve">
+        <value>ساختار پروژه</value>
+    </data>
+    <data name="StructureDescription" xml:space="preserve">
+        <value>همه پروژه‌های راه‌حل و ارجاع‌هایشان به یکدیگر، با توضیح آنچه در هرکدام است.</value>
+    </data>
+    <data name="StructureCaption" xml:space="preserve">
+        <value>هر بخش سر جای خودش</value>
+    </data>
+    <data name="StructureHeading" xml:space="preserve">
+        <value>پروژه شما چطور کنار هم قرار می‌گیرد</value>
+    </data>
+    <data name="StructureIntro" xml:space="preserve">
+        <value>هر جعبه یکی از پروژه‌های راه‌حل است و هر خط یک ارجاع. یکی را انتخاب کنید تا ببینید چه چیزی در آن است.</value>
+    </data>
+    <data name="StructureSelectHint" xml:space="preserve">
+        <value>یک پروژه را انتخاب کنید تا ببینید چه چیزی در آن است.</value>
+    </data>
+    <data name="StructureLoadFailed" xml:space="preserve">
+        <value>ساختار پروژه بارگذاری نشد.</value>
+    </data>
+    <data name="StructureEmpty" xml:space="preserve">
+        <value>پروژه‌ای برای نمایش نیست.</value>
+    </data>
+    <data name="StructureReferences" xml:space="preserve">
+        <value>ارجاع‌ها: {0}</value>
+    </data>
+    <data name="StructureKindClient" xml:space="preserve">
+        <value>کلاینت</value>
+    </data>
+    <data name="StructureKindServer" xml:space="preserve">
+        <value>سرور</value>
+    </data>
+    <data name="StructureKindShared" xml:space="preserve">
+        <value>مشترک</value>
+    </data>
+    <data name="StructureKindTools" xml:space="preserve">
+        <value>ابزارها</value>
+    </data>
+    <data name="StructureClientWebRole" xml:space="preserve">
+        <value>در مرورگر اجرا می‌شود</value>
+    </data>
+    <data name="StructureClientWebDescription" xml:space="preserve">
+        <value>نسخه WebAssembly: برنامه را در مرورگر اجرا می‌کند، بدون اینترنت هم کار می‌کند و به‌شکل برنامه وب نصب می‌شود.</value>
+    </data>
+    <data name="StructureClientMauiRole" xml:space="preserve">
+        <value>اندروید، iOS، macOS، ویندوز</value>
+    </data>
+    <data name="StructureClientMauiDescription" xml:space="preserve">
+        <value>برنامه بومی برای اندروید، iOS، macOS و ویندوز که همان صفحه‌ها درونش اجرا می‌شوند.</value>
+    </data>
+    <data name="StructureClientWindowsRole" xml:space="preserve">
+        <value>برنامه رومیزی ویندوز</value>
+    </data>
+    <data name="StructureClientWindowsDescription" xml:space="preserve">
+        <value>یک برنامه رومیزی سبک برای ویندوز با به‌روزرسانی خودکار که همان صفحه‌ها را اجرا می‌کند.</value>
+    </data>
+    <data name="StructureWorkbenchRole" xml:space="preserve">
+        <value>طراحی صفحه با داده نمونه</value>
+    </data>
+    <data name="StructureWorkbenchDescription" xml:space="preserve">
+        <value>همین برنامه: صفحه‌هایی که با داده نمونه و با کامپوننت‌ها و پوسته کلاینت طراحی می‌شوند. هرگز همراه برنامه منتشر نمی‌شود.</value>
+    </data>
+    <data name="StructureClientCoreRole" xml:space="preserve">
+        <value>صفحه‌ها، کامپوننت‌ها، سرویس‌ها</value>
+    </data>
+    <data name="StructureClientCoreDescription" xml:space="preserve">
+        <value>قلب کلاینت: همه صفحه‌ها، کامپوننت‌ها، چیدمان‌ها و سرویس‌های کلاینت، با استایل‌ها و اسکریپت‌های برنامه. همه کلاینت‌ها آن را اجرا می‌کنند.</value>
+    </data>
+    <data name="StructureServerWebRole" xml:space="preserve">
+        <value>میزبانی و رندر برنامه</value>
+    </data>
+    <data name="StructureServerWebDescription" xml:space="preserve">
+        <value>پروژه شروع: صفحه‌ها را روی سرور رندر می‌کند، Blazor Server را اجرا می‌کند و فایل‌های WebAssembly را ارائه می‌دهد.</value>
+    </data>
+    <data name="StructureServerApiRole" xml:space="preserve">
+        <value>API، داده و کارهای پس‌زمینه</value>
+    </data>
+    <data name="StructureServerApiDescription" xml:space="preserve">
+        <value>کنترلرهای API، پایگاه داده و مهاجرت‌هایش، قالب‌های ایمیل، کارهای پس‌زمینه و هاب‌های بلادرنگ.</value>
+    </data>
+    <data name="StructureSharedRole" xml:space="preserve">
+        <value>DTOها و منابع</value>
+    </data>
+    <data name="StructureSharedDescription" xml:space="preserve">
+        <value>آنچه سرور و همه کلاینت‌ها مشترک دارند: قراردادهای داده، enumها، خطاها، سرویس‌های مشترک و متن‌های ترجمه‌شده.</value>
+    </data>
+    <data name="StructureServerSharedRole" xml:space="preserve">
+        <value>سلامت، تله‌متری، پیش‌فرض‌ها</value>
+    </data>
+    <data name="StructureServerSharedDescription" xml:space="preserve">
+        <value>آنچه هر دو پروژه سرور مشترک دارند، مثل بررسی سلامت، تله‌متری و پیش‌فرض‌های سرویس.</value>
+    </data>
+    <data name="StructureAppHostRole" xml:space="preserve">
+        <value>همه را روی سیستم شما اجرا می‌کند</value>
+    </data>
+    <data name="StructureAppHostDescription" xml:space="preserve">
+        <value>پروژه‌ها و پایگاه داده و سرویس‌های لازم را برای توسعه راه می‌اندازد و پروژه Docker Compose را برای انتشار می‌نویسد.</value>
+    </data>
+    <data name="StructureTestsRole" xml:space="preserve">
+        <value>آزمون‌های رابط کاربری و یکپارچگی</value>
+    </data>
+    <data name="StructureTestsDescription" xml:space="preserve">
+        <value>آزمون‌های رابط کاربری و یکپارچگی که سرور واقعی را در حافظه اجرا می‌کنند، با داده آزمایشی و مرورگر واقعی.</value>
+    </data>
 </root>

@@ -36,6 +36,14 @@ public static class WorkbenchPageCatalog
             nameof(WorkbenchStrings.CategoryExplainers),
             ["bit Blow", "BitToggle", "BitTag", "BitMediaQuery"],
             nameof(WorkbenchStrings.DeployCaption)),
+        new("project-structure",
+            nameof(WorkbenchStrings.StructureTitle),
+            nameof(WorkbenchStrings.StructureDescription),
+            BitIconName.Org,
+            typeof(ProjectStructurePage),
+            nameof(WorkbenchStrings.CategoryExplainers),
+            ["bit Blow", "BitMediaQuery", "BitShimmer"],
+            nameof(WorkbenchStrings.StructureCaption)),
     ];
 
     public static WorkbenchPageInfo? Find(string? key) => Pages.FirstOrDefault(p => string.Equals(p.Key, key, StringComparison.OrdinalIgnoreCase));

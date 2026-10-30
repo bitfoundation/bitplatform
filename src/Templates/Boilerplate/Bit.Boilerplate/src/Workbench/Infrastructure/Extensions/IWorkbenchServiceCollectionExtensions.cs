@@ -17,6 +17,7 @@ public static class IWorkbenchServiceCollectionExtensions
             services.AddScoped<BuildingsService>();
             services.AddScoped<AssistantService>();
             services.AddScoped<DeploymentService>();
+            services.AddScoped<ProjectStructureService>();
 
             services.AddRateLimiter(options =>
             {

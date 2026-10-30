@@ -1344,4 +1344,109 @@ Zo verliep elke dag:</value>
     <data name="DeployLiveDescription" xml:space="preserve">
         <value>Iedereen gebruikt nu de nieuwe versie. De apps in de stores worden bijgewerkt zoals elke store ze levert.</value>
     </data>
+    <data name="StructureTitle" xml:space="preserve">
+        <value>Projectstructuur</value>
+    </data>
+    <data name="StructureDescription" xml:space="preserve">
+        <value>Elk project van de solution en hoe ze naar elkaar verwijzen, met wat er in elk project zit.</value>
+    </data>
+    <data name="StructureCaption" xml:space="preserve">
+        <value>Alles op zijn plek</value>
+    </data>
+    <data name="StructureHeading" xml:space="preserve">
+        <value>Hoe je project in elkaar zit</value>
+    </data>
+    <data name="StructureIntro" xml:space="preserve">
+        <value>Elk vak is een project van de solution en elke lijn een verwijzing. Kies er een om te zien wat erin zit.</value>
+    </data>
+    <data name="StructureSelectHint" xml:space="preserve">
+        <value>Kies een project om te zien wat erin zit.</value>
+    </data>
+    <data name="StructureLoadFailed" xml:space="preserve">
+        <value>De projectstructuur kon niet worden geladen.</value>
+    </data>
+    <data name="StructureEmpty" xml:space="preserve">
+        <value>Geen projecten om te tonen.</value>
+    </data>
+    <data name="StructureReferences" xml:space="preserve">
+        <value>Verwijst naar: {0}</value>
+    </data>
+    <data name="StructureKindClient" xml:space="preserve">
+        <value>Client</value>
+    </data>
+    <data name="StructureKindServer" xml:space="preserve">
+        <value>Server</value>
+    </data>
+    <data name="StructureKindShared" xml:space="preserve">
+        <value>Gedeeld</value>
+    </data>
+    <data name="StructureKindTools" xml:space="preserve">
+        <value>Hulpmiddelen</value>
+    </data>
+    <data name="StructureClientWebRole" xml:space="preserve">
+        <value>Draait in de browser</value>
+    </data>
+    <data name="StructureClientWebDescription" xml:space="preserve">
+        <value>De WebAssembly-variant: draait de app in de browser, werkt offline en is als web-app te installeren.</value>
+    </data>
+    <data name="StructureClientMauiRole" xml:space="preserve">
+        <value>Android, iOS, macOS, Windows</value>
+    </data>
+    <data name="StructureClientMauiDescription" xml:space="preserve">
+        <value>De native app voor Android, iOS, macOS en Windows, met dezelfde pagina's erin.</value>
+    </data>
+    <data name="StructureClientWindowsRole" xml:space="preserve">
+        <value>Windows-desktopapp</value>
+    </data>
+    <data name="StructureClientWindowsDescription" xml:space="preserve">
+        <value>Een lichte Windows-desktopapp met automatische updates, met dezelfde pagina's.</value>
+    </data>
+    <data name="StructureWorkbenchRole" xml:space="preserve">
+        <value>Ontwerpt pagina's op voorbeelddata</value>
+    </data>
+    <data name="StructureWorkbenchDescription" xml:space="preserve">
+        <value>Deze app: pagina's ontworpen op voorbeelddata met de componenten en het thema van de client. Wordt nooit met de app uitgerold.</value>
+    </data>
+    <data name="StructureClientCoreRole" xml:space="preserve">
+        <value>Pagina's, componenten, services</value>
+    </data>
+    <data name="StructureClientCoreDescription" xml:space="preserve">
+        <value>Het hart van de client: elke pagina, component, lay-out en clientservice, met de stijlen en scripts van de app. Elke client draait het.</value>
+    </data>
+    <data name="StructureServerWebRole" xml:space="preserve">
+        <value>Host en rendert de app</value>
+    </data>
+    <data name="StructureServerWebDescription" xml:space="preserve">
+        <value>Het startproject: rendert pagina's op de server, draait Blazor Server en levert de WebAssembly-bestanden.</value>
+    </data>
+    <data name="StructureServerApiRole" xml:space="preserve">
+        <value>API, data en taken</value>
+    </data>
+    <data name="StructureServerApiDescription" xml:space="preserve">
+        <value>De API-controllers, de database en de migraties, e-mailsjablonen, achtergrondtaken en realtime hubs.</value>
+    </data>
+    <data name="StructureSharedRole" xml:space="preserve">
+        <value>DTO's en resources</value>
+    </data>
+    <data name="StructureSharedDescription" xml:space="preserve">
+        <value>Wat de server en elke client delen: datacontracten, enums, fouten, gedeelde services en de vertaalde teksten.</value>
+    </data>
+    <data name="StructureServerSharedRole" xml:space="preserve">
+        <value>Gezondheid, telemetrie, standaarden</value>
+    </data>
+    <data name="StructureServerSharedDescription" xml:space="preserve">
+        <value>Wat beide serverprojecten delen, zoals gezondheidscontroles, telemetrie en servicestandaarden.</value>
+    </data>
+    <data name="StructureAppHostRole" xml:space="preserve">
+        <value>Draait alles lokaal</value>
+    </data>
+    <data name="StructureAppHostDescription" xml:space="preserve">
+        <value>Start de projecten en de database en services die ze nodig hebben voor ontwikkeling, en schrijft het Docker Compose-project voor de uitrol.</value>
+    </data>
+    <data name="StructureTestsRole" xml:space="preserve">
+        <value>UI- en integratietests</value>
+    </data>
+    <data name="StructureTestsDescription" xml:space="preserve">
+        <value>UI- en integratietests die de echte server in het geheugen draaien, met testdata en een echte browser.</value>
+    </data>
 </root>
