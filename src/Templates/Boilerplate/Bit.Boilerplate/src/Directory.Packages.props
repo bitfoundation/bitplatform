@@ -51,6 +51,10 @@
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'Sqlite' OR '$(database)' == '') " Include="CommunityToolkit.Aspire.Hosting.Sqlite" Version="13.6.1" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="Aspire.Hosting.SqlServer" Version="13.6.4" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'SqlServer' OR '$(database)' == '') " Include="CommunityToolkit.Aspire.Hosting.SqlServer.Extensions" Version="13.6.1" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="CommunityToolkit.Aspire.Hosting.PostgreSQL.Extensions" Version="13.6.1" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'MySql' OR '$(database)' == '') " Include="CommunityToolkit.Aspire.Hosting.MySql.Extensions" Version="13.6.1" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(redis)' == 'true' OR '$(redis)' == '') " Include="CommunityToolkit.Aspire.Hosting.Redis.Extensions" Version="13.6.1" />
+        <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' != 'Other' OR '$(redis)' == 'true') " Include="CommunityToolkit.Aspire.Hosting.DbGate" Version="13.6.1" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'PostgreSQL' OR '$(database)' == '') " Include="Aspire.Hosting.PostgreSQL" Version="13.6.4" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(database)' == 'MySql' OR '$(database)' == '') " Include="Aspire.Hosting.MySql" Version="13.6.4" />
         <PackageVersion Condition=" ('$(aspire)' == 'true' OR '$(aspire)' == '') AND ('$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '') " Include="Aspire.Hosting.Azure.Storage" Version="13.6.4" />

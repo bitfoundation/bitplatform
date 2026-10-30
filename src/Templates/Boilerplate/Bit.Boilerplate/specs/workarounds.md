@@ -21,4 +21,12 @@ Code that works around a defect in a library, a tool or the platform this app bu
 - **Workaround:** `PublishAsComposeRedis` in `src/Server/Boilerplate.Server.AppHost/Infrastructure/Extensions/DockerComposePublishingExtensions.cs` folds the arguments into the `-c` string, the way run mode does.
 - **Upstream:** https://github.com/microsoft/aspire/issues/21400 (Aspire 13.6.4, reported 2026-10-29).
 - **Remove when:** Aspire's published Redis passes `WithArgs` on to `redis-server`. To check, remove `PublishAsComposeRedis`, publish and deploy, then `CONFIG GET appendonly` on the persistent Redis must still answer `yes`.
+
+## DbGate can't open Redis
+
+- **Symptom:** DbGate's Redis connections never open. In run mode its log says `self-signed certificate`; on the server it speaks TLS to a Redis that has none.
+- **Cause:** the `WithDbGate` of CommunityToolkit.Aspire.Hosting.Redis.Extensions always writes a `rediss://` URL. In run mode Aspire serves Redis over TLS with the developer certificate, which DbGate doesn't trust, and the published Redis has no TLS at all.
+- **Workaround:** `ConfigureDbGate` in `src/Server/Boilerplate.Server.AppHost/Infrastructure/Extensions/IDistributedApplicationBuilderExtensions.cs` turns DbGate's certificate check off in run mode only (`NODE_TLS_REJECT_UNAUTHORIZED=0`), and `ConfigureDockerComposePublishing` in `src/Server/Boilerplate.Server.AppHost/Infrastructure/Extensions/DockerComposePublishingExtensions.cs` rewrites the published URLs to `redis://`.
+- **Upstream:** not reported yet.
+- **Remove when:** the toolkit takes the scheme from the Redis resource and DbGate trusts Aspire's certificate. To check, remove both, then open each Redis in DbGate with `aspire start` and on a deployed server.
 <!--#endif-->

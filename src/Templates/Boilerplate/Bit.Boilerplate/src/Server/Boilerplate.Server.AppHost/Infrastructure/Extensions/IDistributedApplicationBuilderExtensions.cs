@@ -39,8 +39,7 @@ public static class IDistributedApplicationBuilderExtensions
         public IResourceBuilder<RedisResource> AddRedisCache()
         {
             return builder.AddRedis("redis-cache")
-                .WithRedisInsight(redisInsight => redisInsight.WithExplicitStart())
-                .WithRedisCommander(redisCommander => redisCommander.WithExplicitStart())
+                .WithDbGate()
                 .WithImage("redis", "8")
                 .WithArgs(
                     "--save", "",                        // Backend API has its own L1 in-memory cache, no need to have RDB snapshots for the L2 redis cache in case of failures.
@@ -58,8 +57,7 @@ public static class IDistributedApplicationBuilderExtensions
         public IResourceBuilder<RedisResource> AddRedisPersistent()
         {
             return builder.AddRedis("redis-persistent")
-                .WithRedisInsight(redisInsight => redisInsight.WithExplicitStart())
-                .WithRedisCommander(redisCommander => redisCommander.WithExplicitStart())
+                .WithDbGate()
                 .WithImage("redis", "8")
                 .WithDataVolume()
                 .WithArgs(
@@ -82,7 +80,7 @@ public static class IDistributedApplicationBuilderExtensions
         public IResourceBuilder<SqlServerDatabaseResource> AddSqlServer()
         {
             return builder.AddSqlServer("sqlserver")
-                .WithDbGate(dbGate => dbGate.WithDataVolume().WithExplicitStart())
+                .WithDbGate()
                 .WithDataVolume()
                 .WithImage("mssql/server", "2025-latest") // Sql server 2025 supports embedded vector search.
                 .WithOtlpExporter()
@@ -93,13 +91,13 @@ public static class IDistributedApplicationBuilderExtensions
 
         //#if (database == "PostgreSQL")
         /// <summary>
-        /// Adds a PostgreSQL Server instance with pgAdmin and a database named <c>postgresdb</c>.
+        /// Adds a PostgreSQL Server instance with DbGate management UI and a database named <c>postgresdb</c>.
         /// Uses pgvector (pg18) image which supports embedded vector search.
         /// </summary>
         public IResourceBuilder<PostgresDatabaseResource> AddPostgreSQL()
         {
             return builder.AddPostgres("postgresserver")
-                .WithPgAdmin(pgAdmin => pgAdmin.WithExplicitStart())
+                .WithDbGate()
                 .WithV18DataVolume()
                 .WithOptimizedSetup()
                 .WithImage("pgvector/pgvector", "pg18") // pgvector supports embedded vector search.
@@ -111,12 +109,12 @@ public static class IDistributedApplicationBuilderExtensions
 
         //#if (database == "MySql")
         /// <summary>
-        /// Adds a MySQL server instance with phpMyAdmin and a database named <c>mysqldb</c>.
+        /// Adds a MySQL server instance with DbGate management UI and a database named <c>mysqldb</c>.
         /// </summary>
         public IResourceBuilder<MySqlDatabaseResource> AddMySql()
         {
             return builder.AddMySql("mysqlserver")
-                .WithPhpMyAdmin(phpMyAdmin => phpMyAdmin.WithExplicitStart())
+                .WithDbGate()
                 .WithDataVolume()
                 .WithOtlpExporter()
                 .PublishAsHealthyComposeService("mysqladmin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent")
@@ -126,7 +124,7 @@ public static class IDistributedApplicationBuilderExtensions
 
         //#if (database == "Sqlite")
         /// <summary>
-        /// Adds a SQLite database instance with a web-based management UI.
+        /// Adds a SQLite database instance with DbGate management UI.
         /// </summary>
         public IResourceBuilder<IResourceWithConnectionString> AddSqlite()
         {
@@ -134,8 +132,48 @@ public static class IDistributedApplicationBuilderExtensions
             if (builder.ExecutionContext.IsPublishMode)
                 return builder.AddConnectionString("sqlite", ReferenceExpression.Create($"Data Source=/container_volume/App_Data/BoilerplateDb.db;"));
 
-            return builder.AddSqlite("sqlite", databaseFileName: "BoilerplateDb.db")
-                .WithSqliteWeb(sqliteWeb => sqliteWeb.WithExplicitStart());
+            var databasePath = Path.GetTempPath();
+
+            // DbGate's Aspire integration has no WithDbGate for SQLite, so the database's folder is mounted into it and the
+            // connection is added the way WithDbGate adds the others.
+            builder.AddDbGate("dbgate")
+                .WithBindMount(databasePath, "/sqlite")
+                .WithEnvironment(context =>
+                {
+                    context.EnvironmentVariables["LABEL_sqlite"] = "sqlite";
+                    context.EnvironmentVariables["ENGINE_sqlite"] = "sqlite@dbgate-plugin-sqlite";
+                    context.EnvironmentVariables["FILE_sqlite"] = "/sqlite/BoilerplateDb.db";
+                    context.EnvironmentVariables["CONNECTIONS"] = context.EnvironmentVariables.TryGetValue("CONNECTIONS", out var connections) ? $"{connections},sqlite" : "sqlite";
+                });
+
+            return builder.AddSqlite("sqlite", databasePath, "BoilerplateDb.db");
+        }
+        //#endif
+
+        //#if (database != "Other" || redis == true)
+        /// <summary>
+        /// DbGate is the one web UI for the database and both Redis instances, which join it with <c>WithDbGate</c>, so call
+        /// this after adding them. In run mode it starts from the dashboard; published, it runs on the server too (See
+        /// ConfigureDockerComposePublishing).
+        /// </summary>
+        public IDistributedApplicationBuilder ConfigureDbGate()
+        {
+            if (builder.Resources.OfType<DbGateContainerResource>().SingleOrDefault() is not { } dbGate)
+                return builder;
+
+            builder.CreateResourceBuilder(dbGate)
+                .WithImageTag("7.3.3")
+                .WithDataVolume()
+                .WithExplicitStart();
+            //#if (redis == true)
+
+            // In run mode Aspire serves Redis over TLS with the developer certificate, which DbGate doesn't trust (See
+            // specs/workarounds.md). It only reaches the containers on this machine, so it skips the check there.
+            if (builder.ExecutionContext.IsRunMode)
+                builder.CreateResourceBuilder(dbGate).WithEnvironment("NODE_TLS_REJECT_UNAUTHORIZED", "0");
+            //#endif
+
+            return builder;
         }
         //#endif
 

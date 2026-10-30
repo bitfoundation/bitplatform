@@ -84,6 +84,12 @@ or one each), a domain, a Cloudflare account and the services of section 5. Then
   touch Production.
 - The deploy job keeps the environment's Compose files in `~/deployments/<project>-<environment>` of the runner's
   user. Leave that folder in place: every later deployment, and every `docker compose` command by hand, works from it.
+- The Aspire dashboard, with the logs, traces and metrics it keeps across restarts, and DbGate, for the database and
+  Redis, run on the VM too and listen on its loopback only: `127.0.0.1` for Production and `127.0.0.2` for Test, on
+  ports `18888` and `3000`. Show the user how to open them through SSH, for Production
+  `ssh -L 18888:127.0.0.1:18888 -L 3000:127.0.0.1:3000 <vm>`, then `http://localhost:18888` and
+  `http://localhost:3000`; the dashboard's sign-in link is in `docker compose logs compose-dashboard`. DbGate has no
+  sign-in of its own, so neither gets a route on the tunnel unless a Cloudflare Access policy stands in front of it.
 - Once the tunnel of section 8 runs and SSH reaches the VM through it, close every inbound port the way section 2
   says, and leave outbound open.
 - Plan the backups with the user. Every Docker volume of the Compose project that holds data needs a copy off the VM:
@@ -273,5 +279,5 @@ project up, and fails unless every container is healthy and the public address a
 - Check the AI chat and a voice call there too.
 <!--#endif-->
 - Once Test works, Production follows: a release PR from `develop` into `main`, merged on the user's go-ahead.
-- Hand back a short list: what runs where, the public addresses, where each secret lives, what is backed up, and how to
-  roll back (deploy the images of the last good commit again, or revert the merge).
+- Hand back a short list: what runs where, the public addresses, how to open the dashboards, where each secret lives,
+  what is backed up, and how to roll back (deploy the images of the last good commit again, or revert the merge).

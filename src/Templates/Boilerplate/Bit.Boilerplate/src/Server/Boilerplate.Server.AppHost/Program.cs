@@ -3,10 +3,9 @@ using Microsoft.Extensions.Hosting;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-// `aspire publish` turns the application model into the Docker Compose project the CD deploys to the server; run mode
-// leaves this resource out of the model. See `ConfigureDockerComposePublishing` below.
-var compose = builder.AddDockerComposeEnvironment("compose")
-    .WithDashboard(false);
+// `aspire publish` turns the application model into the Docker Compose project the CD deploys to the server, the Aspire
+// dashboard included; run mode leaves this resource out of the model. See `ConfigureDockerComposePublishing` below.
+var compose = builder.AddDockerComposeEnvironment("compose");
 
 // Check out appsettings.Development.json for credentials/passwords settings.
 
@@ -128,8 +127,13 @@ builder.AddCloudflareTunnels(serverWebProject
     );
 //#endif
 
-// Publish mode only: the registry the images go to, the migrations service, health checks, restart policies and the
-// settings the deployed server reads from the deploy job.
+//#if (database != "Other" || redis == true)
+// DbGate, the one web UI for the database and Redis. In run mode it starts from the Aspire dashboard.
+builder.ConfigureDbGate();
+
+//#endif
+// Publish mode only: the registry the images go to, the migrations service, health checks, restart policies, the
+// dashboards on the server's loopback and the settings the deployed server reads from the deploy job.
 builder.ConfigureDockerComposePublishing(compose, serverWebProject
     //#if (api == "Standalone")
     , serverApiProject

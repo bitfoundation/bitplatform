@@ -16,9 +16,10 @@ public static class DockerComposePublishingExtensions
         /// <summary>
         /// Publish mode only. Sends the images to the registry the CD names, fixes the apps on port 8080 with no host
         /// port, runs them in the environment they are published for, gives every long-running service a restart policy
-        /// and a health check, adds the one-shot <c>migrations</c> service, and wires in the settings the deploy job
-        /// supplies: the connection strings and parameters of the generated <c>.env</c>, the <c>serverweb.env</c> (and
-        /// <c>serverapi.env</c>) files, and the environment's own <c>AppCertificate</c>.
+        /// and a health check, adds the one-shot <c>migrations</c> service, keeps the Aspire dashboard and DbGate on the
+        /// server's loopback, and wires in the settings the deploy job supplies: the connection strings and parameters of
+        /// the generated <c>.env</c>, the <c>serverweb.env</c> (and <c>serverapi.env</c>) files, and the environment's own
+        /// <c>AppCertificate</c>.
         /// </summary>
         public void ConfigureDockerComposePublishing(
             IResourceBuilder<DockerComposeEnvironmentResource> compose,
@@ -107,9 +108,55 @@ public static class DockerComposePublishingExtensions
                 service.AddVolume(new Volume { Name = "app-certificate-key", Type = "bind", Source = "./AppCertificate.key", Target = "/app/AppCertificate.key", ReadOnly = true });
             });
 
+            // The Aspire dashboard and DbGate listen on the server's loopback only, where SSH reaches them: for Production,
+            // ssh -L 18888:127.0.0.1:18888 -L 3000:127.0.0.1:3000. Each environment has an address of its own, so Test and
+            // Production can share a server.
+            var loopback = builder.Environment.EnvironmentName switch { "Production" => "127.0.0.1", "Test" => "127.0.0.2", _ => "127.0.0.3" };
+
+            // The dashboard keeps its telemetry in SQLite on a volume, so a restart or a deployment doesn't lose it. Aspire's
+            // default image comes from the nightly feed, so the release one is named here.
+            compose.WithDashboard(dashboard => dashboard
+                .WithImage("aspire/dashboard", "13.6")
+                .WithImageRegistry("mcr.microsoft.com")
+                .WithVolume(VolumeNameGenerator.Generate(dashboard, "data"), "/home/app")
+                .WithEnvironment("ASPIRE_DASHBOARD_APPLICATION_NAME", "Boilerplate")
+                .WithEnvironment("ASPIRE_DASHBOARD_PERSISTENCE_MODE", "Resume")
+                .WithEnvironment("ASPIRE_DASHBOARD_DATA_DIRECTORY", "/home/app/dashboard-data"));
+            //#if (database != "Other" || redis == true)
+
+            // DbGate's integration leaves it out of a publish, so it is put back next to the dashboard. It has no sign-in of
+            // its own: a route on the tunnel to it needs Cloudflare Access in front.
+            if (builder.Resources.OfType<DbGateContainerResource>().SingleOrDefault() is { } dbGate)
+            {
+                foreach (var exclusion in dbGate.Annotations.OfType<ManifestPublishingCallbackAnnotation>().ToArray())
+                    dbGate.Annotations.Remove(exclusion);
+
+                builder.CreateResourceBuilder(dbGate).PublishAsDockerComposeService((_, service) =>
+                {
+                    service.Ports.Clear();
+                    service.Ports.Add($"{loopback}:3000:3000");
+                    service.Restart = "unless-stopped";
+                });
+            }
+            //#endif
+
             compose.ConfigureComposeFile(composeFile =>
             {
                 var api = composeFile.Services[apiProject.Resource.Name];
+
+                var dashboardService = composeFile.Services[$"{compose.Resource.Name}-dashboard"];
+                dashboardService.Ports.Clear();
+                dashboardService.Ports.Add($"{loopback}:18888:18888");
+                //#if (redis == true)
+
+                // DbGate's integration always writes rediss:// for Redis, which is right in run mode, where Aspire serves Redis
+                // over TLS. The published Redis has no TLS.
+                if (composeFile.Services.TryGetValue("dbgate", out var dbGateService))
+                {
+                    foreach (var (name, value) in dbGateService.Environment.Where(variable => variable.Key.StartsWith("URL_")).ToArray())
+                        dbGateService.Environment[name] = value.Replace("rediss://", "redis://");
+                }
+                //#endif
 
                 //#if (database == "Sqlite" || filesStorage == "Local")
                 // The api keeps its SQLite database and its files under /container_volume/App_Data whenever that folder
