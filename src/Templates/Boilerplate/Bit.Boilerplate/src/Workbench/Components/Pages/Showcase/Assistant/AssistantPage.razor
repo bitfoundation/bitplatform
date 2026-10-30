@@ -2,7 +2,7 @@
 
 <div class="assistant @(Scenario.Chrome ? null : "bare")">
     <aside class="history">
-        <AssistantHistory Conversations="conversations" Current="current" IsLoading="isLoading" OnSelect="Select" OnNewChat="NewChat" />
+        <AssistantHistory Conversations="conversations" Current="current" IsLoading="isLoading" IsFailed="isFailed" OnSelect="Select" OnNewChat="NewChat" />
     </aside>
 
     <section class="chat">
@@ -162,6 +162,6 @@
 
 <BitPanel @bind-IsOpen="isHistoryOpen" Position="BitPanelPosition.Start">
     <div class="history-sheet">
-        <AssistantHistory Conversations="conversations" Current="current" IsLoading="isLoading" OnSelect="Select" OnNewChat="NewChat" />
+        <AssistantHistory Conversations="conversations" Current="current" IsLoading="isLoading" IsFailed="isFailed" OnSelect="Select" OnNewChat="NewChat" />
     </div>
 </BitPanel>

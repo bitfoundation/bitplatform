@@ -8,6 +8,8 @@ public partial class AssistantHistory
 
     [Parameter] public bool IsLoading { get; set; }
 
+    [Parameter] public bool IsFailed { get; set; }
+
     [Parameter] public EventCallback<AssistantConversation> OnSelect { get; set; }
 
     [Parameter] public EventCallback OnNewChat { get; set; }

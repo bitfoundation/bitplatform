@@ -10,7 +10,7 @@
         <BitShimmer Height="2.75rem" />
     }
 }
-else if (Conversations.Count is 0)
+else if (IsFailed is false && Conversations.Count is 0)
 {
     <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.AssistantNoHistory)]</BitText>
 }
