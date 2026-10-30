@@ -12,7 +12,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="MSTest" Version="4.5.1" />
+        <PackageReference Include="MSTest" Version="4.5.2" />
         <!-- Boots the demo server's real Program.cs in memory, so the MCP server under test is the
              one the app actually maps at /mcp rather than a re-registration of its pieces. -->
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="11.0.0-rc.3.26522.148" />
