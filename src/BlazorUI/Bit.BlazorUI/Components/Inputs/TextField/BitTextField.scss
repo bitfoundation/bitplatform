@@ -10,7 +10,9 @@
 //   --bit-TextField-focus-border-color      frame color while focused                       (default: the rest frame color; the focus
 //                                                                                            ring is what marks the focus by default)
 //   --bit-TextField-border-width            thickness of the frame and of the underline     (default: $shp-border-width)
-//   --bit-TextField-radius                  corner radius of the frame and its focus ring   (default: $shp-radius-control)
+//   --bit-TextField-radius                  corner radius of the frame and its focus ring;
+//                                           the parts at its ends (the affixes, the input
+//                                           and the buttons) take the corners of the frame  (default: $shp-radius-control)
 //   --bit-TextField-shadow                  elevation of the frame                          (default: none)
 //   --bit-TextField-min-height              smallest height of the frame                    (default: $siz-ctrl-md)
 //   --bit-TextField-focus-color             focus ring color                                (default: $clr-pri-focus)
@@ -133,6 +135,8 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
             cursor: default;
             color: var(--bit-TextField-disabled-color, #{$clr-fg-dis});
             background: var(--bit-TextField-disabled-background, #{$clr-bg-dis});
+            // Published too, for the cover over an autofilled value, which paints the fill of the frame through it.
+            --bit-tfl-fgp-bg: var(--bit-TextField-disabled-background, #{$clr-bg-dis});
             border: var(--bit-TextField-border-width, #{$shp-border-width}) $shp-border-style var(--bit-TextField-disabled-border-color, #{$clr-brd-dis});
         }
 
@@ -273,6 +277,28 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
                 background-color var(--bit-tfl-dur) $mot-easing;
 }
 
+// Whatever sits at an end of the frame takes the frame's corners on that end, and only there: the fill of an affix
+// or of a button under the pointer, and the ghost wrapper, which hands them on to the input and to the overlay under
+// it - the cover over an autofilled value and the scrollbar of a multiline field would otherwise be drawn square over
+// the arcs of the border. They are inherited rather than read off --bit-TextField-radius, so they follow the frame
+// however it is shaped: a radius of several corners, or one given to the frame itself through Styles or Classes. The
+// cost is the border's width: what is inherited is the outer corner, while the parts sit against the inner arc of the
+// border, and an inherited value cannot be shortened. The frame itself is not clipped instead, since that would cut
+// off the focus rings of the buttons inside it and the required marker drawn outside it.
+//
+// An end a template holds is left alone: what the template leaves there - text, which no selector can see, or
+// nothing at all - is the app's own and unknown here. The weight is a single class, so a part shaped through Classes
+// keeps the shape it was given.
+:where(.bit-tfl:not(.bit-tfl-ptm) > .bit-tfl-wrp > .bit-tfl-fgp) > :first-child {
+    border-start-start-radius: inherit;
+    border-end-start-radius: inherit;
+}
+
+:where(.bit-tfl:not(.bit-tfl-stm) > .bit-tfl-wrp > .bit-tfl-fgp) > :last-child {
+    border-start-end-radius: inherit;
+    border-end-end-radius: inherit;
+}
+
 // A frame that darkens under the pointer is what tells a mouse user the whole box is the target, not only
 // the text inside it. It is drawn on pointer devices alone - a touch device would keep the hover state
 // painted after the tap - and it never overrides the focused or the rejected frame, both of which say
@@ -303,7 +329,10 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
     min-width: 0;
     height: 100%;
     border: none;
-    border-radius: 0;
+    // The corners of the ghost wrapper around it, which takes them from the frame at an end of it (see above). The
+    // shorthand copies them as the physical corners they are, so an input given a direction of its own - a dir="ltr"
+    // one in a right-to-left field - is still rounded on the side the frame is, not on its own end.
+    border-radius: inherit;
     box-shadow: none;
     box-sizing: border-box;
     text-overflow: ellipsis;
@@ -324,17 +353,21 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
     }
 
     // Chrome paints an autofilled field with a background of its own that no background-color declaration
-    // can override, which turns a dark themed field into a pale yellow box. An inset shadow the size of the
-    // element is what paints over it, and the text color is handed over through -webkit-text-fill-color for
-    // the same reason. The out-of-reach delay is not an animation but the known way to hold back the fade
-    // the browser runs over its own background color, which would otherwise wash the shadow out.
+    // can override, which turns a dark themed field into a pale yellow box. An inset shadow is what paints over
+    // it, and the text color is handed over through -webkit-text-fill-color for the same reason. The shadow is
+    // the fill the frame has at that moment, read the way the frame reads it, so it follows the hovered and the
+    // disabled fill too. An inset shadow only reaches in from each edge as far as its spread, so the spread is
+    // the larger side of the viewport rather than a fixed length a large textarea outgrows: a field would have
+    // to be twice that size both ways for its middle to show through. The out-of-reach delay is not an
+    // animation but the known way to hold back the fade the browser runs over its own background color, which
+    // would otherwise wash the shadow out.
     &:-webkit-autofill,
     &:-webkit-autofill:hover,
     &:-webkit-autofill:focus,
     &:-webkit-autofill:active {
         caret-color: var(--bit-TextField-caret-color, var(--bit-TextField-color, #{$clr-fg-pri}));
         -webkit-text-fill-color: var(--bit-TextField-color, #{$clr-fg-pri});
-        -webkit-box-shadow: 0 0 0 spacing(12.5) var(--bit-tfl-clr-bg, var(--bit-TextField-background, #{$clr-bg-pri})) inset;
+        -webkit-box-shadow: 0 0 0 100vmax var(--bit-tfl-fgp-bg, var(--bit-tfl-clr-bg, var(--bit-TextField-background, #{$clr-bg-pri}))) inset;
         transition: background-color 0s 100000s;
     }
 }
@@ -374,14 +407,6 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
     color: var(--bit-tfl-clr, var(--bit-TextField-button-color, var(--bit-TextField-accent-color, #{$clr-pri})));
     width: var(--bit-tfl-btn-width, var(--bit-TextField-button-width, #{$siz-ctrl-md}));
     min-height: var(--bit-tfl-inp-min-height);
-
-    // The button is the last thing in the frame often enough that its corner has to follow the frame's,
-    // and only then: rounding it while an icon or a suffix still comes after it would draw a rounded chip
-    // in the middle of the field the moment the button is hovered.
-    &:last-child {
-        border-start-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
-        border-end-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
-    }
 
     &:focus-visible {
         @include focus-ring-own(var(--bit-tfl-clr-focus, var(--bit-TextField-focus-color)));
@@ -435,13 +460,6 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
     font-size: var(--bit-tfl-font-size, var(--bit-TextField-font-size, #{$tg-fs-sm}));
     min-height: var(--bit-tfl-inp-min-height);
 
-    // Only when it is the last thing in the frame: a reveal button, an icon or a suffix after it would
-    // otherwise leave a rounded hover chip sitting in the middle of the field.
-    &:last-child {
-        border-start-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
-        border-end-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
-    }
-
     // The glyph follows the icon size of the field rather than a size of its own, so it stays the same
     // mark as the reveal password one next to it and grows along with a Large field instead of staying
     // the 12px of a Small one.
@@ -493,19 +511,6 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
     color: var(--bit-tfl-icb-clr, var(--bit-TextField-icon-color, #{$clr-fg-pri}));
     width: var(--bit-tfl-btn-width, var(--bit-TextField-button-width, #{$siz-ctrl-md}));
     min-height: var(--bit-tfl-inp-min-height);
-
-    // Only when it is the last thing in the frame: a suffix after it would otherwise leave a rounded
-    // hover chip sitting in the middle of the field.
-    &:last-child {
-        border-start-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
-        border-end-end-radius: var(--bit-TextField-radius, #{$shp-radius-control});
-    }
-
-    // The leading one rounds the other corner instead, for the same reason.
-    &:first-child {
-        border-start-start-radius: var(--bit-TextField-radius, #{$shp-radius-control});
-        border-end-start-radius: var(--bit-TextField-radius, #{$shp-radius-control});
-    }
 
     &:focus-visible {
         @include focus-ring-own(var(--bit-tfl-clr-focus, var(--bit-TextField-focus-color)));
@@ -944,11 +949,42 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
     pointer-events: none;
     white-space: pre;
     box-sizing: border-box;
+    // The same corners as the input it lies under, so a scrollbar of its own is not left square where the input's
+    // is rounded.
+    border-radius: inherit;
     color: var(--bit-TextField-ghost-color, #{$clr-fg-ter});
     padding: var(--bit-TextField-padding, 0 #{spacing(1)});
     font-weight: var(--bit-TextField-font-weight, #{$tg-fw-regular});
     font-family: var(--bit-TextField-font-family, #{$tg-font-family});
     font-size: var(--bit-tfl-font-size, var(--bit-TextField-font-size, #{$tg-fs-sm}));
+}
+
+// In a multiline field the textarea and the overlay under it are scroll containers, and a rounded corner on one clips
+// what it scrolls: the text where it begins, once the radius outgrows the padding, and the grip of a Resizable field.
+// Outside the cover over an autofilled value, which has to follow the frame wherever it reaches, they keep only the
+// corners at the inline end, where their scrollbar runs - none at all under AutoHeight, which leaves them nothing to
+// scroll - and never the corner the grip is drawn in. The corners are their own logical ones, since it is their own
+// direction the text begins and the grip is drawn by. The weight stays a single class, as everywhere else.
+:where(.bit-tfl-mln, .bit-tfl-mlf) {
+    .bit-tfl-inp:where(textarea:not(:-webkit-autofill)),
+    .bit-tfl-gho {
+        border-start-start-radius: 0;
+        border-end-start-radius: 0;
+    }
+}
+
+:where(.bit-tfl-mla) {
+    .bit-tfl-inp:where(textarea:not(:-webkit-autofill)),
+    .bit-tfl-gho {
+        border-radius: 0;
+    }
+}
+
+:where(.bit-tfl-mln:not(.bit-tfl-mla)) {
+    .bit-tfl-inp:where(textarea),
+    .bit-tfl-gho {
+        border-end-end-radius: 0;
+    }
 }
 
 
