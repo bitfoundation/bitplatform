@@ -275,3 +275,7 @@ project up, and fails unless every container is healthy and the public address a
 - Once Test works, Production follows: a release PR from `develop` into `main`, merged on the user's go-ahead.
 - Hand back a short list: what runs where, the public addresses, how to open the dashboards, where each secret lives,
   what is backed up, and how to roll back (deploy the images of the last good commit again, or revert the merge).
+- After the first deployment to Production, unless the database already has a backup, end with a warning the user
+  can't miss: nothing in this project backs the database up, so a lost disk or a bad migration can lose every record.
+  Ask them to arrange a backup kept off the machine the database runs on, and to restore it once to see it works,
+  before real users arrive.
