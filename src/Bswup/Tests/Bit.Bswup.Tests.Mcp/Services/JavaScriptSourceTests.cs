@@ -1,5 +1,6 @@
 ﻿using Bit.Bswup.Demo.Server.Services;
 using Bit.Bswup.Tests.Mcp.TestInfra;
+using Microsoft.AspNetCore.Http;
 
 namespace Bit.Bswup.Tests.Mcp.Services;
 
@@ -179,6 +180,14 @@ public class JavaScriptSourceTests
 
         Assert.IsFalse(assignments.Any(a => a.Name == "importScripts"),
             "importScripts is a call, not an assignment");
+    }
+
+    [TestMethod]
+    public void ReadAssignments_RefusesChainedAssignmentsThatOverlapPastTheLimit()
+    {
+        var code = string.Concat(Enumerable.Repeat("self.a = ", 7_000)) + "1;";
+
+        Assert.ThrowsExactly<BadHttpRequestException>(() => Read(code));
     }
 
     // -- ReadLiterals ----------------------------------------------------------
