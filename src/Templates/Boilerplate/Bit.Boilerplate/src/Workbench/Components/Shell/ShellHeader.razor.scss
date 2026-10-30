@@ -13,6 +13,10 @@
     backdrop-filter: saturate(180%) blur(12px);
     background-color: color-mix(in srgb, #{$bit-color-background-primary} 82%, transparent);
     border-bottom: 1px solid $bit-color-border-tertiary;
+
+    &.wide {
+        padding: 0 1.25rem;
+    }
 }
 
 .brand {

@@ -1,0 +1,166 @@
+@page "/screenshots"
+@inherits WorkbenchComponentBase
+
+<PageTitle>@Localizer[nameof(WorkbenchStrings.StoreScreenshotsPageTitle)]</PageTitle>
+
+<div class="studio-page">
+    <ShellHeader Wide />
+
+    <div class="studio">
+        <aside class="settings">
+            <div class="intro">
+                <h1>@Localizer[nameof(WorkbenchStrings.StoreScreenshots)]</h1>
+                <p>@Localizer[nameof(WorkbenchStrings.StoreScreenshotsLead)]</p>
+            </div>
+
+            <section>
+                <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.Store)]</BitText>
+                <div class="stores" role="radiogroup" aria-label="@Localizer[nameof(WorkbenchStrings.Store)]">
+                    @foreach (var store in stores)
+                    {
+                        <button type="button" role="radio" aria-checked="@(selectedStore == store ? "true" : "false")"
+                                class="store-option @(selectedStore == store ? "selected" : null)" @onclick="() => SelectStore(store)">
+                            <span class="store-icon"><BitIcon IconName="@store.IconName" /></span>
+                            <span class="store-text">
+                                <span class="store-name">@store.Name</span>
+                                <span class="store-sizes">@GetSizeCountText(store)</span>
+                            </span>
+                            <span class="store-check"><BitIcon IconName="@BitIconName.CheckMark" Size="BitSize.Small" /></span>
+                        </button>
+                    }
+                </div>
+                <div class="store-rule">
+                    <BitIcon IconName="@BitIconName.Info" Size="BitSize.Small" />
+                    <span>@Localizer[selectedStore.RuleKey]</span>
+                </div>
+            </section>
+
+            <section>
+                <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.Look)]</BitText>
+                <BitToggle Text="@Localizer[nameof(WorkbenchStrings.FrameAndCaption)]" @bind-Value="framed" IsEnabled="selectedStore.AllowsFraming" />
+                @if (IsFramed)
+                {
+                    <div class="swatches" role="radiogroup" aria-label="@Localizer[nameof(WorkbenchStrings.Backdrop)]">
+                        @foreach (var backdrop in Enum.GetValues<WorkbenchBackdrop>())
+                        {
+                            <button type="button" role="radio" aria-checked="@(selectedBackdrop == backdrop ? "true" : "false")"
+                                    class="swatch @backdrop.ToString().ToLowerInvariant() @(selectedBackdrop == backdrop ? "selected" : null)"
+                                    title="@Localizer[$"Backdrop{backdrop}"]" aria-label="@Localizer[$"Backdrop{backdrop}"]"
+                                    @onclick="() => selectedBackdrop = backdrop"></button>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.PlainScreenshotsHint)]</BitText>
+                }
+
+                <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.Theme)]</BitText>
+                <div class="segments">
+                    @foreach (var theme in themes)
+                    {
+                        <BitButton Size="BitSize.Small" Variant="@(selectedTheme == theme ? BitVariant.Fill : BitVariant.Outline)"
+                                   IconName="@ScenarioInspector.GetThemeIconName(theme)"
+                                   OnClick="() => selectedTheme = theme">@Localizer[$"Theme{theme}"]</BitButton>
+                    }
+                </div>
+
+                @if (CultureInfoManager.InvariantGlobalization is false)
+                {
+                    <BitDropdown Items="cultureItems"
+                                 Label="@Localizer[nameof(WorkbenchStrings.Language)]"
+                                 @bind-Value="selectedCulture"
+                                 Responsive
+                                 FitWidth />
+                }
+            </section>
+
+            <section>
+                <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.Pages)]</BitText>
+                @foreach (var item in WorkbenchPageCatalog.Pages)
+                {
+                    var isSelected = selectedPages.Contains(item.Key);
+                    <div class="page-option">
+                        <BitCheckbox Label="@Localizer[item.TitleKey]" Value="isSelected" ValueChanged="(bool value) => TogglePage(item.Key, value)" />
+                        @if (IsFramed && isSelected)
+                        {
+                            <BitTextField Value="@captions.GetValueOrDefault(item.Key)"
+                                          ValueChanged="(string? value) => SetCaption(item.Key, value)"
+                                          Placeholder="@Localizer[item.CaptionKey ?? item.TitleKey]"
+                                          AriaLabel="@Localizer[nameof(WorkbenchStrings.Caption)]"
+                                          MaxLength="WorkbenchComposition.MaxCaptionLength"
+                                          Immediate
+                                          DebounceTime="500" />
+                        }
+                    </div>
+                }
+                @if (IsFramed)
+                {
+                    <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.CaptionHint)]</BitText>
+                }
+            </section>
+
+            <div class="download">
+                <BitButton FullWidth IconName="@BitIconName.Download" IsEnabled="ShotCount is > 0 and <= MaxShotsPerDownload" OnClick="DownloadAll">
+                    @Localizer[nameof(WorkbenchStrings.DownloadAllScreenshots), ShotCount]
+                </BitButton>
+                @if (ShotCount > MaxShotsPerDownload)
+                {
+                    <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.TooManyScreenshots), MaxShotsPerDownload]</BitText>
+                }
+            </div>
+        </aside>
+
+        <main class="gallery">
+            @if (selectedPages.Count is 0)
+            {
+                <div class="empty">
+                    <BitIcon IconName="@BitIconName.PhotoCollection" />
+                    <p>@Localizer[nameof(WorkbenchStrings.NoPagesSelected)]</p>
+                </div>
+            }
+            else
+            {
+                @foreach (var device in StoreDevices)
+                {
+                    var (pixelWidth, pixelHeight) = device.GetPixels(rotated: false);
+                    <section class="size-group">
+                        <header>
+                            <h2>@device.Name</h2>
+                            <span class="size">@FormattableString.Invariant($"{pixelWidth} × {pixelHeight}")</span>
+                            <span class="note">@Localizer[GetNoteKey(device)]</span>
+                        </header>
+                        <div class="shots @(device.IsLandscapeByDefault ? "landscape" : "portrait")">
+                            @foreach (var item in SelectedPages)
+                            {
+                                var previewUrl = WorkbenchUrls.Preview(item.Key, GetScenario(device), GetComposition(item));
+                                <figure class="shot">
+                                    <div class="pane-stage"
+                                         style="@FormattableString.Invariant($"aspect-ratio:{device.Width}/{device.Height}")"
+                                         data-frame-width="@device.Width"
+                                         data-frame-height="@device.Height"
+                                         data-fit-width="true">
+                                        <div class="pane-scaler">
+                                            <iframe @key="previewUrl" src="@previewUrl" loading="lazy" width="@device.Width" height="@device.Height" title="@Localizer[item.TitleKey]"></iframe>
+                                        </div>
+                                        <div class="pane-loading">
+                                            <BitRingLoading Size="BitSize.Small" />
+                                        </div>
+                                    </div>
+                                    <figcaption>
+                                        <span class="shot-title">@Localizer[item.TitleKey]</span>
+                                        <BitButton IconOnly Size="BitSize.Small" Variant="BitVariant.Text"
+                                                   IconName="@BitIconName.Download"
+                                                   Title="@Localizer[nameof(WorkbenchStrings.DownloadPng)]"
+                                                   AriaLabel="@Localizer[nameof(WorkbenchStrings.DownloadPng)]"
+                                                   OnClick="() => Download(item, device)" />
+                                    </figcaption>
+                                </figure>
+                            }
+                        </div>
+                    </section>
+                }
+            }
+        </main>
+    </div>
+</div>

@@ -5,5 +5,12 @@
 @if (pageInfo is not null)
 {
     <PageTitle>@Localizer[pageInfo.TitleKey]</PageTitle>
-    <PreviewSurface Page="pageInfo" ShowStatusBar />
+    @if (composition is null)
+    {
+        <PreviewSurface Page="pageInfo" ShowStatusBar />
+    }
+    else
+    {
+        <StoreComposition Page="pageInfo" Composition="composition" />
+    }
 }

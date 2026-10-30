@@ -942,4 +942,106 @@
     <data name="HomeFooter" xml:space="preserve">
         <value>The workbench is part of every bit Boilerplate project. It runs only on your machine unless you choose to publish it.</value>
     </data>
+    <data name="PosDashboardCaption" xml:space="preserve">
+        <value>Every sale, live, on one screen</value>
+    </data>
+    <data name="BuildingsCaption" xml:space="preserve">
+        <value>All your buildings on one map</value>
+    </data>
+    <data name="StoreScreenshotsPageTitle" xml:space="preserve">
+        <value>Store screenshots · Workbench</value>
+    </data>
+    <data name="StoreScreenshotsLead" xml:space="preserve">
+        <value>Pixel-exact images in the sizes each store asks for, taken by a real browser from your real pages.</value>
+    </data>
+    <data name="Store" xml:space="preserve">
+        <value>Store</value>
+    </data>
+    <data name="StoreSizeCount" xml:space="preserve">
+        <value>{0} sizes</value>
+    </data>
+    <data name="Look" xml:space="preserve">
+        <value>Look</value>
+    </data>
+    <data name="FrameAndCaption" xml:space="preserve">
+        <value>Device frame and caption</value>
+    </data>
+    <data name="Backdrop" xml:space="preserve">
+        <value>Background</value>
+    </data>
+    <data name="BackdropBrand" xml:space="preserve">
+        <value>App color</value>
+    </data>
+    <data name="BackdropMidnight" xml:space="preserve">
+        <value>Midnight</value>
+    </data>
+    <data name="BackdropSunset" xml:space="preserve">
+        <value>Sunset</value>
+    </data>
+    <data name="BackdropOcean" xml:space="preserve">
+        <value>Ocean</value>
+    </data>
+    <data name="BackdropForest" xml:space="preserve">
+        <value>Forest</value>
+    </data>
+    <data name="BackdropPaper" xml:space="preserve">
+        <value>Paper</value>
+    </data>
+    <data name="PlainScreenshotsHint" xml:space="preserve">
+        <value>Plain screenshots show the page only, edge to edge.</value>
+    </data>
+    <data name="Caption" xml:space="preserve">
+        <value>Caption</value>
+    </data>
+    <data name="CaptionHint" xml:space="preserve">
+        <value>Leave a caption empty to use the translated default.</value>
+    </data>
+    <data name="DownloadAllScreenshots" xml:space="preserve">
+        <value>Download all ({0})</value>
+    </data>
+    <data name="TooManyScreenshots" xml:space="preserve">
+        <value>Choose fewer pages to download up to {0} images at once.</value>
+    </data>
+    <data name="NoPagesSelected" xml:space="preserve">
+        <value>Choose at least one page to see its screenshots.</value>
+    </data>
+    <data name="DownloadPng" xml:space="preserve">
+        <value>Download PNG</value>
+    </data>
+    <data name="StoreNoteIphoneRequired" xml:space="preserve">
+        <value>Required for iPhone apps</value>
+    </data>
+    <data name="StoreNoteIphoneOptional" xml:space="preserve">
+        <value>Optional, for smaller iPhones</value>
+    </data>
+    <data name="StoreNoteIpad" xml:space="preserve">
+        <value>Required if the app runs on iPad</value>
+    </data>
+    <data name="StoreNoteMac" xml:space="preserve">
+        <value>For the Mac App Store</value>
+    </data>
+    <data name="StoreNotePlayPhone" xml:space="preserve">
+        <value>At least two phone screenshots</value>
+    </data>
+    <data name="StoreNotePlayTablet" xml:space="preserve">
+        <value>Shown to tablet and Chromebook users</value>
+    </data>
+    <data name="StoreNoteMicrosoft" xml:space="preserve">
+        <value>The recommended 4K size</value>
+    </data>
+    <data name="StoreNoteOther" xml:space="preserve">
+        <value>Extra size</value>
+    </data>
+    <data name="StoreRuleAppStore" xml:space="preserve">
+        <value>Frames and captions are welcome. The first three screenshots matter most.</value>
+    </data>
+    <data name="StoreRuleGooglePlay" xml:space="preserve">
+        <value>Google Play discourages device frames. Keep captions short, without words like Best or New.</value>
+    </data>
+    <data name="StoreRuleMicrosoftStore" xml:space="preserve">
+        <value>The Microsoft Store doesn't allow added text or logos. Add captions in Partner Center instead.</value>
+    </data>
+    <data name="StoreSizeCountOne" xml:space="preserve">
+        <value>1 size</value>
+    </data>
 </root>

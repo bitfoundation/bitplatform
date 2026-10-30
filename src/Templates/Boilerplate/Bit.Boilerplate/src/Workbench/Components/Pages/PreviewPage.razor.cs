@@ -4,12 +4,16 @@ public partial class PreviewPage
 {
     private bool isReadyReported;
     private WorkbenchPageInfo? pageInfo;
+    private WorkbenchComposition? composition;
 
     [Parameter] public string? PageKey { get; set; }
 
     protected override void OnInitialized()
     {
-        ScenarioState.Set(WorkbenchScenario.Parse(new Uri(NavigationManager.Uri).Query));
+        var query = new Uri(NavigationManager.Uri).Query;
+
+        ScenarioState.Set(WorkbenchScenario.Parse(query));
+        composition = WorkbenchComposition.Parse(query);
     }
 
     protected override void OnParametersSet()
@@ -59,5 +63,4 @@ public partial class PreviewPage
 
         await JSRuntime.InvokeVoidAsync("workbench.markReady");
     }
-
 }

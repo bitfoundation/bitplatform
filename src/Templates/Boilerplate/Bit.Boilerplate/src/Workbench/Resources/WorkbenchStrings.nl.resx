@@ -942,4 +942,106 @@
     <data name="HomeFooter" xml:space="preserve">
         <value>De werkbank hoort bij elk bit Boilerplate-project. Hij draait alleen op je eigen computer, tenzij je hem publiceert.</value>
     </data>
+    <data name="PosDashboardCaption" xml:space="preserve">
+        <value>Elke verkoop live op één scherm</value>
+    </data>
+    <data name="BuildingsCaption" xml:space="preserve">
+        <value>Al je gebouwen op één kaart</value>
+    </data>
+    <data name="StoreScreenshotsPageTitle" xml:space="preserve">
+        <value>Schermafbeeldingen voor stores · Werkbank</value>
+    </data>
+    <data name="StoreScreenshotsLead" xml:space="preserve">
+        <value>Pixelprecieze afbeeldingen in de formaten die elke store vraagt, gemaakt door een echte browser van je echte pagina's.</value>
+    </data>
+    <data name="Store" xml:space="preserve">
+        <value>Store</value>
+    </data>
+    <data name="StoreSizeCount" xml:space="preserve">
+        <value>{0} formaten</value>
+    </data>
+    <data name="Look" xml:space="preserve">
+        <value>Uiterlijk</value>
+    </data>
+    <data name="FrameAndCaption" xml:space="preserve">
+        <value>Apparaatframe en bijschrift</value>
+    </data>
+    <data name="Backdrop" xml:space="preserve">
+        <value>Achtergrond</value>
+    </data>
+    <data name="BackdropBrand" xml:space="preserve">
+        <value>App-kleur</value>
+    </data>
+    <data name="BackdropMidnight" xml:space="preserve">
+        <value>Middernacht</value>
+    </data>
+    <data name="BackdropSunset" xml:space="preserve">
+        <value>Zonsondergang</value>
+    </data>
+    <data name="BackdropOcean" xml:space="preserve">
+        <value>Oceaan</value>
+    </data>
+    <data name="BackdropForest" xml:space="preserve">
+        <value>Bos</value>
+    </data>
+    <data name="BackdropPaper" xml:space="preserve">
+        <value>Papier</value>
+    </data>
+    <data name="PlainScreenshotsHint" xml:space="preserve">
+        <value>Gewone schermafbeeldingen tonen alleen de pagina, van rand tot rand.</value>
+    </data>
+    <data name="Caption" xml:space="preserve">
+        <value>Bijschrift</value>
+    </data>
+    <data name="CaptionHint" xml:space="preserve">
+        <value>Laat een bijschrift leeg om de vertaalde standaardtekst te gebruiken.</value>
+    </data>
+    <data name="DownloadAllScreenshots" xml:space="preserve">
+        <value>Alles downloaden ({0})</value>
+    </data>
+    <data name="TooManyScreenshots" xml:space="preserve">
+        <value>Kies minder pagina's om maximaal {0} afbeeldingen tegelijk te downloaden.</value>
+    </data>
+    <data name="NoPagesSelected" xml:space="preserve">
+        <value>Kies minstens één pagina om de schermafbeeldingen te zien.</value>
+    </data>
+    <data name="DownloadPng" xml:space="preserve">
+        <value>PNG downloaden</value>
+    </data>
+    <data name="StoreNoteIphoneRequired" xml:space="preserve">
+        <value>Verplicht voor iPhone-apps</value>
+    </data>
+    <data name="StoreNoteIphoneOptional" xml:space="preserve">
+        <value>Optioneel, voor kleinere iPhones</value>
+    </data>
+    <data name="StoreNoteIpad" xml:space="preserve">
+        <value>Verplicht als de app op iPad draait</value>
+    </data>
+    <data name="StoreNoteMac" xml:space="preserve">
+        <value>Voor de Mac App Store</value>
+    </data>
+    <data name="StoreNotePlayPhone" xml:space="preserve">
+        <value>Minstens twee telefoonschermafbeeldingen</value>
+    </data>
+    <data name="StoreNotePlayTablet" xml:space="preserve">
+        <value>Getoond aan tablet- en Chromebook-gebruikers</value>
+    </data>
+    <data name="StoreNoteMicrosoft" xml:space="preserve">
+        <value>Het aanbevolen 4K-formaat</value>
+    </data>
+    <data name="StoreNoteOther" xml:space="preserve">
+        <value>Extra formaat</value>
+    </data>
+    <data name="StoreRuleAppStore" xml:space="preserve">
+        <value>Frames en bijschriften zijn welkom. De eerste drie schermafbeeldingen tellen het meest.</value>
+    </data>
+    <data name="StoreRuleGooglePlay" xml:space="preserve">
+        <value>Google Play raadt apparaatframes af. Houd bijschriften kort, zonder woorden als Beste of Nieuw.</value>
+    </data>
+    <data name="StoreRuleMicrosoftStore" xml:space="preserve">
+        <value>De Microsoft Store staat geen toegevoegde tekst of logo's toe. Voeg bijschriften toe in Partner Center.</value>
+    </data>
+    <data name="StoreSizeCountOne" xml:space="preserve">
+        <value>1 formaat</value>
+    </data>
 </root>

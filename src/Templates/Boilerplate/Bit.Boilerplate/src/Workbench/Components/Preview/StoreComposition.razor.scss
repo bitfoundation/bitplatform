@@ -1,0 +1,87 @@
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.composition {
+    inset: 0;
+    color: #fff;
+    position: fixed;
+    overflow: hidden;
+
+    &.brand {
+        background:
+            radial-gradient(70% 45% at 85% 0%, rgba(255, 255, 255, 0.22), transparent 70%),
+            linear-gradient(160deg, color-mix(in srgb, #{$bit-color-primary} 82%, #fff), color-mix(in srgb, #{$bit-color-primary} 70%, #000));
+    }
+
+    &.midnight {
+        background:
+            radial-gradient(80% 45% at 50% 0%, rgba(99, 102, 241, 0.38), transparent 70%),
+            radial-gradient(60% 40% at 100% 100%, rgba(236, 72, 153, 0.18), transparent 70%),
+            linear-gradient(180deg, #0b1022, #111827);
+    }
+
+    &.sunset {
+        background: linear-gradient(160deg, #ff9a62 0%, #f0567a 50%, #8b5cf6 100%);
+    }
+
+    &.ocean {
+        background: linear-gradient(160deg, #38bdf8 0%, #3b82f6 45%, #4338ca 100%);
+    }
+
+    &.forest {
+        background: linear-gradient(160deg, #34d399 0%, #059669 50%, #064e3b 100%);
+    }
+
+    &.paper {
+        color: #0f172a;
+        background:
+            radial-gradient(70% 40% at 50% 0%, rgba(255, 255, 255, 0.9), transparent 70%),
+            linear-gradient(180deg, #f8fafc, #dfe5ee);
+    }
+}
+
+.glow {
+    left: 50%;
+    width: 110%;
+    aspect-ratio: 1;
+    position: absolute;
+    pointer-events: none;
+    top: var(--wb-glow-top);
+    transform: translate(-50%, -50%);
+    background: radial-gradient(closest-side, rgba(255, 255, 255, 0.26), transparent);
+
+    .paper & {
+        background: radial-gradient(closest-side, rgba(15, 23, 42, 0.08), transparent);
+    }
+}
+
+.caption {
+    left: 50%;
+    margin: 0;
+    font-weight: 800;
+    line-height: 1.12;
+    position: absolute;
+    text-align: center;
+    text-wrap: balance;
+    letter-spacing: -0.02em;
+    top: var(--wb-caption-top);
+    transform: translateX(-50%);
+    width: var(--wb-caption-width);
+    font-size: var(--wb-caption-size);
+    text-shadow: 0 2px 18px rgba(0, 0, 0, 0.18);
+
+    .paper & {
+        text-shadow: none;
+    }
+}
+
+.device-slot {
+    position: absolute;
+    transform-origin: 0 0;
+}
+
+.screen-content {
+    inset: 0;
+    position: absolute;
+    contain: layout paint;
+    background-color: $bit-color-background-primary;
+}

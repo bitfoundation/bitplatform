@@ -6,6 +6,8 @@ public partial class ShellHeader
 
     [AutoInject] private BitThemeManager bitThemeManager = default!;
 
+    [Parameter] public bool Wide { get; set; }
+
     protected override void OnInitialized()
     {
         cultureItems = [.. CultureInfoManager.SupportedCultures.Select(sc => new BitDropdownItem<string> { Value = sc.Culture.Name, Text = sc.DisplayName })];

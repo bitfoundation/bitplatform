@@ -6,4 +6,5 @@ public sealed record WorkbenchPageInfo(string Key,
                                        string IconName,
                                        Type ComponentType,
                                        string CategoryKey,
-                                       string[] Showcases);
+                                       string[] Showcases,
+                                       string? CaptionKey = null);

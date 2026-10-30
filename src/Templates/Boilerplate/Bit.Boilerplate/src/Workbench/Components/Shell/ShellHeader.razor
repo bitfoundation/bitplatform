@@ -1,6 +1,6 @@
 @inherits WorkbenchComponentBase
 
-<header class="shell-header">
+<header class="shell-header @(Wide ? "wide" : null)">
     <a class="brand" href="/">
         <img src="_content/Boilerplate.Client.Core/images/bit-logo.svg" alt="" width="28" height="28" />
         <span>@Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]</span>

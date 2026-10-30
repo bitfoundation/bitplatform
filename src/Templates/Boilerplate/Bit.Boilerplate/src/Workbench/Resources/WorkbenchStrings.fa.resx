@@ -942,4 +942,106 @@
     <data name="HomeFooter" xml:space="preserve">
         <value>میز کار بخشی از هر پروژه bit Boilerplate است و فقط روی سیستم شما اجرا می‌شود، مگر خودتان بخواهید منتشرش کنید.</value>
     </data>
+    <data name="PosDashboardCaption" xml:space="preserve">
+        <value>همه فروش‌ها، زنده، در یک صفحه</value>
+    </data>
+    <data name="BuildingsCaption" xml:space="preserve">
+        <value>همه ساختمان‌هایتان روی یک نقشه</value>
+    </data>
+    <data name="StoreScreenshotsPageTitle" xml:space="preserve">
+        <value>اسکرین‌شات فروشگاه‌ها · میز کار</value>
+    </data>
+    <data name="StoreScreenshotsLead" xml:space="preserve">
+        <value>تصویرهایی با پیکسل دقیق در همان اندازه‌هایی که هر فروشگاه می‌خواهد، گرفته‌شده با مرورگر واقعی از صفحه‌های واقعی شما.</value>
+    </data>
+    <data name="Store" xml:space="preserve">
+        <value>فروشگاه</value>
+    </data>
+    <data name="StoreSizeCount" xml:space="preserve">
+        <value>{0} اندازه</value>
+    </data>
+    <data name="Look" xml:space="preserve">
+        <value>ظاهر</value>
+    </data>
+    <data name="FrameAndCaption" xml:space="preserve">
+        <value>قاب دستگاه و عنوان</value>
+    </data>
+    <data name="Backdrop" xml:space="preserve">
+        <value>پس‌زمینه</value>
+    </data>
+    <data name="BackdropBrand" xml:space="preserve">
+        <value>رنگ برنامه</value>
+    </data>
+    <data name="BackdropMidnight" xml:space="preserve">
+        <value>نیمه‌شب</value>
+    </data>
+    <data name="BackdropSunset" xml:space="preserve">
+        <value>غروب</value>
+    </data>
+    <data name="BackdropOcean" xml:space="preserve">
+        <value>اقیانوس</value>
+    </data>
+    <data name="BackdropForest" xml:space="preserve">
+        <value>جنگل</value>
+    </data>
+    <data name="BackdropPaper" xml:space="preserve">
+        <value>کاغذی</value>
+    </data>
+    <data name="PlainScreenshotsHint" xml:space="preserve">
+        <value>اسکرین‌شات ساده فقط خود صفحه را، لبه تا لبه، نشان می‌دهد.</value>
+    </data>
+    <data name="Caption" xml:space="preserve">
+        <value>عنوان</value>
+    </data>
+    <data name="CaptionHint" xml:space="preserve">
+        <value>اگر عنوان را خالی بگذارید، متن پیش‌فرض ترجمه‌شده به کار می‌رود.</value>
+    </data>
+    <data name="DownloadAllScreenshots" xml:space="preserve">
+        <value>دریافت همه ({0})</value>
+    </data>
+    <data name="TooManyScreenshots" xml:space="preserve">
+        <value>صفحه‌های کمتری انتخاب کنید تا حداکثر {0} تصویر یک‌جا دریافت شود.</value>
+    </data>
+    <data name="NoPagesSelected" xml:space="preserve">
+        <value>دست‌کم یک صفحه انتخاب کنید تا اسکرین‌شات‌هایش را ببینید.</value>
+    </data>
+    <data name="DownloadPng" xml:space="preserve">
+        <value>دریافت PNG</value>
+    </data>
+    <data name="StoreNoteIphoneRequired" xml:space="preserve">
+        <value>برای برنامه‌های iPhone الزامی است</value>
+    </data>
+    <data name="StoreNoteIphoneOptional" xml:space="preserve">
+        <value>اختیاری، برای iPhoneهای کوچک‌تر</value>
+    </data>
+    <data name="StoreNoteIpad" xml:space="preserve">
+        <value>اگر برنامه روی iPad اجرا شود، الزامی است</value>
+    </data>
+    <data name="StoreNoteMac" xml:space="preserve">
+        <value>برای Mac App Store</value>
+    </data>
+    <data name="StoreNotePlayPhone" xml:space="preserve">
+        <value>دست‌کم دو اسکرین‌شات گوشی</value>
+    </data>
+    <data name="StoreNotePlayTablet" xml:space="preserve">
+        <value>به کاربران تبلت و Chromebook نشان داده می‌شود</value>
+    </data>
+    <data name="StoreNoteMicrosoft" xml:space="preserve">
+        <value>اندازه پیشنهادی 4K</value>
+    </data>
+    <data name="StoreNoteOther" xml:space="preserve">
+        <value>اندازه اضافه</value>
+    </data>
+    <data name="StoreRuleAppStore" xml:space="preserve">
+        <value>قاب و عنوان مجاز است. سه اسکرین‌شات اول از همه مهم‌ترند.</value>
+    </data>
+    <data name="StoreRuleGooglePlay" xml:space="preserve">
+        <value>Google Play قاب دستگاه را توصیه نمی‌کند. عنوان‌ها را کوتاه و بدون کلمه‌هایی مثل «بهترین» یا «جدید» بنویسید.</value>
+    </data>
+    <data name="StoreRuleMicrosoftStore" xml:space="preserve">
+        <value>Microsoft Store متن یا لوگوی اضافه را نمی‌پذیرد. عنوان‌ها را در Partner Center وارد کنید.</value>
+    </data>
+    <data name="StoreSizeCountOne" xml:space="preserve">
+        <value>یک اندازه</value>
+    </data>
 </root>

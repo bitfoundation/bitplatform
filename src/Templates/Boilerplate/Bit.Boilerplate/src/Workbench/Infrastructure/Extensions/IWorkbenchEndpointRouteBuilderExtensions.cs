@@ -4,12 +4,43 @@ namespace Boilerplate.Workbench.Infrastructure.Extensions;
 
 public static class IWorkbenchEndpointRouteBuilderExtensions
 {
-    private const int MaxScreenshotsPerArchive = 12;
+    private const int MaxScreenshotsPerArchive = 24;
 
     extension(IEndpointRouteBuilder endpoints)
     {
         public void MapWorkbenchEndpoints()
         {
+            endpoints.MapGet("api/screenshots/zip", async (string? shots, WorkbenchScreenshotService screenshotService, CancellationToken cancellationToken) =>
+            {
+                var entries = WorkbenchUrls.DecodeShots(shots)
+                    .Select(shot => (Page: WorkbenchPageCatalog.Find(shot.PageKey), shot.Query))
+                    .ToArray();
+
+                if (entries.Length is 0 or > MaxScreenshotsPerArchive || entries.Any(entry => entry.Page is null))
+                    return Results.BadRequest();
+
+                var captures = await Task.WhenAll(entries.Select(entry => Capture(screenshotService, entry.Page!, entry.Query, cancellationToken)));
+
+                using var archiveStream = new MemoryStream();
+
+                using (var archive = new ZipArchive(archiveStream, ZipArchiveMode.Create, leaveOpen: true))
+                {
+                    var index = 0;
+
+                    foreach (var (png, fileName) in captures)
+                    {
+                        var entry = archive.CreateEntry($"{++index:00}-{fileName}", CompressionLevel.NoCompression);
+
+                        await using var entryStream = await entry.OpenAsync(cancellationToken);
+                        await entryStream.WriteAsync(png, cancellationToken);
+                    }
+                }
+
+                var archiveName = entries.Select(entry => entry.Page!.Key).Distinct().Count() is 1 ? $"{entries[0].Page!.Key}-screenshots.zip" : "screenshots.zip";
+
+                return Results.File(archiveStream.ToArray(), "application/zip", archiveName);
+            }).RequireRateLimiting(IWorkbenchServiceCollectionExtensions.ScreenshotsRateLimitPolicy);
+
             endpoints.MapGet("api/screenshots/{pageKey}", async (string pageKey, HttpContext context, WorkbenchScreenshotService screenshotService, CancellationToken cancellationToken) =>
             {
                 var page = WorkbenchPageCatalog.Find(pageKey);
@@ -17,7 +48,7 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
                 if (page is null)
                     return Results.NotFound();
 
-                var (png, fileName) = await Capture(screenshotService, page, WorkbenchScenario.Parse(context.Request.QueryString.Value), cancellationToken);
+                var (png, fileName) = await Capture(screenshotService, page, context.Request.QueryString.Value, cancellationToken);
 
                 return Results.File(png, "image/png", fileName);
             }).RequireRateLimiting(IWorkbenchServiceCollectionExtensions.ScreenshotsRateLimitPolicy);
@@ -35,44 +66,18 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
 
                 return Results.File(png, "image/png");
             });
-
-            endpoints.MapGet("api/screenshots/{pageKey}/zip", async (string pageKey, string? panes, WorkbenchScreenshotService screenshotService, CancellationToken cancellationToken) =>
-            {
-                var page = WorkbenchPageCatalog.Find(pageKey);
-                var scenarios = WorkbenchUrls.DecodePanes(panes);
-
-                if (page is null || scenarios.Length is 0 or > MaxScreenshotsPerArchive)
-                    return Results.BadRequest();
-
-                using var archiveStream = new MemoryStream();
-
-                using (var archive = new ZipArchive(archiveStream, ZipArchiveMode.Create, leaveOpen: true))
-                {
-                    var index = 0;
-
-                    foreach (var scenario in scenarios)
-                    {
-                        var (png, fileName) = await Capture(screenshotService, page, scenario, cancellationToken);
-                        var entry = archive.CreateEntry($"{++index:00}-{fileName}", CompressionLevel.NoCompression);
-
-                        await using var entryStream = await entry.OpenAsync(cancellationToken);
-                        await entryStream.WriteAsync(png, cancellationToken);
-                    }
-                }
-
-                return Results.File(archiveStream.ToArray(), "application/zip", $"{page.Key}-screenshots.zip");
-            }).RequireRateLimiting(IWorkbenchServiceCollectionExtensions.ScreenshotsRateLimitPolicy);
         }
     }
 
-    private static async Task<(byte[] Png, string FileName)> Capture(WorkbenchScreenshotService screenshotService, WorkbenchPageInfo page, WorkbenchScenario scenario, CancellationToken cancellationToken)
+    private static async Task<(byte[] Png, string FileName)> Capture(WorkbenchScreenshotService screenshotService, WorkbenchPageInfo page, string? query, CancellationToken cancellationToken)
     {
-        scenario = scenario with { Frame = false };
+        var scenario = WorkbenchScenario.Parse(query) with { Frame = false };
+        var composition = WorkbenchComposition.Parse(query);
 
         var device = scenario.DevicePreset;
         var (width, height) = device.GetViewport(scenario.Rotated);
 
-        var png = await screenshotService.Capture(WorkbenchUrls.Preview(page.Key, scenario).TrimStart('/'),
+        var png = await screenshotService.Capture(WorkbenchUrls.Preview(page.Key, scenario, composition).TrimStart('/'),
                                                   width,
                                                   height,
                                                   device.PixelRatio,
@@ -82,7 +87,8 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
                                                   cancellationToken);
 
         var (pixelWidth, pixelHeight) = device.GetPixels(scenario.Rotated);
-        var fileName = $"{page.Key}-{device.Key}-{pixelWidth}x{pixelHeight}-{scenario.Culture ?? CultureInfoManager.DefaultCulture.Name}-{scenario.Theme}-{scenario.Data}.png".ToLowerInvariant();
+        var look = composition is null ? scenario.Data.ToString() : "framed";
+        var fileName = $"{page.Key}-{device.Key}-{pixelWidth}x{pixelHeight}-{scenario.Culture ?? CultureInfoManager.DefaultCulture.Name}-{scenario.Theme}-{look}.png".ToLowerInvariant();
 
         return (png, fileName);
     }

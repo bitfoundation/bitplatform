@@ -208,7 +208,7 @@ public partial class WorkbenchViewPage
         if (pageInfo is null)
             return;
 
-        var url = QueryHelpers.AddQueryString($"/api/screenshots/{pageInfo.Key}/zip", "panes", WorkbenchUrls.EncodePanes(panes.Select(p => p.Scenario)));
+        var url = WorkbenchUrls.ScreenshotArchive(panes.Select(p => (pageInfo.Key, p.Scenario, (WorkbenchComposition?)null)));
 
         await JSRuntime.InvokeVoidAsync("workbench.download", url);
     }

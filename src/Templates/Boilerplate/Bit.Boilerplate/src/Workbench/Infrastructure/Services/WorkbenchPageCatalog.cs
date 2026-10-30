@@ -13,14 +13,16 @@ public static class WorkbenchPageCatalog
             BitIconName.BarChartVerticalFill,
             typeof(PosDashboardPage),
             nameof(WorkbenchStrings.CategoryDashboards),
-            ["bit Bortable", "BitChart", "BitShimmer", "bit Bmotion"]),
+            ["bit Bortable", "BitChart", "BitShimmer", "bit Bmotion"],
+            nameof(WorkbenchStrings.PosDashboardCaption)),
         new("buildings",
             nameof(WorkbenchStrings.BuildingsTitle),
             nameof(WorkbenchStrings.BuildingsDescription),
             BitIconName.MapPin,
             typeof(BuildingsPage),
             nameof(WorkbenchStrings.CategoryDataAndMaps),
-            ["BitDataGrid", "BitMap", "BitModal", "BitMessageBox", "BitSnackBar"]),
+            ["BitDataGrid", "BitMap", "BitModal", "BitMessageBox", "BitSnackBar"],
+            nameof(WorkbenchStrings.BuildingsCaption)),
     ];
 
     public static WorkbenchPageInfo? Find(string? key) => Pages.FirstOrDefault(p => string.Equals(p.Key, key, StringComparison.OrdinalIgnoreCase));
