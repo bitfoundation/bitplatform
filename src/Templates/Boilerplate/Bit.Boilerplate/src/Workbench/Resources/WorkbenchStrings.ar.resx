@@ -118,205 +118,205 @@
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
     <data name="WorkbenchTitle" xml:space="preserve">
-        <value>Workbench</value>
+        <value>منضدة العمل</value>
     </data>
     <data name="CategoryDashboards" xml:space="preserve">
-        <value>Dashboards</value>
+        <value>لوحات التحكم</value>
     </data>
     <data name="PosDashboardTitle" xml:space="preserve">
-        <value>POS dashboard</value>
+        <value>لوحة تحكم نقاط البيع</value>
     </data>
     <data name="PosDashboardDescription" xml:space="preserve">
-        <value>A point-of-sale dashboard whose widgets can be rearranged, resized, hidden and saved.</value>
+        <value>لوحة تحكم لنقاط البيع يمكن إعادة ترتيب أدواتها وتغيير حجمها وإخفاؤها وحفظها.</value>
     </data>
     <data name="DemoUserSarah" xml:space="preserve">
-        <value>Sarah Johnson</value>
+        <value>سارة جونسون</value>
     </data>
     <data name="DemoUserDaan" xml:space="preserve">
-        <value>Daan Visser</value>
+        <value>دان فيسر</value>
     </data>
     <data name="DemoUserNiloofar" xml:space="preserve">
-        <value>Niloofar Rahimi</value>
+        <value>نيلوفر رحيمي</value>
     </data>
     <data name="DemoTenantStore" xml:space="preserve">
-        <value>Amsterdam store</value>
+        <value>فرع Amsterdam</value>
     </data>
     <data name="DemoTenantHeadOffice" xml:space="preserve">
-        <value>Head office</value>
+        <value>المكتب الرئيسي</value>
     </data>
     <data name="Rotate" xml:space="preserve">
-        <value>Rotate</value>
+        <value>تدوير</value>
     </data>
     <data name="ScreenshotThisView" xml:space="preserve">
-        <value>Screenshot of this view (PNG)</value>
+        <value>لقطة شاشة لهذا العرض (PNG)</value>
     </data>
     <data name="ScreenshotAllViews" xml:space="preserve">
-        <value>Screenshots of all views (ZIP)</value>
+        <value>لقطات شاشة لكل العروض (ZIP)</value>
     </data>
     <data name="StoreScreenshots" xml:space="preserve">
-        <value>Store screenshots</value>
+        <value>لقطات شاشة للمتاجر</value>
     </data>
     <data name="OpenInNewTab" xml:space="preserve">
-        <value>Open in a new tab</value>
+        <value>فتح في علامة تبويب جديدة</value>
     </data>
     <data name="RemoveView" xml:space="preserve">
-        <value>Remove this view</value>
+        <value>إزالة هذا العرض</value>
     </data>
     <data name="NoChrome" xml:space="preserve">
-        <value>No chrome</value>
+        <value>بدون إطار التطبيق</value>
     </data>
     <data name="ThemeLight" xml:space="preserve">
-        <value>Light</value>
+        <value>فاتح</value>
     </data>
     <data name="ThemeDark" xml:space="preserve">
-        <value>Dark</value>
+        <value>داكن</value>
     </data>
     <data name="ThemeSystem" xml:space="preserve">
-        <value>System</value>
+        <value>النظام</value>
     </data>
     <data name="DataLive" xml:space="preserve">
-        <value>Data</value>
+        <value>بيانات</value>
     </data>
     <data name="DataLoading" xml:space="preserve">
-        <value>Loading</value>
+        <value>قيد التحميل</value>
     </data>
     <data name="DataEmpty" xml:space="preserve">
-        <value>Empty</value>
+        <value>فارغ</value>
     </data>
     <data name="DataError" xml:space="preserve">
-        <value>Error</value>
+        <value>خطأ</value>
     </data>
     <data name="DataMixed" xml:space="preserve">
-        <value>Mixed</value>
+        <value>مختلط</value>
     </data>
     <data name="DataSlow" xml:space="preserve">
-        <value>Slow</value>
+        <value>بطيء</value>
     </data>
     <data name="SignedOut" xml:space="preserve">
-        <value>Signed out</value>
+        <value>غير مسجل الدخول</value>
     </data>
     <data name="SignedIn" xml:space="preserve">
-        <value>Signed in</value>
+        <value>مسجل الدخول</value>
     </data>
     <data name="MultiAccount" xml:space="preserve">
-        <value>Accounts</value>
+        <value>عدة حسابات</value>
     </data>
     <data name="Device" xml:space="preserve">
-        <value>Device</value>
+        <value>الجهاز</value>
     </data>
     <data name="Portrait" xml:space="preserve">
-        <value>Portrait</value>
+        <value>عمودي</value>
     </data>
     <data name="Landscape" xml:space="preserve">
-        <value>Landscape</value>
+        <value>أفقي</value>
     </data>
     <data name="DeviceFrame" xml:space="preserve">
-        <value>Device frame</value>
+        <value>إطار الجهاز</value>
     </data>
     <data name="Zoom" xml:space="preserve">
-        <value>Zoom</value>
+        <value>التكبير</value>
     </data>
     <data name="ZoomFit" xml:space="preserve">
-        <value>Fit</value>
+        <value>ملاءمة</value>
     </data>
     <data name="DataState" xml:space="preserve">
-        <value>Data</value>
+        <value>البيانات</value>
     </data>
     <data name="DataStateHint" xml:space="preserve">
-        <value>Pages read their data from memory after a short delay, so every state can be shown here, even the ones that are hard to catch in a real app.</value>
+        <value>تقرأ الصفحات بياناتها من الذاكرة بعد تأخير قصير، لذا يمكن عرض كل حالة هنا، حتى الحالات التي يصعب رصدها في تطبيق حقيقي.</value>
     </data>
     <data name="AppSection" xml:space="preserve">
-        <value>App</value>
+        <value>التطبيق</value>
     </data>
     <data name="AppChrome" xml:space="preserve">
-        <value>App chrome</value>
+        <value>إطار التطبيق</value>
     </data>
     <data name="AppChromeHint" xml:space="preserve">
-        <value>Navigation panel, header, account menu and bottom bar of the app.</value>
+        <value>لوحة التنقل والترويسة وقائمة الحساب والشريط السفلي للتطبيق.</value>
     </data>
     <data name="SignInState" xml:space="preserve">
-        <value>Sign-in</value>
+        <value>تسجيل الدخول</value>
     </data>
     <data name="Theme" xml:space="preserve">
-        <value>Theme</value>
+        <value>المظهر</value>
     </data>
     <data name="Language" xml:space="preserve">
-        <value>Language</value>
+        <value>اللغة</value>
     </data>
     <data name="Reset" xml:space="preserve">
-        <value>Reset</value>
+        <value>إعادة تعيين</value>
     </data>
     <data name="DeviceGroupPhone" xml:space="preserve">
-        <value>Phones</value>
+        <value>الهواتف</value>
     </data>
     <data name="DeviceGroupFoldable" xml:space="preserve">
-        <value>Foldables</value>
+        <value>الأجهزة القابلة للطي</value>
     </data>
     <data name="DeviceGroupTablet" xml:space="preserve">
-        <value>Tablets</value>
+        <value>الأجهزة اللوحية</value>
     </data>
     <data name="DeviceGroupLaptop" xml:space="preserve">
-        <value>Laptops</value>
+        <value>الحواسيب المحمولة</value>
     </data>
     <data name="DeviceGroupDesktop" xml:space="preserve">
-        <value>Desktops</value>
+        <value>الحواسيب المكتبية</value>
     </data>
     <data name="DeviceGroupStore" xml:space="preserve">
-        <value>Store sizes</value>
+        <value>مقاسات المتاجر</value>
     </data>
     <data name="Pages" xml:space="preserve">
-        <value>Pages</value>
+        <value>الصفحات</value>
     </data>
     <data name="SearchPages" xml:space="preserve">
-        <value>Search pages</value>
+        <value>البحث في الصفحات</value>
     </data>
     <data name="PageNotFound" xml:space="preserve">
-        <value>This page isn't in the workbench.</value>
+        <value>هذه الصفحة غير موجودة في منضدة العمل.</value>
     </data>
     <data name="BackToHome" xml:space="preserve">
-        <value>Back to the workbench home</value>
+        <value>العودة إلى الصفحة الرئيسية لمنضدة العمل</value>
     </data>
     <data name="Tools" xml:space="preserve">
-        <value>Tools</value>
+        <value>الأدوات</value>
     </data>
     <data name="Close" xml:space="preserve">
-        <value>Close</value>
+        <value>إغلاق</value>
     </data>
     <data name="Compare" xml:space="preserve">
-        <value>Compare</value>
+        <value>مقارنة</value>
     </data>
     <data name="CompareSingle" xml:space="preserve">
-        <value>One view</value>
+        <value>عرض واحد</value>
     </data>
     <data name="CompareDevices" xml:space="preserve">
-        <value>Phone, tablet and desktop</value>
+        <value>هاتف وجهاز لوحي وحاسوب مكتبي</value>
     </data>
     <data name="CompareThemes" xml:space="preserve">
-        <value>Light and dark</value>
+        <value>فاتح وداكن</value>
     </data>
     <data name="CompareLanguages" xml:space="preserve">
-        <value>Languages side by side</value>
+        <value>اللغات جنبًا إلى جنب</value>
     </data>
     <data name="CompareStates" xml:space="preserve">
-        <value>Every data state</value>
+        <value>كل حالات البيانات</value>
     </data>
     <data name="CompareSignIn" xml:space="preserve">
-        <value>Signed out, signed in, several accounts</value>
+        <value>غير مسجل الدخول، مسجل الدخول، عدة حسابات</value>
     </data>
     <data name="AddView" xml:space="preserve">
-        <value>Add view</value>
+        <value>إضافة عرض</value>
     </data>
     <data name="Screenshot" xml:space="preserve">
-        <value>Screenshot</value>
+        <value>لقطة شاشة</value>
     </data>
     <data name="CopyLink" xml:space="preserve">
-        <value>Copy a link to this setup</value>
+        <value>نسخ رابط لهذا الإعداد</value>
     </data>
     <data name="ToggleWorkbenchTheme" xml:space="preserve">
-        <value>Switch the workbench between light and dark</value>
+        <value>تبديل منضدة العمل بين الوضع الفاتح والداكن</value>
     </data>
     <data name="PosStoreAll" xml:space="preserve">
-        <value>All stores</value>
+        <value>كل الفروع</value>
     </data>
     <data name="PosStoreAmsterdam" xml:space="preserve">
         <value>Amsterdam, Jordaan</value>
@@ -328,1125 +328,1125 @@
         <value>Utrecht, Oudegracht</value>
     </data>
     <data name="PosProductFlatWhite" xml:space="preserve">
-        <value>Flat white</value>
+        <value>فلات وايت</value>
     </data>
     <data name="PosProductOatLatte" xml:space="preserve">
-        <value>Oat milk latte</value>
+        <value>لاتيه بحليب الشوفان</value>
     </data>
     <data name="PosProductCroissant" xml:space="preserve">
-        <value>Butter croissant</value>
+        <value>كرواسون بالزبدة</value>
     </data>
     <data name="PosProductAppleTart" xml:space="preserve">
-        <value>Dutch apple tart</value>
+        <value>فطيرة التفاح الهولندية</value>
     </data>
     <data name="PosProductCappuccino" xml:space="preserve">
-        <value>Cappuccino</value>
+        <value>كابتشينو</value>
     </data>
     <data name="PosProductStroopwafel" xml:space="preserve">
-        <value>Stroopwafel</value>
+        <value>ستروبوافل</value>
     </data>
     <data name="PosProductSourdough" xml:space="preserve">
-        <value>Sourdough loaf</value>
+        <value>خبز العجين المخمر</value>
     </data>
     <data name="PosProductColdBrew" xml:space="preserve">
-        <value>Cold brew</value>
+        <value>كولد برو</value>
     </data>
     <data name="PosStaffEmma" xml:space="preserve">
-        <value>Emma de Jong</value>
+        <value>إيما دي يونغ</value>
     </data>
     <data name="PosStaffLucas" xml:space="preserve">
-        <value>Lucas Bakker</value>
+        <value>لوكاس باكر</value>
     </data>
     <data name="PosStaffMila" xml:space="preserve">
-        <value>Mila Janssen</value>
+        <value>ميلا يانسن</value>
     </data>
     <data name="PosStaffSem" xml:space="preserve">
-        <value>Sem Smit</value>
+        <value>سيم سميت</value>
     </data>
     <data name="PosPaymentCard" xml:space="preserve">
-        <value>Card</value>
+        <value>بطاقة</value>
     </data>
     <data name="PosPaymentWallet" xml:space="preserve">
-        <value>Mobile wallet</value>
+        <value>محفظة الهاتف</value>
     </data>
     <data name="PosPaymentCash" xml:space="preserve">
-        <value>Cash</value>
+        <value>نقدًا</value>
     </data>
     <data name="PosPaymentGiftCard" xml:space="preserve">
-        <value>Gift card</value>
+        <value>بطاقة هدية</value>
     </data>
     <data name="PosStockOatMilk" xml:space="preserve">
-        <value>Oat milk</value>
+        <value>حليب الشوفان</value>
     </data>
     <data name="PosStockCroissantDough" xml:space="preserve">
-        <value>Croissant dough</value>
+        <value>عجينة الكرواسون</value>
     </data>
     <data name="PosStockCoffeeBeans" xml:space="preserve">
-        <value>Espresso beans</value>
+        <value>حبوب الإسبريسو</value>
     </data>
     <data name="PosStockCups" xml:space="preserve">
-        <value>Takeaway cups</value>
+        <value>أكواب الطلبات الخارجية</value>
     </data>
     <data name="PosNetSales" xml:space="preserve">
-        <value>Net sales</value>
+        <value>صافي المبيعات</value>
     </data>
     <data name="PosTransactions" xml:space="preserve">
-        <value>Transactions</value>
+        <value>المعاملات</value>
     </data>
     <data name="PosAverageSale" xml:space="preserve">
-        <value>Average sale</value>
+        <value>متوسط البيع</value>
     </data>
     <data name="PosRefunds" xml:space="preserve">
-        <value>Refunds</value>
+        <value>المبالغ المستردة</value>
     </data>
     <data name="PosSalesByHour" xml:space="preserve">
-        <value>Sales by hour</value>
+        <value>المبيعات حسب الساعة</value>
     </data>
     <data name="PosPaymentMethods" xml:space="preserve">
-        <value>Payment methods</value>
+        <value>طرق الدفع</value>
     </data>
     <data name="PosTopProducts" xml:space="preserve">
-        <value>Top products</value>
+        <value>المنتجات الأكثر مبيعًا</value>
     </data>
     <data name="PosDailyGoal" xml:space="preserve">
-        <value>Sales goal</value>
+        <value>هدف المبيعات</value>
     </data>
     <data name="PosRecentOrders" xml:space="preserve">
-        <value>Recent orders</value>
+        <value>الطلبات الأخيرة</value>
     </data>
     <data name="PosLowStock" xml:space="preserve">
-        <value>Low stock</value>
+        <value>مخزون منخفض</value>
     </data>
     <data name="PosTeam" xml:space="preserve">
-        <value>Team</value>
+        <value>الفريق</value>
     </data>
     <data name="PosPeakHours" xml:space="preserve">
-        <value>Busy hours</value>
+        <value>ساعات الذروة</value>
     </data>
     <data name="PosDragWidget" xml:space="preserve">
-        <value>Drag {0}</value>
+        <value>سحب {0}</value>
     </data>
     <data name="PosWidgetOptions" xml:space="preserve">
-        <value>Widget options</value>
+        <value>خيارات الأداة</value>
     </data>
     <data name="PosLoadingWidget" xml:space="preserve">
-        <value>Loading</value>
+        <value>جارٍ التحميل</value>
     </data>
     <data name="PosWidgetFailedTitle" xml:space="preserve">
-        <value>Couldn't load this</value>
+        <value>تعذر التحميل</value>
     </data>
     <data name="PosWidgetFailedDescription" xml:space="preserve">
-        <value>The rest of the dashboard is fine. Try again in a moment.</value>
+        <value>بقية لوحة التحكم تعمل بشكل سليم. حاول مرة أخرى بعد قليل.</value>
     </data>
     <data name="PosRetry" xml:space="preserve">
-        <value>Try again</value>
+        <value>حاول مرة أخرى</value>
     </data>
     <data name="PosNoDataYet" xml:space="preserve">
-        <value>Nothing here yet</value>
+        <value>لا يوجد شيء بعد</value>
     </data>
     <data name="PosSizeSmall" xml:space="preserve">
-        <value>Small</value>
+        <value>صغير</value>
     </data>
     <data name="PosSizeMedium" xml:space="preserve">
-        <value>Medium</value>
+        <value>متوسط</value>
     </data>
     <data name="PosSizeLarge" xml:space="preserve">
-        <value>Large</value>
+        <value>كبير</value>
     </data>
     <data name="PosMoveEarlier" xml:space="preserve">
-        <value>Move earlier</value>
+        <value>تقديم في الترتيب</value>
     </data>
     <data name="PosMoveLater" xml:space="preserve">
-        <value>Move later</value>
+        <value>تأخير في الترتيب</value>
     </data>
     <data name="PosHideWidget" xml:space="preserve">
-        <value>Hide</value>
+        <value>إخفاء</value>
     </data>
     <data name="PosNoSalesYet" xml:space="preserve">
-        <value>No sales yet</value>
+        <value>لا توجد مبيعات بعد</value>
     </data>
     <data name="PosNoSalesYetDescription" xml:space="preserve">
-        <value>Numbers show up here as soon as the first order is paid.</value>
+        <value>تظهر الأرقام هنا فور دفع أول طلب.</value>
     </data>
     <data name="PosToday" xml:space="preserve">
-        <value>Today</value>
+        <value>اليوم</value>
     </data>
     <data name="PosThisPeriod" xml:space="preserve">
-        <value>This period</value>
+        <value>هذه الفترة</value>
     </data>
     <data name="PosLastWeek" xml:space="preserve">
-        <value>Same day last week</value>
+        <value>اليوم نفسه من الأسبوع الماضي</value>
     </data>
     <data name="PosSalesByHourSubtitle" xml:space="preserve">
-        <value>Compared with the same day last week</value>
+        <value>مقارنةً باليوم نفسه من الأسبوع الماضي</value>
     </data>
     <data name="PosNoPaymentsYet" xml:space="preserve">
-        <value>No payments yet</value>
+        <value>لا توجد مدفوعات بعد</value>
     </data>
     <data name="PosTotal" xml:space="preserve">
-        <value>Total</value>
+        <value>الإجمالي</value>
     </data>
     <data name="PosUnitsSold" xml:space="preserve">
-        <value>{0} sold</value>
+        <value>تم بيع {0}</value>
     </data>
     <data name="PosNoGoalSet" xml:space="preserve">
-        <value>No goal set</value>
+        <value>لا يوجد هدف محدد</value>
     </data>
     <data name="PosNoGoalSetDescription" xml:space="preserve">
-        <value>Set a sales goal to see how close the store is.</value>
+        <value>حدد هدفًا للمبيعات لترى مدى اقتراب الفرع منه.</value>
     </data>
     <data name="PosOfTarget" xml:space="preserve">
-        <value>of {0} goal</value>
+        <value>من هدف {0}</value>
     </data>
     <data name="PosRemainingToGoal" xml:space="preserve">
-        <value>{0} more to reach the goal</value>
+        <value>يتبقى {0} لبلوغ الهدف</value>
     </data>
     <data name="PosRecentOrdersSubtitle" xml:space="preserve">
-        <value>Latest orders across the registers</value>
+        <value>أحدث الطلبات من جميع صناديق الدفع</value>
     </data>
     <data name="PosNoOrdersYet" xml:space="preserve">
-        <value>No orders yet</value>
+        <value>لا توجد طلبات بعد</value>
     </data>
     <data name="PosNoOrdersYetDescription" xml:space="preserve">
-        <value>Orders appear here the moment a register rings them up.</value>
+        <value>تظهر الطلبات هنا لحظة تسجيلها في صندوق الدفع.</value>
     </data>
     <data name="PosOrder" xml:space="preserve">
-        <value>Order</value>
+        <value>الطلب</value>
     </data>
     <data name="PosTime" xml:space="preserve">
-        <value>Time</value>
+        <value>الوقت</value>
     </data>
     <data name="PosCashier" xml:space="preserve">
-        <value>Cashier</value>
+        <value>أمين الصندوق</value>
     </data>
     <data name="PosItems" xml:space="preserve">
-        <value>Items</value>
+        <value>الأصناف</value>
     </data>
     <data name="PosPayment" xml:space="preserve">
-        <value>Payment</value>
+        <value>الدفع</value>
     </data>
     <data name="PosStatus" xml:space="preserve">
-        <value>Status</value>
+        <value>الحالة</value>
     </data>
     <data name="PosOrderStatusPaid" xml:space="preserve">
-        <value>Paid</value>
+        <value>مدفوع</value>
     </data>
     <data name="PosOrderStatusRefunded" xml:space="preserve">
-        <value>Refunded</value>
+        <value>مسترد</value>
     </data>
     <data name="PosOrderStatusPending" xml:space="preserve">
-        <value>Pending</value>
+        <value>قيد الانتظار</value>
     </data>
     <data name="PosMinutesAgo" xml:space="preserve">
-        <value>{0} min ago</value>
+        <value>منذ {0} دقيقة</value>
     </data>
     <data name="PosLowStockSubtitle" xml:space="preserve">
-        <value>Items below their minimum</value>
+        <value>أصناف أقل من حدها الأدنى</value>
     </data>
     <data name="PosStockAllGood" xml:space="preserve">
-        <value>Everything is in stock</value>
+        <value>كل شيء متوفر</value>
     </data>
     <data name="PosStockAllGoodDescription" xml:space="preserve">
-        <value>Nothing is below its minimum right now.</value>
+        <value>لا شيء أقل من حده الأدنى الآن.</value>
     </data>
     <data name="PosInStock" xml:space="preserve">
-        <value>{0} left · minimum {1}</value>
+        <value>يتبقى {0} · الحد الأدنى {1}</value>
     </data>
     <data name="PosOutOfStock" xml:space="preserve">
-        <value>Out of stock</value>
+        <value>نفد المخزون</value>
     </data>
     <data name="PosLowStockBadge" xml:space="preserve">
-        <value>Low</value>
+        <value>منخفض</value>
     </data>
     <data name="PosOrdered" xml:space="preserve">
-        <value>Ordered</value>
+        <value>تم الطلب</value>
     </data>
     <data name="PosReorder" xml:space="preserve">
-        <value>Reorder</value>
+        <value>إعادة الطلب</value>
     </data>
     <data name="PosNoShiftsYet" xml:space="preserve">
-        <value>No one is on shift</value>
+        <value>لا أحد في المناوبة</value>
     </data>
     <data name="PosNoShiftsYetDescription" xml:space="preserve">
-        <value>Team results show up once someone clocks in.</value>
+        <value>تظهر نتائج الفريق فور تسجيل أحدهم حضوره.</value>
     </data>
     <data name="PosOrdersCount" xml:space="preserve">
-        <value>{0} orders</value>
+        <value>{0} طلب</value>
     </data>
     <data name="PosTopSeller" xml:space="preserve">
-        <value>Top seller</value>
+        <value>الأكثر مبيعًا</value>
     </data>
     <data name="PosPeakHoursSubtitle" xml:space="preserve">
-        <value>Orders per hour over the last four weeks</value>
+        <value>الطلبات في الساعة خلال الأسابيع الأربعة الماضية</value>
     </data>
     <data name="PosQuiet" xml:space="preserve">
-        <value>Quiet</value>
+        <value>هادئ</value>
     </data>
     <data name="PosBusy" xml:space="preserve">
-        <value>Busy</value>
+        <value>مزدحم</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>Good afternoon, Sarah</value>
+        <value>مساء الخير يا سارة</value>
     </data>
     <data name="PosStore" xml:space="preserve">
-        <value>Store</value>
+        <value>الفرع</value>
     </data>
     <data name="PosPeriod" xml:space="preserve">
-        <value>Period</value>
+        <value>الفترة</value>
     </data>
     <data name="Pos7Days" xml:space="preserve">
-        <value>7 days</value>
+        <value>7 أيام</value>
     </data>
     <data name="Pos30Days" xml:space="preserve">
-        <value>30 days</value>
+        <value>30 يومًا</value>
     </data>
     <data name="PosDone" xml:space="preserve">
-        <value>Done</value>
+        <value>تم</value>
     </data>
     <data name="PosCustomize" xml:space="preserve">
-        <value>Customize</value>
+        <value>تخصيص</value>
     </data>
     <data name="PosEditHint" xml:space="preserve">
-        <value>Drag widgets by their handle, or use their menu to resize, move or hide them. Your layout is saved on this device.</value>
+        <value>اسحب الأدوات من مقبضها، أو استخدم قائمتها لتغيير حجمها أو نقلها أو إخفائها. يُحفظ تخطيطك على هذا الجهاز.</value>
     </data>
     <data name="PosAddWidget" xml:space="preserve">
-        <value>Add widget ({0})</value>
+        <value>إضافة أداة ({0})</value>
     </data>
     <data name="PosResetLayout" xml:space="preserve">
-        <value>Reset layout</value>
+        <value>إعادة تعيين التخطيط</value>
     </data>
     <data name="PosWidgetGallery" xml:space="preserve">
-        <value>Hidden widgets</value>
+        <value>الأدوات المخفية</value>
     </data>
     <data name="PosAdd" xml:space="preserve">
-        <value>Add</value>
+        <value>إضافة</value>
     </data>
     <data name="PosGalleryEmpty" xml:space="preserve">
-        <value>Every widget is already on the dashboard.</value>
+        <value>كل الأدوات موجودة بالفعل على لوحة التحكم.</value>
     </data>
     <data name="PosLast7Days" xml:space="preserve">
-        <value>Last 7 days</value>
+        <value>آخر 7 أيام</value>
     </data>
     <data name="PosLast30Days" xml:space="preserve">
-        <value>Last 30 days</value>
+        <value>آخر 30 يومًا</value>
     </data>
     <data name="PosVsYesterday" xml:space="preserve">
-        <value>vs yesterday</value>
+        <value>مقارنةً بالأمس</value>
     </data>
     <data name="PosVsPrevious7Days" xml:space="preserve">
-        <value>vs previous 7 days</value>
+        <value>مقارنةً بالأيام الـ7 السابقة</value>
     </data>
     <data name="PosVsPrevious30Days" xml:space="preserve">
-        <value>vs previous 30 days</value>
+        <value>مقارنةً بالأيام الـ30 السابقة</value>
     </data>
     <data name="CategoryDataAndMaps" xml:space="preserve">
-        <value>Data and maps</value>
+        <value>البيانات والخرائط</value>
     </data>
     <data name="BuildingsTitle" xml:space="preserve">
-        <value>Buildings</value>
+        <value>المباني</value>
     </data>
     <data name="BuildingsDescription" xml:space="preserve">
-        <value>A data grid and a map that stay in sync. Double-click the map to add a building, select one and press Delete to remove it. Only places inside the Netherlands are accepted.</value>
+        <value>جدول بيانات وخريطة متزامنان دائمًا. انقر نقرًا مزدوجًا على الخريطة لإضافة مبنى، وحدد مبنى واضغط Delete لإزالته. لا تُقبل إلا الأماكن داخل هولندا.</value>
     </data>
     <data name="BuildingsHeading" xml:space="preserve">
-        <value>Landmark buildings</value>
+        <value>مبانٍ بارزة</value>
     </data>
     <data name="BuildingsSubtitle" xml:space="preserve">
-        <value>{0} buildings in {1} provinces</value>
+        <value>{0} مبنى في {1} مقاطعة</value>
     </data>
     <data name="BuildingsSearch" xml:space="preserve">
-        <value>Search by name, city or type</value>
+        <value>البحث بالاسم أو المدينة أو النوع</value>
     </data>
     <data name="BuildingsAdd" xml:space="preserve">
-        <value>Add building</value>
+        <value>إضافة مبنى</value>
     </data>
     <data name="BuildingsListView" xml:space="preserve">
-        <value>List</value>
+        <value>قائمة</value>
     </data>
     <data name="BuildingsMapView" xml:space="preserve">
-        <value>Map</value>
+        <value>خريطة</value>
     </data>
     <data name="BuildingsFailedTitle" xml:space="preserve">
-        <value>Couldn't load the buildings</value>
+        <value>تعذر تحميل المباني</value>
     </data>
     <data name="BuildingsEmptyTitle" xml:space="preserve">
-        <value>No buildings yet</value>
+        <value>لا توجد مبانٍ بعد</value>
     </data>
     <data name="BuildingsEmptyDescription" xml:space="preserve">
-        <value>Double-click anywhere in the Netherlands on the map to add the first one.</value>
+        <value>انقر نقرًا مزدوجًا في أي مكان داخل هولندا على الخريطة لإضافة أول مبنى.</value>
     </data>
     <data name="BuildingName" xml:space="preserve">
-        <value>Name</value>
+        <value>الاسم</value>
     </data>
     <data name="BuildingCity" xml:space="preserve">
-        <value>City</value>
+        <value>المدينة</value>
     </data>
     <data name="BuildingProvince" xml:space="preserve">
-        <value>Province</value>
+        <value>المقاطعة</value>
     </data>
     <data name="BuildingType" xml:space="preserve">
-        <value>Type</value>
+        <value>النوع</value>
     </data>
     <data name="BuildingYear" xml:space="preserve">
-        <value>Year</value>
+        <value>السنة</value>
     </data>
     <data name="BuildingHeight" xml:space="preserve">
-        <value>Height (m)</value>
+        <value>الارتفاع (م)</value>
     </data>
     <data name="BuildingFloors" xml:space="preserve">
-        <value>Floors</value>
+        <value>الطوابق</value>
     </data>
     <data name="BuildingLatitude" xml:space="preserve">
-        <value>Latitude</value>
+        <value>خط العرض</value>
     </data>
     <data name="BuildingLongitude" xml:space="preserve">
-        <value>Longitude</value>
+        <value>خط الطول</value>
     </data>
     <data name="BuildingsEdit" xml:space="preserve">
-        <value>Edit</value>
+        <value>تحرير</value>
     </data>
     <data name="BuildingsDelete" xml:space="preserve">
-        <value>Delete</value>
+        <value>حذف</value>
     </data>
     <data name="BuildingsMapHint" xml:space="preserve">
-        <value>Double-click inside the Netherlands to add a building. Select one and press Delete to remove it.</value>
+        <value>انقر نقرًا مزدوجًا داخل هولندا لإضافة مبنى. حدد مبنى واضغط Delete لإزالته.</value>
     </data>
     <data name="BuildingsSaved" xml:space="preserve">
-        <value>{0} is saved</value>
+        <value>تم حفظ {0}</value>
     </data>
     <data name="BuildingsDeleteTitle" xml:space="preserve">
-        <value>Delete this building?</value>
+        <value>هل تريد حذف هذا المبنى؟</value>
     </data>
     <data name="BuildingsDeleteBody" xml:space="preserve">
-        <value>{0} will be removed from the list and the map.</value>
+        <value>ستتم إزالة {0} من القائمة والخريطة.</value>
     </data>
     <data name="BuildingsDeleted" xml:space="preserve">
-        <value>{0} is deleted</value>
+        <value>تم حذف {0}</value>
     </data>
     <data name="BuildingsOutsideTitle" xml:space="preserve">
-        <value>Outside the Netherlands</value>
+        <value>خارج هولندا</value>
     </data>
     <data name="BuildingsOutsideBody" xml:space="preserve">
-        <value>Buildings can only be added inside the Dutch border.</value>
+        <value>لا يمكن إضافة المباني إلا داخل حدود هولندا.</value>
     </data>
     <data name="BuildingsAddTitle" xml:space="preserve">
-        <value>New building</value>
+        <value>مبنى جديد</value>
     </data>
     <data name="BuildingsEditTitle" xml:space="preserve">
-        <value>Edit building</value>
+        <value>تحرير المبنى</value>
     </data>
     <data name="BuildingsLocationHint" xml:space="preserve">
-        <value>Double-click the map to pick a spot, or type the coordinates. Only points inside the Netherlands are accepted.</value>
+        <value>انقر نقرًا مزدوجًا على الخريطة لاختيار موقع، أو اكتب الإحداثيات. لا تُقبل إلا النقاط داخل هولندا.</value>
     </data>
     <data name="BuildingsNameRequired" xml:space="preserve">
-        <value>Enter a name.</value>
+        <value>أدخل اسمًا.</value>
     </data>
     <data name="BuildingsCityRequired" xml:space="preserve">
-        <value>Enter a city.</value>
+        <value>أدخل مدينة.</value>
     </data>
     <data name="BuildingsYearInvalid" xml:space="preserve">
-        <value>Enter a year between 1000 and this year.</value>
+        <value>أدخل سنة بين 1000 والسنة الحالية.</value>
     </data>
     <data name="Cancel" xml:space="preserve">
-        <value>Cancel</value>
+        <value>إلغاء</value>
     </data>
     <data name="Save" xml:space="preserve">
-        <value>Save</value>
+        <value>حفظ</value>
     </data>
     <data name="BuildingTypeMuseum" xml:space="preserve">
-        <value>Museum</value>
+        <value>متحف</value>
     </data>
     <data name="BuildingTypeChurch" xml:space="preserve">
-        <value>Church</value>
+        <value>كنيسة</value>
     </data>
     <data name="BuildingTypeTower" xml:space="preserve">
-        <value>Tower</value>
+        <value>برج</value>
     </data>
     <data name="BuildingTypeStation" xml:space="preserve">
-        <value>Station</value>
+        <value>محطة</value>
     </data>
     <data name="BuildingTypeStadium" xml:space="preserve">
-        <value>Stadium</value>
+        <value>ملعب</value>
     </data>
     <data name="BuildingTypePalace" xml:space="preserve">
-        <value>Palace</value>
+        <value>قصر</value>
     </data>
     <data name="BuildingTypeOffice" xml:space="preserve">
-        <value>Office tower</value>
+        <value>برج مكاتب</value>
     </data>
     <data name="BuildingTypeCityHall" xml:space="preserve">
-        <value>City hall</value>
+        <value>مبنى البلدية</value>
     </data>
     <data name="BuildingTypeLandmark" xml:space="preserve">
-        <value>Landmark</value>
+        <value>معلم</value>
     </data>
     <data name="ProvinceGroningen" xml:space="preserve">
-        <value>Groningen</value>
+        <value>خرونينغن</value>
     </data>
     <data name="ProvinceFriesland" xml:space="preserve">
-        <value>Friesland</value>
+        <value>فريسلاند</value>
     </data>
     <data name="ProvinceDrenthe" xml:space="preserve">
-        <value>Drenthe</value>
+        <value>درنته</value>
     </data>
     <data name="ProvinceOverijssel" xml:space="preserve">
-        <value>Overijssel</value>
+        <value>أوفرآيسل</value>
     </data>
     <data name="ProvinceFlevoland" xml:space="preserve">
-        <value>Flevoland</value>
+        <value>فليفولاند</value>
     </data>
     <data name="ProvinceGelderland" xml:space="preserve">
-        <value>Gelderland</value>
+        <value>خيلدرلاند</value>
     </data>
     <data name="ProvinceUtrecht" xml:space="preserve">
-        <value>Utrecht</value>
+        <value>أوترخت</value>
     </data>
     <data name="ProvinceNorthHolland" xml:space="preserve">
-        <value>North Holland</value>
+        <value>هولندا الشمالية</value>
     </data>
     <data name="ProvinceSouthHolland" xml:space="preserve">
-        <value>South Holland</value>
+        <value>هولندا الجنوبية</value>
     </data>
     <data name="ProvinceZeeland" xml:space="preserve">
-        <value>Zeeland</value>
+        <value>زيلاند</value>
     </data>
     <data name="ProvinceNorthBrabant" xml:space="preserve">
-        <value>North Brabant</value>
+        <value>برابانت الشمالية</value>
     </data>
     <data name="ProvinceLimburg" xml:space="preserve">
-        <value>Limburg</value>
+        <value>ليمبورخ</value>
     </data>
     <data name="HomePageTitle" xml:space="preserve">
-        <value>Workbench · Design, review and capture every page</value>
+        <value>منضدة العمل · تصميم كل صفحة ومراجعتها والتقاطها</value>
     </data>
     <data name="HomeEyebrow" xml:space="preserve">
-        <value>Part of your bit Boilerplate project</value>
+        <value>جزء من مشروع bit Boilerplate الخاص بك</value>
     </data>
     <data name="HomeHeadline" xml:space="preserve">
-        <value>Finish the design before the backend exists.</value>
+        <value>أنهِ التصميم قبل أن توجد الواجهة الخلفية.</value>
     </data>
     <data name="HomeLead" xml:space="preserve">
-        <value>The workbench runs your app's pages on sample data, so you can design every state, see it on every device and export store-ready screenshots, with the same components and theme your app ships with.</value>
+        <value>تشغّل منضدة العمل صفحات تطبيقك ببيانات نموذجية، لتتمكن من تصميم كل حالة ومعاينتها على كل جهاز وتصدير لقطات شاشة جاهزة للمتاجر، بنفس المكونات والمظهر اللذين يأتي بهما تطبيقك.</value>
     </data>
     <data name="HomeOpenFirstPage" xml:space="preserve">
-        <value>Open the POS dashboard</value>
+        <value>فتح لوحة تحكم نقاط البيع</value>
     </data>
     <data name="HomeWhyButton" xml:space="preserve">
-        <value>Why a workbench?</value>
+        <value>لماذا منضدة عمل؟</value>
     </data>
     <data name="HomeFactNoServer" xml:space="preserve">
-        <value>No API, database or sign-in needed</value>
+        <value>دون الحاجة إلى API أو قاعدة بيانات أو تسجيل دخول</value>
     </data>
     <data name="HomeFactThemes" xml:space="preserve">
-        <value>Light, dark and right-to-left</value>
+        <value>فاتح وداكن ومن اليمين إلى اليسار</value>
     </data>
     <data name="HomeFactStores" xml:space="preserve">
-        <value>Exact App Store, Google Play and Microsoft Store sizes</value>
+        <value>مقاسات دقيقة لـ App Store و Google Play و Microsoft Store</value>
     </data>
     <data name="HomeChipDark" xml:space="preserve">
-        <value>Dark mode</value>
+        <value>الوضع الداكن</value>
     </data>
     <data name="HomeChipRtl" xml:space="preserve">
-        <value>Right-to-left</value>
+        <value>من اليمين إلى اليسار</value>
     </data>
     <data name="HomeChipLoading" xml:space="preserve">
-        <value>Loading state</value>
+        <value>حالة التحميل</value>
     </data>
     <data name="HomeChipStore" xml:space="preserve">
-        <value>1320 × 2868 PNG</value>
+        <value>صورة PNG بأبعاد 1320 × 2868</value>
     </data>
     <data name="HomeWhyTitle" xml:space="preserve">
-        <value>Why your project has a workbench</value>
+        <value>لماذا يضم مشروعك منضدة عمل</value>
     </data>
     <data name="HomeWhySubtitle" xml:space="preserve">
-        <value>A design tool, a test bench and a photo studio for your pages, inside the project itself.</value>
+        <value>أداة تصميم ومنصة اختبار واستوديو تصوير لصفحاتك، داخل المشروع نفسه.</value>
     </data>
     <data name="HomeWhyAgentsTitle" xml:space="preserve">
-        <value>Design with any AI agent</value>
+        <value>صمّم مع أي وكيل ذكاء اصطناعي</value>
     </data>
     <data name="HomeWhyAgentsText" xml:space="preserve">
-        <value>You don't need Claude Design or Figma. Whether you use Codex, Copilot or Claude Code, your agent can design pages here, look at them in a real browser and refine them.</value>
+        <value>لا تحتاج إلى Claude Design أو Figma. سواء كنت تستخدم Codex أو Copilot أو Claude Code، يستطيع وكيلك تصميم الصفحات هنا ومعاينتها في متصفح حقيقي وتحسينها.</value>
     </data>
     <data name="HomeWhyRealTitle" xml:space="preserve">
-        <value>Real components, not mockups</value>
+        <value>مكونات حقيقية، لا نماذج تصميمية</value>
     </data>
     <data name="HomeWhyRealText" xml:space="preserve">
-        <value>Pages use the same bit BlazorUI components, theme and styles as your app, so the design you approve is already working code.</value>
+        <value>تستخدم الصفحات نفس مكونات bit BlazorUI والمظهر والأنماط التي يستخدمها تطبيقك، لذا فإن التصميم الذي تعتمده هو بالفعل كود يعمل.</value>
     </data>
     <data name="HomeWhyStatesTitle" xml:space="preserve">
-        <value>Every state on demand</value>
+        <value>كل حالة عند الطلب</value>
     </data>
     <data name="HomeWhyStatesText" xml:space="preserve">
-        <value>Loading, empty, error, partial and slow data are one click away, including the states that are hard to catch in a running app.</value>
+        <value>حالات التحميل والفراغ والخطأ والبيانات الجزئية والبطيئة على بُعد نقرة واحدة، بما فيها الحالات التي يصعب رصدها في تطبيق قيد التشغيل.</value>
     </data>
     <data name="HomeWhyDevicesTitle" xml:space="preserve">
-        <value>Every device side by side</value>
+        <value>كل الأجهزة جنبًا إلى جنب</value>
     </data>
     <data name="HomeWhyDevicesText" xml:space="preserve">
-        <value>Phones, tablets and desktops at their real sizes, in light and dark, in every language your app supports.</value>
+        <value>الهواتف والأجهزة اللوحية والحواسيب المكتبية بمقاساتها الحقيقية، بالوضعين الفاتح والداكن، وبكل لغة يدعمها تطبيقك.</value>
     </data>
     <data name="HomeWhyStoresTitle" xml:space="preserve">
-        <value>Screenshots for the stores</value>
+        <value>لقطات شاشة للمتاجر</value>
     </data>
     <data name="HomeWhyStoresText" xml:space="preserve">
-        <value>Export pixel-exact images for the App Store, Google Play and the Microsoft Store, rendered by a real browser, without emulators.</value>
+        <value>صدّر صورًا دقيقة حتى البكسل لـ App Store و Google Play و Microsoft Store، يرسمها متصفح حقيقي، دون محاكيات.</value>
     </data>
     <data name="HomeWhyHeadStartTitle" xml:space="preserve">
-        <value>A head start from bitplatform</value>
+        <value>انطلاقة سريعة مع bitplatform</value>
     </data>
     <data name="HomeWhyHeadStartText" xml:space="preserve">
-        <value>It starts with ready-made pages, like a point-of-sale dashboard and a buildings map. Reuse what fits, learn from the rest, then add your own pages next to them.</value>
+        <value>تبدأ بصفحات جاهزة، مثل لوحة تحكم لنقاط البيع وخريطة للمباني. أعد استخدام ما يناسبك، وتعلّم من الباقي، ثم أضف صفحاتك بجانبها.</value>
     </data>
     <data name="HomeWhySafeTitle" xml:space="preserve">
-        <value>Safe to experiment</value>
+        <value>جرّب بأمان</value>
     </data>
     <data name="HomeWhySafeText" xml:space="preserve">
-        <value>Nothing here talks to your API or database, so trying a new idea never breaks your app or your data.</value>
+        <value>لا شيء هنا يتصل بواجهة API أو بقاعدة البيانات الخاصة بك، لذا فإن تجربة فكرة جديدة لا تُعطّل تطبيقك أو بياناتك أبدًا.</value>
     </data>
     <data name="HomeWhyShareTitle" xml:space="preserve">
-        <value>Agree before you build</value>
+        <value>اتفقوا قبل البناء</value>
     </data>
     <data name="HomeWhyShareText" xml:space="preserve">
-        <value>Send a link to a page in a given state to your team or client, and settle the design before anyone writes backend code.</value>
+        <value>أرسل إلى فريقك أو عميلك رابطًا لصفحة في حالة معينة، واتفقوا على التصميم قبل أن يكتب أحد أي كود للواجهة الخلفية.</value>
     </data>
     <data name="HomeHowTitle" xml:space="preserve">
-        <value>How it fits your workflow</value>
+        <value>كيف تنسجم مع سير عملك</value>
     </data>
     <data name="HomeHowStep1Title" xml:space="preserve">
-        <value>Design it here</value>
+        <value>صمّمها هنا</value>
     </data>
     <data name="HomeHowStep1Text" xml:space="preserve">
-        <value>Build the page in the workbench with sample data that loads like the real thing.</value>
+        <value>ابنِ الصفحة في منضدة العمل ببيانات نموذجية تُحمَّل مثل البيانات الحقيقية.</value>
     </data>
     <data name="HomeHowStep2Title" xml:space="preserve">
-        <value>Review every state</value>
+        <value>راجع كل حالة</value>
     </data>
     <data name="HomeHowStep2Text" xml:space="preserve">
-        <value>Check it on each device, theme, language and data state, one at a time or side by side.</value>
+        <value>تحقق منها على كل جهاز ومظهر ولغة وحالة بيانات، واحدًا تلو الآخر أو جنبًا إلى جنب.</value>
     </data>
     <data name="HomeHowStep3Title" xml:space="preserve">
-        <value>Bring it into the app</value>
+        <value>انقلها إلى التطبيق</value>
     </data>
     <data name="HomeHowStep3Text" xml:space="preserve">
-        <value>Move the approved page into your app and connect it to real data. Your AI agent follows the same steps.</value>
+        <value>انقل الصفحة المعتمدة إلى تطبيقك واربطها ببيانات حقيقية. ويتبع وكيل الذكاء الاصطناعي الخاص بك الخطوات نفسها.</value>
     </data>
     <data name="HomePagesTitle" xml:space="preserve">
-        <value>Pages in this workbench</value>
+        <value>الصفحات في منضدة العمل هذه</value>
     </data>
     <data name="HomePagesSubtitle" xml:space="preserve">
-        <value>Start from these, then add your own pages next to them.</value>
+        <value>ابدأ بهذه الصفحات، ثم أضف صفحاتك بجانبها.</value>
     </data>
     <data name="HomeBuiltWithTitle" xml:space="preserve">
-        <value>Built with bit</value>
+        <value>مبني باستخدام bit</value>
     </data>
     <data name="HomeFooter" xml:space="preserve">
-        <value>The workbench is part of every bit Boilerplate project. It runs only on your machine unless you choose to publish it.</value>
+        <value>منضدة العمل جزء من كل مشروع bit Boilerplate. وهي لا تعمل إلا على جهازك ما لم تختر نشرها.</value>
     </data>
     <data name="PosDashboardCaption" xml:space="preserve">
-        <value>Every sale, live, on one screen</value>
+        <value>كل عملية بيع، مباشرةً، على شاشة واحدة</value>
     </data>
     <data name="BuildingsCaption" xml:space="preserve">
-        <value>All your buildings on one map</value>
+        <value>كل مبانيك على خريطة واحدة</value>
     </data>
     <data name="StoreScreenshotsPageTitle" xml:space="preserve">
-        <value>Store screenshots · Workbench</value>
+        <value>لقطات شاشة للمتاجر · منضدة العمل</value>
     </data>
     <data name="StoreScreenshotsLead" xml:space="preserve">
-        <value>Pixel-exact images in the sizes each store asks for, taken by a real browser from your real pages.</value>
+        <value>صور دقيقة حتى البكسل بالمقاسات التي يطلبها كل متجر، يلتقطها متصفح حقيقي من صفحاتك الحقيقية.</value>
     </data>
     <data name="Store" xml:space="preserve">
-        <value>Store</value>
+        <value>المتجر</value>
     </data>
     <data name="StoreSizeCount" xml:space="preserve">
-        <value>{0} sizes</value>
+        <value>{0} مقاسات</value>
     </data>
     <data name="Look" xml:space="preserve">
-        <value>Look</value>
+        <value>الشكل</value>
     </data>
     <data name="FrameAndCaption" xml:space="preserve">
-        <value>Device frame and caption</value>
+        <value>إطار الجهاز والعنوان</value>
     </data>
     <data name="Backdrop" xml:space="preserve">
-        <value>Background</value>
+        <value>الخلفية</value>
     </data>
     <data name="BackdropBrand" xml:space="preserve">
-        <value>App color</value>
+        <value>لون التطبيق</value>
     </data>
     <data name="BackdropMidnight" xml:space="preserve">
-        <value>Midnight</value>
+        <value>منتصف الليل</value>
     </data>
     <data name="BackdropSunset" xml:space="preserve">
-        <value>Sunset</value>
+        <value>الغروب</value>
     </data>
     <data name="BackdropOcean" xml:space="preserve">
-        <value>Ocean</value>
+        <value>المحيط</value>
     </data>
     <data name="BackdropForest" xml:space="preserve">
-        <value>Forest</value>
+        <value>الغابة</value>
     </data>
     <data name="BackdropPaper" xml:space="preserve">
-        <value>Paper</value>
+        <value>الورق</value>
     </data>
     <data name="PlainScreenshotsHint" xml:space="preserve">
-        <value>Plain screenshots show the page only, edge to edge.</value>
+        <value>تعرض اللقطات العادية الصفحة فقط، من الحافة إلى الحافة.</value>
     </data>
     <data name="Caption" xml:space="preserve">
-        <value>Caption</value>
+        <value>العنوان</value>
     </data>
     <data name="CaptionHint" xml:space="preserve">
-        <value>Leave a caption empty to use the translated default.</value>
+        <value>اترك العنوان فارغًا لاستخدام النص الافتراضي المترجم.</value>
     </data>
     <data name="DownloadAllScreenshots" xml:space="preserve">
-        <value>Download all ({0})</value>
+        <value>تنزيل الكل ({0})</value>
     </data>
     <data name="TooManyScreenshots" xml:space="preserve">
-        <value>Choose fewer pages to download up to {0} images at once.</value>
+        <value>اختر صفحات أقل لتنزيل ما يصل إلى {0} صورة دفعة واحدة.</value>
     </data>
     <data name="NoPagesSelected" xml:space="preserve">
-        <value>Choose at least one page to see its screenshots.</value>
+        <value>اختر صفحة واحدة على الأقل لعرض لقطات الشاشة الخاصة بها.</value>
     </data>
     <data name="DownloadPng" xml:space="preserve">
-        <value>Download PNG</value>
+        <value>تنزيل PNG</value>
     </data>
     <data name="StoreNoteIphoneRequired" xml:space="preserve">
-        <value>Required for iPhone apps</value>
+        <value>مطلوب لتطبيقات iPhone</value>
     </data>
     <data name="StoreNoteIphoneOptional" xml:space="preserve">
-        <value>Optional, for smaller iPhones</value>
+        <value>اختياري، لأجهزة iPhone الأصغر</value>
     </data>
     <data name="StoreNoteIpad" xml:space="preserve">
-        <value>Required if the app runs on iPad</value>
+        <value>مطلوب إذا كان التطبيق يعمل على iPad</value>
     </data>
     <data name="StoreNoteMac" xml:space="preserve">
-        <value>For the Mac App Store</value>
+        <value>لـ Mac App Store</value>
     </data>
     <data name="StoreNotePlayPhone" xml:space="preserve">
-        <value>At least two phone screenshots</value>
+        <value>لقطتا شاشة للهاتف على الأقل</value>
     </data>
     <data name="StoreNotePlayTablet" xml:space="preserve">
-        <value>Shown to tablet and Chromebook users</value>
+        <value>تُعرض لمستخدمي الأجهزة اللوحية و Chromebook</value>
     </data>
     <data name="StoreNoteMicrosoft" xml:space="preserve">
-        <value>The recommended 4K size</value>
+        <value>مقاس 4K الموصى به</value>
     </data>
     <data name="StoreNoteOther" xml:space="preserve">
-        <value>Extra size</value>
+        <value>مقاس إضافي</value>
     </data>
     <data name="StoreRuleAppStore" xml:space="preserve">
-        <value>Frames and captions are welcome. The first three screenshots matter most.</value>
+        <value>الإطارات والعناوين مرحب بها. أول ثلاث لقطات شاشة هي الأهم.</value>
     </data>
     <data name="StoreRuleGooglePlay" xml:space="preserve">
-        <value>Google Play discourages device frames. Keep captions short, without words like Best or New.</value>
+        <value>لا تنصح Google Play بإطارات الأجهزة. اجعل العناوين قصيرة، دون كلمات مثل الأفضل أو جديد.</value>
     </data>
     <data name="StoreRuleMicrosoftStore" xml:space="preserve">
-        <value>The Microsoft Store doesn't allow added text or logos. Add captions in Partner Center instead.</value>
+        <value>لا يسمح Microsoft Store بإضافة نصوص أو شعارات. أضف العناوين في Partner Center بدلًا من ذلك.</value>
     </data>
     <data name="StoreSizeCountOne" xml:space="preserve">
-        <value>1 size</value>
+        <value>مقاس واحد</value>
     </data>
     <data name="AssistantTitle" xml:space="preserve">
-        <value>AI assistant</value>
+        <value>مساعد الذكاء الاصطناعي</value>
     </data>
     <data name="AssistantDescription" xml:space="preserve">
-        <value>A chat that answers with text, charts and actions, streamed as it is written, with history, stop and retry.</value>
+        <value>محادثة تجيب بالنص والرسوم البيانية والإجراءات، وتظهر الإجابة أثناء كتابتها، مع السجل والإيقاف وإعادة المحاولة.</value>
     </data>
     <data name="AssistantCaption" xml:space="preserve">
-        <value>Ask your stores anything</value>
+        <value>اسأل عن فروعك ما تشاء</value>
     </data>
     <data name="CategoryAi" xml:space="preserve">
-        <value>AI</value>
+        <value>الذكاء الاصطناعي</value>
     </data>
     <data name="AssistantConversations" xml:space="preserve">
-        <value>Conversations</value>
+        <value>المحادثات</value>
     </data>
     <data name="AssistantNewChat" xml:space="preserve">
-        <value>New chat</value>
+        <value>محادثة جديدة</value>
     </data>
     <data name="AssistantRecent" xml:space="preserve">
-        <value>Recent</value>
+        <value>الأخيرة</value>
     </data>
     <data name="AssistantNoHistory" xml:space="preserve">
-        <value>No conversations yet</value>
+        <value>لا توجد محادثات بعد</value>
     </data>
     <data name="AssistantHistoryFailed" xml:space="preserve">
-        <value>The conversations couldn't be loaded.</value>
+        <value>تعذر تحميل المحادثات.</value>
     </data>
     <data name="AssistantRetry" xml:space="preserve">
-        <value>Try again</value>
+        <value>حاول مرة أخرى</value>
     </data>
     <data name="AssistantModel" xml:space="preserve">
-        <value>Demo model</value>
+        <value>نموذج تجريبي</value>
     </data>
     <data name="AssistantWelcomeTitle" xml:space="preserve">
-        <value>How can I help with your stores today?</value>
+        <value>كيف يمكنني مساعدتك في فروعك اليوم؟</value>
     </data>
     <data name="AssistantWelcomeText" xml:space="preserve">
-        <value>Ask about sales, stock, promotions or your team. In the workbench the answers come from a script, so every state of the conversation can be designed.</value>
+        <value>اسأل عن المبيعات أو المخزون أو العروض الترويجية أو فريقك. في منضدة العمل تأتي الإجابات من نص معد مسبقًا، لذا يمكن تصميم كل حالة من حالات المحادثة.</value>
     </data>
     <data name="AssistantPromptPlaceholder" xml:space="preserve">
-        <value>Ask about sales, stock or promotions</value>
+        <value>اسأل عن المبيعات أو المخزون أو العروض</value>
     </data>
     <data name="AssistantSend" xml:space="preserve">
-        <value>Send</value>
+        <value>إرسال</value>
     </data>
     <data name="AssistantStop" xml:space="preserve">
-        <value>Stop</value>
+        <value>إيقاف</value>
     </data>
     <data name="AssistantStopped" xml:space="preserve">
-        <value>Stopped</value>
+        <value>تم الإيقاف</value>
     </data>
     <data name="AssistantThinking" xml:space="preserve">
-        <value>Thinking</value>
+        <value>جارٍ التفكير</value>
     </data>
     <data name="AssistantDisclaimer" xml:space="preserve">
-        <value>Sample answers, scripted for design.</value>
+        <value>إجابات نموذجية معدة مسبقًا لأغراض التصميم.</value>
     </data>
     <data name="AssistantAnswerFailed" xml:space="preserve">
-        <value>This answer didn't arrive.</value>
+        <value>لم تصل هذه الإجابة.</value>
     </data>
     <data name="AssistantCopy" xml:space="preserve">
-        <value>Copy</value>
+        <value>نسخ</value>
     </data>
     <data name="AssistantCopied" xml:space="preserve">
-        <value>Copied</value>
+        <value>تم النسخ</value>
     </data>
     <data name="AssistantHelpful" xml:space="preserve">
-        <value>Helpful</value>
+        <value>مفيد</value>
     </data>
     <data name="AssistantNotHelpful" xml:space="preserve">
-        <value>Not helpful</value>
+        <value>غير مفيد</value>
     </data>
     <data name="AssistantToday" xml:space="preserve">
-        <value>Today</value>
+        <value>اليوم</value>
     </data>
     <data name="AssistantYesterday" xml:space="preserve">
-        <value>Yesterday</value>
+        <value>أمس</value>
     </data>
     <data name="AssistantHistoryWeekly" xml:space="preserve">
-        <value>Weekly sales recap</value>
+        <value>ملخص المبيعات الأسبوعي</value>
     </data>
     <data name="AssistantHistoryRestock" xml:space="preserve">
-        <value>Restock before the weekend</value>
+        <value>تجديد المخزون قبل عطلة نهاية الأسبوع</value>
     </data>
     <data name="AssistantHistoryAutumn" xml:space="preserve">
-        <value>Autumn promotion</value>
+        <value>عرض الخريف</value>
     </data>
     <data name="AssistantHistoryTeam" xml:space="preserve">
-        <value>Top sellers today</value>
+        <value>الأكثر مبيعًا اليوم</value>
     </data>
     <data name="AssistantSalesPrompt" xml:space="preserve">
-        <value>How did sales go this week?</value>
+        <value>كيف كانت المبيعات هذا الأسبوع؟</value>
     </data>
     <data name="AssistantSalesAnswer" xml:space="preserve">
-        <value>Net sales over the last 7 days came to **€34,820**, up **8.4%** on the week before.
+        <value>بلغ صافي المبيعات في آخر 7 أيام **34,820 يورو**، بزيادة **8.4%** عن الأسبوع السابق.
 
-- **Amsterdam** led with €15,940, helped by a busy Saturday.
-- **Rotterdam** grew fastest, up **12.1%** after the new breakfast menu.
-- **Utrecht** stayed flat; its afternoons were quieter than usual.
+- تصدّر فرع **Amsterdam** بمبلغ 15,940 يورو، بفضل يوم سبت مزدحم.
+- سجّل فرع **Rotterdam** أسرع نمو، بزيادة **12.1%** بعد قائمة الإفطار الجديدة.
+- بقي فرع **Utrecht** دون تغيير؛ فقد كانت فترات بعد الظهر فيه أهدأ من المعتاد.
 
-Here is each day:</value>
+وإليك مبيعات كل يوم:</value>
     </data>
     <data name="AssistantStockPrompt" xml:space="preserve">
-        <value>What's running low?</value>
+        <value>ما الذي أوشك على النفاد؟</value>
     </data>
     <data name="AssistantStockAnswer" xml:space="preserve">
-        <value>Three products will run out before Monday's delivery. Reorder them now and they arrive on Friday:</value>
+        <value>ستنفد ثلاثة منتجات قبل توريد يوم الاثنين. أعد طلبها الآن لتصل يوم الجمعة:</value>
     </data>
     <data name="AssistantPromoPrompt" xml:space="preserve">
-        <value>Write a promo for oat milk lattes</value>
+        <value>اكتب نصًا ترويجيًا للاتيه بحليب الشوفان</value>
     </data>
     <data name="AssistantPromoAnswer" xml:space="preserve">
-        <value>Here's a short one for the counter and your social posts:</value>
+        <value>إليك نصًا قصيرًا لطاولة الخدمة ومنشوراتك على مواقع التواصل:</value>
     </data>
     <data name="AssistantPromoDraft" xml:space="preserve">
-        <value>Autumn tastes better with oat. Any oat milk latte for €3.50 this week, in all three stores.</value>
+        <value>الخريف ألذ مع الشوفان. أي لاتيه بحليب الشوفان بسعر 3.50 يورو هذا الأسبوع، في فروعنا الثلاثة.</value>
     </data>
     <data name="AssistantStaffPrompt" xml:space="preserve">
-        <value>Who sold the most today?</value>
+        <value>من حقق أكبر مبيعات اليوم؟</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>**Daan** leads today with **64 orders** and €1,180 in sales. **Sarah** follows with 58 orders, then **Niloofar** with 51. Daan's average sale is the highest too, at €18.40.</value>
+        <value>يتصدر **دان** اليوم بـ **64 طلبًا** ومبيعات بقيمة 1,180 يورو. تليه **سارة** بـ 58 طلبًا، ثم **نيلوفر** بـ 51 طلبًا. ومتوسط البيع لدى دان هو الأعلى أيضًا، إذ يبلغ 18.40 يورو.</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
-        <value>In the workbench I answer from a short script, so I can't look that up. Try one of the suggestions, or ask about sales, stock, promotions or your team.</value>
+        <value>في منضدة العمل أجيب من نص قصير معد مسبقًا، لذا لا يمكنني البحث عن ذلك. جرّب أحد الاقتراحات، أو اسأل عن المبيعات أو المخزون أو العروض أو فريقك.</value>
     </data>
     <data name="AssistantSalesCardTitle" xml:space="preserve">
-        <value>Net sales, last 7 days</value>
+        <value>صافي المبيعات، آخر 7 أيام</value>
     </data>
     <data name="AssistantUnitsLeft" xml:space="preserve">
-        <value>{0} left</value>
+        <value>يتبقى {0}</value>
     </data>
     <data name="AssistantReorder" xml:space="preserve">
-        <value>Reorder</value>
+        <value>إعادة الطلب</value>
     </data>
     <data name="AssistantOrdered" xml:space="preserve">
-        <value>Ordered</value>
+        <value>تم الطلب</value>
     </data>
     <data name="AssistantStockOatMilk" xml:space="preserve">
-        <value>Oat milk</value>
+        <value>حليب الشوفان</value>
     </data>
     <data name="AssistantStockCroissants" xml:space="preserve">
-        <value>Croissants</value>
+        <value>كرواسون</value>
     </data>
     <data name="AssistantStockPaperCups" xml:space="preserve">
-        <value>Paper cups</value>
+        <value>أكواب ورقية</value>
     </data>
     <data name="DeployTitle" xml:space="preserve">
-        <value>Deployment</value>
+        <value>النشر</value>
     </data>
     <data name="DeployDescription" xml:space="preserve">
-        <value>The project's deployment pipeline as a flow you can run, with every step explained and a failure to simulate.</value>
+        <value>مسار النشر في المشروع على شكل مخطط يمكنك تشغيله، مع شرح لكل خطوة وفشل يمكنك محاكاته.</value>
     </data>
     <data name="DeployCaption" xml:space="preserve">
-        <value>Ship with one merge</value>
+        <value>انشر بدمج واحد</value>
     </data>
     <data name="CategoryExplainers" xml:space="preserve">
-        <value>Explainers</value>
+        <value>الشروحات</value>
     </data>
     <data name="DeployHeading" xml:space="preserve">
-        <value>How a change goes live</value>
+        <value>كيف يُنشر التغيير</value>
     </data>
     <data name="DeployIntro" xml:space="preserve">
-        <value>This is the pipeline your project ships with, from a merge to a live update. Run it to watch each step, or make the health check fail to see what happens then.</value>
+        <value>هذا هو مسار النشر الذي يأتي مع مشروعك، من الدمج حتى التحديث المباشر. شغّله لمتابعة كل خطوة، أو اجعل فحص السلامة يفشل لترى ما يحدث عندها.</value>
     </data>
     <data name="DeployRun" xml:space="preserve">
-        <value>Run the pipeline</value>
+        <value>تشغيل مسار النشر</value>
     </data>
     <data name="DeploySimulateFailure" xml:space="preserve">
-        <value>Make the health check fail</value>
+        <value>جعل فحص السلامة يفشل</value>
     </data>
     <data name="DeployRunning" xml:space="preserve">
-        <value>Running</value>
+        <value>قيد التشغيل</value>
     </data>
     <data name="DeploySucceeded" xml:space="preserve">
-        <value>Last run succeeded</value>
+        <value>نجح آخر تشغيل</value>
     </data>
     <data name="DeployFailed" xml:space="preserve">
-        <value>Last run failed</value>
+        <value>فشل آخر تشغيل</value>
     </data>
     <data name="DeployNeverRun" xml:space="preserve">
-        <value>Not run yet</value>
+        <value>لم يُشغَّل بعد</value>
     </data>
     <data name="DeployLoadFailed" xml:space="preserve">
-        <value>The pipeline couldn't be loaded.</value>
+        <value>تعذر تحميل مسار النشر.</value>
     </data>
     <data name="DeploySelectHint" xml:space="preserve">
-        <value>Select a step to see what it does.</value>
+        <value>حدد خطوة لترى ما تقوم به.</value>
     </data>
     <data name="DeployCheckFailedMessage" xml:space="preserve">
-        <value>/alive did not answer for five minutes.</value>
+        <value>لم يستجب /alive لمدة خمس دقائق.</value>
     </data>
     <data name="DeployMergeTitle" xml:space="preserve">
-        <value>Merge into main</value>
+        <value>الدمج في main</value>
     </data>
     <data name="DeployMergeDetail" xml:space="preserve">
-        <value>Starts the production deploy</value>
+        <value>يبدأ النشر إلى بيئة الإنتاج</value>
     </data>
     <data name="DeployMergeDescription" xml:space="preserve">
-        <value>A pull request merged into main starts the production workflow. One merged into develop deploys the Test environment the same way.</value>
+        <value>يبدأ سير عمل الإنتاج عند دمج pull request في main. والدمج في develop ينشر بيئة الاختبار بالطريقة نفسها.</value>
     </data>
     <data name="DeployImagesTitle" xml:space="preserve">
-        <value>Build the server images</value>
+        <value>بناء صور الخادم</value>
     </data>
     <data name="DeployImagesDetail" xml:space="preserve">
-        <value>Pushed to the container registry</value>
+        <value>تُرفع إلى سجل الحاويات</value>
     </data>
     <data name="DeployImagesDescription" xml:space="preserve">
-        <value>The server is built as container images, tagged with this run and pushed to the GitHub Container Registry.</value>
+        <value>يُبنى الخادم على شكل صور حاويات، تُوسَم بهذا التشغيل وتُرفع إلى GitHub Container Registry.</value>
     </data>
     <data name="DeployWindowsTitle" xml:space="preserve">
-        <value>Windows app</value>
+        <value>تطبيق Windows</value>
     </data>
     <data name="DeployWindowsDetail" xml:space="preserve">
-        <value>Signed installer and updates</value>
+        <value>مثبّت موقّع وتحديثات</value>
     </data>
     <data name="DeployWindowsDescription" xml:space="preserve">
-        <value>At the same time, the Windows app is built, signed and published with its installer and its update packages.</value>
+        <value>في الوقت نفسه، يُبنى تطبيق Windows ويُوقَّع ويُنشر مع المثبّت وحزم التحديث الخاصة به.</value>
     </data>
     <data name="DeployAndroidTitle" xml:space="preserve">
-        <value>Android app</value>
+        <value>تطبيق Android</value>
     </data>
     <data name="DeployAndroidDetail" xml:space="preserve">
-        <value>Bundle for Google Play</value>
+        <value>حزمة لـ Google Play</value>
     </data>
     <data name="DeployAndroidDescription" xml:space="preserve">
-        <value>At the same time, the Android app is built as a signed bundle, ready for Google Play.</value>
+        <value>في الوقت نفسه، يُبنى تطبيق Android على شكل حزمة موقّعة جاهزة لـ Google Play.</value>
     </data>
     <data name="DeployIosTitle" xml:space="preserve">
-        <value>iOS app</value>
+        <value>تطبيق iOS</value>
     </data>
     <data name="DeployIosDetail" xml:space="preserve">
-        <value>Build for the App Store</value>
+        <value>بناء لـ App Store</value>
     </data>
     <data name="DeployIosDescription" xml:space="preserve">
-        <value>At the same time, the iOS app is built and signed for TestFlight and the App Store.</value>
+        <value>في الوقت نفسه، يُبنى تطبيق iOS ويُوقَّع لـ TestFlight و App Store.</value>
     </data>
     <data name="DeployComposeTitle" xml:space="preserve">
-        <value>Write the Compose project</value>
+        <value>كتابة مشروع Compose</value>
     </data>
     <data name="DeployComposeDetail" xml:space="preserve">
-        <value>Services, settings, health checks</value>
+        <value>الخدمات والإعدادات وفحوص السلامة</value>
     </data>
     <data name="DeployComposeDescription" xml:space="preserve">
-        <value>The app host writes a Docker Compose project that names every service the app needs, with its settings, health checks and restart rules.</value>
+        <value>يكتب مضيف التطبيق مشروع Docker Compose يحدد كل خدمة يحتاجها التطبيق، مع إعداداتها وفحوص السلامة وقواعد إعادة التشغيل.</value>
     </data>
     <data name="DeployPullTitle" xml:space="preserve">
-        <value>Pull on the server</value>
+        <value>السحب على الخادم</value>
     </data>
     <data name="DeployPullDetail" xml:space="preserve">
-        <value>By the server's own runner</value>
+        <value>عبر المشغّل الخاص بالخادم</value>
     </data>
     <data name="DeployPullDescription" xml:space="preserve">
-        <value>On the server, a self-hosted runner signs in to the registry and pulls the new images.</value>
+        <value>على الخادم، يسجل مشغّل مستضاف ذاتيًا الدخول إلى السجل ويسحب الصور الجديدة.</value>
     </data>
     <data name="DeployMigrateTitle" xml:space="preserve">
-        <value>Run the migrations</value>
+        <value>تشغيل الترحيلات</value>
     </data>
     <data name="DeployMigrateDetail" xml:space="preserve">
-        <value>First, before anything restarts</value>
+        <value>أولًا، قبل إعادة تشغيل أي شيء</value>
     </data>
     <data name="DeployMigrateDescription" xml:space="preserve">
-        <value>The database migrations run first, on their own. If they fail, the step fails and the running version is left alone.</value>
+        <value>تعمل ترحيلات قاعدة البيانات أولًا وبشكل منفصل. إذا فشلت، تفشل هذه الخطوة وتبقى النسخة العاملة كما هي.</value>
     </data>
     <data name="DeployStartTitle" xml:space="preserve">
-        <value>Start the containers</value>
+        <value>تشغيل الحاويات</value>
     </data>
     <data name="DeployStartDetail" xml:space="preserve">
-        <value>Waits until each is healthy</value>
+        <value>ينتظر حتى تصبح كل حاوية سليمة</value>
     </data>
     <data name="DeployStartDescription" xml:space="preserve">
-        <value>The new version starts, and the step waits until every container reports healthy, or fails with their logs.</value>
+        <value>تبدأ النسخة الجديدة، وتنتظر هذه الخطوة حتى تُبلغ كل حاوية بأنها سليمة، أو تفشل مع سجلاتها.</value>
     </data>
     <data name="DeployCheckTitle" xml:space="preserve">
-        <value>Check the public address</value>
+        <value>التحقق من العنوان العام</value>
     </data>
     <data name="DeployCheckDetail" xml:space="preserve">
-        <value>Asks /alive from outside</value>
+        <value>يستعلم عن /alive من الخارج</value>
     </data>
     <data name="DeployCheckDescription" xml:space="preserve">
-        <value>The workflow asks the public address for /alive until it answers, so the app is reachable from outside, not only on the server.</value>
+        <value>يستعلم سير العمل عن /alive على العنوان العام حتى يحصل على رد، للتأكد من أن التطبيق متاح من الخارج، لا على الخادم فقط.</value>
     </data>
     <data name="DeployPurgeTitle" xml:space="preserve">
-        <value>Purge the CDN cache</value>
+        <value>مسح ذاكرة CDN المؤقتة</value>
     </data>
     <data name="DeployPurgeDetail" xml:space="preserve">
-        <value>Visitors get the new files</value>
+        <value>يحصل الزوار على الملفات الجديدة</value>
     </data>
     <data name="DeployPurgeDescription" xml:space="preserve">
-        <value>The Cloudflare cache is purged, so visitors get the new version's files at once.</value>
+        <value>تُمسح ذاكرة التخزين المؤقت في Cloudflare، ليحصل الزوار فورًا على ملفات النسخة الجديدة.</value>
     </data>
     <data name="DeployLiveTitle" xml:space="preserve">
-        <value>Live</value>
+        <value>منشور</value>
     </data>
     <data name="DeployLiveDetail" xml:space="preserve">
-        <value>The new version serves everyone</value>
+        <value>النسخة الجديدة تخدم الجميع</value>
     </data>
     <data name="DeployLiveDescription" xml:space="preserve">
-        <value>Everyone now uses the new version. The store apps update the way each store delivers them.</value>
+        <value>يستخدم الجميع الآن النسخة الجديدة. وتتحدث تطبيقات المتاجر بالطريقة التي يوفرها بها كل متجر.</value>
     </data>
     <data name="StructureTitle" xml:space="preserve">
-        <value>Project structure</value>
+        <value>هيكل المشروع</value>
     </data>
     <data name="StructureDescription" xml:space="preserve">
-        <value>Every project of the solution and how they reference each other, with what lives in each one.</value>
+        <value>كل مشاريع الحل وكيف يشير بعضها إلى بعض، مع ما يحتويه كل منها.</value>
     </data>
     <data name="StructureCaption" xml:space="preserve">
-        <value>Every part in its place</value>
+        <value>كل جزء في مكانه</value>
     </data>
     <data name="StructureHeading" xml:space="preserve">
-        <value>How your project fits together</value>
+        <value>كيف تتكامل أجزاء مشروعك</value>
     </data>
     <data name="StructureIntro" xml:space="preserve">
-        <value>Each box is a project of the solution and each line a reference. Select one to see what lives there.</value>
+        <value>كل مربع مشروع من الحل وكل خط مرجع. اختر واحدًا لترى ما بداخله.</value>
     </data>
     <data name="StructureSelectHint" xml:space="preserve">
-        <value>Select a project to see what lives there.</value>
+        <value>اختر مشروعًا لترى ما بداخله.</value>
     </data>
     <data name="StructureLoadFailed" xml:space="preserve">
-        <value>The project structure couldn't be loaded.</value>
+        <value>تعذّر تحميل هيكل المشروع.</value>
     </data>
     <data name="StructureEmpty" xml:space="preserve">
-        <value>No projects to show.</value>
+        <value>لا توجد مشاريع للعرض.</value>
     </data>
     <data name="StructureReferences" xml:space="preserve">
-        <value>References: {0}</value>
+        <value>المراجع: {0}</value>
     </data>
     <data name="StructureKindClient" xml:space="preserve">
-        <value>Client</value>
+        <value>العميل</value>
     </data>
     <data name="StructureKindServer" xml:space="preserve">
-        <value>Server</value>
+        <value>الخادم</value>
     </data>
     <data name="StructureKindShared" xml:space="preserve">
-        <value>Shared</value>
+        <value>مشترك</value>
     </data>
     <data name="StructureKindTools" xml:space="preserve">
-        <value>Tools</value>
+        <value>أدوات</value>
     </data>
     <data name="StructureClientWebRole" xml:space="preserve">
-        <value>Runs in the browser</value>
+        <value>يعمل في المتصفح</value>
     </data>
     <data name="StructureClientWebDescription" xml:space="preserve">
-        <value>The WebAssembly head: it runs the app in the browser, works offline and installs as a web app.</value>
+        <value>نسخة WebAssembly: تشغّل التطبيق في المتصفح، وتعمل دون اتصال، وتُثبَّت كتطبيق ويب.</value>
     </data>
     <data name="StructureClientMauiRole" xml:space="preserve">
-        <value>Android, iOS, macOS, Windows</value>
+        <value>Android وiOS وmacOS وWindows</value>
     </data>
     <data name="StructureClientMauiDescription" xml:space="preserve">
-        <value>The native app for Android, iOS, macOS and Windows, with the same pages running inside it.</value>
+        <value>التطبيق الأصلي لأنظمة Android وiOS وmacOS وWindows، وتعمل بداخله الصفحات نفسها.</value>
     </data>
     <data name="StructureClientWindowsRole" xml:space="preserve">
-        <value>Windows desktop app</value>
+        <value>تطبيق سطح مكتب لـWindows</value>
     </data>
     <data name="StructureClientWindowsDescription" xml:space="preserve">
-        <value>A light Windows desktop app with automatic updates, running the same pages.</value>
+        <value>تطبيق خفيف لسطح مكتب Windows مع تحديثات تلقائية، يشغّل الصفحات نفسها.</value>
     </data>
     <data name="StructureWorkbenchRole" xml:space="preserve">
-        <value>Designs pages on sample data</value>
+        <value>يصمّم الصفحات ببيانات تجريبية</value>
     </data>
     <data name="StructureWorkbenchDescription" xml:space="preserve">
-        <value>This app: pages designed on sample data with the client's components and theme. It is never deployed with the app.</value>
+        <value>هذا التطبيق: صفحات تُصمَّم ببيانات تجريبية بمكونات العميل وسمته، ولا يُنشر أبدًا مع التطبيق.</value>
     </data>
     <data name="StructureClientCoreRole" xml:space="preserve">
-        <value>Pages, components, services</value>
+        <value>الصفحات والمكونات والخدمات</value>
     </data>
     <data name="StructureClientCoreDescription" xml:space="preserve">
-        <value>The heart of the client: every page, component, layout and client service, with the app's styles and scripts. Every client runs it.</value>
+        <value>قلب العميل: كل الصفحات والمكونات والتخطيطات وخدمات العميل، مع أنماط التطبيق ونصوصه البرمجية. تشغّله كل نسخ العميل.</value>
     </data>
     <data name="StructureServerWebRole" xml:space="preserve">
-        <value>Hosts and renders the app</value>
+        <value>يستضيف التطبيق ويعرضه</value>
     </data>
     <data name="StructureServerWebDescription" xml:space="preserve">
-        <value>The startup project: it renders pages on the server, runs Blazor Server and serves the WebAssembly files.</value>
+        <value>مشروع البدء: يعرض الصفحات على الخادم، ويشغّل Blazor Server، ويقدّم ملفات WebAssembly.</value>
     </data>
     <data name="StructureServerApiRole" xml:space="preserve">
-        <value>API, data and jobs</value>
+        <value>الواجهة البرمجية والبيانات والمهام</value>
     </data>
     <data name="StructureServerApiDescription" xml:space="preserve">
-        <value>The API controllers, the database and its migrations, email templates, background jobs and real-time hubs.</value>
+        <value>متحكمات الواجهة البرمجية، وقاعدة البيانات وعمليات ترحيلها، وقوالب البريد، والمهام الخلفية، ومراكز الاتصال الفوري.</value>
     </data>
     <data name="StructureSharedRole" xml:space="preserve">
-        <value>DTOs and resources</value>
+        <value>كائنات البيانات والموارد</value>
     </data>
     <data name="StructureSharedDescription" xml:space="preserve">
-        <value>What the server and every client share: data contracts, enums, errors, shared services and the translated texts.</value>
+        <value>ما يتشاركه الخادم وكل نسخ العميل: عقود البيانات، والتعدادات، والأخطاء، والخدمات المشتركة، والنصوص المترجمة.</value>
     </data>
     <data name="StructureServerSharedRole" xml:space="preserve">
-        <value>Health, telemetry, defaults</value>
+        <value>الصحة والقياس والإعدادات الافتراضية</value>
     </data>
     <data name="StructureServerSharedDescription" xml:space="preserve">
-        <value>What both server projects share, such as health checks, telemetry and service defaults.</value>
+        <value>ما يتشاركه مشروعا الخادم، مثل فحوص الصحة والقياس عن بُعد وإعدادات الخدمات الافتراضية.</value>
     </data>
     <data name="StructureAppHostRole" xml:space="preserve">
-        <value>Runs everything locally</value>
+        <value>يشغّل كل شيء محليًا</value>
     </data>
     <data name="StructureAppHostDescription" xml:space="preserve">
-        <value>Starts the projects and the database and services they need for development, and writes the Docker Compose project for deployment.</value>
+        <value>يشغّل المشاريع وقاعدة البيانات والخدمات التي تحتاجها أثناء التطوير، ويكتب مشروع Docker Compose للنشر.</value>
     </data>
     <data name="StructureTestsRole" xml:space="preserve">
-        <value>UI and integration tests</value>
+        <value>اختبارات الواجهة والتكامل</value>
     </data>
     <data name="StructureTestsDescription" xml:space="preserve">
-        <value>UI and integration tests that run the real server in memory, with test data and a real browser.</value>
+        <value>اختبارات الواجهة والتكامل التي تشغّل الخادم الحقيقي في الذاكرة، مع بيانات اختبار ومتصفح حقيقي.</value>
     </data>
 </root>

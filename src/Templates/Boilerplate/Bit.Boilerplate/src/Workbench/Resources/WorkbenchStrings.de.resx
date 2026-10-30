@@ -118,16 +118,16 @@
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
     <data name="WorkbenchTitle" xml:space="preserve">
-        <value>Workbench</value>
+        <value>Werkbank</value>
     </data>
     <data name="CategoryDashboards" xml:space="preserve">
         <value>Dashboards</value>
     </data>
     <data name="PosDashboardTitle" xml:space="preserve">
-        <value>POS dashboard</value>
+        <value>Kassen-Dashboard</value>
     </data>
     <data name="PosDashboardDescription" xml:space="preserve">
-        <value>A point-of-sale dashboard whose widgets can be rearranged, resized, hidden and saved.</value>
+        <value>Ein Kassen-Dashboard, dessen Widgets sich verschieben, in der Größe ändern, ausblenden und speichern lassen.</value>
     </data>
     <data name="DemoUserSarah" xml:space="preserve">
         <value>Sarah Johnson</value>
@@ -139,118 +139,118 @@
         <value>Niloofar Rahimi</value>
     </data>
     <data name="DemoTenantStore" xml:space="preserve">
-        <value>Amsterdam store</value>
+        <value>Filiale Amsterdam</value>
     </data>
     <data name="DemoTenantHeadOffice" xml:space="preserve">
-        <value>Head office</value>
+        <value>Zentrale</value>
     </data>
     <data name="Rotate" xml:space="preserve">
-        <value>Rotate</value>
+        <value>Drehen</value>
     </data>
     <data name="ScreenshotThisView" xml:space="preserve">
-        <value>Screenshot of this view (PNG)</value>
+        <value>Screenshot dieser Ansicht (PNG)</value>
     </data>
     <data name="ScreenshotAllViews" xml:space="preserve">
-        <value>Screenshots of all views (ZIP)</value>
+        <value>Screenshots aller Ansichten (ZIP)</value>
     </data>
     <data name="StoreScreenshots" xml:space="preserve">
-        <value>Store screenshots</value>
+        <value>Store-Screenshots</value>
     </data>
     <data name="OpenInNewTab" xml:space="preserve">
-        <value>Open in a new tab</value>
+        <value>In neuem Tab öffnen</value>
     </data>
     <data name="RemoveView" xml:space="preserve">
-        <value>Remove this view</value>
+        <value>Diese Ansicht entfernen</value>
     </data>
     <data name="NoChrome" xml:space="preserve">
-        <value>No chrome</value>
+        <value>Ohne App-Rahmen</value>
     </data>
     <data name="ThemeLight" xml:space="preserve">
-        <value>Light</value>
+        <value>Hell</value>
     </data>
     <data name="ThemeDark" xml:space="preserve">
-        <value>Dark</value>
+        <value>Dunkel</value>
     </data>
     <data name="ThemeSystem" xml:space="preserve">
         <value>System</value>
     </data>
     <data name="DataLive" xml:space="preserve">
-        <value>Data</value>
+        <value>Daten</value>
     </data>
     <data name="DataLoading" xml:space="preserve">
-        <value>Loading</value>
+        <value>Lädt</value>
     </data>
     <data name="DataEmpty" xml:space="preserve">
-        <value>Empty</value>
+        <value>Leer</value>
     </data>
     <data name="DataError" xml:space="preserve">
-        <value>Error</value>
+        <value>Fehler</value>
     </data>
     <data name="DataMixed" xml:space="preserve">
-        <value>Mixed</value>
+        <value>Gemischt</value>
     </data>
     <data name="DataSlow" xml:space="preserve">
-        <value>Slow</value>
+        <value>Langsam</value>
     </data>
     <data name="SignedOut" xml:space="preserve">
-        <value>Signed out</value>
+        <value>Abgemeldet</value>
     </data>
     <data name="SignedIn" xml:space="preserve">
-        <value>Signed in</value>
+        <value>Angemeldet</value>
     </data>
     <data name="MultiAccount" xml:space="preserve">
-        <value>Accounts</value>
+        <value>Konten</value>
     </data>
     <data name="Device" xml:space="preserve">
-        <value>Device</value>
+        <value>Gerät</value>
     </data>
     <data name="Portrait" xml:space="preserve">
-        <value>Portrait</value>
+        <value>Hochformat</value>
     </data>
     <data name="Landscape" xml:space="preserve">
-        <value>Landscape</value>
+        <value>Querformat</value>
     </data>
     <data name="DeviceFrame" xml:space="preserve">
-        <value>Device frame</value>
+        <value>Geräterahmen</value>
     </data>
     <data name="Zoom" xml:space="preserve">
         <value>Zoom</value>
     </data>
     <data name="ZoomFit" xml:space="preserve">
-        <value>Fit</value>
+        <value>Einpassen</value>
     </data>
     <data name="DataState" xml:space="preserve">
-        <value>Data</value>
+        <value>Daten</value>
     </data>
     <data name="DataStateHint" xml:space="preserve">
-        <value>Pages read their data from memory after a short delay, so every state can be shown here, even the ones that are hard to catch in a real app.</value>
+        <value>Seiten lesen ihre Daten nach einer kurzen Verzögerung aus dem Speicher, daher lässt sich hier jeder Zustand zeigen, auch solche, die in einer echten App schwer abzupassen sind.</value>
     </data>
     <data name="AppSection" xml:space="preserve">
         <value>App</value>
     </data>
     <data name="AppChrome" xml:space="preserve">
-        <value>App chrome</value>
+        <value>App-Rahmen</value>
     </data>
     <data name="AppChromeHint" xml:space="preserve">
-        <value>Navigation panel, header, account menu and bottom bar of the app.</value>
+        <value>Navigationsbereich, Kopfzeile, Kontomenü und untere Leiste der App.</value>
     </data>
     <data name="SignInState" xml:space="preserve">
-        <value>Sign-in</value>
+        <value>Anmeldung</value>
     </data>
     <data name="Theme" xml:space="preserve">
-        <value>Theme</value>
+        <value>Design</value>
     </data>
     <data name="Language" xml:space="preserve">
-        <value>Language</value>
+        <value>Sprache</value>
     </data>
     <data name="Reset" xml:space="preserve">
-        <value>Reset</value>
+        <value>Zurücksetzen</value>
     </data>
     <data name="DeviceGroupPhone" xml:space="preserve">
-        <value>Phones</value>
+        <value>Smartphones</value>
     </data>
     <data name="DeviceGroupFoldable" xml:space="preserve">
-        <value>Foldables</value>
+        <value>Faltbare Geräte</value>
     </data>
     <data name="DeviceGroupTablet" xml:space="preserve">
         <value>Tablets</value>
@@ -259,64 +259,64 @@
         <value>Laptops</value>
     </data>
     <data name="DeviceGroupDesktop" xml:space="preserve">
-        <value>Desktops</value>
+        <value>Desktop-PCs</value>
     </data>
     <data name="DeviceGroupStore" xml:space="preserve">
-        <value>Store sizes</value>
+        <value>Store-Formate</value>
     </data>
     <data name="Pages" xml:space="preserve">
-        <value>Pages</value>
+        <value>Seiten</value>
     </data>
     <data name="SearchPages" xml:space="preserve">
-        <value>Search pages</value>
+        <value>Seiten suchen</value>
     </data>
     <data name="PageNotFound" xml:space="preserve">
-        <value>This page isn't in the workbench.</value>
+        <value>Diese Seite ist nicht auf der Werkbank.</value>
     </data>
     <data name="BackToHome" xml:space="preserve">
-        <value>Back to the workbench home</value>
+        <value>Zurück zur Startseite der Werkbank</value>
     </data>
     <data name="Tools" xml:space="preserve">
-        <value>Tools</value>
+        <value>Werkzeuge</value>
     </data>
     <data name="Close" xml:space="preserve">
-        <value>Close</value>
+        <value>Schließen</value>
     </data>
     <data name="Compare" xml:space="preserve">
-        <value>Compare</value>
+        <value>Vergleichen</value>
     </data>
     <data name="CompareSingle" xml:space="preserve">
-        <value>One view</value>
+        <value>Eine Ansicht</value>
     </data>
     <data name="CompareDevices" xml:space="preserve">
-        <value>Phone, tablet and desktop</value>
+        <value>Smartphone, Tablet und Desktop</value>
     </data>
     <data name="CompareThemes" xml:space="preserve">
-        <value>Light and dark</value>
+        <value>Hell und dunkel</value>
     </data>
     <data name="CompareLanguages" xml:space="preserve">
-        <value>Languages side by side</value>
+        <value>Sprachen nebeneinander</value>
     </data>
     <data name="CompareStates" xml:space="preserve">
-        <value>Every data state</value>
+        <value>Alle Datenzustände</value>
     </data>
     <data name="CompareSignIn" xml:space="preserve">
-        <value>Signed out, signed in, several accounts</value>
+        <value>Abgemeldet, angemeldet, mehrere Konten</value>
     </data>
     <data name="AddView" xml:space="preserve">
-        <value>Add view</value>
+        <value>Ansicht hinzufügen</value>
     </data>
     <data name="Screenshot" xml:space="preserve">
         <value>Screenshot</value>
     </data>
     <data name="CopyLink" xml:space="preserve">
-        <value>Copy a link to this setup</value>
+        <value>Link zu diesem Setup kopieren</value>
     </data>
     <data name="ToggleWorkbenchTheme" xml:space="preserve">
-        <value>Switch the workbench between light and dark</value>
+        <value>Werkbank zwischen hell und dunkel umschalten</value>
     </data>
     <data name="PosStoreAll" xml:space="preserve">
-        <value>All stores</value>
+        <value>Alle Filialen</value>
     </data>
     <data name="PosStoreAmsterdam" xml:space="preserve">
         <value>Amsterdam, Jordaan</value>
@@ -328,16 +328,16 @@
         <value>Utrecht, Oudegracht</value>
     </data>
     <data name="PosProductFlatWhite" xml:space="preserve">
-        <value>Flat white</value>
+        <value>Flat White</value>
     </data>
     <data name="PosProductOatLatte" xml:space="preserve">
-        <value>Oat milk latte</value>
+        <value>Latte mit Hafermilch</value>
     </data>
     <data name="PosProductCroissant" xml:space="preserve">
-        <value>Butter croissant</value>
+        <value>Buttercroissant</value>
     </data>
     <data name="PosProductAppleTart" xml:space="preserve">
-        <value>Dutch apple tart</value>
+        <value>Holländischer Apfelkuchen</value>
     </data>
     <data name="PosProductCappuccino" xml:space="preserve">
         <value>Cappuccino</value>
@@ -346,10 +346,10 @@
         <value>Stroopwafel</value>
     </data>
     <data name="PosProductSourdough" xml:space="preserve">
-        <value>Sourdough loaf</value>
+        <value>Sauerteigbrot</value>
     </data>
     <data name="PosProductColdBrew" xml:space="preserve">
-        <value>Cold brew</value>
+        <value>Cold Brew</value>
     </data>
     <data name="PosStaffEmma" xml:space="preserve">
         <value>Emma de Jong</value>
@@ -364,421 +364,421 @@
         <value>Sem Smit</value>
     </data>
     <data name="PosPaymentCard" xml:space="preserve">
-        <value>Card</value>
+        <value>Karte</value>
     </data>
     <data name="PosPaymentWallet" xml:space="preserve">
-        <value>Mobile wallet</value>
+        <value>Mobiles Bezahlen</value>
     </data>
     <data name="PosPaymentCash" xml:space="preserve">
-        <value>Cash</value>
+        <value>Bar</value>
     </data>
     <data name="PosPaymentGiftCard" xml:space="preserve">
-        <value>Gift card</value>
+        <value>Geschenkkarte</value>
     </data>
     <data name="PosStockOatMilk" xml:space="preserve">
-        <value>Oat milk</value>
+        <value>Hafermilch</value>
     </data>
     <data name="PosStockCroissantDough" xml:space="preserve">
-        <value>Croissant dough</value>
+        <value>Croissantteig</value>
     </data>
     <data name="PosStockCoffeeBeans" xml:space="preserve">
-        <value>Espresso beans</value>
+        <value>Espressobohnen</value>
     </data>
     <data name="PosStockCups" xml:space="preserve">
-        <value>Takeaway cups</value>
+        <value>To-go-Becher</value>
     </data>
     <data name="PosNetSales" xml:space="preserve">
-        <value>Net sales</value>
+        <value>Nettoumsatz</value>
     </data>
     <data name="PosTransactions" xml:space="preserve">
-        <value>Transactions</value>
+        <value>Transaktionen</value>
     </data>
     <data name="PosAverageSale" xml:space="preserve">
-        <value>Average sale</value>
+        <value>Durchschnittsverkauf</value>
     </data>
     <data name="PosRefunds" xml:space="preserve">
-        <value>Refunds</value>
+        <value>Erstattungen</value>
     </data>
     <data name="PosSalesByHour" xml:space="preserve">
-        <value>Sales by hour</value>
+        <value>Umsatz pro Stunde</value>
     </data>
     <data name="PosPaymentMethods" xml:space="preserve">
-        <value>Payment methods</value>
+        <value>Zahlungsarten</value>
     </data>
     <data name="PosTopProducts" xml:space="preserve">
-        <value>Top products</value>
+        <value>Top-Produkte</value>
     </data>
     <data name="PosDailyGoal" xml:space="preserve">
-        <value>Sales goal</value>
+        <value>Umsatzziel</value>
     </data>
     <data name="PosRecentOrders" xml:space="preserve">
-        <value>Recent orders</value>
+        <value>Letzte Bestellungen</value>
     </data>
     <data name="PosLowStock" xml:space="preserve">
-        <value>Low stock</value>
+        <value>Niedriger Bestand</value>
     </data>
     <data name="PosTeam" xml:space="preserve">
         <value>Team</value>
     </data>
     <data name="PosPeakHours" xml:space="preserve">
-        <value>Busy hours</value>
+        <value>Stoßzeiten</value>
     </data>
     <data name="PosDragWidget" xml:space="preserve">
-        <value>Drag {0}</value>
+        <value>{0} ziehen</value>
     </data>
     <data name="PosWidgetOptions" xml:space="preserve">
-        <value>Widget options</value>
+        <value>Widget-Optionen</value>
     </data>
     <data name="PosLoadingWidget" xml:space="preserve">
-        <value>Loading</value>
+        <value>Wird geladen</value>
     </data>
     <data name="PosWidgetFailedTitle" xml:space="preserve">
-        <value>Couldn't load this</value>
+        <value>Laden fehlgeschlagen</value>
     </data>
     <data name="PosWidgetFailedDescription" xml:space="preserve">
-        <value>The rest of the dashboard is fine. Try again in a moment.</value>
+        <value>Der Rest des Dashboards funktioniert. Versuchen Sie es gleich noch einmal.</value>
     </data>
     <data name="PosRetry" xml:space="preserve">
-        <value>Try again</value>
+        <value>Erneut versuchen</value>
     </data>
     <data name="PosNoDataYet" xml:space="preserve">
-        <value>Nothing here yet</value>
+        <value>Noch nichts vorhanden</value>
     </data>
     <data name="PosSizeSmall" xml:space="preserve">
-        <value>Small</value>
+        <value>Klein</value>
     </data>
     <data name="PosSizeMedium" xml:space="preserve">
-        <value>Medium</value>
+        <value>Mittel</value>
     </data>
     <data name="PosSizeLarge" xml:space="preserve">
-        <value>Large</value>
+        <value>Groß</value>
     </data>
     <data name="PosMoveEarlier" xml:space="preserve">
-        <value>Move earlier</value>
+        <value>Nach vorne</value>
     </data>
     <data name="PosMoveLater" xml:space="preserve">
-        <value>Move later</value>
+        <value>Nach hinten</value>
     </data>
     <data name="PosHideWidget" xml:space="preserve">
-        <value>Hide</value>
+        <value>Ausblenden</value>
     </data>
     <data name="PosNoSalesYet" xml:space="preserve">
-        <value>No sales yet</value>
+        <value>Noch keine Verkäufe</value>
     </data>
     <data name="PosNoSalesYetDescription" xml:space="preserve">
-        <value>Numbers show up here as soon as the first order is paid.</value>
+        <value>Die Zahlen erscheinen hier, sobald die erste Bestellung bezahlt ist.</value>
     </data>
     <data name="PosToday" xml:space="preserve">
-        <value>Today</value>
+        <value>Heute</value>
     </data>
     <data name="PosThisPeriod" xml:space="preserve">
-        <value>This period</value>
+        <value>Dieser Zeitraum</value>
     </data>
     <data name="PosLastWeek" xml:space="preserve">
-        <value>Same day last week</value>
+        <value>Gleicher Tag der Vorwoche</value>
     </data>
     <data name="PosSalesByHourSubtitle" xml:space="preserve">
-        <value>Compared with the same day last week</value>
+        <value>Im Vergleich zum gleichen Tag der Vorwoche</value>
     </data>
     <data name="PosNoPaymentsYet" xml:space="preserve">
-        <value>No payments yet</value>
+        <value>Noch keine Zahlungen</value>
     </data>
     <data name="PosTotal" xml:space="preserve">
-        <value>Total</value>
+        <value>Gesamt</value>
     </data>
     <data name="PosUnitsSold" xml:space="preserve">
-        <value>{0} sold</value>
+        <value>{0} verkauft</value>
     </data>
     <data name="PosNoGoalSet" xml:space="preserve">
-        <value>No goal set</value>
+        <value>Kein Ziel festgelegt</value>
     </data>
     <data name="PosNoGoalSetDescription" xml:space="preserve">
-        <value>Set a sales goal to see how close the store is.</value>
+        <value>Legen Sie ein Umsatzziel fest, um zu sehen, wie nah die Filiale daran ist.</value>
     </data>
     <data name="PosOfTarget" xml:space="preserve">
-        <value>of {0} goal</value>
+        <value>von {0} Ziel</value>
     </data>
     <data name="PosRemainingToGoal" xml:space="preserve">
-        <value>{0} more to reach the goal</value>
+        <value>Noch {0} bis zum Ziel</value>
     </data>
     <data name="PosRecentOrdersSubtitle" xml:space="preserve">
-        <value>Latest orders across the registers</value>
+        <value>Neueste Bestellungen aller Kassen</value>
     </data>
     <data name="PosNoOrdersYet" xml:space="preserve">
-        <value>No orders yet</value>
+        <value>Noch keine Bestellungen</value>
     </data>
     <data name="PosNoOrdersYetDescription" xml:space="preserve">
-        <value>Orders appear here the moment a register rings them up.</value>
+        <value>Bestellungen erscheinen hier, sobald eine Kasse sie bucht.</value>
     </data>
     <data name="PosOrder" xml:space="preserve">
-        <value>Order</value>
+        <value>Bestellung</value>
     </data>
     <data name="PosTime" xml:space="preserve">
-        <value>Time</value>
+        <value>Uhrzeit</value>
     </data>
     <data name="PosCashier" xml:space="preserve">
-        <value>Cashier</value>
+        <value>Kassierer</value>
     </data>
     <data name="PosItems" xml:space="preserve">
-        <value>Items</value>
+        <value>Artikel</value>
     </data>
     <data name="PosPayment" xml:space="preserve">
-        <value>Payment</value>
+        <value>Zahlung</value>
     </data>
     <data name="PosStatus" xml:space="preserve">
         <value>Status</value>
     </data>
     <data name="PosOrderStatusPaid" xml:space="preserve">
-        <value>Paid</value>
+        <value>Bezahlt</value>
     </data>
     <data name="PosOrderStatusRefunded" xml:space="preserve">
-        <value>Refunded</value>
+        <value>Erstattet</value>
     </data>
     <data name="PosOrderStatusPending" xml:space="preserve">
-        <value>Pending</value>
+        <value>Ausstehend</value>
     </data>
     <data name="PosMinutesAgo" xml:space="preserve">
-        <value>{0} min ago</value>
+        <value>vor {0} Min.</value>
     </data>
     <data name="PosLowStockSubtitle" xml:space="preserve">
-        <value>Items below their minimum</value>
+        <value>Artikel unter ihrem Mindestbestand</value>
     </data>
     <data name="PosStockAllGood" xml:space="preserve">
-        <value>Everything is in stock</value>
+        <value>Alles ist vorrätig</value>
     </data>
     <data name="PosStockAllGoodDescription" xml:space="preserve">
-        <value>Nothing is below its minimum right now.</value>
+        <value>Derzeit liegt nichts unter seinem Mindestbestand.</value>
     </data>
     <data name="PosInStock" xml:space="preserve">
-        <value>{0} left · minimum {1}</value>
+        <value>Noch {0} · Minimum {1}</value>
     </data>
     <data name="PosOutOfStock" xml:space="preserve">
-        <value>Out of stock</value>
+        <value>Ausverkauft</value>
     </data>
     <data name="PosLowStockBadge" xml:space="preserve">
-        <value>Low</value>
+        <value>Niedrig</value>
     </data>
     <data name="PosOrdered" xml:space="preserve">
-        <value>Ordered</value>
+        <value>Bestellt</value>
     </data>
     <data name="PosReorder" xml:space="preserve">
-        <value>Reorder</value>
+        <value>Nachbestellen</value>
     </data>
     <data name="PosNoShiftsYet" xml:space="preserve">
-        <value>No one is on shift</value>
+        <value>Niemand ist im Dienst</value>
     </data>
     <data name="PosNoShiftsYetDescription" xml:space="preserve">
-        <value>Team results show up once someone clocks in.</value>
+        <value>Die Teamergebnisse erscheinen, sobald sich jemand einstempelt.</value>
     </data>
     <data name="PosOrdersCount" xml:space="preserve">
-        <value>{0} orders</value>
+        <value>{0} Bestellungen</value>
     </data>
     <data name="PosTopSeller" xml:space="preserve">
-        <value>Top seller</value>
+        <value>Meiste Verkäufe</value>
     </data>
     <data name="PosPeakHoursSubtitle" xml:space="preserve">
-        <value>Orders per hour over the last four weeks</value>
+        <value>Bestellungen pro Stunde in den letzten vier Wochen</value>
     </data>
     <data name="PosQuiet" xml:space="preserve">
-        <value>Quiet</value>
+        <value>Ruhig</value>
     </data>
     <data name="PosBusy" xml:space="preserve">
-        <value>Busy</value>
+        <value>Viel los</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>Good afternoon, Sarah</value>
+        <value>Guten Tag, Sarah</value>
     </data>
     <data name="PosStore" xml:space="preserve">
-        <value>Store</value>
+        <value>Filiale</value>
     </data>
     <data name="PosPeriod" xml:space="preserve">
-        <value>Period</value>
+        <value>Zeitraum</value>
     </data>
     <data name="Pos7Days" xml:space="preserve">
-        <value>7 days</value>
+        <value>7 Tage</value>
     </data>
     <data name="Pos30Days" xml:space="preserve">
-        <value>30 days</value>
+        <value>30 Tage</value>
     </data>
     <data name="PosDone" xml:space="preserve">
-        <value>Done</value>
+        <value>Fertig</value>
     </data>
     <data name="PosCustomize" xml:space="preserve">
-        <value>Customize</value>
+        <value>Anpassen</value>
     </data>
     <data name="PosEditHint" xml:space="preserve">
-        <value>Drag widgets by their handle, or use their menu to resize, move or hide them. Your layout is saved on this device.</value>
+        <value>Ziehen Sie Widgets an ihrem Griff, oder nutzen Sie ihr Menü, um ihre Größe zu ändern, sie zu verschieben oder auszublenden. Ihr Layout wird auf diesem Gerät gespeichert.</value>
     </data>
     <data name="PosAddWidget" xml:space="preserve">
-        <value>Add widget ({0})</value>
+        <value>Widget hinzufügen ({0})</value>
     </data>
     <data name="PosResetLayout" xml:space="preserve">
-        <value>Reset layout</value>
+        <value>Layout zurücksetzen</value>
     </data>
     <data name="PosWidgetGallery" xml:space="preserve">
-        <value>Hidden widgets</value>
+        <value>Ausgeblendete Widgets</value>
     </data>
     <data name="PosAdd" xml:space="preserve">
-        <value>Add</value>
+        <value>Hinzufügen</value>
     </data>
     <data name="PosGalleryEmpty" xml:space="preserve">
-        <value>Every widget is already on the dashboard.</value>
+        <value>Alle Widgets sind bereits auf dem Dashboard.</value>
     </data>
     <data name="PosLast7Days" xml:space="preserve">
-        <value>Last 7 days</value>
+        <value>Letzte 7 Tage</value>
     </data>
     <data name="PosLast30Days" xml:space="preserve">
-        <value>Last 30 days</value>
+        <value>Letzte 30 Tage</value>
     </data>
     <data name="PosVsYesterday" xml:space="preserve">
-        <value>vs yesterday</value>
+        <value>ggü. gestern</value>
     </data>
     <data name="PosVsPrevious7Days" xml:space="preserve">
-        <value>vs previous 7 days</value>
+        <value>ggü. den vorherigen 7 Tagen</value>
     </data>
     <data name="PosVsPrevious30Days" xml:space="preserve">
-        <value>vs previous 30 days</value>
+        <value>ggü. den vorherigen 30 Tagen</value>
     </data>
     <data name="CategoryDataAndMaps" xml:space="preserve">
-        <value>Data and maps</value>
+        <value>Daten und Karten</value>
     </data>
     <data name="BuildingsTitle" xml:space="preserve">
-        <value>Buildings</value>
+        <value>Gebäude</value>
     </data>
     <data name="BuildingsDescription" xml:space="preserve">
-        <value>A data grid and a map that stay in sync. Double-click the map to add a building, select one and press Delete to remove it. Only places inside the Netherlands are accepted.</value>
+        <value>Ein Datenraster und eine Karte, die synchron bleiben. Doppelklicken Sie auf die Karte, um ein Gebäude hinzuzufügen, wählen Sie eines aus und drücken Sie Entf, um es zu entfernen. Nur Orte innerhalb der Niederlande werden akzeptiert.</value>
     </data>
     <data name="BuildingsHeading" xml:space="preserve">
-        <value>Landmark buildings</value>
+        <value>Markante Gebäude</value>
     </data>
     <data name="BuildingsSubtitle" xml:space="preserve">
-        <value>{0} buildings in {1} provinces</value>
+        <value>{0} Gebäude in {1} Provinzen</value>
     </data>
     <data name="BuildingsSearch" xml:space="preserve">
-        <value>Search by name, city or type</value>
+        <value>Nach Name, Ort oder Typ suchen</value>
     </data>
     <data name="BuildingsAdd" xml:space="preserve">
-        <value>Add building</value>
+        <value>Gebäude hinzufügen</value>
     </data>
     <data name="BuildingsListView" xml:space="preserve">
-        <value>List</value>
+        <value>Liste</value>
     </data>
     <data name="BuildingsMapView" xml:space="preserve">
-        <value>Map</value>
+        <value>Karte</value>
     </data>
     <data name="BuildingsFailedTitle" xml:space="preserve">
-        <value>Couldn't load the buildings</value>
+        <value>Die Gebäude konnten nicht geladen werden</value>
     </data>
     <data name="BuildingsEmptyTitle" xml:space="preserve">
-        <value>No buildings yet</value>
+        <value>Noch keine Gebäude</value>
     </data>
     <data name="BuildingsEmptyDescription" xml:space="preserve">
-        <value>Double-click anywhere in the Netherlands on the map to add the first one.</value>
+        <value>Doppelklicken Sie irgendwo in den Niederlanden auf die Karte, um das erste hinzuzufügen.</value>
     </data>
     <data name="BuildingName" xml:space="preserve">
         <value>Name</value>
     </data>
     <data name="BuildingCity" xml:space="preserve">
-        <value>City</value>
+        <value>Ort</value>
     </data>
     <data name="BuildingProvince" xml:space="preserve">
-        <value>Province</value>
+        <value>Provinz</value>
     </data>
     <data name="BuildingType" xml:space="preserve">
-        <value>Type</value>
+        <value>Typ</value>
     </data>
     <data name="BuildingYear" xml:space="preserve">
-        <value>Year</value>
+        <value>Baujahr</value>
     </data>
     <data name="BuildingHeight" xml:space="preserve">
-        <value>Height (m)</value>
+        <value>Höhe (m)</value>
     </data>
     <data name="BuildingFloors" xml:space="preserve">
-        <value>Floors</value>
+        <value>Stockwerke</value>
     </data>
     <data name="BuildingLatitude" xml:space="preserve">
-        <value>Latitude</value>
+        <value>Breitengrad</value>
     </data>
     <data name="BuildingLongitude" xml:space="preserve">
-        <value>Longitude</value>
+        <value>Längengrad</value>
     </data>
     <data name="BuildingsEdit" xml:space="preserve">
-        <value>Edit</value>
+        <value>Bearbeiten</value>
     </data>
     <data name="BuildingsDelete" xml:space="preserve">
-        <value>Delete</value>
+        <value>Löschen</value>
     </data>
     <data name="BuildingsMapHint" xml:space="preserve">
-        <value>Double-click inside the Netherlands to add a building. Select one and press Delete to remove it.</value>
+        <value>Doppelklicken Sie innerhalb der Niederlande, um ein Gebäude hinzuzufügen. Wählen Sie eines aus und drücken Sie Entf, um es zu entfernen.</value>
     </data>
     <data name="BuildingsSaved" xml:space="preserve">
-        <value>{0} is saved</value>
+        <value>{0} wurde gespeichert</value>
     </data>
     <data name="BuildingsDeleteTitle" xml:space="preserve">
-        <value>Delete this building?</value>
+        <value>Dieses Gebäude löschen?</value>
     </data>
     <data name="BuildingsDeleteBody" xml:space="preserve">
-        <value>{0} will be removed from the list and the map.</value>
+        <value>{0} wird aus der Liste und von der Karte entfernt.</value>
     </data>
     <data name="BuildingsDeleted" xml:space="preserve">
-        <value>{0} is deleted</value>
+        <value>{0} wurde gelöscht</value>
     </data>
     <data name="BuildingsOutsideTitle" xml:space="preserve">
-        <value>Outside the Netherlands</value>
+        <value>Außerhalb der Niederlande</value>
     </data>
     <data name="BuildingsOutsideBody" xml:space="preserve">
-        <value>Buildings can only be added inside the Dutch border.</value>
+        <value>Gebäude können nur innerhalb der niederländischen Grenze hinzugefügt werden.</value>
     </data>
     <data name="BuildingsAddTitle" xml:space="preserve">
-        <value>New building</value>
+        <value>Neues Gebäude</value>
     </data>
     <data name="BuildingsEditTitle" xml:space="preserve">
-        <value>Edit building</value>
+        <value>Gebäude bearbeiten</value>
     </data>
     <data name="BuildingsLocationHint" xml:space="preserve">
-        <value>Double-click the map to pick a spot, or type the coordinates. Only points inside the Netherlands are accepted.</value>
+        <value>Doppelklicken Sie auf die Karte, um einen Ort zu wählen, oder geben Sie die Koordinaten ein. Nur Punkte innerhalb der Niederlande werden akzeptiert.</value>
     </data>
     <data name="BuildingsNameRequired" xml:space="preserve">
-        <value>Enter a name.</value>
+        <value>Geben Sie einen Namen ein.</value>
     </data>
     <data name="BuildingsCityRequired" xml:space="preserve">
-        <value>Enter a city.</value>
+        <value>Geben Sie einen Ort ein.</value>
     </data>
     <data name="BuildingsYearInvalid" xml:space="preserve">
-        <value>Enter a year between 1000 and this year.</value>
+        <value>Geben Sie ein Jahr zwischen 1000 und dem aktuellen Jahr ein.</value>
     </data>
     <data name="Cancel" xml:space="preserve">
-        <value>Cancel</value>
+        <value>Abbrechen</value>
     </data>
     <data name="Save" xml:space="preserve">
-        <value>Save</value>
+        <value>Speichern</value>
     </data>
     <data name="BuildingTypeMuseum" xml:space="preserve">
         <value>Museum</value>
     </data>
     <data name="BuildingTypeChurch" xml:space="preserve">
-        <value>Church</value>
+        <value>Kirche</value>
     </data>
     <data name="BuildingTypeTower" xml:space="preserve">
-        <value>Tower</value>
+        <value>Turm</value>
     </data>
     <data name="BuildingTypeStation" xml:space="preserve">
-        <value>Station</value>
+        <value>Bahnhof</value>
     </data>
     <data name="BuildingTypeStadium" xml:space="preserve">
-        <value>Stadium</value>
+        <value>Stadion</value>
     </data>
     <data name="BuildingTypePalace" xml:space="preserve">
-        <value>Palace</value>
+        <value>Palast</value>
     </data>
     <data name="BuildingTypeOffice" xml:space="preserve">
-        <value>Office tower</value>
+        <value>Büroturm</value>
     </data>
     <data name="BuildingTypeCityHall" xml:space="preserve">
-        <value>City hall</value>
+        <value>Rathaus</value>
     </data>
     <data name="BuildingTypeLandmark" xml:space="preserve">
-        <value>Landmark</value>
+        <value>Wahrzeichen</value>
     </data>
     <data name="ProvinceGroningen" xml:space="preserve">
         <value>Groningen</value>
@@ -802,574 +802,574 @@
         <value>Utrecht</value>
     </data>
     <data name="ProvinceNorthHolland" xml:space="preserve">
-        <value>North Holland</value>
+        <value>Nordholland</value>
     </data>
     <data name="ProvinceSouthHolland" xml:space="preserve">
-        <value>South Holland</value>
+        <value>Südholland</value>
     </data>
     <data name="ProvinceZeeland" xml:space="preserve">
         <value>Zeeland</value>
     </data>
     <data name="ProvinceNorthBrabant" xml:space="preserve">
-        <value>North Brabant</value>
+        <value>Nordbrabant</value>
     </data>
     <data name="ProvinceLimburg" xml:space="preserve">
         <value>Limburg</value>
     </data>
     <data name="HomePageTitle" xml:space="preserve">
-        <value>Workbench · Design, review and capture every page</value>
+        <value>Werkbank · Jede Seite entwerfen, prüfen und festhalten</value>
     </data>
     <data name="HomeEyebrow" xml:space="preserve">
-        <value>Part of your bit Boilerplate project</value>
+        <value>Teil Ihres bit Boilerplate-Projekts</value>
     </data>
     <data name="HomeHeadline" xml:space="preserve">
-        <value>Finish the design before the backend exists.</value>
+        <value>Stellen Sie das Design fertig, bevor es das Backend gibt.</value>
     </data>
     <data name="HomeLead" xml:space="preserve">
-        <value>The workbench runs your app's pages on sample data, so you can design every state, see it on every device and export store-ready screenshots, with the same components and theme your app ships with.</value>
+        <value>Die Werkbank führt die Seiten Ihrer App mit Beispieldaten aus, damit Sie jeden Zustand gestalten, auf jedem Gerät ansehen und Store-fertige Screenshots exportieren können, mit denselben Komponenten und demselben Design, mit denen Ihre App ausgeliefert wird.</value>
     </data>
     <data name="HomeOpenFirstPage" xml:space="preserve">
-        <value>Open the POS dashboard</value>
+        <value>Kassen-Dashboard öffnen</value>
     </data>
     <data name="HomeWhyButton" xml:space="preserve">
-        <value>Why a workbench?</value>
+        <value>Warum eine Werkbank?</value>
     </data>
     <data name="HomeFactNoServer" xml:space="preserve">
-        <value>No API, database or sign-in needed</value>
+        <value>Keine API, Datenbank oder Anmeldung nötig</value>
     </data>
     <data name="HomeFactThemes" xml:space="preserve">
-        <value>Light, dark and right-to-left</value>
+        <value>Hell, dunkel und von rechts nach links</value>
     </data>
     <data name="HomeFactStores" xml:space="preserve">
-        <value>Exact App Store, Google Play and Microsoft Store sizes</value>
+        <value>Exakte Formate für App Store, Google Play und Microsoft Store</value>
     </data>
     <data name="HomeChipDark" xml:space="preserve">
-        <value>Dark mode</value>
+        <value>Dunkelmodus</value>
     </data>
     <data name="HomeChipRtl" xml:space="preserve">
-        <value>Right-to-left</value>
+        <value>Von rechts nach links</value>
     </data>
     <data name="HomeChipLoading" xml:space="preserve">
-        <value>Loading state</value>
+        <value>Ladezustand</value>
     </data>
     <data name="HomeChipStore" xml:space="preserve">
         <value>1320 × 2868 PNG</value>
     </data>
     <data name="HomeWhyTitle" xml:space="preserve">
-        <value>Why your project has a workbench</value>
+        <value>Warum Ihr Projekt eine Werkbank hat</value>
     </data>
     <data name="HomeWhySubtitle" xml:space="preserve">
-        <value>A design tool, a test bench and a photo studio for your pages, inside the project itself.</value>
+        <value>Ein Designwerkzeug, ein Prüfstand und ein Fotostudio für Ihre Seiten, direkt im Projekt.</value>
     </data>
     <data name="HomeWhyAgentsTitle" xml:space="preserve">
-        <value>Design with any AI agent</value>
+        <value>Mit jedem KI-Agenten gestalten</value>
     </data>
     <data name="HomeWhyAgentsText" xml:space="preserve">
-        <value>You don't need Claude Design or Figma. Whether you use Codex, Copilot or Claude Code, your agent can design pages here, look at them in a real browser and refine them.</value>
+        <value>Sie brauchen weder Claude Design noch Figma. Ob Sie Codex, Copilot oder Claude Code nutzen, Ihr Agent kann hier Seiten entwerfen, sie in einem echten Browser ansehen und verfeinern.</value>
     </data>
     <data name="HomeWhyRealTitle" xml:space="preserve">
-        <value>Real components, not mockups</value>
+        <value>Echte Komponenten statt Mockups</value>
     </data>
     <data name="HomeWhyRealText" xml:space="preserve">
-        <value>Pages use the same bit BlazorUI components, theme and styles as your app, so the design you approve is already working code.</value>
+        <value>Die Seiten nutzen dieselben bit BlazorUI-Komponenten, dasselbe Design und dieselben Stile wie Ihre App, daher ist der freigegebene Entwurf bereits funktionierender Code.</value>
     </data>
     <data name="HomeWhyStatesTitle" xml:space="preserve">
-        <value>Every state on demand</value>
+        <value>Jeder Zustand auf Abruf</value>
     </data>
     <data name="HomeWhyStatesText" xml:space="preserve">
-        <value>Loading, empty, error, partial and slow data are one click away, including the states that are hard to catch in a running app.</value>
+        <value>Ladende, leere, fehlerhafte, unvollständige und langsame Daten sind nur einen Klick entfernt, auch die Zustände, die in einer laufenden App schwer abzupassen sind.</value>
     </data>
     <data name="HomeWhyDevicesTitle" xml:space="preserve">
-        <value>Every device side by side</value>
+        <value>Alle Geräte nebeneinander</value>
     </data>
     <data name="HomeWhyDevicesText" xml:space="preserve">
-        <value>Phones, tablets and desktops at their real sizes, in light and dark, in every language your app supports.</value>
+        <value>Smartphones, Tablets und Desktops in echter Größe, hell und dunkel, in jeder Sprache, die Ihre App unterstützt.</value>
     </data>
     <data name="HomeWhyStoresTitle" xml:space="preserve">
-        <value>Screenshots for the stores</value>
+        <value>Screenshots für die Stores</value>
     </data>
     <data name="HomeWhyStoresText" xml:space="preserve">
-        <value>Export pixel-exact images for the App Store, Google Play and the Microsoft Store, rendered by a real browser, without emulators.</value>
+        <value>Exportieren Sie pixelgenaue Bilder für den App Store, Google Play und den Microsoft Store, gerendert von einem echten Browser, ohne Emulatoren.</value>
     </data>
     <data name="HomeWhyHeadStartTitle" xml:space="preserve">
-        <value>A head start from bitplatform</value>
+        <value>Ein Vorsprung von bitplatform</value>
     </data>
     <data name="HomeWhyHeadStartText" xml:space="preserve">
-        <value>It starts with ready-made pages, like a point-of-sale dashboard and a buildings map. Reuse what fits, learn from the rest, then add your own pages next to them.</value>
+        <value>Los geht es mit fertigen Seiten wie einem Kassen-Dashboard und einer Gebäudekarte. Verwenden Sie wieder, was passt, lernen Sie vom Rest und fügen Sie dann Ihre eigenen Seiten daneben hinzu.</value>
     </data>
     <data name="HomeWhySafeTitle" xml:space="preserve">
-        <value>Safe to experiment</value>
+        <value>Gefahrlos experimentieren</value>
     </data>
     <data name="HomeWhySafeText" xml:space="preserve">
-        <value>Nothing here talks to your API or database, so trying a new idea never breaks your app or your data.</value>
+        <value>Nichts hier spricht mit Ihrer API oder Datenbank, daher kann eine neue Idee nie Ihre App oder Ihre Daten beschädigen.</value>
     </data>
     <data name="HomeWhyShareTitle" xml:space="preserve">
-        <value>Agree before you build</value>
+        <value>Erst abstimmen, dann bauen</value>
     </data>
     <data name="HomeWhyShareText" xml:space="preserve">
-        <value>Send a link to a page in a given state to your team or client, and settle the design before anyone writes backend code.</value>
+        <value>Senden Sie Ihrem Team oder Kunden einen Link zu einer Seite in einem bestimmten Zustand und klären Sie das Design, bevor jemand Backend-Code schreibt.</value>
     </data>
     <data name="HomeHowTitle" xml:space="preserve">
-        <value>How it fits your workflow</value>
+        <value>Wie sie in Ihren Arbeitsablauf passt</value>
     </data>
     <data name="HomeHowStep1Title" xml:space="preserve">
-        <value>Design it here</value>
+        <value>Hier entwerfen</value>
     </data>
     <data name="HomeHowStep1Text" xml:space="preserve">
-        <value>Build the page in the workbench with sample data that loads like the real thing.</value>
+        <value>Bauen Sie die Seite auf der Werkbank mit Beispieldaten, die wie echte geladen werden.</value>
     </data>
     <data name="HomeHowStep2Title" xml:space="preserve">
-        <value>Review every state</value>
+        <value>Jeden Zustand prüfen</value>
     </data>
     <data name="HomeHowStep2Text" xml:space="preserve">
-        <value>Check it on each device, theme, language and data state, one at a time or side by side.</value>
+        <value>Prüfen Sie sie auf jedem Gerät, in jedem Design, jeder Sprache und jedem Datenzustand, einzeln oder nebeneinander.</value>
     </data>
     <data name="HomeHowStep3Title" xml:space="preserve">
-        <value>Bring it into the app</value>
+        <value>In die App übernehmen</value>
     </data>
     <data name="HomeHowStep3Text" xml:space="preserve">
-        <value>Move the approved page into your app and connect it to real data. Your AI agent follows the same steps.</value>
+        <value>Übernehmen Sie die freigegebene Seite in Ihre App und verbinden Sie sie mit echten Daten. Ihr KI-Agent folgt denselben Schritten.</value>
     </data>
     <data name="HomePagesTitle" xml:space="preserve">
-        <value>Pages in this workbench</value>
+        <value>Seiten auf dieser Werkbank</value>
     </data>
     <data name="HomePagesSubtitle" xml:space="preserve">
-        <value>Start from these, then add your own pages next to them.</value>
+        <value>Beginnen Sie mit diesen und fügen Sie dann Ihre eigenen Seiten daneben hinzu.</value>
     </data>
     <data name="HomeBuiltWithTitle" xml:space="preserve">
-        <value>Built with bit</value>
+        <value>Gebaut mit bit</value>
     </data>
     <data name="HomeFooter" xml:space="preserve">
-        <value>The workbench is part of every bit Boilerplate project. It runs only on your machine unless you choose to publish it.</value>
+        <value>Die Werkbank gehört zu jedem bit Boilerplate-Projekt. Sie läuft nur auf Ihrem Rechner, sofern Sie sie nicht veröffentlichen.</value>
     </data>
     <data name="PosDashboardCaption" xml:space="preserve">
-        <value>Every sale, live, on one screen</value>
+        <value>Jeder Verkauf, live, auf einem Bildschirm</value>
     </data>
     <data name="BuildingsCaption" xml:space="preserve">
-        <value>All your buildings on one map</value>
+        <value>Alle Ihre Gebäude auf einer Karte</value>
     </data>
     <data name="StoreScreenshotsPageTitle" xml:space="preserve">
-        <value>Store screenshots · Workbench</value>
+        <value>Store-Screenshots · Werkbank</value>
     </data>
     <data name="StoreScreenshotsLead" xml:space="preserve">
-        <value>Pixel-exact images in the sizes each store asks for, taken by a real browser from your real pages.</value>
+        <value>Pixelgenaue Bilder in den Formaten, die jeder Store verlangt, aufgenommen von einem echten Browser von Ihren echten Seiten.</value>
     </data>
     <data name="Store" xml:space="preserve">
         <value>Store</value>
     </data>
     <data name="StoreSizeCount" xml:space="preserve">
-        <value>{0} sizes</value>
+        <value>{0} Formate</value>
     </data>
     <data name="Look" xml:space="preserve">
-        <value>Look</value>
+        <value>Aussehen</value>
     </data>
     <data name="FrameAndCaption" xml:space="preserve">
-        <value>Device frame and caption</value>
+        <value>Geräterahmen und Beschriftung</value>
     </data>
     <data name="Backdrop" xml:space="preserve">
-        <value>Background</value>
+        <value>Hintergrund</value>
     </data>
     <data name="BackdropBrand" xml:space="preserve">
-        <value>App color</value>
+        <value>App-Farbe</value>
     </data>
     <data name="BackdropMidnight" xml:space="preserve">
-        <value>Midnight</value>
+        <value>Mitternacht</value>
     </data>
     <data name="BackdropSunset" xml:space="preserve">
-        <value>Sunset</value>
+        <value>Sonnenuntergang</value>
     </data>
     <data name="BackdropOcean" xml:space="preserve">
-        <value>Ocean</value>
+        <value>Ozean</value>
     </data>
     <data name="BackdropForest" xml:space="preserve">
-        <value>Forest</value>
+        <value>Wald</value>
     </data>
     <data name="BackdropPaper" xml:space="preserve">
-        <value>Paper</value>
+        <value>Papier</value>
     </data>
     <data name="PlainScreenshotsHint" xml:space="preserve">
-        <value>Plain screenshots show the page only, edge to edge.</value>
+        <value>Einfache Screenshots zeigen nur die Seite, von Rand zu Rand.</value>
     </data>
     <data name="Caption" xml:space="preserve">
-        <value>Caption</value>
+        <value>Beschriftung</value>
     </data>
     <data name="CaptionHint" xml:space="preserve">
-        <value>Leave a caption empty to use the translated default.</value>
+        <value>Lassen Sie eine Beschriftung leer, um den übersetzten Standardtext zu verwenden.</value>
     </data>
     <data name="DownloadAllScreenshots" xml:space="preserve">
-        <value>Download all ({0})</value>
+        <value>Alle herunterladen ({0})</value>
     </data>
     <data name="TooManyScreenshots" xml:space="preserve">
-        <value>Choose fewer pages to download up to {0} images at once.</value>
+        <value>Wählen Sie weniger Seiten aus, um bis zu {0} Bilder auf einmal herunterzuladen.</value>
     </data>
     <data name="NoPagesSelected" xml:space="preserve">
-        <value>Choose at least one page to see its screenshots.</value>
+        <value>Wählen Sie mindestens eine Seite aus, um ihre Screenshots zu sehen.</value>
     </data>
     <data name="DownloadPng" xml:space="preserve">
-        <value>Download PNG</value>
+        <value>PNG herunterladen</value>
     </data>
     <data name="StoreNoteIphoneRequired" xml:space="preserve">
-        <value>Required for iPhone apps</value>
+        <value>Pflicht für iPhone-Apps</value>
     </data>
     <data name="StoreNoteIphoneOptional" xml:space="preserve">
-        <value>Optional, for smaller iPhones</value>
+        <value>Optional, für kleinere iPhones</value>
     </data>
     <data name="StoreNoteIpad" xml:space="preserve">
-        <value>Required if the app runs on iPad</value>
+        <value>Pflicht, wenn die App auf dem iPad läuft</value>
     </data>
     <data name="StoreNoteMac" xml:space="preserve">
-        <value>For the Mac App Store</value>
+        <value>Für den Mac App Store</value>
     </data>
     <data name="StoreNotePlayPhone" xml:space="preserve">
-        <value>At least two phone screenshots</value>
+        <value>Mindestens zwei Smartphone-Screenshots</value>
     </data>
     <data name="StoreNotePlayTablet" xml:space="preserve">
-        <value>Shown to tablet and Chromebook users</value>
+        <value>Wird Tablet- und Chromebook-Nutzern angezeigt</value>
     </data>
     <data name="StoreNoteMicrosoft" xml:space="preserve">
-        <value>The recommended 4K size</value>
+        <value>Das empfohlene 4K-Format</value>
     </data>
     <data name="StoreNoteOther" xml:space="preserve">
-        <value>Extra size</value>
+        <value>Zusätzliches Format</value>
     </data>
     <data name="StoreRuleAppStore" xml:space="preserve">
-        <value>Frames and captions are welcome. The first three screenshots matter most.</value>
+        <value>Rahmen und Beschriftungen sind willkommen. Die ersten drei Screenshots zählen am meisten.</value>
     </data>
     <data name="StoreRuleGooglePlay" xml:space="preserve">
-        <value>Google Play discourages device frames. Keep captions short, without words like Best or New.</value>
+        <value>Google Play rät von Geräterahmen ab. Halten Sie Beschriftungen kurz, ohne Wörter wie Beste oder Neu.</value>
     </data>
     <data name="StoreRuleMicrosoftStore" xml:space="preserve">
-        <value>The Microsoft Store doesn't allow added text or logos. Add captions in Partner Center instead.</value>
+        <value>Der Microsoft Store erlaubt keinen zusätzlichen Text und keine Logos. Fügen Sie Beschriftungen stattdessen im Partner Center hinzu.</value>
     </data>
     <data name="StoreSizeCountOne" xml:space="preserve">
-        <value>1 size</value>
+        <value>1 Format</value>
     </data>
     <data name="AssistantTitle" xml:space="preserve">
-        <value>AI assistant</value>
+        <value>KI-Assistent</value>
     </data>
     <data name="AssistantDescription" xml:space="preserve">
-        <value>A chat that answers with text, charts and actions, streamed as it is written, with history, stop and retry.</value>
+        <value>Ein Chat, der mit Text, Diagrammen und Aktionen antwortet und die Antwort schon beim Schreiben zeigt, mit Verlauf, Stopp und erneutem Versuch.</value>
     </data>
     <data name="AssistantCaption" xml:space="preserve">
-        <value>Ask your stores anything</value>
+        <value>Fragen Sie alles über Ihre Filialen</value>
     </data>
     <data name="CategoryAi" xml:space="preserve">
-        <value>AI</value>
+        <value>KI</value>
     </data>
     <data name="AssistantConversations" xml:space="preserve">
-        <value>Conversations</value>
+        <value>Unterhaltungen</value>
     </data>
     <data name="AssistantNewChat" xml:space="preserve">
-        <value>New chat</value>
+        <value>Neuer Chat</value>
     </data>
     <data name="AssistantRecent" xml:space="preserve">
-        <value>Recent</value>
+        <value>Zuletzt</value>
     </data>
     <data name="AssistantNoHistory" xml:space="preserve">
-        <value>No conversations yet</value>
+        <value>Noch keine Unterhaltungen</value>
     </data>
     <data name="AssistantHistoryFailed" xml:space="preserve">
-        <value>The conversations couldn't be loaded.</value>
+        <value>Die Unterhaltungen konnten nicht geladen werden.</value>
     </data>
     <data name="AssistantRetry" xml:space="preserve">
-        <value>Try again</value>
+        <value>Erneut versuchen</value>
     </data>
     <data name="AssistantModel" xml:space="preserve">
-        <value>Demo model</value>
+        <value>Demomodell</value>
     </data>
     <data name="AssistantWelcomeTitle" xml:space="preserve">
-        <value>How can I help with your stores today?</value>
+        <value>Wie kann ich Ihnen heute bei Ihren Filialen helfen?</value>
     </data>
     <data name="AssistantWelcomeText" xml:space="preserve">
-        <value>Ask about sales, stock, promotions or your team. In the workbench the answers come from a script, so every state of the conversation can be designed.</value>
+        <value>Fragen Sie nach Umsatz, Bestand, Aktionen oder Ihrem Team. Auf der Werkbank kommen die Antworten aus einem Skript, damit sich jeder Zustand der Unterhaltung gestalten lässt.</value>
     </data>
     <data name="AssistantPromptPlaceholder" xml:space="preserve">
-        <value>Ask about sales, stock or promotions</value>
+        <value>Fragen Sie nach Umsatz, Bestand oder Aktionen</value>
     </data>
     <data name="AssistantSend" xml:space="preserve">
-        <value>Send</value>
+        <value>Senden</value>
     </data>
     <data name="AssistantStop" xml:space="preserve">
-        <value>Stop</value>
+        <value>Stoppen</value>
     </data>
     <data name="AssistantStopped" xml:space="preserve">
-        <value>Stopped</value>
+        <value>Gestoppt</value>
     </data>
     <data name="AssistantThinking" xml:space="preserve">
-        <value>Thinking</value>
+        <value>Denkt nach</value>
     </data>
     <data name="AssistantDisclaimer" xml:space="preserve">
-        <value>Sample answers, scripted for design.</value>
+        <value>Beispielantworten, für das Design vorbereitet.</value>
     </data>
     <data name="AssistantAnswerFailed" xml:space="preserve">
-        <value>This answer didn't arrive.</value>
+        <value>Diese Antwort ist nicht angekommen.</value>
     </data>
     <data name="AssistantCopy" xml:space="preserve">
-        <value>Copy</value>
+        <value>Kopieren</value>
     </data>
     <data name="AssistantCopied" xml:space="preserve">
-        <value>Copied</value>
+        <value>Kopiert</value>
     </data>
     <data name="AssistantHelpful" xml:space="preserve">
-        <value>Helpful</value>
+        <value>Hilfreich</value>
     </data>
     <data name="AssistantNotHelpful" xml:space="preserve">
-        <value>Not helpful</value>
+        <value>Nicht hilfreich</value>
     </data>
     <data name="AssistantToday" xml:space="preserve">
-        <value>Today</value>
+        <value>Heute</value>
     </data>
     <data name="AssistantYesterday" xml:space="preserve">
-        <value>Yesterday</value>
+        <value>Gestern</value>
     </data>
     <data name="AssistantHistoryWeekly" xml:space="preserve">
-        <value>Weekly sales recap</value>
+        <value>Wöchentlicher Umsatzüberblick</value>
     </data>
     <data name="AssistantHistoryRestock" xml:space="preserve">
-        <value>Restock before the weekend</value>
+        <value>Vor dem Wochenende auffüllen</value>
     </data>
     <data name="AssistantHistoryAutumn" xml:space="preserve">
-        <value>Autumn promotion</value>
+        <value>Herbstaktion</value>
     </data>
     <data name="AssistantHistoryTeam" xml:space="preserve">
-        <value>Top sellers today</value>
+        <value>Topverkäufer heute</value>
     </data>
     <data name="AssistantSalesPrompt" xml:space="preserve">
-        <value>How did sales go this week?</value>
+        <value>Wie lief der Umsatz diese Woche?</value>
     </data>
     <data name="AssistantSalesAnswer" xml:space="preserve">
-        <value>Net sales over the last 7 days came to **€34,820**, up **8.4%** on the week before.
+        <value>Der Nettoumsatz der letzten 7 Tage lag bei **34.820 €**, **8,4 %** mehr als in der Vorwoche.
 
-- **Amsterdam** led with €15,940, helped by a busy Saturday.
-- **Rotterdam** grew fastest, up **12.1%** after the new breakfast menu.
-- **Utrecht** stayed flat; its afternoons were quieter than usual.
+- **Amsterdam** lag mit 15.940 € vorn, dank eines gut besuchten Samstags.
+- **Rotterdam** wuchs am stärksten, um **12,1 %** nach Einführung des neuen Frühstücksmenüs.
+- **Utrecht** blieb unverändert; die Nachmittage waren ruhiger als sonst.
 
-Here is each day:</value>
+So sah jeder Tag aus:</value>
     </data>
     <data name="AssistantStockPrompt" xml:space="preserve">
-        <value>What's running low?</value>
+        <value>Was geht zur Neige?</value>
     </data>
     <data name="AssistantStockAnswer" xml:space="preserve">
-        <value>Three products will run out before Monday's delivery. Reorder them now and they arrive on Friday:</value>
+        <value>Drei Produkte gehen vor der Lieferung am Montag aus. Bestellen Sie sie jetzt nach, dann sind sie am Freitag da:</value>
     </data>
     <data name="AssistantPromoPrompt" xml:space="preserve">
-        <value>Write a promo for oat milk lattes</value>
+        <value>Schreib einen Werbetext für Latte mit Hafermilch</value>
     </data>
     <data name="AssistantPromoAnswer" xml:space="preserve">
-        <value>Here's a short one for the counter and your social posts:</value>
+        <value>Hier ist ein kurzer Text für die Theke und Ihre Social-Media-Beiträge:</value>
     </data>
     <data name="AssistantPromoDraft" xml:space="preserve">
-        <value>Autumn tastes better with oat. Any oat milk latte for €3.50 this week, in all three stores.</value>
+        <value>Der Herbst schmeckt besser mit Hafer. Diese Woche jeder Latte mit Hafermilch für 3,50 €, in allen drei Filialen.</value>
     </data>
     <data name="AssistantStaffPrompt" xml:space="preserve">
-        <value>Who sold the most today?</value>
+        <value>Wer hat heute am meisten verkauft?</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>**Daan** leads today with **64 orders** and €1,180 in sales. **Sarah** follows with 58 orders, then **Niloofar** with 51. Daan's average sale is the highest too, at €18.40.</value>
+        <value>**Daan** liegt heute mit **64 Bestellungen** und 1.180 € Umsatz vorn. **Sarah** folgt mit 58 Bestellungen, dann **Niloofar** mit 51. Auch Daans Durchschnittsverkauf ist mit 18,40 € der höchste.</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
-        <value>In the workbench I answer from a short script, so I can't look that up. Try one of the suggestions, or ask about sales, stock, promotions or your team.</value>
+        <value>Auf der Werkbank antworte ich aus einem kurzen Skript, daher kann ich das nicht nachschlagen. Probieren Sie einen der Vorschläge, oder fragen Sie nach Umsatz, Bestand, Aktionen oder Ihrem Team.</value>
     </data>
     <data name="AssistantSalesCardTitle" xml:space="preserve">
-        <value>Net sales, last 7 days</value>
+        <value>Nettoumsatz, letzte 7 Tage</value>
     </data>
     <data name="AssistantUnitsLeft" xml:space="preserve">
-        <value>{0} left</value>
+        <value>Noch {0}</value>
     </data>
     <data name="AssistantReorder" xml:space="preserve">
-        <value>Reorder</value>
+        <value>Nachbestellen</value>
     </data>
     <data name="AssistantOrdered" xml:space="preserve">
-        <value>Ordered</value>
+        <value>Bestellt</value>
     </data>
     <data name="AssistantStockOatMilk" xml:space="preserve">
-        <value>Oat milk</value>
+        <value>Hafermilch</value>
     </data>
     <data name="AssistantStockCroissants" xml:space="preserve">
         <value>Croissants</value>
     </data>
     <data name="AssistantStockPaperCups" xml:space="preserve">
-        <value>Paper cups</value>
+        <value>Pappbecher</value>
     </data>
     <data name="DeployTitle" xml:space="preserve">
-        <value>Deployment</value>
+        <value>Bereitstellung</value>
     </data>
     <data name="DeployDescription" xml:space="preserve">
-        <value>The project's deployment pipeline as a flow you can run, with every step explained and a failure to simulate.</value>
+        <value>Die Bereitstellungspipeline des Projekts als Ablauf, den Sie ausführen können, mit einer Erklärung zu jedem Schritt und einem Fehler zum Simulieren.</value>
     </data>
     <data name="DeployCaption" xml:space="preserve">
-        <value>Ship with one merge</value>
+        <value>Mit einem Merge live</value>
     </data>
     <data name="CategoryExplainers" xml:space="preserve">
-        <value>Explainers</value>
+        <value>Erklärungen</value>
     </data>
     <data name="DeployHeading" xml:space="preserve">
-        <value>How a change goes live</value>
+        <value>Wie eine Änderung live geht</value>
     </data>
     <data name="DeployIntro" xml:space="preserve">
-        <value>This is the pipeline your project ships with, from a merge to a live update. Run it to watch each step, or make the health check fail to see what happens then.</value>
+        <value>Das ist die Pipeline, die Ihr Projekt mitbringt, vom Merge bis zum Live-Update. Führen Sie sie aus, um jeden Schritt zu verfolgen, oder lassen Sie die Zustandsprüfung fehlschlagen, um zu sehen, was dann passiert.</value>
     </data>
     <data name="DeployRun" xml:space="preserve">
-        <value>Run the pipeline</value>
+        <value>Pipeline starten</value>
     </data>
     <data name="DeploySimulateFailure" xml:space="preserve">
-        <value>Make the health check fail</value>
+        <value>Zustandsprüfung fehlschlagen lassen</value>
     </data>
     <data name="DeployRunning" xml:space="preserve">
-        <value>Running</value>
+        <value>Läuft</value>
     </data>
     <data name="DeploySucceeded" xml:space="preserve">
-        <value>Last run succeeded</value>
+        <value>Letzter Lauf erfolgreich</value>
     </data>
     <data name="DeployFailed" xml:space="preserve">
-        <value>Last run failed</value>
+        <value>Letzter Lauf fehlgeschlagen</value>
     </data>
     <data name="DeployNeverRun" xml:space="preserve">
-        <value>Not run yet</value>
+        <value>Noch nicht ausgeführt</value>
     </data>
     <data name="DeployLoadFailed" xml:space="preserve">
-        <value>The pipeline couldn't be loaded.</value>
+        <value>Die Pipeline konnte nicht geladen werden.</value>
     </data>
     <data name="DeploySelectHint" xml:space="preserve">
-        <value>Select a step to see what it does.</value>
+        <value>Wählen Sie einen Schritt aus, um zu sehen, was er tut.</value>
     </data>
     <data name="DeployCheckFailedMessage" xml:space="preserve">
-        <value>/alive did not answer for five minutes.</value>
+        <value>/alive hat fünf Minuten lang nicht geantwortet.</value>
     </data>
     <data name="DeployMergeTitle" xml:space="preserve">
-        <value>Merge into main</value>
+        <value>Merge in main</value>
     </data>
     <data name="DeployMergeDetail" xml:space="preserve">
-        <value>Starts the production deploy</value>
+        <value>Startet die Produktivbereitstellung</value>
     </data>
     <data name="DeployMergeDescription" xml:space="preserve">
-        <value>A pull request merged into main starts the production workflow. One merged into develop deploys the Test environment the same way.</value>
+        <value>Ein in main gemergter Pull Request startet den Produktions-Workflow. Einer, der in develop gemergt wird, stellt die Testumgebung auf dieselbe Weise bereit.</value>
     </data>
     <data name="DeployImagesTitle" xml:space="preserve">
-        <value>Build the server images</value>
+        <value>Server-Images bauen</value>
     </data>
     <data name="DeployImagesDetail" xml:space="preserve">
-        <value>Pushed to the container registry</value>
+        <value>In die Container-Registry übertragen</value>
     </data>
     <data name="DeployImagesDescription" xml:space="preserve">
-        <value>The server is built as container images, tagged with this run and pushed to the GitHub Container Registry.</value>
+        <value>Der Server wird als Container-Images gebaut, mit diesem Lauf getaggt und in die GitHub Container Registry übertragen.</value>
     </data>
     <data name="DeployWindowsTitle" xml:space="preserve">
-        <value>Windows app</value>
+        <value>Windows-App</value>
     </data>
     <data name="DeployWindowsDetail" xml:space="preserve">
-        <value>Signed installer and updates</value>
+        <value>Signierter Installer und Updates</value>
     </data>
     <data name="DeployWindowsDescription" xml:space="preserve">
-        <value>At the same time, the Windows app is built, signed and published with its installer and its update packages.</value>
+        <value>Gleichzeitig wird die Windows-App gebaut, signiert und mit ihrem Installer und ihren Updatepaketen veröffentlicht.</value>
     </data>
     <data name="DeployAndroidTitle" xml:space="preserve">
-        <value>Android app</value>
+        <value>Android-App</value>
     </data>
     <data name="DeployAndroidDetail" xml:space="preserve">
-        <value>Bundle for Google Play</value>
+        <value>Bundle für Google Play</value>
     </data>
     <data name="DeployAndroidDescription" xml:space="preserve">
-        <value>At the same time, the Android app is built as a signed bundle, ready for Google Play.</value>
+        <value>Gleichzeitig wird die Android-App als signiertes Bundle gebaut, bereit für Google Play.</value>
     </data>
     <data name="DeployIosTitle" xml:space="preserve">
-        <value>iOS app</value>
+        <value>iOS-App</value>
     </data>
     <data name="DeployIosDetail" xml:space="preserve">
-        <value>Build for the App Store</value>
+        <value>Build für den App Store</value>
     </data>
     <data name="DeployIosDescription" xml:space="preserve">
-        <value>At the same time, the iOS app is built and signed for TestFlight and the App Store.</value>
+        <value>Gleichzeitig wird die iOS-App für TestFlight und den App Store gebaut und signiert.</value>
     </data>
     <data name="DeployComposeTitle" xml:space="preserve">
-        <value>Write the Compose project</value>
+        <value>Compose-Projekt schreiben</value>
     </data>
     <data name="DeployComposeDetail" xml:space="preserve">
-        <value>Services, settings, health checks</value>
+        <value>Dienste, Einstellungen, Zustandsprüfungen</value>
     </data>
     <data name="DeployComposeDescription" xml:space="preserve">
-        <value>The app host writes a Docker Compose project that names every service the app needs, with its settings, health checks and restart rules.</value>
+        <value>Der App-Host schreibt ein Docker Compose-Projekt, das jeden Dienst nennt, den die App braucht, mit seinen Einstellungen, Zustandsprüfungen und Neustartregeln.</value>
     </data>
     <data name="DeployPullTitle" xml:space="preserve">
-        <value>Pull on the server</value>
+        <value>Auf dem Server abrufen</value>
     </data>
     <data name="DeployPullDetail" xml:space="preserve">
-        <value>By the server's own runner</value>
+        <value>Vom eigenen Runner des Servers</value>
     </data>
     <data name="DeployPullDescription" xml:space="preserve">
-        <value>On the server, a self-hosted runner signs in to the registry and pulls the new images.</value>
+        <value>Auf dem Server meldet sich ein selbst gehosteter Runner bei der Registry an und ruft die neuen Images ab.</value>
     </data>
     <data name="DeployMigrateTitle" xml:space="preserve">
-        <value>Run the migrations</value>
+        <value>Migrationen ausführen</value>
     </data>
     <data name="DeployMigrateDetail" xml:space="preserve">
-        <value>First, before anything restarts</value>
+        <value>Zuerst, bevor etwas neu startet</value>
     </data>
     <data name="DeployMigrateDescription" xml:space="preserve">
-        <value>The database migrations run first, on their own. If they fail, the step fails and the running version is left alone.</value>
+        <value>Die Datenbankmigrationen laufen zuerst und für sich allein. Schlagen sie fehl, schlägt der Schritt fehl und die laufende Version bleibt unangetastet.</value>
     </data>
     <data name="DeployStartTitle" xml:space="preserve">
-        <value>Start the containers</value>
+        <value>Container starten</value>
     </data>
     <data name="DeployStartDetail" xml:space="preserve">
-        <value>Waits until each is healthy</value>
+        <value>Wartet, bis jeder fehlerfrei läuft</value>
     </data>
     <data name="DeployStartDescription" xml:space="preserve">
-        <value>The new version starts, and the step waits until every container reports healthy, or fails with their logs.</value>
+        <value>Die neue Version startet, und der Schritt wartet, bis jeder Container als fehlerfrei gemeldet wird, oder schlägt mit deren Logs fehl.</value>
     </data>
     <data name="DeployCheckTitle" xml:space="preserve">
-        <value>Check the public address</value>
+        <value>Öffentliche Adresse prüfen</value>
     </data>
     <data name="DeployCheckDetail" xml:space="preserve">
-        <value>Asks /alive from outside</value>
+        <value>Fragt /alive von außen ab</value>
     </data>
     <data name="DeployCheckDescription" xml:space="preserve">
-        <value>The workflow asks the public address for /alive until it answers, so the app is reachable from outside, not only on the server.</value>
+        <value>Der Workflow fragt /alive an der öffentlichen Adresse ab, bis eine Antwort kommt, damit die App von außen erreichbar ist und nicht nur auf dem Server.</value>
     </data>
     <data name="DeployPurgeTitle" xml:space="preserve">
-        <value>Purge the CDN cache</value>
+        <value>CDN-Cache leeren</value>
     </data>
     <data name="DeployPurgeDetail" xml:space="preserve">
-        <value>Visitors get the new files</value>
+        <value>Besucher erhalten die neuen Dateien</value>
     </data>
     <data name="DeployPurgeDescription" xml:space="preserve">
-        <value>The Cloudflare cache is purged, so visitors get the new version's files at once.</value>
+        <value>Der Cloudflare-Cache wird geleert, damit Besucher sofort die Dateien der neuen Version erhalten.</value>
     </data>
     <data name="DeployLiveTitle" xml:space="preserve">
         <value>Live</value>
     </data>
     <data name="DeployLiveDetail" xml:space="preserve">
-        <value>The new version serves everyone</value>
+        <value>Die neue Version bedient alle</value>
     </data>
     <data name="DeployLiveDescription" xml:space="preserve">
-        <value>Everyone now uses the new version. The store apps update the way each store delivers them.</value>
+        <value>Alle nutzen jetzt die neue Version. Die Store-Apps aktualisieren sich so, wie der jeweilige Store sie ausliefert.</value>
     </data>
     <data name="StructureTitle" xml:space="preserve">
-        <value>Project structure</value>
+        <value>Projektstruktur</value>
     </data>
     <data name="StructureDescription" xml:space="preserve">
-        <value>Every project of the solution and how they reference each other, with what lives in each one.</value>
+        <value>Alle Projekte der Solution, wie sie aufeinander verweisen und was in jedem steckt.</value>
     </data>
     <data name="StructureCaption" xml:space="preserve">
-        <value>Every part in its place</value>
+        <value>Jedes Teil an seinem Platz</value>
     </data>
     <data name="StructureHeading" xml:space="preserve">
-        <value>How your project fits together</value>
+        <value>So greift dein Projekt ineinander</value>
     </data>
     <data name="StructureIntro" xml:space="preserve">
-        <value>Each box is a project of the solution and each line a reference. Select one to see what lives there.</value>
+        <value>Jeder Kasten ist ein Projekt der Solution, jede Linie ein Verweis. Wähle eines aus, um zu sehen, was darin steckt.</value>
     </data>
     <data name="StructureSelectHint" xml:space="preserve">
-        <value>Select a project to see what lives there.</value>
+        <value>Wähle ein Projekt, um zu sehen, was darin steckt.</value>
     </data>
     <data name="StructureLoadFailed" xml:space="preserve">
-        <value>The project structure couldn't be loaded.</value>
+        <value>Die Projektstruktur konnte nicht geladen werden.</value>
     </data>
     <data name="StructureEmpty" xml:space="preserve">
-        <value>No projects to show.</value>
+        <value>Keine Projekte anzuzeigen.</value>
     </data>
     <data name="StructureReferences" xml:space="preserve">
-        <value>References: {0}</value>
+        <value>Verweist auf: {0}</value>
     </data>
     <data name="StructureKindClient" xml:space="preserve">
         <value>Client</value>
@@ -1378,75 +1378,75 @@ Here is each day:</value>
         <value>Server</value>
     </data>
     <data name="StructureKindShared" xml:space="preserve">
-        <value>Shared</value>
+        <value>Gemeinsam</value>
     </data>
     <data name="StructureKindTools" xml:space="preserve">
-        <value>Tools</value>
+        <value>Werkzeuge</value>
     </data>
     <data name="StructureClientWebRole" xml:space="preserve">
-        <value>Runs in the browser</value>
+        <value>Läuft im Browser</value>
     </data>
     <data name="StructureClientWebDescription" xml:space="preserve">
-        <value>The WebAssembly head: it runs the app in the browser, works offline and installs as a web app.</value>
+        <value>Die WebAssembly-Variante: führt die App im Browser aus, funktioniert offline und lässt sich als Web-App installieren.</value>
     </data>
     <data name="StructureClientMauiRole" xml:space="preserve">
         <value>Android, iOS, macOS, Windows</value>
     </data>
     <data name="StructureClientMauiDescription" xml:space="preserve">
-        <value>The native app for Android, iOS, macOS and Windows, with the same pages running inside it.</value>
+        <value>Die native App für Android, iOS, macOS und Windows, in der dieselben Seiten laufen.</value>
     </data>
     <data name="StructureClientWindowsRole" xml:space="preserve">
-        <value>Windows desktop app</value>
+        <value>Windows-Desktop-App</value>
     </data>
     <data name="StructureClientWindowsDescription" xml:space="preserve">
-        <value>A light Windows desktop app with automatic updates, running the same pages.</value>
+        <value>Eine schlanke Windows-Desktop-App mit automatischen Updates, die dieselben Seiten ausführt.</value>
     </data>
     <data name="StructureWorkbenchRole" xml:space="preserve">
-        <value>Designs pages on sample data</value>
+        <value>Entwirft Seiten mit Beispieldaten</value>
     </data>
     <data name="StructureWorkbenchDescription" xml:space="preserve">
-        <value>This app: pages designed on sample data with the client's components and theme. It is never deployed with the app.</value>
+        <value>Diese App: Seiten, entworfen mit Beispieldaten und den Komponenten und dem Theme des Clients. Sie wird nie mit der App ausgerollt.</value>
     </data>
     <data name="StructureClientCoreRole" xml:space="preserve">
-        <value>Pages, components, services</value>
+        <value>Seiten, Komponenten, Dienste</value>
     </data>
     <data name="StructureClientCoreDescription" xml:space="preserve">
-        <value>The heart of the client: every page, component, layout and client service, with the app's styles and scripts. Every client runs it.</value>
+        <value>Das Herz des Clients: alle Seiten, Komponenten, Layouts und Client-Dienste, mit den Stilen und Skripten der App. Jeder Client führt es aus.</value>
     </data>
     <data name="StructureServerWebRole" xml:space="preserve">
-        <value>Hosts and renders the app</value>
+        <value>Hostet und rendert die App</value>
     </data>
     <data name="StructureServerWebDescription" xml:space="preserve">
-        <value>The startup project: it renders pages on the server, runs Blazor Server and serves the WebAssembly files.</value>
+        <value>Das Startprojekt: rendert Seiten auf dem Server, führt Blazor Server aus und liefert die WebAssembly-Dateien.</value>
     </data>
     <data name="StructureServerApiRole" xml:space="preserve">
-        <value>API, data and jobs</value>
+        <value>API, Daten und Jobs</value>
     </data>
     <data name="StructureServerApiDescription" xml:space="preserve">
-        <value>The API controllers, the database and its migrations, email templates, background jobs and real-time hubs.</value>
+        <value>Die API-Controller, die Datenbank und ihre Migrationen, E-Mail-Vorlagen, Hintergrundjobs und Echtzeit-Hubs.</value>
     </data>
     <data name="StructureSharedRole" xml:space="preserve">
-        <value>DTOs and resources</value>
+        <value>DTOs und Ressourcen</value>
     </data>
     <data name="StructureSharedDescription" xml:space="preserve">
-        <value>What the server and every client share: data contracts, enums, errors, shared services and the translated texts.</value>
+        <value>Was Server und alle Clients teilen: Datenverträge, Enums, Fehler, gemeinsame Dienste und die übersetzten Texte.</value>
     </data>
     <data name="StructureServerSharedRole" xml:space="preserve">
-        <value>Health, telemetry, defaults</value>
+        <value>Health, Telemetrie, Standards</value>
     </data>
     <data name="StructureServerSharedDescription" xml:space="preserve">
-        <value>What both server projects share, such as health checks, telemetry and service defaults.</value>
+        <value>Was beide Serverprojekte teilen, etwa Health Checks, Telemetrie und Dienst-Standards.</value>
     </data>
     <data name="StructureAppHostRole" xml:space="preserve">
-        <value>Runs everything locally</value>
+        <value>Startet alles lokal</value>
     </data>
     <data name="StructureAppHostDescription" xml:space="preserve">
-        <value>Starts the projects and the database and services they need for development, and writes the Docker Compose project for deployment.</value>
+        <value>Startet für die Entwicklung die Projekte sowie die Datenbank und Dienste, die sie brauchen, und schreibt das Docker Compose-Projekt für das Deployment.</value>
     </data>
     <data name="StructureTestsRole" xml:space="preserve">
-        <value>UI and integration tests</value>
+        <value>UI- und Integrationstests</value>
     </data>
     <data name="StructureTestsDescription" xml:space="preserve">
-        <value>UI and integration tests that run the real server in memory, with test data and a real browser.</value>
+        <value>UI- und Integrationstests, die den echten Server im Arbeitsspeicher ausführen, mit Testdaten und einem echten Browser.</value>
     </data>
 </root>
