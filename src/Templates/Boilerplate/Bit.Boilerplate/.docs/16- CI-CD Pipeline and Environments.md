@@ -256,8 +256,8 @@ This is the **core deployment workflow** that handles building and deploying all
 - **Multi-Platform**: Builds server backend, Blazor WebAssembly, Android, iOS, macOS, and Windows
 - **Parallel Jobs**: All platform builds run in parallel for speed
 - **Artifact Storage**: Each platform produces an artifact that can be deployed independently
-- **Build Provenance**: In a public repository, each artifact, and each server image by its digest, gets a signed
-  attestation of the commit and the run that built it, which `gh attestation verify <downloaded artifact .zip> --repo <owner>/<repo>` checks. Private
+- **Build Provenance**: In a public repository, each client artifact gets a signed attestation of the commit and the
+  run that built it, which `gh attestation verify <downloaded artifact .zip> --repo <owner>/<repo>` checks. Private
   repositories need GitHub Enterprise Cloud for attestations, so the step is skipped there. In a public repository
   the About page also shows the commit and the run that built the app, with a link to the attestations, and the
   Windows app shows who signed it once Windows has checked the signature
@@ -317,6 +317,8 @@ This is the **core deployment workflow** that handles building and deploying all
    ```
    - Writes `docker-compose.yaml` and a `.env` that lists every value the deployment needs, uploaded as the
      `compose` artifact
+   - The apps run with `ASPNETCORE_ENVIRONMENT` set to the environment (`Test` or `Production`), which the server also
+     takes as its `AppEnvironment`
 
 ---
 

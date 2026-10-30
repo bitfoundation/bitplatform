@@ -15,10 +15,10 @@ public static class DockerComposePublishingExtensions
     {
         /// <summary>
         /// Publish mode only. Sends the images to the registry the CD names, fixes the apps on port 8080 with no host
-        /// port, gives every long-running service a restart policy and a health check, adds the one-shot
-        /// <c>migrations</c> service, and wires in the settings the deploy job supplies: the connection strings and
-        /// parameters of the generated <c>.env</c>, the <c>serverweb.env</c> (and <c>serverapi.env</c>) files, and the
-        /// environment's own <c>AppCertificate</c>.
+        /// port, runs them in the environment they are published for, gives every long-running service a restart policy
+        /// and a health check, adds the one-shot <c>migrations</c> service, and wires in the settings the deploy job
+        /// supplies: the connection strings and parameters of the generated <c>.env</c>, the <c>serverweb.env</c> (and
+        /// <c>serverapi.env</c>) files, and the environment's own <c>AppCertificate</c>.
         /// </summary>
         public void ConfigureDockerComposePublishing(
             IResourceBuilder<DockerComposeEnvironmentResource> compose,
@@ -58,6 +58,9 @@ public static class DockerComposePublishingExtensions
                 project
                     // A fixed port, because cloudflared reaches the apps at http://serverweb:8080 (and http://serverapi:8080).
                     .WithEndpoint("http", endpoint => endpoint.TargetPort = 8080)
+                    // The environment `aspire publish --environment` names (Test or Production). Without it the apps run as
+                    // Production everywhere, and AppEnvironment takes its value from it on the server.
+                    .WithEnvironment("ASPNETCORE_ENVIRONMENT", builder.Environment.EnvironmentName)
                     .WithRemoteImageTag(imageTag)
                     .PublishAsDockerComposeService((_, service) =>
                     {

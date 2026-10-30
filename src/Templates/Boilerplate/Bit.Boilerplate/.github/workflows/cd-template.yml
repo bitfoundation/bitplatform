@@ -27,8 +27,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write
-      attestations: write
     environment: ${{ inputs.ENV_NAME }}
     steps:
 
@@ -107,38 +105,7 @@ jobs:
             aspire-output/.env
           include-hidden-files: true # Required for .env, the list of values the deploy job has to supply
 
-      # A public repository only: find each pushed image's digest, attest how it was built, and push that attestation to GHCR.
-      - name: Find the digests of the pushed images
-        id: images
-        if: github.event.repository.visibility == 'public'
-        env:
-          ENV_NAME: ${{ inputs.ENV_NAME }}
-        run: |
-          repository="ghcr.io/${GITHUB_REPOSITORY,,}"
-          echo "repository=$repository" >> "$GITHUB_OUTPUT"
-          for image in serverweb serverapi; do
-            if docker image inspect "$repository/$image:${ENV_NAME,,}-$GITHUB_SHA" > /dev/null 2>&1; then
-              echo "$image=$(docker buildx imagetools inspect "$repository/$image:${ENV_NAME,,}-$GITHUB_SHA" --format '{{json .Manifest}}' | jq --raw-output .digest)" >> "$GITHUB_OUTPUT"
-            fi
-          done
-
-      - name: Attest the serverweb image
-        if: github.event.repository.visibility == 'public'
-        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
-        with:
-          subject-name: ${{ steps.images.outputs.repository }}/serverweb
-          subject-digest: ${{ steps.images.outputs.serverweb }}
-          push-to-registry: true
-#if (api == "Standalone")
-
-      - name: Attest the serverapi image
-        if: github.event.repository.visibility == 'public'
-        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
-        with:
-          subject-name: ${{ steps.images.outputs.repository }}/serverapi
-          subject-digest: ${{ steps.images.outputs.serverapi }}
-          push-to-registry: true
-#endif
+      # In a public repository, also find each pushed image's digest, attest it with actions/attest-build-provenance, and push the attestation to GHCR.
 
       - name: Log out of GitHub Container Registry
         if: always()

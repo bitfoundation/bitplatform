@@ -14,7 +14,6 @@
         <PackageReference Include="Aspire.Hosting.Docker" />
         <PackageReference Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Aspire.Hosting.MySql" />
         <PackageReference Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.Hosting.Redis" />
-        <PackageReference Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.Hosting.Azure.Redis" />
         <PackageReference Include="CommunityToolkit.Aspire.Hosting.MailPit" />
         <PackageReference Condition=" '$(database)' == 'Sqlite' OR '$(database)' == '' " Include="CommunityToolkit.Aspire.Hosting.Sqlite" />
         <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == ''" Include="Aspire.Hosting.Azure.Sql" />

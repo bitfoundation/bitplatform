@@ -1,9 +1,6 @@
 //+:cnd:noEmit
-//#if (database == "SqlServer" || database == "PostgreSQL" || redis == true || filesStorage == "AzureBlobStorage")
+//#if (database == "SqlServer" || database == "PostgreSQL" || filesStorage == "AzureBlobStorage")
 using Aspire.Hosting.Azure;
-//#endif
-//#if (redis == true)
-using Azure.Provisioning.RedisEnterprise;
 //#endif
 using Boilerplate.Server.AppHost.Infrastructure.Services;
 
@@ -39,87 +36,41 @@ public static class IDistributedApplicationBuilderExtensions
         /// Adds a Redis instance configured for FusionCache hybrid caching (L2 cache) and SignalR backplane.
         /// No persistence is needed for this cache instance.
         /// </summary>
-        public IResourceBuilder<IResourceWithConnectionString> AddRedisCache()
+        public IResourceBuilder<RedisResource> AddRedisCache()
         {
-            // RunAsContainer does nothing in publish mode, so the Azure resource would be published as Azure Managed Redis
-            // (Bicep) and the Docker Compose project would have no Redis at all. Published, it is the same container instead.
-            if (builder.ExecutionContext.IsPublishMode)
-                return ConfigureContainer(builder.AddRedis("redis-cache")).PublishAsComposeRedis();
-
-            return builder.AddAzureManagedRedis("redis-cache")
-                .RunAsContainer(redis => ConfigureContainer(redis)) // Remove this RunAsContainer and related configuration to use actual Azure Redis instance
-                .ConfigureInfrastructure(infra =>
-                {
-                    var db = infra.GetProvisionableResources()
-                        .OfType<RedisEnterpriseDatabase>()
-                        .Single();
-
-                    db.Persistence = new()
-                    {
-                        IsAofEnabled = false,
-                        IsRdbEnabled = false
-                    };
-
-                    db.EvictionPolicy = RedisEnterpriseEvictionPolicy.AllKeysLru;
-                });
-
-            static IResourceBuilder<RedisResource> ConfigureContainer(IResourceBuilder<RedisResource> redis)
-            {
-                return redis.WithRedisInsight(redisInsight => redisInsight.WithExplicitStart())
-                    .WithRedisCommander(redisCommander => redisCommander.WithExplicitStart())
-                    .WithImage("redis", "8")
-                    .WithArgs(
-                     "--save", "",                        // Backend API has its own L1 in-memory cache, no need to have RDB snapshots for the L2 redis cache in case of failures.
-                     "--appendonly", "no",                // Disables AOF persistence as well for the same reason.
-                     "--maxmemory-policy", "allkeys-lru"  // Documents the Azure-side EvictionPolicy below. Inert in the container: no maxmemory is set, so nothing is ever evicted.
-                 ).WithOtlpExporter();
-            }
+            return builder.AddRedis("redis-cache")
+                .WithRedisInsight(redisInsight => redisInsight.WithExplicitStart())
+                .WithRedisCommander(redisCommander => redisCommander.WithExplicitStart())
+                .WithImage("redis", "8")
+                .WithArgs(
+                    "--save", "",                        // Backend API has its own L1 in-memory cache, no need to have RDB snapshots for the L2 redis cache in case of failures.
+                    "--appendonly", "no",                // Disables AOF persistence as well for the same reason.
+                    "--maxmemory-policy", "allkeys-lru"  // Evicts the least recently used keys once a --maxmemory is set. Without one, nothing is evicted.
+                )
+                .WithOtlpExporter()
+                .PublishAsComposeRedis();
         }
 
         /// <summary>
         /// Adds a Redis instance configured for Hangfire background jobs and distributed locking.
         /// This instance uses AOF persistence for durability.
         /// </summary>
-        public IResourceBuilder<IResourceWithConnectionString> AddRedisPersistent()
+        public IResourceBuilder<RedisResource> AddRedisPersistent()
         {
-            // Published, it is the same container (See AddRedisCache).
-            if (builder.ExecutionContext.IsPublishMode)
-                return ConfigureContainer(builder.AddRedis("redis-persistent")).PublishAsComposeRedis();
-
-            return builder.AddAzureManagedRedis("redis-persistent")
-                .RunAsContainer(redis => ConfigureContainer(redis)) // Remove this RunAsContainer and related configuration to use actual Azure Redis instance
-                .ConfigureInfrastructure(infra =>
-                {
-                    var db = infra.GetProvisionableResources()
-                        .OfType<RedisEnterpriseDatabase>()
-                        .Single();
-
-                    // --appendonly yes + --appendfsync always
-                    db.Persistence = new()
-                    {
-                        IsAofEnabled = true,
-                        AofFrequency = PersistenceSettingAofFrequency.Always,
-                        IsRdbEnabled = false  // --save ""
-                    };
-
-                    // --maxmemory-policy noeviction
-                    db.EvictionPolicy = RedisEnterpriseEvictionPolicy.NoEviction;
-                });
-
-            static IResourceBuilder<RedisResource> ConfigureContainer(IResourceBuilder<RedisResource> redis)
-            {
-                return redis.WithRedisInsight(redisInsight => redisInsight.WithExplicitStart())
-                    .WithRedisCommander(redisCommander => redisCommander.WithExplicitStart())
-                    .WithImage("redis", "8")
-                    .WithDataVolume()
-                    .WithArgs(
-                        "--dir", "/data",
-                        "--appendonly", "yes",             // Enable AOF (Append only file) for data durability
-                        "--appendfsync", "always",         // Sync to disk on every write for maximum durability. Temporarily disable it programmatically using C# code during bulk operations if needed.
-                        "--save", "",                      // Disables RDB snapshots
-                        "--maxmemory-policy", "noeviction" // Raise error when memory limit is reached instead of evicting keys
-                    ).WithOtlpExporter();
-            }
+            return builder.AddRedis("redis-persistent")
+                .WithRedisInsight(redisInsight => redisInsight.WithExplicitStart())
+                .WithRedisCommander(redisCommander => redisCommander.WithExplicitStart())
+                .WithImage("redis", "8")
+                .WithDataVolume()
+                .WithArgs(
+                    "--dir", "/data",
+                    "--appendonly", "yes",             // Enable AOF (Append only file) for data durability
+                    "--appendfsync", "always",         // Sync to disk on every write for maximum durability. Temporarily disable it programmatically using C# code during bulk operations if needed.
+                    "--save", "",                      // Disables RDB snapshots
+                    "--maxmemory-policy", "noeviction" // Raise error when memory limit is reached instead of evicting keys
+                )
+                .WithOtlpExporter()
+                .PublishAsComposeRedis();
         }
         //#endif
 
@@ -130,7 +81,8 @@ public static class IDistributedApplicationBuilderExtensions
         /// </summary>
         public IResourceBuilder<IResourceWithConnectionString> AddSqlServer()
         {
-            // Published, it is the same container (See AddRedisCache).
+            // RunAsContainer does nothing in publish mode, so the Azure resource would be published as Azure SQL (Bicep)
+            // and the Docker Compose project would have no database at all. Published, it is the same container instead.
             if (builder.ExecutionContext.IsPublishMode)
                 return ConfigureContainer(builder.AddSqlServer("sqlserver"))
                     .PublishAsHealthyComposeService("/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q \"SELECT 1\" -b -o /dev/null")
@@ -157,7 +109,9 @@ public static class IDistributedApplicationBuilderExtensions
         /// </summary>
         public IResourceBuilder<IResourceWithConnectionString> AddPostgreSQL()
         {
-            // Published, it is the same container (See AddRedisCache).
+            // RunAsContainer does nothing in publish mode, so the Azure resource would be published as Azure Database for
+            // PostgreSQL (Bicep) and the Docker Compose project would have no database at all. Published, it is the same
+            // container instead.
             if (builder.ExecutionContext.IsPublishMode)
                 return ConfigureContainer(builder.AddPostgres("postgresserver"))
                     .PublishAsHealthyComposeService("pg_isready -U postgres -d postgres")
