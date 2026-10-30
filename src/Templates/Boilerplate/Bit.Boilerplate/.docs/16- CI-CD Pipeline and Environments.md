@@ -119,7 +119,7 @@ that environment's apps.
 | `AZURE_BLOB_STORAGE_CONNECTION_STRING` | secret | The Azure Storage account the files go to |
 <!--#endif-->
 <!--#if (redis == true)-->
-| `REDIS_CACHE_PASSWORD`, `REDIS_PERSISTENT_PASSWORD` | secret | The passwords of the two Redis containers |
+| `REDIS_CACHE_PASSWORD`, `REDIS_PERSISTENT_PASSWORD` | secret | The passwords of the two Redis containers, letters and digits only (see [`/specs/workarounds.md`](/specs/workarounds.md)) |
 <!--#endif-->
 <!--#if (cloudflare == true)-->
 | `CLOUDFLARE_TUNNEL_TOKEN` | secret | The connector token of the environment's Cloudflare Tunnel |

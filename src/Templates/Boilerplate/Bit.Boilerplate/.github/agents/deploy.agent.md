@@ -155,6 +155,9 @@ there, and the setting or secret that carries it. Every environment gets its own
 <!--#endif-->
 <!--#if (redis == true)-->
 - **Redis**: containers on the VM, one for the cache, and one with persistence for Hangfire and the distributed lock.
+  Generate their passwords from letters and digits only, the way Aspire generates them in development:
+  StackExchange.Redis can't take a comma in one, and DbGate gets them inside a URL that nothing encodes, where a `/`,
+  `?`, `#` or `%` breaks it (`specs/workarounds.md`).
 <!--#endif-->
 <!--#if (filesStorage == "S3")-->
 - **File storage**: S3-compatible object storage. Recommend Cloudflare R2: it has no egress fees, and it lives in the
