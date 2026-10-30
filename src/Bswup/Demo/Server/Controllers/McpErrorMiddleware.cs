@@ -70,7 +70,7 @@ public class McpErrorMiddleware(RequestDelegate next)
         // how to split it, which "request body too large" does not tell it.
         BadHttpRequestException { StatusCode: StatusCodes.Status413PayloadTooLarge } =>
             (StatusCodes.Status413PayloadTooLarge,
-             $"The request body is larger than the {endpoint.MaxRequestBodySize:N0} bytes this endpoint reads, so none of it was read. " +
+             $"The request body is larger than the {endpoint.MaxRequestBodySize:N0} bytes this endpoint reads, so the server stopped reading it at that limit and refused the whole call. " +
              $"No call needs that much: {nameof(McpController.InspectBswupServiceWorker)}, the largest, reads at most " +
              $"{McpController.MaxScriptLength:N0} characters of script and {McpController.MaxAssetUrlsLength:N0} of asset URLs. " +
              "Pass the asset URLs in smaller batches."),

@@ -273,6 +273,17 @@ public class ToolCallTests
     }
 
     [TestMethod]
+    public void InspectBswupServiceWorker_AdvertisesTheScriptLengthLimitInItsSchema()
+    {
+        // The refusal above costs a call; the schema is read before the first one, so the limit
+        // has to be there too or a model only learns it by hitting it.
+        var tool = _tools.Single(tool => tool.Name == "InspectBswupServiceWorker");
+        var description = tool.ProtocolTool.InputSchema.GetProperty("properties").GetProperty("script").GetProperty("description").GetString();
+
+        StringAssert.Contains(description, "at most 64,000 characters");
+    }
+
+    [TestMethod]
     public async Task InspectBswupServiceWorker_RefusesAssignmentsChainedPastTheLimit()
     {
         var result = await _server.CallAsync("InspectBswupServiceWorker", new { script = ServiceWorkerFixtures.ChainedAssignments });
