@@ -209,7 +209,9 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         string[] arguments = ["build", Templates.Platforms.MauiProject(project.Name), "-t:InstallAndroidDependencies", "-f", $"{project.TargetFrameworkVersion}-android", "-p:AcceptAndroidSDKLicenses=True"];
         var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}";
         var administrator = cli.Environment.IsWindows && AdministratorNeeds.AndroidSdkNeedsIt(cli.Environment) ? cli.Administrator : null;
-        var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(60), administrator);
+        var result = administrator is null
+            ? await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(60))
+            : await WithAndroidInstallerAsync(installer => administrator.RunAsync(installer with { OnOutputLine = progress }, cancellationToken));
 
         if (result.Succeeded is false && administrator is null && cli.Environment.IsWindows && cli.Environment.IsElevated is false && NeedsElevation(result.Output))
         {
@@ -223,10 +225,10 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             {
                 ToolId = "android",
                 Title = "Install the Android SDK and Java",
-                Commands = [new ProcessSpec { FileName = "dotnet", Arguments = arguments, WorkingDirectory = project.Directory, Timeout = TimeSpan.FromMinutes(60) }]
+                Commands = []
             };
 
-            var elevated = await ToolInstaller.RunAsAdministratorAsync(cli, [install], progress, cancellationToken);
+            var elevated = await WithAndroidInstallerAsync(installer => ToolInstaller.RunAsAdministratorAsync(cli, [install with { Commands = [installer] }], progress, cancellationToken));
 
             if (elevated.Declined)
                 return StepResult.Warning("The Android SDK and Java weren't installed", "administrator permission was declined", followUp);
@@ -1063,6 +1065,46 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         };
 
         return administrator is null ? Runner.RunAsync(spec, cancellationToken) : administrator.RunAsync(spec, cancellationToken);
+    }
+
+    private async Task<T> WithAndroidInstallerAsync<T>(Func<ProcessSpec, Task<T>> run)
+    {
+        var folder = System.IO.Directory.CreateTempSubdirectory("bit-android-").FullName;
+
+        try
+        {
+            File.WriteAllText(Path.Combine(folder, "android.csproj"), $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+                    <PropertyGroup>
+                        <TargetFramework>{project.TargetFrameworkVersion}-android</TargetFramework>
+                    </PropertyGroup>
+                </Project>
+                """);
+
+            if (TemplateRequirements.FromProject(project.Directory, project.Name).Sdk is { } sdk)
+            {
+                File.WriteAllText(Path.Combine(folder, "global.json"), sdk.GlobalJson);
+            }
+
+            return await run(new ProcessSpec
+            {
+                FileName = "dotnet",
+                Arguments = ["build", "android.csproj", "-t:InstallAndroidDependencies", "-p:AcceptAndroidSDKLicenses=True", "-noAutoResponse", "-p:ImportDirectoryBuildProps=false", "-p:ImportDirectoryBuildTargets=false", "-p:ImportDirectoryPackagesProps=false"],
+                WorkingDirectory = folder,
+                Timeout = TimeSpan.FromMinutes(60),
+                Environment = new Dictionary<string, string?> { ["DOTNET_NOLOGO"] = "1", ["MSBUILDTERMINALLOGGER"] = "off", ["DOTNET_CLI_UI_LANGUAGE"] = "en" }
+            });
+        }
+        finally
+        {
+            try
+            {
+                System.IO.Directory.Delete(folder, recursive: true);
+            }
+            catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+            {
+            }
+        }
     }
 
     private static bool NeedsElevation(string output)

@@ -39,6 +39,9 @@ public sealed class TemplateDiff(CliServices cli)
         if (name is null)
             return cli.UsageError("not-a-project", $"{directory} isn't a bit Boilerplate project. Run bit diff in the project's folder, or pass --name.");
 
+        if (name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            return cli.UsageError("name-invalid", $"'{name}' isn't a project name.");
+
         if (from is null)
             return cli.UsageError("version-unknown", $"{directory} has no bit.json that says which bit Boilerplate version made the project. Pass it: bit diff <from> [to].");
 

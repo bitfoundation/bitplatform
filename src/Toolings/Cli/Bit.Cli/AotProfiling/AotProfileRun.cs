@@ -52,7 +52,7 @@ public sealed class AotProfileRun(CliServices cli)
         }
 
         var output = Path.GetFullPath(request.Output ?? $"{Path.GetFileNameWithoutExtension(project)}.aotprofile", current);
-        var work = Path.Combine(Path.GetTempPath(), "bit-aot-profile", Guid.NewGuid().ToString("N")[..8]);
+        var work = Directory.CreateTempSubdirectory("bit-aot-profile-").FullName;
         var publish = Path.Combine(work, "publish");
 
         try
