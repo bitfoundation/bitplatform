@@ -1,6 +1,6 @@
 ---
 name: dependency-update
-description: Sweep every version-pinned surface in the bitplatform repo (NuGet, npm, GitHub Actions, Azure DevOps tasks, devcontainers, dotnet-tools, global.json, container image tags), update what should move, leave what is deliberately held, and report each change with its release notes and any breaking behaviour. Use when asked to "update dependencies/packages/versions", refresh CI, or before a release.
+description: Sweep every version-pinned surface in the bitplatform repo (NuGet, npm, GitHub Actions, devcontainers, dotnet-tools, global.json, container image tags), update what should move, leave what is deliberately held, and report each change with its release notes and any breaking behaviour. Use when asked to "update dependencies/packages/versions", refresh CI, or before a release.
 ---
 
 # Dependency update sweep
@@ -38,10 +38,9 @@ Work the surfaces in this order. Each is independent; batch the network lookups.
 1. NuGet (`*.csproj`, `Directory.Packages.props`)
 2. npm (`package.json`, then `npm install` to refresh `package-lock.json`)
 3. GitHub Actions (`.github/workflows/`, `.github/actions/`, `src/Templates/Boilerplate/Bit.Boilerplate/.github/workflows/`)
-4. Azure DevOps tasks (`src/Templates/Boilerplate/Bit.Boilerplate/.azure-devops/workflows/`)
-5. devcontainers (`.devcontainer/`, `src/Templates/Boilerplate/Bit.Boilerplate/.devcontainer/`)
-6. `dnx <package>@<version>` calls in workflows and docs (`vpk`, `dotnet-ef`), `global.json` (3 files)
-7. Container image tags in the Aspire AppHost
+4. devcontainers (`.devcontainer/`, `src/Templates/Boilerplate/Bit.Boilerplate/.devcontainer/`)
+5. `dnx <package>@<version>` calls in workflows and docs (`vpk`, `dotnet-ef`), `global.json` (3 files)
+6. Container image tags in the Aspire AppHost
 
 ## The hold-back rules
 
@@ -148,7 +147,7 @@ rest of ASP.NET Core moves on. A NU1608 on Npgsql in a restore means this was mi
 floor in the band the Boilerplate uses can't go above that version either: `Bit.Besql`'s raised the offline
 database's Sqlite above it, and the project's restore failed with NU1605.
 
-**Linux runners are on `ubuntu-26.04`**, in the GitHub workflows and the Azure DevOps `vmImage`. It
+**Linux runners are on `ubuntu-26.04`** in the GitHub workflows. It
 defaults to JDK 25 (`(default)` in the image readme's Java table), which .NET for Android accepts from .NET 11
 RC2 on (`LatestSupportedJavaVersion` 25.0.99 in `Xamarin.Android.Common.props.in`). .NET for Android 10 accepts up
 to 21, so the jobs that build a .NET 10 Boilerplate project (the Todo CD's Linux jobs) and a .NET 10 project's
@@ -250,18 +249,6 @@ must give the Xcode that .NET for iOS asks for: the `RecommendedXcodeVersion` in
 build fails with "This version of .NET for iOS requires Xcode ...". When the `macOS-*` image doesn't have that Xcode,
 use GitHub's image that does (`xcode-27` for Xcode 27).
 
-### Azure DevOps
-
-Tasks are major-versioned (`UseDotNet@2`, `FileTransform@2`). The newest major is the highest
-`<Task>V<n>` folder in `gh api repos/microsoft/azure-pipelines-tasks/contents/Tasks --jq '.[].name'`.
-A task can change name across majors while keeping its id: `NodeTool@1` resolves to `UseNodeV1`.
-
-`AzureRmWebAppDeployment@5` passes `DeploymentTypeLinux: 'zipDeploy'` on purpose. For `webAppLinux` @5
-defaults to `oneDeploy` with `CleanDeploymentFlag: true`, which deletes every file the package does not
-carry, the template's `App_Data` (SQLite database, local file storage, Hangfire jobs) included.
-`zipDeploy` keeps them, as @4 did. Keep that input on any later major. The GitHub CD's
-`azure/webapps-deploy` steps pass `clean: false` for the same reason: that action always uses OneDeploy.
-
 ### devcontainers
 
 Features pin a **major only** (`ghcr.io/devcontainers/features/node:2`). Read the current major from
@@ -337,8 +324,8 @@ expired.
 **4. Missed / drifted** — pins that are behind for no discoverable reason, and the same package at
 different versions across projects. These are the ones worth a maintainer's attention.
 
-**5. Not verified** — anything only a real build or CI run can prove. Deploy-path action bumps
-(`azure/webapps-deploy`), devcontainer feature majors, and analyzer bumps are in this category.
+**5. Not verified** — anything only a real build or CI run can prove. Deploy-path action bumps,
+devcontainer feature majors, and analyzer bumps are in this category.
 
 ## After editing
 

@@ -111,7 +111,7 @@ public class HybridHostHardeningTests
         var gitIgnore = ReadTemplateFile(".gitignore");
 
         Assert.Contains(line => line.Trim() == pattern, gitIgnore.Split('\n'),
-            $".gitignore has no '{pattern}' rule. cd-template.yml and .azure-devops/workflows/cd.yml both materialise " +
+            $".gitignore has no '{pattern}' rule. cd-template.yml materialises " +
             "Boilerplate.keystore into a tracked source directory, and the documented local workflow puts a real one " +
             "at the same path.");
     }

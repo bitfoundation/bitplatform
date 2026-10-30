@@ -53,7 +53,6 @@ Every option of the bit Boilerplate template works the same way:
 | `--database` | `Sqlite`, `SqlServer`, `PostgreSQL`, `MySql`, `Other` | `Sqlite` |
 | `--filesStorage` | `Local`, `S3`, `AzureBlobStorage`, `Other` | `Local` |
 | `--api` | `Integrated`, `Standalone` | `Integrated` |
-| `--pipeline` | `GitHub`, `Azure`, `None` | `GitHub` |
 | `--module` | `None`, `Admin`, `Sales` | `None` |
 | `--captcha` | `None`, `reCaptcha` | `None` |
 | `--theme` | `Fluent2`, `Fluent`, `Cupertino`, `Material` | `Fluent2` |
@@ -83,7 +82,7 @@ And these of its own:
 | `--ide code\|vs\|rider\|none` | Open the project in this IDE. Default: VS Code; `none` in CI. bit installs and sets up VS Code only; Visual Studio and Rider are opened when they're already installed. |
 | `--template-version <version>` | The bit Boilerplate version. Default: the CLI's own version. |
 | `--template-package <nupkg or folder>` | Create from a local Bit.Boilerplate package, or from the template's folder in a bitplatform checkout, the way this repository's CI does. |
-| `--github-repo` | Create a private GitHub repository for the project and push to it. Needs the GitHub pipeline, the default. |
+| `--github-repo` | Create a private GitHub repository for the project and push to it. |
 | `--no-update` | Create it with this bit even when a newer one is out. |
 | `-y, --yes` | Install the tools the project needs and create it without asking. Windows' permission prompt, `sudo`'s password and the GitHub sign-in still show when there's a terminal. |
 | `--non-interactive` | Never ask; fail when a required value is missing. |

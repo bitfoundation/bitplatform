@@ -46,9 +46,6 @@ public sealed partial class NewWorkflow(CliServices cli)
         if (ProjectName.Validate(name, typeNames) is { } nameError)
             return cli.UsageError("name-invalid", $"{nameError} Try: bit new {ProjectName.Suggest(name, typeNames)}");
 
-        if (request.GitHubRepo && string.Equals(selection["pipeline"], "GitHub", StringComparison.OrdinalIgnoreCase) is false)
-            return cli.UsageError("github-repo-needs-github", "--github-repo needs the GitHub pipeline (--pipeline GitHub).");
-
         if (request.GitHubRepo && request.NoGit)
             return cli.UsageError("github-repo-no-git", "--github-repo pushes the project's git repository, so it can't go with --no-git.");
 

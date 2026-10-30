@@ -365,7 +365,7 @@ jobs:
     - name: Build sample configuration 1
       working-directory: ${{ runner.temp }}
       run: |
-        bit new MyCompany.TestProject --framework net11.0 --database SqlServer --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --pipeline Azure --module Admin --offlineDb --appInsights --sentry --signalR --notification --cloudflare --ads --aspire --redis --multitenant --brouter --platforms web,android --template-package "$BIT_TEMPLATE_PACKAGE" --yes --no-trust --no-format --no-browsers -p:InvariantGlobalization=false -p:Environment=Staging -p:EnforceCodeStyleInBuild=true
+        bit new MyCompany.TestProject --framework net11.0 --database SqlServer --filesStorage AzureBlobStorage --api Integrated --captcha reCaptcha --module Admin --offlineDb --appInsights --sentry --signalR --notification --cloudflare --ads --aspire --redis --multitenant --brouter --platforms web,android --template-package "$BIT_TEMPLATE_PACKAGE" --yes --no-trust --no-format --no-browsers -p:InvariantGlobalization=false -p:Environment=Staging -p:EnforceCodeStyleInBuild=true
         cd MyCompany.TestProject
         git log --oneline --decorate --all
         git status --short
@@ -378,7 +378,7 @@ jobs:
     - name: Build sample configuration 2
       working-directory: ${{ runner.temp }}
       run: |
-        bit new TestProject2 --framework net11.0 --database Other --filesStorage S3 --api Standalone --captcha None --pipeline None --module None --offlineDb false --appInsights false --sentry false --signalR false --notification false --cloudflare false --ads false --aspire true --redis false --multitenant false --brouter false --platforms web,android --template-package "$BIT_TEMPLATE_PACKAGE" --yes --no-trust --no-browsers -p:InvariantGlobalization=true -p:Environment=Development -p:EnforceCodeStyleInBuild=true
+        bit new TestProject2 --framework net11.0 --database Other --filesStorage S3 --api Standalone --captcha None --module None --offlineDb false --appInsights false --sentry false --signalR false --notification false --cloudflare false --ads false --aspire true --redis false --multitenant false --brouter false --platforms web,android --template-package "$BIT_TEMPLATE_PACKAGE" --yes --no-trust --no-browsers -p:InvariantGlobalization=true -p:Environment=Development -p:EnforceCodeStyleInBuild=true
         rm -r "TestProject2"
 
 

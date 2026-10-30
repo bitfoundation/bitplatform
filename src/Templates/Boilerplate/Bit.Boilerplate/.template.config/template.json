@@ -273,27 +273,6 @@
                 }
             ]
         },
-        "pipeline": {
-            "displayName": "CI-CD pipeline",
-            "type": "parameter",
-            "datatype": "choice",
-            "replaces": "bit-option-pipeline",
-            "defaultValue": "GitHub",
-            "choices": [
-                {
-                    "choice": "GitHub",
-                    "description": "GitHub actions"
-                },
-                {
-                    "choice": "Azure",
-                    "description": "Azure DevOps pipelines"
-                },
-                {
-                    "choice": "None",
-                    "description": "None"
-                }
-            ]
-        },
         "module": {
             "displayName": "Module",
             "type": "parameter",
@@ -818,18 +797,6 @@
                     ]
                 },
                 {
-                    "condition": "(pipeline != GitHub)",
-                    "exclude": [
-                        ".github/workflows**"
-                    ]
-                },
-                {
-                    "condition": "(pipeline != Azure)",
-                    "exclude": [
-                        ".azure-devops/**"
-                    ]
-                },
-                {
                     "condition": "(module != Admin)",
                     "exclude": [
                         "src/Shared/Features/Dashboard/**",
@@ -1033,7 +1000,6 @@
                         "src/Tests/Features/TemplateConfig/TemplateConfigurationTests.cs",
                         "src/Tests/Features/Documentation/DocumentationTruthTests.cs",
                         "src/Tests/Features/TemplateConfig/SolutionAndRepoFilesTests.cs",
-                        "src/Tests/Features/TemplateConfig/PipelineFilesTests.cs",
                         "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
                         "src/Tests/Features/OpenApi/OpenApiParameterContractTests.cs",
                         "src/Tests/Features/Urls/WebAppUrlOriginHardeningTests.cs",

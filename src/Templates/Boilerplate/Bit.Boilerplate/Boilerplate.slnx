@@ -19,13 +19,6 @@
     <File Path="src/Directory.Build.props" />
     <File Path="src/Directory.Packages.props" />
   </Folder>
-<!--#if (pipeline == "Azure")-->
-  <Folder Name="/.SolutionItems/.azure-devops/" />
-  <Folder Name="/.SolutionItems/.azure-devops/workflows/">
-    <File Path=".azure-devops/workflows/cd.yml" />
-    <File Path=".azure-devops/workflows/ci.yml" />
-  </Folder>
-<!--#endif-->
   <Folder Name="/.SolutionItems/.github/" />
   <Folder Name="/.SolutionItems/.github/agents/">
     <File Path=".github/agents/ai-dlc.agent.md" />
@@ -71,14 +64,12 @@
     <File Path=".docs/25- RAG - Semantic Search with Vector Embeddings (Advanced).md" />
     <!--#endif-->
   </Folder>
-<!--#if (pipeline == "GitHub")-->
   <Folder Name="/.SolutionItems/.github/workflows/">
     <File Path=".github/workflows/cd-production.yml" />
     <File Path=".github/workflows/cd-test.yml" />
     <File Path=".github/workflows/cd-template.yml" />
     <File Path=".github/workflows/ci.yml" />
   </Folder>
-<!--#endif-->
   <Folder Name="/Server/">
     <Project Path="src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj" />
     <Project Path="src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj" />

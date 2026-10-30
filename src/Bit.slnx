@@ -775,15 +775,12 @@
     <File Path="Templates/Boilerplate/README.md" />
     <Project Path="Templates/Boilerplate/Bit.Boilerplate.ProjectTemplate.csproj" />
   </Folder>
-  <Folder Name="/Templates/Boilerplate/.azure-devops/" />
-  <Folder Name="/Templates/Boilerplate/.azure-devops/workflows/">
-    <File Path="Templates/Boilerplate/Bit.Boilerplate/.github/workflows/cd.yml" />
-    <File Path="Templates/Boilerplate/Bit.Boilerplate/.github/workflows/ci.yml" />
-  </Folder>
   <Folder Name="/Templates/Boilerplate/.github/" />
   <Folder Name="/Templates/Boilerplate/.github/workflows/">
-    <File Path="Templates/Boilerplate/Bit.Boilerplate/.azure-devops/workflows/cd.yml" />
-    <File Path="Templates/Boilerplate/Bit.Boilerplate/.azure-devops/workflows/ci.yml" />
+    <File Path="Templates/Boilerplate/Bit.Boilerplate/.github/workflows/cd-production.yml" />
+    <File Path="Templates/Boilerplate/Bit.Boilerplate/.github/workflows/cd-template.yml" />
+    <File Path="Templates/Boilerplate/Bit.Boilerplate/.github/workflows/cd-test.yml" />
+    <File Path="Templates/Boilerplate/Bit.Boilerplate/.github/workflows/ci.yml" />
   </Folder>
   <Folder Name="/Templates/Boilerplate/Client/">
     <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj" />

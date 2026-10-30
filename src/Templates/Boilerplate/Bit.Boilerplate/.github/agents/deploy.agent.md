@@ -202,7 +202,6 @@ there, and the setting or secret that carries it. Every environment gets its own
 
 ## 6. GitHub environments and secrets
 
-<!--#if (pipeline == "GitHub")-->
 - Create the `Test` and `Production` environments with `gh api`. Let each one deploy only from its own branch, and
   offer the user required reviewers for Production.
 - Set each environment's variables and secrets from the git-ignored file, with `gh variable set --env <name> -f <file>`
@@ -211,11 +210,6 @@ there, and the setting or secret that carries it. Every environment gets its own
   word. A setting the CD has no secret of its own for goes into the apps' settings secrets, one `Section__Key=value`
   line each.
 - Protect `develop` and `main`, so they take changes only through a pull request whose CI passed.
-<!--#else-->
-- Set up the same shape in the project's pipeline: an environment per branch with its own variables and secrets, the
-  runner on the VM, and both branches taking changes only through a pull request whose CI passed. Work out the details
-  from that platform's documentation.
-<!--#endif-->
 
 ## 7. The pipeline
 

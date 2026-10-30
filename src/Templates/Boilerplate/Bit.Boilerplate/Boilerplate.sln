@@ -37,16 +37,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Client.Web", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Client.Maui", "src\Client\Boilerplate.Client.Maui\Boilerplate.Client.Maui.csproj", "{22816913-64D5-4AE8-9B34-6F188B71FAD1}"
 EndProject
-#if (pipeline == "Azure")
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".azure-devops", ".azure-devops", "{AEE266C3-9E0B-4C41-A491-54D339708C06}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{28C56D1E-528C-4C7F-8A14-A540B6FCB20F}"
-    ProjectSection(SolutionItems) = preProject
-        .azure-devops\workflows\cd.yml = .azure-devops\workflows\cd.yml
-        .azure-devops\workflows\ci.yml = .azure-devops\workflows\ci.yml
-    EndProjectSection
-EndProject
-#endif
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{3E577755-186F-4E63-8153-B8DE890015C9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "agents", "agents", "{4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C2D}"
@@ -65,7 +55,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "agents", "agents", "{4A5D6E
         .github\agents\write-tests.agent.md = .github\agents\write-tests.agent.md
     EndProjectSection
 EndProject
-#if (pipeline == "GitHub")
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{2347E3B2-FDDE-427E-A0AE-E4DCD47C2989}"
     ProjectSection(SolutionItems) = preProject
         .github\workflows\cd-production.yml = .github\workflows\cd-production.yml
@@ -74,7 +63,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
         .github\workflows\ci.yml = .github\workflows\ci.yml
     EndProjectSection
 EndProject
-#endif
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Client.Windows", "src\Client\Boilerplate.Client.Windows\Boilerplate.Client.Windows.csproj", "{E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Server.Api", "src\Server\Boilerplate.Server.Api\Boilerplate.Server.Api.csproj", "{3D93B170-BDCD-4890-92B3-F5ABE48F3D3A}"
@@ -193,15 +181,9 @@ Global
         {FC60C68D-8E8D-494B-8D60-0C8D83A472E7} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
         {13D6A40B-8B8B-41F0-AB62-3F5F1CB58A1B} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
         {22816913-64D5-4AE8-9B34-6F188B71FAD1} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
-#if (pipeline == "Azure")
-        {AEE266C3-9E0B-4C41-A491-54D339708C06} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
-        {28C56D1E-528C-4C7F-8A14-A540B6FCB20F} = {AEE266C3-9E0B-4C41-A491-54D339708C06}
-#endif
         {3E577755-186F-4E63-8153-B8DE890015C9} = {5CF43F76-BB71-4B5B-B4DF-1C753E042A8F}
         {4A5D6E7F-8B9C-1A2B-3C4D-5E6F7A8B9C2D} = {3E577755-186F-4E63-8153-B8DE890015C9}
-#if (pipeline == "GitHub")
         {2347E3B2-FDDE-427E-A0AE-E4DCD47C2989} = {3E577755-186F-4E63-8153-B8DE890015C9}
-#endif
         {E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
         {AA97E5DE-1021-2739-ED90-9EDEEAEB5CA2} = {723683EA-193C-45FD-A64D-7830A2867E4F}
 #if (aspire == true)

@@ -575,7 +575,7 @@ When you open the project in VS Code, you'll be prompted to install these extens
 
 **Location**: [`/README.md`](/README.md)
 
-**Purpose**: The project's **welcome file** displayed on GitHub/Azure DevOps.
+**Purpose**: The project's **welcome file** displayed on GitHub.
 
 **Contains**:
 - Welcome message
@@ -674,7 +674,7 @@ slnf
 **Note**: The current workflows are configured for client platforms (Android, iOS, Windows, macOS) but are not yet fully Aspire-friendly for backend deployment. Backend CI/CD may need additional configuration.
 
 **Best Practice**: The workflows use a **2-phase deployment**:
-1. **Build Phase**: Build the project and upload artifacts to GitHub/Azure DevOps
+1. **Build Phase**: Build the project and upload artifacts to GitHub
 2. **Deployment Phase**: Download artifacts and deploy to target environment
 
 **Why 2 phases?**: 
