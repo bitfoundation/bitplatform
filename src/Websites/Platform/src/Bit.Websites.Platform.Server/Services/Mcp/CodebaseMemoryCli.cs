@@ -12,8 +12,8 @@ public partial class CodebaseMemoryCli
 {
     /// <summary>
     /// The parts of the repository that get indexed, and so the only code the source tools reach.
-    /// What is left out answers for itself elsewhere on this endpoint: BlazorUI, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite, Brouter,
-    /// Butil, Bswup and Belemetry each have their own MCP server here, written for the library rather than grepped out of it.
+    /// What is left out answers for itself elsewhere on this endpoint: each of <see cref="BitLibraries.All"/> has its own
+    /// MCP tools here, written for the library rather than grepped out of it.
     /// </summary>
     internal static readonly string[] IndexedPaths =
     [

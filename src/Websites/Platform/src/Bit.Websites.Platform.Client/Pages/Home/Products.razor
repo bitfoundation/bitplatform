@@ -412,5 +412,29 @@ public partial class CounterStore
                 </div>
             </text>
         },
+        new()
+        {
+            Title = "Accessibility without the styling",
+            Subtitle = "bit Bheadless · accessible, unstyled UI primitives for Blazor",
+            LinkUrl = Urls.Bheadless,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Bheadless gives Blazor the hard parts of interactive UI - keyboard interaction, focus management,
+                    WAI-ARIA semantics, positioning and dismissal - as unstyled components that render semantic HTML, so
+                    plain CSS, Tailwind or your own design system does the rest. An accessibility test toolkit built on
+                    bUnit ships with it.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>&lt;BitBhMenu>
+    &lt;BitBhMenuButton class="btn">Options&lt;/BitBhMenuButton>
+    &lt;BitBhMenuItems class="menu">
+        &lt;BitBhMenuItem OnClick="Edit">Edit&lt;/BitBhMenuItem>
+        &lt;BitBhMenuItem OnClick="Share">Share&lt;/BitBhMenuItem>
+    &lt;/BitBhMenuItems>
+&lt;/BitBhMenu></CodeBox>
+                </div>
+            </text>
+        },
     ];
 }

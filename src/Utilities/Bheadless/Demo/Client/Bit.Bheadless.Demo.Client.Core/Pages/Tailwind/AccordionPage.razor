@@ -1,0 +1,319 @@
+﻿@page "/tw/accordion"
+
+<PageTitle>Accordion — bit Bheadless · Tailwind</PageTitle>
+
+<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
+    <header class="mb-12">
+        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">Accordion</h1>
+        <p class="mt-2 text-zinc-500">A vertically stacked set of collapsible sections, single or multiple open at a time.</p>
+        <TwSectionSwitcher Slug="accordion" />
+    </header>
+
+    <TwDemoBlock Title="Basic Accordion (Single)" Code="@_basicCode">
+        <Description>
+            Only one item can be open at a time. <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">DefaultValue</code> seeds the initial open item. Each trigger gets <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">aria-expanded</code> and <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">aria-controls</code> automatically.
+        </Description>
+        <LiveContent>
+            <BitBhAccordion DefaultValue="item-1" class="w-full overflow-hidden rounded-lg border border-zinc-200">
+                <BitBhAccordionItem Value="item-1" class="border-b border-zinc-200 last:border-b-0 data-disabled:bg-zinc-50">
+                    <BitBhAccordionTrigger class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-4 text-base font-medium outline-none box-border hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+                        <Template Context="t">
+                            What is bit Bheadless?
+                            <span class="@($"text-zinc-500 transition-transform duration-200 {(t.IsOpen ? "rotate-180" : "")}")">▾</span>
+                        </Template>
+                    </BitBhAccordionTrigger>
+                    <BitBhAccordionContent>
+                        <div class="border-t border-zinc-200 px-5 py-3.5 text-sm text-zinc-500">
+                            bit Bheadless is a headless component library for Blazor.
+                            Behaviour and accessibility are built in; styling is entirely up to you.
+                        </div>
+                    </BitBhAccordionContent>
+                </BitBhAccordionItem>
+
+                <BitBhAccordionItem Value="item-2" class="border-b border-zinc-200 last:border-b-0 data-disabled:bg-zinc-50">
+                    <BitBhAccordionTrigger class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-4 text-base font-medium outline-none box-border hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+                        <Template Context="t">
+                            Why headless?
+                            <span class="@($"text-zinc-500 transition-transform duration-200 {(t.IsOpen ? "rotate-180" : "")}")">▾</span>
+                        </Template>
+                    </BitBhAccordionTrigger>
+                    <BitBhAccordionContent>
+                        <div class="border-t border-zinc-200 px-5 py-3.5 text-sm text-zinc-500">
+                            You own the look and feel entirely. ARIA and keyboard support never have to be re-implemented.
+                        </div>
+                    </BitBhAccordionContent>
+                </BitBhAccordionItem>
+
+                <BitBhAccordionItem Value="item-3" class="border-b border-zinc-200 last:border-b-0 data-disabled:bg-zinc-50">
+                    <BitBhAccordionTrigger class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-4 text-base font-medium outline-none box-border hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+                        <Template Context="t">
+                            How do I style it?
+                            <span class="@($"text-zinc-500 transition-transform duration-200 {(t.IsOpen ? "rotate-180" : "")}")">▾</span>
+                        </Template>
+                    </BitBhAccordionTrigger>
+                    <BitBhAccordionContent>
+                        <div class="border-t border-zinc-200 px-5 py-3.5 text-sm text-zinc-500">
+                            Use <code>data-state="open"|"closed"</code> on any element, or just apply classes. The library emits no styles of its own.
+                        </div>
+                    </BitBhAccordionContent>
+                </BitBhAccordionItem>
+            </BitBhAccordion>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Multiple Open Items" Code="@_multipleCode">
+        <Description>Set <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Type="BitBhAccordionType.Multiple"</code>.</Description>
+        <LiveContent>
+            <BitBhAccordion Type="BitBhAccordionType.Multiple" class="w-full overflow-hidden rounded-lg border border-zinc-200">
+                <BitBhAccordionItem Value="faq-1" class="border-b border-zinc-200 last:border-b-0 data-disabled:bg-zinc-50">
+                    <BitBhAccordionTrigger class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-4 text-base font-medium outline-none box-border hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+                        <Template Context="t">
+                            Can I open multiple panels?
+                            <span class="@($"text-zinc-500 transition-transform duration-200 {(t.IsOpen ? "rotate-180" : "")}")">▾</span>
+                        </Template>
+                    </BitBhAccordionTrigger>
+                    <BitBhAccordionContent>
+                        <div class="border-t border-zinc-200 px-5 py-3.5 text-sm text-zinc-500">Yes — every panel is independent. Try opening both!</div>
+                    </BitBhAccordionContent>
+                </BitBhAccordionItem>
+                <BitBhAccordionItem Value="faq-2" class="border-b border-zinc-200 last:border-b-0 data-disabled:bg-zinc-50">
+                    <BitBhAccordionTrigger class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-4 text-base font-medium outline-none box-border hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+                        <Template Context="t">
+                            Does this one close when I open another?
+                            <span class="@($"text-zinc-500 transition-transform duration-200 {(t.IsOpen ? "rotate-180" : "")}")">▾</span>
+                        </Template>
+                    </BitBhAccordionTrigger>
+                    <BitBhAccordionContent>
+                        <div class="border-t border-zinc-200 px-5 py-3.5 text-sm text-zinc-500">No — both can be open at once.</div>
+                    </BitBhAccordionContent>
+                </BitBhAccordionItem>
+            </BitBhAccordion>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Disabled Item" Code="@_disabledCode">
+        <Description>Individual <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Disabled="true"</code> on each item.</Description>
+        <LiveContent>
+            <BitBhAccordion class="w-full overflow-hidden rounded-lg border border-zinc-200">
+                <BitBhAccordionItem Value="d-1" class="border-b border-zinc-200 last:border-b-0 data-disabled:bg-zinc-50">
+                    <BitBhAccordionTrigger class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-4 text-base font-medium outline-none box-border hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+                        <Template Context="t">
+                            I am enabled
+                            <span class="@($"text-zinc-500 transition-transform duration-200 {(t.IsOpen ? "rotate-180" : "")}")">▾</span>
+                        </Template>
+                    </BitBhAccordionTrigger>
+                    <BitBhAccordionContent>
+                        <div class="border-t border-zinc-200 px-5 py-3.5 text-sm text-zinc-500">This item works normally.</div>
+                    </BitBhAccordionContent>
+                </BitBhAccordionItem>
+                <BitBhAccordionItem Value="d-2" Disabled="true" class="border-b border-zinc-200 last:border-b-0 data-disabled:bg-zinc-50">
+                    <BitBhAccordionTrigger class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-4 text-base font-medium outline-none box-border hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+                        <Template Context="t">
+                            I am disabled
+                            <span class="@($"text-zinc-500 transition-transform duration-200 {(t.IsOpen ? "rotate-180" : "")}")">▾</span>
+                        </Template>
+                    </BitBhAccordionTrigger>
+                    <BitBhAccordionContent>
+                        <div class="border-t border-zinc-200 px-5 py-3.5 text-sm text-zinc-500">You should not be able to open this.</div>
+                    </BitBhAccordionContent>
+                </BitBhAccordionItem>
+            </BitBhAccordion>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Controlled Accordion" Code="@_controlledCode">
+        <Description>Drive <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Value</code> + <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">OnValueChange</code> from outside.</Description>
+        <LiveContent>
+            <div class="flex flex-col gap-4 w-full">
+                <div class="flex flex-wrap items-center gap-3">
+                    <BitBhButton OnClick="ToggleControlledItem"
+                              class="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium hover:bg-zinc-100">
+                        Toggle "Panel 2"
+                    </BitBhButton>
+                    <span class="text-sm text-zinc-500">Open: @(controlledValue ?? "none")</span>
+                </div>
+
+                <BitBhAccordion Value="@controlledValue" OnValueChange="v => controlledValue = v" class="w-full overflow-hidden rounded-lg border border-zinc-200">
+                    <BitBhAccordionItem Value="ctrl-1" class="border-b border-zinc-200 last:border-b-0 data-disabled:bg-zinc-50">
+                        <BitBhAccordionTrigger class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-4 text-base font-medium outline-none box-border hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+                            <Template Context="t">
+                                Panel 1
+                                <span class="@($"text-zinc-500 transition-transform duration-200 {(t.IsOpen ? "rotate-180" : "")}")">▾</span>
+                            </Template>
+                        </BitBhAccordionTrigger>
+                        <BitBhAccordionContent>
+                            <div class="border-t border-zinc-200 px-5 py-3.5 text-sm text-zinc-500">Controlled by external state.</div>
+                        </BitBhAccordionContent>
+                    </BitBhAccordionItem>
+                    <BitBhAccordionItem Value="ctrl-2" class="border-b border-zinc-200 last:border-b-0 data-disabled:bg-zinc-50">
+                        <BitBhAccordionTrigger class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-4 text-base font-medium outline-none box-border hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+                            <Template Context="t">
+                                Panel 2
+                                <span class="@($"text-zinc-500 transition-transform duration-200 {(t.IsOpen ? "rotate-180" : "")}")">▾</span>
+                            </Template>
+                        </BitBhAccordionTrigger>
+                        <BitBhAccordionContent>
+                            <div class="border-t border-zinc-200 px-5 py-3.5 text-sm text-zinc-500">This panel is toggled by the button above.</div>
+                        </BitBhAccordionContent>
+                    </BitBhAccordionItem>
+                </BitBhAccordion>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+</div>
+
+@code {
+    private string? controlledValue;
+
+    private void ToggleControlledItem()
+    {
+        controlledValue = controlledValue == "ctrl-2" ? null : "ctrl-2";
+    }
+
+    private const string _basicCode = """
+<BitBhAccordion DefaultValue="item-1" class="w-full overflow-hidden rounded-lg border border-zinc-200">
+    <BitBhAccordionItem Value="item-1" class="border-b border-zinc-200 last:border-b-0 data-disabled:bg-zinc-50">
+        <BitBhAccordionTrigger class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-4 text-base font-medium outline-none box-border hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+            <Template Context="t">
+                What is bit Bheadless?
+                <span class="@($"text-zinc-500 transition-transform duration-200 {(t.IsOpen ? "rotate-180" : "")}")">▾</span>
+            </Template>
+        </BitBhAccordionTrigger>
+        <BitBhAccordionContent>
+            <div class="border-t border-zinc-200 px-5 py-3.5 text-sm text-zinc-500">
+                bit Bheadless is a headless component library for Blazor.
+                Behaviour and accessibility are built in; styling is entirely up to you.
+            </div>
+        </BitBhAccordionContent>
+    </BitBhAccordionItem>
+
+    <BitBhAccordionItem Value="item-2" class="border-b border-zinc-200 last:border-b-0 data-disabled:bg-zinc-50">
+        <BitBhAccordionTrigger class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-4 text-base font-medium outline-none box-border hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+            <Template Context="t">
+                Why headless?
+                <span class="@($"text-zinc-500 transition-transform duration-200 {(t.IsOpen ? "rotate-180" : "")}")">▾</span>
+            </Template>
+        </BitBhAccordionTrigger>
+        <BitBhAccordionContent>
+            <div class="border-t border-zinc-200 px-5 py-3.5 text-sm text-zinc-500">
+                You own the look and feel entirely. ARIA and keyboard support never have to be re-implemented.
+            </div>
+        </BitBhAccordionContent>
+    </BitBhAccordionItem>
+
+    <BitBhAccordionItem Value="item-3" class="border-b border-zinc-200 last:border-b-0 data-disabled:bg-zinc-50">
+        <BitBhAccordionTrigger class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-4 text-base font-medium outline-none box-border hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+            <Template Context="t">
+                How do I style it?
+                <span class="@($"text-zinc-500 transition-transform duration-200 {(t.IsOpen ? "rotate-180" : "")}")">▾</span>
+            </Template>
+        </BitBhAccordionTrigger>
+        <BitBhAccordionContent>
+            <div class="border-t border-zinc-200 px-5 py-3.5 text-sm text-zinc-500">
+                Use <code>data-state="open"|"closed"</code> on any element, or just apply classes. The library emits no styles of its own.
+            </div>
+        </BitBhAccordionContent>
+    </BitBhAccordionItem>
+</BitBhAccordion>
+""";
+
+    private const string _multipleCode = """
+<BitBhAccordion Type="BitBhAccordionType.Multiple" class="w-full overflow-hidden rounded-lg border border-zinc-200">
+    <BitBhAccordionItem Value="faq-1" class="border-b border-zinc-200 last:border-b-0 data-disabled:bg-zinc-50">
+        <BitBhAccordionTrigger class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-4 text-base font-medium outline-none box-border hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+            <Template Context="t">
+                Can I open multiple panels?
+                <span class="@($"text-zinc-500 transition-transform duration-200 {(t.IsOpen ? "rotate-180" : "")}")">▾</span>
+            </Template>
+        </BitBhAccordionTrigger>
+        <BitBhAccordionContent>
+            <div class="border-t border-zinc-200 px-5 py-3.5 text-sm text-zinc-500">Yes — every panel is independent. Try opening both!</div>
+        </BitBhAccordionContent>
+    </BitBhAccordionItem>
+    <BitBhAccordionItem Value="faq-2" class="border-b border-zinc-200 last:border-b-0 data-disabled:bg-zinc-50">
+        <BitBhAccordionTrigger class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-4 text-base font-medium outline-none box-border hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+            <Template Context="t">
+                Does this one close when I open another?
+                <span class="@($"text-zinc-500 transition-transform duration-200 {(t.IsOpen ? "rotate-180" : "")}")">▾</span>
+            </Template>
+        </BitBhAccordionTrigger>
+        <BitBhAccordionContent>
+            <div class="border-t border-zinc-200 px-5 py-3.5 text-sm text-zinc-500">No — both can be open at once.</div>
+        </BitBhAccordionContent>
+    </BitBhAccordionItem>
+</BitBhAccordion>
+""";
+
+    private const string _disabledCode = """
+<BitBhAccordion class="w-full overflow-hidden rounded-lg border border-zinc-200">
+    <BitBhAccordionItem Value="d-1" class="border-b border-zinc-200 last:border-b-0 data-disabled:bg-zinc-50">
+        <BitBhAccordionTrigger class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-4 text-base font-medium outline-none box-border hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+            <Template Context="t">
+                I am enabled
+                <span class="@($"text-zinc-500 transition-transform duration-200 {(t.IsOpen ? "rotate-180" : "")}")">▾</span>
+            </Template>
+        </BitBhAccordionTrigger>
+        <BitBhAccordionContent>
+            <div class="border-t border-zinc-200 px-5 py-3.5 text-sm text-zinc-500">This item works normally.</div>
+        </BitBhAccordionContent>
+    </BitBhAccordionItem>
+    <BitBhAccordionItem Value="d-2" Disabled="true" class="border-b border-zinc-200 last:border-b-0 data-disabled:bg-zinc-50">
+        <BitBhAccordionTrigger class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-4 text-base font-medium outline-none box-border hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+            <Template Context="t">
+                I am disabled
+                <span class="@($"text-zinc-500 transition-transform duration-200 {(t.IsOpen ? "rotate-180" : "")}")">▾</span>
+            </Template>
+        </BitBhAccordionTrigger>
+        <BitBhAccordionContent>
+            <div class="border-t border-zinc-200 px-5 py-3.5 text-sm text-zinc-500">You should not be able to open this.</div>
+        </BitBhAccordionContent>
+    </BitBhAccordionItem>
+</BitBhAccordion>
+""";
+
+    private const string _controlledCode = """
+<div class="flex flex-col gap-4 w-full">
+    <div class="flex flex-wrap items-center gap-3">
+        <BitBhButton OnClick="ToggleControlledItem"
+                  class="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium hover:bg-zinc-100">
+            Toggle "Panel 2"
+        </BitBhButton>
+        <span class="text-sm text-zinc-500">Open: @(controlledValue ?? "none")</span>
+    </div>
+
+    <BitBhAccordion Value="@controlledValue" OnValueChange="v => controlledValue = v" class="w-full overflow-hidden rounded-lg border border-zinc-200">
+        <BitBhAccordionItem Value="ctrl-1" class="border-b border-zinc-200 last:border-b-0 data-disabled:bg-zinc-50">
+            <BitBhAccordionTrigger class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-4 text-base font-medium outline-none box-border hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+                <Template Context="t">
+                    Panel 1
+                    <span class="@($"text-zinc-500 transition-transform duration-200 {(t.IsOpen ? "rotate-180" : "")}")">▾</span>
+                </Template>
+            </BitBhAccordionTrigger>
+            <BitBhAccordionContent>
+                <div class="border-t border-zinc-200 px-5 py-3.5 text-sm text-zinc-500">Controlled by external state.</div>
+            </BitBhAccordionContent>
+        </BitBhAccordionItem>
+        <BitBhAccordionItem Value="ctrl-2" class="border-b border-zinc-200 last:border-b-0 data-disabled:bg-zinc-50">
+            <BitBhAccordionTrigger class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-4 text-base font-medium outline-none box-border hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 data-state-open:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+                <Template Context="t">
+                    Panel 2
+                    <span class="@($"text-zinc-500 transition-transform duration-200 {(t.IsOpen ? "rotate-180" : "")}")">▾</span>
+                </Template>
+            </BitBhAccordionTrigger>
+            <BitBhAccordionContent>
+                <div class="border-t border-zinc-200 px-5 py-3.5 text-sm text-zinc-500">This panel is toggled by the button above.</div>
+            </BitBhAccordionContent>
+        </BitBhAccordionItem>
+    </BitBhAccordion>
+</div>
+
+@code {
+    private string? controlledValue;
+
+    private void ToggleControlledItem()
+    {
+        controlledValue = controlledValue == "ctrl-2" ? null : "ctrl-2";
+    }
+}
+""";
+}

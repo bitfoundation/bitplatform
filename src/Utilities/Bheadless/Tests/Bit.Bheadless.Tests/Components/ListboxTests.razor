@@ -1,0 +1,319 @@
+﻿@using System.Globalization
+@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    private int Count(string identifier) => JSInterop.Invocations.Count(i => i.Identifier == identifier);
+
+    [TestMethod]
+    public void Keyboard_selection_with_bind_value()
+    {
+        var cut = Render(
+            @<Stateful T="string" Context="s">
+                <BitBhListbox TValue="string" Value="s.Value" ValueChanged="s.Set" Name="person">
+                    <BitBhListboxButton TValue="string" aria-label="Person"><Template Context="b">@(b.Text ?? "Pick")</Template></BitBhListboxButton>
+                    <BitBhListboxOptions TValue="string">
+                        <BitBhListboxOption TValue="string" Value="@("ada")">Ada</BitBhListboxOption>
+                        <BitBhListboxOption TValue="string" Value="@("bob")" Disabled="true">Bob</BitBhListboxOption>
+                        <BitBhListboxOption TValue="string" Value="@("cy")">Cy</BitBhListboxOption>
+                    </BitBhListboxOptions>
+                </BitBhListbox>
+            </Stateful>);
+        var host = cut.FindComponent<Stateful<string>>().Instance;
+
+        var button = cut.Find("[role=combobox]");
+        Assert.AreEqual("listbox", button.GetAttribute("aria-haspopup"));
+        button.Press("ArrowDown");
+        Assert.AreEqual("Ada", Text(ActiveOf(cut.Find("[role=combobox]"))));
+
+        cut.Find("[role=combobox]").Press("ArrowDown");
+        Assert.AreEqual("Cy", Text(ActiveOf(cut.Find("[role=combobox]"))));
+        cut.ShouldBeAccessible();
+
+        cut.Find("[role=combobox]").Press("Enter");
+        Assert.AreEqual("cy", host.Value);
+        Assert.AreEqual("false", cut.Find("[role=combobox]").GetAttribute("aria-expanded"));
+        Assert.AreEqual("cy", cut.Find("input[type=hidden][name=person]").GetAttribute("value"));
+        Assert.AreEqual("Cy", cut.Find("[role=combobox]").TextContent);
+    }
+
+    [TestMethod]
+    public void Option_label_names_the_selection_in_the_button()
+    {
+        var cut = Render(
+            @<BitBhListbox TValue="int" DefaultValue="3">
+                <BitBhListboxButton TValue="int" aria-label="Count"><Template Context="b">@b.Text</Template></BitBhListboxButton>
+                <BitBhListboxOptions TValue="int">
+                    <BitBhListboxOption TValue="int" Value="1" Label="One">One</BitBhListboxOption>
+                    <BitBhListboxOption TValue="int" Value="3" Label="Three">Three</BitBhListboxOption>
+                </BitBhListboxOptions>
+            </BitBhListbox>);
+        Assert.AreEqual("Three", cut.Find("[role=combobox]").TextContent);
+    }
+
+    [TestMethod]
+    public void Reopening_highlights_the_selected_option()
+    {
+        var cut = Render(
+            @<BitBhListbox TValue="int" DefaultValue="2">
+                <BitBhListboxButton TValue="int" aria-label="Count">Count</BitBhListboxButton>
+                <BitBhListboxOptions TValue="int">
+                    <BitBhListboxOption TValue="int" Value="1">One</BitBhListboxOption>
+                    <BitBhListboxOption TValue="int" Value="2">Two</BitBhListboxOption>
+                    <BitBhListboxOption TValue="int" Value="3">Three</BitBhListboxOption>
+                </BitBhListboxOptions>
+            </BitBhListbox>);
+
+        cut.Find("[role=combobox]").Press("Enter");
+        Assert.AreEqual("Two", Text(ActiveOf(cut.Find("[role=combobox]"))));
+        Assert.AreEqual("true", cut.FindAll("[role=option]")[1].GetAttribute("aria-selected"));
+    }
+
+    [TestMethod]
+    public void Multiple_selection_toggles_and_stays_open()
+    {
+        IReadOnlyCollection<string> values = ["a"];
+        var cut = Render(
+            @<BitBhListbox TValue="string" Multiple="true" Values="values" ValuesChanged="v => values = v">
+                <BitBhListboxButton TValue="string" aria-label="Letters">Letters</BitBhListboxButton>
+                <BitBhListboxOptions TValue="string">
+                    <BitBhListboxOption TValue="string" Value="@("a")">A</BitBhListboxOption>
+                    <BitBhListboxOption TValue="string" Value="@("b")">B</BitBhListboxOption>
+                </BitBhListboxOptions>
+            </BitBhListbox>);
+
+        cut.Find("[role=combobox]").Click();
+        cut.FindAll("[role=option]")[1].Click();
+        Assert.AreSequenceEqual(new[] { "a", "b" }, values.OrderBy(v => v));
+        Assert.AreEqual("true", cut.Find("[role=listbox]").GetAttribute("aria-multiselectable"));
+        Assert.AreEqual("true", cut.Find("[role=combobox]").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void Typeahead_while_closed_opens_on_the_match()
+    {
+        var cut = Render(
+            @<BitBhListbox TValue="string">
+                <BitBhListboxButton TValue="string" aria-label="City">City</BitBhListboxButton>
+                <BitBhListboxOptions TValue="string">
+                    <BitBhListboxOption TValue="string" Value="@("Berlin")">Berlin</BitBhListboxOption>
+                    <BitBhListboxOption TValue="string" Value="@("Cairo")">Cairo</BitBhListboxOption>
+                    <BitBhListboxOption TValue="string" Value="@("Chicago")">Chicago</BitBhListboxOption>
+                </BitBhListboxOptions>
+            </BitBhListbox>);
+        cut.Find("[role=combobox]").Press("c");
+        Assert.AreEqual("true", cut.Find("[role=combobox]").GetAttribute("aria-expanded"));
+        Assert.AreEqual("Cairo", Text(ActiveOf(cut.Find("[role=combobox]"))));
+        cut.Find("[role=combobox]").Press("c");
+        Assert.AreEqual("Chicago", Text(ActiveOf(cut.Find("[role=combobox]"))));
+    }
+
+    [TestMethod]
+    public void Inside_a_field_the_button_is_labelled_and_described()
+    {
+        var cut = Render(
+            @<BitBhField>
+                <BitBhLabel>Assignee</BitBhLabel>
+                <BitBhDescription>Who owns this task.</BitBhDescription>
+                <BitBhListbox TValue="string">
+                    <BitBhListboxButton TValue="string">Pick</BitBhListboxButton>
+                    <BitBhListboxOptions TValue="string">
+                        <BitBhListboxOption TValue="string" Value="@("x")">X</BitBhListboxOption>
+                    </BitBhListboxOptions>
+                </BitBhListbox>
+            </BitBhField>);
+
+        var button = cut.Find("[role=combobox]");
+        Assert.AreEqual("Assignee", button.AccessibleName());
+        Assert.AreEqual("Who owns this task.", button.AccessibleDescription());
+        Assert.AreEqual(button.Id, cut.Find("label").GetAttribute("for"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Anchored_panel_scrolls_to_the_highlight_once_it_is_revealed()
+    {
+        // An anchored / portalled panel stays hidden until the runtime has opened it: a scroll sent before
+        // that does nothing. The open is held in flight here.
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
+        var open = module.Setup<int>("floating.open", _ => true);
+        var cut = Render(
+            @<BitBhListbox TValue="int" DefaultValue="3">
+                <BitBhListboxButton TValue="int" aria-label="Count">Count</BitBhListboxButton>
+                <BitBhListboxOptions TValue="int" Anchor="@("bottom start")">
+                    <BitBhListboxOption TValue="int" Value="1">One</BitBhListboxOption>
+                    <BitBhListboxOption TValue="int" Value="2">Two</BitBhListboxOption>
+                    <BitBhListboxOption TValue="int" Value="3">Three</BitBhListboxOption>
+                </BitBhListboxOptions>
+            </BitBhListbox>);
+
+        cut.Find("[role=combobox]").Press("Enter");
+        Assert.AreEqual("Three", Text(ActiveOf(cut.Find("[role=combobox]"))));
+        Assert.AreEqual(1, Count("floating.open"));
+        Assert.AreEqual(0, Count("dom.scrollIntoView"));
+        open.SetResult(1);
+        cut.WaitForAssertion(() => Assert.AreEqual(1, Count("dom.scrollIntoView")));
+
+        // Home / End while closed: the same.
+        cut.Find("[role=combobox]").Press("Escape");
+        var reopen = module.Setup<int>("floating.open", _ => true);
+        cut.Find("[role=combobox]").Press("End");
+        Assert.AreEqual("Three", Text(ActiveOf(cut.Find("[role=combobox]"))));
+        Assert.AreEqual(1, Count("dom.scrollIntoView"));
+        reopen.SetResult(2);
+        cut.WaitForAssertion(() => Assert.AreEqual(2, Count("dom.scrollIntoView")));
+    }
+
+    [TestMethod]
+    public void Unmounted_options_still_name_the_selection_and_Home_End_highlight_after_opening()
+    {
+        var cut = Render(
+            @<BitBhListbox TValue="string">
+                <BitBhListboxButton TValue="string" aria-label="Fruit" Placeholder="Pick" />
+                <BitBhListboxOptions TValue="string" Unmount="true">
+                    <BitBhListboxOption TValue="string" Value="@("a")">Apple</BitBhListboxOption>
+                    <BitBhListboxOption TValue="string" Value="@("b")">Banana</BitBhListboxOption>
+                </BitBhListboxOptions>
+            </BitBhListbox>);
+        Assert.IsEmpty(cut.FindAll("[role=option]"));
+        Assert.AreEqual("Pick", cut.Find("[role=combobox]").TextContent);
+
+        // The options mount as the panel opens: End highlights the last one once they are there.
+        cut.Find("[role=combobox]").Press("End");
+        Assert.AreEqual("Banana", Text(ActiveOf(cut.Find("[role=combobox]"))));
+
+        cut.Find("[role=combobox]").Press("Enter");
+        Assert.IsEmpty(cut.FindAll("[role=option]"));
+        Assert.AreEqual("Banana", cut.Find("[role=combobox]").TextContent);
+
+        cut.Find("[role=combobox]").Press("Home");
+        Assert.AreEqual("Apple", Text(ActiveOf(cut.Find("[role=combobox]"))));
+    }
+
+    [TestMethod]
+    public void A_selection_whose_unmounted_options_never_rendered_is_named_by_ValueText()
+    {
+        var cut = Render(
+            @<BitBhListbox TValue="string" DefaultValue="@("b")" ValueText="@(v => v == "b" ? "Banana" : v)">
+                <BitBhListboxButton TValue="string" aria-label="Fruit" Placeholder="Pick" />
+                <BitBhListboxOptions TValue="string" Unmount="true">
+                    <BitBhListboxOption TValue="string" Value="@("a")">Apple</BitBhListboxOption>
+                    <BitBhListboxOption TValue="string" Value="@("b")">Banana</BitBhListboxOption>
+                </BitBhListboxOptions>
+            </BitBhListbox>);
+
+        // Nothing rendered an option yet, but something is selected: the placeholder would say otherwise.
+        Assert.IsEmpty(cut.FindAll("[role=option]"));
+        Assert.AreEqual("Banana", cut.Find("[role=combobox]").TextContent);
+    }
+
+    [TestMethod]
+    public void Without_ValueText_a_never_rendered_selection_shows_its_value()
+    {
+        var cut = Render(
+            @<BitBhListbox TValue="string" DefaultValue="@("b")">
+                <BitBhListboxButton TValue="string" aria-label="Fruit" Placeholder="Pick" />
+                <BitBhListboxOptions TValue="string" Unmount="true">
+                    <BitBhListboxOption TValue="string" Value="@("b")">Banana</BitBhListboxOption>
+                </BitBhListboxOptions>
+            </BitBhListbox>);
+
+        Assert.AreEqual("b", cut.Find("[role=combobox]").TextContent);
+    }
+
+    [TestMethod]
+    public void A_value_type_listbox_without_a_default_selects_nothing()
+    {
+        // default(int) is 0, an option value: only a supplied DefaultValue selects.
+        var cut = Render(
+            @<BitBhListbox TValue="int" Name="count">
+                <BitBhListboxButton TValue="int" aria-label="Count" Placeholder="Pick" />
+                <BitBhListboxOptions TValue="int">
+                    <BitBhListboxOption TValue="int" Value="0" Label="Zero">Zero</BitBhListboxOption>
+                    <BitBhListboxOption TValue="int" Value="1" Label="One">One</BitBhListboxOption>
+                </BitBhListboxOptions>
+            </BitBhListbox>);
+
+        Assert.AreEqual("Pick", cut.Find("[role=combobox]").TextContent);
+        Assert.IsEmpty(cut.FindAll("input[type=hidden]"));
+        foreach (var option in cut.FindAll("[role=option]")) Assert.AreEqual("false", option.GetAttribute("aria-selected"));
+    }
+
+    [TestMethod]
+    public void Hidden_input_posts_culture_invariant_values_and_nothing_while_disabled()
+    {
+        var culture = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+        try
+        {
+            var cut = Render(
+                @<div>
+                    <BitBhListbox TValue="double" DefaultValue="1.5" Name="ratio">
+                        <BitBhListboxButton TValue="double" aria-label="Ratio" />
+                        <BitBhListboxOptions TValue="double">
+                            <BitBhListboxOption TValue="double" Value="1.5">1.5</BitBhListboxOption>
+                        </BitBhListboxOptions>
+                    </BitBhListbox>
+                    <BitBhListbox TValue="double" DefaultValue="2.5" Name="locked" Disabled="true">
+                        <BitBhListboxButton TValue="double" aria-label="Locked" />
+                        <BitBhListboxOptions TValue="double">
+                            <BitBhListboxOption TValue="double" Value="2.5">2.5</BitBhListboxOption>
+                        </BitBhListboxOptions>
+                    </BitBhListbox>
+                </div>);
+
+            Assert.AreEqual("1.5", cut.Find("input[type=hidden][name=ratio]").GetAttribute("value"));
+            // Like a native disabled control, a disabled listbox posts nothing.
+            Assert.IsEmpty(cut.FindAll("input[type=hidden][name=locked]"));
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = culture;
+        }
+    }
+
+    [TestMethod]
+    public void Tab_accepts_the_highlighted_option()
+    {
+        var cut = Render(
+            @<Stateful T="string" Context="s">
+                <BitBhListbox TValue="string" Value="s.Value" ValueChanged="s.Set">
+                    <BitBhListboxButton TValue="string" aria-label="Person" />
+                    <BitBhListboxOptions TValue="string">
+                        <BitBhListboxOption TValue="string" Value="@("ada")">Ada</BitBhListboxOption>
+                        <BitBhListboxOption TValue="string" Value="@("cy")">Cy</BitBhListboxOption>
+                    </BitBhListboxOptions>
+                </BitBhListbox>
+            </Stateful>);
+
+        cut.Find("[role=combobox]").PressSequence("ArrowDown", "ArrowDown");
+        cut.Find("[role=combobox]").Press("Tab");
+        // Select-only combobox (APG): Tab selects the highlighted option, then focus moves on.
+        Assert.AreEqual("cy", cut.FindComponent<Stateful<string>>().Instance.Value);
+        Assert.AreEqual("false", cut.Find("[role=combobox]").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public async Task Alt_ArrowUp_does_not_choose_a_highlighted_option_that_became_disabled()
+    {
+        var chosen = new List<string?>();
+        var cut = Render(
+            @<Stateful T="bool" Context="s">
+                <BitBhListbox TValue="string" ValueChanged="v => chosen.Add(v)">
+                    <BitBhListboxButton TValue="string" aria-label="Person">Person</BitBhListboxButton>
+                    <BitBhListboxOptions TValue="string">
+                        <BitBhListboxOption TValue="string" Value="@("ada")" Disabled="s.Value">Ada</BitBhListboxOption>
+                        <BitBhListboxOption TValue="string" Value="@("cy")">Cy</BitBhListboxOption>
+                    </BitBhListboxOptions>
+                </BitBhListbox>
+            </Stateful>);
+
+        cut.Find("[role=combobox]").Press("ArrowDown");
+        Assert.AreEqual("Ada", Text(ActiveOf(cut.Find("[role=combobox]"))));
+        await cut.InvokeAsync(() => cut.FindComponent<Stateful<bool>>().Instance.Set(true));
+
+        cut.Find("[role=combobox]").Press("ArrowUp", alt: true);
+        Assert.IsEmpty(chosen);
+        Assert.AreEqual("false", cut.Find("[role=combobox]").GetAttribute("aria-expanded"));
+    }
+}

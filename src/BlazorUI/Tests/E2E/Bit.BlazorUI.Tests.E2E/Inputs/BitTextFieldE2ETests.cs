@@ -53,6 +53,15 @@ public class BitTextFieldE2ETests : E2ETestBase
         return box;
     }
 
+    // The four corners of a part as the browser resolves them, clockwise from the top left like the shorthand.
+    private static async Task ExpectCornersAsync(ILocator locator, string topLeft, string topRight, string bottomRight, string bottomLeft)
+    {
+        await Expect(locator).ToHaveCSSAsync("border-top-left-radius", topLeft);
+        await Expect(locator).ToHaveCSSAsync("border-top-right-radius", topRight);
+        await Expect(locator).ToHaveCSSAsync("border-bottom-right-radius", bottomRight);
+        await Expect(locator).ToHaveCSSAsync("border-bottom-left-radius", bottomLeft);
+    }
+
     private static Task<string> PseudoContentAsync(ILocator locator, string pseudo) =>
         locator.EvaluateAsync<string>($"el => getComputedStyle(el, '{pseudo}').content");
 
@@ -2508,6 +2517,10 @@ public class BitTextFieldE2ETests : E2ETestBase
         await Expect(frame).ToHaveCSSAsync("min-height", "50px");
         await Expect(Page.Locator("#tf-cssvar-ancestor .bit-tfl-lbl")).ToHaveCSSAsync("color", "rgb(4, 5, 6)");
 
+        // Alone in the frame, the input holds both of its ends and takes all four corners - the ones the cover over an
+        // autofilled value is drawn in.
+        await ExpectCornersAsync(Input("tf-cssvar-ancestor"), "20px", "20px", "20px", "20px");
+
         // Outside the scope the theme's values stand.
         await Expect(Page.Locator("#tf-basic .bit-tfl-fgp")).Not.ToHaveCSSAsync("border-top-left-radius", "20px");
     }
@@ -2530,6 +2543,90 @@ public class BitTextFieldE2ETests : E2ETestBase
 
         await Expect(Page.Locator("#tf-cssvar-style .bit-tfl-fgp")).ToHaveCSSAsync("border-top-color", "rgb(7, 8, 9)");
         Assert.AreEqual("rgb(11, 12, 13)", await Input("tf-cssvar-style").EvaluateAsync<string>("el => getComputedStyle(el, '::placeholder').color"));
+    }
+
+
+    // ---------- Corners ----------
+
+    // The fields of the section sit in a scope that rounds them by 20px, unless they say otherwise.
+
+    [TestMethod]
+    public async Task Corners_ThePartsAtTheEndsOfTheFrameTakeItsCorners()
+    {
+        await OpenAsync(Url);
+
+        // The prefix and the suffix hold the two ends, so the input between them stays square.
+        await ExpectCornersAsync(Page.Locator("#tf-corner-affixes .bit-tfl-pre"), "20px", "0px", "0px", "20px");
+        await ExpectCornersAsync(Page.Locator("#tf-corner-affixes .bit-tfl-suf"), "0px", "20px", "20px", "0px");
+        await ExpectCornersAsync(Input("tf-corner-affixes"), "0px", "0px", "0px", "0px");
+
+        // A button after the input holds the end, which leaves the input the start.
+        await ExpectCornersAsync(Page.Locator("#tf-corner-clear .bit-tfl-cbt"), "0px", "20px", "20px", "0px");
+        await ExpectCornersAsync(Input("tf-corner-clear"), "20px", "0px", "0px", "20px");
+    }
+
+    [TestMethod]
+    public async Task Corners_FollowTheFrameHoweverItIsShaped()
+    {
+        await OpenAsync(Url);
+
+        // A frame squared through Classes squares the parts at its ends with it.
+        await ExpectCornersAsync(Page.Locator("#tf-corner-square .bit-tfl-fgp"), "0px", "0px", "0px", "0px");
+        await ExpectCornersAsync(Page.Locator("#tf-corner-square .bit-tfl-pre"), "0px", "0px", "0px", "0px");
+        await ExpectCornersAsync(Page.Locator("#tf-corner-square .bit-tfl-suf"), "0px", "0px", "0px", "0px");
+
+        // A radius of several corners reaches each part corner by corner.
+        await ExpectCornersAsync(Page.Locator("#tf-corner-top .bit-tfl-fgp"), "8px", "8px", "0px", "0px");
+        await ExpectCornersAsync(Page.Locator("#tf-corner-top .bit-tfl-pre"), "8px", "0px", "0px", "0px");
+        await ExpectCornersAsync(Input("tf-corner-top"), "0px", "8px", "0px", "0px");
+    }
+
+    [TestMethod]
+    public async Task Corners_APartShapedThroughClassesKeepsItsShape()
+    {
+        await OpenAsync(Url);
+
+        // The corners the parts take from the frame weigh a single class, which the app's own class is not outweighed by.
+        await ExpectCornersAsync(Page.Locator("#tf-corner-classes .bit-tfl-pre"), "9px", "9px", "9px", "9px");
+        await ExpectCornersAsync(Input("tf-corner-classes"), "9px", "9px", "9px", "9px");
+    }
+
+    [TestMethod]
+    public async Task Corners_AnInputOfADirectionOfItsOwnIsRoundedOnTheSideOfTheFrame()
+    {
+        await OpenAsync(Url);
+
+        // The field is right to left, so the prefix holds the right end and the input the left one, whatever direction
+        // the input itself was given.
+        await ExpectCornersAsync(Page.Locator("#tf-corner-rtl .bit-tfl-pre"), "0px", "20px", "20px", "0px");
+        await ExpectCornersAsync(Input("tf-corner-rtl"), "20px", "0px", "0px", "20px");
+    }
+
+    [TestMethod]
+    public async Task Corners_AnEndATemplateHoldsIsLeftToTheTemplate()
+    {
+        await OpenAsync(Url);
+
+        // Text is all either template leaves, which no selector can see: without the classes of the root saying so,
+        // the input would take both ends of a frame it shares with the two of them.
+        await Expect(Root("tf-corner-templates")).ToHaveClassAsync(HasClass("bit-tfl-ptm"));
+        await Expect(Root("tf-corner-templates")).ToHaveClassAsync(HasClass("bit-tfl-stm"));
+        await ExpectCornersAsync(Input("tf-corner-templates"), "0px", "0px", "0px", "0px");
+    }
+
+    [TestMethod]
+    public async Task Corners_AMultilineFieldKeepsTheCornersItsTextAndGripAreIn()
+    {
+        await OpenAsync(Url);
+
+        // Only the corners at the inline end follow the frame, where the scrollbar runs: the start ones, where the text
+        // begins, and the one the grip is drawn in stay square - on the overlay under the textarea as on the textarea.
+        await ExpectCornersAsync(Input("tf-corner-resizable"), "0px", "20px", "0px", "0px");
+        await ExpectCornersAsync(Page.Locator("#tf-corner-resizable .bit-tfl-gho"), "0px", "20px", "0px", "0px");
+        await ExpectCornersAsync(Input("tf-corner-fixed"), "0px", "20px", "20px", "0px");
+
+        // AutoHeight leaves the textarea nothing to scroll, so nothing to round.
+        await ExpectCornersAsync(Input("tf-corner-autoheight"), "0px", "0px", "0px", "0px");
     }
 
 

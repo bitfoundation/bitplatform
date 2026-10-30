@@ -20,6 +20,56 @@ public class GuardAndLoaderTests : BunitTestContext
     }
 
     [TestMethod]
+    public void Guard_redirect_to_a_route_differing_only_by_casing_is_kept_under_case_sensitive_matching()
+    {
+        Services.Configure<BrouterOptions>(o => o.CaseSensitive = true);
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
+        nav.NavigateTo("http://localhost/Admin");
+
+        var cut = RenderComponent<CaseSensitiveGuardHost>();
+
+        cut.WaitForAssertion(() =>
+        {
+            StringAssert.EndsWith(nav.Uri, "/admin");
+            Assert.IsNotNull(cut.Find("[data-testid=login]"));
+        });
+        Assert.AreEqual(0, cut.FindAll("[data-testid=secret]").Count);
+    }
+
+    [TestMethod]
+    [DataRow(true, "/Admin", "/Admin")]
+    [DataRow(true, "http://localhost/Admin", "http://localhost/Admin")]
+    [DataRow(true, "/admin", null)]
+    [DataRow(true, "admin", null)]
+    [DataRow(true, "HTTP://LOCALHOST/admin", null)]
+    [DataRow(false, "/Admin", null)]
+    [DataRow(false, "http://localhost/Admin", null)]
+    public void Redirect_to_the_current_target_follows_the_routing_case_sensitivity(bool caseSensitive, string url, string? expected)
+    {
+        var to = new BrouterLocation("http://localhost/admin", "/admin", ["admin"], "", "");
+        var ctx = new BrouterNavigationContext(to, to, CancellationToken.None, caseSensitive);
+
+        ctx.Redirect(url);
+
+        Assert.AreEqual(expected, ctx.RedirectUrl);
+    }
+
+    [TestMethod]
+    [DataRow(true, "/admin?tab=users#Top", "/admin?tab=users#Top")]
+    [DataRow(true, "/admin?tab=Users#top", "/admin?tab=Users#top")]
+    [DataRow(true, "/admin?tab=Users#Top", null)]
+    [DataRow(false, "/admin?tab=users#top", null)]
+    public void Redirect_to_the_current_target_compares_query_and_hash_by_the_routing_case_sensitivity(bool caseSensitive, string url, string? expected)
+    {
+        var to = new BrouterLocation("http://localhost/admin?tab=Users#Top", "/admin", ["admin"], "?tab=Users", "#Top");
+        var ctx = new BrouterNavigationContext(to, to, CancellationToken.None, caseSensitive);
+
+        ctx.Redirect(url);
+
+        Assert.AreEqual(expected, ctx.RedirectUrl);
+    }
+
+    [TestMethod]
     public void Loader_value_is_exposed_via_RouteData()
     {
         var nav = Services.GetRequiredService<BunitNavigationManager>();

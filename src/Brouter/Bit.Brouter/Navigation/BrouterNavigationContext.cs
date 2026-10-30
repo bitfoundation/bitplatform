@@ -8,11 +8,14 @@ namespace Bit.Brouter;
 /// </summary>
 public sealed class BrouterNavigationContext
 {
-    internal BrouterNavigationContext(BrouterLocation from, BrouterLocation to, CancellationToken cancellationToken)
+    private readonly bool _caseSensitive;
+
+    internal BrouterNavigationContext(BrouterLocation from, BrouterLocation to, CancellationToken cancellationToken, bool caseSensitive)
     {
         From = from;
         To = to;
         CancellationToken = cancellationToken;
+        _caseSensitive = caseSensitive;
     }
 
     /// <summary>Where the navigation is coming from.</summary>
@@ -119,13 +122,20 @@ public sealed class BrouterNavigationContext
     /// </summary>
     private bool IsCurrentTarget(string resolved)
     {
-        if (string.Equals(resolved, To.FullUri, StringComparison.OrdinalIgnoreCase)) return true;
+        var comparison = _caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+
+        if (string.Equals(resolved, To.FullUri, StringComparison.OrdinalIgnoreCase))
+        {
+            var schemeEnd = resolved.IndexOf("://", StringComparison.Ordinal);
+            var pathStart = schemeEnd < 0 ? 0 : resolved.IndexOf('/', schemeEnd + 3);
+            if (pathStart < 0 || resolved.AsSpan(pathStart).Equals(To.FullUri.AsSpan(pathStart), comparison)) return true;
+        }
 
         var pathQueryHash = To.Path + To.Query + To.Hash;
-        if (string.Equals(resolved, pathQueryHash, StringComparison.OrdinalIgnoreCase)) return true;
+        if (string.Equals(resolved, pathQueryHash, comparison)) return true;
 
         // Base-relative form without the leading slash ("users/1" vs "/users/1").
         return resolved.Length > 0 && resolved[0] != '/' &&
-               string.Equals("/" + resolved, pathQueryHash, StringComparison.OrdinalIgnoreCase);
+               string.Equals("/" + resolved, pathQueryHash, comparison);
     }
 }

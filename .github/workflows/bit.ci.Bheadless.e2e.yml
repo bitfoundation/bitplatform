@@ -1,0 +1,90 @@
+name: bit platform CI - Bheadless E2E
+
+# Every demo page of both styling sections audited by axe-core, and the keyboard and focus flows only a browser can
+# verify, in Chromium against the demo published the way it ships. It takes far longer than the build-and-unit
+# pipeline (bit.ci.Bheadless.yml), so it runs only when started by hand. See
+# src/Utilities/Bheadless/Tests/Bit.Bheadless.Tests.E2E/README.md for what the browser suite proves and how to
+# run it locally.
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+permissions:
+  contents: read
+
+jobs:
+
+  e2e:
+    name: Bheadless E2E (Chromium, ${{ matrix.render-mode }})
+    runs-on: ubuntu-26.04
+    timeout-minutes: 60
+
+    # The same suite in each render mode: on WebAssembly, as the site is published, and on Blazor Server, where every
+    # key the components handle crosses the circuit. The Server publish leaves the WebAssembly client out
+    # (IncludeWasm=false), and App.razor then renders every page on a circuit (see Infrastructure/E2EEnvironment.cs).
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - { render-mode: WebAssembly, publish-args: '' }
+        - { render-mode: Server, publish-args: '-p:IncludeWasm=false' }
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: Install wasm-tools
+      run: cd src && dotnet workload install wasm-tools
+
+    # The tests drive the demo published the way bheadless.demo.cd.yml publishes it, not a build output: only a
+    # publish trims the WebAssembly client, and an interop payload the trimmer breaks - an anonymous type whose
+    # constructor lost its parameter names, a getter nothing but System.Text.Json reads - works in every build and
+    # fails only there.
+    - name: Publish the demo
+      run: dotnet publish src/Utilities/Bheadless/Demo/Bit.Bheadless.Demo.Server/Bit.Bheadless.Demo.Server.csproj -c Release -p:AspNetCoreHostingModel=OutOfProcess -o demo -p:InvariantGlobalization=true ${{ matrix.publish-args }}
+
+    - name: Build the E2E suite
+      run: dotnet build src/Utilities/Bheadless/Tests/Bit.Bheadless.Tests.E2E/Bit.Bheadless.Tests.E2E.csproj -c Release
+
+    - name: Install Playwright Chromium
+      run: pwsh src/Utilities/Bheadless/Tests/Bit.Bheadless.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
+
+    # The suite starts the published demo itself, on a free port, and stops it when the run ends.
+    - name: Run E2E tests
+      env:
+        BHEADLESS_E2E_DEMO_DIR: ${{ github.workspace }}/demo
+        BHEADLESS_E2E_RENDER_MODE: ${{ matrix.render-mode }}
+      # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
+      run: >
+        cd src/Utilities/Bheadless/Tests/Bit.Bheadless.Tests.E2E &&
+        dotnet test -c Release --no-build
+        --report-trx --report-trx-filename bheadless-e2e-${{ matrix.render-mode }}.trx
+
+    # The TRX (dotnet test writes it to the project's TestResults folder) and the Playwright trace of every failed
+    # test, which the suite keeps next to its binaries (open one with 'playwright.ps1 show-trace <zip>' or at
+    # trace.playwright.dev).
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: bheadless-e2e-${{ matrix.render-mode }}
+        path: |
+          **/bheadless-e2e-${{ matrix.render-mode }}.trx
+          src/Utilities/Bheadless/Tests/Bit.Bheadless.Tests.E2E/bin/Release/net11.0/TestResults/traces/
+        if-no-files-found: ignore

@@ -37,7 +37,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
     // Snapshot of the options the chrome was last attached with, so a re-render that changed
     // none of them doesn't pay an interop round-trip.
-    private (string?, bool, bool, string, string, bool, bool, bool, bool?)? _chromeSignature;
+    private (string?, bool, bool, string, string, bool, bool, bool, bool?, bool)? _chromeSignature;
 
     // What the provider was last told about a marker's double-click (see ApplyMarkerDoubleClickAsync). A map is built
     // with it off, so this starts false and goes back to false whenever the map is.
@@ -131,7 +131,15 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// Optional content rendered above the map canvas (overlays, custom controls, etc.).
     /// Each direct child is sized to its content from the top-start corner, unless positioned
     /// absolutely, and only the children take the pointer, so the map stays draggable around them.
-    /// Keep them clear of the corners the provider's controls and attribution occupy.
+    /// <para>
+    /// The provider's controls and attribution draw above this content, on every provider, so the
+    /// children start below the controls the provider draws in the top-start corner - its zoom
+    /// buttons, on most providers - measured as they come and go. A child taken anywhere else (to
+    /// the end side with margin-inline-start: auto, or by absolute insets) is placed where it is
+    /// put: which corners hold a provider's controls and attribution differs by provider and by
+    /// direction, and they draw over a child left in one, so keep it clear of them or turn the
+    /// control it would meet off (<see cref="BitMapProviderBase.ZoomControl"/>).
+    /// </para>
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -2368,12 +2376,25 @@ public partial class BitMap<TMapProvider> : BitComponentBase
                 ["keyboardNavigation"] = ProviderKeyboardNavigation,
                 ["respectReducedMotion"] = RespectReducedMotion && ForceAnimation is false,
                 ["explicitRtl"] = ExplicitRtl,
+                ["overlay"] = ChildContent is not null,
             });
         }
         catch (Exception ex)
         {
             // The chrome is an enhancement; a failure here must not take the map down with it.
             await RaiseInteropError(BitMapInteropErrorSource.Init, ex, nameof(AttachChromeAsync));
+            return;
+        }
+
+        // Attaching starts from a clean slate, which drops the anchor of an open popup with the rest, so
+        // the popup would stay frozen where it was last drawn. No auto-pan: a re-attach follows an option
+        // change, not the user opening the popup.
+        if (_openPopupMarker is { } marker)
+        {
+            await SafeInvokeAsync(
+                _js.BitMapChromeTrackAnchor(_Id, _popupAnchorId, marker.Position.Latitude, marker.Position.Longitude,
+                                            false, ShouldAnimate(true, false)),
+                nameof(AttachChromeAsync));
         }
     }
 
@@ -2401,7 +2422,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// Everything the chrome is configured from, as one comparable value. Used to skip a
     /// re-attach when a re-render did not actually change any of it.
     /// </summary>
-    private (string?, bool, bool, string, string, bool, bool, bool, bool?) BuildChromeSignature() => (
+    private (string?, bool, bool, string, string, bool, bool, bool, bool?, bool) BuildChromeSignature() => (
         _activeProvider?.JsObjectName,
         AutoResize,
         CooperativeGestures,
@@ -2410,7 +2431,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         EscapeToExit,
         ProviderKeyboardNavigation,
         RespectReducedMotion && ForceAnimation is false,
-        ExplicitRtl);
+        ExplicitRtl,
+        ChildContent is not null);
 
     /// <summary>
     /// Whether the active provider lets the keyboard pan and zoom. A provider that is not built on

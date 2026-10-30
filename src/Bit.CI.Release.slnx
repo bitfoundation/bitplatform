@@ -359,20 +359,20 @@
     <Project Path="Utilities/BevTools/Samples/Wasm/Bit.BevTools.Samples.Wasm/Bit.BevTools.Samples.Wasm.csproj" />
     <Project Path="Utilities/BevTools/Samples/Wasm/Bit.BevTools.Samples.Wasm.Client/Bit.BevTools.Samples.Wasm.Client.csproj" />
   </Folder>
-  <Folder Name="/BlazorHeadlessUI/">
-    <File Path="BlazorHeadlessUI/README.md" />
-    <Project Path="BlazorHeadlessUI/Bit.BlazorHeadlessUI/Bit.BlazorHeadlessUI.csproj" />
-    <Project Path="BlazorHeadlessUI/Bit.BlazorHeadlessUI.Testing/Bit.BlazorHeadlessUI.Testing.csproj" />
+  <Folder Name="/Utilities/Bheadless/">
+    <File Path="Utilities/Bheadless/README.md" />
+    <Project Path="Utilities/Bheadless/Bit.Bheadless/Bit.Bheadless.csproj" />
+    <Project Path="Utilities/Bheadless/Bit.Bheadless.Testing/Bit.Bheadless.Testing.csproj" />
   </Folder>
-  <Folder Name="/BlazorHeadlessUI/Demo/">
-    <Project Path="BlazorHeadlessUI/Demo/Bit.BlazorHeadlessUI.Demo.Server/Bit.BlazorHeadlessUI.Demo.Server.csproj" />
+  <Folder Name="/Utilities/Bheadless/Demo/">
+    <Project Path="Utilities/Bheadless/Demo/Bit.Bheadless.Demo.Server/Bit.Bheadless.Demo.Server.csproj" />
   </Folder>
-  <Folder Name="/BlazorHeadlessUI/Demo/Client/">
-    <Project Path="BlazorHeadlessUI/Demo/Client/Bit.BlazorHeadlessUI.Demo.Client.Core/Bit.BlazorHeadlessUI.Demo.Client.Core.csproj" />
-    <Project Path="BlazorHeadlessUI/Demo/Client/Bit.BlazorHeadlessUI.Demo.Client.Web/Bit.BlazorHeadlessUI.Demo.Client.Web.csproj" />
+  <Folder Name="/Utilities/Bheadless/Demo/Client/">
+    <Project Path="Utilities/Bheadless/Demo/Client/Bit.Bheadless.Demo.Client.Core/Bit.Bheadless.Demo.Client.Core.csproj" />
+    <Project Path="Utilities/Bheadless/Demo/Client/Bit.Bheadless.Demo.Client.Web/Bit.Bheadless.Demo.Client.Web.csproj" />
   </Folder>
-  <Folder Name="/BlazorHeadlessUI/Tests/">
-    <Project Path="BlazorHeadlessUI/Tests/Bit.BlazorHeadlessUI.Tests/Bit.BlazorHeadlessUI.Tests.csproj" />
+  <Folder Name="/Utilities/Bheadless/Tests/">
+    <Project Path="Utilities/Bheadless/Tests/Bit.Bheadless.Tests/Bit.Bheadless.Tests.csproj" />
   </Folder>
   <Folder Name="/BlazorUI/">
     <File Path="BlazorUI/Clean.bat" />

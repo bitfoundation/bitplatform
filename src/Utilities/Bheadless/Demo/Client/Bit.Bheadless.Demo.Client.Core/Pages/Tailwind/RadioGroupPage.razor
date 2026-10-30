@@ -1,0 +1,480 @@
+﻿@page "/tw/radiogroup"
+
+<PageTitle>Radio Group — bit Bheadless · Tailwind</PageTitle>
+
+<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
+    <header class="mb-12">
+        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">Radio Group</h1>
+        <p class="mt-2 text-zinc-500">An accessible single-select group with roving tabindex and full keyboard support.</p>
+        <TwSectionSwitcher Slug="radiogroup" />
+    </header>
+
+    <TwDemoBlock Title="Basic Radio Group" Code="@_basicCode">
+        <Description>Click or use Up / Down arrow keys to navigate. Disabled radios are skipped.</Description>
+        <LiveContent>
+            <BitBhRadioGroup DefaultValue="medium" class="flex flex-col gap-2.5 data-orientation-horizontal:flex-row data-orientation-horizontal:gap-5">
+                <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+                    <BitBhRadio Value="small"
+                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                        <Template Context="r">
+                            @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                        </Template>
+                    </BitBhRadio>
+                    <span>Small</span>
+                </label>
+                <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+                    <BitBhRadio Value="medium"
+                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                        <Template Context="r">
+                            @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                        </Template>
+                    </BitBhRadio>
+                    <span>Medium</span>
+                </label>
+                <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+                    <BitBhRadio Value="large"
+                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                        <Template Context="r">
+                            @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                        </Template>
+                    </BitBhRadio>
+                    <span>Large</span>
+                </label>
+            </BitBhRadioGroup>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Horizontal Orientation" Code="@_horizontalCode">
+        <Description>Set <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Vertical="false"</code>. The <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-orientation-horizontal:</code> variant flips the layout.</Description>
+        <LiveContent>
+            <BitBhRadioGroup Vertical="false" DefaultValue="card" class="flex flex-col gap-2.5 data-orientation-horizontal:flex-row data-orientation-horizontal:gap-5">
+                <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+                    <BitBhRadio Value="card"
+                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                        <Template Context="r">
+                            @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                        </Template>
+                    </BitBhRadio>
+                    <span>Card</span>
+                </label>
+                <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+                    <BitBhRadio Value="bank"
+                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                        <Template Context="r">
+                            @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                        </Template>
+                    </BitBhRadio>
+                    <span>Bank</span>
+                </label>
+                <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+                    <BitBhRadio Value="paypal"
+                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                        <Template Context="r">
+                            @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                        </Template>
+                    </BitBhRadio>
+                    <span>PayPal</span>
+                </label>
+            </BitBhRadioGroup>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Disabled Radio" Code="@_disabledCode">
+        <Description>Arrow-key navigation skips disabled radios automatically.</Description>
+        <LiveContent>
+            <BitBhRadioGroup DefaultValue="standard" class="flex flex-col gap-2.5 data-orientation-horizontal:flex-row data-orientation-horizontal:gap-5">
+                <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+                    <BitBhRadio Value="standard"
+                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                        <Template Context="r">
+                            @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                        </Template>
+                    </BitBhRadio>
+                    <span>Standard shipping (3–5 days)</span>
+                </label>
+                <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+                    <BitBhRadio Value="express"
+                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                        <Template Context="r">
+                            @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                        </Template>
+                    </BitBhRadio>
+                    <span>Express shipping (1–2 days)</span>
+                </label>
+                <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+                    <BitBhRadio Value="same-day" Disabled="true"
+                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                        <Template Context="r">
+                            @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                        </Template>
+                    </BitBhRadio>
+                    <span>Same-day shipping (unavailable in your region)</span>
+                </label>
+            </BitBhRadioGroup>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Card-style options" Code="@_cardCode">
+        <Description>Use the rich <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">has-[]</code> selector to highlight the wrapper based on the inner radio state.</Description>
+        <LiveContent>
+            <BitBhRadioGroup DefaultValue="pro" class="flex flex-col gap-2.5 w-full max-w-md">
+                <label class="flex items-center gap-3.5 rounded-lg border border-zinc-200 px-4 py-3.5 cursor-pointer transition-colors has-[[data-state=checked]]:border-blue-600 has-[[data-state=checked]]:bg-blue-50">
+                    <BitBhRadio Value="free"
+                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                        <Template Context="r">
+                            @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                        </Template>
+                    </BitBhRadio>
+                    <div class="flex flex-col gap-0.5">
+                        <strong class="text-sm text-zinc-900">Free</strong>
+                        <span class="text-xs text-zinc-500">Up to 3 projects.</span>
+                    </div>
+                </label>
+                <label class="flex items-center gap-3.5 rounded-lg border border-zinc-200 px-4 py-3.5 cursor-pointer transition-colors has-[[data-state=checked]]:border-blue-600 has-[[data-state=checked]]:bg-blue-50">
+                    <BitBhRadio Value="pro"
+                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                        <Template Context="r">
+                            @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                        </Template>
+                    </BitBhRadio>
+                    <div class="flex flex-col gap-0.5">
+                        <strong class="text-sm text-zinc-900">Pro — $9 / mo</strong>
+                        <span class="text-xs text-zinc-600">Unlimited projects, priority support.</span>
+                    </div>
+                </label>
+                <label class="flex items-center gap-3.5 rounded-lg border border-zinc-200 px-4 py-3.5 cursor-pointer transition-colors has-[[data-state=checked]]:border-blue-600 has-[[data-state=checked]]:bg-blue-50">
+                    <BitBhRadio Value="team"
+                             class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                        <Template Context="r">
+                            @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                        </Template>
+                    </BitBhRadio>
+                    <div class="flex flex-col gap-0.5">
+                        <strong class="text-sm text-zinc-900">Team — $29 / mo</strong>
+                        <span class="text-xs text-zinc-500">For groups, with shared workspaces.</span>
+                    </div>
+                </label>
+            </BitBhRadioGroup>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Controlled" Code="@_controlledCode">
+        <Description>Drive selection externally.</Description>
+        <LiveContent>
+            <div class="flex flex-col gap-4 w-full">
+                <div class="flex flex-wrap items-center gap-3">
+                    <BitBhButton OnClick='() => selectedColor = "red"'   class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">Red</BitBhButton>
+                    <BitBhButton OnClick='() => selectedColor = "green"' class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">Green</BitBhButton>
+                    <BitBhButton OnClick='() => selectedColor = "blue"'  class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">Blue</BitBhButton>
+                    <span class="text-sm text-zinc-500">Selected: <strong class="text-zinc-900">@(selectedColor ?? "(none)")</strong></span>
+                </div>
+                <BitBhRadioGroup Value="@selectedColor" OnValueChange="v => selectedColor = v" class="flex flex-col gap-2.5 data-orientation-horizontal:flex-row data-orientation-horizontal:gap-5">
+                    <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+                        <BitBhRadio Value="red"
+                                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                            <Template Context="r">
+                                @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                            </Template>
+                        </BitBhRadio>
+                        <span>Red</span>
+                    </label>
+                    <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+                        <BitBhRadio Value="green"
+                                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                            <Template Context="r">
+                                @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                            </Template>
+                        </BitBhRadio>
+                        <span>Green</span>
+                    </label>
+                    <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+                        <BitBhRadio Value="blue"
+                                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                            <Template Context="r">
+                                @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                            </Template>
+                        </BitBhRadio>
+                        <span>Blue</span>
+                    </label>
+                </BitBhRadioGroup>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Form Submission" Code="@_formCode">
+        <Description>Set <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Name</code> to render a hidden input with the current value.</Description>
+        <LiveContent>
+            <form @onsubmit="HandleFormSubmit" @onsubmit:preventDefault="true" class="flex flex-col items-start gap-3">
+                <BitBhRadioGroup Name="size" DefaultValue="m" class="flex flex-col gap-2.5 data-orientation-horizontal:flex-row data-orientation-horizontal:gap-5">
+                    <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+                        <BitBhRadio Value="s"
+                                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                            <Template Context="r">
+                                @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                            </Template>
+                        </BitBhRadio>
+                        <span>Small</span>
+                    </label>
+                    <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+                        <BitBhRadio Value="m"
+                                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                            <Template Context="r">
+                                @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                            </Template>
+                        </BitBhRadio>
+                        <span>Medium</span>
+                    </label>
+                    <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+                        <BitBhRadio Value="l"
+                                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                            <Template Context="r">
+                                @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                            </Template>
+                        </BitBhRadio>
+                        <span>Large</span>
+                    </label>
+                </BitBhRadioGroup>
+                <button type="submit" class="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-medium text-white cursor-pointer hover:bg-blue-700">Submit</button>
+                @if (lastSubmitted is not null)
+                {
+                    <span class="text-sm text-zinc-500">@lastSubmitted</span>
+                }
+            </form>
+        </LiveContent>
+    </TwDemoBlock>
+</div>
+
+@code {
+    private string? selectedColor = "green";
+    private string? lastSubmitted;
+
+    private void HandleFormSubmit() =>
+        lastSubmitted = "(submitted — the form posts size=<selected value>)";
+
+    private const string _basicCode = """
+<BitBhRadioGroup DefaultValue="medium" class="flex flex-col gap-2.5 data-orientation-horizontal:flex-row data-orientation-horizontal:gap-5">
+    <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+        <BitBhRadio Value="small"
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+            <Template Context="r">
+                @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+            </Template>
+        </BitBhRadio>
+        <span>Small</span>
+    </label>
+    <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+        <BitBhRadio Value="medium"
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+            <Template Context="r">
+                @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+            </Template>
+        </BitBhRadio>
+        <span>Medium</span>
+    </label>
+    <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+        <BitBhRadio Value="large"
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+            <Template Context="r">
+                @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+            </Template>
+        </BitBhRadio>
+        <span>Large</span>
+    </label>
+</BitBhRadioGroup>
+""";
+
+    private const string _horizontalCode = """
+<BitBhRadioGroup Vertical="false" DefaultValue="card" class="flex flex-col gap-2.5 data-orientation-horizontal:flex-row data-orientation-horizontal:gap-5">
+    <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+        <BitBhRadio Value="card"
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+            <Template Context="r">
+                @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+            </Template>
+        </BitBhRadio>
+        <span>Card</span>
+    </label>
+    <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+        <BitBhRadio Value="bank"
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+            <Template Context="r">
+                @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+            </Template>
+        </BitBhRadio>
+        <span>Bank</span>
+    </label>
+    <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+        <BitBhRadio Value="paypal"
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+            <Template Context="r">
+                @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+            </Template>
+        </BitBhRadio>
+        <span>PayPal</span>
+    </label>
+</BitBhRadioGroup>
+""";
+
+    private const string _disabledCode = """
+<BitBhRadioGroup DefaultValue="standard" class="flex flex-col gap-2.5 data-orientation-horizontal:flex-row data-orientation-horizontal:gap-5">
+    <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+        <BitBhRadio Value="standard"
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+            <Template Context="r">
+                @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+            </Template>
+        </BitBhRadio>
+        <span>Standard shipping (3–5 days)</span>
+    </label>
+    <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+        <BitBhRadio Value="express"
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+            <Template Context="r">
+                @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+            </Template>
+        </BitBhRadio>
+        <span>Express shipping (1–2 days)</span>
+    </label>
+    <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+        <BitBhRadio Value="same-day" Disabled="true"
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+            <Template Context="r">
+                @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+            </Template>
+        </BitBhRadio>
+        <span>Same-day shipping (unavailable in your region)</span>
+    </label>
+</BitBhRadioGroup>
+""";
+
+    private const string _cardCode = """
+<BitBhRadioGroup DefaultValue="pro" class="flex flex-col gap-2.5 w-full max-w-md">
+    <label class="flex items-center gap-3.5 rounded-lg border border-zinc-200 px-4 py-3.5 cursor-pointer transition-colors has-[[data-state=checked]]:border-blue-600 has-[[data-state=checked]]:bg-blue-50">
+        <BitBhRadio Value="free"
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+            <Template Context="r">
+                @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+            </Template>
+        </BitBhRadio>
+        <div class="flex flex-col gap-0.5">
+            <strong class="text-sm text-zinc-900">Free</strong>
+            <span class="text-xs text-zinc-500">Up to 3 projects.</span>
+        </div>
+    </label>
+    <label class="flex items-center gap-3.5 rounded-lg border border-zinc-200 px-4 py-3.5 cursor-pointer transition-colors has-[[data-state=checked]]:border-blue-600 has-[[data-state=checked]]:bg-blue-50">
+        <BitBhRadio Value="pro"
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+            <Template Context="r">
+                @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+            </Template>
+        </BitBhRadio>
+        <div class="flex flex-col gap-0.5">
+            <strong class="text-sm text-zinc-900">Pro — $9 / mo</strong>
+            <span class="text-xs text-zinc-600">Unlimited projects, priority support.</span>
+        </div>
+    </label>
+    <label class="flex items-center gap-3.5 rounded-lg border border-zinc-200 px-4 py-3.5 cursor-pointer transition-colors has-[[data-state=checked]]:border-blue-600 has-[[data-state=checked]]:bg-blue-50">
+        <BitBhRadio Value="team"
+                 class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+            <Template Context="r">
+                @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+            </Template>
+        </BitBhRadio>
+        <div class="flex flex-col gap-0.5">
+            <strong class="text-sm text-zinc-900">Team — $29 / mo</strong>
+            <span class="text-xs text-zinc-500">For groups, with shared workspaces.</span>
+        </div>
+    </label>
+</BitBhRadioGroup>
+""";
+
+    private const string _controlledCode = """
+<div class="flex flex-col gap-4 w-full">
+    <div class="flex flex-wrap items-center gap-3">
+        <BitBhButton OnClick='() => selectedColor = "red"'   class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">Red</BitBhButton>
+        <BitBhButton OnClick='() => selectedColor = "green"' class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">Green</BitBhButton>
+        <BitBhButton OnClick='() => selectedColor = "blue"'  class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">Blue</BitBhButton>
+        <span class="text-sm text-zinc-500">Selected: <strong class="text-zinc-900">@(selectedColor ?? "(none)")</strong></span>
+    </div>
+    <BitBhRadioGroup Value="@selectedColor" OnValueChange="v => selectedColor = v" class="flex flex-col gap-2.5 data-orientation-horizontal:flex-row data-orientation-horizontal:gap-5">
+        <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+            <BitBhRadio Value="red"
+                     class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                <Template Context="r">
+                    @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                </Template>
+            </BitBhRadio>
+            <span>Red</span>
+        </label>
+        <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+            <BitBhRadio Value="green"
+                     class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                <Template Context="r">
+                    @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                </Template>
+            </BitBhRadio>
+            <span>Green</span>
+        </label>
+        <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+            <BitBhRadio Value="blue"
+                     class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                <Template Context="r">
+                    @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                </Template>
+            </BitBhRadio>
+            <span>Blue</span>
+        </label>
+    </BitBhRadioGroup>
+</div>
+
+@code {
+    private string? selectedColor = "green";
+}
+""";
+
+    private const string _formCode = """
+<form @onsubmit="HandleFormSubmit" @onsubmit:preventDefault="true" class="flex flex-col items-start gap-3">
+    <BitBhRadioGroup Name="size" DefaultValue="m" class="flex flex-col gap-2.5 data-orientation-horizontal:flex-row data-orientation-horizontal:gap-5">
+        <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+            <BitBhRadio Value="s"
+                     class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                <Template Context="r">
+                    @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                </Template>
+            </BitBhRadio>
+            <span>Small</span>
+        </label>
+        <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+            <BitBhRadio Value="m"
+                     class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                <Template Context="r">
+                    @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                </Template>
+            </BitBhRadio>
+            <span>Medium</span>
+        </label>
+        <label class="inline-flex items-center gap-2.5 cursor-pointer text-sm select-none">
+            <BitBhRadio Value="l"
+                     class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                <Template Context="r">
+                    @if (r.IsChecked) { <span class="h-2 w-2 rounded-full bg-blue-600"></span> }
+                </Template>
+            </BitBhRadio>
+            <span>Large</span>
+        </label>
+    </BitBhRadioGroup>
+    <button type="submit" class="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-medium text-white cursor-pointer hover:bg-blue-700">Submit</button>
+    @if (lastSubmitted is not null)
+    {
+        <span class="text-sm text-zinc-500">@lastSubmitted</span>
+    }
+</form>
+
+@code {
+    private string? lastSubmitted;
+
+    private void HandleFormSubmit() =>
+        lastSubmitted = "(submitted — the form posts size=<selected value>)";
+}
+""";
+}

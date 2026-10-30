@@ -1,0 +1,205 @@
+﻿@page "/tw/collapsible"
+
+<PageTitle>Collapsible — bit Bheadless · Tailwind</PageTitle>
+
+<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
+    <header class="mb-12">
+        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">Collapsible</h1>
+        <p class="mt-2 text-zinc-500">An interactive component which expands and collapses a panel.</p>
+        <TwSectionSwitcher Slug="collapsible" />
+    </header>
+
+    <TwDemoBlock Title="Basic Collapsible" Code="@_basicCode">
+        <Description>
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">aria-expanded</code>, <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">aria-controls</code>, and <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">aria-labelledby</code> are wired automatically.
+        </Description>
+        <LiveContent>
+            <BitBhCollapsible class="w-full overflow-hidden rounded-lg border border-zinc-200 bg-white data-disabled:bg-zinc-50">
+                <div class="flex items-center justify-between px-5 py-3.5 font-medium">
+                    <span>@@peduarte starred 3 repositories</span>
+                    <BitBhCollapsibleTrigger class="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-zinc-500 outline-none hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">▾</BitBhCollapsibleTrigger>
+                </div>
+                <div class="border-t border-zinc-200 px-5 py-3 text-sm text-zinc-500">@@radix-ui/primitives</div>
+                <BitBhCollapsibleContent>
+                    <div class="border-t border-zinc-200 px-5 py-3 text-sm text-zinc-500">@@radix-ui/colors</div>
+                    <div class="border-t border-zinc-200 px-5 py-3 text-sm text-zinc-500">@@radix-ui/themes</div>
+                </BitBhCollapsibleContent>
+            </BitBhCollapsible>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Default Open" Code="@_defaultOpenCode">
+        <Description>Set <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">DefaultOpen="true"</code> to render open initially.</Description>
+        <LiveContent>
+            <BitBhCollapsible DefaultOpen="true" class="w-full overflow-hidden rounded-lg border border-zinc-200 bg-white data-disabled:bg-zinc-50">
+                <div class="flex items-center justify-between px-5 py-3.5 font-medium">
+                    <span>Already open</span>
+                    <BitBhCollapsibleTrigger class="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-zinc-500 outline-none hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">▾</BitBhCollapsibleTrigger>
+                </div>
+                <BitBhCollapsibleContent>
+                    <div class="border-t border-zinc-200 px-5 py-3 text-sm text-zinc-500">I'm open by default. Click the trigger to close me.</div>
+                </BitBhCollapsibleContent>
+            </BitBhCollapsible>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Render Context (rotating chevron + Close)" Code="@_renderContextCode">
+        <Description>
+            The trigger and content expose a <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhCollapsibleRenderContext</code>. Use it to drive UI from the open state and call <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">c.Close()</code>.
+        </Description>
+        <LiveContent>
+            <BitBhCollapsible class="w-full overflow-hidden rounded-lg border border-zinc-200 bg-white data-disabled:bg-zinc-50">
+                <div class="flex items-center justify-between px-5 py-3.5 font-medium">
+                    <span>What's inside?</span>
+                    <BitBhCollapsibleTrigger class="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-zinc-500 outline-none hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                        <Template Context="c">
+                            <span class="@($"inline-block transition-transform duration-200 {(c.IsOpen ? "rotate-180" : "")}")">▾</span>
+                        </Template>
+                    </BitBhCollapsibleTrigger>
+                </div>
+                <BitBhCollapsibleContent>
+                    <Template Context="c">
+                        <div class="border-t border-zinc-200 px-5 py-3 text-sm text-zinc-500">
+                            <p>You can close me from inside the content:</p>
+                            <button class="mt-3 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium hover:bg-zinc-100" @onclick="c.Close">Close panel</button>
+                        </div>
+                    </Template>
+                </BitBhCollapsibleContent>
+            </BitBhCollapsible>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Disabled" Code="@_disabledCode">
+        <Description><code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-disabled:</code> dims the trigger.</Description>
+        <LiveContent>
+            <BitBhCollapsible Disabled="true" class="w-full overflow-hidden rounded-lg border border-zinc-200 bg-white data-disabled:bg-zinc-50">
+                <div class="flex items-center justify-between px-5 py-3.5 font-medium">
+                    <span>Can't toggle me</span>
+                    <BitBhCollapsibleTrigger class="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-zinc-500 outline-none hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">▾</BitBhCollapsibleTrigger>
+                </div>
+                <BitBhCollapsibleContent>
+                    <div class="border-t border-zinc-200 px-5 py-3 text-sm text-zinc-500">You'll never see this content.</div>
+                </BitBhCollapsibleContent>
+            </BitBhCollapsible>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Controlled" Code="@_controlledCode">
+        <Description>External <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Open</code> + <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">OnOpenChange</code>.</Description>
+        <LiveContent>
+            <div class="flex flex-col gap-4 w-full">
+                <div class="flex flex-wrap items-center gap-3">
+                    <BitBhButton OnClick="ToggleControlled"
+                              class="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium hover:bg-zinc-100">
+                        Toggle from outside
+                    </BitBhButton>
+                    <span class="text-sm text-zinc-500">Open: @controlledOpen.ToString().ToLowerInvariant()</span>
+                </div>
+
+                <BitBhCollapsible Open="controlledOpen" OnOpenChange="v => controlledOpen = v"
+                               class="w-full overflow-hidden rounded-lg border border-zinc-200 bg-white data-disabled:bg-zinc-50">
+                    <div class="flex items-center justify-between px-5 py-3.5 font-medium">
+                        <span>Internal trigger</span>
+                        <BitBhCollapsibleTrigger class="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-zinc-500 outline-none hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">▾</BitBhCollapsibleTrigger>
+                    </div>
+                    <BitBhCollapsibleContent>
+                        <div class="border-t border-zinc-200 px-5 py-3 text-sm text-zinc-500">Either trigger updates the same state.</div>
+                    </BitBhCollapsibleContent>
+                </BitBhCollapsible>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+</div>
+
+@code {
+    private bool controlledOpen;
+
+    private void ToggleControlled() => controlledOpen = !controlledOpen;
+
+    private const string _basicCode = """
+<BitBhCollapsible class="w-full overflow-hidden rounded-lg border border-zinc-200 bg-white data-disabled:bg-zinc-50">
+    <div class="flex items-center justify-between px-5 py-3.5 font-medium">
+        <span>@peduarte starred 3 repositories</span>
+        <BitBhCollapsibleTrigger class="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-zinc-500 outline-none hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">▾</BitBhCollapsibleTrigger>
+    </div>
+    <div class="border-t border-zinc-200 px-5 py-3 text-sm text-zinc-500">@radix-ui/primitives</div>
+    <BitBhCollapsibleContent>
+        <div class="border-t border-zinc-200 px-5 py-3 text-sm text-zinc-500">@radix-ui/colors</div>
+        <div class="border-t border-zinc-200 px-5 py-3 text-sm text-zinc-500">@radix-ui/themes</div>
+    </BitBhCollapsibleContent>
+</BitBhCollapsible>
+""";
+
+    private const string _defaultOpenCode = """
+<BitBhCollapsible DefaultOpen="true" class="w-full overflow-hidden rounded-lg border border-zinc-200 bg-white data-disabled:bg-zinc-50">
+    <div class="flex items-center justify-between px-5 py-3.5 font-medium">
+        <span>Already open</span>
+        <BitBhCollapsibleTrigger class="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-zinc-500 outline-none hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">▾</BitBhCollapsibleTrigger>
+    </div>
+    <BitBhCollapsibleContent>
+        <div class="border-t border-zinc-200 px-5 py-3 text-sm text-zinc-500">I'm open by default. Click the trigger to close me.</div>
+    </BitBhCollapsibleContent>
+</BitBhCollapsible>
+""";
+
+    private const string _renderContextCode = """
+<BitBhCollapsible class="w-full overflow-hidden rounded-lg border border-zinc-200 bg-white data-disabled:bg-zinc-50">
+    <div class="flex items-center justify-between px-5 py-3.5 font-medium">
+        <span>What's inside?</span>
+        <BitBhCollapsibleTrigger class="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-zinc-500 outline-none hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+            <Template Context="c">
+                <span class="@($"inline-block transition-transform duration-200 {(c.IsOpen ? "rotate-180" : "")}")">▾</span>
+            </Template>
+        </BitBhCollapsibleTrigger>
+    </div>
+    <BitBhCollapsibleContent>
+        <Template Context="c">
+            <div class="border-t border-zinc-200 px-5 py-3 text-sm text-zinc-500">
+                <p>You can close me from inside the content:</p>
+                <button class="mt-3 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium hover:bg-zinc-100" @onclick="c.Close">Close panel</button>
+            </div>
+        </Template>
+    </BitBhCollapsibleContent>
+</BitBhCollapsible>
+""";
+
+    private const string _disabledCode = """
+<BitBhCollapsible Disabled="true" class="w-full overflow-hidden rounded-lg border border-zinc-200 bg-white data-disabled:bg-zinc-50">
+    <div class="flex items-center justify-between px-5 py-3.5 font-medium">
+        <span>Can't toggle me</span>
+        <BitBhCollapsibleTrigger class="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-zinc-500 outline-none hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">▾</BitBhCollapsibleTrigger>
+    </div>
+    <BitBhCollapsibleContent>
+        <div class="border-t border-zinc-200 px-5 py-3 text-sm text-zinc-500">You'll never see this content.</div>
+    </BitBhCollapsibleContent>
+</BitBhCollapsible>
+""";
+
+    private const string _controlledCode = """
+<div class="flex flex-col gap-4 w-full">
+    <div class="flex flex-wrap items-center gap-3">
+        <BitBhButton OnClick="ToggleControlled"
+                  class="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium hover:bg-zinc-100">
+            Toggle from outside
+        </BitBhButton>
+        <span class="text-sm text-zinc-500">Open: @controlledOpen.ToString().ToLowerInvariant()</span>
+    </div>
+
+    <BitBhCollapsible Open="controlledOpen" OnOpenChange="v => controlledOpen = v"
+                   class="w-full overflow-hidden rounded-lg border border-zinc-200 bg-white data-disabled:bg-zinc-50">
+        <div class="flex items-center justify-between px-5 py-3.5 font-medium">
+            <span>Internal trigger</span>
+            <BitBhCollapsibleTrigger class="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-zinc-500 outline-none hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">▾</BitBhCollapsibleTrigger>
+        </div>
+        <BitBhCollapsibleContent>
+            <div class="border-t border-zinc-200 px-5 py-3 text-sm text-zinc-500">Either trigger updates the same state.</div>
+        </BitBhCollapsibleContent>
+    </BitBhCollapsible>
+</div>
+
+@code {
+    private bool controlledOpen;
+    private void ToggleControlled() => controlledOpen = !controlledOpen;
+}
+""";
+}

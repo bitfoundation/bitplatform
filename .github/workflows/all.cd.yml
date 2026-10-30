@@ -149,16 +149,16 @@ jobs:
     uses: ./.github/workflows/belemetry.demo.cd.yml
     secrets: inherit
 
+  bheadless_demo:
+    name: bheadless demo
+    if: inputs.server
+    uses: ./.github/workflows/bheadless.demo.cd.yml
+    secrets: inherit
+
   brouter_demo:
     name: brouter demo
     if: inputs.server
     uses: ./.github/workflows/brouter.demo.cd.yml
-    secrets: inherit
-
-  blazorheadlessui_demo:
-    name: blazorheadlessui demo
-    if: inputs.server
-    uses: ./.github/workflows/blazorheadlessui.demo.cd.yml
     secrets: inherit
 
   bswup_demo:

@@ -523,6 +523,8 @@ private void BuildInteractionProvider()
             @ref=""controlsMapRef""
             Provider=""@controlsProvider""
             OnFullscreenChanged=""v => isFullscreen = v"">
+        @* The toolbar replaces Leaflet's zoom buttons, which the provider turns off,
+           and margin-inline-start:auto puts it on the end side. *@
         <div role=""toolbar"" aria-label=""Map controls""
              style=""display:flex;flex-flow:column;gap:0.25rem;margin:0.75rem;margin-inline-start:auto;padding:0.25rem;border-radius:0.5rem;background:var(--bit-clr-bg-pri);box-shadow:var(--bit-shd-popup)"">
             <BitButton IconOnly IconName=""@BitIconName.Add"" Size=""BitSize.Small"" AriaLabel=""Zoom in"" Title=""Zoom in"" OnClick=""async () => await controlsMapRef.ZoomIn()"" />
