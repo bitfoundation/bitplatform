@@ -679,8 +679,9 @@ loaded in the project that runs in the browser, and load it before the first pag
     private async Task OnNavigateAsync(NavigationContext context)
     {
         // The pages that use the database: fetch BlazeDb before they render. A second call loads nothing again.
-        // Routes match regardless of case, so /Todos/2 is one of them too.
-        if (context.Path.StartsWith("todos", StringComparison.OrdinalIgnoreCase))
+        // Routes match regardless of case, so /Todos/2 is one of them too, and /todos-archive is not.
+        var path = context.Path.Split('?', '#')[0]; // the path keeps the query string and the fragment
+        if (path.Equals("todos", StringComparison.OrdinalIgnoreCase) || path.StartsWith("todos/", StringComparison.OrdinalIgnoreCase))
             await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.BlazeDb.wasm"]);
     }
 }

@@ -173,6 +173,34 @@ public class McpInspectorTests
     }
 
     [TestMethod]
+    public async Task The_name_of_the_generated_holder_is_reserved()
+    {
+        string[] sources =
+        [
+            """
+            [BlazeDbTable("t")]
+            public partial class __BlazeTable { [BlazeDbKey] public int Id { get; set; } }
+            """,
+            """
+            [BlazeDbTable("t")]
+            public partial class T { [BlazeDbKey] public int Id { get; set; } public int __BlazeTable { get; set; } }
+            """,
+            """
+            [BlazeDbTable("t")]
+            public partial class T { [BlazeDbKey] public int Id { get; set; } public class __BlazeTable { } }
+            """,
+        ];
+
+        foreach (var source in sources)
+        {
+            var report = await InspectAsync(source);
+
+            Assert.IsTrue(report.Diagnostics.Any(d => d.Id == "BLZ019" && d.Source == "generator"), source);
+            Assert.IsFalse(report.Diagnostics.Any(d => d.Source == "compiler"), source);
+        }
+    }
+
+    [TestMethod]
     public async Task Source_without_a_table_says_what_a_table_looks_like()
     {
         var report = await InspectAsync("public class Plain { public int Id { get; set; } }");

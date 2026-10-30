@@ -288,7 +288,8 @@
             private async Task OnNavigateAsync(NavigationContext context)
             {
                 // The pages that use the database: fetch BlazeDb before they render.
-                if (context.Path.StartsWith("todos", StringComparison.OrdinalIgnoreCase))
+                var path = context.Path.Split('?', '#')[0]; // the path keeps the query string
+                if (path.Equals("todos", StringComparison.OrdinalIgnoreCase) || path.StartsWith("todos/", StringComparison.OrdinalIgnoreCase))
                     await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.BlazeDb.wasm"]);
             }
         }
