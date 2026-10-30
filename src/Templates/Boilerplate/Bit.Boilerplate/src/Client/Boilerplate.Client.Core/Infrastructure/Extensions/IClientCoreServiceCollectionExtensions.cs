@@ -123,6 +123,30 @@ public static partial class IClientCoreServiceCollectionExtensions
             });
 
             //#if (offlineDb == true)
+            services.AddOfflineDb();
+            //#endif
+
+            //#if (appInsights == true)
+            services.Add(ServiceDescriptor.Describe(typeof(IApplicationInsights), typeof(AppInsightsJsSdkService), AppPlatform.IsBrowser ? ServiceLifetime.Singleton : ServiceLifetime.Scoped));
+            services.AddBlazorApplicationInsights(options =>
+            {
+                configuration.Bind("ApplicationInsights", options);
+            }, loggingOptions: options => configuration.Bind("Logging:ApplicationInsightsLoggerProvider", options));
+            //#endif
+
+            services.AddTypedHttpClients(); // See Boilerplate.Shared/Controllers/Readme.md
+
+            //#if (signalR == true)
+            services.AddScoped<IRetryPolicy, SignalRInfiniteRetryPolicy>();
+            services.AddSessioned<AppHubConnection>();
+            //#endif
+
+            return services;
+        }
+
+        //#if (offlineDb == true)
+        private void AddOfflineDb()
+        {
             if (AppPlatform.IsBlazorHybridOrBrowser)
             {
                 services.AddBitBsqliteServices(sqlite => sqlite
@@ -173,25 +197,8 @@ public static partial class IClientCoreServiceCollectionExtensions
                 }, ServiceLifetime.Scoped);
             }
             services.AddScoped<SyncService>();
-            //#endif
-
-            //#if (appInsights == true)
-            services.Add(ServiceDescriptor.Describe(typeof(IApplicationInsights), typeof(AppInsightsJsSdkService), AppPlatform.IsBrowser ? ServiceLifetime.Singleton : ServiceLifetime.Scoped));
-            services.AddBlazorApplicationInsights(options =>
-            {
-                configuration.Bind("ApplicationInsights", options);
-            }, loggingOptions: options => configuration.Bind("Logging:ApplicationInsightsLoggerProvider", options));
-            //#endif
-
-            services.AddTypedHttpClients(); // See Boilerplate.Shared/Controllers/Readme.md
-
-            //#if (signalR == true)
-            services.AddScoped<IRetryPolicy, SignalRInfiniteRetryPolicy>();
-            services.AddSessioned<AppHubConnection>();
-            //#endif
-
-            return services;
         }
+        //#endif
 
         /// <summary>
         /// Blazor Server creates one scope for each connected user's client app.
