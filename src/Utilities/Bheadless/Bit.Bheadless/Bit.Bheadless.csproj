@@ -20,10 +20,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- The upper bounds are the lowest prerelease of the next major (-0): NuGet orders 11.0.0-rc.x below 11.0.0,
+        <!-- The upper bounds sit below every prerelease of the next major (-alpha; nuget.org refuses -0): NuGet orders 11.0.0-rc.x below 11.0.0,
              so a plain 11.0.0 bound would still let a net11-only prerelease into the net10.0 range. -->
-        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[10.0.0,11.0.0-0)" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[11.0.0-rc.3.26522.148,12.0.0-0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[10.0.0,11.0.0-alpha)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[11.0.0-rc.3.26522.148,12.0.0-alpha)" />
     </ItemGroup>
 
     <ItemGroup>
