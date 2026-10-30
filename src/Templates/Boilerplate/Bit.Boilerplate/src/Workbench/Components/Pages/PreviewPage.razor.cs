@@ -4,31 +4,56 @@ public partial class PreviewPage
 {
     private bool isReadyReported;
     private WorkbenchPageInfo? pageInfo;
-    private WorkbenchComposition? composition;
+    private DotNetObjectReference<PreviewPage>? reference;
+
+    [AutoInject] private BlexManager blexManager = default!;
+    [AutoInject] private WorkbenchSnapshots snapshots = default!;
+    [AutoInject] private BitAccentColorService accentColorService = default!;
 
     [Parameter] public string? PageKey { get; set; }
 
     protected override void OnInitialized()
     {
-        var query = new Uri(NavigationManager.Uri).Query;
+        ScenarioState.Set(WorkbenchScenario.Parse(new Uri(NavigationManager.Uri).Query));
 
-        ScenarioState.Set(WorkbenchScenario.Parse(query));
-        composition = WorkbenchComposition.Parse(query);
-    }
-
-    protected override void OnParametersSet()
-    {
-        pageInfo = WorkbenchPageCatalog.Find(PageKey);
-    }
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        if (firstRender)
+        if (snapshots.Find(WorkbenchUrls.ReadQuery(NavigationManager.Uri, WorkbenchUrls.SnapshotQueryKey)) is { } state)
         {
-            ScenarioState.Touch();
-            _ = WaitUntilReady();
+            blexManager.RestoreGlobalState(state);
         }
     }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var previous = pageInfo;
+
+        pageInfo = WorkbenchPageCatalog.Find(PageKey);
+
+        if (previous is not null && pageInfo is not null && previous != pageInfo)
+        {
+            await JSRuntime.InvokeVoidAsync("workbench.reportPage", pageInfo.Key);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false)
+            return;
+
+        reference = DotNetObjectReference.Create(this);
+        await JSRuntime.InvokeVoidAsync("workbench.registerPreview", reference);
+
+        await WhenStateRestored();
+        await accentColorService.InitializeAsync();
+
+        ScenarioState.Touch();
+        _ = WaitUntilReady();
+    }
+
+    [JSInvokable]
+    public string CaptureState() => blexManager.CaptureGlobalState().ToJsonString();
+
+    [JSInvokable]
+    public void ResetState() => blexManager.ResetAll();
 
     private async Task WaitUntilReady()
     {
@@ -62,5 +87,12 @@ public partial class PreviewPage
         isReadyReported = true;
 
         await JSRuntime.InvokeVoidAsync("workbench.markReady");
+    }
+
+    public override async ValueTask DisposeAsync()
+    {
+        reference?.Dispose();
+
+        await base.DisposeAsync();
     }
 }

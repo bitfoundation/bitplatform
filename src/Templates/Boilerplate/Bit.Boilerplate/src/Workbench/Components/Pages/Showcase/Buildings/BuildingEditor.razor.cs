@@ -15,6 +15,7 @@ public partial class BuildingEditor
     private List<BitDropdownItem<DutchProvince>> provinceItems = [];
     private List<BitDropdownItem<BuildingType>> typeItems = [];
 
+    [AutoInject] private BuildingsStore store = default!;
     [AutoInject] private BuildingsService buildingsService = default!;
 
     [Parameter] public EventCallback<Building> OnSaved { get; set; }
@@ -23,19 +24,35 @@ public partial class BuildingEditor
     {
         provinceItems = [.. Enum.GetValues<DutchProvince>().Select(p => new BitDropdownItem<DutchProvince> { Value = p, Text = Localizer[$"Province{p}"] }).OrderBy(i => i.Text)];
         typeItems = [.. Enum.GetValues<BuildingType>().Select(t => new BitDropdownItem<BuildingType> { Value = t, Text = Localizer[$"BuildingType{t}"] })];
+
+        if (store.Draft is { } draft)
+        {
+            Begin(draft, store.IsDraftNew);
+        }
     }
 
     public Task Open(Building building, bool isNew)
+    {
+        Begin(building, isNew);
+        store.Edit(building.Clone(), isNew);
+
+        return InvokeAsync(StateHasChanged);
+    }
+
+    private void Begin(Building building, bool isNew)
     {
         this.isNew = isNew;
         model = building.Clone();
         editContext = new EditContext(model);
         messages = new ValidationMessageStore(editContext);
         editContext.OnValidationRequested += (_, _) => Validate();
-        editContext.OnFieldChanged += (_, args) => { messages.Clear(args.FieldIdentifier); editContext.NotifyValidationStateChanged(); };
+        editContext.OnFieldChanged += (_, args) =>
+        {
+            messages.Clear(args.FieldIdentifier);
+            editContext.NotifyValidationStateChanged();
+            store.Edit(model.Clone(), isNew);
+        };
         isOpen = true;
-
-        return InvokeAsync(StateHasChanged);
     }
 
     private void Validate()
@@ -85,6 +102,7 @@ public partial class BuildingEditor
         {
             var saved = await buildingsService.Save(model, CurrentCancellationToken);
             isOpen = false;
+            store.CloseEditor();
             await OnSaved.InvokeAsync(saved);
         }
         finally
@@ -96,5 +114,6 @@ public partial class BuildingEditor
     private void Close()
     {
         isOpen = false;
+        store.CloseEditor();
     }
 }

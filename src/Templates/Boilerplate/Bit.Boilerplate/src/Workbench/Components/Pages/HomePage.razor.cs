@@ -29,15 +29,30 @@ public partial class HomePage
         (nameof(WorkbenchStrings.HomeHowStep3Title), nameof(WorkbenchStrings.HomeHowStep3Text))
     ];
 
-    private static readonly (string Name, string Url)[] products =
+    private static readonly (string Name, string IconName, string TextKey, string Url)[] products =
     [
-        ("bit BlazorUI", "https://blazorui.bitplatform.dev"),
-        ("bit Bortable", "https://bortable.bitplatform.dev"),
-        ("bit Blow", "https://blow.bitplatform.dev"),
-        ("bit Bmotion", "https://bmotion.bitplatform.dev"),
-        ("bit Butil", "https://butil.bitplatform.dev"),
-        ("bit Boilerplate", "https://bitplatform.dev/templates")
+        ("bit BlazorUI", BitIconName.Puzzle, nameof(WorkbenchStrings.HomeProductBlazorUI), "https://blazorui.bitplatform.dev"),
+        ("bit Blex", BitIconName.Database, nameof(WorkbenchStrings.HomeProductBlex), "https://blex.bitplatform.dev"),
+        ("bit Bortable", BitIconName.DragObject, nameof(WorkbenchStrings.HomeProductBortable), "https://bortable.bitplatform.dev"),
+        ("bit Bmotion", BitIconName.Flow, nameof(WorkbenchStrings.HomeProductBmotion), "https://bmotion.bitplatform.dev"),
+        ("bit Butil", BitIconName.Toolbox, nameof(WorkbenchStrings.HomeProductButil), "https://butil.bitplatform.dev"),
+        ("bit Boilerplate", BitIconName.Rocket, nameof(WorkbenchStrings.HomeProductBoilerplate), "https://bitplatform.dev/templates")
     ];
 
+    private bool isPromptCopied;
+
     private static BmTransition Enter(int index) => Bm.Spring(stiffness: 120, damping: 20).WithDelay(index * 0.07);
+
+    private async Task CopyPrompt()
+    {
+        await JSRuntime.InvokeVoidAsync("workbench.copy", Localizer[nameof(WorkbenchStrings.HomeCtaPrompt)].Value);
+
+        isPromptCopied = true;
+        StateHasChanged();
+
+        await Task.Delay(1500);
+
+        isPromptCopied = false;
+        StateHasChanged();
+    }
 }

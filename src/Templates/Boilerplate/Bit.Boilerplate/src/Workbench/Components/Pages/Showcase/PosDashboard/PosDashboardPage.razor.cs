@@ -4,8 +4,6 @@ namespace Boilerplate.Workbench.Components.Pages.Showcase.PosDashboard;
 
 public partial class PosDashboardPage
 {
-    private const string LayoutStorageKey = "workbench.pos-dashboard.layout";
-
     private static readonly (int Days, string TextKey)[] ranges =
     [
         (1, nameof(WorkbenchStrings.PosToday)),
@@ -20,14 +18,13 @@ public partial class PosDashboardPage
     private List<BitButtonGroupItem> rangeItems = [];
     private readonly Dictionary<string, Dictionary<string, object?>> parameters = [];
     private bool isLayoutLoaded;
-    private bool isGalleryOpen;
     private bool isSaving;
 
-    [AutoInject] private IStorageService storageService = default!;
+    [AutoInject] private PosDashboardStore store = default!;
 
-    public PosDashboardFilter Filter { get; private set; } = new(PosDashboardDataService.StoreKeys[0], 1);
+    public PosDashboardFilter Filter => store.Filter;
 
-    public bool IsEditing { get; private set; }
+    public bool IsEditing => store.IsEditing;
 
     public string PeriodKey => Filter.Days switch
     {
@@ -48,7 +45,11 @@ public partial class PosDashboardPage
         storeItems = [.. PosDashboardDataService.StoreKeys.Select(key => new BitDropdownItem<string> { Value = key, Text = Localizer[key] })];
         rangeItems = [.. ranges.Select(range => new BitButtonGroupItem { Key = range.Days.ToString(CultureInfo.InvariantCulture), Text = Localizer[range.TextKey] })];
 
-        ApplyLayout(await ScenarioState.Track(LoadLayout()));
+        Subscribe(store);
+
+        await WhenStateRestored();
+
+        ApplyLayout(LoadLayout());
 
         isLayoutLoaded = true;
     }
@@ -64,13 +65,13 @@ public partial class PosDashboardPage
             return;
 
         await bortable.MoveAsync(widget, target);
-        StateHasChanged();
+        SaveLayout();
     }
 
     public void Resize(PosWidgetLayout widget, PosWidgetSize size)
     {
         widget.Size = size;
-        StateHasChanged();
+        SaveLayout();
     }
 
     public void Hide(PosWidgetLayout widget)
@@ -78,7 +79,7 @@ public partial class PosDashboardPage
         widget.IsVisible = false;
         visibleWidgets.Remove(widget);
         hiddenWidgets.Add(widget);
-        StateHasChanged();
+        SaveLayout();
     }
 
     private void Show(PosWidgetLayout widget)
@@ -86,23 +87,27 @@ public partial class PosDashboardPage
         widget.IsVisible = true;
         hiddenWidgets.Remove(widget);
         visibleWidgets.Add(widget);
+        SaveLayout();
 
         if (hiddenWidgets.Count == 0)
         {
-            isGalleryOpen = false;
+            store.OpenGallery(false);
         }
     }
 
-    private void SetFilter(PosDashboardFilter filter)
+    private void OnReordered(IList<PosWidgetLayout> widgets)
     {
-        Filter = filter;
+        visibleWidgets = widgets;
+        SaveLayout();
     }
+
+    private void SetFilter(PosDashboardFilter filter) => store.SetFilter(filter);
 
     private async Task ToggleEditing()
     {
         if (IsEditing is false)
         {
-            IsEditing = true;
+            store.Edit(true);
             return;
         }
 
@@ -111,40 +116,35 @@ public partial class PosDashboardPage
         try
         {
             await ScenarioState.Save(CurrentCancellationToken);
-            await storageService.SetItem(LayoutStorageKey, JsonSerializer.Serialize([.. visibleWidgets, .. hiddenWidgets], PosDashboardJsonContext.Default.ListPosWidgetLayout));
         }
         finally
         {
             isSaving = false;
-            IsEditing = false;
+            store.Edit(false);
         }
     }
 
-    private async Task ResetLayout()
+    private void ResetLayout()
     {
         ApplyLayout(PosWidgetCatalog.CreateDefaultLayout());
-        await storageService.RemoveItem(LayoutStorageKey);
+        store.Arrange(null);
     }
 
-    private async Task<List<PosWidgetLayout>> LoadLayout()
+    private void SaveLayout() => store.Arrange([.. visibleWidgets.Concat(hiddenWidgets).Select(w => new PosWidgetLayout { Key = w.Key, Size = w.Size, IsVisible = w.IsVisible })]);
+
+    private List<PosWidgetLayout> LoadLayout()
     {
-        try
-        {
-            var json = await storageService.GetItem(LayoutStorageKey);
+        if (store.Layout is not { Length: > 0 } saved)
+            return PosWidgetCatalog.CreateDefaultLayout();
 
-            if (string.IsNullOrWhiteSpace(json) is false)
-            {
-                var saved = JsonSerializer.Deserialize(json, PosDashboardJsonContext.Default.ListPosWidgetLayout) ?? [];
-                var known = saved.Where(w => PosWidgetCatalog.Find(w.Key) is not null).DistinctBy(w => w.Key).ToList();
-                known.AddRange(PosWidgetCatalog.CreateDefaultLayout().Where(d => known.Any(w => w.Key == d.Key) is false));
-                return known;
-            }
-        }
-        catch (JsonException)
-        {
-        }
+        var known = saved.Where(w => PosWidgetCatalog.Find(w.Key) is not null)
+                         .DistinctBy(w => w.Key)
+                         .Select(w => new PosWidgetLayout { Key = w.Key, Size = w.Size, IsVisible = w.IsVisible })
+                         .ToList();
 
-        return PosWidgetCatalog.CreateDefaultLayout();
+        known.AddRange(PosWidgetCatalog.CreateDefaultLayout().Where(d => known.Any(w => w.Key == d.Key) is false));
+
+        return known;
     }
 
     private void ApplyLayout(List<PosWidgetLayout> layout)

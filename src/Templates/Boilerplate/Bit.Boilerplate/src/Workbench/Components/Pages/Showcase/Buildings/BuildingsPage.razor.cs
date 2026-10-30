@@ -30,23 +30,33 @@ public partial class BuildingsPage
     private List<BitMapMarker> markers = [];
     private IReadOnlyList<Building> selectedItems = [];
     private PosWidgetStatus status = PosWidgetStatus.Loading;
-    private string? searchText;
-    private Guid? selectedId;
+    private bool isRestored;
     private bool isNarrow;
-    private bool showMap;
 
+    [AutoInject] private BuildingsStore store = default!;
     [AutoInject] private BuildingsService buildingsService = default!;
     [AutoInject] private BitMessageBoxService messageBoxService = default!;
 
-    private IEnumerable<Building> FilteredBuildings => string.IsNullOrWhiteSpace(searchText)
+    private string? SearchText => store.SearchText;
+
+    private IEnumerable<Building> FilteredBuildings => string.IsNullOrWhiteSpace(SearchText)
         ? buildings
-        : buildings.Where(b => b.Name.Contains(searchText, StringComparison.CurrentCultureIgnoreCase)
-                            || b.City.Contains(searchText, StringComparison.CurrentCultureIgnoreCase)
-                            || Localizer[$"Province{b.Province}"].Value.Contains(searchText, StringComparison.CurrentCultureIgnoreCase)
-                            || Localizer[$"BuildingType{b.Type}"].Value.Contains(searchText, StringComparison.CurrentCultureIgnoreCase));
+        : buildings.Where(b => b.Name.Contains(SearchText, StringComparison.CurrentCultureIgnoreCase)
+                            || b.City.Contains(SearchText, StringComparison.CurrentCultureIgnoreCase)
+                            || Localizer[$"Province{b.Province}"].Value.Contains(SearchText, StringComparison.CurrentCultureIgnoreCase)
+                            || Localizer[$"BuildingType{b.Type}"].Value.Contains(SearchText, StringComparison.CurrentCultureIgnoreCase));
 
     protected override async Task OnInitializedAsync()
     {
+        Subscribe(store);
+
+        if (IsPrerendering)
+            return;
+
+        await WhenStateRestored();
+
+        isRestored = true;
+
         await Reload();
     }
 
@@ -63,6 +73,7 @@ public partial class BuildingsPage
         try
         {
             buildings = await buildingsService.GetAll(CurrentCancellationToken);
+            selectedItems = [.. buildings.Where(b => b.Id == store.SelectedId)];
             status = buildings.Count == 0 ? PosWidgetStatus.Empty : PosWidgetStatus.Ready;
         }
         catch (WorkbenchSimulatedException)
@@ -85,8 +96,8 @@ public partial class BuildingsPage
             Title = b.Name,
             Alt = b.Name,
             TooltipText = $"{b.Name} · {b.City}",
-            Color = b.Id == selectedId ? "#e5484d" : GetTypeColor(b.Type),
-            ZIndexOffset = b.Id == selectedId ? 1000 : 0,
+            Color = b.Id == store.SelectedId ? "#e5484d" : GetTypeColor(b.Type),
+            ZIndexOffset = b.Id == store.SelectedId ? 1000 : 0,
             Focusable = true,
             RiseOnHover = true
         })];
@@ -110,6 +121,22 @@ public partial class BuildingsPage
             Fill = false,
             DashArray = "6 4"
         });
+
+        if (store.MapView is [var latitude, var longitude, var zoom])
+        {
+            await map.SetView(new(latitude, longitude), zoom, animate: false);
+        }
+    }
+
+    private void OnMapViewChanged(BitMapViewState view)
+    {
+        store.MoveMap(view.Center.Latitude, view.Center.Longitude, view.Zoom);
+    }
+
+    private void Search(string? text)
+    {
+        store.Search(text);
+        BuildMarkers();
     }
 
     private async Task OnMapDoubleClick(BitMapLatLng position)
@@ -163,7 +190,7 @@ public partial class BuildingsPage
 
     private async Task Select(Building building, bool flyTo)
     {
-        selectedId = building.Id;
+        store.Select(building.Id);
         selectedItems = [building];
         BuildMarkers();
 
@@ -176,7 +203,7 @@ public partial class BuildingsPage
 
     private async Task OnMapKeyDown(KeyboardEventArgs args)
     {
-        if (args.Key is "Delete" or "Backspace" && buildings.FirstOrDefault(b => b.Id == selectedId) is { } building)
+        if (args.Key is "Delete" or "Backspace" && buildings.FirstOrDefault(b => b.Id == store.SelectedId) is { } building)
         {
             await ConfirmDelete(building);
         }
@@ -222,9 +249,9 @@ public partial class BuildingsPage
         buildings.RemoveAll(b => b.Id == building.Id);
         status = buildings.Count == 0 ? PosWidgetStatus.Empty : PosWidgetStatus.Ready;
 
-        if (selectedId == building.Id)
+        if (store.SelectedId == building.Id)
         {
-            selectedId = null;
+            store.Select(null);
             selectedItems = [];
         }
 

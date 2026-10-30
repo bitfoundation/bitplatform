@@ -53,7 +53,7 @@ The solution is organized into the following projects. Understand their roles to
 *   **Boilerplate.Client.Web**: The Blazor WebAssembly (WASM) standalone project.
 *   **Boilerplate.Client.Maui**: The .NET MAUI Blazor Hybrid project for native mobile and desktop apps.
 *   **Boilerplate.Client.Windows**: The Windows Forms Blazor Hybrid project.
-*   **Boilerplate.Workbench**: A separate web app for designing pages before the app builds them: it runs them on sample data with the app's own components and theme, on device frames side by side, in every theme, language and data state, and makes the App Store, Google Play and Microsoft Store screenshots. It references Client.Core and is never deployed with the app.
+*   **Boilerplate.Workbench**: A separate web app for designing pages before the app builds them: it runs them on sample data with the app's own components and theme, on device frames side by side, in every theme, language and data state, and makes the App Store, Google Play and Microsoft Store screenshots. It references Client.Core and is never deployed with the app. Its pages are designs, not app code: an approved one is rebuilt in the app following this file, never copied as it is.
 
 ## 3. Information Gathering & Codebase Investigation
 

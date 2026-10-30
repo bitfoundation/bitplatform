@@ -10,15 +10,13 @@ public partial class StoreComposition
 
     [Parameter] public WorkbenchPageInfo Page { get; set; } = default!;
 
-    [Parameter] public WorkbenchComposition Composition { get; set; } = default!;
-
     protected override void OnParametersSet()
     {
-        caption = Composition.Caption ?? Localizer[Page.CaptionKey ?? Page.TitleKey];
+        caption = Scenario.Caption ?? Localizer[Page.CaptionKey ?? Page.TitleKey];
         frameDevice = GetFrameDevice(Scenario.DevicePreset);
 
         var (canvasWidth, canvasHeight) = Scenario.DevicePreset.GetViewport(Scenario.Rotated);
-        var (frameWidth, frameHeight) = DeviceFrame.GetFrameSize(frameDevice, Scenario.Rotated, showFrame: true);
+        var (frameWidth, frameHeight) = DeviceFrame.GetFrameSize(frameDevice, Scenario.Rotated, Scenario.Frame);
         var visualWidth = frameDevice.Kind is DeviceKind.Laptop ? frameWidth * 1.1 : frameWidth;
 
         isLandscape = canvasWidth > canvasHeight;

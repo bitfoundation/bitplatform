@@ -2,12 +2,11 @@ namespace Boilerplate.Workbench.Components.Pages.Showcase.Buildings.Data;
 
 public partial class BuildingsService
 {
-    private readonly List<Building> buildings = BuildingSeed.Create();
-
+    [AutoInject] private BuildingsStore store = default!;
     [AutoInject] private WorkbenchScenarioState scenarioState = default!;
 
     public Task<List<Building>> GetAll(CancellationToken cancellationToken) =>
-        scenarioState.Load("buildings.list", () => buildings.Select(b => b.Clone()).ToList(), () => [], cancellationToken);
+        scenarioState.Load("buildings.list", () => Current().ToList(), () => [], cancellationToken);
 
     public async Task<Building> Save(Building building, CancellationToken cancellationToken)
     {
@@ -16,6 +15,7 @@ public partial class BuildingsService
 
         await scenarioState.Save(cancellationToken);
 
+        var buildings = Current().ToList();
         var index = buildings.FindIndex(b => b.Id == building.Id);
 
         if (index >= 0)
@@ -27,6 +27,8 @@ public partial class BuildingsService
             buildings.Add(building.Clone());
         }
 
+        store.StoreItems([.. buildings]);
+
         return building.Clone();
     }
 
@@ -34,6 +36,8 @@ public partial class BuildingsService
     {
         await scenarioState.Save(cancellationToken);
 
-        buildings.RemoveAll(b => b.Id == id);
+        store.StoreItems([.. Current().Where(b => b.Id != id)]);
     }
+
+    private IEnumerable<Building> Current() => (store.Items ?? [.. BuildingSeed.Create()]).Select(b => b.Clone());
 }

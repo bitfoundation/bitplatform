@@ -137,17 +137,75 @@
         </div>
     </section>
 
-    <section class="section built-with">
-        <h2>@Localizer[nameof(WorkbenchStrings.HomeBuiltWithTitle)]</h2>
+    <section class="section">
+        <div class="section-head">
+            <h2>@Localizer[nameof(WorkbenchStrings.HomeBuiltWithTitle)]</h2>
+            <p>@Localizer[nameof(WorkbenchStrings.HomeBuiltWithSubtitle)]</p>
+        </div>
         <div class="products">
-            @foreach (var (name, url) in products)
+            @foreach (var product in products)
             {
-                <a class="product" href="@url" target="_blank" rel="noopener">@name</a>
+                <Bmotion Preset="BmPresets.Reveal(distance: 24)" WhileHover="Bm.To(y: -4)">
+                    <a class="product" href="@product.Url" target="_blank" rel="noopener">
+                        <span class="product-icon"><BitIcon IconName="@product.IconName" /></span>
+                        <span class="product-text">
+                            <span class="product-name">@product.Name</span>
+                            <span class="product-description">@Localizer[product.TextKey]</span>
+                        </span>
+                        <BitIcon IconName="@BitIconName.OpenInNewWindow" Size="BitSize.Small" Class="product-out" />
+                    </a>
+                </Bmotion>
             }
         </div>
     </section>
 
+    <section class="section">
+        <Bmotion Preset="BmPresets.Reveal(distance: 24)">
+            <div class="cta">
+                <div class="cta-text">
+                    <h2>@Localizer[nameof(WorkbenchStrings.HomeCtaTitle)]</h2>
+                    <p>@Localizer[nameof(WorkbenchStrings.HomeCtaText)]</p>
+                    <div class="cta-actions">
+                        <BitButton Size="BitSize.Large" IconName="@BitIconName.Design" Href="@WorkbenchUrls.Workbench(WorkbenchPageCatalog.Pages[0].Key)">
+                            @Localizer[nameof(WorkbenchStrings.HomeCtaOpen)]
+                        </BitButton>
+                    </div>
+                </div>
+                <figure class="prompt">
+                    <figcaption class="prompt-label"><BitIcon IconName="@BitIconName.Robot" Size="BitSize.Small" /> @Localizer[nameof(WorkbenchStrings.HomeCtaPromptLabel)]</figcaption>
+                    <blockquote class="prompt-text">@Localizer[nameof(WorkbenchStrings.HomeCtaPrompt)]</blockquote>
+                    <BitButton Size="BitSize.Small" Variant="BitVariant.Outline"
+                               IconName="@(isPromptCopied ? BitIconName.CheckMark : BitIconName.Copy)"
+                               OnClick="CopyPrompt">
+                        @Localizer[isPromptCopied ? nameof(WorkbenchStrings.HomeCtaCopied) : nameof(WorkbenchStrings.HomeCtaCopy)]
+                    </BitButton>
+                </figure>
+            </div>
+        </Bmotion>
+    </section>
+
     <footer class="home-footer">
-        <p>@Localizer[nameof(WorkbenchStrings.HomeFooter)]</p>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <a class="footer-logo" href="/">
+                    <img src="_content/Boilerplate.Client.Core/images/bit-logo.svg" alt="" width="26" height="26" />
+                    <span>@Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]</span>
+                </a>
+                <p>@Localizer[nameof(WorkbenchStrings.HomeFooter)]</p>
+            </div>
+            <nav class="footer-links" aria-label="@Localizer[nameof(WorkbenchStrings.HomeFooterExplore)]">
+                <h3>@Localizer[nameof(WorkbenchStrings.HomeFooterExplore)]</h3>
+                @foreach (var entry in WorkbenchPageCatalog.Pages)
+                {
+                    <a href="@WorkbenchUrls.Workbench(entry.Key)">@Localizer[entry.TitleKey]</a>
+                }
+            </nav>
+            <nav class="footer-links" aria-label="@Localizer[nameof(WorkbenchStrings.HomeFooterLearn)]">
+                <h3>@Localizer[nameof(WorkbenchStrings.HomeFooterLearn)]</h3>
+                <a href="https://bitplatform.dev/templates" target="_blank" rel="noopener">@Localizer[nameof(WorkbenchStrings.HomeFooterDocs)]</a>
+                <a href="https://blazorui.bitplatform.dev" target="_blank" rel="noopener">@Localizer[nameof(WorkbenchStrings.HomeFooterComponents)]</a>
+                <a href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener">@Localizer[nameof(WorkbenchStrings.HomeFooterSource)]</a>
+            </nav>
+        </div>
     </footer>
 </div>

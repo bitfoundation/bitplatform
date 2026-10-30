@@ -5,10 +5,10 @@ namespace Boilerplate.Workbench.Components.Chrome;
 
 public partial class ChromeShell
 {
-    private bool isNavPanelOpen;
-    private bool isNavPanelToggled;
     private string currentPageUrl = string.Empty;
     private List<BitNavItem> navPanelItems = [];
+
+    [AutoInject] private ChromeStore chromeStore = default!;
 
     [Parameter] public WorkbenchPageInfo Page { get; set; } = default!;
 
@@ -16,9 +16,9 @@ public partial class ChromeShell
 
     public WorkbenchAuthState Auth { get; private set; }
 
-    public int ActiveUserIndex { get; private set; }
+    public int ActiveUserIndex => Auth is WorkbenchAuthState.MultiAccount ? Math.Clamp(chromeStore.ActiveUserIndex, 0, WorkbenchDemoUsers.All.Count - 1) : 0;
 
-    public string TenantKey { get; private set; } = WorkbenchDemoUsers.TenantKeys[0];
+    public string TenantKey => chromeStore.TenantKey;
 
     public bool IsSignedIn => Auth is not WorkbenchAuthState.SignedOut;
 
@@ -33,39 +33,39 @@ public partial class ChromeShell
         Auth = Scenario.Auth;
         currentPageUrl = new Uri(NavigationManager.Uri).PathAndQuery;
         SetNavPanelItems();
+        Subscribe(chromeStore);
     }
 
-    public void SignIn()
+    public Task SignIn() => ChangeAuth(WorkbenchAuthState.SignedIn);
+
+    public Task SignOut()
     {
-        Auth = WorkbenchAuthState.SignedIn;
+        chromeStore.SwitchAccount(0);
+
+        return ChangeAuth(WorkbenchAuthState.SignedOut);
+    }
+
+    public Task AddAccount() => ChangeAuth(WorkbenchAuthState.MultiAccount);
+
+    public void SwitchAccount(WorkbenchDemoUser user) => chromeStore.SwitchAccount(WorkbenchDemoUsers.All.ToList().IndexOf(user));
+
+    public void SwitchTenant(string tenantKey) => chromeStore.SwitchTenant(tenantKey);
+
+    private async Task ChangeAuth(WorkbenchAuthState auth)
+    {
+        Auth = auth;
         SetNavPanelItems();
         StateHasChanged();
+
+        await ReportScenario(Scenario with { Auth = auth });
     }
 
-    public void SignOut()
+    private string PageUrl(string pageKey, string fallback)
     {
-        Auth = WorkbenchAuthState.SignedOut;
-        ActiveUserIndex = 0;
-        SetNavPanelItems();
-        StateHasChanged();
-    }
+        if (WorkbenchPageCatalog.Find(pageKey) is null)
+            return fallback;
 
-    public void AddAccount()
-    {
-        Auth = WorkbenchAuthState.MultiAccount;
-        StateHasChanged();
-    }
-
-    public void SwitchAccount(WorkbenchDemoUser user)
-    {
-        ActiveUserIndex = WorkbenchDemoUsers.All.ToList().IndexOf(user);
-        StateHasChanged();
-    }
-
-    public void SwitchTenant(string tenantKey)
-    {
-        TenantKey = tenantKey;
-        StateHasChanged();
+        return pageKey == Page.Key ? currentPageUrl : WorkbenchUrls.Preview(pageKey, Scenario, PaneId);
     }
 
     private void SetNavPanelItems()
@@ -80,11 +80,11 @@ public partial class ChromeShell
             }
         ];
 
-        navPanelItems.AddRange(WorkbenchPageCatalog.Pages.Select(page => new BitNavItem
+        navPanelItems.AddRange(WorkbenchPageCatalog.Pages.Where(page => page.CategoryKey != nameof(WorkbenchStrings.CategoryAppPages)).Select(page => new BitNavItem
         {
             Text = Localizer[page.TitleKey],
             IconName = page.IconName,
-            Url = page.Key == Page.Key ? currentPageUrl : WorkbenchUrls.Preview(page.Key, Scenario)
+            Url = PageUrl(page.Key, page.Key)
         }));
 
         //#if (module == "Admin")
@@ -96,7 +96,7 @@ public partial class ChromeShell
                 IconName = BitIconName.Admin,
                 ChildItems =
                 [
-                    new() { Text = AppLocalizer[nameof(AppStrings.Dashboard)], IconName = BitIconName.BarChartVerticalFill, Url = "#dashboard" },
+                    new() { Text = AppLocalizer[nameof(AppStrings.Dashboard)], IconName = BitIconName.BarChartVerticalFill, Url = PageUrl("dashboard", "#dashboard") },
                     new() { Text = AppLocalizer[nameof(AppStrings.Categories)], IconName = BitIconName.BuildQueue, Url = "#categories" },
                     new() { Text = AppLocalizer[nameof(AppStrings.Products)], IconName = BitIconName.Product, Url = "#products" }
                 ]
@@ -145,6 +145,6 @@ public partial class ChromeShell
 
         navPanelItems.Add(managementItem);
 
-        navPanelItems.Add(new() { Text = AppLocalizer[nameof(AppStrings.Settings)], IconName = BitIconName.Equalizer, Url = "#settings" });
+        navPanelItems.Add(new() { Text = AppLocalizer[nameof(AppStrings.Settings)], IconName = BitIconName.Equalizer, Url = PageUrl("settings", "#settings") });
     }
 }

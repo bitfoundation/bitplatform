@@ -16,9 +16,9 @@
         <PackageVersion Include="Bit.Minifier" Version="11.0.0-pre-15" />
         <PackageVersion Include="Bit.CodeAnalyzers" Version="11.0.0-pre-15" />
         <PackageVersion Include="Bit.SourceGenerators" Version="11.0.0-pre-15" />
-        <PackageVersion Include="Bit.Blow" Version="11.0.0-pre-15" />
         <PackageVersion Include="Bit.Bmotion" Version="11.0.0-pre-15" />
         <PackageVersion Include="Bit.Bortable" Version="11.0.0-pre-15" />
+        <PackageVersion Include="Bit.Blex" Version="11.0.0-pre-15" />
         <PackageVersion Include="DistributedLock.FileSystem" Version="1.0.3" />
         <PackageVersion Include="Fido2.AspNet" Version="4.3.2" />
         <PackageVersion Include="HtmlSanitizer" Version="9.2.1039" />

@@ -35,7 +35,7 @@
             <div class="edit-bar">
                 <BitIcon IconName="@BitIconName.Info" Size="BitSize.Small" />
                 <BitText Typography="BitTypography.Body2" Class="edit-hint">@Localizer[nameof(WorkbenchStrings.PosEditHint)]</BitText>
-                <BitButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Add" IsEnabled="hiddenWidgets.Count > 0" OnClick="() => isGalleryOpen = true">
+                <BitButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Add" IsEnabled="hiddenWidgets.Count > 0" OnClick="() => store.OpenGallery(true)">
                     @Localizer[nameof(WorkbenchStrings.PosAddWidget), hiddenWidgets.Count]
                 </BitButton>
                 <BitButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Undo" OnClick="ResetLayout">
@@ -47,7 +47,8 @@
         @if (isLayoutLoaded)
         {
             <Bortable @ref="bortable"
-                      @bind-Items="visibleWidgets"
+                      Items="visibleWidgets"
+                      ItemsChanged="OnReordered"
                       TItem="PosWidgetLayout"
                       Class="dashboard-grid"
                       Direction="BortableDirection.Horizontal"
@@ -64,7 +65,7 @@
         }
     </div>
 
-    <BitPanel @bind-IsOpen="isGalleryOpen" Position="BitPanelPosition.End" HeaderText="@Localizer[nameof(WorkbenchStrings.PosWidgetGallery)]">
+    <BitPanel IsOpen="store.IsGalleryOpen" IsOpenChanged="store.OpenGallery" Position="BitPanelPosition.End" HeaderText="@Localizer[nameof(WorkbenchStrings.PosWidgetGallery)]">
         <div class="gallery">
             @foreach (var widget in hiddenWidgets.ToList())
             {

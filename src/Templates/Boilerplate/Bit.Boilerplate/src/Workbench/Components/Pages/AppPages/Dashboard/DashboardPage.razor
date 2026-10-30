@@ -1,0 +1,15 @@
+@* [mirror] dashboard page and its widgets - keep in sync with: *@
+@* - src/Client/Boilerplate.Client.Core/Components/Pages/Dashboard/ *@
+@inherits WorkbenchComponentBase
+
+<section>
+    <BitStack Gap="3rem">
+        <OverallStatsWidget />
+
+        <BitStack Horizontal Wrap AutoHeight Gap="1.5rem" VerticalAlign="BitAlignment.Stretch">
+            <ProductsCountPerCategoryWidget />
+            <ProductsPercentageWidget />
+        </BitStack>
+
+    </BitStack>
+</section>

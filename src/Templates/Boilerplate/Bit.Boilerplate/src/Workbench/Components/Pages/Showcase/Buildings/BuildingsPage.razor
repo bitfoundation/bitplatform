@@ -9,7 +9,7 @@
             <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.BuildingsSubtitle), FilteredBuildings.Count(), FilteredBuildings.Select(b => b.Province).Distinct().Count()]</BitText>
         </div>
         <div class="actions">
-            <BitSearchBox @bind-Value="searchText" Immediate Class="search"
+            <BitSearchBox Value="@SearchText" ValueChanged="Search" Immediate DebounceTime="250" Class="search"
                           Placeholder="@Localizer[nameof(WorkbenchStrings.BuildingsSearch)]"
                           AriaLabel="@Localizer[nameof(WorkbenchStrings.BuildingsSearch)]" />
             <BitButton IconName="@BitIconName.Add" OnClick="OpenAdd" IsEnabled="status is PosWidgetStatus.Ready or PosWidgetStatus.Empty">
@@ -21,12 +21,12 @@
     @if (isNarrow)
     {
         <div class="view-switch" role="tablist">
-            <BitButton Size="BitSize.Small" Variant="@(showMap ? BitVariant.Outline : BitVariant.Fill)" IconName="@BitIconName.BulletedList" OnClick="() => showMap = false">@Localizer[nameof(WorkbenchStrings.BuildingsListView)]</BitButton>
-            <BitButton Size="BitSize.Small" Variant="@(showMap ? BitVariant.Fill : BitVariant.Outline)" IconName="@BitIconName.MapPin" OnClick="() => showMap = true">@Localizer[nameof(WorkbenchStrings.BuildingsMapView)]</BitButton>
+            <BitButton Size="BitSize.Small" Variant="@(store.IsMapShown ? BitVariant.Outline : BitVariant.Fill)" IconName="@BitIconName.BulletedList" OnClick="() => store.ShowMap(false)">@Localizer[nameof(WorkbenchStrings.BuildingsListView)]</BitButton>
+            <BitButton Size="BitSize.Small" Variant="@(store.IsMapShown ? BitVariant.Fill : BitVariant.Outline)" IconName="@BitIconName.MapPin" OnClick="() => store.ShowMap(true)">@Localizer[nameof(WorkbenchStrings.BuildingsMapView)]</BitButton>
         </div>
     }
 
-    <div class="split @(isNarrow ? (showMap ? "narrow show-map" : "narrow show-list") : null)">
+    <div class="split @(isNarrow ? (store.IsMapShown ? "narrow show-map" : "narrow show-list") : null)">
         <section class="list-pane" aria-label="@Localizer[nameof(WorkbenchStrings.BuildingsListView)]">
             @switch (status)
             {
@@ -109,8 +109,9 @@
                     OnDoubleClick="OnMapDoubleClick"
                     OnMarkerClick="OnMarkerClick"
                     OnMarkerDoubleClick="OnMarkerDoubleClick"
+                    OnViewChanged="OnMapViewChanged"
                     MarkerListMode="BitMapMarkerListMode.ScreenReaderOnly"
-                    Class="@(Scenario.Theme is WorkbenchThemeMode.Dark ? "map dark-tiles" : "map")" />
+                    Class="map" />
             <div class="map-hint">
                 <BitIcon IconName="@BitIconName.Info" Size="BitSize.Small" />
                 <span>@Localizer[nameof(WorkbenchStrings.BuildingsMapHint)]</span>
@@ -119,6 +120,9 @@
     </div>
 </div>
 
-<BuildingEditor @ref="editor" OnSaved="OnSaved" />
+@if (isRestored)
+{
+    <BuildingEditor @ref="editor" OnSaved="OnSaved" />
+}
 
 <BitSnackBar @ref="snackBar" Position="BitPosition.BottomCenter" AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(4)" />

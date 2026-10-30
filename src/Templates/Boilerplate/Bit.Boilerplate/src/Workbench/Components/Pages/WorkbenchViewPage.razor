@@ -15,7 +15,10 @@
 else if (isSmallScreen)
 {
     <div class="inline-surface">
-        <PreviewSurface @key="SelectedPane.Scenario" Page="pageInfo" />
+        @if (isRestored)
+        {
+            <PreviewSurface @key="store.SelectedPane.Scenario" Page="pageInfo" />
+        }
     </div>
 
     <BitButton Float Rounded Draggable
@@ -33,13 +36,15 @@ else if (isSmallScreen)
                 <img src="_content/Boilerplate.Client.Core/images/bit-logo.svg" alt="" width="24" height="24" />
                 <BitText Typography="BitTypography.H6">@Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]</BitText>
                 <BitSpacer />
+                <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.Camera" OnClick="() => DownloadScreenshot(store.SelectedPane)"
+                           Title="@Localizer[nameof(WorkbenchStrings.ScreenshotThisView)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.ScreenshotThisView)]" />
                 <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.Cancel" OnClick="() => isToolsOpen = false"
                            Title="@Localizer[nameof(WorkbenchStrings.Close)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.Close)]" />
             </BitStack>
         </Header>
         <Body>
-            <ScenarioInspector Value="SelectedPane.Scenario" ValueChanged="OnScenarioChanged" ShowDevice="false" ShowZoom="false" />
-            <PageNavigator CurrentKey="@pageInfo.Key" Query="@currentQuery" OnNavigate="() => isToolsOpen = false" />
+            <ScenarioInspector Page="pageInfo" Value="store.SelectedPane.Scenario" ValueChanged="store.ChangeScenario" OnReset="Reset" ShowDevice="false" ShowZoom="false" />
+            <PageNavigator CurrentKey="@pageInfo.Key" Query="@store.QueryString" OnNavigate="() => isToolsOpen = false" />
         </Body>
     </BitPanel>
 }
@@ -62,7 +67,7 @@ else
                            Size="BitSize.Small"
                            Items="compareItems" />
 
-            <BitButton Variant="BitVariant.Outline" Size="BitSize.Small" IconName="@BitIconName.Add" OnClick="AddPane">
+            <BitButton Variant="BitVariant.Outline" Size="BitSize.Small" IconName="@BitIconName.Add" OnClick="store.AddPane">
                 @Localizer[nameof(WorkbenchStrings.AddView)]
             </BitButton>
 
@@ -86,27 +91,37 @@ else
         </header>
 
         <aside class="sidebar navigator-column">
-            <PageNavigator CurrentKey="@pageInfo.Key" Query="@currentQuery" />
+            <PageNavigator CurrentKey="@pageInfo.Key" Query="@store.QueryString" />
         </aside>
 
-        <section class="canvas @(panes.Count > 1 ? "multi" : "single")">
-            @foreach (var pane in panes)
+        <section class="canvas @(store.Panes.Length > 1 ? "multi" : "single")">
+            @if (isRestored)
             {
-                <PreviewPane @key="pane.Id"
-                             Pane="pane"
-                             Page="pageInfo"
-                             Zoom="@zoom"
-                             FitWidth="panes.Count == 1"
-                             CanRemove="panes.Count > 1"
-                             IsSelected="pane.Id == SelectedPane.Id && panes.Count > 1"
-                             OnSelect="SelectPane"
-                             OnRemove="RemovePane"
-                             OnRotate="RotatePane" />
+                @foreach (var pane in store.Panes)
+                {
+                    <PreviewPane @key="pane.Id"
+                                 Pane="pane"
+                                 Page="pageInfo"
+                                 Zoom="@store.Zoom"
+                                 FitWidth="store.Panes.Length == 1"
+                                 CanRemove="store.Panes.Length > 1"
+                                 IsSelected="pane.Id == store.SelectedPaneId && store.Panes.Length > 1"
+                                 OnSelect="p => store.SelectPane(p.Id)"
+                                 OnRemove="p => store.RemovePane(p.Id)"
+                                 OnRotate="p => store.RotatePane(p.Id)"
+                                 OnScreenshot="DownloadScreenshot" />
+                }
+            }
+            else
+            {
+                <div class="canvas-loading">
+                    <BitRingLoading />
+                </div>
             }
         </section>
 
         <aside class="sidebar inspector-column">
-            <ScenarioInspector Value="SelectedPane.Scenario" ValueChanged="OnScenarioChanged" Zoom="@zoom" ZoomChanged="OnZoomChanged" />
+            <ScenarioInspector Page="pageInfo" Value="store.SelectedPane.Scenario" ValueChanged="store.ChangeScenario" OnReset="Reset" Zoom="@store.Zoom" ZoomChanged="store.SetZoom" />
         </aside>
     </div>
 }

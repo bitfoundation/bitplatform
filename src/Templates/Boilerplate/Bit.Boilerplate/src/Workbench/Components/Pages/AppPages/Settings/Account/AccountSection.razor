@@ -1,0 +1,30 @@
+@inherits WorkbenchComponentBase
+
+<section>
+    <BitPivot Alignment="BitAlignment.Center"
+              OverflowBehavior="BitPivotOverflowBehavior.Menu"
+              SelectedKey="@store.AccountTab"
+              SelectedKeyChanged="store.SelectAccountTab"
+              OverflowAriaLabel="@AppLocalizer[nameof(AppStrings.MoreTabsTitle)]">
+        <BitPivotItem Key="@nameof(AppStrings.Passwordless)" HeaderText="@AppLocalizer[nameof(AppStrings.Passwordless)]">
+            <PasswordlessTab />
+        </BitPivotItem>
+        <BitPivotItem Key="@nameof(AppStrings.Delete)">
+            <Header>
+                <BitText Color="BitColor.Error">@AppLocalizer[nameof(AppStrings.Delete)]</BitText>
+            </Header>
+            <Body>
+                <DeleteAccountTab />
+            </Body>
+        </BitPivotItem>
+        <BitPivotItem Key="@nameof(AppStrings.Email)" HeaderText="@AppLocalizer[nameof(AppStrings.Email)]">
+            <ChangeEmailTab />
+        </BitPivotItem>
+        <BitPivotItem Key="@nameof(AppStrings.Phone)" HeaderText="@AppLocalizer[nameof(AppStrings.Phone)]">
+            <ChangePhoneNumberTab />
+        </BitPivotItem>
+        <BitPivotItem Key="@nameof(AppStrings.Password)" HeaderText="@AppLocalizer[nameof(AppStrings.Password)]">
+            <ChangePasswordTab />
+        </BitPivotItem>
+    </BitPivot>
+</section>

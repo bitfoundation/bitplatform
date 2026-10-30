@@ -13,11 +13,23 @@ public static class IWorkbenchServiceCollectionExtensions
         {
             services.AddScoped<WorkbenchScenarioState>();
             services.AddSingleton<WorkbenchScreenshotService>();
+            services.AddSingleton<WorkbenchSnapshots>();
             services.AddScoped<PosDashboardDataService>();
             services.AddScoped<BuildingsService>();
             services.AddScoped<AssistantService>();
-            services.AddScoped<DeploymentService>();
-            services.AddScoped<ProjectStructureService>();
+            services.AddScoped<ShiftsService>();
+
+            services.AddBitBlexServices(options => options.DevToolsName = "bit Workbench");
+            services.AddBitBlexStore<WorkbenchStore>();
+            services.AddBitBlexStore<ChromeStore>();
+            services.AddBitBlexStore<BuildingsStore>();
+            services.AddBitBlexStore<PosDashboardStore>();
+            services.AddBitBlexStore<AssistantStore>();
+            services.AddBitBlexStore<ShiftsStore>();
+            services.AddBitBlexStore<SettingsStore>();
+            services.AddScoped<IBlexStorage, WorkbenchStateStorage>();
+            services.AddBitBlexPersistence();
+            services.AddScoped<IBitAccentColorStore, ChromeAccentStore>();
 
             services.AddRateLimiter(options =>
             {

@@ -169,6 +169,19 @@ public class RenameTests
     }
 
     [TestMethod]
+    public async Task Rename_Should_RefuseANameThatStartsWithANamespaceOfTheProject()
+    {
+        using var host = new TestHost();
+        var folder = CreateProject(host);
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("rename", "Server.Shop", folder, "--yes"));
+        StringAssert.Contains(host.FlatOutput, "'Server' is also the name of a namespace inside the project");
+        StringAssert.Contains(host.FlatOutput, "bit rename MyServer.Shop");
+        Assert.IsTrue(File.Exists(Path.Combine(folder, "Old.slnx")));
+        Assert.IsEmpty(host.Runner.Calls);
+    }
+
+    [TestMethod]
     public async Task Rename_Should_RefuseAProjectNamedLikeOneOfItsTypes()
     {
         using var host = new TestHost();

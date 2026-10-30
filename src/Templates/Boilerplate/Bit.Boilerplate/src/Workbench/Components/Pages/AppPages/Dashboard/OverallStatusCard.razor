@@ -1,0 +1,20 @@
+@inherits WorkbenchComponentBase
+
+<section>
+    <BitCard Border="BitColorKind.Transparent" FullWidth>
+        <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+            <BitIcon IconName="@IconName" Size="BitSize.Large" Variant="BitVariant.Fill" Color="BitColor.TertiaryBackground" Style="padding:1rem" />
+            <BitStack Gap="0">
+                @if (Loading)
+                {
+                    <BitEllipsisLoading Size="BitSize.Small" />
+                }
+                else
+                {
+                    <BitText Typography="BitTypography.H6">@Value</BitText>
+                }
+                <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">@Label</BitText>
+            </BitStack>
+        </BitStack>
+    </BitCard>
+</section>

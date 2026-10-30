@@ -19,7 +19,7 @@
                    IconName="@BitIconName.Camera"
                    Title="@Localizer[nameof(WorkbenchStrings.ScreenshotThisView)]"
                    AriaLabel="@Localizer[nameof(WorkbenchStrings.ScreenshotThisView)]"
-                   OnClick="DownloadScreenshot" />
+                   OnClick="() => OnScreenshot.InvokeAsync(Pane)" />
         <BitButton IconOnly Size="BitSize.Small" Variant="BitVariant.Text"
                    IconName="@BitIconName.OpenInNewTab"
                    Href="@previewUrl" Target="_blank"
@@ -44,10 +44,10 @@
         <div class="pane-scaler">
             <DeviceFrame Device="device"
                          Rotated="Pane.Scenario.Rotated"
-                         ShowFrame="Pane.Scenario.Frame"
+                         ShowFrame="ShowFrame"
                          OnDarkContent="Pane.Scenario.Theme is WorkbenchThemeMode.Dark"
                          Address="@AddressText">
-                <iframe @key="previewUrl" src="@previewUrl" title="@Localizer[Page.TitleKey]"></iframe>
+                <iframe src="@frameUrl" data-pane-id="@Pane.Id" title="@Localizer[Page.TitleKey]"></iframe>
             </DeviceFrame>
         </div>
         <div class="pane-loading">

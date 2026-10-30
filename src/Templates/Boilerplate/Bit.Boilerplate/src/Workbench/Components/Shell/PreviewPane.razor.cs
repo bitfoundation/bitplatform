@@ -3,7 +3,9 @@ namespace Boilerplate.Workbench.Components.Shell;
 public partial class PreviewPane
 {
     private DevicePreset device = DevicePresets.Default;
+    private string? frameUrl;
     private string previewUrl = string.Empty;
+    private string? shownUrl;
     private int frameWidth;
     private int frameHeight;
 
@@ -25,6 +27,10 @@ public partial class PreviewPane
 
     [Parameter] public EventCallback<WorkbenchPane> OnRotate { get; set; }
 
+    [Parameter] public EventCallback<WorkbenchPane> OnScreenshot { get; set; }
+
+    private bool ShowFrame => Pane.Scenario.Frame && Pane.Scenario.Backdrop is null;
+
     private string SizeText
     {
         get
@@ -41,8 +47,24 @@ public partial class PreviewPane
     protected override void OnParametersSet()
     {
         device = Pane.Scenario.DevicePreset;
-        previewUrl = WorkbenchUrls.Preview(Page.Key, Pane.Scenario);
-        (frameWidth, frameHeight) = DeviceFrame.GetFrameSize(device, Pane.Scenario.Rotated, Pane.Scenario.Frame);
+        previewUrl = WorkbenchUrls.Preview(Page.Key, Pane.Scenario, Pane.Id);
+        frameUrl ??= previewUrl;
+        (frameWidth, frameHeight) = DeviceFrame.GetFrameSize(device, Pane.Scenario.Rotated, ShowFrame);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            shownUrl = frameUrl;
+            return;
+        }
+
+        if (previewUrl == shownUrl)
+            return;
+
+        shownUrl = previewUrl;
+        await JSRuntime.InvokeVoidAsync("workbench.showInFrame", Pane.Id, previewUrl);
     }
 
     public static string GetDeviceIconName(DevicePreset device) => device.Kind switch
@@ -70,12 +92,10 @@ public partial class PreviewPane
 
         if (scenario.Chrome is false)
             yield return Localizer[nameof(WorkbenchStrings.NoChrome)];
+
+        if (scenario.Backdrop is { } backdrop)
+            yield return Localizer[$"Backdrop{backdrop}"];
     }
 
     private Task Select() => OnSelect.InvokeAsync(Pane);
-
-    private async Task DownloadScreenshot()
-    {
-        await JSRuntime.InvokeVoidAsync("workbench.download", WorkbenchUrls.Screenshot(Page.Key, Pane.Scenario));
-    }
 }

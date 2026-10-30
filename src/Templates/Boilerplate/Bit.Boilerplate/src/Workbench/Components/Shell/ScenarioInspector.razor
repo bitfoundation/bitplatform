@@ -17,6 +17,10 @@
                 <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.DevicePreset.IsLandscape(Value.Rotated))" IconName="@BitIconName.Rotate"
                            OnClick="() => Update(Value with { Rotated = Value.DevicePreset.IsLandscapeByDefault is false })">@Localizer[nameof(WorkbenchStrings.Landscape)]</BitButton>
             </div>
+            @if (StoreRuleKey is not null)
+            {
+                <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[StoreRuleKey]</BitText>
+            }
             <BitToggle Text="@Localizer[nameof(WorkbenchStrings.DeviceFrame)]" Value="Value.Frame" ValueChanged="(bool frame) => Update(Value with { Frame = frame })" />
             @if (ShowZoom)
             {
@@ -48,6 +52,29 @@
         <BitToggle Text="@Localizer[nameof(WorkbenchStrings.AppChrome)]" Value="Value.Chrome" ValueChanged="(bool chrome) => Update(Value with { Chrome = chrome })" />
         <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.AppChromeHint)]</BitText>
 
+        <BitToggle Text="@Localizer[nameof(WorkbenchStrings.Backdrop)]" Value="Value.Backdrop is not null" ValueChanged="(bool backdrop) => Update(Value with { Backdrop = backdrop ? lastBackdrop : null })" />
+        <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.BackdropHint)]</BitText>
+        @if (Value.Backdrop is { } current)
+        {
+            <div class="backdrops" role="radiogroup" aria-label="@Localizer[nameof(WorkbenchStrings.Backdrop)]">
+                @foreach (var backdrop in Enum.GetValues<WorkbenchBackdrop>())
+                {
+                    <button type="button" role="radio"
+                            class="backdrop backdrop-@backdrop.ToString().ToLowerInvariant() @(backdrop == current ? "selected" : null)"
+                            aria-checked="@(backdrop == current ? "true" : "false")"
+                            title="@Localizer[$"Backdrop{backdrop}"]"
+                            aria-label="@Localizer[$"Backdrop{backdrop}"]"
+                            @onclick="() => SelectBackdrop(backdrop)"></button>
+                }
+            </div>
+            <BitTextField Label="@Localizer[nameof(WorkbenchStrings.Caption)]"
+                          Value="@Value.Caption"
+                          ValueChanged="(string? caption) => Update(Value with { Caption = string.IsNullOrWhiteSpace(caption) ? null : caption.Trim() })"
+                          Placeholder="@(CaptionPlaceholder)"
+                          MaxLength="WorkbenchScenario.MaxCaptionLength" />
+            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.CaptionHint)]</BitText>
+        }
+
         <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.SignInState)]</BitText>
         <div class="segments three">
             @foreach (var auth in Enum.GetValues<WorkbenchAuthState>())
@@ -78,7 +105,7 @@
     </section>
 
     <section class="actions">
-        <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Reset" OnClick="() => Update(new WorkbenchScenario { Device = Value.Device, Rotated = Value.Rotated })">
+        <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Reset" OnClick="OnReset">
             @Localizer[nameof(WorkbenchStrings.Reset)]
         </BitButton>
     </section>

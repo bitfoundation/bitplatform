@@ -1,0 +1,43 @@
+@*+:cnd:noEmit*@
+@* [mirror] settings page and its sections - keep in sync with: *@
+@* - src/Client/Boilerplate.Client.Core/Components/Pages/Settings/ *@
+@using global::Boilerplate.Workbench.Components.Pages.AppPages.Settings.Account
+@inherits WorkbenchComponentBase
+
+<CascadingValue Value="this" IsFixed>
+    <section>
+        <BitStack Class="stack">
+            <BitAccordionList TItem="BitAccordionListOption" ExpandedKey="@store.ExpandedSection" ExpandedKeyChanged="store.Expand" LazyContent ScrollIntoViewOnExpand Background="BitColorKind.Secondary" Border="BitColorKind.Transparent">
+
+                <BitAccordionListOption Key="@PageUrls.SettingsSections.Profile" Title="@AppLocalizer[nameof(AppStrings.ProfileTitle)]" Description="@AppLocalizer[nameof(AppStrings.ProfileSubtitle)]">
+                    <ProfileSection />
+                </BitAccordionListOption>
+
+                <BitAccordionListOption Key="@PageUrls.SettingsSections.Account" Title="@AppLocalizer[nameof(AppStrings.AccountTitle)]" Description="@AppLocalizer[nameof(AppStrings.AccountSubtitle)]">
+                    <AccountSection />
+                </BitAccordionListOption>
+
+                <BitAccordionListOption Key="@PageUrls.SettingsSections.Tfa" Title="@AppLocalizer[nameof(AppStrings.TfaTitle)]" Description="@AppLocalizer[nameof(AppStrings.TfaSubtitle)]">
+                    <TwoFactorSection />
+                </BitAccordionListOption>
+
+                <BitAccordionListOption Key="@PageUrls.SettingsSections.Sessions" Title="@AppLocalizer[nameof(AppStrings.SessionsTitle)]" Description="@AppLocalizer[nameof(AppStrings.SessionsSubtitle)]">
+                    <SessionsSection />
+                </BitAccordionListOption>
+
+                <BitAccordionListOption Key="@PageUrls.SettingsSections.Privacy" Title="@AppLocalizer[nameof(AppStrings.PrivacyTitle)]" Description="@AppLocalizer[nameof(AppStrings.PrivacySubtitle)]">
+                    <PrivacySection />
+                </BitAccordionListOption>
+
+                @*#if (ads == true)*@
+                <BitAccordionListOption Key="@PageUrls.SettingsSections.UpgradeAccount" Title="@AppLocalizer[nameof(AppStrings.UpgradeTitle)]" Description="@AppLocalizer[nameof(AppStrings.UpgradeSubtitle)]">
+                    <UpgradeAccountSection />
+                </BitAccordionListOption>
+                @*#endif*@
+
+            </BitAccordionList>
+        </BitStack>
+    </section>
+</CascadingValue>
+
+<BitSnackBar @ref="SnackBar" Position="BitPosition.BottomCenter" AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(4)" />

@@ -1,3 +1,7 @@
+//#if (module == "Admin")
+using Boilerplate.Workbench.Components.Pages.AppPages.Dashboard;
+//#endif
+
 namespace Boilerplate.Workbench.Infrastructure.Services;
 
 public static class WorkbenchPageCatalog
@@ -28,22 +32,32 @@ public static class WorkbenchPageCatalog
             nameof(WorkbenchStrings.CategoryAi),
             ["BitMarkdownViewer", "BitTextShimmer", "BitChart", "BitPanel", "bit Bmotion"],
             nameof(WorkbenchStrings.AssistantCaption)),
-        new("deployment",
-            nameof(WorkbenchStrings.DeployTitle),
-            nameof(WorkbenchStrings.DeployDescription),
-            BitIconName.Rocket,
-            typeof(DeploymentPage),
-            nameof(WorkbenchStrings.CategoryExplainers),
-            ["bit Blow", "BitToggle", "BitTag", "BitMediaQuery"],
-            nameof(WorkbenchStrings.DeployCaption)),
-        new("project-structure",
-            nameof(WorkbenchStrings.StructureTitle),
-            nameof(WorkbenchStrings.StructureDescription),
-            BitIconName.Org,
-            typeof(ProjectStructurePage),
-            nameof(WorkbenchStrings.CategoryExplainers),
-            ["bit Blow", "BitMediaQuery", "BitShimmer"],
-            nameof(WorkbenchStrings.StructureCaption)),
+        new("shifts",
+            nameof(WorkbenchStrings.ShiftsTitle),
+            nameof(WorkbenchStrings.ShiftsDescription),
+            BitIconName.Calendar,
+            typeof(ShiftsPage),
+            nameof(WorkbenchStrings.CategoryPlanning),
+            ["BitFullCalendar", "BitMessage", "bit Blex"],
+            nameof(WorkbenchStrings.ShiftsCaption)),
+        //#if (module == "Admin")
+        new("dashboard",
+            nameof(WorkbenchStrings.AppDashboardTitle),
+            nameof(WorkbenchStrings.AppDashboardDescription),
+            BitIconName.BarChartVerticalFill,
+            typeof(DashboardPage),
+            nameof(WorkbenchStrings.CategoryAppPages),
+            ["BitChart", "BitCard", "BitEllipsisLoading"],
+            nameof(WorkbenchStrings.AppDashboardCaption)),
+        //#endif
+        new("settings",
+            nameof(WorkbenchStrings.SettingsTitle),
+            nameof(WorkbenchStrings.SettingsDescription),
+            BitIconName.Equalizer,
+            typeof(SettingsPage),
+            nameof(WorkbenchStrings.CategoryAppPages),
+            ["BitAccordionList", "BitPivot", "BitOtpInput", "BitFileUpload"],
+            nameof(WorkbenchStrings.SettingsCaption))
     ];
 
     public static WorkbenchPageInfo? Find(string? key) => Pages.FirstOrDefault(p => string.Equals(p.Key, key, StringComparison.OrdinalIgnoreCase));

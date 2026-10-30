@@ -391,50 +391,213 @@
     background-color: $bit-color-background-secondary;
 }
 
-.built-with {
-    text-align: center;
+.products {
+    gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    @include lt-lg {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @include lt-sm {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.product {
+    gap: 1rem;
+    height: 100%;
+    display: flex;
+    padding: 1.25rem;
+    border-radius: 18px;
+    align-items: flex-start;
+    text-decoration: none;
+    box-sizing: border-box;
+    color: $bit-color-foreground-primary;
+    background-color: $bit-color-background-primary;
+    border: 1px solid $bit-color-border-tertiary;
+    transition: border-color 0.15s ease;
+
+    &:hover {
+        border-color: $bit-color-primary;
+    }
+
+    ::deep .product-out {
+        color: $bit-color-foreground-tertiary;
+    }
+}
+
+.product-icon {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    flex-shrink: 0;
+    font-size: 20px;
+    border-radius: 12px;
+    align-items: center;
+    justify-content: center;
+    color: $bit-color-primary;
+    background-color: color-mix(in srgb, #{$bit-color-primary} 12%, transparent);
+}
+
+.product-text {
+    gap: 0.25rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-name {
+    font-size: 1.0625rem;
+    font-weight: 700;
+}
+
+.product-description {
+    font-size: 14px;
+    line-height: 1.55;
+    color: $bit-color-foreground-secondary;
+}
+
+.cta {
+    gap: 2.5rem;
+    display: grid;
+    overflow: hidden;
+    align-items: center;
+    border-radius: 28px;
+    padding: 3rem 3.25rem;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    border: 1px solid color-mix(in srgb, #{$bit-color-primary} 30%, transparent);
+    background:
+        radial-gradient(600px 300px at 100% 0%, color-mix(in srgb, #8b5cf6 22%, transparent), transparent 70%),
+        radial-gradient(500px 300px at 0% 100%, color-mix(in srgb, #{$bit-color-primary} 22%, transparent), transparent 70%),
+        color-mix(in srgb, #{$bit-color-primary} 6%, #{$bit-color-background-primary});
+
+    @include lt-md {
+        gap: 2rem;
+        padding: 2rem 1.5rem;
+        grid-template-columns: minmax(0, 1fr);
+    }
 
     h2 {
-        margin: 0 0 1.25rem;
-        font-size: 1.25rem;
-        font-weight: 700;
+        margin: 0 0 0.75rem;
+        font-size: 2.25rem;
+        font-weight: 800;
+        line-height: 1.15;
+        letter-spacing: -0.02em;
+        color: $bit-color-foreground-primary;
+    }
+
+    p {
+        margin: 0;
+        font-size: 1.0625rem;
+        line-height: 1.65;
         color: $bit-color-foreground-secondary;
     }
 }
 
-.products {
-    gap: 0.75rem;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+.cta-actions {
+    margin-top: 1.75rem;
 }
 
-.product {
-    font-size: 14px;
-    font-weight: 600;
-    padding: 8px 16px;
-    border-radius: 999px;
-    text-decoration: none;
-    color: $bit-color-foreground-primary;
-    border: 1px solid $bit-color-border-secondary;
-    transition: background-color 0.15s ease, border-color 0.15s ease;
+.prompt {
+    gap: 0.875rem;
+    margin: 0;
+    display: flex;
+    padding: 1.5rem;
+    border-radius: 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    background-color: $bit-color-background-primary;
+    border: 1px solid $bit-color-border-tertiary;
+    box-shadow: 0 20px 50px -30px rgba(0, 0, 0, 0.45);
+}
 
-    &:hover {
-        border-color: $bit-color-primary;
-        background-color: color-mix(in srgb, #{$bit-color-primary} 8%, transparent);
-    }
+.prompt-label {
+    gap: 0.5rem;
+    display: flex;
+    font-size: 12px;
+    font-weight: 600;
+    align-items: center;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: $bit-color-primary;
+}
+
+.prompt-text {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.5;
+    color: $bit-color-foreground-primary;
 }
 
 .home-footer {
     margin: 0 auto;
     max-width: 1200px;
-    padding: 2rem 1rem 3rem;
+    padding: 2.5rem 1rem 3.5rem;
     border-top: 1px solid $bit-color-border-tertiary;
+}
+
+.footer-grid {
+    gap: 2rem;
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+
+        .footer-brand {
+            grid-column: 1 / -1;
+        }
+    }
+}
+
+.footer-brand {
+    gap: 0.75rem;
+    display: flex;
+    max-width: 26rem;
+    flex-direction: column;
 
     p {
         margin: 0;
-        font-size: 13px;
-        text-align: center;
+        font-size: 14px;
+        line-height: 1.6;
         color: $bit-color-foreground-secondary;
+    }
+}
+
+.footer-logo {
+    gap: 0.5rem;
+    display: flex;
+    font-size: 16px;
+    font-weight: 700;
+    align-items: center;
+    text-decoration: none;
+    color: $bit-color-foreground-primary;
+}
+
+.footer-links {
+    gap: 0.625rem;
+    display: flex;
+    flex-direction: column;
+
+    h3 {
+        margin: 0 0 0.25rem;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: $bit-color-foreground-secondary;
+    }
+
+    a {
+        font-size: 14px;
+        text-decoration: none;
+        color: $bit-color-foreground-primary;
+
+        &:hover {
+            color: $bit-color-primary;
+        }
     }
 }

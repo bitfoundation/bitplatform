@@ -153,9 +153,6 @@
     <data name="ScreenshotAllViews" xml:space="preserve">
         <value>Screenshots aller Ansichten (ZIP)</value>
     </data>
-    <data name="StoreScreenshots" xml:space="preserve">
-        <value>Store-Screenshots</value>
-    </data>
     <data name="OpenInNewTab" xml:space="preserve">
         <value>In neuem Tab öffnen</value>
     </data>
@@ -646,7 +643,7 @@
         <value>Gebäude</value>
     </data>
     <data name="BuildingsDescription" xml:space="preserve">
-        <value>Ein Datenraster und eine Karte, die synchron bleiben. Doppelklicken Sie auf die Karte, um ein Gebäude hinzuzufügen, wählen Sie eines aus und drücken Sie Entf, um es zu entfernen. Nur Orte innerhalb der Niederlande werden akzeptiert.</value>
+        <value>A data grid and a map that stay in sync. Double-click the map to add a building, select one and press Delete to remove it. Advanced map features are in too, like limiting where points can be picked.</value>
     </data>
     <data name="BuildingsHeading" xml:space="preserve">
         <value>Markante Gebäude</value>
@@ -871,7 +868,7 @@
         <value>Echte Komponenten statt Mockups</value>
     </data>
     <data name="HomeWhyRealText" xml:space="preserve">
-        <value>Die Seiten nutzen dieselben bit BlazorUI-Komponenten, dasselbe Design und dieselben Stile wie Ihre App, daher ist der freigegebene Entwurf bereits funktionierender Code.</value>
+        <value>Pages use the same bit BlazorUI components, theme and styles as your app, so what you approve here looks the same once it is built into the app.</value>
     </data>
     <data name="HomeWhyStatesTitle" xml:space="preserve">
         <value>Jeder Zustand auf Abruf</value>
@@ -889,13 +886,13 @@
         <value>Screenshots für die Stores</value>
     </data>
     <data name="HomeWhyStoresText" xml:space="preserve">
-        <value>Exportieren Sie pixelgenaue Bilder für den App Store, Google Play und den Microsoft Store, gerendert von einem echten Browser, ohne Emulatoren.</value>
+        <value>Export pixel-exact images at App Store, Google Play and Microsoft Store sizes, with a colored background and a caption when you want one, rendered by a real browser.</value>
     </data>
     <data name="HomeWhyHeadStartTitle" xml:space="preserve">
         <value>Ein Vorsprung von bitplatform</value>
     </data>
     <data name="HomeWhyHeadStartText" xml:space="preserve">
-        <value>Los geht es mit fertigen Seiten wie einem Kassen-Dashboard und einer Gebäudekarte. Verwenden Sie wieder, was passt, lernen Sie vom Rest und fügen Sie dann Ihre eigenen Seiten daneben hinzu.</value>
+        <value>It starts with ready-made pages, like a point-of-sale dashboard, a shift planner and your app's own settings page. Reuse what fits, learn from the rest, then add your own pages next to them.</value>
     </data>
     <data name="HomeWhySafeTitle" xml:space="preserve">
         <value>Gefahrlos experimentieren</value>
@@ -928,7 +925,7 @@
         <value>In die App übernehmen</value>
     </data>
     <data name="HomeHowStep3Text" xml:space="preserve">
-        <value>Übernehmen Sie die freigegebene Seite in Ihre App und verbinden Sie sie mit echten Daten. Ihr KI-Agent folgt denselben Schritten.</value>
+        <value>Rebuild the approved design in your app the way the rest of the app is built, and connect it to real data. Your AI agent follows the same steps.</value>
     </data>
     <data name="HomePagesTitle" xml:space="preserve">
         <value>Seiten auf dieser Werkbank</value>
@@ -948,26 +945,11 @@
     <data name="BuildingsCaption" xml:space="preserve">
         <value>Alle Ihre Gebäude auf einer Karte</value>
     </data>
-    <data name="StoreScreenshotsPageTitle" xml:space="preserve">
-        <value>Store-Screenshots · Werkbank</value>
-    </data>
-    <data name="StoreScreenshotsLead" xml:space="preserve">
-        <value>Pixelgenaue Bilder in den Formaten, die jeder Store verlangt, aufgenommen von einem echten Browser von Ihren echten Seiten.</value>
-    </data>
-    <data name="Store" xml:space="preserve">
-        <value>Store</value>
-    </data>
-    <data name="StoreSizeCount" xml:space="preserve">
-        <value>{0} Formate</value>
-    </data>
-    <data name="Look" xml:space="preserve">
-        <value>Aussehen</value>
-    </data>
-    <data name="FrameAndCaption" xml:space="preserve">
-        <value>Geräterahmen und Beschriftung</value>
-    </data>
     <data name="Backdrop" xml:space="preserve">
         <value>Hintergrund</value>
+    </data>
+    <data name="BackdropHint" xml:space="preserve">
+        <value>Puts the page in a device on a colored background with a caption, the way store listings show it.</value>
     </data>
     <data name="BackdropBrand" xml:space="preserve">
         <value>App-Farbe</value>
@@ -987,50 +969,11 @@
     <data name="BackdropPaper" xml:space="preserve">
         <value>Papier</value>
     </data>
-    <data name="PlainScreenshotsHint" xml:space="preserve">
-        <value>Einfache Screenshots zeigen nur die Seite, von Rand zu Rand.</value>
-    </data>
     <data name="Caption" xml:space="preserve">
         <value>Beschriftung</value>
     </data>
     <data name="CaptionHint" xml:space="preserve">
         <value>Lassen Sie eine Beschriftung leer, um den übersetzten Standardtext zu verwenden.</value>
-    </data>
-    <data name="DownloadAllScreenshots" xml:space="preserve">
-        <value>Alle herunterladen ({0})</value>
-    </data>
-    <data name="TooManyScreenshots" xml:space="preserve">
-        <value>Wählen Sie weniger Seiten aus, um bis zu {0} Bilder auf einmal herunterzuladen.</value>
-    </data>
-    <data name="NoPagesSelected" xml:space="preserve">
-        <value>Wählen Sie mindestens eine Seite aus, um ihre Screenshots zu sehen.</value>
-    </data>
-    <data name="DownloadPng" xml:space="preserve">
-        <value>PNG herunterladen</value>
-    </data>
-    <data name="StoreNoteIphoneRequired" xml:space="preserve">
-        <value>Pflicht für iPhone-Apps</value>
-    </data>
-    <data name="StoreNoteIphoneOptional" xml:space="preserve">
-        <value>Optional, für kleinere iPhones</value>
-    </data>
-    <data name="StoreNoteIpad" xml:space="preserve">
-        <value>Pflicht, wenn die App auf dem iPad läuft</value>
-    </data>
-    <data name="StoreNoteMac" xml:space="preserve">
-        <value>Für den Mac App Store</value>
-    </data>
-    <data name="StoreNotePlayPhone" xml:space="preserve">
-        <value>Mindestens zwei Smartphone-Screenshots</value>
-    </data>
-    <data name="StoreNotePlayTablet" xml:space="preserve">
-        <value>Wird Tablet- und Chromebook-Nutzern angezeigt</value>
-    </data>
-    <data name="StoreNoteMicrosoft" xml:space="preserve">
-        <value>Das empfohlene 4K-Format</value>
-    </data>
-    <data name="StoreNoteOther" xml:space="preserve">
-        <value>Zusätzliches Format</value>
     </data>
     <data name="StoreRuleAppStore" xml:space="preserve">
         <value>Rahmen und Beschriftungen sind willkommen. Die ersten drei Screenshots zählen am meisten.</value>
@@ -1040,9 +983,6 @@
     </data>
     <data name="StoreRuleMicrosoftStore" xml:space="preserve">
         <value>Der Microsoft Store erlaubt keinen zusätzlichen Text und keine Logos. Fügen Sie Beschriftungen stattdessen im Partner Center hinzu.</value>
-    </data>
-    <data name="StoreSizeCountOne" xml:space="preserve">
-        <value>1 Format</value>
     </data>
     <data name="AssistantTitle" xml:space="preserve">
         <value>KI-Assistent</value>
@@ -1191,262 +1131,565 @@ So sah jeder Tag aus:</value>
     <data name="AssistantStockPaperCups" xml:space="preserve">
         <value>Pappbecher</value>
     </data>
-    <data name="DeployTitle" xml:space="preserve">
-        <value>Bereitstellung</value>
+    <data name="LoadFailed" xml:space="preserve">
+        <value>Couldn't load this. Try again in a moment.</value>
     </data>
-    <data name="DeployDescription" xml:space="preserve">
-        <value>Die Bereitstellungspipeline des Projekts als Ablauf, den Sie ausführen können, mit einer Erklärung zu jedem Schritt und einem Fehler zum Simulieren.</value>
+    <data name="CategoryAppPages" xml:space="preserve">
+        <value>Your app's pages</value>
     </data>
-    <data name="DeployCaption" xml:space="preserve">
-        <value>Mit einem Merge live</value>
+    <data name="AppDashboardTitle" xml:space="preserve">
+        <value>Dashboard</value>
     </data>
-    <data name="CategoryExplainers" xml:space="preserve">
-        <value>Erklärungen</value>
+    <data name="AppDashboardDescription" xml:space="preserve">
+        <value>The app's own admin dashboard, brought in with demo data, so its states and screenshots are a click away.</value>
     </data>
-    <data name="DeployHeading" xml:space="preserve">
-        <value>Wie eine Änderung live geht</value>
+    <data name="AppDashboardCaption" xml:space="preserve">
+        <value>Your numbers at a glance</value>
     </data>
-    <data name="DeployIntro" xml:space="preserve">
-        <value>Das ist die Pipeline, die Ihr Projekt mitbringt, vom Merge bis zum Live-Update. Führen Sie sie aus, um jeden Schritt zu verfolgen, oder lassen Sie die Zustandsprüfung fehlschlagen, um zu sehen, was dann passiert.</value>
+    <data name="SettingsTitle" xml:space="preserve">
+        <value>Settings</value>
     </data>
-    <data name="DeployRun" xml:space="preserve">
-        <value>Pipeline starten</value>
+    <data name="SettingsDescription" xml:space="preserve">
+        <value>The app's own settings page with profile, account, two-step sign-in, sessions and privacy, running on demo data instead of the server.</value>
     </data>
-    <data name="DeploySimulateFailure" xml:space="preserve">
-        <value>Zustandsprüfung fehlschlagen lassen</value>
+    <data name="SettingsCaption" xml:space="preserve">
+        <value>Your account, your way</value>
     </data>
-    <data name="DeployRunning" xml:space="preserve">
-        <value>Läuft</value>
+    <data name="CalendarViewDay" xml:space="preserve">
+        <value>Day</value>
     </data>
-    <data name="DeploySucceeded" xml:space="preserve">
-        <value>Letzter Lauf erfolgreich</value>
+    <data name="CalendarViewWeek" xml:space="preserve">
+        <value>Week</value>
     </data>
-    <data name="DeployFailed" xml:space="preserve">
-        <value>Letzter Lauf fehlgeschlagen</value>
+    <data name="CalendarViewMonth" xml:space="preserve">
+        <value>Month</value>
     </data>
-    <data name="DeployNeverRun" xml:space="preserve">
-        <value>Noch nicht ausgeführt</value>
+    <data name="CalendarViewYear" xml:space="preserve">
+        <value>Year</value>
     </data>
-    <data name="DeployLoadFailed" xml:space="preserve">
-        <value>Die Pipeline konnte nicht geladen werden.</value>
+    <data name="CalendarViewAgenda" xml:space="preserve">
+        <value>Agenda</value>
     </data>
-    <data name="DeploySelectHint" xml:space="preserve">
-        <value>Wählen Sie einen Schritt aus, um zu sehen, was er tut.</value>
+    <data name="CalendarModeEvent" xml:space="preserve">
+        <value>Events</value>
     </data>
-    <data name="DeployCheckFailedMessage" xml:space="preserve">
-        <value>/alive hat fünf Minuten lang nicht geantwortet.</value>
+    <data name="CalendarModeTimeline" xml:space="preserve">
+        <value>Timeline</value>
     </data>
-    <data name="DeployMergeTitle" xml:space="preserve">
-        <value>Merge in main</value>
+    <data name="CalendarViewTabsAriaLabel" xml:space="preserve">
+        <value>Views</value>
     </data>
-    <data name="DeployMergeDetail" xml:space="preserve">
-        <value>Startet die Produktivbereitstellung</value>
+    <data name="CalendarModeTabsAriaLabel" xml:space="preserve">
+        <value>Modes</value>
     </data>
-    <data name="DeployMergeDescription" xml:space="preserve">
-        <value>Ein in main gemergter Pull Request startet den Produktions-Workflow. Einer, der in develop gemergt wird, stellt die Testumgebung auf dieselbe Weise bereit.</value>
+    <data name="CalendarTodayButton" xml:space="preserve">
+        <value>Today</value>
     </data>
-    <data name="DeployImagesTitle" xml:space="preserve">
-        <value>Server-Images bauen</value>
+    <data name="CalendarAddEventButton" xml:space="preserve">
+        <value>Add Event</value>
     </data>
-    <data name="DeployImagesDetail" xml:space="preserve">
-        <value>In die Container-Registry übertragen</value>
+    <data name="CalendarAddEventHoverHint" xml:space="preserve">
+        <value>Add event</value>
     </data>
-    <data name="DeployImagesDescription" xml:space="preserve">
-        <value>Der Server wird als Container-Images gebaut, mit diesem Lauf getaggt und in die GitHub Container Registry übertragen.</value>
+    <data name="CalendarPreviousButtonTitle" xml:space="preserve">
+        <value>Previous</value>
     </data>
-    <data name="DeployWindowsTitle" xml:space="preserve">
-        <value>Windows-App</value>
+    <data name="CalendarNextButtonTitle" xml:space="preserve">
+        <value>Next</value>
     </data>
-    <data name="DeployWindowsDetail" xml:space="preserve">
-        <value>Signierter Installer und Updates</value>
+    <data name="CalendarPreviousMonthAriaLabel" xml:space="preserve">
+        <value>Previous month</value>
     </data>
-    <data name="DeployWindowsDescription" xml:space="preserve">
-        <value>Gleichzeitig wird die Windows-App gebaut, signiert und mit ihrem Installer und ihren Updatepaketen veröffentlicht.</value>
+    <data name="CalendarNextMonthAriaLabel" xml:space="preserve">
+        <value>Next month</value>
     </data>
-    <data name="DeployAndroidTitle" xml:space="preserve">
-        <value>Android-App</value>
+    <data name="CalendarPickerHourAriaLabel" xml:space="preserve">
+        <value>Hour</value>
     </data>
-    <data name="DeployAndroidDetail" xml:space="preserve">
-        <value>Bundle für Google Play</value>
+    <data name="CalendarPickerMinuteAriaLabel" xml:space="preserve">
+        <value>Minute</value>
     </data>
-    <data name="DeployAndroidDescription" xml:space="preserve">
-        <value>Gleichzeitig wird die Android-App als signiertes Bundle gebaut, bereit für Google Play.</value>
+    <data name="CalendarPickerMeridiemAriaLabel" xml:space="preserve">
+        <value>AM/PM</value>
     </data>
-    <data name="DeployIosTitle" xml:space="preserve">
-        <value>iOS-App</value>
+    <data name="CalendarPickerSelectedDayAriaLabel" xml:space="preserve">
+        <value>selected</value>
     </data>
-    <data name="DeployIosDetail" xml:space="preserve">
-        <value>Build für den App Store</value>
+    <data name="CalendarSettingsButtonTitle" xml:space="preserve">
+        <value>Settings</value>
     </data>
-    <data name="DeployIosDescription" xml:space="preserve">
-        <value>Gleichzeitig wird die iOS-App für TestFlight und den App Store gebaut und signiert.</value>
+    <data name="CalendarFilterByColorAriaLabel" xml:space="preserve">
+        <value>Filter events by color</value>
     </data>
-    <data name="DeployComposeTitle" xml:space="preserve">
-        <value>Compose-Projekt schreiben</value>
+    <data name="CalendarFilterByPersonAriaLabel" xml:space="preserve">
+        <value>Filter events by person in current view</value>
     </data>
-    <data name="DeployComposeDetail" xml:space="preserve">
-        <value>Dienste, Einstellungen, Zustandsprüfungen</value>
+    <data name="CalendarAllColorsOption" xml:space="preserve">
+        <value>All colors</value>
     </data>
-    <data name="DeployComposeDescription" xml:space="preserve">
-        <value>Der App-Host schreibt ein Docker Compose-Projekt, das jeden Dienst nennt, den die App braucht, mit seinen Einstellungen, Zustandsprüfungen und Neustartregeln.</value>
+    <data name="CalendarAllPeopleOption" xml:space="preserve">
+        <value>All people</value>
     </data>
-    <data name="DeployPullTitle" xml:space="preserve">
-        <value>Auf dem Server abrufen</value>
+    <data name="CalendarUnnamedAttendee" xml:space="preserve">
+        <value>(Unnamed)</value>
     </data>
-    <data name="DeployPullDetail" xml:space="preserve">
-        <value>Vom eigenen Runner des Servers</value>
+    <data name="CalendarCalendarSettingsLabel" xml:space="preserve">
+        <value>Calendar settings</value>
     </data>
-    <data name="DeployPullDescription" xml:space="preserve">
-        <value>Auf dem Server meldet sich ein selbst gehosteter Runner bei der Registry an und ruft die neuen Images ab.</value>
+    <data name="CalendarDotBadgeLabel" xml:space="preserve">
+        <value>Dot badge</value>
     </data>
-    <data name="DeployMigrateTitle" xml:space="preserve">
-        <value>Migrationen ausführen</value>
+    <data name="CalendarTwentyFourHourFormatLabel" xml:space="preserve">
+        <value>24-hour format</value>
     </data>
-    <data name="DeployMigrateDetail" xml:space="preserve">
-        <value>Zuerst, bevor etwas neu startet</value>
+    <data name="CalendarDayStartsAtLabel" xml:space="preserve">
+        <value>Day starts at</value>
     </data>
-    <data name="DeployMigrateDescription" xml:space="preserve">
-        <value>Die Datenbankmigrationen laufen zuerst und für sich allein. Schlagen sie fehl, schlägt der Schritt fehl und die laufende Version bleibt unangetastet.</value>
+    <data name="CalendarHourSuffix" xml:space="preserve">
+        <value>h</value>
     </data>
-    <data name="DeployStartTitle" xml:space="preserve">
-        <value>Container starten</value>
+    <data name="CalendarAgendaGroupByLabel" xml:space="preserve">
+        <value>Agenda group by</value>
     </data>
-    <data name="DeployStartDetail" xml:space="preserve">
-        <value>Wartet, bis jeder fehlerfrei läuft</value>
+    <data name="CalendarAgendaGroupByDate" xml:space="preserve">
+        <value>Date</value>
     </data>
-    <data name="DeployStartDescription" xml:space="preserve">
-        <value>Die neue Version startet, und der Schritt wartet, bis jeder Container als fehlerfrei gemeldet wird, oder schlägt mit deren Logs fehl.</value>
+    <data name="CalendarAgendaGroupByColor" xml:space="preserve">
+        <value>Color</value>
     </data>
-    <data name="DeployCheckTitle" xml:space="preserve">
-        <value>Öffentliche Adresse prüfen</value>
+    <data name="CalendarStackedEventsLabel" xml:space="preserve">
+        <value>Stack overlapping events</value>
     </data>
-    <data name="DeployCheckDetail" xml:space="preserve">
-        <value>Fragt /alive von außen ab</value>
+    <data name="CalendarShowDayViewCalendarLabel" xml:space="preserve">
+        <value>Show calendar in day view</value>
     </data>
-    <data name="DeployCheckDescription" xml:space="preserve">
-        <value>Der Workflow fragt /alive an der öffentlichen Adresse ab, bis eine Antwort kommt, damit die App von außen erreichbar ist und nicht nur auf dem Server.</value>
+    <data name="CalendarShowWeekNumbersLabel" xml:space="preserve">
+        <value>Show week numbers</value>
     </data>
-    <data name="DeployPurgeTitle" xml:space="preserve">
-        <value>CDN-Cache leeren</value>
+    <data name="CalendarShowCurrentTimeIndicatorLabel" xml:space="preserve">
+        <value>Show current time</value>
     </data>
-    <data name="DeployPurgeDetail" xml:space="preserve">
-        <value>Besucher erhalten die neuen Dateien</value>
+    <data name="CalendarSlotDurationLabel" xml:space="preserve">
+        <value>Slot duration</value>
     </data>
-    <data name="DeployPurgeDescription" xml:space="preserve">
-        <value>Der Cloudflare-Cache wird geleert, damit Besucher sofort die Dateien der neuen Version erhalten.</value>
+    <data name="CalendarMinuteSuffix" xml:space="preserve">
+        <value>min</value>
     </data>
-    <data name="DeployLiveTitle" xml:space="preserve">
-        <value>Live</value>
+    <data name="CalendarWeekMobileWarning" xml:space="preserve">
+        <value>Weekly view is not recommended on smaller devices. Please switch to a desktop device or use the daily view instead.</value>
     </data>
-    <data name="DeployLiveDetail" xml:space="preserve">
-        <value>Die neue Version bedient alle</value>
+    <data name="CalendarHappeningNowTitle" xml:space="preserve">
+        <value>Happening now</value>
     </data>
-    <data name="DeployLiveDescription" xml:space="preserve">
-        <value>Alle nutzen jetzt die neue Version. Die Store-Apps aktualisieren sich so, wie der jeweilige Store sie ausliefert.</value>
+    <data name="CalendarNoAppointmentsNow" xml:space="preserve">
+        <value>No appointments at the moment</value>
     </data>
-    <data name="StructureTitle" xml:space="preserve">
-        <value>Projektstruktur</value>
+    <data name="CalendarSearchEventsPlaceholder" xml:space="preserve">
+        <value>Search events...</value>
     </data>
-    <data name="StructureDescription" xml:space="preserve">
-        <value>Alle Projekte der Solution, wie sie aufeinander verweisen und was in jedem steckt.</value>
+    <data name="CalendarNoEventsFound" xml:space="preserve">
+        <value>No events found.</value>
     </data>
-    <data name="StructureCaption" xml:space="preserve">
-        <value>Jedes Teil an seinem Platz</value>
+    <data name="CalendarEventListTitleFormat" xml:space="preserve">
+        <value>Events on {0}</value>
     </data>
-    <data name="StructureHeading" xml:space="preserve">
-        <value>So greift dein Projekt ineinander</value>
+    <data name="CalendarEventListCountFormat" xml:space="preserve">
+        <value>{0} event(s)</value>
     </data>
-    <data name="StructureIntro" xml:space="preserve">
-        <value>Jeder Kasten ist ein Projekt der Solution, jede Linie ein Verweis. Wähle eines aus, um zu sehen, was darin steckt.</value>
+    <data name="CalendarMoreEventsFormat" xml:space="preserve">
+        <value>+{0} more</value>
     </data>
-    <data name="StructureSelectHint" xml:space="preserve">
-        <value>Wähle ein Projekt, um zu sehen, was darin steckt.</value>
+    <data name="CalendarAddEventDialogTitle" xml:space="preserve">
+        <value>Add New Event</value>
     </data>
-    <data name="StructureLoadFailed" xml:space="preserve">
-        <value>Die Projektstruktur konnte nicht geladen werden.</value>
+    <data name="CalendarEditEventDialogTitle" xml:space="preserve">
+        <value>Edit Event</value>
     </data>
-    <data name="StructureEmpty" xml:space="preserve">
-        <value>Keine Projekte anzuzeigen.</value>
+    <data name="CalendarAddEventDialogSubtitle" xml:space="preserve">
+        <value>Create a new event for your calendar.</value>
     </data>
-    <data name="StructureReferences" xml:space="preserve">
-        <value>Verweist auf: {0}</value>
+    <data name="CalendarEditEventDialogSubtitle" xml:space="preserve">
+        <value>Modify your existing event.</value>
     </data>
-    <data name="StructureKindClient" xml:space="preserve">
-        <value>Client</value>
+    <data name="CalendarCloseAriaLabel" xml:space="preserve">
+        <value>Close</value>
     </data>
-    <data name="StructureKindServer" xml:space="preserve">
-        <value>Server</value>
+    <data name="CalendarCloseButton" xml:space="preserve">
+        <value>Close</value>
     </data>
-    <data name="StructureKindShared" xml:space="preserve">
-        <value>Gemeinsam</value>
+    <data name="CalendarCancelButton" xml:space="preserve">
+        <value>Cancel</value>
     </data>
-    <data name="StructureKindTools" xml:space="preserve">
-        <value>Werkzeuge</value>
+    <data name="CalendarEditButton" xml:space="preserve">
+        <value>Edit</value>
     </data>
-    <data name="StructureClientWebRole" xml:space="preserve">
-        <value>Läuft im Browser</value>
+    <data name="CalendarDeleteButton" xml:space="preserve">
+        <value>Delete</value>
     </data>
-    <data name="StructureClientWebDescription" xml:space="preserve">
-        <value>Die WebAssembly-Variante: führt die App im Browser aus, funktioniert offline und lässt sich als Web-App installieren.</value>
+    <data name="CalendarCreateEventButton" xml:space="preserve">
+        <value>Create Event</value>
     </data>
-    <data name="StructureClientMauiRole" xml:space="preserve">
-        <value>Android, iOS, macOS, Windows</value>
+    <data name="CalendarSaveChangesButton" xml:space="preserve">
+        <value>Save Changes</value>
     </data>
-    <data name="StructureClientMauiDescription" xml:space="preserve">
-        <value>Die native App für Android, iOS, macOS und Windows, in der dieselben Seiten laufen.</value>
+    <data name="CalendarTitleLabel" xml:space="preserve">
+        <value>Title</value>
     </data>
-    <data name="StructureClientWindowsRole" xml:space="preserve">
-        <value>Windows-Desktop-App</value>
+    <data name="CalendarEventTitlePlaceholder" xml:space="preserve">
+        <value>Event title</value>
     </data>
-    <data name="StructureClientWindowsDescription" xml:space="preserve">
-        <value>Eine schlanke Windows-Desktop-App mit automatischen Updates, die dieselben Seiten ausführt.</value>
+    <data name="CalendarStartDateTimeLabel" xml:space="preserve">
+        <value>Start Date &amp; Time</value>
     </data>
-    <data name="StructureWorkbenchRole" xml:space="preserve">
-        <value>Entwirft Seiten mit Beispieldaten</value>
+    <data name="CalendarEndDateTimeLabel" xml:space="preserve">
+        <value>End Date &amp; Time</value>
     </data>
-    <data name="StructureWorkbenchDescription" xml:space="preserve">
-        <value>Diese App: Seiten, entworfen mit Beispieldaten und den Komponenten und dem Theme des Clients. Sie wird nie mit der App ausgerollt.</value>
+    <data name="CalendarColorLabel" xml:space="preserve">
+        <value>Color</value>
     </data>
-    <data name="StructureClientCoreRole" xml:space="preserve">
-        <value>Seiten, Komponenten, Dienste</value>
+    <data name="CalendarEventColorAriaLabel" xml:space="preserve">
+        <value>Event color</value>
     </data>
-    <data name="StructureClientCoreDescription" xml:space="preserve">
-        <value>Das Herz des Clients: alle Seiten, Komponenten, Layouts und Client-Dienste, mit den Stilen und Skripten der App. Jeder Client führt es aus.</value>
+    <data name="CalendarDescriptionLabel" xml:space="preserve">
+        <value>Description</value>
     </data>
-    <data name="StructureServerWebRole" xml:space="preserve">
-        <value>Hostet und rendert die App</value>
+    <data name="CalendarEventDescriptionPlaceholder" xml:space="preserve">
+        <value>Event description</value>
     </data>
-    <data name="StructureServerWebDescription" xml:space="preserve">
-        <value>Das Startprojekt: rendert Seiten auf dem Server, führt Blazor Server aus und liefert die WebAssembly-Dateien.</value>
+    <data name="CalendarAttendeesLabel" xml:space="preserve">
+        <value>Attendees</value>
     </data>
-    <data name="StructureServerApiRole" xml:space="preserve">
-        <value>API, Daten und Jobs</value>
+    <data name="CalendarNoAttendeesText" xml:space="preserve">
+        <value>No attendees</value>
     </data>
-    <data name="StructureServerApiDescription" xml:space="preserve">
-        <value>Die API-Controller, die Datenbank und ihre Migrationen, E-Mail-Vorlagen, Hintergrundjobs und Echtzeit-Hubs.</value>
+    <data name="CalendarFirstNamePlaceholder" xml:space="preserve">
+        <value>First name</value>
     </data>
-    <data name="StructureSharedRole" xml:space="preserve">
-        <value>DTOs und Ressourcen</value>
+    <data name="CalendarLastNamePlaceholder" xml:space="preserve">
+        <value>Last name</value>
     </data>
-    <data name="StructureSharedDescription" xml:space="preserve">
-        <value>Was Server und alle Clients teilen: Datenverträge, Enums, Fehler, gemeinsame Dienste und die übersetzten Texte.</value>
+    <data name="CalendarIdOptionalPlaceholder" xml:space="preserve">
+        <value>ID (optional)</value>
     </data>
-    <data name="StructureServerSharedRole" xml:space="preserve">
-        <value>Health, Telemetrie, Standards</value>
+    <data name="CalendarAddButton" xml:space="preserve">
+        <value>Add</value>
     </data>
-    <data name="StructureServerSharedDescription" xml:space="preserve">
-        <value>Was beide Serverprojekte teilen, etwa Health Checks, Telemetrie und Dienst-Standards.</value>
+    <data name="CalendarRemoveAttendeeAriaLabel" xml:space="preserve">
+        <value>Remove attendee</value>
     </data>
-    <data name="StructureAppHostRole" xml:space="preserve">
-        <value>Startet alles lokal</value>
+    <data name="CalendarStartDateLabel" xml:space="preserve">
+        <value>Start Date</value>
     </data>
-    <data name="StructureAppHostDescription" xml:space="preserve">
-        <value>Startet für die Entwicklung die Projekte sowie die Datenbank und Dienste, die sie brauchen, und schreibt das Docker Compose-Projekt für das Deployment.</value>
+    <data name="CalendarEndDateLabel" xml:space="preserve">
+        <value>End Date</value>
     </data>
-    <data name="StructureTestsRole" xml:space="preserve">
-        <value>UI- und Integrationstests</value>
+    <data name="CalendarAtWord" xml:space="preserve">
+        <value>at</value>
     </data>
-    <data name="StructureTestsDescription" xml:space="preserve">
-        <value>UI- und Integrationstests, die den echten Server im Arbeitsspeicher ausführen, mit Testdaten und einem echten Browser.</value>
+    <data name="CalendarAllDayLabel" xml:space="preserve">
+        <value>All day</value>
+    </data>
+    <data name="CalendarWeekNumberFormat" xml:space="preserve">
+        <value>W{0}</value>
+    </data>
+    <data name="CalendarWeekNumberAriaLabelFormat" xml:space="preserve">
+        <value>Week {0}</value>
+    </data>
+    <data name="CalendarEventOverlapMessage" xml:space="preserve">
+        <value>This time range is already taken on that resource.</value>
+    </data>
+    <data name="CalendarOutOfRangeMessage" xml:space="preserve">
+        <value>That date is outside the allowed range.</value>
+    </data>
+    <data name="CalendarOutsideBusinessHoursMessage" xml:space="preserve">
+        <value>That time is outside business hours.</value>
+    </data>
+    <data name="CalendarBlockedMessage" xml:space="preserve">
+        <value>That time is unavailable.</value>
+    </data>
+    <data name="CalendarHighlightBusinessHoursLabel" xml:space="preserve">
+        <value>Highlight business hours</value>
+    </data>
+    <data name="CalendarNavLinkDayAriaLabelFormat" xml:space="preserve">
+        <value>Go to {0}</value>
+    </data>
+    <data name="CalendarNavLinkWeekAriaLabelFormat" xml:space="preserve">
+        <value>Go to week {0}</value>
+    </data>
+    <data name="CalendarValidationTitleRequired" xml:space="preserve">
+        <value>Title is required</value>
+    </data>
+    <data name="CalendarValidationDescriptionRequired" xml:space="preserve">
+        <value>Description is required</value>
+    </data>
+    <data name="CalendarValidationEndAfterStart" xml:space="preserve">
+        <value>End date must be after start date</value>
+    </data>
+    <data name="CalendarValidationAttendeeNameRequired" xml:space="preserve">
+        <value>First name or last name is required</value>
+    </data>
+    <data name="CalendarResizePreviewAriaLabel" xml:space="preserve">
+        <value>New time range</value>
+    </data>
+    <data name="CalendarRepeatsLabel" xml:space="preserve">
+        <value>Repeats</value>
+    </data>
+    <data name="CalendarRepeatsDaily" xml:space="preserve">
+        <value>Daily</value>
+    </data>
+    <data name="CalendarRepeatsWeekly" xml:space="preserve">
+        <value>Weekly</value>
+    </data>
+    <data name="CalendarRepeatsMonthly" xml:space="preserve">
+        <value>Monthly</value>
+    </data>
+    <data name="CalendarRepeatsYearly" xml:space="preserve">
+        <value>Yearly</value>
+    </data>
+    <data name="CalendarRepeatsIntervalFormat" xml:space="preserve">
+        <value>every {0}</value>
+    </data>
+    <data name="CalendarRepeatsCountFormat" xml:space="preserve">
+        <value>{0} times</value>
+    </data>
+    <data name="CalendarRepeatsUntilFormat" xml:space="preserve">
+        <value>until {0}</value>
+    </data>
+    <data name="CalendarRepeatsOnDaysFormat" xml:space="preserve">
+        <value>on {0}</value>
+    </data>
+    <data name="CalendarRepeatsOnWeekOfMonthFormat" xml:space="preserve">
+        <value>on the {0} {1}</value>
+    </data>
+    <data name="CalendarListSeparator" xml:space="preserve">
+        <value>, </value>
+    </data>
+    <data name="CalendarWeekOfMonthFirst" xml:space="preserve">
+        <value>first</value>
+    </data>
+    <data name="CalendarWeekOfMonthSecond" xml:space="preserve">
+        <value>second</value>
+    </data>
+    <data name="CalendarWeekOfMonthThird" xml:space="preserve">
+        <value>third</value>
+    </data>
+    <data name="CalendarWeekOfMonthFourth" xml:space="preserve">
+        <value>fourth</value>
+    </data>
+    <data name="CalendarWeekOfMonthLast" xml:space="preserve">
+        <value>last</value>
+    </data>
+    <data name="CalendarRepeatLabel" xml:space="preserve">
+        <value>Repeat</value>
+    </data>
+    <data name="CalendarDoesNotRepeatOption" xml:space="preserve">
+        <value>Does not repeat</value>
+    </data>
+    <data name="CalendarRepeatEveryLabel" xml:space="preserve">
+        <value>Repeat every</value>
+    </data>
+    <data name="CalendarRepeatDaysUnit" xml:space="preserve">
+        <value>day(s)</value>
+    </data>
+    <data name="CalendarRepeatWeeksUnit" xml:space="preserve">
+        <value>week(s)</value>
+    </data>
+    <data name="CalendarRepeatMonthsUnit" xml:space="preserve">
+        <value>month(s)</value>
+    </data>
+    <data name="CalendarRepeatYearsUnit" xml:space="preserve">
+        <value>year(s)</value>
+    </data>
+    <data name="CalendarRepeatOnLabel" xml:space="preserve">
+        <value>Repeat on</value>
+    </data>
+    <data name="CalendarRepeatOnDayOfMonthFormat" xml:space="preserve">
+        <value>Day {0}</value>
+    </data>
+    <data name="CalendarRepeatOnWeekOfMonthFormat" xml:space="preserve">
+        <value>The {0}</value>
+    </data>
+    <data name="CalendarEndsLabel" xml:space="preserve">
+        <value>Ends</value>
+    </data>
+    <data name="CalendarEndsNeverOption" xml:space="preserve">
+        <value>Never</value>
+    </data>
+    <data name="CalendarEndsOnDateOption" xml:space="preserve">
+        <value>On date</value>
+    </data>
+    <data name="CalendarEndsAfterOption" xml:space="preserve">
+        <value>After</value>
+    </data>
+    <data name="CalendarOccurrencesLabel" xml:space="preserve">
+        <value>occurrence(s)</value>
+    </data>
+    <data name="CalendarRepeatExceptionsLabel" xml:space="preserve">
+        <value>Exceptions</value>
+    </data>
+    <data name="CalendarSkipDateButton" xml:space="preserve">
+        <value>Skip date</value>
+    </data>
+    <data name="CalendarAddDateButton" xml:space="preserve">
+        <value>Add date</value>
+    </data>
+    <data name="CalendarSkippedDatesLabel" xml:space="preserve">
+        <value>Skipped</value>
+    </data>
+    <data name="CalendarAddedDatesLabel" xml:space="preserve">
+        <value>Added</value>
+    </data>
+    <data name="CalendarRemoveDateAriaLabel" xml:space="preserve">
+        <value>Remove date</value>
+    </data>
+    <data name="CalendarValidationRepeatAtLeastOne" xml:space="preserve">
+        <value>Must be at least 1</value>
+    </data>
+    <data name="CalendarValidationUntilBeforeStart" xml:space="preserve">
+        <value>The series cannot end before it starts</value>
+    </data>
+    <data name="CalendarRecurringEditTitle" xml:space="preserve">
+        <value>Edit recurring event</value>
+    </data>
+    <data name="CalendarRecurringDeleteTitle" xml:space="preserve">
+        <value>Delete recurring event</value>
+    </data>
+    <data name="CalendarThisOccurrenceOption" xml:space="preserve">
+        <value>This event</value>
+    </data>
+    <data name="CalendarAllOccurrencesOption" xml:space="preserve">
+        <value>All events in the series</value>
+    </data>
+    <data name="CalendarOkButton" xml:space="preserve">
+        <value>OK</value>
+    </data>
+    <data name="CalendarResourceLabel" xml:space="preserve">
+        <value>Resource</value>
+    </data>
+    <data name="CalendarResourceColumnHeader" xml:space="preserve">
+        <value>Resource</value>
+    </data>
+    <data name="CalendarNoResourceLabel" xml:space="preserve">
+        <value>Unassigned</value>
+    </data>
+    <data name="CalendarNoResourceOption" xml:space="preserve">
+        <value>(none)</value>
+    </data>
+    <data name="CalendarNoResourcesMessage" xml:space="preserve">
+        <value>No resources to display.</value>
+    </data>
+    <data name="PosStaffNoah" xml:space="preserve">
+        <value>Noah Smit</value>
+    </data>
+    <data name="PosStaffJulia" xml:space="preserve">
+        <value>Julia Mulder</value>
+    </data>
+    <data name="CategoryPlanning" xml:space="preserve">
+        <value>Planning</value>
+    </data>
+    <data name="ShiftsTitle" xml:space="preserve">
+        <value>Shift planner</value>
+    </data>
+    <data name="ShiftsDescription" xml:space="preserve">
+        <value>The week's staff schedule for a café: move and resize shifts per person, within opening hours, around time off and without double-booking.</value>
+    </data>
+    <data name="ShiftsCaption" xml:space="preserve">
+        <value>Plan the whole week in minutes</value>
+    </data>
+    <data name="ShiftsHeading" xml:space="preserve">
+        <value>Staff schedule</value>
+    </data>
+    <data name="ShiftsSummary" xml:space="preserve">
+        <value>{0} shifts and {1} hours this week</value>
+    </data>
+    <data name="ShiftsEmpty" xml:space="preserve">
+        <value>No shifts are planned yet. Select a time on someone's row to add the first one.</value>
+    </data>
+    <data name="ShiftsRoleLead" xml:space="preserve">
+        <value>Shift lead</value>
+    </data>
+    <data name="ShiftsRoleBarista" xml:space="preserve">
+        <value>Barista</value>
+    </data>
+    <data name="ShiftsRoleBaker" xml:space="preserve">
+        <value>Baker</value>
+    </data>
+    <data name="ShiftsRoleCashier" xml:space="preserve">
+        <value>Cashier</value>
+    </data>
+    <data name="ShiftsOpening" xml:space="preserve">
+        <value>Opening</value>
+    </data>
+    <data name="ShiftsMidday" xml:space="preserve">
+        <value>Midday</value>
+    </data>
+    <data name="ShiftsBakery" xml:space="preserve">
+        <value>Bakery</value>
+    </data>
+    <data name="ShiftsClosing" xml:space="preserve">
+        <value>Closing</value>
+    </data>
+    <data name="ShiftsStocktake" xml:space="preserve">
+        <value>Stocktake, café closed</value>
+    </data>
+    <data name="ShiftsTimeOff" xml:space="preserve">
+        <value>Time off</value>
+    </data>
+    <data name="HomeBuiltWithSubtitle" xml:space="preserve">
+        <value>The same open-source libraries your app is built on, each with live docs your AI agent can read too.</value>
+    </data>
+    <data name="HomeProductBlazorUI" xml:space="preserve">
+        <value>Native Blazor components with theming, right-to-left and accessibility built in.</value>
+    </data>
+    <data name="HomeProductBlex" xml:space="preserve">
+        <value>State that survives reloads and travels into every screenshot taken here.</value>
+    </data>
+    <data name="HomeProductBortable" xml:space="preserve">
+        <value>Drag-to-reorder lists and grids, like the dashboard's widgets.</value>
+    </data>
+    <data name="HomeProductBmotion" xml:space="preserve">
+        <value>Springs, reveals and hover effects, like the ones on this page.</value>
+    </data>
+    <data name="HomeProductButil" xml:space="preserve">
+        <value>Browser features from C#, from the clipboard to IndexedDB.</value>
+    </data>
+    <data name="HomeProductBoilerplate" xml:space="preserve">
+        <value>The project template this workbench lives in, from database to app stores.</value>
+    </data>
+    <data name="HomeCtaTitle" xml:space="preserve">
+        <value>Your next page starts here</value>
+    </data>
+    <data name="HomeCtaText" xml:space="preserve">
+        <value>Ask your AI agent to design it in the workbench. It builds the page on sample data, checks every state in a real browser and shows you screenshots before any backend code is written.</value>
+    </data>
+    <data name="HomeCtaOpen" xml:space="preserve">
+        <value>Open the workbench</value>
+    </data>
+    <data name="HomeCtaPromptLabel" xml:space="preserve">
+        <value>Try asking</value>
+    </data>
+    <data name="HomeCtaPrompt" xml:space="preserve">
+        <value>Design an order history page in the workbench, with loading, empty and error states, and show me phone and desktop screenshots.</value>
+    </data>
+    <data name="HomeCtaCopy" xml:space="preserve">
+        <value>Copy</value>
+    </data>
+    <data name="HomeCtaCopied" xml:space="preserve">
+        <value>Copied</value>
+    </data>
+    <data name="HomeFooterExplore" xml:space="preserve">
+        <value>Explore</value>
+    </data>
+    <data name="HomeFooterLearn" xml:space="preserve">
+        <value>Learn</value>
+    </data>
+    <data name="HomeFooterDocs" xml:space="preserve">
+        <value>bit Boilerplate docs</value>
+    </data>
+    <data name="HomeFooterComponents" xml:space="preserve">
+        <value>bit BlazorUI components</value>
+    </data>
+    <data name="HomeFooterSource" xml:space="preserve">
+        <value>Source on GitHub</value>
     </data>
 </root>

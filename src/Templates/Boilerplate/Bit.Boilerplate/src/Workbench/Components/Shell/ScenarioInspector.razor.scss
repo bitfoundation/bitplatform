@@ -44,3 +44,51 @@ section {
         padding-inline: 0.25rem;
     }
 }
+
+.backdrops {
+    gap: 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.backdrop {
+    padding: 0;
+    cursor: pointer;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+
+    &.selected {
+        outline: 2px solid $bit-color-primary;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $bit-color-primary-hover;
+    }
+}
+
+.backdrop-brand {
+    background: linear-gradient(160deg, color-mix(in srgb, #{$bit-color-primary} 82%, #fff), color-mix(in srgb, #{$bit-color-primary} 70%, #000));
+}
+
+.backdrop-midnight {
+    background: linear-gradient(180deg, #312e81, #111827);
+}
+
+.backdrop-sunset {
+    background: linear-gradient(160deg, #ff9a62 0%, #f0567a 50%, #8b5cf6 100%);
+}
+
+.backdrop-ocean {
+    background: linear-gradient(160deg, #38bdf8 0%, #3b82f6 45%, #4338ca 100%);
+}
+
+.backdrop-forest {
+    background: linear-gradient(160deg, #34d399 0%, #059669 50%, #064e3b 100%);
+}
+
+.backdrop-paper {
+    background: linear-gradient(180deg, #f8fafc, #dfe5ee);
+}

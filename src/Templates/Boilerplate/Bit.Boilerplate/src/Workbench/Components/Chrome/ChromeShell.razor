@@ -10,8 +10,10 @@
     <BitAppShell PersistScroll ScrollPadding="5rem 0 4rem">
         <main>
             <div class="main-container">
-                <BitNavPanel @bind-IsOpen="isNavPanelOpen"
-                             @bind-IsToggled="isNavPanelToggled"
+                <BitNavPanel IsOpen="chromeStore.IsNavPanelOpen"
+                             IsOpenChanged="chromeStore.OpenNavPanel"
+                             IsToggled="chromeStore.IsNavPanelToggled"
+                             IsToggledChanged="chromeStore.ToggleNavPanel"
                              IconNavUrl="#"
                              Class="nav-panel"
                              Items="navPanelItems"
@@ -20,17 +22,17 @@
                         <BitStack Class="footer-stack">
                             @if (IsSignedIn is false)
                             {
-                                <BitActionButton IconOnly="isNavPanelToggled" IconName="@BitIconName.Signin" OnClick="SignIn">
+                                <BitActionButton IconOnly="chromeStore.IsNavPanelToggled" IconName="@BitIconName.Signin" OnClick="SignIn">
                                     @AppLocalizer[nameof(AppStrings.SignIn)]
                                 </BitActionButton>
-                                <BitActionButton IconOnly="isNavPanelToggled" IconName="@BitIconName.UserWindow" OnClick="SignIn">
+                                <BitActionButton IconOnly="chromeStore.IsNavPanelToggled" IconName="@BitIconName.UserWindow" OnClick="SignIn">
                                     @AppLocalizer[nameof(AppStrings.SignInByModal)]
                                 </BitActionButton>
-                                <BitActionButton IconOnly="isNavPanelToggled" IconName="@BitIconName.AddFriend" OnClick="SignIn">
+                                <BitActionButton IconOnly="chromeStore.IsNavPanelToggled" IconName="@BitIconName.AddFriend" OnClick="SignIn">
                                     @AppLocalizer[nameof(AppStrings.SignUp)]
                                 </BitActionButton>
                             }
-                            @if (isNavPanelToggled is false)
+                            @if (chromeStore.IsNavPanelToggled is false)
                             {
                                 @*#if (multitenant == true)*@
                                 @if (IsSignedIn)
@@ -54,7 +56,7 @@
                             <BitButton IconOnly FixedColor
                                        Class="menu-btn"
                                        Size="BitSize.Large"
-                                       OnClick="() => isNavPanelOpen = true"
+                                       OnClick="() => chromeStore.OpenNavPanel(true)"
                                        Variant="BitVariant.Text"
                                        Color="BitColor.SecondaryBackground"
                                        IconName="@BitIconName.CollapseMenu"

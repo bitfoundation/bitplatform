@@ -26,7 +26,7 @@ public abstract partial class PosWidgetBase<TData> : WorkbenchComponentBase
 
     protected override async Task OnParametersSetAsync()
     {
-        if (loadedFilter == Dashboard.Filter)
+        if (IsPrerendering || loadedFilter == Dashboard.Filter)
             return;
 
         await Reload();

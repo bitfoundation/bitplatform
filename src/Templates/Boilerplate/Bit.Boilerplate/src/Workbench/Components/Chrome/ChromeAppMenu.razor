@@ -4,7 +4,7 @@
 @inherits WorkbenchComponentBase
 
 <section>
-    <BitDropMenu Transparent @bind-IsOpen="isOpen" Responsive
+    <BitDropMenu Transparent IsOpen="chromeStore.IsMenuOpen" IsOpenChanged="chromeStore.OpenMenu" Responsive
                  Width="20rem"
                  MaxWidth="calc(100vw - 1rem)"
                  OnDismiss="ResetMenu"
@@ -92,14 +92,14 @@
 
                             @foreach (var account in Shell.OtherAccounts)
                             {
-                                <BitActionButton FullWidth Class="account-button" OnClick="() => { Shell.SwitchAccount(account); isOpen = false; }">
+                                <BitActionButton FullWidth Class="account-button" OnClick="() => { Shell.SwitchAccount(account); chromeStore.OpenMenu(false); }">
                                     <BitPersona Size="BitPersonaSize.Size32"
                                                 PrimaryText="@Localizer[account.NameKey]"
                                                 SecondaryText="@account.Email" />
                                 </BitActionButton>
                             }
 
-                            <BitActionButton FullWidth IconName="@BitIconName.AddFriend" OnClick="() => Shell.AddAccount()">
+                            <BitActionButton FullWidth IconName="@BitIconName.AddFriend" OnClick="Shell.AddAccount">
                                 @AppLocalizer[nameof(AppStrings.AddAnotherAccount)]
                             </BitActionButton>
 
@@ -111,13 +111,13 @@
                         }
                         else
                         {
-                            <BitActionButton FullWidth IconName="@BitIconName.Signin" OnClick="() => { Shell.SignIn(); isOpen = false; }">
+                            <BitActionButton FullWidth IconName="@BitIconName.Signin" OnClick="SignIn">
                                 @AppLocalizer[nameof(AppStrings.SignIn)]
                             </BitActionButton>
-                            <BitActionButton FullWidth IconName="@BitIconName.UserWindow" OnClick="() => { Shell.SignIn(); isOpen = false; }">
+                            <BitActionButton FullWidth IconName="@BitIconName.UserWindow" OnClick="SignIn">
                                 @AppLocalizer[nameof(AppStrings.SignInByModal)]
                             </BitActionButton>
-                            <BitActionButton FullWidth IconName="@BitIconName.AddFriend" OnClick="() => { Shell.SignIn(); isOpen = false; }">
+                            <BitActionButton FullWidth IconName="@BitIconName.AddFriend" OnClick="SignIn">
                                 @AppLocalizer[nameof(AppStrings.SignUp)]
                             </BitActionButton>
                         }
@@ -157,7 +157,7 @@
 
                         @if (Shell.IsSignedIn)
                         {
-                            <BitActionButton FullWidth Color="BitColor.Error" IconName="@BitIconName.SignOut" OnClick="() => { Shell.SignOut(); isOpen = false; }">
+                            <BitActionButton FullWidth Color="BitColor.Error" IconName="@BitIconName.SignOut" OnClick="SignOut">
                                 @AppLocalizer[nameof(AppStrings.SignOut)]
                             </BitActionButton>
                         }

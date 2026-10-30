@@ -2,13 +2,13 @@ namespace Boilerplate.Workbench.Components.Chrome;
 
 public partial class ChromeAppMenu
 {
-    private bool isOpen;
     private bool isDark;
     private bool showCultures;
     private bool showTenants;
     private BitChoiceGroupItem<string>[] cultures = [];
     private BitChoiceGroupItem<string>[] tenants = [];
 
+    [AutoInject] private ChromeStore chromeStore = default!;
     [AutoInject] private BitThemeManager bitThemeManager = default!;
 
     [CascadingParameter] public ChromeShell Shell { get; set; } = default!;
@@ -24,6 +24,22 @@ public partial class ChromeAppMenu
         cultures = [.. CultureInfoManager.SupportedCultures.Select(sc => new BitChoiceGroupItem<string> { Value = sc.Culture.Name, Text = sc.DisplayName })];
 
         tenants = [.. WorkbenchDemoUsers.TenantKeys.Select(key => new BitChoiceGroupItem<string> { Value = key, Text = Localizer[key] })];
+
+        Subscribe(chromeStore);
+    }
+
+    private Task SignIn()
+    {
+        chromeStore.OpenMenu(false);
+
+        return Shell.SignIn();
+    }
+
+    private Task SignOut()
+    {
+        chromeStore.OpenMenu(false);
+
+        return Shell.SignOut();
     }
 
     private void ResetMenu()
@@ -36,13 +52,14 @@ public partial class ChromeAppMenu
     {
         var theme = await bitThemeManager.ToggleDarkLightAsync();
         isDark = theme?.Contains("dark", StringComparison.OrdinalIgnoreCase) is true;
+
+        await ReportScenario(Scenario with { Theme = isDark ? WorkbenchThemeMode.Dark : WorkbenchThemeMode.Light });
     }
 
-    private void ChangeCulture(string? culture)
+    private async Task ChangeCulture(string? culture)
     {
-        var uri = new Uri(NavigationManager.Uri);
-        var scenario = WorkbenchScenario.Parse(uri.Query) with { Culture = culture };
+        chromeStore.OpenMenu(false);
 
-        NavigationManager.NavigateTo($"{uri.AbsolutePath}{scenario.ToQueryString()}", forceLoad: true);
+        await ReportScenario(Scenario with { Culture = culture == CultureInfoManager.DefaultCulture.Name ? null : culture }, isApplied: false);
     }
 }

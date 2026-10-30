@@ -2,7 +2,7 @@
 
 <div class="assistant @(Scenario.Chrome ? null : "bare")">
     <aside class="history">
-        <AssistantHistory Conversations="conversations" Current="current" IsLoading="isLoading" IsFailed="isFailed" OnSelect="Select" OnNewChat="NewChat" />
+        <AssistantHistory Conversations="conversations" Current="CurrentConversation" IsLoading="isLoading" IsFailed="isFailed" OnSelect="Select" OnNewChat="NewChat" />
     </aside>
 
     <section class="chat">
@@ -12,8 +12,8 @@
                        Class="history-toggle"
                        Title="@Localizer[nameof(WorkbenchStrings.AssistantConversations)]"
                        AriaLabel="@Localizer[nameof(WorkbenchStrings.AssistantConversations)]"
-                       OnClick="() => isHistoryOpen = true" />
-            <span class="chat-title">@(current?.Title ?? Localizer[nameof(WorkbenchStrings.AssistantNewChat)])</span>
+                       OnClick="() => store.ShowHistory(true)" />
+            <span class="chat-title">@(CurrentConversation?.Title ?? Localizer[nameof(WorkbenchStrings.AssistantNewChat)])</span>
             <BitTag Text="@Localizer[nameof(WorkbenchStrings.AssistantModel)]" IconName="@BitIconName.Robot" Variant="BitVariant.Outline" Color="BitColor.Primary" Size="BitSize.Small" />
         </header>
 
@@ -35,7 +35,7 @@
                     <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Refresh" OnClick="LoadConversations">@Localizer[nameof(WorkbenchStrings.AssistantRetry)]</BitButton>
                 </div>
             }
-            else if (current is null)
+            else if (CurrentConversation is null)
             {
                 <div class="welcome">
                     <Bmotion Initial="Bm.To(opacity: 0, scale: 0.85)" Animate="Bm.To(opacity: 1, scale: 1)" Transition="Bm.Spring(stiffness: 160, damping: 16)">
@@ -62,7 +62,7 @@
             else
             {
                 <div class="thread">
-                    @foreach (var message in current.Messages)
+                    @foreach (var message in CurrentConversation.Messages)
                     {
                         if (message.Role is AssistantRole.User)
                         {
@@ -111,12 +111,12 @@
                                                            IconName="@BitIconName.Like"
                                                            Title="@Localizer[nameof(WorkbenchStrings.AssistantHelpful)]"
                                                            AriaLabel="@Localizer[nameof(WorkbenchStrings.AssistantHelpful)]"
-                                                           OnClick="() => message.IsHelpful = message.IsHelpful is true ? null : true" />
+                                                           OnClick="() => Rate(message, true)" />
                                                 <BitButton IconOnly Size="BitSize.Small" Variant="@(message.IsHelpful is false ? BitVariant.Fill : BitVariant.Text)"
                                                            IconName="@BitIconName.Dislike"
                                                            Title="@Localizer[nameof(WorkbenchStrings.AssistantNotHelpful)]"
                                                            AriaLabel="@Localizer[nameof(WorkbenchStrings.AssistantNotHelpful)]"
-                                                           OnClick="() => message.IsHelpful = message.IsHelpful is false ? null : false" />
+                                                           OnClick="() => Rate(message, false)" />
                                             </div>
                                         }
                                     }
@@ -130,7 +130,8 @@
 
         <footer class="composer">
             <div class="composer-box">
-                <BitTextField @bind-Value="prompt"
+                <BitTextField Value="@Prompt"
+                              ValueChanged="store.Write"
                               Immediate
                               Placeholder="@Localizer[nameof(WorkbenchStrings.AssistantPromptPlaceholder)]"
                               AriaLabel="@Localizer[nameof(WorkbenchStrings.AssistantPromptPlaceholder)]"
@@ -160,8 +161,8 @@
     </section>
 </div>
 
-<BitPanel @bind-IsOpen="isHistoryOpen" Position="BitPanelPosition.Start">
+<BitPanel IsOpen="store.IsHistoryOpen" IsOpenChanged="store.ShowHistory" Position="BitPanelPosition.Start">
     <div class="history-sheet">
-        <AssistantHistory Conversations="conversations" Current="current" IsLoading="isLoading" IsFailed="isFailed" OnSelect="Select" OnNewChat="NewChat" />
+        <AssistantHistory Conversations="conversations" Current="CurrentConversation" IsLoading="isLoading" IsFailed="isFailed" OnSelect="Select" OnNewChat="NewChat" />
     </div>
 </BitPanel>

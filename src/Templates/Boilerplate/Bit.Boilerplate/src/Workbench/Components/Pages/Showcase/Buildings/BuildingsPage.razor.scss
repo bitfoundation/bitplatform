@@ -154,7 +154,7 @@
     height: 100%;
 }
 
-::deep .dark-tiles .leaflet-tile-pane {
+:root[bit-theme$="dark"] ::deep .map .leaflet-tile-pane {
     filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.9);
 }
 

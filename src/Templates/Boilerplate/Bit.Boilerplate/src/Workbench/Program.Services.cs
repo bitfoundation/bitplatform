@@ -12,6 +12,7 @@ public static partial class Program
             var services = builder.Services;
             var configuration = builder.Configuration;
 
+            services.AddSingleton(new BitAccentColorConfig { Persistence = BitAccentColorPersistence.None, FirstPaintStrategy = BitAccentColorFirstPaintStrategy.None });
             services.AddClientCoreProjectServices(configuration);
 
             services.AddHttpContextAccessor();

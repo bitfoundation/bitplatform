@@ -1,10 +1,10 @@
 @inherits WorkbenchComponentBase
 
-<div class="composition @Composition.Backdrop.ToString().ToLowerInvariant() @(isLandscape ? "landscape" : "portrait")" style="@canvasStyle">
+<div class="composition @Scenario.Backdrop?.ToString().ToLowerInvariant() @(isLandscape ? "landscape" : "portrait")" style="@canvasStyle">
     <div class="glow"></div>
     <h1 class="caption">@caption</h1>
     <div class="device-slot" style="@deviceStyle">
-        <DeviceFrame Device="frameDevice" Rotated="Scenario.Rotated" OnDarkContent="Scenario.Theme is WorkbenchThemeMode.Dark">
+        <DeviceFrame Device="frameDevice" Rotated="Scenario.Rotated" ShowFrame="Scenario.Frame" OnDarkContent="Scenario.Theme is WorkbenchThemeMode.Dark">
             <div class="screen-content" dir="@(Scenario.IsRtl ? "rtl" : "ltr")">
                 <PreviewSurface Page="Page" ShowStatusBar />
             </div>

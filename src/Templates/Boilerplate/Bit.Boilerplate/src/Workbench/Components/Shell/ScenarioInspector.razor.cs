@@ -19,6 +19,20 @@ public partial class ScenarioInspector
 
     [Parameter] public bool ShowZoom { get; set; } = true;
 
+    [Parameter] public WorkbenchPageInfo? Page { get; set; }
+
+    [Parameter] public EventCallback OnReset { get; set; }
+
+    private string? StoreRuleKey => Value.DevicePreset.Store switch
+    {
+        "App Store" => nameof(WorkbenchStrings.StoreRuleAppStore),
+        "Google Play" => nameof(WorkbenchStrings.StoreRuleGooglePlay),
+        "Microsoft Store" => nameof(WorkbenchStrings.StoreRuleMicrosoftStore),
+        _ => null
+    };
+
+    private string? CaptionPlaceholder => Page is null ? null : Localizer[Page.CaptionKey ?? Page.TitleKey].Value;
+
     protected override void OnInitialized()
     {
         deviceItems = [];
@@ -44,6 +58,18 @@ public partial class ScenarioInspector
     }
 
     private static BitVariant VariantOf(bool isActive) => isActive ? BitVariant.Fill : BitVariant.Outline;
+
+    private WorkbenchBackdrop lastBackdrop = WorkbenchBackdrop.Brand;
+
+    protected override void OnParametersSet()
+    {
+        if (Value.Backdrop is { } backdrop)
+        {
+            lastBackdrop = backdrop;
+        }
+    }
+
+    private Task SelectBackdrop(WorkbenchBackdrop backdrop) => Update(Value with { Backdrop = backdrop });
 
     private Task Update(WorkbenchScenario scenario) => ValueChanged.InvokeAsync(scenario);
 

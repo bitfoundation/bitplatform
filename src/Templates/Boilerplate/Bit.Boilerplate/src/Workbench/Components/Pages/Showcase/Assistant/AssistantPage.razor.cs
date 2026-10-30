@@ -3,19 +3,30 @@ namespace Boilerplate.Workbench.Components.Pages.Showcase.Assistant;
 public partial class AssistantPage
 {
     private List<AssistantConversation> conversations = [];
-    private AssistantConversation? current;
     private ElementReference messagesElement;
     private CancellationTokenSource? streamCancellation;
     private bool isLoading = true;
     private bool isFailed;
-    private bool isHistoryOpen;
-    private string? prompt;
 
+    [AutoInject] private AssistantStore store = default!;
     [AutoInject] private AssistantService assistantService = default!;
 
-    private bool CanSend => string.IsNullOrWhiteSpace(prompt) is false && streamCancellation is null && isLoading is false && isFailed is false;
+    private AssistantConversation? CurrentConversation => conversations.FirstOrDefault(c => c.Id == store.CurrentId);
 
-    protected override Task OnInitializedAsync() => LoadConversations();
+    private string? Prompt => store.Prompt;
+
+    private bool CanSend => string.IsNullOrWhiteSpace(Prompt) is false && streamCancellation is null && isLoading is false && isFailed is false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Subscribe(store);
+
+        if (IsPrerendering)
+            return;
+
+        await WhenStateRestored();
+        await LoadConversations();
+    }
 
     private async Task LoadConversations()
     {
@@ -24,8 +35,10 @@ public partial class AssistantPage
 
         try
         {
-            conversations = await assistantService.GetConversations(CurrentCancellationToken);
-            current = conversations.FirstOrDefault();
+            var seeded = await assistantService.GetConversations(CurrentCancellationToken);
+            var kept = store.Conversations.Select(Settle).ToList();
+
+            conversations = [.. kept.Concat(seeded.Where(s => kept.Any(k => k.Id == s.Id) is false)).OrderByDescending(c => c.UpdatedAt)];
             isLoading = false;
         }
         catch (WorkbenchSimulatedException)
@@ -41,37 +54,41 @@ public partial class AssistantPage
     private void NewChat()
     {
         Stop();
-        current = null;
-        isHistoryOpen = false;
+        store.Open(null);
+        store.ShowHistory(false);
     }
 
     private void Select(AssistantConversation conversation)
     {
         Stop();
-        current = conversation;
-        isHistoryOpen = false;
+        store.Open(conversation.Id);
+        store.ShowHistory(false);
     }
 
-    private Task Send() => CanSend ? Ask(prompt!.Trim()) : Task.CompletedTask;
+    private Task Send() => CanSend ? Ask(Prompt!.Trim()) : Task.CompletedTask;
 
     private async Task Ask(string text)
     {
         if (streamCancellation is not null)
             return;
 
-        prompt = null;
+        store.Write(null);
 
-        if (current is null)
+        var conversation = CurrentConversation;
+
+        if (conversation is null)
         {
-            current = new() { Id = Guid.NewGuid().ToString("N"), Title = text.Length > 48 ? $"{text[..48]}…" : text };
-            conversations.Insert(0, current);
+            conversation = new() { Id = Guid.NewGuid().ToString("N"), Title = text.Length > 48 ? $"{text[..48]}…" : text };
+            conversations.Insert(0, conversation);
         }
 
-        current.UpdatedAt = DateTimeOffset.Now;
-        current.Messages.Add(new() { Role = AssistantRole.User, At = DateTimeOffset.Now, Text = text });
+        conversation.UpdatedAt = DateTimeOffset.Now;
+        conversation.Messages.Add(new() { Role = AssistantRole.User, At = DateTimeOffset.Now, Text = text });
 
         var reply = new AssistantMessage { Role = AssistantRole.Assistant, At = DateTimeOffset.Now, Topic = assistantService.Match(text) };
-        current.Messages.Add(reply);
+        conversation.Messages.Add(reply);
+
+        store.Keep(conversation);
 
         await Stream(reply);
     }
@@ -82,6 +99,27 @@ public partial class AssistantPage
         message.Text = string.Empty;
 
         return Stream(message);
+    }
+
+    private void Rate(AssistantMessage message, bool? isHelpful)
+    {
+        message.IsHelpful = message.IsHelpful == isHelpful ? null : isHelpful;
+
+        if (CurrentConversation is { } conversation)
+        {
+            store.Keep(conversation);
+        }
+    }
+
+    private static AssistantConversation Settle(AssistantConversation conversation)
+    {
+        foreach (var message in conversation.Messages.Where(m => m.IsStreaming))
+        {
+            message.IsStreaming = false;
+            message.IsFailed = string.IsNullOrEmpty(message.Text);
+        }
+
+        return conversation;
     }
 
     private async Task Stream(AssistantMessage reply)
@@ -128,6 +166,11 @@ public partial class AssistantPage
 
         if (CurrentCancellationToken.IsCancellationRequested)
             return;
+
+        if (conversations.FirstOrDefault(c => c.Messages.Contains(reply)) is { } conversation)
+        {
+            store.Keep(conversation);
+        }
 
         StateHasChanged();
         await ScrollToEnd();

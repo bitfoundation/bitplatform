@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Boilerplate.Workbench.Infrastructure.Extensions;
 
@@ -71,13 +72,12 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
 
     private static async Task<(byte[] Png, string FileName)> Capture(WorkbenchScreenshotService screenshotService, WorkbenchPageInfo page, string? query, CancellationToken cancellationToken)
     {
-        var scenario = WorkbenchScenario.Parse(query) with { Frame = false };
-        var composition = WorkbenchComposition.Parse(query);
-
+        var scenario = WorkbenchScenario.Parse(query);
         var device = scenario.DevicePreset;
         var (width, height) = device.GetViewport(scenario.Rotated);
+        var snapshotId = QueryHelpers.ParseQuery(query).TryGetValue(WorkbenchUrls.SnapshotQueryKey, out var id) ? id.ToString() : null;
 
-        var png = await screenshotService.Capture(WorkbenchUrls.Preview(page.Key, scenario, composition).TrimStart('/'),
+        var png = await screenshotService.Capture(WorkbenchUrls.Preview(page.Key, scenario with { Frame = scenario.Backdrop is not null && scenario.Frame }, snapshotId: snapshotId).TrimStart('/'),
                                                   width,
                                                   height,
                                                   device.PixelRatio,
@@ -87,7 +87,7 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
                                                   cancellationToken);
 
         var (pixelWidth, pixelHeight) = device.GetPixels(scenario.Rotated);
-        var look = composition is null ? scenario.Data.ToString() : "framed";
+        var look = scenario.Backdrop is null ? scenario.Data.ToString() : "framed";
         var fileName = $"{page.Key}-{device.Key}-{pixelWidth}x{pixelHeight}-{scenario.Culture ?? CultureInfoManager.DefaultCulture.Name}-{scenario.Theme}-{look}.png".ToLowerInvariant();
 
         return (png, fileName);
