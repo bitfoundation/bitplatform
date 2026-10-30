@@ -267,6 +267,9 @@
                 <b>ChildContent</b> floats above the map; only its children take the pointer. Build controls from
                 <b>ZoomIn</b>, <b>ZoomOut</b>, <b>PanBy</b> and <b>ToggleFullscreen</b> - the pan buttons are the
                 single-pointer alternative to dragging WCAG 2.5.7 asks for, and fullscreen takes the overlay with it.
+                The provider's own controls draw above the overlay, which starts its children below the ones in its
+                top-start corner. This toolbar replaces Leaflet's zoom buttons, so it turns <b>ZoomControl</b> off, and
+                sits on the end side with <b>margin-inline-start: auto</b>.
             </div>
             <br />
             <div class="map-container">

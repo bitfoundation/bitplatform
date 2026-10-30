@@ -30,7 +30,7 @@ public partial class BitMapDemo
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Content floated above the map, such as custom controls. Only its children take the pointer, each sized to its content from the top-start corner.",
+            Description = "Content floated above the map, such as custom controls. Only its children take the pointer, each sized to its content from the top-start corner. The provider's controls and attribution draw above it, so the children start below the controls the provider draws in that corner - its zoom buttons, on most providers. A child taken anywhere else (the end side with margin-inline-start: auto, or absolute insets) is placed where it is put, so keep it clear of the provider's controls and attribution there, or turn the control off (ZoomControl).",
         },
         new()
         {
@@ -950,7 +950,7 @@ public partial class BitMapDemo
                     Name = "ZoomControl",
                     Type = "bool",
                     DefaultValue = "true",
-                    Description = "Shows the provider's +/- buttons.",
+                    Description = "Shows the provider's +/- buttons - on MapLibre and Mapbox, the zoom half of the navigation control.",
                 },
                 new()
                 {
@@ -1058,7 +1058,7 @@ public partial class BitMapDemo
         new() { Name = "--bit-Map-border", DefaultValue = "none", Description = "Border of the map." },
         new() { Name = "--bit-Map-radius", DefaultValue = "--bit-shp-radius-none", Description = "Corner radius of the map, which clips the tiles too." },
         new() { Name = "--bit-Map-focus-color", DefaultValue = "--bit-clr-pri-focus", Description = "Focus outline of the map canvas." },
-        new() { Name = "--bit-Map-disabled-opacity", DefaultValue = "--bit-opa-dis", Description = "Opacity of the canvas of a disabled map." },
+        new() { Name = "--bit-Map-disabled-opacity", DefaultValue = "--bit-opa-dis", Description = "Opacity a disabled map is drawn at - its controls and popups too, never the overlay." },
         new() { Name = "--bit-Map-popup-background", DefaultValue = "--bit-clr-bg-pri", Description = "Background of the popups (the providers' included) and the keyboard instructions." },
         new() { Name = "--bit-Map-popup-color", DefaultValue = "--bit-clr-fg-pri", Description = "Text color of the popups and the keyboard instructions." },
         new() { Name = "--bit-Map-popup-radius", DefaultValue = "--bit-shp-radius-popup", Description = "Corner radius of the popups, the tooltips and the keyboard instructions." },

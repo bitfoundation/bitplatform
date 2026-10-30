@@ -12,7 +12,10 @@ public sealed class BitMapboxMapProvider : BitMapProviderBase
     /// <summary>Mapbox style URL or <c>mapbox://</c> shortcut.</summary>
     public string StyleUrl { get; set; } = "mapbox://styles/mapbox/streets-v12";
 
-    /// <summary>Show the navigation (zoom/compass) control.</summary>
+    /// <summary>
+    /// Show the navigation control: its compass, and its zoom buttons while
+    /// <see cref="BitMapProviderBase.ZoomControl"/> is on.
+    /// </summary>
     public bool ShowNavigationControl { get; set; } = true;
 
     /// <summary>Allow rotating the map by dragging.</summary>

@@ -792,6 +792,51 @@ public class BitMapE2ETests : E2ETestBase
         await Expect(Page.Locator("#overlay-zoom")).ToHaveTextAsync("14.0");
     }
 
+    // Leaflet draws its zoom buttons in the top-start corner, above the overlay, so the overlay's children start below
+    // them - and back at the top once the buttons are switched off (#14317).
+    [TestMethod]
+    public async Task ChildContent_StartsBelowTheZoomButtonsWhileTheyShow()
+    {
+        await OpenAsync(Route);
+        await ReadyAsync("map-overlay");
+
+        var overlay = Page.Locator("#map-overlay .bit-map-overlay");
+        var zoomControl = Page.Locator("#map-overlay .leaflet-control-zoom");
+        var canvasBox = (await Canvas("map-overlay").BoundingBoxAsync())!;
+        var zoomBox = (await zoomControl.BoundingBoxAsync())!;
+        var room = zoomBox.Y + zoomBox.Height - canvasBox.Y;
+        await Expect(overlay).Not.ToHaveCSSAsync("padding-top", "0px");
+        Assert.AreEqual(room, await PaddingTopAsync(overlay), 1);
+        Assert.IsTrue((await Page.Locator("#overlay-badge").BoundingBoxAsync())!.Y >= zoomBox.Y + zoomBox.Height - 1,
+            "The badge starts under the zoom buttons, which draw over it");
+
+        await Page.Locator("#btn-toggle-overlay-zoom-control").ClickAsync();
+        await Expect(zoomControl).ToHaveCountAsync(0);
+        await Expect(overlay).ToHaveCSSAsync("padding-top", "0px");
+
+        await Page.Locator("#btn-toggle-overlay-zoom-control").ClickAsync();
+        await Expect(zoomControl).ToHaveCountAsync(1);
+        await Expect(overlay).Not.ToHaveCSSAsync("padding-top", "0px");
+        Assert.AreEqual(room, await PaddingTopAsync(overlay), 1);
+    }
+
+    private static async Task<double> PaddingTopAsync(ILocator element)
+        => double.Parse((await element.EvaluateAsync<string>("el => getComputedStyle(el).paddingTop")).Replace("px", ""), CultureInfo.InvariantCulture);
+
+    // Right to left, the overlay's start side is the right, and Leaflet keeps its zoom buttons on the left.
+    [TestMethod]
+    public async Task ChildContent_RightToLeft_StartsAtTheTopOfTheSideWithoutControls()
+    {
+        await OpenAsync(Route);
+        await ReadyAsync("map-rtl");
+
+        await Expect(Page.Locator("#map-rtl .leaflet-control-zoom")).ToBeVisibleAsync();
+        await Expect(Page.Locator("#map-rtl .bit-map-overlay")).ToHaveCSSAsync("padding-top", "0px");
+        var canvasBox = (await Canvas("map-rtl").BoundingBoxAsync())!;
+        var badgeBox = (await Page.Locator("#rtl-badge").BoundingBoxAsync())!;
+        Assert.AreEqual(canvasBox.X + canvasBox.Width, badgeBox.X + badgeBox.Width, 1, "The badge starts at the right");
+    }
+
     [TestMethod]
     public async Task CooperativeGestures_AWheelWithoutCtrlShowsTheHintAndCtrlZooms()
     {
@@ -829,7 +874,12 @@ public class BitMapE2ETests : E2ETestBase
         var canvas = Canvas("map-disabled");
         await Expect(root).ToHaveClassAsync(HasClass("bit-dis"));
         await Expect(canvas).ToHaveAttributeAsync("inert", "");
-        Assert.IsTrue(double.Parse(await ComputedStyleAsync("#map-disabled-canvas", "opacity"), CultureInfo.InvariantCulture) < 1);
+        // Dimmed without fading the canvas itself, which would make one layer of it and take the controls back under
+        // the overlay: the map goes under a cover of its background, and the controls fade on their own.
+        Assert.AreEqual("1", await ComputedStyleAsync("#map-disabled-canvas", "opacity"));
+        Assert.IsTrue(double.Parse(await CoverOpacityAsync("#map-disabled-canvas"), CultureInfo.InvariantCulture) > 0);
+        Assert.IsTrue(double.Parse(await ComputedStyleAsync("#map-disabled .leaflet-top", "opacity"), CultureInfo.InvariantCulture) < 1);
+        Assert.AreEqual("5", await ComputedStyleAsync("#map-disabled .leaflet-top", "z-index"));
         var listButton = Page.Locator("#map-disabled + .bit-map-marker-list button").First;
         await Expect(listButton).ToBeDisabledAsync();
         await Expect(listButton).ToHaveAttributeAsync("aria-disabled", "true");
@@ -841,7 +891,8 @@ public class BitMapE2ETests : E2ETestBase
         await Page.Locator("#btn-toggle-disabled").ClickAsync();
         await Expect(canvas).Not.ToHaveAttributeAsync("inert", new Regex(".*"));
         await Expect(listButton).ToBeEnabledAsync();
-        Assert.AreEqual("1", await ComputedStyleAsync("#map-disabled-canvas", "opacity"));
+        Assert.AreEqual("none", await Canvas("map-disabled").EvaluateAsync<string>("el => getComputedStyle(el, '::after').content"));
+        Assert.AreEqual("1", await ComputedStyleAsync("#map-disabled .leaflet-top", "opacity"));
     }
 
     [TestMethod]
@@ -853,8 +904,12 @@ public class BitMapE2ETests : E2ETestBase
         Assert.AreEqual("3px", await ComputedStyleAsync("#map-vars", "border-top-width"));
         Assert.AreEqual("rgb(255, 0, 0)", await ComputedStyleAsync("#map-vars", "border-top-color"));
         Assert.AreEqual("12px", await ComputedStyleAsync("#map-vars", "border-top-left-radius"));
-        Assert.AreEqual("0.25", await ComputedStyleAsync("#map-vars-canvas", "opacity"));
+        // The map shows through its cover as much as the variable says.
+        Assert.AreEqual("0.75", await CoverOpacityAsync("#map-vars-canvas"));
     }
+
+    private Task<string> CoverOpacityAsync(string canvasSelector)
+        => Page.Locator(canvasSelector).EvaluateAsync<string>("el => getComputedStyle(el, '::after').opacity");
 
     [TestMethod]
     public async Task StyleAndClass_ReachTheRootAndItsParts()
