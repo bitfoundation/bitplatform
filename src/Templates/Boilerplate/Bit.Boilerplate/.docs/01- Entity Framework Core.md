@@ -380,7 +380,7 @@ For client-side databases:
 
 **DbContext Location:** [`/src/Client/Boilerplate.Client.Core/Infrastructure/Data/AppOfflineDbContext.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Data/AppOfflineDbContext.cs)
 
-**Technology:** [bit Besql](https://bitplatform.dev/besql) - EF Core SQLite for Blazor
+**Technology:** [bit Bsqlite](https://bsqlite.bitplatform.dev) - EF Core SQLite for Blazor
 
 ```csharp
 public partial class AppOfflineDbContext(DbContextOptions<AppOfflineDbContext> options) : OfflineDbContext(options)

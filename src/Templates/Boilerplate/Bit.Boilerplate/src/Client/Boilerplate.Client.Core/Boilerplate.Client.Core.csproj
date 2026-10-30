@@ -20,7 +20,7 @@
         <Using Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Boilerplate.Client.Core.Infrastructure.Data" />
         <PackageReference Condition=" '$(brouter)' == 'true' OR '$(brouter)' == '' " Include="Bit.Brouter" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="BlazorApplicationInsights" />
-        <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" />
+        <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Bsqlite" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Client" />
         <PackageReference Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Sqlite" />
