@@ -11,6 +11,7 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
     [AutoInject] private IConfiguration configuration = default!;
     [AutoInject] private ILogger<WorkbenchScreenshotService> logger = default!;
 
+    private readonly ConcurrentDictionary<string, Task<byte[]>> thumbnails = [];
     private readonly SemaphoreSlim browserLock = new(1, 1);
     private SemaphoreSlim? captureSlots;
     private IPlaywright? playwright;
@@ -60,6 +61,29 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
         finally
         {
             captureSlots.Release();
+        }
+    }
+
+    public Task<byte[]> GetThumbnail(string pageKey, bool phone, WorkbenchThemeMode theme)
+    {
+        var key = $"{pageKey}|{phone}|{theme}";
+
+        return thumbnails.GetOrAdd(key, _ => CaptureThumbnail(key, pageKey, phone, theme));
+    }
+
+    private async Task<byte[]> CaptureThumbnail(string key, string pageKey, bool phone, WorkbenchThemeMode theme)
+    {
+        try
+        {
+            var scenario = new WorkbenchScenario { Device = phone ? DevicePresets.DefaultKey : "laptop-hidpi", Theme = theme, Frame = false };
+            var (width, height) = scenario.DevicePreset.GetViewport(rotated: false);
+
+            return await Capture(WorkbenchUrls.Preview(pageKey, scenario).TrimStart('/'), width, height, phone ? 1 : 0.5, phone, theme, null, CancellationToken.None);
+        }
+        catch
+        {
+            thumbnails.TryRemove(key, out _);
+            throw;
         }
     }
 

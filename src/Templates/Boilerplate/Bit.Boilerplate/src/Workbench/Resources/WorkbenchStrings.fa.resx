@@ -736,7 +736,7 @@
         <value>ویرایش ساختمان</value>
     </data>
     <data name="BuildingsLocationHint" xml:space="preserve">
-        <value>موقعیت از نقشه آمده است. هر نقطه‌ای داخل هلند پذیرفته می‌شود.</value>
+        <value>برای انتخاب مکان روی نقشه دوبار کلیک کنید یا مختصات را بنویسید. فقط نقطه‌های داخل هلند پذیرفته می‌شوند.</value>
     </data>
     <data name="BuildingsNameRequired" xml:space="preserve">
         <value>نام را وارد کنید.</value>
@@ -815,5 +815,131 @@
     </data>
     <data name="ProvinceLimburg" xml:space="preserve">
         <value>لیمبورخ</value>
+    </data>
+    <data name="HomePageTitle" xml:space="preserve">
+        <value>میز کار · طراحی، بازبینی و ثبت هر صفحه</value>
+    </data>
+    <data name="HomeEyebrow" xml:space="preserve">
+        <value>بخشی از پروژه bit Boilerplate شما</value>
+    </data>
+    <data name="HomeHeadline" xml:space="preserve">
+        <value>طراحی را قبل از ساخت بک‌اند تمام کنید.</value>
+    </data>
+    <data name="HomeLead" xml:space="preserve">
+        <value>میز کار صفحه‌های برنامه شما را با داده نمونه اجرا می‌کند تا هر حالتی را طراحی کنید، روی هر دستگاهی ببینید و اسکرین‌شات آماده فروشگاه بگیرید، با همان کامپوننت‌ها و پوسته‌ای که برنامه‌تان دارد.</value>
+    </data>
+    <data name="HomeOpenFirstPage" xml:space="preserve">
+        <value>باز کردن داشبورد فروشگاه</value>
+    </data>
+    <data name="HomeWhyButton" xml:space="preserve">
+        <value>چرا میز کار؟</value>
+    </data>
+    <data name="HomeFactNoServer" xml:space="preserve">
+        <value>بدون نیاز به API، پایگاه داده یا ورود</value>
+    </data>
+    <data name="HomeFactThemes" xml:space="preserve">
+        <value>روشن، تیره و راست‌به‌چپ</value>
+    </data>
+    <data name="HomeFactStores" xml:space="preserve">
+        <value>اندازه‌های دقیق App Store، Google Play و Microsoft Store</value>
+    </data>
+    <data name="HomeChipDark" xml:space="preserve">
+        <value>حالت تیره</value>
+    </data>
+    <data name="HomeChipRtl" xml:space="preserve">
+        <value>راست‌به‌چپ</value>
+    </data>
+    <data name="HomeChipLoading" xml:space="preserve">
+        <value>حالت بارگذاری</value>
+    </data>
+    <data name="HomeChipStore" xml:space="preserve">
+        <value>PNG با ابعاد ۱۳۲۰ × ۲۸۶۸</value>
+    </data>
+    <data name="HomeWhyTitle" xml:space="preserve">
+        <value>چرا پروژه شما میز کار دارد</value>
+    </data>
+    <data name="HomeWhySubtitle" xml:space="preserve">
+        <value>ابزار طراحی، میز آزمایش و آتلیه عکاسی صفحه‌هایتان، داخل خود پروژه.</value>
+    </data>
+    <data name="HomeWhyAgentsTitle" xml:space="preserve">
+        <value>طراحی با هر عامل هوش مصنوعی</value>
+    </data>
+    <data name="HomeWhyAgentsText" xml:space="preserve">
+        <value>به Claude Design یا Figma نیازی ندارید. چه با Codex کار کنید، چه Copilot یا Claude Code، عامل شما می‌تواند این‌جا صفحه طراحی کند، آن را در مرورگر واقعی ببیند و بهترش کند.</value>
+    </data>
+    <data name="HomeWhyRealTitle" xml:space="preserve">
+        <value>کامپوننت واقعی، نه ماکت</value>
+    </data>
+    <data name="HomeWhyRealText" xml:space="preserve">
+        <value>صفحه‌ها همان کامپوننت‌های bit BlazorUI، پوسته و استایل‌های برنامه شما را به کار می‌برند، پس طراحی تأییدشده از همان اول کد کارکن است.</value>
+    </data>
+    <data name="HomeWhyStatesTitle" xml:space="preserve">
+        <value>هر حالتی، هر وقت بخواهید</value>
+    </data>
+    <data name="HomeWhyStatesText" xml:space="preserve">
+        <value>بارگذاری، خالی، خطا، نیمه‌کامل و کند فقط یک کلیک فاصله دارند، حتی حالت‌هایی که در برنامه در حال اجرا به‌سختی دیده می‌شوند.</value>
+    </data>
+    <data name="HomeWhyDevicesTitle" xml:space="preserve">
+        <value>همه دستگاه‌ها کنار هم</value>
+    </data>
+    <data name="HomeWhyDevicesText" xml:space="preserve">
+        <value>گوشی، تبلت و رومیزی با اندازه واقعی، در حالت روشن و تیره و به همه زبان‌هایی که برنامه‌تان پشتیبانی می‌کند.</value>
+    </data>
+    <data name="HomeWhyStoresTitle" xml:space="preserve">
+        <value>اسکرین‌شات برای فروشگاه‌ها</value>
+    </data>
+    <data name="HomeWhyStoresText" xml:space="preserve">
+        <value>تصویرهایی با پیکسل دقیق برای App Store، Google Play و Microsoft Store بگیرید که مرورگر واقعی ساخته، بدون شبیه‌ساز.</value>
+    </data>
+    <data name="HomeWhyHeadStartTitle" xml:space="preserve">
+        <value>یک قدم جلوتر با bitplatform</value>
+    </data>
+    <data name="HomeWhyHeadStartText" xml:space="preserve">
+        <value>با صفحه‌های آماده‌ای مثل داشبورد فروشگاه و نقشه ساختمان‌ها شروع می‌شود. هرچه به کارتان می‌آید را بردارید، از بقیه یاد بگیرید و صفحه‌های خودتان را کنارشان اضافه کنید.</value>
+    </data>
+    <data name="HomeWhySafeTitle" xml:space="preserve">
+        <value>بی‌خطر برای آزمودن</value>
+    </data>
+    <data name="HomeWhySafeText" xml:space="preserve">
+        <value>هیچ‌چیز این‌جا با API یا پایگاه داده شما حرف نمی‌زند، پس آزمودن یک ایده تازه هیچ‌وقت برنامه یا داده‌تان را خراب نمی‌کند.</value>
+    </data>
+    <data name="HomeWhyShareTitle" xml:space="preserve">
+        <value>قبل از ساخت توافق کنید</value>
+    </data>
+    <data name="HomeWhyShareText" xml:space="preserve">
+        <value>پیوند یک صفحه در حالت دلخواه را برای تیم یا مشتری بفرستید و پیش از نوشتن کد بک‌اند، سر طراحی به توافق برسید.</value>
+    </data>
+    <data name="HomeHowTitle" xml:space="preserve">
+        <value>چطور در روند کار شما جا می‌افتد</value>
+    </data>
+    <data name="HomeHowStep1Title" xml:space="preserve">
+        <value>این‌جا طراحی کنید</value>
+    </data>
+    <data name="HomeHowStep1Text" xml:space="preserve">
+        <value>صفحه را در میز کار با داده نمونه‌ای بسازید که مثل داده واقعی بارگذاری می‌شود.</value>
+    </data>
+    <data name="HomeHowStep2Title" xml:space="preserve">
+        <value>همه حالت‌ها را بازبینی کنید</value>
+    </data>
+    <data name="HomeHowStep2Text" xml:space="preserve">
+        <value>آن را روی هر دستگاه، پوسته، زبان و حالت داده، تک‌به‌تک یا کنار هم بررسی کنید.</value>
+    </data>
+    <data name="HomeHowStep3Title" xml:space="preserve">
+        <value>به برنامه منتقلش کنید</value>
+    </data>
+    <data name="HomeHowStep3Text" xml:space="preserve">
+        <value>صفحه تأییدشده را به برنامه ببرید و به داده واقعی وصلش کنید. عامل هوش مصنوعی شما هم همین مراحل را دنبال می‌کند.</value>
+    </data>
+    <data name="HomePagesTitle" xml:space="preserve">
+        <value>صفحه‌های این میز کار</value>
+    </data>
+    <data name="HomePagesSubtitle" xml:space="preserve">
+        <value>از این‌ها شروع کنید و بعد صفحه‌های خودتان را کنارشان بگذارید.</value>
+    </data>
+    <data name="HomeBuiltWithTitle" xml:space="preserve">
+        <value>ساخته‌شده با bit</value>
+    </data>
+    <data name="HomeFooter" xml:space="preserve">
+        <value>میز کار بخشی از هر پروژه bit Boilerplate است و فقط روی سیستم شما اجرا می‌شود، مگر خودتان بخواهید منتشرش کنید.</value>
     </data>
 </root>

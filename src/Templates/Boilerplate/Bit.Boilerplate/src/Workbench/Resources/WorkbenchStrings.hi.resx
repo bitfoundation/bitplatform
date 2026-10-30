@@ -736,7 +736,7 @@
         <value>Edit building</value>
     </data>
     <data name="BuildingsLocationHint" xml:space="preserve">
-        <value>The location came from the map. Any point inside the Netherlands is accepted.</value>
+        <value>Double-click the map to pick a spot, or type the coordinates. Only points inside the Netherlands are accepted.</value>
     </data>
     <data name="BuildingsNameRequired" xml:space="preserve">
         <value>Enter a name.</value>
@@ -815,5 +815,131 @@
     </data>
     <data name="ProvinceLimburg" xml:space="preserve">
         <value>Limburg</value>
+    </data>
+    <data name="HomePageTitle" xml:space="preserve">
+        <value>Workbench · Design, review and capture every page</value>
+    </data>
+    <data name="HomeEyebrow" xml:space="preserve">
+        <value>Part of your bit Boilerplate project</value>
+    </data>
+    <data name="HomeHeadline" xml:space="preserve">
+        <value>Finish the design before the backend exists.</value>
+    </data>
+    <data name="HomeLead" xml:space="preserve">
+        <value>The workbench runs your app's pages on sample data, so you can design every state, see it on every device and export store-ready screenshots, with the same components and theme your app ships with.</value>
+    </data>
+    <data name="HomeOpenFirstPage" xml:space="preserve">
+        <value>Open the POS dashboard</value>
+    </data>
+    <data name="HomeWhyButton" xml:space="preserve">
+        <value>Why a workbench?</value>
+    </data>
+    <data name="HomeFactNoServer" xml:space="preserve">
+        <value>No API, database or sign-in needed</value>
+    </data>
+    <data name="HomeFactThemes" xml:space="preserve">
+        <value>Light, dark and right-to-left</value>
+    </data>
+    <data name="HomeFactStores" xml:space="preserve">
+        <value>Exact App Store, Google Play and Microsoft Store sizes</value>
+    </data>
+    <data name="HomeChipDark" xml:space="preserve">
+        <value>Dark mode</value>
+    </data>
+    <data name="HomeChipRtl" xml:space="preserve">
+        <value>Right-to-left</value>
+    </data>
+    <data name="HomeChipLoading" xml:space="preserve">
+        <value>Loading state</value>
+    </data>
+    <data name="HomeChipStore" xml:space="preserve">
+        <value>1320 × 2868 PNG</value>
+    </data>
+    <data name="HomeWhyTitle" xml:space="preserve">
+        <value>Why your project has a workbench</value>
+    </data>
+    <data name="HomeWhySubtitle" xml:space="preserve">
+        <value>A design tool, a test bench and a photo studio for your pages, inside the project itself.</value>
+    </data>
+    <data name="HomeWhyAgentsTitle" xml:space="preserve">
+        <value>Design with any AI agent</value>
+    </data>
+    <data name="HomeWhyAgentsText" xml:space="preserve">
+        <value>You don't need Claude Design or Figma. Whether you use Codex, Copilot or Claude Code, your agent can design pages here, look at them in a real browser and refine them.</value>
+    </data>
+    <data name="HomeWhyRealTitle" xml:space="preserve">
+        <value>Real components, not mockups</value>
+    </data>
+    <data name="HomeWhyRealText" xml:space="preserve">
+        <value>Pages use the same bit BlazorUI components, theme and styles as your app, so the design you approve is already working code.</value>
+    </data>
+    <data name="HomeWhyStatesTitle" xml:space="preserve">
+        <value>Every state on demand</value>
+    </data>
+    <data name="HomeWhyStatesText" xml:space="preserve">
+        <value>Loading, empty, error, partial and slow data are one click away, including the states that are hard to catch in a running app.</value>
+    </data>
+    <data name="HomeWhyDevicesTitle" xml:space="preserve">
+        <value>Every device side by side</value>
+    </data>
+    <data name="HomeWhyDevicesText" xml:space="preserve">
+        <value>Phones, tablets and desktops at their real sizes, in light and dark, in every language your app supports.</value>
+    </data>
+    <data name="HomeWhyStoresTitle" xml:space="preserve">
+        <value>Screenshots for the stores</value>
+    </data>
+    <data name="HomeWhyStoresText" xml:space="preserve">
+        <value>Export pixel-exact images for the App Store, Google Play and the Microsoft Store, rendered by a real browser, without emulators.</value>
+    </data>
+    <data name="HomeWhyHeadStartTitle" xml:space="preserve">
+        <value>A head start from bitplatform</value>
+    </data>
+    <data name="HomeWhyHeadStartText" xml:space="preserve">
+        <value>It starts with ready-made pages, like a point-of-sale dashboard and a buildings map. Reuse what fits, learn from the rest, then add your own pages next to them.</value>
+    </data>
+    <data name="HomeWhySafeTitle" xml:space="preserve">
+        <value>Safe to experiment</value>
+    </data>
+    <data name="HomeWhySafeText" xml:space="preserve">
+        <value>Nothing here talks to your API or database, so trying a new idea never breaks your app or your data.</value>
+    </data>
+    <data name="HomeWhyShareTitle" xml:space="preserve">
+        <value>Agree before you build</value>
+    </data>
+    <data name="HomeWhyShareText" xml:space="preserve">
+        <value>Send a link to a page in a given state to your team or client, and settle the design before anyone writes backend code.</value>
+    </data>
+    <data name="HomeHowTitle" xml:space="preserve">
+        <value>How it fits your workflow</value>
+    </data>
+    <data name="HomeHowStep1Title" xml:space="preserve">
+        <value>Design it here</value>
+    </data>
+    <data name="HomeHowStep1Text" xml:space="preserve">
+        <value>Build the page in the workbench with sample data that loads like the real thing.</value>
+    </data>
+    <data name="HomeHowStep2Title" xml:space="preserve">
+        <value>Review every state</value>
+    </data>
+    <data name="HomeHowStep2Text" xml:space="preserve">
+        <value>Check it on each device, theme, language and data state, one at a time or side by side.</value>
+    </data>
+    <data name="HomeHowStep3Title" xml:space="preserve">
+        <value>Bring it into the app</value>
+    </data>
+    <data name="HomeHowStep3Text" xml:space="preserve">
+        <value>Move the approved page into your app and connect it to real data. Your AI agent follows the same steps.</value>
+    </data>
+    <data name="HomePagesTitle" xml:space="preserve">
+        <value>Pages in this workbench</value>
+    </data>
+    <data name="HomePagesSubtitle" xml:space="preserve">
+        <value>Start from these, then add your own pages next to them.</value>
+    </data>
+    <data name="HomeBuiltWithTitle" xml:space="preserve">
+        <value>Built with bit</value>
+    </data>
+    <data name="HomeFooter" xml:space="preserve">
+        <value>The workbench is part of every bit Boilerplate project. It runs only on your machine unless you choose to publish it.</value>
     </data>
 </root>

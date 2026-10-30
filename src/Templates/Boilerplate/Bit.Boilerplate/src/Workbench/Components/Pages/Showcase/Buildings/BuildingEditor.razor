@@ -3,7 +3,8 @@
 <BitModal @bind-IsOpen="isOpen" Blocking MaxWidth="34rem" Classes="@(new() { Content = "editor-modal" })">
     @if (model is not null && editContext is not null)
     {
-        <EditForm EditContext="editContext" OnSubmit="Submit" class="editor">
+        <div class="editor">
+        <EditForm EditContext="editContext" OnSubmit="Submit" class="editor-form">
             <header class="editor-header">
                 <span class="editor-icon"><BitIcon IconName="@(isNew ? BitIconName.Add : BitIconName.Edit)" /></span>
                 <BitText Typography="BitTypography.H6">@Localizer[isNew ? nameof(WorkbenchStrings.BuildingsAddTitle) : nameof(WorkbenchStrings.BuildingsEditTitle)]</BitText>
@@ -57,5 +58,6 @@
                 <BitButton ButtonType="BitButtonType.Submit" IconName="@BitIconName.Save" IsLoading="isSaving">@Localizer[nameof(WorkbenchStrings.Save)]</BitButton>
             </footer>
         </EditForm>
+        </div>
     }
 </BitModal>

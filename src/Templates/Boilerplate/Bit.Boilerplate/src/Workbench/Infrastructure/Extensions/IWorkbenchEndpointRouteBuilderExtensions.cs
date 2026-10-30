@@ -22,6 +22,20 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
                 return Results.File(png, "image/png", fileName);
             }).RequireRateLimiting(IWorkbenchServiceCollectionExtensions.ScreenshotsRateLimitPolicy);
 
+            endpoints.MapGet("api/thumbnails/{pageKey}", async (string pageKey, bool? phone, WorkbenchThemeMode? theme, HttpContext context, WorkbenchScreenshotService screenshotService) =>
+            {
+                var page = WorkbenchPageCatalog.Find(pageKey);
+
+                if (page is null)
+                    return Results.NotFound();
+
+                var png = await screenshotService.GetThumbnail(page.Key, phone is true, theme is WorkbenchThemeMode.Dark ? WorkbenchThemeMode.Dark : WorkbenchThemeMode.Light);
+
+                context.Response.Headers.CacheControl = "public, max-age=3600";
+
+                return Results.File(png, "image/png");
+            });
+
             endpoints.MapGet("api/screenshots/{pageKey}/zip", async (string pageKey, string? panes, WorkbenchScreenshotService screenshotService, CancellationToken cancellationToken) =>
             {
                 var page = WorkbenchPageCatalog.Find(pageKey);

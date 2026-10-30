@@ -1,10 +1,13 @@
 @import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
 
-::deep .editor {
-    gap: 1rem;
-    display: flex;
+.editor {
     padding: 1.25rem;
-    flex-direction: column;
+
+    ::deep .editor-form {
+        gap: 1rem;
+        display: flex;
+        flex-direction: column;
+    }
 }
 
 .editor-header {

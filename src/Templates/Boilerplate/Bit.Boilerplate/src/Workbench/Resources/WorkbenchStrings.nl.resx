@@ -736,7 +736,7 @@
         <value>Gebouw bewerken</value>
     </data>
     <data name="BuildingsLocationHint" xml:space="preserve">
-        <value>De locatie komt van de kaart. Elk punt binnen Nederland wordt geaccepteerd.</value>
+        <value>Dubbelklik op de kaart om een plek te kiezen, of typ de coördinaten. Alleen punten binnen Nederland worden geaccepteerd.</value>
     </data>
     <data name="BuildingsNameRequired" xml:space="preserve">
         <value>Vul een naam in.</value>
@@ -815,5 +815,131 @@
     </data>
     <data name="ProvinceLimburg" xml:space="preserve">
         <value>Limburg</value>
+    </data>
+    <data name="HomePageTitle" xml:space="preserve">
+        <value>Werkbank · Elke pagina ontwerpen, beoordelen en vastleggen</value>
+    </data>
+    <data name="HomeEyebrow" xml:space="preserve">
+        <value>Onderdeel van je bit Boilerplate-project</value>
+    </data>
+    <data name="HomeHeadline" xml:space="preserve">
+        <value>Maak het ontwerp af voordat de backend bestaat.</value>
+    </data>
+    <data name="HomeLead" xml:space="preserve">
+        <value>De werkbank draait de pagina's van je app op voorbeeldgegevens, zodat je elke toestand ontwerpt, op elk apparaat bekijkt en schermafbeeldingen voor de stores maakt, met dezelfde componenten en hetzelfde thema als je app.</value>
+    </data>
+    <data name="HomeOpenFirstPage" xml:space="preserve">
+        <value>Open het kassadashboard</value>
+    </data>
+    <data name="HomeWhyButton" xml:space="preserve">
+        <value>Waarom een werkbank?</value>
+    </data>
+    <data name="HomeFactNoServer" xml:space="preserve">
+        <value>Geen API, database of aanmelding nodig</value>
+    </data>
+    <data name="HomeFactThemes" xml:space="preserve">
+        <value>Licht, donker en van rechts naar links</value>
+    </data>
+    <data name="HomeFactStores" xml:space="preserve">
+        <value>Exacte formaten voor App Store, Google Play en Microsoft Store</value>
+    </data>
+    <data name="HomeChipDark" xml:space="preserve">
+        <value>Donkere modus</value>
+    </data>
+    <data name="HomeChipRtl" xml:space="preserve">
+        <value>Van rechts naar links</value>
+    </data>
+    <data name="HomeChipLoading" xml:space="preserve">
+        <value>Laadtoestand</value>
+    </data>
+    <data name="HomeChipStore" xml:space="preserve">
+        <value>1320 × 2868 PNG</value>
+    </data>
+    <data name="HomeWhyTitle" xml:space="preserve">
+        <value>Waarom je project een werkbank heeft</value>
+    </data>
+    <data name="HomeWhySubtitle" xml:space="preserve">
+        <value>Een ontwerptool, een testbank en een fotostudio voor je pagina's, in het project zelf.</value>
+    </data>
+    <data name="HomeWhyAgentsTitle" xml:space="preserve">
+        <value>Ontwerpen met elke AI-agent</value>
+    </data>
+    <data name="HomeWhyAgentsText" xml:space="preserve">
+        <value>Je hebt Claude Design of Figma niet nodig. Of je nu Codex, Copilot of Claude Code gebruikt, je agent kan hier pagina's ontwerpen, ze in een echte browser bekijken en verbeteren.</value>
+    </data>
+    <data name="HomeWhyRealTitle" xml:space="preserve">
+        <value>Echte componenten, geen mockups</value>
+    </data>
+    <data name="HomeWhyRealText" xml:space="preserve">
+        <value>Pagina's gebruiken dezelfde bit BlazorUI-componenten, hetzelfde thema en dezelfde stijlen als je app, dus het goedgekeurde ontwerp is al werkende code.</value>
+    </data>
+    <data name="HomeWhyStatesTitle" xml:space="preserve">
+        <value>Elke toestand op verzoek</value>
+    </data>
+    <data name="HomeWhyStatesText" xml:space="preserve">
+        <value>Laden, leeg, fout, gedeeltelijk en traag zijn één klik verwijderd, ook de toestanden die in een draaiende app lastig te vangen zijn.</value>
+    </data>
+    <data name="HomeWhyDevicesTitle" xml:space="preserve">
+        <value>Alle apparaten naast elkaar</value>
+    </data>
+    <data name="HomeWhyDevicesText" xml:space="preserve">
+        <value>Telefoons, tablets en desktops op hun echte formaat, licht en donker, in elke taal die je app ondersteunt.</value>
+    </data>
+    <data name="HomeWhyStoresTitle" xml:space="preserve">
+        <value>Schermafbeeldingen voor de stores</value>
+    </data>
+    <data name="HomeWhyStoresText" xml:space="preserve">
+        <value>Exporteer pixelprecieze afbeeldingen voor de App Store, Google Play en de Microsoft Store, gemaakt door een echte browser, zonder emulators.</value>
+    </data>
+    <data name="HomeWhyHeadStartTitle" xml:space="preserve">
+        <value>Een voorsprong van bitplatform</value>
+    </data>
+    <data name="HomeWhyHeadStartText" xml:space="preserve">
+        <value>Het begint met kant-en-klare pagina's, zoals een kassadashboard en een gebouwenkaart. Hergebruik wat past, leer van de rest en zet je eigen pagina's ernaast.</value>
+    </data>
+    <data name="HomeWhySafeTitle" xml:space="preserve">
+        <value>Veilig om te experimenteren</value>
+    </data>
+    <data name="HomeWhySafeText" xml:space="preserve">
+        <value>Niets hier praat met je API of database, dus een nieuw idee uitproberen maakt nooit je app of je gegevens kapot.</value>
+    </data>
+    <data name="HomeWhyShareTitle" xml:space="preserve">
+        <value>Eerst afspreken, dan bouwen</value>
+    </data>
+    <data name="HomeWhyShareText" xml:space="preserve">
+        <value>Stuur je team of klant een link naar een pagina in een bepaalde toestand en spreek het ontwerp af voordat iemand backendcode schrijft.</value>
+    </data>
+    <data name="HomeHowTitle" xml:space="preserve">
+        <value>Hoe het in je werkwijze past</value>
+    </data>
+    <data name="HomeHowStep1Title" xml:space="preserve">
+        <value>Ontwerp het hier</value>
+    </data>
+    <data name="HomeHowStep1Text" xml:space="preserve">
+        <value>Bouw de pagina op de werkbank met voorbeeldgegevens die laden zoals de echte.</value>
+    </data>
+    <data name="HomeHowStep2Title" xml:space="preserve">
+        <value>Beoordeel elke toestand</value>
+    </data>
+    <data name="HomeHowStep2Text" xml:space="preserve">
+        <value>Controleer het op elk apparaat, thema, taal en gegevenstoestand, één voor één of naast elkaar.</value>
+    </data>
+    <data name="HomeHowStep3Title" xml:space="preserve">
+        <value>Breng het naar de app</value>
+    </data>
+    <data name="HomeHowStep3Text" xml:space="preserve">
+        <value>Zet de goedgekeurde pagina in je app en koppel echte gegevens. Je AI-agent volgt dezelfde stappen.</value>
+    </data>
+    <data name="HomePagesTitle" xml:space="preserve">
+        <value>Pagina's op deze werkbank</value>
+    </data>
+    <data name="HomePagesSubtitle" xml:space="preserve">
+        <value>Begin hiermee en zet je eigen pagina's ernaast.</value>
+    </data>
+    <data name="HomeBuiltWithTitle" xml:space="preserve">
+        <value>Gebouwd met bit</value>
+    </data>
+    <data name="HomeFooter" xml:space="preserve">
+        <value>De werkbank hoort bij elk bit Boilerplate-project. Hij draait alleen op je eigen computer, tenzij je hem publiceert.</value>
     </data>
 </root>
