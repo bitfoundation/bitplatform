@@ -46,6 +46,7 @@ public partial class Header : IDisposable
         new("Bortable", "Blazor-native sortable lists", Urls.Bortable, External: true),
         new("Blex", "Reactive state management for Blazor and MAUI", Urls.Blex, External: true),
         new("Belemetry", "OpenTelemetry for every Blazor app", Urls.Belemetry, External: true),
+        new("Bheadless", "Accessible, unstyled Blazor UI primitives", Urls.Bheadless, External: true),
     ];
 
     private static readonly ProductMenuItem[] toolingMenuItems =

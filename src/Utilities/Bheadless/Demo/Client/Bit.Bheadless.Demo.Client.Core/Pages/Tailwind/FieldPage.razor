@@ -1,0 +1,364 @@
+﻿@page "/tw/field"
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Field / Input — bit Bheadless · Tailwind</PageTitle>
+
+<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
+    <header class="mb-12">
+        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">Field / Input</h1>
+        <p class="mt-2 text-zinc-500">Form primitives with auto-wired ARIA labels, descriptions, and validation state.</p>
+        <TwSectionSwitcher Slug="field" />
+    </header>
+
+    <TwDemoBlock Title="Basic Field" Code="@_basicCode">
+        <Description>
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhField</code> auto-wires <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">for</code>, <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">id</code>, and <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">aria-describedby</code>.
+        </Description>
+        <LiveContent>
+            <BitBhField class="flex w-full max-w-sm flex-col gap-1.5">
+                <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Email</BitBhLabel>
+                <BitBhInput type="email" placeholder="you@example.com"
+                         class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600" />
+                <BitBhDescription class="m-0 text-xs text-zinc-500">We'll never share your email.</BitBhDescription>
+            </BitBhField>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Textarea" Code="@_textareaCode">
+        <Description><code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhTextarea</code> works identically.</Description>
+        <LiveContent>
+            <BitBhField class="flex w-full max-w-sm flex-col gap-1.5">
+                <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Bio</BitBhLabel>
+                <BitBhTextarea rows="3" placeholder="Tell us about yourself…"
+                            class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600 resize-y min-h-16" />
+                <BitBhDescription class="m-0 text-xs text-zinc-500">Max 280 characters.</BitBhDescription>
+            </BitBhField>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Select" Code="@_selectCode">
+        <Description><code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhSelect</code> renders a native select with the same ARIA wiring.</Description>
+        <LiveContent>
+            <BitBhField class="flex w-full max-w-sm flex-col gap-1.5">
+                <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Country</BitBhLabel>
+                <BitBhSelect class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed appearance-none pr-8">
+                    <option value="">Choose…</option>
+                    <option value="us">United States</option>
+                    <option value="gb">United Kingdom</option>
+                    <option value="fr">France</option>
+                    <option value="de">Germany</option>
+                </BitBhSelect>
+                <BitBhDescription class="m-0 text-xs text-zinc-500">Where you're based.</BitBhDescription>
+            </BitBhField>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Disabled Field" Code="@_disabledCode">
+        <Description><code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-disabled:</code> cascades to label and input.</Description>
+        <LiveContent>
+            <BitBhField Disabled="true" class="flex w-full max-w-sm flex-col gap-1.5">
+                <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Username</BitBhLabel>
+                <BitBhInput type="text" value="alice"
+                         class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed" />
+                <BitBhDescription class="m-0 text-xs text-zinc-500">Cannot be changed.</BitBhDescription>
+            </BitBhField>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Invalid Field" Code="@_invalidCode">
+        <Description>The <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">aria-invalid:</code> Tailwind variant lets you style invalid fields without a custom selector.</Description>
+        <LiveContent>
+            <BitBhField Invalid="true" class="flex w-full max-w-sm flex-col gap-1.5">
+                <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Password</BitBhLabel>
+                <BitBhInput type="password" value="123"
+                         class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600" />
+                <BitBhDescription class="m-0 text-xs text-red-600">
+                    Password must be at least 8 characters.
+                </BitBhDescription>
+            </BitBhField>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Multiple Fields (form layout)" Code="@_formCode">
+        <Description>Each <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhField</code> manages its own id namespace.</Description>
+        <LiveContent>
+            <form class="flex w-full max-w-sm flex-col gap-4" @onsubmit:preventDefault>
+                <BitBhField class="flex w-full flex-col gap-1.5">
+                    <BitBhLabel class="text-sm font-semibold text-zinc-900">First name</BitBhLabel>
+                    <BitBhInput type="text" placeholder="Alice"
+                             class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+                </BitBhField>
+                <BitBhField class="flex w-full flex-col gap-1.5">
+                    <BitBhLabel class="text-sm font-semibold text-zinc-900">Last name</BitBhLabel>
+                    <BitBhInput type="text" placeholder="Anderson"
+                             class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+                </BitBhField>
+                <BitBhField class="flex w-full flex-col gap-1.5">
+                    <BitBhLabel class="text-sm font-semibold text-zinc-900">Email</BitBhLabel>
+                    <BitBhInput type="email" placeholder="alice@example.com"
+                             class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+                    <BitBhDescription class="m-0 text-xs text-zinc-500">Your work email.</BitBhDescription>
+                </BitBhField>
+                <BitBhButton Type="submit"
+                          class="inline-flex items-center justify-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-medium text-white cursor-pointer hover:bg-blue-700 self-start">
+                    Submit
+                </BitBhButton>
+            </form>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="EditForm validation" Code="@_editFormCode">
+        <Description>
+            Inside an <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">EditForm</code> with <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">DataAnnotationsValidator</code>, controls bound with <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">@@bind-Value</code> / <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">@@bind-Checked</code>
+            get <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">aria-invalid</code> (style with <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">aria-invalid:</code> / <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-invalid:</code>), and <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhErrorMessage</code> is wired into their <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">aria-describedby</code> automatically.
+            The radio group is labelled via <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">aria-labelledby</code> and focused by a label click. Plain child content means no <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Context</code> clashes inside the form. Submit empty to see it.
+        </Description>
+        <LiveContent>
+            <EditForm Model="signup" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="() => signupResult = null"
+                      novalidate="@true" class="flex w-full max-w-sm flex-col gap-4">
+                <DataAnnotationsValidator />
+
+                <BitBhField Required="true" class="flex w-full flex-col gap-1.5">
+                    <BitBhLabel class="text-sm font-semibold text-zinc-900 data-invalid:text-red-700 data-required:after:ml-0.5 data-required:after:text-red-600 data-required:after:content-['*']">Full name</BitBhLabel>
+                    <BitBhInput @bind-Value="signup.Name" autocomplete="name"
+                             class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600" />
+                    <BitBhErrorMessage class="m-0 flex items-center gap-1.5 text-xs font-medium text-red-600 before:inline-flex before:size-3.5 before:items-center before:justify-center before:rounded-full before:bg-red-600 before:text-[0.6rem] before:font-bold before:text-white before:content-['!']" />
+                </BitBhField>
+
+                <BitBhField Required="true" class="flex w-full flex-col gap-1.5">
+                    <BitBhLabel class="text-sm font-semibold text-zinc-900 data-invalid:text-red-700 data-required:after:ml-0.5 data-required:after:text-red-600 data-required:after:content-['*']">Email</BitBhLabel>
+                    <BitBhDescription class="m-0 text-xs text-zinc-500">We'll send the receipt here.</BitBhDescription>
+                    <BitBhInput type="email" @bind-Value="signup.Email" autocomplete="email"
+                             class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600" />
+                    <BitBhErrorMessage class="m-0 flex items-center gap-1.5 text-xs font-medium text-red-600 before:inline-flex before:size-3.5 before:items-center before:justify-center before:rounded-full before:bg-red-600 before:text-[0.6rem] before:font-bold before:text-white before:content-['!']" />
+                </BitBhField>
+
+                <BitBhField Required="true" class="flex w-full flex-col gap-1.5">
+                    <BitBhLabel class="text-sm font-semibold text-zinc-900 data-invalid:text-red-700 data-required:after:ml-0.5 data-required:after:text-red-600 data-required:after:content-['*']">Plan</BitBhLabel>
+                    <BitBhRadioGroup @bind-Value="signup.Plan" Vertical="false" class="group/radios flex flex-wrap gap-2">
+                        <BitBhRadio Value="Free" class="group inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-1.5 text-sm text-zinc-900 cursor-pointer outline-none group-aria-invalid/radios:border-red-300 data-state-checked:border-blue-600 data-state-checked:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                            <span aria-hidden="true" class="size-3.5 rounded-full border border-zinc-400 bg-white group-data-state-checked:border-4 group-data-state-checked:border-blue-600"></span>Free
+                        </BitBhRadio>
+                        <BitBhRadio Value="Pro" class="group inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-1.5 text-sm text-zinc-900 cursor-pointer outline-none group-aria-invalid/radios:border-red-300 data-state-checked:border-blue-600 data-state-checked:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                            <span aria-hidden="true" class="size-3.5 rounded-full border border-zinc-400 bg-white group-data-state-checked:border-4 group-data-state-checked:border-blue-600"></span>Pro
+                        </BitBhRadio>
+                        <BitBhRadio Value="Team" class="group inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-1.5 text-sm text-zinc-900 cursor-pointer outline-none group-aria-invalid/radios:border-red-300 data-state-checked:border-blue-600 data-state-checked:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                            <span aria-hidden="true" class="size-3.5 rounded-full border border-zinc-400 bg-white group-data-state-checked:border-4 group-data-state-checked:border-blue-600"></span>Team
+                        </BitBhRadio>
+                    </BitBhRadioGroup>
+                    <BitBhErrorMessage class="m-0 flex items-center gap-1.5 text-xs font-medium text-red-600 before:inline-flex before:size-3.5 before:items-center before:justify-center before:rounded-full before:bg-red-600 before:text-[0.6rem] before:font-bold before:text-white before:content-['!']" />
+                </BitBhField>
+
+                <BitBhField class="flex w-full flex-col gap-1.5">
+                    <div class="flex items-center gap-2">
+                        <BitBhCheckbox @bind-Checked="signup.AcceptTerms"
+                                    class="inline-flex h-[1.15rem] w-[1.15rem] shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:border-blue-600 data-state-checked:bg-blue-600 aria-invalid:border-red-600">
+                            <BitBhCheckboxIndicator class="text-sm leading-none">✓</BitBhCheckboxIndicator>
+                        </BitBhCheckbox>
+                        <BitBhLabel class="text-sm text-zinc-900 cursor-pointer">I accept the terms of service</BitBhLabel>
+                    </div>
+                    <BitBhErrorMessage class="m-0 flex items-center gap-1.5 text-xs font-medium text-red-600 before:inline-flex before:size-3.5 before:items-center before:justify-center before:rounded-full before:bg-red-600 before:text-[0.6rem] before:font-bold before:text-white before:content-['!']" />
+                </BitBhField>
+
+                <div class="flex gap-2">
+                    <button type="submit"
+                            class="inline-flex items-center justify-center rounded-lg border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-medium text-white cursor-pointer hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                        Create account
+                    </button>
+                    <button type="button" @onclick="ResetSignup"
+                            class="inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                        Reset
+                    </button>
+                </div>
+
+                <BitBhLiveRegion class="text-sm text-green-800 not-empty:rounded-lg not-empty:border not-empty:border-green-200 not-empty:bg-green-50 not-empty:px-3.5 not-empty:py-2.5">@signupResult</BitBhLiveRegion>
+            </EditForm>
+        </LiveContent>
+    </TwDemoBlock>
+</div>
+
+@code {
+    // ── EditForm validation ───────────────────────────────────────────────────
+
+    private sealed class SignupModel
+    {
+        [Required(ErrorMessage = "Please enter your name.")]
+        public string? Name { get; set; }
+
+        [Required(ErrorMessage = "Please enter your email.")]
+        [EmailAddress(ErrorMessage = "That doesn't look like an email address.")]
+        public string? Email { get; set; }
+
+        [Required(ErrorMessage = "Pick a plan.")]
+        public string? Plan { get; set; }
+
+        [Range(typeof(bool), "true", "true", ErrorMessage = "You must accept the terms.")]
+        public bool AcceptTerms { get; set; }
+    }
+
+    private SignupModel signup = new();
+    private string? signupResult;
+
+    private void HandleValidSubmit() =>
+        signupResult = $"Welcome aboard, {signup.Name}! You're on the {signup.Plan} plan.";
+
+    private void ResetSignup()
+    {
+        signup = new();
+        signupResult = null;
+    }
+
+    private const string _editFormCode = """
+@using System.ComponentModel.DataAnnotations
+
+@* novalidate: let DataAnnotations (not the browser) report errors *@
+<EditForm Model="signup" OnValidSubmit="HandleValidSubmit" novalidate="@true" class="flex w-full max-w-sm flex-col gap-4">
+    <DataAnnotationsValidator />
+
+    <BitBhField Required="true" class="flex w-full flex-col gap-1.5">
+        <BitBhLabel class="text-sm font-semibold text-zinc-900 data-invalid:text-red-700 data-required:after:ml-0.5 data-required:after:text-red-600 data-required:after:content-['*']">Full name</BitBhLabel>
+        <BitBhInput @bind-Value="signup.Name" autocomplete="name"
+                 class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus-visible:outline-2 focus-visible:outline-blue-600 aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600" />
+        @* Only rendered while invalid; referenced by the input's aria-describedby *@
+        <BitBhErrorMessage class="m-0 flex items-center gap-1.5 text-xs font-medium text-red-600 before:inline-flex before:size-3.5 before:items-center before:justify-center before:rounded-full before:bg-red-600 before:text-[0.6rem] before:font-bold before:text-white before:content-['!']" />
+    </BitBhField>
+
+    <BitBhField Required="true" class="flex w-full flex-col gap-1.5">
+        <BitBhLabel class="...">Email</BitBhLabel>
+        <BitBhDescription class="m-0 text-xs text-zinc-500">We'll send the receipt here.</BitBhDescription>
+        <BitBhInput type="email" @bind-Value="signup.Email" autocomplete="email" class="..." />
+        <BitBhErrorMessage class="..." />
+    </BitBhField>
+
+    @* Non-native control: labelled via aria-labelledby, focused by a label click *@
+    <BitBhField Required="true" class="flex w-full flex-col gap-1.5">
+        <BitBhLabel class="...">Plan</BitBhLabel>
+        <BitBhRadioGroup @bind-Value="signup.Plan" Vertical="false" class="group/radios flex flex-wrap gap-2">
+            <BitBhRadio Value="Free"
+                     class="group inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-1.5 text-sm group-aria-invalid/radios:border-red-300 data-state-checked:border-blue-600 data-state-checked:bg-blue-50">
+                <span aria-hidden="true" class="size-3.5 rounded-full border border-zinc-400 bg-white group-data-state-checked:border-4 group-data-state-checked:border-blue-600"></span>Free
+            </BitBhRadio>
+            <BitBhRadio Value="Pro" class="...">…Pro</BitBhRadio>
+            <BitBhRadio Value="Team" class="...">…Team</BitBhRadio>
+        </BitBhRadioGroup>
+        <BitBhErrorMessage class="..." />
+    </BitBhField>
+
+    <BitBhField class="flex w-full flex-col gap-1.5">
+        <div class="flex items-center gap-2">
+            <BitBhCheckbox @bind-Checked="signup.AcceptTerms"
+                        class="inline-flex h-[1.15rem] w-[1.15rem] items-center justify-center rounded border border-zinc-300 bg-white text-white data-state-checked:border-blue-600 data-state-checked:bg-blue-600 aria-invalid:border-red-600">
+                <BitBhCheckboxIndicator class="text-sm leading-none">✓</BitBhCheckboxIndicator>
+            </BitBhCheckbox>
+            <BitBhLabel class="text-sm cursor-pointer">I accept the terms of service</BitBhLabel>
+        </div>
+        <BitBhErrorMessage class="..." />
+    </BitBhField>
+
+    <button type="submit" class="...">Create account</button>
+
+    <BitBhLiveRegion class="text-sm text-green-800 not-empty:rounded-lg not-empty:border not-empty:border-green-200 not-empty:bg-green-50 not-empty:px-3.5 not-empty:py-2.5">@signupResult</BitBhLiveRegion>
+</EditForm>
+
+@code {
+    private sealed class SignupModel
+    {
+        [Required(ErrorMessage = "Please enter your name.")]
+        public string? Name { get; set; }
+
+        [Required(ErrorMessage = "Please enter your email.")]
+        [EmailAddress(ErrorMessage = "That doesn't look like an email address.")]
+        public string? Email { get; set; }
+
+        [Required(ErrorMessage = "Pick a plan.")]
+        public string? Plan { get; set; }
+
+        [Range(typeof(bool), "true", "true", ErrorMessage = "You must accept the terms.")]
+        public bool AcceptTerms { get; set; }
+    }
+
+    private SignupModel signup = new();
+    private string? signupResult;
+
+    private void HandleValidSubmit() =>
+        signupResult = $"Welcome aboard, {signup.Name}! You're on the {signup.Plan} plan.";
+}
+""";
+
+    private const string _basicCode = """
+<BitBhField class="flex w-full max-w-sm flex-col gap-1.5">
+    <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Email</BitBhLabel>
+    <BitBhInput type="email" placeholder="you@example.com"
+             class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600" />
+    <BitBhDescription class="m-0 text-xs text-zinc-500">We'll never share your email.</BitBhDescription>
+</BitBhField>
+""";
+
+    private const string _textareaCode = """
+<BitBhField class="flex w-full max-w-sm flex-col gap-1.5">
+    <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Bio</BitBhLabel>
+    <BitBhTextarea rows="3" placeholder="Tell us about yourself…"
+                class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600 resize-y min-h-16" />
+    <BitBhDescription class="m-0 text-xs text-zinc-500">Max 280 characters.</BitBhDescription>
+</BitBhField>
+""";
+
+    private const string _selectCode = """
+<BitBhField class="flex w-full max-w-sm flex-col gap-1.5">
+    <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Country</BitBhLabel>
+    <BitBhSelect class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed appearance-none pr-8">
+        <option value="">Choose…</option>
+        <option value="us">United States</option>
+        <option value="gb">United Kingdom</option>
+        <option value="fr">France</option>
+        <option value="de">Germany</option>
+    </BitBhSelect>
+    <BitBhDescription class="m-0 text-xs text-zinc-500">Where you're based.</BitBhDescription>
+</BitBhField>
+""";
+
+    private const string _disabledCode = """
+<BitBhField Disabled="true" class="flex w-full max-w-sm flex-col gap-1.5">
+    <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Username</BitBhLabel>
+    <BitBhInput type="text" value="alice"
+             class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-50 data-disabled:opacity-50 data-disabled:cursor-not-allowed" />
+    <BitBhDescription class="m-0 text-xs text-zinc-500">Cannot be changed.</BitBhDescription>
+</BitBhField>
+""";
+
+    private const string _invalidCode = """
+<BitBhField Invalid="true" class="flex w-full max-w-sm flex-col gap-1.5">
+    <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Password</BitBhLabel>
+    <BitBhInput type="password" value="123"
+             class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 aria-invalid:border-red-600 aria-invalid:focus-visible:outline-red-600" />
+    <BitBhDescription class="m-0 text-xs text-red-600">
+        Password must be at least 8 characters.
+    </BitBhDescription>
+</BitBhField>
+""";
+
+    private const string _formCode = """
+<form class="flex w-full max-w-sm flex-col gap-4" @onsubmit:preventDefault>
+    <BitBhField class="flex w-full flex-col gap-1.5">
+        <BitBhLabel class="text-sm font-semibold text-zinc-900">First name</BitBhLabel>
+        <BitBhInput type="text" placeholder="Alice"
+                 class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+    </BitBhField>
+    <BitBhField class="flex w-full flex-col gap-1.5">
+        <BitBhLabel class="text-sm font-semibold text-zinc-900">Last name</BitBhLabel>
+        <BitBhInput type="text" placeholder="Anderson"
+                 class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+    </BitBhField>
+    <BitBhField class="flex w-full flex-col gap-1.5">
+        <BitBhLabel class="text-sm font-semibold text-zinc-900">Email</BitBhLabel>
+        <BitBhInput type="email" placeholder="alice@example.com"
+                 class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+        <BitBhDescription class="m-0 text-xs text-zinc-500">Your work email.</BitBhDescription>
+    </BitBhField>
+    <BitBhButton Type="submit"
+              class="inline-flex items-center justify-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-medium text-white cursor-pointer hover:bg-blue-700 self-start">
+        Submit
+    </BitBhButton>
+</form>
+""";
+}

@@ -1,0 +1,463 @@
+﻿@page "/toggle-group"
+
+<PageTitle>Toggle / Toggle Group — bit Bheadless</PageTitle>
+
+<div class="demo-page">
+    <header class="demo-header">
+        <h1>Toggle / Toggle Group</h1>
+        <p>Two-state buttons on their own, or grouped for formatting, alignment and view switchers.</p>
+        <SectionSwitcher Slug="toggle-group" />
+    </header>
+
+    <DemoBlock Title="Toggle button"
+               Code="@_toggleCode"
+               Css="@_toggleCss">
+        <Description>
+            <code>BitBhToggle</code> is the APG Button pattern's toggle variant: a native
+            <code>&lt;button&gt;</code> with <code>aria-pressed</code> and <code>data-state="on|off"</code>.
+            <kbd>Space</kbd> / <kbd>Enter</kbd> or a click flips it. Use <code>@@bind-Pressed</code>,
+            <code>DefaultPressed</code> for uncontrolled use, and <code>Disabled</code>.
+        </Description>
+        <LiveContent>
+            <div class="toggle-row">
+                <BitBhToggle aria-label="Bold" class="toggle-btn"><strong>B</strong></BitBhToggle>
+                <BitBhToggle @bind-Pressed="muted" class="toggle-btn">Mute</BitBhToggle>
+                <BitBhToggle DefaultPressed="true" Disabled="true" class="toggle-btn">Pinned</BitBhToggle>
+                <p class="toggle-output">Muted: <strong>@(muted ? "yes" : "no")</strong></p>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="State-aware content with Template"
+               Code="@_templateCode"
+               Css="@_templateCss">
+        <Description>
+            When the content depends on the pressed state, use <code>Template</code> instead of child
+            content — its context is the <code>bool</code> pressed state. Keep the label itself constant
+            (APG): only the icon swaps here, <code>aria-pressed</code> conveys the state.
+        </Description>
+        <LiveContent>
+            <div class="toggle-row">
+                <BitBhToggle DefaultPressed="true" class="toggle-btn">
+                    <Template Context="pressed">
+                        <span class="toggle-icon" aria-hidden="true">@(pressed ? "★" : "☆")</span>
+                        Star
+                    </Template>
+                </BitBhToggle>
+                <BitBhToggle class="toggle-btn">
+                    <Template Context="pressed">
+                        <span class="toggle-icon" aria-hidden="true">@(pressed ? "✓" : "+")</span>
+                        Follow
+                    </Template>
+                </BitBhToggle>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Multiple: text formatting"
+               Code="@_multipleCode"
+               Css="@_multipleCss">
+        <Description>
+            <code>Type="BitBhToggleGroupType.Multiple"</code> renders a <code>role="group"</code> of
+            <code>aria-pressed</code> buttons bound with <code>@@bind-Values</code>. The group is a single
+            tab stop: <kbd>←</kbd> / <kbd>→</kbd> move focus (wrapping), <kbd>Home</kbd> / <kbd>End</kbd>
+            jump, <kbd>Space</kbd> / <kbd>Enter</kbd> toggle.
+        </Description>
+        <LiveContent>
+            <div class="toggle-demo">
+                <BitBhToggleGroup Type="BitBhToggleGroupType.Multiple" @bind-Values="textStyles"
+                               aria-label="Text formatting" class="toggle-group">
+                    <BitBhToggleGroupItem Value="bold" aria-label="Bold" class="toggle-item"><strong>B</strong></BitBhToggleGroupItem>
+                    <BitBhToggleGroupItem Value="italic" aria-label="Italic" class="toggle-item"><em>I</em></BitBhToggleGroupItem>
+                    <BitBhToggleGroupItem Value="underline" aria-label="Underline" class="toggle-item"><u>U</u></BitBhToggleGroupItem>
+                    <BitBhToggleGroupItem Value="strike" aria-label="Strikethrough" class="toggle-item"><s>S</s></BitBhToggleGroupItem>
+                </BitBhToggleGroup>
+                <p class="toggle-preview" style="@PreviewStyle()">The quick brown fox jumps over the lazy dog.</p>
+                <p class="toggle-output">
+                    Values: <strong>@(textStyles.Count == 0 ? "none" : string.Join(", ", textStyles))</strong>
+                </p>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Single: alignment"
+               Code="@_singleCode"
+               Css="@_singleCss">
+        <Description>
+            The default <code>Type="BitBhToggleGroupType.Single"</code> behaves like a radio group
+            (<code>role="radiogroup"</code> of <code>role="radio"</code> items with <code>aria-checked</code>);
+            the pressed item is the tab stop. Clicking the pressed item normally clears the value —
+            <code>AllowEmpty="false"</code> keeps one alignment selected at all times.
+        </Description>
+        <LiveContent>
+            <div class="toggle-demo">
+                <BitBhToggleGroup @bind-Value="align" AllowEmpty="false"
+                               aria-label="Text alignment" class="toggle-group">
+                    <BitBhToggleGroupItem Value="left" aria-label="Align left" class="toggle-item">
+                        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3h12M2 6.5h8M2 10h12M2 13.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>
+                    </BitBhToggleGroupItem>
+                    <BitBhToggleGroupItem Value="center" aria-label="Align center" class="toggle-item">
+                        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3h12M4 6.5h8M2 10h12M4 13.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>
+                    </BitBhToggleGroupItem>
+                    <BitBhToggleGroupItem Value="right" aria-label="Align right" class="toggle-item">
+                        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3h12M6 6.5h8M2 10h12M6 13.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>
+                    </BitBhToggleGroupItem>
+                    <BitBhToggleGroupItem Value="justify" aria-label="Justify" class="toggle-item">
+                        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3h12M2 6.5h12M2 10h12M2 13.5h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>
+                    </BitBhToggleGroupItem>
+                </BitBhToggleGroup>
+                <p class="toggle-preview" style="text-align: @align">
+                    Headless components ship behavior and accessibility, and leave every pixel of
+                    the presentation to you — so this paragraph can be aligned however you like.
+                </p>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Vertical orientation"
+               Code="@_verticalCode"
+               Css="@_verticalCss">
+        <Description>
+            <code>Orientation="BitBhRovingOrientation.Vertical"</code> switches navigation to
+            <kbd>↑</kbd> / <kbd>↓</kbd> and sets <code>data-orientation="vertical"</code> for styling.
+            This group is uncontrolled (<code>DefaultValue</code>) and each item's <code>Template</code>
+            receives its pressed state to draw a check mark.
+        </Description>
+        <LiveContent>
+            <BitBhToggleGroup Orientation="BitBhRovingOrientation.Vertical" DefaultValue="week"
+                           aria-label="Calendar view" class="toggle-group">
+                @foreach (var view in views)
+                {
+                    <BitBhToggleGroupItem Value="@view.ToLowerInvariant()" class="toggle-item">
+                        <Template Context="isOn">
+                            <span class="toggle-check" aria-hidden="true">@(isOn ? "✓" : "")</span>
+                            @view
+                        </Template>
+                    </BitBhToggleGroupItem>
+                }
+            </BitBhToggleGroup>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Disabled items"
+               Code="@_disabledCode"
+               Css="@_disabledCss">
+        <Description>
+            <code>Disabled="true"</code> on an item renders the native <code>disabled</code> attribute and
+            <code>data-disabled</code>; arrow keys skip it. On the group it disables every item.
+        </Description>
+        <LiveContent>
+            <div class="toggle-demo">
+                <BitBhToggleGroup @bind-Value="size" aria-label="Size" class="toggle-group">
+                    <BitBhToggleGroupItem Value="s" class="toggle-item">S</BitBhToggleGroupItem>
+                    <BitBhToggleGroupItem Value="m" class="toggle-item">M</BitBhToggleGroupItem>
+                    <BitBhToggleGroupItem Value="l" class="toggle-item">L</BitBhToggleGroupItem>
+                    <BitBhToggleGroupItem Value="xl" Disabled="true" class="toggle-item">XL</BitBhToggleGroupItem>
+                </BitBhToggleGroup>
+
+                <BitBhToggleGroup DefaultValue="m" Disabled="true" aria-label="Size (sold out)" class="toggle-group">
+                    <BitBhToggleGroupItem Value="s" class="toggle-item">S</BitBhToggleGroupItem>
+                    <BitBhToggleGroupItem Value="m" class="toggle-item">M</BitBhToggleGroupItem>
+                    <BitBhToggleGroupItem Value="l" class="toggle-item">L</BitBhToggleGroupItem>
+                </BitBhToggleGroup>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+</div>
+
+@code {
+    private bool muted;
+    private IReadOnlyCollection<string> textStyles = ["bold"];
+    private string? align = "left";
+    private readonly string[] views = ["Day", "Week", "Month", "Year"];
+    private string? size = "m";
+
+    private string PreviewStyle()
+    {
+        var decorations = textStyles
+            .Where(s => s is "underline" or "strike")
+            .Select(s => s == "strike" ? "line-through" : s)
+            .ToList();
+        return $"font-weight: {(textStyles.Contains("bold") ? 700 : 400)}; " +
+               $"font-style: {(textStyles.Contains("italic") ? "italic" : "normal")}; " +
+               $"text-decoration: {(decorations.Count > 0 ? string.Join(" ", decorations) : "none")}";
+    }
+
+    // ── Source snippets shown alongside each live demo ─────────────────────────
+
+    private const string _toggleCode = """
+<BitBhToggle aria-label="Bold" class="toggle-btn"><strong>B</strong></BitBhToggle>
+
+<BitBhToggle @bind-Pressed="muted" class="toggle-btn">Mute</BitBhToggle>
+
+<BitBhToggle DefaultPressed="true" Disabled="true" class="toggle-btn">Pinned</BitBhToggle>
+
+<p class="toggle-output">Muted: <strong>@(muted ? "yes" : "no")</strong></p>
+
+@code {
+    private bool muted;
+}
+""";
+
+    private const string _templateCode = """
+<BitBhToggle DefaultPressed="true" class="toggle-btn">
+    <Template Context="pressed">
+        <span class="toggle-icon" aria-hidden="true">@(pressed ? "★" : "☆")</span>
+        Star
+    </Template>
+</BitBhToggle>
+
+<BitBhToggle class="toggle-btn">
+    <Template Context="pressed">
+        <span class="toggle-icon" aria-hidden="true">@(pressed ? "✓" : "+")</span>
+        Follow
+    </Template>
+</BitBhToggle>
+""";
+
+    private const string _multipleCode = """
+<BitBhToggleGroup Type="BitBhToggleGroupType.Multiple" @bind-Values="textStyles"
+               aria-label="Text formatting" class="toggle-group">
+    <BitBhToggleGroupItem Value="bold" aria-label="Bold" class="toggle-item"><strong>B</strong></BitBhToggleGroupItem>
+    <BitBhToggleGroupItem Value="italic" aria-label="Italic" class="toggle-item"><em>I</em></BitBhToggleGroupItem>
+    <BitBhToggleGroupItem Value="underline" aria-label="Underline" class="toggle-item"><u>U</u></BitBhToggleGroupItem>
+    <BitBhToggleGroupItem Value="strike" aria-label="Strikethrough" class="toggle-item"><s>S</s></BitBhToggleGroupItem>
+</BitBhToggleGroup>
+
+<p class="toggle-preview" style="@PreviewStyle()">The quick brown fox jumps over the lazy dog.</p>
+
+<p class="toggle-output">
+    Values: <strong>@(textStyles.Count == 0 ? "none" : string.Join(", ", textStyles))</strong>
+</p>
+
+@code {
+    private IReadOnlyCollection<string> textStyles = ["bold"];
+
+    private string PreviewStyle()
+    {
+        var decorations = textStyles
+            .Where(s => s is "underline" or "strike")
+            .Select(s => s == "strike" ? "line-through" : s)
+            .ToList();
+        return $"font-weight: {(textStyles.Contains("bold") ? 700 : 400)}; " +
+               $"font-style: {(textStyles.Contains("italic") ? "italic" : "normal")}; " +
+               $"text-decoration: {(decorations.Count > 0 ? string.Join(" ", decorations) : "none")}";
+    }
+}
+""";
+
+    private const string _singleCode = """
+<BitBhToggleGroup @bind-Value="align" AllowEmpty="false"
+               aria-label="Text alignment" class="toggle-group">
+    <BitBhToggleGroupItem Value="left" aria-label="Align left" class="toggle-item">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3h12M2 6.5h8M2 10h12M2 13.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>
+    </BitBhToggleGroupItem>
+    <BitBhToggleGroupItem Value="center" aria-label="Align center" class="toggle-item">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3h12M4 6.5h8M2 10h12M4 13.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>
+    </BitBhToggleGroupItem>
+    <BitBhToggleGroupItem Value="right" aria-label="Align right" class="toggle-item">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3h12M6 6.5h8M2 10h12M6 13.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>
+    </BitBhToggleGroupItem>
+    <BitBhToggleGroupItem Value="justify" aria-label="Justify" class="toggle-item">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3h12M2 6.5h12M2 10h12M2 13.5h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>
+    </BitBhToggleGroupItem>
+</BitBhToggleGroup>
+
+<p class="toggle-preview" style="text-align: @align">
+    Headless components ship behavior and accessibility, and leave every pixel of
+    the presentation to you — so this paragraph can be aligned however you like.
+</p>
+
+@code {
+    private string? align = "left";
+}
+""";
+
+    private const string _verticalCode = """
+<BitBhToggleGroup Orientation="BitBhRovingOrientation.Vertical" DefaultValue="week"
+               aria-label="Calendar view" class="toggle-group">
+    @foreach (var view in views)
+    {
+        <BitBhToggleGroupItem Value="@view.ToLowerInvariant()" class="toggle-item">
+            <Template Context="isOn">
+                <span class="toggle-check" aria-hidden="true">@(isOn ? "✓" : "")</span>
+                @view
+            </Template>
+        </BitBhToggleGroupItem>
+    }
+</BitBhToggleGroup>
+
+@code {
+    private readonly string[] views = ["Day", "Week", "Month", "Year"];
+}
+""";
+
+    private const string _disabledCode = """
+<BitBhToggleGroup @bind-Value="size" aria-label="Size" class="toggle-group">
+    <BitBhToggleGroupItem Value="s" class="toggle-item">S</BitBhToggleGroupItem>
+    <BitBhToggleGroupItem Value="m" class="toggle-item">M</BitBhToggleGroupItem>
+    <BitBhToggleGroupItem Value="l" class="toggle-item">L</BitBhToggleGroupItem>
+    <BitBhToggleGroupItem Value="xl" Disabled="true" class="toggle-item">XL</BitBhToggleGroupItem>
+</BitBhToggleGroup>
+
+<BitBhToggleGroup DefaultValue="m" Disabled="true" aria-label="Size (sold out)" class="toggle-group">
+    <BitBhToggleGroupItem Value="s" class="toggle-item">S</BitBhToggleGroupItem>
+    <BitBhToggleGroupItem Value="m" class="toggle-item">M</BitBhToggleGroupItem>
+    <BitBhToggleGroupItem Value="l" class="toggle-item">L</BitBhToggleGroupItem>
+</BitBhToggleGroup>
+
+@code {
+    private string? size = "m";
+}
+""";
+
+    // ── CSS (mirrors wwwroot/demos/toggle-group.css) ───────────────────────────
+
+    private const string _toggleBtnCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.toggle-btn {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    padding: 0 0.75rem;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    background: #fff;
+    color: #3f3f46;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.toggle-btn:hover:enabled { background: #f4f4f5; }
+.toggle-btn:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+
+/* aria-pressed="true" / data-state="on" while pressed */
+.toggle-btn[data-state="on"] {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1d4ed8;
+}
+
+.toggle-btn[data-state="on"]:hover:enabled { background: #dbeafe; }
+""";
+
+    private const string _toggleCss = _toggleBtnCss + """
+
+
+.toggle-btn[data-disabled] { opacity: 0.5; cursor: not-allowed; }
+
+/* Demo layout */
+.toggle-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
+
+.toggle-output { margin: 0; font-size: 0.85rem; color: #71717a; }
+.toggle-output strong { color: #18181b; font-weight: 600; }
+""";
+
+    private const string _templateCss = _toggleBtnCss + """
+
+
+.toggle-icon { font-size: 1rem; line-height: 1; }
+
+.toggle-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
+""";
+
+    private const string _groupCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.toggle-group {
+    display: inline-flex;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.6rem;
+    background: #f4f4f5;
+}
+
+.toggle-item {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: 2.25rem;
+    height: 2rem;
+    padding: 0 0.6rem;
+    border-radius: 0.4rem;
+    color: #52525b;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
+}
+
+.toggle-item:hover:enabled:not([data-state="on"]) { background: #e4e4e7; color: #18181b; }
+.toggle-item:focus-visible { outline: 2px solid #2563eb; outline-offset: 1px; }
+
+/* data-state="on": aria-checked="true" (Single) or aria-pressed="true" (Multiple) */
+.toggle-item[data-state="on"] {
+    background: #fff;
+    color: #2563eb;
+    box-shadow: 0 1px 2px rgba(24, 24, 27, 0.12);
+}
+""";
+
+    private const string _previewCss = """
+
+
+/* Demo layout */
+.toggle-demo {
+    display: grid;
+    gap: 1rem;
+    width: 100%;
+    justify-items: start;
+}
+
+.toggle-preview {
+    width: 100%;
+    max-width: 28rem;
+    margin: 0;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    background: #fff;
+    font-size: 0.95rem;
+    color: #27272a;
+}
+""";
+
+    private const string _multipleCss = _groupCss + _previewCss + """
+
+
+.toggle-output { margin: 0; font-size: 0.85rem; color: #71717a; }
+.toggle-output strong { color: #18181b; font-weight: 600; }
+""";
+
+    private const string _singleCss = _groupCss + _previewCss;
+
+    private const string _verticalCss = _groupCss + """
+
+
+/* data-orientation="vertical" when Orientation="BitBhRovingOrientation.Vertical" */
+.toggle-group[data-orientation="vertical"] { flex-direction: column; min-width: 9rem; }
+.toggle-group[data-orientation="vertical"] .toggle-item { justify-content: flex-start; }
+
+.toggle-check { display: inline-block; width: 1rem; color: #2563eb; }
+""";
+
+    private const string _disabledCss = _groupCss + """
+
+
+/* Hooks emitted for disabled items / groups */
+.toggle-group[data-disabled]      { opacity: 0.6; }
+.toggle-item[data-disabled] { opacity: 0.4; cursor: not-allowed; }
+
+.toggle-demo { display: grid; gap: 1rem; width: 100%; justify-items: start; }
+""";
+}

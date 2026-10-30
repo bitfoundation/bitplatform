@@ -1,0 +1,105 @@
+﻿@page "/tw/aspect-ratio"
+
+<PageTitle>Aspect Ratio — bit Bheadless · Tailwind</PageTitle>
+
+<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
+    <header class="mb-12">
+        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">Aspect Ratio</h1>
+        <p class="mt-2 text-zinc-500">Displays content within a desired ratio, styled entirely with Tailwind utilities.</p>
+        <TwSectionSwitcher Slug="aspect-ratio" />
+    </header>
+
+    <TwDemoBlock Title="Basic (16 / 9)" Code="@_basicCode">
+        <Description>
+            Set <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Ratio</code> to the desired
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">width / height</code>. Style the inner element with utilities — they merge with the component's positioning styles.
+        </Description>
+        <LiveContent>
+            <div class="w-full max-w-md">
+                <BitBhAspectRatio Ratio="16d / 9d" class="overflow-hidden rounded-xl shadow-md">
+                    <img class="h-full w-full object-cover"
+                         src="https://images.unsplash.com/photo-1535025183041-0991a977e25b?w=800&dpr=2&q=80"
+                         alt="Landscape photograph" />
+                </BitBhAspectRatio>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Square (1 / 1)" Code="@_squareCode">
+        <Description>
+            The default ratio is <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">1</code> — a perfect square. Great for avatars; the <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Ratio</code> parameter is optional.
+        </Description>
+        <LiveContent>
+            <div class="w-48">
+                <BitBhAspectRatio class="overflow-hidden rounded-xl shadow-md">
+                    <img class="h-full w-full object-cover"
+                         src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&dpr=2&q=80"
+                         alt="Portrait photograph" />
+                </BitBhAspectRatio>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Portrait (3 / 4)" Code="@_portraitCode">
+        <Description>
+            Ratios below <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">1</code> produce taller-than-wide boxes.
+        </Description>
+        <LiveContent>
+            <div class="w-48">
+                <BitBhAspectRatio Ratio="3d / 4d" class="overflow-hidden rounded-xl shadow-md">
+                    <img class="h-full w-full object-cover"
+                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&dpr=2&q=80"
+                         alt="Portrait photograph" />
+                </BitBhAspectRatio>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Non-image content" Code="@_contentCode">
+        <Description>
+            The inner element fills the reserved space, so flex centring works directly on the component.
+        </Description>
+        <LiveContent>
+            <div class="w-full max-w-md">
+                <BitBhAspectRatio Ratio="2d / 1d"
+                               class="flex items-center justify-center rounded-xl bg-linear-to-br from-indigo-500 to-violet-500 text-2xl font-bold tracking-widest text-white">
+                    <span>2 : 1</span>
+                </BitBhAspectRatio>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+</div>
+
+@code {
+    private const string _basicCode = """
+<div class="w-full max-w-md">
+    <BitBhAspectRatio Ratio="16d / 9d" class="overflow-hidden rounded-xl shadow-md">
+        <img class="h-full w-full object-cover" src="/landscape.jpg" alt="Landscape" />
+    </BitBhAspectRatio>
+</div>
+""";
+
+    private const string _squareCode = """
+@* Ratio defaults to 1 (square) — the parameter is optional *@
+<div class="w-48">
+    <BitBhAspectRatio class="overflow-hidden rounded-xl shadow-md">
+        <img class="h-full w-full object-cover" src="/avatar.jpg" alt="Avatar" />
+    </BitBhAspectRatio>
+</div>
+""";
+
+    private const string _portraitCode = """
+<div class="w-48">
+    <BitBhAspectRatio Ratio="3d / 4d" class="overflow-hidden rounded-xl shadow-md">
+        <img class="h-full w-full object-cover" src="/portrait.jpg" alt="Portrait" />
+    </BitBhAspectRatio>
+</div>
+""";
+
+    private const string _contentCode = """
+<BitBhAspectRatio Ratio="2d / 1d"
+               class="flex items-center justify-center rounded-xl bg-linear-to-br from-indigo-500 to-violet-500 text-2xl font-bold tracking-widest text-white">
+    <span>2 : 1</span>
+</BitBhAspectRatio>
+""";
+}

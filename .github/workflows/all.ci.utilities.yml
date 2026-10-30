@@ -187,6 +187,16 @@ jobs:
         dotnet build src/Utilities/BevTools/Bit.BevTools.Server/Bit.BevTools.Server.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Utilities/BevTools/Bit.BevTools.Server/Bit.BevTools.Server.csproj --output ./packages --configuration Release
 
+    - name: Build and pack Bheadless
+      run: |
+        dotnet build src/Utilities/Bheadless/Bit.Bheadless/Bit.Bheadless.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Utilities/Bheadless/Bit.Bheadless/Bit.Bheadless.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Bheadless.Testing
+      run: |
+        dotnet build src/Utilities/Bheadless/Bit.Bheadless.Testing/Bit.Bheadless.Testing.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Utilities/Bheadless/Bit.Bheadless.Testing/Bit.Bheadless.Testing.csproj --output ./packages --configuration Release
+
     - name: Upload NuGet packages artifact
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
@@ -334,3 +344,12 @@ jobs:
   bevtools:
     name: bevtools
     uses: ./.github/workflows/bit.ci.BevTools.yml
+
+  bheadless:
+    name: bheadless
+    uses: ./.github/workflows/bit.ci.Bheadless.yml
+
+  bheadless_e2e:
+    name: bheadless e2e
+    if: ${{ inputs.e2e }}
+    uses: ./.github/workflows/bit.ci.Bheadless.e2e.yml

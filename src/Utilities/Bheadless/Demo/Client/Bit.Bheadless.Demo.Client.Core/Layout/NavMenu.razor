@@ -1,0 +1,89 @@
+﻿@*
+    Sidebar navigation. Renders the same component list under whichever
+    section (CSS or Tailwind) the user is currently browsing. The
+    component list is sourced from DemoCatalog so adding a new component
+    only requires a single entry there.
+*@
+@inject NavigationManager Nav
+@implements IDisposable
+
+<nav class="nav-menu">
+    <div class="nav-brand">
+        <a href="" @onclick="OnNavLinkClicked">bit Bheadless</a>
+        <ThemeToggle Dark="DarkTheme" DarkChanged="DarkThemeChanged" />
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-title">Sections</div>
+
+        <NavLink class="nav-link"
+                 href=""
+                 Match="NavLinkMatch.All"
+                 @onclick="OnNavLinkClicked">
+            Home
+        </NavLink>
+
+        <NavLink class="nav-link"
+                 href="tw"
+                 Match="NavLinkMatch.All"
+                 @onclick="OnNavLinkClicked">
+            Tailwind home
+        </NavLink>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-title">
+            @(_section == DemoSection.Tailwind ? "Tailwind components" : "CSS components")
+        </div>
+
+        @foreach (var entry in DemoCatalog.Components)
+        {
+            <NavLink class="nav-link"
+                     href="@DemoCatalog.Href(_section, entry.Slug)"
+                     Match="NavLinkMatch.All"
+                     @onclick="OnNavLinkClicked">
+                @entry.Label
+            </NavLink>
+        }
+    </div>
+</nav>
+
+@code {
+    [Parameter] public EventCallback OnNavLinkClicked { get; set; }
+
+    /// <summary>Whether the dark theme is active (owned by MainLayout).</summary>
+    [Parameter] public bool DarkTheme { get; set; }
+
+    [Parameter] public EventCallback<bool> DarkThemeChanged { get; set; }
+
+    private DemoSection _section;
+
+    protected override void OnInitialized()
+    {
+        _section = ResolveSection(Nav.Uri);
+        Nav.LocationChanged += HandleLocationChanged;
+    }
+
+    private void HandleLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        var next = ResolveSection(e.Location);
+        if (next != _section)
+        {
+            _section = next;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private DemoSection ResolveSection(string uri)
+    {
+        var rel = Nav.ToBaseRelativePath(uri).Trim('/');
+        return rel.StartsWith("tw", StringComparison.OrdinalIgnoreCase)
+            ? DemoSection.Tailwind
+            : DemoSection.Css;
+    }
+
+    public void Dispose()
+    {
+        Nav.LocationChanged -= HandleLocationChanged;
+    }
+}

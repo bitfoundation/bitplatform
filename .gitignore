@@ -284,10 +284,6 @@ _book
 /src/Brouter/Bit.Brouter/Scripts/**/*.js
 /src/Brouter/Bit.Brouter/wwwroot/**/*.js
 
-/src/BlazorHeadlessUI/Bit.BlazorHeadlessUI/Scripts/**/*.js
-/src/BlazorHeadlessUI/Bit.BlazorHeadlessUI/wwwroot/**/*.js
-/src/BlazorHeadlessUI/Demo/Client/Bit.BlazorHeadlessUI.Demo.Client.Core/wwwroot/tailwind.css
-
 /src/Utilities/Bmotion/Bit.Bmotion/Scripts/**/*.js
 /src/Utilities/Bmotion/Bit.Bmotion/wwwroot/**/*.js
 
@@ -341,6 +337,16 @@ _book
 
 /src/Utilities/Belemetry/Bit.Belemetry/Scripts/**/*.js
 /src/Utilities/Belemetry/Bit.Belemetry/wwwroot/**/*.js
+
+/src/Utilities/Bheadless/Bit.Bheadless/Scripts/**/*.js
+/src/Utilities/Bheadless/Bit.Bheadless/wwwroot/**/*.js
+/src/Utilities/Bheadless/Demo/Client/Bit.Bheadless.Demo.Client.Core/wwwroot/tailwind.css
+
+# Its outputs from before it moved here from src/BlazorHeadlessUI: git moves only tracked files, so a checkout that
+# built it there keeps them behind.
+/src/BlazorHeadlessUI/Bit.BlazorHeadlessUI/Scripts/**/*.js
+/src/BlazorHeadlessUI/Bit.BlazorHeadlessUI/wwwroot/**/*.js
+/src/BlazorHeadlessUI/Demo/Client/Bit.BlazorHeadlessUI.Demo.Client.Core/wwwroot/tailwind.css
 
 /src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/BitFileUploaderFiles/*.*
 /src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/wwwroot/scripts/app.js

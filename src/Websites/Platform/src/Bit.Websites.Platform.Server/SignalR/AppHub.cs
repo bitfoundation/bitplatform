@@ -59,7 +59,7 @@ public partial class AppHub : Hub
             Name = "bitplatform",
             Endpoint = mcpEndpoint,
             TransportMode = HttpTransportMode.StreamableHttp
-        }), new() { }, loggerFactory, cancellationToken); // provides the per product tools (bit BlazorUI, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite, Brouter, Butil, Bswup, Belemetry, ...), the bitplatform source code tools and the general AskGitHubRepository tool
+        }), new() { }, loggerFactory, cancellationToken); // provides the per product tools (every library of BitLibraries.All), the bitplatform source code tools and the general AskGitHubRepository tool
         var bitplatformMcpTools = (await bitplatformMcp.ListToolsAsync(cancellationToken: cancellationToken))
             .OrderBy(tool => GetChatbotPriority(tool.Name))
             .ToArray();
@@ -128,8 +128,8 @@ public partial class AppHub : Hub
 
                     configuration.GetRequiredSection("AppSettings:ChatOptions").Bind(chatOptions);
 
-                    const string supportSystemPrompt = """
-                        You are the AI assistant of bitplatform (https://bitplatform.dev). You answer questions about every product the bit platform team ships - bit BlazorUI, Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite, Brouter, Butil, Bswup, Belemetry, Besql, the bit Boilerplate project template and the rest - and you route support and sales requests to a human.
+                    var supportSystemPrompt = $"""
+                        You are the AI assistant of bitplatform (https://bitplatform.dev). You answer questions about every product the bit platform team ships - bit {string.Join(", ", BitLibraries.All.Select(library => library.Name))}, Besql, the bit Boilerplate project template and the rest - and you route support and sales requests to a human.
 
                         **RELEVANCE:**
                         - A query is relevant only if it concerns bitplatform's products, their features, setup or usage, support topics, or product recommendations tied to bitplatform. .NET, Blazor, MAUI and ASP.NET Core topics are relevant only while they serve a bitplatform answer.
