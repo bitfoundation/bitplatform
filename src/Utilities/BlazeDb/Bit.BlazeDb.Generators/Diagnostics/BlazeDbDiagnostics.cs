@@ -142,6 +142,14 @@ internal static class BlazeDbDiagnostics
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    public static readonly DiagnosticDescriptor ReservedName = new(
+        "BLZ019",
+        "Name is reserved for generated members",
+        "Type '{0}' uses the name '{1}', which the generated partial declares itself; rename it - 'Table', 'Indexes' and names starting with '__Blaze' are reserved for the table type and its members",
+        Category,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     public static readonly DiagnosticDescriptor UnsupportedTypeShape = new(
         "BLZ007",
         "Unsupported table type shape",

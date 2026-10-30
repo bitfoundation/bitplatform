@@ -182,9 +182,12 @@ public static class BlazeDbTableInspector
     /// <summary>The table the generated partial of <paramref name="type"/> describes, read off its syntax.</summary>
     private static BlazeDbInspectedTableDto Describe(INamedTypeSymbol type, Compilation compilation, SyntaxTree generatedTree)
     {
-        var generated = generatedTree.GetRoot();
-        var tableField = generated.DescendantNodes().OfType<VariableDeclaratorSyntax>().FirstOrDefault(v => v.Identifier.ValueText == "Table");
-        var tableArguments = (tableField?.Initializer?.Value as BaseObjectCreationExpressionSyntax)?.ArgumentList?.Arguments;
+        // The descriptor and the index definitions are fields of a nested class the generator emits; the type's
+        // Table and its Indexes class only expose them as properties. Following Table to the field it returns finds
+        // that class without naming anything the generator keeps to itself.
+        var descriptor = DescriptorField(type, compilation, generatedTree);
+        var holder = descriptor?.FirstAncestorOrSelf<ClassDeclarationSyntax>();
+        var tableArguments = (descriptor?.Initializer?.Value as BaseObjectCreationExpressionSyntax)?.ArgumentList?.Arguments;
 
         var tableName = tableArguments is { Count: > 0 } ? (tableArguments.Value[0].Expression as LiteralExpressionSyntax)?.Token.ValueText : null;
         var keyName = tableArguments?.FirstOrDefault(argument => argument.NameColon?.Name.Identifier.ValueText == "keyMember")?.Expression is LiteralExpressionSyntax keyLiteral
@@ -194,7 +197,7 @@ public static class BlazeDbTableInspector
         var keyProperty = keyName is null ? null : type.GetMembers(keyName).OfType<IPropertySymbol>().FirstOrDefault();
 
         var fields = ReadFields(type, compilation, generatedTree);
-        var indexes = ReadIndexes(type, generated);
+        var indexes = ReadIndexes(type, holder);
 
         string[] members =
         [
@@ -213,6 +216,23 @@ public static class BlazeDbTableInspector
             Indexes = indexes,
             GeneratedMembers = members
         };
+    }
+
+    /// <summary>
+    /// The field the generated <c>Table</c> property of <paramref name="type"/> returns, as the compiler binds it -
+    /// not the <c>Table</c> index an <c>Indexes</c> class may declare.
+    /// </summary>
+    private static VariableDeclaratorSyntax? DescriptorField(INamedTypeSymbol type, Compilation compilation, SyntaxTree generatedTree)
+    {
+        if (compilation.ContainsSyntaxTree(generatedTree) is false) return null;
+
+        var table = generatedTree.GetRoot().DescendantNodes().OfType<PropertyDeclarationSyntax>()
+            .FirstOrDefault(property => property.Identifier.ValueText == "Table" && property.Parent is TypeDeclarationSyntax parent && parent.Identifier.ValueText == type.Name);
+        if (table?.ExpressionBody is null) return null;
+
+        var field = compilation.GetSemanticModel(generatedTree).GetSymbolInfo(table.ExpressionBody.Expression).Symbol as IFieldSymbol;
+
+        return field?.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() as VariableDeclaratorSyntax;
     }
 
     /// <summary>
@@ -299,18 +319,18 @@ public static class BlazeDbTableInspector
     }
 
     /// <summary>
-    /// The indexes of the generated <c>Indexes</c> class. Each member is declared as
+    /// The indexes the generated <c>Indexes</c> class exposes, read off the holder's fields behind it. Each is declared as
     /// <c>BlazeDbHashIndexDefinition&lt;TRow, TKey&gt;</c> or <c>BlazeDbOrderedIndexDefinition&lt;TRow, TKey&gt;</c> and
-    /// constructed as <c>new("Name", selector, comparer, unique, new string[] { members })</c>.
+    /// constructed as <c>new("Name", selector, comparer, unique, new string[] { members })</c>; the field's own name
+    /// carries a prefix, so the index's name is the first argument.
     /// </summary>
-    private static BlazeDbInspectedIndexDto[] ReadIndexes(INamedTypeSymbol type, SyntaxNode generated)
+    private static BlazeDbInspectedIndexDto[] ReadIndexes(INamedTypeSymbol type, ClassDeclarationSyntax? holder)
     {
-        var indexesClass = generated.DescendantNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault(c => c.Identifier.ValueText == "Indexes");
-        if (indexesClass is null) return [];
+        if (holder is null) return [];
 
         var indexes = new List<BlazeDbInspectedIndexDto>();
 
-        foreach (var field in indexesClass.Members.OfType<FieldDeclarationSyntax>())
+        foreach (var field in holder.Members.OfType<FieldDeclarationSyntax>())
         {
             if (field.Declaration.Type is not QualifiedNameSyntax { Right: GenericNameSyntax definition } || definition.TypeArgumentList.Arguments.Count != 2) continue;
 
@@ -325,7 +345,7 @@ public static class BlazeDbTableInspector
             foreach (var variable in field.Declaration.Variables)
             {
                 var arguments = (variable.Initializer?.Value as BaseObjectCreationExpressionSyntax)?.ArgumentList?.Arguments;
-                if (arguments is not { Count: >= 5 } args) continue;
+                if (arguments is not { Count: >= 5 } args || args[0].Expression is not LiteralExpressionSyntax name) continue;
 
                 var unique = args[3].Expression.IsKind(SyntaxKind.TrueLiteralExpression);
                 var members = args[4].Expression.DescendantNodes().OfType<LiteralExpressionSyntax>()
@@ -335,12 +355,13 @@ public static class BlazeDbTableInspector
 
                 indexes.Add(new BlazeDbInspectedIndexDto
                 {
-                    Name = variable.Identifier.ValueText,
+                    Name = name.Token.ValueText,
                     Kind = kind,
                     Unique = unique,
                     Members = members,
                     KeyType = KeyTypeOf(type, members, definition.TypeArgumentList.Arguments[1]),
-                    Reference = $"{type.Name}.Indexes.{variable.Identifier.ValueText}"
+                    // An index named after a keyword is a member the generator escapes: Indexes.@event.
+                    Reference = $"{type.Name}.Indexes.{(SyntaxFacts.GetKeywordKind(name.Token.ValueText) is SyntaxKind.None ? "" : "@")}{name.Token.ValueText}"
                 });
             }
         }

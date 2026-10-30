@@ -62,7 +62,9 @@ public static partial class BlazeDbSetupGuide
                 and must not render the components that open it: OPFS, IndexedDB and Web Locks exist only in the browser.
                 This demo turns prerendering off for the whole app, since every page opens the database; an app that wants
                 prerendering opens the database in `OnAfterRenderAsync` (or behind `OperatingSystem.IsBrowser()`) instead.
-                The files below are the demo's own.
+                The files below are the demo's own. A client that lazy loads Bit.BlazeDb gives `Routes` the
+                InteractiveWebAssembly render mode and keeps the singleton's fields free of BlazeDb's types - see
+                `GetBlazeDbGuideSection(heading: "Lazy loading on WebAssembly")`.
                 """,
                 ["Blazor Web App", "Blazor WebAssembly"],
                 null,
@@ -73,7 +75,9 @@ public static partial class BlazeDbSetupGuide
                 "standalone Blazor WebAssembly",
                 """
                 One project and no prerendering: the database is opened in the browser from the first render, once per tab,
-                by a singleton service every page shares.
+                by a singleton service every page shares. This is the setup for an app that loads Bit.BlazeDb at startup; one
+                that lazy loads it keeps the service's fields free of BlazeDb's types - see
+                `GetBlazeDbGuideSection(heading: "Lazy loading on WebAssembly")`.
                 """,
                 ["Blazor WebAssembly"],
                 StandaloneFiles,
@@ -87,7 +91,9 @@ public static partial class BlazeDbSetupGuide
                 the database only ever lives in the browser. Put the code that uses it in the .Client project and open it only
                 once the component runs in the browser (`OperatingSystem.IsBrowser()`, or `RendererInfo.Name == "WebAssembly"`),
                 rendering a placeholder during the server-rendered visit. Pages that need the
-                database on every visit are simpler as `InteractiveWebAssembly` without prerendering, as in this demo.
+                database on every visit are simpler as `InteractiveWebAssembly` without prerendering, as in this demo. A
+                client that lazy loads Bit.BlazeDb only does so in the browser - see
+                `GetBlazeDbGuideSection(heading: "Lazy loading on WebAssembly")`.
                 """,
                 ["Blazor Web App", "Blazor WebAssembly"],
                 null,
@@ -189,7 +195,9 @@ public static partial class BlazeDbSetupGuide
         2. Declare each table as a top-level `partial` type marked `[BlazeDbTable("name")]` with one `[BlazeDbKey]`
            property, and check it with `InspectBlazeDbTable`.
         3. Open the database ONCE per tab, in a singleton service, and share it - not per component or per page. The
-           storage (`BlazeDbOpfsStorage.CreateAsync`) takes the tab's writer lock; dispose it after the database.
+           storage (`BlazeDbOpfsStorage.CreateAsync`) takes the tab's writer lock; dispose it after the database. (An app
+           that lazy loads Bit.BlazeDb keeps that service's fields free of BlazeDb's types, since Program.cs names it
+           before the assembly is there - see the guide's lazy loading section.)
         4. Never open a browser backend outside the browser: not during prerendering, not in an InteractiveServer or
            InteractiveAuto server render. Every type in `Bit.BlazeDb.Browser` is `[SupportedOSPlatform("browser")]`.
         5. Handle the second tab: `CreateAsync` throws `BlazeDbDatabaseLockedException` when another tab is the writer -

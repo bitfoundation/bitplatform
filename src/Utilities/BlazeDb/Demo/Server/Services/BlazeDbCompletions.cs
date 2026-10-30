@@ -33,6 +33,7 @@ public static class BlazeDbCompletions
         "PlatformNotSupportedException during prerendering",
         "the UI freezes while scanning a large table",
         "BlazeDbStorageQuotaExceededException",
+        "Could not load file or assembly 'Bit.BlazeDb' in an app that lazy loads it",
     ];
 
     private static readonly string[] _features =

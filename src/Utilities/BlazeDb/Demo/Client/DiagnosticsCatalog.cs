@@ -404,6 +404,26 @@ public static class DiagnosticsCatalog
                 [BlazeDbIgnore] public string Label { get; set; } = "";
             }
             """),
+
+        new("BLZ019", "Name is reserved for generated members", true,
+            "int Table { get; set; }",
+            "The generated partial adds a static <code>Table</code> property and an <code>Indexes</code> class to the type, and private members whose names start with <code>__Blaze</code>. A member of the type with one of those names would be declared twice, and a type named after one would contain a member named after itself - either way the generated code would not compile.",
+            """
+            [BlazeDbTable("reservations")]
+            public partial class Reservation
+            {
+                [BlazeDbKey] public int Id { get; set; }
+                public int Table { get; set; }   // BLZ019
+            }
+            """,
+            """
+            [BlazeDbTable("reservations")]
+            public partial class Reservation
+            {
+                [BlazeDbKey] public int Id { get; set; }
+                public int TableNumber { get; set; }
+            }
+            """),
     ];
 
     /// <summary>The entry for one id, or null.</summary>

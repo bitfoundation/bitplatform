@@ -87,6 +87,26 @@ public class McpInspectorTests
     }
 
     [TestMethod]
+    public async Task An_index_named_after_a_keyword_compiles_and_is_referenced_escaped()
+    {
+        var report = await InspectAsync("""
+            [BlazeDbTable("occurrences")]
+            public partial class Occurrence
+            {
+                [BlazeDbKey] public int Id { get; set; }
+                [BlazeDbIndex(Name = "event")] public string Kind { get; set; } = "";
+            }
+            """);
+
+        Assert.IsTrue(report.IsValid, string.Join(Environment.NewLine, report.Diagnostics.Select(d => $"{d.Id}: {d.Message}")));
+
+        var index = report.Tables.Single().Indexes.Single();
+
+        Assert.AreEqual("event", index.Name);
+        Assert.AreEqual("Occurrence.Indexes.@event", index.Reference);
+    }
+
+    [TestMethod]
     public async Task The_generated_code_is_returned_only_when_asked_for()
     {
         var without = await InspectAsync(_modelsSource.Value);
@@ -150,6 +170,34 @@ public class McpInspectorTests
 
         Assert.AreEqual(5, diagnostic.Line);
         Assert.IsFalse(report.IsValid);
+    }
+
+    [TestMethod]
+    public async Task The_name_of_the_generated_holder_is_reserved()
+    {
+        string[] sources =
+        [
+            """
+            [BlazeDbTable("t")]
+            public partial class __BlazeTable { [BlazeDbKey] public int Id { get; set; } }
+            """,
+            """
+            [BlazeDbTable("t")]
+            public partial class T { [BlazeDbKey] public int Id { get; set; } public int __BlazeTable { get; set; } }
+            """,
+            """
+            [BlazeDbTable("t")]
+            public partial class T { [BlazeDbKey] public int Id { get; set; } public class __BlazeTable { } }
+            """,
+        ];
+
+        foreach (var source in sources)
+        {
+            var report = await InspectAsync(source);
+
+            Assert.IsTrue(report.Diagnostics.Any(d => d.Id == "BLZ019" && d.Source == "generator"), source);
+            Assert.IsFalse(report.Diagnostics.Any(d => d.Source == "compiler"), source);
+        }
     }
 
     [TestMethod]
