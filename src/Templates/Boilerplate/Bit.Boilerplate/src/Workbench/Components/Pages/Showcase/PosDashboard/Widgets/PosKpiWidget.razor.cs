@@ -26,7 +26,7 @@ public partial class PosKpiWidget
 
     protected override void OnDataLoaded()
     {
-        var color = IsGoodChange ? "#22a06b" : "#e5484d";
+        var color = $"var({(IsGoodChange ? BitCss.Var.Color.Success.Main : BitCss.Var.Color.Error.Main)})";
 
         trendData = new()
         {
@@ -38,7 +38,7 @@ public partial class PosKpiWidget
                     Data = [.. Data!.Trend.Select(v => (double?)v)],
                     BorderColor = color,
                     BackgroundColor = color,
-                    FillColor = $"{color}22",
+                    FillColor = BitChartColorUtil.Translucent(color, 0.13),
                     Fill = BitChartFillMode.Origin,
                     Tension = 0.4,
                     BorderWidth = 2,

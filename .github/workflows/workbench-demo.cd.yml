@@ -59,6 +59,19 @@ jobs:
       working-directory: Workbench
       run: dotnet publish src/Workbench/Workbench.Workbench.csproj -c Release -o ../server -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess
 
+    - name: Point screenshots at the shared browser folder
+      shell: pwsh
+      run: |
+        $path = Resolve-Path 'server/web.config'
+        [xml]$config = Get-Content $path
+        $variables = $config.CreateElement('environmentVariables')
+        $variable = $config.CreateElement('environmentVariable')
+        $variable.SetAttribute('name', 'PLAYWRIGHT_BROWSERS_PATH')
+        $variable.SetAttribute('value', 'C:\ProgramData\ms-playwright')
+        $variables.AppendChild($variable) | Out-Null
+        $config.SelectSingleNode('//aspNetCore').AppendChild($variables) | Out-Null
+        $config.Save($path)
+
     - name: Strip server-owned files from bundle
       shell: pwsh
       run: |
@@ -106,3 +119,9 @@ jobs:
         health-check-url: 'https://workbench.bitplatform.dev/'
         cloudflare-zone-id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
         cloudflare-token: ${{ secrets.CLOUDFLARE_TOKEN }}
+
+    - name: Install the screenshot browser
+      shell: pwsh
+      run: |
+        $env:PLAYWRIGHT_BROWSERS_PATH = 'C:\ProgramData\ms-playwright'
+        & 'C:\inetpub\Workbench\playwright.ps1' install chromium --only-shell

@@ -1044,4 +1044,151 @@
     <data name="StoreSizeCountOne" xml:space="preserve">
         <value>1 size</value>
     </data>
+    <data name="AssistantTitle" xml:space="preserve">
+        <value>AI assistant</value>
+    </data>
+    <data name="AssistantDescription" xml:space="preserve">
+        <value>A chat that answers with text, charts and actions, streamed as it is written, with history, stop and retry.</value>
+    </data>
+    <data name="AssistantCaption" xml:space="preserve">
+        <value>Ask your stores anything</value>
+    </data>
+    <data name="CategoryAi" xml:space="preserve">
+        <value>AI</value>
+    </data>
+    <data name="AssistantConversations" xml:space="preserve">
+        <value>Conversations</value>
+    </data>
+    <data name="AssistantNewChat" xml:space="preserve">
+        <value>New chat</value>
+    </data>
+    <data name="AssistantRecent" xml:space="preserve">
+        <value>Recent</value>
+    </data>
+    <data name="AssistantNoHistory" xml:space="preserve">
+        <value>No conversations yet</value>
+    </data>
+    <data name="AssistantHistoryFailed" xml:space="preserve">
+        <value>The conversations couldn't be loaded.</value>
+    </data>
+    <data name="AssistantRetry" xml:space="preserve">
+        <value>Try again</value>
+    </data>
+    <data name="AssistantModel" xml:space="preserve">
+        <value>Demo model</value>
+    </data>
+    <data name="AssistantWelcomeTitle" xml:space="preserve">
+        <value>How can I help with your stores today?</value>
+    </data>
+    <data name="AssistantWelcomeText" xml:space="preserve">
+        <value>Ask about sales, stock, promotions or your team. In the workbench the answers come from a script, so every state of the conversation can be designed.</value>
+    </data>
+    <data name="AssistantPromptPlaceholder" xml:space="preserve">
+        <value>Ask about sales, stock or promotions</value>
+    </data>
+    <data name="AssistantSend" xml:space="preserve">
+        <value>Send</value>
+    </data>
+    <data name="AssistantStop" xml:space="preserve">
+        <value>Stop</value>
+    </data>
+    <data name="AssistantStopped" xml:space="preserve">
+        <value>Stopped</value>
+    </data>
+    <data name="AssistantThinking" xml:space="preserve">
+        <value>Thinking</value>
+    </data>
+    <data name="AssistantDisclaimer" xml:space="preserve">
+        <value>Sample answers, scripted for design.</value>
+    </data>
+    <data name="AssistantAnswerFailed" xml:space="preserve">
+        <value>This answer didn't arrive.</value>
+    </data>
+    <data name="AssistantCopy" xml:space="preserve">
+        <value>Copy</value>
+    </data>
+    <data name="AssistantCopied" xml:space="preserve">
+        <value>Copied</value>
+    </data>
+    <data name="AssistantHelpful" xml:space="preserve">
+        <value>Helpful</value>
+    </data>
+    <data name="AssistantNotHelpful" xml:space="preserve">
+        <value>Not helpful</value>
+    </data>
+    <data name="AssistantToday" xml:space="preserve">
+        <value>Today</value>
+    </data>
+    <data name="AssistantYesterday" xml:space="preserve">
+        <value>Yesterday</value>
+    </data>
+    <data name="AssistantHistoryWeekly" xml:space="preserve">
+        <value>Weekly sales recap</value>
+    </data>
+    <data name="AssistantHistoryRestock" xml:space="preserve">
+        <value>Restock before the weekend</value>
+    </data>
+    <data name="AssistantHistoryAutumn" xml:space="preserve">
+        <value>Autumn promotion</value>
+    </data>
+    <data name="AssistantHistoryTeam" xml:space="preserve">
+        <value>Top sellers today</value>
+    </data>
+    <data name="AssistantSalesPrompt" xml:space="preserve">
+        <value>How did sales go this week?</value>
+    </data>
+    <data name="AssistantSalesAnswer" xml:space="preserve">
+        <value>Net sales over the last 7 days came to **€34,820**, up **8.4%** on the week before.
+
+- **Amsterdam** led with €15,940, helped by a busy Saturday.
+- **Rotterdam** grew fastest, up **12.1%** after the new breakfast menu.
+- **Utrecht** stayed flat; its afternoons were quieter than usual.
+
+Here is each day:</value>
+    </data>
+    <data name="AssistantStockPrompt" xml:space="preserve">
+        <value>What's running low?</value>
+    </data>
+    <data name="AssistantStockAnswer" xml:space="preserve">
+        <value>Three products will run out before Monday's delivery. Reorder them now and they arrive on Friday:</value>
+    </data>
+    <data name="AssistantPromoPrompt" xml:space="preserve">
+        <value>Write a promo for oat milk lattes</value>
+    </data>
+    <data name="AssistantPromoAnswer" xml:space="preserve">
+        <value>Here's a short one for the counter and your social posts:</value>
+    </data>
+    <data name="AssistantPromoDraft" xml:space="preserve">
+        <value>Autumn tastes better with oat. Any oat milk latte for €3.50 this week, in all three stores.</value>
+    </data>
+    <data name="AssistantStaffPrompt" xml:space="preserve">
+        <value>Who sold the most today?</value>
+    </data>
+    <data name="AssistantStaffAnswer" xml:space="preserve">
+        <value>**Daan** leads today with **64 orders** and €1,180 in sales. **Sarah** follows with 58 orders, then **Niloofar** with 51. Daan's average sale is the highest too, at €18.40.</value>
+    </data>
+    <data name="AssistantFallbackAnswer" xml:space="preserve">
+        <value>In the workbench I answer from a short script, so I can't look that up. Try one of the suggestions, or ask about sales, stock, promotions or your team.</value>
+    </data>
+    <data name="AssistantSalesCardTitle" xml:space="preserve">
+        <value>Net sales, last 7 days</value>
+    </data>
+    <data name="AssistantUnitsLeft" xml:space="preserve">
+        <value>{0} left</value>
+    </data>
+    <data name="AssistantReorder" xml:space="preserve">
+        <value>Reorder</value>
+    </data>
+    <data name="AssistantOrdered" xml:space="preserve">
+        <value>Ordered</value>
+    </data>
+    <data name="AssistantStockOatMilk" xml:space="preserve">
+        <value>Oat milk</value>
+    </data>
+    <data name="AssistantStockCroissants" xml:space="preserve">
+        <value>Croissants</value>
+    </data>
+    <data name="AssistantStockPaperCups" xml:space="preserve">
+        <value>Paper cups</value>
+    </data>
 </root>

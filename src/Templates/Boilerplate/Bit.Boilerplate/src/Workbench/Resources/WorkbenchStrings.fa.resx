@@ -1044,4 +1044,151 @@
     <data name="StoreSizeCountOne" xml:space="preserve">
         <value>یک اندازه</value>
     </data>
+    <data name="AssistantTitle" xml:space="preserve">
+        <value>دستیار هوش مصنوعی</value>
+    </data>
+    <data name="AssistantDescription" xml:space="preserve">
+        <value>گفتگویی که با متن، نمودار و اقدام پاسخ می‌دهد و پاسخ را هم‌زمان با نوشته‌شدن نشان می‌دهد، با تاریخچه، توقف و تلاش دوباره.</value>
+    </data>
+    <data name="AssistantCaption" xml:space="preserve">
+        <value>هر سؤالی از فروشگاه‌هایتان بپرسید</value>
+    </data>
+    <data name="CategoryAi" xml:space="preserve">
+        <value>هوش مصنوعی</value>
+    </data>
+    <data name="AssistantConversations" xml:space="preserve">
+        <value>گفتگوها</value>
+    </data>
+    <data name="AssistantNewChat" xml:space="preserve">
+        <value>گفتگوی تازه</value>
+    </data>
+    <data name="AssistantRecent" xml:space="preserve">
+        <value>اخیر</value>
+    </data>
+    <data name="AssistantNoHistory" xml:space="preserve">
+        <value>هنوز گفتگویی نیست</value>
+    </data>
+    <data name="AssistantHistoryFailed" xml:space="preserve">
+        <value>گفتگوها بارگذاری نشدند.</value>
+    </data>
+    <data name="AssistantRetry" xml:space="preserve">
+        <value>دوباره امتحان کنید</value>
+    </data>
+    <data name="AssistantModel" xml:space="preserve">
+        <value>مدل نمایشی</value>
+    </data>
+    <data name="AssistantWelcomeTitle" xml:space="preserve">
+        <value>امروز چه کمکی برای فروشگاه‌هایتان از دستم برمی‌آید؟</value>
+    </data>
+    <data name="AssistantWelcomeText" xml:space="preserve">
+        <value>درباره فروش، موجودی، تخفیف‌ها یا همکارانتان بپرسید. در میز کار پاسخ‌ها از یک متن آماده می‌آیند تا بتوانید هر حالت گفتگو را طراحی کنید.</value>
+    </data>
+    <data name="AssistantPromptPlaceholder" xml:space="preserve">
+        <value>درباره فروش، موجودی یا تخفیف‌ها بپرسید</value>
+    </data>
+    <data name="AssistantSend" xml:space="preserve">
+        <value>ارسال</value>
+    </data>
+    <data name="AssistantStop" xml:space="preserve">
+        <value>توقف</value>
+    </data>
+    <data name="AssistantStopped" xml:space="preserve">
+        <value>متوقف شد</value>
+    </data>
+    <data name="AssistantThinking" xml:space="preserve">
+        <value>در حال فکر کردن</value>
+    </data>
+    <data name="AssistantDisclaimer" xml:space="preserve">
+        <value>پاسخ‌های نمونه، نوشته‌شده برای طراحی.</value>
+    </data>
+    <data name="AssistantAnswerFailed" xml:space="preserve">
+        <value>این پاسخ نرسید.</value>
+    </data>
+    <data name="AssistantCopy" xml:space="preserve">
+        <value>کپی</value>
+    </data>
+    <data name="AssistantCopied" xml:space="preserve">
+        <value>کپی شد</value>
+    </data>
+    <data name="AssistantHelpful" xml:space="preserve">
+        <value>مفید بود</value>
+    </data>
+    <data name="AssistantNotHelpful" xml:space="preserve">
+        <value>مفید نبود</value>
+    </data>
+    <data name="AssistantToday" xml:space="preserve">
+        <value>امروز</value>
+    </data>
+    <data name="AssistantYesterday" xml:space="preserve">
+        <value>دیروز</value>
+    </data>
+    <data name="AssistantHistoryWeekly" xml:space="preserve">
+        <value>خلاصه فروش هفته</value>
+    </data>
+    <data name="AssistantHistoryRestock" xml:space="preserve">
+        <value>تأمین موجودی پیش از آخر هفته</value>
+    </data>
+    <data name="AssistantHistoryAutumn" xml:space="preserve">
+        <value>تخفیف پاییزی</value>
+    </data>
+    <data name="AssistantHistoryTeam" xml:space="preserve">
+        <value>پرفروش‌ترین‌های امروز</value>
+    </data>
+    <data name="AssistantSalesPrompt" xml:space="preserve">
+        <value>فروش این هفته چطور بود؟</value>
+    </data>
+    <data name="AssistantSalesAnswer" xml:space="preserve">
+        <value>فروش خالص ۷ روز گذشته **۳۴٬۸۲۰ یورو** بود، یعنی **۸٫۴٪** بیشتر از هفته قبل.
+
+- **آمستردام** با ۱۵٬۹۴۰ یورو جلوتر بود و شنبه شلوغی داشت.
+- **روتردام** پس از منوی صبحانه تازه بیشترین رشد را داشت: **۱۲٫۱٪**.
+- **اوترخت** ثابت ماند و عصرهایش خلوت‌تر از همیشه بود.
+
+فروش هر روز:</value>
+    </data>
+    <data name="AssistantStockPrompt" xml:space="preserve">
+        <value>چه چیزهایی دارد تمام می‌شود؟</value>
+    </data>
+    <data name="AssistantStockAnswer" xml:space="preserve">
+        <value>سه کالا پیش از رسیدن بار دوشنبه تمام می‌شوند. اگر همین حالا سفارش دهید، جمعه می‌رسند:</value>
+    </data>
+    <data name="AssistantPromoPrompt" xml:space="preserve">
+        <value>یک متن تبلیغاتی برای لاته با شیر جو دوسر بنویس</value>
+    </data>
+    <data name="AssistantPromoAnswer" xml:space="preserve">
+        <value>یک متن کوتاه برای پیشخوان و شبکه‌های اجتماعی:</value>
+    </data>
+    <data name="AssistantPromoDraft" xml:space="preserve">
+        <value>پاییز با شیر جو دوسر خوش‌طعم‌تر است. این هفته هر لاته با شیر جو دوسر ۳٫۵۰ یورو، در هر سه فروشگاه.</value>
+    </data>
+    <data name="AssistantStaffPrompt" xml:space="preserve">
+        <value>امروز چه کسی بیشترین فروش را داشت؟</value>
+    </data>
+    <data name="AssistantStaffAnswer" xml:space="preserve">
+        <value>**دان** امروز با **۶۴ سفارش** و ۱٬۱۸۰ یورو فروش جلوتر است. پس از او **سارا** با ۵۸ سفارش و **نیلوفر** با ۵۱ سفارش هستند. میانگین فروش دان هم بیشترین است: ۱۸٫۴۰ یورو.</value>
+    </data>
+    <data name="AssistantFallbackAnswer" xml:space="preserve">
+        <value>در میز کار از روی یک متن کوتاه پاسخ می‌دهم و نمی‌توانم این را پیدا کنم. یکی از پیشنهادها را امتحان کنید یا درباره فروش، موجودی، تخفیف‌ها یا همکارانتان بپرسید.</value>
+    </data>
+    <data name="AssistantSalesCardTitle" xml:space="preserve">
+        <value>فروش خالص، ۷ روز گذشته</value>
+    </data>
+    <data name="AssistantUnitsLeft" xml:space="preserve">
+        <value>{0} عدد مانده</value>
+    </data>
+    <data name="AssistantReorder" xml:space="preserve">
+        <value>سفارش دوباره</value>
+    </data>
+    <data name="AssistantOrdered" xml:space="preserve">
+        <value>سفارش داده شد</value>
+    </data>
+    <data name="AssistantStockOatMilk" xml:space="preserve">
+        <value>شیر جو دوسر</value>
+    </data>
+    <data name="AssistantStockCroissants" xml:space="preserve">
+        <value>کروسان</value>
+    </data>
+    <data name="AssistantStockPaperCups" xml:space="preserve">
+        <value>لیوان کاغذی</value>
+    </data>
 </root>

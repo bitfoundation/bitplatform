@@ -102,6 +102,10 @@ host.workbench = {
         return navigator.clipboard?.writeText(text);
     },
 
+    scrollToEnd(element: HTMLElement) {
+        element?.scrollTo({ top: element.scrollHeight, behavior: 'smooth' });
+    },
+
     setCulture(name: string) {
         document.cookie = `.AspNetCore.Culture=${encodeURIComponent(`c=${name}|uic=${name}`)}; path=/; max-age=31536000; samesite=lax`;
         location.reload();

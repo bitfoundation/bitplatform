@@ -1044,4 +1044,151 @@
     <data name="StoreSizeCountOne" xml:space="preserve">
         <value>1 formaat</value>
     </data>
+    <data name="AssistantTitle" xml:space="preserve">
+        <value>AI-assistent</value>
+    </data>
+    <data name="AssistantDescription" xml:space="preserve">
+        <value>Een chat die antwoordt met tekst, grafieken en acties, live geschreven, met geschiedenis, stoppen en opnieuw proberen.</value>
+    </data>
+    <data name="AssistantCaption" xml:space="preserve">
+        <value>Vraag je winkels alles</value>
+    </data>
+    <data name="CategoryAi" xml:space="preserve">
+        <value>AI</value>
+    </data>
+    <data name="AssistantConversations" xml:space="preserve">
+        <value>Gesprekken</value>
+    </data>
+    <data name="AssistantNewChat" xml:space="preserve">
+        <value>Nieuw gesprek</value>
+    </data>
+    <data name="AssistantRecent" xml:space="preserve">
+        <value>Recent</value>
+    </data>
+    <data name="AssistantNoHistory" xml:space="preserve">
+        <value>Nog geen gesprekken</value>
+    </data>
+    <data name="AssistantHistoryFailed" xml:space="preserve">
+        <value>De gesprekken konden niet worden geladen.</value>
+    </data>
+    <data name="AssistantRetry" xml:space="preserve">
+        <value>Opnieuw proberen</value>
+    </data>
+    <data name="AssistantModel" xml:space="preserve">
+        <value>Demomodel</value>
+    </data>
+    <data name="AssistantWelcomeTitle" xml:space="preserve">
+        <value>Waarmee kan ik je vandaag helpen met je winkels?</value>
+    </data>
+    <data name="AssistantWelcomeText" xml:space="preserve">
+        <value>Vraag naar verkoop, voorraad, acties of je team. Op de werkbank komen de antwoorden uit een script, zodat je elke toestand van het gesprek kunt ontwerpen.</value>
+    </data>
+    <data name="AssistantPromptPlaceholder" xml:space="preserve">
+        <value>Vraag naar verkoop, voorraad of acties</value>
+    </data>
+    <data name="AssistantSend" xml:space="preserve">
+        <value>Versturen</value>
+    </data>
+    <data name="AssistantStop" xml:space="preserve">
+        <value>Stoppen</value>
+    </data>
+    <data name="AssistantStopped" xml:space="preserve">
+        <value>Gestopt</value>
+    </data>
+    <data name="AssistantThinking" xml:space="preserve">
+        <value>Aan het nadenken</value>
+    </data>
+    <data name="AssistantDisclaimer" xml:space="preserve">
+        <value>Voorbeeldantwoorden, geschreven voor het ontwerp.</value>
+    </data>
+    <data name="AssistantAnswerFailed" xml:space="preserve">
+        <value>Dit antwoord is niet aangekomen.</value>
+    </data>
+    <data name="AssistantCopy" xml:space="preserve">
+        <value>Kopiëren</value>
+    </data>
+    <data name="AssistantCopied" xml:space="preserve">
+        <value>Gekopieerd</value>
+    </data>
+    <data name="AssistantHelpful" xml:space="preserve">
+        <value>Nuttig</value>
+    </data>
+    <data name="AssistantNotHelpful" xml:space="preserve">
+        <value>Niet nuttig</value>
+    </data>
+    <data name="AssistantToday" xml:space="preserve">
+        <value>Vandaag</value>
+    </data>
+    <data name="AssistantYesterday" xml:space="preserve">
+        <value>Gisteren</value>
+    </data>
+    <data name="AssistantHistoryWeekly" xml:space="preserve">
+        <value>Weekoverzicht verkoop</value>
+    </data>
+    <data name="AssistantHistoryRestock" xml:space="preserve">
+        <value>Bijvullen voor het weekend</value>
+    </data>
+    <data name="AssistantHistoryAutumn" xml:space="preserve">
+        <value>Herfstactie</value>
+    </data>
+    <data name="AssistantHistoryTeam" xml:space="preserve">
+        <value>Topverkopers van vandaag</value>
+    </data>
+    <data name="AssistantSalesPrompt" xml:space="preserve">
+        <value>Hoe ging de verkoop deze week?</value>
+    </data>
+    <data name="AssistantSalesAnswer" xml:space="preserve">
+        <value>De nettoverkoop van de afgelopen 7 dagen kwam uit op **€ 34.820**, **8,4%** meer dan de week ervoor.
+
+- **Amsterdam** liep voorop met € 15.940, dankzij een drukke zaterdag.
+- **Rotterdam** groeide het snelst, **12,1%** na het nieuwe ontbijtmenu.
+- **Utrecht** bleef gelijk; de middagen waren rustiger dan normaal.
+
+Zo verliep elke dag:</value>
+    </data>
+    <data name="AssistantStockPrompt" xml:space="preserve">
+        <value>Wat raakt op?</value>
+    </data>
+    <data name="AssistantStockAnswer" xml:space="preserve">
+        <value>Drie producten raken op voor de levering van maandag. Bestel ze nu bij, dan zijn ze er vrijdag:</value>
+    </data>
+    <data name="AssistantPromoPrompt" xml:space="preserve">
+        <value>Schrijf een actie voor havermelk-lattes</value>
+    </data>
+    <data name="AssistantPromoAnswer" xml:space="preserve">
+        <value>Hier is een korte tekst voor de toonbank en je socials:</value>
+    </data>
+    <data name="AssistantPromoDraft" xml:space="preserve">
+        <value>De herfst smaakt beter met haver. Deze week elke havermelk-latte voor € 3,50, in alle drie de winkels.</value>
+    </data>
+    <data name="AssistantStaffPrompt" xml:space="preserve">
+        <value>Wie heeft vandaag het meest verkocht?</value>
+    </data>
+    <data name="AssistantStaffAnswer" xml:space="preserve">
+        <value>**Daan** staat vandaag bovenaan met **64 bestellingen** en € 1.180 omzet. Daarna volgen **Sarah** met 58 bestellingen en **Niloofar** met 51. Daan heeft ook de hoogste gemiddelde verkoop: € 18,40.</value>
+    </data>
+    <data name="AssistantFallbackAnswer" xml:space="preserve">
+        <value>Op de werkbank antwoord ik uit een kort script, dus dat kan ik niet opzoeken. Probeer een van de suggesties, of vraag naar verkoop, voorraad, acties of je team.</value>
+    </data>
+    <data name="AssistantSalesCardTitle" xml:space="preserve">
+        <value>Nettoverkoop, laatste 7 dagen</value>
+    </data>
+    <data name="AssistantUnitsLeft" xml:space="preserve">
+        <value>nog {0}</value>
+    </data>
+    <data name="AssistantReorder" xml:space="preserve">
+        <value>Bijbestellen</value>
+    </data>
+    <data name="AssistantOrdered" xml:space="preserve">
+        <value>Besteld</value>
+    </data>
+    <data name="AssistantStockOatMilk" xml:space="preserve">
+        <value>Havermelk</value>
+    </data>
+    <data name="AssistantStockCroissants" xml:space="preserve">
+        <value>Croissants</value>
+    </data>
+    <data name="AssistantStockPaperCups" xml:space="preserve">
+        <value>Papieren bekers</value>
+    </data>
 </root>

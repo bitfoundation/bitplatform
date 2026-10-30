@@ -32,7 +32,7 @@ public partial class PosSalesByHourWidget
                 {
                     Label = Localizer[Dashboard.Filter.Days == 1 ? nameof(WorkbenchStrings.PosToday) : nameof(WorkbenchStrings.PosThisPeriod)],
                     Data = [.. Data!.Select(h => (double?)h.Today)],
-                    BackgroundColor = "#4f6bed",
+                    BackgroundColor = $"var({BitCss.Var.Color.Primary.Main})",
                     BorderRadius = 6,
                     MaxBarThickness = 22,
                     Order = 1
@@ -42,8 +42,8 @@ public partial class PosSalesByHourWidget
                     Type = BitChartType.Line,
                     Label = Localizer[nameof(WorkbenchStrings.PosLastWeek)],
                     Data = [.. Data!.Select(h => (double?)h.LastWeek)],
-                    BorderColor = "#f5a524",
-                    BackgroundColor = "#f5a524",
+                    BorderColor = $"var({BitCss.Var.Color.Warning.Main})",
+                    BackgroundColor = $"var({BitCss.Var.Color.Warning.Main})",
                     BorderDash = [5, 4],
                     BorderWidth = 2,
                     Tension = 0.4,
