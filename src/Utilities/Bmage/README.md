@@ -90,9 +90,9 @@ Blazor-native image processing platform where the engine itself is C#.
 | `Bit.Bmage` | The engine: pixel buffers, operations, pipelines, layers, masks, annotations, metadata, the managed codecs and headless processing on a server | `Microsoft.Extensions.DependencyInjection.Abstractions` |
 | `Bit.Bmage.Blazor` | The browser integration: browser codecs, capabilities, loading and export, and the `BmageEditor` / `BmageDropZone` components | `Bit.Bmage`, `Microsoft.AspNetCore.Components.Web` |
 
-A browser app takes `Bit.Bmage.Blazor`, which brings `Bit.Bmage` along. An ASP.NET Core API, a console tool or a worker
-that only processes images headlessly takes `Bit.Bmage` alone, without Blazor. The editor's stylesheet is opt-in, so an
-app that brings its own UI never loads it.
+A browser app takes `Bit.Bmage.Blazor`, which brings `Bit.Bmage` along at exactly its own version. An ASP.NET Core
+API, a console tool or a worker that only processes images headlessly takes `Bit.Bmage` alone, without Blazor. The
+editor's stylesheet is opt-in, so an app that brings its own UI never loads it.
 
 ## Installation
 

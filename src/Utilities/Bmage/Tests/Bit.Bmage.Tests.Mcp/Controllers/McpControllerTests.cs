@@ -140,6 +140,20 @@ public class McpControllerTests
     }
 
     [TestMethod]
+    public void ApiList_APackageName_ListsThatPackageAlone_ThoughItIsANamespaceToo()
+    {
+        // Both packages put types in the Bit.Bmage namespace: "Bit.Bmage" asks for the engine's package, and the browser
+        // registration that lives in that namespace in Bit.Bmage.Blazor must not come with it.
+        var engine = _controller.GetBmageApiList("Bit.Bmage");
+        Assert.IsTrue(engine.All(type => type.Package == "Bit.Bmage"));
+        Assert.IsTrue(engine.Any(type => type.Name == "BitBmage") && engine.All(type => type.Name != "BitBmageBlazor"));
+
+        var blazor = _controller.GetBmageApiList("Bit.Bmage.Blazor");
+        Assert.IsTrue(blazor.All(type => type.Package == "Bit.Bmage.Blazor"));
+        Assert.IsTrue(blazor.Any(type => type.Name == "BitBmageBlazor") && blazor.Any(type => type.Name == "BmageEditor"));
+    }
+
+    [TestMethod]
     public void ApiDetails_AType_AMember_AndTheNearMisses()
     {
         var type = _controller.GetBmageApiDetails("ImageExportOptions").Details;

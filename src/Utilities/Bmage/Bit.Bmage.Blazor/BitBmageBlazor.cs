@@ -1,4 +1,4 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using Bit.Bmage.Capabilities;
 using Bit.Bmage.Input;
 using Bit.Bmage.Interop;

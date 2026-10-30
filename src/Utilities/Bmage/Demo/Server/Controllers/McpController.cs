@@ -209,10 +209,16 @@ public class McpController : ControllerBase
         var term = filter.Trim();
 
         // A package or a kind is matched exactly: "Bit.Bmage" as a substring is every type there is,
-        // and "Class" would pull in every "...Class..." name as well.
-        var exact = types.Where(type => type.Package.Equals(term, StringComparison.OrdinalIgnoreCase)
-                                     || type.Kind.Equals(term, StringComparison.OrdinalIgnoreCase)
-                                     || type.Namespace.Equals(term, StringComparison.OrdinalIgnoreCase)).ToArray();
+        // and "Class" would pull in every "...Class..." name as well. A package name is tried on its
+        // own first: both packages put types in the Bit.Bmage namespace, so "Bit.Bmage" matched as a
+        // namespace too would mix Bit.Bmage.Blazor's browser registration into the engine's list.
+        var exact = types.Where(type => type.Package.Equals(term, StringComparison.OrdinalIgnoreCase)).ToArray();
+
+        if (exact.Length == 0)
+        {
+            exact = [.. types.Where(type => type.Kind.Equals(term, StringComparison.OrdinalIgnoreCase)
+                                         || type.Namespace.Equals(term, StringComparison.OrdinalIgnoreCase))];
+        }
 
         if (exact.Length > 0) return exact;
 

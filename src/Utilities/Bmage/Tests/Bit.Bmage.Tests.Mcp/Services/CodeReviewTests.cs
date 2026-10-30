@@ -298,6 +298,41 @@ public class CodeReviewTests
         None(BmageCodeReview.Review(BmageSourceCatalog.GetSourceFile("Demo/Server/Program.cs")), "services-not-registered");
     }
 
+    [TestMethod]
+    public void Package_ABrowserProjectWithTheEngineAlone_IsAnError()
+    {
+        var review = Review("""
+            <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+              <ItemGroup>
+                <PackageReference Include="Bit.Bmage" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        var finding = Single(review, "blazor-package-missing");
+        Assert.AreEqual("Error", finding.Severity);
+        Assert.AreEqual(3, finding.Line);
+        StringAssert.Contains(finding.Fix, "Bit.Bmage.Blazor");
+
+        // A Razor class library is only a browser project by what it uses: the editor, or the browser registration.
+        Single(Review("<Project Sdk=\"Microsoft.NET.Sdk.Razor\">\n<PackageReference Include=\"Bit.Bmage\" />\n</Project>\n<BmageEditor />"), "blazor-package-missing");
+        Single(Review("<ProjectReference Include=\"..\\Bit.Bmage\\Bit.Bmage.csproj\" />\nbuilder.Services.AddBitBmageServices();"), "blazor-package-missing");
+    }
+
+    [TestMethod]
+    public void Package_TheBlazorPackage_OrAHeadlessProject_IsFine()
+    {
+        None(Review("<Project Sdk=\"Microsoft.NET.Sdk.BlazorWebAssembly\">\n<PackageReference Include=\"Bit.Bmage.Blazor\" />"), "blazor-package-missing");
+        None(Review("<Project Sdk=\"Microsoft.NET.Sdk.BlazorWebAssembly\">\n<PackageReference Include=\"Bit.Bmage\" />\n<PackageReference Include=\"Bit.Bmage.Blazor\" />"), "blazor-package-missing");
+        None(Review("<ProjectReference Include=\"..\\Bit.Bmage.Blazor\\Bit.Bmage.Blazor.csproj\" />\n<BmageEditor />"), "blazor-package-missing");
+
+        // The engine alone is what a server, a console app or a worker installs.
+        None(Review("<Project Sdk=\"Microsoft.NET.Sdk.Web\">\n<PackageReference Include=\"Bit.Bmage\" />\n</Project>\nbuilder.Services.AddBitBmageHeadlessServices();"), "blazor-package-missing");
+
+        // Naming the assembly is not installing it.
+        None(Review("<Project Sdk=\"Microsoft.NET.Sdk.BlazorWebAssembly\">\n<TrimmerRootAssembly Include=\"Bit.Bmage\" />"), "blazor-package-missing");
+    }
+
     // -- aot ----------------------------------------------------------------------------------
 
     [TestMethod]

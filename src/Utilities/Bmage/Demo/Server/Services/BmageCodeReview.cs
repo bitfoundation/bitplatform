@@ -51,6 +51,8 @@ public static partial class BmageCodeReview
                 Catches = "AddBitBmageHeadlessServices in a WebAssembly host: no browser codecs, no ImageLoader, no ImageExporter." },
         new() { Id = "services-not-registered", Severity = "Warning", Source = "browser-support",
                 Catches = "A Blazor host Program.cs that never registers Bmage - in a Web App the prerender pass needs it in the server container too." },
+        new() { Id = "blazor-package-missing", Severity = "Error", Source = "getting-started",
+                Catches = "A browser project that references Bit.Bmage alone: AddBitBmageServices, ImageLoader, ImageExporter and BmageEditor ship in Bit.Bmage.Blazor." },
         new() { Id = "aot-not-enabled", Severity = "Warning", Source = "performance",
                 Catches = "A Blazor WebAssembly project using Bmage without RunAOTCompilation: pixel loops run 10 to 35 times slower." },
         new() { Id = "format-without-capability-check", Severity = "Warning", Source = "formats",
@@ -117,6 +119,7 @@ public static partial class BmageCodeReview
         CheckProcessorInjection(text, lines, findings);
         CheckHeadlessRegistration(text, lines, findings);
         CheckServicesRegistered(text, lines, findings);
+        CheckBlazorPackage(text, findings);
         CheckAot(text, lines, findings);
         CheckFormats(text, lines, findings);
         CheckMetadataPolicy(text, lines, findings);
@@ -466,8 +469,8 @@ public static partial class BmageCodeReview
                 Message = "AddBitBmageHeadlessServices in a WebAssembly host registers only the managed engine: no ImageLoader, no " +
                           "ImageExporter, no ImageProcessorFactory, no browser codecs - so no AVIF export, no clipboard, no " +
                           "downloads, and the editor cannot be resolved.",
-                Fix = "builder.Services.AddBitBmageServices() in the browser project. The headless registration is for servers, " +
-                      "console apps and workers."
+                Fix = "builder.Services.AddBitBmageServices() in the browser project, from the Bit.Bmage.Blazor package. The " +
+                      "headless registration is for servers, console apps and workers."
             });
 
             return;
@@ -486,8 +489,8 @@ public static partial class BmageCodeReview
             Message = $"{browserUse.Groups["service"].Value} is a browser service, and the only registration here is " +
                       "AddBitBmageHeadlessServices, which registers ImageProcessor, a managed capability provider and " +
                       "FontTextRasterizer - nothing else. Resolving it throws a missing-service exception.",
-            Fix = "Components that talk to a browser need AddBitBmageServices (in every container they run in). On the server, " +
-                  "inject ImageProcessor and work with bytes instead."
+            Fix = "Components that talk to a browser need AddBitBmageServices from the Bit.Bmage.Blazor package (in every " +
+                  "container they run in). On the server, inject ImageProcessor and work with bytes instead."
         });
     }
 
@@ -523,8 +526,36 @@ public static partial class BmageCodeReview
                   "IImageCapabilityProvider in its components throws a missing-service exception when the page renders."
                 : "This Blazor Web App host never registers Bmage. Its prerender pass instantiates the client's components in " +
                   "this container, so any component that injects a Bmage service fails at prerender - in production, not at build.",
-            Fix = "Call builder.Services.AddBitBmageServices() here - in a Web App, through one shared extension method that both " +
-                  "the server's and the client's Program.cs call, so the two containers cannot drift. GetBmageSetupGuide has the files."
+            Fix = "Call builder.Services.AddBitBmageServices(), from the Bit.Bmage.Blazor package, here - in a Web App, through one " +
+                  "shared extension method that both the server's and the client's Program.cs call, so the two containers cannot " +
+                  "drift. GetBmageSetupGuide has the files."
+        });
+    }
+
+    /// <summary>A browser project that installs the engine's package and not the browser integration's.</summary>
+    private static void CheckBlazorPackage(string text, List<BmageReviewFindingDto> findings)
+    {
+        var engine = BmageEngineReferenceRegex().Match(text);
+        if (engine.Success is false || BmageBlazorReferenceRegex().IsMatch(text)) return;
+
+        var browser = text.Contains("Microsoft.NET.Sdk.BlazorWebAssembly", StringComparison.Ordinal)
+                   || BrowserCallRegex().IsMatch(text)
+                   || BrowserServiceUseRegex().IsMatch(text);
+
+        if (browser is false) return;
+
+        findings.Add(new BmageReviewFindingDto
+        {
+            Severity = "Error",
+            Rule = "blazor-package-missing",
+            Line = LineOf(text, engine.Index),
+            Message = "This browser project references Bit.Bmage alone, which is the headless engine. AddBitBmageServices, " +
+                      "ImageLoader, ImageExporter, ImageProcessorFactory, the browser codecs and BmageEditor ship in Bit.Bmage.Blazor: " +
+                      "without it the build fails with CS1061 ('IServiceCollection' does not contain a definition for " +
+                      "'AddBitBmageServices') or CS0246 for the browser types.",
+            Fix = "<PackageReference Include=\"Bit.Bmage.Blazor\" /> in place of Bit.Bmage, which it brings along at the matching " +
+                  "version. The editor's stylesheet is then _content/Bit.Bmage.Blazor/bit-bmage-editor.css, and a WebAssembly app " +
+                  "that lazy loads Bit.Bmage.wasm lazy loads Bit.Bmage.Blazor.wasm with it."
         });
     }
 
@@ -999,6 +1030,13 @@ public static partial class BmageCodeReview
 
     [GeneratedRegex(@"Include\s*=\s*""Bit\.Bmage(?:\.Blazor)?""|Bit\.Bmage(?:\.Blazor)?\.csproj")]
     private static partial Regex BmageReferenceRegex();
+
+    // References only: a <TrimmerRootAssembly Include="Bit.Bmage" /> or a <Using Include="Bit.Bmage" /> installs nothing.
+    [GeneratedRegex(@"<PackageReference\s+Include\s*=\s*""Bit\.Bmage""|[\\/""]Bit\.Bmage\.csproj""")]
+    private static partial Regex BmageEngineReferenceRegex();
+
+    [GeneratedRegex(@"<PackageReference\s+Include\s*=\s*""Bit\.Bmage\.Blazor""|[\\/""]Bit\.Bmage\.Blazor\.csproj""")]
+    private static partial Regex BmageBlazorReferenceRegex();
 
     [GeneratedRegex(@"<RunAOTCompilation>\s*false\s*</RunAOTCompilation>", RegexOptions.IgnoreCase)]
     private static partial Regex AotDisabledRegex();
