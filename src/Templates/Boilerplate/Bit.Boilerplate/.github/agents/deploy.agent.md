@@ -50,10 +50,11 @@ or one each), a domain, a Cloudflare account and the services of section 5. Then
 - Work the details out when you get to them, from the project, the VM and each tool's current documentation: Docker,
   the GitHub Actions runner, Aspire's Docker Compose publishing (the aspire MCP server's `search_docs`), cloudflared.
   They change between versions.
-- **Secrets.** Generate the ones you can yourself - database passwords, the app certificate, the VAPID keys - and store
-  them straight into the environment's secrets, without showing them. For the keys that only the user's accounts can
-  give, open a git-ignored file for the user to paste them into, load it, then delete it. If even that is too much for
-  them, take the key from the chat, store it at once and never repeat it. No secret goes into a commit or a log.
+- **Secrets.** `bit pipeline` creates the ones it can - the app certificate, the VAPID keys, the database and Redis
+  passwords - and stores them straight into the environment's secrets (section 6). For the keys that only the user's
+  accounts can give, open a git-ignored file for the user to paste them into, load it, then delete it. If even that is
+  too much for them, take the key from the chat, store it at once and never repeat it. No secret goes into a commit or a
+  log.
 - **No inbound port, and no locked door.** SSH is open only while you set the VM up: key only, with password and root
   sign-in off. Once the tunnel runs, give SSH a route through it too, behind Cloudflare Access: a hostname for the
   VM's SSH, and an Access policy that lets in only the people the user names, with a one-time PIN sent to their email
@@ -77,7 +78,8 @@ or one each), a domain, a Cloudflare account and the services of section 5. Then
   project runs.
 - Install Docker Engine with its Compose plugin from Docker's own repository, have it start on boot, and create a user
   for the runner that can use Docker. Nothing else: the VM gets no SDK and no source code, only images.
-- Install curl too: the deploy job checks the public address with it.
+- Install curl and openssl too: the deploy job checks the public address with curl, and reads the app certificate with
+  openssl.
 - Register a runner for each environment with the repository, using a registration token from `gh api`. Label it
   `Test` or `Production`, the label the deploy job runs on, and install it as a service. One VM can host both
   environments, each with its own runner and its own Compose project. Separate VMs mean a Test deployment can never
@@ -155,9 +157,9 @@ there, and the setting or secret that carries it. Every environment gets its own
 <!--#endif-->
 <!--#if (redis == true)-->
 - **Redis**: containers on the VM, one for the cache, and one with persistence for Hangfire and the distributed lock.
-  Generate their passwords from letters and digits only, the way Aspire generates them in development:
-  StackExchange.Redis can't take a comma in one, and DbGate gets them inside a URL that nothing encodes, where a `/`,
-  `?`, `#` or `%` breaks it (`specs/workarounds.md`).
+  `bit pipeline` creates their passwords from letters and digits only, the way Aspire does in development; keep to that
+  for one you set by hand: StackExchange.Redis can't take a comma in one, and DbGate gets them inside a URL that nothing
+  encodes, where a `/`, `?`, `#` or `%` breaks it (`specs/workarounds.md`).
 <!--#endif-->
 <!--#if (filesStorage == "S3")-->
 - **File storage**: S3-compatible object storage. Recommend Cloudflare R2: it has no egress fees, and it lives in the
@@ -205,11 +207,14 @@ there, and the setting or secret that carries it. Every environment gets its own
 
 ## 6. GitHub environments and secrets
 
-- Create the `Test` and `Production` environments with `gh api`. Let each one deploy only from its own branch, and
-  offer the user required reviewers for Production.
-- Set each environment's variables and secrets from the git-ignored file, with `gh variable set --env <name> -f <file>`
-  and `gh secret set --env <name> -f <file>`, then delete the file. The names are in the table of
-  `.docs/16- CI-CD Pipeline and Environments.md`, and what the workflows read (`vars.*`, `secrets.*`) is the final
+- Run `bit pipeline` in the repository, with `--yes` when nobody is there to answer its questions. It reads the secrets
+  the workflows use, creates the `Test` and `Production` environments, and creates and stores what it can: the app
+  certificate, the VAPID keys, the database and Redis passwords and the Android signing key. `bit pipeline --check`
+  lists what is still missing.
+- Let each environment deploy only from its own branch (`gh api`), and offer the user required reviewers for Production.
+- Set the variables, and the secrets only the user's accounts can give, from the git-ignored file, with `gh variable set
+  --env <name> -f <file>` and `gh secret set --env <name> -f <file>`, then delete the file. The names are in the table
+  of `.docs/16- CI-CD Pipeline and Environments.md`, and what the workflows read (`vars.*`, `secrets.*`) is the final
   word. A setting the CD has no secret of its own for goes into the apps' settings secrets, one `Section__Key=value`
   line each.
 - Protect `develop` and `main`, so they take changes only through a pull request whose CI passed.

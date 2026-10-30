@@ -38,7 +38,9 @@ var s3Storage = builder.AddS3Storage();
 var keycloak = builder.ExecutionContext.IsRunMode ? builder.AddKeycloak() : null;
 
 //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
-var embedding = builder.AddTextEmbeddingsInference();
+// Development only, like Keycloak: a deployed server takes its embeddings from the OpenAI-compatible provider its
+// settings name.
+var embedding = builder.ExecutionContext.IsRunMode ? builder.AddTextEmbeddingsInference() : null;
 //#endif
 
 var serverWebProject = builder.AddProject("serverweb", "../Boilerplate.Server.Web/Boilerplate.Server.Web.csproj")
@@ -82,7 +84,10 @@ if (keycloak is not null)
     serverApiProject.WithReference(keycloak);
 }
 //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
-serverApiProject.WithEnvironment("AI__HuggingFace__EmbeddingEndpoint", embedding.GetEndpoint("http"));
+if (embedding is not null)
+{
+    serverApiProject.WithEnvironment("AI__HuggingFace__EmbeddingEndpoint", embedding.GetEndpoint("http"));
+}
 //#endif
 //#if (redis == true)
 serverApiProject.WithReference(redisCache).WaitFor(redisCache);
@@ -110,7 +115,10 @@ if (keycloak is not null)
     serverWebProject.WithReference(keycloak);
 }
 //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
-serverWebProject.WithEnvironment("AI__HuggingFace__EmbeddingEndpoint", embedding.GetEndpoint("http"));
+if (embedding is not null)
+{
+    serverWebProject.WithEnvironment("AI__HuggingFace__EmbeddingEndpoint", embedding.GetEndpoint("http"));
+}
 //#endif
 //#if (redis == true)
 serverWebProject.WithReference(redisCache).WaitFor(redisCache);

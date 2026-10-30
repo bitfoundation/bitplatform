@@ -36,6 +36,13 @@ wait for the tests, so protect `develop` with a required `ci.yml` check.
 In a public repository, every build also gets a signed attestation of the commit and the run that made it, which
 `gh attestation verify` checks, and the About page links to them.
 
+Two steps use short composite actions from
+[bitfoundation/bitplatform](https://github.com/bitfoundation/bitplatform/tree/develop/.github/actions/boilerplate), at the
+release tag of the project's bit platform version, so the workflows stay short and get their fixes with each upgrade:
+`bit-setup` installs the bit CLI and runs `bit setup`, which installs only what the runner is missing, and
+`artifact-signing` lets `vpk pack` sign the Windows app with Artifact Signing. Each is a few lines of YAML; to stop
+depending on that repository, copy one into this repository and point its step at the copy.
+
 ---
 
 <!--#if (aspire == true)-->
@@ -84,8 +91,9 @@ stores is up to you.
 - **Windows**: an installer with automatic updates (Velopack). Once the `CODE_SIGNING_*` settings are there, it is
   signed with Azure Artifact Signing, so Windows shows your organization as the publisher.
 - **Android**: an `.aab` signed with your keystore, for Google Play. Keep that keystore safe: without it you can't
-  update the app on Google Play.
-- **iOS**: an `.ipa` signed for the App Store.
+  update the app on Google Play. `bit pipeline` creates it, and `bit keys android` writes one as a file.
+- **iOS**: an `.ipa` signed for the App Store. No Mac is needed for its signing: given an App Store Connect API key,
+  `bit pipeline` creates the certificate and the provisioning profile, and `bit keys apple` writes them as files.
 
 ---
 
@@ -96,6 +104,11 @@ Each GitHub environment, `Test` and `Production`, has its own variables and secr
 CD writes the environment's values, such as `ServerAddress`, into the `appsettings*.json` files, so they are built into
 that environment's apps.
 
+Run `bit pipeline` in the repository. It reads the secrets the workflows use, creates the environments they deploy to,
+and stores each secret in its environment. It creates what it can on its own: the app certificate, the VAPID key pair,
+the database and Redis passwords and the Android signing key, and with an App Store Connect API key you give it, the iOS
+app's signing. It asks for the rest, and an empty answer skips one. `bit pipeline --check` only lists what's missing.
+
 | Name | Kind | Holds |
 | --- | --- | --- |
 | `SERVER_ADDRESS` | variable | The environment's public address |
@@ -103,7 +116,8 @@ that environment's apps.
 | `OPENAI_APIKEY` | secret, optional | The key `bit translate` fills missing translations with |
 <!--#if (aspire == true)-->
 | `SMTP_CONNECTION_STRING` | secret | The SMTP server the app sends email through |
-| `APP_CERTIFICATE_CRT`, `APP_CERTIFICATE_KEY` | secret | The environment's own `AppCertificate` pair, never the development one |
+| `APP_CERTIFICATE` | secret | The environment's own `AppCertificate`, its `.crt` and `.key` in one PEM, never the development one |
+| `APP_CERTIFICATE_RETIRED` | secret, optional | The certificate it replaced, while tokens it signed are still alive (see `AppCertificate.md`) |
 | `SERVERWEB_SETTINGS` | secret, optional | Any other setting of the web app, one `Section__Key=value` line each |
 <!--#if (api == "Standalone")-->
 | `SERVERAPI_SETTINGS` | secret, optional | The same, for the api |
@@ -127,7 +141,7 @@ that environment's apps.
 <!--#endif-->
 <!--#if (notification == true)-->
 | `PUBLIC_VAPIDKEY`, `PRIVATE_VAPIDKEY` | secret | The environment's web push key pair |
-| `VAPID_SUBJECT` | variable | The contact the push services see, such as `mailto:you@example.com` |
+| `VAPID_SUBJECT` | secret | The contact the push services see, such as `mailto:you@example.com` |
 <!--#endif-->
 <!--#endif-->
 | `ANDROID_RELEASE_*`, `APPSTORE_*`, `IOS_CODE_SIGN_PROVISION` | secret, variable | Signing the Android and iOS apps |

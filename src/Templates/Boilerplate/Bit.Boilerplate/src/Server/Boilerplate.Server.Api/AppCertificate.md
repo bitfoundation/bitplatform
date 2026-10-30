@@ -49,10 +49,11 @@ bit keys certificate --production -o <a folder outside the repository>
 
 It writes `AppCertificate.crt` and `AppCertificate.key`: RSA 3072 with SHA-256, `OU=Production`, valid for a year. It refuses a
 folder where git would commit the key.
-<!--#if (pipeline == "GitHub")-->
+<!--#if (aspire == true)-->
 
-With the GitHub pipeline, `bit pipeline` creates one for each environment instead and keeps it in that environment's
-`APP_CERTIFICATE` secret, and the deploy job writes it next to the app before the app or its migrations start.
+For the environments the CD deploys, `bit pipeline` creates one for each instead and keeps it in that environment's
+`APP_CERTIFICATE` secret. The deploy job writes it to the `app-certificate` folder of the server's Docker Compose
+project, which the app reads through its `AppCertificateDirectory` setting, before the app or its migrations start.
 <!--#endif-->
 
 > **⚠ `AppCertificate.key` is a production secret. Do not commit the one you generate.**
@@ -91,9 +92,9 @@ bit keys certificate --rotate -o <the folder with your certificates>
 
 It renames the active pair to `AppCertificate.<date>.crt` / `.key`, which retires it, and creates a new active pair with
 the same subject.
-<!--#if (pipeline == "GitHub")-->
+<!--#if (aspire == true)-->
 
-With the GitHub pipeline, `bit pipeline --rotate-certificate` does the same in each environment: the new certificate
+For the environments the CD deploys, `bit pipeline --rotate-certificate` does the same: the new certificate
 goes into `APP_CERTIFICATE` and the old one into `APP_CERTIFICATE_RETIRED`, which the deploy job writes as
 `AppCertificate.retired.crt` / `.key`. GitHub doesn't give a secret back, so bit keeps a copy of every certificate it
 creates under `~/.bitplatform/keys`; on another machine it asks for the old certificate's PEM file.
@@ -116,10 +117,10 @@ Two independent clocks have to run out, not one:
 Until both have elapsed the old private key can still mint tokens this app accepts - so if you are rotating *because
 the old key leaked*, skip the overlap entirely, delete the retired pair immediately and accept the sign-out and the
 key-ring reset.
-<!--#if (pipeline == "GitHub")-->
+<!--#if (aspire == true)-->
 
-With the GitHub pipeline, deleting the retired pair means deleting the environment's `APP_CERTIFICATE_RETIRED` secret,
-plus `AppCertificate.retired.crt` and `.key` on the server, since a deploy leaves the files it doesn't bring in place.
+For the environments the CD deploys, deleting the retired pair means deleting the environment's
+`APP_CERTIFICATE_RETIRED` secret: the next deployment leaves the pair out.
 <!--#endif-->
 
 > Both files are copied to the output directory by the `AppCertificate.*` glob in the csproj, so a retired pair needs

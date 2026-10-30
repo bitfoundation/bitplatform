@@ -100,13 +100,14 @@ public static class DockerComposePublishingExtensions
             serverWebProject.WithEnvironment("ServerSideHttpClientBaseAddress", serverApiProject.GetEndpoint("http"));
             //#endif
 
-            apiProject.PublishAsDockerComposeService((_, service) =>
-            {
-                // The image only carries the development AppCertificate, which the api refuses outside Development. The
-                // deploy job writes the environment's own pair next to docker-compose.yaml (See AppCertificate.md).
-                service.AddVolume(new Volume { Name = "app-certificate-crt", Type = "bind", Source = "./AppCertificate.crt", Target = "/app/AppCertificate.crt", ReadOnly = true });
-                service.AddVolume(new Volume { Name = "app-certificate-key", Type = "bind", Source = "./AppCertificate.key", Target = "/app/AppCertificate.key", ReadOnly = true });
-            });
+            // The image only carries the development AppCertificate, which the api refuses outside Development. The deploy job
+            // writes the environment's own pair, and the retired one while there is one, to the app-certificate folder next to
+            // docker-compose.yaml (See AppCertificate.md).
+            apiProject.WithEnvironment("AppCertificateDirectory", "/app-certificate")
+                .PublishAsDockerComposeService((_, service) =>
+                {
+                    service.AddVolume(new Volume { Name = "app-certificate", Type = "bind", Source = "./app-certificate", Target = "/app-certificate", ReadOnly = true });
+                });
 
             // The Aspire dashboard and DbGate listen on the server's loopback only, where SSH reaches them: for Production,
             // ssh -L 18888:127.0.0.1:18888 -L 3000:127.0.0.1:3000. Each environment has an address of its own, so Test and
