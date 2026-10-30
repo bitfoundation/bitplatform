@@ -1488,17 +1488,17 @@ public class BitDataGridTests : BunitTestContext
     {
         // The bridge is claimed before its call is awaited, so a call that fails in any way - here one that timed out,
         // as a slow circuit's does - has to release it again: the render goes on, and the next one attaches the bridge.
-        Context.JSInterop.SetupVoid("BitBlazorUI.DataGrid.watchNestedSurfaceKeys", _ => true)
+        Context.JSInterop.SetupVoid("BitBlazorUI.DataGrid.watchNestedTargets", _ => true)
                          .SetException(new TaskCanceledException("interop call timed out"));
 
         var grid = RenderGrid();
-        var attempts = Context.JSInterop.Invocations["BitBlazorUI.DataGrid.watchNestedSurfaceKeys"].Count;
+        var attempts = Context.JSInterop.Invocations["BitBlazorUI.DataGrid.watchNestedTargets"].Count;
 
         Assert.IsTrue(attempts >= 1);
 
         grid.Render();
 
-        Assert.AreEqual(attempts + 1, Context.JSInterop.Invocations["BitBlazorUI.DataGrid.watchNestedSurfaceKeys"].Count);
+        Assert.AreEqual(attempts + 1, Context.JSInterop.Invocations["BitBlazorUI.DataGrid.watchNestedTargets"].Count);
     }
 
     [TestMethod]
@@ -3269,6 +3269,151 @@ public class BitDataGridTests : BunitTestContext
 
         Assert.IsNotNull(doubleClicked);
         Assert.AreEqual("Cherry", doubleClicked!.Name);
+    }
+
+    // A click on a control in a cell - a template's Edit or Delete button - reaches the row on its way out too; the
+    // script tells the grid which clicks those are (BitDataGrid.ts, reportCellControlClick), and the row leaves them to
+    // the control: it is not selected, and neither of its click events is raised.
+    [TestMethod]
+    public async Task RowLeavesTheClicksOfAControlInACellAlone()
+    {
+        var clicked = new List<TestRow>();
+        var doubleClicked = new List<TestRow>();
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Single);
+            parameters.Add(p => p.OnRowClick, (TestRow row) => clicked.Add(row));
+            parameters.Add(p => p.OnRowDoubleClick, (TestRow row) => doubleClicked.Add(row));
+        });
+
+        await component.InvokeAsync(() => component.Instance.OnCellControlClick(true));
+        component.FindAll(".bit-dtg-body > .bit-dtg-row")[1].Click();
+        component.FindAll(".bit-dtg-body > .bit-dtg-row")[1].DoubleClick();
+
+        Assert.AreEqual(0, clicked.Count);
+        Assert.AreEqual(0, doubleClicked.Count);
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-body > .bit-dtg-row.bit-dtg-selected").Count);
+
+        await component.InvokeAsync(() => component.Instance.OnCellControlClick(false));
+        component.FindAll(".bit-dtg-body > .bit-dtg-row")[1].Click();
+        component.FindAll(".bit-dtg-body > .bit-dtg-row")[1].DoubleClick();
+
+        Assert.AreEqual("Apple", clicked.Single().Name, "a click on the row itself is the row's again");
+        Assert.AreEqual("Apple", doubleClicked.Single().Name);
+        Assert.AreEqual(1, component.FindAll(".bit-dtg-body > .bit-dtg-row.bit-dtg-selected").Count);
+    }
+
+    [TestMethod]
+    public async Task CellLeavesTheClicksOfAControlInItAlone()
+    {
+        var cellEvents = 0;
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.Editable, true);
+            parameters.Add(p => p.EditMode, BitDataGridEditMode.Cell);
+            parameters.Add(p => p.OnCellClick, (BitDataGridCellEventArgs<TestRow> _) => cellEvents++);
+            parameters.Add(p => p.OnCellDoubleClick, (BitDataGridCellEventArgs<TestRow> _) => cellEvents++);
+        });
+
+        await component.InvokeAsync(() => component.Instance.OnCellControlClick(true));
+        DataCell(component, 0, 0).Click();
+        DataCell(component, 0, 0).DoubleClick();
+
+        Assert.AreEqual(0, cellEvents);
+        Assert.IsNull(component.Instance.EditingItem, "a double-click on a control opens no editor");
+
+        await component.InvokeAsync(() => component.Instance.OnCellControlClick(false));
+        DataCell(component, 0, 0).DoubleClick();
+
+        Assert.AreEqual(1, cellEvents);
+        Assert.IsNotNull(component.Instance.EditingItem);
+    }
+
+    // Only the pointer is gated: what the last click landed on says nothing about a key pressed on the row since.
+    [TestMethod]
+    public async Task RowKeyboardToggleIsNotGatedByTheLastClick()
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.DetailTemplate, (RenderFragment<TestRow>)(r => b => b.AddContent(0, $"DETAIL-{r.Id}")));
+            parameters.Add(p => p.ShowDetailToggle, false);
+            parameters.Add(p => p.ExpandDetailOnRowClick, true);
+        });
+
+        await component.InvokeAsync(() => component.Instance.OnCellControlClick(true));
+        component.Find(".bit-dtg-body > .bit-dtg-row").KeyDown("Enter");
+
+        Assert.AreEqual("DETAIL-1", component.Find(".bit-dtg-detail-content").TextContent.Trim());
+    }
+
+    // The grid's own control cells stop no double-click, so a handler of the page around the grid hears one on their
+    // controls - it reaches the row here, which nothing on the way stops; the script tells the row it is not its own
+    // (BitDataGrid.ts, reportCellControlClick), and the row leaves it alone.
+    [TestMethod]
+    [DataRow(".bit-dtg-cell-command button")]
+    [DataRow(".bit-dtg-cell-select input")]
+    [DataRow(".bit-dtg-cell-detail button")]
+    [DataRow(".bit-dtg-cell-reorder button")]
+    [DataRow(".bit-dtg-tree-toggle")]
+    public async Task BuiltInCellControlsLetTheirDoubleClickThroughToThePage(string selector)
+    {
+        var doubleClicked = 0;
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.Editable, true);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
+            parameters.Add(p => p.DetailTemplate, (RenderFragment<TestRow>)(r => b => b.AddContent(0, $"DETAIL-{r.Id}")));
+            parameters.Add(p => p.OnRowDoubleClick, (TestRow _) => doubleClicked++);
+            // A tree turns row reordering off, so the two are rendered apart.
+            if (selector == ".bit-dtg-tree-toggle")
+                parameters.Add(p => p.ChildrenSelector, (Func<TestRow, IEnumerable<TestRow>?>)(r => r.Id == 1 ? [new TestRow { Id = 10, Name = "Child" }] : null));
+            else
+                parameters.Add(p => p.RowReorderable, true);
+        });
+
+        component.Find($".bit-dtg-body > .bit-dtg-row {selector}").DoubleClick();
+
+        Assert.AreEqual(1, doubleClicked, "the double-click was stopped on its way out of the grid's own cell");
+
+        await component.InvokeAsync(() => component.Instance.OnCellControlClick(true));
+        component.Find($".bit-dtg-body > .bit-dtg-row {selector}").DoubleClick();
+
+        Assert.AreEqual(1, doubleClicked);
+    }
+
+    // A right-click on a control in a cell is the control's as well: the cell raises nothing, and the browser's menu is
+    // the script's to suppress (data-bit-dtg-contextmenu), on the cell itself only - never through a preventDefault of
+    // the cell's markup, which would take a link's or a field's own menu away from it.
+    [TestMethod]
+    public async Task CellLeavesTheRightClickOfAControlInItAlone()
+    {
+        var contextMenus = 0;
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.OnCellContextMenu, (BitDataGridCellEventArgs<TestRow> _) => contextMenus++);
+        });
+
+        Assert.AreEqual("true", DataCell(component, 0, 0).GetAttribute("data-bit-dtg-contextmenu"));
+        Assert.IsFalse(DataCell(component, 0, 0).HasAttribute("blazor:oncontextmenu:preventDefault"));
+
+        await component.InvokeAsync(() => component.Instance.OnCellControlClick(true));
+        DataCell(component, 0, 0).ContextMenu();
+
+        Assert.AreEqual(0, contextMenus);
+
+        await component.InvokeAsync(() => component.Instance.OnCellControlClick(false));
+        DataCell(component, 0, 0).ContextMenu();
+
+        Assert.AreEqual(1, contextMenus);
+    }
+
+    // Without a handler of its own the grid leaves the browser's context menu alone everywhere.
+    [TestMethod]
+    public void CellsLeaveTheBrowsersContextMenuAloneWithoutOnCellContextMenu()
+    {
+        var component = RenderGrid();
+
+        Assert.IsFalse(DataCell(component, 0, 0).HasAttribute("data-bit-dtg-contextmenu"));
     }
 
     [TestMethod]
