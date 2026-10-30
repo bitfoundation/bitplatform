@@ -45,7 +45,7 @@
             </dl>
         </Panel>
 
-        <Panel Title="TodoEntry.Indexes" IconName="index" Sub="one static field per indexed property">
+        <Panel Title="TodoEntry.Indexes" IconName="index" Sub="one static property per index">
             <div class="bb-scroll">
                 <table class="bb-table">
                     <thead>
@@ -541,38 +541,41 @@
         {
             partial class TodoEntry
             {
-                public static readonly BlazeDbTableDescriptor<Guid, TodoEntry> Table = new(
-                    "todos",
-                    static row => row.Id,
-                    __BlazeWriteRow,
-                    __BlazeReadRow,
-                    __BlazeWriteKey,
-                    __BlazeReadKey,
-                    new BlazeDbIndexDefinition<TodoEntry>[]
-                    {
-                        Indexes.Done,
-                        Indexes.Category,
-                        Indexes.ByPriority,
-                        Indexes.CreatedAt,
-                        Indexes.Effort,
-                    });
+                public static BlazeDbTableDescriptor<Guid, TodoEntry> Table => __BlazeTable.Descriptor;
 
                 public static class Indexes
                 {
-                    public static readonly BlazeDbHashIndexDefinition<TodoEntry, bool> Done =
+                    public static BlazeDbHashIndexDefinition<TodoEntry, bool> Done => __BlazeTable.Index_Done;
+                    public static BlazeDbHashIndexDefinition<TodoEntry, string?> Category => __BlazeTable.Index_Category;
+                    public static BlazeDbHashIndexDefinition<TodoEntry, Priority> ByPriority => __BlazeTable.Index_ByPriority;
+                    public static BlazeDbOrderedIndexDefinition<TodoEntry, DateTime> CreatedAt => __BlazeTable.Index_CreatedAt;
+                    public static BlazeDbOrderedIndexDefinition<TodoEntry, int> Effort => __BlazeTable.Index_Effort;
+                }
+
+                // The values live in a nested class, so TodoEntry itself has no field of a BlazeDb type: naming it
+                // does not load Bit.BlazeDb, which an app that lazy loads the engine relies on.
+                private static class __BlazeTable
+                {
+                    public static readonly BlazeDbHashIndexDefinition<TodoEntry, bool> Index_Done =
                         new("Done", static row => row.Done);
 
-                    public static readonly BlazeDbHashIndexDefinition<TodoEntry, string?> Category =
-                        new("Category", static row => row.Category);
+                    // …one field per index: Category, ByPriority, CreatedAt, Effort
 
-                    public static readonly BlazeDbHashIndexDefinition<TodoEntry, Priority> ByPriority =
-                        new("ByPriority", static row => row.Priority);
-
-                    public static readonly BlazeDbOrderedIndexDefinition<TodoEntry, DateTime> CreatedAt =
-                        new("CreatedAt", static row => row.CreatedAt);
-
-                    public static readonly BlazeDbOrderedIndexDefinition<TodoEntry, int> Effort =
-                        new("Effort", static row => row.Effort);
+                    public static readonly BlazeDbTableDescriptor<Guid, TodoEntry> Descriptor = new(
+                        "todos",
+                        static row => row.Id,
+                        __BlazeWriteRow,
+                        __BlazeReadRow,
+                        __BlazeWriteKey,
+                        __BlazeReadKey,
+                        new BlazeDbIndexDefinition<TodoEntry>[]
+                        {
+                            Index_Done,
+                            Index_Category,
+                            Index_ByPriority,
+                            Index_CreatedAt,
+                            Index_Effort,
+                        });
                 }
 
                 private static void __BlazeWriteRow(BlazeDbBufferWriter writer, TodoEntry row)

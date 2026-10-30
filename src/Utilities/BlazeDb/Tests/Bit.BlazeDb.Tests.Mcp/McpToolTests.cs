@@ -42,6 +42,26 @@ public class McpToolTests
     }
 
     [TestMethod]
+    public void The_setup_guides_and_prompts_point_only_at_sections_that_exist()
+    {
+        string[] texts =
+        [
+            .. BlazeDbSetupGuide.HostingModels.Select(model => BlazeDbSetupGuide.Get(model)!),
+            Demo.Server.Controllers.McpPrompts.AddBlazeDbToApp(),
+            Demo.Server.Controllers.McpPrompts.DebugBlazeDbDatabase("a symptom"),
+        ];
+        var headings = texts.SelectMany(text => System.Text.RegularExpressions.Regex.Matches(text, """GetBlazeDbGuideSection\(heading: "(?<heading>[^"]+)"\)"""))
+                            .Select(match => match.Groups["heading"].Value)
+                            .ToHashSet(StringComparer.Ordinal);
+
+        Assert.Contains("Lazy loading on WebAssembly", headings);
+        foreach (var heading in headings)
+        {
+            Assert.IsTrue(BlazeDbSourceCatalog.GetGuideSection(heading)?.TrimStart('#').TrimStart().StartsWith(heading, StringComparison.Ordinal) is true, $"'{heading}' is not a section of the guide.");
+        }
+    }
+
+    [TestMethod]
     public async Task Every_section_is_reached_through_its_key()
     {
         foreach (var section in BlazeDbSourceCatalog.GuideSections)

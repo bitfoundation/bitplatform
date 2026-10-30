@@ -621,7 +621,8 @@ way the demo does.
 
 There is no script tag to add: each browser backend imports its ES module the first time it is used,
 from `_content/Bit.BlazeDb/` resolved against the document's `<base href>`. Every `CreateAsync` takes a
-`moduleUrl` for an app that serves the modules from somewhere else.
+`moduleUrl` for an app that serves the modules from somewhere else. An app that is not compiled ahead of time can
+download the engine only when a page that uses the database opens - see [lazy loading](#lazy-loading-on-webassembly).
 
 ### Blazor Web App
 
@@ -651,6 +652,117 @@ the UI is rendered in a WebView. Persist through `BlazeDbFileStorage` in the app
 Components render on the UI thread, which serializes their access; marshal work from background threads
 back to it. Console tools and tests use `BlazeDbFileStorage` or `BlazeDbInMemoryStorage`, which also makes
 crash and corruption scenarios reproducible.
+
+### Lazy loading on WebAssembly
+
+BlazeDb registers no services and each browser backend imports its module the first time it is used, so a WebAssembly
+app can fetch the engine only when someone opens a part of the app that uses the database. Mark the assembly as lazy
+loaded in the project that runs in the browser, and load it before the first page that uses it renders:
+
+```xml
+<ItemGroup>
+  <BlazorWebAssemblyLazyLoad Include="Bit.BlazeDb.wasm" />
+</ItemGroup>
+```
+
+```razor
+@* App.razor - in a Blazor Web App, the client project's Routes.razor: the router waits for OnNavigateAsync
+   before it renders the page. typeof(Program) is the project the router's file is in, in either kind of app. *@
+@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@inject LazyAssemblyLoader LazyAssemblyLoader
+
+<Router AppAssembly="typeof(Program).Assembly" OnNavigateAsync="OnNavigateAsync">
+    ...
+</Router>
+
+@code {
+    private async Task OnNavigateAsync(NavigationContext context)
+    {
+        // The pages that use the database: fetch BlazeDb before they render. A second call loads nothing again.
+        // Routes match regardless of case, so /Todos/2 is one of them too.
+        if (context.Path.StartsWith("todos", StringComparison.OrdinalIgnoreCase))
+            await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.BlazeDb.wasm"]);
+    }
+}
+```
+
+The table types stay where they are: the code the generator adds keeps the engine's types out of a `[BlazeDbTable]`
+type's fields, so code that runs before the assembly is there - a layout every page shares - can create one and read
+its properties; only `Table` and `Indexes` need the assembly. The service that opens the database once per tab is
+registered in `Program.cs`, before the assembly is there, so its own fields must not be of the engine's types either.
+Keep them in a nested class that is created when the first page asks for the database:
+
+```csharp
+public sealed class AppDatabase : IAsyncDisposable
+{
+    private Opened? _opened;   // not a Task<BlazeDbDatabase>: Program.cs names AppDatabase before Bit.BlazeDb loads
+
+    public Task<BlazeDbDatabase> GetAsync() => (_opened ??= new Opened()).Database;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_opened is not null) await _opened.DisposeAsync();
+    }
+
+    // The engine's types live here, laid out only once a page asks for the database.
+    private sealed class Opened : IAsyncDisposable
+    {
+        private BlazeDbOpfsStorage? _storage;
+
+        public Opened() => Database = OpenAsync();
+
+        public Task<BlazeDbDatabase> Database { get; }
+
+        private async Task<BlazeDbDatabase> OpenAsync()
+        {
+            _storage = await BlazeDbOpfsStorage.CreateAsync("app"); // takes this tab's writer lock
+            return await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = _storage }.AddTable(TodoItem.Table));
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await (await Database).DisposeAsync(); // flushes what is still pending
+            _storage?.Dispose();                   // and only then releases the lock
+        }
+    }
+}
+
+// Program.cs - as before
+builder.Services.AddSingleton<AppDatabase>();
+```
+
+- Only what runs after the assembly has loaded may use the engine - the pages it is loaded for and a layout only they
+  use, not `Program.cs`, `App.razor`, `Routes.razor` or a layout every page shares. The pages themselves may keep the
+  engine's types in fields, as the live query under [Reacting to changes](#reacting-to-changes) does.
+- A type that code running before then names may not have a field of one of the engine's types. Registering it -
+  `AddSingleton<AppDatabase>()`, `AddSingleton(typeof(AppDatabase))` and a factory alike - makes the runtime lay it
+  out, and on WebAssembly a field whose type cannot be loaded yet fails the app as it starts:
+  `Could not load type of field 'AppDatabase:_opening' ... Could not load file or assembly 'Bit.BlazeDb'`. Its methods
+  may take and return the engine's types; only fields count.
+- No public type in an assembly the router reads when the app starts - the app's own assembly first of all - may
+  derive from or implement one of the engine's: no public `IBlazeDbStorage` wrapper or `IBlazeDbAeadCipher` of your
+  own. The router reads the public types of those assemblies at startup, and fails with a `ReflectionTypeLoadException`
+  on such a type before Bit.BlazeDb is there. Make it `internal`, or put it in a library that is lazy loaded together
+  with Bit.BlazeDb.
+- Serializing a table type - with System.Text.Json, reflection-based or source-generated - reads the BlazeDb attributes
+  on its properties, and so needs the assembly. Give a call that runs before it has loaded, such as one the main
+  layout makes, a type of its own.
+- A failed attempt is final: once the runtime has tried to load Bit.BlazeDb before it was there - even in code that
+  caught the exception - it does not try again, and the pages that use the database fail after the assembly has loaded
+  too.
+- With the EF Core provider, lazy load `Bit.BlazeDb.EntityFrameworkCore.wasm` as well, in the same call.
+  `AddDbContext<AppContext>(options => options.UseBlazeDb())` can stay in `Program.cs`: the lambda runs when the first
+  context is created, by then in a page the assemblies were loaded for. A persistent store cannot be given its storage
+  there, since creating one uses the engine: give the context the database the service above opened instead,
+  `new AppContext(new DbContextOptionsBuilder<AppContext>().UseBlazeDb(await Database.GetAsync()).Options)`. EF Core
+  itself loads with the app, since the context derives from its `DbContext`.
+- In a Blazor Web App only the browser lazy loads. Give `Routes` the `InteractiveWebAssembly` or `InteractiveAuto`
+  render mode in `App.razor`, so the router - and its `OnNavigateAsync` - runs in the browser; with per-page render
+  modes it renders statically on the server and never loads the assembly in the browser. The server project loads
+  BlazeDb with the rest of the app, and registers `LazyAssemblyLoader`, which `Routes.razor` injects while it is
+  prerendered there and which loads nothing outside the browser: `builder.Services.AddScoped<LazyAssemblyLoader>()`.
+- Do not lazy load in an AOT build. AOT compiles every assembly into `dotnet.native.wasm`, so there is nothing left to
+  download later, and lazy loading an AOT-compiled assembly can fail at startup.
 
 ## Encryption at rest
 

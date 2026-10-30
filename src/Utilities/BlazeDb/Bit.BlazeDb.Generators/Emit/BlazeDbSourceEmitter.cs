@@ -23,6 +23,12 @@ internal static class BlazeDbSourceEmitter
     private static string Members(params string[] names) =>
         "new string[] { " + string.Join(", ", Array.ConvertAll(names, Literal)) + " }";
 
+    /// <summary>The nested class whose fields hold the descriptor and the index definitions; see <see cref="Emit"/>.</summary>
+    private const string Holder = "__BlazeTable";
+
+    /// <summary>The holder's field for the index named <paramref name="indexName"/>.</summary>
+    private static string HolderField(string indexName) => "Index_" + indexName;
+
     public static string Emit(BlazeDbTableModel model)
     {
         var self = model.Namespace is null
@@ -45,74 +51,86 @@ internal static class BlazeDbSourceEmitter
         sb.AppendLine($"{indent}partial {model.TypeKeyword} {model.TypeName}");
         sb.AppendLine($"{indent}{{");
 
-        // Descriptor.
-        var indexed = model.Props.Where(p => p.HashIndexName != null || p.OrderedIndexName != null).ToList();
-        var indexRefs = new List<string>();
-        foreach (var prop in indexed)
+        // The descriptor and the index definitions are fields of a nested holder class, and the type and its Indexes
+        // class reach them through properties. A field of one of Bit.BlazeDb's types would make the runtime load
+        // Bit.BlazeDb as soon as it lays the type out, which merely naming the type does - typeof(TodoItem), a
+        // new TodoItem() - and a WebAssembly app that lazy loads Bit.BlazeDb may name a table type before the assembly
+        // is there: in a layout every page shares, or as a DTO. The type would then fail to load, and keep failing
+        // after Bit.BlazeDb has loaded. The holder is laid out on first use, through Table or an index, by which time
+        // Bit.BlazeDb is in use anyway. The holder's members carry a prefix, so no index name can collide with
+        // Descriptor, with a comparer class or with the holder's own name.
+        var indexes = new List<(string Name, string Type, string Initializer)>();
+        foreach (var prop in model.Props)
         {
             if (prop.HashIndexName != null)
             {
-                indexRefs.Add("Indexes." + prop.HashIndexName);
+                indexes.Add((prop.HashIndexName,
+                    $"global::Bit.BlazeDb.BlazeDbHashIndexDefinition<{self}, {prop.TypeDisplay}>",
+                    $"new({Literal(prop.HashIndexName)}, static row => row.{prop.Name}, null, {Bool(prop.HashIndexUnique)}, {Members(prop.Name)})"));
             }
             if (prop.OrderedIndexName != null)
             {
-                indexRefs.Add("Indexes." + prop.OrderedIndexName);
+                indexes.Add((prop.OrderedIndexName,
+                    $"global::Bit.BlazeDb.BlazeDbOrderedIndexDefinition<{self}, {prop.TypeDisplay}>",
+                    $"new({Literal(prop.OrderedIndexName)}, static row => row.{prop.Name}, null, {Bool(prop.OrderedIndexUnique)}, {Members(prop.Name)})"));
             }
         }
         foreach (var compound in model.CompoundIndexes)
         {
-            indexRefs.Add("Indexes." + compound.Name);
+            var ctor = "(" + string.Join(", ", compound.Props.ConvertAll(p => "row." + p.Name)) + ")";
+            var defType = compound.Ordered ? "BlazeDbOrderedIndexDefinition" : "BlazeDbHashIndexDefinition";
+            indexes.Add((compound.Name,
+                $"global::Bit.BlazeDb.{defType}<{self}, {compound.TupleType}>",
+                $"new({Literal(compound.Name)}, static row => {ctor}, {CompoundComparer(compound)}, {Bool(compound.Unique)}, {Members(compound.Props.ConvertAll(p => p.Name).ToArray())})"));
         }
-        var indexArg = indexRefs.Count == 0
+        var indexArg = indexes.Count == 0
             ? "null"
-            : $"new global::Bit.BlazeDb.BlazeDbIndexDefinition<{self}>[] {{ {string.Join(", ", indexRefs)} }}";
+            : $"new global::Bit.BlazeDb.BlazeDbIndexDefinition<{self}>[] {{ {string.Join(", ", indexes.Select(index => HolderField(index.Name)))} }}";
+        var descriptorType = $"global::Bit.BlazeDb.BlazeDbTableDescriptor<{keyType}, {self}>";
 
         sb.AppendLine($"{indent}    /// <summary>Generated BlazeDb table descriptor for this type.</summary>");
-        sb.AppendLine($"{indent}    public static readonly global::Bit.BlazeDb.BlazeDbTableDescriptor<{keyType}, {self}> Table = new(");
-        sb.AppendLine($"{indent}        {Literal(model.TableName)},");
-        sb.AppendLine($"{indent}        static row => row.{key.Name},");
-        sb.AppendLine($"{indent}        __BlazeWriteRow,");
-        sb.AppendLine($"{indent}        __BlazeReadRow,");
-        sb.AppendLine($"{indent}        __BlazeWriteKey,");
-        sb.AppendLine($"{indent}        __BlazeReadKey,");
-        sb.AppendLine($"{indent}        {indexArg},");
-        sb.AppendLine($"{indent}        keyMember: {Literal(key.Name)});");
+        sb.AppendLine($"{indent}    public static {descriptorType} Table => {Holder}.Descriptor;");
         sb.AppendLine();
 
         // Index definitions.
-        if (indexRefs.Count > 0)
+        if (indexes.Count > 0)
         {
             sb.AppendLine($"{indent}    /// <summary>Generated secondary index definitions.</summary>");
             sb.AppendLine($"{indent}    public static class Indexes");
             sb.AppendLine($"{indent}    {{");
-            foreach (var prop in indexed)
+            foreach (var index in indexes)
             {
-                if (prop.HashIndexName != null)
-                {
-                    sb.AppendLine($"{indent}        public static readonly global::Bit.BlazeDb.BlazeDbHashIndexDefinition<{self}, {prop.TypeDisplay}> {prop.HashIndexName} =");
-                    sb.AppendLine($"{indent}            new({Literal(prop.HashIndexName!)}, static row => row.{prop.Name}, null, {Bool(prop.HashIndexUnique)}, {Members(prop.Name)});");
-                }
-                if (prop.OrderedIndexName != null)
-                {
-                    sb.AppendLine($"{indent}        public static readonly global::Bit.BlazeDb.BlazeDbOrderedIndexDefinition<{self}, {prop.TypeDisplay}> {prop.OrderedIndexName} =");
-                    sb.AppendLine($"{indent}            new({Literal(prop.OrderedIndexName!)}, static row => row.{prop.Name}, null, {Bool(prop.OrderedIndexUnique)}, {Members(prop.Name)});");
-                }
-            }
-            foreach (var compound in model.CompoundIndexes)
-            {
-                var tuple = compound.TupleType;
-                var ctor = "(" + string.Join(", ", compound.Props.ConvertAll(p => "row." + p.Name)) + ")";
-                var defType = compound.Ordered ? "BlazeDbOrderedIndexDefinition" : "BlazeDbHashIndexDefinition";
-                sb.AppendLine($"{indent}        public static readonly global::Bit.BlazeDb.{defType}<{self}, {tuple}> {compound.Name} =");
-                sb.AppendLine($"{indent}            new({Literal(compound.Name)}, static row => {ctor}, {CompoundComparer(compound)}, {Bool(compound.Unique)}, {Members(compound.Props.ConvertAll(p => p.Name).ToArray())});");
-            }
-            foreach (var compound in model.CompoundIndexes)
-            {
-                EmitCompoundComparer(sb, compound, indent);
+                // Qualified: inside Indexes, an index named after the holder would hide it.
+                sb.AppendLine($"{indent}        public static {index.Type} {index.Name} => {self}.{Holder}.{HolderField(index.Name)};");
             }
             sb.AppendLine($"{indent}    }}");
             sb.AppendLine();
         }
+
+        sb.AppendLine($"{indent}    private static class {Holder}");
+        sb.AppendLine($"{indent}    {{");
+        // Indexes first: static fields are initialized in declaration order, and the descriptor takes them.
+        foreach (var index in indexes)
+        {
+            sb.AppendLine($"{indent}        public static readonly {index.Type} {HolderField(index.Name)} =");
+            sb.AppendLine($"{indent}            {index.Initializer};");
+            sb.AppendLine();
+        }
+        sb.AppendLine($"{indent}        public static readonly {descriptorType} Descriptor = new(");
+        sb.AppendLine($"{indent}            {Literal(model.TableName)},");
+        sb.AppendLine($"{indent}            static row => row.{key.Name},");
+        sb.AppendLine($"{indent}            __BlazeWriteRow,");
+        sb.AppendLine($"{indent}            __BlazeReadRow,");
+        sb.AppendLine($"{indent}            __BlazeWriteKey,");
+        sb.AppendLine($"{indent}            __BlazeReadKey,");
+        sb.AppendLine($"{indent}            {indexArg},");
+        sb.AppendLine($"{indent}            keyMember: {Literal(key.Name)});");
+        foreach (var compound in model.CompoundIndexes)
+        {
+            EmitCompoundComparer(sb, compound, indent);
+        }
+        sb.AppendLine($"{indent}    }}");
+        sb.AppendLine();
 
         EmitWriteRow(sb, model, self, indent);
         sb.AppendLine();
