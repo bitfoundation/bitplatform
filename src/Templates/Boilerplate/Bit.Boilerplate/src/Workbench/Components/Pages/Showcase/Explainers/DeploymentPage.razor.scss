@@ -1,0 +1,148 @@
+@import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_media-queries.scss';
+@import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.deployment {
+    gap: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.intro {
+    gap: 0.25rem;
+    display: flex;
+    max-width: 48rem;
+    flex-direction: column;
+
+    ::deep .title {
+        font-weight: 700;
+    }
+}
+
+.toolbar {
+    gap: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.canvas-box {
+    height: 26rem;
+    overflow: hidden;
+    border-radius: 14px;
+    border: 1px solid $bit-color-border-tertiary;
+
+    @include lt-md {
+        height: 34rem;
+    }
+}
+
+.notice {
+    gap: 0.75rem;
+    height: 100%;
+    display: flex;
+    padding: 1rem;
+    text-align: center;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.step {
+    gap: 0.625rem;
+    display: flex;
+    height: 100%;
+    align-items: center;
+    padding: 0 0.25rem;
+}
+
+.step-icon {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    flex-shrink: 0;
+    border-radius: 10px;
+    align-items: center;
+    justify-content: center;
+    background-color: color-mix(in srgb, #{$bit-color-primary} 12%, transparent);
+}
+
+.step-text {
+    gap: 2px;
+    min-width: 0;
+    display: flex;
+    text-align: start;
+    flex-direction: column;
+}
+
+.step-title {
+    font-size: 13px;
+    font-weight: 700;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.step-detail {
+    font-size: 11.5px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: $bit-color-foreground-secondary;
+}
+
+.details {
+    gap: 0.75rem;
+    display: flex;
+    padding: 0.875rem 1rem;
+    border-radius: 14px;
+    align-items: flex-start;
+    background-color: $bit-color-background-secondary;
+
+    ::deep .details-title {
+        font-weight: 700;
+    }
+}
+
+.details-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    flex-shrink: 0;
+    border-radius: 10px;
+    align-items: center;
+    justify-content: center;
+    background-color: color-mix(in srgb, #{$bit-color-primary} 12%, transparent);
+}
+
+.details-text {
+    gap: 0.25rem;
+    display: flex;
+    flex-direction: column;
+}
+
+::deep .themed-flow {
+    --bit-blow-bg: #{$bit-color-background-secondary};
+    --bit-blow-node-bg: #{$bit-color-background-primary};
+    --bit-blow-node-border: #{$bit-color-border-secondary};
+    --bit-blow-node-input-border: #{$bit-color-primary};
+    --bit-blow-node-output-border: #{$bit-color-primary};
+    --bit-blow-node-color: #{$bit-color-foreground-primary};
+    --bit-blow-node-selected: #{$bit-color-primary};
+    --bit-blow-edge-stroke: #{$bit-color-border-secondary};
+    --bit-blow-edge-selected: #{$bit-color-primary};
+    --bit-blow-connection-stroke: #{$bit-color-primary};
+    --bit-blow-handle-bg: #{$bit-color-foreground-secondary};
+    --bit-blow-surface: #{$bit-color-background-primary};
+    --bit-blow-surface-hover: #{$bit-color-background-secondary};
+    --bit-blow-surface-muted: #{$bit-color-background-secondary};
+    --bit-blow-surface-muted-hover: #{$bit-color-background-tertiary};
+    --bit-blow-surface-translucent: color-mix(in srgb, #{$bit-color-background-primary} 90%, transparent);
+    --bit-blow-border: #{$bit-color-border-tertiary};
+    --bit-blow-border-subtle: #{$bit-color-border-tertiary};
+    --bit-blow-text: #{$bit-color-foreground-primary};
+    --bit-blow-text-muted: #{$bit-color-foreground-secondary};
+    --bit-blow-shadow: color-mix(in srgb, #{$bit-color-foreground-primary} 14%, transparent);
+    --bit-blow-group-bg: color-mix(in srgb, #{$bit-color-primary} 5%, transparent);
+    --bit-blow-group-border: color-mix(in srgb, #{$bit-color-primary} 35%, transparent);
+    --bit-blow-background-pattern: #{$bit-color-border-secondary};
+}

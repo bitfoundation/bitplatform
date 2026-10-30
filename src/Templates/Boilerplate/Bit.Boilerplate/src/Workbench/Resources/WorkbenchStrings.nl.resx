@@ -1191,4 +1191,157 @@ Zo verliep elke dag:</value>
     <data name="AssistantStockPaperCups" xml:space="preserve">
         <value>Papieren bekers</value>
     </data>
+    <data name="DeployTitle" xml:space="preserve">
+        <value>Uitrol</value>
+    </data>
+    <data name="DeployDescription" xml:space="preserve">
+        <value>De uitrol-pipeline van het project als een stroom die je kunt starten, met uitleg bij elke stap en een fout om na te bootsen.</value>
+    </data>
+    <data name="DeployCaption" xml:space="preserve">
+        <value>Live met één merge</value>
+    </data>
+    <data name="CategoryExplainers" xml:space="preserve">
+        <value>Uitleg</value>
+    </data>
+    <data name="DeployHeading" xml:space="preserve">
+        <value>Hoe een wijziging live gaat</value>
+    </data>
+    <data name="DeployIntro" xml:space="preserve">
+        <value>Dit is de pipeline waarmee je project komt, van een merge tot een live update. Start hem om elke stap te volgen, of laat de gezondheidscontrole falen om te zien wat er dan gebeurt.</value>
+    </data>
+    <data name="DeployRun" xml:space="preserve">
+        <value>Pipeline starten</value>
+    </data>
+    <data name="DeploySimulateFailure" xml:space="preserve">
+        <value>Gezondheidscontrole laten falen</value>
+    </data>
+    <data name="DeployRunning" xml:space="preserve">
+        <value>Bezig</value>
+    </data>
+    <data name="DeploySucceeded" xml:space="preserve">
+        <value>Laatste run geslaagd</value>
+    </data>
+    <data name="DeployFailed" xml:space="preserve">
+        <value>Laatste run mislukt</value>
+    </data>
+    <data name="DeployNeverRun" xml:space="preserve">
+        <value>Nog niet gestart</value>
+    </data>
+    <data name="DeployLoadFailed" xml:space="preserve">
+        <value>De pipeline kon niet worden geladen.</value>
+    </data>
+    <data name="DeploySelectHint" xml:space="preserve">
+        <value>Kies een stap om te zien wat die doet.</value>
+    </data>
+    <data name="DeployCheckFailedMessage" xml:space="preserve">
+        <value>/alive gaf vijf minuten geen antwoord.</value>
+    </data>
+    <data name="DeployMergeTitle" xml:space="preserve">
+        <value>Merge in main</value>
+    </data>
+    <data name="DeployMergeDetail" xml:space="preserve">
+        <value>Start de productie-uitrol</value>
+    </data>
+    <data name="DeployMergeDescription" xml:space="preserve">
+        <value>Een pull request die in main wordt gemerged, start de productie-workflow. Een merge in develop rolt de testomgeving op dezelfde manier uit.</value>
+    </data>
+    <data name="DeployImagesTitle" xml:space="preserve">
+        <value>Serverimages bouwen</value>
+    </data>
+    <data name="DeployImagesDetail" xml:space="preserve">
+        <value>Naar het containerregister</value>
+    </data>
+    <data name="DeployImagesDescription" xml:space="preserve">
+        <value>De server wordt gebouwd als containerimages, gelabeld met deze run en naar de GitHub Container Registry gestuurd.</value>
+    </data>
+    <data name="DeployWindowsTitle" xml:space="preserve">
+        <value>Windows-app</value>
+    </data>
+    <data name="DeployWindowsDetail" xml:space="preserve">
+        <value>Ondertekend installatieprogramma en updates</value>
+    </data>
+    <data name="DeployWindowsDescription" xml:space="preserve">
+        <value>Tegelijk wordt de Windows-app gebouwd, ondertekend en gepubliceerd met het installatieprogramma en de updatepakketten.</value>
+    </data>
+    <data name="DeployAndroidTitle" xml:space="preserve">
+        <value>Android-app</value>
+    </data>
+    <data name="DeployAndroidDetail" xml:space="preserve">
+        <value>Bundel voor Google Play</value>
+    </data>
+    <data name="DeployAndroidDescription" xml:space="preserve">
+        <value>Tegelijk wordt de Android-app gebouwd als ondertekende bundel, klaar voor Google Play.</value>
+    </data>
+    <data name="DeployIosTitle" xml:space="preserve">
+        <value>iOS-app</value>
+    </data>
+    <data name="DeployIosDetail" xml:space="preserve">
+        <value>Build voor de App Store</value>
+    </data>
+    <data name="DeployIosDescription" xml:space="preserve">
+        <value>Tegelijk wordt de iOS-app gebouwd en ondertekend voor TestFlight en de App Store.</value>
+    </data>
+    <data name="DeployComposeTitle" xml:space="preserve">
+        <value>Compose-project schrijven</value>
+    </data>
+    <data name="DeployComposeDetail" xml:space="preserve">
+        <value>Services, instellingen, controles</value>
+    </data>
+    <data name="DeployComposeDescription" xml:space="preserve">
+        <value>De app host schrijft een Docker Compose-project met elke service die de app nodig heeft, met instellingen, gezondheidscontroles en herstartregels.</value>
+    </data>
+    <data name="DeployPullTitle" xml:space="preserve">
+        <value>Ophalen op de server</value>
+    </data>
+    <data name="DeployPullDetail" xml:space="preserve">
+        <value>Door de eigen runner van de server</value>
+    </data>
+    <data name="DeployPullDescription" xml:space="preserve">
+        <value>Op de server meldt een eigen runner zich aan bij het register en haalt de nieuwe images op.</value>
+    </data>
+    <data name="DeployMigrateTitle" xml:space="preserve">
+        <value>Migraties uitvoeren</value>
+    </data>
+    <data name="DeployMigrateDetail" xml:space="preserve">
+        <value>Eerst, voordat er iets herstart</value>
+    </data>
+    <data name="DeployMigrateDescription" xml:space="preserve">
+        <value>De databasemigraties draaien eerst, op zichzelf. Mislukken ze, dan mislukt de stap en blijft de draaiende versie ongemoeid.</value>
+    </data>
+    <data name="DeployStartTitle" xml:space="preserve">
+        <value>Containers starten</value>
+    </data>
+    <data name="DeployStartDetail" xml:space="preserve">
+        <value>Wacht tot elke container gezond is</value>
+    </data>
+    <data name="DeployStartDescription" xml:space="preserve">
+        <value>De nieuwe versie start en de stap wacht tot elke container gezond meldt, of mislukt met hun logs.</value>
+    </data>
+    <data name="DeployCheckTitle" xml:space="preserve">
+        <value>Openbaar adres controleren</value>
+    </data>
+    <data name="DeployCheckDetail" xml:space="preserve">
+        <value>Vraagt /alive van buitenaf</value>
+    </data>
+    <data name="DeployCheckDescription" xml:space="preserve">
+        <value>De workflow vraagt het openbare adres om /alive tot het antwoordt, zodat de app ook van buitenaf bereikbaar is, niet alleen op de server.</value>
+    </data>
+    <data name="DeployPurgeTitle" xml:space="preserve">
+        <value>CDN-cache legen</value>
+    </data>
+    <data name="DeployPurgeDetail" xml:space="preserve">
+        <value>Bezoekers krijgen de nieuwe bestanden</value>
+    </data>
+    <data name="DeployPurgeDescription" xml:space="preserve">
+        <value>De Cloudflare-cache wordt geleegd, zodat bezoekers meteen de bestanden van de nieuwe versie krijgen.</value>
+    </data>
+    <data name="DeployLiveTitle" xml:space="preserve">
+        <value>Live</value>
+    </data>
+    <data name="DeployLiveDetail" xml:space="preserve">
+        <value>De nieuwe versie bedient iedereen</value>
+    </data>
+    <data name="DeployLiveDescription" xml:space="preserve">
+        <value>Iedereen gebruikt nu de nieuwe versie. De apps in de stores worden bijgewerkt zoals elke store ze levert.</value>
+    </data>
 </root>

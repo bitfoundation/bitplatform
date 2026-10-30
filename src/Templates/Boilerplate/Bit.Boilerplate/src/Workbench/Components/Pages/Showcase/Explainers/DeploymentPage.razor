@@ -1,0 +1,88 @@
+@inherits WorkbenchComponentBase
+
+<BitMediaQuery ScreenQuery="BitScreenQuery.LtMd" OnChange="OnNarrowChanged" />
+
+<div class="deployment">
+    <div class="intro">
+        <BitText Typography="BitTypography.H5" Class="title">@Localizer[nameof(WorkbenchStrings.DeployHeading)]</BitText>
+        <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.DeployIntro)]</BitText>
+    </div>
+
+    <div class="toolbar">
+        <BitButton IconName="@BitIconName.Play" IsLoading="isRunning" IsEnabled="CanRun" OnClick="Run">@Localizer[nameof(WorkbenchStrings.DeployRun)]</BitButton>
+        <BitToggle Text="@Localizer[nameof(WorkbenchStrings.DeploySimulateFailure)]" @bind-Value="simulateFailure" IsEnabled="CanRun" />
+        <BitSpacer />
+        @if (isLoading is false && isFailed is false)
+        {
+            <BitTag Text="@Localizer[OutcomeKey]" IconName="@OutcomeIconName" Color="@OutcomeColor" Variant="BitVariant.Outline" Size="BitSize.Small" />
+        }
+    </div>
+
+    <div class="canvas-box">
+        @if (isLoading)
+        {
+            <BitShimmer Height="100%" Width="100%" />
+        }
+        else if (isFailed)
+        {
+            <div class="notice">
+                <BitIcon IconName="@BitIconName.Error" Size="BitSize.Large" Color="BitColor.Warning" />
+                <BitText Typography="BitTypography.Subtitle1">@Localizer[nameof(WorkbenchStrings.DeployLoadFailed)]</BitText>
+                <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Refresh" OnClick="Load">@Localizer[nameof(WorkbenchStrings.AssistantRetry)]</BitButton>
+            </div>
+        }
+        else
+        {
+            <BlowCanvas @ref="canvas"
+                        Nodes="nodes"
+                        Edges="edges"
+                        RunStates="runStates"
+                        FitViewOnInit
+                        NodesDraggable="false"
+                        NodesConnectable="false"
+                        ZoomOnScroll="false"
+                        PreventScrolling="false"
+                        OnNodeClick="Select"
+                        Class="themed-flow">
+                <NodeTemplate Context="node">
+                    @if (node.Data is DeploymentStep step)
+                    {
+                        <BlowHandle Type="BlowHandleType.Target" Position="node.TargetPosition" IsConnectable="false" />
+                        <div class="step @(step == selected ? "selected" : null)">
+                            <span class="step-icon"><BitIcon IconName="@step.IconName" Color="BitColor.Primary" /></span>
+                            <span class="step-text">
+                                <span class="step-title">@Localizer[step.TitleKey]</span>
+                                <span class="step-detail">@Localizer[step.DetailKey]</span>
+                            </span>
+                        </div>
+                        <BlowHandle Type="BlowHandleType.Source" Position="node.SourcePosition" IsConnectable="false" />
+                        @if (step.Key == "merge")
+                        {
+                            <BlowHandle Type="BlowHandleType.Source" Position="AppsHandlePosition" Id="@AppsHandle" IsConnectable="false" />
+                        }
+                    }
+                </NodeTemplate>
+                <ChildContent>
+                    <BlowBackground />
+                    <BlowControls />
+                </ChildContent>
+            </BlowCanvas>
+        }
+    </div>
+
+    <div class="details">
+        @if (selected is null)
+        {
+            <BitIcon IconName="@BitIconName.Info" Color="BitColor.Primary" />
+            <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.DeploySelectHint)]</BitText>
+        }
+        else
+        {
+            <span class="details-icon"><BitIcon IconName="@selected.IconName" Color="BitColor.Primary" /></span>
+            <div class="details-text">
+                <BitText Typography="BitTypography.Subtitle1" Class="details-title">@Localizer[selected.TitleKey]</BitText>
+                <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@Localizer[selected.DescriptionKey]</BitText>
+            </div>
+        }
+    </div>
+</div>

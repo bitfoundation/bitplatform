@@ -1191,4 +1191,157 @@
     <data name="AssistantStockPaperCups" xml:space="preserve">
         <value>لیوان کاغذی</value>
     </data>
+    <data name="DeployTitle" xml:space="preserve">
+        <value>انتشار</value>
+    </data>
+    <data name="DeployDescription" xml:space="preserve">
+        <value>خط انتشار پروژه به‌شکل یک نمودار قابل اجرا، با توضیح هر مرحله و امکان شبیه‌سازی خطا.</value>
+    </data>
+    <data name="DeployCaption" xml:space="preserve">
+        <value>انتشار با یک ادغام</value>
+    </data>
+    <data name="CategoryExplainers" xml:space="preserve">
+        <value>توضیح‌دهنده‌ها</value>
+    </data>
+    <data name="DeployHeading" xml:space="preserve">
+        <value>یک تغییر چطور منتشر می‌شود</value>
+    </data>
+    <data name="DeployIntro" xml:space="preserve">
+        <value>این همان خط انتشاری است که پروژه شما با آن می‌آید، از ادغام تا به‌روزرسانی زنده. اجرایش کنید تا هر مرحله را ببینید، یا بررسی سلامت را خراب کنید تا ببینید آن‌وقت چه می‌شود.</value>
+    </data>
+    <data name="DeployRun" xml:space="preserve">
+        <value>اجرای خط انتشار</value>
+    </data>
+    <data name="DeploySimulateFailure" xml:space="preserve">
+        <value>خراب‌کردن بررسی سلامت</value>
+    </data>
+    <data name="DeployRunning" xml:space="preserve">
+        <value>در حال اجرا</value>
+    </data>
+    <data name="DeploySucceeded" xml:space="preserve">
+        <value>آخرین اجرا موفق بود</value>
+    </data>
+    <data name="DeployFailed" xml:space="preserve">
+        <value>آخرین اجرا ناموفق بود</value>
+    </data>
+    <data name="DeployNeverRun" xml:space="preserve">
+        <value>هنوز اجرا نشده</value>
+    </data>
+    <data name="DeployLoadFailed" xml:space="preserve">
+        <value>خط انتشار بارگذاری نشد.</value>
+    </data>
+    <data name="DeploySelectHint" xml:space="preserve">
+        <value>یک مرحله را انتخاب کنید تا ببینید چه می‌کند.</value>
+    </data>
+    <data name="DeployCheckFailedMessage" xml:space="preserve">
+        <value>/alive تا پنج دقیقه پاسخ نداد.</value>
+    </data>
+    <data name="DeployMergeTitle" xml:space="preserve">
+        <value>ادغام در main</value>
+    </data>
+    <data name="DeployMergeDetail" xml:space="preserve">
+        <value>انتشار نسخه اصلی را آغاز می‌کند</value>
+    </data>
+    <data name="DeployMergeDescription" xml:space="preserve">
+        <value>ادغام یک pull request در main گردش‌کار محیط اصلی را آغاز می‌کند. ادغام در develop محیط تست را به همین شکل منتشر می‌کند.</value>
+    </data>
+    <data name="DeployImagesTitle" xml:space="preserve">
+        <value>ساخت ایمیج‌های سرور</value>
+    </data>
+    <data name="DeployImagesDetail" xml:space="preserve">
+        <value>ارسال به رجیستری کانتینر</value>
+    </data>
+    <data name="DeployImagesDescription" xml:space="preserve">
+        <value>سرور به‌شکل ایمیج‌های کانتینر ساخته می‌شود، با برچسب همین اجرا، و به GitHub Container Registry فرستاده می‌شود.</value>
+    </data>
+    <data name="DeployWindowsTitle" xml:space="preserve">
+        <value>برنامه ویندوز</value>
+    </data>
+    <data name="DeployWindowsDetail" xml:space="preserve">
+        <value>نصب‌کننده امضاشده و به‌روزرسانی‌ها</value>
+    </data>
+    <data name="DeployWindowsDescription" xml:space="preserve">
+        <value>هم‌زمان، برنامه ویندوز ساخته، امضا و همراه با نصب‌کننده و بسته‌های به‌روزرسانی‌اش منتشر می‌شود.</value>
+    </data>
+    <data name="DeployAndroidTitle" xml:space="preserve">
+        <value>برنامه اندروید</value>
+    </data>
+    <data name="DeployAndroidDetail" xml:space="preserve">
+        <value>بسته برای Google Play</value>
+    </data>
+    <data name="DeployAndroidDescription" xml:space="preserve">
+        <value>هم‌زمان، برنامه اندروید به‌شکل یک بسته امضاشده و آماده برای Google Play ساخته می‌شود.</value>
+    </data>
+    <data name="DeployIosTitle" xml:space="preserve">
+        <value>برنامه iOS</value>
+    </data>
+    <data name="DeployIosDetail" xml:space="preserve">
+        <value>ساخت برای App Store</value>
+    </data>
+    <data name="DeployIosDescription" xml:space="preserve">
+        <value>هم‌زمان، برنامه iOS برای TestFlight و App Store ساخته و امضا می‌شود.</value>
+    </data>
+    <data name="DeployComposeTitle" xml:space="preserve">
+        <value>نوشتن پروژه Compose</value>
+    </data>
+    <data name="DeployComposeDetail" xml:space="preserve">
+        <value>سرویس‌ها، تنظیمات، بررسی سلامت</value>
+    </data>
+    <data name="DeployComposeDescription" xml:space="preserve">
+        <value>میزبان برنامه یک پروژه Docker Compose می‌نویسد که همه سرویس‌های لازم برنامه را با تنظیمات، بررسی سلامت و قواعد راه‌اندازی دوباره‌شان نام می‌برد.</value>
+    </data>
+    <data name="DeployPullTitle" xml:space="preserve">
+        <value>دریافت روی سرور</value>
+    </data>
+    <data name="DeployPullDetail" xml:space="preserve">
+        <value>با اجراکننده خود سرور</value>
+    </data>
+    <data name="DeployPullDescription" xml:space="preserve">
+        <value>روی سرور، یک اجراکننده مستقر در خود سرور وارد رجیستری می‌شود و ایمیج‌های تازه را دریافت می‌کند.</value>
+    </data>
+    <data name="DeployMigrateTitle" xml:space="preserve">
+        <value>اجرای مهاجرت‌ها</value>
+    </data>
+    <data name="DeployMigrateDetail" xml:space="preserve">
+        <value>پیش از راه‌اندازی دوباره هر چیزی</value>
+    </data>
+    <data name="DeployMigrateDescription" xml:space="preserve">
+        <value>مهاجرت‌های پایگاه داده اول و جداگانه اجرا می‌شوند. اگر شکست بخورند، این مرحله شکست می‌خورد و نسخه در حال اجرا دست‌نخورده می‌ماند.</value>
+    </data>
+    <data name="DeployStartTitle" xml:space="preserve">
+        <value>راه‌اندازی کانتینرها</value>
+    </data>
+    <data name="DeployStartDetail" xml:space="preserve">
+        <value>تا سالم‌شدن هرکدام صبر می‌کند</value>
+    </data>
+    <data name="DeployStartDescription" xml:space="preserve">
+        <value>نسخه تازه راه می‌افتد و این مرحله صبر می‌کند تا همه کانتینرها اعلام سلامت کنند، یا با گزارش‌هایشان شکست می‌خورد.</value>
+    </data>
+    <data name="DeployCheckTitle" xml:space="preserve">
+        <value>بررسی نشانی عمومی</value>
+    </data>
+    <data name="DeployCheckDetail" xml:space="preserve">
+        <value>پرسیدن /alive از بیرون</value>
+    </data>
+    <data name="DeployCheckDescription" xml:space="preserve">
+        <value>گردش‌کار از نشانی عمومی /alive را می‌پرسد تا پاسخ بدهد، تا مطمئن شود برنامه از بیرون هم در دسترس است، نه فقط روی سرور.</value>
+    </data>
+    <data name="DeployPurgeTitle" xml:space="preserve">
+        <value>پاک‌کردن حافظه CDN</value>
+    </data>
+    <data name="DeployPurgeDetail" xml:space="preserve">
+        <value>بازدیدکنندگان فایل‌های تازه را می‌گیرند</value>
+    </data>
+    <data name="DeployPurgeDescription" xml:space="preserve">
+        <value>حافظه Cloudflare پاک می‌شود تا بازدیدکنندگان فوراً فایل‌های نسخه تازه را بگیرند.</value>
+    </data>
+    <data name="DeployLiveTitle" xml:space="preserve">
+        <value>منتشر شد</value>
+    </data>
+    <data name="DeployLiveDetail" xml:space="preserve">
+        <value>نسخه تازه به همه خدمت می‌دهد</value>
+    </data>
+    <data name="DeployLiveDescription" xml:space="preserve">
+        <value>اکنون همه از نسخه تازه استفاده می‌کنند. برنامه‌های فروشگاهی به همان روشی به‌روز می‌شوند که هر فروشگاه تحویلشان می‌دهد.</value>
+    </data>
 </root>

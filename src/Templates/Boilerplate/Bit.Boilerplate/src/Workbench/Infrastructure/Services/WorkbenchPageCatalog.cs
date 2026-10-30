@@ -28,6 +28,14 @@ public static class WorkbenchPageCatalog
             nameof(WorkbenchStrings.CategoryAi),
             ["BitMarkdownViewer", "BitTextShimmer", "BitChart", "BitPanel", "bit Bmotion"],
             nameof(WorkbenchStrings.AssistantCaption)),
+        new("deployment",
+            nameof(WorkbenchStrings.DeployTitle),
+            nameof(WorkbenchStrings.DeployDescription),
+            BitIconName.Rocket,
+            typeof(DeploymentPage),
+            nameof(WorkbenchStrings.CategoryExplainers),
+            ["bit Blow", "BitToggle", "BitTag", "BitMediaQuery"],
+            nameof(WorkbenchStrings.DeployCaption)),
     ];
 
     public static WorkbenchPageInfo? Find(string? key) => Pages.FirstOrDefault(p => string.Equals(p.Key, key, StringComparison.OrdinalIgnoreCase));

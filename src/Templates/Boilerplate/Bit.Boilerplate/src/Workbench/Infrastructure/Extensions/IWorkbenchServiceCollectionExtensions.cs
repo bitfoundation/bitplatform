@@ -16,6 +16,7 @@ public static class IWorkbenchServiceCollectionExtensions
             services.AddScoped<PosDashboardDataService>();
             services.AddScoped<BuildingsService>();
             services.AddScoped<AssistantService>();
+            services.AddScoped<DeploymentService>();
 
             services.AddRateLimiter(options =>
             {

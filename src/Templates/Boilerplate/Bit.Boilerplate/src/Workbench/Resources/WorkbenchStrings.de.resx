@@ -1191,4 +1191,157 @@ Here is each day:</value>
     <data name="AssistantStockPaperCups" xml:space="preserve">
         <value>Paper cups</value>
     </data>
+    <data name="DeployTitle" xml:space="preserve">
+        <value>Deployment</value>
+    </data>
+    <data name="DeployDescription" xml:space="preserve">
+        <value>The project's deployment pipeline as a flow you can run, with every step explained and a failure to simulate.</value>
+    </data>
+    <data name="DeployCaption" xml:space="preserve">
+        <value>Ship with one merge</value>
+    </data>
+    <data name="CategoryExplainers" xml:space="preserve">
+        <value>Explainers</value>
+    </data>
+    <data name="DeployHeading" xml:space="preserve">
+        <value>How a change goes live</value>
+    </data>
+    <data name="DeployIntro" xml:space="preserve">
+        <value>This is the pipeline your project ships with, from a merge to a live update. Run it to watch each step, or make the health check fail to see what happens then.</value>
+    </data>
+    <data name="DeployRun" xml:space="preserve">
+        <value>Run the pipeline</value>
+    </data>
+    <data name="DeploySimulateFailure" xml:space="preserve">
+        <value>Make the health check fail</value>
+    </data>
+    <data name="DeployRunning" xml:space="preserve">
+        <value>Running</value>
+    </data>
+    <data name="DeploySucceeded" xml:space="preserve">
+        <value>Last run succeeded</value>
+    </data>
+    <data name="DeployFailed" xml:space="preserve">
+        <value>Last run failed</value>
+    </data>
+    <data name="DeployNeverRun" xml:space="preserve">
+        <value>Not run yet</value>
+    </data>
+    <data name="DeployLoadFailed" xml:space="preserve">
+        <value>The pipeline couldn't be loaded.</value>
+    </data>
+    <data name="DeploySelectHint" xml:space="preserve">
+        <value>Select a step to see what it does.</value>
+    </data>
+    <data name="DeployCheckFailedMessage" xml:space="preserve">
+        <value>/alive did not answer for five minutes.</value>
+    </data>
+    <data name="DeployMergeTitle" xml:space="preserve">
+        <value>Merge into main</value>
+    </data>
+    <data name="DeployMergeDetail" xml:space="preserve">
+        <value>Starts the production deploy</value>
+    </data>
+    <data name="DeployMergeDescription" xml:space="preserve">
+        <value>A pull request merged into main starts the production workflow. One merged into develop deploys the Test environment the same way.</value>
+    </data>
+    <data name="DeployImagesTitle" xml:space="preserve">
+        <value>Build the server images</value>
+    </data>
+    <data name="DeployImagesDetail" xml:space="preserve">
+        <value>Pushed to the container registry</value>
+    </data>
+    <data name="DeployImagesDescription" xml:space="preserve">
+        <value>The server is built as container images, tagged with this run and pushed to the GitHub Container Registry.</value>
+    </data>
+    <data name="DeployWindowsTitle" xml:space="preserve">
+        <value>Windows app</value>
+    </data>
+    <data name="DeployWindowsDetail" xml:space="preserve">
+        <value>Signed installer and updates</value>
+    </data>
+    <data name="DeployWindowsDescription" xml:space="preserve">
+        <value>At the same time, the Windows app is built, signed and published with its installer and its update packages.</value>
+    </data>
+    <data name="DeployAndroidTitle" xml:space="preserve">
+        <value>Android app</value>
+    </data>
+    <data name="DeployAndroidDetail" xml:space="preserve">
+        <value>Bundle for Google Play</value>
+    </data>
+    <data name="DeployAndroidDescription" xml:space="preserve">
+        <value>At the same time, the Android app is built as a signed bundle, ready for Google Play.</value>
+    </data>
+    <data name="DeployIosTitle" xml:space="preserve">
+        <value>iOS app</value>
+    </data>
+    <data name="DeployIosDetail" xml:space="preserve">
+        <value>Build for the App Store</value>
+    </data>
+    <data name="DeployIosDescription" xml:space="preserve">
+        <value>At the same time, the iOS app is built and signed for TestFlight and the App Store.</value>
+    </data>
+    <data name="DeployComposeTitle" xml:space="preserve">
+        <value>Write the Compose project</value>
+    </data>
+    <data name="DeployComposeDetail" xml:space="preserve">
+        <value>Services, settings, health checks</value>
+    </data>
+    <data name="DeployComposeDescription" xml:space="preserve">
+        <value>The app host writes a Docker Compose project that names every service the app needs, with its settings, health checks and restart rules.</value>
+    </data>
+    <data name="DeployPullTitle" xml:space="preserve">
+        <value>Pull on the server</value>
+    </data>
+    <data name="DeployPullDetail" xml:space="preserve">
+        <value>By the server's own runner</value>
+    </data>
+    <data name="DeployPullDescription" xml:space="preserve">
+        <value>On the server, a self-hosted runner signs in to the registry and pulls the new images.</value>
+    </data>
+    <data name="DeployMigrateTitle" xml:space="preserve">
+        <value>Run the migrations</value>
+    </data>
+    <data name="DeployMigrateDetail" xml:space="preserve">
+        <value>First, before anything restarts</value>
+    </data>
+    <data name="DeployMigrateDescription" xml:space="preserve">
+        <value>The database migrations run first, on their own. If they fail, the step fails and the running version is left alone.</value>
+    </data>
+    <data name="DeployStartTitle" xml:space="preserve">
+        <value>Start the containers</value>
+    </data>
+    <data name="DeployStartDetail" xml:space="preserve">
+        <value>Waits until each is healthy</value>
+    </data>
+    <data name="DeployStartDescription" xml:space="preserve">
+        <value>The new version starts, and the step waits until every container reports healthy, or fails with their logs.</value>
+    </data>
+    <data name="DeployCheckTitle" xml:space="preserve">
+        <value>Check the public address</value>
+    </data>
+    <data name="DeployCheckDetail" xml:space="preserve">
+        <value>Asks /alive from outside</value>
+    </data>
+    <data name="DeployCheckDescription" xml:space="preserve">
+        <value>The workflow asks the public address for /alive until it answers, so the app is reachable from outside, not only on the server.</value>
+    </data>
+    <data name="DeployPurgeTitle" xml:space="preserve">
+        <value>Purge the CDN cache</value>
+    </data>
+    <data name="DeployPurgeDetail" xml:space="preserve">
+        <value>Visitors get the new files</value>
+    </data>
+    <data name="DeployPurgeDescription" xml:space="preserve">
+        <value>The Cloudflare cache is purged, so visitors get the new version's files at once.</value>
+    </data>
+    <data name="DeployLiveTitle" xml:space="preserve">
+        <value>Live</value>
+    </data>
+    <data name="DeployLiveDetail" xml:space="preserve">
+        <value>The new version serves everyone</value>
+    </data>
+    <data name="DeployLiveDescription" xml:space="preserve">
+        <value>Everyone now uses the new version. The store apps update the way each store delivers them.</value>
+    </data>
 </root>

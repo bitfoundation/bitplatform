@@ -37,6 +37,8 @@
         <Using Include="Boilerplate.Workbench.Components.Pages.Showcase.Assistant" />
         <Using Include="Boilerplate.Workbench.Components.Pages.Showcase.Assistant.Data" />
         <Using Include="Boilerplate.Workbench.Components.Pages.Showcase.Buildings" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.Showcase.Explainers" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.Showcase.Explainers.Data" />
         <Using Include="Boilerplate.Workbench.Components.Pages.Showcase.Buildings.Data" />
         <Using Include="Boilerplate.Workbench.Components.Pages.Showcase.PosDashboard" />
         <Using Include="Boilerplate.Workbench.Components.Pages.Showcase.PosDashboard.Data" />
