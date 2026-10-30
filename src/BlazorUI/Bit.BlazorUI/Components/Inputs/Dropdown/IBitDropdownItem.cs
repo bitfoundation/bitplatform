@@ -1,8 +1,9 @@
 ﻿namespace Bit.BlazorUI;
 
-// A BitDropdownItem<T> of any T, so that a dropdown reads its built-in items whatever their T: an id is rarely
-// nullable while the property a dropdown is bound to often is, and the BitDropdownItem<Guid> of a dropdown of Guid?
-// then works as the BitDropdownItem<Guid?> it stands for (see BitItemValueType).
+// A BitDropdownItem<T> of any T, so that a dropdown without NameSelectors reads its built-in items whatever their T: an
+// id is rarely nullable while the property a dropdown is bound to often is, and the BitDropdownItem<Guid> of a dropdown
+// of Guid? then works as the BitDropdownItem<Guid?> it stands for (see BitItemValueType). Every public property of
+// BitDropdownItem<T> has its member here (BitDropdownItemValueTypeTests pins that), the value as the two methods below.
 internal interface IBitDropdownItem
 {
     string? AriaLabel { get; }
@@ -29,9 +30,12 @@ internal interface IBitDropdownItem
 
     string? Title { get; set; }
 
-    // Boxed, so that the dropdown reads it as the TValue it is (a Guid as a Guid?). A value that is not one of the
-    // item's own T - the null of a Guid? given to a BitDropdownItem<Guid> - is set as the default of that T.
-    object? Value { get; set; }
-
     bool IsSelected { get; set; }
+
+    // The value as the TValue of the dropdown (a Guid as a Guid?), or the default of it when the value is none.
+    T? GetValue<T>();
+
+    // Sets the value a dropdown gives a new item of the Dynamic mode, or returns false when the item cannot hold it: the
+    // null of a Guid? is no value of a BitDropdownItem<Guid>.
+    bool TrySetValue<T>(T? value);
 }

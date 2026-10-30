@@ -10,6 +10,15 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 The packages no longer ship `net8.0` and `net9.0` builds. **An app on .NET 8 or .NET 9** moves to .NET 10 or later
 before it updates, or stays on 10.x of the packages.
 
+### A `BitDropdown` or `BitChoiceGroup` of options of another `TValue` throws ([#14383](https://github.com/bitfoundation/bitplatform/issues/14383))
+
+An option finds its `BitDropdown` or `BitChoiceGroup` through a cascade typed by its own `TValue`, so the options of
+another one (the `BitDropdownOption<Guid>` children of a `BitDropdown<BitDropdownOption<Guid>, Guid?>`) never reached it
+and the component rendered without a single one of them. It now throws an `InvalidOperationException` naming the type
+to use as it initializes, whatever its `NameSelectors`. **An app with such a component** gives its options the
+`TValue` of the component: `BitDropdownOption<Guid?>`. The built-in items are not affected: a
+`BitDropdownItem<Guid>` in a dropdown of `Guid?` is read as the `BitDropdownItem<Guid?>` it stands for.
+
 ## 10.7.0 (first shipped in 10.7.0-pre-01)
 
 ### `BitFullCalendarChangeNotifier` passes on whether to show the refusal notice ([#13827](https://github.com/bitfoundation/bitplatform/issues/13827))

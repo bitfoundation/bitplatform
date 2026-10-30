@@ -11,8 +11,12 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
 {
-    // Why the built-in items of this TItem can never give a TValue (see BitItemValueType), worked out once per closed type.
-    private static readonly string? _itemValueTypeMismatch = BitItemValueType.GetMismatch(nameof(BitDropdown<TItem, TValue>), typeof(TItem), typeof(TValue), typeof(BitDropdownItem<>), typeof(BitDropdownOption<>));
+    // Why the options of this TItem never reach the dropdown (see BitItemValueType), worked out once per closed type.
+    private static readonly string? _optionValueTypeMismatch = BitItemValueType.GetOptionMismatch(nameof(BitDropdown<TItem, TValue>), typeof(TItem), typeof(TValue), typeof(BitDropdownOption<>));
+
+    // Whether the built-in items of this TItem have no null to hold for the null a new item of the Dynamic mode starts
+    // with (the BitDropdownItem<Guid> of a dropdown of Guid?), which leaves it to a DynamicValueGenerator to give one a value.
+    private static readonly bool _dynamicItemsNeedAValue = BitItemValueType.HoldsNoNullOf(typeof(TItem), typeof(TValue), typeof(BitDropdownItem<>));
 
     private int? _providerTotalItems;
     private Dictionary<TItem, int>? _providerPositions;
@@ -362,6 +366,9 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     /// <summary>
     /// The function for generating value in a custom item when a new item is on added Dynamic ComboBox mode.
+    /// A built-in item of another T than TValue takes the value as its own T, and one that cannot hold it is not added:
+    /// a BitDropdownItem&lt;Guid&gt; of a dropdown of Guid? has no null to hold, so without this function no such item
+    /// is offered, and one it returns null for is not added.
     /// </summary>
     [Parameter] public Func<TItem?, TValue>? DynamicValueGenerator { get; set; }
 
@@ -476,7 +483,8 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     /// <summary>
     /// The list of items to display in the callout.
-    /// The items may carry the underlying type of a nullable TValue, like BitDropdownItem&lt;Guid&gt; items in a dropdown of Guid?.
+    /// The values of built-in items of another T than TValue are read as TValue when they are one or convert to one, like
+    /// those of BitDropdownItem&lt;Guid&gt; items in a dropdown of Guid?, unless NameSelectors say how the items are read.
     /// </summary>
     [Parameter] public ICollection<TItem>? Items { get; set; }
 
@@ -1490,9 +1498,12 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
 
 
 
+    // Each item reader takes the built-in item and option of the dropdown's own TValue as they are. Any other item is read
+    // through the NameSelectors when there are any, and otherwise as the built-in item of another T it may be: the
+    // BitDropdownItem<Guid> of a dropdown of Guid? (see IBitDropdownItem).
     internal string? GetAriaLabel(TItem item)
     {
-        if (item is IBitDropdownItem dropdownItem)
+        if (item is BitDropdownItem<TValue> dropdownItem)
         {
             return dropdownItem.AriaLabel;
         }
@@ -1502,7 +1513,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
             return dropdownOption.AriaLabel;
         }
 
-        if (NameSelectors is null) return null;
+        if (NameSelectors is null) return (item as IBitDropdownItem)?.AriaLabel;
 
         if (NameSelectors.AriaLabel.Selector is not null)
         {
@@ -1514,7 +1525,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     internal string? GetClass(TItem item)
     {
-        if (item is IBitDropdownItem dropdownItem)
+        if (item is BitDropdownItem<TValue> dropdownItem)
         {
             return dropdownItem.Class;
         }
@@ -1524,7 +1535,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
             return dropdownOption.Class;
         }
 
-        if (NameSelectors is null) return null;
+        if (NameSelectors is null) return (item as IBitDropdownItem)?.Class;
 
         if (NameSelectors.Class.Selector is not null)
         {
@@ -1536,7 +1547,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     internal string? GetId(TItem item)
     {
-        if (item is IBitDropdownItem dropdownItem)
+        if (item is BitDropdownItem<TValue> dropdownItem)
         {
             return dropdownItem.Id;
         }
@@ -1546,7 +1557,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
             return dropdownOption.Id;
         }
 
-        if (NameSelectors is null) return null;
+        if (NameSelectors is null) return (item as IBitDropdownItem)?.Id;
 
         if (NameSelectors.Id.Selector is not null)
         {
@@ -1558,7 +1569,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     internal object? GetData(TItem item)
     {
-        if (item is IBitDropdownItem dropdownItem)
+        if (item is BitDropdownItem<TValue> dropdownItem)
         {
             return dropdownItem.Data;
         }
@@ -1568,7 +1579,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
             return dropdownOption.Data;
         }
 
-        if (NameSelectors is null) return null;
+        if (NameSelectors is null) return (item as IBitDropdownItem)?.Data;
 
         if (NameSelectors.Data.Selector is not null)
         {
@@ -1580,7 +1591,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     internal bool GetIsDisabled(TItem item)
     {
-        if (item is IBitDropdownItem dropdownItem)
+        if (item is BitDropdownItem<TValue> dropdownItem)
         {
             return dropdownItem.IsDisabled;
         }
@@ -1590,7 +1601,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
             return dropdownOption.IsDisabled;
         }
 
-        if (NameSelectors is null) return false;
+        if (NameSelectors is null) return item is IBitDropdownItem { IsDisabled: true };
 
         if (NameSelectors.IsDisabled.Selector is not null)
         {
@@ -1602,7 +1613,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     internal bool GetIsHidden(TItem item)
     {
-        if (item is IBitDropdownItem dropdownItem)
+        if (item is BitDropdownItem<TValue> dropdownItem)
         {
             return dropdownItem.IsHidden;
         }
@@ -1612,7 +1623,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
             return dropdownOption.IsHidden;
         }
 
-        if (NameSelectors is null) return false;
+        if (NameSelectors is null) return item is IBitDropdownItem { IsHidden: true };
 
         if (NameSelectors.IsHidden.Selector is not null)
         {
@@ -1624,7 +1635,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     internal BitDropdownItemType GetItemType(TItem item)
     {
-        if (item is IBitDropdownItem dropdownItem)
+        if (item is BitDropdownItem<TValue> dropdownItem)
         {
             return dropdownItem.ItemType;
         }
@@ -1634,7 +1645,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
             return dropdownOption.ItemType;
         }
 
-        if (NameSelectors is null) return BitDropdownItemType.Normal;
+        if (NameSelectors is null) return (item as IBitDropdownItem)?.ItemType ?? BitDropdownItemType.Normal;
 
         if (NameSelectors.ItemType.Selector is not null)
         {
@@ -1646,7 +1657,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     internal string? GetStyle(TItem item)
     {
-        if (item is IBitDropdownItem dropdownItem)
+        if (item is BitDropdownItem<TValue> dropdownItem)
         {
             return dropdownItem.Style;
         }
@@ -1656,7 +1667,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
             return dropdownOption.Style;
         }
 
-        if (NameSelectors is null) return null;
+        if (NameSelectors is null) return (item as IBitDropdownItem)?.Style;
 
         if (NameSelectors.Style.Selector is not null)
         {
@@ -1670,7 +1681,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     {
         if (item is null) return null;
 
-        if (item is IBitDropdownItem dropdownItem)
+        if (item is BitDropdownItem<TValue> dropdownItem)
         {
             return dropdownItem.Text;
         }
@@ -1680,7 +1691,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
             return dropdownOption.Text;
         }
 
-        if (NameSelectors is null) return null;
+        if (NameSelectors is null) return (item as IBitDropdownItem)?.Text;
 
         if (NameSelectors.Text.Selector is not null)
         {
@@ -1692,7 +1703,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     internal string? GetTitle(TItem item)
     {
-        if (item is IBitDropdownItem dropdownItem)
+        if (item is BitDropdownItem<TValue> dropdownItem)
         {
             return dropdownItem.Title;
         }
@@ -1702,7 +1713,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
             return dropdownOption.Title;
         }
 
-        if (NameSelectors is null) return null;
+        if (NameSelectors is null) return (item as IBitDropdownItem)?.Title;
 
         if (NameSelectors.Title.Selector is not null)
         {
@@ -1714,7 +1725,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     internal BitIconInfo? GetIcon(TItem item)
     {
-        if (item is IBitDropdownItem dropdownItem)
+        if (item is BitDropdownItem<TValue> dropdownItem)
         {
             return BitIconInfo.From(dropdownItem.Icon, dropdownItem.IconName);
         }
@@ -1724,7 +1735,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
             return BitIconInfo.From(dropdownOption.Icon, dropdownOption.IconName);
         }
 
-        if (NameSelectors is null) return null;
+        if (NameSelectors is null) return item is IBitDropdownItem otherItem ? BitIconInfo.From(otherItem.Icon, otherItem.IconName) : null;
 
         BitIconInfo? icon = null;
         if (NameSelectors.Icon.Selector is not null)
@@ -1763,13 +1774,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
             return dropdownOption.Value;
         }
 
-        // An item of another T whose value is still a TValue, like the BitDropdownItem<Guid> of a dropdown of Guid?.
-        if (item is IBitDropdownItem otherItem && otherItem.Value is TValue otherValue)
-        {
-            return otherValue;
-        }
-
-        if (NameSelectors is null) return default;
+        if (NameSelectors is null) return item is IBitDropdownItem otherItem ? otherItem.GetValue<TValue>() : default;
 
         if (NameSelectors.Value.Selector is not null)
         {
@@ -1813,6 +1818,18 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
         StyleBuilder.Register(() => Styles?.Root);
 
         StyleBuilder.Register(() => FitWidth ? "width:fit-content" : string.Empty);
+    }
+
+    protected override void OnInitialized()
+    {
+        // A dropdown of options that never reach it is refused before it applies a value of its own, raises a change or
+        // renders: OnInitializedAsync does all of that, and a throw from the async method would only come after a render.
+        if (_optionValueTypeMismatch is not null)
+        {
+            throw new InvalidOperationException(_optionValueTypeMismatch);
+        }
+
+        base.OnInitialized();
     }
 
     protected override async Task OnInitializedAsync()
@@ -1886,13 +1903,6 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
-
-        // A dropdown in which no item could ever match a value is refused before it renders, unless the NameSelectors
-        // say how its items are read.
-        if (_itemValueTypeMismatch is not null && NameSelectors is null)
-        {
-            throw new InvalidOperationException(_itemValueTypeMismatch);
-        }
 
         // Options render their items themselves and Blazor skips re-rendering them when only the
         // dropdown's own parameters (Styles, ItemTemplate, ...) change, so push a re-render to each one.
@@ -3923,24 +3933,25 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
         if (Dynamic is false) return;
 
         var text = _comboInputText;
-        // A BitDropdownItem of any T, so that the BitDropdownItem<Guid> of a dropdown of Guid? gets its text and value too.
-        if (typeof(TItem).IsGenericType && typeof(TItem).GetGenericTypeDefinition() == typeof(BitDropdownItem<>))
+        if (typeof(TItem) == typeof(BitDropdownItem<TValue>))
         {
-            var newItem = new TItem();
-            var dropdownItem = (IBitDropdownItem)newItem;
-            dropdownItem.Text = text;
-            dropdownItem.Title = text;
+            var dropdownItem = new BitDropdownItem<TValue>
+            {
+                Text = text,
+                Title = text,
+                Value = default
+            };
 
             if (DynamicValueGenerator is not null)
             {
-                dropdownItem.Value = DynamicValueGenerator(newItem);
+                dropdownItem.Value = DynamicValueGenerator(dropdownItem as TItem);
             }
 
             // Only a selection that stands is an item that was added: a refused one (the selection
             // limit is reached, the binding is one-way) never became part of anything.
-            if (await AddOrRemoveSelectedItem(newItem, true))
+            if (await AddOrRemoveSelectedItem(dropdownItem as TItem, true))
             {
-                await OnDynamicAdd.InvokeAsync(newItem);
+                await OnDynamicAdd.InvokeAsync(dropdownItem as TItem);
             }
         }
         else if (typeof(TItem) == typeof(BitDropdownOption<TValue>))
@@ -3960,6 +3971,23 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
             if (await AddOrRemoveSelectedItem(dropdownOption as TItem, true))
             {
                 await OnDynamicAdd.InvokeAsync(dropdownOption as TItem);
+            }
+        }
+        else if (NameSelectors is null && typeof(TItem).IsAssignableTo(typeof(IBitDropdownItem)))
+        {
+            // The built-in item of another T (read as the item readers say), which takes the value as its own T. One that
+            // cannot hold it is not added rather than given a value of its own: the null of a Guid? would be the
+            // Guid.Empty of a BitDropdownItem<Guid>, a value the dropdown would then report for an item that has none.
+            var otherItem = (IBitDropdownItem)new TItem();
+            otherItem.Text = text;
+            otherItem.Title = text;
+
+            var value = DynamicValueGenerator is null ? default : DynamicValueGenerator((TItem)otherItem);
+            if (otherItem.TrySetValue(value) is false) return;
+
+            if (await AddOrRemoveSelectedItem((TItem)otherItem, true))
+            {
+                await OnDynamicAdd.InvokeAsync((TItem)otherItem);
             }
         }
         else
@@ -4090,6 +4118,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
         if (ReadOnly || Disabled) return null;
         if (_comboInputText.HasNoValue()) return null;
         if (IsMaxSelectedItemsReached) return null;
+        if (_dynamicItemsNeedAValue && DynamicValueGenerator is null && NameSelectors is null) return null;
         if (IsTextAlreadySelected(_comboInputText!)) return null;
         if (GetCommitTarget() is not null) return null;
 
@@ -4215,7 +4244,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     private void SetIsSelected(TItem item, bool value)
     {
-        if (item is IBitDropdownItem dropdownItem)
+        if (item is BitDropdownItem<TValue> dropdownItem)
         {
             dropdownItem.IsSelected = value;
         }
@@ -4225,7 +4254,15 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
             dropdownOption.IsSelected = value;
         }
 
-        if (NameSelectors is null) return;
+        if (NameSelectors is null)
+        {
+            if (item is IBitDropdownItem otherItem and not BitDropdownItem<TValue>)
+            {
+                otherItem.IsSelected = value;
+            }
+
+            return;
+        }
 
         item.SetValueToProperty(NameSelectors.IsSelected, value);
     }

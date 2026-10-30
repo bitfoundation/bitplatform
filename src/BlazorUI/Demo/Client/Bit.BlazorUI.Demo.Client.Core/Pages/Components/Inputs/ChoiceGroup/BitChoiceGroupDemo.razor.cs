@@ -106,7 +106,7 @@ public partial class BitChoiceGroupDemo
             Name = "Items",
             Type = "IEnumerable<TItem>",
             DefaultValue = "new List<TItem>()",
-            Description = "Sets the data source that populates the items of the list. The items may carry the underlying type of a nullable TValue, like BitChoiceGroupItem<Guid> items in a ChoiceGroup of Guid?.",
+            Description = "Sets the data source that populates the items of the list. The values of built-in items of another T than TValue are read as TValue when they are one or convert to one, like those of BitChoiceGroupItem<Guid> items in a ChoiceGroup of Guid?, unless NameSelectors say how the items are read.",
             LinkType = LinkType.Link,
             Href = "#choice-group-item"
         },

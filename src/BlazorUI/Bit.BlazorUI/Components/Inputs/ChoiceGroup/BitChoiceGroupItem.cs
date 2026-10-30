@@ -118,9 +118,7 @@ public class BitChoiceGroupItem<TValue> : IBitChoiceGroupItem
 
 
 
-    object? IBitChoiceGroupItem.Template => Template;
-
-    object? IBitChoiceGroupItem.Value => Value;
+    private BitItemValueType.ValueRead<TValue>? _valueRead;
 
     int IBitChoiceGroupItem.Index
     {
@@ -133,4 +131,15 @@ public class BitChoiceGroupItem<TValue> : IBitChoiceGroupItem
         get => IsSelected;
         set => IsSelected = value;
     }
+
+    // A RenderFragment<T> takes nothing but a T, so the template of an item of a type derived from this one (the TItem of
+    // its ChoiceGroup) is handed over as one that takes that type, which is this very item when it renders.
+    RenderFragment<TItem>? IBitChoiceGroupItem.GetTemplate<TItem>()
+    {
+        if (Template is not { } template) return null;
+
+        return template as RenderFragment<TItem> ?? (item => template((BitChoiceGroupItem<TValue>)(object)item!));
+    }
+
+    T? IBitChoiceGroupItem.GetValue<T>() where T : default => BitItemValueType.Read<TValue, T>(Value, ref _valueRead);
 }

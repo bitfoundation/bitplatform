@@ -270,7 +270,7 @@ public partial class BitDropdownDemo
             Name = "DynamicValueGenerator",
             Type = "Func<TItem?, TValue>?",
             DefaultValue = "null",
-            Description = "The function for generating value in a custom item when a new item is on added Dynamic ComboBox mode.",
+            Description = "The function for generating value in a custom item when a new item is on added Dynamic ComboBox mode. A built-in item of another T than TValue takes the value as its own T, and one that cannot hold it is not added: a BitDropdownItem<Guid> of a dropdown of Guid? has no null to hold, so without this function no such item is offered, and one it returns null for is not added.",
         },
         new()
         {
@@ -398,7 +398,7 @@ public partial class BitDropdownDemo
             Name = "Items",
             Type = "ICollection<TItem>?",
             DefaultValue = "null",
-            Description = "The list of items to display in the callout. The items may carry the underlying type of a nullable TValue, like BitDropdownItem<Guid> items in a dropdown of Guid?.",
+            Description = "The list of items to display in the callout. The values of built-in items of another T than TValue are read as TValue when they are one or convert to one, like those of BitDropdownItem<Guid> items in a dropdown of Guid?, unless NameSelectors say how the items are read.",
             LinkType = LinkType.Link,
             Href = "#dropdown-item"
         },

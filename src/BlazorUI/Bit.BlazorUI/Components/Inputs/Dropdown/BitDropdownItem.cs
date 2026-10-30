@@ -80,15 +80,22 @@ public class BitDropdownItem<TValue> : IBitDropdownItem
 
 
 
-    object? IBitDropdownItem.Value
-    {
-        get => Value;
-        set => Value = value is TValue tValue ? tValue : default;
-    }
+    private BitItemValueType.ValueRead<TValue>? _valueRead;
 
     bool IBitDropdownItem.IsSelected
     {
         get => IsSelected;
         set => IsSelected = value;
+    }
+
+    T? IBitDropdownItem.GetValue<T>() where T : default => BitItemValueType.Read<TValue, T>(Value, ref _valueRead);
+
+    bool IBitDropdownItem.TrySetValue<T>(T? value) where T : default
+    {
+        if (BitItemValueType.TryConvert(value, out TValue? itemValue) is false) return false;
+
+        Value = itemValue;
+
+        return true;
     }
 }
