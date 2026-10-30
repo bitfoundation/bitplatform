@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Collections.Concurrent;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Bit.Bswup.Demo.Server.Controllers;
 using Microsoft.AspNetCore.Hosting;
@@ -42,6 +43,12 @@ public sealed class McpTestServer : IAsyncDisposable
 
     /// <summary>A connected MCP client - the same one an agent would use.</summary>
     public McpClient Mcp { get; }
+
+    /// <summary>
+    /// The exception of every entry the server logged at Error or above - what would page someone in
+    /// production, and so where a caller's mistake must never show up.
+    /// </summary>
+    public IReadOnlyCollection<Exception> LoggedExceptions => _app.LoggedExceptions;
 
     public static async Task<McpTestServer> StartAsync()
     {
@@ -169,17 +176,39 @@ public sealed class McpTestServer : IAsyncDisposable
     }
 
     /// <summary>
-    /// The application under test. Only the log level is overridden - every service, endpoint and
-    /// middleware is the one Program.cs registers, or these tests would be checking a different
-    /// server than the one that ships.
+    /// The application under test. Only logging is touched - its level, and a collector for the
+    /// errors - while every service, endpoint and middleware is the one Program.cs registers, or
+    /// these tests would be checking a different server than the one that ships.
     /// </summary>
     private sealed class BswupApp : WebApplicationFactory<McpController>
     {
+        public ConcurrentQueue<Exception> LoggedExceptions { get; } = new();
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             // Warning, not None: a docs page that fails to render logs an error and answers with a
             // placeholder, and that error is the only place the reason is written down.
-            builder.ConfigureLogging(logging => logging.SetMinimumLevel(LogLevel.Warning));
+            builder.ConfigureLogging(logging =>
+            {
+                logging.SetMinimumLevel(LogLevel.Warning);
+                logging.AddProvider(new ErrorCollector(LoggedExceptions));
+            });
         }
+    }
+
+    private sealed class ErrorCollector(ConcurrentQueue<Exception> exceptions) : ILoggerProvider, ILogger
+    {
+        public ILogger CreateLogger(string categoryName) => this;
+
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+        public bool IsEnabled(LogLevel logLevel) => logLevel >= LogLevel.Error;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            if (IsEnabled(logLevel) && exception is not null) exceptions.Enqueue(exception);
+        }
+
+        public void Dispose() { }
     }
 }

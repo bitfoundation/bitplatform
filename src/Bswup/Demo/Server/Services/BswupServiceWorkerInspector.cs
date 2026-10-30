@@ -4,6 +4,9 @@ using System.Text.RegularExpressions;
 
 namespace Bit.Bswup.Demo.Server.Services;
 
+/// <summary>A service-worker file as read once: its comment-stripped code and every self.* assignment in it.</summary>
+public record ServiceWorkerScript(string Code, IReadOnlyList<JsAssignment> Assignments);
+
 /// <summary>
 /// Reads an app's own <c>service-worker.js</c> the way the shipped worker does, and reports what
 /// that configuration will actually do.
@@ -50,9 +53,24 @@ public static partial class BswupServiceWorkerInspector
     private static readonly string[] _urlLists =
         ["assetsInclude", "assetsExclude", "prohibitedUrls", "serverHandledUrls", "serverRenderedUrls"];
 
-    public static BswupServiceWorkerInspectionDto Inspect(string? script)
+    /// <summary>
+    /// Reads a service-worker file once, for <see cref="Inspect(ServiceWorkerScript)"/> and
+    /// <see cref="AnalyzeAssets(ServiceWorkerScript, IEnumerable{string})"/> to share: a call that
+    /// asks for both pays for one scan of the file, not two.
+    /// </summary>
+    /// <exception cref="ScriptTooComplexException">The file's assignments are chained past what is read.</exception>
+    public static ServiceWorkerScript Parse(string? script)
     {
         var code = JavaScriptSource.StripComments(script ?? string.Empty);
+
+        return new(code, JavaScriptSource.ReadAssignments(code, "self"));
+    }
+
+    public static BswupServiceWorkerInspectionDto Inspect(string? script) => Inspect(Parse(script));
+
+    public static BswupServiceWorkerInspectionDto Inspect(ServiceWorkerScript script)
+    {
+        var code = script.Code;
 
         var problems = new List<string>();
         var warnings = new List<string>();
@@ -61,10 +79,10 @@ public static partial class BswupServiceWorkerInspector
         var import = FindImport(code, Engine);
         var cleanupImport = FindImport(code, CleanupEngine);
 
-        var assignments = JavaScriptSource.ReadAssignments(code, "self")
-                                          // importScripts is a call, not a setting.
-                                          .Where(assignment => assignment.Name != "importScripts")
-                                          .ToArray();
+        var assignments = script.Assignments
+                                // importScripts is a call, not a setting.
+                                .Where(assignment => assignment.Name != "importScripts")
+                                .ToArray();
 
         var settings = assignments.Select(assignment => new BswupSettingAssignmentDto
         {
@@ -133,12 +151,14 @@ public static partial class BswupServiceWorkerInspector
     /// Runs asset URLs through the include/exclude lists the given service-worker file produces -
     /// the built-in lists first, then the file's own - and reports what the worker will manage.
     /// </summary>
-    public static BswupAssetAnalysisDto AnalyzeAssets(string? script, IEnumerable<string> urls)
+    public static BswupAssetAnalysisDto AnalyzeAssets(string? script, IEnumerable<string> urls) => AnalyzeAssets(Parse(script), urls);
+
+    /// <inheritdoc cref="AnalyzeAssets(string?, IEnumerable{string})"/>
+    public static BswupAssetAnalysisDto AnalyzeAssets(ServiceWorkerScript script, IEnumerable<string> urls)
     {
-        var code = JavaScriptSource.StripComments(script ?? string.Empty);
-        var assigned = JavaScriptSource.ReadAssignments(code, "self")
-                                       .GroupBy(assignment => assignment.Name, StringComparer.Ordinal)
-                                       .ToDictionary(group => group.Key, group => group.Last().Value, StringComparer.Ordinal);
+        var assigned = script.Assignments
+                             .GroupBy(assignment => assignment.Name, StringComparer.Ordinal)
+                             .ToDictionary(group => group.Key, group => group.Last().Value, StringComparer.Ordinal);
 
         // A mode preset changes what gets cached (isPassive) and how patterns match
         // (caseInsensitiveUrl), so the analysis has to run against the settings the worker ends up

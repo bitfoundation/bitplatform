@@ -265,7 +265,7 @@ public class AssetCachingAnalysisTests
     [TestMethod]
     public void Analyze_EmptyScript_StillAppliesTheBuiltInLists()
     {
-        var analysis = BswupServiceWorkerInspector.AnalyzeAssets(null, ["css/app.css", "service-worker.js"]);
+        var analysis = BswupServiceWorkerInspector.AnalyzeAssets((string?)null, ["css/app.css", "service-worker.js"]);
 
         AssertCached(analysis, "css/app.css");
         AssertNotCached(analysis, "service-worker.js");
