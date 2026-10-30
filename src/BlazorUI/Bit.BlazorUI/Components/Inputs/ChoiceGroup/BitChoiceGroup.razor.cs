@@ -7,6 +7,9 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
 {
+    // Why the options of this TItem never reach the ChoiceGroup (see BitItemValueType), worked out once per closed type.
+    private static readonly string? _optionValueTypeMismatch = BitItemValueType.GetOptionMismatch(nameof(BitChoiceGroup<TItem, TValue>), typeof(TItem), typeof(TValue), typeof(BitChoiceGroupOption<>));
+
     private List<TItem> _items = [];
     private string _name = default!;
     private bool _autoFocusDone;
@@ -132,6 +135,8 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
     /// <summary>
     /// Sets the data source that populates the items of the list.
+    /// The values of built-in items of another T than TValue are read as TValue when they are one or convert to one, like
+    /// those of BitChoiceGroupItem&lt;Guid&gt; items in a ChoiceGroup of Guid?, unless NameSelectors say how the items are read.
     /// </summary>
     [Parameter] public IEnumerable<TItem> Items { get; set; } = [];
 
@@ -334,6 +339,18 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     }
 
 
+
+    protected override void OnInitialized()
+    {
+        // A group of options that never reach it is refused before it applies a value of its own, raises a change or
+        // renders: OnInitializedAsync does all of that, and a throw from the async method would only come after a render.
+        if (_optionValueTypeMismatch is not null)
+        {
+            throw new InvalidOperationException(_optionValueTypeMismatch);
+        }
+
+        base.OnInitialized();
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -756,6 +773,9 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
         return name.HasValue() ? name : null;
     }
 
+    // Each item reader takes the built-in item and option of the ChoiceGroup's own TValue as they are. Any other item is
+    // read through the NameSelectors when there are any, and otherwise as the built-in item of another T it may be: the
+    // BitChoiceGroupItem<Guid> of a ChoiceGroup of Guid? (see IBitChoiceGroupItem).
     internal string? GetAriaLabel(TItem item)
     {
         if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
@@ -768,7 +788,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
             return choiceGroupOption.AriaLabel;
         }
 
-        if (NameSelectors is null) return null;
+        if (NameSelectors is null) return (item as IBitChoiceGroupItem)?.AriaLabel;
 
         if (NameSelectors.AriaLabel.Selector is not null)
         {
@@ -795,7 +815,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
             return choiceGroupOption.IsDisabled;
         }
 
-        if (NameSelectors is null) return false;
+        if (NameSelectors is null) return item is IBitChoiceGroupItem { IsDisabled: true };
 
         if (NameSelectors.IsDisabled.Selector is not null)
         {
@@ -817,7 +837,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
             return BitIconInfo.From(choiceGroupOption.Icon, choiceGroupOption.IconName);
         }
 
-        if (NameSelectors is null) return null;
+        if (NameSelectors is null) return item is IBitChoiceGroupItem otherItem ? BitIconInfo.From(otherItem.Icon, otherItem.IconName) : null;
 
         BitIconInfo? icon = null;
         if (NameSelectors.Icon.Selector is not null)
@@ -854,7 +874,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
             return choiceGroupOption.ImageSrc;
         }
 
-        if (NameSelectors is null) return null;
+        if (NameSelectors is null) return (item as IBitChoiceGroupItem)?.ImageSrc;
 
         if (NameSelectors.ImageSrc.Selector is not null)
         {
@@ -876,7 +896,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
             return choiceGroupOption.ImageAlt;
         }
 
-        if (NameSelectors is null) return null;
+        if (NameSelectors is null) return (item as IBitChoiceGroupItem)?.ImageAlt;
 
         if (NameSelectors.ImageAlt.Selector is not null)
         {
@@ -900,7 +920,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
             return choiceGroupOption.ImageSize;
         }
 
-        if (NameSelectors is null) return null;
+        if (NameSelectors is null) return (item as IBitChoiceGroupItem)?.ImageSize;
 
         if (NameSelectors.ImageSize.Selector is not null)
         {
@@ -954,7 +974,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
             return choiceGroupOption.Prefix;
         }
 
-        if (NameSelectors is null) return null;
+        if (NameSelectors is null) return (item as IBitChoiceGroupItem)?.Prefix;
 
         if (NameSelectors.Prefix.Selector is not null)
         {
@@ -976,7 +996,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
             return choiceGroupOption.Suffix;
         }
 
-        if (NameSelectors is null) return null;
+        if (NameSelectors is null) return (item as IBitChoiceGroupItem)?.Suffix;
 
         if (NameSelectors.Suffix.Selector is not null)
         {
@@ -998,7 +1018,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
             return choiceGroupOption.SelectedImageSrc;
         }
 
-        if (NameSelectors is null) return null;
+        if (NameSelectors is null) return (item as IBitChoiceGroupItem)?.SelectedImageSrc;
 
         if (NameSelectors.SelectedImageSrc.Selector is not null)
         {
@@ -1012,7 +1032,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         if (item is BitChoiceGroupItem<TValue> choiceGroupItem)
         {
-            return choiceGroupItem.Template as RenderFragment<TItem>;
+            return ((IBitChoiceGroupItem)choiceGroupItem).GetTemplate<TItem>();
         }
 
         if (item is BitChoiceGroupOption<TValue> choiceGroupOption)
@@ -1020,7 +1040,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
             return choiceGroupOption.Template as RenderFragment<TItem>;
         }
 
-        if (NameSelectors is null) return null;
+        if (NameSelectors is null) return (item as IBitChoiceGroupItem)?.GetTemplate<TItem>();
 
         if (NameSelectors.Template.Selector is not null)
         {
@@ -1042,7 +1062,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
             return choiceGroupOption.Description;
         }
 
-        if (NameSelectors is null) return null;
+        if (NameSelectors is null) return (item as IBitChoiceGroupItem)?.Description;
 
         if (NameSelectors.Description.Selector is not null)
         {
@@ -1064,7 +1084,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
             return choiceGroupOption.Text;
         }
 
-        if (NameSelectors is null) return null;
+        if (NameSelectors is null) return (item as IBitChoiceGroupItem)?.Text;
 
         if (NameSelectors.Text.Selector is not null)
         {
@@ -1086,7 +1106,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
             return choiceGroupOption.Title;
         }
 
-        if (NameSelectors is null) return null;
+        if (NameSelectors is null) return (item as IBitChoiceGroupItem)?.Title;
 
         if (NameSelectors.Title.Selector is not null)
         {
@@ -1108,7 +1128,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
             return choiceGroupOption.Value;
         }
 
-        if (NameSelectors is null) return default;
+        if (NameSelectors is null) return item is IBitChoiceGroupItem otherItem ? otherItem.GetValue<TValue>() : default;
 
         if (NameSelectors.Value.Selector is not null)
         {
@@ -1130,7 +1150,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
             return choiceGroupOption.Style;
         }
 
-        if (NameSelectors is null) return null;
+        if (NameSelectors is null) return (item as IBitChoiceGroupItem)?.Style;
 
         if (NameSelectors.Style.Selector is not null)
         {
@@ -1152,7 +1172,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
             return choiceGroupOption.Class;
         }
 
-        if (NameSelectors is null) return null;
+        if (NameSelectors is null) return (item as IBitChoiceGroupItem)?.Class;
 
         if (NameSelectors.Class.Selector is not null)
         {
@@ -1174,7 +1194,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
             return choiceGroupOption.Id;
         }
 
-        if (NameSelectors is null) return null;
+        if (NameSelectors is null) return (item as IBitChoiceGroupItem)?.Id;
 
         if (NameSelectors.Id.Selector is not null)
         {
@@ -1198,7 +1218,15 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
             return;
         }
 
-        if (NameSelectors is null) return;
+        if (NameSelectors is null)
+        {
+            if (item is IBitChoiceGroupItem otherItem)
+            {
+                otherItem.Index = value;
+            }
+
+            return;
+        }
 
         item.SetValueToProperty(NameSelectors.Index, value);
     }
@@ -1217,7 +1245,15 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
             return;
         }
 
-        if (NameSelectors is null) return;
+        if (NameSelectors is null)
+        {
+            if (item is IBitChoiceGroupItem otherItem)
+            {
+                otherItem.IsSelected = value;
+            }
+
+            return;
+        }
 
         item.SetValueToProperty(NameSelectors.IsSelected, value);
     }

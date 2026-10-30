@@ -227,6 +227,9 @@ public class BitDropdownParams<[DynamicallyAccessedMembers(DynamicallyAccessedMe
 
     /// <summary>
     /// The function for generating value in a custom item when a new item is on added Dynamic ComboBox mode.
+    /// A built-in item of another T than TValue takes the value as its own T, and one that cannot hold it is not added:
+    /// a BitDropdownItem&lt;Guid&gt; of a dropdown of Guid? has no null to hold, so without this function no such item
+    /// is offered, and one it returns null for is not added.
     /// </summary>
     public Func<TItem?, TValue>? DynamicValueGenerator { get; set; }
 
@@ -305,6 +308,8 @@ public class BitDropdownParams<[DynamicallyAccessedMembers(DynamicallyAccessedMe
 
     /// <summary>
     /// The list of items to display in the callout.
+    /// The values of built-in items of another T than TValue are read as TValue when they are one or convert to one, like
+    /// those of BitDropdownItem&lt;Guid&gt; items in a dropdown of Guid?, unless NameSelectors say how the items are read.
     /// </summary>
     public ICollection<TItem>? Items { get; set; }
 
