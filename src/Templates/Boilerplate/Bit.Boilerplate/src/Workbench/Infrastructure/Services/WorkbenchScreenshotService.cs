@@ -35,7 +35,8 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
                 HasTouch = isMobile,
                 Locale = culture,
                 ReducedMotion = ReducedMotion.Reduce,
-                ColorScheme = theme is WorkbenchThemeMode.Dark ? ColorScheme.Dark : ColorScheme.Light
+                ColorScheme = theme is WorkbenchThemeMode.Dark ? ColorScheme.Dark : ColorScheme.Light,
+                ExtraHTTPHeaders = GetPairingHeaders()
             });
 
             var page = await context.NewPageAsync();
@@ -57,6 +58,11 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
             var png = await page.ScreenshotAsync(new() { Type = ScreenshotType.Png, Animations = ScreenshotAnimations.Disabled });
 
             return RemoveAlphaChannel(png);
+        }
+        catch (Exception exp) when (exp is not OperationCanceledException)
+        {
+            logger.LogError(exp, "Taking a screenshot of {Url} failed.", relativeUrl);
+            throw;
         }
         finally
         {
@@ -85,6 +91,13 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
             thumbnails.TryRemove(key, out _);
             throw;
         }
+    }
+
+    private static Dictionary<string, string>? GetPairingHeaders()
+    {
+        var pairingToken = Environment.GetEnvironmentVariable("ASPNETCORE_TOKEN");
+
+        return string.IsNullOrEmpty(pairingToken) ? null : new() { ["MS-ASPNETCORE-TOKEN"] = pairingToken };
     }
 
     private static byte[] RemoveAlphaChannel(byte[] png)
@@ -122,6 +135,8 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
 
             playwright ??= await Playwright.CreateAsync();
 
+            List<Exception> failures = [];
+
             foreach (var channel in new string?[] { null, "msedge", "chrome" })
             {
                 try
@@ -131,11 +146,11 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
                 }
                 catch (PlaywrightException exp)
                 {
-                    logger.LogInformation(exp, "Chromium channel {Channel} is not available.", channel ?? "default");
+                    failures.Add(exp);
                 }
             }
 
-            throw new InvalidOperationException("No Chromium-based browser was found for taking screenshots. Install one with: pwsh bin/Debug/net11.0/playwright.ps1 install chromium");
+            throw new AggregateException("No Chromium-based browser could be started for taking screenshots. Install one with: pwsh bin/Debug/net11.0/playwright.ps1 install chromium", failures);
         }
         finally
         {

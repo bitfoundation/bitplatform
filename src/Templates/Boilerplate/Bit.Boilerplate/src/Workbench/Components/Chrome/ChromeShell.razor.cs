@@ -1,4 +1,6 @@
 //+:cnd:noEmit
+// [mirror] app chrome - nav panel items - keep in sync with:
+// - src/Client/Boilerplate.Client.Core/Components/Layout/MainLayout.razor.items.cs
 namespace Boilerplate.Workbench.Components.Chrome;
 
 public partial class ChromeShell

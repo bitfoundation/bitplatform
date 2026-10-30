@@ -57,7 +57,7 @@
                         <span class="state-icon"><BitIcon IconName="@BitIconName.Warning" /></span>
                         <BitText Typography="BitTypography.Subtitle2">@Localizer[nameof(WorkbenchStrings.PosWidgetFailedTitle)]</BitText>
                         <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.PosWidgetFailedDescription)]</BitText>
-                        <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" IconName="@BitIconName.Refresh" OnClick="OnRetry">
+                        <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" IconName="@BitIconName.Refresh" Class="retry" OnClick="OnRetry">
                             @Localizer[nameof(WorkbenchStrings.PosRetry)]
                         </BitButton>
                     </div>

@@ -30,7 +30,7 @@
                     }
                 </div>
                 <div class="store-rule">
-                    <BitIcon IconName="@BitIconName.Info" Size="BitSize.Small" />
+                    <BitIcon IconName="@BitIconName.Info" Size="BitSize.Small" Color="BitColor.Primary" Class="rule-icon" />
                     <span>@Localizer[selectedStore.RuleKey]</span>
                 </div>
             </section>
@@ -115,7 +115,7 @@
             @if (selectedPages.Count is 0)
             {
                 <div class="empty">
-                    <BitIcon IconName="@BitIconName.PhotoCollection" />
+                    <BitIcon IconName="@BitIconName.PhotoCollection" Class="empty-icon" />
                     <p>@Localizer[nameof(WorkbenchStrings.NoPagesSelected)]</p>
                 </div>
             }

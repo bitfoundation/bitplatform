@@ -147,9 +147,8 @@
     color: $bit-color-foreground-secondary;
     background-color: $bit-color-background-secondary;
 
-    ::deep .bit-ico {
+    ::deep .rule-icon {
         margin-top: 2px;
-        color: $bit-color-primary;
     }
 }
 
@@ -351,7 +350,7 @@ figcaption {
     flex-direction: column;
     color: $bit-color-foreground-secondary;
 
-    ::deep .bit-ico {
+    ::deep .empty-icon {
         font-size: 2.5rem;
     }
 

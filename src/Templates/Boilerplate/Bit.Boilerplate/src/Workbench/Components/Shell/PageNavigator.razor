@@ -11,7 +11,7 @@
         @foreach (var item in group)
         {
             <a class="page-link @(item.Key == CurrentKey ? "active" : null)" href="@($"{WorkbenchUrls.Workbench(item.Key)}{Query}")" @onclick="OnNavigate">
-                <BitIcon IconName="@item.IconName" Size="BitSize.Medium" />
+                <BitIcon IconName="@item.IconName" Size="BitSize.Medium" Class="page-icon" />
                 <span class="page-text">
                     <span class="page-title">@Localizer[item.TitleKey]</span>
                     <span class="page-description">@Localizer[item.DescriptionKey]</span>

@@ -32,6 +32,7 @@
     <File Path=".github/agents/scaffold-entity.agent.md" />
     <File Path=".github/agents/template-diff.agent.md" />
     <File Path=".github/agents/troubleshoot.agent.md" />
+    <File Path=".github/agents/workbench.agent.md" />
     <File Path=".github/agents/write-tests.agent.md" />
   </Folder>
   <Folder Name="/.SolutionItems/.docs/">

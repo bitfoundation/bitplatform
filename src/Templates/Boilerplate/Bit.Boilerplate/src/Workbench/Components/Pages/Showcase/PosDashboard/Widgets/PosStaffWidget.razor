@@ -21,6 +21,7 @@
                 rank++;
                 <li>
                     <BitPersona Size="BitPersonaSize.Size40"
+                                Class="member"
                                 PrimaryText="@Localizer[member.NameKey]"
                                 SecondaryText="@Localizer[nameof(WorkbenchStrings.PosOrdersCount), PosFormat.Number(member.Orders)]"
                                 Presence="@(rank <= 3 ? BitPersonaPresence.Online : BitPersonaPresence.Away)" />

@@ -1,3 +1,9 @@
+// [mirror] IStorageService semantics - persistent vs temp storage - keep in sync with:
+// - src/Client/Boilerplate.Client.Web/Infrastructure/Services/WebStorageService.cs
+// - src/Client/Boilerplate.Client.Maui/Infrastructure/Services/MauiStorageService.cs
+// - src/Client/Boilerplate.Client.Windows/Infrastructure/Services/WindowsStorageService.cs
+// - src/Tests/Infrastructure/Services/TestStorageService.cs
+
 namespace Boilerplate.Workbench.Infrastructure.Services.StandIns;
 
 public partial class WorkbenchStorageService : IStorageService

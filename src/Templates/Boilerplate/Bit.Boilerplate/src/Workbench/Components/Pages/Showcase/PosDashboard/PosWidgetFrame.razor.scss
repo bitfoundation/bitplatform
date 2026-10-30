@@ -108,7 +108,7 @@
         background-color: color-mix(in srgb, #{$bit-color-warning} 14%, transparent);
     }
 
-    ::deep .bit-btn {
+    ::deep .retry {
         margin-top: 0.5rem;
     }
 }

@@ -52,6 +52,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "agents", "agents", "{4A5D6E
         .github\agents\scaffold-entity.agent.md = .github\agents\scaffold-entity.agent.md
         .github\agents\template-diff.agent.md = .github\agents\template-diff.agent.md
         .github\agents\troubleshoot.agent.md = .github\agents\troubleshoot.agent.md
+        .github\agents\workbench.agent.md = .github\agents\workbench.agent.md
         .github\agents\write-tests.agent.md = .github\agents\write-tests.agent.md
     EndProjectSection
 EndProject

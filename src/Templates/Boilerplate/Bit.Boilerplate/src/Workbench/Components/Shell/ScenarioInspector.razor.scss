@@ -39,7 +39,7 @@ section {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
-    ::deep .bit-btn {
+    ::deep .segment {
         min-width: 0;
         padding-inline: 0.25rem;
     }

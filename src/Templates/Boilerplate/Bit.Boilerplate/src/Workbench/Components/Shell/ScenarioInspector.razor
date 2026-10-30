@@ -12,9 +12,9 @@
                          Responsive
                          FitWidth />
             <div class="segments two">
-                <BitButton Size="BitSize.Small" Variant="@VariantOf(Value.DevicePreset.IsLandscape(Value.Rotated) is false)" IconName="@BitIconName.CellPhone"
+                <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.DevicePreset.IsLandscape(Value.Rotated) is false)" IconName="@BitIconName.CellPhone"
                            OnClick="() => Update(Value with { Rotated = Value.DevicePreset.IsLandscapeByDefault })">@Localizer[nameof(WorkbenchStrings.Portrait)]</BitButton>
-                <BitButton Size="BitSize.Small" Variant="@VariantOf(Value.DevicePreset.IsLandscape(Value.Rotated))" IconName="@BitIconName.Rotate"
+                <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.DevicePreset.IsLandscape(Value.Rotated))" IconName="@BitIconName.Rotate"
                            OnClick="() => Update(Value with { Rotated = Value.DevicePreset.IsLandscapeByDefault is false })">@Localizer[nameof(WorkbenchStrings.Landscape)]</BitButton>
             </div>
             <BitToggle Text="@Localizer[nameof(WorkbenchStrings.DeviceFrame)]" Value="Value.Frame" ValueChanged="(bool frame) => Update(Value with { Frame = frame })" />
@@ -24,7 +24,7 @@
                 <div class="segments four">
                     @foreach (var (key, textKey) in zoomLevels)
                     {
-                        <BitButton Size="BitSize.Small" Variant="@VariantOf(Zoom == key)" OnClick="() => ZoomChanged.InvokeAsync(key)">@(textKey is null ? key : Localizer[textKey])</BitButton>
+                        <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Zoom == key)" OnClick="() => ZoomChanged.InvokeAsync(key)">@(textKey is null ? key : Localizer[textKey])</BitButton>
                     }
                 </div>
             }
@@ -36,7 +36,7 @@
         <div class="segments three">
             @foreach (var state in Enum.GetValues<WorkbenchDataState>())
             {
-                <BitButton Size="BitSize.Small" Variant="@VariantOf(Value.Data == state)" IconName="@GetDataStateIconName(state)"
+                <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.Data == state)" IconName="@GetDataStateIconName(state)"
                            OnClick="() => Update(Value with { Data = state })">@Localizer[$"Data{state}"]</BitButton>
             }
         </div>
@@ -52,7 +52,7 @@
         <div class="segments three">
             @foreach (var auth in Enum.GetValues<WorkbenchAuthState>())
             {
-                <BitButton Size="BitSize.Small" Variant="@VariantOf(Value.Auth == auth)" IsEnabled="Value.Chrome"
+                <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.Auth == auth)" IsEnabled="Value.Chrome"
                            OnClick="() => Update(Value with { Auth = auth })">@Localizer[auth.ToString()]</BitButton>
             }
         </div>
@@ -61,7 +61,7 @@
         <div class="segments three">
             @foreach (var theme in Enum.GetValues<WorkbenchThemeMode>())
             {
-                <BitButton Size="BitSize.Small" Variant="@VariantOf(Value.Theme == theme)" IconName="@GetThemeIconName(theme)"
+                <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.Theme == theme)" IconName="@GetThemeIconName(theme)"
                            OnClick="() => Update(Value with { Theme = theme })">@Localizer[$"Theme{theme}"]</BitButton>
             }
         </div>
