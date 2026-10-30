@@ -639,4 +639,181 @@
     <data name="PosVsPrevious30Days" xml:space="preserve">
         <value>نسبت به ۳۰ روز قبل</value>
     </data>
+    <data name="CategoryDataAndMaps" xml:space="preserve">
+        <value>داده و نقشه</value>
+    </data>
+    <data name="BuildingsTitle" xml:space="preserve">
+        <value>ساختمان‌ها</value>
+    </data>
+    <data name="BuildingsDescription" xml:space="preserve">
+        <value>جدول داده و نقشه‌ای که با هم هماهنگ‌اند. روی نقشه دوبار کلیک کنید تا ساختمان اضافه شود، یکی را انتخاب کنید و Delete بزنید تا حذف شود. فقط مکان‌های داخل هلند پذیرفته می‌شوند.</value>
+    </data>
+    <data name="BuildingsHeading" xml:space="preserve">
+        <value>ساختمان‌های شاخص</value>
+    </data>
+    <data name="BuildingsSubtitle" xml:space="preserve">
+        <value>{0} ساختمان در {1} استان</value>
+    </data>
+    <data name="BuildingsSearch" xml:space="preserve">
+        <value>جست‌وجو بر اساس نام، شهر یا نوع</value>
+    </data>
+    <data name="BuildingsAdd" xml:space="preserve">
+        <value>افزودن ساختمان</value>
+    </data>
+    <data name="BuildingsListView" xml:space="preserve">
+        <value>فهرست</value>
+    </data>
+    <data name="BuildingsMapView" xml:space="preserve">
+        <value>نقشه</value>
+    </data>
+    <data name="BuildingsFailedTitle" xml:space="preserve">
+        <value>ساختمان‌ها بارگذاری نشدند</value>
+    </data>
+    <data name="BuildingsEmptyTitle" xml:space="preserve">
+        <value>هنوز ساختمانی نیست</value>
+    </data>
+    <data name="BuildingsEmptyDescription" xml:space="preserve">
+        <value>روی هر جای هلند در نقشه دوبار کلیک کنید تا اولین ساختمان را اضافه کنید.</value>
+    </data>
+    <data name="BuildingName" xml:space="preserve">
+        <value>نام</value>
+    </data>
+    <data name="BuildingCity" xml:space="preserve">
+        <value>شهر</value>
+    </data>
+    <data name="BuildingProvince" xml:space="preserve">
+        <value>استان</value>
+    </data>
+    <data name="BuildingType" xml:space="preserve">
+        <value>نوع</value>
+    </data>
+    <data name="BuildingYear" xml:space="preserve">
+        <value>سال</value>
+    </data>
+    <data name="BuildingHeight" xml:space="preserve">
+        <value>ارتفاع (متر)</value>
+    </data>
+    <data name="BuildingFloors" xml:space="preserve">
+        <value>طبقه‌ها</value>
+    </data>
+    <data name="BuildingLatitude" xml:space="preserve">
+        <value>عرض جغرافیایی</value>
+    </data>
+    <data name="BuildingLongitude" xml:space="preserve">
+        <value>طول جغرافیایی</value>
+    </data>
+    <data name="BuildingsEdit" xml:space="preserve">
+        <value>ویرایش</value>
+    </data>
+    <data name="BuildingsDelete" xml:space="preserve">
+        <value>حذف</value>
+    </data>
+    <data name="BuildingsMapHint" xml:space="preserve">
+        <value>برای افزودن ساختمان داخل هلند دوبار کلیک کنید. یکی را انتخاب کنید و Delete بزنید تا حذف شود.</value>
+    </data>
+    <data name="BuildingsSaved" xml:space="preserve">
+        <value>{0} ذخیره شد</value>
+    </data>
+    <data name="BuildingsDeleteTitle" xml:space="preserve">
+        <value>این ساختمان حذف شود؟</value>
+    </data>
+    <data name="BuildingsDeleteBody" xml:space="preserve">
+        <value>{0} از فهرست و نقشه حذف می‌شود.</value>
+    </data>
+    <data name="BuildingsDeleted" xml:space="preserve">
+        <value>{0} حذف شد</value>
+    </data>
+    <data name="BuildingsOutsideTitle" xml:space="preserve">
+        <value>بیرون از هلند</value>
+    </data>
+    <data name="BuildingsOutsideBody" xml:space="preserve">
+        <value>ساختمان را فقط داخل مرز هلند می‌شود اضافه کرد.</value>
+    </data>
+    <data name="BuildingsAddTitle" xml:space="preserve">
+        <value>ساختمان جدید</value>
+    </data>
+    <data name="BuildingsEditTitle" xml:space="preserve">
+        <value>ویرایش ساختمان</value>
+    </data>
+    <data name="BuildingsLocationHint" xml:space="preserve">
+        <value>موقعیت از نقشه آمده است. هر نقطه‌ای داخل هلند پذیرفته می‌شود.</value>
+    </data>
+    <data name="BuildingsNameRequired" xml:space="preserve">
+        <value>نام را وارد کنید.</value>
+    </data>
+    <data name="BuildingsCityRequired" xml:space="preserve">
+        <value>شهر را وارد کنید.</value>
+    </data>
+    <data name="BuildingsYearInvalid" xml:space="preserve">
+        <value>سالی بین ۱۰۰۰ و امسال وارد کنید.</value>
+    </data>
+    <data name="Cancel" xml:space="preserve">
+        <value>انصراف</value>
+    </data>
+    <data name="Save" xml:space="preserve">
+        <value>ذخیره</value>
+    </data>
+    <data name="BuildingTypeMuseum" xml:space="preserve">
+        <value>موزه</value>
+    </data>
+    <data name="BuildingTypeChurch" xml:space="preserve">
+        <value>کلیسا</value>
+    </data>
+    <data name="BuildingTypeTower" xml:space="preserve">
+        <value>برج</value>
+    </data>
+    <data name="BuildingTypeStation" xml:space="preserve">
+        <value>ایستگاه</value>
+    </data>
+    <data name="BuildingTypeStadium" xml:space="preserve">
+        <value>ورزشگاه</value>
+    </data>
+    <data name="BuildingTypePalace" xml:space="preserve">
+        <value>کاخ</value>
+    </data>
+    <data name="BuildingTypeOffice" xml:space="preserve">
+        <value>برج اداری</value>
+    </data>
+    <data name="BuildingTypeCityHall" xml:space="preserve">
+        <value>شهرداری</value>
+    </data>
+    <data name="BuildingTypeLandmark" xml:space="preserve">
+        <value>بنای شاخص</value>
+    </data>
+    <data name="ProvinceGroningen" xml:space="preserve">
+        <value>خرونینگن</value>
+    </data>
+    <data name="ProvinceFriesland" xml:space="preserve">
+        <value>فریسلند</value>
+    </data>
+    <data name="ProvinceDrenthe" xml:space="preserve">
+        <value>درنته</value>
+    </data>
+    <data name="ProvinceOverijssel" xml:space="preserve">
+        <value>اوفرآیسل</value>
+    </data>
+    <data name="ProvinceFlevoland" xml:space="preserve">
+        <value>فلیولند</value>
+    </data>
+    <data name="ProvinceGelderland" xml:space="preserve">
+        <value>خلدرلند</value>
+    </data>
+    <data name="ProvinceUtrecht" xml:space="preserve">
+        <value>اوترخت</value>
+    </data>
+    <data name="ProvinceNorthHolland" xml:space="preserve">
+        <value>هلند شمالی</value>
+    </data>
+    <data name="ProvinceSouthHolland" xml:space="preserve">
+        <value>هلند جنوبی</value>
+    </data>
+    <data name="ProvinceZeeland" xml:space="preserve">
+        <value>زیلند</value>
+    </data>
+    <data name="ProvinceNorthBrabant" xml:space="preserve">
+        <value>برابانت شمالی</value>
+    </data>
+    <data name="ProvinceLimburg" xml:space="preserve">
+        <value>لیمبورخ</value>
+    </data>
 </root>

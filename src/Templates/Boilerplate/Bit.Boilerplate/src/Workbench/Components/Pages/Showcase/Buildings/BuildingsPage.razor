@@ -1,0 +1,123 @@
+@inherits WorkbenchComponentBase
+
+<BitMediaQuery ScreenQuery="BitScreenQuery.LtMd" OnChange="OnNarrowChanged" />
+
+<div class="buildings">
+    <div class="buildings-header">
+        <div class="titles">
+            <BitText Typography="BitTypography.H5" Class="title">@Localizer[nameof(WorkbenchStrings.BuildingsHeading)]</BitText>
+            <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.BuildingsSubtitle), FilteredBuildings.Count(), FilteredBuildings.Select(b => b.Province).Distinct().Count()]</BitText>
+        </div>
+        <div class="actions">
+            <BitSearchBox @bind-Value="searchText" Immediate Class="search"
+                          Placeholder="@Localizer[nameof(WorkbenchStrings.BuildingsSearch)]"
+                          AriaLabel="@Localizer[nameof(WorkbenchStrings.BuildingsSearch)]" />
+            <BitButton IconName="@BitIconName.Add" OnClick="OpenAdd" IsEnabled="status is PosWidgetStatus.Ready or PosWidgetStatus.Empty">
+                @Localizer[nameof(WorkbenchStrings.BuildingsAdd)]
+            </BitButton>
+        </div>
+    </div>
+
+    @if (isNarrow)
+    {
+        <div class="view-switch" role="tablist">
+            <BitButton Size="BitSize.Small" Variant="@(showMap ? BitVariant.Outline : BitVariant.Fill)" IconName="@BitIconName.BulletedList" OnClick="() => showMap = false">@Localizer[nameof(WorkbenchStrings.BuildingsListView)]</BitButton>
+            <BitButton Size="BitSize.Small" Variant="@(showMap ? BitVariant.Fill : BitVariant.Outline)" IconName="@BitIconName.MapPin" OnClick="() => showMap = true">@Localizer[nameof(WorkbenchStrings.BuildingsMapView)]</BitButton>
+        </div>
+    }
+
+    <div class="split @(isNarrow ? (showMap ? "narrow show-map" : "narrow show-list") : null)">
+        <section class="list-pane" aria-label="@Localizer[nameof(WorkbenchStrings.BuildingsListView)]">
+            @switch (status)
+            {
+                case PosWidgetStatus.Loading:
+                    <div class="state">
+                        @for (var i = 0; i < 8; i++)
+                        {
+                            <BitShimmer Height="2.25rem" />
+                        }
+                    </div>
+                    break;
+                case PosWidgetStatus.Failed:
+                    <div class="state center" role="alert">
+                        <span class="state-icon warning"><BitIcon IconName="@BitIconName.Warning" /></span>
+                        <BitText Typography="BitTypography.Subtitle2">@Localizer[nameof(WorkbenchStrings.BuildingsFailedTitle)]</BitText>
+                        <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.PosWidgetFailedDescription)]</BitText>
+                        <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" IconName="@BitIconName.Refresh" OnClick="Reload">@Localizer[nameof(WorkbenchStrings.PosRetry)]</BitButton>
+                    </div>
+                    break;
+                case PosWidgetStatus.Empty:
+                    <div class="state center">
+                        <span class="state-icon"><BitIcon IconName="@BitIconName.MapPin" /></span>
+                        <BitText Typography="BitTypography.Subtitle2">@Localizer[nameof(WorkbenchStrings.BuildingsEmptyTitle)]</BitText>
+                        <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.BuildingsEmptyDescription)]</BitText>
+                    </div>
+                    break;
+                default:
+                    <BitDataGrid @ref="grid"
+                                 TItem="Building"
+                                 Items="FilteredBuildings"
+                                 KeyField="b => b.Id"
+                                 Height="100%"
+                                 SelectionMode="BitSelectionMode.Single"
+                                 SelectedItems="selectedItems"
+                                 SelectedItemsChanged="OnGridSelectionChanged"
+                                 OnRowDoubleClick="OpenEdit"
+                                 Pageable="true"
+                                 PageSize="10"
+                                 AriaLabel="@Localizer[nameof(WorkbenchStrings.BuildingsHeading)]">
+                        <BitDataGridColumn TItem="Building" Property="b => b.Name" Title="@Localizer[nameof(WorkbenchStrings.BuildingName)]" RowHeader="true">
+                            <Template Context="building">
+                                <span class="name-cell">
+                                    <span class="type-dot" style="background-color:@GetTypeColor(building.Type)"></span>
+                                    <span class="name-text">
+                                        <span class="name">@building.Name</span>
+                                        <span class="city">@building.City · @Localizer[$"Province{building.Province}"]</span>
+                                    </span>
+                                </span>
+                            </Template>
+                        </BitDataGridColumn>
+                        <BitDataGridColumn TItem="Building" Property="b => b.Type" Title="@Localizer[nameof(WorkbenchStrings.BuildingType)]" SortBy="SortByType" Width="130px" Visible="isNarrow is false">
+                            <Template Context="building">@Localizer[$"BuildingType{building.Type}"]</Template>
+                        </BitDataGridColumn>
+                        <BitDataGridColumn TItem="Building" Property="b => b.Year" Title="@Localizer[nameof(WorkbenchStrings.BuildingYear)]" Align="BitTextAlign.End" Width="80px" Visible="isNarrow is false" />
+                        <BitDataGridColumn TItem="Building" Title="" Width="92px" Sortable="false" Searchable="false" Exportable="false">
+                            <Template Context="building">
+                                <span class="row-actions">
+                                    <BitButton IconOnly Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Edit"
+                                               Title="@Localizer[nameof(WorkbenchStrings.BuildingsEdit)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.BuildingsEdit)]"
+                                               OnClick="() => OpenEdit(building)" />
+                                    <BitButton IconOnly Size="BitSize.Small" Variant="BitVariant.Text" Color="BitColor.Error" IconName="@BitIconName.Delete"
+                                               Title="@Localizer[nameof(WorkbenchStrings.BuildingsDelete)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.BuildingsDelete)]"
+                                               OnClick="() => ConfirmDelete(building)" />
+                                </span>
+                            </Template>
+                        </BitDataGridColumn>
+                    </BitDataGrid>
+                    break;
+            }
+        </section>
+
+        <section class="map-pane" @onkeydown="OnMapKeyDown" aria-label="@Localizer[nameof(WorkbenchStrings.BuildingsMapView)]">
+            <BitMap @ref="map"
+                    TMapProvider="BitLeafletMapProvider"
+                    Provider="provider"
+                    Markers="markers"
+                    Clustering="clustering"
+                    OnReady="OnMapReady"
+                    OnDoubleClick="OnMapDoubleClick"
+                    OnMarkerClick="OnMarkerClick"
+                    OnMarkerDoubleClick="OnMarkerDoubleClick"
+                    MarkerListMode="BitMapMarkerListMode.ScreenReaderOnly"
+                    Class="@(Scenario.Theme is WorkbenchThemeMode.Dark ? "map dark-tiles" : "map")" />
+            <div class="map-hint">
+                <BitIcon IconName="@BitIconName.Info" Size="BitSize.Small" />
+                <span>@Localizer[nameof(WorkbenchStrings.BuildingsMapHint)]</span>
+            </div>
+        </section>
+    </div>
+</div>
+
+<BuildingEditor @ref="editor" OnSaved="OnSaved" />
+
+<BitSnackBar @ref="snackBar" Position="BitPosition.BottomCenter" AutoDismiss AutoDismissTime="TimeSpan.FromSeconds(4)" />

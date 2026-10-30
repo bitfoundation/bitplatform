@@ -1,3 +1,4 @@
+using Boilerplate.Workbench.Components.Pages.Showcase.Buildings;
 using Boilerplate.Workbench.Components.Pages.Showcase.PosDashboard;
 
 namespace Boilerplate.Workbench.Infrastructure.Services;
@@ -13,6 +14,13 @@ public static class WorkbenchPageCatalog
             typeof(PosDashboardPage),
             nameof(WorkbenchStrings.CategoryDashboards),
             ["bit Bortable", "BitChart", "BitShimmer", "bit Bmotion"]),
+        new("buildings",
+            nameof(WorkbenchStrings.BuildingsTitle),
+            nameof(WorkbenchStrings.BuildingsDescription),
+            BitIconName.MapPin,
+            typeof(BuildingsPage),
+            nameof(WorkbenchStrings.CategoryDataAndMaps),
+            ["BitDataGrid", "BitMap", "BitModal", "BitMessageBox", "BitSnackBar"]),
     ];
 
     public static WorkbenchPageInfo? Find(string? key) => Pages.FirstOrDefault(p => string.Equals(p.Key, key, StringComparison.OrdinalIgnoreCase));

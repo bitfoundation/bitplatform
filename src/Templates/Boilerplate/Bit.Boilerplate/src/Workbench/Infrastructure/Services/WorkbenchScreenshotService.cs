@@ -43,6 +43,14 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
 
             await page.WaitForFunctionAsync("() => window.__workbenchReady === true", null, new() { Timeout = 30_000 });
 
+            try
+            {
+                await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new() { Timeout = 8_000 });
+            }
+            catch (TimeoutException)
+            {
+            }
+
             await page.EvaluateAsync("() => document.fonts.ready.then(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))))");
 
             var png = await page.ScreenshotAsync(new() { Type = ScreenshotType.Png, Animations = ScreenshotAnimations.Disabled });

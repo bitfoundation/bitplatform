@@ -639,4 +639,181 @@
     <data name="PosVsPrevious30Days" xml:space="preserve">
         <value>vs previous 30 days</value>
     </data>
+    <data name="CategoryDataAndMaps" xml:space="preserve">
+        <value>Data and maps</value>
+    </data>
+    <data name="BuildingsTitle" xml:space="preserve">
+        <value>Buildings</value>
+    </data>
+    <data name="BuildingsDescription" xml:space="preserve">
+        <value>A data grid and a map that stay in sync. Double-click the map to add a building, select one and press Delete to remove it. Only places inside the Netherlands are accepted.</value>
+    </data>
+    <data name="BuildingsHeading" xml:space="preserve">
+        <value>Landmark buildings</value>
+    </data>
+    <data name="BuildingsSubtitle" xml:space="preserve">
+        <value>{0} buildings in {1} provinces</value>
+    </data>
+    <data name="BuildingsSearch" xml:space="preserve">
+        <value>Search by name, city or type</value>
+    </data>
+    <data name="BuildingsAdd" xml:space="preserve">
+        <value>Add building</value>
+    </data>
+    <data name="BuildingsListView" xml:space="preserve">
+        <value>List</value>
+    </data>
+    <data name="BuildingsMapView" xml:space="preserve">
+        <value>Map</value>
+    </data>
+    <data name="BuildingsFailedTitle" xml:space="preserve">
+        <value>Couldn't load the buildings</value>
+    </data>
+    <data name="BuildingsEmptyTitle" xml:space="preserve">
+        <value>No buildings yet</value>
+    </data>
+    <data name="BuildingsEmptyDescription" xml:space="preserve">
+        <value>Double-click anywhere in the Netherlands on the map to add the first one.</value>
+    </data>
+    <data name="BuildingName" xml:space="preserve">
+        <value>Name</value>
+    </data>
+    <data name="BuildingCity" xml:space="preserve">
+        <value>City</value>
+    </data>
+    <data name="BuildingProvince" xml:space="preserve">
+        <value>Province</value>
+    </data>
+    <data name="BuildingType" xml:space="preserve">
+        <value>Type</value>
+    </data>
+    <data name="BuildingYear" xml:space="preserve">
+        <value>Year</value>
+    </data>
+    <data name="BuildingHeight" xml:space="preserve">
+        <value>Height (m)</value>
+    </data>
+    <data name="BuildingFloors" xml:space="preserve">
+        <value>Floors</value>
+    </data>
+    <data name="BuildingLatitude" xml:space="preserve">
+        <value>Latitude</value>
+    </data>
+    <data name="BuildingLongitude" xml:space="preserve">
+        <value>Longitude</value>
+    </data>
+    <data name="BuildingsEdit" xml:space="preserve">
+        <value>Edit</value>
+    </data>
+    <data name="BuildingsDelete" xml:space="preserve">
+        <value>Delete</value>
+    </data>
+    <data name="BuildingsMapHint" xml:space="preserve">
+        <value>Double-click inside the Netherlands to add a building. Select one and press Delete to remove it.</value>
+    </data>
+    <data name="BuildingsSaved" xml:space="preserve">
+        <value>{0} is saved</value>
+    </data>
+    <data name="BuildingsDeleteTitle" xml:space="preserve">
+        <value>Delete this building?</value>
+    </data>
+    <data name="BuildingsDeleteBody" xml:space="preserve">
+        <value>{0} will be removed from the list and the map.</value>
+    </data>
+    <data name="BuildingsDeleted" xml:space="preserve">
+        <value>{0} is deleted</value>
+    </data>
+    <data name="BuildingsOutsideTitle" xml:space="preserve">
+        <value>Outside the Netherlands</value>
+    </data>
+    <data name="BuildingsOutsideBody" xml:space="preserve">
+        <value>Buildings can only be added inside the Dutch border.</value>
+    </data>
+    <data name="BuildingsAddTitle" xml:space="preserve">
+        <value>New building</value>
+    </data>
+    <data name="BuildingsEditTitle" xml:space="preserve">
+        <value>Edit building</value>
+    </data>
+    <data name="BuildingsLocationHint" xml:space="preserve">
+        <value>The location came from the map. Any point inside the Netherlands is accepted.</value>
+    </data>
+    <data name="BuildingsNameRequired" xml:space="preserve">
+        <value>Enter a name.</value>
+    </data>
+    <data name="BuildingsCityRequired" xml:space="preserve">
+        <value>Enter a city.</value>
+    </data>
+    <data name="BuildingsYearInvalid" xml:space="preserve">
+        <value>Enter a year between 1000 and this year.</value>
+    </data>
+    <data name="Cancel" xml:space="preserve">
+        <value>Cancel</value>
+    </data>
+    <data name="Save" xml:space="preserve">
+        <value>Save</value>
+    </data>
+    <data name="BuildingTypeMuseum" xml:space="preserve">
+        <value>Museum</value>
+    </data>
+    <data name="BuildingTypeChurch" xml:space="preserve">
+        <value>Church</value>
+    </data>
+    <data name="BuildingTypeTower" xml:space="preserve">
+        <value>Tower</value>
+    </data>
+    <data name="BuildingTypeStation" xml:space="preserve">
+        <value>Station</value>
+    </data>
+    <data name="BuildingTypeStadium" xml:space="preserve">
+        <value>Stadium</value>
+    </data>
+    <data name="BuildingTypePalace" xml:space="preserve">
+        <value>Palace</value>
+    </data>
+    <data name="BuildingTypeOffice" xml:space="preserve">
+        <value>Office tower</value>
+    </data>
+    <data name="BuildingTypeCityHall" xml:space="preserve">
+        <value>City hall</value>
+    </data>
+    <data name="BuildingTypeLandmark" xml:space="preserve">
+        <value>Landmark</value>
+    </data>
+    <data name="ProvinceGroningen" xml:space="preserve">
+        <value>Groningen</value>
+    </data>
+    <data name="ProvinceFriesland" xml:space="preserve">
+        <value>Friesland</value>
+    </data>
+    <data name="ProvinceDrenthe" xml:space="preserve">
+        <value>Drenthe</value>
+    </data>
+    <data name="ProvinceOverijssel" xml:space="preserve">
+        <value>Overijssel</value>
+    </data>
+    <data name="ProvinceFlevoland" xml:space="preserve">
+        <value>Flevoland</value>
+    </data>
+    <data name="ProvinceGelderland" xml:space="preserve">
+        <value>Gelderland</value>
+    </data>
+    <data name="ProvinceUtrecht" xml:space="preserve">
+        <value>Utrecht</value>
+    </data>
+    <data name="ProvinceNorthHolland" xml:space="preserve">
+        <value>North Holland</value>
+    </data>
+    <data name="ProvinceSouthHolland" xml:space="preserve">
+        <value>South Holland</value>
+    </data>
+    <data name="ProvinceZeeland" xml:space="preserve">
+        <value>Zeeland</value>
+    </data>
+    <data name="ProvinceNorthBrabant" xml:space="preserve">
+        <value>North Brabant</value>
+    </data>
+    <data name="ProvinceLimburg" xml:space="preserve">
+        <value>Limburg</value>
+    </data>
 </root>

@@ -1,0 +1,61 @@
+@inherits WorkbenchComponentBase
+
+<BitModal @bind-IsOpen="isOpen" Blocking MaxWidth="34rem" Classes="@(new() { Content = "editor-modal" })">
+    @if (model is not null && editContext is not null)
+    {
+        <EditForm EditContext="editContext" OnSubmit="Submit" class="editor">
+            <header class="editor-header">
+                <span class="editor-icon"><BitIcon IconName="@(isNew ? BitIconName.Add : BitIconName.Edit)" /></span>
+                <BitText Typography="BitTypography.H6">@Localizer[isNew ? nameof(WorkbenchStrings.BuildingsAddTitle) : nameof(WorkbenchStrings.BuildingsEditTitle)]</BitText>
+                <BitSpacer />
+                <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.Cancel" OnClick="Close"
+                           Title="@Localizer[nameof(WorkbenchStrings.Close)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.Close)]" />
+            </header>
+
+            <div class="fields">
+                <div class="field full">
+                    <BitTextField Label="@Localizer[nameof(WorkbenchStrings.BuildingName)]" @bind-Value="model.Name" Required AutoFocus />
+                    <ValidationMessage For="() => model.Name" />
+                </div>
+                <div class="field">
+                    <BitTextField Label="@Localizer[nameof(WorkbenchStrings.BuildingCity)]" @bind-Value="model.City" Required />
+                    <ValidationMessage For="() => model.City" />
+                </div>
+                <div class="field">
+                    <BitDropdown Label="@Localizer[nameof(WorkbenchStrings.BuildingProvince)]" Items="provinceItems" @bind-Value="model.Province" Responsive />
+                </div>
+                <div class="field">
+                    <BitDropdown Label="@Localizer[nameof(WorkbenchStrings.BuildingType)]" Items="typeItems" @bind-Value="model.Type" Responsive />
+                </div>
+                <div class="field">
+                    <BitNumberField Label="@Localizer[nameof(WorkbenchStrings.BuildingYear)]" @bind-Value="model.Year" Min="1000" Max="@maxYear" />
+                    <ValidationMessage For="() => model.Year" />
+                </div>
+                <div class="field">
+                    <BitNumberField Label="@Localizer[nameof(WorkbenchStrings.BuildingHeight)]" @bind-Value="model.Height" Min="0" Max="1000" Step="0.5" />
+                </div>
+                <div class="field">
+                    <BitNumberField Label="@Localizer[nameof(WorkbenchStrings.BuildingFloors)]" @bind-Value="model.Floors" Min="0" Max="200" />
+                </div>
+                <div class="field">
+                    <BitNumberField Label="@Localizer[nameof(WorkbenchStrings.BuildingLatitude)]" @bind-Value="model.Latitude" Step="0.0001" Precision="5" />
+                </div>
+                <div class="field">
+                    <BitNumberField Label="@Localizer[nameof(WorkbenchStrings.BuildingLongitude)]" @bind-Value="model.Longitude" Step="0.0001" Precision="5" />
+                </div>
+                <div class="field full">
+                    <ValidationMessage For="() => model.Latitude" />
+                    <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary" Class="location-hint">
+                        <BitIcon IconName="@BitIconName.MapPin" Size="BitSize.Small" />
+                        @Localizer[nameof(WorkbenchStrings.BuildingsLocationHint)]
+                    </BitText>
+                </div>
+            </div>
+
+            <footer class="editor-footer">
+                <BitButton Variant="BitVariant.Text" OnClick="Close">@Localizer[nameof(WorkbenchStrings.Cancel)]</BitButton>
+                <BitButton ButtonType="BitButtonType.Submit" IconName="@BitIconName.Save" IsLoading="isSaving">@Localizer[nameof(WorkbenchStrings.Save)]</BitButton>
+            </footer>
+        </EditForm>
+    }
+</BitModal>
