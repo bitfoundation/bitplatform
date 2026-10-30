@@ -26,7 +26,7 @@
 .cell {
     height: 1.375rem;
     border-radius: 5px;
-    background-color: color-mix(in srgb, #4f6bed calc(8% + var(--level) * 92%), #{$bit-color-background-secondary});
+    background-color: color-mix(in srgb, #{$bit-color-primary} calc(8% + var(--level) * 92%), #{$bit-color-background-secondary});
 }
 
 .scale {
@@ -42,6 +42,6 @@
         width: 7rem;
         height: 8px;
         border-radius: 4px;
-        background: linear-gradient(90deg, #{$bit-color-background-secondary}, #4f6bed);
+        background: linear-gradient(90deg, #{$bit-color-background-secondary}, #{$bit-color-primary});
     }
 }

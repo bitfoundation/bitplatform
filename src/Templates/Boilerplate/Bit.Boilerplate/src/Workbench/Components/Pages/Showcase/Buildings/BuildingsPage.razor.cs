@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.Components.Web;
-using Boilerplate.Workbench.Components.Pages.Showcase.PosDashboard;
-using Boilerplate.Workbench.Components.Pages.Showcase.Buildings.Data;
 
 namespace Boilerplate.Workbench.Components.Pages.Showcase.Buildings;
 

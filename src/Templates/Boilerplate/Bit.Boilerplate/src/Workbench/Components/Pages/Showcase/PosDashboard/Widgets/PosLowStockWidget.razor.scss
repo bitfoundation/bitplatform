@@ -55,12 +55,12 @@
     border-radius: 999px;
 
     &.out {
-        color: #c4314b;
-        background-color: color-mix(in srgb, #e5484d 16%, transparent);
+        color: $bit-color-error;
+        background-color: color-mix(in srgb, #{$bit-color-error} 14%, transparent);
     }
 
     &.low {
-        color: #a36a00;
-        background-color: color-mix(in srgb, #f5a524 20%, transparent);
+        color: $bit-color-warning;
+        background-color: color-mix(in srgb, #{$bit-color-warning} 16%, transparent);
     }
 }

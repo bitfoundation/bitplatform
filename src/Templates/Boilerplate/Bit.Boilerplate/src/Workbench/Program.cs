@@ -1,3 +1,9 @@
+//-:cnd:noEmit
+#if Development
+using Boilerplate.Server.Web.Infrastructure.Services;
+#endif
+//+:cnd:noEmit
+
 namespace Boilerplate.Workbench;
 
 public static partial class Program
@@ -21,6 +27,12 @@ public static partial class Program
         var app = builder.Build();
 
         app.ConfigureMiddlewares();
+
+        //-:cnd:noEmit
+#if Development
+        await FileWatcherService.StartAsync(app);
+#endif
+        //+:cnd:noEmit
 
         await app.RunAsync();
     }

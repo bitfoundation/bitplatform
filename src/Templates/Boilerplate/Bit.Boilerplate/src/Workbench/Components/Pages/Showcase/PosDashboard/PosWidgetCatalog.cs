@@ -1,5 +1,3 @@
-using Boilerplate.Workbench.Components.Pages.Showcase.PosDashboard.Widgets;
-
 namespace Boilerplate.Workbench.Components.Pages.Showcase.PosDashboard;
 
 public static class PosWidgetCatalog

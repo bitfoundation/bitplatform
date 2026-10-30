@@ -21,11 +21,11 @@
     align-items: center;
 
     &.good {
-        color: #22a06b;
+        color: $bit-color-success;
     }
 
     &.bad {
-        color: #e5484d;
+        color: $bit-color-error;
     }
 
     .kpi-percent {

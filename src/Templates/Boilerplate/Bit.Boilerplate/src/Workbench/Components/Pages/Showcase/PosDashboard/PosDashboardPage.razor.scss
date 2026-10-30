@@ -36,24 +36,6 @@
     }
 }
 
-.range {
-    display: flex;
-
-    ::deep .bit-btn {
-        border-radius: 0;
-    }
-
-    ::deep .bit-btn:first-child {
-        border-start-start-radius: 8px;
-        border-end-start-radius: 8px;
-    }
-
-    ::deep .bit-btn:last-child {
-        border-start-end-radius: 8px;
-        border-end-end-radius: 8px;
-    }
-}
-
 .edit-bar {
     gap: 0.5rem;
     display: flex;

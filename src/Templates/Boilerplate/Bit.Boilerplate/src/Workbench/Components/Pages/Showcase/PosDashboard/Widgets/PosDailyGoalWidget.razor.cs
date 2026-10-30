@@ -1,5 +1,3 @@
-using Boilerplate.Workbench.Components.Pages.Showcase.PosDashboard.Data;
-
 namespace Boilerplate.Workbench.Components.Pages.Showcase.PosDashboard.Widgets;
 
 public partial class PosDailyGoalWidget

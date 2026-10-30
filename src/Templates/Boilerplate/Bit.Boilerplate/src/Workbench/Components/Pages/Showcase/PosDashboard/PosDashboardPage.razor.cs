@@ -1,5 +1,4 @@
 using Bit.Bortable;
-using Boilerplate.Workbench.Components.Pages.Showcase.PosDashboard.Data;
 
 namespace Boilerplate.Workbench.Components.Pages.Showcase.PosDashboard;
 
@@ -18,6 +17,7 @@ public partial class PosDashboardPage
     private IList<PosWidgetLayout> visibleWidgets = [];
     private List<PosWidgetLayout> hiddenWidgets = [];
     private List<BitDropdownItem<string>> storeItems = [];
+    private List<BitButtonGroupItem> rangeItems = [];
     private readonly Dictionary<string, Dictionary<string, object?>> parameters = [];
     private bool isLayoutLoaded;
     private bool isGalleryOpen;
@@ -46,11 +46,14 @@ public partial class PosDashboardPage
     protected override async Task OnInitializedAsync()
     {
         storeItems = [.. PosDashboardDataService.StoreKeys.Select(key => new BitDropdownItem<string> { Value = key, Text = Localizer[key] })];
+        rangeItems = [.. ranges.Select(range => new BitButtonGroupItem { Key = range.Days.ToString(CultureInfo.InvariantCulture), Text = Localizer[range.TextKey] })];
 
         ApplyLayout(await ScenarioState.Track(LoadLayout()));
 
         isLayoutLoaded = true;
     }
+
+    private void SetRange(BitButtonGroupItem item) => SetFilter(Filter with { Days = int.Parse(item.Key!, CultureInfo.InvariantCulture) });
 
     public async Task Move(PosWidgetLayout widget, int delta)
     {

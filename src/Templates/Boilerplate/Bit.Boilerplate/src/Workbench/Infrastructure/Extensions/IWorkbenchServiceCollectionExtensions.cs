@@ -1,6 +1,4 @@
 using System.Threading.RateLimiting;
-using Boilerplate.Workbench.Components.Pages.Showcase.Buildings.Data;
-using Boilerplate.Workbench.Components.Pages.Showcase.PosDashboard.Data;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace Boilerplate.Workbench.Infrastructure.Extensions;

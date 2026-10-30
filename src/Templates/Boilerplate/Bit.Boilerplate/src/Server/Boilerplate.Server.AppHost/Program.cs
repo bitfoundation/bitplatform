@@ -164,6 +164,9 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
     serverWebProject.WithReference(mailpit);
     //#endif
 
+    builder.AddProject("workbench", "../../Workbench/Boilerplate.Workbench.csproj")
+        .WithExplicitStart();
+
     if (OperatingSystem.IsWindows())
     {
         // Blazor Hybrid Windows project.

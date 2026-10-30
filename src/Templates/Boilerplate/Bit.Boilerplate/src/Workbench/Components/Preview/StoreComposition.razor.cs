@@ -1,5 +1,3 @@
-using Boilerplate.Workbench.Components.Shell;
-
 namespace Boilerplate.Workbench.Components.Preview;
 
 public partial class StoreComposition

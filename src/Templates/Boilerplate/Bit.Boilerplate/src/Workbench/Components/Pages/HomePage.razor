@@ -40,14 +40,16 @@
             <Bmotion Initial="Bm.To(opacity: 0, y: 40)" Animate="Bm.To(opacity: 1, y: 0)" Transition="Bm.Spring(stiffness: 90, damping: 18).WithDelay(0.15)">
                 <div class="laptop-holder">
                     <DeviceFrame Device="@DevicePresets.Find("laptop-hidpi")">
-                        <img src="api/thumbnails/pos-dashboard" alt="" />
+                        <img class="light-only" src="api/thumbnails/pos-dashboard" alt="" loading="lazy" />
+                        <img class="dark-only" src="api/thumbnails/pos-dashboard?theme=Dark" alt="" loading="lazy" />
                     </DeviceFrame>
                 </div>
             </Bmotion>
             <Bmotion Initial="Bm.To(opacity: 0, y: 60, x: 30)" Animate="Bm.To(opacity: 1, y: 0, x: 0)" Transition="Bm.Spring(stiffness: 90, damping: 16).WithDelay(0.35)">
                 <div class="phone-holder">
-                    <DeviceFrame Device="DevicePresets.Default" OnDarkContent>
-                        <img src="api/thumbnails/buildings?phone=true&theme=Dark" alt="" />
+                    <DeviceFrame Device="DevicePresets.Default">
+                        <img class="light-only" src="api/thumbnails/buildings?phone=true" alt="" loading="lazy" />
+                        <img class="dark-only" src="api/thumbnails/buildings?phone=true&theme=Dark" alt="" loading="lazy" />
                     </DeviceFrame>
                 </div>
             </Bmotion>
@@ -115,7 +117,8 @@
                 <Bmotion Preset="BmPresets.Reveal(distance: 24)" WhileHover="Bm.To(y: -6)">
                     <a class="page-card" href="@WorkbenchUrls.Workbench(entry.Key)">
                         <span class="thumbnail">
-                            <img src="@($"api/thumbnails/{entry.Key}")" alt="@Localizer[entry.TitleKey]" loading="lazy" />
+                            <img class="light-only" src="@($"api/thumbnails/{entry.Key}")" alt="@Localizer[entry.TitleKey]" loading="lazy" />
+                            <img class="dark-only" src="@($"api/thumbnails/{entry.Key}?theme=Dark")" alt="@Localizer[entry.TitleKey]" loading="lazy" />
                         </span>
                         <span class="page-body">
                             <span class="page-category"><BitIcon IconName="@entry.IconName" Size="BitSize.Small" /> @Localizer[entry.CategoryKey]</span>

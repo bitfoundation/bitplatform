@@ -23,10 +23,22 @@
         <Using Include="Bit.Butil" />
         <Using Include="Bit.BlazorUI" />
         <Using Include="Bit.Bmotion" />
+        <Using Include="Boilerplate.Shared" />
+        <Using Include="Boilerplate.Shared.Resources" />
+        <Using Include="Boilerplate.Shared.Infrastructure.Services" />
         <Using Include="Boilerplate.Client.Core.Infrastructure.Services" />
         <Using Include="Boilerplate.Client.Core.Infrastructure.Services.Contracts" />
         <Using Include="Boilerplate.Workbench.Resources" />
         <Using Include="Boilerplate.Workbench.Components" />
+        <Using Include="Boilerplate.Workbench.Components.Layout" />
+        <Using Include="Boilerplate.Workbench.Components.Shell" />
+        <Using Include="Boilerplate.Workbench.Components.Chrome" />
+        <Using Include="Boilerplate.Workbench.Components.Preview" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.Showcase.Buildings" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.Showcase.Buildings.Data" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.Showcase.PosDashboard" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.Showcase.PosDashboard.Data" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.Showcase.PosDashboard.Widgets" />
         <Using Include="Boilerplate.Workbench.Infrastructure.Models" />
         <Using Include="Boilerplate.Workbench.Infrastructure.Services" />
         <Using Include="Boilerplate.Workbench.Infrastructure.Extensions" />
@@ -34,6 +46,10 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Client\Boilerplate.Client.Core\Boilerplate.Client.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(Environment)' == 'Development'">
+        <Compile Include="..\Server\Boilerplate.Server.Web\Infrastructure\Services\FileWatcherService.cs" Link="Infrastructure\Services\FileWatcherService.cs" />
     </ItemGroup>
 
     <ItemGroup>

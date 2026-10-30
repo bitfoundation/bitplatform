@@ -1,6 +1,3 @@
-using Boilerplate.Workbench.Components.Pages.Showcase.Buildings;
-using Boilerplate.Workbench.Components.Pages.Showcase.PosDashboard;
-
 namespace Boilerplate.Workbench.Infrastructure.Services;
 
 public static class WorkbenchPageCatalog

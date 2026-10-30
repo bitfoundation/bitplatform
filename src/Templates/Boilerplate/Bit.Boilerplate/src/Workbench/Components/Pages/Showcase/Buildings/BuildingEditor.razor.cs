@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Components.Forms;
-using Boilerplate.Workbench.Components.Pages.Showcase.Buildings.Data;
 
 namespace Boilerplate.Workbench.Components.Pages.Showcase.Buildings;
 
@@ -63,8 +62,22 @@ public partial class BuildingEditor
 
     private async Task Submit()
     {
-        if (model is null || editContext is null || await editContext.ValidateAsync() is false)
+        if (model is null || editContext is null)
             return;
+
+        //#if (framework == 'net11.0')
+        if (await editContext.ValidateAsync(CurrentCancellationToken) is false)
+            return;
+        //#else
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
+        if (editContext.Validate() is false)
+            return;
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
+        //#endif
 
         isSaving = true;
 

@@ -176,6 +176,10 @@
     }
 }
 
+:root[bit-theme$="dark"] .home-indicator.follow-theme {
+    background-color: rgba(255, 255, 255, 0.88);
+}
+
 .side-button {
     width: 3px;
     position: absolute;

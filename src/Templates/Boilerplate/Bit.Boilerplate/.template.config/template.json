@@ -673,6 +673,16 @@
             },
             "replaces": "4030"
         },
+        "workbenchPortGenerated": {
+            "type": "generated",
+            "generator": "port",
+            "parameters": {
+                "low": 6000,
+                "high": 6300,
+                "fallback": 6030
+            },
+            "replaces": "6030"
+        },
         "apiServerUrl": {
             "displayName": "Server url",
             "type": "parameter",

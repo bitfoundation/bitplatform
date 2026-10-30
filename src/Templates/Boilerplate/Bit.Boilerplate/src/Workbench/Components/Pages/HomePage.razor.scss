@@ -138,6 +138,20 @@
     object-position: top;
 }
 
+.dark-only {
+    display: none !important;
+}
+
+:root[bit-theme$="dark"] {
+    .light-only {
+        display: none !important;
+    }
+
+    .dark-only {
+        display: block !important;
+    }
+}
+
 .chip {
     z-index: 5;
     gap: 0.375rem;

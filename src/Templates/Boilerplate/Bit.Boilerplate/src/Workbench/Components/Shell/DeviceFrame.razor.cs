@@ -8,7 +8,7 @@ public partial class DeviceFrame
 
     [Parameter] public bool ShowFrame { get; set; } = true;
 
-    [Parameter] public bool OnDarkContent { get; set; }
+    [Parameter] public bool? OnDarkContent { get; set; }
 
     [Parameter] public string? Address { get; set; }
 

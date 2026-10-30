@@ -24,7 +24,7 @@
 
         @if (ShowFrame && Device.Kind is DeviceKind.Phone or DeviceKind.Foldable && Device.Cutout is not DeviceCutout.HomeButton)
         {
-            <div class="home-indicator @(OnDarkContent ? "on-dark" : null)"></div>
+            <div class="home-indicator @(OnDarkContent switch { true => "on-dark", false => null, null => "follow-theme" })"></div>
         }
     </div>
 

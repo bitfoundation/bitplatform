@@ -14,14 +14,14 @@
                              AriaLabel="@Localizer[nameof(WorkbenchStrings.PosStore)]"
                              Class="store-picker"
                              Responsive />
-                <div class="range" role="group" aria-label="@Localizer[nameof(WorkbenchStrings.PosPeriod)]">
-                    @foreach (var (days, textKey) in ranges)
-                    {
-                        <BitButton Size="BitSize.Small"
-                                   Variant="@(Filter.Days == days ? BitVariant.Fill : BitVariant.Outline)"
-                                   OnClick="() => SetFilter(Filter with { Days = days })">@Localizer[textKey]</BitButton>
-                    }
-                </div>
+                <BitButtonGroup Items="rangeItems"
+                                Toggle
+                                FixedToggle
+                                Size="BitSize.Small"
+                                Variant="BitVariant.Outline"
+                                ToggleKey="@Filter.Days.ToString(CultureInfo.InvariantCulture)"
+                                OnToggleChange="(BitButtonGroupItem item) => SetRange(item)"
+                                AriaLabel="@Localizer[nameof(WorkbenchStrings.PosPeriod)]" />
                 <BitButton Size="BitSize.Small"
                            Variant="@(IsEditing ? BitVariant.Fill : BitVariant.Outline)"
                            IconName="@(IsEditing ? BitIconName.Accept : BitIconName.Edit)"
