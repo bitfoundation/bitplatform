@@ -222,6 +222,28 @@ public class SwapTests : BortableTestContext
     }
 
     [TestMethod]
+    public async Task AKeyboardSwapRefusesAPartnerTheCarryingListAlreadyHolds()
+    {
+        // The swap would move Z's "x" into W, which holds an "x" already: a duplicate @key. S, the list the drag
+        // started in, does not hold one, so it is W that has to be asked.
+        List<string> source = ["a", "b"], words = ["x"], swap = ["x"];
+        var s = RenderList(source, "S", p => p.Add(c => c.Group, "g"));
+        RenderList(words, "W", p => p.Add(c => c.Group, "g"));
+        var z = RenderSwapList(swap, "Z");
+
+        await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync(KeyOf(s, "a"), "pick", null, -1));
+        await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync("", "to", "W", 0));
+        var over = await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync("", "to", "Z", 0));
+        await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync("", "drop", null, -1));
+
+        Assert.IsNull(over.Target);
+        Assert.AreEqual("", LabelsWithClass(z, Highlight));
+        Assert.AreSequenceEqual(["a", "x"], words);
+        Assert.AreSequenceEqual(["b"], source);
+        Assert.AreSequenceEqual(["x"], swap);
+    }
+
+    [TestMethod]
     public async Task SwappingAcrossListsOfAGroup()
     {
         List<string> left = ["A", "B", "C"], right = ["X", "Y"];
