@@ -219,6 +219,57 @@ public class McpInspectStoreTests
     }
 
     [TestMethod]
+    public async Task A_type_doubled_by_nested_anonymous_types_is_refused_before_a_compiler_error_prints_it()
+    {
+        // An anonymous type has no name to print, so it prints every member's type - and those are anonymous too.
+        var levels = string.Concat(Enumerable.Range(1, 20).Select(i => $"        var a{i} = new {{ x = a{i - 1}, y = a{i - 1} }};\n"));
+
+        var result = await InspectAsync($$"""
+            [BlexStore]
+            public partial class AnonymousStore
+            {
+                [BlexState] private int _count;
+
+                private void Nest()
+                {
+                    var a0 = 1;
+            {{levels}}
+                    int n = a20;
+                }
+            }
+            """);
+
+        AssertRefused(result, "a type in this source prints longer than");
+    }
+
+    [TestMethod]
+    public async Task A_long_diagnostic_message_is_cut()
+    {
+        // Seven levels print a few thousand characters: short enough to inspect, too long to report whole.
+        var levels = string.Concat(Enumerable.Range(1, 7).Select(i => $"        var a{i} = new {{ x = a{i - 1}, y = a{i - 1} }};\n"));
+
+        var result = await InspectAsync($$"""
+            [BlexStore]
+            public partial class AnonymousStore
+            {
+                [BlexState] private int _count;
+
+                private void Nest()
+                {
+                    var a0 = 1;
+            {{levels}}
+                    int n = a7;
+                }
+            }
+            """);
+
+        var message = result.Diagnostics.Single(d => d.Id == "CS0029").Message;
+
+        Assert.IsLessThan(BlexStoreInspector.MaxMessageLength + 100, message.Length);
+        StringAssert.Contains(message, $"(cut at {BlexStoreInspector.MaxMessageLength} of ");
+    }
+
+    [TestMethod]
     public async Task A_source_that_keeps_the_compiler_busy_is_stopped_at_the_deadline_and_the_server_carries_on()
     {
         // Forty nested calls: Roslyn's own inference over a type that doubles each time runs for years, inside a call
@@ -282,6 +333,111 @@ public class McpInspectStoreTests
             """);
 
         AssertRefused(result, "a constant in this source is longer than");
+    }
+
+    [TestMethod]
+    public async Task A_constant_doubled_through_constants_that_share_its_name_is_refused_too()
+    {
+        // Every link is called C: only the type it is qualified with tells them apart.
+        var levels = string.Concat(Enumerable.Range(1, 24).Select(i => $"public static class L{i} {{ public const string C = L{i - 1}.C + L{i - 1}.C; }}\n"));
+
+        var result = await InspectAsync($$"""
+            public static class L0 { public const string C = "ab"; }
+            {{levels}}
+            [BlexStore]
+            public partial class LabelStore
+            {
+                [BlexState] private int _count;
+
+                [BlexAction(Name = L24.C)] private void OnReset() => Count = 0;
+            }
+            """);
+
+        AssertRefused(result, "a constant in this source is longer than");
+    }
+
+    [TestMethod]
+    public async Task Constants_that_name_one_another_in_a_cycle_are_refused()
+    {
+        var result = await InspectAsync("""
+            [BlexStore]
+            public partial class LoopStore
+            {
+                private const string A = B + "a";
+                private const string B = A + "b";
+
+                [BlexState] private int _count;
+            }
+            """);
+
+        AssertRefused(result, "constants in this source name one another in a cycle");
+    }
+
+    [TestMethod]
+    public async Task Constants_that_share_a_name_across_types_are_inspected()
+    {
+        var result = await InspectAsync("""
+            public class Area { public const string Name = "cart"; }
+            public class Routes { public const string Name = Area.Name + "/items"; }
+
+            public class Base { public const string Prefix = "app"; }
+            public class Labels : Base
+            {
+                public new const string Prefix = Base.Prefix + "/labels";
+                public const string Add = Prefix + "/add";
+            }
+
+            [BlexStore(Name = Routes.Name)]
+            public partial class CartStore
+            {
+                [BlexState] private int _count;
+
+                [BlexAction(Name = Labels.Add)] private void OnAdd() => Count++;
+            }
+            """);
+
+        Assert.IsTrue(result.IsValid, string.Join("; ", result.Diagnostics.Select(d => d.Message).Concat(result.Notes)));
+        Assert.IsTrue(result.Stores.Single().Generated);
+    }
+
+    [TestMethod]
+    public async Task Long_chains_of_constants_are_measured_without_running_out_of_stack()
+    {
+        // Thousands of terms, and a constant at the top that one at the bottom names: measured a link at a time.
+        var terms = string.Join(" + ", Enumerable.Repeat("\"a\"", 3_000));
+        var links = string.Concat(Enumerable.Range(1, 400).Select(i => $"    private const string K{i} = K{i - 1} + \"k\";\n"));
+
+        var result = await InspectAsync($$"""
+            [BlexStore]
+            public partial class ChainStore
+            {
+                private const string Long = {{terms}};
+                private const string K0 = Long;
+            {{links}}
+                [BlexState] private int _count;
+
+                [BlexAction(Name = K400)] private void OnReset() => Count = 0;
+            }
+            """);
+
+        Assert.IsTrue(result.IsValid, string.Join("; ", result.Diagnostics.Select(d => d.Message).Concat(result.Notes)));
+    }
+
+    [TestMethod]
+    public async Task An_attribute_of_the_source_with_an_array_name_does_not_stop_the_inspection()
+    {
+        var result = await InspectAsync("""
+            public class TagsAttribute : System.Attribute { public string[] Name { get; set; } = []; }
+
+            [BlexStore]
+            public partial class TaggedStore
+            {
+                [BlexState, Tags(Name = new[] { "a" })] private int _count;
+            }
+            """);
+
+        Assert.IsTrue(result.IsValid, string.Join("; ", result.Diagnostics.Select(d => d.Message).Concat(result.Notes)));
+        Assert.IsTrue(result.Stores.Single().Generated);
     }
 
     [TestMethod]

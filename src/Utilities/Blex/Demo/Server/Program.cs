@@ -10,7 +10,7 @@ using ModelContextProtocol.Protocol;
 // into an endless computation costs a killed worker rather than the server. A worker never builds the web app.
 if (args is [BlexStoreInspector.WorkerArgument])
 {
-    Environment.ExitCode = await BlexStoreInspector.RunWorkerAsync(Console.OpenStandardInput(), Console.OpenStandardOutput());
+    Environment.ExitCode = await BlexStoreInspector.RunWorkerAsync(Console.OpenStandardInput(), Console.OpenStandardOutput(), Console.Error);
     return;
 }
 

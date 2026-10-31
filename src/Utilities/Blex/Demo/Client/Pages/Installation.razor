@@ -66,7 +66,7 @@
                 <tbody>
                     <tr>
                         <td>Blazor Server<br /><span class="bb-muted">InteractiveServer</span></td>
-                        <td>The server's <code>Program.cs</code>. Every circuit is a scope, so each user gets their own manager and stores. Browser storage is unreachable while prerendering; <code>&lt;BlexProvider&gt;</code> hydrates on the first interactive render instead. Set <code>EnableDevTools="false"</code> unless you want the state tree streamed over the circuit.</td>
+                        <td>The server's <code>Program.cs</code>. Every circuit is a scope, so each user gets their own manager and stores. Browser storage is unreachable while prerendering; <code>&lt;BlexProvider&gt;</code> hydrates on the first interactive render instead. Leave <code>EnableDevTools</code> at its default (<code>false</code>) unless you want the state tree streamed over the circuit.</td>
                     </tr>
                     <tr>
                         <td>Blazor Web App<br /><span class="bb-muted">InteractiveWebAssembly, prerendered</span></td>
@@ -86,7 +86,7 @@
                     </tr>
                     <tr>
                         <td>.NET MAUI Blazor Hybrid</td>
-                        <td><code>MauiProgram.cs</code>, scoped as in Blazor: the <code>BlazorWebView</code> creates the scope. No browser extension exists in a WebView, so set <code>EnableDevTools="false"</code>. Persist to the WebView's <code>localStorage</code> or to OS-native <code>Preferences</code>. See <a href="maui">.NET MAUI</a>.</td>
+                        <td><code>MauiProgram.cs</code>, scoped as in Blazor: the <code>BlazorWebView</code> creates the scope. No browser extension exists in a WebView, so leave <code>EnableDevTools</code> at its default (<code>false</code>). Persist to the WebView's <code>localStorage</code> or to OS-native <code>Preferences</code>. See <a href="maui">.NET MAUI</a>.</td>
                     </tr>
                     <tr>
                         <td>.NET MAUI<br /><span class="bb-muted">native XAML</span></td>
