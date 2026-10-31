@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <!-- The browser half of the lazy loading sample: it downloads Bit.Bortable.wasm only when a page with a list opens.
+         It does everything the README's "Lazy loading on WebAssembly" section asks of such a project, and the
+         end-to-end suite (Tests/Bit.Bortable.Tests.E2E, LazyLoadingTests) publishes it and checks it in a browser. -->
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.3.26522.148" />
+        <ProjectReference Include="..\..\..\Bit.Bortable\Bit.Bortable.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Program.cs leaves AddBitBortableServices out, in every build: the lists create their own coordinator. -->
+        <RuntimeHostConfigurationOption Include="Bit.Bortable.Unregistered" Value="true" />
+    </ItemGroup>
+
+    <!-- AOT builds load Bit.Bortable with the rest of the app. -->
+    <ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' ">
+        <BlazorWebAssemblyLazyLoad Include="Bit.Bortable.wasm" />
+        <RuntimeHostConfigurationOption Include="Bit.Bortable.Samples.Lazy.LazyLoadsBortable" Value="true" Trim="true" />
+    </ItemGroup>
+
+</Project>

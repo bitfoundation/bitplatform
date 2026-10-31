@@ -26,8 +26,9 @@
         It registers one scoped service: the coordinator that holds the drag in progress, so lists
         sharing a group can hand an item to each other. Scoped means one per circuit on Blazor Server
         and one per application on WebAssembly, so two users never share a drag. Calling it more than once
-        is harmless; without it, the first list that renders throws, as it cannot be given the service it
-        injects.
+        is harmless; without it, the first list that renders throws, on every host. Only a WebAssembly app that
+        <a href="getting-started#lazy-loading">lazy loads</a> the library goes without, and says so with the
+        <code>Bit.Bortable.Unregistered</code> runtime switch.
     </p>
     <pre class="bb-code"><span class="c">// Program.cs - in every project that renders a list</span>
 builder.Services.AddBitBortableServices();</pre>
@@ -127,12 +128,38 @@ builder.Services.AddBitBortableServices();</pre>
     </p>
 </div>
 
+<div class="bb-card" id="lazy-loading">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Lazy loading on WebAssembly</h3>
+    <p class="bb-card-desc">
+        A WebAssembly app can fetch Bortable only when someone opens a part of the app that has a list. Its
+        <code>Program.cs</code> cannot call <code>AddBitBortableServices</code> then, so the app sets the
+        <code>Bit.Bortable.Unregistered</code> runtime switch, and the lists create their drag coordinator themselves,
+        once per application, and share it: lists of a group still hand items to each other. Without the switch a list
+        that finds no registration throws, so an app that merely forgot it still hears of it. In the project that runs in
+        the browser, set that switch, mark the assembly as lazy loaded with a switch of your own next to the mark so the
+        router knows it is there to load, and load it before the first page that uses it renders:
+    </p>
+    <CodeBlock Code="@LazyProjectCode" />
+    <CodeBlock Code="@LazyRouterCode" />
+    <ul class="bb-detail-list">
+        <li>Leave <code>AddBitBortableServices</code> out of that project's <code>Program.cs</code>: calling it references Bortable's types before the assembly is there. For the same reason only what renders after the assembly has loaded may use Bortable's types - the pages it is loaded for and a layout only they use, not <code>App.razor</code>, <code>Routes.razor</code>, a layout every page shares, <code>Program.cs</code> or the method that calls <code>LoadAssembliesAsync</code>.</li>
+        <li>No public type in an assembly the router reads when the app starts - the app's own assembly first of all - may derive from one of Bortable's, or from a generic type closed over one: no component that inherits <code>Bortable&lt;TItem&gt;</code>, no <code>BortableMessages</code> subclass. On WebAssembly such a type fails to load before Bit.Bortable is there, and keeps failing after it has loaded. Make it <code>internal</code>, or put it in a library that is lazy loaded together with Bit.Bortable.</li>
+        <li>Without the registration there are no app-wide defaults: set <code>Messages</code>, <code>TouchDelay</code>, <code>Animation</code> and the classes on the lists themselves.</li>
+        <li><code>Bit.Bortable.Unregistered</code> belongs only in the project that lazy loads. Everywhere else - Blazor Server, Blazor Hybrid, the server project of a Blazor Web App, a WebAssembly app that loads Bortable with the rest - register the services and leave the switch out, so a missing registration throws where it happens.</li>
+        <li>In a Blazor Web App only the browser lazy loads. Give <code>Routes</code> the <code>InteractiveWebAssembly</code> or <code>InteractiveAuto</code> render mode in <code>App.razor</code>, so the router - and its <code>OnNavigateAsync</code> - runs in the browser. The server project loads Bortable with the rest of the app, keeps its <code>AddBitBortableServices()</code> - it prerenders the lists - and registers <code>LazyAssemblyLoader</code>, which <code>Routes.razor</code> injects there too: <code>builder.Services.AddScoped&lt;LazyAssemblyLoader&gt;()</code>.</li>
+        <li>Do not lazy load in an AOT build. AOT compiles every assembly into <code>dotnet.native.wasm</code>, so there is nothing left to download later, and lazy loading an AOT-compiled assembly can fail at startup - the condition on the second <code>ItemGroup</code> leaves it out, and the router's switch skips the load with it. <code>Bit.Bortable.Unregistered</code> stays outside the condition: an AOT build runs the same <code>Program.cs</code>, without the registration.</li>
+    </ul>
+</div>
+
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> When something does not work</h3>
     <ul class="bb-detail-list">
         <li>
-            <strong>"There is no registered service of type 'Bit.Bortable.BortableService'"</strong> - call
-            <code>AddBitBortableServices()</code>, in both projects of a Blazor Web App.
+            <strong>"Bit.Bortable's services are not registered"</strong> - call
+            <code>AddBitBortableServices()</code>, in both projects of a Blazor Web App. A WebAssembly app that
+            <a href="getting-started#lazy-loading">lazy loads</a> Bortable sets the <code>Bit.Bortable.Unregistered</code>
+            switch instead, in the project that runs in the browser and outside the <code>ItemGroup</code> an AOT build
+            leaves out.
         </li>
         <li><strong>The items render, but nothing can be dragged</strong> - the page is not interactive. Give it, or the app, an interactive render mode.</li>
         <li>
@@ -164,4 +191,49 @@ builder.Services.AddBitBortableServices();</pre>
 
 @code {
     private IList<string> _items = new List<string> { "Write the spec", "Review the PR", "Ship it" };
+
+    private const string LazyProjectCode = """
+        <!-- The browser project's .csproj. -->
+        <ItemGroup>
+          <!-- Program.cs leaves AddBitBortableServices out, in every build: the lists create their own coordinator. -->
+          <RuntimeHostConfigurationOption Include="Bit.Bortable.Unregistered" Value="true" />
+        </ItemGroup>
+        <!-- AOT builds load Bit.Bortable with the rest of the app. -->
+        <ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' ">
+          <BlazorWebAssemblyLazyLoad Include="Bit.Bortable.wasm" />
+          <RuntimeHostConfigurationOption Include="MyApp.LazyLoadsBortable" Value="true" Trim="true" />
+        </ItemGroup>
+        """;
+
+    private const string LazyRouterCode = """
+        @* App.razor - in a Blazor Web App, the client project's Routes.razor: the router waits for OnNavigateAsync
+           before it renders the page. typeof(Program) is the project the router's file is in, in either kind of app. *@
+        @using Microsoft.AspNetCore.Components.WebAssembly.Services
+        @inject LazyAssemblyLoader LazyAssemblyLoader
+
+        <Router AppAssembly="typeof(Program).Assembly" OnNavigateAsync="OnNavigateAsync">
+            ...
+        </Router>
+
+        @code {
+            // Set only where Bit.Bortable.wasm is marked: loading an assembly that is not marked throws.
+            private static readonly bool LazyLoadsBortable = AppContext.TryGetSwitch("MyApp.LazyLoadsBortable", out var on) && on;
+
+            private async Task OnNavigateAsync(NavigationContext context)
+            {
+                // The pages with lists: fetch Bortable before they render. A second call loads nothing again.
+                if (LazyLoadsBortable && IsBoardPage(context.Path))
+                    await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bortable.wasm"]);
+            }
+
+            // /board and the routes beneath it, such as /Board/2 (routes match regardless of case), but not
+            // /board-settings. Add every other route that renders a list. The path keeps any query and fragment.
+            private static bool IsBoardPage(string path)
+            {
+                path = path.Split('?', '#')[0];
+                return path.Equals("board", StringComparison.OrdinalIgnoreCase)
+                    || path.StartsWith("board/", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+        """;
 }

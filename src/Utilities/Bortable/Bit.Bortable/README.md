@@ -28,6 +28,10 @@ module, `_content/Bit.Bortable/bit-bortable.js`, is imported by the component on
 <link rel="stylesheet" href="_content/Bit.Bortable/bit-bortable.css" />
 ```
 
+A WebAssembly app that lazy loads `Bit.Bortable.wasm` skips the registration and sets the `Bit.Bortable.Unregistered`
+runtime switch instead; see
+[lazy loading](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bortable#lazy-loading-on-webassembly).
+
 ```razor
 <Bortable @bind-Items="_todo" TItem="string" Group="board">
     <ItemTemplate Context="item">@item</ItemTemplate>
@@ -56,7 +60,8 @@ module, `_content/Bit.Bortable/bit-bortable.js`, is imported by the component on
 - `@bind-Items` and the SortableJS lifecycle events: `OnStart`, `OnEnd`, `OnAdd`, `OnRemove`, `OnUpdate`, `OnSort`
   and `OnChange`.
 - Theming of the drag states through `--bit-bortable-*` CSS custom properties.
-- Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 10 and 11.
+- Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 10 and 11; lazy loadable on
+  WebAssembly.
 
 ## For AI agents
 

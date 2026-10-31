@@ -11,7 +11,8 @@ namespace Bit.Bortable;
 /// drag them between lists that share a <see cref="Group"/>. The sorting engine runs in C#; the
 /// <c>bit-bortable.js</c> module routes the input where the pointer is - it hit-tests the lists and calls
 /// .NET only when the drop position changes - installs drag handles and plays the FLIP animations.
-/// Needs <see cref="BitBortable.AddBitBortableServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)"/>.
+/// Needs <see cref="BitBortable.AddBitBortableServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)"/>,
+/// or - in a WebAssembly app that lazy loads Bit.Bortable - the <c>Bit.Bortable.Unregistered</c> runtime switch.
 /// </summary>
 /// <typeparam name="TItem">The type of the bound items.</typeparam>
 public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDisposable
@@ -44,7 +45,12 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     private bool _playFlipOnRender;
     private bool _disposed;
 
-    [Inject] private BortableService Service { get; set; } = default!;
+    [Inject] private IServiceProvider Services { get; set; } = default!;
+
+    // Resolved rather than injected, so the list also works in an app that lazy loads Bit.Bortable on WebAssembly and so
+    // never called AddBitBortableServices. Null until first used: DisposeAsync leaves alone what was never resolved.
+    private BortableService? _service;
+    private BortableService Service => _service ??= BortableService.Of(Services);
 
     /// <summary>
     /// The list of items to display and reorder. Bind with <c>@bind-Items</c>. It must be
@@ -1914,7 +1920,10 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     {
         if (_disposed) return;
         _disposed = true;
-        Service.Zones.Remove(this);
+        // A list that failed to resolve its coordinator never joined it, a drag or the browser layer: there is nothing
+        // to leave, and resolving it here would only fail again.
+        if (_service is null) return;
+        _service.Zones.Remove(this);
         var module = _module;
         _module = null; // shared by every list of the scope; BortableService releases it
 

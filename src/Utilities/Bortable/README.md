@@ -52,8 +52,8 @@ order a user makes is the order your code reads back.
   `OnRemove`, `OnUpdate`, `OnSort`, `OnChange`), which also say how the drag was made and whether it was
   cancelled.
 - **Generic and strongly typed**: `Bortable<TItem>`.
-- Works on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, on .NET 10 and 11, and is
-  trimming and AOT friendly.
+- Works on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, on .NET 10 and 11, is
+  trimming and AOT friendly, and can be [lazy loaded](#lazy-loading-on-webassembly) on WebAssembly.
 
 ## Quick start
 
@@ -111,12 +111,15 @@ clones from a palette, a tree of nested lists, and multi-drag and swap mode), ho
 [Server](Samples/Server/), [WASM](Samples/Wasm/), [Auto](Samples/Auto/) and [MAUI](Samples/Maui/) (Blazor Hybrid on
 Android, iOS, macOS and Windows), so each [hosting model](#hosting-models) can be tried with the same lists. Every
 page says which renderer it is on and where a drop position is decided: in the browser, on the server across the
-circuit, or in the app's own process.
+circuit, or in the app's own process. [Lazy](Samples/Lazy/) stands apart: a Blazor Web App of its own whose browser
+half downloads `Bit.Bortable.wasm` only when its board opens (see
+[lazy loading](#lazy-loading-on-webassembly)).
 
 ```bash
 dotnet run --project src/Utilities/Bortable/Samples/Server
 dotnet run --project src/Utilities/Bortable/Samples/Wasm/Bit.Bortable.Samples.Wasm
 dotnet run --project src/Utilities/Bortable/Samples/Auto/Bit.Bortable.Samples.Auto
+dotnet run --project src/Utilities/Bortable/Samples/Lazy/Bit.Bortable.Samples.Lazy
 dotnet build -t:Run -f net10.0-android src/Utilities/Bortable/Samples/Maui
 ```
 
@@ -148,7 +151,7 @@ Everything ships in one package, `Bit.Bortable`, under one namespace, `Bit.Borta
 | --- | --- |
 | The component | `Bortable<TItem>`, the list. |
 | The model | `BortablePull`, `BortableDirection`, `BortableInput` and `BortableEventArgs<TItem>`. |
-| The services | `AddBitBortableServices`, which registers the scoped coordinator that tracks the active drag across lists. |
+| The services | `AddBitBortableServices`, which registers the scoped coordinator that tracks the active drag across lists. A WebAssembly app that lazy loads Bortable goes without it and sets the `Bit.Bortable.Unregistered` runtime switch instead. |
 | The browser layer | `bit-bortable.js` (hit testing, drag handles, FLIP animations) and `bit-bortable.css` (the drag states). |
 
 ## MCP server
@@ -210,7 +213,8 @@ dotnet add package Bit.Bortable
 ```
 
 In a Blazor Web App with an interactive client, the package belongs in the `.Client` project, and the services are
-registered in both projects (see [hosting models](#hosting-models)).
+registered in both projects (see [hosting models](#hosting-models)), unless the client
+[lazy loads](#lazy-loading-on-webassembly) Bortable.
 
 ### Register the services
 
@@ -221,7 +225,9 @@ builder.Services.AddBitBortableServices();
 It registers one scoped service, the coordinator that holds the drag in progress so that lists sharing a group can
 hand an item to each other. Scoped means one per circuit on Blazor Server and one per application on WebAssembly,
 so two users never share a drag. Calling it more than once is harmless. Without it, the first `Bortable` that
-renders throws, because it cannot be given the service it injects.
+renders throws "Bit.Bortable's services are not registered", on every host. Only a WebAssembly app that downloads
+Bortable when a page with a list opens skips this step, and says so with a runtime switch; see
+[lazy loading](#lazy-loading-on-webassembly).
 
 ### App-wide defaults
 
@@ -919,7 +925,120 @@ to another list - and the drop placeholder shows it too, so the preview looks li
 ### Blazor WebAssembly
 
 Register the services in `Program.cs` and link the stylesheet from `wwwroot/index.html`. Every drag event is
-handled in the browser.
+handled in the browser. An app that is not compiled ahead of time can download the library only when a page with a
+list opens - see [lazy loading](#lazy-loading-on-webassembly).
+
+### Lazy loading on WebAssembly
+
+A WebAssembly app can fetch Bortable only when someone opens a part of the app that has a list. Its `Program.cs`
+cannot call `AddBitBortableServices` then - the assembly is not there yet when it runs - so the app says that it
+leaves the registration out on purpose, with the `Bit.Bortable.Unregistered` runtime switch, and the lists create
+their drag coordinator themselves: once per scope, which on WebAssembly is once per application, shared as the
+registered one would be, so lists of a group still hand items to each other. Without the switch a list that finds no
+registration throws, so an app that merely forgot it still hears of it.
+
+In the project that runs in the browser, set that switch, mark the assembly as lazy loaded, and set a switch of your
+own next to the mark so the router knows the assembly is there to load:
+
+```xml
+<ItemGroup>
+  <!-- Program.cs leaves AddBitBortableServices out, in every build: the lists create their own coordinator. -->
+  <RuntimeHostConfigurationOption Include="Bit.Bortable.Unregistered" Value="true" />
+</ItemGroup>
+<!-- AOT builds load Bit.Bortable with the rest of the app: see below. -->
+<ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' ">
+  <BlazorWebAssemblyLazyLoad Include="Bit.Bortable.wasm" />
+  <RuntimeHostConfigurationOption Include="MyApp.LazyLoadsBortable" Value="true" Trim="true" />
+</ItemGroup>
+```
+
+Then load it before the first page that uses it renders, from the router's `OnNavigateAsync`:
+
+```razor
+@* App.razor - in a Blazor Web App, the client project's Routes.razor: the router waits for OnNavigateAsync
+   before it renders the page. typeof(Program) is the project the router's file is in, in either kind of app. *@
+@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@inject LazyAssemblyLoader LazyAssemblyLoader
+
+<Router AppAssembly="typeof(Program).Assembly" OnNavigateAsync="OnNavigateAsync">
+    ...
+</Router>
+
+@code {
+    // Set only where Bit.Bortable.wasm is marked: loading an assembly that is not marked throws.
+    private static readonly bool LazyLoadsBortable = AppContext.TryGetSwitch("MyApp.LazyLoadsBortable", out var on) && on;
+
+    private async Task OnNavigateAsync(NavigationContext context)
+    {
+        // The pages with lists: fetch Bortable before they render. A second call loads nothing again.
+        if (LazyLoadsBortable && IsBoardPage(context.Path))
+            await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bortable.wasm"]);
+    }
+
+    // /board and the routes beneath it, such as /Board/2 (routes match regardless of case), but not
+    // /board-settings. Add every other route that renders a list. The path keeps any query and fragment.
+    private static bool IsBoardPage(string path)
+    {
+        path = path.Split('?', '#')[0];
+        return path.Equals("board", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith("board/", StringComparison.OrdinalIgnoreCase);
+    }
+}
+```
+
+Those pages hold their lists as usual. The stylesheet is a plain `<link>`, served whether the assembly has loaded or
+not, and the lists import their script module the first time one renders interactively. The rest of the app has to
+keep to these rules:
+
+- Leave `AddBitBortableServices` out of that project's `Program.cs`: calling it references Bortable's types before
+  the assembly is there. For the same reason only what renders after the assembly has loaded may use Bortable's
+  types - the pages it is loaded for and a layout only they use, not `App.razor`, `Routes.razor`, a layout every page
+  shares or `Program.cs`. A page in the app's own assembly can hold a `<Bortable>` and a `BortableMessages` field,
+  since the router loads Bortable before it renders the page. The method that calls `LoadAssembliesAsync` cannot use
+  them either: WebAssembly resolves what a method refers to when the method first runs, which is before the load,
+  and does not retry what it failed to resolve.
+- No public type in an assembly the router reads when the app starts in the browser - the app's own assembly first of
+  all, the client project's in a Blazor Web App - may derive from one of Bortable's, or from a generic type closed
+  over one of them: no component that inherits `Bortable<TItem>`, no class that derives from `BortableMessages`, and
+  no class that derives from `List<BortableEventArgs<Card>>`. The router reads the public types of those assemblies
+  at startup, and on WebAssembly a type whose base type needs an assembly that is not loaded yet fails to load - and
+  keeps failing after Bit.Bortable has loaded. Make such a type `internal`, or put it in a library of your own that is
+  lazy loaded together with Bit.Bortable: mark it in the same `ItemGroup`
+  (`<BlazorWebAssemblyLazyLoad Include="MyApp.Boards.wasm" />`) and load both
+  (`LoadAssembliesAsync(["Bit.Bortable.wasm", "MyApp.Boards.wasm"])`). Keep the pages in the app's own assembly and
+  only the types they use in that library: the router finds routes only in `AppAssembly` and `AdditionalAssemblies`,
+  so a page in the library would need `OnNavigateAsync` to add what `LoadAssembliesAsync` returns to a list the router
+  takes as `AdditionalAssemblies` - and an AOT build, which skips that call, would not find it at all.
+- Without the registration there are no [app-wide defaults](#app-wide-defaults): every list starts from its
+  parameters' own defaults. Set what you need on the lists themselves - `Messages`, `TouchDelay`, `Animation`, the
+  classes - for instance from one static class the pages share:
+  `<Bortable Messages="BoardTexts.German" TouchDelay="300" ...>`.
+- `Bit.Bortable.Unregistered` belongs only in the project that lazy loads. Everywhere else - Blazor Server, Blazor
+  Hybrid, the server project of a Blazor Web App, a WebAssembly app that loads Bortable with the rest - register the
+  services and leave the switch out, so that a missing registration throws "Bit.Bortable's services are not
+  registered" where it happens rather than quietly costing the lists their app-wide defaults.
+- In a Blazor Web App only the browser lazy loads, so give `Routes` the `InteractiveWebAssembly` or
+  `InteractiveAuto` render mode in `App.razor`, which brings the router - and its `OnNavigateAsync` - to the browser.
+  Under `InteractiveAuto` it runs over a server circuit on the first visit, while the WebAssembly runtime downloads,
+  and in the browser on later ones. With per-page render modes the router renders statically on the server and never
+  loads the assembly in the browser.
+- The server project of a Blazor Web App loads Bortable with the rest of the app and keeps its
+  `AddBitBortableServices()` - it prerenders the lists, and under `InteractiveAuto` runs them on the first visit - and
+  registers `LazyAssemblyLoader`, which `Routes.razor` injects whenever it runs on the server:
+  `builder.Services.AddScoped<LazyAssemblyLoader>()`. Outside the browser `LazyAssemblyLoader` downloads nothing: it
+  loads each assembly the call names from the ones the server already references. Give the server's registration no
+  defaults the client's lists do not set as parameters as well, or a list changes its texts or classes as it turns
+  interactive.
+- The condition leaves AOT builds out. AOT compiles every assembly into `dotnet.native.wasm`, so there is nothing left
+  to download later, and lazy loading an AOT-compiled assembly can fail at startup. The router's switch is set only
+  where the mark is, so an AOT build skips `LoadAssembliesAsync` as well - loading an assembly that is not marked
+  throws. `Bit.Bortable.Unregistered` stays outside the condition: an AOT build loads Bortable with the app, but runs
+  the same `Program.cs`, without the registration.
+
+The [lazy loading sample](Samples/Lazy) does all of this in a Blazor Web App, and the
+[end-to-end suite](Tests/Bit.Bortable.Tests.E2E) runs its published, trimmed copy in a browser: the home page never
+downloads `Bit.Bortable.wasm`, and the board - opened from the home page or by a deep link the server prerenders -
+downloads it and hands items between its lists.
 
 ### Blazor Server
 
@@ -1138,7 +1257,7 @@ given its own.
 
 | Method | Description |
 | --- | --- |
-| `AddBitBortableServices(this IServiceCollection)` | Registers the scoped drag coordinator. Required. |
+| `AddBitBortableServices(this IServiceCollection)` | Registers the scoped drag coordinator. Required, except in a WebAssembly app that [lazy loads](#lazy-loading-on-webassembly) Bortable and sets the `Bit.Bortable.Unregistered` switch. |
 | `AddBitBortableServices(this IServiceCollection, Action<BortableOptions>)` | The same, with [app-wide defaults](#app-wide-defaults) for every list. |
 
 ### BortableOptions
@@ -1190,8 +1309,20 @@ leaves the parameter's own default. See [app-wide defaults](#app-wide-defaults).
 
 ## Troubleshooting
 
-**"Cannot provide a value for property 'Service' on type 'Bit.Bortable.Bortable\`1[...]'. There is no registered
-service of type 'Bit.Bortable.BortableService'."** - the services are not registered. Call `builder.Services.AddBitBortableServices()`, in both projects of a Blazor Web App.
+**"Bit.Bortable's services are not registered: call builder.Services.AddBitBortableServices() in Program.cs"** -
+call it in the `Program.cs` of the project the list rendered in; in a Blazor Web App, in both projects, through one
+shared method. A WebAssembly app that [lazy loads](#lazy-loading-on-webassembly) Bortable cannot, and sets the
+`Bit.Bortable.Unregistered` runtime switch in its project file instead; when such an app gets this error anyway, the
+switch is not in the project that runs in the browser, or sits inside the `ItemGroup` an AOT build leaves out.
+
+**`Could not load file or assembly 'Bit.Bortable'`** in an app that lazy loads it - something used Bortable's types
+before the assembly loaded: load it in `OnNavigateAsync` for every route that renders a list, and keep its types out
+of `Program.cs`, `App.razor`, the layouts every page shares and the method that loads it. If it fails as the app
+starts and keeps failing once the assembly has loaded, a public type in an assembly the router reads at startup
+derives from one of Bortable's - a component inheriting `Bortable<TItem>`, a `BortableMessages` subclass: make it
+`internal` or move it into a library that is lazy loaded together with Bit.Bortable. `... must be marked with
+'BlazorWebAssemblyLazyLoad' item group` names an assembly the call loads that the project file does not mark. See
+[lazy loading](#lazy-loading-on-webassembly).
 
 **The items render, but nothing can be dragged** - the page is not interactive. Give it, or the app, an interactive
 render mode.

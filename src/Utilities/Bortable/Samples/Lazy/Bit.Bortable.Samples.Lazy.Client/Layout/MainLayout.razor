@@ -1,0 +1,14 @@
+﻿@inherits LayoutComponentBase
+
+@* Every page shares this layout, so it renders before Bit.Bortable.wasm is downloaded and may not use Bortable's types.
+   data-interactive turns true once the page runs in the browser; the end-to-end tests wait for it. *@
+<div data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")">
+    <nav class="topbar">
+        <NavLink href="" Match="NavLinkMatch.All">Home</NavLink>
+        <NavLink href="board">Board</NavLink>
+    </nav>
+
+    <main>
+        @Body
+    </main>
+</div>

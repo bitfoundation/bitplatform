@@ -17,7 +17,13 @@ public static class PlaywrightSession
 {
     private static readonly Lazy<Task<Session>> _session = new(StartAsync);
 
+    // Booted by the first test that drives it, as only the lazy loading tests do. A sample that is not published or
+    // does not start fails that first boot, and every later test is handed the same failure at once.
+    private static readonly Lazy<Task<DemoHost>> _lazySample = new(DemoHost.StartLazySampleAsync);
+
     public static Task<Session> GetAsync() => _session.Value;
+
+    public static Task<DemoHost> GetLazySampleAsync() => _lazySample.Value;
 
     public static async Task StopAsync()
     {
@@ -34,6 +40,8 @@ public static class PlaywrightSession
         session.Playwright?.Dispose();
 
         if (session.Host is not null) await session.Host.DisposeAsync();
+
+        if (_lazySample.IsValueCreated && _lazySample.Value.IsCompletedSuccessfully) await _lazySample.Value.Result.DisposeAsync();
     }
 
     private static async Task<Session> StartAsync()

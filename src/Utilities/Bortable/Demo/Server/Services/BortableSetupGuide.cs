@@ -9,9 +9,10 @@ namespace Bit.Bortable.Demo.Server.Services;
 /// and - where the demo is that render mode - the demo's real hosting files.
 /// <para>
 /// Bortable needs three things wired, and each fails in its own way. The service registration fails
-/// loudly - the first list that renders throws, unable to inject its coordinator - but in a Blazor
-/// Web App it is needed twice, once per container, and the server's copy is the one people leave
-/// out, because the list "runs on WebAssembly". The other two fail without a word: without the
+/// loudly - the first list that renders throws - but in a Blazor Web App it is needed twice, once
+/// per container, and the server's copy is the one people leave out, because the list "runs on
+/// WebAssembly". Only a client that lazy loads the library goes without it, and says so with the
+/// Bit.Bortable.Unregistered runtime switch. The other two fail without a word: without the
 /// stylesheet a drag still works, but the dragged item is not dimmed and its original does not hide
 /// while it is previewed in another list, so the item seems to be in two places at once; and a
 /// statically rendered page shows its items and never answers a drag. What differs per render mode
@@ -80,9 +81,12 @@ public static partial class BortableSetupGuide
                 The lists run in the browser, so no dragover waits on the network - this is how the demo is built, and the
                 files below are its own. The pages with lists must live in the .Client project so their assembly is
                 downloaded to the browser; reference `Bit.Bortable` from it (the server gets it transitively). Register the
-                services in BOTH `Program.cs` files: the server prerenders the same pages and has to resolve what each list
-                injects - the demo does it once, in a shared `AddDemoServices` both projects call. Link the stylesheet from the
-                server's `App.razor`, which is the host page.
+                services in BOTH `Program.cs` files: the server prerenders the same pages and its lists need the coordinator
+                as much as the client's - the demo does it once, in a shared `AddDemoServices` both projects call. Link the stylesheet from the
+                server's `App.razor`, which is the host page. A client that lazy loads Bit.Bortable leaves its registration
+                out and sets the `Bit.Bortable.Unregistered` runtime switch instead, gives `Routes` the InteractiveWebAssembly
+                render mode and registers `LazyAssemblyLoader` on the server - see
+                `GetBortableGuideSection(heading: "Lazy loading on WebAssembly")`.
                 """,
                 [.. _gettingStarted, "Blazor Web App", "Blazor WebAssembly", "Prerendering", "Content security policy"],
                 null,
@@ -96,7 +100,12 @@ public static partial class BortableSetupGuide
                 Both containers therefore resolve the lists' services: register them in BOTH `Program.cs` files, and put the
                 pages in the .Client project. The demo below uses InteractiveWebAssembly; for InteractiveAuto add
                 `AddInteractiveServerComponents()` and `AddInteractiveServerRenderMode()` to the server's `Program.cs` and use
-                `@rendermode="InteractiveAuto"` in `App.razor` - nothing else changes.
+                `@rendermode="InteractiveAuto"` in `App.razor` - nothing else changes for an app that loads Bit.Bortable with
+                the rest of the client. A client that lazy loads it does so only in the browser, so only from the second
+                visit on; the server keeps its registration and registers `LazyAssemblyLoader` as well
+                (`builder.Services.AddScoped<LazyAssemblyLoader>()`), because `Routes` injects it on the server both while
+                prerendering and over the first visit's circuit - see
+                `GetBortableGuideSection(heading: "Lazy loading on WebAssembly")`.
                 """,
                 [.. _gettingStarted, "Blazor Web App", "Blazor WebAssembly", "Blazor Server", "Prerendering", "Content security policy"],
                 null,
@@ -107,7 +116,9 @@ public static partial class BortableSetupGuide
                 """
                 One project and no prerendering: the lists run in the browser from the first render, and there is one
                 container to register the services in. The host page is `wwwroot/index.html`, so that is where the
-                stylesheet link goes.
+                stylesheet link goes. The app can also download Bit.Bortable only when a page with a list opens, leaving
+                the registration out for the `Bit.Bortable.Unregistered` runtime switch - see
+                `GetBortableGuideSection(heading: "Lazy loading on WebAssembly")`.
                 """,
                 [.. _gettingStarted, "Blazor WebAssembly", "Content security policy"],
                 StandaloneFiles,
@@ -180,10 +191,11 @@ public static partial class BortableSetupGuide
            App with an interactive client, add it to the .Client project.
         2. Add `@using Bit.Bortable` to `_Imports.razor`.
         3. Register the services - REQUIRED: `builder.Services.AddBitBortableServices();`. It registers the scoped drag
-           coordinator every list injects, and without it the first list that renders throws "Cannot provide a value for
-           property 'Service' ... no registered service of type 'Bit.Bortable.BortableService'". In a Blazor Web App with
-           WebAssembly or Auto, call it in BOTH `Program.cs` files - the server prerenders the same lists. Calling it
-           twice is harmless.
+           coordinator every list uses, and without it the first list that renders throws "Bit.Bortable's services are
+           not registered", on every host. In a Blazor Web App with WebAssembly or Auto, call it in BOTH `Program.cs`
+           files - the server prerenders the same lists, and the client runs them. Calling it twice is harmless. (Only a
+           WebAssembly client that lazy loads Bit.Bortable leaves it out, and sets the `Bit.Bortable.Unregistered`
+           runtime switch instead - see the guide's "Lazy loading on WebAssembly" section.)
         4. Link the stylesheet from the host page - it is REQUIRED, and nothing adds it for you:
            `<link rel="stylesheet" href="_content/Bit.Bortable/bit-bortable.css" />` (in a Blazor Web App's `App.razor`,
            `@Assets["_content/Bit.Bortable/bit-bortable.css"]`). Without it a drag still works, but the dragged item is not

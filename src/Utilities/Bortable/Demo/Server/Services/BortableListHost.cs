@@ -96,7 +96,7 @@ internal sealed class BortableListHost : IAsyncDisposable
 
     private BortableListHost()
     {
-        // The library's own registration, so the lists inject the coordinator an app would give them -
+        // The library's own registration, so the lists use the coordinator an app would give them -
         // one scope, like one circuit, so every list of the drag shares it.
         _services = new ServiceCollection()
             .AddBitBortableServices()

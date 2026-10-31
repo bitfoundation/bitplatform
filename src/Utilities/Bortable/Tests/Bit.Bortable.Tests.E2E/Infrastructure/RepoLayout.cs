@@ -1,17 +1,28 @@
 ﻿namespace Bit.Bortable.Tests.E2E.Infrastructure;
 
 /// <summary>
-/// Finds the demo server from the test binary's location by walking up, so a run does not depend on
-/// the working directory the shell, the IDE or the test runner picked.
+/// Finds the demo server and the lazy loading sample from the test binary's location by walking up, so a run
+/// does not depend on the working directory the shell, the IDE or the test runner picked.
 /// </summary>
 public static class RepoLayout
 {
     public const string DemoServerName = "Bit.Bortable.Demo.Server";
 
+    public const string LazySampleName = "Bit.Bortable.Samples.Lazy";
+
     public static string DemoServerProject() => FindUpward(Path.Combine("Demo", "Server", $"{DemoServerName}.csproj"));
 
     public static string DemoServerAssembly(string configuration) =>
         Path.Combine(Path.GetDirectoryName(DemoServerProject())!, "bin", configuration, "net11.0", $"{DemoServerName}.dll");
+
+    public static string LazySampleProject() => FindUpward(Path.Combine("Samples", "Lazy", LazySampleName, $"{LazySampleName}.csproj"));
+
+    /// <summary>
+    /// The lazy loading sample as <c>dotnet publish</c> leaves it: trimmed, with <c>Bit.Bortable.wasm</c> fingerprinted
+    /// and compressed, and the runtime switches in the boot configuration - what an app that lazy loads ships.
+    /// </summary>
+    public static string LazySamplePublishDirectory(string configuration) =>
+        Path.Combine(Path.GetDirectoryName(LazySampleProject())!, "bin", configuration, "net11.0", "publish");
 
     /// <summary>The demo's routable pages, which the page sweep reads its routes from.</summary>
     public static string DemoPagesDirectory() =>

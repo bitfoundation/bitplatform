@@ -9,11 +9,13 @@ namespace Bit.Bortable;
 public static class BitBortable
 {
     /// <summary>
-    /// Registers the coordinator that every <see cref="Bortable{TItem}"/> needs to track the active drag across
+    /// Registers the coordinator the <see cref="Bortable{TItem}"/> lists use to track the active drag across
     /// lists. It is scoped, which is per circuit on Blazor Server and per application on WebAssembly, so two users
     /// never share a drag. In a Blazor Web App, call it in both the server and the client project; calling it more
     /// than once is harmless:
     /// <code>builder.Services.AddBitBortableServices();</code>
+    /// Without it the first list that renders throws, unless the app sets the <c>Bit.Bortable.Unregistered</c>
+    /// runtime switch, as one that lazy loads Bit.Bortable on WebAssembly - and so cannot call this - does.
     /// </summary>
     /// <param name="services">The service collection.</param>
     public static IServiceCollection AddBitBortableServices(this IServiceCollection services)

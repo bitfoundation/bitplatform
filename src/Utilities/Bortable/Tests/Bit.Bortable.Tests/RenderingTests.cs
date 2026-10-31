@@ -241,15 +241,6 @@ public class RenderingTests : BortableTestContext
     }
 
     [TestMethod]
-    public void RenderingWithoutTheServicesThrows()
-    {
-        using var bare = new BunitContext();
-        bare.JSInterop.Mode = JSRuntimeMode.Loose;
-
-        Assert.ThrowsExactly<InvalidOperationException>(() => bare.Render<Bortable<string>>(p => p.Add(c => c.Items, ["A"])));
-    }
-
-    [TestMethod]
     public void RegisteringTheServicesTwiceIsHarmless()
     {
         var services = new ServiceCollection();

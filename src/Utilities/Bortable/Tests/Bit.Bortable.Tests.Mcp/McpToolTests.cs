@@ -286,6 +286,24 @@ public class McpToolTests
     }
 
     [TestMethod]
+    public async Task The_webassembly_modes_point_at_the_lazy_loading_section_and_it_is_there()
+    {
+        foreach (var mode in new[] { "wasm", "auto", "standalone-wasm" })
+        {
+            var guide = await McpCall.TextAsync("GetBortableSetupGuide", new() { ["renderMode"] = mode });
+
+            Assert.Contains("GetBortableGuideSection(heading: \"Lazy loading on WebAssembly\")", guide, mode);
+        }
+
+        var section = await McpCall.TextAsync("GetBortableGuideSection", new() { ["heading"] = "Lazy loading on WebAssembly" });
+
+        Assert.Contains("<BlazorWebAssemblyLazyLoad Include=\"Bit.Bortable.wasm\" />", section);
+        // the switch the library reads before it creates a coordinator of its own (BortableService.UnregisteredSwitch)
+        Assert.Contains("<RuntimeHostConfigurationOption Include=\"Bit.Bortable.Unregistered\" Value=\"true\" />", section);
+        Assert.Contains("builder.Services.AddScoped<LazyAssemblyLoader>()", section);
+    }
+
+    [TestMethod]
     public async Task The_server_mode_explains_the_round_trip()
     {
         var guide = await McpCall.TextAsync("GetBortableSetupGuide", new() { ["renderMode"] = "server" });

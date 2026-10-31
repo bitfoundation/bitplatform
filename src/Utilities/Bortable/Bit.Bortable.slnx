@@ -20,6 +20,10 @@
         <Project Path="Samples/Auto/Bit.Bortable.Samples.Auto.Client/Bit.Bortable.Samples.Auto.Client.csproj" />
         <Project Path="Samples/Auto/Bit.Bortable.Samples.Auto/Bit.Bortable.Samples.Auto.csproj" />
     </Folder>
+    <Folder Name="/Samples/Lazy/">
+        <Project Path="Samples/Lazy/Bit.Bortable.Samples.Lazy.Client/Bit.Bortable.Samples.Lazy.Client.csproj" />
+        <Project Path="Samples/Lazy/Bit.Bortable.Samples.Lazy/Bit.Bortable.Samples.Lazy.csproj" />
+    </Folder>
     <Folder Name="/Samples/Server/">
         <Project Path="Samples/Server/Bit.Bortable.Samples.Server.csproj" />
     </Folder>

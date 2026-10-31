@@ -1,19 +1,63 @@
-﻿using Microsoft.JSInterop;
+﻿using System.Runtime.CompilerServices;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 
 namespace Bit.Bortable;
 
 /// <summary>
 /// The per-scope coordinator that holds the active drag, so that several <see cref="Bortable{TItem}"/>
 /// lists in the same group can exchange items. Scoped, so every Blazor Server circuit has a drag state
-/// of its own. Registered by <see cref="BitBortable.AddBitBortableServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)"/>.
+/// of its own. Registered by <see cref="BitBortable.AddBitBortableServices(IServiceCollection)"/>; in an app
+/// that cannot register it - one that lazy loads Bit.Bortable on WebAssembly - and says so with the
+/// <see cref="UnregisteredSwitch"/>, the lists create one per scope (see <see cref="Of"/>).
 /// </summary>
 internal sealed class BortableService(IJSRuntime js, IEnumerable<BortableConfiguration> configurations) : IAsyncDisposable, IDisposable
 {
     private const string ModulePath = "./_content/Bit.Bortable/bit-bortable.js";
 
+    /// <summary>
+    /// The runtime switch an app sets - <c>&lt;RuntimeHostConfigurationOption Include="Bit.Bortable.Unregistered" Value="true" /&gt;</c>
+    /// in the project that renders the lists - to leave <see cref="BitBortable.AddBitBortableServices(IServiceCollection)"/>
+    /// out on purpose, as an app that lazy loads Bit.Bortable has to.
+    /// </summary>
+    internal const string UnregisteredSwitch = "Bit.Bortable.Unregistered";
+
+    // One coordinator per scope for applications that set UnregisteredSwitch and so never call AddBitBortableServices:
+    // the one a scoped registration would give - per circuit on Blazor Server, per application on WebAssembly, per
+    // renderer scope anywhere - keyed weakly by the scope's IServiceProvider, so a scope that ends takes its coordinator
+    // with it. Never disposed, and nothing needs it to be: the one thing disposal would add, releasing the module
+    // reference held in the browser, goes with the circuit or the page that held it.
+    private static readonly ConditionalWeakTable<IServiceProvider, BortableService> OwnCoordinators = new();
+
+    /// <summary>
+    /// The coordinator of the scope <paramref name="services"/> belong to: the one
+    /// <see cref="BitBortable.AddBitBortableServices(IServiceCollection)"/> registered, otherwise - when the app sets
+    /// <see cref="UnregisteredSwitch"/> - one the lists create themselves, once per scope, with no app-wide defaults.
+    /// </summary>
+    /// <remarks>
+    /// The second case is what lets a WebAssembly app lazy load Bit.Bortable: the assembly is not there yet when
+    /// <c>Program.cs</c> runs, so nothing can be registered. An app has to opt into it, so that one that merely forgot
+    /// the registration - the client project of a Blazor Web App, typically - still fails where it happens rather than
+    /// quietly losing its app-wide defaults.
+    /// </remarks>
+    /// <param name="services">The services of the list asking, as injected through <see cref="IServiceProvider"/>.</param>
+    /// <exception cref="InvalidOperationException">The services are not registered, and the app does not set the switch.</exception>
+    internal static BortableService Of(IServiceProvider services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        if (services.GetService<BortableService>() is { } registered) return registered;
+
+        if (AppContext.TryGetSwitch(UnregisteredSwitch, out var unregistered) is false || unregistered is false) throw new InvalidOperationException(
+            "Bit.Bortable's services are not registered: call builder.Services.AddBitBortableServices() in Program.cs - in a Blazor Web App, in both the server and the client project. " +
+            $"An app that cannot, as it lazy loads Bit.Bortable on WebAssembly, sets the {UnregisteredSwitch} runtime switch instead.");
+
+        return OwnCoordinators.GetValue(services, static scope => new BortableService(scope.GetRequiredService<IJSRuntime>(), []));
+    }
+
     private BortableOptions? _options;
 
-    /// <summary>The app-wide defaults (<see cref="BitBortable.AddBitBortableServices(Microsoft.Extensions.DependencyInjection.IServiceCollection, Action{BortableOptions})"/>), built once per scope.</summary>
+    /// <summary>The app-wide defaults (<see cref="BitBortable.AddBitBortableServices(IServiceCollection, Action{BortableOptions})"/>), built once per scope.</summary>
     internal BortableOptions Options => _options ??= Build(configurations);
 
     private static BortableOptions Build(IEnumerable<BortableConfiguration> configurations)
