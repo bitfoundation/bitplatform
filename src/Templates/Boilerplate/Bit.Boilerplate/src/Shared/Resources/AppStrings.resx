@@ -1105,6 +1105,12 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="DashboardSubtitle" xml:space="preserve">
     <value>Here's your analytic data</value>
   </data>
+  <data name="Resize" xml:space="preserve">
+    <value>Resize</value>
+  </data>
+  <data name="Hide" xml:space="preserve">
+    <value>Hide</value>
+  </data>
     <data name="DeleteCategory" xml:space="preserve">
     <value>Delete category</value>
   </data>

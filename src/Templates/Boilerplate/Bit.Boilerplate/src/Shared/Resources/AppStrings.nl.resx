@@ -1105,6 +1105,12 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="DashboardSubtitle" xml:space="preserve">
     <value>Hier is je analysegegevens</value>
   </data>
+  <data name="Resize" xml:space="preserve">
+    <value>Formaat wijzigen</value>
+  </data>
+  <data name="Hide" xml:space="preserve">
+    <value>Verbergen</value>
+  </data>
     <data name="DeleteCategory" xml:space="preserve">
     <value>Categorie verwijderen</value>
   </data>

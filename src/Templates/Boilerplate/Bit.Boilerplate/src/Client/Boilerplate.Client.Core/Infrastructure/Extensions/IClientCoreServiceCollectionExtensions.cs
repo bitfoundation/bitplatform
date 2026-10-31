@@ -10,6 +10,9 @@ using Bit.Bsqlite.Storage.IndexedDb;
 using Bit.Bsqlite.EntityFrameworkCore;
 //#endif
 using Bit.BevTools;
+//#if (module == "Admin")
+using Bit.Bortable;
+//#endif
 using Boilerplate.Client.Core;
 using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
@@ -39,6 +42,9 @@ public static partial class IClientCoreServiceCollectionExtensions
             });
             services.AddScoped<SignInModalService>();
             services.AddScoped<ImageEditorService>();
+            //#if (module == "Admin")
+            services.AddBitBortableServices();
+            //#endif
             services.AddScoped<IAuthTokenProvider, ClientSideAuthTokenProvider>();
             services.AddScoped<IExternalNavigationService, DefaultExternalNavigationService>();
             services.AddScoped<FileSaveService>();

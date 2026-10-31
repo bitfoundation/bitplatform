@@ -1105,6 +1105,12 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="DashboardSubtitle" xml:space="preserve">
     <value>Här är dina analysdata</value>
   </data>
+  <data name="Resize" xml:space="preserve">
+    <value>Ändra storlek</value>
+  </data>
+  <data name="Hide" xml:space="preserve">
+    <value>Dölj</value>
+  </data>
     <data name="DeleteCategory" xml:space="preserve">
     <value>Ta bort kategori</value>
   </data>

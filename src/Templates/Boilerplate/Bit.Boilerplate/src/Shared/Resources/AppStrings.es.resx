@@ -1105,6 +1105,12 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="DashboardSubtitle" xml:space="preserve">
     <value>Aquí están tus datos analíticos</value>
   </data>
+  <data name="Resize" xml:space="preserve">
+    <value>Cambiar tamaño</value>
+  </data>
+  <data name="Hide" xml:space="preserve">
+    <value>Ocultar</value>
+  </data>
     <data name="DeleteCategory" xml:space="preserve">
     <value>Eliminar categoría</value>
   </data>
