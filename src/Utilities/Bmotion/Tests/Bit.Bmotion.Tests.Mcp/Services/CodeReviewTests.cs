@@ -284,6 +284,34 @@ public class CodeReviewTests
                       "An underscore outside the Animate value silenced the rule.");
     }
 
+    /// <summary>
+    /// An app that lazy loads the library sets its options in a layout instead of registering them. Leaving the
+    /// reduced-motion policy out there costs the same users the same thing.
+    /// </summary>
+    [TestMethod]
+    public void Review_ReducedMotion_IsCheckedWhereALazyLoadingAppSetsItsOptions()
+    {
+        var offender = """
+            protected override void OnInitialized() => Services.ConfigureBmotionServices(o =>
+            {
+                o.Prerender = BmPrerenderMode.Animate;
+            });
+            """;
+        var clean = """
+            protected override void OnInitialized() => Services.ConfigureBmotionServices(o =>
+            {
+                o.ReducedMotion = BmReducedMotionMode.User;
+                o.Prerender = BmPrerenderMode.Animate;
+            });
+            """;
+
+        var finding = BmotionCodeReview.Review(offender).Findings.Single(entry => entry.Rule == "reduced-motion-not-configured");
+
+        Assert.AreEqual(1, finding.Line);
+        Assert.StartsWith("ConfigureBmotionServices(", finding.Fix, StringComparison.Ordinal);
+        Assert.IsFalse(BmotionCodeReview.Review(clean).Findings.Any(entry => entry.Rule == "reduced-motion-not-configured"));
+    }
+
     [TestMethod]
     public void Review_PointsAtTheLineTheMistakeIsOn()
     {

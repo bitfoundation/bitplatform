@@ -136,7 +136,7 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBmotionSetupGuide))]
-    [Description("Gets the complete wiring needed to add Bit.Bmotion to a Blazor app in one render mode, as the real files of a working project: 'wasm' (Blazor Web App, InteractiveWebAssembly), 'server' (InteractiveServer), 'auto' (InteractiveAuto) or 'standalone-wasm'. Call this before writing any setup code - which DI containers register the services, and which library features work at all, both differ per render mode.")]
+    [Description("Gets the complete wiring needed to add Bit.Bmotion to a Blazor app in one render mode, as the real files of a working project: 'wasm' (Blazor Web App, InteractiveWebAssembly), 'server' (InteractiveServer), 'auto' (InteractiveAuto) or 'standalone-wasm'. Call this before writing any setup code - which DI containers register the services, and which library features work at all, both differ per render mode. Only a WebAssembly app that lazy loads Bit.Bmotion leaves the registration out of the browser's Program.cs - see GetBmotionGuideSection(heading: \"Lazy loading on WebAssembly\").")]
     public string GetBmotionSetupGuide(string renderMode)
     {
         return BmotionSetupGuide.Get(renderMode)

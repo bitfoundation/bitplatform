@@ -601,15 +601,31 @@ public static partial class BmotionCodeReview
         }
     }
 
-    /// <summary>Registration that never states a reduced-motion policy.</summary>
+    /// <summary>
+    /// Options that never state a reduced-motion policy - where they are registered, or where an app that lazy loads
+    /// the library sets them instead.
+    /// </summary>
     private static void CheckReducedMotion(string text, string[] lines, List<BmotionReviewFindingDto> findings)
     {
-        if (text.Contains("AddBitBmotionServices", StringComparison.Ordinal) is false) return;
-        if (text.Contains("ReducedMotion", StringComparison.Ordinal)) return;
+        string[] setters = ["AddBitBmotionServices", "ConfigureBmotionServices"];
+
+        if (setters.Any(setter => text.Contains(setter, StringComparison.Ordinal)) is false)
+        {
+            return;
+        }
+
+        if (text.Contains("ReducedMotion", StringComparison.Ordinal))
+        {
+            return;
+        }
 
         for (int i = 0; i < lines.Length; i++)
         {
-            if (lines[i].Contains("AddBitBmotionServices", StringComparison.Ordinal) is false) continue;
+            var setter = setters.FirstOrDefault(name => lines[i].Contains(name, StringComparison.Ordinal));
+            if (setter is null)
+            {
+                continue;
+            }
 
             findings.Add(new BmotionReviewFindingDto
             {
@@ -620,7 +636,7 @@ public static partial class BmotionCodeReview
                           "(IgnoreUnlessConfigured), which consults the operating system preference only inside a " +
                           "<BmotionConfig>. Users who have asked their system for less motion will get the full " +
                           "animations everywhere else.",
-                Fix = "AddBitBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User) - the web-platform " +
+                Fix = $"{setter}(o => o.ReducedMotion = BmReducedMotionMode.User) - the web-platform " +
                       "default. Reduced motion still animates opacity and colour, so the interface stays legible."
             });
 

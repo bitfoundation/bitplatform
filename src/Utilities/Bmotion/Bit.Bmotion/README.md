@@ -23,6 +23,11 @@ builder.Services.AddBitBmotionServices();
 </Bmotion>
 ```
 
+A WebAssembly app can skip the registration and lazy load `Bit.Bmotion.wasm` instead, creating the
+services with `IServiceProvider.ConfigureBmotionServices(...)` before its first animated element and
+reaching them through `IServiceProvider.GetBmotionService<T>()`; see
+[lazy loading](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmotion#lazy-loading-on-webassembly).
+
 The `Bm` facade is the entry point for the whole hot path: `Bm.To(...)` builds animation
 targets (single values or keyframe sequences), `Bm.Spring` / `Bm.Tween` / `Bm.Inertia` build
 transitions, `Bm.Stagger` builds multi-element delay generators, `Bm.SnapTo` builds the
@@ -66,6 +71,10 @@ and `BmotionAnimateService` for the complete API surface.
   needs the stylesheet in the page head:
   `<link rel="stylesheet" href="_content/Bit.Bmotion/bit-bmotion.css" />`. In both modes the runtime
   takes each prerendered element over at rest instead of replaying its enter animation.
+- ✅ **Lazy loading on WebAssembly** - the components work without `AddBitBmotionServices` once
+  `ConfigureBmotionServices` has created their services, so the assembly can be downloaded only when
+  a page that animates opens. Lazy loading itself is not for AOT builds, which compile every
+  assembly into the runtime up front.
 
 Inject **`BmotionCapabilities`** to detect the current mode instead of guessing:
 `Caps.SupportsFrameLoop` is `false` on Server (per-frame callbacks and SVG path morphs land at once),

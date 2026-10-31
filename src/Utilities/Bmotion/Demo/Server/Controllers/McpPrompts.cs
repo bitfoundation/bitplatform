@@ -72,12 +72,19 @@ public static class McpPrompts
                AddInteractiveServerComponents / AddInteractiveWebAssemblyComponents in Program.cs and for a separate
                .Client project, then continue with what you find.
             2. Call `GetBmotionSetupGuide` with that render mode and follow it. Registering the services in only one
-               of a Blazor Web App's two DI containers is the most common setup bug - it fails during prerendering,
-               not at compile time.
+               of a Blazor Web App's two DI containers is the most common setup bug - it fails with "Bit.Bmotion's
+               services are not registered" during prerendering or in the browser, not at compile time. Only a
+               WebAssembly client that lazy loads Bit.Bmotion leaves the registration out of its Program.cs: it creates
+               the services with `Services.ConfigureBmotionServices(...)` in every layout that animates, with the
+               server's options, and takes them from `Services.GetBmotionService<T>()` - see
+               `GetBmotionGuideSection(heading: "Lazy loading on WebAssembly")`.
             3. Add `@using Bit.Bmotion` to `_Imports.razor` in every project that renders animations.
-            4. Set the reduced-motion policy while you are in Program.cs:
-               `AddBitBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User)`. The default is
-               back-compatible rather than correct, and this is the one moment when adding it costs nothing.
+            4. Set the reduced-motion policy while you are wiring the services up. Where Program.cs registers them,
+               that is `AddBitBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User)` there. A WebAssembly
+               client that lazy loads Bit.Bmotion still registers nothing in its Program.cs: it sets the policy in
+               `Services.ConfigureBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User)` in the layout,
+               the same as the server's `AddBitBmotionServices` sets it. The default is back-compatible rather than
+               correct, and this is the one moment when adding it costs nothing.
             5. Add one small animation from `GetBmotionRecipe(id: "fade-in-on-mount")` to prove the wiring works
                end to end, and build.
 
@@ -146,7 +153,10 @@ public static class McpPrompts
             5. Confirm the API you are relying on with `GetBmotionApiDetails` before concluding it is a bug -
                check the actual default value of the parameter involved.
             6. Check the setup itself against `GetBmotionSetupGuide` for this render mode: services registered in
-               every DI container the components run in, and `@using Bit.Bmotion` present.
+               every DI container the components run in, and `@using Bit.Bmotion` present. In an app that lazy loads
+               Bit.Bmotion, "Bit.Bmotion's services are not registered" means `Services.ConfigureBmotionServices(...)`
+               is missing from the layout of the page that failed, and "Bit.Bmotion's options are already set" means
+               two calls - or the call and the server's `AddBitBmotionServices` - set different options.
             7. Rule out reduced motion. If the operating system asks for reduced motion and the app sets
                `BmReducedMotionMode.User` or `Always`, transforms and layout changes snap by design while opacity
                and colour keep animating. That is correct behaviour, and it looks exactly like a bug.
