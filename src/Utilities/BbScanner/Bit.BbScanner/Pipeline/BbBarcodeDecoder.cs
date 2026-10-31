@@ -267,8 +267,10 @@ public sealed class BbBarcodeDecoder : IDisposable
         // the work too.
         (cropX, cropY, var cropWidth, var cropHeight) = _options.Region.ToPixels(width, height);
 
+        // The pixels divided rather than the sizes multiplied: two sizes near the largest int make a product that fits in
+        // 64 bits, but not that product again three or four times over, which wraps round to one that passes.
         var bpp = BbPixelConverter.BytesPerPixel(format);
-        if (pixels.Length < (long)width * height * bpp)
+        if (pixels.Length / bpp < (long)width * height)
         {
             throw new ArgumentException("The pixels are fewer than the frame holds.", nameof(pixels));
         }
@@ -374,15 +376,15 @@ public sealed class BbBarcodeDecoder : IDisposable
             throw new ArgumentException("The frame is too small to decode.", nameof(pixels));
         }
 
-        // Subtracted rather than added, and multiplied in 64 bits: sums and products of sizes near the largest int wrap
-        // round to small ones, which pass a check they should fail.
+        // Subtracted rather than added, and the pixels divided rather than the sizes multiplied, as in Prepare: sums and
+        // products of sizes near the largest int wrap round to small ones, which pass a check they should fail.
         if (region.X < 0 || region.Y < 0 || region.X > frameWidth - region.Width || region.Y > frameHeight - region.Height)
         {
             throw new ArgumentOutOfRangeException(nameof(region), "The region does not lie inside the frame.");
         }
 
         var bpp = BbPixelConverter.BytesPerPixel(format);
-        if (pixels.Length < (long)region.Width * region.Height * bpp)
+        if (pixels.Length / bpp < (long)region.Width * region.Height)
         {
             throw new ArgumentException("The pixels are fewer than the region holds.", nameof(pixels));
         }

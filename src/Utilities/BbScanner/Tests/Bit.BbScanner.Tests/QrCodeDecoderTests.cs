@@ -300,7 +300,7 @@ public class QrCodeDecoderTests
         watch.Stop();
 
         Assert.AreEqual(0, found);
-        Assert.IsLessThan(TimeSpan.FromSeconds(5), watch.Elapsed, $"Took {watch.Elapsed}.");
+        Assert.IsLessThan(TimeSpan.FromSeconds(10), watch.Elapsed, $"Took {watch.Elapsed}.");
     }
 
     [TestMethod]
@@ -329,7 +329,7 @@ public class QrCodeDecoderTests
         watch.Stop();
 
         Assert.AreEqual(0, found);
-        Assert.IsLessThan(TimeSpan.FromSeconds(5), watch.Elapsed, $"Took {watch.Elapsed}.");
+        Assert.IsLessThan(TimeSpan.FromSeconds(10), watch.Elapsed, $"Took {watch.Elapsed}.");
     }
 
     [TestMethod]

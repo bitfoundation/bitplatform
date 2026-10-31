@@ -255,10 +255,20 @@ public class MaxiCodeAndMicroQrTests
     /// <summary>The light centre of <see cref="IsRing"/>.</summary>
     private static bool IsCentre(int t) => (t % 21) is 10 or 11 or 12;
 
+    /// <summary>
+    /// Fills an image whose rows repeat every 21, as each above does: the first 21 a bit at a time, every later one
+    /// copied a word at a time from the one 21 above it - set one by one, the larger images took seconds.
+    /// </summary>
     private static void Fill(BbBitMatrix image, Func<int, int, bool> dark)
     {
         for (var y = 0; y < image.Height; y++)
         {
+            if (y >= 21)
+            {
+                image.GetRowWords(y - 21).CopyTo(image.GetRowWords(y));
+                continue;
+            }
+
             for (var x = 0; x < image.Width; x++)
             {
                 image[x, y] = dark(x, y);

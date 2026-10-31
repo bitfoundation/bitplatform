@@ -1603,9 +1603,10 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
             }
 
             // A remote page sends the searched region as luminance. Otherwise the frame is whole: the grayscale plane, a
-            // byte a pixel, from the GPU path or a native camera, and RGBA from the 2D canvas.
-            var pixels = width * height;
-            if (remote ? written != region.Width * region.Height : written != pixels && written < pixels * 4)
+            // byte a pixel, from the GPU path or a native camera, and RGBA from the 2D canvas. The sizes are multiplied in
+            // 64 bits: a product past the largest int wraps round to one a page could send.
+            var pixels = (long)width * height;
+            if (remote ? written != (long)region.Width * region.Height : written != pixels && written < pixels * 4)
             {
                 return true;
             }
