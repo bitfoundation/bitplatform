@@ -1975,7 +1975,7 @@
         <value>主题之外的颜色（{0}）</value>
     </data>
     <data name="ThemeFindingsHint" xml:space="preserve">
-        <value>页面自行设置、且与主题中任何颜色都不匹配的颜色。仅检查 bit 组件和图表之外的部分。</value>
+        <value>页面自行设置、既不来自主题、也不是主题颜色与白色、黑色或背景混合而成的颜色。不包括 bit 组件、图表以及通过 --data-color 传入的颜色。</value>
     </data>
     <data name="Flows" xml:space="preserve">
         <value>流程</value>
@@ -2480,5 +2480,14 @@
     </data>
     <data name="DeleteArrow" xml:space="preserve">
         <value>删除箭头</value>
+    </data>
+    <data name="ReplyNotifications" xml:space="preserve">
+        <value>智能体回复时通知我</value>
+    </data>
+    <data name="NotificationsBlocked" xml:space="preserve">
+        <value>浏览器阻止了此网站的通知。请在网站设置中允许通知。</value>
+    </data>
+    <data name="AgentRepliedOn" xml:space="preserve">
+        <value>{0} 在“{1}”上回复了</value>
     </data>
 </root>

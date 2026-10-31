@@ -1975,7 +1975,7 @@
         <value>ألوان خارج المظهر ({0})</value>
     </data>
     <data name="ThemeFindingsHint" xml:space="preserve">
-        <value>ألوان تحددها الصفحة بنفسها ولا تطابق أيًا من ألوان المظهر. خارج مكونات bit والمخططات فقط.</value>
+        <value>ألوان تحددها الصفحة بنفسها ولا تأتي من المظهر ولا من مزج أحد ألوانه بالأبيض أو الأسود أو الخلفية. يستثني مكونات bit والمخططات والألوان المُمرَّرة عبر --data-color.</value>
     </data>
     <data name="Flows" xml:space="preserve">
         <value>المسارات</value>
@@ -2480,5 +2480,14 @@
     </data>
     <data name="DeleteArrow" xml:space="preserve">
         <value>حذف السهم</value>
+    </data>
+    <data name="ReplyNotifications" xml:space="preserve">
+        <value>نبّهني عندما يرد الوكيل</value>
+    </data>
+    <data name="NotificationsBlocked" xml:space="preserve">
+        <value>يحظر المتصفح الإشعارات من هذا الموقع. اسمح بها من إعدادات الموقع.</value>
+    </data>
+    <data name="AgentRepliedOn" xml:space="preserve">
+        <value>ردّ {0} على {1}</value>
     </data>
 </root>

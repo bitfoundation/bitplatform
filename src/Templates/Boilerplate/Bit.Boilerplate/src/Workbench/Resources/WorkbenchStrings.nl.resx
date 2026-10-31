@@ -1975,7 +1975,7 @@
         <value>Kleuren buiten het thema ({0})</value>
     </data>
     <data name="ThemeFindingsHint" xml:space="preserve">
-        <value>Kleuren die de pagina zelf instelt en die met geen enkele themakleur overeenkomen. Alleen buiten bit-componenten en grafieken.</value>
+        <value>Kleuren die de pagina zelf instelt en die niet uit het thema komen en ook geen mengsel zijn van een themakleur met wit, zwart of de achtergrond. Zonder bit-componenten, grafieken en kleuren die als --data-color worden doorgegeven.</value>
     </data>
     <data name="Flows" xml:space="preserve">
         <value>Flows</value>
@@ -2480,5 +2480,14 @@
     </data>
     <data name="DeleteArrow" xml:space="preserve">
         <value>Pijl verwijderen</value>
+    </data>
+    <data name="ReplyNotifications" xml:space="preserve">
+        <value>Laat het me weten als de agent antwoordt</value>
+    </data>
+    <data name="NotificationsBlocked" xml:space="preserve">
+        <value>De browser blokkeert meldingen van deze site. Sta ze toe in de site-instellingen.</value>
+    </data>
+    <data name="AgentRepliedOn" xml:space="preserve">
+        <value>{0} heeft gereageerd op {1}</value>
     </data>
 </root>

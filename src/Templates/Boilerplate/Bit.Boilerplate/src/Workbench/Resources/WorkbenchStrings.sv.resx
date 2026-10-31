@@ -1975,7 +1975,7 @@
         <value>Färger utanför temat ({0})</value>
     </data>
     <data name="ThemeFindingsHint" xml:space="preserve">
-        <value>Färger som sidan själv anger och som inte matchar någon av temats färger. Bara utanför bit-komponenter och diagram.</value>
+        <value>Färger som sidan själv anger och som varken kommer från temat eller från en blandning av en temafärg med vitt, svart eller bakgrunden. Utan bit-komponenter, diagram och färger som skickas som --data-color.</value>
     </data>
     <data name="Flows" xml:space="preserve">
         <value>Flöden</value>
@@ -2480,5 +2480,14 @@
     </data>
     <data name="DeleteArrow" xml:space="preserve">
         <value>Ta bort pilen</value>
+    </data>
+    <data name="ReplyNotifications" xml:space="preserve">
+        <value>Meddela mig när agenten svarar</value>
+    </data>
+    <data name="NotificationsBlocked" xml:space="preserve">
+        <value>Webbläsaren blockerar aviseringar från den här webbplatsen. Tillåt dem i webbplatsinställningarna.</value>
+    </data>
+    <data name="AgentRepliedOn" xml:space="preserve">
+        <value>{0} svarade på {1}</value>
     </data>
 </root>

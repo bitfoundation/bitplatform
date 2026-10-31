@@ -75,7 +75,8 @@ the way to send it around. Every browser that has the page open holds a copy and
 they come from you or from your agent. The agent reaches the same document through the Workbench's MCP server (`/mcp`,
 listed as `workbench` in the project's agent settings) or its HTTP endpoints under `/api/review`. Once you ask it to go
 through the review, it keeps listening: a new comment reaches it as you send it, it changes the page, hot reload shows
-the change in your view, and it replies and ticks the comment.
+the change in your view, and it replies and ticks the comment. Each reply plays a short sound, and with "Notify me"
+turned on in the Review tab it also shows a notification, on a phone too.
 
 Only this machine can talk to the agent. The MCP server and the review endpoints answer only local requests, and opened
 from anywhere else, through a shared link or a public address, the review is read-only: comments, replies and statuses

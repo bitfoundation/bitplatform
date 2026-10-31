@@ -63,7 +63,7 @@
                             {
                                 <div role="listitem" @key="building.Id" class="card @(selectedItems.Contains(building) ? "selected" : null)">
                                     <button type="button" class="card-main" @onclick="() => Select(building, flyTo: true)" @ondblclick="() => OpenEdit(building)">
-                                        <span class="type-dot" style="background-color:@GetTypeColor(building.Type)"></span>
+                                        <span class="type-dot" style="--data-color:@GetTypeColor(building.Type)"></span>
                                         <span class="name-text">
                                             <span class="name">@building.Name</span>
                                             <span class="city">@building.City · @Localizer[$"Province{building.Province}"]</span>
@@ -102,7 +102,7 @@
                         <BitDataGridColumn TItem="Building" Property="b => b.Name" Title="@Localizer[nameof(WorkbenchStrings.BuildingName)]" RowHeader="true">
                             <Template Context="building">
                                 <span class="name-cell">
-                                    <span class="type-dot" style="background-color:@GetTypeColor(building.Type)"></span>
+                                    <span class="type-dot" style="--data-color:@GetTypeColor(building.Type)"></span>
                                     <span class="name-text">
                                         <span class="name">@building.Name</span>
                                         <span class="city">@building.City · @Localizer[$"Province{building.Province}"]</span>
@@ -114,7 +114,7 @@
                             <Template Context="building">@Localizer[$"BuildingType{building.Type}"]</Template>
                         </BitDataGridColumn>
                         <BitDataGridColumn TItem="Building" Property="b => b.Year" Title="@Localizer[nameof(WorkbenchStrings.BuildingYear)]" Align="BitTextAlign.End" Width="80px" Visible="isNarrow is false" />
-                        <BitDataGridColumn TItem="Building" Title="" Width="92px" Sortable="false" Searchable="false" Exportable="false" Visible="canManage">
+                        <BitDataGridColumn TItem="Building" Title="@AppLocalizer[nameof(AppStrings.Action)]" Width="92px" Sortable="false" Searchable="false" Exportable="false" Visible="canManage">
                             <Template Context="building">
                                 <span class="row-actions">
                                     <BitButton IconOnly Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Edit"
@@ -131,7 +131,7 @@
             }
         </section>
 
-        <section class="map-pane" @onkeydown="OnMapKeyDown" aria-label="@Localizer[nameof(WorkbenchStrings.BuildingsMapView)]">
+        <section class="map-pane" @onkeydown="OnMapKeyDown">
             <BitMap @ref="map"
                     TMapProvider="BitLeafletMapProvider"
                     Provider="provider"

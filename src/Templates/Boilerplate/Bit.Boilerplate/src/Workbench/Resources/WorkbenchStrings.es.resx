@@ -1975,7 +1975,7 @@
         <value>Colores fuera del tema ({0})</value>
     </data>
     <data name="ThemeFindingsHint" xml:space="preserve">
-        <value>Colores que la propia página define y que no coinciden con ninguno del tema. Solo fuera de los componentes de bit y de los gráficos.</value>
+        <value>Colores que la propia página define y que no vienen del tema ni de mezclar un color del tema con blanco, negro o el fondo. Deja fuera los componentes de bit, los gráficos y los colores que se pasan como --data-color.</value>
     </data>
     <data name="Flows" xml:space="preserve">
         <value>Flujos</value>
@@ -2480,5 +2480,14 @@
     </data>
     <data name="DeleteArrow" xml:space="preserve">
         <value>Eliminar flecha</value>
+    </data>
+    <data name="ReplyNotifications" xml:space="preserve">
+        <value>Avisarme cuando el agente responda</value>
+    </data>
+    <data name="NotificationsBlocked" xml:space="preserve">
+        <value>El navegador bloquea las notificaciones de este sitio. Permítelas en la configuración del sitio.</value>
+    </data>
+    <data name="AgentRepliedOn" xml:space="preserve">
+        <value>{0} respondió en {1}</value>
     </data>
 </root>

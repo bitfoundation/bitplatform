@@ -16,7 +16,7 @@
                                    Title="@Localizer[nameof(WorkbenchStrings.AssistantConversations)]"
                                    AriaLabel="@Localizer[nameof(WorkbenchStrings.AssistantConversations)]"
                                    OnClick="() => store.ShowHistory(true)" />
-                        <span class="chat-title">@(session.Conversation.Title ?? Localizer[nameof(WorkbenchStrings.AssistantNewChat)])</span>
+                        <h1 class="chat-title">@(session.Conversation.Title ?? Localizer[nameof(WorkbenchStrings.AssistantNewChat)])</h1>
                         <BitAiModelSelector Models="assistantService.Models"
                                             ModelId="@Model.ModelId"
                                             ModelIdChanged="ChooseModel"

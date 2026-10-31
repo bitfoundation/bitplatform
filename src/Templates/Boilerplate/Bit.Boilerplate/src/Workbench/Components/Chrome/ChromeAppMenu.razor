@@ -184,7 +184,7 @@
                             <BitActionButton Style="flex-grow:1" OnClick="ToggleTheme" IconName="@(isDark ? BitIconName.ClearNight : BitIconName.Sunny)">
                                 @(isDark ? AppLocalizer[nameof(AppStrings.Dark)] : AppLocalizer[nameof(AppStrings.Light)])
                             </BitActionButton>
-                            <BitToggle OnChange="ToggleTheme" Value="isDark is false" />
+                            <BitToggle AriaLabel="@ThemeToggleLabel" OnChange="ToggleTheme" Value="isDark is false" />
                         </BitStack>
 
                         <BitAccentColorSwitcher Class="accent-color-switcher" Classes="@(new() { Swatch = "accent-color-swatch" })" />

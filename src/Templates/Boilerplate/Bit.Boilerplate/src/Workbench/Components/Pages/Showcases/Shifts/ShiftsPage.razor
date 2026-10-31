@@ -13,13 +13,14 @@
         <div class="roles" aria-hidden="true">
             @foreach (var role in roles)
             {
-                <span class="role"><span class="role-dot" style="background-color:@role.Value"></span>@role.Title</span>
+                <span class="role"><span class="role-dot" style="--data-color:@role.Value"></span>@role.Title</span>
             }
         </div>
     </div>
 
     <div class="filters">
         <BitDropdown Items="staffFilterItems" MultiSelect Responsive
+                     AriaLabel="@Localizer[nameof(WorkbenchStrings.ShiftsStaffLabel)]"
                      Placeholder="@Localizer[nameof(WorkbenchStrings.ShiftsNoStaff)]"
                      Values="store.StaffFilter ?? allStaffKeys"
                      ValuesChanged="(IEnumerable<string?> keys) => FilterStaff(keys)">
@@ -29,12 +30,13 @@
             </ItemTemplate>
         </BitDropdown>
         <BitDropdown Items="roleFilterItems" MultiSelect Responsive
+                     AriaLabel="@Localizer[nameof(WorkbenchStrings.ShiftsRoleLabel)]"
                      Placeholder="@Localizer[nameof(WorkbenchStrings.ShiftsNoRoles)]"
                      Values="store.RoleFilter ?? allRoles"
                      ValuesChanged="(IEnumerable<ShiftRole> roles) => FilterRoles(roles)">
             <TextTemplate>@RoleFilterText</TextTemplate>
             <ItemTemplate Context="item">
-                <span class="role-item"><span class="role-dot" style="background-color:@RoleColor(item.Value)"></span>@item.Text</span>
+                <span class="role-item"><span class="role-dot" style="--data-color:@RoleColor(item.Value)"></span>@item.Text</span>
             </ItemTemplate>
         </BitDropdown>
     </div>

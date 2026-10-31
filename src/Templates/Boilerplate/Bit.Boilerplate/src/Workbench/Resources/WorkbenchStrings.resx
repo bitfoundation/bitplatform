@@ -2188,7 +2188,7 @@
         <value>Colors outside the theme ({0})</value>
     </data>
     <data name="ThemeFindingsHint" xml:space="preserve">
-        <value>Colors the page sets itself that match none of the theme's colors. Outside bit components and charts only.</value>
+        <value>Colors the page sets itself that come neither from the theme nor from a mix of a theme color with white, black or the background. Leaves out bit components, charts and colors passed as --data-color.</value>
     </data>
     <data name="EditText" xml:space="preserve">
         <value>Edit text</value>
@@ -2480,5 +2480,14 @@
     </data>
     <data name="DeleteArrow" xml:space="preserve">
         <value>Delete arrow</value>
+    </data>
+    <data name="ReplyNotifications" xml:space="preserve">
+        <value>Notify me when the agent replies</value>
+    </data>
+    <data name="NotificationsBlocked" xml:space="preserve">
+        <value>The browser blocks notifications from this site. Allow them in its site settings.</value>
+    </data>
+    <data name="AgentRepliedOn" xml:space="preserve">
+        <value>{0} replied on {1}</value>
     </data>
 </root>

@@ -75,7 +75,9 @@
 
 .chat-title {
     flex: 1;
+    margin: 0;
     min-width: 0;
+    font-size: inherit;
     font-weight: 700;
     overflow: hidden;
     white-space: nowrap;

@@ -40,22 +40,35 @@ export async function runChecks() {
 
 function checkTheme() {
     const themeColors = new Set<string>();
+    const tints: Rgba[] = [];
+    const neutrals: Rgba[] = [[1, 1, 1, 1], [0, 0, 0, 1]];
     const probe = document.createElement('span');
     probe.style.display = 'none';
     document.body.appendChild(probe);
 
-    for (const name of customProperties(document, name => name.startsWith('--bit-clr-'))) {
-        probe.style.color = `var(${name})`;
-        themeColors.add(getComputedStyle(probe).color);
-    }
+    const resolve = (value: string) => {
+        probe.style.color = '';
+        probe.style.color = value;
+        return getComputedStyle(probe).color;
+    };
 
-    probe.remove();
+    for (const name of customProperties(document, name => name.startsWith('--bit-clr-'))) {
+        const color = resolve(`var(${name})`);
+        const parsed = parseColor(color);
+
+        themeColors.add(color);
+
+        if (!parsed) continue;
+
+        tints.push(parsed);
+        if (name.startsWith('--bit-clr-bg-') || name.startsWith('--bit-clr-fg-')) neutrals.push(parsed);
+    }
 
     const findings = new Map<string, { property: string; color: string; count: number; example: string }>();
     const isOwnedByComponent = (element: Element) => Array.from(element.classList).some(name => name.startsWith('bit-'));
 
     for (const element of Array.from(document.body.querySelectorAll('*'))) {
-        if (element.closest('.wb-layer, svg, canvas, iframe, img, video') || isOwnedByComponent(element)) continue;
+        if (element.closest('.wb-layer, svg, canvas, iframe, img, video, select, option') || isOwnedByComponent(element)) continue;
 
         const rect = element.getBoundingClientRect();
         if (rect.width === 0 || rect.height === 0) continue;
@@ -71,8 +84,11 @@ function checkTheme() {
         if (style.backgroundColor !== 'rgba(0, 0, 0, 0)') checks.push(['background-color', style.backgroundColor]);
         if (parseFloat(style.borderTopWidth) > 0 && style.borderTopStyle !== 'none') checks.push(['border-color', style.borderTopColor]);
 
+        const dataColor = style.getPropertyValue('--data-color').trim();
+        const dataValue = dataColor ? resolve(dataColor) : null;
+
         for (const [property, color] of checks) {
-            if (themeColors.has(color) || color === 'rgba(0, 0, 0, 0)') continue;
+            if (themeColors.has(color) || color === 'rgba(0, 0, 0, 0)' || color === dataValue || isThemeMix(color, tints, neutrals)) continue;
 
             const key = `${property}|${color}`;
             const finding = findings.get(key);
@@ -85,7 +101,44 @@ function checkTheme() {
         }
     }
 
+    probe.remove();
+
     return Array.from(findings.values()).sort((a, b) => b.count - a.count).slice(0, 30);
+}
+
+type Rgba = [number, number, number, number];
+
+function parseColor(value: string): Rgba | null {
+    const legacy = value.match(/^rgba?\(([^)]+)\)$/);
+    if (legacy) {
+        const [r, g, b, a = 1] = legacy[1].split(/[\s,/]+/).filter(Boolean).map(Number);
+        return [r / 255, g / 255, b / 255, a];
+    }
+
+    const modern = value.match(/^color\(srgb ([^)]+)\)$/);
+    if (modern) {
+        const [r, g, b, a = 1] = modern[1].split(/[\s/]+/).filter(Boolean).map(Number);
+        return [r, g, b, a];
+    }
+
+    return null;
+}
+
+function isThemeMix(value: string, tints: Rgba[], neutrals: Rgba[]) {
+    const color = parseColor(value);
+    if (!color) return false;
+
+    const near = (x: number[], y: number[]) => Math.abs(x[0] - y[0]) < 0.02 && Math.abs(x[1] - y[1]) < 0.02 && Math.abs(x[2] - y[2]) < 0.02;
+
+    return tints.some(tint => near(tint, color) || neutrals.some(neutral => {
+        const delta = [tint[0] - neutral[0], tint[1] - neutral[1], tint[2] - neutral[2]];
+        const length = delta[0] * delta[0] + delta[1] * delta[1] + delta[2] * delta[2];
+        if (length < 0.0001) return false;
+
+        const t = ((color[0] - neutral[0]) * delta[0] + (color[1] - neutral[1]) * delta[1] + (color[2] - neutral[2]) * delta[2]) / length;
+
+        return t >= 0 && t <= 1 && near([neutral[0] + delta[0] * t, neutral[1] + delta[1] * t, neutral[2] + delta[2] * t], color);
+    }));
 }
 
 function describe(element: Element) {

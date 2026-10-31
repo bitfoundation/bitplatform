@@ -5,8 +5,13 @@ public partial class ReviewPanel
     private string? draft;
     private string? reply;
     private bool showDone;
+    private bool notificationsBlocked;
 
     [AutoInject] private WorkbenchReviewSession session = default!;
+    [AutoInject] private WorkbenchStore store = default!;
+    [AutoInject] private Bit.Butil.Notification notification = default!;
+    [AutoInject] private Bit.Butil.ServiceWorker serviceWorker = default!;
+    [AutoInject] private Bit.Butil.WebAudio webAudio = default!;
 
     [Parameter] public WorkbenchPageInfo Page { get; set; } = default!;
 
@@ -105,7 +110,29 @@ public partial class ReviewPanel
         draft = null;
         showDone = false;
 
+        await webAudio.Resume();
         await OnSend.InvokeAsync(text);
+    }
+
+    private async Task SetReplyNotifications(bool on)
+    {
+        notificationsBlocked = false;
+
+        if (on)
+        {
+            await webAudio.Resume();
+
+            if (await notification.RequestPermission() is not Bit.Butil.NotificationPermission.Granted)
+            {
+                notificationsBlocked = true;
+                store.SetReplyNotifications(false);
+                return;
+            }
+
+            await serviceWorker.Register("/workbench-sw.js");
+        }
+
+        store.SetReplyNotifications(on);
     }
 
     private Task CancelPending()
@@ -115,11 +142,12 @@ public partial class ReviewPanel
         return OnCancel.InvokeAsync();
     }
 
-    private void Reply(WorkbenchReviewThread thread)
+    private async Task Reply(WorkbenchReviewThread thread)
     {
         if (string.IsNullOrWhiteSpace(reply))
             return;
 
+        await webAudio.Resume();
         session.Reply(thread.Id, ReviewerName, reply);
         reply = null;
     }

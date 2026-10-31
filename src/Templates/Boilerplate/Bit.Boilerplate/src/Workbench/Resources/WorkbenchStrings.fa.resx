@@ -1975,7 +1975,7 @@
         <value>رنگ‌های خارج از پوسته ({0})</value>
     </data>
     <data name="ThemeFindingsHint" xml:space="preserve">
-        <value>رنگ‌هایی که خود صفحه تعیین می‌کند و با هیچ‌کدام از رنگ‌های پوسته جور نیستند. فقط بیرون از کامپوننت‌های bit و نمودارها.</value>
+        <value>رنگ‌هایی که خود صفحه تعیین می‌کند و نه از پوسته می‌آیند و نه از آمیختن یکی از رنگ‌های پوسته با سفید، سیاه یا پس‌زمینه. کامپوننت‌های bit، نمودارها و رنگ‌هایی که با --data-color داده می‌شوند بررسی نمی‌شوند.</value>
     </data>
     <data name="Flows" xml:space="preserve">
         <value>مسیرها</value>
@@ -2480,5 +2480,14 @@
     </data>
     <data name="DeleteArrow" xml:space="preserve">
         <value>حذف فلش</value>
+    </data>
+    <data name="ReplyNotifications" xml:space="preserve">
+        <value>وقتی عامل جواب داد خبرم کن</value>
+    </data>
+    <data name="NotificationsBlocked" xml:space="preserve">
+        <value>مرورگر اعلان‌های این سایت را مسدود کرده است. در تنظیمات سایت اجازه‌اش را بدهید.</value>
+    </data>
+    <data name="AgentRepliedOn" xml:space="preserve">
+        <value>{0} در {1} جواب داد</value>
     </data>
 </root>

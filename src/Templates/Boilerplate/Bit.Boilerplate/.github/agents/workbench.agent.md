@@ -90,6 +90,9 @@ what the user approves is how the real page will look.
 - `/api/checks/<key>` takes the same query keys and returns an accessibility check of the view (axe-core) and the colors
   the page sets that match none of the theme's. Fix what the page's own markup causes. A finding inside a bit component
   or the app's chrome is reported to the user, not worked around in the page.
+- A theme color mixed with white, black or the background counts as the theme's. A color that stands for data, like a
+  category's, goes in a `--data-color` custom property (`style="--data-color:..."`, painted with `var(--data-color)`),
+  which the check leaves alone.
 - The user can try another primary color, larger text, reduced motion and color blindness on
   a view. When they like a theme change, put the value into the app's theme: the Workbench changes only the view.
 - Read the browser console and the Workbench's console output while you look, as the run-app skill describes.

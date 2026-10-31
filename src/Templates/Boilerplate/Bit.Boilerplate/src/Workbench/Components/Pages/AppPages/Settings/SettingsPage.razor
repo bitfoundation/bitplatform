@@ -8,7 +8,7 @@
 <CascadingValue Value="this" IsFixed>
     <section>
         <BitStack Class="stack">
-            <BitAccordionList TItem="BitAccordionListOption" ExpandedKey="@store.ExpandedSection" ExpandedKeyChanged="store.Expand" LazyContent ScrollIntoViewOnExpand Background="BitColorKind.Secondary" Border="BitColorKind.Transparent">
+            <BitAccordionList TItem="BitAccordionListOption" HeadingLevel="2" ExpandedKey="@store.ExpandedSection" ExpandedKeyChanged="store.Expand" LazyContent ScrollIntoViewOnExpand Background="BitColorKind.Secondary" Border="BitColorKind.Transparent">
 
                 <BitAccordionListOption Key="@PageUrls.SettingsSections.Profile" Title="@AppLocalizer[nameof(AppStrings.ProfileTitle)]" Description="@AppLocalizer[nameof(AppStrings.ProfileSubtitle)]">
                     <ProfileSection />

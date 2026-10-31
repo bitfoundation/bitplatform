@@ -17,6 +17,10 @@ public partial class ChromeAppMenu
 
     private string ChevronIconName => CurrentDir is BitDir.Rtl ? BitIconName.ChevronLeft : BitIconName.ChevronRight;
 
+    private string ThemeToggleLabel => isDark
+        ? AppLocalizer[nameof(AppStrings.SwitchToLightThemeTitle)]
+        : AppLocalizer[nameof(AppStrings.SwitchToDarkThemeTitle)];
+
     protected override void OnInitialized()
     {
         isDark = Scenario.Theme is WorkbenchThemeMode.Dark;

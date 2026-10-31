@@ -1975,7 +1975,7 @@
         <value>Farben außerhalb des Designs ({0})</value>
     </data>
     <data name="ThemeFindingsHint" xml:space="preserve">
-        <value>Farben, die die Seite selbst setzt und die zu keiner Farbe des Designs passen. Nur außerhalb von bit-Komponenten und Diagrammen.</value>
+        <value>Farben, die die Seite selbst setzt und die weder aus dem Design noch aus einer Mischung einer Designfarbe mit Weiß, Schwarz oder dem Hintergrund stammen. Ohne bit-Komponenten, Diagramme und Farben, die als --data-color übergeben werden.</value>
     </data>
     <data name="Flows" xml:space="preserve">
         <value>Abläufe</value>
@@ -2480,5 +2480,14 @@
     </data>
     <data name="DeleteArrow" xml:space="preserve">
         <value>Pfeil löschen</value>
+    </data>
+    <data name="ReplyNotifications" xml:space="preserve">
+        <value>Benachrichtigen, wenn der Agent antwortet</value>
+    </data>
+    <data name="NotificationsBlocked" xml:space="preserve">
+        <value>Der Browser blockiert Benachrichtigungen dieser Website. Erlauben Sie sie in den Website-Einstellungen.</value>
+    </data>
+    <data name="AgentRepliedOn" xml:space="preserve">
+        <value>{0} hat auf {1} geantwortet</value>
     </data>
 </root>

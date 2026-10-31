@@ -5,7 +5,7 @@
 
         @if (askableCategories.Length > 0)
         {
-            <BitText Typography="BitTypography.H6">@AppLocalizer[nameof(AppStrings.PrivacyChoicesTitle)]</BitText>
+            <BitText Typography="BitTypography.H6" Element="h3">@AppLocalizer[nameof(AppStrings.PrivacyChoicesTitle)]</BitText>
 
             <BitStack Gap="0.5rem">
                 @foreach (var category in askableCategories)
@@ -25,7 +25,7 @@
             <BitSeparator />
         }
 
-        <BitText Typography="BitTypography.H6">@AppLocalizer[nameof(AppStrings.ExportPersonalDataTitle)]</BitText>
+        <BitText Typography="BitTypography.H6" Element="h3">@AppLocalizer[nameof(AppStrings.ExportPersonalDataTitle)]</BitText>
 
         <BitText Typography="BitTypography.Body1">
             @AppLocalizer[nameof(AppStrings.ExportPersonalDataMessage)]

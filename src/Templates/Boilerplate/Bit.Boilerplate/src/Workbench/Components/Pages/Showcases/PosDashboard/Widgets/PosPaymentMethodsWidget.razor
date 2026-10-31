@@ -31,7 +31,7 @@
                 @foreach (var share in Data!)
                 {
                     <li>
-                        <span class="dot" style="background-color:@share.Color"></span>
+                        <span class="dot" style="--data-color:@share.Color"></span>
                         <span class="name">@Localizer[share.MethodKey]</span>
                         <span class="percent">@PosFormat.Percent(total == 0 ? 0 : share.Amount / total)</span>
                         <span class="amount">@PosFormat.Money(share.Amount, 0)</span>

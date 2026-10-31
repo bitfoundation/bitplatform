@@ -59,6 +59,7 @@
     width: 0.625rem;
     height: 0.625rem;
     border-radius: 50%;
+    background-color: var(--data-color);
 }
 
 .staff {
@@ -87,6 +88,10 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     color: $bit-color-foreground-secondary;
+}
+
+.shifts ::deep .today > .bit-bfc-tl-time-cell-label {
+    color: $bit-color-foreground-primary;
 }
 
 @include lt-sm {

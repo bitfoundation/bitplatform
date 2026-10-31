@@ -33,6 +33,14 @@
             <span class="agent-dot"></span>
             <BitText Typography="BitTypography.Caption1">@AgentLine</BitText>
         </div>
+        @if (session.CanWrite)
+        {
+            <BitToggle Text="@Localizer[nameof(WorkbenchStrings.ReplyNotifications)]" Value="store.ReplyNotifications" ValueChanged="(bool on) => SetReplyNotifications(on)" />
+            @if (notificationsBlocked)
+            {
+                <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.NotificationsBlocked)]</BitText>
+            }
+        }
     </section>
 
     @if (PendingAnchor is { } pendingAnchor && session.CanWrite)

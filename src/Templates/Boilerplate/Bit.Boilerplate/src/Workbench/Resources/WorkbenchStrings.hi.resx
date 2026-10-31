@@ -1975,7 +1975,7 @@
         <value>थीम से बाहर के रंग ({0})</value>
     </data>
     <data name="ThemeFindingsHint" xml:space="preserve">
-        <value>वे रंग जो पेज खुद सेट करता है और जो थीम के किसी भी रंग से मेल नहीं खाते। सिर्फ़ bit कंपोनेंट और चार्ट के बाहर।</value>
+        <value>वे रंग जो पेज खुद सेट करता है और जो न थीम से आते हैं, न थीम के किसी रंग को सफ़ेद, काले या पृष्ठभूमि के साथ मिलाकर बनते हैं। bit कंपोनेंट, चार्ट और --data-color से दिए गए रंग इसमें शामिल नहीं हैं।</value>
     </data>
     <data name="Flows" xml:space="preserve">
         <value>फ़्लो</value>
@@ -2480,5 +2480,14 @@
     </data>
     <data name="DeleteArrow" xml:space="preserve">
         <value>तीर हटाएँ</value>
+    </data>
+    <data name="ReplyNotifications" xml:space="preserve">
+        <value>एजेंट के जवाब देने पर मुझे सूचित करें</value>
+    </data>
+    <data name="NotificationsBlocked" xml:space="preserve">
+        <value>ब्राउज़र इस साइट की सूचनाएँ रोक रहा है। साइट की सेटिंग में इन्हें अनुमति दें।</value>
+    </data>
+    <data name="AgentRepliedOn" xml:space="preserve">
+        <value>{0} ने {1} पर जवाब दिया</value>
     </data>
 </root>

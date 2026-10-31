@@ -29,7 +29,7 @@
                 <div class="field full">
                     <BitDropdown Label="@Localizer[nameof(WorkbenchStrings.ShiftsRoleLabel)]" Items="roleItems" Value="role" ValueChanged="(ShiftRole value) => Update(() => role = value)" Responsive>
                         <ItemTemplate Context="item">
-                            <span class="role-item"><span class="role-dot" style="background-color:@(ShiftsPage.RoleColor(item.Value))"></span>@item.Text</span>
+                            <span class="role-item"><span class="role-dot" style="--data-color:@(ShiftsPage.RoleColor(item.Value))"></span>@item.Text</span>
                         </ItemTemplate>
                     </BitDropdown>
                 </div>
