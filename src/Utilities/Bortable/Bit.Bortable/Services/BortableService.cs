@@ -1,19 +1,71 @@
-﻿using Microsoft.JSInterop;
+﻿using System.Runtime.CompilerServices;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 
 namespace Bit.Bortable;
 
 /// <summary>
 /// The per-scope coordinator that holds the active drag, so that several <see cref="Bortable{TItem}"/>
 /// lists in the same group can exchange items. Scoped, so every Blazor Server circuit has a drag state
-/// of its own. Registered by <see cref="BitBortable.AddBitBortableServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)"/>.
+/// of its own. Registered by <see cref="BitBortable.AddBitBortableServices(IServiceCollection)"/>; where it
+/// is not - an app that lazy loads Bit.Bortable on WebAssembly - the lists create one per WebAssembly
+/// runtime (see <see cref="Of"/>).
 /// </summary>
-internal sealed class BortableService(IJSRuntime js, IEnumerable<BortableConfiguration> configurations) : IAsyncDisposable, IDisposable
+internal sealed partial class BortableService(IJSRuntime js, IEnumerable<BortableConfiguration> configurations) : IAsyncDisposable, IDisposable
 {
     private const string ModulePath = "./_content/Bit.Bortable/bit-bortable.js";
 
+    // One coordinator per WebAssembly runtime for applications that lazy load Bit.Bortable and so never call
+    // AddBitBortableServices. Keyed weakly by the runtime's IJSRuntime - on WebAssembly there is one for the life of the
+    // tab - so that every runtime in a process, as in the tests, has its own. Never disposed, and nothing needs it to be:
+    // it lives as long as the tab, like the runtime's one scope, and the one thing disposal would add, releasing the
+    // module reference held in the browser, has no page left to do it in by then.
+    private static readonly ConditionalWeakTable<IJSRuntime, BortableService> OwnCoordinators = new();
+
+    /// <summary>
+    /// The coordinator of the circuit or WebAssembly runtime that <paramref name="services"/> belong to: the one
+    /// <see cref="BitBortable.AddBitBortableServices(IServiceCollection)"/> registered, otherwise - on WebAssembly only -
+    /// one the lists create themselves, once per runtime, with no app-wide defaults.
+    /// </summary>
+    /// <remarks>
+    /// The second case is what lets a WebAssembly app lazy load Bit.Bortable: the assembly is not there yet when
+    /// <c>Program.cs</c> runs, so nothing can be registered. Only WebAssembly can lazy load it - everywhere else it is
+    /// loaded with the application - so everywhere else a missing registration is a mistake, reported where it happens.
+    /// </remarks>
+    /// <param name="services">The services of the list asking, as injected through <see cref="IServiceProvider"/>.</param>
+    /// <exception cref="InvalidOperationException">
+    /// The services are not registered, and <paramref name="services"/> do not belong to a WebAssembly runtime.
+    /// </exception>
+    internal static BortableService Of(IServiceProvider services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        if (services.GetService<BortableService>() is { } registered) return registered;
+
+        // The JS runtime tells WebAssembly apart: only there is it in-process; Blazor Server's and Blazor Hybrid's reach
+        // the browser over a connection, and a prerendering server has none that works.
+        if (services.GetService<IJSRuntime>() is not IJSInProcessRuntime jsRuntime) throw new InvalidOperationException(
+            "Bit.Bortable's services are not registered: call builder.Services.AddBitBortableServices() in Program.cs - in a Blazor Web App, in both the server and the client project. " +
+            "Only a WebAssembly app that lazy loads Bit.Bortable goes without.");
+
+        if (OwnCoordinators.TryGetValue(jsRuntime, out var own)) return own;
+
+        // Two lists that get here together end up with the same coordinator - the first one added - and only that one
+        // warns: once per runtime, which on WebAssembly is once per app.
+        var created = new BortableService(jsRuntime, []);
+        own = OwnCoordinators.GetOrAdd(jsRuntime, created);
+        if (ReferenceEquals(own, created) && services.GetService<ILoggerFactory>() is { } loggers)
+            LogServicesNotRegistered(loggers.CreateLogger(typeof(BitBortable).FullName!));
+        return own;
+    }
+
+    [LoggerMessage(1, LogLevel.Warning, "Bit.Bortable's services are not registered, so the lists create their own and take none of the app-wide defaults (BortableOptions). Call builder.Services.AddBitBortableServices() in Program.cs - in a Blazor Web App, in both the server and the client project. An app that lazy loads Bit.Bortable on WebAssembly cannot, and can ignore this warning.")]
+    private static partial void LogServicesNotRegistered(ILogger logger);
+
     private BortableOptions? _options;
 
-    /// <summary>The app-wide defaults (<see cref="BitBortable.AddBitBortableServices(Microsoft.Extensions.DependencyInjection.IServiceCollection, Action{BortableOptions})"/>), built once per scope.</summary>
+    /// <summary>The app-wide defaults (<see cref="BitBortable.AddBitBortableServices(IServiceCollection, Action{BortableOptions})"/>), built once per scope.</summary>
     internal BortableOptions Options => _options ??= Build(configurations);
 
     private static BortableOptions Build(IEnumerable<BortableConfiguration> configurations)

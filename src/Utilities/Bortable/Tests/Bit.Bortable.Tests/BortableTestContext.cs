@@ -23,12 +23,15 @@ public abstract class BortableTestContext : BunitContext
 
     private const string ItemSelector = "[data-bortable-item]:not([data-bortable-placeholder])";
 
-    protected BortableTestContext()
+    /// <param name="registerServices">
+    /// False leaves <c>AddBitBortableServices</c> out, as an app that lazy loads Bit.Bortable on WebAssembly does.
+    /// </param>
+    protected BortableTestContext(bool registerServices = true)
     {
         // Loose, because every call the component makes into the module (register, configure, the FLIP calls) is
         // fire-and-forget: the engine never reads a result, so none needs a set-up of its own.
         JSInterop.Mode = JSRuntimeMode.Loose;
-        Services.AddBitBortableServices();
+        if (registerServices) Services.AddBitBortableServices();
 
         Module = JSInterop.SetupModule(ModulePath);
     }
@@ -36,8 +39,8 @@ public abstract class BortableTestContext : BunitContext
     /// <summary>The stand-in for <c>bit-bortable.js</c>, which records every call made to it.</summary>
     protected BunitJSModuleInterop Module { get; }
 
-    /// <summary>The scoped drag coordinator every list of the test shares.</summary>
-    internal BortableService Coordinator => Services.GetRequiredService<BortableService>();
+    /// <summary>The drag coordinator every list of the test shares: the registered one, or the one the lists created.</summary>
+    internal BortableService Coordinator => BortableService.Of(Services);
 
     /// <summary>The options a list last sent the browser layer (with <c>register</c> or <c>configure</c>).</summary>
     internal BortableJsOptions? SentOptions<TItem>(IRenderedComponent<Bortable<TItem>> list)

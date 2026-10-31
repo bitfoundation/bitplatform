@@ -91,7 +91,7 @@ public static class DocsCatalog
         [
             new("/getting-started", "Getting started",
                 "Install the package, register the services, link the stylesheet and put your first list on a page.",
-                "install setup nuget package AddBitBortableServices quick start program.cs stylesheet render mode",
+                "install setup nuget package AddBitBortableServices quick start program.cs stylesheet render mode lazy load lazyassemblyloader blazorwebassemblylazyload aot",
                 typeof(GettingStarted)),
         ]),
         new("Sorting",

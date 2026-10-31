@@ -38,8 +38,11 @@ public static class McpPrompts
                client the package and the pages with lists belong in the .Client project.
             3. DO register the services: `builder.Services.AddBitBortableServices();` - in EVERY Program.cs that renders a
                list. In a Blazor Web App with WebAssembly or Auto that means both the server and the .Client project: the
-               server prerenders the lists, and without the registration there the first page throws "no registered
-               service of type 'Bit.Bortable.BortableService'".
+               server prerenders the lists, and without the registration there the first page throws "Bit.Bortable's
+               services are not registered". Without it in the .Client project the lists still work in the browser, but
+               on their parameters' own defaults, logging a warning - the options set in `Program.cs` are gone once the
+               page turns interactive. (Only a WebAssembly client that lazy loads Bit.Bortable leaves the registration
+               out - see the guide's "Lazy loading on WebAssembly" section.)
             4. DO link the stylesheet from the host page - `_content/Bit.Bortable/bit-bortable.css` (App.razor, or
                wwwroot/index.html). Nothing injects it, and without it the dragged item is not dimmed and its original
                does not hide while it is previewed in another list.
@@ -88,7 +91,7 @@ public static class McpPrompts
     }
 
     [McpServerPrompt(Name = "debug-bortable-drag", Title = "Debug a list or a drag")]
-    [Description("Diagnoses a Bit.Bortable problem - a page that throws about BortableService, items that cannot be dragged, a list that refuses a drop, a refused clone, an original that does not hide, an empty list that cannot be dropped into, a field that does not update.")]
+    [Description("Diagnoses a Bit.Bortable problem - a page that throws that Bit.Bortable's services are not registered, an app that cannot load Bit.Bortable because it lazy loads it, items that cannot be dragged, a list that refuses a drop, a refused clone, an original that does not hide, an empty list that cannot be dropped into, a field that does not update.")]
     public static string DebugBortableDrag(
         [Description("What goes wrong, with the lists and their parameters involved if you know them.")] string symptom)
     {
@@ -106,7 +109,8 @@ public static class McpPrompts
                different groups, Put="false", a Pull of None, Sort="false", a Disabled or read-only list, a filtered item,
                or an item the target already holds.
             3. Call `SearchBortable` with the symptom and read the guide section it points to - "Shared lists",
-               "Read-only lists", "Events", "Limitations" and "Troubleshooting" cover the usual causes.
+               "Read-only lists", "Events", "Limitations" and "Troubleshooting" cover the usual causes, and "Lazy loading on
+               WebAssembly" covers an app that cannot load Bit.Bortable because it lazy loads it.
             4. If the page does not update after a drag, check the binding: `@bind-Items` needs an `IList<TItem>` field (the
                parameter's type) holding a mutable list, and markup elsewhere on the page that reads the list re-renders
                on `ItemsChanged` or in `OnEnd`. A read-only list - an array - is never changed.
