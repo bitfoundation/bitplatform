@@ -1005,7 +1005,10 @@ keep to these rules:
   keeps failing after Bit.Bortable has loaded. Make such a type `internal`, or put it in a library of your own that is
   lazy loaded together with Bit.Bortable: mark it in the same `ItemGroup`
   (`<BlazorWebAssemblyLazyLoad Include="MyApp.Boards.wasm" />`) and load both
-  (`LoadAssembliesAsync(["Bit.Bortable.wasm", "MyApp.Boards.wasm"])`).
+  (`LoadAssembliesAsync(["Bit.Bortable.wasm", "MyApp.Boards.wasm"])`). Keep the pages in the app's own assembly and
+  only the types they use in that library: the router finds routes only in `AppAssembly` and `AdditionalAssemblies`,
+  so a page in the library would need `OnNavigateAsync` to add what `LoadAssembliesAsync` returns to a list the router
+  takes as `AdditionalAssemblies` - and an AOT build, which skips that call, would not find it at all.
 - Without the registration there are no [app-wide defaults](#app-wide-defaults): every list starts from its
   parameters' own defaults. Set what you need on the lists themselves - `Messages`, `TouchDelay`, `Animation`, the
   classes - for instance from one static class the pages share:
