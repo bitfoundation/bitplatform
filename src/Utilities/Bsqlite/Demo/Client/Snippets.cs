@@ -75,6 +75,63 @@ internal static class Snippets
                 _orders = await db.Orders.Where(o => o.Status == OrderStatus.Draft).ToListAsync();
             }
             """;
+
+        public const string LazyServices =
+            """
+            // Program.cs registers nothing of Bsqlite's: it runs before the assemblies are there.
+            // Called only from the pages the assemblies are loaded for.
+            internal static class AppDatabase
+            {
+                // What Program.cs would have registered, unchanged. Pass this one method to
+                // every call - and register with it in MauiProgram.cs, in a Blazor Hybrid app.
+                public static void Register(IServiceCollection services)
+                {
+                    services.AddBitBsqliteServices(sqlite => sqlite
+                        .AddStorageProvider<BsqliteOpfsStorageProvider>()
+                        .AddStorageProvider<BsqliteIndexedDbStorageProvider>()
+                        .UseStorage(s => s
+                            .Prefer(BsqliteOpfsStorageProvider.ProviderName)
+                            .Fallback(BsqliteIndexedDbStorageProvider.ProviderName))
+                        .AddDatabase("app.db"));
+
+                    services.AddBitBsqliteDbContext<AppDbContext>();
+                }
+
+                public static IBsqliteDbContextFactory<AppDbContext> Contexts(IServiceProvider provider) => provider
+                    .GetBitBsqliteServices(Register)
+                    .GetRequiredService<IBsqliteDbContextFactory<AppDbContext>>();
+            }
+
+            // A page - once it runs in the browser, not while it is prerendered:
+            @inject IServiceProvider Services
+
+            if (RendererInfo.IsInteractive)
+            {
+                await using var db = await AppDatabase.Contexts(Services).CreateDbContextAsync();
+            }
+            """;
+
+        public const string LazyRouter =
+            """
+            @inject LazyAssemblyLoader LazyAssemblyLoader
+
+            <Router AppAssembly="typeof(Program).Assembly" OnNavigateAsync="OnNavigateAsync">
+                ...
+            </Router>
+
+            @code {
+                // Set next to the marks, so unset in an AOT build: loading an assembly that is not marked throws.
+                private static readonly bool LazyLoadsBsqlite = AppContext.TryGetSwitch("MyApp.LazyLoadsBsqlite", out var on) && on;
+
+                private async Task OnNavigateAsync(NavigationContext context)
+                {
+                    // Every assembly the project file marks BlazorWebAssemblyLazyLoad: Bit.Bsqlite.wasm,
+                    // the EF Core assemblies, what only they use, and the library with your model.
+                    if (LazyLoadsBsqlite && UsesTheDatabase(context.Path))
+                        await LazyAssemblyLoader.LoadAssembliesAsync(DatabaseAssemblies);
+                }
+            }
+            """;
     }
 
     public static class Home

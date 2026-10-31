@@ -93,7 +93,7 @@ public static class McpPrompts
     }
 
     [McpServerPrompt(Name = "debug-bsqlite-storage", Title = "Debug a database that does not open or behave")]
-    [Description("Diagnoses a Bit.Bsqlite problem - a database that does not open, opens empty, lands on the wrong backend, loses its data on reload, refuses a statement, or a live query that does not refresh.")]
+    [Description("Diagnoses a Bit.Bsqlite problem - a database that does not open, opens empty, lands on the wrong backend, loses its data on reload, refuses a statement, a live query that does not refresh, or an app that lazy loads Bit.Bsqlite and fails with Could not load file or assembly.")]
     public static string DebugBsqliteStorage(
         [Description("What goes wrong, with the exception message, the browser and the backend involved if you know them.")] string symptom)
     {
@@ -103,7 +103,8 @@ public static class McpPrompts
             Work in this order:
 
             1. Check the wiring against `GetBsqliteSetupGuide` for the app's hosting model first: services registered in
-               every container that renders the page (the server too, when prerendering), the database opened only once
+               every container that renders the page (the server too, when prerendering) - or built with
+               `GetBitBsqliteServices` by an app that lazy loads Bit.Bsqlite - the database opened only once
                `RendererInfo.IsInteractive` is true, the page running on WebAssembly, async EF calls only.
             2. For anything about which backend a database is on - empty after a reload, empty after a browser update,
                `BsqliteStorageUnavailableException` - reproduce it with `PlanBsqliteStorageSelection`: the app's preference
@@ -116,7 +117,13 @@ public static class McpPrompts
             4. For a live query that does not refresh, `CheckBsqliteSql` also shows the tables a query over that SQL
                watches; then read `GetBsqliteDocument(name: "live-queries")` - nothing is reported while a transaction is
                open, and a disposed query stops listening.
-            5. Call `SearchBsqlite` with the exception's type or message, and confirm the API you rely on with
+            5. If the app lazy loads Bit.Bsqlite and EF Core and fails with `Could not load file or assembly`,
+               `Could not load type of field` or a `ReflectionTypeLoadException`, read
+               `GetBsqliteDocument(name: "getting-started", section: "Lazy loading on WebAssembly")`: their types used
+               before the assemblies load (`Program.cs`, a shared layout, the method that loads them), a public
+               `DbContext` or migration in an assembly the router reads, or an assembly marked lazy that the app uses
+               elsewhere are the usual causes.
+            6. Call `SearchBsqlite` with the exception's type or message, and confirm the API you rely on with
                `GetBsqliteApi` - the actual default of the option involved - before concluding it is a bug.
 
             Tell me the cause and the fix, and cite the tool call that established it.

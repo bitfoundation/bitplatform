@@ -42,6 +42,7 @@ Bsqlite's documentation website lives in [`Demo`](https://github.com/bitfoundati
 - [Composition without dependency injection](#composition-without-dependency-injection)
 - [Live queries](#live-queries)
 - [Where it runs](#where-it-runs)
+- [Lazy loading on WebAssembly](#lazy-loading-on-webassembly)
 - [What this release does not claim](#what-this-release-does-not-claim)
 - [Moving off Bit.Besql](#moving-off-bitbesql)
 - [MCP server (for AI agents)](#mcp-server-for-ai-agents)
@@ -163,6 +164,43 @@ Every service that reaches the browser, or holds a database session, is register
 application on WebAssembly, one per web view in Blazor Hybrid, and one per circuit or request on a server, so nothing is
 ever shared between users.
 
+## Lazy loading on WebAssembly
+
+EF Core and Bsqlite are most of what a WebAssembly app downloads for its database - about 2.1 MB, compressed with
+Brotli, for a small app on the demo's model. An app whose database only some pages use can mark them
+`BlazorWebAssemblyLazyLoad` and load them from the router's `OnNavigateAsync` before those pages render. `Program.cs`
+then registers nothing of Bsqlite's, and the pages build the same services the first time one of them asks:
+
+```csharp
+// Called only from the pages the assemblies are loaded for, once they run in the browser.
+internal static class AppDatabase
+{
+    public static void Register(IServiceCollection services)
+    {
+        services.AddBitBsqliteServices(sqlite => sqlite
+            .AddStorageProvider<BsqliteOpfsStorageProvider>()
+            .AddStorageProvider<BsqliteIndexedDbStorageProvider>()
+            .UseStorage(s => s
+                .Prefer(BsqliteOpfsStorageProvider.ProviderName)
+                .Fallback(BsqliteIndexedDbStorageProvider.ProviderName))
+            .AddDatabase("app.db"));
+
+        services.AddBitBsqliteDbContext<AppDbContext>();
+    }
+
+    public static IBsqliteDbContextFactory<AppDbContext> Contexts(IServiceProvider provider) => provider
+        .GetBitBsqliteServices(Register)
+        .GetRequiredService<IBsqliteDbContextFactory<AppDbContext>>();
+}
+```
+
+`GetBitBsqliteServices` makes that registration once, on WebAssembly, in a container of Bsqlite's own in front of the
+app's, and takes the same method on every call. Where the app called `AddBitBsqliteServices` after all - a Blazor
+Hybrid app sharing the pages, which registers with `AppDatabase.Register(builder.Services)` - it returns the app's own
+container, once it has checked that what the method registers is there. Which assemblies to mark, the router's code, and the rules the rest of the app keeps - no public `DbContext` or migration in an assembly
+the router reads, nothing of EF Core's in `Program.cs`, the database asked for only once a page is interactive, no AOT - are in the *Getting started* guide's
+[Lazy loading on WebAssembly](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/getting-started.md#lazy-loading-on-webassembly).
+
 ## What this release does not claim
 
 - A synchronous tier (`SaveChanges()`, `ToList()`). Synchronous members throw
@@ -209,7 +247,7 @@ for the browser matrix, the soak suite and the benchmark page.
 
 ## Documentation
 
-- [Getting started](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/getting-started.md) - registration, contexts, raw ADO.NET, the shared database
+- [Getting started](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/getting-started.md) - registration, contexts, raw ADO.NET, the shared database, lazy loading on WebAssembly
 - [Storage](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/storage.md) - backends, selection rules, migration, admin, writing a provider
 - [Live queries](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/live-queries.md) - EF and ADO.NET live queries, cross-tab notifications
 - [Architecture and performance](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/architecture.md) - the worker, the binary wire format, the statement cache, change tracking

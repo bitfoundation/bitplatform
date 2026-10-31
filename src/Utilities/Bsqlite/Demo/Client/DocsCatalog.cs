@@ -91,7 +91,7 @@ public static class DocsCatalog
         [
             new("/getting-started", "Getting started",
                 "Install the package, register a storage preference and a database, and open an EF Core context in the browser.",
-                "install setup nuget package AddBitBsqliteServices AddBitBsqliteDbContext UseBitBsqlite program.cs prerendering render mode quick start",
+                "install setup nuget package AddBitBsqliteServices AddBitBsqliteDbContext UseBitBsqlite program.cs prerendering render mode quick start lazy loading lazyassemblyloader blazorwebassemblylazyload GetBitBsqliteServices aot",
                 typeof(GettingStarted)),
         ]),
         new("Model and data",

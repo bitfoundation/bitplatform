@@ -50,3 +50,8 @@ checks its assembly with it: its components take from the container only what ev
   covers configuring its service without registering it.
 - Balette and BbScanner: the README's section and the Getting Started page.
 - Bmage: `docs/getting-started.md` and the demo's Hosting page.
+- Bsqlite: `docs/getting-started.md`'s "Lazy loading on WebAssembly" and the README's summary of it, the Getting
+  Started page's lazy loading card, the setup guide's hosting scenarios, the debug prompt and its completions. Bsqlite
+  has services to register, so `GetBitBsqliteServices` makes that registration once the assembly has loaded, and its
+  unit tests check that instead of using `LazyLoadingAssert`. Its guide also lists the EF Core assemblies to lazy load with
+  it, checked on .NET 10 and 11 (rc.3) in a published app.

@@ -80,7 +80,11 @@ public static partial class BsqliteSetupGuide
             "standalone Blazor WebAssembly",
             """
             One project and no prerendering: the app runs on WebAssembly from its first render, so a page can open the
-            database whenever it likes - OnInitializedAsync included - and everything Bsqlite does is available.
+            database whenever it likes - OnInitializedAsync included - and everything Bsqlite does is available. An app
+            whose database only some pages use can also download Bsqlite and EF Core only when one of those pages first
+            opens: `Program.cs` then registers nothing of Bsqlite's, and the pages make the same registration with
+            `GetBitBsqliteServices` - see
+            `GetBsqliteDocument(name: "getting-started", section: "Lazy loading on WebAssembly")`.
             """,
             HostingChecklist,
             StandaloneCode,
@@ -97,9 +101,16 @@ public static partial class BsqliteSetupGuide
             touches the browser until a page opens the database. And a page opens it only once
             `RendererInfo.IsInteractive` is true: during prerendering OnInitializedAsync runs on the server, where there
             is no browser to open a database in. The demo shares one registration method between the two projects and
-            gates every page through one component; both are below, as they ship.
+            gates every page through one component; both are below, as they ship. A client that lazy loads Bit.Bsqlite
+            and EF Core registers nothing of Bsqlite's in its `Program.cs` and builds the services with
+            `GetBitBsqliteServices` instead - only in the browser, so its pages ask for them only once
+            `RendererInfo.IsInteractive` is true, unless the server project registers them too - gives `Routes` the
+            InteractiveWebAssembly render mode - as the demo does - so the router's `OnNavigateAsync` runs in the browser,
+            and registers `LazyAssemblyLoader` in the server project (`builder.Services.AddScoped<LazyAssemblyLoader>()`),
+            which loads Bsqlite with the rest of the app - see
+            `GetBsqliteDocument(name: "getting-started", section: "Lazy loading on WebAssembly")`.
             """,
-            HostingChecklist + "\n" + WebAppChecklist,
+            LoadedWithTheApp + "\n" + HostingChecklist + "\n" + WebAppChecklist,
             WebAppCode,
             _webAppFiles,
             [("readme", "Installation"), ("readme", "Where it runs")],
@@ -115,8 +126,11 @@ public static partial class BsqliteSetupGuide
             `OperatingSystem.IsBrowser()` is. And a component that started on the circuit stays there until the next
             full load, so the reliable setup is per-page render modes: InteractiveWebAssembly for the pages that use the
             database, Auto for the rest. Everything else is the InteractiveWebAssembly setup, whose files are the demo's.
+            With per-page render modes the router never runs `OnNavigateAsync` in the browser, so a client that lazy loads
+            Bit.Bsqlite and EF Core loads them from each page that uses the database, before it renders the component that
+            does - see `GetBsqliteDocument(name: "getting-started", section: "Lazy loading on WebAssembly")`.
             """,
-            HostingChecklist + "\n" + WebAppChecklist + "\n" + AutoChecklist,
+            LoadedWithTheApp + "\n" + HostingChecklist + "\n" + WebAppChecklist + "\n" + AutoChecklist,
             AutoCode,
             _webAppFiles,
             [("readme", "Where it runs")],
@@ -146,7 +160,12 @@ public static partial class BsqliteSetupGuide
             browser and are passed over without being probed. The database is a SQLite file in the app's own folder,
             opened in-process by the native SQLite the app brings for Android, iOS, Mac Catalyst, Windows and macOS.
             So the registration a WebAssembly client uses - typically one extension method in a shared Razor class
-            library - serves the Hybrid app unchanged, and so do the pages.
+            library - serves the Hybrid app unchanged, and so do the pages. Nothing is downloaded in a Hybrid app, so
+            nothing is lazy loaded: a Hybrid app that shares pages with a WebAssembly client that lazy loads Bit.Bsqlite
+            registers the services with the method the pages pass to `GetBitBsqliteServices`, which then hands them its
+            container - it builds none in a web view, which would leave its databases open when it closes - and a host
+            that shares the router's file registers `LazyAssemblyLoader` (`builder.Services.AddScoped<LazyAssemblyLoader>()`)
+            - see `GetBsqliteDocument(name: "getting-started", section: "Lazy loading on WebAssembly")`.
             """,
             HybridChecklist,
             HybridCode,
@@ -290,6 +309,17 @@ public static partial class BsqliteSetupGuide
            `_content/Bit.Bsqlite/`, imported on demand - a session downloads the VFS of the backend it selected and no other.
         7. Keep the model in a project that references only EF Core Relational, as the demo's Data project does, and
            scaffold migrations with `dotnet ef` against the stock SQLite provider: the same migrations apply in the browser.
+        """;
+
+    private const string LoadedWithTheApp = """
+        ## Loaded with the app, or lazy loaded
+
+        The checklist and the code below - Bsqlite registered in each `Program.cs`, a page that injects
+        `IBsqliteDbContextFactory<AppDbContext>` - are the path of a client that loads Bit.Bsqlite and EF Core with the
+        app, as the demo does. A client that lazy loads them does not take it: it registers nothing of Bsqlite's in its
+        `Program.cs`, which runs before the assemblies are there, and a component that uses the database injects
+        `IServiceProvider` and gets the factory from `GetBitBsqliteServices`, passing it the one method that makes the
+        registration below - see `GetBsqliteDocument(name: "getting-started", section: "Lazy loading on WebAssembly")`.
         """;
 
     private const string WebAppChecklist = """
