@@ -27,6 +27,13 @@ public static class BsqliteSearchIndex
 
     private const int MaxTerms = 16;
 
+    /// <summary>
+    /// The most of a query that is read. Far more than <see cref="MaxTerms"/> words take, and a bound on the
+    /// rest: every term is stemmed again for every entry and every title word, so a term's length is paid for
+    /// thousands of times over - a megabyte-long word is gigabytes of allocations.
+    /// </summary>
+    private const int MaxQueryLength = 1_000;
+
     /// <summary>The most hits one search may return, whatever the caller asked for.</summary>
     private const int MaxHits = 50;
 
@@ -387,6 +394,10 @@ public static class BsqliteSearchIndex
     private static string[] Tokenize(string? query)
     {
         if (string.IsNullOrWhiteSpace(query)) return [];
+
+        // A pasted file is searched by its first words, as Take below keeps them, without splitting the rest -
+        // and never cut between the two halves of a surrogate pair, since a term that matches nothing is echoed back.
+        if (query.Length > MaxQueryLength) query = query[..(char.IsHighSurrogate(query[MaxQueryLength - 1]) ? MaxQueryLength - 1 : MaxQueryLength)];
 
         string[] terms = [.. query.Split(['.', ',', ';', ':', '?', '!', '"', '\'', '(', ')', '[', ']', '{', '}', '/', '\\', '<', '>', '-', '_', ' ', '\t', '\n', '\r'],
                               StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)

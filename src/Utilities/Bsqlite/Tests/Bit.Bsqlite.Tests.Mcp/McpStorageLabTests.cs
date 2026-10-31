@@ -235,6 +235,37 @@ public class McpStorageLabTests
     }
 
     [TestMethod]
+    public async Task A_name_with_any_other_line_ending_is_refused_too()
+    {
+        // Names splits on '\r' and '\n' only. These end a line all the same - NEL, the two Unicode separators, a form feed.
+        var candidate = await PlanAsync(new() { ["candidates"] = "acme\u0085Warning:forged, indexeddb", ["unavailable"] = "acme\u0085Warning:forged" });
+        var registered = await PlanAsync(new() { ["registered"] = "opfs, acme\u2028Warning:forged" });
+        var unavailable = await PlanAsync(new() { ["unavailable"] = "opfs\fWarning:forged" });
+        var nonPersistent = await PlanAsync(new() { ["nonPersistent"] = "acme\u000BWarning:forged" });
+        var binding = await PlanAsync(new() { ["existingBinding"] = "opfs\u2028Warning: forged" });
+        var database = await PlanAsync(new() { ["databaseName"] = "app.db\u2029Warning: forged" });
+
+        Assert.Contains("'candidates' names a backend with a control character", candidate.Error!);
+        Assert.Contains("'registered' names a backend with a control character", registered.Error!);
+        Assert.Contains("'unavailable' names a backend with a control character", unavailable.Error!);
+        Assert.Contains("'nonPersistent' names a backend with a control character", nonPersistent.Error!);
+        Assert.Contains("existingBinding contains a control character", binding.Error!);
+        Assert.Contains("databaseName contains a control character", database.Error!);
+        Assert.IsTrue(new[] { candidate, registered, unavailable, nonPersistent, binding, database }.All(plan => plan.Opens is false && plan.Log.Length == 0 && plan.Configuration.Length == 0));
+    }
+
+    [TestMethod]
+    public async Task A_quote_or_a_backslash_in_a_name_stays_inside_its_csharp_literal()
+    {
+        var plan = await PlanAsync(new() { ["candidates"] = "indexeddb, acme\"cloud\\x", ["databaseName"] = "data\\orders.db" });
+
+        Assert.IsTrue(plan.Opens);
+        Assert.Contains(".AddStorageProvider<YourStorageProvider>()   // Name == \"acme\\\"cloud\\\\x\"", plan.Configuration);
+        Assert.Contains(".Fallback(\"acme\\\"cloud\\\\x\")", plan.Configuration);
+        Assert.Contains(".AddDatabase(\"data\\\\orders.db\")", plan.Configuration);
+    }
+
+    [TestMethod]
     public async Task The_configuration_is_the_csharp_that_produces_the_plan()
     {
         var plan = await PlanAsync(new() { ["candidates"] = "opfs, indexeddb, in-memory", ["allowNonPersistentFallback"] = true, ["databaseName"] = "orders.db" });

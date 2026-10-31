@@ -124,11 +124,12 @@ public partial class BsqliteServiceTests
         Assert.Contains("is not a migration mode", numeric.Error!, "A mode is named, as WithMigrationMode is written - not numbered.");
         Assert.Contains("at most", many.Error!);
         Assert.Contains("longer than a provider name", longName.Error!);
-        Assert.IsTrue(new[] { mode, numeric, many, longName }.All(plan => plan.Opens is false && plan.Log.Length == 0));
+        // Nothing is planned from any of them - not even the C# snippet, which for an unknown mode would show KeepExisting.
+        Assert.IsTrue(new[] { mode, numeric, many, longName }.All(plan => plan.Opens is false && plan.Log.Length == 0 && plan.Candidates.Length == 0 && plan.Configuration.Length == 0));
     }
 
     [TestMethod]
-    public async Task An_oversized_list_is_refused_before_any_provider_is_built()
+    public async Task An_oversized_list_is_refused_before_anything_is_planned()
     {
         var names = string.Join(",", Enumerable.Range(0, 1_000).Select(i => $"p{i}"));
         var seventeen = string.Join(",", Enumerable.Range(0, 17).Select(i => $"p{i}"));
@@ -156,6 +157,20 @@ public partial class BsqliteServiceTests
 
         Assert.Contains("No storage provider could open database 'orders.db'", plan.Error!);
         Assert.Contains("AddDatabase(\"orders.db\")", plan.Configuration);
+    }
+
+    [TestMethod]
+    public void A_pasted_file_is_searched_by_its_first_words_only()
+    {
+        // Every term is stemmed again for every entry, so a megabyte-long word would cost gigabytes.
+        var word = BsqliteSearchIndex.Search(new string('Q', 1_000_000), 12);
+        var pasted = BsqliteSearchIndex.Search($"opfs fallback {new string('Q', 1_000_000)}", 12);
+        // A pair straddling the cut is left out whole rather than halved.
+        var pair = BsqliteSearchIndex.Search(new string('Q', 999) + "\U0001F600", 12);
+
+        Assert.AreEqual(1_000, word.Terms!.Single().Length);
+        Assert.IsNotEmpty(pasted.Hits);
+        Assert.AreEqual(999, pair.Terms!.Single().Length);
     }
 
     [TestMethod]
