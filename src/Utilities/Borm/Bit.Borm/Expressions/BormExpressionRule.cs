@@ -53,10 +53,12 @@ public sealed class BormExpressionRule : IBormValidationRule
     /// <inheritdoc />
     public ValueTask<BormRuleResult> ValidateAsync(BormValidationContext context)
     {
-        if (Expression.Test(context.Data) != false)
+        var timeouts = BormRegex.Timeouts;
+        var holds = Expression.Test(context.Data);
+        if (holds == true || (holds is null && BormRegex.Timeouts == timeouts))
             return new(BormRuleResult.Success());
 
-        var message = Message ?? context.Message(BormMessageKeys.Rule);
+        var message = holds is null ? context.Message(BormMessageKeys.PatternTimeout) : Message ?? context.Message(BormMessageKeys.Rule);
         return new(FieldPath is null
             ? BormRuleResult.Fail(message, Severity)
             : BormRuleResult.FailFor(FieldPath, message, Severity));

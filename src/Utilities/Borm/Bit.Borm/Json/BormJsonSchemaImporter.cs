@@ -1,4 +1,6 @@
 ﻿using System.Globalization;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -69,6 +71,10 @@ public static class BormJsonSchemaImporter
 
     /// <summary>How many rounds of union-collapsing and allOf-folding one subschema may take.</summary>
     private const int MaxPreparePasses = 8;
+
+    private const int MaxChoices = 250_000;
+
+    private const int MaxChoiceText = 10_000_000;
 
     /// <summary>
     /// The pattern that stands in for <c>"format": "uuid"</c> as the browser's own <c>pattern</c>
@@ -194,6 +200,10 @@ public static class BormJsonSchemaImporter
         var schema = ctx.Prepare(rawSchema, out var identity, out var recursive);
         if (recursive || schema.ValueKind == JsonValueKind.False) return null;
 
+        if (name.AsSpan().IndexOfAny('.', '[', ']') >= 0)
+            throw new FormatException(
+                $"The property name '{name}' has a '.', '[' or ']' in it, which a field name cannot hold; it is refused rather than built.");
+
         // Anything else that is not an object — `true`, or a malformed value — constrains nothing.
         if (schema.ValueKind != JsonValueKind.Object) schema = ImportContext.EmptySchema;
 
@@ -277,7 +287,7 @@ public static class BormJsonSchemaImporter
         }
 
         // `examples` is JSON Schema's own "values like these", which is what a datalist offers.
-        ReadExamples(schema, field.Suggestions);
+        ReadExamples(ctx, schema, field.Suggestions);
 
         ReadAttributes(schema, "x-attributes", field.Attributes);
         ReadAttributes(schema, "x-inputAttributes", field.InputAttributes);
@@ -287,7 +297,7 @@ public static class BormJsonSchemaImporter
 
         ApplyWidget(field, schema, widget);
         ApplyConstraints(field, schema);
-        var valueKind = ApplyEnum(constChoices, field, schema, type);
+        var valueKind = ApplyEnum(ctx, constChoices, field, schema, type);
         ApplyConditions(field, schema);
         ApplyExpressions(field, schema);
 
@@ -385,7 +395,7 @@ public static class BormJsonSchemaImporter
         {
             var itemSchema = ctx.Prepare(items, out _, out _);
             if (itemSchema.ValueKind == JsonValueKind.Object)
-                valueKind = ReadChoices(ctx.ConstBranches(itemSchema), itemSchema, field.Options, ReadTypeName(itemSchema));
+                valueKind = ReadChoices(ctx, ctx.ConstBranches(itemSchema), itemSchema, field.Options, ReadTypeName(itemSchema));
         }
 
         // A tag list's length limits, pattern and suggestions are about each tag, so a standard
@@ -406,7 +416,7 @@ public static class BormJsonSchemaImporter
                     field.AddValidator(new BormMaxLengthRule(maxLen));
                 }
                 if (field.Pattern is null) ApplyPatterns(field, itemSchema);
-                ReadExamples(itemSchema, field.Suggestions);
+                ReadExamples(ctx, itemSchema, field.Suggestions);
             }
         }
 
@@ -537,9 +547,14 @@ public static class BormJsonSchemaImporter
     /// field each one is itself a list — its members are what a tag box should propose, not the text
     /// of the list object.
     /// </summary>
-    private static void ReadExamples(JsonElement schema, IList<string> into)
+    private static void ReadExamples(ImportContext ctx, JsonElement schema, IList<string> into)
     {
         if (!TryGet(schema, "examples", out var examples) || examples.ValueKind != JsonValueKind.Array) return;
+        var members = 0;
+        foreach (var example in examples.EnumerateArray())
+            members += example.ValueKind == JsonValueKind.Array ? example.GetArrayLength() : 1;
+        ctx.ChargeChoices(examples, members);
+        var seen = new HashSet<string>(into, StringComparer.Ordinal);
 
         foreach (var example in examples.EnumerateArray())
         {
@@ -556,7 +571,7 @@ public static class BormJsonSchemaImporter
         void Add(JsonElement value)
         {
             if (value.ValueKind is JsonValueKind.Object or JsonValueKind.Array) return;
-            if (OptionValue(value) is { } text && !into.Contains(text)) into.Add(text);
+            if (OptionValue(value) is { } text && seen.Add(text)) into.Add(text);
         }
     }
 
@@ -647,7 +662,7 @@ public static class BormJsonSchemaImporter
     /// Returns the JSON type the values share — <c>integer</c>, <c>number</c> or <c>boolean</c> — so the
     /// chosen answer can be stored as that type rather than as its text.
     /// </summary>
-    private static string? ApplyEnum(
+    private static string? ApplyEnum(ImportContext ctx,
         IReadOnlyList<ConstChoice>? constChoices, BormFieldDefinition field, JsonElement schema, string? declaredType)
     {
         // `const` is a one-value enum: the field is fixed, so it is shown read-only with that value.
@@ -663,7 +678,7 @@ public static class BormJsonSchemaImporter
             && !TryGet(schema, "enum", out _) && !TryGet(schema, "x-enum", out _))
             return null;
 
-        var kind = ReadChoices(constChoices, schema, field.Options, declaredType);
+        var kind = ReadChoices(ctx, constChoices, schema, field.Options, declaredType);
         if (field.Options.Count > 0 && !field.IsChoice) field.Type = BormFieldType.Select;
         return kind;
     }
@@ -678,7 +693,7 @@ public static class BormJsonSchemaImporter
     /// declares, so it is returned all the same: otherwise an integer select exported, imported and
     /// exported again came back as a string one.
     /// </remarks>
-    private static string? ReadChoices(
+    private static string? ReadChoices(ImportContext ctx,
         IReadOnlyList<ConstChoice>? constChoices, JsonElement schema, IList<BormSelectOption> into, string? declaredType)
     {
         // `oneOf` of `const` values is the standard way to give an enum member a display label, since
@@ -689,6 +704,7 @@ public static class BormJsonSchemaImporter
             {
                 // A null member is the "no answer" every optional select already offers.
                 if (OptionValue(choice.Value) is not { } value) continue;
+                ctx.ChargeChoices(1, value.Length + (choice.Title?.Length ?? 0));
                 into.Add(new BormSelectOption(value, choice.Title ?? value));
             }
             return ValueKind(constChoices.Select(c => c.Value), declaredType);
@@ -699,6 +715,11 @@ public static class BormJsonSchemaImporter
             : default;
         if (values.ValueKind != JsonValueKind.Array)
             return declaredType is "integer" or "number" or "boolean" ? declaredType : null;
+
+        ctx.ChargeChoices(values, values.GetArrayLength());
+        if (TryGet(schema, "enumNames", out var listedNames)) ctx.ChargeChoices(listedNames, 0);
+        if (TryGet(schema, "x-enumGroups", out var listedGroups)) ctx.ChargeChoices(listedGroups, 0);
+        if (TryGet(schema, "x-enumDisabled", out var listedDisabled)) ctx.ChargeChoices(listedDisabled, 0);
 
         var names = ReadStringArray(schema, "enumNames");
         var groups = ReadStringArray(schema, "x-enumGroups");
@@ -1224,6 +1245,8 @@ public static class BormJsonSchemaImporter
 
         private readonly JsonElement _root = root;
 
+        private PointerNode? _pointers;
+
         /// <summary>
         /// How many times each definition appears on the path from the document root down to the field
         /// being built. One more than <see cref="MaxRecursion"/> is a cycle.
@@ -1240,6 +1263,8 @@ public static class BormJsonSchemaImporter
         private int _depth;
         private int _mergeSteps;
         private int _allOfDepth;
+        private long _choices;
+        private long _choiceText;
 
         /// <summary>Set when an <c>allOf</c> branch had to be dropped because it names a definition seen too often.</summary>
         private bool _recursionHit;
@@ -1331,6 +1356,21 @@ public static class BormJsonSchemaImporter
             if (++_mergeSteps > MaxMergeSteps)
                 throw new FormatException(
                     $"The schema needs more than {MaxMergeSteps} allOf and $ref merges; it is refused rather than built.");
+        }
+
+        public void ChargeChoices(JsonElement list, int count)
+        {
+            if (list.ValueKind == JsonValueKind.Array)
+                ChargeChoices(count, Encoding.UTF8.GetCharCount(JsonMarshal.GetRawUtf8Value(list)));
+        }
+
+        public void ChargeChoices(int count, long text)
+        {
+            _choices += count;
+            _choiceText += text;
+            if (_choices > MaxChoices || _choiceText > MaxChoiceText)
+                throw new FormatException(
+                    $"The schema's choices and suggestions come to more than {MaxChoices} values or {MaxChoiceText} characters across its fields; it is refused rather than built.");
         }
 
         /// <summary>Follows a chain of local <c>$ref</c>s to the schema they ultimately name.</summary>
@@ -2001,7 +2041,11 @@ public static class BormJsonSchemaImporter
 
                 // The branch's own keywords win over the definition it refers to, as they do anywhere.
                 if (TryGet(raw, "const", out var value) || TryGet(target, "const", out value))
-                    (choices ??= []).Add(new ConstChoice(value, ReadString(raw, "title") ?? ReadString(target, "title")));
+                {
+                    var title = ReadString(raw, "title") ?? ReadString(target, "title");
+                    ChargeChoices(1, title?.Length ?? 0);
+                    (choices ??= []).Add(new ConstChoice(value, title));
+                }
                 else
                     return null;
             }
@@ -2435,29 +2479,48 @@ public static class BormJsonSchemaImporter
             var fragment = Uri.UnescapeDataString(pointer[1..]);
             var segments = fragment.Split('/', StringSplitOptions.RemoveEmptyEntries);
 
-            var current = _root;
+            var current = _pointers ??= new PointerNode(_root);
             foreach (var rawSegment in segments)
             {
                 var segment = rawSegment.Replace("~1", "/", StringComparison.Ordinal).Replace("~0", "~", StringComparison.Ordinal);
-                if (current.ValueKind == JsonValueKind.Object && current.TryGetProperty(segment, out var next))
-                {
-                    current = next;
-                }
-                else if (current.ValueKind == JsonValueKind.Array
-                         && int.TryParse(segment, NumberStyles.Integer, CultureInfo.InvariantCulture, out var index)
-                         && index >= 0 && index < current.GetArrayLength())
-                {
-                    current = current[index];
-                }
-                else
-                {
-                    return false;
-                }
+                if (current.Child(segment) is not { } next) return false;
+                current = next;
             }
 
-            target = current;
+            target = current.Element;
             key = "#" + string.Concat(segments.Select(s => "/" + s));
             return true;
+        }
+
+        private sealed class PointerNode(JsonElement element)
+        {
+            private Dictionary<string, PointerNode>? _members;
+            private PointerNode[]? _items;
+
+            public JsonElement Element { get; } = element;
+
+            public PointerNode? Child(string segment)
+            {
+                if (Element.ValueKind == JsonValueKind.Object)
+                {
+                    if (_members is null)
+                    {
+                        _members = new(StringComparer.Ordinal);
+                        foreach (var member in Element.EnumerateObject()) _members[member.Name] = new(member.Value);
+                    }
+                    return _members.GetValueOrDefault(segment);
+                }
+
+                if (Element.ValueKind == JsonValueKind.Array
+                    && int.TryParse(segment, NumberStyles.Integer, CultureInfo.InvariantCulture, out var index)
+                    && index >= 0 && index < Element.GetArrayLength())
+                {
+                    _items ??= [.. Element.EnumerateArray().Select(item => new PointerNode(item))];
+                    return _items[index];
+                }
+
+                return null;
+            }
         }
     }
 }
