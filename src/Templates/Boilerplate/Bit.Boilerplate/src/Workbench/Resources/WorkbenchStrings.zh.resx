@@ -643,7 +643,7 @@
         <value>建筑</value>
     </data>
     <data name="BuildingsDescription" xml:space="preserve">
-        <value>A data grid and a map that stay in sync. Double-click the map to add a building, select one and press Delete to remove it. Advanced map features are in too, like limiting where points can be picked.</value>
+        <value>数据表格与地图保持同步。双击地图即可添加建筑，选中一座后按 Delete 键即可删除。还包含高级地图功能，例如限制可选取点的范围。</value>
     </data>
     <data name="BuildingsHeading" xml:space="preserve">
         <value>地标建筑</value>
@@ -868,7 +868,7 @@
         <value>真实组件，而非效果图</value>
     </data>
     <data name="HomeWhyRealText" xml:space="preserve">
-        <value>Pages use the same bit BlazorUI components, theme and styles as your app, so what you approve here looks the same once it is built into the app.</value>
+        <value>页面使用与您的应用相同的 bit BlazorUI 组件、主题和样式，因此您在这里确认的设计，集成到应用后看起来也完全一样。</value>
     </data>
     <data name="HomeWhyStatesTitle" xml:space="preserve">
         <value>任意状态，随时可见</value>
@@ -886,13 +886,13 @@
         <value>为应用商店准备截图</value>
     </data>
     <data name="HomeWhyStoresText" xml:space="preserve">
-        <value>Export pixel-exact images at App Store, Google Play and Microsoft Store sizes, with a colored background and a caption when you want one, rendered by a real browser.</value>
+        <value>按 App Store、Google Play 和 Microsoft Store 的尺寸导出像素级精确的图片，可按需添加彩色背景和说明文字，并由真实浏览器渲染。</value>
     </data>
     <data name="HomeWhyHeadStartTitle" xml:space="preserve">
         <value>bitplatform 助您快人一步</value>
     </data>
     <data name="HomeWhyHeadStartText" xml:space="preserve">
-        <value>It starts with ready-made pages, like a point-of-sale dashboard, a shift planner and your app's own settings page. Reuse what fits, learn from the rest, then add your own pages next to them.</value>
+        <value>工作台自带现成的页面，例如 POS 仪表板、排班表和您应用自己的设置页面。合适的直接复用，其余的用来借鉴，然后在旁边添加您自己的页面。</value>
     </data>
     <data name="HomeWhySafeTitle" xml:space="preserve">
         <value>放心尝试</value>
@@ -925,7 +925,7 @@
         <value>移入应用</value>
     </data>
     <data name="HomeHowStep3Text" xml:space="preserve">
-        <value>Rebuild the approved design in your app the way the rest of the app is built, and connect it to real data. Your AI agent follows the same steps.</value>
+        <value>按照应用其余部分的构建方式，在应用中重建已确认的设计，并接入真实数据。您的 AI 智能体也会遵循同样的步骤。</value>
     </data>
     <data name="HomePagesTitle" xml:space="preserve">
         <value>此工作台中的页面</value>
@@ -949,7 +949,7 @@
         <value>背景</value>
     </data>
     <data name="BackdropHint" xml:space="preserve">
-        <value>Puts the page in a device on a colored background with a caption, the way store listings show it.</value>
+        <value>将页面置于设备外框中，配上彩色背景和说明文字，呈现方式与应用商店详情页一致。</value>
     </data>
     <data name="BackdropBrand" xml:space="preserve">
         <value>应用主色</value>
@@ -1132,564 +1132,564 @@
         <value>纸杯</value>
     </data>
     <data name="LoadFailed" xml:space="preserve">
-        <value>Couldn't load this. Try again in a moment.</value>
+        <value>无法加载。请稍后重试。</value>
     </data>
     <data name="CategoryAppPages" xml:space="preserve">
-        <value>Your app's pages</value>
+        <value>您应用的页面</value>
     </data>
     <data name="AppDashboardTitle" xml:space="preserve">
-        <value>Dashboard</value>
+        <value>仪表板</value>
     </data>
     <data name="AppDashboardDescription" xml:space="preserve">
-        <value>The app's own admin dashboard, brought in with demo data, so its states and screenshots are a click away.</value>
+        <value>应用自带的管理仪表板，配上演示数据引入工作台，一键即可查看其各种状态并截图。</value>
     </data>
     <data name="AppDashboardCaption" xml:space="preserve">
-        <value>Your numbers at a glance</value>
+        <value>关键数据，一目了然</value>
     </data>
     <data name="SettingsTitle" xml:space="preserve">
-        <value>Settings</value>
+        <value>设置</value>
     </data>
     <data name="SettingsDescription" xml:space="preserve">
-        <value>The app's own settings page with profile, account, two-step sign-in, sessions and privacy, running on demo data instead of the server.</value>
+        <value>应用自带的设置页面，包含个人资料、账户、两步验证、会话和隐私，使用演示数据运行，而不连接服务器。</value>
     </data>
     <data name="SettingsCaption" xml:space="preserve">
-        <value>Your account, your way</value>
+        <value>您的账户，由您做主</value>
     </data>
     <data name="CalendarViewDay" xml:space="preserve">
-        <value>Day</value>
+        <value>日</value>
     </data>
     <data name="CalendarViewWeek" xml:space="preserve">
-        <value>Week</value>
+        <value>周</value>
     </data>
     <data name="CalendarViewMonth" xml:space="preserve">
-        <value>Month</value>
+        <value>月</value>
     </data>
     <data name="CalendarViewYear" xml:space="preserve">
-        <value>Year</value>
+        <value>年</value>
     </data>
     <data name="CalendarViewAgenda" xml:space="preserve">
-        <value>Agenda</value>
+        <value>列表</value>
     </data>
     <data name="CalendarModeEvent" xml:space="preserve">
-        <value>Events</value>
+        <value>日程</value>
     </data>
     <data name="CalendarModeTimeline" xml:space="preserve">
-        <value>Timeline</value>
+        <value>时间线</value>
     </data>
     <data name="CalendarViewTabsAriaLabel" xml:space="preserve">
-        <value>Views</value>
+        <value>视图</value>
     </data>
     <data name="CalendarModeTabsAriaLabel" xml:space="preserve">
-        <value>Modes</value>
+        <value>模式</value>
     </data>
     <data name="CalendarTodayButton" xml:space="preserve">
-        <value>Today</value>
+        <value>今天</value>
     </data>
     <data name="CalendarAddEventButton" xml:space="preserve">
-        <value>Add Event</value>
+        <value>添加日程</value>
     </data>
     <data name="CalendarAddEventHoverHint" xml:space="preserve">
-        <value>Add event</value>
+        <value>添加日程</value>
     </data>
     <data name="CalendarPreviousButtonTitle" xml:space="preserve">
-        <value>Previous</value>
+        <value>上一个</value>
     </data>
     <data name="CalendarNextButtonTitle" xml:space="preserve">
-        <value>Next</value>
+        <value>下一个</value>
     </data>
     <data name="CalendarPreviousMonthAriaLabel" xml:space="preserve">
-        <value>Previous month</value>
+        <value>上个月</value>
     </data>
     <data name="CalendarNextMonthAriaLabel" xml:space="preserve">
-        <value>Next month</value>
+        <value>下个月</value>
     </data>
     <data name="CalendarPickerHourAriaLabel" xml:space="preserve">
-        <value>Hour</value>
+        <value>小时</value>
     </data>
     <data name="CalendarPickerMinuteAriaLabel" xml:space="preserve">
-        <value>Minute</value>
+        <value>分钟</value>
     </data>
     <data name="CalendarPickerMeridiemAriaLabel" xml:space="preserve">
-        <value>AM/PM</value>
+        <value>上午/下午</value>
     </data>
     <data name="CalendarPickerSelectedDayAriaLabel" xml:space="preserve">
-        <value>selected</value>
+        <value>已选中</value>
     </data>
     <data name="CalendarSettingsButtonTitle" xml:space="preserve">
-        <value>Settings</value>
+        <value>设置</value>
     </data>
     <data name="CalendarFilterByColorAriaLabel" xml:space="preserve">
-        <value>Filter events by color</value>
+        <value>按颜色筛选日程</value>
     </data>
     <data name="CalendarFilterByPersonAriaLabel" xml:space="preserve">
-        <value>Filter events by person in current view</value>
+        <value>按人员筛选当前视图中的日程</value>
     </data>
     <data name="CalendarAllColorsOption" xml:space="preserve">
-        <value>All colors</value>
+        <value>所有颜色</value>
     </data>
     <data name="CalendarAllPeopleOption" xml:space="preserve">
-        <value>All people</value>
+        <value>所有人</value>
     </data>
     <data name="CalendarUnnamedAttendee" xml:space="preserve">
-        <value>(Unnamed)</value>
+        <value>（未命名）</value>
     </data>
     <data name="CalendarCalendarSettingsLabel" xml:space="preserve">
-        <value>Calendar settings</value>
+        <value>日历设置</value>
     </data>
     <data name="CalendarDotBadgeLabel" xml:space="preserve">
-        <value>Dot badge</value>
+        <value>圆点标记</value>
     </data>
     <data name="CalendarTwentyFourHourFormatLabel" xml:space="preserve">
-        <value>24-hour format</value>
+        <value>24 小时制</value>
     </data>
     <data name="CalendarDayStartsAtLabel" xml:space="preserve">
-        <value>Day starts at</value>
+        <value>每日起始时间</value>
     </data>
     <data name="CalendarHourSuffix" xml:space="preserve">
-        <value>h</value>
+        <value>时</value>
     </data>
     <data name="CalendarAgendaGroupByLabel" xml:space="preserve">
-        <value>Agenda group by</value>
+        <value>列表分组方式</value>
     </data>
     <data name="CalendarAgendaGroupByDate" xml:space="preserve">
-        <value>Date</value>
+        <value>日期</value>
     </data>
     <data name="CalendarAgendaGroupByColor" xml:space="preserve">
-        <value>Color</value>
+        <value>颜色</value>
     </data>
     <data name="CalendarStackedEventsLabel" xml:space="preserve">
-        <value>Stack overlapping events</value>
+        <value>堆叠显示重叠日程</value>
     </data>
     <data name="CalendarShowDayViewCalendarLabel" xml:space="preserve">
-        <value>Show calendar in day view</value>
+        <value>在日视图中显示日历</value>
     </data>
     <data name="CalendarShowWeekNumbersLabel" xml:space="preserve">
-        <value>Show week numbers</value>
+        <value>显示周数</value>
     </data>
     <data name="CalendarShowCurrentTimeIndicatorLabel" xml:space="preserve">
-        <value>Show current time</value>
+        <value>显示当前时间</value>
     </data>
     <data name="CalendarSlotDurationLabel" xml:space="preserve">
-        <value>Slot duration</value>
+        <value>时间刻度</value>
     </data>
     <data name="CalendarMinuteSuffix" xml:space="preserve">
-        <value>min</value>
+        <value>分钟</value>
     </data>
     <data name="CalendarWeekMobileWarning" xml:space="preserve">
-        <value>Weekly view is not recommended on smaller devices. Please switch to a desktop device or use the daily view instead.</value>
+        <value>不建议在较小的设备上使用周视图。请改用台式机，或切换到日视图。</value>
     </data>
     <data name="CalendarHappeningNowTitle" xml:space="preserve">
-        <value>Happening now</value>
+        <value>正在进行</value>
     </data>
     <data name="CalendarNoAppointmentsNow" xml:space="preserve">
-        <value>No appointments at the moment</value>
+        <value>目前没有日程</value>
     </data>
     <data name="CalendarSearchEventsPlaceholder" xml:space="preserve">
-        <value>Search events...</value>
+        <value>搜索日程...</value>
     </data>
     <data name="CalendarNoEventsFound" xml:space="preserve">
-        <value>No events found.</value>
+        <value>未找到日程。</value>
     </data>
     <data name="CalendarEventListTitleFormat" xml:space="preserve">
-        <value>Events on {0}</value>
+        <value>{0}的日程</value>
     </data>
     <data name="CalendarEventListCountFormat" xml:space="preserve">
-        <value>{0} event(s)</value>
+        <value>{0} 个日程</value>
     </data>
     <data name="CalendarMoreEventsFormat" xml:space="preserve">
-        <value>+{0} more</value>
+        <value>还有 {0} 个</value>
     </data>
     <data name="CalendarAddEventDialogTitle" xml:space="preserve">
-        <value>Add New Event</value>
+        <value>新建日程</value>
     </data>
     <data name="CalendarEditEventDialogTitle" xml:space="preserve">
-        <value>Edit Event</value>
+        <value>编辑日程</value>
     </data>
     <data name="CalendarAddEventDialogSubtitle" xml:space="preserve">
-        <value>Create a new event for your calendar.</value>
+        <value>在您的日历中创建新日程。</value>
     </data>
     <data name="CalendarEditEventDialogSubtitle" xml:space="preserve">
-        <value>Modify your existing event.</value>
+        <value>修改您现有的日程。</value>
     </data>
     <data name="CalendarCloseAriaLabel" xml:space="preserve">
-        <value>Close</value>
+        <value>关闭</value>
     </data>
     <data name="CalendarCloseButton" xml:space="preserve">
-        <value>Close</value>
+        <value>关闭</value>
     </data>
     <data name="CalendarCancelButton" xml:space="preserve">
-        <value>Cancel</value>
+        <value>取消</value>
     </data>
     <data name="CalendarEditButton" xml:space="preserve">
-        <value>Edit</value>
+        <value>编辑</value>
     </data>
     <data name="CalendarDeleteButton" xml:space="preserve">
-        <value>Delete</value>
+        <value>删除</value>
     </data>
     <data name="CalendarCreateEventButton" xml:space="preserve">
-        <value>Create Event</value>
+        <value>创建日程</value>
     </data>
     <data name="CalendarSaveChangesButton" xml:space="preserve">
-        <value>Save Changes</value>
+        <value>保存更改</value>
     </data>
     <data name="CalendarTitleLabel" xml:space="preserve">
-        <value>Title</value>
+        <value>标题</value>
     </data>
     <data name="CalendarEventTitlePlaceholder" xml:space="preserve">
-        <value>Event title</value>
+        <value>日程标题</value>
     </data>
     <data name="CalendarStartDateTimeLabel" xml:space="preserve">
-        <value>Start Date &amp; Time</value>
+        <value>开始日期和时间</value>
     </data>
     <data name="CalendarEndDateTimeLabel" xml:space="preserve">
-        <value>End Date &amp; Time</value>
+        <value>结束日期和时间</value>
     </data>
     <data name="CalendarColorLabel" xml:space="preserve">
-        <value>Color</value>
+        <value>颜色</value>
     </data>
     <data name="CalendarEventColorAriaLabel" xml:space="preserve">
-        <value>Event color</value>
+        <value>日程颜色</value>
     </data>
     <data name="CalendarDescriptionLabel" xml:space="preserve">
-        <value>Description</value>
+        <value>描述</value>
     </data>
     <data name="CalendarEventDescriptionPlaceholder" xml:space="preserve">
-        <value>Event description</value>
+        <value>日程描述</value>
     </data>
     <data name="CalendarAttendeesLabel" xml:space="preserve">
-        <value>Attendees</value>
+        <value>参与者</value>
     </data>
     <data name="CalendarNoAttendeesText" xml:space="preserve">
-        <value>No attendees</value>
+        <value>无参与者</value>
     </data>
     <data name="CalendarFirstNamePlaceholder" xml:space="preserve">
-        <value>First name</value>
+        <value>名字</value>
     </data>
     <data name="CalendarLastNamePlaceholder" xml:space="preserve">
-        <value>Last name</value>
+        <value>姓氏</value>
     </data>
     <data name="CalendarIdOptionalPlaceholder" xml:space="preserve">
-        <value>ID (optional)</value>
+        <value>ID（可选）</value>
     </data>
     <data name="CalendarAddButton" xml:space="preserve">
-        <value>Add</value>
+        <value>添加</value>
     </data>
     <data name="CalendarRemoveAttendeeAriaLabel" xml:space="preserve">
-        <value>Remove attendee</value>
+        <value>移除参与者</value>
     </data>
     <data name="CalendarStartDateLabel" xml:space="preserve">
-        <value>Start Date</value>
+        <value>开始日期</value>
     </data>
     <data name="CalendarEndDateLabel" xml:space="preserve">
-        <value>End Date</value>
+        <value>结束日期</value>
     </data>
     <data name="CalendarAtWord" xml:space="preserve">
-        <value>at</value>
+        <value>·</value>
     </data>
     <data name="CalendarAllDayLabel" xml:space="preserve">
-        <value>All day</value>
+        <value>全天</value>
     </data>
     <data name="CalendarWeekNumberFormat" xml:space="preserve">
-        <value>W{0}</value>
+        <value>{0}周</value>
     </data>
     <data name="CalendarWeekNumberAriaLabelFormat" xml:space="preserve">
-        <value>Week {0}</value>
+        <value>第 {0} 周</value>
     </data>
     <data name="CalendarEventOverlapMessage" xml:space="preserve">
-        <value>This time range is already taken on that resource.</value>
+        <value>该资源在此时间段已被占用。</value>
     </data>
     <data name="CalendarOutOfRangeMessage" xml:space="preserve">
-        <value>That date is outside the allowed range.</value>
+        <value>该日期超出允许的范围。</value>
     </data>
     <data name="CalendarOutsideBusinessHoursMessage" xml:space="preserve">
-        <value>That time is outside business hours.</value>
+        <value>该时间不在工作时间内。</value>
     </data>
     <data name="CalendarBlockedMessage" xml:space="preserve">
-        <value>That time is unavailable.</value>
+        <value>该时间不可用。</value>
     </data>
     <data name="CalendarHighlightBusinessHoursLabel" xml:space="preserve">
-        <value>Highlight business hours</value>
+        <value>突出显示工作时间</value>
     </data>
     <data name="CalendarNavLinkDayAriaLabelFormat" xml:space="preserve">
-        <value>Go to {0}</value>
+        <value>转到 {0}</value>
     </data>
     <data name="CalendarNavLinkWeekAriaLabelFormat" xml:space="preserve">
-        <value>Go to week {0}</value>
+        <value>转到第 {0} 周</value>
     </data>
     <data name="CalendarValidationTitleRequired" xml:space="preserve">
-        <value>Title is required</value>
+        <value>标题为必填项</value>
     </data>
     <data name="CalendarValidationDescriptionRequired" xml:space="preserve">
-        <value>Description is required</value>
+        <value>描述为必填项</value>
     </data>
     <data name="CalendarValidationEndAfterStart" xml:space="preserve">
-        <value>End date must be after start date</value>
+        <value>结束日期必须晚于开始日期</value>
     </data>
     <data name="CalendarValidationAttendeeNameRequired" xml:space="preserve">
-        <value>First name or last name is required</value>
+        <value>名字或姓氏至少填写一项</value>
     </data>
     <data name="CalendarResizePreviewAriaLabel" xml:space="preserve">
-        <value>New time range</value>
+        <value>新的时间段</value>
     </data>
     <data name="CalendarRepeatsLabel" xml:space="preserve">
-        <value>Repeats</value>
+        <value>重复</value>
     </data>
     <data name="CalendarRepeatsDaily" xml:space="preserve">
-        <value>Daily</value>
+        <value>每天</value>
     </data>
     <data name="CalendarRepeatsWeekly" xml:space="preserve">
-        <value>Weekly</value>
+        <value>每周</value>
     </data>
     <data name="CalendarRepeatsMonthly" xml:space="preserve">
-        <value>Monthly</value>
+        <value>每月</value>
     </data>
     <data name="CalendarRepeatsYearly" xml:space="preserve">
-        <value>Yearly</value>
+        <value>每年</value>
     </data>
     <data name="CalendarRepeatsIntervalFormat" xml:space="preserve">
-        <value>every {0}</value>
+        <value>间隔 {0}</value>
     </data>
     <data name="CalendarRepeatsCountFormat" xml:space="preserve">
-        <value>{0} times</value>
+        <value>共 {0} 次</value>
     </data>
     <data name="CalendarRepeatsUntilFormat" xml:space="preserve">
-        <value>until {0}</value>
+        <value>直到 {0}</value>
     </data>
     <data name="CalendarRepeatsOnDaysFormat" xml:space="preserve">
-        <value>on {0}</value>
+        <value>{0}</value>
     </data>
     <data name="CalendarRepeatsOnWeekOfMonthFormat" xml:space="preserve">
-        <value>on the {0} {1}</value>
+        <value>{0}{1}</value>
     </data>
     <data name="CalendarListSeparator" xml:space="preserve">
-        <value>, </value>
+        <value>、</value>
     </data>
     <data name="CalendarWeekOfMonthFirst" xml:space="preserve">
-        <value>first</value>
+        <value>第一个</value>
     </data>
     <data name="CalendarWeekOfMonthSecond" xml:space="preserve">
-        <value>second</value>
+        <value>第二个</value>
     </data>
     <data name="CalendarWeekOfMonthThird" xml:space="preserve">
-        <value>third</value>
+        <value>第三个</value>
     </data>
     <data name="CalendarWeekOfMonthFourth" xml:space="preserve">
-        <value>fourth</value>
+        <value>第四个</value>
     </data>
     <data name="CalendarWeekOfMonthLast" xml:space="preserve">
-        <value>last</value>
+        <value>最后一个</value>
     </data>
     <data name="CalendarRepeatLabel" xml:space="preserve">
-        <value>Repeat</value>
+        <value>重复</value>
     </data>
     <data name="CalendarDoesNotRepeatOption" xml:space="preserve">
-        <value>Does not repeat</value>
+        <value>不重复</value>
     </data>
     <data name="CalendarRepeatEveryLabel" xml:space="preserve">
-        <value>Repeat every</value>
+        <value>重复间隔</value>
     </data>
     <data name="CalendarRepeatDaysUnit" xml:space="preserve">
-        <value>day(s)</value>
+        <value>天</value>
     </data>
     <data name="CalendarRepeatWeeksUnit" xml:space="preserve">
-        <value>week(s)</value>
+        <value>周</value>
     </data>
     <data name="CalendarRepeatMonthsUnit" xml:space="preserve">
-        <value>month(s)</value>
+        <value>个月</value>
     </data>
     <data name="CalendarRepeatYearsUnit" xml:space="preserve">
-        <value>year(s)</value>
+        <value>年</value>
     </data>
     <data name="CalendarRepeatOnLabel" xml:space="preserve">
-        <value>Repeat on</value>
+        <value>重复于</value>
     </data>
     <data name="CalendarRepeatOnDayOfMonthFormat" xml:space="preserve">
-        <value>Day {0}</value>
+        <value>每月 {0} 日</value>
     </data>
     <data name="CalendarRepeatOnWeekOfMonthFormat" xml:space="preserve">
-        <value>The {0}</value>
+        <value>{0}</value>
     </data>
     <data name="CalendarEndsLabel" xml:space="preserve">
-        <value>Ends</value>
+        <value>结束</value>
     </data>
     <data name="CalendarEndsNeverOption" xml:space="preserve">
-        <value>Never</value>
+        <value>从不</value>
     </data>
     <data name="CalendarEndsOnDateOption" xml:space="preserve">
-        <value>On date</value>
+        <value>于指定日期</value>
     </data>
     <data name="CalendarEndsAfterOption" xml:space="preserve">
-        <value>After</value>
+        <value>按次数</value>
     </data>
     <data name="CalendarOccurrencesLabel" xml:space="preserve">
-        <value>occurrence(s)</value>
+        <value>次</value>
     </data>
     <data name="CalendarRepeatExceptionsLabel" xml:space="preserve">
-        <value>Exceptions</value>
+        <value>例外</value>
     </data>
     <data name="CalendarSkipDateButton" xml:space="preserve">
-        <value>Skip date</value>
+        <value>跳过日期</value>
     </data>
     <data name="CalendarAddDateButton" xml:space="preserve">
-        <value>Add date</value>
+        <value>添加日期</value>
     </data>
     <data name="CalendarSkippedDatesLabel" xml:space="preserve">
-        <value>Skipped</value>
+        <value>已跳过</value>
     </data>
     <data name="CalendarAddedDatesLabel" xml:space="preserve">
-        <value>Added</value>
+        <value>已添加</value>
     </data>
     <data name="CalendarRemoveDateAriaLabel" xml:space="preserve">
-        <value>Remove date</value>
+        <value>移除日期</value>
     </data>
     <data name="CalendarValidationRepeatAtLeastOne" xml:space="preserve">
-        <value>Must be at least 1</value>
+        <value>至少为 1</value>
     </data>
     <data name="CalendarValidationUntilBeforeStart" xml:space="preserve">
-        <value>The series cannot end before it starts</value>
+        <value>系列不能在开始之前结束</value>
     </data>
     <data name="CalendarRecurringEditTitle" xml:space="preserve">
-        <value>Edit recurring event</value>
+        <value>编辑重复日程</value>
     </data>
     <data name="CalendarRecurringDeleteTitle" xml:space="preserve">
-        <value>Delete recurring event</value>
+        <value>删除重复日程</value>
     </data>
     <data name="CalendarThisOccurrenceOption" xml:space="preserve">
-        <value>This event</value>
+        <value>此日程</value>
     </data>
     <data name="CalendarAllOccurrencesOption" xml:space="preserve">
-        <value>All events in the series</value>
+        <value>该系列中的所有日程</value>
     </data>
     <data name="CalendarOkButton" xml:space="preserve">
-        <value>OK</value>
+        <value>确定</value>
     </data>
     <data name="CalendarResourceLabel" xml:space="preserve">
-        <value>Resource</value>
+        <value>资源</value>
     </data>
     <data name="CalendarResourceColumnHeader" xml:space="preserve">
-        <value>Resource</value>
+        <value>资源</value>
     </data>
     <data name="CalendarNoResourceLabel" xml:space="preserve">
-        <value>Unassigned</value>
+        <value>未分配</value>
     </data>
     <data name="CalendarNoResourceOption" xml:space="preserve">
-        <value>(none)</value>
+        <value>（无）</value>
     </data>
     <data name="CalendarNoResourcesMessage" xml:space="preserve">
-        <value>No resources to display.</value>
+        <value>没有可显示的资源。</value>
     </data>
     <data name="PosStaffNoah" xml:space="preserve">
-        <value>Noah Smit</value>
+        <value>诺亚·斯米特</value>
     </data>
     <data name="PosStaffJulia" xml:space="preserve">
-        <value>Julia Mulder</value>
+        <value>尤利娅·穆尔德</value>
     </data>
     <data name="CategoryPlanning" xml:space="preserve">
-        <value>Planning</value>
+        <value>规划</value>
     </data>
     <data name="ShiftsTitle" xml:space="preserve">
-        <value>Shift planner</value>
+        <value>排班表</value>
     </data>
     <data name="ShiftsDescription" xml:space="preserve">
-        <value>The week's staff schedule for a café: move and resize shifts per person, within opening hours, around time off and without double-booking.</value>
+        <value>一家咖啡馆的每周员工排班：可按人员移动班次、调整时长，限定在营业时间内，避开休假，也不会重复排班。</value>
     </data>
     <data name="ShiftsCaption" xml:space="preserve">
-        <value>Plan the whole week in minutes</value>
+        <value>几分钟排好一整周</value>
     </data>
     <data name="ShiftsHeading" xml:space="preserve">
-        <value>Staff schedule</value>
+        <value>员工排班</value>
     </data>
     <data name="ShiftsSummary" xml:space="preserve">
-        <value>{0} shifts and {1} hours this week</value>
+        <value>本周 {0} 个班次，共 {1} 小时</value>
     </data>
     <data name="ShiftsEmpty" xml:space="preserve">
-        <value>No shifts are planned yet. Select a time on someone's row to add the first one.</value>
+        <value>尚未安排任何班次。在某位员工所在的行中选择一个时间，即可添加第一个班次。</value>
     </data>
     <data name="ShiftsRoleLead" xml:space="preserve">
-        <value>Shift lead</value>
+        <value>值班主管</value>
     </data>
     <data name="ShiftsRoleBarista" xml:space="preserve">
-        <value>Barista</value>
+        <value>咖啡师</value>
     </data>
     <data name="ShiftsRoleBaker" xml:space="preserve">
-        <value>Baker</value>
+        <value>烘焙师</value>
     </data>
     <data name="ShiftsRoleCashier" xml:space="preserve">
-        <value>Cashier</value>
+        <value>收银员</value>
     </data>
     <data name="ShiftsOpening" xml:space="preserve">
-        <value>Opening</value>
+        <value>开店班</value>
     </data>
     <data name="ShiftsMidday" xml:space="preserve">
-        <value>Midday</value>
+        <value>午间班</value>
     </data>
     <data name="ShiftsBakery" xml:space="preserve">
-        <value>Bakery</value>
+        <value>烘焙班</value>
     </data>
     <data name="ShiftsClosing" xml:space="preserve">
-        <value>Closing</value>
+        <value>打烊班</value>
     </data>
     <data name="ShiftsStocktake" xml:space="preserve">
-        <value>Stocktake, café closed</value>
+        <value>盘点，咖啡馆暂停营业</value>
     </data>
     <data name="ShiftsTimeOff" xml:space="preserve">
-        <value>Time off</value>
+        <value>休假</value>
     </data>
     <data name="HomeBuiltWithSubtitle" xml:space="preserve">
-        <value>The same open-source libraries your app is built on, each with live docs your AI agent can read too.</value>
+        <value>与您的应用所基于的开源库完全相同，每个库都配有在线文档，您的 AI 智能体也能阅读。</value>
     </data>
     <data name="HomeProductBlazorUI" xml:space="preserve">
-        <value>Native Blazor components with theming, right-to-left and accessibility built in.</value>
+        <value>原生 Blazor 组件，内置主题、从右到左布局和无障碍支持。</value>
     </data>
     <data name="HomeProductBlex" xml:space="preserve">
-        <value>State that survives reloads and travels into every screenshot taken here.</value>
+        <value>重新加载后依然保留的状态，还会带入在这里截取的每一张截图。</value>
     </data>
     <data name="HomeProductBortable" xml:space="preserve">
-        <value>Drag-to-reorder lists and grids, like the dashboard's widgets.</value>
+        <value>可拖动排序的列表和网格，就像仪表板上的小组件。</value>
     </data>
     <data name="HomeProductBmotion" xml:space="preserve">
-        <value>Springs, reveals and hover effects, like the ones on this page.</value>
+        <value>弹簧动画、渐显效果和悬停效果，就像本页上的这些。</value>
     </data>
     <data name="HomeProductButil" xml:space="preserve">
-        <value>Browser features from C#, from the clipboard to IndexedDB.</value>
+        <value>在 C# 中使用浏览器功能，从剪贴板到 IndexedDB。</value>
     </data>
     <data name="HomeProductBoilerplate" xml:space="preserve">
-        <value>The project template this workbench lives in, from database to app stores.</value>
+        <value>此工作台所在的项目模板，从数据库到应用商店，一应俱全。</value>
     </data>
     <data name="HomeCtaTitle" xml:space="preserve">
-        <value>Your next page starts here</value>
+        <value>您的下一个页面，从这里开始</value>
     </data>
     <data name="HomeCtaText" xml:space="preserve">
-        <value>Ask your AI agent to design it in the workbench. It builds the page on sample data, checks every state in a real browser and shows you screenshots before any backend code is written.</value>
+        <value>让您的 AI 智能体在工作台中设计它。它会用示例数据构建页面，在真实浏览器中检查每种状态，并在编写任何后端代码之前向您展示截图。</value>
     </data>
     <data name="HomeCtaOpen" xml:space="preserve">
-        <value>Open the workbench</value>
+        <value>打开工作台</value>
     </data>
     <data name="HomeCtaPromptLabel" xml:space="preserve">
-        <value>Try asking</value>
+        <value>试着这样问</value>
     </data>
     <data name="HomeCtaPrompt" xml:space="preserve">
-        <value>Design an order history page in the workbench, with loading, empty and error states, and show me phone and desktop screenshots.</value>
+        <value>在工作台中设计一个订单历史页面，包含加载中、无数据和出错状态，并给我看手机和台式机上的截图。</value>
     </data>
     <data name="HomeCtaCopy" xml:space="preserve">
-        <value>Copy</value>
+        <value>复制</value>
     </data>
     <data name="HomeCtaCopied" xml:space="preserve">
-        <value>Copied</value>
+        <value>已复制</value>
     </data>
     <data name="HomeFooterExplore" xml:space="preserve">
-        <value>Explore</value>
+        <value>探索</value>
     </data>
     <data name="HomeFooterLearn" xml:space="preserve">
-        <value>Learn</value>
+        <value>学习</value>
     </data>
     <data name="HomeFooterDocs" xml:space="preserve">
-        <value>bit Boilerplate docs</value>
+        <value>bit Boilerplate 文档</value>
     </data>
     <data name="HomeFooterComponents" xml:space="preserve">
-        <value>bit BlazorUI components</value>
+        <value>bit BlazorUI 组件</value>
     </data>
     <data name="HomeFooterSource" xml:space="preserve">
-        <value>Source on GitHub</value>
+        <value>GitHub 上的源代码</value>
     </data>
 </root>

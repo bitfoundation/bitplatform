@@ -643,7 +643,7 @@
         <value>Byggnader</value>
     </data>
     <data name="BuildingsDescription" xml:space="preserve">
-        <value>A data grid and a map that stay in sync. Double-click the map to add a building, select one and press Delete to remove it. Advanced map features are in too, like limiting where points can be picked.</value>
+        <value>En datatabell och en karta som hålls synkroniserade. Dubbelklicka på kartan för att lägga till en byggnad, markera en och tryck på Delete för att ta bort den. Avancerade kartfunktioner finns också med, till exempel att begränsa var punkter kan väljas.</value>
     </data>
     <data name="BuildingsHeading" xml:space="preserve">
         <value>Kända byggnader</value>
@@ -868,7 +868,7 @@
         <value>Riktiga komponenter, inte skisser</value>
     </data>
     <data name="HomeWhyRealText" xml:space="preserve">
-        <value>Pages use the same bit BlazorUI components, theme and styles as your app, so what you approve here looks the same once it is built into the app.</value>
+        <value>Sidorna använder samma bit BlazorUI-komponenter, tema och stilar som din app, så det du godkänner här ser likadant ut när det väl är inbyggt i appen.</value>
     </data>
     <data name="HomeWhyStatesTitle" xml:space="preserve">
         <value>Varje läge när du vill</value>
@@ -886,13 +886,13 @@
         <value>Skärmbilder för appbutikerna</value>
     </data>
     <data name="HomeWhyStoresText" xml:space="preserve">
-        <value>Export pixel-exact images at App Store, Google Play and Microsoft Store sizes, with a colored background and a caption when you want one, rendered by a real browser.</value>
+        <value>Exportera pixelexakta bilder i storlekarna för App Store, Google Play och Microsoft Store, med färgad bakgrund och bildtext om du vill, renderade av en riktig webbläsare.</value>
     </data>
     <data name="HomeWhyHeadStartTitle" xml:space="preserve">
         <value>Ett försprång från bitplatform</value>
     </data>
     <data name="HomeWhyHeadStartText" xml:space="preserve">
-        <value>It starts with ready-made pages, like a point-of-sale dashboard, a shift planner and your app's own settings page. Reuse what fits, learn from the rest, then add your own pages next to them.</value>
+        <value>Arbetsbänken börjar med färdiga sidor, till exempel en kassaöversikt, en schemaplanerare och appens egen inställningssida. Återanvänd det som passar, lär dig av resten och lägg sedan till dina egna sidor bredvid dem.</value>
     </data>
     <data name="HomeWhySafeTitle" xml:space="preserve">
         <value>Tryggt att experimentera</value>
@@ -925,7 +925,7 @@
         <value>Flytta in den i appen</value>
     </data>
     <data name="HomeHowStep3Text" xml:space="preserve">
-        <value>Rebuild the approved design in your app the way the rest of the app is built, and connect it to real data. Your AI agent follows the same steps.</value>
+        <value>Bygg den godkända designen i din app på samma sätt som resten av appen är byggd, och koppla den till riktiga data. Din AI-agent följer samma steg.</value>
     </data>
     <data name="HomePagesTitle" xml:space="preserve">
         <value>Sidor på den här arbetsbänken</value>
@@ -949,7 +949,7 @@
         <value>Bakgrund</value>
     </data>
     <data name="BackdropHint" xml:space="preserve">
-        <value>Puts the page in a device on a colored background with a caption, the way store listings show it.</value>
+        <value>Placerar sidan i en enhet på en färgad bakgrund med bildtext, så som appbutikerna visar den.</value>
     </data>
     <data name="BackdropBrand" xml:space="preserve">
         <value>Appens färg</value>
@@ -1132,451 +1132,451 @@ Så här gick varje dag:</value>
         <value>Pappersmuggar</value>
     </data>
     <data name="LoadFailed" xml:space="preserve">
-        <value>Couldn't load this. Try again in a moment.</value>
+        <value>Kunde inte laddas. Försök igen om en stund.</value>
     </data>
     <data name="CategoryAppPages" xml:space="preserve">
-        <value>Your app's pages</value>
+        <value>Sidor i din app</value>
     </data>
     <data name="AppDashboardTitle" xml:space="preserve">
-        <value>Dashboard</value>
+        <value>Översikt</value>
     </data>
     <data name="AppDashboardDescription" xml:space="preserve">
-        <value>The app's own admin dashboard, brought in with demo data, so its states and screenshots are a click away.</value>
+        <value>Appens egen adminöversikt, här med demodata, så att dess lägen och skärmbilder bara är ett klick bort.</value>
     </data>
     <data name="AppDashboardCaption" xml:space="preserve">
-        <value>Your numbers at a glance</value>
+        <value>Dina siffror med ett ögonkast</value>
     </data>
     <data name="SettingsTitle" xml:space="preserve">
-        <value>Settings</value>
+        <value>Inställningar</value>
     </data>
     <data name="SettingsDescription" xml:space="preserve">
-        <value>The app's own settings page with profile, account, two-step sign-in, sessions and privacy, running on demo data instead of the server.</value>
+        <value>Appens egen inställningssida med profil, konto, tvåstegsinloggning, sessioner och integritet, som körs med demodata i stället för mot servern.</value>
     </data>
     <data name="SettingsCaption" xml:space="preserve">
-        <value>Your account, your way</value>
+        <value>Ditt konto, på ditt sätt</value>
     </data>
     <data name="CalendarViewDay" xml:space="preserve">
-        <value>Day</value>
+        <value>Dag</value>
     </data>
     <data name="CalendarViewWeek" xml:space="preserve">
-        <value>Week</value>
+        <value>Vecka</value>
     </data>
     <data name="CalendarViewMonth" xml:space="preserve">
-        <value>Month</value>
+        <value>Månad</value>
     </data>
     <data name="CalendarViewYear" xml:space="preserve">
-        <value>Year</value>
+        <value>År</value>
     </data>
     <data name="CalendarViewAgenda" xml:space="preserve">
         <value>Agenda</value>
     </data>
     <data name="CalendarModeEvent" xml:space="preserve">
-        <value>Events</value>
+        <value>Händelser</value>
     </data>
     <data name="CalendarModeTimeline" xml:space="preserve">
-        <value>Timeline</value>
+        <value>Tidslinje</value>
     </data>
     <data name="CalendarViewTabsAriaLabel" xml:space="preserve">
-        <value>Views</value>
+        <value>Vyer</value>
     </data>
     <data name="CalendarModeTabsAriaLabel" xml:space="preserve">
-        <value>Modes</value>
+        <value>Lägen</value>
     </data>
     <data name="CalendarTodayButton" xml:space="preserve">
-        <value>Today</value>
+        <value>I dag</value>
     </data>
     <data name="CalendarAddEventButton" xml:space="preserve">
-        <value>Add Event</value>
+        <value>Lägg till händelse</value>
     </data>
     <data name="CalendarAddEventHoverHint" xml:space="preserve">
-        <value>Add event</value>
+        <value>Lägg till händelse</value>
     </data>
     <data name="CalendarPreviousButtonTitle" xml:space="preserve">
-        <value>Previous</value>
+        <value>Föregående</value>
     </data>
     <data name="CalendarNextButtonTitle" xml:space="preserve">
-        <value>Next</value>
+        <value>Nästa</value>
     </data>
     <data name="CalendarPreviousMonthAriaLabel" xml:space="preserve">
-        <value>Previous month</value>
+        <value>Föregående månad</value>
     </data>
     <data name="CalendarNextMonthAriaLabel" xml:space="preserve">
-        <value>Next month</value>
+        <value>Nästa månad</value>
     </data>
     <data name="CalendarPickerHourAriaLabel" xml:space="preserve">
-        <value>Hour</value>
+        <value>Timme</value>
     </data>
     <data name="CalendarPickerMinuteAriaLabel" xml:space="preserve">
-        <value>Minute</value>
+        <value>Minut</value>
     </data>
     <data name="CalendarPickerMeridiemAriaLabel" xml:space="preserve">
-        <value>AM/PM</value>
+        <value>FM/EM</value>
     </data>
     <data name="CalendarPickerSelectedDayAriaLabel" xml:space="preserve">
-        <value>selected</value>
+        <value>vald</value>
     </data>
     <data name="CalendarSettingsButtonTitle" xml:space="preserve">
-        <value>Settings</value>
+        <value>Inställningar</value>
     </data>
     <data name="CalendarFilterByColorAriaLabel" xml:space="preserve">
-        <value>Filter events by color</value>
+        <value>Filtrera händelser efter färg</value>
     </data>
     <data name="CalendarFilterByPersonAriaLabel" xml:space="preserve">
-        <value>Filter events by person in current view</value>
+        <value>Filtrera händelser efter person i den aktuella vyn</value>
     </data>
     <data name="CalendarAllColorsOption" xml:space="preserve">
-        <value>All colors</value>
+        <value>Alla färger</value>
     </data>
     <data name="CalendarAllPeopleOption" xml:space="preserve">
-        <value>All people</value>
+        <value>Alla personer</value>
     </data>
     <data name="CalendarUnnamedAttendee" xml:space="preserve">
-        <value>(Unnamed)</value>
+        <value>(Namnlös)</value>
     </data>
     <data name="CalendarCalendarSettingsLabel" xml:space="preserve">
-        <value>Calendar settings</value>
+        <value>Kalenderinställningar</value>
     </data>
     <data name="CalendarDotBadgeLabel" xml:space="preserve">
-        <value>Dot badge</value>
+        <value>Punktmarkering</value>
     </data>
     <data name="CalendarTwentyFourHourFormatLabel" xml:space="preserve">
-        <value>24-hour format</value>
+        <value>24-timmarsformat</value>
     </data>
     <data name="CalendarDayStartsAtLabel" xml:space="preserve">
-        <value>Day starts at</value>
+        <value>Dagen börjar</value>
     </data>
     <data name="CalendarHourSuffix" xml:space="preserve">
         <value>h</value>
     </data>
     <data name="CalendarAgendaGroupByLabel" xml:space="preserve">
-        <value>Agenda group by</value>
+        <value>Gruppera agendan efter</value>
     </data>
     <data name="CalendarAgendaGroupByDate" xml:space="preserve">
-        <value>Date</value>
+        <value>Datum</value>
     </data>
     <data name="CalendarAgendaGroupByColor" xml:space="preserve">
-        <value>Color</value>
+        <value>Färg</value>
     </data>
     <data name="CalendarStackedEventsLabel" xml:space="preserve">
-        <value>Stack overlapping events</value>
+        <value>Stapla överlappande händelser</value>
     </data>
     <data name="CalendarShowDayViewCalendarLabel" xml:space="preserve">
-        <value>Show calendar in day view</value>
+        <value>Visa kalender i dagvyn</value>
     </data>
     <data name="CalendarShowWeekNumbersLabel" xml:space="preserve">
-        <value>Show week numbers</value>
+        <value>Visa veckonummer</value>
     </data>
     <data name="CalendarShowCurrentTimeIndicatorLabel" xml:space="preserve">
-        <value>Show current time</value>
+        <value>Visa aktuell tid</value>
     </data>
     <data name="CalendarSlotDurationLabel" xml:space="preserve">
-        <value>Slot duration</value>
+        <value>Tidsintervall</value>
     </data>
     <data name="CalendarMinuteSuffix" xml:space="preserve">
         <value>min</value>
     </data>
     <data name="CalendarWeekMobileWarning" xml:space="preserve">
-        <value>Weekly view is not recommended on smaller devices. Please switch to a desktop device or use the daily view instead.</value>
+        <value>Veckovyn rekommenderas inte på mindre enheter. Byt till en dator eller använd dagvyn i stället.</value>
     </data>
     <data name="CalendarHappeningNowTitle" xml:space="preserve">
-        <value>Happening now</value>
+        <value>Pågår nu</value>
     </data>
     <data name="CalendarNoAppointmentsNow" xml:space="preserve">
-        <value>No appointments at the moment</value>
+        <value>Inget inbokat just nu</value>
     </data>
     <data name="CalendarSearchEventsPlaceholder" xml:space="preserve">
-        <value>Search events...</value>
+        <value>Sök händelser...</value>
     </data>
     <data name="CalendarNoEventsFound" xml:space="preserve">
-        <value>No events found.</value>
+        <value>Inga händelser hittades.</value>
     </data>
     <data name="CalendarEventListTitleFormat" xml:space="preserve">
-        <value>Events on {0}</value>
+        <value>Händelser {0}</value>
     </data>
     <data name="CalendarEventListCountFormat" xml:space="preserve">
-        <value>{0} event(s)</value>
+        <value>{0} händelse(r)</value>
     </data>
     <data name="CalendarMoreEventsFormat" xml:space="preserve">
-        <value>+{0} more</value>
+        <value>+{0} till</value>
     </data>
     <data name="CalendarAddEventDialogTitle" xml:space="preserve">
-        <value>Add New Event</value>
+        <value>Ny händelse</value>
     </data>
     <data name="CalendarEditEventDialogTitle" xml:space="preserve">
-        <value>Edit Event</value>
+        <value>Redigera händelse</value>
     </data>
     <data name="CalendarAddEventDialogSubtitle" xml:space="preserve">
-        <value>Create a new event for your calendar.</value>
+        <value>Skapa en ny händelse i din kalender.</value>
     </data>
     <data name="CalendarEditEventDialogSubtitle" xml:space="preserve">
-        <value>Modify your existing event.</value>
+        <value>Ändra din befintliga händelse.</value>
     </data>
     <data name="CalendarCloseAriaLabel" xml:space="preserve">
-        <value>Close</value>
+        <value>Stäng</value>
     </data>
     <data name="CalendarCloseButton" xml:space="preserve">
-        <value>Close</value>
+        <value>Stäng</value>
     </data>
     <data name="CalendarCancelButton" xml:space="preserve">
-        <value>Cancel</value>
+        <value>Avbryt</value>
     </data>
     <data name="CalendarEditButton" xml:space="preserve">
-        <value>Edit</value>
+        <value>Redigera</value>
     </data>
     <data name="CalendarDeleteButton" xml:space="preserve">
-        <value>Delete</value>
+        <value>Ta bort</value>
     </data>
     <data name="CalendarCreateEventButton" xml:space="preserve">
-        <value>Create Event</value>
+        <value>Skapa händelse</value>
     </data>
     <data name="CalendarSaveChangesButton" xml:space="preserve">
-        <value>Save Changes</value>
+        <value>Spara ändringar</value>
     </data>
     <data name="CalendarTitleLabel" xml:space="preserve">
-        <value>Title</value>
+        <value>Titel</value>
     </data>
     <data name="CalendarEventTitlePlaceholder" xml:space="preserve">
-        <value>Event title</value>
+        <value>Titel på händelsen</value>
     </data>
     <data name="CalendarStartDateTimeLabel" xml:space="preserve">
-        <value>Start Date &amp; Time</value>
+        <value>Startdatum och -tid</value>
     </data>
     <data name="CalendarEndDateTimeLabel" xml:space="preserve">
-        <value>End Date &amp; Time</value>
+        <value>Slutdatum och -tid</value>
     </data>
     <data name="CalendarColorLabel" xml:space="preserve">
-        <value>Color</value>
+        <value>Färg</value>
     </data>
     <data name="CalendarEventColorAriaLabel" xml:space="preserve">
-        <value>Event color</value>
+        <value>Färg på händelsen</value>
     </data>
     <data name="CalendarDescriptionLabel" xml:space="preserve">
-        <value>Description</value>
+        <value>Beskrivning</value>
     </data>
     <data name="CalendarEventDescriptionPlaceholder" xml:space="preserve">
-        <value>Event description</value>
+        <value>Beskrivning av händelsen</value>
     </data>
     <data name="CalendarAttendeesLabel" xml:space="preserve">
-        <value>Attendees</value>
+        <value>Deltagare</value>
     </data>
     <data name="CalendarNoAttendeesText" xml:space="preserve">
-        <value>No attendees</value>
+        <value>Inga deltagare</value>
     </data>
     <data name="CalendarFirstNamePlaceholder" xml:space="preserve">
-        <value>First name</value>
+        <value>Förnamn</value>
     </data>
     <data name="CalendarLastNamePlaceholder" xml:space="preserve">
-        <value>Last name</value>
+        <value>Efternamn</value>
     </data>
     <data name="CalendarIdOptionalPlaceholder" xml:space="preserve">
-        <value>ID (optional)</value>
+        <value>ID (valfritt)</value>
     </data>
     <data name="CalendarAddButton" xml:space="preserve">
-        <value>Add</value>
+        <value>Lägg till</value>
     </data>
     <data name="CalendarRemoveAttendeeAriaLabel" xml:space="preserve">
-        <value>Remove attendee</value>
+        <value>Ta bort deltagare</value>
     </data>
     <data name="CalendarStartDateLabel" xml:space="preserve">
-        <value>Start Date</value>
+        <value>Startdatum</value>
     </data>
     <data name="CalendarEndDateLabel" xml:space="preserve">
-        <value>End Date</value>
+        <value>Slutdatum</value>
     </data>
     <data name="CalendarAtWord" xml:space="preserve">
-        <value>at</value>
+        <value>kl.</value>
     </data>
     <data name="CalendarAllDayLabel" xml:space="preserve">
-        <value>All day</value>
+        <value>Heldag</value>
     </data>
     <data name="CalendarWeekNumberFormat" xml:space="preserve">
-        <value>W{0}</value>
+        <value>v. {0}</value>
     </data>
     <data name="CalendarWeekNumberAriaLabelFormat" xml:space="preserve">
-        <value>Week {0}</value>
+        <value>Vecka {0}</value>
     </data>
     <data name="CalendarEventOverlapMessage" xml:space="preserve">
-        <value>This time range is already taken on that resource.</value>
+        <value>Den här tiden är redan upptagen för den resursen.</value>
     </data>
     <data name="CalendarOutOfRangeMessage" xml:space="preserve">
-        <value>That date is outside the allowed range.</value>
+        <value>Det datumet ligger utanför det tillåtna intervallet.</value>
     </data>
     <data name="CalendarOutsideBusinessHoursMessage" xml:space="preserve">
-        <value>That time is outside business hours.</value>
+        <value>Den tiden ligger utanför arbetstiden.</value>
     </data>
     <data name="CalendarBlockedMessage" xml:space="preserve">
-        <value>That time is unavailable.</value>
+        <value>Den tiden är inte tillgänglig.</value>
     </data>
     <data name="CalendarHighlightBusinessHoursLabel" xml:space="preserve">
-        <value>Highlight business hours</value>
+        <value>Markera arbetstid</value>
     </data>
     <data name="CalendarNavLinkDayAriaLabelFormat" xml:space="preserve">
-        <value>Go to {0}</value>
+        <value>Gå till {0}</value>
     </data>
     <data name="CalendarNavLinkWeekAriaLabelFormat" xml:space="preserve">
-        <value>Go to week {0}</value>
+        <value>Gå till vecka {0}</value>
     </data>
     <data name="CalendarValidationTitleRequired" xml:space="preserve">
-        <value>Title is required</value>
+        <value>Titel måste anges</value>
     </data>
     <data name="CalendarValidationDescriptionRequired" xml:space="preserve">
-        <value>Description is required</value>
+        <value>Beskrivning måste anges</value>
     </data>
     <data name="CalendarValidationEndAfterStart" xml:space="preserve">
-        <value>End date must be after start date</value>
+        <value>Slutdatumet måste vara efter startdatumet</value>
     </data>
     <data name="CalendarValidationAttendeeNameRequired" xml:space="preserve">
-        <value>First name or last name is required</value>
+        <value>Förnamn eller efternamn måste anges</value>
     </data>
     <data name="CalendarResizePreviewAriaLabel" xml:space="preserve">
-        <value>New time range</value>
+        <value>Nytt tidsintervall</value>
     </data>
     <data name="CalendarRepeatsLabel" xml:space="preserve">
-        <value>Repeats</value>
+        <value>Upprepning</value>
     </data>
     <data name="CalendarRepeatsDaily" xml:space="preserve">
-        <value>Daily</value>
+        <value>Dagligen</value>
     </data>
     <data name="CalendarRepeatsWeekly" xml:space="preserve">
-        <value>Weekly</value>
+        <value>Veckovis</value>
     </data>
     <data name="CalendarRepeatsMonthly" xml:space="preserve">
-        <value>Monthly</value>
+        <value>Månadsvis</value>
     </data>
     <data name="CalendarRepeatsYearly" xml:space="preserve">
-        <value>Yearly</value>
+        <value>Årligen</value>
     </data>
     <data name="CalendarRepeatsIntervalFormat" xml:space="preserve">
-        <value>every {0}</value>
+        <value>var {0}</value>
     </data>
     <data name="CalendarRepeatsCountFormat" xml:space="preserve">
-        <value>{0} times</value>
+        <value>{0} gånger</value>
     </data>
     <data name="CalendarRepeatsUntilFormat" xml:space="preserve">
-        <value>until {0}</value>
+        <value>till {0}</value>
     </data>
     <data name="CalendarRepeatsOnDaysFormat" xml:space="preserve">
-        <value>on {0}</value>
+        <value>på {0}</value>
     </data>
     <data name="CalendarRepeatsOnWeekOfMonthFormat" xml:space="preserve">
-        <value>on the {0} {1}</value>
+        <value>varje {0} {1}</value>
     </data>
     <data name="CalendarListSeparator" xml:space="preserve">
         <value>, </value>
     </data>
     <data name="CalendarWeekOfMonthFirst" xml:space="preserve">
-        <value>first</value>
+        <value>första</value>
     </data>
     <data name="CalendarWeekOfMonthSecond" xml:space="preserve">
-        <value>second</value>
+        <value>andra</value>
     </data>
     <data name="CalendarWeekOfMonthThird" xml:space="preserve">
-        <value>third</value>
+        <value>tredje</value>
     </data>
     <data name="CalendarWeekOfMonthFourth" xml:space="preserve">
-        <value>fourth</value>
+        <value>fjärde</value>
     </data>
     <data name="CalendarWeekOfMonthLast" xml:space="preserve">
-        <value>last</value>
+        <value>sista</value>
     </data>
     <data name="CalendarRepeatLabel" xml:space="preserve">
-        <value>Repeat</value>
+        <value>Upprepa</value>
     </data>
     <data name="CalendarDoesNotRepeatOption" xml:space="preserve">
-        <value>Does not repeat</value>
+        <value>Upprepas inte</value>
     </data>
     <data name="CalendarRepeatEveryLabel" xml:space="preserve">
-        <value>Repeat every</value>
+        <value>Upprepa var</value>
     </data>
     <data name="CalendarRepeatDaysUnit" xml:space="preserve">
-        <value>day(s)</value>
+        <value>dag/dagar</value>
     </data>
     <data name="CalendarRepeatWeeksUnit" xml:space="preserve">
-        <value>week(s)</value>
+        <value>vecka/veckor</value>
     </data>
     <data name="CalendarRepeatMonthsUnit" xml:space="preserve">
-        <value>month(s)</value>
+        <value>månad/månader</value>
     </data>
     <data name="CalendarRepeatYearsUnit" xml:space="preserve">
-        <value>year(s)</value>
+        <value>år</value>
     </data>
     <data name="CalendarRepeatOnLabel" xml:space="preserve">
-        <value>Repeat on</value>
+        <value>Upprepa på</value>
     </data>
     <data name="CalendarRepeatOnDayOfMonthFormat" xml:space="preserve">
-        <value>Day {0}</value>
+        <value>Dag {0}</value>
     </data>
     <data name="CalendarRepeatOnWeekOfMonthFormat" xml:space="preserve">
-        <value>The {0}</value>
+        <value>Den {0}</value>
     </data>
     <data name="CalendarEndsLabel" xml:space="preserve">
-        <value>Ends</value>
+        <value>Slutar</value>
     </data>
     <data name="CalendarEndsNeverOption" xml:space="preserve">
-        <value>Never</value>
+        <value>Aldrig</value>
     </data>
     <data name="CalendarEndsOnDateOption" xml:space="preserve">
-        <value>On date</value>
+        <value>På ett datum</value>
     </data>
     <data name="CalendarEndsAfterOption" xml:space="preserve">
-        <value>After</value>
+        <value>Efter</value>
     </data>
     <data name="CalendarOccurrencesLabel" xml:space="preserve">
-        <value>occurrence(s)</value>
+        <value>gånger</value>
     </data>
     <data name="CalendarRepeatExceptionsLabel" xml:space="preserve">
-        <value>Exceptions</value>
+        <value>Undantag</value>
     </data>
     <data name="CalendarSkipDateButton" xml:space="preserve">
-        <value>Skip date</value>
+        <value>Hoppa över datum</value>
     </data>
     <data name="CalendarAddDateButton" xml:space="preserve">
-        <value>Add date</value>
+        <value>Lägg till datum</value>
     </data>
     <data name="CalendarSkippedDatesLabel" xml:space="preserve">
-        <value>Skipped</value>
+        <value>Överhoppade</value>
     </data>
     <data name="CalendarAddedDatesLabel" xml:space="preserve">
-        <value>Added</value>
+        <value>Tillagda</value>
     </data>
     <data name="CalendarRemoveDateAriaLabel" xml:space="preserve">
-        <value>Remove date</value>
+        <value>Ta bort datum</value>
     </data>
     <data name="CalendarValidationRepeatAtLeastOne" xml:space="preserve">
-        <value>Must be at least 1</value>
+        <value>Måste vara minst 1</value>
     </data>
     <data name="CalendarValidationUntilBeforeStart" xml:space="preserve">
-        <value>The series cannot end before it starts</value>
+        <value>Serien kan inte sluta innan den börjar</value>
     </data>
     <data name="CalendarRecurringEditTitle" xml:space="preserve">
-        <value>Edit recurring event</value>
+        <value>Redigera återkommande händelse</value>
     </data>
     <data name="CalendarRecurringDeleteTitle" xml:space="preserve">
-        <value>Delete recurring event</value>
+        <value>Ta bort återkommande händelse</value>
     </data>
     <data name="CalendarThisOccurrenceOption" xml:space="preserve">
-        <value>This event</value>
+        <value>Den här händelsen</value>
     </data>
     <data name="CalendarAllOccurrencesOption" xml:space="preserve">
-        <value>All events in the series</value>
+        <value>Alla händelser i serien</value>
     </data>
     <data name="CalendarOkButton" xml:space="preserve">
         <value>OK</value>
     </data>
     <data name="CalendarResourceLabel" xml:space="preserve">
-        <value>Resource</value>
+        <value>Resurs</value>
     </data>
     <data name="CalendarResourceColumnHeader" xml:space="preserve">
-        <value>Resource</value>
+        <value>Resurs</value>
     </data>
     <data name="CalendarNoResourceLabel" xml:space="preserve">
-        <value>Unassigned</value>
+        <value>Ej tilldelad</value>
     </data>
     <data name="CalendarNoResourceOption" xml:space="preserve">
-        <value>(none)</value>
+        <value>(ingen)</value>
     </data>
     <data name="CalendarNoResourcesMessage" xml:space="preserve">
-        <value>No resources to display.</value>
+        <value>Inga resurser att visa.</value>
     </data>
     <data name="PosStaffNoah" xml:space="preserve">
         <value>Noah Smit</value>
@@ -1585,111 +1585,111 @@ Så här gick varje dag:</value>
         <value>Julia Mulder</value>
     </data>
     <data name="CategoryPlanning" xml:space="preserve">
-        <value>Planning</value>
+        <value>Planering</value>
     </data>
     <data name="ShiftsTitle" xml:space="preserve">
-        <value>Shift planner</value>
+        <value>Schemaplanerare</value>
     </data>
     <data name="ShiftsDescription" xml:space="preserve">
-        <value>The week's staff schedule for a café: move and resize shifts per person, within opening hours, around time off and without double-booking.</value>
+        <value>Veckans personalschema för ett kafé: flytta pass och ändra deras längd per person, inom öppettiderna, runt ledigheter och utan dubbelbokningar.</value>
     </data>
     <data name="ShiftsCaption" xml:space="preserve">
-        <value>Plan the whole week in minutes</value>
+        <value>Planera hela veckan på några minuter</value>
     </data>
     <data name="ShiftsHeading" xml:space="preserve">
-        <value>Staff schedule</value>
+        <value>Personalschema</value>
     </data>
     <data name="ShiftsSummary" xml:space="preserve">
-        <value>{0} shifts and {1} hours this week</value>
+        <value>{0} pass och {1} timmar den här veckan</value>
     </data>
     <data name="ShiftsEmpty" xml:space="preserve">
-        <value>No shifts are planned yet. Select a time on someone's row to add the first one.</value>
+        <value>Inga pass är planerade än. Markera en tid på någons rad för att lägga till det första.</value>
     </data>
     <data name="ShiftsRoleLead" xml:space="preserve">
-        <value>Shift lead</value>
+        <value>Skiftledare</value>
     </data>
     <data name="ShiftsRoleBarista" xml:space="preserve">
         <value>Barista</value>
     </data>
     <data name="ShiftsRoleBaker" xml:space="preserve">
-        <value>Baker</value>
+        <value>Bagare</value>
     </data>
     <data name="ShiftsRoleCashier" xml:space="preserve">
-        <value>Cashier</value>
+        <value>Kassör</value>
     </data>
     <data name="ShiftsOpening" xml:space="preserve">
-        <value>Opening</value>
+        <value>Öppning</value>
     </data>
     <data name="ShiftsMidday" xml:space="preserve">
-        <value>Midday</value>
+        <value>Mellanpass</value>
     </data>
     <data name="ShiftsBakery" xml:space="preserve">
-        <value>Bakery</value>
+        <value>Bageri</value>
     </data>
     <data name="ShiftsClosing" xml:space="preserve">
-        <value>Closing</value>
+        <value>Stängning</value>
     </data>
     <data name="ShiftsStocktake" xml:space="preserve">
-        <value>Stocktake, café closed</value>
+        <value>Inventering, kaféet stängt</value>
     </data>
     <data name="ShiftsTimeOff" xml:space="preserve">
-        <value>Time off</value>
+        <value>Ledig</value>
     </data>
     <data name="HomeBuiltWithSubtitle" xml:space="preserve">
-        <value>The same open-source libraries your app is built on, each with live docs your AI agent can read too.</value>
+        <value>Samma bibliotek med öppen källkod som din app bygger på, vart och ett med live-dokumentation som även din AI-agent kan läsa.</value>
     </data>
     <data name="HomeProductBlazorUI" xml:space="preserve">
-        <value>Native Blazor components with theming, right-to-left and accessibility built in.</value>
+        <value>Native Blazor-komponenter med inbyggt stöd för teman, höger-till-vänster-språk och tillgänglighet.</value>
     </data>
     <data name="HomeProductBlex" xml:space="preserve">
-        <value>State that survives reloads and travels into every screenshot taken here.</value>
+        <value>Tillstånd som överlever omladdningar och följer med in i varje skärmbild som tas här.</value>
     </data>
     <data name="HomeProductBortable" xml:space="preserve">
-        <value>Drag-to-reorder lists and grids, like the dashboard's widgets.</value>
+        <value>Listor och rutnät som ordnas om genom att dra, precis som widgetarna på översikten.</value>
     </data>
     <data name="HomeProductBmotion" xml:space="preserve">
-        <value>Springs, reveals and hover effects, like the ones on this page.</value>
+        <value>Fjäderanimationer, intoningar och hovringseffekter, precis som de på den här sidan.</value>
     </data>
     <data name="HomeProductButil" xml:space="preserve">
-        <value>Browser features from C#, from the clipboard to IndexedDB.</value>
+        <value>Webbläsarfunktioner från C#, från urklipp till IndexedDB.</value>
     </data>
     <data name="HomeProductBoilerplate" xml:space="preserve">
-        <value>The project template this workbench lives in, from database to app stores.</value>
+        <value>Projektmallen som den här arbetsbänken ingår i, från databas till appbutiker.</value>
     </data>
     <data name="HomeCtaTitle" xml:space="preserve">
-        <value>Your next page starts here</value>
+        <value>Din nästa sida börjar här</value>
     </data>
     <data name="HomeCtaText" xml:space="preserve">
-        <value>Ask your AI agent to design it in the workbench. It builds the page on sample data, checks every state in a real browser and shows you screenshots before any backend code is written.</value>
+        <value>Be din AI-agent att designa sidan på arbetsbänken. Agenten bygger den med exempeldata, kontrollerar varje läge i en riktig webbläsare och visar dig skärmbilder innan någon backendkod har skrivits.</value>
     </data>
     <data name="HomeCtaOpen" xml:space="preserve">
-        <value>Open the workbench</value>
+        <value>Öppna arbetsbänken</value>
     </data>
     <data name="HomeCtaPromptLabel" xml:space="preserve">
-        <value>Try asking</value>
+        <value>Fråga till exempel</value>
     </data>
     <data name="HomeCtaPrompt" xml:space="preserve">
-        <value>Design an order history page in the workbench, with loading, empty and error states, and show me phone and desktop screenshots.</value>
+        <value>Designa en sida för beställningshistorik på arbetsbänken, med lägen för laddning, tomt och fel, och visa mig skärmbilder för telefon och dator.</value>
     </data>
     <data name="HomeCtaCopy" xml:space="preserve">
-        <value>Copy</value>
+        <value>Kopiera</value>
     </data>
     <data name="HomeCtaCopied" xml:space="preserve">
-        <value>Copied</value>
+        <value>Kopierat</value>
     </data>
     <data name="HomeFooterExplore" xml:space="preserve">
-        <value>Explore</value>
+        <value>Utforska</value>
     </data>
     <data name="HomeFooterLearn" xml:space="preserve">
-        <value>Learn</value>
+        <value>Lär dig mer</value>
     </data>
     <data name="HomeFooterDocs" xml:space="preserve">
-        <value>bit Boilerplate docs</value>
+        <value>bit Boilerplate-dokumentation</value>
     </data>
     <data name="HomeFooterComponents" xml:space="preserve">
-        <value>bit BlazorUI components</value>
+        <value>bit BlazorUI-komponenter</value>
     </data>
     <data name="HomeFooterSource" xml:space="preserve">
-        <value>Source on GitHub</value>
+        <value>Källkod på GitHub</value>
     </data>
 </root>

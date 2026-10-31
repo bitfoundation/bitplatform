@@ -643,7 +643,7 @@
         <value>इमारतें</value>
     </data>
     <data name="BuildingsDescription" xml:space="preserve">
-        <value>A data grid and a map that stay in sync. Double-click the map to add a building, select one and press Delete to remove it. Advanced map features are in too, like limiting where points can be picked.</value>
+        <value>एक टेबल और एक मैप, जो हमेशा एक-दूसरे के साथ तालमेल में रहते हैं। इमारत जोड़ने के लिए मैप पर डबल-क्लिक करें, किसी इमारत को चुनें और उसे हटाने के लिए Delete दबाएँ। मैप की एडवांस सुविधाएँ भी मौजूद हैं, जैसे यह सीमित करना कि पॉइंट कहाँ चुने जा सकते हैं।</value>
     </data>
     <data name="BuildingsHeading" xml:space="preserve">
         <value>प्रसिद्ध इमारतें</value>
@@ -868,7 +868,7 @@
         <value>असली कंपोनेंट, मॉकअप नहीं</value>
     </data>
     <data name="HomeWhyRealText" xml:space="preserve">
-        <value>Pages use the same bit BlazorUI components, theme and styles as your app, so what you approve here looks the same once it is built into the app.</value>
+        <value>पेज आपके ऐप जैसे ही bit BlazorUI कंपोनेंट, थीम और स्टाइल इस्तेमाल करते हैं, इसलिए जो आप यहाँ मंज़ूर करते हैं, वह ऐप में बनने के बाद भी वैसा ही दिखता है।</value>
     </data>
     <data name="HomeWhyStatesTitle" xml:space="preserve">
         <value>हर स्थिति, जब चाहें</value>
@@ -886,13 +886,13 @@
         <value>स्टोर के लिए स्क्रीनशॉट</value>
     </data>
     <data name="HomeWhyStoresText" xml:space="preserve">
-        <value>Export pixel-exact images at App Store, Google Play and Microsoft Store sizes, with a colored background and a caption when you want one, rendered by a real browser.</value>
+        <value>App Store, Google Play और Microsoft Store के साइज़ में पिक्सेल-सटीक इमेज एक्सपोर्ट करें, चाहें तो रंगीन बैकग्राउंड और कैप्शन के साथ, जिन्हें असली ब्राउज़र बनाता है।</value>
     </data>
     <data name="HomeWhyHeadStartTitle" xml:space="preserve">
         <value>bitplatform से शुरुआती बढ़त</value>
     </data>
     <data name="HomeWhyHeadStartText" xml:space="preserve">
-        <value>It starts with ready-made pages, like a point-of-sale dashboard, a shift planner and your app's own settings page. Reuse what fits, learn from the rest, then add your own pages next to them.</value>
+        <value>इसमें शुरू से ही तैयार पेज होते हैं, जैसे POS डैशबोर्ड, शिफ़्ट प्लानर और आपके ऐप का अपना सेटिंग्स पेज। जो काम का हो उसे दोबारा इस्तेमाल करें, बाकी से सीखें, फिर उनके साथ अपने पेज जोड़ें।</value>
     </data>
     <data name="HomeWhySafeTitle" xml:space="preserve">
         <value>बेझिझक प्रयोग करें</value>
@@ -925,7 +925,7 @@
         <value>इसे ऐप में लाएँ</value>
     </data>
     <data name="HomeHowStep3Text" xml:space="preserve">
-        <value>Rebuild the approved design in your app the way the rest of the app is built, and connect it to real data. Your AI agent follows the same steps.</value>
+        <value>मंज़ूर हुए डिज़ाइन को अपने ऐप में उसी तरह दोबारा बनाएँ जैसे बाकी ऐप बना है, और उसे असली डेटा से जोड़ें। आपका AI एजेंट भी यही कदम अपनाता है।</value>
     </data>
     <data name="HomePagesTitle" xml:space="preserve">
         <value>इस वर्कबेंच के पेज</value>
@@ -949,7 +949,7 @@
         <value>बैकग्राउंड</value>
     </data>
     <data name="BackdropHint" xml:space="preserve">
-        <value>Puts the page in a device on a colored background with a caption, the way store listings show it.</value>
+        <value>पेज को रंगीन बैकग्राउंड पर किसी डिवाइस के अंदर कैप्शन के साथ रखता है, जैसे स्टोर लिस्टिंग में दिखता है।</value>
     </data>
     <data name="BackdropBrand" xml:space="preserve">
         <value>ऐप का रंग</value>
@@ -1132,564 +1132,564 @@
         <value>पेपर कप</value>
     </data>
     <data name="LoadFailed" xml:space="preserve">
-        <value>Couldn't load this. Try again in a moment.</value>
+        <value>यह लोड नहीं हो सका। थोड़ी देर में फिर से कोशिश करें।</value>
     </data>
     <data name="CategoryAppPages" xml:space="preserve">
-        <value>Your app's pages</value>
+        <value>आपके ऐप के पेज</value>
     </data>
     <data name="AppDashboardTitle" xml:space="preserve">
-        <value>Dashboard</value>
+        <value>डैशबोर्ड</value>
     </data>
     <data name="AppDashboardDescription" xml:space="preserve">
-        <value>The app's own admin dashboard, brought in with demo data, so its states and screenshots are a click away.</value>
+        <value>ऐप का अपना एडमिन डैशबोर्ड, डेमो डेटा के साथ यहाँ लाया गया, ताकि उसकी स्थितियाँ और स्क्रीनशॉट बस एक क्लिक दूर हों।</value>
     </data>
     <data name="AppDashboardCaption" xml:space="preserve">
-        <value>Your numbers at a glance</value>
+        <value>आपके आँकड़े एक नज़र में</value>
     </data>
     <data name="SettingsTitle" xml:space="preserve">
-        <value>Settings</value>
+        <value>सेटिंग्स</value>
     </data>
     <data name="SettingsDescription" xml:space="preserve">
-        <value>The app's own settings page with profile, account, two-step sign-in, sessions and privacy, running on demo data instead of the server.</value>
+        <value>ऐप का अपना सेटिंग्स पेज, जिसमें प्रोफ़ाइल, खाता, दो-चरणीय साइन इन, सत्र और गोपनीयता हैं, और जो सर्वर के बजाय डेमो डेटा पर चलता है।</value>
     </data>
     <data name="SettingsCaption" xml:space="preserve">
-        <value>Your account, your way</value>
+        <value>आपका खाता, आपके तरीके से</value>
     </data>
     <data name="CalendarViewDay" xml:space="preserve">
-        <value>Day</value>
+        <value>दिन</value>
     </data>
     <data name="CalendarViewWeek" xml:space="preserve">
-        <value>Week</value>
+        <value>हफ़्ता</value>
     </data>
     <data name="CalendarViewMonth" xml:space="preserve">
-        <value>Month</value>
+        <value>महीना</value>
     </data>
     <data name="CalendarViewYear" xml:space="preserve">
-        <value>Year</value>
+        <value>साल</value>
     </data>
     <data name="CalendarViewAgenda" xml:space="preserve">
-        <value>Agenda</value>
+        <value>एजेंडा</value>
     </data>
     <data name="CalendarModeEvent" xml:space="preserve">
-        <value>Events</value>
+        <value>इवेंट</value>
     </data>
     <data name="CalendarModeTimeline" xml:space="preserve">
-        <value>Timeline</value>
+        <value>टाइमलाइन</value>
     </data>
     <data name="CalendarViewTabsAriaLabel" xml:space="preserve">
-        <value>Views</value>
+        <value>व्यू</value>
     </data>
     <data name="CalendarModeTabsAriaLabel" xml:space="preserve">
-        <value>Modes</value>
+        <value>मोड</value>
     </data>
     <data name="CalendarTodayButton" xml:space="preserve">
-        <value>Today</value>
+        <value>आज</value>
     </data>
     <data name="CalendarAddEventButton" xml:space="preserve">
-        <value>Add Event</value>
+        <value>इवेंट जोड़ें</value>
     </data>
     <data name="CalendarAddEventHoverHint" xml:space="preserve">
-        <value>Add event</value>
+        <value>इवेंट जोड़ें</value>
     </data>
     <data name="CalendarPreviousButtonTitle" xml:space="preserve">
-        <value>Previous</value>
+        <value>पिछला</value>
     </data>
     <data name="CalendarNextButtonTitle" xml:space="preserve">
-        <value>Next</value>
+        <value>अगला</value>
     </data>
     <data name="CalendarPreviousMonthAriaLabel" xml:space="preserve">
-        <value>Previous month</value>
+        <value>पिछला महीना</value>
     </data>
     <data name="CalendarNextMonthAriaLabel" xml:space="preserve">
-        <value>Next month</value>
+        <value>अगला महीना</value>
     </data>
     <data name="CalendarPickerHourAriaLabel" xml:space="preserve">
-        <value>Hour</value>
+        <value>घंटा</value>
     </data>
     <data name="CalendarPickerMinuteAriaLabel" xml:space="preserve">
-        <value>Minute</value>
+        <value>मिनट</value>
     </data>
     <data name="CalendarPickerMeridiemAriaLabel" xml:space="preserve">
         <value>AM/PM</value>
     </data>
     <data name="CalendarPickerSelectedDayAriaLabel" xml:space="preserve">
-        <value>selected</value>
+        <value>चुना गया</value>
     </data>
     <data name="CalendarSettingsButtonTitle" xml:space="preserve">
-        <value>Settings</value>
+        <value>सेटिंग्स</value>
     </data>
     <data name="CalendarFilterByColorAriaLabel" xml:space="preserve">
-        <value>Filter events by color</value>
+        <value>इवेंट को रंग के हिसाब से फ़िल्टर करें</value>
     </data>
     <data name="CalendarFilterByPersonAriaLabel" xml:space="preserve">
-        <value>Filter events by person in current view</value>
+        <value>मौजूदा व्यू में इवेंट को व्यक्ति के हिसाब से फ़िल्टर करें</value>
     </data>
     <data name="CalendarAllColorsOption" xml:space="preserve">
-        <value>All colors</value>
+        <value>सभी रंग</value>
     </data>
     <data name="CalendarAllPeopleOption" xml:space="preserve">
-        <value>All people</value>
+        <value>सभी लोग</value>
     </data>
     <data name="CalendarUnnamedAttendee" xml:space="preserve">
-        <value>(Unnamed)</value>
+        <value>(बिना नाम)</value>
     </data>
     <data name="CalendarCalendarSettingsLabel" xml:space="preserve">
-        <value>Calendar settings</value>
+        <value>कैलेंडर सेटिंग्स</value>
     </data>
     <data name="CalendarDotBadgeLabel" xml:space="preserve">
-        <value>Dot badge</value>
+        <value>डॉट बैज</value>
     </data>
     <data name="CalendarTwentyFourHourFormatLabel" xml:space="preserve">
-        <value>24-hour format</value>
+        <value>24-घंटे का फ़ॉर्मैट</value>
     </data>
     <data name="CalendarDayStartsAtLabel" xml:space="preserve">
-        <value>Day starts at</value>
+        <value>दिन की शुरुआत</value>
     </data>
     <data name="CalendarHourSuffix" xml:space="preserve">
-        <value>h</value>
+        <value>बजे</value>
     </data>
     <data name="CalendarAgendaGroupByLabel" xml:space="preserve">
-        <value>Agenda group by</value>
+        <value>एजेंडा ग्रुपिंग</value>
     </data>
     <data name="CalendarAgendaGroupByDate" xml:space="preserve">
-        <value>Date</value>
+        <value>तारीख़</value>
     </data>
     <data name="CalendarAgendaGroupByColor" xml:space="preserve">
-        <value>Color</value>
+        <value>रंग</value>
     </data>
     <data name="CalendarStackedEventsLabel" xml:space="preserve">
-        <value>Stack overlapping events</value>
+        <value>ओवरलैप होने वाले इवेंट एक के ऊपर एक दिखाएँ</value>
     </data>
     <data name="CalendarShowDayViewCalendarLabel" xml:space="preserve">
-        <value>Show calendar in day view</value>
+        <value>दिन वाले व्यू में कैलेंडर दिखाएँ</value>
     </data>
     <data name="CalendarShowWeekNumbersLabel" xml:space="preserve">
-        <value>Show week numbers</value>
+        <value>हफ़्ते के नंबर दिखाएँ</value>
     </data>
     <data name="CalendarShowCurrentTimeIndicatorLabel" xml:space="preserve">
-        <value>Show current time</value>
+        <value>मौजूदा समय दिखाएँ</value>
     </data>
     <data name="CalendarSlotDurationLabel" xml:space="preserve">
-        <value>Slot duration</value>
+        <value>स्लॉट की अवधि</value>
     </data>
     <data name="CalendarMinuteSuffix" xml:space="preserve">
-        <value>min</value>
+        <value>मिनट</value>
     </data>
     <data name="CalendarWeekMobileWarning" xml:space="preserve">
-        <value>Weekly view is not recommended on smaller devices. Please switch to a desktop device or use the daily view instead.</value>
+        <value>छोटे डिवाइस पर हफ़्ते वाले व्यू की सलाह नहीं दी जाती। कृपया डेस्कटॉप डिवाइस पर जाएँ या इसके बजाय दिन वाला व्यू इस्तेमाल करें।</value>
     </data>
     <data name="CalendarHappeningNowTitle" xml:space="preserve">
-        <value>Happening now</value>
+        <value>अभी चल रहा है</value>
     </data>
     <data name="CalendarNoAppointmentsNow" xml:space="preserve">
-        <value>No appointments at the moment</value>
+        <value>फ़िलहाल कोई अपॉइंटमेंट नहीं</value>
     </data>
     <data name="CalendarSearchEventsPlaceholder" xml:space="preserve">
-        <value>Search events...</value>
+        <value>इवेंट खोजें...</value>
     </data>
     <data name="CalendarNoEventsFound" xml:space="preserve">
-        <value>No events found.</value>
+        <value>कोई इवेंट नहीं मिला।</value>
     </data>
     <data name="CalendarEventListTitleFormat" xml:space="preserve">
-        <value>Events on {0}</value>
+        <value>{0} के इवेंट</value>
     </data>
     <data name="CalendarEventListCountFormat" xml:space="preserve">
-        <value>{0} event(s)</value>
+        <value>{0} इवेंट</value>
     </data>
     <data name="CalendarMoreEventsFormat" xml:space="preserve">
-        <value>+{0} more</value>
+        <value>+{0} और</value>
     </data>
     <data name="CalendarAddEventDialogTitle" xml:space="preserve">
-        <value>Add New Event</value>
+        <value>नया इवेंट जोड़ें</value>
     </data>
     <data name="CalendarEditEventDialogTitle" xml:space="preserve">
-        <value>Edit Event</value>
+        <value>इवेंट संपादित करें</value>
     </data>
     <data name="CalendarAddEventDialogSubtitle" xml:space="preserve">
-        <value>Create a new event for your calendar.</value>
+        <value>अपने कैलेंडर के लिए नया इवेंट बनाएँ।</value>
     </data>
     <data name="CalendarEditEventDialogSubtitle" xml:space="preserve">
-        <value>Modify your existing event.</value>
+        <value>अपने मौजूदा इवेंट में बदलाव करें।</value>
     </data>
     <data name="CalendarCloseAriaLabel" xml:space="preserve">
-        <value>Close</value>
+        <value>बंद करें</value>
     </data>
     <data name="CalendarCloseButton" xml:space="preserve">
-        <value>Close</value>
+        <value>बंद करें</value>
     </data>
     <data name="CalendarCancelButton" xml:space="preserve">
-        <value>Cancel</value>
+        <value>रद्द करें</value>
     </data>
     <data name="CalendarEditButton" xml:space="preserve">
-        <value>Edit</value>
+        <value>संपादित करें</value>
     </data>
     <data name="CalendarDeleteButton" xml:space="preserve">
-        <value>Delete</value>
+        <value>हटाएँ</value>
     </data>
     <data name="CalendarCreateEventButton" xml:space="preserve">
-        <value>Create Event</value>
+        <value>इवेंट बनाएँ</value>
     </data>
     <data name="CalendarSaveChangesButton" xml:space="preserve">
-        <value>Save Changes</value>
+        <value>बदलाव सहेजें</value>
     </data>
     <data name="CalendarTitleLabel" xml:space="preserve">
-        <value>Title</value>
+        <value>शीर्षक</value>
     </data>
     <data name="CalendarEventTitlePlaceholder" xml:space="preserve">
-        <value>Event title</value>
+        <value>इवेंट का शीर्षक</value>
     </data>
     <data name="CalendarStartDateTimeLabel" xml:space="preserve">
-        <value>Start Date &amp; Time</value>
+        <value>शुरू होने की तारीख़ और समय</value>
     </data>
     <data name="CalendarEndDateTimeLabel" xml:space="preserve">
-        <value>End Date &amp; Time</value>
+        <value>ख़त्म होने की तारीख़ और समय</value>
     </data>
     <data name="CalendarColorLabel" xml:space="preserve">
-        <value>Color</value>
+        <value>रंग</value>
     </data>
     <data name="CalendarEventColorAriaLabel" xml:space="preserve">
-        <value>Event color</value>
+        <value>इवेंट का रंग</value>
     </data>
     <data name="CalendarDescriptionLabel" xml:space="preserve">
-        <value>Description</value>
+        <value>विवरण</value>
     </data>
     <data name="CalendarEventDescriptionPlaceholder" xml:space="preserve">
-        <value>Event description</value>
+        <value>इवेंट का विवरण</value>
     </data>
     <data name="CalendarAttendeesLabel" xml:space="preserve">
-        <value>Attendees</value>
+        <value>प्रतिभागी</value>
     </data>
     <data name="CalendarNoAttendeesText" xml:space="preserve">
-        <value>No attendees</value>
+        <value>कोई प्रतिभागी नहीं</value>
     </data>
     <data name="CalendarFirstNamePlaceholder" xml:space="preserve">
-        <value>First name</value>
+        <value>पहला नाम</value>
     </data>
     <data name="CalendarLastNamePlaceholder" xml:space="preserve">
-        <value>Last name</value>
+        <value>उपनाम</value>
     </data>
     <data name="CalendarIdOptionalPlaceholder" xml:space="preserve">
-        <value>ID (optional)</value>
+        <value>ID (वैकल्पिक)</value>
     </data>
     <data name="CalendarAddButton" xml:space="preserve">
-        <value>Add</value>
+        <value>जोड़ें</value>
     </data>
     <data name="CalendarRemoveAttendeeAriaLabel" xml:space="preserve">
-        <value>Remove attendee</value>
+        <value>प्रतिभागी हटाएँ</value>
     </data>
     <data name="CalendarStartDateLabel" xml:space="preserve">
-        <value>Start Date</value>
+        <value>शुरू होने की तारीख़</value>
     </data>
     <data name="CalendarEndDateLabel" xml:space="preserve">
-        <value>End Date</value>
+        <value>ख़त्म होने की तारीख़</value>
     </data>
     <data name="CalendarAtWord" xml:space="preserve">
-        <value>at</value>
+        <value>को</value>
     </data>
     <data name="CalendarAllDayLabel" xml:space="preserve">
-        <value>All day</value>
+        <value>पूरे दिन</value>
     </data>
     <data name="CalendarWeekNumberFormat" xml:space="preserve">
-        <value>W{0}</value>
+        <value>ह{0}</value>
     </data>
     <data name="CalendarWeekNumberAriaLabelFormat" xml:space="preserve">
-        <value>Week {0}</value>
+        <value>हफ़्ता {0}</value>
     </data>
     <data name="CalendarEventOverlapMessage" xml:space="preserve">
-        <value>This time range is already taken on that resource.</value>
+        <value>उस रिसोर्स पर यह समय पहले से बुक है।</value>
     </data>
     <data name="CalendarOutOfRangeMessage" xml:space="preserve">
-        <value>That date is outside the allowed range.</value>
+        <value>यह तारीख़ तय सीमा से बाहर है।</value>
     </data>
     <data name="CalendarOutsideBusinessHoursMessage" xml:space="preserve">
-        <value>That time is outside business hours.</value>
+        <value>यह समय कामकाजी घंटों से बाहर है।</value>
     </data>
     <data name="CalendarBlockedMessage" xml:space="preserve">
-        <value>That time is unavailable.</value>
+        <value>यह समय उपलब्ध नहीं है।</value>
     </data>
     <data name="CalendarHighlightBusinessHoursLabel" xml:space="preserve">
-        <value>Highlight business hours</value>
+        <value>कामकाजी घंटे हाइलाइट करें</value>
     </data>
     <data name="CalendarNavLinkDayAriaLabelFormat" xml:space="preserve">
-        <value>Go to {0}</value>
+        <value>{0} पर जाएँ</value>
     </data>
     <data name="CalendarNavLinkWeekAriaLabelFormat" xml:space="preserve">
-        <value>Go to week {0}</value>
+        <value>हफ़्ते {0} पर जाएँ</value>
     </data>
     <data name="CalendarValidationTitleRequired" xml:space="preserve">
-        <value>Title is required</value>
+        <value>शीर्षक ज़रूरी है</value>
     </data>
     <data name="CalendarValidationDescriptionRequired" xml:space="preserve">
-        <value>Description is required</value>
+        <value>विवरण ज़रूरी है</value>
     </data>
     <data name="CalendarValidationEndAfterStart" xml:space="preserve">
-        <value>End date must be after start date</value>
+        <value>ख़त्म होने की तारीख़ शुरू होने की तारीख़ के बाद होनी चाहिए</value>
     </data>
     <data name="CalendarValidationAttendeeNameRequired" xml:space="preserve">
-        <value>First name or last name is required</value>
+        <value>पहला नाम या उपनाम ज़रूरी है</value>
     </data>
     <data name="CalendarResizePreviewAriaLabel" xml:space="preserve">
-        <value>New time range</value>
+        <value>नई समय सीमा</value>
     </data>
     <data name="CalendarRepeatsLabel" xml:space="preserve">
-        <value>Repeats</value>
+        <value>दोहराव</value>
     </data>
     <data name="CalendarRepeatsDaily" xml:space="preserve">
-        <value>Daily</value>
+        <value>दैनिक</value>
     </data>
     <data name="CalendarRepeatsWeekly" xml:space="preserve">
-        <value>Weekly</value>
+        <value>साप्ताहिक</value>
     </data>
     <data name="CalendarRepeatsMonthly" xml:space="preserve">
-        <value>Monthly</value>
+        <value>मासिक</value>
     </data>
     <data name="CalendarRepeatsYearly" xml:space="preserve">
-        <value>Yearly</value>
+        <value>वार्षिक</value>
     </data>
     <data name="CalendarRepeatsIntervalFormat" xml:space="preserve">
-        <value>every {0}</value>
+        <value>हर {0}</value>
     </data>
     <data name="CalendarRepeatsCountFormat" xml:space="preserve">
-        <value>{0} times</value>
+        <value>{0} बार</value>
     </data>
     <data name="CalendarRepeatsUntilFormat" xml:space="preserve">
-        <value>until {0}</value>
+        <value>{0} तक</value>
     </data>
     <data name="CalendarRepeatsOnDaysFormat" xml:space="preserve">
-        <value>on {0}</value>
+        <value>{0} को</value>
     </data>
     <data name="CalendarRepeatsOnWeekOfMonthFormat" xml:space="preserve">
-        <value>on the {0} {1}</value>
+        <value>{0} {1}</value>
     </data>
     <data name="CalendarListSeparator" xml:space="preserve">
         <value>, </value>
     </data>
     <data name="CalendarWeekOfMonthFirst" xml:space="preserve">
-        <value>first</value>
+        <value>पहला</value>
     </data>
     <data name="CalendarWeekOfMonthSecond" xml:space="preserve">
-        <value>second</value>
+        <value>दूसरा</value>
     </data>
     <data name="CalendarWeekOfMonthThird" xml:space="preserve">
-        <value>third</value>
+        <value>तीसरा</value>
     </data>
     <data name="CalendarWeekOfMonthFourth" xml:space="preserve">
-        <value>fourth</value>
+        <value>चौथा</value>
     </data>
     <data name="CalendarWeekOfMonthLast" xml:space="preserve">
-        <value>last</value>
+        <value>आख़िरी</value>
     </data>
     <data name="CalendarRepeatLabel" xml:space="preserve">
-        <value>Repeat</value>
+        <value>दोहराव</value>
     </data>
     <data name="CalendarDoesNotRepeatOption" xml:space="preserve">
-        <value>Does not repeat</value>
+        <value>दोहराया नहीं जाता</value>
     </data>
     <data name="CalendarRepeatEveryLabel" xml:space="preserve">
-        <value>Repeat every</value>
+        <value>दोहराने का अंतराल</value>
     </data>
     <data name="CalendarRepeatDaysUnit" xml:space="preserve">
-        <value>day(s)</value>
+        <value>दिन</value>
     </data>
     <data name="CalendarRepeatWeeksUnit" xml:space="preserve">
-        <value>week(s)</value>
+        <value>हफ़्ते</value>
     </data>
     <data name="CalendarRepeatMonthsUnit" xml:space="preserve">
-        <value>month(s)</value>
+        <value>महीने</value>
     </data>
     <data name="CalendarRepeatYearsUnit" xml:space="preserve">
-        <value>year(s)</value>
+        <value>साल</value>
     </data>
     <data name="CalendarRepeatOnLabel" xml:space="preserve">
-        <value>Repeat on</value>
+        <value>दोहराने के दिन</value>
     </data>
     <data name="CalendarRepeatOnDayOfMonthFormat" xml:space="preserve">
-        <value>Day {0}</value>
+        <value>{0} तारीख़</value>
     </data>
     <data name="CalendarRepeatOnWeekOfMonthFormat" xml:space="preserve">
-        <value>The {0}</value>
+        <value>{0}</value>
     </data>
     <data name="CalendarEndsLabel" xml:space="preserve">
-        <value>Ends</value>
+        <value>समाप्ति</value>
     </data>
     <data name="CalendarEndsNeverOption" xml:space="preserve">
-        <value>Never</value>
+        <value>कभी नहीं</value>
     </data>
     <data name="CalendarEndsOnDateOption" xml:space="preserve">
-        <value>On date</value>
+        <value>तारीख़ पर</value>
     </data>
     <data name="CalendarEndsAfterOption" xml:space="preserve">
-        <value>After</value>
+        <value>इतनी बार के बाद</value>
     </data>
     <data name="CalendarOccurrencesLabel" xml:space="preserve">
-        <value>occurrence(s)</value>
+        <value>बार</value>
     </data>
     <data name="CalendarRepeatExceptionsLabel" xml:space="preserve">
-        <value>Exceptions</value>
+        <value>अपवाद</value>
     </data>
     <data name="CalendarSkipDateButton" xml:space="preserve">
-        <value>Skip date</value>
+        <value>तारीख़ छोड़ें</value>
     </data>
     <data name="CalendarAddDateButton" xml:space="preserve">
-        <value>Add date</value>
+        <value>तारीख़ जोड़ें</value>
     </data>
     <data name="CalendarSkippedDatesLabel" xml:space="preserve">
-        <value>Skipped</value>
+        <value>छोड़ी गई तारीख़ें</value>
     </data>
     <data name="CalendarAddedDatesLabel" xml:space="preserve">
-        <value>Added</value>
+        <value>जोड़ी गई तारीख़ें</value>
     </data>
     <data name="CalendarRemoveDateAriaLabel" xml:space="preserve">
-        <value>Remove date</value>
+        <value>तारीख़ हटाएँ</value>
     </data>
     <data name="CalendarValidationRepeatAtLeastOne" xml:space="preserve">
-        <value>Must be at least 1</value>
+        <value>कम से कम 1 होना चाहिए</value>
     </data>
     <data name="CalendarValidationUntilBeforeStart" xml:space="preserve">
-        <value>The series cannot end before it starts</value>
+        <value>सीरीज़ शुरू होने से पहले ख़त्म नहीं हो सकती</value>
     </data>
     <data name="CalendarRecurringEditTitle" xml:space="preserve">
-        <value>Edit recurring event</value>
+        <value>दोहराए जाने वाले इवेंट को संपादित करें</value>
     </data>
     <data name="CalendarRecurringDeleteTitle" xml:space="preserve">
-        <value>Delete recurring event</value>
+        <value>दोहराए जाने वाले इवेंट को हटाएँ</value>
     </data>
     <data name="CalendarThisOccurrenceOption" xml:space="preserve">
-        <value>This event</value>
+        <value>यह इवेंट</value>
     </data>
     <data name="CalendarAllOccurrencesOption" xml:space="preserve">
-        <value>All events in the series</value>
+        <value>सीरीज़ के सभी इवेंट</value>
     </data>
     <data name="CalendarOkButton" xml:space="preserve">
-        <value>OK</value>
+        <value>ठीक है</value>
     </data>
     <data name="CalendarResourceLabel" xml:space="preserve">
-        <value>Resource</value>
+        <value>रिसोर्स</value>
     </data>
     <data name="CalendarResourceColumnHeader" xml:space="preserve">
-        <value>Resource</value>
+        <value>रिसोर्स</value>
     </data>
     <data name="CalendarNoResourceLabel" xml:space="preserve">
-        <value>Unassigned</value>
+        <value>असाइन नहीं</value>
     </data>
     <data name="CalendarNoResourceOption" xml:space="preserve">
-        <value>(none)</value>
+        <value>(कोई नहीं)</value>
     </data>
     <data name="CalendarNoResourcesMessage" xml:space="preserve">
-        <value>No resources to display.</value>
+        <value>दिखाने के लिए कोई रिसोर्स नहीं है।</value>
     </data>
     <data name="PosStaffNoah" xml:space="preserve">
-        <value>Noah Smit</value>
+        <value>नोआ स्मिट</value>
     </data>
     <data name="PosStaffJulia" xml:space="preserve">
-        <value>Julia Mulder</value>
+        <value>जूलिया मुल्डर</value>
     </data>
     <data name="CategoryPlanning" xml:space="preserve">
-        <value>Planning</value>
+        <value>प्लानिंग</value>
     </data>
     <data name="ShiftsTitle" xml:space="preserve">
-        <value>Shift planner</value>
+        <value>शिफ़्ट प्लानर</value>
     </data>
     <data name="ShiftsDescription" xml:space="preserve">
-        <value>The week's staff schedule for a café: move and resize shifts per person, within opening hours, around time off and without double-booking.</value>
+        <value>एक कैफ़े के स्टाफ़ का हफ़्ते भर का शेड्यूल: हर व्यक्ति की शिफ़्ट खिसकाएँ और छोटी-बड़ी करें, खुले रहने के घंटों के भीतर, छुट्टियों का ध्यान रखते हुए और बिना डबल-बुकिंग के।</value>
     </data>
     <data name="ShiftsCaption" xml:space="preserve">
-        <value>Plan the whole week in minutes</value>
+        <value>पूरे हफ़्ते की योजना मिनटों में बनाएँ</value>
     </data>
     <data name="ShiftsHeading" xml:space="preserve">
-        <value>Staff schedule</value>
+        <value>स्टाफ़ शेड्यूल</value>
     </data>
     <data name="ShiftsSummary" xml:space="preserve">
-        <value>{0} shifts and {1} hours this week</value>
+        <value>इस हफ़्ते {0} शिफ़्ट और {1} घंटे</value>
     </data>
     <data name="ShiftsEmpty" xml:space="preserve">
-        <value>No shifts are planned yet. Select a time on someone's row to add the first one.</value>
+        <value>अभी कोई शिफ़्ट तय नहीं है। पहली शिफ़्ट जोड़ने के लिए किसी की पंक्ति में कोई समय चुनें।</value>
     </data>
     <data name="ShiftsRoleLead" xml:space="preserve">
-        <value>Shift lead</value>
+        <value>शिफ़्ट लीड</value>
     </data>
     <data name="ShiftsRoleBarista" xml:space="preserve">
-        <value>Barista</value>
+        <value>बरिस्ता</value>
     </data>
     <data name="ShiftsRoleBaker" xml:space="preserve">
-        <value>Baker</value>
+        <value>बेकर</value>
     </data>
     <data name="ShiftsRoleCashier" xml:space="preserve">
-        <value>Cashier</value>
+        <value>कैशियर</value>
     </data>
     <data name="ShiftsOpening" xml:space="preserve">
-        <value>Opening</value>
+        <value>ओपनिंग</value>
     </data>
     <data name="ShiftsMidday" xml:space="preserve">
-        <value>Midday</value>
+        <value>दोपहर</value>
     </data>
     <data name="ShiftsBakery" xml:space="preserve">
-        <value>Bakery</value>
+        <value>बेकरी</value>
     </data>
     <data name="ShiftsClosing" xml:space="preserve">
-        <value>Closing</value>
+        <value>क्लोज़िंग</value>
     </data>
     <data name="ShiftsStocktake" xml:space="preserve">
-        <value>Stocktake, café closed</value>
+        <value>स्टॉक की गिनती, कैफ़े बंद</value>
     </data>
     <data name="ShiftsTimeOff" xml:space="preserve">
-        <value>Time off</value>
+        <value>छुट्टी</value>
     </data>
     <data name="HomeBuiltWithSubtitle" xml:space="preserve">
-        <value>The same open-source libraries your app is built on, each with live docs your AI agent can read too.</value>
+        <value>वही ओपन-सोर्स लाइब्रेरी जिन पर आपका ऐप बना है, और हर एक के साथ लाइव डॉक्स, जिन्हें आपका AI एजेंट भी पढ़ सकता है।</value>
     </data>
     <data name="HomeProductBlazorUI" xml:space="preserve">
-        <value>Native Blazor components with theming, right-to-left and accessibility built in.</value>
+        <value>नेटिव Blazor कंपोनेंट, जिनमें थीमिंग, दाएँ से बाएँ और एक्सेसिबिलिटी पहले से शामिल हैं।</value>
     </data>
     <data name="HomeProductBlex" xml:space="preserve">
-        <value>State that survives reloads and travels into every screenshot taken here.</value>
+        <value>ऐसी स्टेट जो रीलोड के बाद भी बनी रहती है और यहाँ लिए गए हर स्क्रीनशॉट तक पहुँचती है।</value>
     </data>
     <data name="HomeProductBortable" xml:space="preserve">
-        <value>Drag-to-reorder lists and grids, like the dashboard's widgets.</value>
+        <value>खींचकर नए क्रम में लगाई जा सकने वाली सूचियाँ और ग्रिड, जैसे डैशबोर्ड के विजेट।</value>
     </data>
     <data name="HomeProductBmotion" xml:space="preserve">
-        <value>Springs, reveals and hover effects, like the ones on this page.</value>
+        <value>स्प्रिंग ऐनिमेशन, रिवील और होवर इफ़ेक्ट, जैसे इस पेज पर हैं।</value>
     </data>
     <data name="HomeProductButil" xml:space="preserve">
-        <value>Browser features from C#, from the clipboard to IndexedDB.</value>
+        <value>C# से ब्राउज़र की सुविधाएँ, क्लिपबोर्ड से लेकर IndexedDB तक।</value>
     </data>
     <data name="HomeProductBoilerplate" xml:space="preserve">
-        <value>The project template this workbench lives in, from database to app stores.</value>
+        <value>वह प्रोजेक्ट टेम्पलेट जिसमें यह वर्कबेंच रहती है, डेटाबेस से लेकर ऐप स्टोर तक।</value>
     </data>
     <data name="HomeCtaTitle" xml:space="preserve">
-        <value>Your next page starts here</value>
+        <value>आपका अगला पेज यहीं से शुरू होता है</value>
     </data>
     <data name="HomeCtaText" xml:space="preserve">
-        <value>Ask your AI agent to design it in the workbench. It builds the page on sample data, checks every state in a real browser and shows you screenshots before any backend code is written.</value>
+        <value>अपने AI एजेंट से कहें कि वह इसे वर्कबेंच में डिज़ाइन करे। वह सैंपल डेटा पर पेज बनाता है, हर स्थिति को असली ब्राउज़र में जाँचता है और कोई भी बैकएंड कोड लिखे जाने से पहले आपको स्क्रीनशॉट दिखाता है।</value>
     </data>
     <data name="HomeCtaOpen" xml:space="preserve">
-        <value>Open the workbench</value>
+        <value>वर्कबेंच खोलें</value>
     </data>
     <data name="HomeCtaPromptLabel" xml:space="preserve">
-        <value>Try asking</value>
+        <value>पूछकर देखें</value>
     </data>
     <data name="HomeCtaPrompt" xml:space="preserve">
-        <value>Design an order history page in the workbench, with loading, empty and error states, and show me phone and desktop screenshots.</value>
+        <value>वर्कबेंच में एक ऑर्डर हिस्ट्री पेज डिज़ाइन करें, जिसमें लोडिंग, खाली और त्रुटि स्थितियाँ हों, और मुझे फ़ोन और डेस्कटॉप के स्क्रीनशॉट दिखाएँ।</value>
     </data>
     <data name="HomeCtaCopy" xml:space="preserve">
-        <value>Copy</value>
+        <value>कॉपी करें</value>
     </data>
     <data name="HomeCtaCopied" xml:space="preserve">
-        <value>Copied</value>
+        <value>कॉपी हो गया</value>
     </data>
     <data name="HomeFooterExplore" xml:space="preserve">
-        <value>Explore</value>
+        <value>एक्सप्लोर करें</value>
     </data>
     <data name="HomeFooterLearn" xml:space="preserve">
-        <value>Learn</value>
+        <value>सीखें</value>
     </data>
     <data name="HomeFooterDocs" xml:space="preserve">
-        <value>bit Boilerplate docs</value>
+        <value>bit Boilerplate डॉक्स</value>
     </data>
     <data name="HomeFooterComponents" xml:space="preserve">
-        <value>bit BlazorUI components</value>
+        <value>bit BlazorUI कंपोनेंट</value>
     </data>
     <data name="HomeFooterSource" xml:space="preserve">
-        <value>Source on GitHub</value>
+        <value>GitHub पर सोर्स कोड</value>
     </data>
 </root>

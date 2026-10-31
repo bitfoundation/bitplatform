@@ -643,7 +643,7 @@
         <value>Bâtiments</value>
     </data>
     <data name="BuildingsDescription" xml:space="preserve">
-        <value>A data grid and a map that stay in sync. Double-click the map to add a building, select one and press Delete to remove it. Advanced map features are in too, like limiting where points can be picked.</value>
+        <value>Une grille de données et une carte qui restent synchronisées. Double-cliquez sur la carte pour ajouter un bâtiment, sélectionnez-en un et appuyez sur Suppr pour le supprimer. La carte offre aussi des fonctions avancées, comme limiter les zones où l’on peut choisir des points.</value>
     </data>
     <data name="BuildingsHeading" xml:space="preserve">
         <value>Bâtiments emblématiques</value>
@@ -868,7 +868,7 @@
         <value>De vrais composants, pas des maquettes</value>
     </data>
     <data name="HomeWhyRealText" xml:space="preserve">
-        <value>Pages use the same bit BlazorUI components, theme and styles as your app, so what you approve here looks the same once it is built into the app.</value>
+        <value>Les pages utilisent les mêmes composants bit BlazorUI, le même thème et les mêmes styles que votre application, donc ce que vous validez ici aura le même rendu une fois intégré à l’application.</value>
     </data>
     <data name="HomeWhyStatesTitle" xml:space="preserve">
         <value>Chaque état à la demande</value>
@@ -886,13 +886,13 @@
         <value>Des captures pour les boutiques</value>
     </data>
     <data name="HomeWhyStoresText" xml:space="preserve">
-        <value>Export pixel-exact images at App Store, Google Play and Microsoft Store sizes, with a colored background and a caption when you want one, rendered by a real browser.</value>
+        <value>Exportez des images au pixel près aux formats de l’App Store, de Google Play et du Microsoft Store, avec un arrière-plan coloré et une légende si vous le souhaitez, rendues par un vrai navigateur.</value>
     </data>
     <data name="HomeWhyHeadStartTitle" xml:space="preserve">
         <value>Une longueur d’avance grâce à bitplatform</value>
     </data>
     <data name="HomeWhyHeadStartText" xml:space="preserve">
-        <value>It starts with ready-made pages, like a point-of-sale dashboard, a shift planner and your app's own settings page. Reuse what fits, learn from the rest, then add your own pages next to them.</value>
+        <value>L’établi est livré avec des pages prêtes à l’emploi, comme un tableau de bord de point de vente, un planning des équipes et la page de paramètres de votre propre application. Réutilisez ce qui vous convient, inspirez-vous du reste, puis ajoutez vos propres pages à côté.</value>
     </data>
     <data name="HomeWhySafeTitle" xml:space="preserve">
         <value>Expérimentez sans risque</value>
@@ -925,7 +925,7 @@
         <value>Intégrez-la à l’application</value>
     </data>
     <data name="HomeHowStep3Text" xml:space="preserve">
-        <value>Rebuild the approved design in your app the way the rest of the app is built, and connect it to real data. Your AI agent follows the same steps.</value>
+        <value>Reconstruisez le design validé dans votre application, de la même manière que le reste de l’application, et reliez-le à de vraies données. Votre agent IA suit les mêmes étapes.</value>
     </data>
     <data name="HomePagesTitle" xml:space="preserve">
         <value>Pages de cet établi</value>
@@ -949,7 +949,7 @@
         <value>Arrière-plan</value>
     </data>
     <data name="BackdropHint" xml:space="preserve">
-        <value>Puts the page in a device on a colored background with a caption, the way store listings show it.</value>
+        <value>Place la page dans un appareil, sur un arrière-plan coloré avec une légende, comme dans les fiches des boutiques.</value>
     </data>
     <data name="BackdropBrand" xml:space="preserve">
         <value>Couleur de l’application</value>
@@ -1132,79 +1132,79 @@ Voici le détail jour par jour :</value>
         <value>Gobelets en carton</value>
     </data>
     <data name="LoadFailed" xml:space="preserve">
-        <value>Couldn't load this. Try again in a moment.</value>
+        <value>Impossible de charger ce contenu. Réessayez dans un instant.</value>
     </data>
     <data name="CategoryAppPages" xml:space="preserve">
-        <value>Your app's pages</value>
+        <value>Pages de votre application</value>
     </data>
     <data name="AppDashboardTitle" xml:space="preserve">
-        <value>Dashboard</value>
+        <value>Tableau de bord</value>
     </data>
     <data name="AppDashboardDescription" xml:space="preserve">
-        <value>The app's own admin dashboard, brought in with demo data, so its states and screenshots are a click away.</value>
+        <value>Le tableau de bord d’administration de l’application elle-même, importé avec des données de démo, pour que ses états et ses captures soient à un clic.</value>
     </data>
     <data name="AppDashboardCaption" xml:space="preserve">
-        <value>Your numbers at a glance</value>
+        <value>Vos chiffres en un coup d’œil</value>
     </data>
     <data name="SettingsTitle" xml:space="preserve">
-        <value>Settings</value>
+        <value>Paramètres</value>
     </data>
     <data name="SettingsDescription" xml:space="preserve">
-        <value>The app's own settings page with profile, account, two-step sign-in, sessions and privacy, running on demo data instead of the server.</value>
+        <value>La page de paramètres de l’application elle-même, avec profil, compte, connexion en deux étapes, sessions et confidentialité, qui fonctionne avec des données de démo au lieu du serveur.</value>
     </data>
     <data name="SettingsCaption" xml:space="preserve">
-        <value>Your account, your way</value>
+        <value>Votre compte, à votre façon</value>
     </data>
     <data name="CalendarViewDay" xml:space="preserve">
-        <value>Day</value>
+        <value>Jour</value>
     </data>
     <data name="CalendarViewWeek" xml:space="preserve">
-        <value>Week</value>
+        <value>Semaine</value>
     </data>
     <data name="CalendarViewMonth" xml:space="preserve">
-        <value>Month</value>
+        <value>Mois</value>
     </data>
     <data name="CalendarViewYear" xml:space="preserve">
-        <value>Year</value>
+        <value>Année</value>
     </data>
     <data name="CalendarViewAgenda" xml:space="preserve">
-        <value>Agenda</value>
+        <value>Planning</value>
     </data>
     <data name="CalendarModeEvent" xml:space="preserve">
-        <value>Events</value>
+        <value>Événements</value>
     </data>
     <data name="CalendarModeTimeline" xml:space="preserve">
-        <value>Timeline</value>
+        <value>Chronologie</value>
     </data>
     <data name="CalendarViewTabsAriaLabel" xml:space="preserve">
-        <value>Views</value>
+        <value>Vues</value>
     </data>
     <data name="CalendarModeTabsAriaLabel" xml:space="preserve">
         <value>Modes</value>
     </data>
     <data name="CalendarTodayButton" xml:space="preserve">
-        <value>Today</value>
+        <value>Aujourd’hui</value>
     </data>
     <data name="CalendarAddEventButton" xml:space="preserve">
-        <value>Add Event</value>
+        <value>Ajouter un événement</value>
     </data>
     <data name="CalendarAddEventHoverHint" xml:space="preserve">
-        <value>Add event</value>
+        <value>Ajouter un événement</value>
     </data>
     <data name="CalendarPreviousButtonTitle" xml:space="preserve">
-        <value>Previous</value>
+        <value>Précédent</value>
     </data>
     <data name="CalendarNextButtonTitle" xml:space="preserve">
-        <value>Next</value>
+        <value>Suivant</value>
     </data>
     <data name="CalendarPreviousMonthAriaLabel" xml:space="preserve">
-        <value>Previous month</value>
+        <value>Mois précédent</value>
     </data>
     <data name="CalendarNextMonthAriaLabel" xml:space="preserve">
-        <value>Next month</value>
+        <value>Mois suivant</value>
     </data>
     <data name="CalendarPickerHourAriaLabel" xml:space="preserve">
-        <value>Hour</value>
+        <value>Heure</value>
     </data>
     <data name="CalendarPickerMinuteAriaLabel" xml:space="preserve">
         <value>Minute</value>
@@ -1213,313 +1213,313 @@ Voici le détail jour par jour :</value>
         <value>AM/PM</value>
     </data>
     <data name="CalendarPickerSelectedDayAriaLabel" xml:space="preserve">
-        <value>selected</value>
+        <value>sélectionné</value>
     </data>
     <data name="CalendarSettingsButtonTitle" xml:space="preserve">
-        <value>Settings</value>
+        <value>Paramètres</value>
     </data>
     <data name="CalendarFilterByColorAriaLabel" xml:space="preserve">
-        <value>Filter events by color</value>
+        <value>Filtrer les événements par couleur</value>
     </data>
     <data name="CalendarFilterByPersonAriaLabel" xml:space="preserve">
-        <value>Filter events by person in current view</value>
+        <value>Filtrer les événements par personne dans la vue actuelle</value>
     </data>
     <data name="CalendarAllColorsOption" xml:space="preserve">
-        <value>All colors</value>
+        <value>Toutes les couleurs</value>
     </data>
     <data name="CalendarAllPeopleOption" xml:space="preserve">
-        <value>All people</value>
+        <value>Toutes les personnes</value>
     </data>
     <data name="CalendarUnnamedAttendee" xml:space="preserve">
-        <value>(Unnamed)</value>
+        <value>(Sans nom)</value>
     </data>
     <data name="CalendarCalendarSettingsLabel" xml:space="preserve">
-        <value>Calendar settings</value>
+        <value>Paramètres du calendrier</value>
     </data>
     <data name="CalendarDotBadgeLabel" xml:space="preserve">
-        <value>Dot badge</value>
+        <value>Pastilles de couleur</value>
     </data>
     <data name="CalendarTwentyFourHourFormatLabel" xml:space="preserve">
-        <value>24-hour format</value>
+        <value>Format 24 heures</value>
     </data>
     <data name="CalendarDayStartsAtLabel" xml:space="preserve">
-        <value>Day starts at</value>
+        <value>La journée commence à</value>
     </data>
     <data name="CalendarHourSuffix" xml:space="preserve">
         <value>h</value>
     </data>
     <data name="CalendarAgendaGroupByLabel" xml:space="preserve">
-        <value>Agenda group by</value>
+        <value>Regrouper le planning par</value>
     </data>
     <data name="CalendarAgendaGroupByDate" xml:space="preserve">
         <value>Date</value>
     </data>
     <data name="CalendarAgendaGroupByColor" xml:space="preserve">
-        <value>Color</value>
+        <value>Couleur</value>
     </data>
     <data name="CalendarStackedEventsLabel" xml:space="preserve">
-        <value>Stack overlapping events</value>
+        <value>Empiler les événements qui se chevauchent</value>
     </data>
     <data name="CalendarShowDayViewCalendarLabel" xml:space="preserve">
-        <value>Show calendar in day view</value>
+        <value>Afficher le calendrier dans la vue Jour</value>
     </data>
     <data name="CalendarShowWeekNumbersLabel" xml:space="preserve">
-        <value>Show week numbers</value>
+        <value>Afficher les numéros de semaine</value>
     </data>
     <data name="CalendarShowCurrentTimeIndicatorLabel" xml:space="preserve">
-        <value>Show current time</value>
+        <value>Afficher l’heure actuelle</value>
     </data>
     <data name="CalendarSlotDurationLabel" xml:space="preserve">
-        <value>Slot duration</value>
+        <value>Échelle de temps</value>
     </data>
     <data name="CalendarMinuteSuffix" xml:space="preserve">
         <value>min</value>
     </data>
     <data name="CalendarWeekMobileWarning" xml:space="preserve">
-        <value>Weekly view is not recommended on smaller devices. Please switch to a desktop device or use the daily view instead.</value>
+        <value>La vue Semaine est déconseillée sur les petits appareils. Passez sur un ordinateur de bureau ou utilisez plutôt la vue Jour.</value>
     </data>
     <data name="CalendarHappeningNowTitle" xml:space="preserve">
-        <value>Happening now</value>
+        <value>En cours</value>
     </data>
     <data name="CalendarNoAppointmentsNow" xml:space="preserve">
-        <value>No appointments at the moment</value>
+        <value>Aucun rendez-vous pour le moment</value>
     </data>
     <data name="CalendarSearchEventsPlaceholder" xml:space="preserve">
-        <value>Search events...</value>
+        <value>Rechercher des événements...</value>
     </data>
     <data name="CalendarNoEventsFound" xml:space="preserve">
-        <value>No events found.</value>
+        <value>Aucun événement trouvé.</value>
     </data>
     <data name="CalendarEventListTitleFormat" xml:space="preserve">
-        <value>Events on {0}</value>
+        <value>Événements du {0}</value>
     </data>
     <data name="CalendarEventListCountFormat" xml:space="preserve">
-        <value>{0} event(s)</value>
+        <value>{0} événement(s)</value>
     </data>
     <data name="CalendarMoreEventsFormat" xml:space="preserve">
-        <value>+{0} more</value>
+        <value>+{0} de plus</value>
     </data>
     <data name="CalendarAddEventDialogTitle" xml:space="preserve">
-        <value>Add New Event</value>
+        <value>Nouvel événement</value>
     </data>
     <data name="CalendarEditEventDialogTitle" xml:space="preserve">
-        <value>Edit Event</value>
+        <value>Modifier l’événement</value>
     </data>
     <data name="CalendarAddEventDialogSubtitle" xml:space="preserve">
-        <value>Create a new event for your calendar.</value>
+        <value>Créez un nouvel événement dans votre calendrier.</value>
     </data>
     <data name="CalendarEditEventDialogSubtitle" xml:space="preserve">
-        <value>Modify your existing event.</value>
+        <value>Modifiez votre événement existant.</value>
     </data>
     <data name="CalendarCloseAriaLabel" xml:space="preserve">
-        <value>Close</value>
+        <value>Fermer</value>
     </data>
     <data name="CalendarCloseButton" xml:space="preserve">
-        <value>Close</value>
+        <value>Fermer</value>
     </data>
     <data name="CalendarCancelButton" xml:space="preserve">
-        <value>Cancel</value>
+        <value>Annuler</value>
     </data>
     <data name="CalendarEditButton" xml:space="preserve">
-        <value>Edit</value>
+        <value>Modifier</value>
     </data>
     <data name="CalendarDeleteButton" xml:space="preserve">
-        <value>Delete</value>
+        <value>Supprimer</value>
     </data>
     <data name="CalendarCreateEventButton" xml:space="preserve">
-        <value>Create Event</value>
+        <value>Créer l’événement</value>
     </data>
     <data name="CalendarSaveChangesButton" xml:space="preserve">
-        <value>Save Changes</value>
+        <value>Enregistrer les modifications</value>
     </data>
     <data name="CalendarTitleLabel" xml:space="preserve">
-        <value>Title</value>
+        <value>Titre</value>
     </data>
     <data name="CalendarEventTitlePlaceholder" xml:space="preserve">
-        <value>Event title</value>
+        <value>Titre de l’événement</value>
     </data>
     <data name="CalendarStartDateTimeLabel" xml:space="preserve">
-        <value>Start Date &amp; Time</value>
+        <value>Date et heure de début</value>
     </data>
     <data name="CalendarEndDateTimeLabel" xml:space="preserve">
-        <value>End Date &amp; Time</value>
+        <value>Date et heure de fin</value>
     </data>
     <data name="CalendarColorLabel" xml:space="preserve">
-        <value>Color</value>
+        <value>Couleur</value>
     </data>
     <data name="CalendarEventColorAriaLabel" xml:space="preserve">
-        <value>Event color</value>
+        <value>Couleur de l’événement</value>
     </data>
     <data name="CalendarDescriptionLabel" xml:space="preserve">
         <value>Description</value>
     </data>
     <data name="CalendarEventDescriptionPlaceholder" xml:space="preserve">
-        <value>Event description</value>
+        <value>Description de l’événement</value>
     </data>
     <data name="CalendarAttendeesLabel" xml:space="preserve">
-        <value>Attendees</value>
+        <value>Participants</value>
     </data>
     <data name="CalendarNoAttendeesText" xml:space="preserve">
-        <value>No attendees</value>
+        <value>Aucun participant</value>
     </data>
     <data name="CalendarFirstNamePlaceholder" xml:space="preserve">
-        <value>First name</value>
+        <value>Prénom</value>
     </data>
     <data name="CalendarLastNamePlaceholder" xml:space="preserve">
-        <value>Last name</value>
+        <value>Nom</value>
     </data>
     <data name="CalendarIdOptionalPlaceholder" xml:space="preserve">
-        <value>ID (optional)</value>
+        <value>ID (facultatif)</value>
     </data>
     <data name="CalendarAddButton" xml:space="preserve">
-        <value>Add</value>
+        <value>Ajouter</value>
     </data>
     <data name="CalendarRemoveAttendeeAriaLabel" xml:space="preserve">
-        <value>Remove attendee</value>
+        <value>Retirer le participant</value>
     </data>
     <data name="CalendarStartDateLabel" xml:space="preserve">
-        <value>Start Date</value>
+        <value>Date de début</value>
     </data>
     <data name="CalendarEndDateLabel" xml:space="preserve">
-        <value>End Date</value>
+        <value>Date de fin</value>
     </data>
     <data name="CalendarAtWord" xml:space="preserve">
-        <value>at</value>
+        <value>à</value>
     </data>
     <data name="CalendarAllDayLabel" xml:space="preserve">
-        <value>All day</value>
+        <value>Toute la journée</value>
     </data>
     <data name="CalendarWeekNumberFormat" xml:space="preserve">
-        <value>W{0}</value>
+        <value>S{0}</value>
     </data>
     <data name="CalendarWeekNumberAriaLabelFormat" xml:space="preserve">
-        <value>Week {0}</value>
+        <value>Semaine {0}</value>
     </data>
     <data name="CalendarEventOverlapMessage" xml:space="preserve">
-        <value>This time range is already taken on that resource.</value>
+        <value>Ce créneau est déjà occupé sur cette ressource.</value>
     </data>
     <data name="CalendarOutOfRangeMessage" xml:space="preserve">
-        <value>That date is outside the allowed range.</value>
+        <value>Cette date est en dehors de la plage autorisée.</value>
     </data>
     <data name="CalendarOutsideBusinessHoursMessage" xml:space="preserve">
-        <value>That time is outside business hours.</value>
+        <value>Cet horaire est en dehors des heures ouvrables.</value>
     </data>
     <data name="CalendarBlockedMessage" xml:space="preserve">
-        <value>That time is unavailable.</value>
+        <value>Ce créneau n’est pas disponible.</value>
     </data>
     <data name="CalendarHighlightBusinessHoursLabel" xml:space="preserve">
-        <value>Highlight business hours</value>
+        <value>Mettre en évidence les heures ouvrables</value>
     </data>
     <data name="CalendarNavLinkDayAriaLabelFormat" xml:space="preserve">
-        <value>Go to {0}</value>
+        <value>Aller au {0}</value>
     </data>
     <data name="CalendarNavLinkWeekAriaLabelFormat" xml:space="preserve">
-        <value>Go to week {0}</value>
+        <value>Aller à la semaine {0}</value>
     </data>
     <data name="CalendarValidationTitleRequired" xml:space="preserve">
-        <value>Title is required</value>
+        <value>Le titre est obligatoire</value>
     </data>
     <data name="CalendarValidationDescriptionRequired" xml:space="preserve">
-        <value>Description is required</value>
+        <value>La description est obligatoire</value>
     </data>
     <data name="CalendarValidationEndAfterStart" xml:space="preserve">
-        <value>End date must be after start date</value>
+        <value>La date de fin doit être postérieure à la date de début</value>
     </data>
     <data name="CalendarValidationAttendeeNameRequired" xml:space="preserve">
-        <value>First name or last name is required</value>
+        <value>Le prénom ou le nom est obligatoire</value>
     </data>
     <data name="CalendarResizePreviewAriaLabel" xml:space="preserve">
-        <value>New time range</value>
+        <value>Nouvelle plage horaire</value>
     </data>
     <data name="CalendarRepeatsLabel" xml:space="preserve">
-        <value>Repeats</value>
+        <value>Répétition</value>
     </data>
     <data name="CalendarRepeatsDaily" xml:space="preserve">
-        <value>Daily</value>
+        <value>Quotidienne</value>
     </data>
     <data name="CalendarRepeatsWeekly" xml:space="preserve">
-        <value>Weekly</value>
+        <value>Hebdomadaire</value>
     </data>
     <data name="CalendarRepeatsMonthly" xml:space="preserve">
-        <value>Monthly</value>
+        <value>Mensuelle</value>
     </data>
     <data name="CalendarRepeatsYearly" xml:space="preserve">
-        <value>Yearly</value>
+        <value>Annuelle</value>
     </data>
     <data name="CalendarRepeatsIntervalFormat" xml:space="preserve">
-        <value>every {0}</value>
+        <value>intervalle de {0}</value>
     </data>
     <data name="CalendarRepeatsCountFormat" xml:space="preserve">
-        <value>{0} times</value>
+        <value>{0} fois</value>
     </data>
     <data name="CalendarRepeatsUntilFormat" xml:space="preserve">
-        <value>until {0}</value>
+        <value>jusqu’au {0}</value>
     </data>
     <data name="CalendarRepeatsOnDaysFormat" xml:space="preserve">
-        <value>on {0}</value>
+        <value>le {0}</value>
     </data>
     <data name="CalendarRepeatsOnWeekOfMonthFormat" xml:space="preserve">
-        <value>on the {0} {1}</value>
+        <value>le {0} {1}</value>
     </data>
     <data name="CalendarListSeparator" xml:space="preserve">
         <value>, </value>
     </data>
     <data name="CalendarWeekOfMonthFirst" xml:space="preserve">
-        <value>first</value>
+        <value>premier</value>
     </data>
     <data name="CalendarWeekOfMonthSecond" xml:space="preserve">
-        <value>second</value>
+        <value>deuxième</value>
     </data>
     <data name="CalendarWeekOfMonthThird" xml:space="preserve">
-        <value>third</value>
+        <value>troisième</value>
     </data>
     <data name="CalendarWeekOfMonthFourth" xml:space="preserve">
-        <value>fourth</value>
+        <value>quatrième</value>
     </data>
     <data name="CalendarWeekOfMonthLast" xml:space="preserve">
-        <value>last</value>
+        <value>dernier</value>
     </data>
     <data name="CalendarRepeatLabel" xml:space="preserve">
-        <value>Repeat</value>
+        <value>Répétition</value>
     </data>
     <data name="CalendarDoesNotRepeatOption" xml:space="preserve">
-        <value>Does not repeat</value>
+        <value>Ne se répète pas</value>
     </data>
     <data name="CalendarRepeatEveryLabel" xml:space="preserve">
-        <value>Repeat every</value>
+        <value>Intervalle de répétition</value>
     </data>
     <data name="CalendarRepeatDaysUnit" xml:space="preserve">
-        <value>day(s)</value>
+        <value>jour(s)</value>
     </data>
     <data name="CalendarRepeatWeeksUnit" xml:space="preserve">
-        <value>week(s)</value>
+        <value>semaine(s)</value>
     </data>
     <data name="CalendarRepeatMonthsUnit" xml:space="preserve">
-        <value>month(s)</value>
+        <value>mois</value>
     </data>
     <data name="CalendarRepeatYearsUnit" xml:space="preserve">
-        <value>year(s)</value>
+        <value>an(s)</value>
     </data>
     <data name="CalendarRepeatOnLabel" xml:space="preserve">
-        <value>Repeat on</value>
+        <value>Se répète</value>
     </data>
     <data name="CalendarRepeatOnDayOfMonthFormat" xml:space="preserve">
-        <value>Day {0}</value>
+        <value>Le {0}</value>
     </data>
     <data name="CalendarRepeatOnWeekOfMonthFormat" xml:space="preserve">
-        <value>The {0}</value>
+        <value>Le {0}</value>
     </data>
     <data name="CalendarEndsLabel" xml:space="preserve">
-        <value>Ends</value>
+        <value>Se termine</value>
     </data>
     <data name="CalendarEndsNeverOption" xml:space="preserve">
-        <value>Never</value>
+        <value>Jamais</value>
     </data>
     <data name="CalendarEndsOnDateOption" xml:space="preserve">
-        <value>On date</value>
+        <value>À une date</value>
     </data>
     <data name="CalendarEndsAfterOption" xml:space="preserve">
-        <value>After</value>
+        <value>Après</value>
     </data>
     <data name="CalendarOccurrencesLabel" xml:space="preserve">
         <value>occurrence(s)</value>
@@ -1528,55 +1528,55 @@ Voici le détail jour par jour :</value>
         <value>Exceptions</value>
     </data>
     <data name="CalendarSkipDateButton" xml:space="preserve">
-        <value>Skip date</value>
+        <value>Exclure la date</value>
     </data>
     <data name="CalendarAddDateButton" xml:space="preserve">
-        <value>Add date</value>
+        <value>Ajouter la date</value>
     </data>
     <data name="CalendarSkippedDatesLabel" xml:space="preserve">
-        <value>Skipped</value>
+        <value>Exclues</value>
     </data>
     <data name="CalendarAddedDatesLabel" xml:space="preserve">
-        <value>Added</value>
+        <value>Ajoutées</value>
     </data>
     <data name="CalendarRemoveDateAriaLabel" xml:space="preserve">
-        <value>Remove date</value>
+        <value>Retirer la date</value>
     </data>
     <data name="CalendarValidationRepeatAtLeastOne" xml:space="preserve">
-        <value>Must be at least 1</value>
+        <value>Doit être au moins égal à 1</value>
     </data>
     <data name="CalendarValidationUntilBeforeStart" xml:space="preserve">
-        <value>The series cannot end before it starts</value>
+        <value>La série ne peut pas se terminer avant de commencer</value>
     </data>
     <data name="CalendarRecurringEditTitle" xml:space="preserve">
-        <value>Edit recurring event</value>
+        <value>Modifier l’événement périodique</value>
     </data>
     <data name="CalendarRecurringDeleteTitle" xml:space="preserve">
-        <value>Delete recurring event</value>
+        <value>Supprimer l’événement périodique</value>
     </data>
     <data name="CalendarThisOccurrenceOption" xml:space="preserve">
-        <value>This event</value>
+        <value>Cet événement</value>
     </data>
     <data name="CalendarAllOccurrencesOption" xml:space="preserve">
-        <value>All events in the series</value>
+        <value>Tous les événements de la série</value>
     </data>
     <data name="CalendarOkButton" xml:space="preserve">
         <value>OK</value>
     </data>
     <data name="CalendarResourceLabel" xml:space="preserve">
-        <value>Resource</value>
+        <value>Ressource</value>
     </data>
     <data name="CalendarResourceColumnHeader" xml:space="preserve">
-        <value>Resource</value>
+        <value>Ressource</value>
     </data>
     <data name="CalendarNoResourceLabel" xml:space="preserve">
-        <value>Unassigned</value>
+        <value>Non attribué</value>
     </data>
     <data name="CalendarNoResourceOption" xml:space="preserve">
-        <value>(none)</value>
+        <value>(aucune)</value>
     </data>
     <data name="CalendarNoResourcesMessage" xml:space="preserve">
-        <value>No resources to display.</value>
+        <value>Aucune ressource à afficher.</value>
     </data>
     <data name="PosStaffNoah" xml:space="preserve">
         <value>Noah Smit</value>
@@ -1585,111 +1585,111 @@ Voici le détail jour par jour :</value>
         <value>Julia Mulder</value>
     </data>
     <data name="CategoryPlanning" xml:space="preserve">
-        <value>Planning</value>
+        <value>Planification</value>
     </data>
     <data name="ShiftsTitle" xml:space="preserve">
-        <value>Shift planner</value>
+        <value>Planning des équipes</value>
     </data>
     <data name="ShiftsDescription" xml:space="preserve">
-        <value>The week's staff schedule for a café: move and resize shifts per person, within opening hours, around time off and without double-booking.</value>
+        <value>Le planning de la semaine du personnel d’un café : déplacez les créneaux de chacun et ajustez leur durée, dans les heures d’ouverture, en tenant compte des congés et sans chevauchement.</value>
     </data>
     <data name="ShiftsCaption" xml:space="preserve">
-        <value>Plan the whole week in minutes</value>
+        <value>Planifiez toute la semaine en quelques minutes</value>
     </data>
     <data name="ShiftsHeading" xml:space="preserve">
-        <value>Staff schedule</value>
+        <value>Planning du personnel</value>
     </data>
     <data name="ShiftsSummary" xml:space="preserve">
-        <value>{0} shifts and {1} hours this week</value>
+        <value>{0} créneaux et {1} heures cette semaine</value>
     </data>
     <data name="ShiftsEmpty" xml:space="preserve">
-        <value>No shifts are planned yet. Select a time on someone's row to add the first one.</value>
+        <value>Aucun créneau n’est encore planifié. Sélectionnez une heure sur la ligne d’une personne pour ajouter le premier.</value>
     </data>
     <data name="ShiftsRoleLead" xml:space="preserve">
-        <value>Shift lead</value>
+        <value>Chef d’équipe</value>
     </data>
     <data name="ShiftsRoleBarista" xml:space="preserve">
         <value>Barista</value>
     </data>
     <data name="ShiftsRoleBaker" xml:space="preserve">
-        <value>Baker</value>
+        <value>Boulanger</value>
     </data>
     <data name="ShiftsRoleCashier" xml:space="preserve">
-        <value>Cashier</value>
+        <value>Caissier</value>
     </data>
     <data name="ShiftsOpening" xml:space="preserve">
-        <value>Opening</value>
+        <value>Ouverture</value>
     </data>
     <data name="ShiftsMidday" xml:space="preserve">
-        <value>Midday</value>
+        <value>Midi</value>
     </data>
     <data name="ShiftsBakery" xml:space="preserve">
-        <value>Bakery</value>
+        <value>Boulangerie</value>
     </data>
     <data name="ShiftsClosing" xml:space="preserve">
-        <value>Closing</value>
+        <value>Fermeture</value>
     </data>
     <data name="ShiftsStocktake" xml:space="preserve">
-        <value>Stocktake, café closed</value>
+        <value>Inventaire, café fermé</value>
     </data>
     <data name="ShiftsTimeOff" xml:space="preserve">
-        <value>Time off</value>
+        <value>Congé</value>
     </data>
     <data name="HomeBuiltWithSubtitle" xml:space="preserve">
-        <value>The same open-source libraries your app is built on, each with live docs your AI agent can read too.</value>
+        <value>Les mêmes bibliothèques open source que celles sur lesquelles repose votre application, chacune avec une documentation interactive que votre agent IA peut aussi consulter.</value>
     </data>
     <data name="HomeProductBlazorUI" xml:space="preserve">
-        <value>Native Blazor components with theming, right-to-left and accessibility built in.</value>
+        <value>Des composants Blazor natifs, avec thèmes, écriture de droite à gauche et accessibilité intégrés.</value>
     </data>
     <data name="HomeProductBlex" xml:space="preserve">
-        <value>State that survives reloads and travels into every screenshot taken here.</value>
+        <value>Un état qui survit aux rechargements et se retrouve dans chaque capture prise ici.</value>
     </data>
     <data name="HomeProductBortable" xml:space="preserve">
-        <value>Drag-to-reorder lists and grids, like the dashboard's widgets.</value>
+        <value>Des listes et des grilles réorganisables par glisser-déposer, comme les widgets du tableau de bord.</value>
     </data>
     <data name="HomeProductBmotion" xml:space="preserve">
-        <value>Springs, reveals and hover effects, like the ones on this page.</value>
+        <value>Des animations à ressort, des apparitions et des effets de survol, comme ceux de cette page.</value>
     </data>
     <data name="HomeProductButil" xml:space="preserve">
-        <value>Browser features from C#, from the clipboard to IndexedDB.</value>
+        <value>Les fonctionnalités du navigateur depuis C#, du presse-papiers à IndexedDB.</value>
     </data>
     <data name="HomeProductBoilerplate" xml:space="preserve">
-        <value>The project template this workbench lives in, from database to app stores.</value>
+        <value>Le modèle de projet qui héberge cet établi, de la base de données aux boutiques d’applications.</value>
     </data>
     <data name="HomeCtaTitle" xml:space="preserve">
-        <value>Your next page starts here</value>
+        <value>Votre prochaine page commence ici</value>
     </data>
     <data name="HomeCtaText" xml:space="preserve">
-        <value>Ask your AI agent to design it in the workbench. It builds the page on sample data, checks every state in a real browser and shows you screenshots before any backend code is written.</value>
+        <value>Demandez à votre agent IA de la concevoir sur l’établi. Il construit la page sur des données d’exemple, vérifie chaque état dans un vrai navigateur et vous montre des captures avant qu’une seule ligne de code backend ne soit écrite.</value>
     </data>
     <data name="HomeCtaOpen" xml:space="preserve">
-        <value>Open the workbench</value>
+        <value>Ouvrir l’établi</value>
     </data>
     <data name="HomeCtaPromptLabel" xml:space="preserve">
-        <value>Try asking</value>
+        <value>Essayez de demander</value>
     </data>
     <data name="HomeCtaPrompt" xml:space="preserve">
-        <value>Design an order history page in the workbench, with loading, empty and error states, and show me phone and desktop screenshots.</value>
+        <value>Conçois une page d’historique des commandes sur l’établi, avec les états de chargement, vide et d’erreur, et montre-moi des captures sur téléphone et sur ordinateur.</value>
     </data>
     <data name="HomeCtaCopy" xml:space="preserve">
-        <value>Copy</value>
+        <value>Copier</value>
     </data>
     <data name="HomeCtaCopied" xml:space="preserve">
-        <value>Copied</value>
+        <value>Copié</value>
     </data>
     <data name="HomeFooterExplore" xml:space="preserve">
-        <value>Explore</value>
+        <value>Explorer</value>
     </data>
     <data name="HomeFooterLearn" xml:space="preserve">
-        <value>Learn</value>
+        <value>Apprendre</value>
     </data>
     <data name="HomeFooterDocs" xml:space="preserve">
-        <value>bit Boilerplate docs</value>
+        <value>Documentation de bit Boilerplate</value>
     </data>
     <data name="HomeFooterComponents" xml:space="preserve">
-        <value>bit BlazorUI components</value>
+        <value>Composants bit BlazorUI</value>
     </data>
     <data name="HomeFooterSource" xml:space="preserve">
-        <value>Source on GitHub</value>
+        <value>Code source sur GitHub</value>
     </data>
 </root>
