@@ -352,6 +352,139 @@ public sealed class AdversarialMetadataTests
     }
 
     [TestMethod]
+    public async Task StripSensitiveDropsTheArtistAndTheWindowsCommentAndAuthor()
+    {
+        static ExifValue Utf16(string text)
+        {
+            var bytes = System.Text.Encoding.Unicode.GetBytes(text + "\0");
+            return new ExifValue(ExifType.Byte, bytes.Length, bytes);
+        }
+        var primary = new ExifDirectory()
+            .With(ExifTag.Make, ExifValue.FromString("TestCam"))
+            .With(ExifTag.Copyright, ExifValue.FromString("(c) Studio"))
+            .With(ExifTag.Artist, ExifValue.FromString("Sam Rivera"))
+            .With(ExifTag.WindowsComment, Utf16("private note"))
+            .With(ExifTag.WindowsAuthor, Utf16("Jane Doe"));
+        var exif = new ExifData(primary, null, null, null, default);
+
+        var stripped = exif.StripSensitive();
+        foreach (var tag in new[] { ExifTag.Artist, ExifTag.WindowsComment, ExifTag.WindowsAuthor })
+            Assert.IsFalse(stripped.Primary.Contains(tag), $"tag 0x{tag:X4} survived StripSensitive");
+        Assert.AreEqual("TestCam", stripped.Make);
+        Assert.AreEqual("(c) Studio", stripped.Copyright);
+
+        var secrets = new[]
+        {
+            System.Text.Encoding.ASCII.GetBytes("Sam Rivera"),
+            System.Text.Encoding.Unicode.GetBytes("private note"),
+            System.Text.Encoding.Unicode.GetBytes("Jane Doe"),
+        };
+        var processor = new ImageProcessor();
+        using var img = AdversarialGeometryTests.Noise(32, 32, 19);
+        img.Metadata = new ImageMetadata(exif, sourceFormat: ImageFormat.Jpeg);
+        foreach (var format in new[] { ImageFormat.Jpeg, ImageFormat.Png })
+        {
+            var preserved = await processor.EncodeAsync(img, new ImageExportOptions { Format = format, Metadata = MetadataPolicy.Preserve });
+            var encoded = await processor.EncodeAsync(img, new ImageExportOptions { Format = format, Metadata = MetadataPolicy.StripSensitive });
+            foreach (var secret in secrets)
+            {
+                Assert.IsGreaterThanOrEqualTo(0, preserved.Data.AsSpan().IndexOf(secret), $"{format} dropped a secret even when preserving");
+                Assert.AreEqual(-1, encoded.Data.AsSpan().IndexOf(secret), $"{format} kept a secret");
+            }
+            using var reread = await processor.DecodeAsync(encoded.Data);
+            Assert.AreEqual("TestCam", reread.Metadata?.Exif?.Make);
+            Assert.AreEqual("(c) Studio", reread.Metadata?.Exif?.Copyright);
+        }
+    }
+
+    [TestMethod]
+    public void EntriesSharingOneLargeValueAreCopiedOnlyUpToABudget()
+    {
+        const int entries = 300;
+        const int valueBytes = 1 << 20;
+        var valueOffset = 8 + 2 + entries * 12 + 4;
+        var tiff = new byte[valueOffset + valueBytes];
+        "II*\0"u8.CopyTo(tiff);
+        BinaryPrimitives.WriteUInt32LittleEndian(tiff.AsSpan(4), 8);
+        BinaryPrimitives.WriteUInt16LittleEndian(tiff.AsSpan(8), entries);
+        for (var i = 0; i < entries; i++)
+        {
+            var entry = tiff.AsSpan(10 + i * 12);
+            BinaryPrimitives.WriteUInt16LittleEndian(entry, (ushort)(0x1000 + i));
+            BinaryPrimitives.WriteUInt16LittleEndian(entry[2..], (ushort)ExifType.Undefined);
+            BinaryPrimitives.WriteUInt32LittleEndian(entry[4..], valueBytes);
+            BinaryPrimitives.WriteUInt32LittleEndian(entry[8..], (uint)valueOffset);
+        }
+
+        var exif = ExifData.Parse(tiff);
+
+        Assert.IsNotNull(exif);
+        Assert.IsGreaterThan(0, exif.Primary.Count);
+        Assert.IsLessThan(entries, exif.Primary.Count);
+        Assert.IsLessThanOrEqualTo(4L << 20, exif.Primary.Tags.Sum(t => (long)t.Value.Data.Length));
+    }
+
+    [TestMethod]
+    public void ValuesAcrossDirectoriesAndTheThumbnailShareTheBudget()
+    {
+        const int valueBytes = 1 << 20;
+        const int exifOffset = 8 + 2 + 4 * 12 + 4;
+        const int ifd1Offset = exifOffset + 2 + 3 * 12 + 4;
+        const int valueOffset = ifd1Offset + 2 + 2 * 12 + 4;
+        var tiff = new byte[valueOffset + 2 * valueBytes];
+        "II*\0"u8.CopyTo(tiff);
+        BinaryPrimitives.WriteUInt32LittleEndian(tiff.AsSpan(4), 8);
+        void WriteDirectory(int at, int next, params (ushort Tag, ExifType Type, uint Count, uint Value)[] entries)
+        {
+            BinaryPrimitives.WriteUInt16LittleEndian(tiff.AsSpan(at), (ushort)entries.Length);
+            for (var i = 0; i < entries.Length; i++)
+            {
+                var entry = tiff.AsSpan(at + 2 + i * 12);
+                BinaryPrimitives.WriteUInt16LittleEndian(entry, entries[i].Tag);
+                BinaryPrimitives.WriteUInt16LittleEndian(entry[2..], (ushort)entries[i].Type);
+                BinaryPrimitives.WriteUInt32LittleEndian(entry[4..], entries[i].Count);
+                BinaryPrimitives.WriteUInt32LittleEndian(entry[8..], entries[i].Value);
+            }
+            BinaryPrimitives.WriteUInt32LittleEndian(tiff.AsSpan(at + 2 + entries.Length * 12), (uint)next);
+        }
+        WriteDirectory(8, ifd1Offset,
+            (ExifTag.ExifIfdPointer, ExifType.Long, 1, exifOffset),
+            (0x1001, ExifType.Undefined, valueBytes, valueOffset),
+            (0x1002, ExifType.Undefined, valueBytes, valueOffset),
+            (0x1003, ExifType.Undefined, valueBytes, valueOffset));
+        WriteDirectory(exifOffset, 0,
+            (0x2001, ExifType.Undefined, valueBytes, valueOffset),
+            (0x2002, ExifType.Undefined, valueBytes, valueOffset),
+            (0x2003, ExifType.Undefined, valueBytes, valueOffset));
+        WriteDirectory(ifd1Offset, 0,
+            (0x0201, ExifType.Long, 1, valueOffset),
+            (0x0202, ExifType.Long, 1, 2 * valueBytes));
+
+        var exif = ExifData.Parse(tiff);
+
+        Assert.IsNotNull(exif);
+        Assert.AreEqual(3, exif.Primary.Count);
+        var kept = exif.Primary.Tags.Concat(exif.Exif.Tags).Sum(t => (long)t.Value.Data.Length) + exif.Thumbnail.Length;
+        Assert.IsLessThanOrEqualTo(4L << 20, kept);
+    }
+
+    [TestMethod]
+    public void AnIccProfileThatInflatesPastTheCapIsDropped()
+    {
+        using var img = AdversarialGeometryTests.Noise(8, 8, 3);
+        var png = Codecs.Png.PngEncoder.Encode(img).Data;
+
+        var bomb = PngContainer.WriteMetadata(png, new ImageMetadata(null, new byte[5 << 20], default, ImageFormat.Png));
+        Assert.IsLessThan(64 * 1024, bomb.Length);
+        Assert.IsTrue(PngContainer.ReadMetadata(bomb).IccProfile.IsEmpty);
+
+        var profile = new byte[1 << 20];
+        new Random(5).NextBytes(profile);
+        var real = PngContainer.WriteMetadata(png, new ImageMetadata(null, profile, default, ImageFormat.Png));
+        CollectionAssert.AreEqual(profile, PngContainer.ReadMetadata(real).IccProfile.ToArray());
+    }
+
+    [TestMethod]
     public async Task PreservePolicyKeepsDescriptiveMetadataThroughAJpegRoundTrip()
     {
         var processor = new ImageProcessor();

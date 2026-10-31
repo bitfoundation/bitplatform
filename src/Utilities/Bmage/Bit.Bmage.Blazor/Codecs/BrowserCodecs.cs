@@ -58,7 +58,7 @@ public sealed class BrowserImageDecoder : IImageDecoder
         };
     }
 
-    /// <summary>Reads the dimensions using the browser, for formats with no managed header reader (such as AVIF).</summary>
+    /// <summary>Reads the dimensions using the browser, for a format passed to the constructor that no managed header reader covers.</summary>
     public async ValueTask<ImageInfo?> IdentifyAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
     {
         if (Identify(data.Span) is { } managed) return managed;
@@ -91,7 +91,12 @@ public sealed class BrowserImageDecoder : IImageDecoder
         // The browser can decode straight to a smaller bitmap, which is what keeps a 48 megapixel phone photo from
         // ever existing at full size on a memory constrained device. It only preserves the aspect ratio when told a
         // single axis, so pass the header dimensions along and let the browser side pick the constraining one.
-        var header = options.MaxSize is not null ? Identify(data.Span) : null;
+        var header = Identify(data.Span);
+        // Shrinking to the pixel limit happens only once the browser has decoded at full size, so a header far past the
+        // limit is refused before the browser sees it; four times the limit still leaves a large photo room to shrink.
+        var scalable = options.Limits.MaxPixels > long.MaxValue / 4 ? long.MaxValue : options.Limits.MaxPixels * 4;
+        if (header is { Width: > 0, Height: > 0 } && (long)header.Width * header.Height > scalable)
+            throw new ImageLimitExceededException($"Image dimensions {header.Width}x{header.Height} exceed four times the configured limit of {options.Limits.MaxPixels} pixels.");
         var maxPixels = options.Limits.MaxPixels < long.MaxValue ? options.Limits.MaxPixels : (long?)null;
         if (OperatingSystem.IsBrowser())
         {

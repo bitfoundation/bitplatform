@@ -52,10 +52,18 @@ read or an unbounded allocation.
 
 EXIF parsing is deliberately more forgiving, because metadata is not worth failing an image over: bad offsets, circular
 IFD references and absurd component counts are ignored, and parsing continues. Tests truncate valid EXIF at forty
-different lengths and corrupt its offsets, asserting only that nothing escapes.
+different lengths and corrupt its offsets, asserting only that nothing escapes. The values copied out of one EXIF block,
+its thumbnail included, share a 4 MB budget: a PNG or WebP can carry a far larger block than a JPEG's 64 KB segment, and
+hundreds of entries pointing at one large value would otherwise each copy it. A PNG's colour profile is inflated only up
+to 4 MB and dropped past that, so a small compressed profile cannot unpack into gigabytes.
 
 The GIF LZW decoder bounds its code table and dictionary explicitly, because the classic GIF attack is a stream that
-drives the decoder past the end of its tables.
+drives the decoder past the end of its tables. A frame overhanging the logical screen is clipped to it, as browsers do,
+and its own size is checked against `ImageLimits` before its pixels are allocated.
+
+The JPEG decoder walks the whole image once per scan, however little the scan holds, so a few bytes repeating a scan
+header would each cost a full pass. A baseline image may have no more scans than components, as the standard requires,
+and a progressive one at most 500.
 
 The WebP decoder checks the canvas and every frame against `ImageLimits` before allocating, validates every prefix code
 it builds as complete, bounds every back reference by the pixels already decoded, and rejects a lossless stream that
@@ -80,6 +88,10 @@ together against `MaxTotalPixels` (four times `ImageLimits.MaxPixels` unless set
 colour compresses to almost nothing, so a small file could otherwise ask for many large images. The document is
 validated as any JSON document is, anything malformed, a damaged archive included, is an
 `ImageDocumentFormatException`, and a project that fails to load returns every buffer it had decoded.
+
+A document's operations are as untrusted as its images. A blur, sharpen or high-pass costs the same whatever its radius,
+a resize fused with a crop is checked against `ImageLimits` at the full resized size, as the two steps apart would be,
+and shaping text with a long run of combining marks takes time in proportion to its length.
 
 ## SVG is refused
 
@@ -107,6 +119,10 @@ cross-origin reads produces a clear error naming CORS as the likely cause, rathe
 Only `http`, `https`, `blob` and `data` schemes are accepted; anything else is rejected before the request is made.
 Credentials are not sent unless you opt in with `ImageSource.FromUrl(url, withCredentials: true)`.
 
+The download is held to `BitBmageOptions.MaxSourceBytes`, as an upload is. A response declaring more is refused before
+its body is read, and one sending more is cut off at the limit; either way the load fails with an
+`ImageLimitExceededException`.
+
 If your application accepts a URL from a user, validate it against your own allowlist first. The library cannot know
 which hosts you consider acceptable, and a URL fetched by the browser can be used to probe your users' network.
 
@@ -121,6 +137,10 @@ defences are structural:
 - Batch concurrency is bounded and defaults to 2.
 - `ImageCapabilities.SuggestedMaxWorkingDimension` reports a device-appropriate cap based on reported memory.
 - `MaxCanvasDimension` is probed, because exceeding a browser's canvas limit silently produces a blank image.
+- The browser decodes an image at full size before it can be shrunk to `ImageLimits.MaxPixels`, so a header declaring
+  more than four times that is refused before the browser sees the file.
+- `BrowserTextRasterizer` refuses text whose bitmap would exceed its `Limits`, which the services take from
+  `BitBmageOptions.Limits`, before the browser allocates a canvas for it.
 
 `ImageLimits` refuses absurd dimensions; a `BudgetedPixelAllocator` refuses absurd totals. Give each request on a server,
 or each editor session in a browser, its own budget, and an image that would need more than its share fails with

@@ -40,6 +40,9 @@ public static class ExifTag
     public const ushort Copyright = 0x8298;
     public const ushort ExifIfdPointer = 0x8769;
     public const ushort GpsIfdPointer = 0x8825;
+    // Windows Explorer writes these from its Details tab, as UTF-16 bytes.
+    public const ushort WindowsComment = 0x9C9C;
+    public const ushort WindowsAuthor = 0x9C9D;
     public const ushort InteropIfdPointer = 0xA005;
 
     // EXIF IFD
@@ -361,11 +364,15 @@ public sealed class ExifData
 
     public ExifData WithoutLocation() => Gps.Count == 0 ? this : new ExifData(Primary, Exif, new ExifDirectory(), Interop, Thumbnail);
 
-    /// <summary>Removes privacy-sensitive fields: GPS, serial numbers, owner, user comment, maker note, unique id and thumbnail.</summary>
+    /// <summary>
+    /// Removes privacy-sensitive fields: GPS, serial numbers, the owner's and the artist's names (Windows' author
+    /// included), user comments (Windows' comment included), maker note, unique id and thumbnail.
+    /// </summary>
     public ExifData StripSensitive()
     {
         var exif = Exif.Without(ExifTag.MakerNote, ExifTag.UserComment, ExifTag.ImageUniqueId, ExifTag.OwnerName, ExifTag.BodySerialNumber, ExifTag.LensSerialNumber);
-        return new ExifData(Primary.Without(ExifTag.GpsIfdPointer), exif, new ExifDirectory(), Interop, default);
+        var primary = Primary.Without(ExifTag.GpsIfdPointer, ExifTag.Artist, ExifTag.WindowsAuthor, ExifTag.WindowsComment);
+        return new ExifData(primary, exif, new ExifDirectory(), Interop, default);
     }
 
     /// <summary>Creates a minimal EXIF block with the given orientation.</summary>

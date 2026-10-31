@@ -461,7 +461,7 @@ function closeBitmap(bitmap: ImageBitmap | HTMLImageElement) {
 }
 
 /**
- * Reads dimensions using the browser's own decoder. Only used for formats with no managed header reader (AVIF),
+ * Reads dimensions using the browser's own decoder. Only used for formats with no managed header reader,
  * because it really does decode the image: there is no cheaper way to ask the browser for a size.
  */
 export async function identify(bytes: any, mimeType?: string) {
@@ -706,10 +706,28 @@ export async function writeClipboardImage(bytes: any, mimeType: string) {
 }
 
 /** Fetches a remote image. Subject to CORS; the caller decides whether credentials are sent. */
-export async function fetchImage(url: string, withCredentials: boolean) {
+export async function fetchImage(url: string, withCredentials: boolean, maxBytes: number) {
     const response = await fetch(url, { credentials: withCredentials ? 'include' : 'omit', mode: 'cors' });
     if (!response.ok) throw new Error(`Fetching the image failed with HTTP ${response.status}.`);
-    const blob = await response.blob();
+    // A declared length over the limit is refused before the body is read; counting the body catches the rest.
+    if (maxBytes > 0 && Number(response.headers.get('Content-Length')) > maxBytes) {
+        await response.body?.cancel();
+        return null;
+    }
+    const chunks: BlobPart[] = [];
+    let total = 0;
+    const reader = response.body?.getReader();
+    while (reader) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        total += value.byteLength;
+        if (maxBytes > 0 && total > maxBytes) {
+            await reader.cancel();
+            return null;
+        }
+        chunks.push(value);
+    }
+    const blob = new Blob(chunks, { type: response.headers.get('Content-Type') ?? '' });
     return new ByteResult(new Uint8Array(await blobToArrayBuffer(blob)), { mimeType: blob.type });
 }
 
@@ -794,7 +812,7 @@ export function measureText(text: string, font: string, letterSpacing?: number) 
  * Renders text to RGBA pixels using the platform text engine. Used by the browser text rasteriser so
  * system fonts, emoji and complex scripts render correctly without shipping a font.
  */
-export function renderText(text: string, font: string, color: string, maxWidth: number, letterSpacing: number, lineHeight: number, align?: CanvasTextAlign) {
+export function renderText(text: string, font: string, color: string, maxWidth: number, letterSpacing: number, lineHeight: number, align?: CanvasTextAlign, maxPixels?: number) {
     const probe = rentCanvas(1, 1);
     let metrics: ReturnType<typeof measureLines>;
     try {
@@ -809,6 +827,8 @@ export function renderText(text: string, font: string, color: string, maxWidth: 
     const pad = Math.ceil(metrics.fontSize * 0.35) + 2;
     const width = Math.max(1, Math.ceil(metrics.width) + pad * 2);
     const height = Math.max(1, Math.ceil(metrics.lines.length * metrics.lineHeight) + pad * 2);
+    // Refused before the canvas exists; .NET turns the marker into an ImageLimitExceededException.
+    if (maxPixels && width * height > maxPixels) throw new Error(`text-too-large:${width}x${height}`);
     const canvas = rentCanvas(width, height);
     try {
         const ctx = get2d(canvas);

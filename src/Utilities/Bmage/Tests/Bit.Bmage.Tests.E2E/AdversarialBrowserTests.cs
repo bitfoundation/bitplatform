@@ -184,6 +184,77 @@ public class JsModuleContractTests : DemoTest
     }
 
     /// <summary>
+    /// A fetched image is held to the source limit .NET passes, which reads a null result as the limit exceeded. A blob
+    /// URL's response declares its length, so it is refused before the body is read; a data URL's does not, so its body
+    /// is counted as it arrives.
+    /// </summary>
+    [TestMethod]
+    public async Task FetchingAnImageStopsAtTheSourceLimit()
+    {
+        var page = await OpenAsync("capabilities");
+
+        var result = await EvaluateAgainstModuleAsync(page, $$"""
+            {{MakePng}}
+            const bytes = await makePng(64, 64);
+            const blobUrl = URL.createObjectURL(new Blob([bytes], { type: 'image/png' }));
+            const dataUrl = 'data:image/png;base64,' + btoa(String.fromCharCode(...bytes));
+            const fetched = async (url, maxBytes) => {
+                const handle = await m.fetchImage(url, false, maxBytes);
+                if (!handle) return -1;
+                const length = handle.info().byteLength;
+                handle.dispose();
+                return length;
+            };
+            try {
+                return {
+                    size: bytes.length,
+                    blobAtTheLimit: await fetched(blobUrl, bytes.length),
+                    blobPastIt: await fetched(blobUrl, bytes.length - 1),
+                    dataAtTheLimit: await fetched(dataUrl, bytes.length),
+                    dataPastIt: await fetched(dataUrl, bytes.length - 1),
+                    unlimited: await fetched(dataUrl, 0),
+                };
+            } finally {
+                URL.revokeObjectURL(blobUrl);
+            }
+            """);
+
+        var size = result.GetProperty("size").GetInt32();
+        Assert.AreEqual(size, result.GetProperty("blobAtTheLimit").GetInt32());
+        Assert.AreEqual(-1, result.GetProperty("blobPastIt").GetInt32());
+        Assert.AreEqual(size, result.GetProperty("dataAtTheLimit").GetInt32());
+        Assert.AreEqual(-1, result.GetProperty("dataPastIt").GetInt32());
+        Assert.AreEqual(size, result.GetProperty("unlimited").GetInt32());
+    }
+
+    /// <summary>
+    /// Text whose bitmap would pass the pixel limit is refused before its canvas is made, with the marker .NET turns
+    /// into an ImageLimitExceededException.
+    /// </summary>
+    [TestMethod]
+    public async Task RenderingTextPastThePixelLimitIsRefusedBeforeDrawing()
+    {
+        var page = await OpenAsync("capabilities");
+
+        var result = await EvaluateAgainstModuleAsync(page, """
+            const render = (maxPixels) => {
+                try {
+                    const handle = m.renderText('Hello, world', '48px sans-serif', '#000', null, 0, 1.2, 'left', maxPixels);
+                    const info = handle.info();
+                    handle.dispose();
+                    return `${info.width}x${info.height}`;
+                } catch (e) {
+                    return 'error:' + String(e.message || e);
+                }
+            };
+            return { within: render(10000000), past: render(100) };
+            """);
+
+        Assert.MatchesRegex(@"^\d+x\d+$", result.GetProperty("within").GetString()!);
+        Assert.StartsWith("error:text-too-large:", result.GetProperty("past").GetString()!, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// Decoding, encoding and resizing go to the codec workers wherever the browser can run them there, and give the
     /// pixels the page's own thread gives. Turned off, everything runs on the page; turned on again, workers return.
     /// </summary>
