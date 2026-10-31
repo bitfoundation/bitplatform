@@ -68,16 +68,16 @@ public static class BormDraft
             var rows = new List<(string Path, int Count)>();
             writer.WritePropertyName("values");
             writer.WriteStartObject();
-            foreach (var (field, path) in state.FieldPaths())
+            foreach (var (field, path, sensitive) in state.FieldPaths())
             {
                 if (field.Type == BormFieldType.Object || field.IsPresentational) continue;
+                if (sensitive && !options.IncludeSensitive) continue;
                 if (field.Type == BormFieldType.Array)
                 {
                     rows.Add((path, state.ArrayCount(path)));
                     continue;
                 }
                 if (field.Computed is not null || field.Type == BormFieldType.File) continue;
-                if (field.IsSensitive && !options.IncludeSensitive) continue;
                 if (visible is not null && !visible.Contains(path)) continue;
 
                 var value = state.GetValue(path);

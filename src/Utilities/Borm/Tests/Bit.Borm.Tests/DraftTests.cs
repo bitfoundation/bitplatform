@@ -243,6 +243,45 @@ public class DraftTests
     }
 
     [TestMethod]
+    public void A_sensitive_list_leaves_out_every_row_and_how_many_there_were()
+    {
+        var form = BormBuilder.Create()
+            .Text("name")
+            .ArrayOf("codes", BormFieldType.Text, f => f.Sensitive())
+            .Build();
+        var state = new BormState(form, new BormDictionaryDataAccessor(new Dictionary<string, object?>
+        {
+            ["name"] = "Ada", ["codes"] = new List<object?> { "111111", "222222" }
+        }));
+
+        var draft = BormDraft.Serialize(state);
+
+        Assert.DoesNotContain("111111", draft);
+        Assert.DoesNotContain("codes", draft);
+        CollectionAssert.AreEquivalent(new[] { "name" }, state.Snapshot(new BormSnapshotOptions { ExcludeSensitive = true }).Keys.ToArray());
+    }
+
+    [TestMethod]
+    public void A_password_in_a_repeater_row_stays_out_of_a_snapshot_that_leaves_out_sensitive_values()
+    {
+        var form = BormBuilder.Create()
+            .Array("users", u => u.Text("login").Password("secret"))
+            .Build();
+        var state = new BormState(form, new BormDictionaryDataAccessor(new Dictionary<string, object?>
+        {
+            ["users"] = new List<object?> { new Dictionary<string, object?> { ["login"] = "ada", ["secret"] = "hunter2" } }
+        }));
+
+        var payload = state.Snapshot(new BormSnapshotOptions { ExcludeSensitive = true });
+
+        CollectionAssert.AreEquivalent(new[] { "users[0].login" }, payload.Keys.ToArray());
+        Assert.IsTrue(state.Snapshot(new BormSnapshotOptions()).ContainsKey("users"));
+        var draft = BormDraft.Serialize(state);
+        Assert.DoesNotContain("hunter2", draft);
+        StringAssert.Contains(draft, "\"users[0].login\":\"ada\"");
+    }
+
+    [TestMethod]
     public void The_version_and_the_sensitive_flag_travel_through_json_schema()
     {
         var back = BormJsonSchemaImporter.Import(BormJsonSchemaExporter.Export(Form()));
