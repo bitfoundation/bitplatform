@@ -61,6 +61,7 @@ async function handle(m, id) {
         try {
             var result;
             if (m.op === 'read') {
+                if (m.offset < 0) throw new Error('the offset must not be negative');
                 var size = access.getSize();
                 var offset = Math.min(m.offset || 0, size);
                 var length = m.length > 0 ? Math.min(m.length, size - offset) : size - offset;
