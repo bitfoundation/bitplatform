@@ -2,23 +2,37 @@ namespace Boilerplate.Workbench.Components.Pages.Showcase.Assistant;
 
 public partial class AssistantPage
 {
-    private List<AssistantConversation> conversations = [];
-    private ElementReference messagesElement;
-    private CancellationTokenSource? streamCancellation;
+    private List<BitAiConversationSnapshot> seeded = [];
+    private BitAiChatSession session = default!;
+    private AssistantAiStrings strings = default!;
+    private BitAiUiOptions uiOptions = default!;
+    private BitAiError loadError = default!;
+    private string[] suggestions = [];
     private bool isLoading = true;
     private bool isFailed;
 
     [AutoInject] private AssistantStore store = default!;
     [AutoInject] private AssistantService assistantService = default!;
 
-    private AssistantConversation? CurrentConversation => conversations.FirstOrDefault(c => c.Id == store.CurrentId);
+    private bool IsBlocked => isLoading || isFailed;
 
-    private string? Prompt => store.Prompt;
+    private BitAiModel Model => assistantService.FindModel(store.ModelId);
 
-    private bool CanSend => string.IsNullOrWhiteSpace(Prompt) is false && streamCancellation is null && isLoading is false && isFailed is false;
+    private IEnumerable<BitAiConversationSnapshot> Conversations =>
+        store.Conversations.Concat(seeded.Where(s => store.DeletedIds.Contains(s.ConversationId) is false && store.Conversations.Any(c => c.ConversationId == s.ConversationId) is false));
+
+    private IReadOnlyList<BitAiConversationSummary> Summaries => IsBlocked
+        ? []
+        : [.. Conversations.OrderByDescending(c => c.UpdatedAt).Select(c => new BitAiConversationSummary(c.ConversationId, c.Title, c.UpdatedAt, MessageCount: c.Messages.Count))];
 
     protected override async Task OnInitializedAsync()
     {
+        strings = new(Localizer);
+        uiOptions = BitAiUiOptions.Default with { Strings = strings, ShowUsage = true };
+        loadError = new(Localizer[nameof(WorkbenchStrings.AssistantHistoryFailed)]) { IsRetryable = true };
+        suggestions = [.. AssistantService.Topics.Select(topic => Localizer[topic.PromptKey].Value)];
+
+        Open(new BitAiConversation());
         Subscribe(store);
 
         if (IsPrerendering)
@@ -35,11 +49,10 @@ public partial class AssistantPage
 
         try
         {
-            var seeded = await assistantService.GetConversations(CurrentCancellationToken);
-            var kept = store.Conversations.Select(Settle).ToList();
-
-            conversations = [.. kept.Concat(seeded.Where(s => kept.Any(k => k.Id == s.Id) is false)).OrderByDescending(c => c.UpdatedAt)];
+            seeded = await assistantService.GetConversations(CurrentCancellationToken);
             isLoading = false;
+
+            Open(store.CurrentId);
         }
         catch (WorkbenchSimulatedException)
         {
@@ -51,149 +64,124 @@ public partial class AssistantPage
         }
     }
 
+    private void Open(string? conversationId)
+    {
+        var conversation = Conversations.FirstOrDefault(c => c.ConversationId == conversationId);
+
+        Open(conversation is null ? new BitAiConversation() : BitAiConversationSerializer.ToConversation(conversation));
+    }
+
+    private void Open(BitAiConversation conversation)
+    {
+        Close();
+
+        session = assistantService.CreateSession(conversation, Model.ModelId, strings);
+        session.TurnCompleted += OnTurnCompleted;
+        conversation.MessageAdded += OnMessageAdded;
+    }
+
+    private void Close()
+    {
+        if (session is null)
+            return;
+
+        session.TurnCompleted -= OnTurnCompleted;
+        session.Conversation.MessageAdded -= OnMessageAdded;
+
+        if (session.IsGenerating)
+        {
+            session.Stop();
+            Settle(session.Conversation);
+            store.Keep(BitAiConversationSerializer.ToSnapshot(session.Conversation));
+        }
+
+        _ = session.DisposeAsync().AsTask();
+    }
+
+    private void Select(BitAiConversationSummary summary)
+    {
+        store.ShowHistory(false);
+
+        if (summary.ConversationId == session.Conversation.ConversationId)
+            return;
+
+        Open(summary.ConversationId);
+        store.Open(summary.ConversationId);
+    }
+
     private void NewChat()
     {
-        Stop();
+        store.ShowHistory(false);
+
+        if (session.Conversation.Messages.Count > 0)
+        {
+            Open(new BitAiConversation());
+        }
+
         store.Open(null);
-        store.ShowHistory(false);
     }
 
-    private void Select(AssistantConversation conversation)
+    private void Delete(BitAiConversationSummary summary)
     {
-        Stop();
-        store.Open(conversation.Id);
-        store.ShowHistory(false);
-    }
-
-    private Task Send() => CanSend ? Ask(Prompt!.Trim()) : Task.CompletedTask;
-
-    private async Task Ask(string text)
-    {
-        if (streamCancellation is not null)
-            return;
-
-        store.Write(null);
-
-        var conversation = CurrentConversation;
-
-        if (conversation is null)
+        if (summary.ConversationId == session.Conversation.ConversationId)
         {
-            conversation = new() { Id = Guid.NewGuid().ToString("N"), Title = text.Length > 48 ? $"{text[..48]}…" : text };
-            conversations.Insert(0, conversation);
+            Open(new BitAiConversation());
         }
 
-        conversation.UpdatedAt = DateTimeOffset.Now;
-        conversation.Messages.Add(new() { Role = AssistantRole.User, At = DateTimeOffset.Now, Text = text });
-
-        var reply = new AssistantMessage { Role = AssistantRole.Assistant, At = DateTimeOffset.Now, Topic = assistantService.Match(text) };
-        conversation.Messages.Add(reply);
-
-        store.Keep(conversation);
-
-        await Stream(reply);
+        store.Delete(summary.ConversationId);
     }
 
-    private Task Retry(AssistantMessage message)
+    private void ChooseModel(string modelId)
     {
-        message.IsFailed = false;
-        message.Text = string.Empty;
-
-        return Stream(message);
+        store.ChooseModel(modelId);
+        session.Options = session.Options with { RequestOptions = new() { ModelId = modelId } };
     }
 
-    private void Rate(AssistantMessage message, bool? isHelpful)
-    {
-        message.IsHelpful = message.IsHelpful == isHelpful ? null : isHelpful;
+    private async Task Ask(string prompt) => await session.SubmitAsync(prompt);
 
-        if (CurrentConversation is { } conversation)
+    private void OnMessageAdded(BitAiConversation conversation, BitAiMessage message)
+    {
+        if (message.Role.IsUser)
         {
-            store.Keep(conversation);
-        }
-    }
-
-    private static AssistantConversation Settle(AssistantConversation conversation)
-    {
-        foreach (var message in conversation.Messages.Where(m => m.IsStreaming))
-        {
-            message.IsStreaming = false;
-            message.IsFailed = string.IsNullOrEmpty(message.Text);
-        }
-
-        return conversation;
-    }
-
-    private async Task Stream(AssistantMessage reply)
-    {
-        var topic = reply.Topic ?? AssistantService.Fallback;
-        var lastRender = DateTimeOffset.UtcNow;
-
-        streamCancellation = CancellationTokenSource.CreateLinkedTokenSource(CurrentCancellationToken);
-        reply.IsStreaming = true;
-        reply.Card = AssistantCardKind.None;
-
-        StateHasChanged();
-        await ScrollToEnd();
-
-        try
-        {
-            await foreach (var chunk in assistantService.StreamAnswer(topic, streamCancellation.Token))
+            _ = InvokeAsync(async () =>
             {
-                reply.Text += chunk;
-
-                if (DateTimeOffset.UtcNow - lastRender > TimeSpan.FromMilliseconds(60))
-                {
-                    lastRender = DateTimeOffset.UtcNow;
-                    StateHasChanged();
-                    await ScrollToEnd();
-                }
-            }
-
-            reply.Card = topic.Card;
+                await Task.Yield();
+                KeepCurrent();
+            });
         }
-        catch (OperationCanceledException)
-        {
-            if (string.IsNullOrEmpty(reply.Text))
-            {
-                reply.Text = $"*{Localizer[nameof(WorkbenchStrings.AssistantStopped)]}*";
-            }
-        }
-        finally
-        {
-            reply.IsStreaming = false;
-            streamCancellation.Dispose();
-            streamCancellation = null;
-        }
-
-        if (CurrentCancellationToken.IsCancellationRequested)
-            return;
-
-        if (conversations.FirstOrDefault(c => c.Messages.Contains(reply)) is { } conversation)
-        {
-            store.Keep(conversation);
-        }
-
-        StateHasChanged();
-        await ScrollToEnd();
     }
 
-    private void Stop() => streamCancellation?.Cancel();
-
-    private async Task Copy(AssistantMessage message)
+    private void OnTurnCompleted(BitAiMessage reply) => _ = InvokeAsync(() =>
     {
-        await JSRuntime.InvokeVoidAsync("workbench.copy", message.Text);
-    }
-
-    private async Task ScrollToEnd()
-    {
-        if (CurrentCancellationToken.IsCancellationRequested)
+        if (session.Conversation.FindMessage(reply.MessageId) is null)
             return;
 
-        await JSRuntime.InvokeVoidAsync("workbench.scrollToEnd", messagesElement);
+        if (reply.Status is BitAiMessageStatus.Cancelled && reply.Parts.Count is 0)
+        {
+            reply.AddPart(new BitAiTextPart($"*{Localizer[nameof(WorkbenchStrings.AssistantStopped)]}*"));
+        }
+
+        Settle(session.Conversation);
+        KeepCurrent();
+    });
+
+    private static void Settle(BitAiConversation conversation)
+    {
+        foreach (var artifact in conversation.Artifacts.Values.Where(a => a.IsStreaming))
+        {
+            artifact.Complete();
+        }
+    }
+
+    private void KeepCurrent()
+    {
+        store.Keep(BitAiConversationSerializer.ToSnapshot(session.Conversation));
+        store.Open(session.Conversation.ConversationId);
     }
 
     public override async ValueTask DisposeAsync()
     {
-        streamCancellation?.Cancel();
+        Close();
 
         await base.DisposeAsync();
     }

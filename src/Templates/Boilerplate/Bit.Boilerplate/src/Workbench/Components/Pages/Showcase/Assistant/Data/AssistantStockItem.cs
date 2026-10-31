@@ -1,7 +1,3 @@
 namespace Boilerplate.Workbench.Components.Pages.Showcase.Assistant.Data;
 
-public enum AssistantRole
-{
-    User,
-    Assistant
-}
+public sealed record AssistantStockItem(string Name, int Left, int Order);

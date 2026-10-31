@@ -19,6 +19,16 @@ public static class IWorkbenchServiceCollectionExtensions
             services.AddScoped<AssistantService>();
             services.AddScoped<ShiftsService>();
 
+            services.AddBitBlazorUIAIServices(ai =>
+            {
+                ai.UseTransport(sp => sp.GetRequiredService<AssistantService>());
+                ai.ConfigureGenerativeUi(components =>
+                {
+                    components.Register<AssistantSalesCard>("sales_trend");
+                    components.Register<AssistantStockCard>("low_stock");
+                });
+            });
+
             services.AddBitBlexServices(options => options.DevToolsName = "bit Workbench");
             services.AddBitBlexStore<WorkbenchStore>();
             services.AddBitBlexStore<ChromeStore>();

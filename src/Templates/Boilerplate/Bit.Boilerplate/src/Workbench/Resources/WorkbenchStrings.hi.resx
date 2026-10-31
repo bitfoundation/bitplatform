@@ -979,7 +979,7 @@
         <value>AI असिस्टेंट</value>
     </data>
     <data name="AssistantDescription" xml:space="preserve">
-        <value>एक चैट जो टेक्स्ट, चार्ट और ऐक्शन के साथ जवाब देती है और जवाब लिखते-लिखते दिखाती है, साथ में हिस्ट्री, रोकने और फिर से कोशिश करने की सुविधा।</value>
+        <value>एक चैट जो सोचती है, टूल इस्तेमाल करती है, अपने स्रोत बताती है और चार्ट, दस्तावेज़ और मंज़ूरी वाले ऐक्शन के साथ जवाब देती है, सब कुछ लिखते-लिखते दिखाते हुए।</value>
     </data>
     <data name="AssistantCaption" xml:space="preserve">
         <value>बस पूछिए</value>
@@ -993,9 +993,6 @@
     <data name="AssistantNewChat" xml:space="preserve">
         <value>नई चैट</value>
     </data>
-    <data name="AssistantRecent" xml:space="preserve">
-        <value>हालिया</value>
-    </data>
     <data name="AssistantNoHistory" xml:space="preserve">
         <value>अभी कोई बातचीत नहीं</value>
     </data>
@@ -1006,16 +1003,16 @@
         <value>फिर से कोशिश करें</value>
     </data>
     <data name="AssistantModel" xml:space="preserve">
-        <value>डेमो मॉडल</value>
+        <value>मॉडल</value>
     </data>
     <data name="AssistantWelcomeTitle" xml:space="preserve">
-        <value>आज मैं आपके स्टोरों के लिए क्या कर सकता हूँ?</value>
+        <value>आज मैं कैसे मदद करूँ?</value>
     </data>
     <data name="AssistantWelcomeText" xml:space="preserve">
-        <value>बिक्री, स्टॉक, प्रमोशन या अपनी टीम के बारे में पूछें। वर्कबेंच में जवाब एक स्क्रिप्ट से आते हैं, ताकि बातचीत की हर स्थिति डिज़ाइन की जा सके।</value>
+        <value>बिक्री, स्टॉक, प्रमोशन या अपनी टीम के बारे में पूछें।</value>
     </data>
     <data name="AssistantPromptPlaceholder" xml:space="preserve">
-        <value>बिक्री, स्टॉक या प्रमोशन के बारे में पूछें</value>
+        <value>अपने स्टोर के बारे में पूछें</value>
     </data>
     <data name="AssistantSend" xml:space="preserve">
         <value>भेजें</value>
@@ -1057,7 +1054,7 @@
         <value>हफ़्ते की बिक्री का सारांश</value>
     </data>
     <data name="AssistantHistoryRestock" xml:space="preserve">
-        <value>वीकेंड से पहले स्टॉक भरें</value>
+        <value>सप्ताहांत का स्टॉक</value>
     </data>
     <data name="AssistantHistoryAutumn" xml:space="preserve">
         <value>पतझड़ ऑफ़र</value>
@@ -1066,52 +1063,40 @@
         <value>आज के टॉप सेलर</value>
     </data>
     <data name="AssistantSalesPrompt" xml:space="preserve">
-        <value>इस हफ़्ते बिक्री कैसी रही?</value>
+        <value>इस हफ़्ते की बिक्री?</value>
     </data>
     <data name="AssistantSalesAnswer" xml:space="preserve">
-        <value>पिछले 7 दिनों में शुद्ध बिक्री **€34,820** रही, जो पिछले हफ़्ते से **8.4%** ज़्यादा है।
-
-- **Amsterdam** €15,940 के साथ सबसे आगे रहा, जिसमें व्यस्त शनिवार का बड़ा हाथ था।
-- **Rotterdam** सबसे तेज़ी से बढ़ा, नए नाश्ते के मेन्यू के बाद **12.1%** ऊपर।
-- **Utrecht** में बिक्री स्थिर रही; वहाँ की दोपहरें आम दिनों से ज़्यादा शांत रहीं।
-
-हर दिन का हाल:</value>
+        <value>शुद्ध बिक्री **€34,820** रही, पिछले हफ़्ते से **8.4%** ज़्यादा [1]।</value>
     </data>
     <data name="AssistantStockPrompt" xml:space="preserve">
         <value>क्या ख़त्म होने वाला है?</value>
     </data>
     <data name="AssistantStockAnswer" xml:space="preserve">
-        <value>सोमवार की डिलीवरी से पहले तीन उत्पाद ख़त्म हो जाएँगे। अभी फिर से ऑर्डर करें, तो वे शुक्रवार को पहुँच जाएँगे:</value>
+        <value>तीन उत्पाद सोमवार से पहले ख़त्म हो जाएँगे [1]:</value>
     </data>
     <data name="AssistantPromoPrompt" xml:space="preserve">
-        <value>ओट मिल्क लाटे के लिए एक प्रमोशन लिखें</value>
+        <value>ओट लाटे का प्रमोशन लिखें</value>
     </data>
     <data name="AssistantPromoAnswer" xml:space="preserve">
-        <value>काउंटर और आपकी सोशल मीडिया पोस्ट के लिए यह एक छोटा-सा टेक्स्ट है:</value>
+        <value>यह रहा एक छोटा-सा टेक्स्ट:</value>
     </data>
     <data name="AssistantPromoDraft" xml:space="preserve">
-        <value>पतझड़ का मज़ा ओट के साथ और भी बढ़िया। इस हफ़्ते तीनों स्टोरों में कोई भी ओट मिल्क लाटे सिर्फ़ €3.50 में।</value>
+        <value>ओट के साथ पतझड़ और भी बढ़िया। पूरे हफ़्ते ओट लाटे सिर्फ़ €3.50 में।</value>
     </data>
     <data name="AssistantStaffPrompt" xml:space="preserve">
-        <value>आज सबसे ज़्यादा बिक्री किसने की?</value>
+        <value>आज सबसे ज़्यादा किसने बेचा?</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>**डान** आज **64 ऑर्डर** और €1,180 की बिक्री के साथ सबसे आगे हैं। उनके बाद **सारा** 58 ऑर्डर के साथ हैं, फिर **नीलोफ़र** 51 के साथ। डान की औसत बिक्री भी सबसे ज़्यादा है, €18.40।</value>
+        <value>**डान** **64 ऑर्डर** और €1,180 की बिक्री के साथ सबसे आगे हैं [1]।</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
-        <value>वर्कबेंच में मैं एक छोटी स्क्रिप्ट से जवाब देता हूँ, इसलिए यह नहीं खोज सकता। कोई सुझाव आज़माएँ, या बिक्री, स्टॉक, प्रमोशन या अपनी टीम के बारे में पूछें।</value>
+        <value>यहाँ मुझे सिर्फ़ सुझाए गए सवाल आते हैं। उनमें से कोई एक आज़माएँ।</value>
     </data>
     <data name="AssistantSalesCardTitle" xml:space="preserve">
         <value>शुद्ध बिक्री, पिछले 7 दिन</value>
     </data>
     <data name="AssistantUnitsLeft" xml:space="preserve">
         <value>{0} बचे</value>
-    </data>
-    <data name="AssistantReorder" xml:space="preserve">
-        <value>फिर से ऑर्डर करें</value>
-    </data>
-    <data name="AssistantOrdered" xml:space="preserve">
-        <value>ऑर्डर हो गया</value>
     </data>
     <data name="AssistantStockOatMilk" xml:space="preserve">
         <value>ओट मिल्क</value>
@@ -1121,6 +1106,219 @@
     </data>
     <data name="AssistantStockPaperCups" xml:space="preserve">
         <value>पेपर कप</value>
+    </data>
+    <data name="AssistantModelThorough" xml:space="preserve">
+        <value>गहन</value>
+    </data>
+    <data name="AssistantModelThoroughDescription" xml:space="preserve">
+        <value>जवाब देने से पहले अच्छी तरह सोचता है</value>
+    </data>
+    <data name="AssistantModelQuick" xml:space="preserve">
+        <value>तेज़</value>
+    </data>
+    <data name="AssistantModelQuickDescription" xml:space="preserve">
+        <value>तुरंत जवाब देता है</value>
+    </data>
+    <data name="AssistantToolSales" xml:space="preserve">
+        <value>बिक्री रिपोर्ट</value>
+    </data>
+    <data name="AssistantToolStock" xml:space="preserve">
+        <value>स्टॉक स्तर</value>
+    </data>
+    <data name="AssistantToolTeam" xml:space="preserve">
+        <value>टीम की बिक्री</value>
+    </data>
+    <data name="AssistantToolOrder" xml:space="preserve">
+        <value>सप्लायर ऑर्डर</value>
+    </data>
+    <data name="AssistantSourceStock" xml:space="preserve">
+        <value>स्टॉक गिनती और डिलीवरी</value>
+    </data>
+    <data name="AssistantSourceTeam" xml:space="preserve">
+        <value>टीम सदस्य के हिसाब से ऑर्डर, आज</value>
+    </data>
+    <data name="AssistantSalesReasoning" xml:space="preserve">
+        <value>हर स्टोर के पिछले 7 दिन जोड़ूँ और पिछले हफ़्ते से तुलना करूँ।</value>
+    </data>
+    <data name="AssistantStockReasoning" xml:space="preserve">
+        <value>स्टॉक को बिक्री और सोमवार की डिलीवरी से मिलाऊँ।</value>
+    </data>
+    <data name="AssistantPromoReasoning" xml:space="preserve">
+        <value>छोटा रखूँ: मौसम, कीमत और सभी स्टोर।</value>
+    </data>
+    <data name="AssistantStaffReasoning" xml:space="preserve">
+        <value>आज के ऑर्डर को टीम सदस्य के हिसाब से क्रम में लगाऊँ।</value>
+    </data>
+    <data name="AssistantOrderReason" xml:space="preserve">
+        <value>ये तीनों शुक्रवार के लिए ऑर्डर करें?</value>
+    </data>
+    <data name="AssistantOrderPlaced" xml:space="preserve">
+        <value>हो गया। ऑर्डर **PO-1042** शुक्रवार को पहुँचेगा।</value>
+    </data>
+    <data name="AssistantOrderSkipped" xml:space="preserve">
+        <value>ठीक है, मैंने कुछ ऑर्डर नहीं किया।</value>
+    </data>
+    <data name="AssistantPromoTitle" xml:space="preserve">
+        <value>ओट मिल्क लाटे प्रमोशन</value>
+    </data>
+    <data name="AssistantSeconds" xml:space="preserve">
+        <value>{0} सेकंड</value>
+    </data>
+    <data name="AssistantRegenerate" xml:space="preserve">
+        <value>फिर से बनाएँ</value>
+    </data>
+    <data name="AssistantEdit" xml:space="preserve">
+        <value>संपादित करें</value>
+    </data>
+    <data name="AssistantSave" xml:space="preserve">
+        <value>सहेजें</value>
+    </data>
+    <data name="AssistantCancel" xml:space="preserve">
+        <value>रद्द करें</value>
+    </data>
+    <data name="AssistantScrollToLatest" xml:space="preserve">
+        <value>नवीनतम पर जाएँ</value>
+    </data>
+    <data name="AssistantReasoning" xml:space="preserve">
+        <value>तर्क</value>
+    </data>
+    <data name="AssistantReasonedFor" xml:space="preserve">
+        <value>{0} तक सोचा</value>
+    </data>
+    <data name="AssistantSources" xml:space="preserve">
+        <value>स्रोत</value>
+    </data>
+    <data name="AssistantCitationLabel" xml:space="preserve">
+        <value>स्रोत {0}: {1}</value>
+    </data>
+    <data name="AssistantAttachFile" xml:space="preserve">
+        <value>फ़ाइलें जोड़ें</value>
+    </data>
+    <data name="AssistantRemove" xml:space="preserve">
+        <value>हटाएँ</value>
+    </data>
+    <data name="AssistantDropFiles" xml:space="preserve">
+        <value>जोड़ने के लिए फ़ाइलें यहाँ छोड़ें</value>
+    </data>
+    <data name="AssistantDismiss" xml:space="preserve">
+        <value>बंद करें</value>
+    </data>
+    <data name="AssistantAttachmentTooLarge" xml:space="preserve">
+        <value>{0} बहुत बड़ी है। फ़ाइलें अधिकतम {1} की हो सकती हैं।</value>
+    </data>
+    <data name="AssistantAttachmentTypeNotAllowed" xml:space="preserve">
+        <value>{0} समर्थित फ़ाइल प्रकार नहीं है।</value>
+    </data>
+    <data name="AssistantAttachmentReadFailed" xml:space="preserve">
+        <value>{0} पढ़ी नहीं जा सकी।</value>
+    </data>
+    <data name="AssistantAttachmentTooMany" xml:space="preserve">
+        <value>{0} नहीं जोड़ी गई। आप एक बार में अधिकतम {1} फ़ाइलें जोड़ सकते हैं।</value>
+    </data>
+    <data name="AssistantCallingTool" xml:space="preserve">
+        <value>{0} का उपयोग हो रहा है</value>
+    </data>
+    <data name="AssistantCalledTool" xml:space="preserve">
+        <value>{0} का उपयोग किया गया</value>
+    </data>
+    <data name="AssistantToolFailed" xml:space="preserve">
+        <value>{0} विफल रहा</value>
+    </data>
+    <data name="AssistantToolCancelled" xml:space="preserve">
+        <value>{0} रोक दिया गया</value>
+    </data>
+    <data name="AssistantToolRejected" xml:space="preserve">
+        <value>{0} अस्वीकार किया गया</value>
+    </data>
+    <data name="AssistantToolAwaitingApproval" xml:space="preserve">
+        <value>{0} आपकी मंज़ूरी का इंतज़ार कर रहा है</value>
+    </data>
+    <data name="AssistantApproveTool" xml:space="preserve">
+        <value>{0} की अनुमति दें?</value>
+    </data>
+    <data name="AssistantApprove" xml:space="preserve">
+        <value>अनुमति दें</value>
+    </data>
+    <data name="AssistantApproveAlways" xml:space="preserve">
+        <value>हमेशा अनुमति दें</value>
+    </data>
+    <data name="AssistantReject" xml:space="preserve">
+        <value>अस्वीकार करें</value>
+    </data>
+    <data name="AssistantToolDeclined" xml:space="preserve">
+        <value>आपने इसे अस्वीकार किया।</value>
+    </data>
+    <data name="AssistantArguments" xml:space="preserve">
+        <value>इनपुट</value>
+    </data>
+    <data name="AssistantResult" xml:space="preserve">
+        <value>परिणाम</value>
+    </data>
+    <data name="AssistantJsonRoot" xml:space="preserve">
+        <value>डेटा</value>
+    </data>
+    <data name="AssistantDownload" xml:space="preserve">
+        <value>डाउनलोड करें</value>
+    </data>
+    <data name="AssistantExpand" xml:space="preserve">
+        <value>बड़ा करें</value>
+    </data>
+    <data name="AssistantCollapse" xml:space="preserve">
+        <value>छोटा करें</value>
+    </data>
+    <data name="AssistantVersion" xml:space="preserve">
+        <value>संस्करण</value>
+    </data>
+    <data name="AssistantTranscript" xml:space="preserve">
+        <value>बातचीत</value>
+    </data>
+    <data name="AssistantDelete" xml:space="preserve">
+        <value>हटाएँ</value>
+    </data>
+    <data name="AssistantUntitled" xml:space="preserve">
+        <value>बिना शीर्षक</value>
+    </data>
+    <data name="AssistantPreviousSevenDays" xml:space="preserve">
+        <value>पिछले 7 दिन</value>
+    </data>
+    <data name="AssistantPreviousThirtyDays" xml:space="preserve">
+        <value>पिछले 30 दिन</value>
+    </data>
+    <data name="AssistantSomethingWentWrong" xml:space="preserve">
+        <value>कुछ गड़बड़ हो गई</value>
+    </data>
+    <data name="AssistantTokens" xml:space="preserve">
+        <value>टोकन</value>
+    </data>
+    <data name="AssistantTokensPerSecond" xml:space="preserve">
+        <value>{0} टोकन/सेकंड</value>
+    </data>
+    <data name="AssistantInputTokens" xml:space="preserve">
+        <value>इनपुट</value>
+    </data>
+    <data name="AssistantOutputTokens" xml:space="preserve">
+        <value>आउटपुट</value>
+    </data>
+    <data name="AssistantUsageLine" xml:space="preserve">
+        <value>{0}: {1}</value>
+    </data>
+    <data name="AssistantContext" xml:space="preserve">
+        <value>संदर्भ</value>
+    </data>
+    <data name="AssistantContextUsage" xml:space="preserve">
+        <value>{1} में से {0} टोकन</value>
+    </data>
+    <data name="AssistantContextWarning" xml:space="preserve">
+        <value>बातचीत लंबी हो रही है</value>
+    </data>
+    <data name="AssistantContextCritical" xml:space="preserve">
+        <value>बातचीत जारी रखने के लिए लगभग बहुत लंबी हो गई है</value>
+    </data>
+    <data name="AssistantKilobytes" xml:space="preserve">
+        <value>{0} केबी</value>
+    </data>
+    <data name="AssistantMegabytes" xml:space="preserve">
+        <value>{0} एमबी</value>
     </data>
     <data name="LoadFailed" xml:space="preserve">
         <value>यह लोड नहीं हो सका। थोड़ी देर में फिर से कोशिश करें।</value>

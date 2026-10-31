@@ -979,7 +979,7 @@
         <value>دستیار هوش مصنوعی</value>
     </data>
     <data name="AssistantDescription" xml:space="preserve">
-        <value>گفتگویی که با متن، نمودار و اقدام پاسخ می‌دهد و پاسخ را هم‌زمان با نوشته‌شدن نشان می‌دهد، با تاریخچه، توقف و تلاش دوباره.</value>
+        <value>گفتگویی که فکر می‌کند، از ابزارها استفاده می‌کند، منابعش را می‌گوید و با نمودار، سند و اقدام‌هایی که باید تأیید کنید پاسخ می‌دهد، همه هم‌زمان با نوشته‌شدن.</value>
     </data>
     <data name="AssistantCaption" xml:space="preserve">
         <value>فقط بپرسید</value>
@@ -993,9 +993,6 @@
     <data name="AssistantNewChat" xml:space="preserve">
         <value>گفتگوی تازه</value>
     </data>
-    <data name="AssistantRecent" xml:space="preserve">
-        <value>اخیر</value>
-    </data>
     <data name="AssistantNoHistory" xml:space="preserve">
         <value>هنوز گفتگویی نیست</value>
     </data>
@@ -1006,16 +1003,16 @@
         <value>دوباره امتحان کنید</value>
     </data>
     <data name="AssistantModel" xml:space="preserve">
-        <value>مدل نمایشی</value>
+        <value>مدل</value>
     </data>
     <data name="AssistantWelcomeTitle" xml:space="preserve">
-        <value>امروز چه کمکی برای فروشگاه‌هایتان از دستم برمی‌آید؟</value>
+        <value>امروز چه کمکی از دستم برمی‌آید؟</value>
     </data>
     <data name="AssistantWelcomeText" xml:space="preserve">
-        <value>درباره فروش، موجودی، تخفیف‌ها یا همکارانتان بپرسید. در میز کار پاسخ‌ها از یک متن آماده می‌آیند تا بتوانید هر حالت گفتگو را طراحی کنید.</value>
+        <value>درباره فروش، موجودی، تخفیف‌ها یا همکارانتان بپرسید.</value>
     </data>
     <data name="AssistantPromptPlaceholder" xml:space="preserve">
-        <value>درباره فروش، موجودی یا تخفیف‌ها بپرسید</value>
+        <value>درباره فروشگاه‌هایتان بپرسید</value>
     </data>
     <data name="AssistantSend" xml:space="preserve">
         <value>ارسال</value>
@@ -1057,7 +1054,7 @@
         <value>خلاصه فروش هفته</value>
     </data>
     <data name="AssistantHistoryRestock" xml:space="preserve">
-        <value>تأمین موجودی پیش از آخر هفته</value>
+        <value>تأمین موجودی آخر هفته</value>
     </data>
     <data name="AssistantHistoryAutumn" xml:space="preserve">
         <value>تخفیف پاییزی</value>
@@ -1066,52 +1063,40 @@
         <value>پرفروش‌ترین‌های امروز</value>
     </data>
     <data name="AssistantSalesPrompt" xml:space="preserve">
-        <value>فروش این هفته چطور بود؟</value>
+        <value>فروش این هفته؟</value>
     </data>
     <data name="AssistantSalesAnswer" xml:space="preserve">
-        <value>فروش خالص ۷ روز گذشته **۳۴٬۸۲۰ یورو** بود، یعنی **۸٫۴٪** بیشتر از هفته قبل.
-
-- **آمستردام** با ۱۵٬۹۴۰ یورو جلوتر بود و شنبه شلوغی داشت.
-- **روتردام** پس از منوی صبحانه تازه بیشترین رشد را داشت: **۱۲٫۱٪**.
-- **اوترخت** ثابت ماند و عصرهایش خلوت‌تر از همیشه بود.
-
-فروش هر روز:</value>
+        <value>فروش خالص **۳۴٬۸۲۰ یورو** بود، **۸٫۴٪** بیشتر از هفته قبل [1].</value>
     </data>
     <data name="AssistantStockPrompt" xml:space="preserve">
         <value>چه چیزهایی دارد تمام می‌شود؟</value>
     </data>
     <data name="AssistantStockAnswer" xml:space="preserve">
-        <value>سه کالا پیش از رسیدن بار دوشنبه تمام می‌شوند. اگر همین حالا سفارش دهید، جمعه می‌رسند:</value>
+        <value>سه کالا پیش از دوشنبه تمام می‌شوند [1]:</value>
     </data>
     <data name="AssistantPromoPrompt" xml:space="preserve">
-        <value>یک متن تبلیغاتی برای لاته با شیر جو دوسر بنویس</value>
+        <value>یک تبلیغ برای لاته جو دوسر بنویس</value>
     </data>
     <data name="AssistantPromoAnswer" xml:space="preserve">
-        <value>یک متن کوتاه برای پیشخوان و شبکه‌های اجتماعی:</value>
+        <value>یک متن کوتاه:</value>
     </data>
     <data name="AssistantPromoDraft" xml:space="preserve">
-        <value>پاییز با شیر جو دوسر خوش‌طعم‌تر است. این هفته هر لاته با شیر جو دوسر ۳٫۵۰ یورو، در هر سه فروشگاه.</value>
+        <value>پاییز با جو دوسر خوش‌طعم‌تر است. لاته جو دوسر تمام هفته ۳٫۵۰ یورو.</value>
     </data>
     <data name="AssistantStaffPrompt" xml:space="preserve">
-        <value>امروز چه کسی بیشترین فروش را داشت؟</value>
+        <value>پرفروش‌ترین امروز کیست؟</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>**دان** امروز با **۶۴ سفارش** و ۱٬۱۸۰ یورو فروش جلوتر است. پس از او **سارا** با ۵۸ سفارش و **نیلوفر** با ۵۱ سفارش هستند. میانگین فروش دان هم بیشترین است: ۱۸٫۴۰ یورو.</value>
+        <value>**دان** با **۶۴ سفارش** و ۱٬۱۸۰ یورو فروش جلوتر است [1].</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
-        <value>در میز کار از روی یک متن کوتاه پاسخ می‌دهم و نمی‌توانم این را پیدا کنم. یکی از پیشنهادها را امتحان کنید یا درباره فروش، موجودی، تخفیف‌ها یا همکارانتان بپرسید.</value>
+        <value>اینجا فقط پرسش‌های پیشنهادی را بلدم. یکی از آن‌ها را امتحان کنید.</value>
     </data>
     <data name="AssistantSalesCardTitle" xml:space="preserve">
         <value>فروش خالص، ۷ روز گذشته</value>
     </data>
     <data name="AssistantUnitsLeft" xml:space="preserve">
         <value>{0} عدد مانده</value>
-    </data>
-    <data name="AssistantReorder" xml:space="preserve">
-        <value>سفارش دوباره</value>
-    </data>
-    <data name="AssistantOrdered" xml:space="preserve">
-        <value>سفارش داده شد</value>
     </data>
     <data name="AssistantStockOatMilk" xml:space="preserve">
         <value>شیر جو دوسر</value>
@@ -1121,6 +1106,219 @@
     </data>
     <data name="AssistantStockPaperCups" xml:space="preserve">
         <value>لیوان کاغذی</value>
+    </data>
+    <data name="AssistantModelThorough" xml:space="preserve">
+        <value>دقیق</value>
+    </data>
+    <data name="AssistantModelThoroughDescription" xml:space="preserve">
+        <value>پیش از پاسخ دادن خوب فکر می‌کند</value>
+    </data>
+    <data name="AssistantModelQuick" xml:space="preserve">
+        <value>سریع</value>
+    </data>
+    <data name="AssistantModelQuickDescription" xml:space="preserve">
+        <value>بی‌درنگ پاسخ می‌دهد</value>
+    </data>
+    <data name="AssistantToolSales" xml:space="preserve">
+        <value>گزارش فروش</value>
+    </data>
+    <data name="AssistantToolStock" xml:space="preserve">
+        <value>موجودی انبار</value>
+    </data>
+    <data name="AssistantToolTeam" xml:space="preserve">
+        <value>فروش همکاران</value>
+    </data>
+    <data name="AssistantToolOrder" xml:space="preserve">
+        <value>سفارش به تأمین‌کننده</value>
+    </data>
+    <data name="AssistantSourceStock" xml:space="preserve">
+        <value>شمارش موجودی و زمان رسیدن بارها</value>
+    </data>
+    <data name="AssistantSourceTeam" xml:space="preserve">
+        <value>سفارش‌ها به تفکیک همکار، امروز</value>
+    </data>
+    <data name="AssistantSalesReasoning" xml:space="preserve">
+        <value>جمع ۷ روز گذشته برای هر فروشگاه و مقایسه با هفته قبل.</value>
+    </data>
+    <data name="AssistantStockReasoning" xml:space="preserve">
+        <value>مقایسه موجودی با فروش و بار دوشنبه.</value>
+    </data>
+    <data name="AssistantPromoReasoning" xml:space="preserve">
+        <value>کوتاه باشد: فصل، قیمت، همه فروشگاه‌ها.</value>
+    </data>
+    <data name="AssistantStaffReasoning" xml:space="preserve">
+        <value>رتبه‌بندی سفارش‌های امروز به تفکیک همکاران.</value>
+    </data>
+    <data name="AssistantOrderReason" xml:space="preserve">
+        <value>این سه را برای جمعه سفارش بدهم؟</value>
+    </data>
+    <data name="AssistantOrderPlaced" xml:space="preserve">
+        <value>انجام شد. سفارش **PO-1042** جمعه می‌رسد.</value>
+    </data>
+    <data name="AssistantOrderSkipped" xml:space="preserve">
+        <value>باشد، چیزی سفارش ندادم.</value>
+    </data>
+    <data name="AssistantPromoTitle" xml:space="preserve">
+        <value>تبلیغ لاته با شیر جو دوسر</value>
+    </data>
+    <data name="AssistantSeconds" xml:space="preserve">
+        <value>{0} ثانیه</value>
+    </data>
+    <data name="AssistantRegenerate" xml:space="preserve">
+        <value>پاسخ دوباره</value>
+    </data>
+    <data name="AssistantEdit" xml:space="preserve">
+        <value>ویرایش</value>
+    </data>
+    <data name="AssistantSave" xml:space="preserve">
+        <value>ذخیره</value>
+    </data>
+    <data name="AssistantCancel" xml:space="preserve">
+        <value>انصراف</value>
+    </data>
+    <data name="AssistantScrollToLatest" xml:space="preserve">
+        <value>رفتن به آخرین پیام</value>
+    </data>
+    <data name="AssistantReasoning" xml:space="preserve">
+        <value>استدلال</value>
+    </data>
+    <data name="AssistantReasonedFor" xml:space="preserve">
+        <value>{0} فکر کرد</value>
+    </data>
+    <data name="AssistantSources" xml:space="preserve">
+        <value>منابع</value>
+    </data>
+    <data name="AssistantCitationLabel" xml:space="preserve">
+        <value>منبع {0}: {1}</value>
+    </data>
+    <data name="AssistantAttachFile" xml:space="preserve">
+        <value>پیوست فایل</value>
+    </data>
+    <data name="AssistantRemove" xml:space="preserve">
+        <value>حذف</value>
+    </data>
+    <data name="AssistantDropFiles" xml:space="preserve">
+        <value>فایل‌ها را برای پیوست اینجا رها کنید</value>
+    </data>
+    <data name="AssistantDismiss" xml:space="preserve">
+        <value>بستن</value>
+    </data>
+    <data name="AssistantAttachmentTooLarge" xml:space="preserve">
+        <value>{0} بیش از حد بزرگ است. حجم فایل‌ها حداکثر {1} است.</value>
+    </data>
+    <data name="AssistantAttachmentTypeNotAllowed" xml:space="preserve">
+        <value>نوع فایل {0} پشتیبانی نمی‌شود.</value>
+    </data>
+    <data name="AssistantAttachmentReadFailed" xml:space="preserve">
+        <value>{0} خوانده نشد.</value>
+    </data>
+    <data name="AssistantAttachmentTooMany" xml:space="preserve">
+        <value>{0} پیوست نشد. هر بار حداکثر {1} فایل می‌توانید پیوست کنید.</value>
+    </data>
+    <data name="AssistantCallingTool" xml:space="preserve">
+        <value>در حال استفاده از {0}</value>
+    </data>
+    <data name="AssistantCalledTool" xml:space="preserve">
+        <value>از {0} استفاده شد</value>
+    </data>
+    <data name="AssistantToolFailed" xml:space="preserve">
+        <value>{0} ناموفق بود</value>
+    </data>
+    <data name="AssistantToolCancelled" xml:space="preserve">
+        <value>{0} متوقف شد</value>
+    </data>
+    <data name="AssistantToolRejected" xml:space="preserve">
+        <value>{0} رد شد</value>
+    </data>
+    <data name="AssistantToolAwaitingApproval" xml:space="preserve">
+        <value>{0} منتظر تأیید شماست</value>
+    </data>
+    <data name="AssistantApproveTool" xml:space="preserve">
+        <value>اجازه اجرای {0} را می‌دهید؟</value>
+    </data>
+    <data name="AssistantApprove" xml:space="preserve">
+        <value>اجازه بده</value>
+    </data>
+    <data name="AssistantApproveAlways" xml:space="preserve">
+        <value>همیشه اجازه بده</value>
+    </data>
+    <data name="AssistantReject" xml:space="preserve">
+        <value>رد کردن</value>
+    </data>
+    <data name="AssistantToolDeclined" xml:space="preserve">
+        <value>شما این را رد کردید.</value>
+    </data>
+    <data name="AssistantArguments" xml:space="preserve">
+        <value>ورودی</value>
+    </data>
+    <data name="AssistantResult" xml:space="preserve">
+        <value>نتیجه</value>
+    </data>
+    <data name="AssistantJsonRoot" xml:space="preserve">
+        <value>داده‌ها</value>
+    </data>
+    <data name="AssistantDownload" xml:space="preserve">
+        <value>دانلود</value>
+    </data>
+    <data name="AssistantExpand" xml:space="preserve">
+        <value>بزرگ‌کردن</value>
+    </data>
+    <data name="AssistantCollapse" xml:space="preserve">
+        <value>کوچک‌کردن</value>
+    </data>
+    <data name="AssistantVersion" xml:space="preserve">
+        <value>نسخه</value>
+    </data>
+    <data name="AssistantTranscript" xml:space="preserve">
+        <value>گفتگو</value>
+    </data>
+    <data name="AssistantDelete" xml:space="preserve">
+        <value>حذف</value>
+    </data>
+    <data name="AssistantUntitled" xml:space="preserve">
+        <value>بدون عنوان</value>
+    </data>
+    <data name="AssistantPreviousSevenDays" xml:space="preserve">
+        <value>۷ روز گذشته</value>
+    </data>
+    <data name="AssistantPreviousThirtyDays" xml:space="preserve">
+        <value>۳۰ روز گذشته</value>
+    </data>
+    <data name="AssistantSomethingWentWrong" xml:space="preserve">
+        <value>مشکلی پیش آمد</value>
+    </data>
+    <data name="AssistantTokens" xml:space="preserve">
+        <value>توکن</value>
+    </data>
+    <data name="AssistantTokensPerSecond" xml:space="preserve">
+        <value>{0} توکن در ثانیه</value>
+    </data>
+    <data name="AssistantInputTokens" xml:space="preserve">
+        <value>ورودی</value>
+    </data>
+    <data name="AssistantOutputTokens" xml:space="preserve">
+        <value>خروجی</value>
+    </data>
+    <data name="AssistantUsageLine" xml:space="preserve">
+        <value>{0}: {1}</value>
+    </data>
+    <data name="AssistantContext" xml:space="preserve">
+        <value>زمینه</value>
+    </data>
+    <data name="AssistantContextUsage" xml:space="preserve">
+        <value>{0} از {1} توکن</value>
+    </data>
+    <data name="AssistantContextWarning" xml:space="preserve">
+        <value>گفتگو دارد طولانی می‌شود</value>
+    </data>
+    <data name="AssistantContextCritical" xml:space="preserve">
+        <value>گفتگو تقریباً بیش از حد طولانی شده است</value>
+    </data>
+    <data name="AssistantKilobytes" xml:space="preserve">
+        <value>{0} کیلوبایت</value>
+    </data>
+    <data name="AssistantMegabytes" xml:space="preserve">
+        <value>{0} مگابایت</value>
     </data>
     <data name="LoadFailed" xml:space="preserve">
         <value>بارگذاری نشد. کمی بعد دوباره امتحان کنید.</value>

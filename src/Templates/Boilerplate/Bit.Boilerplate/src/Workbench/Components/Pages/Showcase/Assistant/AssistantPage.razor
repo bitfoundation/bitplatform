@@ -1,168 +1,74 @@
 @inherits WorkbenchComponentBase
 
-<div class="assistant @(Scenario.Chrome ? null : "bare")">
-    <aside class="history">
-        <AssistantHistory Conversations="conversations" Current="CurrentConversation" IsLoading="isLoading" IsFailed="isFailed" OnSelect="Select" OnNewChat="NewChat" />
-    </aside>
+<BitAiOptionsProvider UiOptions="uiOptions">
+    <div class="assistant @(Scenario.Chrome ? null : "bare")">
+        <aside class="history">
+            <AssistantHistory Conversations="Summaries" SelectedId="@session.Conversation.ConversationId" IsLoading="isLoading" IsFailed="isFailed" OnSelect="Select" OnNewChat="NewChat" OnDelete="Delete" />
+        </aside>
 
-    <section class="chat">
-        <header class="chat-header">
-            <BitButton IconOnly Variant="BitVariant.Text"
-                       IconName="@BitIconName.History"
-                       Class="history-toggle"
-                       Title="@Localizer[nameof(WorkbenchStrings.AssistantConversations)]"
-                       AriaLabel="@Localizer[nameof(WorkbenchStrings.AssistantConversations)]"
-                       OnClick="() => store.ShowHistory(true)" />
-            <span class="chat-title">@(CurrentConversation?.Title ?? Localizer[nameof(WorkbenchStrings.AssistantNewChat)])</span>
-            <BitTag Text="@Localizer[nameof(WorkbenchStrings.AssistantModel)]" IconName="@BitIconName.Robot" Variant="BitVariant.Outline" Color="BitColor.Primary" Size="BitSize.Small" />
-        </header>
-
-        <div class="messages" @ref="messagesElement">
-            @if (isLoading)
-            {
-                <div class="thread">
-                    <BitShimmer Height="2.5rem" Width="45%" Class="shimmer-user" />
-                    <BitShimmer Height="7rem" Width="85%" />
-                    <BitShimmer Height="2.5rem" Width="35%" Class="shimmer-user" />
-                    <BitShimmer Height="5rem" Width="70%" />
-                </div>
-            }
-            else if (isFailed)
-            {
-                <div class="notice">
-                    <BitIcon IconName="@BitIconName.Error" Size="BitSize.Large" Color="BitColor.Warning" />
-                    <BitText Typography="BitTypography.Subtitle1">@Localizer[nameof(WorkbenchStrings.AssistantHistoryFailed)]</BitText>
-                    <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Refresh" OnClick="LoadConversations">@Localizer[nameof(WorkbenchStrings.AssistantRetry)]</BitButton>
-                </div>
-            }
-            else if (CurrentConversation is null)
-            {
-                <div class="welcome">
-                    <Bmotion Initial="Bm.To(opacity: 0, scale: 0.85)" Animate="Bm.To(opacity: 1, scale: 1)" Transition="Bm.Spring(stiffness: 160, damping: 16)">
-                        <span class="welcome-icon"><BitIcon IconName="@BitIconName.Robot" Size="BitSize.Large" Color="BitColor.Primary" /></span>
-                    </Bmotion>
-                    <BitText Typography="BitTypography.H5" Class="welcome-title">@Localizer[nameof(WorkbenchStrings.AssistantWelcomeTitle)]</BitText>
-                    <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary" Class="welcome-text">@Localizer[nameof(WorkbenchStrings.AssistantWelcomeText)]</BitText>
-                    <div class="suggestions">
-                        @for (var i = 0; i < AssistantService.Topics.Count; i++)
-                        {
-                            var topic = AssistantService.Topics[i];
-                            var delay = 0.08 * i;
-                            <Bmotion Initial="Bm.To(opacity: 0, y: 12)" Animate="Bm.To(opacity: 1, y: 0)" Transition="Bm.Spring(stiffness: 140, damping: 18).WithDelay(delay)">
-                                <div>
-                                    <BitButton Variant="BitVariant.Outline" IconName="@topic.IconName" FullWidth Class="suggestion" OnClick="() => Ask(Localizer[topic.PromptKey])">
-                                        @Localizer[topic.PromptKey]
-                                    </BitButton>
-                                </div>
-                            </Bmotion>
-                        }
-                    </div>
-                </div>
-            }
-            else
-            {
-                <div class="thread">
-                    @foreach (var message in CurrentConversation.Messages)
+        <section class="chat">
+            <BitAiChat @key="session" Session="session" Disabled="IsBlocked" OnFeedback="KeepCurrent">
+                <HeaderTemplate>
+                    <header class="chat-header">
+                        <BitButton IconOnly Variant="BitVariant.Text"
+                                   IconName="@BitIconName.History"
+                                   Class="history-toggle"
+                                   Title="@Localizer[nameof(WorkbenchStrings.AssistantConversations)]"
+                                   AriaLabel="@Localizer[nameof(WorkbenchStrings.AssistantConversations)]"
+                                   OnClick="() => store.ShowHistory(true)" />
+                        <span class="chat-title">@(session.Conversation.Title ?? Localizer[nameof(WorkbenchStrings.AssistantNewChat)])</span>
+                        <BitAiModelSelector Models="assistantService.Models"
+                                            ModelId="@Model.ModelId"
+                                            ModelIdChanged="ChooseModel"
+                                            Disabled="IsBlocked || session.IsGenerating"
+                                            Class="model" />
+                    </header>
+                </HeaderTemplate>
+                <EmptyTemplate>
+                    @if (isLoading)
                     {
-                        if (message.Role is AssistantRole.User)
-                        {
-                            <div class="bubble user">@message.Text</div>
-                        }
-                        else
-                        {
-                            <div class="reply">
-                                <span class="avatar"><BitIcon IconName="@BitIconName.Robot" Size="BitSize.Small" Color="BitColor.Primary" /></span>
-                                <div class="reply-body">
-                                    @if (message.IsFailed)
-                                    {
-                                        <div class="reply-failed">
-                                            <BitIcon IconName="@BitIconName.Error" Size="BitSize.Small" Color="BitColor.Warning" />
-                                            <span>@Localizer[nameof(WorkbenchStrings.AssistantAnswerFailed)]</span>
-                                            <BitButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Refresh" OnClick="() => Retry(message)">@Localizer[nameof(WorkbenchStrings.AssistantRetry)]</BitButton>
-                                        </div>
-                                    }
-                                    else if (message.IsStreaming && string.IsNullOrEmpty(message.Text))
-                                    {
-                                        <div class="thinking">
-                                            <BitBouncingDotsLoading Size="BitSize.Small" />
-                                            <BitTextShimmer>@Localizer[nameof(WorkbenchStrings.AssistantThinking)]</BitTextShimmer>
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <BitMarkdownViewer Markdown="@message.Text" Class="answer" />
-                                        @if (message.Card is not AssistantCardKind.None)
-                                        {
-                                            <Bmotion Initial="Bm.To(opacity: 0, y: 10)" Animate="Bm.To(opacity: 1, y: 0)" Transition="Bm.Spring(stiffness: 150, damping: 20)">
-                                                <div>
-                                                    <AssistantCard Kind="message.Card" />
-                                                </div>
-                                            </Bmotion>
-                                        }
-                                        @if (message.IsStreaming is false)
-                                        {
-                                            <div class="reply-actions">
-                                                <BitButton IconOnly Size="BitSize.Small" Variant="BitVariant.Text"
-                                                           IconName="@BitIconName.Copy"
-                                                           Title="@Localizer[nameof(WorkbenchStrings.AssistantCopy)]"
-                                                           AriaLabel="@Localizer[nameof(WorkbenchStrings.AssistantCopy)]"
-                                                           OnClick="() => Copy(message)" />
-                                                <BitButton IconOnly Size="BitSize.Small" Variant="@(message.IsHelpful is true ? BitVariant.Fill : BitVariant.Text)"
-                                                           IconName="@BitIconName.Like"
-                                                           Title="@Localizer[nameof(WorkbenchStrings.AssistantHelpful)]"
-                                                           AriaLabel="@Localizer[nameof(WorkbenchStrings.AssistantHelpful)]"
-                                                           OnClick="() => Rate(message, true)" />
-                                                <BitButton IconOnly Size="BitSize.Small" Variant="@(message.IsHelpful is false ? BitVariant.Fill : BitVariant.Text)"
-                                                           IconName="@BitIconName.Dislike"
-                                                           Title="@Localizer[nameof(WorkbenchStrings.AssistantNotHelpful)]"
-                                                           AriaLabel="@Localizer[nameof(WorkbenchStrings.AssistantNotHelpful)]"
-                                                           OnClick="() => Rate(message, false)" />
-                                            </div>
-                                        }
-                                    }
-                                </div>
-                            </div>
-                        }
+                        <div class="placeholder">
+                            <BitShimmer Height="2.5rem" Width="45%" Class="shimmer-user" />
+                            <BitShimmer Height="7rem" Width="85%" />
+                            <BitShimmer Height="2.5rem" Width="35%" Class="shimmer-user" />
+                            <BitShimmer Height="5rem" Width="70%" />
+                        </div>
                     }
+                    else if (isFailed)
+                    {
+                        <BitAiErrorView Error="loadError" OnRetry="LoadConversations" />
+                    }
+                    else
+                    {
+                        <BitAiEmptyState IconName="@BitIconName.Robot"
+                                         Title="@Localizer[nameof(WorkbenchStrings.AssistantWelcomeTitle)]"
+                                         Body="@Localizer[nameof(WorkbenchStrings.AssistantWelcomeText)]"
+                                         Suggestions="suggestions"
+                                         OnSuggestion="Ask" />
+                    }
+                </EmptyTemplate>
+                <ComposerTemplate>
+                    <BitAiPromptInput Session="session"
+                                      Model="Model"
+                                      Value="@(store.Prompt ?? string.Empty)"
+                                      ValueChanged="store.Write"
+                                      Disabled="IsBlocked"
+                                      Placeholder="@Localizer[nameof(WorkbenchStrings.AssistantPromptPlaceholder)]">
+                        <HintTemplate>
+                            <BitAiContextMeter Conversation="session.Conversation" />
+                        </HintTemplate>
+                    </BitAiPromptInput>
+                </ComposerTemplate>
+                <FooterTemplate>
+                    <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary" Class="disclaimer">@Localizer[nameof(WorkbenchStrings.AssistantDisclaimer)]</BitText>
+                </FooterTemplate>
+            </BitAiChat>
+
+            <BitPanel IsOpen="store.IsHistoryOpen" IsOpenChanged="store.ShowHistory" Placement="BitPlacement.Start" Classes="@(new() { Container = "history-panel" })">
+                <div class="history-sheet">
+                    <AssistantHistory Conversations="Summaries" SelectedId="@session.Conversation.ConversationId" IsLoading="isLoading" IsFailed="isFailed" OnSelect="Select" OnNewChat="NewChat" OnDelete="Delete" />
                 </div>
-            }
-        </div>
-
-        <footer class="composer">
-            <div class="composer-box">
-                <BitTextField Value="@Prompt"
-                              ValueChanged="store.Write"
-                              Immediate
-                              Placeholder="@Localizer[nameof(WorkbenchStrings.AssistantPromptPlaceholder)]"
-                              AriaLabel="@Localizer[nameof(WorkbenchStrings.AssistantPromptPlaceholder)]"
-                              IsEnabled="isLoading is false && isFailed is false"
-                              OnEnter="Send"
-                              Class="prompt" />
-                @if (streamCancellation is not null)
-                {
-                    <BitButton IconOnly Variant="BitVariant.Outline"
-                               IconName="@BitIconName.StopSolid"
-                               Title="@Localizer[nameof(WorkbenchStrings.AssistantStop)]"
-                               AriaLabel="@Localizer[nameof(WorkbenchStrings.AssistantStop)]"
-                               OnClick="Stop" />
-                }
-                else
-                {
-                    <BitButton IconOnly
-                               IconName="@BitIconName.Send"
-                               IsEnabled="CanSend"
-                               Title="@Localizer[nameof(WorkbenchStrings.AssistantSend)]"
-                               AriaLabel="@Localizer[nameof(WorkbenchStrings.AssistantSend)]"
-                               OnClick="Send" />
-                }
-            </div>
-            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary" Class="disclaimer">@Localizer[nameof(WorkbenchStrings.AssistantDisclaimer)]</BitText>
-        </footer>
-    </section>
-</div>
-
-<BitPanel IsOpen="store.IsHistoryOpen" IsOpenChanged="store.ShowHistory" Position="BitPanelPosition.Start">
-    <div class="history-sheet">
-        <AssistantHistory Conversations="conversations" Current="CurrentConversation" IsLoading="isLoading" IsFailed="isFailed" OnSelect="Select" OnNewChat="NewChat" />
+            </BitPanel>
+        </section>
     </div>
-</BitPanel>
+</BitAiOptionsProvider>

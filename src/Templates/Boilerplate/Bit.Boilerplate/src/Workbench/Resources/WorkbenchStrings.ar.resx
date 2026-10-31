@@ -979,7 +979,7 @@
         <value>مساعد الذكاء الاصطناعي</value>
     </data>
     <data name="AssistantDescription" xml:space="preserve">
-        <value>محادثة تجيب بالنص والرسوم البيانية والإجراءات، وتظهر الإجابة أثناء كتابتها، مع السجل والإيقاف وإعادة المحاولة.</value>
+        <value>محادثة تفكّر وتستخدم الأدوات وتذكر مصادرها، وتجيب بالرسوم البيانية والمستندات وإجراءات تنتظر موافقتك، وتظهر الإجابة أثناء كتابتها.</value>
     </data>
     <data name="AssistantCaption" xml:space="preserve">
         <value>فقط اسأل</value>
@@ -993,9 +993,6 @@
     <data name="AssistantNewChat" xml:space="preserve">
         <value>محادثة جديدة</value>
     </data>
-    <data name="AssistantRecent" xml:space="preserve">
-        <value>الأخيرة</value>
-    </data>
     <data name="AssistantNoHistory" xml:space="preserve">
         <value>لا توجد محادثات بعد</value>
     </data>
@@ -1006,16 +1003,16 @@
         <value>حاول مرة أخرى</value>
     </data>
     <data name="AssistantModel" xml:space="preserve">
-        <value>نموذج تجريبي</value>
+        <value>النموذج</value>
     </data>
     <data name="AssistantWelcomeTitle" xml:space="preserve">
-        <value>كيف يمكنني مساعدتك في فروعك اليوم؟</value>
+        <value>كيف يمكنني المساعدة اليوم؟</value>
     </data>
     <data name="AssistantWelcomeText" xml:space="preserve">
-        <value>اسأل عن المبيعات أو المخزون أو العروض الترويجية أو فريقك. في منضدة العمل تأتي الإجابات من نص معد مسبقًا، لذا يمكن تصميم كل حالة من حالات المحادثة.</value>
+        <value>اسأل عن المبيعات أو المخزون أو العروض أو فريقك.</value>
     </data>
     <data name="AssistantPromptPlaceholder" xml:space="preserve">
-        <value>اسأل عن المبيعات أو المخزون أو العروض</value>
+        <value>اسأل عن فروعك</value>
     </data>
     <data name="AssistantSend" xml:space="preserve">
         <value>إرسال</value>
@@ -1057,7 +1054,7 @@
         <value>ملخص المبيعات الأسبوعي</value>
     </data>
     <data name="AssistantHistoryRestock" xml:space="preserve">
-        <value>تجديد المخزون قبل عطلة نهاية الأسبوع</value>
+        <value>تجهيز المخزون لعطلة الأسبوع</value>
     </data>
     <data name="AssistantHistoryAutumn" xml:space="preserve">
         <value>عرض الخريف</value>
@@ -1066,52 +1063,40 @@
         <value>الأكثر مبيعًا اليوم</value>
     </data>
     <data name="AssistantSalesPrompt" xml:space="preserve">
-        <value>كيف كانت المبيعات هذا الأسبوع؟</value>
+        <value>المبيعات هذا الأسبوع؟</value>
     </data>
     <data name="AssistantSalesAnswer" xml:space="preserve">
-        <value>بلغ صافي المبيعات في آخر 7 أيام **34,820 يورو**، بزيادة **8.4%** عن الأسبوع السابق.
-
-- تصدّر فرع **Amsterdam** بمبلغ 15,940 يورو، بفضل يوم سبت مزدحم.
-- سجّل فرع **Rotterdam** أسرع نمو، بزيادة **12.1%** بعد قائمة الإفطار الجديدة.
-- بقي فرع **Utrecht** دون تغيير؛ فقد كانت فترات بعد الظهر فيه أهدأ من المعتاد.
-
-وإليك مبيعات كل يوم:</value>
+        <value>صافي المبيعات **34,820 يورو**، بزيادة **8.4%** عن الأسبوع الماضي [1].</value>
     </data>
     <data name="AssistantStockPrompt" xml:space="preserve">
         <value>ما الذي أوشك على النفاد؟</value>
     </data>
     <data name="AssistantStockAnswer" xml:space="preserve">
-        <value>ستنفد ثلاثة منتجات قبل توريد يوم الاثنين. أعد طلبها الآن لتصل يوم الجمعة:</value>
+        <value>ثلاثة منتجات ستنفد قبل يوم الاثنين [1]:</value>
     </data>
     <data name="AssistantPromoPrompt" xml:space="preserve">
-        <value>اكتب نصًا ترويجيًا للاتيه بحليب الشوفان</value>
+        <value>اكتب عرضًا للاتيه بالشوفان</value>
     </data>
     <data name="AssistantPromoAnswer" xml:space="preserve">
-        <value>إليك نصًا قصيرًا لطاولة الخدمة ومنشوراتك على مواقع التواصل:</value>
+        <value>إليك نصًا قصيرًا:</value>
     </data>
     <data name="AssistantPromoDraft" xml:space="preserve">
-        <value>الخريف ألذ مع الشوفان. أي لاتيه بحليب الشوفان بسعر 3.50 يورو هذا الأسبوع، في فروعنا الثلاثة.</value>
+        <value>الخريف ألذ مع الشوفان. لاتيه الشوفان بـ 3.50 يورو طوال الأسبوع.</value>
     </data>
     <data name="AssistantStaffPrompt" xml:space="preserve">
-        <value>من حقق أكبر مبيعات اليوم؟</value>
+        <value>من الأعلى مبيعًا اليوم؟</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>يتصدر **دان** اليوم بـ **64 طلبًا** ومبيعات بقيمة 1,180 يورو. تليه **سارة** بـ 58 طلبًا، ثم **نيلوفر** بـ 51 طلبًا. ومتوسط البيع لدى دان هو الأعلى أيضًا، إذ يبلغ 18.40 يورو.</value>
+        <value>يتصدر **دان** بـ **64 طلبًا** ومبيعات بقيمة 1,180 يورو [1].</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
-        <value>في منضدة العمل أجيب من نص قصير معد مسبقًا، لذا لا يمكنني البحث عن ذلك. جرّب أحد الاقتراحات، أو اسأل عن المبيعات أو المخزون أو العروض أو فريقك.</value>
+        <value>هنا أعرف الأسئلة المقترحة فقط. جرّب واحدًا منها.</value>
     </data>
     <data name="AssistantSalesCardTitle" xml:space="preserve">
         <value>صافي المبيعات، آخر 7 أيام</value>
     </data>
     <data name="AssistantUnitsLeft" xml:space="preserve">
         <value>يتبقى {0}</value>
-    </data>
-    <data name="AssistantReorder" xml:space="preserve">
-        <value>إعادة الطلب</value>
-    </data>
-    <data name="AssistantOrdered" xml:space="preserve">
-        <value>تم الطلب</value>
     </data>
     <data name="AssistantStockOatMilk" xml:space="preserve">
         <value>حليب الشوفان</value>
@@ -1121,6 +1106,219 @@
     </data>
     <data name="AssistantStockPaperCups" xml:space="preserve">
         <value>أكواب ورقية</value>
+    </data>
+    <data name="AssistantModelThorough" xml:space="preserve">
+        <value>دقيق</value>
+    </data>
+    <data name="AssistantModelThoroughDescription" xml:space="preserve">
+        <value>يفكر مليًا قبل أن يجيب</value>
+    </data>
+    <data name="AssistantModelQuick" xml:space="preserve">
+        <value>سريع</value>
+    </data>
+    <data name="AssistantModelQuickDescription" xml:space="preserve">
+        <value>يجيب على الفور</value>
+    </data>
+    <data name="AssistantToolSales" xml:space="preserve">
+        <value>تقرير المبيعات</value>
+    </data>
+    <data name="AssistantToolStock" xml:space="preserve">
+        <value>مستويات المخزون</value>
+    </data>
+    <data name="AssistantToolTeam" xml:space="preserve">
+        <value>مبيعات الفريق</value>
+    </data>
+    <data name="AssistantToolOrder" xml:space="preserve">
+        <value>طلب من المورّدين</value>
+    </data>
+    <data name="AssistantSourceStock" xml:space="preserve">
+        <value>جرد المخزون ومواعيد التوريد</value>
+    </data>
+    <data name="AssistantSourceTeam" xml:space="preserve">
+        <value>الطلبات حسب أعضاء الفريق، اليوم</value>
+    </data>
+    <data name="AssistantSalesReasoning" xml:space="preserve">
+        <value>سأجمع آخر 7 أيام لكل فرع وأقارنها بالأسبوع الماضي.</value>
+    </data>
+    <data name="AssistantStockReasoning" xml:space="preserve">
+        <value>سأقارن المخزون بالمبيعات وبتوريد يوم الاثنين.</value>
+    </data>
+    <data name="AssistantPromoReasoning" xml:space="preserve">
+        <value>سأجعله قصيرًا: الموسم والسعر وكل الفروع.</value>
+    </data>
+    <data name="AssistantStaffReasoning" xml:space="preserve">
+        <value>سأرتب طلبات اليوم حسب أعضاء الفريق.</value>
+    </data>
+    <data name="AssistantOrderReason" xml:space="preserve">
+        <value>هل أطلب هذه الثلاثة لتصل يوم الجمعة؟</value>
+    </data>
+    <data name="AssistantOrderPlaced" xml:space="preserve">
+        <value>تم. يصل الطلب **PO-1042** يوم الجمعة.</value>
+    </data>
+    <data name="AssistantOrderSkipped" xml:space="preserve">
+        <value>حسنًا، لم أطلب أي شيء.</value>
+    </data>
+    <data name="AssistantPromoTitle" xml:space="preserve">
+        <value>عرض لاتيه حليب الشوفان</value>
+    </data>
+    <data name="AssistantSeconds" xml:space="preserve">
+        <value>{0} ث</value>
+    </data>
+    <data name="AssistantRegenerate" xml:space="preserve">
+        <value>إعادة الإنشاء</value>
+    </data>
+    <data name="AssistantEdit" xml:space="preserve">
+        <value>تعديل</value>
+    </data>
+    <data name="AssistantSave" xml:space="preserve">
+        <value>حفظ</value>
+    </data>
+    <data name="AssistantCancel" xml:space="preserve">
+        <value>إلغاء</value>
+    </data>
+    <data name="AssistantScrollToLatest" xml:space="preserve">
+        <value>الانتقال إلى الأحدث</value>
+    </data>
+    <data name="AssistantReasoning" xml:space="preserve">
+        <value>الاستدلال</value>
+    </data>
+    <data name="AssistantReasonedFor" xml:space="preserve">
+        <value>فكّر لمدة {0}</value>
+    </data>
+    <data name="AssistantSources" xml:space="preserve">
+        <value>المصادر</value>
+    </data>
+    <data name="AssistantCitationLabel" xml:space="preserve">
+        <value>المصدر {0}: {1}</value>
+    </data>
+    <data name="AssistantAttachFile" xml:space="preserve">
+        <value>إرفاق ملفات</value>
+    </data>
+    <data name="AssistantRemove" xml:space="preserve">
+        <value>إزالة</value>
+    </data>
+    <data name="AssistantDropFiles" xml:space="preserve">
+        <value>أفلت الملفات لإرفاقها</value>
+    </data>
+    <data name="AssistantDismiss" xml:space="preserve">
+        <value>إغلاق</value>
+    </data>
+    <data name="AssistantAttachmentTooLarge" xml:space="preserve">
+        <value>الملف {0} كبير جدًا. يمكن أن يصل حجم الملفات إلى {1}.</value>
+    </data>
+    <data name="AssistantAttachmentTypeNotAllowed" xml:space="preserve">
+        <value>نوع الملف {0} غير مدعوم.</value>
+    </data>
+    <data name="AssistantAttachmentReadFailed" xml:space="preserve">
+        <value>تعذرت قراءة {0}.</value>
+    </data>
+    <data name="AssistantAttachmentTooMany" xml:space="preserve">
+        <value>لم يُرفق {0}. يمكنك إرفاق {1} ملفًا كحد أقصى في المرة الواحدة.</value>
+    </data>
+    <data name="AssistantCallingTool" xml:space="preserve">
+        <value>جارٍ استخدام {0}</value>
+    </data>
+    <data name="AssistantCalledTool" xml:space="preserve">
+        <value>تم استخدام {0}</value>
+    </data>
+    <data name="AssistantToolFailed" xml:space="preserve">
+        <value>فشل {0}</value>
+    </data>
+    <data name="AssistantToolCancelled" xml:space="preserve">
+        <value>أُوقف {0}</value>
+    </data>
+    <data name="AssistantToolRejected" xml:space="preserve">
+        <value>رُفض {0}</value>
+    </data>
+    <data name="AssistantToolAwaitingApproval" xml:space="preserve">
+        <value>{0} بانتظار موافقتك</value>
+    </data>
+    <data name="AssistantApproveTool" xml:space="preserve">
+        <value>هل تسمح بـ {0}؟</value>
+    </data>
+    <data name="AssistantApprove" xml:space="preserve">
+        <value>اسمح</value>
+    </data>
+    <data name="AssistantApproveAlways" xml:space="preserve">
+        <value>اسمح دائمًا</value>
+    </data>
+    <data name="AssistantReject" xml:space="preserve">
+        <value>رفض</value>
+    </data>
+    <data name="AssistantToolDeclined" xml:space="preserve">
+        <value>لقد رفضت هذا.</value>
+    </data>
+    <data name="AssistantArguments" xml:space="preserve">
+        <value>المدخلات</value>
+    </data>
+    <data name="AssistantResult" xml:space="preserve">
+        <value>النتيجة</value>
+    </data>
+    <data name="AssistantJsonRoot" xml:space="preserve">
+        <value>البيانات</value>
+    </data>
+    <data name="AssistantDownload" xml:space="preserve">
+        <value>تنزيل</value>
+    </data>
+    <data name="AssistantExpand" xml:space="preserve">
+        <value>توسيع</value>
+    </data>
+    <data name="AssistantCollapse" xml:space="preserve">
+        <value>تصغير</value>
+    </data>
+    <data name="AssistantVersion" xml:space="preserve">
+        <value>الإصدار</value>
+    </data>
+    <data name="AssistantTranscript" xml:space="preserve">
+        <value>المحادثة</value>
+    </data>
+    <data name="AssistantDelete" xml:space="preserve">
+        <value>حذف</value>
+    </data>
+    <data name="AssistantUntitled" xml:space="preserve">
+        <value>بلا عنوان</value>
+    </data>
+    <data name="AssistantPreviousSevenDays" xml:space="preserve">
+        <value>آخر 7 أيام</value>
+    </data>
+    <data name="AssistantPreviousThirtyDays" xml:space="preserve">
+        <value>آخر 30 يومًا</value>
+    </data>
+    <data name="AssistantSomethingWentWrong" xml:space="preserve">
+        <value>حدث خطأ ما</value>
+    </data>
+    <data name="AssistantTokens" xml:space="preserve">
+        <value>رمز</value>
+    </data>
+    <data name="AssistantTokensPerSecond" xml:space="preserve">
+        <value>{0} رمز/ث</value>
+    </data>
+    <data name="AssistantInputTokens" xml:space="preserve">
+        <value>الإدخال</value>
+    </data>
+    <data name="AssistantOutputTokens" xml:space="preserve">
+        <value>الإخراج</value>
+    </data>
+    <data name="AssistantUsageLine" xml:space="preserve">
+        <value>{0}: {1}</value>
+    </data>
+    <data name="AssistantContext" xml:space="preserve">
+        <value>السياق</value>
+    </data>
+    <data name="AssistantContextUsage" xml:space="preserve">
+        <value>{0} من {1} رمز</value>
+    </data>
+    <data name="AssistantContextWarning" xml:space="preserve">
+        <value>المحادثة أصبحت طويلة</value>
+    </data>
+    <data name="AssistantContextCritical" xml:space="preserve">
+        <value>المحادثة على وشك أن تصبح أطول من أن تستمر</value>
+    </data>
+    <data name="AssistantKilobytes" xml:space="preserve">
+        <value>{0} ك.ب</value>
+    </data>
+    <data name="AssistantMegabytes" xml:space="preserve">
+        <value>{0} م.ب</value>
     </data>
     <data name="LoadFailed" xml:space="preserve">
         <value>تعذر التحميل. حاول مرة أخرى بعد قليل.</value>

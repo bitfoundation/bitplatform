@@ -979,7 +979,7 @@
         <value>AI-assistent</value>
     </data>
     <data name="AssistantDescription" xml:space="preserve">
-        <value>En chatt som svarar med text, diagram och åtgärder som strömmas fram medan de skrivs, med historik, stopp och nytt försök.</value>
+        <value>En chatt som resonerar, använder verktyg, anger sina källor och svarar med diagram, dokument och åtgärder att godkänna, allt strömmat medan det skrivs.</value>
     </data>
     <data name="AssistantCaption" xml:space="preserve">
         <value>Fråga bara</value>
@@ -993,9 +993,6 @@
     <data name="AssistantNewChat" xml:space="preserve">
         <value>Ny chatt</value>
     </data>
-    <data name="AssistantRecent" xml:space="preserve">
-        <value>Senaste</value>
-    </data>
     <data name="AssistantNoHistory" xml:space="preserve">
         <value>Inga konversationer än</value>
     </data>
@@ -1006,16 +1003,16 @@
         <value>Försök igen</value>
     </data>
     <data name="AssistantModel" xml:space="preserve">
-        <value>Demomodell</value>
+        <value>Modell</value>
     </data>
     <data name="AssistantWelcomeTitle" xml:space="preserve">
-        <value>Hur kan jag hjälpa dig med dina butiker i dag?</value>
+        <value>Hur kan jag hjälpa dig i dag?</value>
     </data>
     <data name="AssistantWelcomeText" xml:space="preserve">
-        <value>Fråga om försäljning, lager, kampanjer eller ditt team. På arbetsbänken kommer svaren från ett manus, så att varje läge i konversationen kan designas.</value>
+        <value>Fråga om försäljning, lager, kampanjer eller ditt team.</value>
     </data>
     <data name="AssistantPromptPlaceholder" xml:space="preserve">
-        <value>Fråga om försäljning, lager eller kampanjer</value>
+        <value>Fråga om dina butiker</value>
     </data>
     <data name="AssistantSend" xml:space="preserve">
         <value>Skicka</value>
@@ -1057,7 +1054,7 @@
         <value>Sammanfattning av veckans försäljning</value>
     </data>
     <data name="AssistantHistoryRestock" xml:space="preserve">
-        <value>Fyll på lagret före helgen</value>
+        <value>Påfyllning inför helgen</value>
     </data>
     <data name="AssistantHistoryAutumn" xml:space="preserve">
         <value>Höstkampanj</value>
@@ -1066,52 +1063,40 @@
         <value>Dagens toppsäljare</value>
     </data>
     <data name="AssistantSalesPrompt" xml:space="preserve">
-        <value>Hur gick försäljningen den här veckan?</value>
+        <value>Försäljningen i veckan?</value>
     </data>
     <data name="AssistantSalesAnswer" xml:space="preserve">
-        <value>Nettoförsäljningen de senaste 7 dagarna landade på **34 820 €**, upp **8,4 %** jämfört med veckan innan.
-
-- **Amsterdam** ledde med 15 940 €, tack vare en hektisk lördag.
-- **Rotterdam** växte snabbast, upp **12,1 %** efter den nya frukostmenyn.
-- **Utrecht** låg stilla; eftermiddagarna där var lugnare än vanligt.
-
-Så här gick varje dag:</value>
+        <value>Nettoförsäljning: **34 820 €**, upp **8,4 %** mot förra veckan [1].</value>
     </data>
     <data name="AssistantStockPrompt" xml:space="preserve">
         <value>Vad håller på att ta slut?</value>
     </data>
     <data name="AssistantStockAnswer" xml:space="preserve">
-        <value>Tre produkter tar slut före måndagens leverans. Beställ mer nu så kommer de på fredag:</value>
+        <value>Tre produkter tar slut före måndag [1]:</value>
     </data>
     <data name="AssistantPromoPrompt" xml:space="preserve">
-        <value>Skriv en kampanjtext för havrelatte</value>
+        <value>Skriv en kampanj för havrelatte</value>
     </data>
     <data name="AssistantPromoAnswer" xml:space="preserve">
-        <value>Här är en kort text för disken och dina inlägg i sociala medier:</value>
+        <value>Här är en kort text:</value>
     </data>
     <data name="AssistantPromoDraft" xml:space="preserve">
-        <value>Hösten smakar bättre med havre. Valfri havrelatte för 3,50 € den här veckan, i alla tre butikerna.</value>
+        <value>Hösten smakar bättre med havre. Havrelatte för 3,50 € hela veckan.</value>
     </data>
     <data name="AssistantStaffPrompt" xml:space="preserve">
-        <value>Vem sålde mest i dag?</value>
+        <value>Vem säljer mest i dag?</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>**Daan** leder i dag med **64 beställningar** och 1 180 € i försäljning. **Sarah** följer med 58 beställningar, sedan **Niloofar** med 51. Daan har också det högsta snittköpet, 18,40 €.</value>
+        <value>**Daan** leder med **64 beställningar** och 1 180 € i försäljning [1].</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
-        <value>På arbetsbänken svarar jag utifrån ett kort manus, så det kan jag inte slå upp. Prova något av förslagen, eller fråga om försäljning, lager, kampanjer eller ditt team.</value>
+        <value>Här kan jag bara de föreslagna frågorna. Prova en av dem.</value>
     </data>
     <data name="AssistantSalesCardTitle" xml:space="preserve">
         <value>Nettoförsäljning, senaste 7 dagarna</value>
     </data>
     <data name="AssistantUnitsLeft" xml:space="preserve">
         <value>{0} kvar</value>
-    </data>
-    <data name="AssistantReorder" xml:space="preserve">
-        <value>Beställ mer</value>
-    </data>
-    <data name="AssistantOrdered" xml:space="preserve">
-        <value>Beställt</value>
     </data>
     <data name="AssistantStockOatMilk" xml:space="preserve">
         <value>Havredryck</value>
@@ -1121,6 +1106,219 @@ Så här gick varje dag:</value>
     </data>
     <data name="AssistantStockPaperCups" xml:space="preserve">
         <value>Pappersmuggar</value>
+    </data>
+    <data name="AssistantModelThorough" xml:space="preserve">
+        <value>Grundlig</value>
+    </data>
+    <data name="AssistantModelThoroughDescription" xml:space="preserve">
+        <value>Tänker igenom saken innan det svarar</value>
+    </data>
+    <data name="AssistantModelQuick" xml:space="preserve">
+        <value>Snabb</value>
+    </data>
+    <data name="AssistantModelQuickDescription" xml:space="preserve">
+        <value>Svarar direkt</value>
+    </data>
+    <data name="AssistantToolSales" xml:space="preserve">
+        <value>Försäljningsrapport</value>
+    </data>
+    <data name="AssistantToolStock" xml:space="preserve">
+        <value>Lagersaldo</value>
+    </data>
+    <data name="AssistantToolTeam" xml:space="preserve">
+        <value>Teamets försäljning</value>
+    </data>
+    <data name="AssistantToolOrder" xml:space="preserve">
+        <value>Leverantörsbeställning</value>
+    </data>
+    <data name="AssistantSourceStock" xml:space="preserve">
+        <value>Inventering och leveranser</value>
+    </data>
+    <data name="AssistantSourceTeam" xml:space="preserve">
+        <value>Beställningar per teammedlem, i dag</value>
+    </data>
+    <data name="AssistantSalesReasoning" xml:space="preserve">
+        <value>Summera de senaste 7 dagarna per butik och jämför med förra veckan.</value>
+    </data>
+    <data name="AssistantStockReasoning" xml:space="preserve">
+        <value>Jämför lagret med försäljningen och måndagens leverans.</value>
+    </data>
+    <data name="AssistantPromoReasoning" xml:space="preserve">
+        <value>Håll det kort: säsongen, priset, alla butiker.</value>
+    </data>
+    <data name="AssistantStaffReasoning" xml:space="preserve">
+        <value>Rangordna dagens beställningar per teammedlem.</value>
+    </data>
+    <data name="AssistantOrderReason" xml:space="preserve">
+        <value>Beställa de här tre till fredag?</value>
+    </data>
+    <data name="AssistantOrderPlaced" xml:space="preserve">
+        <value>Klart. Beställning **PO-1042** kommer på fredag.</value>
+    </data>
+    <data name="AssistantOrderSkipped" xml:space="preserve">
+        <value>Okej, jag beställde ingenting.</value>
+    </data>
+    <data name="AssistantPromoTitle" xml:space="preserve">
+        <value>Kampanj för havrelatte</value>
+    </data>
+    <data name="AssistantSeconds" xml:space="preserve">
+        <value>{0} s</value>
+    </data>
+    <data name="AssistantRegenerate" xml:space="preserve">
+        <value>Generera igen</value>
+    </data>
+    <data name="AssistantEdit" xml:space="preserve">
+        <value>Redigera</value>
+    </data>
+    <data name="AssistantSave" xml:space="preserve">
+        <value>Spara</value>
+    </data>
+    <data name="AssistantCancel" xml:space="preserve">
+        <value>Avbryt</value>
+    </data>
+    <data name="AssistantScrollToLatest" xml:space="preserve">
+        <value>Gå till det senaste</value>
+    </data>
+    <data name="AssistantReasoning" xml:space="preserve">
+        <value>Resonemang</value>
+    </data>
+    <data name="AssistantReasonedFor" xml:space="preserve">
+        <value>Tänkte i {0}</value>
+    </data>
+    <data name="AssistantSources" xml:space="preserve">
+        <value>Källor</value>
+    </data>
+    <data name="AssistantCitationLabel" xml:space="preserve">
+        <value>Källa {0}: {1}</value>
+    </data>
+    <data name="AssistantAttachFile" xml:space="preserve">
+        <value>Bifoga filer</value>
+    </data>
+    <data name="AssistantRemove" xml:space="preserve">
+        <value>Ta bort</value>
+    </data>
+    <data name="AssistantDropFiles" xml:space="preserve">
+        <value>Släpp filer här för att bifoga dem</value>
+    </data>
+    <data name="AssistantDismiss" xml:space="preserve">
+        <value>Stäng</value>
+    </data>
+    <data name="AssistantAttachmentTooLarge" xml:space="preserve">
+        <value>{0} är för stor. Filer får vara högst {1}.</value>
+    </data>
+    <data name="AssistantAttachmentTypeNotAllowed" xml:space="preserve">
+        <value>{0} är inte en filtyp som stöds.</value>
+    </data>
+    <data name="AssistantAttachmentReadFailed" xml:space="preserve">
+        <value>{0} kunde inte läsas.</value>
+    </data>
+    <data name="AssistantAttachmentTooMany" xml:space="preserve">
+        <value>{0} bifogades inte. Du kan bifoga upp till {1} filer åt gången.</value>
+    </data>
+    <data name="AssistantCallingTool" xml:space="preserve">
+        <value>Använder {0}</value>
+    </data>
+    <data name="AssistantCalledTool" xml:space="preserve">
+        <value>Använde {0}</value>
+    </data>
+    <data name="AssistantToolFailed" xml:space="preserve">
+        <value>{0} misslyckades</value>
+    </data>
+    <data name="AssistantToolCancelled" xml:space="preserve">
+        <value>{0} stoppades</value>
+    </data>
+    <data name="AssistantToolRejected" xml:space="preserve">
+        <value>{0} nekades</value>
+    </data>
+    <data name="AssistantToolAwaitingApproval" xml:space="preserve">
+        <value>{0} väntar på ditt godkännande</value>
+    </data>
+    <data name="AssistantApproveTool" xml:space="preserve">
+        <value>Tillåta {0}?</value>
+    </data>
+    <data name="AssistantApprove" xml:space="preserve">
+        <value>Tillåt</value>
+    </data>
+    <data name="AssistantApproveAlways" xml:space="preserve">
+        <value>Tillåt alltid</value>
+    </data>
+    <data name="AssistantReject" xml:space="preserve">
+        <value>Avböj</value>
+    </data>
+    <data name="AssistantToolDeclined" xml:space="preserve">
+        <value>Du nekade det här.</value>
+    </data>
+    <data name="AssistantArguments" xml:space="preserve">
+        <value>Indata</value>
+    </data>
+    <data name="AssistantResult" xml:space="preserve">
+        <value>Resultat</value>
+    </data>
+    <data name="AssistantJsonRoot" xml:space="preserve">
+        <value>Uppgifter</value>
+    </data>
+    <data name="AssistantDownload" xml:space="preserve">
+        <value>Ladda ned</value>
+    </data>
+    <data name="AssistantExpand" xml:space="preserve">
+        <value>Förstora</value>
+    </data>
+    <data name="AssistantCollapse" xml:space="preserve">
+        <value>Förminska</value>
+    </data>
+    <data name="AssistantVersion" xml:space="preserve">
+        <value>Version</value>
+    </data>
+    <data name="AssistantTranscript" xml:space="preserve">
+        <value>Konversation</value>
+    </data>
+    <data name="AssistantDelete" xml:space="preserve">
+        <value>Ta bort</value>
+    </data>
+    <data name="AssistantUntitled" xml:space="preserve">
+        <value>Namnlös</value>
+    </data>
+    <data name="AssistantPreviousSevenDays" xml:space="preserve">
+        <value>Senaste 7 dagarna</value>
+    </data>
+    <data name="AssistantPreviousThirtyDays" xml:space="preserve">
+        <value>Senaste 30 dagarna</value>
+    </data>
+    <data name="AssistantSomethingWentWrong" xml:space="preserve">
+        <value>Något gick fel</value>
+    </data>
+    <data name="AssistantTokens" xml:space="preserve">
+        <value>token</value>
+    </data>
+    <data name="AssistantTokensPerSecond" xml:space="preserve">
+        <value>{0} token/s</value>
+    </data>
+    <data name="AssistantInputTokens" xml:space="preserve">
+        <value>Indata</value>
+    </data>
+    <data name="AssistantOutputTokens" xml:space="preserve">
+        <value>Utdata</value>
+    </data>
+    <data name="AssistantUsageLine" xml:space="preserve">
+        <value>{0}: {1}</value>
+    </data>
+    <data name="AssistantContext" xml:space="preserve">
+        <value>Kontext</value>
+    </data>
+    <data name="AssistantContextUsage" xml:space="preserve">
+        <value>{0} av {1} token</value>
+    </data>
+    <data name="AssistantContextWarning" xml:space="preserve">
+        <value>Konversationen börjar bli lång</value>
+    </data>
+    <data name="AssistantContextCritical" xml:space="preserve">
+        <value>Konversationen är snart för lång för att fortsätta</value>
+    </data>
+    <data name="AssistantKilobytes" xml:space="preserve">
+        <value>{0} kB</value>
+    </data>
+    <data name="AssistantMegabytes" xml:space="preserve">
+        <value>{0} MB</value>
     </data>
     <data name="LoadFailed" xml:space="preserve">
         <value>Kunde inte laddas. Försök igen om en stund.</value>

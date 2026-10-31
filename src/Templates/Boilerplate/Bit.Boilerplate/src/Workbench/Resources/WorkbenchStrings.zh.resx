@@ -979,7 +979,7 @@
         <value>AI 助手</value>
     </data>
     <data name="AssistantDescription" xml:space="preserve">
-        <value>一个用文字、图表和操作来回答的聊天界面，回答边生成边显示，并支持历史记录、停止和重试。</value>
+        <value>一个会推理、会调用工具、会注明来源的聊天界面，用图表、文档和待批准的操作来回答，内容边生成边显示。</value>
     </data>
     <data name="AssistantCaption" xml:space="preserve">
         <value>尽管问</value>
@@ -993,9 +993,6 @@
     <data name="AssistantNewChat" xml:space="preserve">
         <value>新对话</value>
     </data>
-    <data name="AssistantRecent" xml:space="preserve">
-        <value>最近</value>
-    </data>
     <data name="AssistantNoHistory" xml:space="preserve">
         <value>暂无对话</value>
     </data>
@@ -1006,16 +1003,16 @@
         <value>重试</value>
     </data>
     <data name="AssistantModel" xml:space="preserve">
-        <value>演示模型</value>
+        <value>模型</value>
     </data>
     <data name="AssistantWelcomeTitle" xml:space="preserve">
-        <value>今天需要我为您的门店做些什么？</value>
+        <value>今天需要什么帮助？</value>
     </data>
     <data name="AssistantWelcomeText" xml:space="preserve">
-        <value>您可以询问销售、库存、促销或团队的情况。在工作台中，回答来自预设脚本，因此对话的每种状态都可以设计。</value>
+        <value>可以问销售、库存、促销或团队的情况。</value>
     </data>
     <data name="AssistantPromptPlaceholder" xml:space="preserve">
-        <value>询问销售、库存或促销</value>
+        <value>问问你的门店情况</value>
     </data>
     <data name="AssistantSend" xml:space="preserve">
         <value>发送</value>
@@ -1057,7 +1054,7 @@
         <value>每周销售回顾</value>
     </data>
     <data name="AssistantHistoryRestock" xml:space="preserve">
-        <value>周末前补货</value>
+        <value>周末补货</value>
     </data>
     <data name="AssistantHistoryAutumn" xml:space="preserve">
         <value>秋季促销</value>
@@ -1066,52 +1063,40 @@
         <value>今日销售冠军</value>
     </data>
     <data name="AssistantSalesPrompt" xml:space="preserve">
-        <value>这周销售情况怎么样？</value>
+        <value>本周销售如何？</value>
     </data>
     <data name="AssistantSalesAnswer" xml:space="preserve">
-        <value>过去 7 天的净销售额为 **34,820 欧元**，比前一周增长 **8.4%**。
-
-- **Amsterdam** 以 15,940 欧元领先，这得益于一个繁忙的周六。
-- **Rotterdam** 增速最快，推出新早餐菜单后上涨 **12.1%**。
-- **Utrecht** 持平；那里的下午比平时冷清。
-
-以下是每天的情况：</value>
+        <value>净销售额 **34,820 欧元**，比上周增长 **8.4%** [1]。</value>
     </data>
     <data name="AssistantStockPrompt" xml:space="preserve">
         <value>哪些商品快没货了？</value>
     </data>
     <data name="AssistantStockAnswer" xml:space="preserve">
-        <value>有三种商品会在周一到货前卖完。现在补货，周五就能送到：</value>
+        <value>有三种商品会在周一前卖完 [1]：</value>
     </data>
     <data name="AssistantPromoPrompt" xml:space="preserve">
-        <value>为燕麦拿铁写一段促销文案</value>
+        <value>写一段燕麦拿铁促销文案</value>
     </data>
     <data name="AssistantPromoAnswer" xml:space="preserve">
-        <value>这是一段简短的文案，可用于柜台和社交媒体帖子：</value>
+        <value>这是一段简短的文案：</value>
     </data>
     <data name="AssistantPromoDraft" xml:space="preserve">
-        <value>秋天，和燕麦更配。本周三家门店，任意燕麦拿铁仅需 3.50 欧元。</value>
+        <value>秋天和燕麦更配。本周燕麦拿铁仅需 3.50 欧元。</value>
     </data>
     <data name="AssistantStaffPrompt" xml:space="preserve">
         <value>今天谁卖得最多？</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>**达恩**今天以 **64 笔订单**、1,180 欧元的销售额领先。**莎拉**以 58 笔订单紧随其后，然后是**尼卢法尔**，51 笔。达恩的平均客单价也最高，为 18.40 欧元。</value>
+        <value>**达恩**以 **64 笔订单**、1,180 欧元的销售额领先 [1]。</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
-        <value>在工作台中，我只按一段简短的脚本回答，所以无法查询这个问题。试试其中一条建议，或询问销售、库存、促销或团队情况。</value>
+        <value>这里我只会回答推荐的问题。试试其中一个吧。</value>
     </data>
     <data name="AssistantSalesCardTitle" xml:space="preserve">
         <value>最近 7 天净销售额</value>
     </data>
     <data name="AssistantUnitsLeft" xml:space="preserve">
         <value>剩余 {0}</value>
-    </data>
-    <data name="AssistantReorder" xml:space="preserve">
-        <value>补货</value>
-    </data>
-    <data name="AssistantOrdered" xml:space="preserve">
-        <value>已订购</value>
     </data>
     <data name="AssistantStockOatMilk" xml:space="preserve">
         <value>燕麦奶</value>
@@ -1121,6 +1106,219 @@
     </data>
     <data name="AssistantStockPaperCups" xml:space="preserve">
         <value>纸杯</value>
+    </data>
+    <data name="AssistantModelThorough" xml:space="preserve">
+        <value>深入</value>
+    </data>
+    <data name="AssistantModelThoroughDescription" xml:space="preserve">
+        <value>先充分思考，再给出回答</value>
+    </data>
+    <data name="AssistantModelQuick" xml:space="preserve">
+        <value>快速</value>
+    </data>
+    <data name="AssistantModelQuickDescription" xml:space="preserve">
+        <value>立即回答</value>
+    </data>
+    <data name="AssistantToolSales" xml:space="preserve">
+        <value>销售报表</value>
+    </data>
+    <data name="AssistantToolStock" xml:space="preserve">
+        <value>库存水平</value>
+    </data>
+    <data name="AssistantToolTeam" xml:space="preserve">
+        <value>团队销售</value>
+    </data>
+    <data name="AssistantToolOrder" xml:space="preserve">
+        <value>供应商订单</value>
+    </data>
+    <data name="AssistantSourceStock" xml:space="preserve">
+        <value>库存盘点与到货安排</value>
+    </data>
+    <data name="AssistantSourceTeam" xml:space="preserve">
+        <value>今日各成员订单</value>
+    </data>
+    <data name="AssistantSalesReasoning" xml:space="preserve">
+        <value>按门店汇总最近 7 天，并与上周对比。</value>
+    </data>
+    <data name="AssistantStockReasoning" xml:space="preserve">
+        <value>对照销售和周一的到货检查库存。</value>
+    </data>
+    <data name="AssistantPromoReasoning" xml:space="preserve">
+        <value>简短一些：季节、价格、所有门店。</value>
+    </data>
+    <data name="AssistantStaffReasoning" xml:space="preserve">
+        <value>按成员对今天的订单排名。</value>
+    </data>
+    <data name="AssistantOrderReason" xml:space="preserve">
+        <value>要订购这三种商品，周五到货吗？</value>
+    </data>
+    <data name="AssistantOrderPlaced" xml:space="preserve">
+        <value>已完成。订单 **PO-1042** 将于周五到货。</value>
+    </data>
+    <data name="AssistantOrderSkipped" xml:space="preserve">
+        <value>好的，我没有下单。</value>
+    </data>
+    <data name="AssistantPromoTitle" xml:space="preserve">
+        <value>燕麦拿铁促销文案</value>
+    </data>
+    <data name="AssistantSeconds" xml:space="preserve">
+        <value>{0} 秒</value>
+    </data>
+    <data name="AssistantRegenerate" xml:space="preserve">
+        <value>重新生成</value>
+    </data>
+    <data name="AssistantEdit" xml:space="preserve">
+        <value>编辑</value>
+    </data>
+    <data name="AssistantSave" xml:space="preserve">
+        <value>保存</value>
+    </data>
+    <data name="AssistantCancel" xml:space="preserve">
+        <value>取消</value>
+    </data>
+    <data name="AssistantScrollToLatest" xml:space="preserve">
+        <value>滚动到最新</value>
+    </data>
+    <data name="AssistantReasoning" xml:space="preserve">
+        <value>推理过程</value>
+    </data>
+    <data name="AssistantReasonedFor" xml:space="preserve">
+        <value>思考了 {0}</value>
+    </data>
+    <data name="AssistantSources" xml:space="preserve">
+        <value>来源</value>
+    </data>
+    <data name="AssistantCitationLabel" xml:space="preserve">
+        <value>来源 {0}：{1}</value>
+    </data>
+    <data name="AssistantAttachFile" xml:space="preserve">
+        <value>添加附件</value>
+    </data>
+    <data name="AssistantRemove" xml:space="preserve">
+        <value>移除</value>
+    </data>
+    <data name="AssistantDropFiles" xml:space="preserve">
+        <value>将文件拖放到此处以添加附件</value>
+    </data>
+    <data name="AssistantDismiss" xml:space="preserve">
+        <value>关闭</value>
+    </data>
+    <data name="AssistantAttachmentTooLarge" xml:space="preserve">
+        <value>{0} 太大。文件最大为 {1}。</value>
+    </data>
+    <data name="AssistantAttachmentTypeNotAllowed" xml:space="preserve">
+        <value>不支持 {0} 的文件类型。</value>
+    </data>
+    <data name="AssistantAttachmentReadFailed" xml:space="preserve">
+        <value>无法读取 {0}。</value>
+    </data>
+    <data name="AssistantAttachmentTooMany" xml:space="preserve">
+        <value>未添加 {0}。一次最多可添加 {1} 个文件。</value>
+    </data>
+    <data name="AssistantCallingTool" xml:space="preserve">
+        <value>正在使用{0}</value>
+    </data>
+    <data name="AssistantCalledTool" xml:space="preserve">
+        <value>已使用{0}</value>
+    </data>
+    <data name="AssistantToolFailed" xml:space="preserve">
+        <value>{0}失败</value>
+    </data>
+    <data name="AssistantToolCancelled" xml:space="preserve">
+        <value>{0}已停止</value>
+    </data>
+    <data name="AssistantToolRejected" xml:space="preserve">
+        <value>{0}已被拒绝</value>
+    </data>
+    <data name="AssistantToolAwaitingApproval" xml:space="preserve">
+        <value>{0}正在等待你的批准</value>
+    </data>
+    <data name="AssistantApproveTool" xml:space="preserve">
+        <value>允许{0}吗？</value>
+    </data>
+    <data name="AssistantApprove" xml:space="preserve">
+        <value>允许</value>
+    </data>
+    <data name="AssistantApproveAlways" xml:space="preserve">
+        <value>始终允许</value>
+    </data>
+    <data name="AssistantReject" xml:space="preserve">
+        <value>拒绝</value>
+    </data>
+    <data name="AssistantToolDeclined" xml:space="preserve">
+        <value>你拒绝了此操作。</value>
+    </data>
+    <data name="AssistantArguments" xml:space="preserve">
+        <value>输入</value>
+    </data>
+    <data name="AssistantResult" xml:space="preserve">
+        <value>结果</value>
+    </data>
+    <data name="AssistantJsonRoot" xml:space="preserve">
+        <value>数据</value>
+    </data>
+    <data name="AssistantDownload" xml:space="preserve">
+        <value>下载</value>
+    </data>
+    <data name="AssistantExpand" xml:space="preserve">
+        <value>展开</value>
+    </data>
+    <data name="AssistantCollapse" xml:space="preserve">
+        <value>收起</value>
+    </data>
+    <data name="AssistantVersion" xml:space="preserve">
+        <value>版本</value>
+    </data>
+    <data name="AssistantTranscript" xml:space="preserve">
+        <value>对话</value>
+    </data>
+    <data name="AssistantDelete" xml:space="preserve">
+        <value>删除</value>
+    </data>
+    <data name="AssistantUntitled" xml:space="preserve">
+        <value>未命名</value>
+    </data>
+    <data name="AssistantPreviousSevenDays" xml:space="preserve">
+        <value>过去 7 天</value>
+    </data>
+    <data name="AssistantPreviousThirtyDays" xml:space="preserve">
+        <value>过去 30 天</value>
+    </data>
+    <data name="AssistantSomethingWentWrong" xml:space="preserve">
+        <value>出了点问题</value>
+    </data>
+    <data name="AssistantTokens" xml:space="preserve">
+        <value>个词元</value>
+    </data>
+    <data name="AssistantTokensPerSecond" xml:space="preserve">
+        <value>每秒 {0} 个词元</value>
+    </data>
+    <data name="AssistantInputTokens" xml:space="preserve">
+        <value>输入</value>
+    </data>
+    <data name="AssistantOutputTokens" xml:space="preserve">
+        <value>输出</value>
+    </data>
+    <data name="AssistantUsageLine" xml:space="preserve">
+        <value>{0}：{1}</value>
+    </data>
+    <data name="AssistantContext" xml:space="preserve">
+        <value>上下文</value>
+    </data>
+    <data name="AssistantContextUsage" xml:space="preserve">
+        <value>已用 {0} / {1} 个词元</value>
+    </data>
+    <data name="AssistantContextWarning" xml:space="preserve">
+        <value>对话越来越长了</value>
+    </data>
+    <data name="AssistantContextCritical" xml:space="preserve">
+        <value>对话即将过长，无法继续</value>
+    </data>
+    <data name="AssistantKilobytes" xml:space="preserve">
+        <value>{0} KB</value>
+    </data>
+    <data name="AssistantMegabytes" xml:space="preserve">
+        <value>{0} MB</value>
     </data>
     <data name="LoadFailed" xml:space="preserve">
         <value>无法加载。请稍后重试。</value>

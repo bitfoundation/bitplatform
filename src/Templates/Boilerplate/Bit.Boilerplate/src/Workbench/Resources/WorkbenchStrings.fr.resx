@@ -979,7 +979,7 @@
         <value>Assistant IA</value>
     </data>
     <data name="AssistantDescription" xml:space="preserve">
-        <value>Un chat qui répond par du texte, des graphiques et des actions, affichés au fil de l’écriture, avec historique, arrêt et nouvel essai.</value>
+        <value>Un chat qui réfléchit, utilise des outils, cite ses sources et répond avec des graphiques, des documents et des actions à approuver, le tout affiché au fil de l’écriture.</value>
     </data>
     <data name="AssistantCaption" xml:space="preserve">
         <value>Demandez, tout simplement</value>
@@ -993,9 +993,6 @@
     <data name="AssistantNewChat" xml:space="preserve">
         <value>Nouvelle conversation</value>
     </data>
-    <data name="AssistantRecent" xml:space="preserve">
-        <value>Récentes</value>
-    </data>
     <data name="AssistantNoHistory" xml:space="preserve">
         <value>Aucune conversation pour l’instant</value>
     </data>
@@ -1006,16 +1003,16 @@
         <value>Réessayer</value>
     </data>
     <data name="AssistantModel" xml:space="preserve">
-        <value>Modèle de démo</value>
+        <value>Modèle</value>
     </data>
     <data name="AssistantWelcomeTitle" xml:space="preserve">
-        <value>Comment puis-je vous aider avec vos magasins aujourd’hui ?</value>
+        <value>Comment puis-je vous aider aujourd’hui ?</value>
     </data>
     <data name="AssistantWelcomeText" xml:space="preserve">
-        <value>Posez vos questions sur les ventes, le stock, les promotions ou votre équipe. Sur l’établi, les réponses viennent d’un script, ce qui permet de concevoir chaque état de la conversation.</value>
+        <value>Posez vos questions sur les ventes, le stock, les promos ou l’équipe.</value>
     </data>
     <data name="AssistantPromptPlaceholder" xml:space="preserve">
-        <value>Posez une question sur les ventes, le stock ou les promotions</value>
+        <value>Une question sur vos magasins ?</value>
     </data>
     <data name="AssistantSend" xml:space="preserve">
         <value>Envoyer</value>
@@ -1057,7 +1054,7 @@
         <value>Bilan hebdomadaire des ventes</value>
     </data>
     <data name="AssistantHistoryRestock" xml:space="preserve">
-        <value>Réassort avant le week-end</value>
+        <value>Réassort du week-end</value>
     </data>
     <data name="AssistantHistoryAutumn" xml:space="preserve">
         <value>Promotion d’automne</value>
@@ -1066,52 +1063,40 @@
         <value>Meilleurs vendeurs du jour</value>
     </data>
     <data name="AssistantSalesPrompt" xml:space="preserve">
-        <value>Comment se sont passées les ventes cette semaine ?</value>
+        <value>Ventes de la semaine ?</value>
     </data>
     <data name="AssistantSalesAnswer" xml:space="preserve">
-        <value>Les ventes nettes des 7 derniers jours ont atteint **34 820 €**, soit **8,4 %** de plus que la semaine précédente.
-
-- **Amsterdam** est en tête avec 15 940 €, grâce à un samedi chargé.
-- **Rotterdam** a le plus progressé, avec **12,1 %** de hausse après le nouveau menu du petit-déjeuner.
-- **Utrecht** est resté stable ; ses après-midi ont été plus calmes que d’habitude.
-
-Voici le détail jour par jour :</value>
+        <value>Ventes nettes : **34 820 €**, soit **8,4 %** de plus que la semaine dernière [1].</value>
     </data>
     <data name="AssistantStockPrompt" xml:space="preserve">
         <value>Qu’est-ce qui commence à manquer ?</value>
     </data>
     <data name="AssistantStockAnswer" xml:space="preserve">
-        <value>Trois produits seront épuisés avant la livraison de lundi. Recommandez-les maintenant et ils arriveront vendredi :</value>
+        <value>Trois produits seront épuisés avant lundi [1] :</value>
     </data>
     <data name="AssistantPromoPrompt" xml:space="preserve">
-        <value>Rédige une promo pour les lattes au lait d’avoine</value>
+        <value>Rédige une promo latte à l’avoine</value>
     </data>
     <data name="AssistantPromoAnswer" xml:space="preserve">
-        <value>En voici une courte pour le comptoir et vos réseaux sociaux :</value>
+        <value>En voici une courte :</value>
     </data>
     <data name="AssistantPromoDraft" xml:space="preserve">
-        <value>L’automne a meilleur goût avec l’avoine. Tous les lattes au lait d’avoine à 3,50 € cette semaine, dans les trois magasins.</value>
+        <value>L’automne a meilleur goût avec l’avoine. Latte à l’avoine à 3,50 € toute la semaine.</value>
     </data>
     <data name="AssistantStaffPrompt" xml:space="preserve">
-        <value>Qui a le plus vendu aujourd’hui ?</value>
+        <value>Qui vend le plus aujourd’hui ?</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>**Daan** est en tête aujourd’hui avec **64 commandes** et 1 180 € de ventes. **Sarah** suit avec 58 commandes, puis **Niloofar** avec 51. Le panier moyen de Daan est aussi le plus élevé, à 18,40 €.</value>
+        <value>**Daan** est en tête avec **64 commandes** et 1 180 € de ventes [1].</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
-        <value>Sur l’établi, je réponds à partir d’un court script, je ne peux donc pas chercher cela. Essayez l’une des suggestions, ou posez une question sur les ventes, le stock, les promotions ou votre équipe.</value>
+        <value>Ici, je ne connais que les questions suggérées. Essayez-en une.</value>
     </data>
     <data name="AssistantSalesCardTitle" xml:space="preserve">
         <value>Ventes nettes, 7 derniers jours</value>
     </data>
     <data name="AssistantUnitsLeft" xml:space="preserve">
         <value>Reste {0}</value>
-    </data>
-    <data name="AssistantReorder" xml:space="preserve">
-        <value>Commander</value>
-    </data>
-    <data name="AssistantOrdered" xml:space="preserve">
-        <value>Commandé</value>
     </data>
     <data name="AssistantStockOatMilk" xml:space="preserve">
         <value>Lait d’avoine</value>
@@ -1121,6 +1106,219 @@ Voici le détail jour par jour :</value>
     </data>
     <data name="AssistantStockPaperCups" xml:space="preserve">
         <value>Gobelets en carton</value>
+    </data>
+    <data name="AssistantModelThorough" xml:space="preserve">
+        <value>Approfondi</value>
+    </data>
+    <data name="AssistantModelThoroughDescription" xml:space="preserve">
+        <value>Prend le temps de réfléchir avant de répondre</value>
+    </data>
+    <data name="AssistantModelQuick" xml:space="preserve">
+        <value>Rapide</value>
+    </data>
+    <data name="AssistantModelQuickDescription" xml:space="preserve">
+        <value>Répond tout de suite</value>
+    </data>
+    <data name="AssistantToolSales" xml:space="preserve">
+        <value>Rapport des ventes</value>
+    </data>
+    <data name="AssistantToolStock" xml:space="preserve">
+        <value>Niveaux de stock</value>
+    </data>
+    <data name="AssistantToolTeam" xml:space="preserve">
+        <value>Ventes de l’équipe</value>
+    </data>
+    <data name="AssistantToolOrder" xml:space="preserve">
+        <value>Commande fournisseur</value>
+    </data>
+    <data name="AssistantSourceStock" xml:space="preserve">
+        <value>Inventaire et livraisons</value>
+    </data>
+    <data name="AssistantSourceTeam" xml:space="preserve">
+        <value>Commandes par membre de l’équipe, aujourd’hui</value>
+    </data>
+    <data name="AssistantSalesReasoning" xml:space="preserve">
+        <value>Additionner les 7 derniers jours par magasin et comparer à la semaine dernière.</value>
+    </data>
+    <data name="AssistantStockReasoning" xml:space="preserve">
+        <value>Comparer le stock aux ventes et à la livraison de lundi.</value>
+    </data>
+    <data name="AssistantPromoReasoning" xml:space="preserve">
+        <value>Rester court : la saison, le prix, tous les magasins.</value>
+    </data>
+    <data name="AssistantStaffReasoning" xml:space="preserve">
+        <value>Classer les commandes du jour par membre de l’équipe.</value>
+    </data>
+    <data name="AssistantOrderReason" xml:space="preserve">
+        <value>Commander ces trois produits pour vendredi ?</value>
+    </data>
+    <data name="AssistantOrderPlaced" xml:space="preserve">
+        <value>C’est fait. La commande **PO-1042** arrive vendredi.</value>
+    </data>
+    <data name="AssistantOrderSkipped" xml:space="preserve">
+        <value>D’accord, je n’ai rien commandé.</value>
+    </data>
+    <data name="AssistantPromoTitle" xml:space="preserve">
+        <value>Promo latte au lait d’avoine</value>
+    </data>
+    <data name="AssistantSeconds" xml:space="preserve">
+        <value>{0} s</value>
+    </data>
+    <data name="AssistantRegenerate" xml:space="preserve">
+        <value>Régénérer</value>
+    </data>
+    <data name="AssistantEdit" xml:space="preserve">
+        <value>Modifier</value>
+    </data>
+    <data name="AssistantSave" xml:space="preserve">
+        <value>Enregistrer</value>
+    </data>
+    <data name="AssistantCancel" xml:space="preserve">
+        <value>Annuler</value>
+    </data>
+    <data name="AssistantScrollToLatest" xml:space="preserve">
+        <value>Aller au plus récent</value>
+    </data>
+    <data name="AssistantReasoning" xml:space="preserve">
+        <value>Raisonnement</value>
+    </data>
+    <data name="AssistantReasonedFor" xml:space="preserve">
+        <value>Réflexion : {0}</value>
+    </data>
+    <data name="AssistantSources" xml:space="preserve">
+        <value>Sources</value>
+    </data>
+    <data name="AssistantCitationLabel" xml:space="preserve">
+        <value>Source {0} : {1}</value>
+    </data>
+    <data name="AssistantAttachFile" xml:space="preserve">
+        <value>Joindre des fichiers</value>
+    </data>
+    <data name="AssistantRemove" xml:space="preserve">
+        <value>Retirer</value>
+    </data>
+    <data name="AssistantDropFiles" xml:space="preserve">
+        <value>Déposez des fichiers pour les joindre</value>
+    </data>
+    <data name="AssistantDismiss" xml:space="preserve">
+        <value>Fermer</value>
+    </data>
+    <data name="AssistantAttachmentTooLarge" xml:space="preserve">
+        <value>{0} est trop volumineux. Les fichiers peuvent faire jusqu’à {1}.</value>
+    </data>
+    <data name="AssistantAttachmentTypeNotAllowed" xml:space="preserve">
+        <value>{0} n’est pas un type de fichier pris en charge.</value>
+    </data>
+    <data name="AssistantAttachmentReadFailed" xml:space="preserve">
+        <value>Impossible de lire {0}.</value>
+    </data>
+    <data name="AssistantAttachmentTooMany" xml:space="preserve">
+        <value>{0} n’a pas été joint. Vous pouvez joindre jusqu’à {1} fichiers à la fois.</value>
+    </data>
+    <data name="AssistantCallingTool" xml:space="preserve">
+        <value>En cours : {0}</value>
+    </data>
+    <data name="AssistantCalledTool" xml:space="preserve">
+        <value>Outil utilisé : {0}</value>
+    </data>
+    <data name="AssistantToolFailed" xml:space="preserve">
+        <value>Échec : {0}</value>
+    </data>
+    <data name="AssistantToolCancelled" xml:space="preserve">
+        <value>Arrêté : {0}</value>
+    </data>
+    <data name="AssistantToolRejected" xml:space="preserve">
+        <value>Refusé : {0}</value>
+    </data>
+    <data name="AssistantToolAwaitingApproval" xml:space="preserve">
+        <value>En attente de votre accord : {0}</value>
+    </data>
+    <data name="AssistantApproveTool" xml:space="preserve">
+        <value>Autoriser {0} ?</value>
+    </data>
+    <data name="AssistantApprove" xml:space="preserve">
+        <value>Autoriser</value>
+    </data>
+    <data name="AssistantApproveAlways" xml:space="preserve">
+        <value>Toujours autoriser</value>
+    </data>
+    <data name="AssistantReject" xml:space="preserve">
+        <value>Refuser</value>
+    </data>
+    <data name="AssistantToolDeclined" xml:space="preserve">
+        <value>Vous avez refusé.</value>
+    </data>
+    <data name="AssistantArguments" xml:space="preserve">
+        <value>Entrée</value>
+    </data>
+    <data name="AssistantResult" xml:space="preserve">
+        <value>Résultat</value>
+    </data>
+    <data name="AssistantJsonRoot" xml:space="preserve">
+        <value>Données</value>
+    </data>
+    <data name="AssistantDownload" xml:space="preserve">
+        <value>Télécharger</value>
+    </data>
+    <data name="AssistantExpand" xml:space="preserve">
+        <value>Agrandir</value>
+    </data>
+    <data name="AssistantCollapse" xml:space="preserve">
+        <value>Réduire</value>
+    </data>
+    <data name="AssistantVersion" xml:space="preserve">
+        <value>Version</value>
+    </data>
+    <data name="AssistantTranscript" xml:space="preserve">
+        <value>Conversation</value>
+    </data>
+    <data name="AssistantDelete" xml:space="preserve">
+        <value>Supprimer</value>
+    </data>
+    <data name="AssistantUntitled" xml:space="preserve">
+        <value>Sans titre</value>
+    </data>
+    <data name="AssistantPreviousSevenDays" xml:space="preserve">
+        <value>7 derniers jours</value>
+    </data>
+    <data name="AssistantPreviousThirtyDays" xml:space="preserve">
+        <value>30 derniers jours</value>
+    </data>
+    <data name="AssistantSomethingWentWrong" xml:space="preserve">
+        <value>Un problème est survenu</value>
+    </data>
+    <data name="AssistantTokens" xml:space="preserve">
+        <value>jetons</value>
+    </data>
+    <data name="AssistantTokensPerSecond" xml:space="preserve">
+        <value>{0} jetons/s</value>
+    </data>
+    <data name="AssistantInputTokens" xml:space="preserve">
+        <value>Entrée</value>
+    </data>
+    <data name="AssistantOutputTokens" xml:space="preserve">
+        <value>Sortie</value>
+    </data>
+    <data name="AssistantUsageLine" xml:space="preserve">
+        <value>{0} : {1}</value>
+    </data>
+    <data name="AssistantContext" xml:space="preserve">
+        <value>Contexte</value>
+    </data>
+    <data name="AssistantContextUsage" xml:space="preserve">
+        <value>{0} sur {1} jetons</value>
+    </data>
+    <data name="AssistantContextWarning" xml:space="preserve">
+        <value>La conversation devient longue</value>
+    </data>
+    <data name="AssistantContextCritical" xml:space="preserve">
+        <value>La conversation sera bientôt trop longue pour continuer</value>
+    </data>
+    <data name="AssistantKilobytes" xml:space="preserve">
+        <value>{0} Ko</value>
+    </data>
+    <data name="AssistantMegabytes" xml:space="preserve">
+        <value>{0} Mo</value>
     </data>
     <data name="LoadFailed" xml:space="preserve">
         <value>Impossible de charger ce contenu. Réessayez dans un instant.</value>

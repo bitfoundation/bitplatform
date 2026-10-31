@@ -1,43 +1,15 @@
-@import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
-
-::deep .history-title {
-    margin-top: 0.75rem;
-    padding-inline: 0.5rem;
-}
-
-.history-item {
-    gap: 2px;
-    width: 100%;
-    border: none;
+.conversations {
     display: flex;
-    font: inherit;
-    cursor: pointer;
-    text-align: start;
-    border-radius: 10px;
     flex-direction: column;
-    padding: 0.5rem 0.625rem;
-    background-color: transparent;
-    color: $bit-color-foreground-primary;
-    transition: background-color 0.15s ease;
-
-    &:hover {
-        background-color: $bit-color-background-secondary;
-    }
-
-    &.active {
-        background-color: color-mix(in srgb, #{$bit-color-primary} 10%, transparent);
-    }
 }
 
-.history-item-title {
-    font-size: 14px;
-    font-weight: 600;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+.placeholder {
+    gap: 0.5rem;
+    display: flex;
+    padding: 0.5rem;
+    flex-direction: column;
 }
 
-.history-item-date {
-    font-size: 12px;
-    color: $bit-color-foreground-secondary;
+::deep .empty {
+    padding: 0.5rem 1.25rem;
 }

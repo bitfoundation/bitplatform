@@ -30,7 +30,7 @@ public static class WorkbenchPageCatalog
             BitIconName.Robot,
             typeof(AssistantPage),
             nameof(WorkbenchStrings.CategoryAi),
-            ["BitMarkdownViewer", "BitTextShimmer", "BitChart", "BitPanel", "bit Bmotion"],
+            ["BitAiChat", "BitAiConversationList", "BitAiToolCallView", "BitAiGenerativeUiView", "BitAiArtifactView"],
             nameof(WorkbenchStrings.AssistantCaption)),
         new("shifts",
             nameof(WorkbenchStrings.ShiftsTitle),

@@ -1,26 +1,24 @@
 @inherits WorkbenchComponentBase
 
-<BitButton FullWidth IconName="@BitIconName.Add" OnClick="OnNewChat">@Localizer[nameof(WorkbenchStrings.AssistantNewChat)]</BitButton>
-<BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary" Class="history-title">@Localizer[nameof(WorkbenchStrings.AssistantRecent)]</BitText>
+<div class="conversations">
+    <BitAiConversationList Conversations="Conversations"
+                           SelectedId="@SelectedId"
+                           Disabled="IsLoading || IsFailed"
+                           OnSelect="OnSelect"
+                           OnNew="OnNewChat"
+                           OnDelete="OnDelete" />
 
-@if (IsLoading)
-{
-    @for (var i = 0; i < 4; i++)
+    @if (IsLoading)
     {
-        <BitShimmer Height="2.75rem" />
+        <div class="placeholder">
+            @for (var i = 0; i < 4; i++)
+            {
+                <BitShimmer Height="2.25rem" />
+            }
+        </div>
     }
-}
-else if (IsFailed is false && Conversations.Count is 0)
-{
-    <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.AssistantNoHistory)]</BitText>
-}
-else
-{
-    @foreach (var conversation in Conversations)
+    else if (IsFailed is false && Conversations.Count is 0)
     {
-        <button type="button" class="history-item @(conversation == Current ? "active" : null)" @onclick="() => OnSelect.InvokeAsync(conversation)">
-            <span class="history-item-title">@conversation.Title</span>
-            <span class="history-item-date">@FormatDate(conversation.UpdatedAt)</span>
-        </button>
+        <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary" Class="empty">@Localizer[nameof(WorkbenchStrings.AssistantNoHistory)]</BitText>
     }
-}
+</div>

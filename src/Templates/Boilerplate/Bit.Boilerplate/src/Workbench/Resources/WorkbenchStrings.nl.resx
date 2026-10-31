@@ -979,7 +979,7 @@
         <value>AI-assistent</value>
     </data>
     <data name="AssistantDescription" xml:space="preserve">
-        <value>Een chat die antwoordt met tekst, grafieken en acties, live geschreven, met geschiedenis, stoppen en opnieuw proberen.</value>
+        <value>Een chat die nadenkt, tools gebruikt, bronnen noemt en antwoordt met grafieken, documenten en acties om goed te keuren, live geschreven.</value>
     </data>
     <data name="AssistantCaption" xml:space="preserve">
         <value>Vraag het gewoon</value>
@@ -993,9 +993,6 @@
     <data name="AssistantNewChat" xml:space="preserve">
         <value>Nieuw gesprek</value>
     </data>
-    <data name="AssistantRecent" xml:space="preserve">
-        <value>Recent</value>
-    </data>
     <data name="AssistantNoHistory" xml:space="preserve">
         <value>Nog geen gesprekken</value>
     </data>
@@ -1006,16 +1003,16 @@
         <value>Opnieuw proberen</value>
     </data>
     <data name="AssistantModel" xml:space="preserve">
-        <value>Demomodel</value>
+        <value>Model</value>
     </data>
     <data name="AssistantWelcomeTitle" xml:space="preserve">
-        <value>Waarmee kan ik je vandaag helpen met je winkels?</value>
+        <value>Waarmee kan ik je vandaag helpen?</value>
     </data>
     <data name="AssistantWelcomeText" xml:space="preserve">
-        <value>Vraag naar verkoop, voorraad, acties of je team. Op de werkbank komen de antwoorden uit een script, zodat je elke toestand van het gesprek kunt ontwerpen.</value>
+        <value>Vraag naar verkoop, voorraad, acties of je team.</value>
     </data>
     <data name="AssistantPromptPlaceholder" xml:space="preserve">
-        <value>Vraag naar verkoop, voorraad of acties</value>
+        <value>Vraag iets over je winkels</value>
     </data>
     <data name="AssistantSend" xml:space="preserve">
         <value>Versturen</value>
@@ -1057,7 +1054,7 @@
         <value>Weekoverzicht verkoop</value>
     </data>
     <data name="AssistantHistoryRestock" xml:space="preserve">
-        <value>Bijvullen voor het weekend</value>
+        <value>Voorraad voor het weekend</value>
     </data>
     <data name="AssistantHistoryAutumn" xml:space="preserve">
         <value>Herfstactie</value>
@@ -1066,52 +1063,40 @@
         <value>Topverkopers van vandaag</value>
     </data>
     <data name="AssistantSalesPrompt" xml:space="preserve">
-        <value>Hoe ging de verkoop deze week?</value>
+        <value>Verkoop deze week?</value>
     </data>
     <data name="AssistantSalesAnswer" xml:space="preserve">
-        <value>De nettoverkoop van de afgelopen 7 dagen kwam uit op **€ 34.820**, **8,4%** meer dan de week ervoor.
-
-- **Amsterdam** liep voorop met € 15.940, dankzij een drukke zaterdag.
-- **Rotterdam** groeide het snelst, **12,1%** na het nieuwe ontbijtmenu.
-- **Utrecht** bleef gelijk; de middagen waren rustiger dan normaal.
-
-Zo verliep elke dag:</value>
+        <value>Nettoverkoop: **€ 34.820**, **8,4%** meer dan vorige week [1].</value>
     </data>
     <data name="AssistantStockPrompt" xml:space="preserve">
         <value>Wat raakt op?</value>
     </data>
     <data name="AssistantStockAnswer" xml:space="preserve">
-        <value>Drie producten raken op voor de levering van maandag. Bestel ze nu bij, dan zijn ze er vrijdag:</value>
+        <value>Drie producten raken voor maandag op [1]:</value>
     </data>
     <data name="AssistantPromoPrompt" xml:space="preserve">
-        <value>Schrijf een actie voor havermelk-lattes</value>
+        <value>Schrijf een actie voor havermelk-latte</value>
     </data>
     <data name="AssistantPromoAnswer" xml:space="preserve">
-        <value>Hier is een korte tekst voor de toonbank en je socials:</value>
+        <value>Hier is een korte tekst:</value>
     </data>
     <data name="AssistantPromoDraft" xml:space="preserve">
-        <value>De herfst smaakt beter met haver. Deze week elke havermelk-latte voor € 3,50, in alle drie de winkels.</value>
+        <value>De herfst smaakt beter met haver. Havermelk-latte de hele week € 3,50.</value>
     </data>
     <data name="AssistantStaffPrompt" xml:space="preserve">
-        <value>Wie heeft vandaag het meest verkocht?</value>
+        <value>Wie verkoopt vandaag het meest?</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>**Daan** staat vandaag bovenaan met **64 bestellingen** en € 1.180 omzet. Daarna volgen **Sarah** met 58 bestellingen en **Niloofar** met 51. Daan heeft ook de hoogste gemiddelde verkoop: € 18,40.</value>
+        <value>**Daan** staat bovenaan met **64 bestellingen** en € 1.180 omzet [1].</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
-        <value>Op de werkbank antwoord ik uit een kort script, dus dat kan ik niet opzoeken. Probeer een van de suggesties, of vraag naar verkoop, voorraad, acties of je team.</value>
+        <value>Hier ken ik alleen de voorgestelde vragen. Probeer er een.</value>
     </data>
     <data name="AssistantSalesCardTitle" xml:space="preserve">
         <value>Nettoverkoop, laatste 7 dagen</value>
     </data>
     <data name="AssistantUnitsLeft" xml:space="preserve">
         <value>nog {0}</value>
-    </data>
-    <data name="AssistantReorder" xml:space="preserve">
-        <value>Bijbestellen</value>
-    </data>
-    <data name="AssistantOrdered" xml:space="preserve">
-        <value>Besteld</value>
     </data>
     <data name="AssistantStockOatMilk" xml:space="preserve">
         <value>Havermelk</value>
@@ -1121,6 +1106,219 @@ Zo verliep elke dag:</value>
     </data>
     <data name="AssistantStockPaperCups" xml:space="preserve">
         <value>Papieren bekers</value>
+    </data>
+    <data name="AssistantModelThorough" xml:space="preserve">
+        <value>Grondig</value>
+    </data>
+    <data name="AssistantModelThoroughDescription" xml:space="preserve">
+        <value>Denkt eerst goed na voordat het antwoordt</value>
+    </data>
+    <data name="AssistantModelQuick" xml:space="preserve">
+        <value>Snel</value>
+    </data>
+    <data name="AssistantModelQuickDescription" xml:space="preserve">
+        <value>Antwoordt meteen</value>
+    </data>
+    <data name="AssistantToolSales" xml:space="preserve">
+        <value>Verkooprapport</value>
+    </data>
+    <data name="AssistantToolStock" xml:space="preserve">
+        <value>Voorraad</value>
+    </data>
+    <data name="AssistantToolTeam" xml:space="preserve">
+        <value>Teamverkoop</value>
+    </data>
+    <data name="AssistantToolOrder" xml:space="preserve">
+        <value>Bestelling bij leverancier</value>
+    </data>
+    <data name="AssistantSourceStock" xml:space="preserve">
+        <value>Voorraadtelling en leveringen</value>
+    </data>
+    <data name="AssistantSourceTeam" xml:space="preserve">
+        <value>Bestellingen per teamlid, vandaag</value>
+    </data>
+    <data name="AssistantSalesReasoning" xml:space="preserve">
+        <value>De laatste 7 dagen per winkel optellen en vergelijken met vorige week.</value>
+    </data>
+    <data name="AssistantStockReasoning" xml:space="preserve">
+        <value>Voorraad naast de verkoop en de levering van maandag leggen.</value>
+    </data>
+    <data name="AssistantPromoReasoning" xml:space="preserve">
+        <value>Kort houden: het seizoen, de prijs, alle winkels.</value>
+    </data>
+    <data name="AssistantStaffReasoning" xml:space="preserve">
+        <value>De bestellingen van vandaag per teamlid rangschikken.</value>
+    </data>
+    <data name="AssistantOrderReason" xml:space="preserve">
+        <value>Deze drie bestellen voor vrijdag?</value>
+    </data>
+    <data name="AssistantOrderPlaced" xml:space="preserve">
+        <value>Klaar. Bestelling **PO-1042** komt vrijdag.</value>
+    </data>
+    <data name="AssistantOrderSkipped" xml:space="preserve">
+        <value>Oké, ik heb niets besteld.</value>
+    </data>
+    <data name="AssistantPromoTitle" xml:space="preserve">
+        <value>Actie havermelk-latte</value>
+    </data>
+    <data name="AssistantSeconds" xml:space="preserve">
+        <value>{0} s</value>
+    </data>
+    <data name="AssistantRegenerate" xml:space="preserve">
+        <value>Opnieuw genereren</value>
+    </data>
+    <data name="AssistantEdit" xml:space="preserve">
+        <value>Bewerken</value>
+    </data>
+    <data name="AssistantSave" xml:space="preserve">
+        <value>Opslaan</value>
+    </data>
+    <data name="AssistantCancel" xml:space="preserve">
+        <value>Annuleren</value>
+    </data>
+    <data name="AssistantScrollToLatest" xml:space="preserve">
+        <value>Naar het nieuwste</value>
+    </data>
+    <data name="AssistantReasoning" xml:space="preserve">
+        <value>Redenering</value>
+    </data>
+    <data name="AssistantReasonedFor" xml:space="preserve">
+        <value>{0} nagedacht</value>
+    </data>
+    <data name="AssistantSources" xml:space="preserve">
+        <value>Bronnen</value>
+    </data>
+    <data name="AssistantCitationLabel" xml:space="preserve">
+        <value>Bron {0}: {1}</value>
+    </data>
+    <data name="AssistantAttachFile" xml:space="preserve">
+        <value>Bestanden bijvoegen</value>
+    </data>
+    <data name="AssistantRemove" xml:space="preserve">
+        <value>Verwijderen</value>
+    </data>
+    <data name="AssistantDropFiles" xml:space="preserve">
+        <value>Zet bestanden hier neer om ze bij te voegen</value>
+    </data>
+    <data name="AssistantDismiss" xml:space="preserve">
+        <value>Sluiten</value>
+    </data>
+    <data name="AssistantAttachmentTooLarge" xml:space="preserve">
+        <value>{0} is te groot. Bestanden mogen maximaal {1} zijn.</value>
+    </data>
+    <data name="AssistantAttachmentTypeNotAllowed" xml:space="preserve">
+        <value>{0} is geen ondersteund bestandstype.</value>
+    </data>
+    <data name="AssistantAttachmentReadFailed" xml:space="preserve">
+        <value>{0} kon niet worden gelezen.</value>
+    </data>
+    <data name="AssistantAttachmentTooMany" xml:space="preserve">
+        <value>{0} is niet bijgevoegd. Je kunt maximaal {1} bestanden tegelijk bijvoegen.</value>
+    </data>
+    <data name="AssistantCallingTool" xml:space="preserve">
+        <value>{0} wordt gebruikt</value>
+    </data>
+    <data name="AssistantCalledTool" xml:space="preserve">
+        <value>{0} gebruikt</value>
+    </data>
+    <data name="AssistantToolFailed" xml:space="preserve">
+        <value>{0} mislukt</value>
+    </data>
+    <data name="AssistantToolCancelled" xml:space="preserve">
+        <value>{0} gestopt</value>
+    </data>
+    <data name="AssistantToolRejected" xml:space="preserve">
+        <value>{0} geweigerd</value>
+    </data>
+    <data name="AssistantToolAwaitingApproval" xml:space="preserve">
+        <value>{0} wacht op je goedkeuring</value>
+    </data>
+    <data name="AssistantApproveTool" xml:space="preserve">
+        <value>{0} toestaan?</value>
+    </data>
+    <data name="AssistantApprove" xml:space="preserve">
+        <value>Toestaan</value>
+    </data>
+    <data name="AssistantApproveAlways" xml:space="preserve">
+        <value>Altijd toestaan</value>
+    </data>
+    <data name="AssistantReject" xml:space="preserve">
+        <value>Weigeren</value>
+    </data>
+    <data name="AssistantToolDeclined" xml:space="preserve">
+        <value>Je hebt dit geweigerd.</value>
+    </data>
+    <data name="AssistantArguments" xml:space="preserve">
+        <value>Invoer</value>
+    </data>
+    <data name="AssistantResult" xml:space="preserve">
+        <value>Resultaat</value>
+    </data>
+    <data name="AssistantJsonRoot" xml:space="preserve">
+        <value>Gegevens</value>
+    </data>
+    <data name="AssistantDownload" xml:space="preserve">
+        <value>Downloaden</value>
+    </data>
+    <data name="AssistantExpand" xml:space="preserve">
+        <value>Vergroten</value>
+    </data>
+    <data name="AssistantCollapse" xml:space="preserve">
+        <value>Verkleinen</value>
+    </data>
+    <data name="AssistantVersion" xml:space="preserve">
+        <value>Versie</value>
+    </data>
+    <data name="AssistantTranscript" xml:space="preserve">
+        <value>Gesprek</value>
+    </data>
+    <data name="AssistantDelete" xml:space="preserve">
+        <value>Verwijderen</value>
+    </data>
+    <data name="AssistantUntitled" xml:space="preserve">
+        <value>Zonder titel</value>
+    </data>
+    <data name="AssistantPreviousSevenDays" xml:space="preserve">
+        <value>Afgelopen 7 dagen</value>
+    </data>
+    <data name="AssistantPreviousThirtyDays" xml:space="preserve">
+        <value>Afgelopen 30 dagen</value>
+    </data>
+    <data name="AssistantSomethingWentWrong" xml:space="preserve">
+        <value>Er ging iets mis</value>
+    </data>
+    <data name="AssistantTokens" xml:space="preserve">
+        <value>tokens</value>
+    </data>
+    <data name="AssistantTokensPerSecond" xml:space="preserve">
+        <value>{0} tokens/s</value>
+    </data>
+    <data name="AssistantInputTokens" xml:space="preserve">
+        <value>Invoer</value>
+    </data>
+    <data name="AssistantOutputTokens" xml:space="preserve">
+        <value>Uitvoer</value>
+    </data>
+    <data name="AssistantUsageLine" xml:space="preserve">
+        <value>{0}: {1}</value>
+    </data>
+    <data name="AssistantContext" xml:space="preserve">
+        <value>Context</value>
+    </data>
+    <data name="AssistantContextUsage" xml:space="preserve">
+        <value>{0} van {1} tokens</value>
+    </data>
+    <data name="AssistantContextWarning" xml:space="preserve">
+        <value>Het gesprek wordt lang</value>
+    </data>
+    <data name="AssistantContextCritical" xml:space="preserve">
+        <value>Het gesprek is bijna te lang om verder te gaan</value>
+    </data>
+    <data name="AssistantKilobytes" xml:space="preserve">
+        <value>{0} kB</value>
+    </data>
+    <data name="AssistantMegabytes" xml:space="preserve">
+        <value>{0} MB</value>
     </data>
     <data name="LoadFailed" xml:space="preserve">
         <value>Kon dit niet laden. Probeer het zo opnieuw.</value>

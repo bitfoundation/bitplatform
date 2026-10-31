@@ -10,6 +10,7 @@
         <EmbeddedResource Include="appsettings*.json" />
         <EmbeddedResource Include="Components\Pages\Showcase\Buildings\Data\netherlands.geojson" />
 
+        <PackageReference Include="Bit.BlazorUI.AI" />
         <PackageReference Include="Bit.Bmotion" />
         <PackageReference Include="Bit.Blex" />
         <PackageReference Include="Bit.Bortable" />
