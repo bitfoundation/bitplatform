@@ -313,8 +313,8 @@ todos.Insert(<span class="k">new</span> TodoEntry
                 <p>
                     Commits reach the write-ahead log within the flush interval - 100 ms by default - and
                     <code>FlushAsync</code> closes that window to zero. On the next open the log is replayed up to the last
-                    record whose checksum verifies; a torn tail is truncated, and a corrupt manifest or snapshot throws
-                    <code>BlazeDbCorruptDatabaseException</code> instead of silently losing data.
+                    record whose checksum verifies; a torn tail is truncated, and a corrupt manifest, snapshot or
+                    mid-log record throws <code>BlazeDbCorruptDatabaseException</code> instead of silently losing data.
                 </p>
             </details>
             <details>

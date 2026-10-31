@@ -244,11 +244,6 @@ public class McpInspectorTests
         var half = new string('a', BlazeDbTableInspector.MaxNameLength / 2 + 1);
         var indexes = string.Concat(Enumerable.Range(0, BlazeDbTableInspector.MaxAttributeTokens / 8 + 1).Select(i => $"[BlazeDbIndex(Unique = false)] public int P{i} {{ get; set; }}\n"));
         var members = string.Concat(Enumerable.Range(0, BlazeDbTableInspector.MaxMembers + 1).Select(i => $"public int P{i} {{ get; set; }}\n"));
-        // Each constant names the one before twice: a thousand characters of source that fold to a gigabyte,
-        // built by the compiler the moment anything binds them.
-        var doubling = "const string A0 = \"aaaaaaaa\";\n" + string.Concat(Enumerable.Range(1, 25).Select(i => $"const string A{i} = A{i - 1} + A{i - 1};\n"));
-        var block = new string('a', 1_000);
-        var repeated = string.Join(" + ", Enumerable.Repeat("Block", BlazeDbTableInspector.MaxConstantLength / block.Length + 1));
 
         (string Source, string Limit)[] cases =
         [
@@ -256,9 +251,7 @@ public class McpInspectorTests
             ($$"""namespace {{deepNamespace}} { [BlazeDbTable("t")] public partial class T { [BlazeDbKey] public int Id { get; set; } } }""", "full name"),
             ($$"""[BlazeDbTable("t")] public partial class T { const string Half = "{{half}}"; [BlazeDbKey] public int Id { get; set; } [BlazeDbIndex(Name = Half + Half)] public int Value { get; set; } }""", "attribute argument"),
             ($$"""[BlazeDbTable("t")] public partial class T { [BlazeDbKey] public int Id { get; set; } {{indexes}} }""", "attributes"),
-            ($$"""[BlazeDbTable("t")] public partial class T { [BlazeDbKey] public int Id { get; set; } {{members}} }""", "members"),
-            ($$"""[BlazeDbTable("t")] public partial class T { {{doubling}} [BlazeDbKey] public int Id { get; set; } }""", "constants"),
-            ($$"""[BlazeDbTable("t")] public partial class T { const string Block = "{{block}}"; [BlazeDbKey] public int Id { get; set; } public string All => {{repeated}}; }""", "constants")
+            ($$"""[BlazeDbTable("t")] public partial class T { [BlazeDbKey] public int Id { get; set; } {{members}} }""", "members")
         ];
 
         foreach (var (source, limit) in cases)
@@ -268,6 +261,40 @@ public class McpInspectorTests
             Assert.IsTrue(result.IsError, source[..80]);
             Assert.Contains(limit, string.Join('\n', result.Content.OfType<TextContentBlock>().Select(content => content.Text)), source[..80]);
         }
+    }
+
+    [TestMethod]
+    public async Task A_source_that_needs_more_memory_than_the_inspector_has_is_refused()
+    {
+        // Each constant names the one before twice: a thousand characters of source that fold to a gigabyte,
+        // built the moment the attribute argument is read. It is the compile that is bounded - not a guess
+        // at it from the syntax - so the shape it takes does not matter: a nameof that is a method of the
+        // source's own, a constant of the framework's, anything else the compiler folds.
+        var doubling = "const string A0 = \"aaaaaaaa\";\n" + string.Concat(Enumerable.Range(1, 26).Select(i => $"const string A{i} = A{i - 1} + A{i - 1};\n"));
+        var source = $$"""[BlazeDbTable("t")] public partial class T { {{doubling}} [BlazeDbKey] public int Id { get; set; } [BlazeDbIndex(Name = A26)] public string Value { get; set; } = ""; }""";
+
+        var result = await McpCall.RawAsync("InspectBlazeDbTable", new() { ["source"] = source });
+
+        Assert.IsTrue(result.IsError);
+        Assert.Contains($"more than {BlazeDbInspectionWorker.MemoryLimit / (1024 * 1024)} MB", string.Join('\n', result.Content.OfType<TextContentBlock>().Select(content => content.Text)));
+
+        // The worker that ran out is replaced, and the next inspection is served as usual.
+        var report = await InspectAsync("""[BlazeDbTable("t")] public partial class T { [BlazeDbKey] public int Id { get; set; } }""");
+
+        Assert.IsTrue(report.IsValid);
+    }
+
+    [TestMethod]
+    public async Task A_refusal_reaches_an_http_caller_with_its_reason()
+    {
+        using var http = McpTestHost.CreateHttpClient();
+        var source = $$"""[BlazeDbTable("t")] public partial class T { [BlazeDbKey] public int Id { get; set; } public int {{new string('a', BlazeDbTableInspector.MaxNameLength + 1)}} { get; set; } }""";
+
+        using var response = await http.GetAsync($"/api/mcp/InspectBlazeDbTable?source={Uri.EscapeDataString(source)}");
+
+        Assert.AreEqual(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+        using var problem = System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Contains("a name is longer than", problem.RootElement.GetProperty("detail").GetString() ?? "");
     }
 
     [TestMethod]
@@ -291,6 +318,25 @@ public class McpInspectorTests
         Assert.IsTrue(report.IsValid, string.Join(Environment.NewLine, report.Diagnostics.Select(d => $"{d.Id}: {d.Message}")));
         Assert.AreEqual("app_items", report.Tables.Single().TableName);
         Assert.AreEqual("app_ByTitle", report.Tables.Single().Indexes.Single().Name);
+    }
+
+    [TestMethod]
+    public async Task A_constant_named_after_the_one_it_forwards_is_inspected()
+    {
+        // Two constants of the same name in different types, one forwarding the other - valid C#.
+        var report = await InspectAsync("""
+            public static class Tables { public const string Items = "items"; }
+
+            [BlazeDbTable(Tables.Items)]
+            public partial class Item
+            {
+                public const string Items = Tables.Items;
+                [BlazeDbKey] public int Id { get; set; }
+            }
+            """);
+
+        Assert.IsTrue(report.IsValid, string.Join(Environment.NewLine, report.Diagnostics.Select(d => $"{d.Id}: {d.Message}")));
+        Assert.AreEqual("items", report.Tables.Single().TableName);
     }
 
     private static InspectedItem FullItem() => new()

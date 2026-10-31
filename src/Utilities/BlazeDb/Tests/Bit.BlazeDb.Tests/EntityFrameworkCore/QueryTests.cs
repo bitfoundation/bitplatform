@@ -346,11 +346,17 @@ public class QueryTests
             .UseBlazeDb("unvalidated-filter-" + Guid.NewGuid().ToString("N"))
             .ReplaceService<IModelValidator, ModelValidator>()
             .Options;
-        using var context = new FilteredPeopleContext(options);
 
-        var error = Assert.ThrowsExactly<NotSupportedException>(() => context.People.ToList());
+        // Refused when the model is initialized, before anything touches a table - and for every
+        // context, not only the first one to build the model.
+        for (var i = 0; i < 2; i++)
+        {
+            using var context = new FilteredPeopleContext(options);
 
-        Assert.Contains("HasQueryFilter", error.Message);
+            var error = Assert.ThrowsExactly<NotSupportedException>(() => context.Model);
+
+            Assert.Contains("HasQueryFilter", error.Message);
+        }
     }
 
     [TestMethod]

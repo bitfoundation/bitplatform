@@ -22,7 +22,9 @@ namespace Bit.BlazeDb.Demo.Server.Services;
 /// </para>
 /// <para>
 /// The submitted source is compiled and never run: everything reported is read off the compilation and
-/// the generated syntax, so nothing a caller sends can execute on this server.
+/// the generated syntax, so nothing a caller sends can execute on this server. Nor can what it costs to
+/// compile reach the server: the compile happens in a worker process with a capped heap, killed when it
+/// runs out of time - see <see cref="BlazeDbInspectionWorker"/>.
 /// </para>
 /// </summary>
 public static class BlazeDbTableInspector
@@ -36,12 +38,6 @@ public static class BlazeDbTableInspector
 
     /// <summary>Far more members than a table type has; every one is work for the generator and the compiler.</summary>
     public const int MaxMembers = 500;
-
-    /// <summary>
-    /// The constant text a source may spell, every mention of a constant counted at its full length. A
-    /// source spells no more than itself unless its constants repeat one another, and those fold to gigabytes.
-    /// </summary>
-    public const int MaxConstantLength = MaxSourceLength;
 
     private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(20);
 
@@ -95,10 +91,11 @@ public static class BlazeDbTableInspector
 
         try
         {
+            // The gate bounds the workers busy at once, and so the memory they can take between them.
             await _gate.WaitAsync(timeout.Token);
             try
             {
-                return Inspect(source, includeGeneratedCode, timeout.Token);
+                return await BlazeDbInspectionWorker.InspectAsync(source, includeGeneratedCode, timeout.Token);
             }
             finally
             {
@@ -112,7 +109,8 @@ public static class BlazeDbTableInspector
         }
     }
 
-    private static BlazeDbTableInspectionDto Inspect(string? source, bool includeGeneratedCode, CancellationToken cancellationToken)
+    /// <summary>The inspection itself, run inside a <see cref="BlazeDbInspectionWorker"/>.</summary>
+    internal static BlazeDbTableInspectionDto Inspect(string? source, bool includeGeneratedCode, CancellationToken cancellationToken)
     {
         source ??= string.Empty;
 
@@ -205,152 +203,62 @@ public static class BlazeDbTableInspector
     }
 
     /// <summary>
-    /// The limit the source goes past, or null. The syntax is checked before anything is bound, so
-    /// nothing a caller can make expensive to bind is bound before it is known to be small.
+    /// The limit the source goes past, or null. The limits bound what the generator emits and what a report
+    /// carries; what compiling the source costs is bounded by the worker it runs in.
     /// </summary>
     private static string? ExceededLimit(SemanticModel model, CancellationToken cancellationToken)
     {
         var root = model.SyntaxTree.GetRoot(cancellationToken);
 
-        if (root.DescendantTokens().Any(token => token.IsKind(SyntaxKind.IdentifierToken) && token.ValueText.Length > MaxNameLength)) return $"a name is longer than {MaxNameLength} characters";
+        // One walk over the syntax for every limit it can tell on its own, picking up what the checks that
+        // need the compiler look at.
+        var members = 0;
+        var attributeTokens = 0;
+        var attributeEnd = -1;
+        var types = new List<BaseTypeDeclarationSyntax>();
+        var arguments = new List<AttributeArgumentSyntax>();
 
-        if (root.DescendantNodes().OfType<MemberDeclarationSyntax>().Skip(MaxMembers).Any()) return $"it declares more than {MaxMembers} members";
+        foreach (var item in root.DescendantNodesAndTokens())
+        {
+            if (item.AsNode() is { } node)
+            {
+                if (node is MemberDeclarationSyntax && ++members > MaxMembers) return $"it declares more than {MaxMembers} members";
 
-        var attributes = root.DescendantNodes().OfType<AttributeListSyntax>().ToArray();
+                switch (node)
+                {
+                    case BaseTypeDeclarationSyntax type:
+                        types.Add(type);
+                        break;
+                    case AttributeListSyntax:
+                        attributeEnd = Math.Max(attributeEnd, node.Span.End);
+                        break;
+                    case AttributeArgumentSyntax argument:
+                        arguments.Add(argument);
+                        break;
+                }
 
-        if (attributes.Sum(attribute => attribute.DescendantTokens().Count()) > MaxAttributeTokens) return $"its attributes run to more than {MaxAttributeTokens} tokens";
+                continue;
+            }
 
-        if (SpellsTooMuchConstantText(root, cancellationToken)) return $"its constants spell more than {MaxConstantLength} characters";
+            var token = item.AsToken();
 
-        foreach (var type in root.DescendantNodes().OfType<BaseTypeDeclarationSyntax>())
+            if (token.IsKind(SyntaxKind.IdentifierToken) && token.ValueText.Length > MaxNameLength) return $"a name is longer than {MaxNameLength} characters";
+
+            // A node comes before its tokens, so every token short of where the last attribute list ends is that list's.
+            if (token.SpanStart < attributeEnd && ++attributeTokens > MaxAttributeTokens) return $"its attributes run to more than {MaxAttributeTokens} tokens";
+        }
+
+        foreach (var type in types)
         {
             if (model.GetDeclaredSymbol(type, cancellationToken)?.ToDisplayString().Length > MaxNameLength) return $"a type's full name is longer than {MaxNameLength} characters";
         }
 
-        foreach (var argument in attributes.SelectMany(attribute => attribute.DescendantNodes().OfType<AttributeArgumentSyntax>()))
+        foreach (var argument in arguments)
         {
             if (model.GetConstantValue(argument.Expression, cancellationToken) is { HasValue: true, Value: string { Length: > MaxNameLength } }) return $"an attribute argument is longer than {MaxNameLength} characters";
         }
 
         return null;
-    }
-
-    /// <summary>
-    /// Whether the source's constants could fold into more than <see cref="MaxConstantLength"/> characters,
-    /// judged from the syntax alone.
-    /// <para>
-    /// Binding a constant makes the compiler build its value - the checks after this one do, and so does
-    /// every later step - and a few dozen lines of constants that each name the one before twice fold to
-    /// gigabytes. So the length is bounded first: a constant spells no more than its literals, its
-    /// <c>nameof</c>s and the constants it names, each at its own bound. A name that is not one of the
-    /// source's constants - a framework constant - counts at its own length; its value is fixed, so it cannot
-    /// be made to grow. Every mention of a constant anywhere - an attribute, another initializer, a method
-    /// body - counts at that bound as well, since the compiler folds an expression of constants wherever it
-    /// meets one. Names are matched as written, so a name that only shares a constant's is counted too.
-    /// </para>
-    /// </summary>
-    private static bool SpellsTooMuchConstantText(SyntaxNode root, CancellationToken cancellationToken)
-    {
-        static long Capped(long length) => Math.Min(length, MaxConstantLength + 1L);
-
-        // nameof spells the name it is given and never reads what the name holds - a constant can name itself in one.
-        static bool IsNameof(SyntaxNode node) => node is InvocationExpressionSyntax { Expression: IdentifierNameSyntax { Identifier.ValueText: "nameof" } };
-
-        // Each constant's literal text and the names its initializer mentions. Constants that share a name
-        // count as one that spells all of their initializers.
-        var constants = new Dictionary<string, (long Spelled, List<string> Named)>(StringComparer.Ordinal);
-
-        foreach (var variable in root.DescendantNodes().OfType<VariableDeclaratorSyntax>())
-        {
-            var isConstant = variable.Parent?.Parent switch
-            {
-                FieldDeclarationSyntax field => field.Modifiers.Any(SyntaxKind.ConstKeyword),
-                LocalDeclarationStatementSyntax local => local.IsConst,
-                _ => false
-            };
-            if (isConstant is false || variable.Initializer is null) continue;
-
-            var (spelled, named) = constants.TryGetValue(variable.Identifier.ValueText, out var existing) ? existing : (0L, new List<string>());
-
-            foreach (var part in variable.Initializer.DescendantNodesAndTokens(node => IsNameof(node) is false))
-            {
-                if (part.AsNode() is { } node)
-                {
-                    if (IsNameof(node)) spelled = Capped(spelled + node.Span.Length);
-                }
-                else if (part.IsKind(SyntaxKind.IdentifierToken))
-                {
-                    named.Add(part.AsToken().ValueText);
-                }
-                else if (part.Kind() is SyntaxKind.StringLiteralToken or SyntaxKind.CharacterLiteralToken or SyntaxKind.InterpolatedStringTextToken
-                         or SyntaxKind.SingleLineRawStringLiteralToken or SyntaxKind.MultiLineRawStringLiteralToken)
-                {
-                    spelled = Capped(spelled + part.AsToken().ValueText.Length);
-                }
-            }
-
-            constants[variable.Identifier.ValueText] = (spelled, named);
-        }
-
-        // Depth-first with a stack of its own: a chain of constants naming constants can be as long as the
-        // source allows, deeper than recursion would survive.
-        var bounds = new Dictionary<string, long>(StringComparer.Ordinal);
-        var entered = new HashSet<string>(StringComparer.Ordinal);
-        var pending = new Stack<string>();
-
-        foreach (var start in constants.Keys)
-        {
-            pending.Push(start);
-
-            while (pending.TryPeek(out var name))
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (bounds.ContainsKey(name))
-                {
-                    pending.Pop();
-                    continue;
-                }
-
-                var (spelled, named) = constants[name];
-
-                if (entered.Add(name))
-                {
-                    foreach (var other in named)
-                    {
-                        if (constants.ContainsKey(other) is false || bounds.ContainsKey(other)) continue;
-
-                        // A constant that depends on itself does not compile - nor, here, can it be told apart
-                        // from two constants that only share a name, so neither is inspected.
-                        if (entered.Contains(other)) return true;
-
-                        pending.Push(other);
-                    }
-
-                    continue;
-                }
-
-                pending.Pop();
-
-                var bound = named.Aggregate(spelled, (sum, other) => Capped(sum + (bounds.TryGetValue(other, out var length) ? length : other.Length)));
-                if (bound > MaxConstantLength) return true;
-
-                bounds[name] = bound;
-            }
-        }
-
-        var total = 0L;
-
-        foreach (var token in root.DescendantTokens(node => IsNameof(node) is false))
-        {
-            if (token.IsKind(SyntaxKind.IdentifierToken) && token.Parent is IdentifierNameSyntax && bounds.TryGetValue(token.ValueText, out var bound))
-            {
-                total = Capped(total + bound);
-                if (total > MaxConstantLength) return true;
-            }
-        }
-
-        return false;
     }
 
     private static BlazeDbInspectedTableDto[] FindTables(Compilation compilation, SyntaxTree userTree, GeneratedSourceResult[] generated)

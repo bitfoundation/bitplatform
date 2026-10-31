@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using Bit.BlazeDb.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Bit.BlazeDb.EntityFrameworkCore.Metadata;
@@ -15,9 +14,6 @@ internal static class BlazeDbTableResolver
 
     public static BlazeDbTableDescriptor Resolve(IEntityType entityType)
     {
-        // Every entity type comes through here before its table is opened, queried or written to.
-        BlazeDbModelValidator.ThrowIfQueryFiltered(entityType);
-
         if (entityType.FindAnnotation(DescriptorAnnotation)?.Value is BlazeDbTableDescriptor configured)
         {
             return configured;

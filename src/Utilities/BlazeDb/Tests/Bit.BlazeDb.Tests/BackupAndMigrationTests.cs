@@ -207,7 +207,7 @@ public class BackupAndMigrationTests
             await db.CheckpointAsync();
         }
 
-        var snapshot = storage.GetFile("snapshot-2.blz")!;
+        var snapshot = storage.GetFile(storage.Snapshot(2))!;
         Assert.AreEqual(-1, snapshot.AsSpan().IndexOf("__blazedb"u8), "An earlier engine version would see an extra table.");
     }
 

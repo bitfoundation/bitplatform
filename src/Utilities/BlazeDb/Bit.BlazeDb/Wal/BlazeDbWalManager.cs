@@ -1,4 +1,5 @@
-﻿using Bit.BlazeDb.Serialization;
+﻿using System.Security.Cryptography;
+using Bit.BlazeDb.Serialization;
 using Bit.BlazeDb.Storage;
 
 namespace Bit.BlazeDb.Wal;
@@ -9,14 +10,19 @@ namespace Bit.BlazeDb.Wal;
 /// WAL) when the log grows, and recovers state on open.
 ///
 /// File layout (all referenced from an atomic manifest):
-///   manifest.blz     magic BLZM, version, generation, snapshot file, wal file, snapshot LSN, CRC
-///   snapshot-N.blz   magic BLZS, version, LSN, per-table [key][row] dumps, CRC
-///                    (version 1 snapshots hold rows only and are still readable)
-///   wal-N.blz        sequence of records: magic BLZR, [len:4][lsn:8][crc:4][payload]
-/// Recovery = load snapshot, then replay WAL records in LSN order from snapshot LSN + 1, stopping at
-/// the first torn/corrupt record or the first gap in the sequence; a record whose LSN was already
-/// replayed is skipped. The checksum covers the length and the LSN as well as the payload, so a
-/// corrupted header cannot make replay skip a commit or misread where a record ends.
+///   manifest.blz          magic BLZM, version, generation, snapshot file, wal file, snapshot LSN, CRC
+///   snapshot-{id}-N.blz   magic BLZS, version, LSN, per-table [key][row] dumps, CRC
+///                         (version 1 snapshots hold rows only and are still readable)
+///   wal-{id}-N.blz        sequence of records: magic BLZR, [len:4][lsn:8][crc:4][payload]
+/// {id} is random and chosen once per database, so no two databases ever share a file name - not even one
+/// deleted and created again on the same backend. Databases written before it existed name their files
+/// snapshot-N.blz and wal-N.blz, and take an id at their next checkpoint.
+/// Recovery = load snapshot, then replay WAL records in LSN order from snapshot LSN + 1; a record whose
+/// LSN was already replayed is skipped. A torn tail - a record cut short or failing its checksum with
+/// nothing intact after it - ends the log, as a crash mid-append leaves it. A record that is damaged or
+/// out of sequence with intact records after it is not a crash but corruption, and is reported as such
+/// rather than cut away along with the commits behind it. The checksum covers the length and the LSN as
+/// well as the payload, so a corrupted header cannot make replay skip a commit or misread where a record ends.
 /// </summary>
 internal sealed class BlazeDbWalManager : IAsyncDisposable
 {
@@ -63,6 +69,9 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
     private ulong _generation;
     private string _walFile = "";
     private string _snapshotFile = "";
+
+    // The id in this database's file names; null for one whose files predate ids, until its next checkpoint.
+    private string? _databaseId;
     private long _snapshotLsn;
     private long _lastLsn;
     private long _walSize;
@@ -336,7 +345,7 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
                 }
                 // Only the wait is cancellable. Once a flush has started it runs to completion:
                 // interrupting an append mid-write and re-issuing it later could leave a torn
-                // record in front of the retry, and replay stops at the first torn record.
+                // record in front of the retry, which the next open would report as corruption.
                 await FlushAsync(CancellationToken.None).ConfigureAwait(false);
                 if (Volatile.Read(ref _walSize) > _options.CheckpointWalSize)
                 {
@@ -425,7 +434,7 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
         var raw = await _storage.ReadAsync(_walFile, ct).ConfigureAwait(false);
         if (raw is not null)
         {
-            var validLength = ScanRecords(raw, replay: false);
+            var validLength = ScanLog(raw, _walFile, _snapshotLsn).ValidLength;
             if (validLength != raw.Length)
             {
                 await _storage.WriteAtomicAsync(_walFile, raw.AsMemory(0, validLength), ct).ConfigureAwait(false);
@@ -503,16 +512,19 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
                 _pending.Reset();
             }
 
-            var newSnapshotFile = $"snapshot-{newGeneration}.blz";
-            var newWalFile = $"wal-{newGeneration}.blz";
+            // A database whose files predate ids takes one now, so from this generation on its files are
+            // its own by name.
+            var databaseId = _databaseId ?? NewDatabaseId();
+            var newSnapshotFile = FileName("snapshot", databaseId, newGeneration);
+            var newWalFile = FileName("wal", databaseId, newGeneration);
 
             try
             {
                 await _storage.WriteAtomicAsync(newSnapshotFile, snapshotBytes, ct).ConfigureAwait(false);
                 // The new generation's log has to start empty, and nothing guarantees that no file
-                // by its name is left over - from a cleanup that failed, or from an earlier database
-                // on the same backend that a delete could not completely remove. Appending behind
-                // one would make the next open replay its records into this database.
+                // by its name is left over - from a cleanup that failed, or from a generation that was
+                // rolled back by putting an older manifest in place. Appending behind one would make
+                // the next open replay its records into this one.
                 await _storage.DeleteAsync(newWalFile, ct).ConfigureAwait(false);
                 await _storage.WriteAtomicAsync(
                     ManifestFile,
@@ -536,6 +548,7 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
 
             var oldWalFile = _walFile;
             var oldSnapshotFile = _snapshotFile;
+            _databaseId = databaseId;
             _generation = newGeneration;
             _snapshotFile = newSnapshotFile;
             _walFile = newWalFile;
@@ -589,10 +602,9 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
     /// Removes a database from a backend: everything it holds when it can list its files, otherwise
     /// the manifest together with the snapshot and log that manifest names.
     ///
-    /// Deleting only the manifest is not enough and is worse than doing nothing: recovery reads a
-    /// missing manifest as an empty database and writes a fresh one pointing at the first
-    /// generation's log, without truncating the log that is still sitting there - so the next open
-    /// replays the rows the caller asked to be rid of.
+    /// Deleting only the manifest is not enough: the rows the caller asked to be rid of would still
+    /// be sitting in the files it named. A database created on the backend afterwards names its files
+    /// with an id of its own, so it never reads them - but they are still there to be read.
     /// </summary>
     internal static async ValueTask DeleteAsync(IBlazeDbStorage storage, CancellationToken ct)
     {
@@ -627,8 +639,10 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
             }
             await storage.DeleteAsync(info.WalFile, ct).ConfigureAwait(false);
         }
-        // The first generation's log exists before any manifest names it, and a manifest too corrupt
-        // to read names nothing at all, so that generation is cleared by name as well.
+        // A database from before file names carried an id could hold a first-generation log no manifest
+        // named yet, and a manifest too corrupt to read names nothing at all, so that generation is
+        // cleared by its fixed names as well. Files named with an id cannot be found without a listing
+        // or a manifest; whatever is left of them belongs to no database that can ever be opened.
         await storage.DeleteAsync("snapshot-1.blz", ct).ConfigureAwait(false);
         await storage.DeleteAsync("wal-1.blz", ct).ConfigureAwait(false);
         // Last, so a failure part-way through cannot leave a manifest pointing at files that are gone.
@@ -639,20 +653,26 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
     private readonly record struct ManifestInfo(ulong Generation, string SnapshotFile, string WalFile, long SnapshotLsn);
 
     /// <summary>A generation read off storage, before any of it has been decoded into the tables.</summary>
-    private readonly record struct LoadedGeneration(ManifestInfo Info, byte[]? SnapshotBytes, byte[]? WalBytes);
+    private readonly record struct LoadedGeneration(ManifestInfo Info, byte[]? SnapshotBytes, byte[]? WalBytes, ScannedLog Log);
+
+    /// <summary>
+    /// A log whose records have been checked: the length of its intact prefix, the LSN that prefix ends
+    /// at, and where in it the payload of each commit to replay lies, in order.
+    /// </summary>
+    private readonly record struct ScannedLog(int ValidLength, long LastLsn, List<Range> Commits);
 
     private async ValueTask RecoverAsync(CancellationToken ct)
     {
         var manifestBytes = await _storage.ReadAsync(ManifestFile, ct).ConfigureAwait(false);
         if (manifestBytes is null)
         {
-            ApplyGeneration(new LoadedGeneration(new ManifestInfo(1, "", "wal-1.blz", 0), null, null));
+            // No manifest means no database, whatever else the backend holds. The new one's files are
+            // named with an id nothing on the backend can already carry, so it starts from an empty log
+            // even beside the files of one that was deleted only in part.
+            var walFile = FileName("wal", NewDatabaseId(), 1);
+            ApplyGeneration(new LoadedGeneration(new ManifestInfo(1, "", walFile, 0), null, null, new ScannedLog(0, 0, [])));
             if (!_options.ReadOnly)
             {
-                // No manifest means no database, whatever else the backend holds: a writer writes the
-                // manifest before its first append, so a first-generation log already sitting here
-                // belongs to one that was deleted only in part, and must not be appended to.
-                await _storage.DeleteAsync(_walFile, ct).ConfigureAwait(false);
                 await _storage.WriteAtomicAsync(
                     ManifestFile, BuildManifest(_generation, _snapshotFile, _walFile, _snapshotLsn), ct).ConfigureAwait(false);
             }
@@ -660,14 +680,14 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
         }
 
         var loaded = await LoadGenerationAsync(manifestBytes, ct).ConfigureAwait(false);
-        var validLength = ApplyGeneration(loaded);
+        ApplyGeneration(loaded);
 
-        if (loaded.WalBytes is not null && validLength < loaded.WalBytes.Length && !_options.ReadOnly)
+        if (loaded.WalBytes is not null && loaded.Log.ValidLength < loaded.WalBytes.Length && !_options.ReadOnly)
         {
             // Torn tail detected: truncate so future appends continue from a clean point.
             // A replica leaves it alone - repair is the writer's job, and the tail may simply
             // be a commit the writer is in the middle of appending.
-            await _storage.WriteAtomicAsync(_walFile, loaded.WalBytes.AsMemory(0, validLength), ct).ConfigureAwait(false);
+            await _storage.WriteAtomicAsync(_walFile, loaded.WalBytes.AsMemory(0, loaded.Log.ValidLength), ct).ConfigureAwait(false);
         }
     }
 
@@ -717,22 +737,26 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
             {
                 VerifySnapshot(snapshotBytes, info.SnapshotFile);
             }
-            return new LoadedGeneration(info, snapshotBytes, walBytes);
+            var log = walBytes is null
+                ? new ScannedLog(0, info.SnapshotLsn, [])
+                : ScanLog(walBytes, info.WalFile, info.SnapshotLsn);
+            return new LoadedGeneration(info, snapshotBytes, walBytes, log);
         }
     }
 
     /// <summary>
-    /// Installs a generation that has already been read and checksummed, and returns the length of
-    /// the log's valid prefix. Clearing the tables, decoding the snapshot and replaying the log all
-    /// happen under the lock with no await between them, so a reload cannot be observed halfway -
-    /// and, because everything was read first, cannot leave the tables empty because storage failed.
+    /// Installs a generation that has already been read and checksummed. Clearing the tables, decoding
+    /// the snapshot and replaying the log all happen under the lock with no await between them, so a
+    /// reload cannot be observed halfway - and, because everything was read and checked first, cannot
+    /// leave the tables empty because storage failed or the log turned out to be damaged.
     /// </summary>
-    private int ApplyGeneration(LoadedGeneration loaded)
+    private void ApplyGeneration(LoadedGeneration loaded)
     {
         lock (_db.SyncRoot)
         {
             _db.ResetTables();
             _pending.Reset();
+            _databaseId = DatabaseIdOf(loaded.Info.WalFile);
             _generation = loaded.Info.Generation;
             _snapshotFile = loaded.Info.SnapshotFile;
             _walFile = loaded.Info.WalFile;
@@ -757,12 +781,14 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
 
             if (loaded.WalBytes is null)
             {
-                return 0;
+                return;
             }
-            int validLength;
             try
             {
-                validLength = ScanRecords(loaded.WalBytes, replay: true);
+                foreach (var commit in loaded.Log.Commits)
+                {
+                    ReplayCommit(loaded.WalBytes.AsSpan(commit));
+                }
             }
             catch (Exception ex) when (IsDecodeFailure(ex))
             {
@@ -770,77 +796,120 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
                     $"A record in '{_walFile}' passed its checksum but could not be decoded; the row " +
                     "format may not match the registered table descriptors.", ex);
             }
-            _walSize = validLength;
-            return validLength;
+            _lastLsn = loaded.Log.LastLsn;
+            _walSize = loaded.Log.ValidLength;
         }
     }
 
     /// <summary>
-    /// Walks the log's records and returns the length of the valid prefix, replaying each commit
-    /// past the snapshot's LSN once, in LSN order, when asked to.
+    /// Checks a log's records and finds each commit past the snapshot's LSN to replay, once and in LSN
+    /// order.
     ///
-    /// Scanning stops at the first record that is torn or fails its checksum, and at the first one
-    /// whose LSN skips past the next one expected. Everything after such a record was written later,
-    /// so carrying on could apply a commit whose predecessor was lost - a state the database was
-    /// never in. The gap matters for an encrypted log in particular: its frames are authenticated one
-    /// at a time, so a frame dropped from the middle leaves every frame around it intact. A fragment a
-    /// failed append left behind is cut off by <see cref="RepairWalAsync"/> before the retry is
-    /// written, so stopping here does not cost the commits that followed it.
+    /// The log ends at its torn tail: the first record that is cut short or fails its checksum, with
+    /// nothing intact after it. That is what a crash part-way through an append leaves, and what comes
+    /// after it was never acknowledged as durable. A fragment a failed append left behind is cut off by
+    /// <see cref="RepairWalAsync"/> before the retry is written, so a live log never holds one in front
+    /// of later records.
+    ///
+    /// Damage anywhere else is corruption, and is reported rather than treated as the end of the log:
+    /// ending there would replay a prefix - a state the database was in once - and the writer would then
+    /// truncate the log to it, destroying every intact commit behind the damage for good. So a broken
+    /// record with an intact one after it, and an intact record whose LSN skips past the next one
+    /// expected, both throw, leaving the files untouched. The gap matters for an encrypted log in
+    /// particular: its frames are authenticated one at a time, so a frame dropped from the middle leaves
+    /// every frame around it intact.
     ///
     /// A record whose LSN was already seen is skipped rather than replayed. An append that failed
     /// after some of its records reached storage is retried whole, so those records appear twice;
     /// applying the second copy would undo whatever the commits between the two copies changed.
     /// </summary>
-    private int ScanRecords(byte[] walBytes, bool replay)
+    private static ScannedLog ScanLog(byte[] walBytes, string walFile, long snapshotLsn)
     {
+        var commits = new List<Range>();
         var offset = 0;
-        var lastLsn = _snapshotLsn;
-        while (walBytes.Length - offset >= RecordHeaderSize)
+        var lastLsn = snapshotLsn;
+        while (TryReadRecord(walBytes, offset, out var lsn, out var payload))
         {
-            var record = walBytes.AsSpan(offset);
-            if (!record.Slice(0, RecordMagicSize).SequenceEqual(RecordMagic))
-            {
-                break;
-            }
-
-            var header = new BlazeDbBufferReader(record.Slice(RecordMagicSize, RecordHeaderSize - RecordMagicSize));
-            var payloadLength = (int)header.ReadFixed32();
-            var lsn = (long)header.ReadFixed64();
-            var expectedCrc = header.ReadFixed32();
-
-            if (payloadLength < 0 || payloadLength > MaxRecordSize ||
-                walBytes.Length - offset - RecordHeaderSize < payloadLength)
-            {
-                break;
-            }
-
-            var payload = record.Slice(RecordHeaderSize, payloadLength);
-            if (BlazeDbCrc32.Compute(record.Slice(RecordMagicSize, RecordChecksummedSize), payload) != expectedCrc)
-            {
-                break;
-            }
-
             if (lsn > lastLsn + 1)
             {
-                break;
+                throw new BlazeDbCorruptDatabaseException(
+                    $"'{walFile}' is damaged: commit {lsn} follows commit {lastLsn}, so the commits between them are " +
+                    "missing from the log. The file is left as it is.");
             }
-
             if (lsn == lastLsn + 1)
             {
-                if (replay)
-                {
-                    ReplayCommit(payload);
-                }
+                commits.Add(payload);
                 lastLsn = lsn;
             }
-            offset += RecordHeaderSize + payloadLength;
+            offset = payload.End.Value;
         }
 
-        if (replay)
+        if (offset < walBytes.Length && HasIntactRecordAfter(walBytes, offset))
         {
-            _lastLsn = lastLsn;
+            throw new BlazeDbCorruptDatabaseException(
+                $"'{walFile}' is damaged at byte {offset}: the record there is broken, but intact records follow it, " +
+                "which a crash part-way through an append does not leave. The file is left as it is, so the commits " +
+                "after the damage are not lost.");
         }
-        return offset;
+        return new ScannedLog(offset, lastLsn, commits);
+    }
+
+    /// <summary>
+    /// Reads the record at <paramref name="offset"/>, giving its LSN and where its payload lies, or returns
+    /// false when no whole record with a matching checksum starts there.
+    /// </summary>
+    private static bool TryReadRecord(ReadOnlySpan<byte> walBytes, int offset, out long lsn, out Range payload)
+    {
+        lsn = 0;
+        payload = default;
+        if (walBytes.Length - offset < RecordHeaderSize)
+        {
+            return false;
+        }
+
+        var record = walBytes.Slice(offset);
+        if (!record.Slice(0, RecordMagicSize).SequenceEqual(RecordMagic))
+        {
+            return false;
+        }
+
+        var header = new BlazeDbBufferReader(record.Slice(RecordMagicSize, RecordHeaderSize - RecordMagicSize));
+        var payloadLength = (int)header.ReadFixed32();
+        var recordLsn = (long)header.ReadFixed64();
+        var expectedCrc = header.ReadFixed32();
+
+        if (payloadLength < 0 || payloadLength > MaxRecordSize ||
+            walBytes.Length - offset - RecordHeaderSize < payloadLength)
+        {
+            return false;
+        }
+
+        if (BlazeDbCrc32.Compute(record.Slice(RecordMagicSize, RecordChecksummedSize), record.Slice(RecordHeaderSize, payloadLength)) != expectedCrc)
+        {
+            return false;
+        }
+
+        lsn = recordLsn;
+        payload = new Range(offset + RecordHeaderSize, offset + RecordHeaderSize + payloadLength);
+        return true;
+    }
+
+    /// <summary>Whether a whole record with a matching checksum starts anywhere past the broken one at <paramref name="broken"/>.</summary>
+    private static bool HasIntactRecordAfter(ReadOnlySpan<byte> walBytes, int broken)
+    {
+        for (var at = broken + 1; ; at++)
+        {
+            var found = walBytes.Slice(at).IndexOf(RecordMagic);
+            if (found < 0)
+            {
+                return false;
+            }
+            at += found;
+            if (TryReadRecord(walBytes, at, out _, out _))
+            {
+                return true;
+            }
+        }
     }
 
     /// <summary>
@@ -925,13 +994,13 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
             throw new InvalidOperationException(
                 "The destination already holds a database. Delete it first with BlazeDbDatabase.DeleteAsync, or import somewhere else.");
         }
-        const string SnapshotFile = "snapshot-1.blz";
-        const string WalFile = "wal-1.blz";
-        // A first-generation log left by a database that was only partly deleted would otherwise be
-        // replayed on top of the imported rows.
-        await storage.DeleteAsync(WalFile, ct).ConfigureAwait(false);
-        await storage.WriteAtomicAsync(SnapshotFile, snapshot, ct).ConfigureAwait(false);
-        await storage.WriteAtomicAsync(ManifestFile, BuildManifest(1, SnapshotFile, WalFile, lsn), ct).ConfigureAwait(false);
+        // A database of its own, under an id no file a partly deleted one left behind can carry, so none
+        // of them is replayed on top of the imported rows.
+        var databaseId = NewDatabaseId();
+        var snapshotFile = FileName("snapshot", databaseId, 1);
+        var walFile = FileName("wal", databaseId, 1);
+        await storage.WriteAtomicAsync(snapshotFile, snapshot, ct).ConfigureAwait(false);
+        await storage.WriteAtomicAsync(ManifestFile, BuildManifest(1, snapshotFile, walFile, lsn), ct).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -969,6 +1038,29 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
             var tableName = reader.ReadString();
             _db.GetTableByName(tableName).LoadSnapshot(ref reader, version);
         }
+    }
+
+    /// <summary>
+    /// The name of one generation's snapshot or log: <c>{kind}-{id}-{generation}.blz</c>, or
+    /// <c>{kind}-{generation}.blz</c> for a database whose files predate ids.
+    /// </summary>
+    private static string FileName(string kind, string? databaseId, ulong generation) =>
+        databaseId is null ? $"{kind}-{generation}.blz" : $"{kind}-{databaseId}-{generation}.blz";
+
+    /// <summary>
+    /// A new database's id. It is in every file name, and an encrypted backend seals each frame with its
+    /// file's name as associated data, so a frame another database sealed under the same key - one deleted
+    /// and created again on the same backend, say - does not open as one of this database's.
+    /// </summary>
+    private static string NewDatabaseId() => Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(16));
+
+    /// <summary>The id in a log's name, or null for a name from before ids.</summary>
+    private static string? DatabaseIdOf(string walFile)
+    {
+        // wal-{id}-{generation}.blz has two dashes; wal-{generation}.blz, from before ids, has one.
+        var first = walFile.IndexOf('-');
+        var last = walFile.LastIndexOf('-');
+        return first >= 0 && last > first ? walFile[(first + 1)..last] : null;
     }
 
     private static byte[] BuildManifest(ulong generation, string snapshotFile, string walFile, long snapshotLsn)

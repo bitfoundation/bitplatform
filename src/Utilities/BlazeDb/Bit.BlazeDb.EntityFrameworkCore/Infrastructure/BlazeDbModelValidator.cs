@@ -25,8 +25,8 @@ internal sealed class BlazeDbModelValidator : ModelValidator
     /// Query filters are applied by EF's query pipeline, which this provider replaces, so a filter would
     /// be ignored and every row it exists to hide - another tenant's, a soft-deleted one - returned.
     /// <para>
-    /// Also checked where an entity type is bound to its table: a compiled model is not validated when
-    /// it is loaded, so this validator never sees it.
+    /// Also checked by <see cref="BlazeDbModelRuntimeInitializer"/>: a compiled model is not validated
+    /// when it is loaded, so this validator never sees it.
     /// </para>
     /// </summary>
     internal static void ThrowIfQueryFiltered(IEntityType entityType)
