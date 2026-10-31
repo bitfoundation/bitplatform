@@ -1,0 +1,16 @@
+@page "/preview/{PageKey}"
+@layout PreviewLayout
+@inherits WorkbenchComponentBase
+
+@if (pageInfo is not null)
+{
+    <PageTitle>@Localizer[pageInfo.TitleKey]</PageTitle>
+    @if (Scenario.Backdrop is null)
+    {
+        <PreviewSurface Page="pageInfo" ShowStatusBar />
+    }
+    else
+    {
+        <StoreComposition Page="pageInfo" />
+    }
+}

@@ -1,0 +1,47 @@
+@import '../../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.heatmap-scroll {
+    overflow-x: auto;
+}
+
+.heatmap {
+    gap: 4px;
+    display: grid;
+    min-width: 28rem;
+    align-items: center;
+    grid-template-columns: 2.75rem repeat(var(--hours), minmax(0, 1fr));
+}
+
+.hour,
+.day {
+    font-size: 11px;
+    text-align: center;
+    color: $bit-color-foreground-secondary;
+}
+
+.day {
+    text-align: start;
+}
+
+.cell {
+    height: 1.375rem;
+    border-radius: 5px;
+    background-color: color-mix(in srgb, #{$bit-color-primary} calc(8% + var(--level) * 92%), #{$bit-color-background-secondary});
+}
+
+.scale {
+    gap: 0.5rem;
+    display: flex;
+    font-size: 11px;
+    margin-top: 0.75rem;
+    align-items: center;
+    justify-content: flex-end;
+    color: $bit-color-foreground-secondary;
+
+    .gradient {
+        width: 7rem;
+        height: 8px;
+        border-radius: 4px;
+        background: linear-gradient(90deg, #{$bit-color-background-secondary}, #{$bit-color-primary});
+    }
+}

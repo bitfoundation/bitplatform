@@ -1,0 +1,54 @@
+@inherits PosWidgetBase<PosOrder[]>
+
+<PosWidgetFrame Definition="Definition"
+                Layout="Layout"
+                Status="Status"
+                OnRetry="Reload"
+                Subtitle="@Localizer[nameof(WorkbenchStrings.PosRecentOrdersSubtitle)]"
+                EmptyTitleKey="@nameof(WorkbenchStrings.PosNoOrdersYet)"
+                EmptyDescriptionKey="@nameof(WorkbenchStrings.PosNoOrdersYetDescription)">
+    <Skeleton>
+        @for (var i = 0; i < 6; i++)
+        {
+            <BitShimmer Height="1.75rem" />
+        }
+    </Skeleton>
+    <ChildContent>
+        <div class="orders-scroll">
+            <table class="orders">
+                <thead>
+                    <tr>
+                        <th>@Localizer[nameof(WorkbenchStrings.PosOrder)]</th>
+                        <th>@Localizer[nameof(WorkbenchStrings.PosTime)]</th>
+                        <th>@Localizer[nameof(WorkbenchStrings.PosCashier)]</th>
+                        <th class="numeric">@Localizer[nameof(WorkbenchStrings.PosItems)]</th>
+                        <th>@Localizer[nameof(WorkbenchStrings.PosPayment)]</th>
+                        <th class="numeric">@Localizer[nameof(WorkbenchStrings.PosTotal)]</th>
+                        <th>@Localizer[nameof(WorkbenchStrings.PosStatus)]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Data!)
+                    {
+                        <tr>
+                            <td class="number">@order.Number</td>
+                            <td class="muted">@FormatAge(order.Time)</td>
+                            <td>
+                                <span class="cashier">
+                                    <BitPersona Size="BitPersonaSize.Size24" ImageUrl="@WorkbenchPhotos.Find(order.CashierKey)" PrimaryText="@Localizer[order.CashierKey]" HidePersonaDetails />
+                                    @Localizer[order.CashierKey]
+                                </span>
+                            </td>
+                            <td class="numeric">@PosFormat.Number(order.Items)</td>
+                            <td class="muted">@Localizer[order.PaymentKey]</td>
+                            <td class="numeric strong">@PosFormat.Money(order.Total)</td>
+                            <td>
+                                <span class="status status-@order.Status.ToString().ToLowerInvariant()">@Localizer[$"PosOrderStatus{order.Status}"]</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </ChildContent>
+</PosWidgetFrame>

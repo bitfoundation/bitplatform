@@ -1,0 +1,56 @@
+@import '../../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.team {
+    margin: 0;
+    padding: 0;
+    gap: 0.875rem;
+    display: flex;
+    list-style: none;
+    flex-direction: column;
+
+    li {
+        gap: 0.75rem;
+        display: flex;
+        align-items: center;
+    }
+
+    ::deep .member {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
+.sales {
+    gap: 0.25rem;
+    width: 7rem;
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+}
+
+.amount {
+    font-size: 14px;
+    font-weight: 700;
+    text-align: end;
+    font-variant-numeric: tabular-nums;
+}
+
+.bar {
+    height: 6px;
+    overflow: hidden;
+    border-radius: 3px;
+    background-color: $bit-color-background-secondary;
+
+    span {
+        height: 100%;
+        display: block;
+        border-radius: 3px;
+        background-color: $bit-color-success;
+    }
+}
+
+.medal {
+    width: 1.5rem;
+    font-size: 1.125rem;
+    text-align: center;
+}

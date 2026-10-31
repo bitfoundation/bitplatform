@@ -42,9 +42,10 @@ public sealed partial class NewWorkflow(CliServices cli)
             return cli.UsageError("name-missing", $"Pass the project name: bit new <name>. {CreateProjectPage} builds the whole command.");
 
         var typeNames = request.TemplatePackage is null ? TypeNames.Template : TypeNames.FromPackage(Path.GetFullPath(request.TemplatePackage, cli.Environment.CurrentDirectory));
+        var namespaceNames = request.TemplatePackage is null ? NamespaceNames.Template : NamespaceNames.FromPackage(Path.GetFullPath(request.TemplatePackage, cli.Environment.CurrentDirectory));
 
-        if (ProjectName.Validate(name, typeNames) is { } nameError)
-            return cli.UsageError("name-invalid", $"{nameError} Try: bit new {ProjectName.Suggest(name, typeNames)}");
+        if (ProjectName.Validate(name, typeNames, namespaceNames) is { } nameError)
+            return cli.UsageError("name-invalid", $"{nameError} Try: bit new {ProjectName.Suggest(name, typeNames, namespaceNames)}");
 
         if (request.GitHubRepo && request.NoGit)
             return cli.UsageError("github-repo-no-git", "--github-repo pushes the project's git repository, so it can't go with --no-git.");

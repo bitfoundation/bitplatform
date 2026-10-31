@@ -164,6 +164,15 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
     serverWebProject.WithReference(mailpit);
     //#endif
 
+    var workbench = builder.AddProject("workbench", "../../Workbench/Boilerplate.Workbench.csproj")
+        .WithExplicitStart();
+
+    //#if (cloudflare == true)
+    builder.AddCloudflareQuickTunnel("cloudflare-tunnel-workbench")
+        .WithReference(workbench)
+        .WaitFor(workbench);
+    //#endif
+
     if (OperatingSystem.IsWindows())
     {
         // Blazor Hybrid Windows project.

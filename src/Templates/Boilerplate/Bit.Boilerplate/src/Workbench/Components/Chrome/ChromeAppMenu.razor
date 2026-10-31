@@ -1,0 +1,203 @@
+@*+:cnd:noEmit*@
+@* [mirror] account menu - keep in sync with: *@
+@* - src/Client/Boilerplate.Client.Core/Components/Layout/Header/AppMenu.razor *@
+@inherits WorkbenchComponentBase
+
+<section>
+    <BitDropMenu Transparent IsOpen="chromeStore.IsMenuOpen" IsOpenChanged="chromeStore.OpenMenu" Responsive
+                 Width="20rem"
+                 MaxWidth="calc(100vw - 1rem)"
+                 OnDismiss="ResetMenu"
+                 Classes="@(new() { Callout = "app-menu-callout" })">
+        <Template>
+            <BitIcon IconName="@BitIconName.ChevronDown" Size="BitSize.Small" Color="BitColor.Info" Class="menu-chevron" />
+            @if (Shell.IsSignedIn)
+            {
+                <BitText Class="menu-displayname">@Localizer[Shell.ActiveUser.NameKey]</BitText>
+                <BitPersona Class="persona"
+                            ImageUrl="@WorkbenchPhotos.Find(Shell.ActiveUser.NameKey)"
+                            Size="BitPersonaSize.Size32"
+                            PrimaryText="@Localizer[Shell.ActiveUser.NameKey]"
+                            Presence="BitPersonaPresence.Online"
+                            Classes="@(new() { DetailsContainer = "persona-details" })" />
+            }
+            else
+            {
+                <BitPersona Class="persona"
+                            Size="BitPersonaSize.Size32"
+                            CoinVariant="BitVariant.Text"
+                            Classes="@(new() { DetailsContainer = "persona-details" })">
+                    <CoinTemplate>
+                        <BitIcon IconName="@BitIconName.Contact" Size="BitSize.Small" Variant="BitVariant.Fill" Circular Color="BitColor.Info" Class="menu-icon" />
+                    </CoinTemplate>
+                </BitPersona>
+            }
+        </Template>
+        <Body>
+            <BitCard FullSize Class="app-menu-card">
+                @if (showCultures)
+                {
+                    <BitStack HorizontalAlign="BitAlignment.Start" AutoSize>
+                        <BitActionButton FullWidth OnClick="() => showCultures = false" IconName="@BackIconName">
+                            @AppLocalizer[nameof(AppStrings.SelectLanguage)]
+                        </BitActionButton>
+                        <BitSeparator />
+                        <BitChoiceGroup Items="cultures" NoCircle FullWidth StretchItemLabel
+                                        DefaultValue="@CultureInfo.CurrentUICulture.Name"
+                                        OnChange="(string? culture) => ChangeCulture(culture)">
+                            <ItemTemplate Context="item">
+                                <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+                                    <BitFlag Iso2="@CultureInfoManager.FindRegionIso2(item.Value)" />
+                                    <BitText Typography="BitTypography.Body1" Weight="@(item.IsSelected ? BitFontWeight.Bold : null)">@item.Text</BitText>
+                                </BitStack>
+                            </ItemTemplate>
+                        </BitChoiceGroup>
+                    </BitStack>
+                }
+                @*#if (multitenant == true)*@
+                @if (showTenants)
+                {
+                    <BitStack HorizontalAlign="BitAlignment.Start" AutoSize>
+                        <BitActionButton FullWidth OnClick="() => showTenants = false" IconName="@BackIconName">
+                            @AppLocalizer[nameof(AppStrings.SwitchTenant)]
+                        </BitActionButton>
+                        <BitSeparator />
+                        <BitChoiceGroup Items="tenants" NoCircle FullWidth StretchItemLabel
+                                        DefaultValue="@Shell.TenantKey"
+                                        OnChange="(string? tenant) => { Shell.SwitchTenant(tenant!); showTenants = false; }">
+                            <ItemTemplate Context="item">
+                                <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+                                    <BitIcon Size="BitSize.Small" IconName="@BitIconName.Org" Color="BitColor.Info" />
+                                    <BitText Typography="BitTypography.Body1" Weight="@(item.IsSelected ? BitFontWeight.Bold : null)">@item.Text</BitText>
+                                </BitStack>
+                            </ItemTemplate>
+                        </BitChoiceGroup>
+                        <BitSeparator />
+                        <BitActionButton IconName="@BitIconName.Settings" FullWidth>
+                            @AppLocalizer[nameof(AppStrings.ManageMyTenants)]
+                        </BitActionButton>
+                    </BitStack>
+                }
+                @*#endif*@
+                @if (showCultures is false && showTenants is false)
+                {
+                    <BitStack AutoSize>
+                        @if (Shell.IsSignedIn)
+                        {
+                            <BitPersona Class="persona"
+                                        ImageUrl="@WorkbenchPhotos.Find(Shell.ActiveUser.NameKey)"
+                                        Size="BitPersonaSize.Size48"
+                                        PrimaryText="@Localizer[Shell.ActiveUser.NameKey]"
+                                        SecondaryText="@Shell.ActiveUser.Email"
+                                        ImageOverlayText="@AppLocalizer[nameof(AppStrings.Edit)]"
+                                        Presence="BitPersonaPresence.Online" />
+
+                            @foreach (var account in Shell.OtherAccounts)
+                            {
+                                <BitActionButton FullWidth Class="account-button" OnClick="async () => { chromeStore.OpenMenu(false); await Shell.SwitchAccount(account); }">
+                                    <BitPersona Size="BitPersonaSize.Size32"
+                                                ImageUrl="@WorkbenchPhotos.Find(account.NameKey)"
+                                                PrimaryText="@Localizer[account.NameKey]"
+                                                SecondaryText="@account.Email" />
+                                </BitActionButton>
+                            }
+
+                            <BitActionButton FullWidth IconName="@BitIconName.AddFriend" OnClick="Shell.AddAccount">
+                                @AppLocalizer[nameof(AppStrings.AddAnotherAccount)]
+                            </BitActionButton>
+
+                            <BitSeparator />
+
+                            <BitActionButton IconName="@BitIconName.Contact" FullWidth>
+                                @AppLocalizer[nameof(AppStrings.ProfileTitle)]
+                            </BitActionButton>
+                        }
+                        else
+                        {
+                            <BitActionButton FullWidth IconName="@BitIconName.Signin" OnClick="SignIn">
+                                @AppLocalizer[nameof(AppStrings.SignIn)]
+                            </BitActionButton>
+                            <BitActionButton FullWidth IconName="@BitIconName.UserWindow" OnClick="SignIn">
+                                @AppLocalizer[nameof(AppStrings.SignInByModal)]
+                            </BitActionButton>
+                            <BitActionButton FullWidth IconName="@BitIconName.AddFriend" OnClick="SignIn">
+                                @AppLocalizer[nameof(AppStrings.SignUp)]
+                            </BitActionButton>
+                        }
+
+                        @if (CultureInfoManager.InvariantGlobalization is false)
+                        {
+                            <BitActionButton IconName="@BitIconName.Globe" FullWidth OnClick="() => showCultures = true">
+                                <BitStack Horizontal Gap="0" Grows VerticalAlign="BitAlignment.Center">
+                                    @AppLocalizer[nameof(AppStrings.Language)]
+                                    <BitSpacer />
+                                    <BitIcon Size="BitSize.Small" Color="BitColor.SecondaryForeground" IconName="@ChevronIconName" />
+                                </BitStack>
+                            </BitActionButton>
+                        }
+
+                        @*#if (multitenant == true)*@
+                        @if (Shell.IsSignedIn)
+                        {
+                            <BitActionButton IconName="@BitIconName.Org" FullWidth OnClick="() => showTenants = true">
+                                <BitStack Horizontal Gap="0" Grows VerticalAlign="BitAlignment.Center">
+                                    @AppLocalizer[nameof(AppStrings.Tenant)]
+                                    <BitSpacer />
+                                    <BitIcon Size="BitSize.Small" Color="BitColor.SecondaryForeground" IconName="@ChevronIconName" />
+                                </BitStack>
+                            </BitActionButton>
+                        }
+                        @*#endif*@
+
+                        <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0" Class="time-zone-row">
+                            <BitIcon IconName="@BitIconName.WorldClock" Color="BitColor.Primary" />
+                            <BitTimeZonePicker TValue="string"
+                                               Responsive
+                                               NoBorder
+                                               Background="BitColorKind.Transparent"
+                                               Class="time-zone-picker"
+                                               Value="@(chromeStore.TimeZoneId ?? TimeZoneInfo.Local.Id)"
+                                               ValueChanged="(string? timeZoneId) => chromeStore.PickTimeZone(timeZoneId)"
+                                               Title="@AppLocalizer[nameof(AppStrings.TimeZone)]"
+                                               AriaLabel="@AppLocalizer[nameof(AppStrings.TimeZone)]"
+                                               Placeholder="@AppLocalizer[nameof(AppStrings.SelectTimeZone)]"
+                                               SearchBoxPlaceholder="@AppLocalizer[nameof(AppStrings.FindTimeZone)]"
+                                               SearchBoxAriaLabel="@AppLocalizer[nameof(AppStrings.FindTimeZone)]"
+                                               NoResultsMessage="@AppLocalizer[nameof(AppStrings.NoTimeZoneMatchesSearchMessage)]"
+                                               ResponsiveCloseButtonAriaLabel="@AppLocalizer[nameof(AppStrings.Close)]" />
+                        </BitStack>
+
+                        @*#if (signalR == true || notification == true)*@
+                        <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
+                            <BitActionButton Style="flex-grow:1"
+                                             OnClick="() => chromeStore.TurnNotifications(chromeStore.AreNotificationsOn is false)"
+                                             IconName="@(chromeStore.AreNotificationsOn ? BitIconName.Ringer : BitIconName.RingerOff)">
+                                @AppLocalizer[nameof(AppStrings.Notifications)]
+                            </BitActionButton>
+                            <BitToggle AriaLabel="@AppLocalizer[chromeStore.AreNotificationsOn ? nameof(AppStrings.TurnNotificationsOff) : nameof(AppStrings.TurnNotificationsOn)]"
+                                       OnChange="(bool isOn) => chromeStore.TurnNotifications(isOn)"
+                                       Value="chromeStore.AreNotificationsOn" />
+                        </BitStack>
+                        @*#endif*@
+
+                        <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
+                            <BitActionButton Style="flex-grow:1" OnClick="ToggleTheme" IconName="@(isDark ? BitIconName.ClearNight : BitIconName.Sunny)">
+                                @(isDark ? AppLocalizer[nameof(AppStrings.Dark)] : AppLocalizer[nameof(AppStrings.Light)])
+                            </BitActionButton>
+                            <BitToggle OnChange="ToggleTheme" Value="isDark is false" />
+                        </BitStack>
+
+                        <BitAccentColorSwitcher Class="accent-color-switcher" Classes="@(new() { Swatch = "accent-color-swatch" })" />
+
+                        @if (Shell.IsSignedIn)
+                        {
+                            <BitActionButton FullWidth Color="BitColor.Error" IconName="@BitIconName.SignOut" OnClick="SignOut">
+                                @AppLocalizer[nameof(AppStrings.SignOut)]
+                            </BitActionButton>
+                        }
+                    </BitStack>
+                }
+            </BitCard>
+        </Body>
+    </BitDropMenu>
+</section>

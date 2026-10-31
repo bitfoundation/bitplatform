@@ -1,0 +1,53 @@
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_media-queries.scss';
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.shell-header {
+    top: 0;
+    z-index: 10;
+    gap: 1.25rem;
+    height: 60px;
+    display: flex;
+    position: sticky;
+    align-items: center;
+    padding: 0 max(1rem, calc((100% - 1200px) / 2));
+    backdrop-filter: saturate(180%) blur(12px);
+    background-color: color-mix(in srgb, #{$bit-color-background-primary} 82%, transparent);
+    border-bottom: 1px solid $bit-color-border-tertiary;
+
+    &.wide {
+        padding: 0 1.25rem;
+    }
+}
+
+.brand {
+    gap: 0.5rem;
+    display: flex;
+    font-size: 16px;
+    font-weight: 700;
+    align-items: center;
+    text-decoration: none;
+    color: $bit-color-foreground-primary;
+}
+
+.links {
+    gap: 1rem;
+    display: flex;
+
+    a {
+        font-size: 14px;
+        text-decoration: none;
+        color: $bit-color-foreground-secondary;
+
+        &:hover {
+            color: $bit-color-foreground-primary;
+        }
+    }
+
+    @include lt-sm {
+        display: none;
+    }
+}
+
+::deep .language {
+    width: 10rem;
+}

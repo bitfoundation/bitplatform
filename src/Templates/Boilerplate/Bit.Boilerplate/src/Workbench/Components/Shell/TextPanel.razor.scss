@@ -1,0 +1,34 @@
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.text-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+section {
+    gap: 0.625rem;
+    display: flex;
+    padding: 1rem;
+    flex-direction: column;
+    border-bottom: 1px solid $bit-color-border-tertiary;
+}
+
+::deep .section-title {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+::deep .picked {
+    overflow-wrap: anywhere;
+}
+
+::deep .key {
+    font-family: ui-monospace, monospace;
+    overflow-wrap: anywhere;
+}
+
+.actions {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+}

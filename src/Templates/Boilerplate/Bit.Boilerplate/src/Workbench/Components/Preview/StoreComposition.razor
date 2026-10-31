@@ -1,0 +1,18 @@
+@inherits WorkbenchComponentBase
+
+<div class="composition @Scenario.Backdrop?.ToString().ToLowerInvariant() @(isLandscape ? "landscape" : "portrait")" style="@canvasStyle">
+    <div class="aura"></div>
+    <div class="pattern"></div>
+    <div class="grain"></div>
+    <div class="headline">
+        <span class="eyebrow"><BitIcon IconName="@Page.IconName" Class="eyebrow-icon" />@Localizer[Page.TitleKey]</span>
+        <h1 class="caption">@caption</h1>
+    </div>
+    <div class="device-box" style="@boxStyle">
+        <div class="device-slot" style="@deviceStyle">
+            <DeviceFrame Device="frameDevice" Rotated="Scenario.Rotated" ShowFrame="Scenario.Frame" OnDarkContent="Scenario.Theme is WorkbenchThemeMode.Dark">
+                <iframe class="screen-frame" src="@screenUrl" title="@Localizer[Page.TitleKey]"></iframe>
+            </DeviceFrame>
+        </div>
+    </div>
+</div>

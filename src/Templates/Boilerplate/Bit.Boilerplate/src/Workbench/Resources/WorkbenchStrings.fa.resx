@@ -1,0 +1,2478 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="WorkbenchTitle" xml:space="preserve">
+        <value>میز کار</value>
+    </data>
+    <data name="CategoryDashboards" xml:space="preserve">
+        <value>داشبوردها</value>
+    </data>
+    <data name="PosDashboardTitle" xml:space="preserve">
+        <value>داشبورد فروشگاه</value>
+    </data>
+    <data name="PosDashboardDescription" xml:space="preserve">
+        <value>داشبورد صندوق فروش با ویجت‌هایی که می‌شود جابه‌جا، کوچک و بزرگ، پنهان و ذخیره کرد.</value>
+    </data>
+    <data name="DemoUserSarah" xml:space="preserve">
+        <value>سارا محمدی</value>
+    </data>
+    <data name="DemoUserDaan" xml:space="preserve">
+        <value>داوود کریمی</value>
+    </data>
+    <data name="DemoUserNiloofar" xml:space="preserve">
+        <value>نیلوفر رحیمی</value>
+    </data>
+    <data name="DemoTenantStore" xml:space="preserve">
+        <value>شعبه آمستردام</value>
+    </data>
+    <data name="DemoTenantHeadOffice" xml:space="preserve">
+        <value>دفتر مرکزی</value>
+    </data>
+    <data name="Rotate" xml:space="preserve">
+        <value>چرخاندن</value>
+    </data>
+    <data name="ScreenshotThisView" xml:space="preserve">
+        <value>اسکرین‌شات از این نما (PNG)</value>
+    </data>
+    <data name="ScreenshotAllViews" xml:space="preserve">
+        <value>اسکرین‌شات از همه نماها (ZIP)</value>
+    </data>
+    <data name="OpenInNewTab" xml:space="preserve">
+        <value>باز کردن در زبانه جدید</value>
+    </data>
+    <data name="RemoveView" xml:space="preserve">
+        <value>حذف این نما</value>
+    </data>
+    <data name="NoChrome" xml:space="preserve">
+        <value>بدون قاب برنامه</value>
+    </data>
+    <data name="ThemeLight" xml:space="preserve">
+        <value>روشن</value>
+    </data>
+    <data name="ThemeDark" xml:space="preserve">
+        <value>تیره</value>
+    </data>
+    <data name="ThemeSystem" xml:space="preserve">
+        <value>سیستم</value>
+    </data>
+    <data name="DataLive" xml:space="preserve">
+        <value>داده</value>
+    </data>
+    <data name="DataLoading" xml:space="preserve">
+        <value>در حال بارگذاری</value>
+    </data>
+    <data name="DataEmpty" xml:space="preserve">
+        <value>خالی</value>
+    </data>
+    <data name="DataError" xml:space="preserve">
+        <value>خطا</value>
+    </data>
+    <data name="DataMixed" xml:space="preserve">
+        <value>ترکیبی</value>
+    </data>
+    <data name="DataSlow" xml:space="preserve">
+        <value>کند</value>
+    </data>
+    <data name="SignedOut" xml:space="preserve">
+        <value>خارج شده</value>
+    </data>
+    <data name="SignedIn" xml:space="preserve">
+        <value>وارد شده</value>
+    </data>
+    <data name="MultiAccount" xml:space="preserve">
+        <value>چند حساب</value>
+    </data>
+    <data name="Device" xml:space="preserve">
+        <value>دستگاه</value>
+    </data>
+    <data name="Portrait" xml:space="preserve">
+        <value>عمودی</value>
+    </data>
+    <data name="Landscape" xml:space="preserve">
+        <value>افقی</value>
+    </data>
+    <data name="DeviceFrame" xml:space="preserve">
+        <value>قاب دستگاه</value>
+    </data>
+    <data name="Zoom" xml:space="preserve">
+        <value>بزرگ‌نمایی</value>
+    </data>
+    <data name="ZoomFit" xml:space="preserve">
+        <value>جاشو</value>
+    </data>
+    <data name="DataState" xml:space="preserve">
+        <value>داده</value>
+    </data>
+    <data name="DataStateHint" xml:space="preserve">
+        <value>صفحه‌ها داده را با کمی تأخیر از حافظه می‌خوانند، پس هر حالتی را می‌شود این‌جا دید، حتی حالت‌هایی که در برنامه واقعی به‌سختی پیش می‌آیند.</value>
+    </data>
+    <data name="AppSection" xml:space="preserve">
+        <value>برنامه</value>
+    </data>
+    <data name="AppChrome" xml:space="preserve">
+        <value>قاب برنامه</value>
+    </data>
+    <data name="AppChromeHint" xml:space="preserve">
+        <value>پنل ناوبری، سربرگ، منوی حساب و نوار پایین برنامه.</value>
+    </data>
+    <data name="SignInState" xml:space="preserve">
+        <value>ورود</value>
+    </data>
+    <data name="Theme" xml:space="preserve">
+        <value>پوسته</value>
+    </data>
+    <data name="Language" xml:space="preserve">
+        <value>زبان</value>
+    </data>
+    <data name="Reset" xml:space="preserve">
+        <value>بازنشانی</value>
+    </data>
+    <data name="DeviceGroupPhone" xml:space="preserve">
+        <value>گوشی‌ها</value>
+    </data>
+    <data name="DeviceGroupFoldable" xml:space="preserve">
+        <value>تاشوها</value>
+    </data>
+    <data name="DeviceGroupTablet" xml:space="preserve">
+        <value>تبلت‌ها</value>
+    </data>
+    <data name="DeviceGroupLaptop" xml:space="preserve">
+        <value>لپ‌تاپ‌ها</value>
+    </data>
+    <data name="DeviceGroupDesktop" xml:space="preserve">
+        <value>رایانه‌های رومیزی</value>
+    </data>
+    <data name="DeviceGroupStore" xml:space="preserve">
+        <value>اندازه‌های فروشگاه</value>
+    </data>
+    <data name="Pages" xml:space="preserve">
+        <value>صفحه‌ها</value>
+    </data>
+    <data name="SearchPages" xml:space="preserve">
+        <value>جست‌وجوی صفحه‌ها</value>
+    </data>
+    <data name="PageNotFound" xml:space="preserve">
+        <value>این صفحه در میز کار نیست.</value>
+    </data>
+    <data name="BackToHome" xml:space="preserve">
+        <value>بازگشت به خانه میز کار</value>
+    </data>
+    <data name="Tools" xml:space="preserve">
+        <value>ابزارها</value>
+    </data>
+    <data name="Close" xml:space="preserve">
+        <value>بستن</value>
+    </data>
+    <data name="Compare" xml:space="preserve">
+        <value>مقایسه</value>
+    </data>
+    <data name="CompareSingle" xml:space="preserve">
+        <value>یک نما</value>
+    </data>
+    <data name="CompareDevices" xml:space="preserve">
+        <value>گوشی، تبلت و رومیزی</value>
+    </data>
+    <data name="CompareThemes" xml:space="preserve">
+        <value>روشن و تیره</value>
+    </data>
+    <data name="CompareLanguages" xml:space="preserve">
+        <value>زبان‌ها کنار هم</value>
+    </data>
+    <data name="CompareStates" xml:space="preserve">
+        <value>همه حالت‌های داده</value>
+    </data>
+    <data name="CompareSignIn" xml:space="preserve">
+        <value>خارج، وارد، چند حساب</value>
+    </data>
+    <data name="AddView" xml:space="preserve">
+        <value>افزودن نما</value>
+    </data>
+    <data name="Screenshot" xml:space="preserve">
+        <value>اسکرین‌شات</value>
+    </data>
+    <data name="CopyLink" xml:space="preserve">
+        <value>کپی پیوند این چیدمان</value>
+    </data>
+    <data name="ToggleWorkbenchTheme" xml:space="preserve">
+        <value>جابه‌جایی میز کار بین روشن و تیره</value>
+    </data>
+    <data name="PosStoreAll" xml:space="preserve">
+        <value>همه شعبه‌ها</value>
+    </data>
+    <data name="PosStoreAmsterdam" xml:space="preserve">
+        <value>آمستردام، یوردان</value>
+    </data>
+    <data name="PosStoreRotterdam" xml:space="preserve">
+        <value>روتردام، مارکت‌هال</value>
+    </data>
+    <data name="PosStoreUtrecht" xml:space="preserve">
+        <value>اوترخت، اودخراخت</value>
+    </data>
+    <data name="PosProductFlatWhite" xml:space="preserve">
+        <value>فلت وایت</value>
+    </data>
+    <data name="PosProductOatLatte" xml:space="preserve">
+        <value>لاته با شیر جو</value>
+    </data>
+    <data name="PosProductCroissant" xml:space="preserve">
+        <value>کروسان کره‌ای</value>
+    </data>
+    <data name="PosProductAppleTart" xml:space="preserve">
+        <value>پای سیب هلندی</value>
+    </data>
+    <data name="PosProductCappuccino" xml:space="preserve">
+        <value>کاپوچینو</value>
+    </data>
+    <data name="PosProductStroopwafel" xml:space="preserve">
+        <value>استروپ‌وافل</value>
+    </data>
+    <data name="PosProductSourdough" xml:space="preserve">
+        <value>نان خمیرترش</value>
+    </data>
+    <data name="PosProductColdBrew" xml:space="preserve">
+        <value>کلد برو</value>
+    </data>
+    <data name="PosStaffEmma" xml:space="preserve">
+        <value>الهام</value>
+    </data>
+    <data name="PosStaffLucas" xml:space="preserve">
+        <value>آرش</value>
+    </data>
+    <data name="PosStaffMila" xml:space="preserve">
+        <value>مینا</value>
+    </data>
+    <data name="PosStaffSem" xml:space="preserve">
+        <value>سامان</value>
+    </data>
+    <data name="PosPaymentCard" xml:space="preserve">
+        <value>کارت</value>
+    </data>
+    <data name="PosPaymentWallet" xml:space="preserve">
+        <value>کیف پول همراه</value>
+    </data>
+    <data name="PosPaymentCash" xml:space="preserve">
+        <value>نقد</value>
+    </data>
+    <data name="PosPaymentGiftCard" xml:space="preserve">
+        <value>کارت هدیه</value>
+    </data>
+    <data name="PosStockOatMilk" xml:space="preserve">
+        <value>شیر جو</value>
+    </data>
+    <data name="PosStockCroissantDough" xml:space="preserve">
+        <value>خمیر کروسان</value>
+    </data>
+    <data name="PosStockCoffeeBeans" xml:space="preserve">
+        <value>دانه قهوه اسپرسو</value>
+    </data>
+    <data name="PosStockCups" xml:space="preserve">
+        <value>لیوان بیرون‌بر</value>
+    </data>
+    <data name="PosNetSales" xml:space="preserve">
+        <value>فروش خالص</value>
+    </data>
+    <data name="PosTransactions" xml:space="preserve">
+        <value>تراکنش‌ها</value>
+    </data>
+    <data name="PosAverageSale" xml:space="preserve">
+        <value>میانگین هر فروش</value>
+    </data>
+    <data name="PosRefunds" xml:space="preserve">
+        <value>بازپرداخت‌ها</value>
+    </data>
+    <data name="PosSalesByHour" xml:space="preserve">
+        <value>فروش ساعت‌به‌ساعت</value>
+    </data>
+    <data name="PosPaymentMethods" xml:space="preserve">
+        <value>روش‌های پرداخت</value>
+    </data>
+    <data name="PosTopProducts" xml:space="preserve">
+        <value>پرفروش‌ترین‌ها</value>
+    </data>
+    <data name="PosDailyGoal" xml:space="preserve">
+        <value>هدف فروش</value>
+    </data>
+    <data name="PosRecentOrders" xml:space="preserve">
+        <value>سفارش‌های اخیر</value>
+    </data>
+    <data name="PosLowStock" xml:space="preserve">
+        <value>موجودی رو به اتمام</value>
+    </data>
+    <data name="PosTeam" xml:space="preserve">
+        <value>تیم</value>
+    </data>
+    <data name="PosPeakHours" xml:space="preserve">
+        <value>ساعت‌های شلوغ</value>
+    </data>
+    <data name="PosDragWidget" xml:space="preserve">
+        <value>جابه‌جا کردن {0}</value>
+    </data>
+    <data name="PosWidgetOptions" xml:space="preserve">
+        <value>گزینه‌های ویجت</value>
+    </data>
+    <data name="PosLoadingWidget" xml:space="preserve">
+        <value>در حال بارگذاری</value>
+    </data>
+    <data name="PosWidgetFailedTitle" xml:space="preserve">
+        <value>بارگذاری نشد</value>
+    </data>
+    <data name="PosWidgetFailedDescription" xml:space="preserve">
+        <value>بقیه داشبورد سالم است. کمی بعد دوباره امتحان کنید.</value>
+    </data>
+    <data name="PosRetry" xml:space="preserve">
+        <value>دوباره امتحان کنید</value>
+    </data>
+    <data name="PosNoDataYet" xml:space="preserve">
+        <value>هنوز چیزی نیست</value>
+    </data>
+    <data name="PosSizeSmall" xml:space="preserve">
+        <value>کوچک</value>
+    </data>
+    <data name="PosSizeMedium" xml:space="preserve">
+        <value>متوسط</value>
+    </data>
+    <data name="PosSizeLarge" xml:space="preserve">
+        <value>بزرگ</value>
+    </data>
+    <data name="PosMoveEarlier" xml:space="preserve">
+        <value>جابه‌جایی به عقب</value>
+    </data>
+    <data name="PosMoveLater" xml:space="preserve">
+        <value>جابه‌جایی به جلو</value>
+    </data>
+    <data name="PosHideWidget" xml:space="preserve">
+        <value>پنهان کردن</value>
+    </data>
+    <data name="PosNoSalesYet" xml:space="preserve">
+        <value>هنوز فروشی نیست</value>
+    </data>
+    <data name="PosNoSalesYetDescription" xml:space="preserve">
+        <value>با پرداخت اولین سفارش، عددها این‌جا نمایش داده می‌شوند.</value>
+    </data>
+    <data name="PosToday" xml:space="preserve">
+        <value>امروز</value>
+    </data>
+    <data name="PosThisPeriod" xml:space="preserve">
+        <value>این بازه</value>
+    </data>
+    <data name="PosLastWeek" xml:space="preserve">
+        <value>همین روز هفته قبل</value>
+    </data>
+    <data name="PosSalesByHourSubtitle" xml:space="preserve">
+        <value>در مقایسه با همین روز هفته قبل</value>
+    </data>
+    <data name="PosNoPaymentsYet" xml:space="preserve">
+        <value>هنوز پرداختی نیست</value>
+    </data>
+    <data name="PosTotal" xml:space="preserve">
+        <value>جمع</value>
+    </data>
+    <data name="PosUnitsSold" xml:space="preserve">
+        <value>{0} فروش</value>
+    </data>
+    <data name="PosNoGoalSet" xml:space="preserve">
+        <value>هدفی تعیین نشده</value>
+    </data>
+    <data name="PosNoGoalSetDescription" xml:space="preserve">
+        <value>یک هدف فروش تعیین کنید تا ببینید شعبه چقدر به آن نزدیک است.</value>
+    </data>
+    <data name="PosOfTarget" xml:space="preserve">
+        <value>از هدف {0}</value>
+    </data>
+    <data name="PosRemainingToGoal" xml:space="preserve">
+        <value>{0} مانده تا هدف</value>
+    </data>
+    <data name="PosRecentOrdersSubtitle" xml:space="preserve">
+        <value>آخرین سفارش‌های همه صندوق‌ها</value>
+    </data>
+    <data name="PosNoOrdersYet" xml:space="preserve">
+        <value>هنوز سفارشی نیست</value>
+    </data>
+    <data name="PosNoOrdersYetDescription" xml:space="preserve">
+        <value>سفارش‌ها همان لحظه‌ای که صندوق ثبتشان کند این‌جا می‌آیند.</value>
+    </data>
+    <data name="PosOrder" xml:space="preserve">
+        <value>سفارش</value>
+    </data>
+    <data name="PosTime" xml:space="preserve">
+        <value>زمان</value>
+    </data>
+    <data name="PosCashier" xml:space="preserve">
+        <value>صندوق‌دار</value>
+    </data>
+    <data name="PosItems" xml:space="preserve">
+        <value>اقلام</value>
+    </data>
+    <data name="PosPayment" xml:space="preserve">
+        <value>پرداخت</value>
+    </data>
+    <data name="PosStatus" xml:space="preserve">
+        <value>وضعیت</value>
+    </data>
+    <data name="PosOrderStatusPaid" xml:space="preserve">
+        <value>پرداخت شده</value>
+    </data>
+    <data name="PosOrderStatusRefunded" xml:space="preserve">
+        <value>بازپرداخت شده</value>
+    </data>
+    <data name="PosOrderStatusPending" xml:space="preserve">
+        <value>در انتظار</value>
+    </data>
+    <data name="PosMinutesAgo" xml:space="preserve">
+        <value>{0} دقیقه پیش</value>
+    </data>
+    <data name="PosLowStockSubtitle" xml:space="preserve">
+        <value>اقلام زیر حداقل موجودی</value>
+    </data>
+    <data name="PosStockAllGood" xml:space="preserve">
+        <value>همه‌چیز موجود است</value>
+    </data>
+    <data name="PosStockAllGoodDescription" xml:space="preserve">
+        <value>فعلا هیچ قلمی زیر حداقل نیست.</value>
+    </data>
+    <data name="PosInStock" xml:space="preserve">
+        <value>{0} مانده · حداقل {1}</value>
+    </data>
+    <data name="PosOutOfStock" xml:space="preserve">
+        <value>تمام شده</value>
+    </data>
+    <data name="PosLowStockBadge" xml:space="preserve">
+        <value>کم</value>
+    </data>
+    <data name="PosOrdered" xml:space="preserve">
+        <value>سفارش داده شد</value>
+    </data>
+    <data name="PosReorder" xml:space="preserve">
+        <value>سفارش مجدد</value>
+    </data>
+    <data name="PosNoShiftsYet" xml:space="preserve">
+        <value>کسی سر شیفت نیست</value>
+    </data>
+    <data name="PosNoShiftsYetDescription" xml:space="preserve">
+        <value>با ورود اولین نفر به شیفت، نتایج تیم این‌جا می‌آید.</value>
+    </data>
+    <data name="PosOrdersCount" xml:space="preserve">
+        <value>{0} سفارش</value>
+    </data>
+    <data name="PosTopSeller" xml:space="preserve">
+        <value>بهترین فروشنده</value>
+    </data>
+    <data name="PosPeakHoursSubtitle" xml:space="preserve">
+        <value>سفارش در هر ساعت در چهار هفته اخیر</value>
+    </data>
+    <data name="PosQuiet" xml:space="preserve">
+        <value>خلوت</value>
+    </data>
+    <data name="PosBusy" xml:space="preserve">
+        <value>شلوغ</value>
+    </data>
+    <data name="PosGreeting" xml:space="preserve">
+        <value>عصر بخیر، سارا</value>
+    </data>
+    <data name="PosStore" xml:space="preserve">
+        <value>شعبه</value>
+    </data>
+    <data name="PosPeriod" xml:space="preserve">
+        <value>بازه</value>
+    </data>
+    <data name="Pos7Days" xml:space="preserve">
+        <value>۷ روز</value>
+    </data>
+    <data name="Pos30Days" xml:space="preserve">
+        <value>۳۰ روز</value>
+    </data>
+    <data name="PosDone" xml:space="preserve">
+        <value>تمام</value>
+    </data>
+    <data name="PosCustomize" xml:space="preserve">
+        <value>شخصی‌سازی</value>
+    </data>
+    <data name="PosEditHint" xml:space="preserve">
+        <value>ویجت‌ها را با دستگیره‌شان جابه‌جا کنید، یا با منوی هرکدام اندازه، جا و نمایششان را عوض کنید. چیدمان روی همین دستگاه ذخیره می‌شود.</value>
+    </data>
+    <data name="PosAddWidget" xml:space="preserve">
+        <value>افزودن ویجت ({0})</value>
+    </data>
+    <data name="PosResetLayout" xml:space="preserve">
+        <value>بازگشت به چیدمان پیش‌فرض</value>
+    </data>
+    <data name="PosWidgetGallery" xml:space="preserve">
+        <value>ویجت‌های پنهان</value>
+    </data>
+    <data name="PosAdd" xml:space="preserve">
+        <value>افزودن</value>
+    </data>
+    <data name="PosGalleryEmpty" xml:space="preserve">
+        <value>همه ویجت‌ها روی داشبورد هستند.</value>
+    </data>
+    <data name="PosLast7Days" xml:space="preserve">
+        <value>۷ روز اخیر</value>
+    </data>
+    <data name="PosLast30Days" xml:space="preserve">
+        <value>۳۰ روز اخیر</value>
+    </data>
+    <data name="PosVsYesterday" xml:space="preserve">
+        <value>نسبت به دیروز</value>
+    </data>
+    <data name="PosVsPrevious7Days" xml:space="preserve">
+        <value>نسبت به ۷ روز قبل</value>
+    </data>
+    <data name="PosVsPrevious30Days" xml:space="preserve">
+        <value>نسبت به ۳۰ روز قبل</value>
+    </data>
+    <data name="CategoryDataAndMaps" xml:space="preserve">
+        <value>داده و نقشه</value>
+    </data>
+    <data name="BuildingsTitle" xml:space="preserve">
+        <value>ساختمان‌ها</value>
+    </data>
+    <data name="BuildingsDescription" xml:space="preserve">
+        <value>جدول داده و نقشه‌ای که با هم هماهنگ‌اند. روی نقشه دوبار کلیک کنید تا ساختمان اضافه شود، یکی را انتخاب کنید و Delete بزنید تا حذف شود. قابلیت‌های پیشرفته نقشه هم هست، مثل محدود کردن جاهایی که می‌شود نقطه انتخاب کرد.</value>
+    </data>
+    <data name="BuildingsHeading" xml:space="preserve">
+        <value>ساختمان‌های شاخص</value>
+    </data>
+    <data name="BuildingsSubtitle" xml:space="preserve">
+        <value>{0} ساختمان در {1} استان</value>
+    </data>
+    <data name="BuildingsSearch" xml:space="preserve">
+        <value>جست‌وجو بر اساس نام، شهر یا نوع</value>
+    </data>
+    <data name="BuildingsAdd" xml:space="preserve">
+        <value>افزودن ساختمان</value>
+    </data>
+    <data name="BuildingsListView" xml:space="preserve">
+        <value>فهرست</value>
+    </data>
+    <data name="BuildingsMapView" xml:space="preserve">
+        <value>نقشه</value>
+    </data>
+    <data name="BuildingsFailedTitle" xml:space="preserve">
+        <value>ساختمان‌ها بارگذاری نشدند</value>
+    </data>
+    <data name="BuildingsEmptyTitle" xml:space="preserve">
+        <value>هنوز ساختمانی نیست</value>
+    </data>
+    <data name="BuildingsEmptyDescription" xml:space="preserve">
+        <value>روی هر جای هلند در نقشه دوبار کلیک کنید تا اولین ساختمان را اضافه کنید.</value>
+    </data>
+    <data name="BuildingName" xml:space="preserve">
+        <value>نام</value>
+    </data>
+    <data name="BuildingCity" xml:space="preserve">
+        <value>شهر</value>
+    </data>
+    <data name="BuildingProvince" xml:space="preserve">
+        <value>استان</value>
+    </data>
+    <data name="BuildingType" xml:space="preserve">
+        <value>نوع</value>
+    </data>
+    <data name="BuildingYear" xml:space="preserve">
+        <value>سال</value>
+    </data>
+    <data name="BuildingHeight" xml:space="preserve">
+        <value>ارتفاع (متر)</value>
+    </data>
+    <data name="BuildingFloors" xml:space="preserve">
+        <value>طبقه‌ها</value>
+    </data>
+    <data name="BuildingLatitude" xml:space="preserve">
+        <value>عرض جغرافیایی</value>
+    </data>
+    <data name="BuildingLongitude" xml:space="preserve">
+        <value>طول جغرافیایی</value>
+    </data>
+    <data name="BuildingsEdit" xml:space="preserve">
+        <value>ویرایش</value>
+    </data>
+    <data name="BuildingsDelete" xml:space="preserve">
+        <value>حذف</value>
+    </data>
+    <data name="BuildingsMapHint" xml:space="preserve">
+        <value>برای افزودن ساختمان داخل هلند دوبار کلیک کنید. یکی را انتخاب کنید و Delete بزنید تا حذف شود.</value>
+    </data>
+    <data name="BuildingsSaved" xml:space="preserve">
+        <value>{0} ذخیره شد</value>
+    </data>
+    <data name="BuildingsDeleteTitle" xml:space="preserve">
+        <value>این ساختمان حذف شود؟</value>
+    </data>
+    <data name="BuildingsDeleteBody" xml:space="preserve">
+        <value>{0} از فهرست و نقشه حذف می‌شود.</value>
+    </data>
+    <data name="BuildingsDeleted" xml:space="preserve">
+        <value>{0} حذف شد</value>
+    </data>
+    <data name="BuildingsOutsideTitle" xml:space="preserve">
+        <value>بیرون از هلند</value>
+    </data>
+    <data name="BuildingsOutsideBody" xml:space="preserve">
+        <value>ساختمان را فقط داخل مرز هلند می‌شود اضافه کرد.</value>
+    </data>
+    <data name="BuildingsAddTitle" xml:space="preserve">
+        <value>ساختمان جدید</value>
+    </data>
+    <data name="BuildingsEditTitle" xml:space="preserve">
+        <value>ویرایش ساختمان</value>
+    </data>
+    <data name="BuildingsLocationHint" xml:space="preserve">
+        <value>برای انتخاب مکان روی نقشه دوبار کلیک کنید یا مختصات را بنویسید. فقط نقطه‌های داخل هلند پذیرفته می‌شوند.</value>
+    </data>
+    <data name="BuildingsNameRequired" xml:space="preserve">
+        <value>نام را وارد کنید.</value>
+    </data>
+    <data name="BuildingsCityRequired" xml:space="preserve">
+        <value>شهر را وارد کنید.</value>
+    </data>
+    <data name="BuildingsYearInvalid" xml:space="preserve">
+        <value>سالی بین ۱۰۰۰ و امسال وارد کنید.</value>
+    </data>
+    <data name="Cancel" xml:space="preserve">
+        <value>انصراف</value>
+    </data>
+    <data name="Save" xml:space="preserve">
+        <value>ذخیره</value>
+    </data>
+    <data name="BuildingTypeMuseum" xml:space="preserve">
+        <value>موزه</value>
+    </data>
+    <data name="BuildingTypeChurch" xml:space="preserve">
+        <value>کلیسا</value>
+    </data>
+    <data name="BuildingTypeTower" xml:space="preserve">
+        <value>برج</value>
+    </data>
+    <data name="BuildingTypeStation" xml:space="preserve">
+        <value>ایستگاه</value>
+    </data>
+    <data name="BuildingTypeStadium" xml:space="preserve">
+        <value>ورزشگاه</value>
+    </data>
+    <data name="BuildingTypePalace" xml:space="preserve">
+        <value>کاخ</value>
+    </data>
+    <data name="BuildingTypeOffice" xml:space="preserve">
+        <value>برج اداری</value>
+    </data>
+    <data name="BuildingTypeCityHall" xml:space="preserve">
+        <value>شهرداری</value>
+    </data>
+    <data name="BuildingTypeLandmark" xml:space="preserve">
+        <value>بنای شاخص</value>
+    </data>
+    <data name="ProvinceGroningen" xml:space="preserve">
+        <value>خرونینگن</value>
+    </data>
+    <data name="ProvinceFriesland" xml:space="preserve">
+        <value>فریسلند</value>
+    </data>
+    <data name="ProvinceDrenthe" xml:space="preserve">
+        <value>درنته</value>
+    </data>
+    <data name="ProvinceOverijssel" xml:space="preserve">
+        <value>اوفرآیسل</value>
+    </data>
+    <data name="ProvinceFlevoland" xml:space="preserve">
+        <value>فلیولند</value>
+    </data>
+    <data name="ProvinceGelderland" xml:space="preserve">
+        <value>خلدرلند</value>
+    </data>
+    <data name="ProvinceUtrecht" xml:space="preserve">
+        <value>اوترخت</value>
+    </data>
+    <data name="ProvinceNorthHolland" xml:space="preserve">
+        <value>هلند شمالی</value>
+    </data>
+    <data name="ProvinceSouthHolland" xml:space="preserve">
+        <value>هلند جنوبی</value>
+    </data>
+    <data name="ProvinceZeeland" xml:space="preserve">
+        <value>زیلند</value>
+    </data>
+    <data name="ProvinceNorthBrabant" xml:space="preserve">
+        <value>برابانت شمالی</value>
+    </data>
+    <data name="ProvinceLimburg" xml:space="preserve">
+        <value>لیمبورخ</value>
+    </data>
+    <data name="HomePageTitle" xml:space="preserve">
+        <value>میز کار · طراحی، بازبینی و ثبت هر صفحه</value>
+    </data>
+    <data name="HomeEyebrow" xml:space="preserve">
+        <value>بخشی از پروژه شما</value>
+    </data>
+    <data name="HomeHeadline" xml:space="preserve">
+        <value>طراحی را قبل از ساخت بک‌اند تمام کنید.</value>
+    </data>
+    <data name="HomeLead" xml:space="preserve">
+        <value>میز کار صفحه‌های برنامه شما را با داده نمونه اجرا می‌کند تا هر حالتی را طراحی کنید، روی هر دستگاهی ببینید و اسکرین‌شات آماده فروشگاه بگیرید، با همان کامپوننت‌ها و پوسته‌ای که برنامه‌تان دارد.</value>
+    </data>
+    <data name="HomeOpenFirstPage" xml:space="preserve">
+        <value>باز کردن داشبورد فروشگاه</value>
+    </data>
+    <data name="HomeWhyButton" xml:space="preserve">
+        <value>چرا میز کار؟</value>
+    </data>
+    <data name="HomeFactNoServer" xml:space="preserve">
+        <value>بدون نیاز به API، پایگاه داده یا ورود</value>
+    </data>
+    <data name="HomeFactThemes" xml:space="preserve">
+        <value>روشن، تیره و راست‌به‌چپ</value>
+    </data>
+    <data name="HomeFactStores" xml:space="preserve">
+        <value>اندازه‌های دقیق App Store، Google Play و Microsoft Store</value>
+    </data>
+    <data name="HomeChipDark" xml:space="preserve">
+        <value>حالت تیره</value>
+    </data>
+    <data name="HomeChipRtl" xml:space="preserve">
+        <value>راست‌به‌چپ</value>
+    </data>
+    <data name="HomeChipLoading" xml:space="preserve">
+        <value>حالت بارگذاری</value>
+    </data>
+    <data name="HomeChipStore" xml:space="preserve">
+        <value>PNG با ابعاد ۱۳۲۰ × ۲۸۶۸</value>
+    </data>
+    <data name="HomeWhyTitle" xml:space="preserve">
+        <value>چرا پروژه شما میز کار دارد</value>
+    </data>
+    <data name="HomeWhySubtitle" xml:space="preserve">
+        <value>ابزار طراحی، میز آزمایش و آتلیه عکاسی صفحه‌هایتان، داخل خود پروژه.</value>
+    </data>
+    <data name="HomeWhyAgentsTitle" xml:space="preserve">
+        <value>طراحی با هر عامل هوش مصنوعی</value>
+    </data>
+    <data name="HomeWhyAgentsText" xml:space="preserve">
+        <value>به Claude Design یا Figma نیازی ندارید. چه با Codex کار کنید، چه Copilot یا Claude Code، عامل شما می‌تواند این‌جا صفحه طراحی کند، آن را در مرورگر واقعی ببیند و بهترش کند.</value>
+    </data>
+    <data name="HomeWhyRealTitle" xml:space="preserve">
+        <value>کامپوننت واقعی، نه ماکت</value>
+    </data>
+    <data name="HomeWhyRealText" xml:space="preserve">
+        <value>صفحه‌ها همان کامپوننت‌های bit BlazorUI، پوسته و استایل‌های برنامه شما را به کار می‌برند، پس آنچه این‌جا تأیید می‌کنید، وقتی در برنامه ساخته شود هم همین شکل را دارد.</value>
+    </data>
+    <data name="HomeWhyStatesTitle" xml:space="preserve">
+        <value>هر حالتی، هر وقت بخواهید</value>
+    </data>
+    <data name="HomeWhyStatesText" xml:space="preserve">
+        <value>بارگذاری، خالی، خطا، نیمه‌کامل و کند فقط یک کلیک فاصله دارند، حتی حالت‌هایی که در برنامه در حال اجرا به‌سختی دیده می‌شوند.</value>
+    </data>
+    <data name="HomeWhyDevicesTitle" xml:space="preserve">
+        <value>همه دستگاه‌ها کنار هم</value>
+    </data>
+    <data name="HomeWhyDevicesText" xml:space="preserve">
+        <value>گوشی، تبلت و رومیزی با اندازه واقعی، در حالت روشن و تیره و به همه زبان‌هایی که برنامه‌تان پشتیبانی می‌کند.</value>
+    </data>
+    <data name="HomeWhyStoresTitle" xml:space="preserve">
+        <value>اسکرین‌شات برای فروشگاه‌ها</value>
+    </data>
+    <data name="HomeWhyStoresText" xml:space="preserve">
+        <value>تصویرهایی با پیکسل دقیق در اندازه‌های App Store، Google Play و Microsoft Store بگیرید که مرورگر واقعی ساخته، اگر بخواهید با پس‌زمینه رنگی و عنوان.</value>
+    </data>
+    <data name="HomeWhyHeadStartTitle" xml:space="preserve">
+        <value>یک قدم جلوتر با bitplatform</value>
+    </data>
+    <data name="HomeWhyHeadStartText" xml:space="preserve">
+        <value>با صفحه‌های آماده‌ای مثل داشبورد فروشگاه، برنامه‌ریز شیفت و صفحه تنظیمات خود برنامه‌تان شروع می‌شود. هرچه به کارتان می‌آید را بردارید، از بقیه یاد بگیرید و صفحه‌های خودتان را کنارشان اضافه کنید.</value>
+    </data>
+    <data name="HomeWhySafeTitle" xml:space="preserve">
+        <value>بی‌خطر برای آزمودن</value>
+    </data>
+    <data name="HomeWhySafeText" xml:space="preserve">
+        <value>هیچ‌چیز این‌جا با API یا پایگاه داده شما حرف نمی‌زند، پس آزمودن یک ایده تازه هیچ‌وقت برنامه یا داده‌تان را خراب نمی‌کند.</value>
+    </data>
+    <data name="HomeHowTitle" xml:space="preserve">
+        <value>چطور در روند کار شما جا می‌افتد</value>
+    </data>
+    <data name="HomeHowStep1Title" xml:space="preserve">
+        <value>از هوش مصنوعی بخواهید</value>
+    </data>
+    <data name="HomeHowStep1Text" xml:space="preserve">
+        <value>صفحه را از Claude، Codex، GitHub Copilot، Gemini یا Junie بخواهید تا آن را این‌جا با داده نمونه‌ای بسازد که مثل داده واقعی بارگذاری می‌شود.</value>
+    </data>
+    <data name="HomeHowStep2Title" xml:space="preserve">
+        <value>همه حالت‌ها را بازبینی کنید</value>
+    </data>
+    <data name="HomeHowStep2Text" xml:space="preserve">
+        <value>آن را روی هر دستگاه، پوسته، زبان و حالت داده، تک‌به‌تک یا کنار هم بررسی کنید.</value>
+    </data>
+    <data name="HomeHowStep3Title" xml:space="preserve">
+        <value>به برنامه منتقلش کنید</value>
+    </data>
+    <data name="HomeHowStep3Text" xml:space="preserve">
+        <value>طراحی تأییدشده را به همان روشی که بقیه برنامه ساخته شده، در برنامه‌تان دوباره بسازید و به داده واقعی وصلش کنید. عامل هوش مصنوعی شما هم همین مراحل را دنبال می‌کند.</value>
+    </data>
+    <data name="HomePagesTitle" xml:space="preserve">
+        <value>صفحه‌های این میز کار</value>
+    </data>
+    <data name="HomePagesSubtitle" xml:space="preserve">
+        <value>از این‌ها شروع کنید و بعد صفحه‌های خودتان را کنارشان بگذارید.</value>
+    </data>
+    <data name="HomeFooter" xml:space="preserve">
+        <value>میز کار بخشی از هر پروژه‌ای است که از قالب پروژه bit ساخته می‌شود و فقط روی سیستم شما اجرا می‌شود، مگر خودتان بخواهید منتشرش کنید.</value>
+    </data>
+    <data name="PosDashboardCaption" xml:space="preserve">
+        <value>همه فروش‌ها، زنده</value>
+    </data>
+    <data name="BuildingsCaption" xml:space="preserve">
+        <value>ساختمان‌ها، روی یک نقشه</value>
+    </data>
+    <data name="Backdrop" xml:space="preserve">
+        <value>پس‌زمینه</value>
+    </data>
+    <data name="BackdropHint" xml:space="preserve">
+        <value>صفحه را درون یک دستگاه روی پس‌زمینه رنگی با عنوان می‌گذارد، همان‌طور که در صفحه برنامه‌ها در فروشگاه‌ها دیده می‌شود.</value>
+    </data>
+    <data name="BackdropBrand" xml:space="preserve">
+        <value>رنگ برنامه</value>
+    </data>
+    <data name="BackdropMidnight" xml:space="preserve">
+        <value>نیمه‌شب</value>
+    </data>
+    <data name="BackdropSunset" xml:space="preserve">
+        <value>غروب</value>
+    </data>
+    <data name="BackdropOcean" xml:space="preserve">
+        <value>اقیانوس</value>
+    </data>
+    <data name="BackdropForest" xml:space="preserve">
+        <value>جنگل</value>
+    </data>
+    <data name="BackdropPaper" xml:space="preserve">
+        <value>کاغذی</value>
+    </data>
+    <data name="Caption" xml:space="preserve">
+        <value>عنوان</value>
+    </data>
+    <data name="CaptionHint" xml:space="preserve">
+        <value>اگر عنوان را خالی بگذارید، متن پیش‌فرض ترجمه‌شده به کار می‌رود.</value>
+    </data>
+    <data name="StoreRuleAppStore" xml:space="preserve">
+        <value>قاب و عنوان مجاز است. سه اسکرین‌شات اول از همه مهم‌ترند.</value>
+    </data>
+    <data name="StoreRuleGooglePlay" xml:space="preserve">
+        <value>Google Play قاب دستگاه را توصیه نمی‌کند. عنوان‌ها را کوتاه و بدون کلمه‌هایی مثل «بهترین» یا «جدید» بنویسید.</value>
+    </data>
+    <data name="StoreRuleMicrosoftStore" xml:space="preserve">
+        <value>Microsoft Store متن یا لوگوی اضافه را نمی‌پذیرد. عنوان‌ها را در Partner Center وارد کنید.</value>
+    </data>
+    <data name="AssistantTitle" xml:space="preserve">
+        <value>دستیار هوش مصنوعی</value>
+    </data>
+    <data name="AssistantDescription" xml:space="preserve">
+        <value>گفتگویی که فکر می‌کند، از ابزارها استفاده می‌کند، منابعش را می‌گوید و با نمودار، سند و اقدام‌هایی که باید تأیید کنید پاسخ می‌دهد، همه هم‌زمان با نوشته‌شدن.</value>
+    </data>
+    <data name="AssistantCaption" xml:space="preserve">
+        <value>فقط بپرسید</value>
+    </data>
+    <data name="CategoryAi" xml:space="preserve">
+        <value>هوش مصنوعی</value>
+    </data>
+    <data name="AssistantConversations" xml:space="preserve">
+        <value>گفتگوها</value>
+    </data>
+    <data name="AssistantNewChat" xml:space="preserve">
+        <value>گفتگوی تازه</value>
+    </data>
+    <data name="AssistantNoHistory" xml:space="preserve">
+        <value>هنوز گفتگویی نیست</value>
+    </data>
+    <data name="AssistantHistoryFailed" xml:space="preserve">
+        <value>گفتگوها بارگذاری نشدند.</value>
+    </data>
+    <data name="AssistantRetry" xml:space="preserve">
+        <value>دوباره امتحان کنید</value>
+    </data>
+    <data name="AssistantModel" xml:space="preserve">
+        <value>مدل</value>
+    </data>
+    <data name="AssistantWelcomeTitle" xml:space="preserve">
+        <value>امروز چه کمکی از دستم برمی‌آید؟</value>
+    </data>
+    <data name="AssistantWelcomeText" xml:space="preserve">
+        <value>درباره فروش، موجودی، تخفیف‌ها یا همکارانتان بپرسید.</value>
+    </data>
+    <data name="AssistantPromptPlaceholder" xml:space="preserve">
+        <value>درباره فروشگاه‌هایتان بپرسید</value>
+    </data>
+    <data name="AssistantSend" xml:space="preserve">
+        <value>ارسال</value>
+    </data>
+    <data name="AssistantStop" xml:space="preserve">
+        <value>توقف</value>
+    </data>
+    <data name="AssistantStopped" xml:space="preserve">
+        <value>متوقف شد</value>
+    </data>
+    <data name="AssistantThinking" xml:space="preserve">
+        <value>در حال فکر کردن</value>
+    </data>
+    <data name="AssistantDisclaimer" xml:space="preserve">
+        <value>پاسخ‌های نمونه، نوشته‌شده برای طراحی.</value>
+    </data>
+    <data name="AssistantAnswerFailed" xml:space="preserve">
+        <value>این پاسخ نرسید.</value>
+    </data>
+    <data name="AssistantCopy" xml:space="preserve">
+        <value>کپی</value>
+    </data>
+    <data name="AssistantCopied" xml:space="preserve">
+        <value>کپی شد</value>
+    </data>
+    <data name="AssistantHelpful" xml:space="preserve">
+        <value>مفید بود</value>
+    </data>
+    <data name="AssistantNotHelpful" xml:space="preserve">
+        <value>مفید نبود</value>
+    </data>
+    <data name="AssistantToday" xml:space="preserve">
+        <value>امروز</value>
+    </data>
+    <data name="AssistantYesterday" xml:space="preserve">
+        <value>دیروز</value>
+    </data>
+    <data name="AssistantHistoryWeekly" xml:space="preserve">
+        <value>خلاصه فروش هفته</value>
+    </data>
+    <data name="AssistantHistoryRestock" xml:space="preserve">
+        <value>تأمین موجودی آخر هفته</value>
+    </data>
+    <data name="AssistantHistoryAutumn" xml:space="preserve">
+        <value>تخفیف پاییزی</value>
+    </data>
+    <data name="AssistantHistoryTeam" xml:space="preserve">
+        <value>پرفروش‌ترین‌های امروز</value>
+    </data>
+    <data name="AssistantSalesPrompt" xml:space="preserve">
+        <value>فروش این هفته؟</value>
+    </data>
+    <data name="AssistantSalesAnswer" xml:space="preserve">
+        <value>فروش خالص **۳۴٬۸۲۰ یورو** بود، **۸٫۴٪** بیشتر از هفته قبل [1].</value>
+    </data>
+    <data name="AssistantStockPrompt" xml:space="preserve">
+        <value>چه چیزهایی دارد تمام می‌شود؟</value>
+    </data>
+    <data name="AssistantStockAnswer" xml:space="preserve">
+        <value>سه کالا پیش از دوشنبه تمام می‌شوند [1]:</value>
+    </data>
+    <data name="AssistantPromoPrompt" xml:space="preserve">
+        <value>یک تبلیغ برای لاته جو دوسر بنویس</value>
+    </data>
+    <data name="AssistantPromoAnswer" xml:space="preserve">
+        <value>یک متن کوتاه:</value>
+    </data>
+    <data name="AssistantPromoDraft" xml:space="preserve">
+        <value>پاییز با جو دوسر خوش‌طعم‌تر است. لاته جو دوسر تمام هفته ۳٫۵۰ یورو.</value>
+    </data>
+    <data name="AssistantStaffPrompt" xml:space="preserve">
+        <value>پرفروش‌ترین امروز کیست؟</value>
+    </data>
+    <data name="AssistantStaffAnswer" xml:space="preserve">
+        <value>**دان** با **۶۴ سفارش** و ۱٬۱۸۰ یورو فروش جلوتر است [1].</value>
+    </data>
+    <data name="AssistantFallbackAnswer" xml:space="preserve">
+        <value>اینجا فقط پرسش‌های پیشنهادی را بلدم. یکی از آن‌ها را امتحان کنید.</value>
+    </data>
+    <data name="AssistantSalesCardTitle" xml:space="preserve">
+        <value>فروش خالص، ۷ روز گذشته</value>
+    </data>
+    <data name="AssistantUnitsLeft" xml:space="preserve">
+        <value>{0} عدد مانده</value>
+    </data>
+    <data name="AssistantStockOatMilk" xml:space="preserve">
+        <value>شیر جو دوسر</value>
+    </data>
+    <data name="AssistantStockCroissants" xml:space="preserve">
+        <value>کروسان</value>
+    </data>
+    <data name="AssistantStockPaperCups" xml:space="preserve">
+        <value>لیوان کاغذی</value>
+    </data>
+    <data name="AssistantModelThorough" xml:space="preserve">
+        <value>دقیق</value>
+    </data>
+    <data name="AssistantModelThoroughDescription" xml:space="preserve">
+        <value>پیش از پاسخ دادن خوب فکر می‌کند</value>
+    </data>
+    <data name="AssistantModelQuick" xml:space="preserve">
+        <value>سریع</value>
+    </data>
+    <data name="AssistantModelQuickDescription" xml:space="preserve">
+        <value>بی‌درنگ پاسخ می‌دهد</value>
+    </data>
+    <data name="AssistantToolSales" xml:space="preserve">
+        <value>گزارش فروش</value>
+    </data>
+    <data name="AssistantToolStock" xml:space="preserve">
+        <value>موجودی انبار</value>
+    </data>
+    <data name="AssistantToolTeam" xml:space="preserve">
+        <value>فروش همکاران</value>
+    </data>
+    <data name="AssistantToolOrder" xml:space="preserve">
+        <value>سفارش به تأمین‌کننده</value>
+    </data>
+    <data name="AssistantSourceStock" xml:space="preserve">
+        <value>شمارش موجودی و زمان رسیدن بارها</value>
+    </data>
+    <data name="AssistantSourceTeam" xml:space="preserve">
+        <value>سفارش‌ها به تفکیک همکار، امروز</value>
+    </data>
+    <data name="AssistantSalesReasoning" xml:space="preserve">
+        <value>جمع ۷ روز گذشته برای هر فروشگاه و مقایسه با هفته قبل.</value>
+    </data>
+    <data name="AssistantStockReasoning" xml:space="preserve">
+        <value>مقایسه موجودی با فروش و بار دوشنبه.</value>
+    </data>
+    <data name="AssistantPromoReasoning" xml:space="preserve">
+        <value>کوتاه باشد: فصل، قیمت، همه فروشگاه‌ها.</value>
+    </data>
+    <data name="AssistantStaffReasoning" xml:space="preserve">
+        <value>رتبه‌بندی سفارش‌های امروز به تفکیک همکاران.</value>
+    </data>
+    <data name="AssistantOrderReason" xml:space="preserve">
+        <value>این سه را برای جمعه سفارش بدهم؟</value>
+    </data>
+    <data name="AssistantOrderPlaced" xml:space="preserve">
+        <value>انجام شد. سفارش **PO-1042** جمعه می‌رسد.</value>
+    </data>
+    <data name="AssistantOrderSkipped" xml:space="preserve">
+        <value>باشد، چیزی سفارش ندادم.</value>
+    </data>
+    <data name="AssistantPromoTitle" xml:space="preserve">
+        <value>تبلیغ لاته با شیر جو دوسر</value>
+    </data>
+    <data name="AssistantSeconds" xml:space="preserve">
+        <value>{0} ثانیه</value>
+    </data>
+    <data name="AssistantRegenerate" xml:space="preserve">
+        <value>پاسخ دوباره</value>
+    </data>
+    <data name="AssistantEdit" xml:space="preserve">
+        <value>ویرایش</value>
+    </data>
+    <data name="AssistantSave" xml:space="preserve">
+        <value>ذخیره</value>
+    </data>
+    <data name="AssistantCancel" xml:space="preserve">
+        <value>انصراف</value>
+    </data>
+    <data name="AssistantScrollToLatest" xml:space="preserve">
+        <value>رفتن به آخرین پیام</value>
+    </data>
+    <data name="AssistantReasoning" xml:space="preserve">
+        <value>استدلال</value>
+    </data>
+    <data name="AssistantReasonedFor" xml:space="preserve">
+        <value>{0} فکر کرد</value>
+    </data>
+    <data name="AssistantSources" xml:space="preserve">
+        <value>منابع</value>
+    </data>
+    <data name="AssistantCitationLabel" xml:space="preserve">
+        <value>منبع {0}: {1}</value>
+    </data>
+    <data name="AssistantAttachFile" xml:space="preserve">
+        <value>پیوست فایل</value>
+    </data>
+    <data name="AssistantRemove" xml:space="preserve">
+        <value>حذف</value>
+    </data>
+    <data name="AssistantDropFiles" xml:space="preserve">
+        <value>فایل‌ها را برای پیوست اینجا رها کنید</value>
+    </data>
+    <data name="AssistantDismiss" xml:space="preserve">
+        <value>بستن</value>
+    </data>
+    <data name="AssistantAttachmentTooLarge" xml:space="preserve">
+        <value>{0} بیش از حد بزرگ است. حجم فایل‌ها حداکثر {1} است.</value>
+    </data>
+    <data name="AssistantAttachmentTypeNotAllowed" xml:space="preserve">
+        <value>نوع فایل {0} پشتیبانی نمی‌شود.</value>
+    </data>
+    <data name="AssistantAttachmentReadFailed" xml:space="preserve">
+        <value>{0} خوانده نشد.</value>
+    </data>
+    <data name="AssistantAttachmentTooMany" xml:space="preserve">
+        <value>{0} پیوست نشد. هر بار حداکثر {1} فایل می‌توانید پیوست کنید.</value>
+    </data>
+    <data name="AssistantCallingTool" xml:space="preserve">
+        <value>در حال استفاده از {0}</value>
+    </data>
+    <data name="AssistantCalledTool" xml:space="preserve">
+        <value>از {0} استفاده شد</value>
+    </data>
+    <data name="AssistantToolFailed" xml:space="preserve">
+        <value>{0} ناموفق بود</value>
+    </data>
+    <data name="AssistantToolCancelled" xml:space="preserve">
+        <value>{0} متوقف شد</value>
+    </data>
+    <data name="AssistantToolRejected" xml:space="preserve">
+        <value>{0} رد شد</value>
+    </data>
+    <data name="AssistantToolAwaitingApproval" xml:space="preserve">
+        <value>{0} منتظر تأیید شماست</value>
+    </data>
+    <data name="AssistantApproveTool" xml:space="preserve">
+        <value>اجازه اجرای {0} را می‌دهید؟</value>
+    </data>
+    <data name="AssistantApprove" xml:space="preserve">
+        <value>اجازه بده</value>
+    </data>
+    <data name="AssistantApproveAlways" xml:space="preserve">
+        <value>همیشه اجازه بده</value>
+    </data>
+    <data name="AssistantReject" xml:space="preserve">
+        <value>رد کردن</value>
+    </data>
+    <data name="AssistantToolDeclined" xml:space="preserve">
+        <value>شما این را رد کردید.</value>
+    </data>
+    <data name="AssistantArguments" xml:space="preserve">
+        <value>ورودی</value>
+    </data>
+    <data name="AssistantResult" xml:space="preserve">
+        <value>نتیجه</value>
+    </data>
+    <data name="AssistantJsonRoot" xml:space="preserve">
+        <value>داده‌ها</value>
+    </data>
+    <data name="AssistantDownload" xml:space="preserve">
+        <value>دانلود</value>
+    </data>
+    <data name="AssistantExpand" xml:space="preserve">
+        <value>بزرگ‌کردن</value>
+    </data>
+    <data name="AssistantCollapse" xml:space="preserve">
+        <value>کوچک‌کردن</value>
+    </data>
+    <data name="AssistantVersion" xml:space="preserve">
+        <value>نسخه</value>
+    </data>
+    <data name="AssistantTranscript" xml:space="preserve">
+        <value>گفتگو</value>
+    </data>
+    <data name="AssistantDelete" xml:space="preserve">
+        <value>حذف</value>
+    </data>
+    <data name="AssistantUntitled" xml:space="preserve">
+        <value>بدون عنوان</value>
+    </data>
+    <data name="AssistantPreviousSevenDays" xml:space="preserve">
+        <value>۷ روز گذشته</value>
+    </data>
+    <data name="AssistantPreviousThirtyDays" xml:space="preserve">
+        <value>۳۰ روز گذشته</value>
+    </data>
+    <data name="AssistantSomethingWentWrong" xml:space="preserve">
+        <value>مشکلی پیش آمد</value>
+    </data>
+    <data name="AssistantTokens" xml:space="preserve">
+        <value>توکن</value>
+    </data>
+    <data name="AssistantTokensPerSecond" xml:space="preserve">
+        <value>{0} توکن در ثانیه</value>
+    </data>
+    <data name="AssistantInputTokens" xml:space="preserve">
+        <value>ورودی</value>
+    </data>
+    <data name="AssistantOutputTokens" xml:space="preserve">
+        <value>خروجی</value>
+    </data>
+    <data name="AssistantUsageLine" xml:space="preserve">
+        <value>{0}: {1}</value>
+    </data>
+    <data name="AssistantContext" xml:space="preserve">
+        <value>زمینه</value>
+    </data>
+    <data name="AssistantContextUsage" xml:space="preserve">
+        <value>{0} از {1} توکن</value>
+    </data>
+    <data name="AssistantContextWarning" xml:space="preserve">
+        <value>گفتگو دارد طولانی می‌شود</value>
+    </data>
+    <data name="AssistantContextCritical" xml:space="preserve">
+        <value>گفتگو تقریباً بیش از حد طولانی شده است</value>
+    </data>
+    <data name="AssistantKilobytes" xml:space="preserve">
+        <value>{0} کیلوبایت</value>
+    </data>
+    <data name="AssistantMegabytes" xml:space="preserve">
+        <value>{0} مگابایت</value>
+    </data>
+    <data name="LoadFailed" xml:space="preserve">
+        <value>بارگذاری نشد. کمی بعد دوباره امتحان کنید.</value>
+    </data>
+    <data name="CategoryAppPages" xml:space="preserve">
+        <value>صفحه‌های برنامه شما</value>
+    </data>
+    <data name="AppDashboardTitle" xml:space="preserve">
+        <value>داشبورد</value>
+    </data>
+    <data name="AppDashboardDescription" xml:space="preserve">
+        <value>داشبورد مدیریت خود برنامه که با داده نمایشی به این‌جا آمده، تا حالت‌ها و اسکرین‌شات‌هایش فقط یک کلیک فاصله داشته باشند.</value>
+    </data>
+    <data name="AppDashboardCaption" xml:space="preserve">
+        <value>آمار در یک نگاه</value>
+    </data>
+    <data name="SettingsTitle" xml:space="preserve">
+        <value>تنظیمات</value>
+    </data>
+    <data name="SettingsDescription" xml:space="preserve">
+        <value>صفحه تنظیمات خود برنامه با پروفایل، حساب کاربری، ورود دومرحله‌ای، نشست‌ها و حریم خصوصی، که به‌جای سرور با داده نمایشی کار می‌کند.</value>
+    </data>
+    <data name="SettingsCaption" xml:space="preserve">
+        <value>حساب شما، به سلیقه شما</value>
+    </data>
+    <data name="CalendarViewDay" xml:space="preserve">
+        <value>روز</value>
+    </data>
+    <data name="CalendarViewWeek" xml:space="preserve">
+        <value>هفته</value>
+    </data>
+    <data name="CalendarViewMonth" xml:space="preserve">
+        <value>ماه</value>
+    </data>
+    <data name="CalendarViewYear" xml:space="preserve">
+        <value>سال</value>
+    </data>
+    <data name="CalendarViewAgenda" xml:space="preserve">
+        <value>برنامه زمانی</value>
+    </data>
+    <data name="CalendarModeEvent" xml:space="preserve">
+        <value>رویدادها</value>
+    </data>
+    <data name="CalendarModeTimeline" xml:space="preserve">
+        <value>خط زمانی</value>
+    </data>
+    <data name="CalendarViewTabsAriaLabel" xml:space="preserve">
+        <value>نماها</value>
+    </data>
+    <data name="CalendarModeTabsAriaLabel" xml:space="preserve">
+        <value>حالت‌ها</value>
+    </data>
+    <data name="CalendarTodayButton" xml:space="preserve">
+        <value>امروز</value>
+    </data>
+    <data name="CalendarAddEventButton" xml:space="preserve">
+        <value>افزودن رویداد</value>
+    </data>
+    <data name="CalendarAddEventHoverHint" xml:space="preserve">
+        <value>افزودن رویداد</value>
+    </data>
+    <data name="CalendarPreviousButtonTitle" xml:space="preserve">
+        <value>قبلی</value>
+    </data>
+    <data name="CalendarNextButtonTitle" xml:space="preserve">
+        <value>بعدی</value>
+    </data>
+    <data name="CalendarPreviousMonthAriaLabel" xml:space="preserve">
+        <value>ماه قبل</value>
+    </data>
+    <data name="CalendarNextMonthAriaLabel" xml:space="preserve">
+        <value>ماه بعد</value>
+    </data>
+    <data name="CalendarPickerHourAriaLabel" xml:space="preserve">
+        <value>ساعت</value>
+    </data>
+    <data name="CalendarPickerMinuteAriaLabel" xml:space="preserve">
+        <value>دقیقه</value>
+    </data>
+    <data name="CalendarPickerMeridiemAriaLabel" xml:space="preserve">
+        <value>قبل/بعد از ظهر</value>
+    </data>
+    <data name="CalendarPickerSelectedDayAriaLabel" xml:space="preserve">
+        <value>انتخاب‌شده</value>
+    </data>
+    <data name="CalendarSettingsButtonTitle" xml:space="preserve">
+        <value>تنظیمات</value>
+    </data>
+    <data name="CalendarFilterByColorAriaLabel" xml:space="preserve">
+        <value>فیلتر رویدادها بر اساس رنگ</value>
+    </data>
+    <data name="CalendarFilterByPersonAriaLabel" xml:space="preserve">
+        <value>فیلتر رویدادها بر اساس شخص در نمای فعلی</value>
+    </data>
+    <data name="CalendarAllColorsOption" xml:space="preserve">
+        <value>همه رنگ‌ها</value>
+    </data>
+    <data name="CalendarAllPeopleOption" xml:space="preserve">
+        <value>همه افراد</value>
+    </data>
+    <data name="CalendarUnnamedAttendee" xml:space="preserve">
+        <value>(بدون نام)</value>
+    </data>
+    <data name="CalendarCalendarSettingsLabel" xml:space="preserve">
+        <value>تنظیمات تقویم</value>
+    </data>
+    <data name="CalendarDotBadgeLabel" xml:space="preserve">
+        <value>نشان نقطه‌ای</value>
+    </data>
+    <data name="CalendarTwentyFourHourFormatLabel" xml:space="preserve">
+        <value>قالب ۲۴ ساعته</value>
+    </data>
+    <data name="CalendarDayStartsAtLabel" xml:space="preserve">
+        <value>شروع روز از</value>
+    </data>
+    <data name="CalendarHourSuffix" xml:space="preserve">
+        <value>ساعت</value>
+    </data>
+    <data name="CalendarAgendaGroupByLabel" xml:space="preserve">
+        <value>گروه‌بندی برنامه زمانی بر اساس</value>
+    </data>
+    <data name="CalendarAgendaGroupByDate" xml:space="preserve">
+        <value>تاریخ</value>
+    </data>
+    <data name="CalendarAgendaGroupByColor" xml:space="preserve">
+        <value>رنگ</value>
+    </data>
+    <data name="CalendarStackedEventsLabel" xml:space="preserve">
+        <value>روی هم چیدن رویدادهای هم‌پوشان</value>
+    </data>
+    <data name="CalendarShowDayViewCalendarLabel" xml:space="preserve">
+        <value>نمایش تقویم در نمای روز</value>
+    </data>
+    <data name="CalendarShowWeekNumbersLabel" xml:space="preserve">
+        <value>نمایش شماره هفته‌ها</value>
+    </data>
+    <data name="CalendarShowCurrentTimeIndicatorLabel" xml:space="preserve">
+        <value>نمایش زمان فعلی</value>
+    </data>
+    <data name="CalendarSlotDurationLabel" xml:space="preserve">
+        <value>طول بازه</value>
+    </data>
+    <data name="CalendarMinuteSuffix" xml:space="preserve">
+        <value>دقیقه</value>
+    </data>
+    <data name="CalendarWeekMobileWarning" xml:space="preserve">
+        <value>نمای هفتگی برای دستگاه‌های کوچک توصیه نمی‌شود. لطفاً از رایانه رومیزی استفاده کنید یا نمای روزانه را انتخاب کنید.</value>
+    </data>
+    <data name="CalendarHappeningNowTitle" xml:space="preserve">
+        <value>در حال انجام</value>
+    </data>
+    <data name="CalendarNoAppointmentsNow" xml:space="preserve">
+        <value>در حال حاضر قراری نیست</value>
+    </data>
+    <data name="CalendarSearchEventsPlaceholder" xml:space="preserve">
+        <value>جست‌وجوی رویدادها...</value>
+    </data>
+    <data name="CalendarNoEventsFound" xml:space="preserve">
+        <value>رویدادی پیدا نشد.</value>
+    </data>
+    <data name="CalendarEventListTitleFormat" xml:space="preserve">
+        <value>رویدادهای {0}</value>
+    </data>
+    <data name="CalendarEventListCountFormat" xml:space="preserve">
+        <value>{0} رویداد</value>
+    </data>
+    <data name="CalendarMoreEventsFormat" xml:space="preserve">
+        <value>+{0} دیگر</value>
+    </data>
+    <data name="CalendarAddEventDialogTitle" xml:space="preserve">
+        <value>افزودن رویداد جدید</value>
+    </data>
+    <data name="CalendarEditEventDialogTitle" xml:space="preserve">
+        <value>ویرایش رویداد</value>
+    </data>
+    <data name="CalendarAddEventDialogSubtitle" xml:space="preserve">
+        <value>یک رویداد جدید برای تقویمتان بسازید.</value>
+    </data>
+    <data name="CalendarEditEventDialogSubtitle" xml:space="preserve">
+        <value>رویداد فعلی‌تان را تغییر دهید.</value>
+    </data>
+    <data name="CalendarCloseAriaLabel" xml:space="preserve">
+        <value>بستن</value>
+    </data>
+    <data name="CalendarCloseButton" xml:space="preserve">
+        <value>بستن</value>
+    </data>
+    <data name="CalendarCancelButton" xml:space="preserve">
+        <value>انصراف</value>
+    </data>
+    <data name="CalendarEditButton" xml:space="preserve">
+        <value>ویرایش</value>
+    </data>
+    <data name="CalendarDeleteButton" xml:space="preserve">
+        <value>حذف</value>
+    </data>
+    <data name="CalendarCreateEventButton" xml:space="preserve">
+        <value>ایجاد رویداد</value>
+    </data>
+    <data name="CalendarSaveChangesButton" xml:space="preserve">
+        <value>ذخیره تغییرات</value>
+    </data>
+    <data name="CalendarTitleLabel" xml:space="preserve">
+        <value>عنوان</value>
+    </data>
+    <data name="CalendarEventTitlePlaceholder" xml:space="preserve">
+        <value>عنوان رویداد</value>
+    </data>
+    <data name="CalendarStartDateTimeLabel" xml:space="preserve">
+        <value>تاریخ و ساعت شروع</value>
+    </data>
+    <data name="CalendarEndDateTimeLabel" xml:space="preserve">
+        <value>تاریخ و ساعت پایان</value>
+    </data>
+    <data name="CalendarColorLabel" xml:space="preserve">
+        <value>رنگ</value>
+    </data>
+    <data name="CalendarEventColorAriaLabel" xml:space="preserve">
+        <value>رنگ رویداد</value>
+    </data>
+    <data name="CalendarDescriptionLabel" xml:space="preserve">
+        <value>توضیحات</value>
+    </data>
+    <data name="CalendarEventDescriptionPlaceholder" xml:space="preserve">
+        <value>توضیحات رویداد</value>
+    </data>
+    <data name="CalendarAttendeesLabel" xml:space="preserve">
+        <value>شرکت‌کنندگان</value>
+    </data>
+    <data name="CalendarNoAttendeesText" xml:space="preserve">
+        <value>بدون شرکت‌کننده</value>
+    </data>
+    <data name="CalendarFirstNamePlaceholder" xml:space="preserve">
+        <value>نام</value>
+    </data>
+    <data name="CalendarLastNamePlaceholder" xml:space="preserve">
+        <value>نام خانوادگی</value>
+    </data>
+    <data name="CalendarIdOptionalPlaceholder" xml:space="preserve">
+        <value>شناسه (اختیاری)</value>
+    </data>
+    <data name="CalendarAddButton" xml:space="preserve">
+        <value>افزودن</value>
+    </data>
+    <data name="CalendarRemoveAttendeeAriaLabel" xml:space="preserve">
+        <value>حذف شرکت‌کننده</value>
+    </data>
+    <data name="CalendarStartDateLabel" xml:space="preserve">
+        <value>تاریخ شروع</value>
+    </data>
+    <data name="CalendarEndDateLabel" xml:space="preserve">
+        <value>تاریخ پایان</value>
+    </data>
+    <data name="CalendarAtWord" xml:space="preserve">
+        <value>ساعت</value>
+    </data>
+    <data name="CalendarAllDayLabel" xml:space="preserve">
+        <value>تمام روز</value>
+    </data>
+    <data name="CalendarWeekNumberFormat" xml:space="preserve">
+        <value>ه{0}</value>
+    </data>
+    <data name="CalendarWeekNumberAriaLabelFormat" xml:space="preserve">
+        <value>هفته {0}</value>
+    </data>
+    <data name="CalendarEventOverlapMessage" xml:space="preserve">
+        <value>این بازه زمانی برای آن منبع قبلاً رزرو شده است.</value>
+    </data>
+    <data name="CalendarOutOfRangeMessage" xml:space="preserve">
+        <value>این تاریخ خارج از بازه مجاز است.</value>
+    </data>
+    <data name="CalendarOutsideBusinessHoursMessage" xml:space="preserve">
+        <value>این زمان خارج از ساعات کاری است.</value>
+    </data>
+    <data name="CalendarBlockedMessage" xml:space="preserve">
+        <value>این زمان در دسترس نیست.</value>
+    </data>
+    <data name="CalendarHighlightBusinessHoursLabel" xml:space="preserve">
+        <value>برجسته‌سازی ساعات کاری</value>
+    </data>
+    <data name="CalendarNavLinkDayAriaLabelFormat" xml:space="preserve">
+        <value>رفتن به {0}</value>
+    </data>
+    <data name="CalendarNavLinkWeekAriaLabelFormat" xml:space="preserve">
+        <value>رفتن به هفته {0}</value>
+    </data>
+    <data name="CalendarValidationTitleRequired" xml:space="preserve">
+        <value>عنوان الزامی است</value>
+    </data>
+    <data name="CalendarValidationDescriptionRequired" xml:space="preserve">
+        <value>توضیحات الزامی است</value>
+    </data>
+    <data name="CalendarValidationEndAfterStart" xml:space="preserve">
+        <value>تاریخ پایان باید بعد از تاریخ شروع باشد</value>
+    </data>
+    <data name="CalendarValidationAttendeeNameRequired" xml:space="preserve">
+        <value>نام یا نام خانوادگی الزامی است</value>
+    </data>
+    <data name="CalendarResizePreviewAriaLabel" xml:space="preserve">
+        <value>بازه زمانی جدید</value>
+    </data>
+    <data name="CalendarRepeatsLabel" xml:space="preserve">
+        <value>تکرار</value>
+    </data>
+    <data name="CalendarRepeatsDaily" xml:space="preserve">
+        <value>روزانه</value>
+    </data>
+    <data name="CalendarRepeatsWeekly" xml:space="preserve">
+        <value>هفتگی</value>
+    </data>
+    <data name="CalendarRepeatsMonthly" xml:space="preserve">
+        <value>ماهانه</value>
+    </data>
+    <data name="CalendarRepeatsYearly" xml:space="preserve">
+        <value>سالانه</value>
+    </data>
+    <data name="CalendarRepeatsIntervalFormat" xml:space="preserve">
+        <value>هر {0} دوره یک‌بار</value>
+    </data>
+    <data name="CalendarRepeatsCountFormat" xml:space="preserve">
+        <value>{0} بار</value>
+    </data>
+    <data name="CalendarRepeatsUntilFormat" xml:space="preserve">
+        <value>تا {0}</value>
+    </data>
+    <data name="CalendarRepeatsOnDaysFormat" xml:space="preserve">
+        <value>روزهای {0}</value>
+    </data>
+    <data name="CalendarRepeatsOnWeekOfMonthFormat" xml:space="preserve">
+        <value>{0} {1}</value>
+    </data>
+    <data name="CalendarListSeparator" xml:space="preserve">
+        <value>، </value>
+    </data>
+    <data name="CalendarWeekOfMonthFirst" xml:space="preserve">
+        <value>اولین</value>
+    </data>
+    <data name="CalendarWeekOfMonthSecond" xml:space="preserve">
+        <value>دومین</value>
+    </data>
+    <data name="CalendarWeekOfMonthThird" xml:space="preserve">
+        <value>سومین</value>
+    </data>
+    <data name="CalendarWeekOfMonthFourth" xml:space="preserve">
+        <value>چهارمین</value>
+    </data>
+    <data name="CalendarWeekOfMonthLast" xml:space="preserve">
+        <value>آخرین</value>
+    </data>
+    <data name="CalendarRepeatLabel" xml:space="preserve">
+        <value>تکرار</value>
+    </data>
+    <data name="CalendarDoesNotRepeatOption" xml:space="preserve">
+        <value>بدون تکرار</value>
+    </data>
+    <data name="CalendarRepeatEveryLabel" xml:space="preserve">
+        <value>تکرار هر</value>
+    </data>
+    <data name="CalendarRepeatDaysUnit" xml:space="preserve">
+        <value>روز</value>
+    </data>
+    <data name="CalendarRepeatWeeksUnit" xml:space="preserve">
+        <value>هفته</value>
+    </data>
+    <data name="CalendarRepeatMonthsUnit" xml:space="preserve">
+        <value>ماه</value>
+    </data>
+    <data name="CalendarRepeatYearsUnit" xml:space="preserve">
+        <value>سال</value>
+    </data>
+    <data name="CalendarRepeatOnLabel" xml:space="preserve">
+        <value>تکرار در</value>
+    </data>
+    <data name="CalendarRepeatOnDayOfMonthFormat" xml:space="preserve">
+        <value>روز {0}</value>
+    </data>
+    <data name="CalendarRepeatOnWeekOfMonthFormat" xml:space="preserve">
+        <value>{0}</value>
+    </data>
+    <data name="CalendarEndsLabel" xml:space="preserve">
+        <value>پایان</value>
+    </data>
+    <data name="CalendarEndsNeverOption" xml:space="preserve">
+        <value>هرگز</value>
+    </data>
+    <data name="CalendarEndsOnDateOption" xml:space="preserve">
+        <value>در تاریخ</value>
+    </data>
+    <data name="CalendarEndsAfterOption" xml:space="preserve">
+        <value>پس از</value>
+    </data>
+    <data name="CalendarOccurrencesLabel" xml:space="preserve">
+        <value>بار</value>
+    </data>
+    <data name="CalendarRepeatExceptionsLabel" xml:space="preserve">
+        <value>استثناها</value>
+    </data>
+    <data name="CalendarSkipDateButton" xml:space="preserve">
+        <value>رد کردن تاریخ</value>
+    </data>
+    <data name="CalendarAddDateButton" xml:space="preserve">
+        <value>افزودن تاریخ</value>
+    </data>
+    <data name="CalendarSkippedDatesLabel" xml:space="preserve">
+        <value>تاریخ‌های ردشده</value>
+    </data>
+    <data name="CalendarAddedDatesLabel" xml:space="preserve">
+        <value>تاریخ‌های افزوده‌شده</value>
+    </data>
+    <data name="CalendarRemoveDateAriaLabel" xml:space="preserve">
+        <value>حذف تاریخ</value>
+    </data>
+    <data name="CalendarValidationRepeatAtLeastOne" xml:space="preserve">
+        <value>باید دست‌کم ۱ باشد</value>
+    </data>
+    <data name="CalendarValidationUntilBeforeStart" xml:space="preserve">
+        <value>سری نمی‌تواند پیش از شروعش تمام شود</value>
+    </data>
+    <data name="CalendarRecurringEditTitle" xml:space="preserve">
+        <value>ویرایش رویداد تکرارشونده</value>
+    </data>
+    <data name="CalendarRecurringDeleteTitle" xml:space="preserve">
+        <value>حذف رویداد تکرارشونده</value>
+    </data>
+    <data name="CalendarThisOccurrenceOption" xml:space="preserve">
+        <value>همین رویداد</value>
+    </data>
+    <data name="CalendarAllOccurrencesOption" xml:space="preserve">
+        <value>همه رویدادهای این سری</value>
+    </data>
+    <data name="CalendarOkButton" xml:space="preserve">
+        <value>تأیید</value>
+    </data>
+    <data name="CalendarResourceLabel" xml:space="preserve">
+        <value>منبع</value>
+    </data>
+    <data name="CalendarResourceColumnHeader" xml:space="preserve">
+        <value>کارکنان</value>
+    </data>
+    <data name="CalendarNoResourceLabel" xml:space="preserve">
+        <value>تخصیص‌نیافته</value>
+    </data>
+    <data name="CalendarNoResourceOption" xml:space="preserve">
+        <value>(هیچ‌کدام)</value>
+    </data>
+    <data name="CalendarNoResourcesMessage" xml:space="preserve">
+        <value>منبعی برای نمایش نیست.</value>
+    </data>
+    <data name="PosStaffNoah" xml:space="preserve">
+        <value>نوید</value>
+    </data>
+    <data name="PosStaffJulia" xml:space="preserve">
+        <value>ژیلا</value>
+    </data>
+    <data name="CategoryPlanning" xml:space="preserve">
+        <value>برنامه‌ریزی</value>
+    </data>
+    <data name="ShiftsTitle" xml:space="preserve">
+        <value>برنامه‌ریز شیفت</value>
+    </data>
+    <data name="ShiftsDescription" xml:space="preserve">
+        <value>برنامه هفتگی کارکنان یک کافه: شیفت هر نفر را جابه‌جا و کوتاه و بلند کنید، در ساعت‌های کاری کافه، با در نظر گرفتن مرخصی‌ها و بدون تداخل.</value>
+    </data>
+    <data name="ShiftsCaption" xml:space="preserve">
+        <value>برنامه هفته در چند دقیقه</value>
+    </data>
+    <data name="ShiftsHeading" xml:space="preserve">
+        <value>برنامه کاری کارکنان</value>
+    </data>
+    <data name="ShiftsSummary" xml:space="preserve">
+        <value>{0} شیفت و {1} ساعت در این هفته</value>
+    </data>
+    <data name="ShiftsEmpty" xml:space="preserve">
+        <value>هنوز شیفتی برنامه‌ریزی نشده. زمانی را در ردیف یک نفر انتخاب کنید تا اولین شیفت اضافه شود.</value>
+    </data>
+    <data name="ShiftsRoleLead" xml:space="preserve">
+        <value>سرشیفت</value>
+    </data>
+    <data name="ShiftsRoleBarista" xml:space="preserve">
+        <value>باریستا</value>
+    </data>
+    <data name="ShiftsRoleBaker" xml:space="preserve">
+        <value>نانوا</value>
+    </data>
+    <data name="ShiftsRoleCashier" xml:space="preserve">
+        <value>صندوق‌دار</value>
+    </data>
+    <data name="ShiftsOpening" xml:space="preserve">
+        <value>شروع روز</value>
+    </data>
+    <data name="ShiftsMidday" xml:space="preserve">
+        <value>میان‌روز</value>
+    </data>
+    <data name="ShiftsBakery" xml:space="preserve">
+        <value>نانوایی</value>
+    </data>
+    <data name="ShiftsClosing" xml:space="preserve">
+        <value>پایان روز</value>
+    </data>
+    <data name="ShiftsStocktake" xml:space="preserve">
+        <value>انبارگردانی، کافه تعطیل</value>
+    </data>
+    <data name="ShiftsTimeOff" xml:space="preserve">
+        <value>مرخصی</value>
+    </data>
+    <data name="HomeCtaTitle" xml:space="preserve">
+        <value>صفحه بعدی شما از این‌جا شروع می‌شود</value>
+    </data>
+    <data name="HomeCtaText" xml:space="preserve">
+        <value>از عامل هوش مصنوعی‌تان بخواهید آن را در میز کار طراحی کند. صفحه را با داده نمونه می‌سازد، همه حالت‌ها را در مرورگر واقعی بررسی می‌کند و پیش از نوشتن هر کد بک‌اندی، اسکرین‌شات‌ها را نشانتان می‌دهد.</value>
+    </data>
+    <data name="HomeCtaOpen" xml:space="preserve">
+        <value>باز کردن میز کار</value>
+    </data>
+    <data name="HomeCtaPromptLabel" xml:space="preserve">
+        <value>این را امتحان کنید</value>
+    </data>
+    <data name="HomeCtaPrompt" xml:space="preserve">
+        <value>یک صفحه تاریخچه سفارش‌ها در میز کار طراحی کن، با حالت‌های بارگذاری، خالی و خطا، و اسکرین‌شات‌های گوشی و رومیزی را نشانم بده.</value>
+    </data>
+    <data name="HomeCtaCopy" xml:space="preserve">
+        <value>کپی</value>
+    </data>
+    <data name="HomeCtaCopied" xml:space="preserve">
+        <value>کپی شد</value>
+    </data>
+    <data name="HomeFooterExplore" xml:space="preserve">
+        <value>کاوش</value>
+    </data>
+    <data name="HomeFooterLearn" xml:space="preserve">
+        <value>یادگیری</value>
+    </data>
+    <data name="HomeFooterDocs" xml:space="preserve">
+        <value>مستندات قالب پروژه bit</value>
+    </data>
+    <data name="HomeFooterComponents" xml:space="preserve">
+        <value>کامپوننت‌های bit BlazorUI</value>
+    </data>
+    <data name="HomeFooterSource" xml:space="preserve">
+        <value>کد منبع در GitHub</value>
+    </data>
+    <data name="NavShowcases" xml:space="preserve">
+        <value>نمونه‌ها</value>
+    </data>
+    <data name="ShiftsAddTitle" xml:space="preserve">
+        <value>شیفت جدید</value>
+    </data>
+    <data name="ShiftsEditTitle" xml:space="preserve">
+        <value>ویرایش شیفت</value>
+    </data>
+    <data name="ShiftsStaffLabel" xml:space="preserve">
+        <value>عضو تیم</value>
+    </data>
+    <data name="ShiftsNameLabel" xml:space="preserve">
+        <value>شیفت</value>
+    </data>
+    <data name="ShiftsNamePlaceholder" xml:space="preserve">
+        <value>مثلاً شروع روز</value>
+    </data>
+    <data name="ShiftsRoleLabel" xml:space="preserve">
+        <value>نقش</value>
+    </data>
+    <data name="ShiftsDayLabel" xml:space="preserve">
+        <value>روز</value>
+    </data>
+    <data name="ShiftsStartsLabel" xml:space="preserve">
+        <value>شروع</value>
+    </data>
+    <data name="ShiftsEndsLabel" xml:space="preserve">
+        <value>پایان</value>
+    </data>
+    <data name="ShiftsEndBeforeStart" xml:space="preserve">
+        <value>شیفت باید بعد از شروعش تمام شود.</value>
+    </data>
+    <data name="ShiftsOverlap" xml:space="preserve">
+        <value>{0} در این ساعت شیفت دیگری دارد.</value>
+    </data>
+    <data name="ShiftsSaved" xml:space="preserve">
+        <value>شیفت ذخیره شد</value>
+    </data>
+    <data name="ShiftsDeleted" xml:space="preserve">
+        <value>شیفت حذف شد</value>
+    </data>
+    <data name="ShiftsAllStaff" xml:space="preserve">
+        <value>همه کارکنان</value>
+    </data>
+    <data name="ShiftsAllRoles" xml:space="preserve">
+        <value>همه نقش‌ها</value>
+    </data>
+    <data name="HomeWhyCustomizeTitle" xml:space="preserve">
+        <value>با هوش مصنوعی شخصی‌اش کنید</value>
+    </data>
+    <data name="HomeWhyCustomizeText" xml:space="preserve">
+        <value>خود میز کار هم بخشی از اپ شماست. از عامل هوش مصنوعی‌تان بخواهید امکاناتش را تغییر دهد یا ابزارها، دستگاه‌ها و حالت‌هایی را که تیمتان لازم دارد اضافه کند.</value>
+    </data>
+    <data name="ShiftsNoStaff" xml:space="preserve">
+        <value>هیچ‌کس</value>
+    </data>
+    <data name="ShiftsNoRoles" xml:space="preserve">
+        <value>هیچ نقشی</value>
+    </data>
+    <data name="SignedInAs" xml:space="preserve">
+        <value>واردشده با</value>
+    </data>
+    <data name="RoleGlobalAdmin" xml:space="preserve">
+        <value>مدیر کل</value>
+    </data>
+    <data name="RoleTenantAdmin" xml:space="preserve">
+        <value>مدیر مستأجر</value>
+    </data>
+    <data name="RoleDemo" xml:space="preserve">
+        <value>دمو</value>
+    </data>
+    <data name="ChecksTab" xml:space="preserve">
+        <value>بررسی‌ها</value>
+    </data>
+    <data name="ChecksTitle" xml:space="preserve">
+        <value>بررسی این نما</value>
+    </data>
+    <data name="ChecksHint" xml:space="preserve">
+        <value>روی نمای انتخاب‌شده با همان دستگاه، پوسته، زبان و داده‌اش اجرا می‌شود: یک بررسی دسترس‌پذیری (axe-core) و جست‌وجوی رنگ‌هایی که از پوسته نمی‌آیند.</value>
+    </data>
+    <data name="RunChecks" xml:space="preserve">
+        <value>اجرای بررسی‌ها</value>
+    </data>
+    <data name="ChecksFailed" xml:space="preserve">
+        <value>بررسی‌ها روی این نما اجرا نشدند. صبر کنید بارگذاری‌اش تمام شود و دوباره امتحان کنید.</value>
+    </data>
+    <data name="AccessibilityFindings" xml:space="preserve">
+        <value>دسترس‌پذیری ({0})</value>
+    </data>
+    <data name="NoAccessibilityFindings" xml:space="preserve">
+        <value>مشکلی پیدا نشد.</value>
+    </data>
+    <data name="ImpactCritical" xml:space="preserve">
+        <value>بحرانی</value>
+    </data>
+    <data name="ImpactSerious" xml:space="preserve">
+        <value>جدی</value>
+    </data>
+    <data name="ImpactModerate" xml:space="preserve">
+        <value>متوسط</value>
+    </data>
+    <data name="ImpactMinor" xml:space="preserve">
+        <value>جزئی</value>
+    </data>
+    <data name="ShowOnPage" xml:space="preserve">
+        <value>نمایش</value>
+    </data>
+    <data name="LearnMore" xml:space="preserve">
+        <value>بیشتر بدانید</value>
+    </data>
+    <data name="ThemeFindings" xml:space="preserve">
+        <value>رنگ‌های خارج از پوسته ({0})</value>
+    </data>
+    <data name="ThemeFindingsHint" xml:space="preserve">
+        <value>رنگ‌هایی که خود صفحه تعیین می‌کند و با هیچ‌کدام از رنگ‌های پوسته جور نیستند. فقط بیرون از کامپوننت‌های bit و نمودارها.</value>
+    </data>
+    <data name="Flows" xml:space="preserve">
+        <value>مسیرها</value>
+    </data>
+    <data name="FlowsHint" xml:space="preserve">
+        <value>مسیر صفحه‌های یک کار را کنار هم می‌چیند، هر کدام در حالتی که مهم است، مثلاً یک فهرست و پنجره‌ای که دکمه‌اش باز می‌کند، با فلش‌هایی که نشان می‌دهند چطور از یکی به بعدی می‌رسید. یکی را باز کنید تا اپ را بفهمید یا در جلسه درباره‌اش حرف بزنید.</value>
+    </data>
+    <data name="NewFlowName" xml:space="preserve">
+        <value>نام مسیر جدید</value>
+    </data>
+    <data name="DeleteFlow" xml:space="preserve">
+        <value>حذف مسیر</value>
+    </data>
+    <data name="OpenCommentsCount" xml:space="preserve">
+        <value>{0} نظر باز</value>
+    </data>
+    <data name="PageStatus" xml:space="preserve">
+        <value>وضعیت بازبینی</value>
+    </data>
+    <data name="PageStatusDraft" xml:space="preserve">
+        <value>پیش‌نویس</value>
+    </data>
+    <data name="PageStatusInReview" xml:space="preserve">
+        <value>در حال بازبینی</value>
+    </data>
+    <data name="PageStatusApproved" xml:space="preserve">
+        <value>تأییدشده</value>
+    </data>
+    <data name="PageStatusBuilt" xml:space="preserve">
+        <value>ساخته‌شده</value>
+    </data>
+    <data name="PageStatusSetBy" xml:space="preserve">
+        <value>تعیین‌شده توسط {0}، {1}</value>
+    </data>
+    <data name="NoAgentListening" xml:space="preserve">
+        <value>هیچ عاملی گوش‌به‌زنگ نیست. از عاملتان بخواهید نظرهای بازبینی را در میز کار مرور کند تا به تک‌تکشان همین‌جا جواب بدهد.</value>
+    </data>
+    <data name="AgentListening" xml:space="preserve">
+        <value>{0} گوش‌به‌زنگ نظرهاست</value>
+    </data>
+    <data name="AgentWorkingOn" xml:space="preserve">
+        <value>{0} مشغول #{1} است</value>
+    </data>
+    <data name="NewComment" xml:space="preserve">
+        <value>نظر جدید</value>
+    </data>
+    <data name="YourName" xml:space="preserve">
+        <value>نام شما</value>
+    </data>
+    <data name="CommentPlaceholder" xml:space="preserve">
+        <value>این‌جا چه چیزی باید عوض شود؟</value>
+    </data>
+    <data name="Send" xml:space="preserve">
+        <value>ارسال</value>
+    </data>
+    <data name="OpenComments" xml:space="preserve">
+        <value>باز ({0})</value>
+    </data>
+    <data name="DoneComments" xml:space="preserve">
+        <value>انجام‌شده ({0})</value>
+    </data>
+    <data name="NoComments" xml:space="preserve">
+        <value>هنوز نظری نیست. از بالا «نظر دادن» را انتخاب کنید و روی هر جای صفحه کلیک کنید.</value>
+    </data>
+    <data name="NoDoneComments" xml:space="preserve">
+        <value>هنوز چیزی انجام نشده.</value>
+    </data>
+    <data name="ReviewStatusOpen" xml:space="preserve">
+        <value>باز</value>
+    </data>
+    <data name="ReviewStatusWorking" xml:space="preserve">
+        <value>در حال انجام</value>
+    </data>
+    <data name="ReviewStatusDone" xml:space="preserve">
+        <value>انجام‌شده</value>
+    </data>
+    <data name="AgentTasks" xml:space="preserve">
+        <value>نقشه کار عامل</value>
+    </data>
+    <data name="ReplyPlaceholder" xml:space="preserve">
+        <value>پاسخ</value>
+    </data>
+    <data name="Reply" xml:space="preserve">
+        <value>پاسخ</value>
+    </data>
+    <data name="Reopen" xml:space="preserve">
+        <value>باز کردن دوباره</value>
+    </data>
+    <data name="Resolve" xml:space="preserve">
+        <value>انجام شد</value>
+    </data>
+    <data name="ShowView" xml:space="preserve">
+        <value>نمایش نما</value>
+    </data>
+    <data name="DeleteComment" xml:space="preserve">
+        <value>حذف نظر</value>
+    </data>
+    <data name="ThisSpot" xml:space="preserve">
+        <value>این نقطه</value>
+    </data>
+    <data name="Mode" xml:space="preserve">
+        <value>حالت</value>
+    </data>
+    <data name="ModeBrowse" xml:space="preserve">
+        <value>کار با صفحه</value>
+    </data>
+    <data name="ModeComment" xml:space="preserve">
+        <value>نظر دادن</value>
+    </data>
+    <data name="ModeInspect" xml:space="preserve">
+        <value>بازرسی</value>
+    </data>
+    <data name="ModeText" xml:space="preserve">
+        <value>ویرایش متن</value>
+    </data>
+    <data name="ViewTab" xml:space="preserve">
+        <value>نما</value>
+    </data>
+    <data name="ReviewTab" xml:space="preserve">
+        <value>بازبینی</value>
+    </data>
+    <data name="Reviewer" xml:space="preserve">
+        <value>بازبین</value>
+    </data>
+    <data name="NotFromTheme" xml:space="preserve">
+        <value>از پوسته نیست</value>
+    </data>
+    <data name="ReviewSheet" xml:space="preserve">
+        <value>گزارش بازبینی</value>
+    </data>
+    <data name="ReviewSheetHtml" xml:space="preserve">
+        <value>گزارش بازبینی (HTML)</value>
+    </data>
+    <data name="ReviewSheetPdf" xml:space="preserve">
+        <value>گزارش بازبینی (PDF)</value>
+    </data>
+    <data name="ReviewSheetViews" xml:space="preserve">
+        <value>نماها</value>
+    </data>
+    <data name="ReviewSheetComments" xml:space="preserve">
+        <value>نظرها</value>
+    </data>
+    <data name="ReviewSheetNoComments" xml:space="preserve">
+        <value>نظری نیست.</value>
+    </data>
+    <data name="ReviewSheetMade" xml:space="preserve">
+        <value>ساخته‌شده در میز کار، {0}</value>
+    </data>
+    <data name="EditText" xml:space="preserve">
+        <value>ویرایش متن</value>
+    </data>
+    <data name="EditTextHint" xml:space="preserve">
+        <value>روی هر متنی در صفحه کلیک کنید تا آن را به همه زبان‌ها تغییر دهید.</value>
+    </data>
+    <data name="TextNotTranslated" xml:space="preserve">
+        <value>این متن داخل خود صفحه نوشته شده و هنوز در فایل‌های ترجمه نیست، برای همین در همه زبان‌ها یکسان دیده می‌شود.</value>
+    </data>
+    <data name="MoveTextRequest" xml:space="preserve">
+        <value>این متن را به فایل‌های ترجمه ببر و ترجمه‌اش کن: «{0}»</value>
+    </data>
+    <data name="AskTheAgent" xml:space="preserve">
+        <value>درخواست از عامل</value>
+    </data>
+    <data name="TextKey" xml:space="preserve">
+        <value>کدام متن</value>
+    </data>
+    <data name="SaveTranslations" xml:space="preserve">
+        <value>ذخیره</value>
+    </data>
+    <data name="SaveTranslationsHint" xml:space="preserve">
+        <value>در فایل‌های ترجمه ذخیره می‌کند و نماها را دوباره بارگذاری می‌کند. عاملتان تغییر را در git می‌بیند.</value>
+    </data>
+    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
+        <value>ذخیره متن فقط وقتی کار می‌کند که میز کار از پروژه روی سیستم خودتان اجرا شود.</value>
+    </data>
+    <data name="ChangeTextRequest" xml:space="preserve">
+        <value>متن {0} · {1} را عوض کن:</value>
+    </data>
+    <data name="ThemePageTitle" xml:space="preserve">
+        <value>پوسته و کامپوننت‌ها</value>
+    </data>
+    <data name="ThemePageDescription" xml:space="preserve">
+        <value>زبان بصری برنامه در یک صفحه: رنگ‌ها، تایپوگرافی، گوشه‌ها و کامپوننت‌های اصلی با همه گونه‌هایشان، در حالت روشن، تیره و راست‌به‌چپ.</value>
+    </data>
+    <data name="ThemePageCaption" xml:space="preserve">
+        <value>یک ظاهر در کل برنامه</value>
+    </data>
+    <data name="CategoryDesignSystem" xml:space="preserve">
+        <value>سیستم طراحی</value>
+    </data>
+    <data name="ThemeHeading" xml:space="preserve">
+        <value>پوسته و کامپوننت‌ها</value>
+    </data>
+    <data name="ThemeSubtitle" xml:space="preserve">
+        <value>همه‌چیز این‌جا از پوسته خود برنامه می‌آید. گزینه‌های پنل کناری را امتحان کنید تا تغییرش را ببینید.</value>
+    </data>
+    <data name="ThemeColors" xml:space="preserve">
+        <value>رنگ‌ها</value>
+    </data>
+    <data name="ThemePrimary" xml:space="preserve">
+        <value>اصلی</value>
+    </data>
+    <data name="ThemeSecondary" xml:space="preserve">
+        <value>ثانویه</value>
+    </data>
+    <data name="ThemeTertiary" xml:space="preserve">
+        <value>سوم</value>
+    </data>
+    <data name="ThemeInfo" xml:space="preserve">
+        <value>اطلاعات</value>
+    </data>
+    <data name="ThemeSuccess" xml:space="preserve">
+        <value>موفقیت</value>
+    </data>
+    <data name="ThemeWarning" xml:space="preserve">
+        <value>هشدار</value>
+    </data>
+    <data name="ThemeSevereWarning" xml:space="preserve">
+        <value>هشدار جدی</value>
+    </data>
+    <data name="ThemeError" xml:space="preserve">
+        <value>خطا</value>
+    </data>
+    <data name="ThemeForeground" xml:space="preserve">
+        <value>متن</value>
+    </data>
+    <data name="ThemeBackground" xml:space="preserve">
+        <value>پس‌زمینه‌ها</value>
+    </data>
+    <data name="ThemeBorder" xml:space="preserve">
+        <value>حاشیه‌ها</value>
+    </data>
+    <data name="ThemeTypography" xml:space="preserve">
+        <value>تایپوگرافی</value>
+    </data>
+    <data name="ThemeSampleText" xml:space="preserve">
+        <value>روباه قهوه‌ای چابک از روی سگ تنبل می‌پرد</value>
+    </data>
+    <data name="ThemeShape" xml:space="preserve">
+        <value>گوشه‌ها</value>
+    </data>
+    <data name="ThemeButtons" xml:space="preserve">
+        <value>دکمه‌ها</value>
+    </data>
+    <data name="ThemeDisabled" xml:space="preserve">
+        <value>غیرفعال</value>
+    </data>
+    <data name="ThemeIconButton" xml:space="preserve">
+        <value>تنظیمات</value>
+    </data>
+    <data name="ThemeInputs" xml:space="preserve">
+        <value>ورودی‌ها</value>
+    </data>
+    <data name="ThemeName" xml:space="preserve">
+        <value>نام</value>
+    </data>
+    <data name="ThemeNamePlaceholder" xml:space="preserve">
+        <value>یک نام بنویسید</value>
+    </data>
+    <data name="ThemeChoice" xml:space="preserve">
+        <value>انتخاب</value>
+    </data>
+    <data name="ThemeChoicePlaceholder" xml:space="preserve">
+        <value>یکی را انتخاب کنید</value>
+    </data>
+    <data name="ThemeSearch" xml:space="preserve">
+        <value>جست‌وجو</value>
+    </data>
+    <data name="ThemeAmount" xml:space="preserve">
+        <value>مقدار</value>
+    </data>
+    <data name="ThemeOption" xml:space="preserve">
+        <value>گزینه {0}</value>
+    </data>
+    <data name="ThemeToggle" xml:space="preserve">
+        <value>اعلان‌ها</value>
+    </data>
+    <data name="ThemeFeedback" xml:space="preserve">
+        <value>پیام‌ها و وضعیت</value>
+    </data>
+    <data name="ThemeMessage" xml:space="preserve">
+        <value>یک پیام {0}، همان‌طور که برنامه نشانش می‌دهد.</value>
+    </data>
+    <data name="ThemeProgress" xml:space="preserve">
+        <value>در حال آپلود</value>
+    </data>
+    <data name="ThemeContainers" xml:space="preserve">
+        <value>کارت‌ها و زبانه‌ها</value>
+    </data>
+    <data name="ThemeTab" xml:space="preserve">
+        <value>زبانه {0}</value>
+    </data>
+    <data name="BuildingsVariantTable" xml:space="preserve">
+        <value>جدول</value>
+    </data>
+    <data name="BuildingsVariantCards" xml:space="preserve">
+        <value>کارت‌ها</value>
+    </data>
+    <data name="BuildingsSwitchAmount" xml:space="preserve">
+        <value>تعداد ساختمان‌ها</value>
+    </data>
+    <data name="BuildingsAmountNormal" xml:space="preserve">
+        <value>بدون تغییر</value>
+    </data>
+    <data name="BuildingsAmountFew" xml:space="preserve">
+        <value>سه</value>
+    </data>
+    <data name="BuildingsAmountMany" xml:space="preserve">
+        <value>صدها</value>
+    </data>
+    <data name="BuildingsSwitchNames" xml:space="preserve">
+        <value>نام‌ها</value>
+    </data>
+    <data name="BuildingsNamesAsTheyAre" xml:space="preserve">
+        <value>بدون تغییر</value>
+    </data>
+    <data name="BuildingsNamesLong" xml:space="preserve">
+        <value>خیلی بلند</value>
+    </data>
+    <data name="Width" xml:space="preserve">
+        <value>عرض</value>
+    </data>
+    <data name="Height" xml:space="preserve">
+        <value>ارتفاع</value>
+    </data>
+    <data name="CustomSizeHint" xml:space="preserve">
+        <value>لبه یا گوشه نما را بکشید تا اندازه‌اش عوض شود، یا اندازه را بنویسید.</value>
+    </data>
+    <data name="PageSection" xml:space="preserve">
+        <value>این صفحه</value>
+    </data>
+    <data name="Variant" xml:space="preserve">
+        <value>گزینه طراحی</value>
+    </data>
+    <data name="PageSectionHint" xml:space="preserve">
+        <value>این‌ها را خود صفحه تعریف می‌کند، برای حالت‌هایی که باید در آن‌ها درست دیده شود. هر انتخاب در پیوند و اسکرین‌شات‌ها هم می‌آید.</value>
+    </data>
+    <data name="ThemeTweaks" xml:space="preserve">
+        <value>پوسته را امتحان کنید</value>
+    </data>
+    <data name="AccentColor" xml:space="preserve">
+        <value>رنگ اصلی</value>
+    </data>
+    <data name="ThemeDefault" xml:space="preserve">
+        <value>پوسته</value>
+    </data>
+    <data name="CustomColor" xml:space="preserve">
+        <value>رنگ دلخواه</value>
+    </data>
+    <data name="ThemeTweaksHint" xml:space="preserve">
+        <value>فقط همین نما تغییر می‌کند. هرکدام را پسندیدید، از عاملتان بخواهید آن را در پوسته برنامه بگذارد.</value>
+    </data>
+    <data name="Accessibility" xml:space="preserve">
+        <value>دسترس‌پذیری</value>
+    </data>
+    <data name="TextSize" xml:space="preserve">
+        <value>اندازه متن</value>
+    </data>
+    <data name="ReduceMotion" xml:space="preserve">
+        <value>کاهش حرکت</value>
+    </data>
+    <data name="ColorVision" xml:space="preserve">
+        <value>دید رنگ</value>
+    </data>
+    <data name="AccessibilityHint" xml:space="preserve">
+        <value>متن بزرگ‌تر، همان‌طور که تنظیمات گوشی یا مرورگر بزرگش می‌کند، بدون انیمیشن، و این‌که افراد کوررنگ صفحه را چطور می‌بینند.</value>
+    </data>
+    <data name="DeviceGroupCustom" xml:space="preserve">
+        <value>هر اندازه</value>
+    </data>
+    <data name="CustomSize" xml:space="preserve">
+        <value>اندازه دلخواه</value>
+    </data>
+    <data name="VisionTypical" xml:space="preserve">
+        <value>معمولی</value>
+    </data>
+    <data name="VisionProtanopia" xml:space="preserve">
+        <value>بدون قرمز (پروتانوپیا)</value>
+    </data>
+    <data name="VisionDeuteranopia" xml:space="preserve">
+        <value>بدون سبز (دوترانوپیا)</value>
+    </data>
+    <data name="VisionTritanopia" xml:space="preserve">
+        <value>بدون آبی (تریتانوپیا)</value>
+    </data>
+    <data name="VisionAchromatopsia" xml:space="preserve">
+        <value>بدون رنگ (آکروماتوپسیا)</value>
+    </data>
+    <data name="Breakpoints" xml:space="preserve">
+        <value>بریک‌پوینت‌های برنامه</value>
+    </data>
+    <data name="CompareVariants" xml:space="preserve">
+        <value>گزینه‌های طراحی</value>
+    </data>
+    <data name="LiveReviewTitle" xml:space="preserve">
+        <value>همکاری زنده با هوش مصنوعی</value>
+    </data>
+    <data name="LiveReviewRemote" xml:space="preserve">
+        <value>روی سیستمی که میز کار را اجرا می‌کند، نظری که روی صفحه سنجاق شود مستقیم به عامل هوش مصنوعی توسعه‌دهنده می‌رسد: صفحه را تغییر می‌دهد، همین‌جا جواب می‌دهد و جلوی چشم شما آن نظر را انجام‌شده علامت می‌زند. از هر جای دیگری بازبینی فقط‌خواندنی است تا هیچ‌کس نتواند از راه یک پیوند اشتراکی به آن عامل برسد.</value>
+    </data>
+    <data name="AgentOffline" xml:space="preserve">
+        <value>عامل آفلاین است</value>
+    </data>
+    <data name="NoCommentsYet" xml:space="preserve">
+        <value>هنوز نظری نیست.</value>
+    </data>
+    <data name="FlowsReadOnly" xml:space="preserve">
+        <value>مسیرها روی سیستمی کشیده می‌شوند که میز کار را اجرا می‌کند. این‌جا می‌توانید بازشان کنید و مرورشان کنید.</value>
+    </data>
+    <data name="HomeWhyLiveTitle" xml:space="preserve">
+        <value>بازبینی زنده با عامل هوش مصنوعی‌تان</value>
+    </data>
+    <data name="HomeWhyLiveText" xml:space="preserve">
+        <value>روی هر نقطه‌ای از صفحه نظری سنجاق کنید. روی سیستم خودتان، عامل کدنویسی‌تان همان وقتی که می‌نویسید آن را دریافت می‌کند، صفحه را تغییر می‌دهد، روی همان نظر جواب می‌دهد و آن را انجام‌شده علامت می‌زند. با Claude Code، Codex، Copilot، Gemini، Junie و Cursor کار می‌کند.</value>
+    </data>
+    <data name="HomeChipLive" xml:space="preserve">
+        <value>بازبینی زنده با هوش مصنوعی</value>
+    </data>
+    <data name="PinComment" xml:space="preserve">
+        <value>نظر دادن روی صفحه</value>
+    </data>
+    <data name="TapToComment" xml:space="preserve">
+        <value>جایی را که می‌خواهید درباره‌اش نظر بدهید لمس کنید</value>
+    </data>
+    <data name="FlowsEmpty" xml:space="preserve">
+        <value>هنوز مسیری نیست. از عاملتان بخواهید یکی بکشد، مثلاً «نشان بده ساختمان چطور اضافه می‌شود»، یا از زبانهٔ «مسیرها» در هر صفحه نماها را به یک مسیر اضافه کنید.</value>
+    </data>
+    <data name="FlowNotFound" xml:space="preserve">
+        <value>مسیری با این پیوند نیست. شاید حذف شده باشد.</value>
+    </data>
+    <data name="FlowHasNoScreens" xml:space="preserve">
+        <value>این مسیر هنوز صفحه‌ای ندارد. از زبانهٔ «مسیرها» در هر صفحه نما به آن اضافه کنید، یا از عاملتان بخواهید.</value>
+    </data>
+    <data name="ScreenCount" xml:space="preserve">
+        <value>صفحه‌ها: {0}</value>
+    </data>
+    <data name="AllFlows" xml:space="preserve">
+        <value>همهٔ مسیرها</value>
+    </data>
+    <data name="AllFlowsHint" xml:space="preserve">
+        <value>صفحه‌های یک کار کنار هم، با فلش به هم وصل</value>
+    </data>
+    <data name="AddToFlow" xml:space="preserve">
+        <value>افزودن این نما به یک مسیر</value>
+    </data>
+    <data name="AddToFlowHint" xml:space="preserve">
+        <value>مسیر نما را همان‌طور که الان هست می‌گیرد: دستگاهش، تنظیماتش و هر چه روی صفحه باز است.</value>
+    </data>
+    <data name="Flow" xml:space="preserve">
+        <value>مسیر</value>
+    </data>
+    <data name="NewFlow" xml:space="preserve">
+        <value>مسیر جدید</value>
+    </data>
+    <data name="ScreenNote" xml:space="preserve">
+        <value>این صفحه چه نشان می‌دهد (اختیاری)</value>
+    </data>
+    <data name="ArrowFromLast" xml:space="preserve">
+        <value>از صفحهٔ قبلی چطور به این‌جا می‌رسید (اختیاری)</value>
+    </data>
+    <data name="ArrowLabel" xml:space="preserve">
+        <value>کاری که کاربر می‌کند</value>
+    </data>
+    <data name="ArrowLabelPlaceholder" xml:space="preserve">
+        <value>زدن «افزودن ساختمان»</value>
+    </data>
+    <data name="AddThisView" xml:space="preserve">
+        <value>افزودن این نما</value>
+    </data>
+    <data name="OpenBoard" xml:space="preserve">
+        <value>باز کردن تابلو</value>
+    </data>
+    <data name="OpenInWorkbench" xml:space="preserve">
+        <value>باز کردن در میز کار</value>
+    </data>
+    <data name="ShowAllScreens" xml:space="preserve">
+        <value>نمایش همهٔ صفحه‌ها</value>
+    </data>
+    <data name="Present" xml:space="preserve">
+        <value>ارائه</value>
+    </data>
+    <data name="PreviousScreen" xml:space="preserve">
+        <value>صفحهٔ قبلی</value>
+    </data>
+    <data name="NextScreen" xml:space="preserve">
+        <value>صفحهٔ بعدی</value>
+    </data>
+    <data name="StopPresenting" xml:space="preserve">
+        <value>پایان ارائه</value>
+    </data>
+    <data name="ScreenOf" xml:space="preserve">
+        <value>{0} از {1}</value>
+    </data>
+    <data name="BoardHelp" xml:space="preserve">
+        <value>برای جابه‌جا کردن یک صفحه آن را بکشید. برای کشیدن فلش، از نقطهٔ لبهٔ راست یک صفحه تا صفحهٔ دیگر بکشید، برای نام‌گذاری فلش روی آن دوبار کلیک کنید و برای حذف آنچه انتخاب کرده‌اید Delete را بزنید.</value>
+    </data>
+    <data name="DeleteFlowConfirm" xml:space="preserve">
+        <value>این مسیر حذف شود؟</value>
+    </data>
+</root>

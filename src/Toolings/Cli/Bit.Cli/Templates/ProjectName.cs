@@ -19,7 +19,7 @@ public static class ProjectName
 
     private static readonly HashSet<string> reservedRoots = new(StringComparer.OrdinalIgnoreCase) { "System", "Microsoft" };
 
-    public static string? Validate(string? name, IReadOnlySet<string>? typeNames = null)
+    public static string? Validate(string? name, IReadOnlySet<string>? typeNames = null, IReadOnlySet<string>? namespaceNames = null)
     {
         if (string.IsNullOrWhiteSpace(name))
             return "Enter a name, e.g. Contoso.Shop.";
@@ -50,6 +50,12 @@ public static class ProjectName
         if (reservedRoots.Contains(segments[0]))
             return $"A name starting with '{segments[0]}' clashes with .NET's own namespaces.";
 
+        if (namespaceNames?.Contains(segments[0]) is true)
+            return $"'{segments[0]}' is also the name of a namespace inside the project, so a name that starts with it makes the project's code reach the wrong namespace, and the project wouldn't build.";
+
+        if (segments.Skip(1).Contains(segments[0]))
+            return $"'{segments[0]}' comes twice in the name, which makes the project's code reach the wrong namespace, so the project wouldn't build.";
+
         return null;
     }
 
@@ -67,7 +73,7 @@ public static class ProjectName
         return appId.Split('.') is { Length: > 1 } parts && parts.All(part => part.Length > 0 && char.IsAsciiLetter(part[0]) && part.All(c => char.IsAsciiLetterOrDigit(c) || c is '_'));
     }
 
-    public static string Suggest(string? input, IReadOnlySet<string>? typeNames = null)
+    public static string Suggest(string? input, IReadOnlySet<string>? typeNames = null, IReadOnlySet<string>? namespaceNames = null)
     {
         var segments = new List<string>();
 
@@ -104,7 +110,7 @@ public static class ProjectName
         if (segments.Count == 0)
             return "MyApp";
 
-        if (reservedRoots.Contains(segments[0]))
+        if (reservedRoots.Contains(segments[0]) || namespaceNames?.Contains(segments[0]) is true || segments.Skip(1).Contains(segments[0]))
         {
             segments[0] = "My" + segments[0];
         }

@@ -1,0 +1,85 @@
+@inherits WorkbenchComponentBase
+
+<CascadingValue Value="this">
+    <div class="pos-dashboard">
+        <div class="dashboard-header">
+            <div class="titles">
+                <BitText Typography="BitTypography.H5" Element="h1" Class="greeting">@Localizer[nameof(WorkbenchStrings.PosGreeting)]</BitText>
+                <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@DateTimeOffset.Now.ToString("D", CultureInfo.CurrentCulture)</BitText>
+            </div>
+            <div class="toolbar">
+                <BitDropdown Items="storeItems"
+                             Value="@Filter.StoreKey"
+                             ValueChanged="(string? store) => SetFilter(Filter with { StoreKey = store ?? PosDashboardDataService.StoreKeys[0] })"
+                             AriaLabel="@Localizer[nameof(WorkbenchStrings.PosStore)]"
+                             Class="store-picker"
+                             Responsive />
+                <BitButtonGroup Items="rangeItems"
+                                Toggle
+                                FixedToggle
+                                Size="BitSize.Small"
+                                Variant="BitVariant.Outline"
+                                ToggleKey="@Filter.Days.ToString(CultureInfo.InvariantCulture)"
+                                OnToggleChange="(BitButtonGroupItem item) => SetRange(item)"
+                                AriaLabel="@Localizer[nameof(WorkbenchStrings.PosPeriod)]" />
+                <BitButton Size="BitSize.Small"
+                           Variant="@(IsEditing ? BitVariant.Fill : BitVariant.Outline)"
+                           IconName="@(IsEditing ? BitIconName.Accept : BitIconName.Edit)"
+                           IsLoading="isSaving"
+                           OnClick="ToggleEditing">@Localizer[IsEditing ? nameof(WorkbenchStrings.PosDone) : nameof(WorkbenchStrings.PosCustomize)]</BitButton>
+            </div>
+        </div>
+
+        @if (IsEditing)
+        {
+            <div class="edit-bar">
+                <BitIcon IconName="@BitIconName.Info" Size="BitSize.Small" />
+                <BitText Typography="BitTypography.Body2" Class="edit-hint">@Localizer[nameof(WorkbenchStrings.PosEditHint)]</BitText>
+                <BitButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Add" IsEnabled="hiddenWidgets.Count > 0" OnClick="() => store.OpenGallery(true)">
+                    @Localizer[nameof(WorkbenchStrings.PosAddWidget), hiddenWidgets.Count]
+                </BitButton>
+                <BitButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Undo" OnClick="ResetLayout">
+                    @Localizer[nameof(WorkbenchStrings.PosResetLayout)]
+                </BitButton>
+            </div>
+        }
+
+        @if (isLayoutLoaded)
+        {
+            <Bortable @ref="bortable"
+                      Items="visibleWidgets"
+                      ItemsChanged="OnReordered"
+                      TItem="PosWidgetLayout"
+                      Class="dashboard-grid"
+                      Direction="BortableDirection.Horizontal"
+                      Handle=".widget-handle"
+                      Disabled="IsEditing is false"
+                      Animation="220"
+                      ItemClassSelector="GetItemClass"
+                      AriaLabel="@Localizer[nameof(WorkbenchStrings.PosDashboardTitle)]"
+                      ItemLabel="GetItemLabel">
+                <ItemTemplate Context="widget">
+                    <DynamicComponent Type="PosWidgetCatalog.Find(widget.Key)!.ComponentType" Parameters="GetParameters(widget)" />
+                </ItemTemplate>
+            </Bortable>
+        }
+    </div>
+
+    <BitPanel IsOpen="store.IsGalleryOpen" IsOpenChanged="store.OpenGallery" Placement="BitPlacement.End" HeaderText="@Localizer[nameof(WorkbenchStrings.PosWidgetGallery)]">
+        <div class="gallery">
+            @foreach (var widget in hiddenWidgets.ToList())
+            {
+                var definition = PosWidgetCatalog.Find(widget.Key)!;
+                <div class="gallery-item">
+                    <span class="gallery-icon"><BitIcon IconName="@definition.IconName" /></span>
+                    <BitText Typography="BitTypography.Body1" Class="gallery-title">@Localizer[definition.TitleKey]</BitText>
+                    <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" IconName="@BitIconName.Add" OnClick="() => Show(widget)">@Localizer[nameof(WorkbenchStrings.PosAdd)]</BitButton>
+                </div>
+            }
+            @if (hiddenWidgets.Count == 0)
+            {
+                <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.PosGalleryEmpty)]</BitText>
+            }
+        </div>
+    </BitPanel>
+</CascadingValue>

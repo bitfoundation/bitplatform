@@ -1,0 +1,347 @@
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_media-queries.scss';
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.flows-page {
+    height: 100dvh;
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+}
+
+.topbar {
+    gap: 0.5rem;
+    height: 52px;
+    display: flex;
+    flex-shrink: 0;
+    padding: 0 0.75rem;
+    align-items: center;
+    background-color: $bit-color-background-primary;
+    border-bottom: 1px solid $bit-color-border-tertiary;
+}
+
+.brand {
+    gap: 0.5rem;
+    display: flex;
+    font-size: 15px;
+    font-weight: 700;
+    align-items: center;
+    text-decoration: none;
+    letter-spacing: -0.01em;
+    color: $bit-color-foreground-primary;
+
+    @include lt-sm {
+        span {
+            display: none;
+        }
+    }
+}
+
+.crumb {
+    text-decoration: none;
+    color: $bit-color-foreground-secondary;
+}
+
+.crumb-separator {
+    color: $bit-color-foreground-tertiary;
+}
+
+::deep .crumb-title {
+    min-width: 0;
+    color: $bit-color-foreground-secondary;
+}
+
+.loading {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+}
+
+.board {
+    flex-grow: 1;
+    min-height: 0;
+    position: relative;
+}
+
+::deep .bit-blow.flow-board {
+    width: 100%;
+    height: 100%;
+    --bit-blow-bg: #{$bit-color-background-secondary};
+    --bit-blow-background-pattern: #{$bit-color-border-secondary};
+    --bit-blow-node-bg: transparent;
+    --bit-blow-node-border: transparent;
+    --bit-blow-node-color: #{$bit-color-foreground-primary};
+    --bit-blow-node-selected: #{$bit-color-primary};
+    --bit-blow-edge-stroke: #{$bit-color-primary};
+    --bit-blow-edge-selected: #{$bit-color-primary-dark};
+    --bit-blow-connection-stroke: #{$bit-color-primary};
+    --bit-blow-handle-bg: #{$bit-color-primary};
+    --bit-blow-surface: #{$bit-color-background-primary};
+    --bit-blow-surface-hover: #{$bit-color-background-primary-hover};
+    --bit-blow-surface-muted: #{$bit-color-background-secondary};
+    --bit-blow-surface-muted-hover: #{$bit-color-background-secondary-hover};
+    --bit-blow-surface-translucent: color-mix(in srgb, #{$bit-color-background-primary} 85%, transparent);
+    --bit-blow-border: #{$bit-color-border-secondary};
+    --bit-blow-border-subtle: #{$bit-color-border-tertiary};
+    --bit-blow-text: #{$bit-color-foreground-primary};
+    --bit-blow-text-muted: #{$bit-color-foreground-secondary};
+    --bit-blow-minimap-node: #{$bit-color-border-secondary};
+    --bit-blow-minimap-mask: color-mix(in srgb, #{$bit-color-background-secondary} 70%, transparent);
+}
+
+::deep .bit-blow-node-screen {
+    padding: 0;
+    border: none;
+    min-width: 0;
+    font: inherit;
+    text-align: start;
+    background: none;
+}
+
+::deep .bit-blow-edges {
+    z-index: 1;
+}
+
+::deep .bit-blow-handle {
+    width: 18px;
+    height: 18px;
+}
+
+.read-only ::deep .bit-blow-handle {
+    visibility: hidden;
+}
+
+::deep .bit-blow-minimap {
+    @include lt-md {
+        display: none;
+    }
+}
+
+::deep .spot-handle {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.screen-card {
+    gap: 18px;
+    display: flex;
+    flex-direction: column;
+}
+
+.screen-head {
+    gap: 14px;
+    display: flex;
+    font-size: 30px;
+    font-weight: 700;
+    align-items: center;
+    color: $bit-color-foreground-primary;
+}
+
+.screen-number {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    flex-shrink: 0;
+    font-size: 24px;
+    place-items: center;
+    border-radius: 50%;
+    color: $bit-color-primary-text;
+    background-color: $bit-color-primary;
+}
+
+.screen-title {
+    min-width: 0;
+    flex-grow: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.screen-open {
+    display: flex;
+    font-size: 28px;
+    color: $bit-color-foreground-secondary;
+
+    &:hover {
+        color: $bit-color-primary;
+    }
+}
+
+.screen-card.current ::deep .device {
+    border-radius: 24px;
+    outline: 8px solid $bit-color-primary;
+    outline-offset: 10px;
+}
+
+iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+    background-color: $bit-color-background-primary;
+}
+
+.spot {
+    z-index: 2;
+    position: absolute;
+    border-radius: 12px;
+    pointer-events: none;
+    border: 4px solid $bit-color-primary;
+    box-shadow: 0 0 0 8px color-mix(in srgb, #{$bit-color-primary} 25%, transparent);
+}
+
+.screen-note {
+    margin: 0;
+    max-width: 100%;
+    font-size: 26px;
+    line-height: 1.4;
+    color: $bit-color-foreground-secondary;
+}
+
+.board-help,
+.board-empty {
+    left: 50%;
+    top: 0.75rem;
+    margin: 0;
+    z-index: 5;
+    font-size: 13px;
+    max-width: 92vw;
+    position: absolute;
+    text-align: center;
+    border-radius: 999px;
+    padding: 0.35rem 0.9rem;
+    pointer-events: none;
+    transform: translateX(-50%);
+    color: $bit-color-foreground-secondary;
+    background-color: $bit-color-background-primary;
+    border: 1px solid $bit-color-border-tertiary;
+}
+
+.board-help {
+    top: auto;
+    bottom: 1rem;
+    max-width: min(640px, 60vw);
+
+    @include lt-md {
+        display: none;
+    }
+}
+
+.board-empty {
+    top: 40%;
+    font-size: 15px;
+}
+
+.presenter {
+    left: 50%;
+    gap: 0.25rem;
+    z-index: 6;
+    bottom: 1.25rem;
+    display: flex;
+    max-width: 92vw;
+    position: absolute;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.25rem 0.5rem;
+    transform: translateX(-50%);
+    background-color: $bit-color-background-primary;
+    border: 1px solid $bit-color-border-secondary;
+    box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.35);
+}
+
+.presenter-text {
+    gap: 0.5rem;
+    min-width: 0;
+    display: flex;
+    padding: 0 0.5rem;
+    align-items: baseline;
+
+    span {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        color: $bit-color-foreground-secondary;
+    }
+}
+
+.label-editor {
+    top: 4rem;
+    left: 50%;
+    z-index: 7;
+    gap: 0.75rem;
+    display: flex;
+    padding: 1rem;
+    position: absolute;
+    border-radius: 12px;
+    flex-direction: column;
+    width: min(360px, 92vw);
+    transform: translateX(-50%);
+    background-color: $bit-color-background-primary;
+    border: 1px solid $bit-color-border-secondary;
+    box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.35);
+}
+
+.label-actions {
+    gap: 0.5rem;
+    display: flex;
+}
+
+.flow-list {
+    gap: 1rem;
+    width: 100%;
+    display: flex;
+    max-width: 960px;
+    overflow-y: auto;
+    margin-inline: auto;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: 2.5rem 1.25rem;
+}
+
+.empty,
+::deep .missing {
+    margin: 0;
+    padding: 1rem;
+    border-radius: 12px;
+    color: $bit-color-foreground-secondary;
+    border: 1px dashed $bit-color-border-secondary;
+}
+
+.flow-cards {
+    gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.flow-card {
+    gap: 0.35rem;
+    display: flex;
+    padding: 1rem 1.1rem;
+    border-radius: 12px;
+    flex-direction: column;
+    text-decoration: none;
+    color: $bit-color-foreground-primary;
+    background-color: $bit-color-background-primary;
+    border: 1px solid $bit-color-border-tertiary;
+    transition: border-color 0.15s ease;
+
+    &:hover {
+        border-color: $bit-color-primary;
+    }
+}
+
+::deep .flow-card-icon {
+    font-size: 22px;
+    color: $bit-color-primary;
+}
+
+.flow-card-name {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.flow-card-meta,
+.flow-card-pages {
+    font-size: 13px;
+    color: $bit-color-foreground-secondary;
+}

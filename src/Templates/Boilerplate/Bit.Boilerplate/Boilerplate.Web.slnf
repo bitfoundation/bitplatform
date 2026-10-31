@@ -14,7 +14,8 @@
       "src\\Server\\Boilerplate.Server.Shared\\Boilerplate.Server.Shared.csproj",
       "src\\Server\\Boilerplate.Server.Web\\Boilerplate.Server.Web.csproj",
       "src\\Shared\\Boilerplate.Shared.csproj",
-      "src\\Tests\\Boilerplate.Tests.csproj"
+      "src\\Tests\\Boilerplate.Tests.csproj",
+      "src\\Workbench\\Boilerplate.Workbench.csproj"
     ]
   }
 }

@@ -1,0 +1,56 @@
+@inherits WorkbenchComponentBase
+
+<div class="checks">
+    <section>
+        <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.ChecksTitle)]</BitText>
+        <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ChecksHint)]</BitText>
+        <div class="run">
+            <BitButton IconName="@BitIconName.TestBeakerSolid" IsEnabled="isRunning is false" OnClick="Run">@Localizer[nameof(WorkbenchStrings.RunChecks)]</BitButton>
+            @if (isRunning)
+            {
+                <BitRingLoading Size="BitSize.Small" />
+            }
+        </div>
+        @if (hasFailed)
+        {
+            <BitText Typography="BitTypography.Caption1" Color="BitColor.Error">@Localizer[nameof(WorkbenchStrings.ChecksFailed)]</BitText>
+        }
+    </section>
+
+    @if (result is not null)
+    {
+        <section>
+            <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.AccessibilityFindings), result.Accessibility.Length]</BitText>
+            @if (result.Accessibility.Length == 0)
+            {
+                <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.NoAccessibilityFindings)]</BitText>
+            }
+            @foreach (var finding in result.Accessibility)
+            {
+                <div class="finding">
+                    <span class="impact impact-@finding.Impact">@Localizer[$"Impact{CultureInfo.InvariantCulture.TextInfo.ToTitleCase(finding.Impact)}"]</span>
+                    <span class="finding-text">@finding.Help <span class="count">× @finding.Count</span></span>
+                    <span class="finding-actions">
+                        @if (finding.Targets.Length > 0)
+                        {
+                            <BitButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.View" OnClick="() => Highlight(finding.Targets[0])">@Localizer[nameof(WorkbenchStrings.ShowOnPage)]</BitButton>
+                        }
+                        <BitLink Href="@finding.HelpUrl" Target="_blank">@Localizer[nameof(WorkbenchStrings.LearnMore)]</BitLink>
+                    </span>
+                </div>
+            }
+        </section>
+
+        <section>
+            <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.ThemeFindings), result.Theme.Length]</BitText>
+            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ThemeFindingsHint)]</BitText>
+            @foreach (var finding in result.Theme)
+            {
+                <div class="finding">
+                    <span class="swatch" style="--wb-swatch:@finding.Color"></span>
+                    <span class="finding-text">@finding.Property @finding.Color <span class="count">× @finding.Count</span><span class="example">@finding.Example</span></span>
+                </div>
+            }
+        </section>
+    }
+</div>

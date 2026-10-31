@@ -1,0 +1,31 @@
+@inherits WorkbenchComponentBase
+
+<header class="shell-header @(Wide ? "wide" : null)">
+    <a class="brand" href="/">
+        <img src="_content/Boilerplate.Client.Core/images/bit-logo.svg" alt="" width="28" height="28" />
+        <span>@Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]</span>
+    </a>
+
+    <nav class="links">
+        <a href="/#pages">@Localizer[nameof(WorkbenchStrings.Pages)]</a>
+        <a href="/#why">@Localizer[nameof(WorkbenchStrings.HomeWhyButton)]</a>
+    </nav>
+
+    <BitSpacer />
+
+    @if (CultureInfoManager.InvariantGlobalization is false)
+    {
+        <BitDropdown Items="cultureItems"
+                     Value="@CultureInfo.CurrentUICulture.Name"
+                     ValueChanged="(string? culture) => SetCulture(culture)"
+                     AriaLabel="@Localizer[nameof(WorkbenchStrings.Language)]"
+                     Class="language"
+                     Responsive />
+    }
+
+    <BitButton IconOnly Variant="BitVariant.Text"
+               IconName="@BitIconName.Contrast"
+               Title="@Localizer[nameof(WorkbenchStrings.ToggleWorkbenchTheme)]"
+               AriaLabel="@Localizer[nameof(WorkbenchStrings.ToggleWorkbenchTheme)]"
+               OnClick="ToggleTheme" />
+</header>

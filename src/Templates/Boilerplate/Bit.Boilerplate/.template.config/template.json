@@ -673,6 +673,16 @@
             },
             "replaces": "4030"
         },
+        "workbenchPortGenerated": {
+            "type": "generated",
+            "generator": "port",
+            "parameters": {
+                "low": 6000,
+                "high": 6300,
+                "fallback": 6030
+            },
+            "replaces": "6030"
+        },
         "apiServerUrl": {
             "displayName": "Server url",
             "type": "parameter",
@@ -806,6 +816,7 @@
                         "src/Shared/Features/Categories/ICategoryController.cs",
                         "src/Shared/Features/Products/IProductController.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Dashboard/**",
+                        "src/Workbench/Components/Pages/AppPages/Dashboard/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Categories/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Products/**",
                         // Drive ProductController / CategoryController, which this same rule removes.
@@ -1264,6 +1275,7 @@
                     "condition": "(ads != true)",
                     "exclude": [
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Settings/UpgradeAccountSection*.*",
+                        "src/Workbench/Components/Pages/AppPages/Settings/UpgradeAccountSection*.*",
                         "src/Client/Boilerplate.Client.Core/Scripts/Ads.ts",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/Contracts/IAdsService.cs",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AdsService.cs",
