@@ -36,7 +36,7 @@ public sealed class BlexGenerator : IIncrementalGenerator
     /// </summary>
     private static readonly string[] ReservedNames =
     [
-        "Name", "Persist", "StateChanged", "PropertyChanged", "SerializeState", "DeserializeState",
+        "Name", "Persist", "PersistVersion", "StateChanged", "PropertyChanged", "SerializeState", "DeserializeState",
         "InvalidateComputed", "NotifyRestored", "SetState", "SetEffectState",
         "BeginEffect", "EndEffect", "DebounceEffectAsync", "RunEffectAttemptsAsync", "Dispatch", "DispatchAsync",
         "BeginAction", "DispatchApprovedAsync",
@@ -347,6 +347,7 @@ public sealed class BlexGenerator : IIncrementalGenerator
 
         var storeName = symbol.Name;
         var persist = false;
+        var version = 0;
         var enforceActions = false;
         var rollbackOnError = false;
         var storeAttr = ctx.Attributes.FirstOrDefault();
@@ -359,6 +360,10 @@ public sealed class BlexGenerator : IIncrementalGenerator
             var persistArg = storeAttr.NamedArguments.FirstOrDefault(a => a.Key == "Persist").Value;
             if (persistArg.Value is bool b)
                 persist = b;
+
+            var versionArg = storeAttr.NamedArguments.FirstOrDefault(a => a.Key == "Version").Value;
+            if (versionArg.Value is int ver)
+                version = ver;
 
             var enforceArg = storeAttr.NamedArguments.FirstOrDefault(a => a.Key == "EnforceActions").Value;
             if (enforceArg.Value is bool e)
@@ -631,6 +636,7 @@ public sealed class BlexGenerator : IIncrementalGenerator
             symbol.Name,
             storeName,
             persist,
+            version,
             enforceActions,
             rollbackOnError,
             emitActions,
@@ -1380,6 +1386,13 @@ public sealed class BlexGenerator : IIncrementalGenerator
         {
             sb.AppendLine($"{body}/// <inheritdoc />");
             sb.AppendLine($"{body}public override bool Persist => true;");
+            sb.AppendLine();
+        }
+
+        if (m.Version > 0)
+        {
+            sb.AppendLine($"{body}/// <inheritdoc />");
+            sb.AppendLine($"{body}public override int PersistVersion => {m.Version};");
             sb.AppendLine();
         }
 
