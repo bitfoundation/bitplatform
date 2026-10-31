@@ -817,7 +817,7 @@
         <value>वर्कबेंच · हर पेज को डिज़ाइन करें, जाँचें और कैप्चर करें</value>
     </data>
     <data name="HomeEyebrow" xml:space="preserve">
-        <value>आपके bit Boilerplate प्रोजेक्ट का हिस्सा</value>
+        <value>आपके प्रोजेक्ट का हिस्सा</value>
     </data>
     <data name="HomeHeadline" xml:space="preserve">
         <value>बैकएंड बनने से पहले ही डिज़ाइन पूरा कर लें।</value>
@@ -928,7 +928,7 @@
         <value>इन्हीं से शुरू करें, फिर इनके साथ अपने पेज जोड़ें।</value>
     </data>
     <data name="HomeFooter" xml:space="preserve">
-        <value>वर्कबेंच हर bit Boilerplate प्रोजेक्ट का हिस्सा है। यह सिर्फ़ आपकी मशीन पर चलती है, जब तक आप इसे पब्लिश करने का फ़ैसला न करें।</value>
+        <value>वर्कबेंच bit प्रोजेक्ट टेम्पलेट से बने हर प्रोजेक्ट का हिस्सा है। यह सिर्फ़ आपकी मशीन पर चलती है, जब तक आप इसे पब्लिश करने का फ़ैसला न करें।</value>
     </data>
     <data name="PosDashboardCaption" xml:space="preserve">
         <value>हर बिक्री, लाइव</value>
@@ -1852,7 +1852,7 @@
         <value>सीखें</value>
     </data>
     <data name="HomeFooterDocs" xml:space="preserve">
-        <value>bit Boilerplate डॉक्स</value>
+        <value>bit प्रोजेक्ट टेम्पलेट डॉक्स</value>
     </data>
     <data name="HomeFooterComponents" xml:space="preserve">
         <value>bit BlazorUI कंपोनेंट</value>
@@ -1919,5 +1919,17 @@
     </data>
     <data name="ShiftsNoRoles" xml:space="preserve">
         <value>कोई भूमिका नहीं</value>
+    </data>
+    <data name="SignedInAs" xml:space="preserve">
+        <value>इस रूप में साइन इन</value>
+    </data>
+    <data name="RoleGlobalAdmin" xml:space="preserve">
+        <value>ग्लोबल एडमिन</value>
+    </data>
+    <data name="RoleTenantAdmin" xml:space="preserve">
+        <value>टेनेंट एडमिन</value>
+    </data>
+    <data name="RoleDemo" xml:space="preserve">
+        <value>डेमो</value>
     </data>
 </root>

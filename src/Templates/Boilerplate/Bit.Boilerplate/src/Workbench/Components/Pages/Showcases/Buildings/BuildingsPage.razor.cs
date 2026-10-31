@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Boilerplate.Workbench.Components.Pages.Showcases.Buildings;
@@ -28,6 +29,7 @@ public partial class BuildingsPage
     private List<Building> buildings = [];
     private List<BitMapMarker> markers = [];
     private IReadOnlyList<Building> selectedItems = [];
+    private bool canManage;
     private PosWidgetStatus status = PosWidgetStatus.Loading;
     private bool isRestored;
     private bool isNarrow;
@@ -44,6 +46,11 @@ public partial class BuildingsPage
                             || b.City.Contains(SearchText, StringComparison.CurrentCultureIgnoreCase)
                             || Localizer[$"Province{b.Province}"].Value.Contains(SearchText, StringComparison.CurrentCultureIgnoreCase)
                             || Localizer[$"BuildingType{b.Type}"].Value.Contains(SearchText, StringComparison.CurrentCultureIgnoreCase));
+
+    protected override async Task OnParametersSetAsync()
+    {
+        canManage = await AuthorizationService.IsAuthorized((await AuthenticationStateTask).User, WorkbenchPolicies.ManageBuildings);
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -140,7 +147,7 @@ public partial class BuildingsPage
 
     private async Task OnMapDoubleClick(BitMapLatLng position)
     {
-        if (status is not PosWidgetStatus.Ready and not PosWidgetStatus.Empty)
+        if (canManage is false || status is not PosWidgetStatus.Ready and not PosWidgetStatus.Empty)
             return;
 
         if (NetherlandsBoundary.Contains(position.Latitude, position.Longitude) is false)
@@ -202,7 +209,7 @@ public partial class BuildingsPage
 
     private async Task OnMapKeyDown(KeyboardEventArgs args)
     {
-        if (args.Key is "Delete" or "Backspace" && buildings.FirstOrDefault(b => b.Id == store.SelectedId) is { } building)
+        if (canManage && args.Key is "Delete" or "Backspace" && buildings.FirstOrDefault(b => b.Id == store.SelectedId) is { } building)
         {
             await ConfirmDelete(building);
         }
@@ -215,7 +222,7 @@ public partial class BuildingsPage
         return editor!.Open(new Building { Latitude = center.Latitude, Longitude = center.Longitude, Year = DateTime.Now.Year }, isNew: true);
     }
 
-    private Task OpenEdit(Building building) => editor!.Open(building, isNew: false);
+    private Task OpenEdit(Building building) => canManage ? editor!.Open(building, isNew: false) : Task.CompletedTask;
 
     private async Task OnSaved(Building building)
     {

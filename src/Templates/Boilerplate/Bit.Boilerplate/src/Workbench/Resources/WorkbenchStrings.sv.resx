@@ -817,7 +817,7 @@
         <value>Arbetsbänk · Designa, granska och ta skärmbilder av varje sida</value>
     </data>
     <data name="HomeEyebrow" xml:space="preserve">
-        <value>En del av ditt bit Boilerplate-projekt</value>
+        <value>En del av ditt projekt</value>
     </data>
     <data name="HomeHeadline" xml:space="preserve">
         <value>Gör klart designen innan backenden finns.</value>
@@ -928,7 +928,7 @@
         <value>Börja med de här och lägg sedan till dina egna sidor bredvid dem.</value>
     </data>
     <data name="HomeFooter" xml:space="preserve">
-        <value>Arbetsbänken ingår i varje bit Boilerplate-projekt. Den körs bara på din dator, om du inte väljer att publicera den.</value>
+        <value>Arbetsbänken ingår i varje projekt som skapas från bits projektmall. Den körs bara på din dator, om du inte väljer att publicera den.</value>
     </data>
     <data name="PosDashboardCaption" xml:space="preserve">
         <value>Varje köp, live</value>
@@ -1852,7 +1852,7 @@
         <value>Lär dig mer</value>
     </data>
     <data name="HomeFooterDocs" xml:space="preserve">
-        <value>bit Boilerplate-dokumentation</value>
+        <value>Dokumentation för bits projektmall</value>
     </data>
     <data name="HomeFooterComponents" xml:space="preserve">
         <value>bit BlazorUI-komponenter</value>
@@ -1919,5 +1919,17 @@
     </data>
     <data name="ShiftsNoRoles" xml:space="preserve">
         <value>Inga roller</value>
+    </data>
+    <data name="SignedInAs" xml:space="preserve">
+        <value>Inloggad som</value>
+    </data>
+    <data name="RoleGlobalAdmin" xml:space="preserve">
+        <value>Global administratör</value>
+    </data>
+    <data name="RoleTenantAdmin" xml:space="preserve">
+        <value>Tenantadministratör</value>
+    </data>
+    <data name="RoleDemo" xml:space="preserve">
+        <value>Demo</value>
     </data>
 </root>

@@ -90,6 +90,9 @@ public partial class PreviewPane
         if (scenario.Auth is not WorkbenchAuthState.SignedIn)
             yield return Localizer[scenario.Auth.ToString()];
 
+        if (scenario.Auth is not WorkbenchAuthState.SignedOut && scenario.User != 0)
+            yield return Localizer[WorkbenchDemoUsers.Find(scenario.User).RoleKey];
+
         if (scenario.Chrome is false)
             yield return Localizer[nameof(WorkbenchStrings.NoChrome)];
 

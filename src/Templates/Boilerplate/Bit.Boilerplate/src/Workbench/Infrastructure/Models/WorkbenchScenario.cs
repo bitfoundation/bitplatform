@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.WebUtilities;
 
@@ -16,6 +17,8 @@ public sealed record WorkbenchScenario
     public bool Chrome { get; init; } = true;
 
     public WorkbenchAuthState Auth { get; init; } = WorkbenchAuthState.SignedIn;
+
+    public int User { get; init; }
 
     public string Device { get; init; } = DevicePresets.DefaultKey;
 
@@ -49,6 +52,7 @@ public sealed record WorkbenchScenario
             Culture = CultureInfoManager.GetCultureInfo(Read("culture"))?.Name,
             Chrome = bool.TryParse(Read("chrome"), out var chrome) ? chrome : defaults.Chrome,
             Auth = Enum.TryParse<WorkbenchAuthState>(Read("auth"), ignoreCase: true, out var auth) ? auth : defaults.Auth,
+            User = int.TryParse(Read("user"), NumberStyles.None, CultureInfo.InvariantCulture, out var user) && user < WorkbenchDemoUsers.All.Count ? user : defaults.User,
             Device = DevicePresets.Find(Read("device")).Key,
             Rotated = bool.TryParse(Read("rotated"), out var rotated) ? rotated : defaults.Rotated,
             Frame = bool.TryParse(Read("frame"), out var frame) ? frame : defaults.Frame,
@@ -67,6 +71,7 @@ public sealed record WorkbenchScenario
         if (Culture is not null) values["culture"] = Culture;
         if (Chrome != defaults.Chrome) values["chrome"] = Chrome.ToString().ToLowerInvariant();
         if (Auth != defaults.Auth) values["auth"] = Auth.ToString().ToLowerInvariant();
+        if (User != defaults.User) values["user"] = User.ToString(CultureInfo.InvariantCulture);
         if (Device != defaults.Device) values["device"] = Device;
         if (Rotated != defaults.Rotated) values["rotated"] = Rotated.ToString().ToLowerInvariant();
         if (Frame != defaults.Frame) values["frame"] = Frame.ToString().ToLowerInvariant();

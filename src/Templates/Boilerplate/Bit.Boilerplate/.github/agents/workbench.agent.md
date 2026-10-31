@@ -46,6 +46,11 @@ what the user approves is how the real page will look.
   whose old copy would hide your new data. When a change does that, raise the store's `Version` in its `[BlexStore]`
   (start at 1), and state saved under another version is dropped. Don't write a migration: dropping it only puts the
   page back to its defaults.
+- Pages follow the app's sign-in rules the way they will in the app: `[Authorize]` with the app's policies on a page
+  that needs them, and `AuthorizeView` around what only some users may see or do. The Workbench signs in as one of three
+  users with the app's roles: a global admin (the default), a tenant admin (a second global admin when the project has
+  no multitenancy) and a demo user. Pick one in the inspector to see what each gets; signed out, a page that needs
+  sign-in shows the app's not-authorized page.
 - Add it to `WorkbenchPageCatalog`: its key, title, description, icon, category, the components it shows off and the
   caption its store screenshots carry.
 - Follow `AGENTS.md` section 5 as for any page of the app: bit BlazorUI components as they are, styled through their

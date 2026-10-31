@@ -2,6 +2,7 @@
 @* [mirror] settings page and its sections - keep in sync with: *@
 @* - src/Client/Boilerplate.Client.Core/Components/Pages/Settings/ *@
 @using global::Boilerplate.Workbench.Components.Pages.AppPages.Settings.Account
+@attribute [Authorize]
 @inherits WorkbenchComponentBase
 
 <CascadingValue Value="this" IsFixed>

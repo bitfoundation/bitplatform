@@ -79,10 +79,17 @@
         <div class="segments three">
             @foreach (var auth in Enum.GetValues<WorkbenchAuthState>())
             {
-                <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.Auth == auth)" IsEnabled="Value.Chrome"
+                <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.Auth == auth)"
                            OnClick="() => Update(Value with { Auth = auth })">@Localizer[auth.ToString()]</BitButton>
             }
         </div>
+        <BitDropdown Items="userItems"
+                     Value="Value.User"
+                     ValueChanged="(int user) => Update(Value with { User = user })"
+                     IsEnabled="Value.Auth is not WorkbenchAuthState.SignedOut"
+                     AriaLabel="@Localizer[nameof(WorkbenchStrings.SignedInAs)]"
+                     Responsive
+                     FitWidth />
 
         <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.Theme)]</BitText>
         <div class="segments three">

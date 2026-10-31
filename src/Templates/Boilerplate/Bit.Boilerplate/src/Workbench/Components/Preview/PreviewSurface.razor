@@ -8,13 +8,13 @@
 @if (Scenario.Chrome)
 {
     <ChromeShell Page="Page">
-        <DynamicComponent Type="Page.ComponentType" />
+        <PreviewPageView Page="Page" />
     </ChromeShell>
 }
 else
 {
     <div class="bare-surface">
-        <DynamicComponent Type="Page.ComponentType" />
+        <PreviewPageView Page="Page" />
     </div>
 }
 

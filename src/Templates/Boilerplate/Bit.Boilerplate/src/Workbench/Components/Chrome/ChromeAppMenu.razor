@@ -94,7 +94,7 @@
 
                             @foreach (var account in Shell.OtherAccounts)
                             {
-                                <BitActionButton FullWidth Class="account-button" OnClick="() => { Shell.SwitchAccount(account); chromeStore.OpenMenu(false); }">
+                                <BitActionButton FullWidth Class="account-button" OnClick="async () => { chromeStore.OpenMenu(false); await Shell.SwitchAccount(account); }">
                                     <BitPersona Size="BitPersonaSize.Size32"
                                                 ImageUrl="@WorkbenchPhotos.Find(account.NameKey)"
                                                 PrimaryText="@Localizer[account.NameKey]"

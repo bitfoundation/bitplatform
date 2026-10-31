@@ -6,6 +6,7 @@ public partial class ScenarioInspector
 
     private List<BitDropdownItem<string>> deviceItems = [];
     private List<BitDropdownItem<string>> cultureItems = [];
+    private List<BitDropdownItem<int>> userItems = [];
     private WorkbenchBackdrop lastBackdrop = WorkbenchBackdrop.Paper;
 
     [Parameter] public WorkbenchScenario Value { get; set; } = new();
@@ -56,6 +57,7 @@ public partial class ScenarioInspector
         }
 
         cultureItems = [.. CultureInfoManager.SupportedCultures.Select(sc => new BitDropdownItem<string> { Value = sc.Culture.Name, Text = sc.DisplayName })];
+        userItems = [.. WorkbenchDemoUsers.All.Select((user, index) => new BitDropdownItem<int> { Value = index, Text = $"{Localizer[user.NameKey]} · {Localizer[user.RoleKey]}" })];
     }
 
     private static BitVariant VariantOf(bool isActive) => isActive ? BitVariant.Fill : BitVariant.Outline;

@@ -12,9 +12,11 @@
             <BitSearchBox Value="@SearchText" ValueChanged="Search" Immediate DebounceTime="250" Class="search"
                           Placeholder="@Localizer[nameof(WorkbenchStrings.BuildingsSearch)]"
                           AriaLabel="@Localizer[nameof(WorkbenchStrings.BuildingsSearch)]" />
-            <BitButton IconName="@BitIconName.Add" OnClick="OpenAdd" IsEnabled="status is PosWidgetStatus.Ready or PosWidgetStatus.Empty">
-                @Localizer[nameof(WorkbenchStrings.BuildingsAdd)]
-            </BitButton>
+            <AuthorizeView Policy="@WorkbenchPolicies.ManageBuildings">
+                <BitButton IconName="@BitIconName.Add" OnClick="OpenAdd" IsEnabled="status is PosWidgetStatus.Ready or PosWidgetStatus.Empty">
+                    @Localizer[nameof(WorkbenchStrings.BuildingsAdd)]
+                </BitButton>
+            </AuthorizeView>
         </div>
     </div>
 
@@ -82,7 +84,7 @@
                             <Template Context="building">@Localizer[$"BuildingType{building.Type}"]</Template>
                         </BitDataGridColumn>
                         <BitDataGridColumn TItem="Building" Property="b => b.Year" Title="@Localizer[nameof(WorkbenchStrings.BuildingYear)]" Align="BitTextAlign.End" Width="80px" Visible="isNarrow is false" />
-                        <BitDataGridColumn TItem="Building" Title="" Width="92px" Sortable="false" Searchable="false" Exportable="false">
+                        <BitDataGridColumn TItem="Building" Title="" Width="92px" Sortable="false" Searchable="false" Exportable="false" Visible="canManage">
                             <Template Context="building">
                                 <span class="row-actions">
                                     <BitButton IconOnly Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Edit"
@@ -112,10 +114,13 @@
                     OnViewChanged="OnMapViewChanged"
                     MarkerListMode="BitMapMarkerListMode.ScreenReaderOnly"
                     Class="map" />
-            <div class="map-hint">
-                <BitIcon IconName="@BitIconName.Info" Size="BitSize.Small" />
-                <span>@Localizer[nameof(WorkbenchStrings.BuildingsMapHint)]</span>
-            </div>
+            @if (canManage)
+            {
+                <div class="map-hint">
+                    <BitIcon IconName="@BitIconName.Info" Size="BitSize.Small" />
+                    <span>@Localizer[nameof(WorkbenchStrings.BuildingsMapHint)]</span>
+                </div>
+            }
         </section>
     </div>
 </div>

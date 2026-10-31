@@ -817,7 +817,7 @@
         <value>منضدة العمل · تصميم كل صفحة ومراجعتها والتقاطها</value>
     </data>
     <data name="HomeEyebrow" xml:space="preserve">
-        <value>جزء من مشروع bit Boilerplate الخاص بك</value>
+        <value>جزء من مشروعك</value>
     </data>
     <data name="HomeHeadline" xml:space="preserve">
         <value>أنهِ التصميم قبل أن توجد الواجهة الخلفية.</value>
@@ -928,7 +928,7 @@
         <value>ابدأ بهذه الصفحات، ثم أضف صفحاتك بجانبها.</value>
     </data>
     <data name="HomeFooter" xml:space="preserve">
-        <value>منضدة العمل جزء من كل مشروع bit Boilerplate. وهي لا تعمل إلا على جهازك ما لم تختر نشرها.</value>
+        <value>منضدة العمل جزء من كل مشروع يُنشأ من قالب مشاريع bit. وهي لا تعمل إلا على جهازك ما لم تختر نشرها.</value>
     </data>
     <data name="PosDashboardCaption" xml:space="preserve">
         <value>كل بيع، مباشرةً</value>
@@ -1852,7 +1852,7 @@
         <value>تعلّم</value>
     </data>
     <data name="HomeFooterDocs" xml:space="preserve">
-        <value>توثيق bit Boilerplate</value>
+        <value>توثيق قالب مشاريع bit</value>
     </data>
     <data name="HomeFooterComponents" xml:space="preserve">
         <value>مكونات bit BlazorUI</value>
@@ -1919,5 +1919,17 @@
     </data>
     <data name="ShiftsNoRoles" xml:space="preserve">
         <value>لا أدوار</value>
+    </data>
+    <data name="SignedInAs" xml:space="preserve">
+        <value>مسجّل الدخول باسم</value>
+    </data>
+    <data name="RoleGlobalAdmin" xml:space="preserve">
+        <value>المسؤول العام</value>
+    </data>
+    <data name="RoleTenantAdmin" xml:space="preserve">
+        <value>مسؤول المستأجر</value>
+    </data>
+    <data name="RoleDemo" xml:space="preserve">
+        <value>تجريبي</value>
     </data>
 </root>

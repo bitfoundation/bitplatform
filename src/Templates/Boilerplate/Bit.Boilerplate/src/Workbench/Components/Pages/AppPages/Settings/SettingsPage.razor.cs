@@ -23,6 +23,8 @@ public partial class SettingsPage
         await LoadProfile();
     }
 
+    public WorkbenchDemoUser ActiveUser => WorkbenchDemoUsers.Find(Scenario.User);
+
     public async Task LoadProfile()
     {
         IsProfileLoading = true;
@@ -31,7 +33,7 @@ public partial class SettingsPage
 
         try
         {
-            var user = WorkbenchDemoUsers.All[0];
+            var user = ActiveUser;
 
             Profile = await ScenarioState.Load("settings.profile",
                                                () => store.Profile ?? SettingsDemoData.CreateProfile(Localizer[user.NameKey], user.Email),

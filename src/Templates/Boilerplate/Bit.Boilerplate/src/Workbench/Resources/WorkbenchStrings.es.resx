@@ -817,7 +817,7 @@
         <value>Banco de trabajo · Diseña, revisa y captura cada página</value>
     </data>
     <data name="HomeEyebrow" xml:space="preserve">
-        <value>Parte de tu proyecto bit Boilerplate</value>
+        <value>Parte de tu proyecto</value>
     </data>
     <data name="HomeHeadline" xml:space="preserve">
         <value>Termina el diseño antes de que exista el backend.</value>
@@ -928,7 +928,7 @@
         <value>Empieza con estas y luego agrega tus propias páginas junto a ellas.</value>
     </data>
     <data name="HomeFooter" xml:space="preserve">
-        <value>El banco de trabajo forma parte de todo proyecto bit Boilerplate. Solo se ejecuta en tu equipo, a menos que decidas publicarlo.</value>
+        <value>El banco de trabajo forma parte de todo proyecto creado con la plantilla de proyectos de bit. Solo se ejecuta en tu equipo, a menos que decidas publicarlo.</value>
     </data>
     <data name="PosDashboardCaption" xml:space="preserve">
         <value>Cada venta, en vivo</value>
@@ -1852,7 +1852,7 @@
         <value>Aprender</value>
     </data>
     <data name="HomeFooterDocs" xml:space="preserve">
-        <value>Documentación de bit Boilerplate</value>
+        <value>Documentación de la plantilla de proyectos de bit</value>
     </data>
     <data name="HomeFooterComponents" xml:space="preserve">
         <value>Componentes de bit BlazorUI</value>
@@ -1919,5 +1919,17 @@
     </data>
     <data name="ShiftsNoRoles" xml:space="preserve">
         <value>Ningún rol</value>
+    </data>
+    <data name="SignedInAs" xml:space="preserve">
+        <value>Sesión iniciada como</value>
+    </data>
+    <data name="RoleGlobalAdmin" xml:space="preserve">
+        <value>Administrador global</value>
+    </data>
+    <data name="RoleTenantAdmin" xml:space="preserve">
+        <value>Administrador del inquilino</value>
+    </data>
+    <data name="RoleDemo" xml:space="preserve">
+        <value>Demo</value>
     </data>
 </root>

@@ -817,7 +817,7 @@
         <value>工作台 · 设计、评审并截取每个页面</value>
     </data>
     <data name="HomeEyebrow" xml:space="preserve">
-        <value>您的 bit Boilerplate 项目的一部分</value>
+        <value>您项目的一部分</value>
     </data>
     <data name="HomeHeadline" xml:space="preserve">
         <value>在后端动工之前，先把设计做完。</value>
@@ -928,7 +928,7 @@
         <value>从这些页面开始，然后在旁边添加您自己的页面。</value>
     </data>
     <data name="HomeFooter" xml:space="preserve">
-        <value>工作台是每个 bit Boilerplate 项目的一部分。除非您选择发布，否则它只会在您的电脑上运行。</value>
+        <value>工作台是每个用 bit 项目模板创建的项目的一部分。除非您选择发布，否则它只会在您的电脑上运行。</value>
     </data>
     <data name="PosDashboardCaption" xml:space="preserve">
         <value>每笔销售，实时可见</value>
@@ -1852,7 +1852,7 @@
         <value>学习</value>
     </data>
     <data name="HomeFooterDocs" xml:space="preserve">
-        <value>bit Boilerplate 文档</value>
+        <value>bit 项目模板文档</value>
     </data>
     <data name="HomeFooterComponents" xml:space="preserve">
         <value>bit BlazorUI 组件</value>
@@ -1919,5 +1919,17 @@
     </data>
     <data name="ShiftsNoRoles" xml:space="preserve">
         <value>无角色</value>
+    </data>
+    <data name="SignedInAs" xml:space="preserve">
+        <value>登录身份</value>
+    </data>
+    <data name="RoleGlobalAdmin" xml:space="preserve">
+        <value>全局管理员</value>
+    </data>
+    <data name="RoleTenantAdmin" xml:space="preserve">
+        <value>租户管理员</value>
+    </data>
+    <data name="RoleDemo" xml:space="preserve">
+        <value>演示</value>
     </data>
 </root>

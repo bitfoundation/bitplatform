@@ -817,7 +817,7 @@
         <value>میز کار · طراحی، بازبینی و ثبت هر صفحه</value>
     </data>
     <data name="HomeEyebrow" xml:space="preserve">
-        <value>بخشی از پروژه bit Boilerplate شما</value>
+        <value>بخشی از پروژه شما</value>
     </data>
     <data name="HomeHeadline" xml:space="preserve">
         <value>طراحی را قبل از ساخت بک‌اند تمام کنید.</value>
@@ -928,7 +928,7 @@
         <value>از این‌ها شروع کنید و بعد صفحه‌های خودتان را کنارشان بگذارید.</value>
     </data>
     <data name="HomeFooter" xml:space="preserve">
-        <value>میز کار بخشی از هر پروژه bit Boilerplate است و فقط روی سیستم شما اجرا می‌شود، مگر خودتان بخواهید منتشرش کنید.</value>
+        <value>میز کار بخشی از هر پروژه‌ای است که از قالب پروژه bit ساخته می‌شود و فقط روی سیستم شما اجرا می‌شود، مگر خودتان بخواهید منتشرش کنید.</value>
     </data>
     <data name="PosDashboardCaption" xml:space="preserve">
         <value>همه فروش‌ها، زنده</value>
@@ -1852,7 +1852,7 @@
         <value>یادگیری</value>
     </data>
     <data name="HomeFooterDocs" xml:space="preserve">
-        <value>مستندات bit Boilerplate</value>
+        <value>مستندات قالب پروژه bit</value>
     </data>
     <data name="HomeFooterComponents" xml:space="preserve">
         <value>کامپوننت‌های bit BlazorUI</value>
@@ -1919,5 +1919,17 @@
     </data>
     <data name="ShiftsNoRoles" xml:space="preserve">
         <value>هیچ نقشی</value>
+    </data>
+    <data name="SignedInAs" xml:space="preserve">
+        <value>واردشده با</value>
+    </data>
+    <data name="RoleGlobalAdmin" xml:space="preserve">
+        <value>مدیر کل</value>
+    </data>
+    <data name="RoleTenantAdmin" xml:space="preserve">
+        <value>مدیر مستأجر</value>
+    </data>
+    <data name="RoleDemo" xml:space="preserve">
+        <value>دمو</value>
     </data>
 </root>

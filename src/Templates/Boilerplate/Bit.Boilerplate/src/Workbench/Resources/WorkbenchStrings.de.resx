@@ -817,7 +817,7 @@
         <value>Werkbank · Jede Seite entwerfen, prüfen und festhalten</value>
     </data>
     <data name="HomeEyebrow" xml:space="preserve">
-        <value>Teil Ihres bit Boilerplate-Projekts</value>
+        <value>Teil Ihres Projekts</value>
     </data>
     <data name="HomeHeadline" xml:space="preserve">
         <value>Stellen Sie das Design fertig, bevor es das Backend gibt.</value>
@@ -928,7 +928,7 @@
         <value>Beginnen Sie mit diesen und fügen Sie dann Ihre eigenen Seiten daneben hinzu.</value>
     </data>
     <data name="HomeFooter" xml:space="preserve">
-        <value>Die Werkbank gehört zu jedem bit Boilerplate-Projekt. Sie läuft nur auf Ihrem Rechner, sofern Sie sie nicht veröffentlichen.</value>
+        <value>Die Werkbank gehört zu jedem Projekt, das aus der bit-Projektvorlage erstellt wird. Sie läuft nur auf Ihrem Rechner, sofern Sie sie nicht veröffentlichen.</value>
     </data>
     <data name="PosDashboardCaption" xml:space="preserve">
         <value>Jeder Verkauf, live</value>
@@ -1852,7 +1852,7 @@
         <value>Lernen</value>
     </data>
     <data name="HomeFooterDocs" xml:space="preserve">
-        <value>bit Boilerplate-Dokumentation</value>
+        <value>Dokumentation der bit-Projektvorlage</value>
     </data>
     <data name="HomeFooterComponents" xml:space="preserve">
         <value>bit BlazorUI-Komponenten</value>
@@ -1919,5 +1919,17 @@
     </data>
     <data name="ShiftsNoRoles" xml:space="preserve">
         <value>Keine Rollen</value>
+    </data>
+    <data name="SignedInAs" xml:space="preserve">
+        <value>Angemeldet als</value>
+    </data>
+    <data name="RoleGlobalAdmin" xml:space="preserve">
+        <value>Globaler Admin</value>
+    </data>
+    <data name="RoleTenantAdmin" xml:space="preserve">
+        <value>Mandanten-Admin</value>
+    </data>
+    <data name="RoleDemo" xml:space="preserve">
+        <value>Demo</value>
     </data>
 </root>

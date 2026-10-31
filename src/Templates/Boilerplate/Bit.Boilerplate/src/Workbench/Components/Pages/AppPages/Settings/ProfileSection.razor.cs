@@ -16,7 +16,7 @@ public partial class ProfileSection
 
     [CascadingParameter] public SettingsPage Page { get; set; } = default!;
 
-    private string? ProfileImageUrl => Page.Profile?.HasPicture is true ? SettingsDemoData.ProfilePhotoUrl : null;
+    private string? ProfileImageUrl => Page.Profile?.HasPicture is true ? WorkbenchPhotos.Find(Page.ActiveUser.NameKey) : null;
 
     protected override void OnInitialized()
     {

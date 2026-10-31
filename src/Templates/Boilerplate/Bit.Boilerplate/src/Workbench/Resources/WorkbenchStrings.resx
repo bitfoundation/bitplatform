@@ -817,7 +817,7 @@
         <value>Workbench · Design, review and capture every page</value>
     </data>
     <data name="HomeEyebrow" xml:space="preserve">
-        <value>Part of your bit Boilerplate project</value>
+        <value>Part of your project</value>
     </data>
     <data name="HomeHeadline" xml:space="preserve">
         <value>Finish the design before the backend exists.</value>
@@ -928,7 +928,7 @@
         <value>Start from these, then add your own pages next to them.</value>
     </data>
     <data name="HomeFooter" xml:space="preserve">
-        <value>The workbench is part of every bit Boilerplate project. It runs only on your machine unless you choose to publish it.</value>
+        <value>The Workbench is part of every project created from the bit project template. It runs only on your machine unless you choose to publish it.</value>
     </data>
     <data name="PosDashboardCaption" xml:space="preserve">
         <value>Every sale, live</value>
@@ -1852,7 +1852,7 @@
         <value>Learn</value>
     </data>
     <data name="HomeFooterDocs" xml:space="preserve">
-        <value>bit Boilerplate docs</value>
+        <value>bit project template docs</value>
     </data>
     <data name="HomeFooterComponents" xml:space="preserve">
         <value>bit BlazorUI components</value>
@@ -1919,5 +1919,17 @@
     </data>
     <data name="ShiftsNoRoles" xml:space="preserve">
         <value>No roles</value>
+    </data>
+    <data name="SignedInAs" xml:space="preserve">
+        <value>Signed in as</value>
+    </data>
+    <data name="RoleGlobalAdmin" xml:space="preserve">
+        <value>Global admin</value>
+    </data>
+    <data name="RoleTenantAdmin" xml:space="preserve">
+        <value>Tenant admin</value>
+    </data>
+    <data name="RoleDemo" xml:space="preserve">
+        <value>Demo</value>
     </data>
 </root>

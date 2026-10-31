@@ -5,7 +5,7 @@ namespace Boilerplate.Workbench.Components.Shell;
 [BlexStore(Name = "workbench", Persist = true)]
 public partial class WorkbenchStore
 {
-    private static readonly string[] scenarioKeys = ["data", "theme", "culture", "chrome", "auth", "device", "rotated", "frame", "backdrop", "caption", "panes"];
+    private static readonly string[] scenarioKeys = ["data", "theme", "culture", "chrome", "auth", "user", "device", "rotated", "frame", "backdrop", "caption", "panes"];
 
     [BlexState] private WorkbenchPane[] _panes = [new("1", new())];
     [BlexState] private string _selectedPaneId = "1";

@@ -817,7 +817,7 @@
         <value>Établi · Concevez, vérifiez et capturez chaque page</value>
     </data>
     <data name="HomeEyebrow" xml:space="preserve">
-        <value>Fait partie de votre projet bit Boilerplate</value>
+        <value>Fait partie de votre projet</value>
     </data>
     <data name="HomeHeadline" xml:space="preserve">
         <value>Finalisez le design avant que le backend n’existe.</value>
@@ -928,7 +928,7 @@
         <value>Partez de celles-ci, puis ajoutez vos propres pages à côté.</value>
     </data>
     <data name="HomeFooter" xml:space="preserve">
-        <value>L’établi fait partie de chaque projet bit Boilerplate. Il ne s’exécute que sur votre machine, sauf si vous choisissez de le publier.</value>
+        <value>L’établi fait partie de chaque projet créé à partir du modèle de projet bit. Il ne s’exécute que sur votre machine, sauf si vous choisissez de le publier.</value>
     </data>
     <data name="PosDashboardCaption" xml:space="preserve">
         <value>Chaque vente, en direct</value>
@@ -1852,7 +1852,7 @@
         <value>Apprendre</value>
     </data>
     <data name="HomeFooterDocs" xml:space="preserve">
-        <value>Documentation de bit Boilerplate</value>
+        <value>Documentation du modèle de projet bit</value>
     </data>
     <data name="HomeFooterComponents" xml:space="preserve">
         <value>Composants bit BlazorUI</value>
@@ -1919,5 +1919,17 @@
     </data>
     <data name="ShiftsNoRoles" xml:space="preserve">
         <value>Aucun rôle</value>
+    </data>
+    <data name="SignedInAs" xml:space="preserve">
+        <value>Connecté en tant que</value>
+    </data>
+    <data name="RoleGlobalAdmin" xml:space="preserve">
+        <value>Administrateur global</value>
+    </data>
+    <data name="RoleTenantAdmin" xml:space="preserve">
+        <value>Administrateur du locataire</value>
+    </data>
+    <data name="RoleDemo" xml:space="preserve">
+        <value>Démo</value>
     </data>
 </root>

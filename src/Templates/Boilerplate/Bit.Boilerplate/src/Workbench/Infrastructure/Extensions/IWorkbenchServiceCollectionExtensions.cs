@@ -46,6 +46,7 @@ public static class IWorkbenchServiceCollectionExtensions
             services.AddScoped<IBlexStorage, WorkbenchStateStorage>();
             services.AddBitBlexPersistence();
             services.AddScoped<IBitAccentColorStore, ChromeAccentStore>();
+            services.AddAuthorizationCore(options => options.AddPolicy(WorkbenchPolicies.ManageBuildings, policy => policy.RequireRole(WorkbenchPolicies.AdminRoles)));
 
             services.AddRateLimiter(options =>
             {

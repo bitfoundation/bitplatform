@@ -1,4 +1,5 @@
 using Bit.Bortable;
+using Microsoft.AspNetCore.Components.Authorization;
 using Boilerplate.Workbench.Infrastructure.Services.StandIns;
 
 namespace Boilerplate.Workbench;
@@ -18,6 +19,14 @@ public static partial class Program
             services.AddHttpContextAccessor();
             services.AddScoped<IBitDeviceCoordinator, WorkbenchDeviceCoordinator>();
             services.AddScoped<IStorageService, WorkbenchStorageService>();
+            services.AddScoped<AuthenticationStateProvider, WorkbenchAuthenticationStateProvider>();
+            services.AddScoped(sp =>
+            {
+                var authManager = ActivatorUtilities.CreateInstance<AuthManager>(sp);
+                authManager.OnInit();
+                return authManager;
+            });
+            services.AddCascadingAuthenticationState();
             services.AddScoped<ClientExceptionHandlerBase, WorkbenchExceptionHandler>();
             services.AddScoped<SharedExceptionHandler>(sp => sp.GetRequiredService<ClientExceptionHandlerBase>());
             services.AddScoped(sp =>

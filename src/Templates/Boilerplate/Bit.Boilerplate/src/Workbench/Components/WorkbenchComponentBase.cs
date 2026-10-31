@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Authorization;
+
 namespace Boilerplate.Workbench.Components;
 
 public partial class WorkbenchComponentBase : BlexComponentBase, IAsyncDisposable
@@ -10,10 +13,13 @@ public partial class WorkbenchComponentBase : BlexComponentBase, IAsyncDisposabl
     [AutoInject] protected WorkbenchStore WorkbenchStore = default!;
     [AutoInject] protected IJSRuntime JSRuntime = default!;
     [AutoInject] protected SnackBarService SnackBarService = default!;
+    [AutoInject] protected IAuthorizationService AuthorizationService = default!;
 
     private CancellationTokenSource? cancellationTokenSource = new();
 
     [CascadingParameter] protected BitDir? CurrentDir { get; set; }
+
+    [CascadingParameter] protected Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
     protected CancellationToken CurrentCancellationToken => cancellationTokenSource?.Token ?? CancellationToken.None;
 

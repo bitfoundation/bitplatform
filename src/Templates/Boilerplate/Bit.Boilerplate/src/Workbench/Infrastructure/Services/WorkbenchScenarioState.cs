@@ -8,6 +8,8 @@ public partial class WorkbenchScenarioState
 
     public WorkbenchScenario Scenario { get; private set; } = new();
 
+    public event Action? Changed;
+
     public bool IsSettled => Volatile.Read(ref pendingLoads) == 0;
 
     public DateTimeOffset LastActivity => new(Interlocked.Read(ref lastActivityTicks), TimeSpan.Zero);
@@ -17,6 +19,7 @@ public partial class WorkbenchScenarioState
         Scenario = scenario;
         attempts.Clear();
         Touch();
+        Changed?.Invoke();
     }
 
     public void Touch() => Interlocked.Exchange(ref lastActivityTicks, DateTimeOffset.UtcNow.UtcTicks);

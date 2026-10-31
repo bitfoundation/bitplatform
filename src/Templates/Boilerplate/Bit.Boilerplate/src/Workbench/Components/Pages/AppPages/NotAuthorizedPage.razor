@@ -1,0 +1,61 @@
+@*+:cnd:noEmit*@
+@* [mirror] not authorized page - keep in sync with: *@
+@* - src/Client/Boilerplate.Client.Core/Components/Pages/NotAuthorizedPage.razor *@
+@inherits WorkbenchComponentBase
+
+<AuthorizeView>
+    <Authorized>
+        <section>
+            <BitStack HorizontalAlign="BitAlignment.Center" Style="--bit-Button-min-width:min(300px, 100%)">
+                <BitImage Alt="" Src="_content/Boilerplate.Client.Core/images/403.svg" Width="100%" Style="max-width:600px" />
+
+                <BitText Typography="BitTypography.H5" Color="BitColor.SevereWarning" Align="BitTextAlign.Center">
+                    @AppLocalizer[nameof(AppStrings.ForbiddenException)]
+                </BitText>
+
+                <BitText>@AppLocalizer[nameof(AppStrings.YouAreSignedInAs)] <b>@context.User.GetDisplayName()</b></BitText>
+
+                @*#if (multitenant == true)*@
+                @if (lacksSelectedTenant)
+                {
+                    <BitText Align="BitTextAlign.Center">@AppLocalizer[nameof(AppStrings.SelectTenantMessage)]</BitText>
+
+                    <BitButton>
+                        @AppLocalizer[nameof(AppStrings.ManageMyTenants)]
+                    </BitButton>
+                }
+                @*#endif*@
+
+                @if (lacksValidPrivilege)
+                {
+                    <BitButton Color="BitColor.SevereWarning">
+                        @AppLocalizer[nameof(AppStrings.TryRemovingOtherSessions)]
+                    </BitButton>
+                }
+
+                <BitButton OnClick="SignInAsDifferentUser">
+                    @AppLocalizer[nameof(AppStrings.SignInAsDifferentUser)]
+                </BitButton>
+
+            </BitStack>
+        </section>
+    </Authorized>
+    <NotAuthorized>
+        <section>
+            <BitStack Alignment="BitAlignment.Center">
+                <BitImage Alt="" Src="_content/Boilerplate.Client.Core/images/401.svg" Width="100%" Style="max-width:600px" />
+                <BitText Typography="BitTypography.H3" Align="BitTextAlign.Center">
+                    @AppLocalizer[nameof(AppStrings.YouAreNotAuthorized)]
+                </BitText>
+                <BitText Typography="BitTypography.Subtitle1" Align="BitTextAlign.Center" Gutter>
+                    @AppLocalizer[nameof(AppStrings.YouAreNotAuthorizedMessage)]
+                </BitText>
+                <BitButton Variant="BitVariant.Outline"
+                           OnClick="SignIn"
+                           IconName="@BitIconName.Signin">
+                    @AppLocalizer[nameof(AppStrings.SignIn)]
+                </BitButton>
+            </BitStack>
+        </section>
+    </NotAuthorized>
+</AuthorizeView>
