@@ -143,11 +143,12 @@ public class McpController(HtmlRenderer htmlRenderer) : ControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(InspectBlexStore), Title = "Inspect a store with the real generator", ReadOnly = true, OpenWorld = false, UseStructuredContent = true)]
     [Description("Runs the real Bit.Blex source generator over C# source containing one or more [BlexStore] classes and reports its verdict: every BLEX diagnostic a build would report, the C# compiler errors in the result, and the exact public members the generator adds to each store (generated property names, action and effect wrappers, Cancel methods, loading/error properties). Check every store with it before you build on it, and call the generated names it lists rather than guessed ones. The usual usings (System, System.Threading.Tasks, Bit.Blex, ...) are implied, so a class on its own is enough.")]
-    public BlexStoreInspectionDto InspectBlexStore(
+    public Task<BlexStoreInspectionDto> InspectBlexStore(
         [Description("The store source: one or more classes marked [BlexStore], as they would be written in a .cs file. At most 50,000 characters.")] string source,
-        [Description("True to also return the full generated source. Off by default - the member list is what a caller normally needs.")] bool includeGeneratedCode = false)
+        [Description("True to also return the full generated source. Off by default - the member list is what a caller normally needs.")] bool includeGeneratedCode = false,
+        CancellationToken cancellationToken = default)
     {
-        return BlexStoreInspector.Inspect(source, includeGeneratedCode);
+        return BlexStoreInspector.InspectAsync(source, includeGeneratedCode, cancellationToken);
     }
 
     [HttpGet]

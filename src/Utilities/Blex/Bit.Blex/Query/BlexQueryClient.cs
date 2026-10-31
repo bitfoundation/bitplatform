@@ -576,6 +576,9 @@ public sealed class BlexQueryClient : IDisposable
         foreach (var entry in Match(Matcher(key, exact)))
             removed.Add(entry);
 
+        var text = key.ToString();
+        var prefix = text[..^1] + ",";
+
         lock (Gate)
         {
             for (var i = removed.Count - 1; i >= 0; i--)
@@ -585,6 +588,13 @@ public sealed class BlexQueryClient : IDisposable
                     _entries.Remove(removed[i].Key);
                 else
                     removed.RemoveAt(i);
+            }
+
+            string[] handedOver = [.. _hydration.Keys];
+            foreach (var pending in handedOver)
+            {
+                if (pending == text || (!exact && pending.StartsWith(prefix, StringComparison.Ordinal)))
+                    _hydration.Remove(pending);
             }
         }
 
@@ -1086,7 +1096,7 @@ public sealed class BlexQueryClient : IDisposable
         if (_manager is { } manager)
             manager.ReportError("query", exception, key?.ToString());
         else
-            Console.Error.WriteLine($"[Blex] query failed{(key is null ? "" : $" ({key})")}: {exception.Message}");
+            Console.Error.WriteLine(BlexManager.EscapeControlCharacters($"[Blex] query failed{(key is null ? "" : $" ({key})")}: {exception.Message}"));
     }
 
     /// <summary>The longest a timer can wait (about 49 days); a longer wait is made in more than one go.</summary>

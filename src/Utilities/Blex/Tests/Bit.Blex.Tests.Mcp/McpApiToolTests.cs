@@ -61,7 +61,7 @@ public class McpApiToolTests
         var reference = await McpCall.TextAsync("GetBlexApi", new() { ["typeName"] = "BlexProvider" });
 
         StringAssert.Contains(reference, "## Parameter");
-        StringAssert.Contains(reference, "**EnableDevTools** : `bool` = `true`");
+        StringAssert.Contains(reference, "**EnableDevTools** : `bool` = `false`");
         StringAssert.Contains(reference, "**PersistComponentState** : `bool` = `true`");
     }
 

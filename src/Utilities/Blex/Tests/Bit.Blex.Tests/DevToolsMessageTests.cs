@@ -114,4 +114,28 @@ public class DevToolsMessageTests
         Assert.AreEqual(1, store.Count);
         Assert.Contains(e => e.Source == "devtools", errors);
     }
+
+    [TestMethod]
+    [DoNotParallelize]
+    public void ActionNameWithLineBreaks_StaysOnOneStderrLine()
+    {
+        var manager = new BlexManager();
+        var typed = new JsonObject { ["type"] = "counter/Nope\r\n[Blex] forged line" }.ToJsonString();
+        var original = Console.Error;
+        using var captured = new StringWriter();
+        Console.SetError(captured);
+
+        try
+        {
+            manager.HandleDevToolsMessage(new JsonObject { ["type"] = "ACTION", ["payload"] = typed }.ToJsonString());
+        }
+        finally
+        {
+            Console.SetError(original);
+        }
+
+        var line = captured.ToString().TrimEnd('\r', '\n');
+        Assert.IsFalse(line.Contains('\r') || line.Contains('\n'), line);
+        StringAssert.Contains(line, @"counter/Nope\u000d\u000a[Blex] forged line");
+    }
 }
