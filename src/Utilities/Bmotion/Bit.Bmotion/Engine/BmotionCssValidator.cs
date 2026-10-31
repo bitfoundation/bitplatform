@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 namespace Bit.Bmotion;
 
 /// <summary>
@@ -32,5 +34,42 @@ internal static class BmotionCssValidator
             if (value.Contains(seq, StringComparison.OrdinalIgnoreCase)) return false;
 
         return true;
+    }
+
+    // How many rejections a warned set remembers. A target whose value keeps changing (bound to input) would otherwise
+    // hold every value it ever had; past this the set starts over, at worst reporting a value again.
+    private const int MaxWarned = 64;
+
+    /// <summary>
+    /// Applies CSS safe mode (<see cref="BitBmotionOptions.CssSafeMode"/>) to every string-valued CSS declaration
+    /// <paramref name="props"/> carries: nothing when it is Off, a warning per rejected value (which is still written)
+    /// when Warn, an exception for the first rejected value when Throw.
+    /// </summary>
+    /// <param name="target">What the warning names: the element's id, or the selector that picks the elements.</param>
+    /// <param name="warned">
+    /// The rejections already reported for this target, so a value checked again on every render is reported once
+    /// rather than once per check; <c>null</c> reports every rejection.
+    /// </param>
+    public static void Enforce(BmProps props, BmCssSafeMode mode, ILogger? logger, string? target, HashSet<string>? warned = null)
+    {
+        if (mode == BmCssSafeMode.Off) return;
+        foreach (var (prop, value) in props.EnumerateCssStringValues())
+        {
+            if (IsSafe(value)) continue;
+            if (mode == BmCssSafeMode.Throw)
+                throw new InvalidOperationException(
+                    $"Bit.Bmotion CSS safe mode rejected the value for '{prop}': \"{value}\". " +
+                    "It contains characters/sequences that could break out of the inline style.");
+            if (warned is not null)
+            {
+                var key = $"{prop}\n{value}";
+                if (warned.Contains(key)) continue;
+                if (warned.Count >= MaxWarned) warned.Clear();
+                warned.Add(key);
+            }
+            logger?.LogWarning(
+                "Bit.Bmotion CSS safe mode: rejected value for '{Prop}' on element '{Id}': {Value}",
+                prop, target, value);
+        }
     }
 }

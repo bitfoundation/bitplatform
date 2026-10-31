@@ -8,7 +8,11 @@ namespace Bit.Bmotion;
 /// </summary>
 public abstract class BmTransition
 {
-    /// <summary>Delay before the animation starts, in seconds.</summary>
+    /// <summary>
+    /// Delay before the animation starts, in seconds. A negative delay starts it that far into its motion; a spring or
+    /// inertia plays the skipped time frame by frame, at most its last ten minutes, so one that never settles (no
+    /// damping, or repeating forever) lands where it is ten minutes in.
+    /// </summary>
     public double Delay { get; set; }
 
     /// <summary>

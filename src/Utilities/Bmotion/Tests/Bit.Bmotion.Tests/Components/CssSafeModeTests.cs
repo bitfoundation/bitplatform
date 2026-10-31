@@ -148,6 +148,86 @@ public class CssSafeModeTests
     };
 
     [TestMethod]
+    public async Task WarnMode_LogsEachRejectedValueOncePerElement()
+    {
+        using var ctx = new BmotionTestContext();
+        var logger = new ListLogger<Bmotion>();
+        ctx.Services.AddSingleton<ILogger<Bmotion>>(logger);
+        ctx.Options.CssSafeMode = BmCssSafeMode.Warn;
+        int Logged() => logger.Warnings.Count(w => w.Contains("CSS safe mode"));
+
+        // A prerendered element resolves its targets several times on the way to animating them - five checks of this
+        // one value - and one value is one warning.
+        ctx.Options.Prerender = BmPrerenderMode.Animate;
+        var cut = ctx.Render<Bmotion>(ps => ps
+            .Add(p => p.Id, "box")
+            .Add(p => p.Initial, Bm.To(boxShadow: $"0 0 4px {Injected}"))
+            .Add(p => p.Animate, Bm.To(boxShadow: $"0 0 4px {Injected}"))
+            .Add(p => p.ChildContent, Div));
+        await ctx.RunFramesAsync(0, 100);
+        Assert.AreEqual(1, Logged());
+
+        // Rendered again with the same value: nothing new to report.
+        cut.Render(ps => ps.Add(p => p.Animate, Bm.To(boxShadow: $"0 0 4px {Injected}")));
+        await ctx.RunFramesAsync(100, 200);
+        Assert.AreEqual(1, Logged());
+
+        // A different rejected value is reported in its turn.
+        cut.Render(ps => ps.Add(p => p.Animate, Bm.To(boxShadow: $"0 0 8px {Injected}")));
+        await ctx.RunFramesAsync(200, 300);
+        Assert.AreEqual(2, Logged());
+    }
+
+    [TestMethod]
+    public async Task ThrowMode_ChecksWhatTheAnimateServiceAnimates()
+    {
+        using var ctx = new BmotionTestContext();
+        ctx.Options.CssSafeMode = BmCssSafeMode.Throw;
+        // Resolved from the container, as an app injects it: the options reach the service through it.
+        var service = ctx.Services.GetRequiredService<BmotionAnimateService>();
+        var unsafeTarget = Bm.To(boxShadow: $"0 0 4px {Injected}");
+
+        var bySelector = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => service.AnimateAsync(".box", unsafeTarget).AsTask());
+        StringAssert.Contains(bySelector.Message, "boxShadow");
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => service.AnimateAsync(new ElementReference("box-ref"), unsafeTarget).AsTask());
+
+        // Only the last segment is unsafe: none of the sequence may start, and no element is left registered.
+        var sequence = new BmSequence().Add(".a", Bm.To(opacity: 0.5)).Add(".b", unsafeTarget);
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => service.RunAsync(sequence).AsTask());
+
+        Assert.IsFalse(ctx.Interop.WasCalled("resolveOrRegisterBySelector"), "a rejected target registers no element");
+        Assert.IsFalse(ctx.Interop.WasCalled("resolveOrRegisterByRef"), "a rejected target registers no element");
+    }
+
+    [TestMethod]
+    public async Task WarnMode_TheAnimateServiceLogsTheSelector_ButStillAnimates()
+    {
+        using var ctx = new BmotionTestContext();
+        var logger = new ListLogger<BmotionAnimateService>();
+        ctx.Services.AddSingleton<ILogger<BmotionAnimateService>>(logger);
+        ctx.Options.CssSafeMode = BmCssSafeMode.Warn;
+        var service = ctx.Services.GetRequiredService<BmotionAnimateService>();
+
+        await service.AnimateAsync(".card", Bm.To(boxShadow: $"0 0 4px {Injected}"));
+
+        var warning = logger.Warnings.SingleOrDefault(w => w.Contains("CSS safe mode"));
+        Assert.IsNotNull(warning, "Warn mode must log the rejected value");
+        StringAssert.Contains(warning, "'.card'", "the warning names the selector");
+        Assert.IsTrue(ctx.Interop.WasCalled("resolveOrRegisterBySelector"), "Warn still animates");
+    }
+
+    [TestMethod]
+    public async Task OffMode_TheAnimateServiceChecksNothing()
+    {
+        using var ctx = new BmotionTestContext();
+        var service = ctx.Services.GetRequiredService<BmotionAnimateService>();
+
+        await service.AnimateAsync(".card", Bm.To(boxShadow: $"0 0 4px {Injected}"));
+
+        Assert.IsTrue(ctx.Interop.WasCalled("resolveOrRegisterBySelector"));
+    }
+
+    [TestMethod]
     public void ThrowMode_AcceptsCleanArraysAndDictionaries()
     {
         using var ctx = new BmotionTestContext();

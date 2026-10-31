@@ -130,6 +130,9 @@ builder.Services.AddBitBmotionServices(o => o.CssSafeMode = BmCssSafeMode.Throw)
 ```
 
 It is `Off` by default (for performance/parity); `Warn` logs and still applies, `Throw` rejects.
+It checks every target an element animates to - its own, the variants it inherits from a parent,
+its gestures - and the targets `BmotionAnimateService` animates (`AnimateAsync`, `RunAsync`). `Warn`
+logs each rejected value once per element, however often the element renders it.
 
 ## Threading
 

@@ -20,7 +20,9 @@ public sealed class BitBmotionOptions
     /// <summary>
     /// Validation policy for string-valued CSS props written verbatim into inline style. Defaults to
     /// <see cref="BmCssSafeMode.Off"/>; set to <see cref="BmCssSafeMode.Warn"/> or
-    /// <see cref="BmCssSafeMode.Throw"/> when binding untrusted end-user input to those props.
+    /// <see cref="BmCssSafeMode.Throw"/> when binding untrusted end-user input to those props. It applies
+    /// to every target a <see cref="Bmotion"/> element animates to, inherited variants included, and to
+    /// the targets <see cref="BmotionAnimateService"/> animates.
     /// </summary>
     public BmCssSafeMode CssSafeMode { get; set; } = BmCssSafeMode.Off;
 

@@ -1746,25 +1746,19 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         return null;
     }
 
+    // The rejected values Warn mode has reported for this element: a target is resolved several times a render, and
+    // each value is worth one warning, not one per resolve.
+    private HashSet<string>? _cssWarned;
+
     /// <summary>
     /// Opt-in CSS-injection safe mode (<see cref="BitBmotionOptions.CssSafeMode"/>): validates every
-    /// string-valued CSS declaration a target carries, warning or throwing on a rejected value. A
-    /// no-op (returns immediately) when the mode is Off, so the default path pays nothing.
+    /// string-valued CSS declaration a target carries, warning (once per value) or throwing on a rejected
+    /// value. A no-op (returns immediately) when the mode is Off, so the default path pays nothing.
     /// </summary>
     private BmProps? GuardCss(BmProps? props)
     {
         if (props is null || Options.CssSafeMode == BmCssSafeMode.Off) return props;
-        foreach (var (prop, value) in props.EnumerateCssStringValues())
-        {
-            if (BmotionCssValidator.IsSafe(value)) continue;
-            if (Options.CssSafeMode == BmCssSafeMode.Throw)
-                throw new InvalidOperationException(
-                    $"Bit.Bmotion CSS safe mode rejected the value for '{prop}': \"{value}\". " +
-                    "It contains characters/sequences that could break out of the inline style.");
-            Logger?.LogWarning(
-                "Bit.Bmotion CSS safe mode: rejected value for '{Prop}' on element '{Id}': {Value}",
-                prop, _id, value);
-        }
+        BmotionCssValidator.Enforce(props, Options.CssSafeMode, Logger, _id, _cssWarned ??= []);
         return props;
     }
 

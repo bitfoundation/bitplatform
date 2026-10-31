@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 
 namespace Bit.Bmotion;
 /// <summary>
@@ -25,13 +26,27 @@ public sealed class BmotionAnimateService
 {
     private readonly BmotionAnimationEngine _engine;
     private readonly IBmotionInterop _interop;
+    private readonly BitBmotionOptions _options;
+    private readonly ILogger<BmotionAnimateService>? _logger;
 
     public BmotionAnimateService(BmotionAnimationEngine engine, IBmotionInterop interop)
+        : this(engine, interop, new BitBmotionOptions())
+    {
+    }
+
+    /// <summary>
+    /// The service with library-wide options: <see cref="BitBmotionOptions.CssSafeMode"/> checks the targets it
+    /// animates as it does a <see cref="Bmotion"/> element's, logging to <paramref name="logger"/> in Warn mode.
+    /// </summary>
+    public BmotionAnimateService(BmotionAnimationEngine engine, IBmotionInterop interop, BitBmotionOptions options, ILogger<BmotionAnimateService>? logger = null)
     {
         ArgumentNullException.ThrowIfNull(engine);
         ArgumentNullException.ThrowIfNull(interop);
+        ArgumentNullException.ThrowIfNull(options);
         _engine = engine;
         _interop = interop;
+        _options = options;
+        _logger = logger;
     }
 
     /// <summary>
@@ -67,6 +82,8 @@ public sealed class BmotionAnimateService
         ArgumentNullException.ThrowIfNull(keyframes);
         // Skip interop + engine registration when already cancelled (see Bmotion.AnimateAsync).
         if (cancellationToken.IsCancellationRequested) return CancelledControls();
+        // CSS safe mode, as on a Bmotion element - checked before any element is registered, so a rejection leaves none behind.
+        BmotionCssValidator.Enforce(keyframes, _options.CssSafeMode, _logger, selector);
         var ids = await _interop.ResolveOrRegisterBySelectorAsync(selector);
         return WithCancellation(await StartAnimationsAsync(ids, keyframes, transition, stagger), cancellationToken);
     }
@@ -106,6 +123,7 @@ public sealed class BmotionAnimateService
     {
         ArgumentNullException.ThrowIfNull(keyframes);
         if (cancellationToken.IsCancellationRequested) return CancelledControls();
+        BmotionCssValidator.Enforce(keyframes, _options.CssSafeMode, _logger, elementReference.Id);
         var id = await _interop.ResolveOrRegisterByRefAsync(elementReference);
         return WithCancellation(await StartAnimationsAsync([id], keyframes, transition, stagger: null), cancellationToken);
     }
@@ -207,6 +225,10 @@ public sealed class BmotionAnimateService
     {
         ArgumentNullException.ThrowIfNull(sequence);
         if (cancellationToken.IsCancellationRequested) return CancelledControls();
+
+        // CSS safe mode checks every segment before any is resolved, so a rejected one leaves no element registered.
+        foreach (var segment in sequence.Segments)
+            BmotionCssValidator.Enforce(segment.Target, _options.CssSafeMode, _logger, segment.Selector);
 
         // Resolve every segment's targets up front so registration/refcounting is symmetric.
         var starts = new List<(string[] ids, Dictionary<string, object?> values, BmotionTransitionConfig config, double start)>();
