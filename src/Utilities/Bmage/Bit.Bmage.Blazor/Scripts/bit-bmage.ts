@@ -721,11 +721,7 @@ export async function writeClipboardImage(bytes: any, mimeType: string) {
 export async function fetchImage(url: string, withCredentials: boolean, maxBytes: number) {
     const response = await fetch(url, { credentials: withCredentials ? 'include' : 'omit', mode: 'cors' });
     if (!response.ok) throw new Error(`Fetching the image failed with HTTP ${response.status}.`);
-    // A declared length over the limit is refused before the body is read; counting the body catches the rest.
-    if (maxBytes > 0 && Number(response.headers.get('Content-Length')) > maxBytes) {
-        await response.body?.cancel();
-        return null;
-    }
+    // Only the body is counted: Content-Length gives the encoded length, which is not the size of the bytes read.
     const chunks: Uint8Array[] = [];
     let total = 0;
     const reader = response.body?.getReader();

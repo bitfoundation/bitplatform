@@ -1,6 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Drawing;
 using System.Numerics;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Bit.Bmage.Codecs;
 using Bit.Bmage.Drawing;
 using Bit.Bmage.Geometry;
@@ -291,6 +293,23 @@ public sealed class ReviewFindingsTests
 
         await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await loader.LoadAsync(Input.ImageSource.FromUrl("https://photos.example/huge.jpg")));
         Assert.AreEqual(123_456L, passed);
+    }
+
+    [TestMethod]
+    public async Task AUrlServingNoMoreThanTheSourceLimitIsDecoded()
+    {
+        using var image = TestImages.Gradient(12, 9);
+        var png = Codecs.Png.PngEncoder.Encode(image).Data;
+        var module = new FakeModule(_ => { }, respond: (identifier, _) => identifier == "fetchImage"
+            ? new FakeHandle(new JsonObject { ["mimeType"] = "image/png", ["byteLength"] = png.Length }, png)
+            : null);
+        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
+        var loader = new Input.ImageLoader(new Input.ImageProcessorFactory(interop, Capabilities.ManagedCapabilityProvider.Instance), interop, Capabilities.ManagedCapabilityProvider.Instance) { MaxSourceBytes = png.Length };
+
+        using var loaded = await loader.LoadAsync(Input.ImageSource.FromUrl("https://photos.example/small.png"));
+
+        Assert.AreEqual(image.Size, loaded.Size);
+        Assert.AreEqual(0, TestImages.MaxChannelDifference(image, loaded));
     }
 
     [TestMethod]
@@ -643,13 +662,16 @@ public sealed class ReviewFindingsTests
         }
     }
 
-    /// <summary>A byte result as the module's functions return one: a descriptor from info() and a payload from bytes().</summary>
+    /// <summary>
+    /// A byte result as the module's functions return one: a descriptor from info() and a payload from bytes(). A
+    /// descriptor of another type reaches the caller through JSON, as the browser's does.
+    /// </summary>
     private sealed class FakeHandle(object info, byte[] bytes) : IJSObjectReference
     {
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => InvokeAsync<TValue>(identifier, CancellationToken.None, args);
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args) => identifier switch
         {
-            "info" => ValueTask.FromResult((TValue)info),
+            "info" => ValueTask.FromResult(info is TValue typed ? typed : JsonSerializer.Deserialize<TValue>(JsonSerializer.Serialize(info))!),
             "bytes" => ValueTask.FromResult((TValue)(object)new FakeStream(bytes)),
             _ => ValueTask.FromResult(default(TValue)!),
         };

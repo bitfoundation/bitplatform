@@ -89,7 +89,9 @@ public static class ExifReader
         if (offset > (uint)data.Length - 2 || !visited.Add(offset)) return null;
         int count = ReadU16(data, (int)offset, be);
         if (count > MaxEntries) count = MaxEntries;
-        var dir = new Dictionary<ushort, ExifValue>();
+        // A tag listed twice keeps its last readable value. Only that one is copied and charged to the budget, so
+        // repeating a tag cannot spend the budget the directory's other tags, the orientation among them, need.
+        var entries = new Dictionary<ushort, (ExifType Type, uint Count, int Offset, int Length)>();
         var pos = (int)offset + 2;
         for (var i = 0; i < count; i++, pos += 12)
         {
@@ -100,23 +102,24 @@ public static class ExifReader
             var size = ExifValue.SizeOf(type);
             if (!Enum.IsDefined(type) || n > MaxValueBytes / (uint)size) continue;
             var byteLen = (int)(n * (uint)size);
-            if (byteLen > budget) continue;
-            ReadOnlySpan<byte> raw;
-            if (byteLen <= 4)
-            {
-                raw = data.Slice(pos + 8, byteLen);
-            }
-            else
+            var rawOffset = pos + 8;
+            if (byteLen > 4)
             {
                 // Compare without adding, so a hostile offset near uint.MaxValue cannot wrap past the check.
                 var valueOffset = ReadU32(data, pos + 8, be);
                 if (valueOffset > (uint)data.Length || byteLen > data.Length - (int)valueOffset) continue;
-                raw = data.Slice((int)valueOffset, byteLen);
+                rawOffset = (int)valueOffset;
             }
-            budget -= byteLen;
-            dir[tag] = new ExifValue(type, (int)n, Normalise(raw, type, be));
+            entries[tag] = (type, n, rawOffset, byteLen);
         }
         if (pos + 4 <= data.Length) nextIfd = ReadU32(data, pos, be);
+        var dir = new Dictionary<ushort, ExifValue>(entries.Count);
+        foreach (var (tag, entry) in entries)
+        {
+            if (entry.Length > budget) continue;
+            budget -= entry.Length;
+            dir[tag] = new ExifValue(entry.Type, (int)entry.Count, Normalise(data.Slice(entry.Offset, entry.Length), entry.Type, be));
+        }
         return new ExifDirectory(dir);
     }
 

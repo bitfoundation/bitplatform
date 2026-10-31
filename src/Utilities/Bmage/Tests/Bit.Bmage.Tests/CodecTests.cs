@@ -267,6 +267,59 @@ public sealed class JpegCodecTests
         Assert.AreEqual(0, TestImages.MaxChannelDifference(capped, past));
     }
 
+    /// <summary>
+    /// A grey 8x8 progressive JPEG of four scans: the DC's top bits, the first AC band, then a refinement of each. Every
+    /// scan moves the pixels by more than rounding does, so a scan skipped or misread shows in the result.
+    /// </summary>
+    [TestMethod]
+    public void AProgressiveJpegWithAcAndRefinementScansDecodesToItsCoefficients()
+    {
+        // The bits of a scan, padded with ones and with any 0xFF byte stuffed, as an encoder writes them.
+        static byte[] Bits(string bits)
+        {
+            bits = bits.Replace(" ", "");
+            bits += new string('1', (8 - bits.Length % 8) % 8);
+            var bytes = new List<byte>();
+            for (var i = 0; i < bits.Length; i += 8)
+            {
+                bytes.Add(Convert.ToByte(bits.Substring(i, 8), 2));
+                if (bytes[^1] == 0xFF) bytes.Add(0x00);
+            }
+            return [.. bytes];
+        }
+
+        var jpeg = new List<byte> { 0xFF, 0xD8, 0xFF, 0xDB, 0x00, 0x43, 0x00 };
+        jpeg.AddRange(Enumerable.Repeat((byte)1, 64));
+        jpeg.AddRange([0xFF, 0xC2, 0x00, 0x0B, 0x08, 0x00, 0x08, 0x00, 0x08, 0x01, 0x01, 0x11, 0x00]);
+        // DC table 0: "0" is category 1. AC table 0: "0" is run 0 size 1, "10" is the end of the band.
+        jpeg.AddRange([0xFF, 0xC4, 0x00, 0x14, 0x00, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01]);
+        jpeg.AddRange([0xFF, 0xC4, 0x00, 0x15, 0x10, 0x01, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01, 0x00]);
+        // DC first, Al 6: a difference of 1, so the DC is 64.
+        jpeg.AddRange([0xFF, 0xDA, 0x00, 0x08, 0x01, 0x01, 0x00, 0x00, 0x00, 0x06, .. Bits("0 1")]);
+        // AC 1 to 63 first, Al 5: the first coefficient is 1, so 32, then the band ends.
+        jpeg.AddRange([0xFF, 0xDA, 0x00, 0x08, 0x01, 0x01, 0x00, 0x01, 0x3F, 0x05, .. Bits("0 1 10")]);
+        // DC refinement, Ah 6 Al 5: a one bit, so the DC is 96.
+        jpeg.AddRange([0xFF, 0xDA, 0x00, 0x08, 0x01, 0x01, 0x00, 0x00, 0x00, 0x65, .. Bits("1")]);
+        // AC 1 to 63 refinement, Ah 5 Al 4: a new +16 after one zero, passing the first coefficient, whose correction bit
+        // makes it 48, then the band ends.
+        jpeg.AddRange([0xFF, 0xDA, 0x00, 0x08, 0x01, 0x01, 0x00, 0x01, 0x3F, 0x54, .. Bits("0 1 1 10")]);
+        jpeg.AddRange([0xFF, 0xD9]);
+
+        using var decoded = JpegDecoder.Decode([.. jpeg]);
+        Assert.AreEqual(8, decoded.Width);
+        Assert.AreEqual(8, decoded.Height);
+        // DC 96, 48 at the first horizontal frequency and 16 at the first vertical one, through the inverse DCT.
+        static double Basis(int i) => Math.Cos((2 * i + 1) * Math.PI / 16) / (4 * Math.Sqrt(2));
+        for (var y = 0; y < 8; y++)
+            for (var x = 0; x < 8; x++)
+            {
+                var expected = 128 + 96 / 8.0 + 48 * Basis(x) + 16 * Basis(y);
+                var p = decoded[x, y];
+                Assert.AreEqual(expected, p.R, 1.0, $"({x}, {y})");
+                Assert.IsTrue(p.R == p.G && p.G == p.B && p.A == 255, $"({x}, {y}) is {p}, not grey");
+            }
+    }
+
     /// <summary>FF00 is a stuffed byte, which decoders skip; read as a marker, its "length" jumped over the frame header.</summary>
     [TestMethod]
     public void IdentifySkipsAStuffedByteBeforeTheFrameHeader()

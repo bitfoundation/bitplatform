@@ -468,6 +468,43 @@ public sealed class AdversarialMetadataTests
         Assert.IsLessThanOrEqualTo(4L << 20, kept);
     }
 
+    /// <summary>
+    /// A tag listed many times keeps only its last value, so only that one is charged to the budget: the copies cannot
+    /// spend it and leave the orientation after them unread.
+    /// </summary>
+    [TestMethod]
+    public void ATagRepeatedPastTheBudgetLeavesTheOtherTagsReadable()
+    {
+        const int copies = 300;
+        const int valueBytes = 1 << 20;
+        var valueOffset = 8 + 2 + (copies + 1) * 12 + 4;
+        var tiff = new byte[valueOffset + valueBytes + 1];
+        "II*\0"u8.CopyTo(tiff);
+        BinaryPrimitives.WriteUInt32LittleEndian(tiff.AsSpan(4), 8);
+        BinaryPrimitives.WriteUInt16LittleEndian(tiff.AsSpan(8), copies + 1);
+        for (var i = 0; i < copies; i++)
+        {
+            var entry = tiff.AsSpan(10 + i * 12);
+            BinaryPrimitives.WriteUInt16LittleEndian(entry, 0x1000);
+            BinaryPrimitives.WriteUInt16LittleEndian(entry[2..], (ushort)ExifType.Undefined);
+            // The last copy is one byte longer, so which one was kept shows.
+            BinaryPrimitives.WriteUInt32LittleEndian(entry[4..], (uint)(i == copies - 1 ? valueBytes + 1 : valueBytes));
+            BinaryPrimitives.WriteUInt32LittleEndian(entry[8..], (uint)valueOffset);
+        }
+        var orientation = tiff.AsSpan(10 + copies * 12);
+        BinaryPrimitives.WriteUInt16LittleEndian(orientation, ExifTag.Orientation);
+        BinaryPrimitives.WriteUInt16LittleEndian(orientation[2..], (ushort)ExifType.Short);
+        BinaryPrimitives.WriteUInt32LittleEndian(orientation[4..], 1);
+        BinaryPrimitives.WriteUInt16LittleEndian(orientation[8..], (ushort)Orientation.Rotate90);
+
+        var exif = ExifData.Parse(tiff);
+
+        Assert.IsNotNull(exif);
+        Assert.AreEqual(2, exif.Primary.Count);
+        Assert.AreEqual(valueBytes + 1, exif.Primary.Get(0x1000)!.Data.Length);
+        Assert.AreEqual(Orientation.Rotate90, exif.Orientation);
+    }
+
     [TestMethod]
     public void AnIccProfileThatInflatesPastTheCapIsDropped()
     {

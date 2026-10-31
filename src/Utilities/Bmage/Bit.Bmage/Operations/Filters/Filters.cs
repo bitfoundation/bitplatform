@@ -58,7 +58,8 @@ public sealed class BlurFilter : RegionOperation
         return target;
     }
 
-    public override IImageOperation ForScale(double scale) => scale == 1 ? this : new BlurFilter((float)(Radius * scale), ScaleRegion(Region, scale));
+    // Clamped first: past float.MaxValue the cast is infinity, which the constructor refuses.
+    public override IImageOperation ForScale(double scale) => scale == 1 ? this : new BlurFilter((float)Math.Min(Radius * scale, float.MaxValue), ScaleRegion(Region, scale));
 }
 
 internal static class BoxBlur

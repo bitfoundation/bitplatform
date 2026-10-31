@@ -229,7 +229,8 @@ public class JsModuleContractTests : DemoTest
 
     /// <summary>
     /// Text whose bitmap would pass the pixel, width or height limit is refused before its canvas is made: the result
-    /// carries only its size, flagged tooLarge, which .NET turns into an ImageLimitExceededException.
+    /// carries only its size, flagged tooLarge, which .NET turns into an ImageLimitExceededException. Every canvas the
+    /// module draws on during a call is recorded as it takes its context, and none is past the limits of that call.
     /// </summary>
     [TestMethod]
     public async Task RenderingTextPastTheLimitsIsRefusedBeforeDrawing()
@@ -237,27 +238,55 @@ public class JsModuleContractTests : DemoTest
         var page = await OpenAsync("capabilities");
 
         var result = await EvaluateAgainstModuleAsync(page, """
+            const canvases = [];
+            const kinds = [HTMLCanvasElement, ...(typeof OffscreenCanvas !== 'undefined' ? [OffscreenCanvas] : [])];
+            const originals = kinds.map(kind => kind.prototype.getContext);
+            kinds.forEach((kind, i) => {
+                kind.prototype.getContext = function (...args) {
+                    canvases.push([this.width, this.height]);
+                    return originals[i].apply(this, args);
+                };
+            });
             const render = (maxPixels, maxWidth, maxHeight) => {
+                canvases.length = 0;
+                let outcome;
                 try {
                     const handle = m.renderText('Hello, world', '48px sans-serif', '#000', null, 0, 1.2, 'left', maxPixels, maxWidth, maxHeight);
                     const info = handle.info();
                     handle.dispose();
-                    return info.tooLarge ? `refused:${info.width}x${info.height}:${info.byteLength}` : `${info.width}x${info.height}`;
+                    outcome = info.tooLarge ? `refused:${info.width}x${info.height}:${info.byteLength}` : `${info.width}x${info.height}`;
                 } catch (e) {
-                    return 'error:' + String(e.message || e);
+                    outcome = 'error:' + String(e.message || e);
                 }
+                const oversized = canvases
+                    .filter(([w, h]) => (maxPixels && w * h > maxPixels) || (maxWidth && w > maxWidth) || (maxHeight && h > maxHeight))
+                    .map(([w, h]) => `${w}x${h}`);
+                return { outcome, oversized, seen: canvases.map(([w, h]) => `${w}x${h}`) };
             };
-            return {
-                within: render(10000000, 16384, 16384),
-                pastPixels: render(100),
-                pastWidth: render(10000000, 50, 0),
-                pastHeight: render(10000000, 0, 10),
-            };
+            try {
+                return {
+                    within: render(10000000, 16384, 16384),
+                    pastPixels: render(100),
+                    pastWidth: render(10000000, 50, 0),
+                    pastHeight: render(10000000, 0, 10),
+                };
+            } finally {
+                kinds.forEach((kind, i) => { kind.prototype.getContext = originals[i]; });
+            }
             """);
 
-        Assert.MatchesRegex(@"^\d+x\d+$", result.GetProperty("within").GetString()!);
-        foreach (var refused in new[] { "pastPixels", "pastWidth", "pastHeight" })
-            Assert.MatchesRegex(@"^refused:\d+x\d+:0$", result.GetProperty(refused).GetString()!, refused);
+        var within = result.GetProperty("within");
+        var size = within.GetProperty("outcome").GetString()!;
+        Assert.MatchesRegex(@"^\d+x\d+$", size);
+        // The text's own canvas was seen, so the recording watches the canvases the module draws on.
+        Assert.Contains(size, within.GetProperty("seen").EnumerateArray().Select(e => e.GetString()!).ToList());
+        foreach (var name in new[] { "within", "pastPixels", "pastWidth", "pastHeight" })
+        {
+            var call = result.GetProperty(name);
+            if (name != "within") Assert.MatchesRegex(@"^refused:\d+x\d+:0$", call.GetProperty("outcome").GetString()!, name);
+            var oversized = call.GetProperty("oversized").EnumerateArray().Select(e => e.GetString()).ToList();
+            Assert.IsEmpty(oversized, $"{name} made a canvas past its limits: {string.Join(", ", oversized)}");
+        }
     }
 
     /// <summary>

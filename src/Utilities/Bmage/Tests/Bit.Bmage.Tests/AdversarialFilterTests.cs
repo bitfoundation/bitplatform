@@ -217,7 +217,16 @@ public sealed class AdversarialFilterTests
             using var result = filter.Apply(src, OperationContext.Default);
             Assert.IsLessThan(2000, watch.ElapsedMilliseconds, $"{filter.Name} took {watch.ElapsedMilliseconds} ms.");
             Assert.AreEqual(src.Size, result.Size);
+            // A blur that did nothing would leave the sharpen nothing to add.
+            if (filter is SharpenFilter) Assert.IsGreaterThan(0, TestImages.MaxChannelDifference(src, result), "The sharpen changed no pixel.");
         }
+    }
+
+    [TestMethod]
+    public void ScalingAnAbsurdBlurRadiusUpStaysFinite()
+    {
+        var scaled = (BlurFilter)new BlurFilter(float.MaxValue).ForScale(4);
+        Assert.AreEqual(float.MaxValue, scaled.Radius);
     }
 
     /// <summary>Past about a billion pixels the box radii overflowed and the blur did nothing at all.</summary>

@@ -285,7 +285,7 @@ public sealed class ImageProcessorFactory
     /// for AVIF, signals wide gamut or HDR colours without one. The managed decoders read the stored values as sRGB, so
     /// those colours need the browser's colour management.
     /// </summary>
-    private static bool HasWideGamutProfile(ImageFormat format, ReadOnlyMemory<byte> data)
+    internal static bool HasWideGamutProfile(ImageFormat format, ReadOnlyMemory<byte> data)
     {
         try
         {
@@ -305,6 +305,8 @@ public sealed class ImageProcessorFactory
                     _ => null,
                 };
                 profile = metadata?.IccProfile ?? default;
+                // A PNG profile too large or too broken to inflate reads as none, yet it is no sRGB profile either.
+                if (format == ImageFormat.Png && profile.IsEmpty && HasIccChunk(data.Span)) return true;
             }
             // Anything not recognised as sRGB goes to the browser, which costs bandwidth but never colour.
             return !profile.IsEmpty && !IsSrgbProfile(profile.Span);
@@ -313,6 +315,17 @@ public sealed class ImageProcessorFactory
         {
             return false;
         }
+    }
+
+    /// <summary>True when a PNG has an iCCP chunk before its image data, whether or not the profile in it could be read.</summary>
+    private static bool HasIccChunk(ReadOnlySpan<byte> png)
+    {
+        foreach (var chunk in PngContainer.EnumerateChunks(png))
+        {
+            if (chunk.Type == PngContainer.MakeType("iCCP")) return true;
+            if (chunk.Type == PngContainer.MakeType("IDAT")) break;
+        }
+        return false;
     }
 
     /// <summary>
