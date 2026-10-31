@@ -27,10 +27,17 @@ public sealed class BmotionAnimateService
     private readonly BmotionAnimationEngine _engine;
     private readonly IBmotionInterop _interop;
     private readonly BitBmotionOptions _options;
-    private readonly ILogger<BmotionAnimateService>? _logger;
+    private readonly ILogger? _logger;
+    // The rejections Warn mode has reported, so a target animated again and again is reported once, not once per call.
+    private readonly BmotionCssWarnings _cssWarned = new();
 
+    /// <summary>
+    /// The service on <paramref name="engine"/>, following the library-wide options the engine was created with: an
+    /// engine from the application's container brings its <see cref="BitBmotionOptions.CssSafeMode"/>, and Warn mode
+    /// logs to the engine's logger.
+    /// </summary>
     public BmotionAnimateService(BmotionAnimationEngine engine, IBmotionInterop interop)
-        : this(engine, interop, new BitBmotionOptions())
+        : this(engine, interop, engine?.Options!, engine?.Logger)
     {
     }
 
@@ -39,6 +46,11 @@ public sealed class BmotionAnimateService
     /// animates as it does a <see cref="Bmotion"/> element's, logging to <paramref name="logger"/> in Warn mode.
     /// </summary>
     public BmotionAnimateService(BmotionAnimationEngine engine, IBmotionInterop interop, BitBmotionOptions options, ILogger<BmotionAnimateService>? logger = null)
+        : this(engine, interop, options, (ILogger?)logger)
+    {
+    }
+
+    private BmotionAnimateService(BmotionAnimationEngine engine, IBmotionInterop interop, BitBmotionOptions options, ILogger? logger)
     {
         ArgumentNullException.ThrowIfNull(engine);
         ArgumentNullException.ThrowIfNull(interop);
@@ -82,10 +94,19 @@ public sealed class BmotionAnimateService
         ArgumentNullException.ThrowIfNull(keyframes);
         // Skip interop + engine registration when already cancelled (see Bmotion.AnimateAsync).
         if (cancellationToken.IsCancellationRequested) return CancelledControls();
-        // CSS safe mode, as on a Bmotion element - checked before any element is registered, so a rejection leaves none behind.
-        BmotionCssValidator.Enforce(keyframes, _options.CssSafeMode, _logger, selector);
+        // Checked before any element is registered, so a rejection leaves none behind.
+        var values = CheckedValues(keyframes, selector);
+        var config = (keyframes.Transition ?? transition)?.ToConfig();
         var ids = await _interop.ResolveOrRegisterBySelectorAsync(selector);
-        return WithCancellation(await StartAnimationsAsync(ids, keyframes, transition, stagger), cancellationToken);
+        return WithCancellation(await StartAnimationsAsync(ids, values, config, stagger), cancellationToken);
+    }
+
+    // CSS safe mode, as on a Bmotion element, and the values the engine is handed, in one synchronous step: what is
+    // animated is exactly what was checked, however the target changes while the elements are resolved.
+    private Dictionary<string, object?> CheckedValues(BmProps target, string? name)
+    {
+        BmotionCssValidator.Enforce(target, _options.CssSafeMode, _logger, name, _cssWarned);
+        return target.ToJsDictionary();
     }
 
     // A resolved, no-op controls for a pre-cancelled call: no elements registered, already settled.
@@ -123,9 +144,10 @@ public sealed class BmotionAnimateService
     {
         ArgumentNullException.ThrowIfNull(keyframes);
         if (cancellationToken.IsCancellationRequested) return CancelledControls();
-        BmotionCssValidator.Enforce(keyframes, _options.CssSafeMode, _logger, elementReference.Id);
+        var values = CheckedValues(keyframes, elementReference.Id);
+        var config = (keyframes.Transition ?? transition)?.ToConfig();
         var id = await _interop.ResolveOrRegisterByRefAsync(elementReference);
-        return WithCancellation(await StartAnimationsAsync([id], keyframes, transition, stagger: null), cancellationToken);
+        return WithCancellation(await StartAnimationsAsync([id], values, config, stagger: null), cancellationToken);
     }
 
     /// <summary>
@@ -226,18 +248,20 @@ public sealed class BmotionAnimateService
         ArgumentNullException.ThrowIfNull(sequence);
         if (cancellationToken.IsCancellationRequested) return CancelledControls();
 
-        // CSS safe mode checks every segment before any is resolved, so a rejected one leaves no element registered.
-        foreach (var segment in sequence.Segments)
-            BmotionCssValidator.Enforce(segment.Target, _options.CssSafeMode, _logger, segment.Selector);
+        // Every segment checked (CSS safe mode) and serialized before any is resolved: a rejected one leaves no element
+        // registered, and each plays exactly what was checked, however the sequence changes while they are resolved.
+        var segments = sequence.Segments
+            .Select(segment => (segment.Selector, Values: CheckedValues(segment.Target, segment.Selector), segment.Transition, segment.Start))
+            .ToArray();
 
         // Resolve every segment's targets up front so registration/refcounting is symmetric.
         var starts = new List<(string[] ids, Dictionary<string, object?> values, BmotionTransitionConfig config, double start)>();
-        foreach (var segment in sequence.Segments)
+        foreach (var segment in segments)
         {
             var ids = await _interop.ResolveOrRegisterBySelectorAsync(segment.Selector);
             if (ids.Length == 0) continue;
             var config = (segment.Transition ?? new BmTween()).ToConfig();
-            starts.Add((ids, segment.Target.ToJsDictionary(), config, segment.Start));
+            starts.Add((ids, segment.Values, config, segment.Start));
         }
 
         // One refcount per (segment, element) occurrence, released exactly once by the controls.
@@ -413,18 +437,15 @@ public sealed class BmotionAnimateService
 
     // ────────────────────────────────────────────────────────────────────────────
 
+    // `values` and `config` are the target as checked and lowered before the elements were resolved. The config is the
+    // target's embedded transition, else the explicit argument (the component's resolution order), lowered once and
+    // shared across all target elements (drivers never mutate the config).
     private async ValueTask<BmAnimationControls> StartAnimationsAsync(
         string[] elementIds,
-        BmProps keyframes,
-        BmTransition? transition,
+        Dictionary<string, object?> values,
+        BmotionTransitionConfig? config,
         BmStagger? stagger)
     {
-        var values = keyframes.ToJsDictionary();
-        // A transition embedded in the target wins over the explicit argument, matching the
-        // component's resolution order. Lower once and share across all target elements
-        // (drivers never mutate the config).
-        var config = (keyframes.Transition ?? transition)?.ToConfig();
-
         // A stagger needs a per-element config so each element gets its own delay.
         BmotionTransitionConfig ConfigFor(int index)
         {

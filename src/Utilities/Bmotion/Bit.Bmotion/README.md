@@ -123,7 +123,10 @@ developer-authored values. Do **not** bind untrusted end-user input to them, or 
 injection into the element's `style`.
 
 If you must bind untrusted input, enable **CSS safe mode** to validate those values against a
-conservative injection check (rejecting `;`, `}`, `<`, `javascript:`, `expression(`, comments, …):
+conservative injection check (rejecting `;`, `}`, `<`, `javascript:`, `expression(`, comments, …).
+It also rejects anything that makes the browser fetch a URL (`url(`, `src(`, `image(`,
+`image-set(`) - an SVG reference such as `filter: url(#blur)` included - and, for the free-form
+`css` entries and `cssVars`, any property name that isn't plain letters, digits, `-` and `_`:
 
 ```csharp
 builder.Services.AddBitBmotionServices(o => o.CssSafeMode = BmCssSafeMode.Throw); // or .Warn
@@ -131,8 +134,13 @@ builder.Services.AddBitBmotionServices(o => o.CssSafeMode = BmCssSafeMode.Throw)
 
 It is `Off` by default (for performance/parity); `Warn` logs and still applies, `Throw` rejects.
 It checks every target an element animates to - its own, the variants it inherits from a parent,
-its gestures - and the targets `BmotionAnimateService` animates (`AnimateAsync`, `RunAsync`). `Warn`
-logs each rejected value once per element, however often the element renders it.
+its gestures - and the targets `BmotionAnimateService` animates (`AnimateAsync`, `RunAsync`), each
+checked as it is handed to the engine, so a target changed while the call is under way plays only
+what was checked. A service created by hand on an engine from the container
+(`new BmotionAnimateService(engine, interop)`) follows the engine's options. `Warn` logs each
+rejected declaration once per element (or per service), however often it is checked, quoting the
+value cut short and with control characters escaped; past 64 of them it says once that it stops
+reporting.
 
 ## Threading
 

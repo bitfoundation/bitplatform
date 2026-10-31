@@ -115,7 +115,7 @@ internal static class BmotionBrowserTiming
         try { driver = new BmotionSpringDriver(0, 1, sampling, v => value = v); }
         catch { return null; }
 
-        const double stepMs = 1000.0 / 60;
+        const double stepMs = BmotionFrameRecorder.StepMs;
         const int maxSamples = 20 * 60;
         var samples = new List<double>(128);
         double t = 0;

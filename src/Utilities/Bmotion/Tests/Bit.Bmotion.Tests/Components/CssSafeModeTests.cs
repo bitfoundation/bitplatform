@@ -227,6 +227,148 @@ public class CssSafeModeTests
         Assert.IsTrue(ctx.Interop.WasCalled("resolveOrRegisterBySelector"));
     }
 
+    // A free-form entry's name is written verbatim too (`{name}:{value};`): a name can inject a declaration of its own
+    // with a value that passes.
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ThrowMode_ChecksTheNamesOfFreeFormEntries(bool customProperty)
+    {
+        using var ctx = new BmotionTestContext();
+        ctx.Options.CssSafeMode = BmCssSafeMode.Throw;
+        var target = customProperty
+            ? Bm.To(cssVars: new() { ["--a:0;background:url(//evil/x);--b"] = "1" })
+            : Bm.To(css: new() { ["x;background-image:url(//evil);y"] = "1px" });
+
+        var thrown = Assert.ThrowsExactly<InvalidOperationException>(() => RenderWith(ctx, target));
+        StringAssert.Contains(thrown.Message, "property name");
+    }
+
+    // The inline style writes a free-form entry and the typed prop it shadows both; the engine's dictionary keeps one.
+    [TestMethod]
+    public void ThrowMode_ChecksATypedValueAFreeFormEntryShadows()
+    {
+        using var ctx = new BmotionTestContext();
+        ctx.Options.CssSafeMode = BmCssSafeMode.Throw;
+
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
+            RenderWith(ctx, Bm.To(backgroundColor: Injected, css: new() { ["backgroundColor"] = "red" })));
+    }
+
+    [TestMethod]
+    public void WarnMode_QuotesTheRejectedValueEscapedAndCutShort()
+    {
+        using var ctx = new BmotionTestContext();
+        var logger = new ListLogger<Bmotion>();
+        ctx.Services.AddSingleton<ILogger<Bmotion>>(logger);
+        ctx.Options.CssSafeMode = BmCssSafeMode.Warn;
+
+        RenderWith(ctx, Bm.To(boxShadow: "red\n[info] Admin login ok user=root" + new string('x', 100_000)));
+
+        var warning = logger.Warnings.Single(w => w.Contains("CSS safe mode"));
+        Assert.IsFalse(warning.Contains('\n'), "a rejected value can't start a log line of its own");
+        StringAssert.Contains(warning, "red\\u000a[info] Admin login ok");
+        Assert.IsTrue(warning.Length < 400, $"the value is cut short, not logged whole ({warning.Length} characters)");
+    }
+
+    // An element carrying more rejected values than Warn remembers is reported up to the limit and then told about once:
+    // forgetting and starting over would report most of them again on every check.
+    [TestMethod]
+    public async Task WarnMode_PastTheLimit_SaysOnceThatItStopsReporting()
+    {
+        using var ctx = new BmotionTestContext();
+        var logger = new ListLogger<Bmotion>();
+        ctx.Services.AddSingleton<ILogger<Bmotion>>(logger);
+        ctx.Options.CssSafeMode = BmCssSafeMode.Warn;
+        var many = Enumerable.Range(0, BmotionCssWarnings.Max + 6).ToDictionary(i => $"--v{i}", i => $"{i};");
+        int Logged() => logger.Warnings.Count(w => w.Contains("CSS safe mode"));
+
+        var cut = ctx.Render<Bmotion>(ps => ps
+            .Add(p => p.Id, "box")
+            .Add(p => p.Initial, Bm.To(cssVars: many))
+            .Add(p => p.Animate, Bm.To(cssVars: many))
+            .Add(p => p.ChildContent, Div));
+        await ctx.RunFramesAsync(0, 100);
+        Assert.AreEqual(BmotionCssWarnings.Max + 1, Logged());
+        Assert.AreEqual(1, logger.Warnings.Count(w => w.Contains("not reported")));
+
+        cut.Render(ps => ps.Add(p => p.Animate, Bm.To(cssVars: many)));
+        await ctx.RunFramesAsync(100, 200);
+        Assert.AreEqual(BmotionCssWarnings.Max + 1, Logged());
+    }
+
+    [TestMethod]
+    public async Task WarnMode_TheAnimateServiceLogsATargetAnimatedAgainAndAgainOnce()
+    {
+        using var ctx = new BmotionTestContext();
+        var logger = new ListLogger<BmotionAnimateService>();
+        ctx.Services.AddSingleton<ILogger<BmotionAnimateService>>(logger);
+        ctx.Options.CssSafeMode = BmCssSafeMode.Warn;
+        var service = ctx.Services.GetRequiredService<BmotionAnimateService>();
+
+        for (int i = 0; i < 5; i++)
+            await service.AnimateAsync(".swatch", Bm.To(boxShadow: $"0 0 4px {Injected}"));
+
+        Assert.AreEqual(1, logger.Warnings.Count(w => w.Contains("CSS safe mode")));
+    }
+
+    // Resolving the elements is a round trip (a network one on Blazor Server): a target changed meanwhile must not play
+    // what the check never saw.
+    [TestMethod]
+    public async Task ThrowMode_TheAnimateServicePlaysTheTargetAsChecked_HoweverItChangesMeanwhile()
+    {
+        var interop = new FakeBmotionInterop { WebAnimationsSupported = false };
+        await using var engine = new BmotionAnimationEngine(interop, null, new BitBmotionOptions { CssSafeMode = BmCssSafeMode.Throw });
+        var service = new BmotionAnimateService(engine, interop);
+        engine.RegisterElement("el", new Dictionary<string, object?> { ["backgroundColor"] = "#000000" });
+        var target = Bm.To(backgroundColor: "#ffffff");
+        interop.SelectorResolver = _ =>
+        {
+            target.BackgroundColor = Injected;
+            return ["el"];
+        };
+
+        await service.AnimateAsync("#el", target, Bm.Tween(0.1, ease: BmEase.Linear));
+        for (double t = 0; t <= 300; t += 16) engine.ComputeFrame(t);
+
+        var played = engine.GetDiagnostics().Single(d => d.Id == "el").StringValues["backgroundColor"];
+        Assert.IsFalse(played.Contains("display"), played);
+    }
+
+    // The element raises OnAnimationStart between checking its target and playing it, and a handler can await.
+    [TestMethod]
+    public async Task ThrowMode_AnElementPlaysItsTargetAsChecked_WhateverTheStartHandlerChanges()
+    {
+        using var ctx = new BmotionTestContext();
+        ctx.Options.CssSafeMode = BmCssSafeMode.Throw;
+        ctx.Interop.WebAnimationsSupported = false;
+        var target = Bm.To(backgroundColor: "#ffffff");
+
+        ctx.Render<Bmotion>(ps => ps
+            .Add(p => p.Id, "box")
+            .Add(p => p.Initial, Bm.To(backgroundColor: "#000000"))
+            .Add(p => p.Animate, target)
+            .Add(p => p.Transition, Bm.Tween(0.1, ease: BmEase.Linear))
+            .Add(p => p.OnAnimationStart, (BmProps? _) => target.BackgroundColor = Injected)
+            .Add(p => p.ChildContent, Div));
+        await ctx.RunFramesAsync(0, 300);
+
+        var played = ctx.Engine.GetDiagnostics().Single(d => d.Id == "box").StringValues["backgroundColor"];
+        Assert.IsFalse(played.Contains("display"), played);
+    }
+
+    // A service created by hand on the application's engine (in a factory, say) follows the application's options.
+    [TestMethod]
+    public async Task ThrowMode_AServiceCreatedOnTheContainersEngine_FollowsItsOptions()
+    {
+        using var ctx = new BmotionTestContext();
+        ctx.Options.CssSafeMode = BmCssSafeMode.Throw;
+        var service = new BmotionAnimateService(ctx.Engine, ctx.Interop);
+
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() =>
+            service.AnimateAsync(".box", Bm.To(boxShadow: $"0 0 4px {Injected}")).AsTask());
+    }
+
     [TestMethod]
     public void ThrowMode_AcceptsCleanArraysAndDictionaries()
     {

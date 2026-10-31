@@ -630,7 +630,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     {
         if (EffectiveAnimate != null) return ResolveProps(EffectiveAnimate);
         if (VariantCtx?.ActiveVariant is string name && (Variants != null || VariantCtx.Variants != null))
-            return GuardCss(Variants?.Get(name, Custom) ?? VariantCtx.Variants?.Get(name, Custom));
+            return ResolveVariant(name);
         return null;
     }
 
@@ -638,7 +638,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     {
         var props = ResolveProps(EffectiveInitial);
         if (props == null && EffectiveAnimate == null && VariantCtx?.InitialVariant is string initVariant)
-            props = GuardCss(Variants?.Get(initVariant, Custom) ?? VariantCtx.Variants?.Get(initVariant, Custom));
+            props = ResolveVariant(initVariant);
         return props;
     }
 
@@ -764,7 +764,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
         if (VariantCtx?.ActiveVariant is string name && (Variants != null || VariantCtx.Variants != null))
         {
-            var props = GuardCss(Variants?.Get(name, Custom) ?? VariantCtx.Variants?.Get(name, Custom));
+            var props = ResolveVariant(name);
             if (props is null) return null;
             // Reduced motion drops the stagger delay, exactly as BuildEffectiveTransitionWithDelay does.
             // The reduced transition animates its retained properties with the normal one itself,
@@ -867,7 +867,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     private double EstimateOwnAnimationSeconds()
     {
         var props = VariantCtx?.ActiveVariant is string name
-            ? Variants?.Get(name, Custom) ?? VariantCtx.Variants?.Get(name, Custom)
+            ? LookupVariant(name)
             : null;
         var transition = props?.Transition ?? EffectiveTransition ?? ConfigCtx?.DefaultTransition;
         // No transition anywhere means the engine's default tween, whose length is BmTween's default.
@@ -1078,9 +1078,12 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             var animateProps = ResolveProps(EffectiveAnimate);
             if (animateProps != null)
             {
+                // Serialized as it was checked, before the event: what plays is what CSS safe mode let through,
+                // whatever changes the target while the handler runs.
+                var values = animateProps.ToJsDictionary();
                 await OnAnimationStart.InvokeAsync(animateProps);
                 var transition = BuildEffectiveTransition(animateProps);
-                await Engine.AnimateToAsync(_id, animateProps.ToJsDictionary(),
+                await Engine.AnimateToAsync(_id, values,
                     ApplyAfterChildren(transition?.Clone()),
                     () => OnAnimationComplete.InvokeAsync(animateProps), setAsBase: true, baseTransition: transition ?? new());
             }
@@ -1092,13 +1095,15 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             if (VariantCtx.ActiveVariant is string inheritedVariant)
             {
                 _prevInheritedVariant = inheritedVariant;
-                var props = GuardCss(Variants?.Get(inheritedVariant, Custom) ?? VariantCtx.Variants?.Get(inheritedVariant, Custom));
+                var props = ResolveVariant(inheritedVariant);
                 if (props != null)
                 {
                     // A child animated by the cascade reports its animation like one with its own
                     // Animate target does (motion.dev raises both for variant-driven children too).
+                    // Serialized before the event, as checked (see the Animate branch above).
+                    var values = props.ToJsDictionary();
                     await OnAnimationStart.InvokeAsync(props);
-                    await Engine.AnimateToAsync(_id, props.ToJsDictionary(),
+                    await Engine.AnimateToAsync(_id, values,
                         BuildEffectiveTransitionWithDelay(VariantCtx.GetChildDelay(_variantChildIndex), props),
                         () => OnAnimationComplete.InvokeAsync(props),
                         setAsBase: true, baseTransition: BuildEffectiveTransition(props) ?? new());
@@ -1122,7 +1127,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         else if (VariantCtx?.ActiveVariant is string variant)
         {
             _prevInheritedVariant = variant;
-            if (GuardCss(Variants?.Get(variant, Custom) ?? VariantCtx.Variants?.Get(variant, Custom)) is { } props)
+            if (ResolveVariant(variant) is { } props)
                 Engine.SetBaseAnimation(_id, props.ToJsDictionary(), BuildEffectiveTransition(props));
         }
     }
@@ -1183,9 +1188,11 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             var animateProps = ResolveProps(EffectiveAnimate);
             if (animateProps != null)
             {
+                // Serialized before the event, as checked (see InitialiseAsync).
+                var values = animateProps.ToJsDictionary();
                 await OnAnimationStart.InvokeAsync(animateProps);
                 var transition = BuildEffectiveTransition(animateProps);
-                await Engine.AnimateToAsync(_id, animateProps.ToJsDictionary(),
+                await Engine.AnimateToAsync(_id, values,
                     ApplyAfterChildren(transition?.Clone()),
                     () => OnAnimationComplete.InvokeAsync(animateProps), setAsBase: true, baseTransition: transition ?? new());
             }
@@ -1202,7 +1209,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
                 _prevInheritedVariant = newVariant;
                 if (newVariant != null)
                 {
-                    var props = GuardCss(Variants?.Get(newVariant, Custom) ?? VariantCtx?.Variants?.Get(newVariant, Custom));
+                    var props = ResolveVariant(newVariant);
                     if (props != null)
                     {
                         // An element that rendered with a non-null Animate never claimed a slot in
@@ -1212,8 +1219,10 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
                         if (_variantChildIndex < 0)
                             _variantChildIndex = VariantCtx!.RegisterChild(EstimateOwnAnimationSeconds);
                         double delay = VariantCtx!.GetChildDelay(_variantChildIndex);
+                        // Serialized before the event, as checked (see InitialiseAsync).
+                        var values = props.ToJsDictionary();
                         await OnAnimationStart.InvokeAsync(props);
-                        await Engine.AnimateToAsync(_id, props.ToJsDictionary(),
+                        await Engine.AnimateToAsync(_id, values,
                             BuildEffectiveTransitionWithDelay(delay, props),
                             () => OnAnimationComplete.InvokeAsync(props), setAsBase: true,
                             baseTransition: BuildEffectiveTransition(props) ?? new());
@@ -1237,6 +1246,8 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         var exitProps = ResolveProps(EffectiveExit);
         if (exitProps != null)
         {
+            // Serialized once, as checked: the exit awaits the layout pop before it plays.
+            var exitValues = exitProps.ToJsDictionary();
             // On its way out: nothing in it can be focused, pressed again or read out any more, and pointer events
             // reach what is behind it. Set by the bridge rather than rendered, so static child content (one markup
             // frame) isn't re-created mid-exit; not awaited, so on Blazor Server the exit doesn't start a round
@@ -1247,7 +1258,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             // Kept from the first exit until a re-entry restores it: a second exit starting before
             // that restore ran (presence toggled twice in one render) would otherwise capture the
             // values the first exit had reached part-way.
-            _preExitValues ??= Engine.CaptureValues(_id, exitProps.ToJsDictionary().Keys);
+            _preExitValues ??= Engine.CaptureValues(_id, exitValues.Keys);
             // popLayout: pin the element at its current spot with position:absolute so siblings
             // reflow immediately, then play the exit on the popped element.
             if (PresenceCtx is { PopLayout: true })
@@ -1259,7 +1270,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             // A preset's exit can carry the preset's own timing (Pop, Modal, Toast leave faster than they came): a
             // Transition set on the component wins over it, as everything set on the component wins over the preset.
             var exitTransition = Exit is null && Transition is not null ? Transition : null;
-            await Engine.AnimateToAwaitAsync(_id, exitProps.ToJsDictionary(), BuildEffectiveTransition(exitProps, exitTransition));
+            await Engine.AnimateToAwaitAsync(_id, exitValues, BuildEffectiveTransition(exitProps, exitTransition));
         }
         // Re-entered while the exit played (OnParametersSetAsync cleared the flag and bumped the
         // generation): this exit was cancelled, and reporting it would count it towards the next one.
@@ -1741,24 +1752,33 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         if (target.IsVariant)
         {
             var name = target.Variant!;
-            return GuardCss(Variants?.Get(name, Custom) ?? VariantCtx?.Variants?.Get(name, Custom));
+            return ResolveVariant(name);
         }
         return null;
     }
 
-    // The rejected values Warn mode has reported for this element: a target is resolved several times a render, and
-    // each value is worth one warning, not one per resolve.
-    private HashSet<string>? _cssWarned;
+    // The variant called `name`: this element's own, else the one it inherits. Unchecked - for reading it, not playing it.
+    private BmProps? LookupVariant(string name) => Variants?.Get(name, Custom) ?? VariantCtx?.Variants?.Get(name, Custom);
+
+    // The variant called `name`, checked (GuardCss) as every target the element plays is: ResolveProps for its own
+    // targets, this for the variants it plays by name, and the imperative API for the rest.
+    private BmProps? ResolveVariant(string name) => GuardCss(LookupVariant(name));
+
+    // The rejections Warn mode has reported for this element: a target is resolved several times a render, and each
+    // rejected declaration is worth one warning, not one per resolve.
+    private BmotionCssWarnings? _cssWarned;
 
     /// <summary>
     /// Opt-in CSS-injection safe mode (<see cref="BitBmotionOptions.CssSafeMode"/>): validates every
-    /// string-valued CSS declaration a target carries, warning (once per value) or throwing on a rejected
-    /// value. A no-op (returns immediately) when the mode is Off, so the default path pays nothing.
+    /// string-valued CSS declaration a target carries - name and value - warning (once per declaration)
+    /// or throwing on a rejected one. A no-op (returns immediately) when the mode is Off, so the default
+    /// path pays nothing. A caller that awaits before writing the props serializes them first, so what is
+    /// written is what was checked.
     /// </summary>
     private BmProps? GuardCss(BmProps? props)
     {
         if (props is null || Options.CssSafeMode == BmCssSafeMode.Off) return props;
-        BmotionCssValidator.Enforce(props, Options.CssSafeMode, Logger, _id, _cssWarned ??= []);
+        BmotionCssValidator.Enforce(props, Options.CssSafeMode, Logger, _id, _cssWarned ??= new());
         return props;
     }
 

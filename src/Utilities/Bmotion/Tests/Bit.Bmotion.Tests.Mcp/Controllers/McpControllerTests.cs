@@ -216,12 +216,6 @@ public class McpControllerTests
     }
 
     /// <summary>
-    /// Simulating dozens at once would spend more of a client's context than any comparison is read
-    /// with, and the interesting comparisons are between two and four candidates. What is over the
-    /// cap is still answered: fewer results than transitions asked about is a silent cut, and the
-    /// caller cannot tell which candidates were never run - or that any were left out at all.
-    /// </summary>
-    /// <summary>
     /// Naming every unmeasured spec is an answer per spec, so a long enough list would make a response as long. Past
     /// <see cref="McpController.MaxListedTransitions"/> the rest of the list is one answer that does not echo it.
     /// </summary>
@@ -256,6 +250,12 @@ public class McpControllerTests
         Assert.IsFalse(results.Any(result => result.Error?.StartsWith("Not read") ?? false));
     }
 
+    /// <summary>
+    /// Simulating dozens at once would spend more of a client's context than any comparison is read
+    /// with, and the interesting comparisons are between two and four candidates. What is over the
+    /// cap is still answered: fewer results than transitions asked about is a silent cut, and the
+    /// caller cannot tell which candidates were never run - or that any were left out at all.
+    /// </summary>
     [TestMethod]
     public async Task SimulateBmotionTransition_IsCappedRatherThanRunningWhateverArrives()
     {

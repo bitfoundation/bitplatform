@@ -15,8 +15,11 @@ namespace Bit.Bmotion;
 /// </summary>
 internal static class BmotionFastForward
 {
-    /// <summary>The frame the skipped time is played in: 60 Hz, as the browser draws.</summary>
-    internal const double FrameMs = 1000.0 / 60;
+    /// <summary>
+    /// The frame the skipped time is played in: the engine's one 60 Hz frame step, the one recording plays at, so a
+    /// fast-forwarded motion lands where the recorded one does.
+    /// </summary>
+    internal const double FrameMs = BmotionFrameRecorder.StepMs;
 
     /// <summary>The most skipped time that is played: ten minutes.</summary>
     internal const double MaxMs = 10 * 60 * 1000;

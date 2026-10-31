@@ -357,8 +357,9 @@
         <li>
             <strong>CSS-injection safe mode</strong> -
             <code>o.CssSafeMode = BmCssSafeMode.Throw</code> validates string values before they reach
-            inline style (reject <code>;</code>, <code>}</code>, <code>javascript:</code>, …) and throws on one
-            that fails; <code>Warn</code> logs it and applies it anyway, and <code>Off</code>, the default, skips the
+            inline style (reject <code>;</code>, <code>}</code>, <code>javascript:</code>, anything that loads a
+            URL such as <code>url(…)</code>, …) and the property names of <code>css</code> and
+            <code>cssVars</code> entries, and throws on one that fails; <code>Warn</code> logs it and applies it anyway, and <code>Off</code>, the default, skips the
             check. Enable it when binding untrusted input.
         </li>
         <li>
