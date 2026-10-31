@@ -2,8 +2,10 @@ namespace Bit.Blow;
 
 /// <summary>
 /// Where nodes and edges are drawn, decided the same way by the canvas and the SVG export - which promises to show what
-/// is on screen: where a nested node sits, which node each end of an edge is drawn to when it is folded into a
-/// collapsed group, and which nodes a routed edge goes round.
+/// is on screen: which nodes are drawn at all, where a nested node sits, which node each end of an edge is drawn to
+/// when it is folded into a collapsed group, and which nodes a routed edge goes round. A node is drawn when neither it
+/// nor any node it is nested in is hidden (<see cref="Nesting.Hidden"/>); an edge only when the nodes its ends are
+/// drawn to are, so a node hidden with its parent takes its edges with it.
 /// </summary>
 internal static class BlowEdgeLayout
 {
@@ -12,13 +14,6 @@ internal static class BlowEdgeLayout
     /// router searches grows with the square of the obstacles it sees.
     /// </summary>
     public const double ObstacleReach = 150;
-
-    /// <summary>
-    /// How many parents a walk up a chain that does not watch for cycles follows before it gives up - finding the
-    /// collapsed group an end is folded into, or the groups an edge runs inside. <see cref="Nest"/> watches for them,
-    /// and follows a chain however long it is.
-    /// </summary>
-    public const int MaxParentDepth = 50;
 
     /// <summary>
     /// Where a node sits once its parents are summed, how deep it is nested, and whether it - or a node it is nested
@@ -84,8 +79,9 @@ internal static class BlowEdgeLayout
 
     /// <summary>
     /// The node an edge's end is drawn to: the node itself when it is shown, else - when it is folded into a collapsed
-    /// node - the nearest collapsed ancestor that is shown, with <paramref name="moved"/> set. The node itself, not
-    /// shown, when neither; null when the id names no node.
+    /// node - the nearest collapsed ancestor that is shown, at any depth, with <paramref name="moved"/> set. The node
+    /// itself, not shown, when neither; null when the id names no node. A chain of parents that leads back round is
+    /// followed until it repeats.
     /// </summary>
     public static BlowNode? DisplayedEnd(IReadOnlyDictionary<string, BlowNode> index, string nodeId, Func<BlowNode, bool> shown,
         out bool moved)
@@ -94,8 +90,9 @@ internal static class BlowEdgeLayout
         if (!index.TryGetValue(nodeId, out var node)) return null;
         if (shown(node)) return node;
 
+        var visited = new HashSet<string>(StringComparer.Ordinal) { node.Id };
         var current = node;
-        for (var guard = 0; guard < MaxParentDepth && current.ParentId is { } pid && index.TryGetValue(pid, out var parent); guard++)
+        while (current.ParentId is { } pid && index.TryGetValue(pid, out var parent) && visited.Add(pid))
         {
             if (parent.Collapsed && shown(parent))
             {
@@ -128,9 +125,10 @@ internal static class BlowEdgeLayout
         var containers = new HashSet<string>(StringComparer.Ordinal);
         foreach (var end in new[] { source, target })
         {
+            // However deep. A container already met - above the other end, or round a cycle - ends the walk: what is
+            // above it is in already.
             var current = end;
-            for (var guard = 0; guard < MaxParentDepth && current.ParentId is { } pid && index.TryGetValue(pid, out var parent)
-                 && containers.Add(pid); guard++)
+            while (current.ParentId is { } pid && index.TryGetValue(pid, out var parent) && containers.Add(pid))
             {
                 current = parent;
             }

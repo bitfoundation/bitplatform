@@ -1064,7 +1064,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// Depth guard for walks up a parent chain that do not watch for cycles. Layout watches for them - they are reported
     /// as parent-cycle - and follows a chain however long it is.
     /// </summary>
-    private const int MaxParentDepth = BlowEdgeLayout.MaxParentDepth;
+    private const int MaxParentDepth = 50;
 
     // per-render caches (rebuilt by PrepareRender)
     private bool _indexDirty = true;
@@ -1358,7 +1358,8 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         var any = false;
         foreach (var n in Nodes)
         {
-            if (n.Hidden) continue;
+            // A node not drawn is never measured.
+            if (!IsShown(n)) continue;
             any = true;
             if (n.Measured.IsEmpty) return false;
         }
@@ -1668,7 +1669,8 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
         foreach (var n in Nodes)
         {
-            if (n.Hidden) continue;
+            // Hidden with any node it is nested in, as the SVG export leaves it out.
+            if (_nesting[n.Id].Hidden) continue;
             // Elements are keyed by id, and Blazor refuses to diff a list with a repeated key.
             // Rendering only the node the id resolves to keeps a duplicated id a reported
             // mistake rather than a crash on the next render.
@@ -2089,7 +2091,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
         foreach (var node in _nodeGrid.Near(area))
         {
-            if (!node.Hidden) yield return (node.Id, node.GetRect());
+            if (IsShown(node)) yield return (node.Id, node.GetRect());
         }
     }
 
@@ -2110,7 +2112,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     {
         var source = DisplayedEndpoint(edge.Source, out var sourceMoved);
         var target = DisplayedEndpoint(edge.Target, out var targetMoved);
-        if (source is { Hidden: true } || target is { Hidden: true }) return false;
+        if ((source is not null && !IsShown(source)) || (target is not null && !IsShown(target))) return false;
 
         // Both ends folded into the same collapsed node: the edge is inside it, out of sight with the rest.
         return !((sourceMoved || targetMoved) && source is not null && ReferenceEquals(source, target));
@@ -2122,7 +2124,13 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// no node.
     /// </summary>
     private BlowNode? DisplayedEndpoint(string nodeId, out bool moved)
-        => BlowEdgeLayout.DisplayedEnd(_index, nodeId, static n => !n.Hidden, out moved);
+        => BlowEdgeLayout.DisplayedEnd(_index, nodeId, IsShown, out moved);
+
+    /// <summary>
+    /// Whether a node is drawn: neither it nor any node it is nested in is hidden, as of the last layout - the rule the
+    /// SVG export draws by; see <see cref="BlowEdgeLayout"/>. A node added since is judged by its own flag.
+    /// </summary>
+    private bool IsShown(BlowNode node) => !(_nesting.TryGetValue(node.Id, out var placed) ? placed.Hidden : node.Hidden);
 
     /// <summary>
     /// Where one end of an edge is drawn: at its handle, or - for an end folded into a collapsed node - at that node's
@@ -4192,7 +4200,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     {
         if (!ElementsSelectable) return;
         foreach (var n in Nodes) n.Selected = n.Selectable && !n.Hidden;
-        _ = Index;
+        ComputeLayout(); // brought up to date: IsEdgeVisible reads the index and the nesting directly
         foreach (var ed in Edges) ed.Selected = ed.Selectable && !ed.Hidden && IsEdgeVisible(ed);
         await NotifySelectionChangedAsync();
         StateHasChanged();
@@ -4595,12 +4603,12 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             raised = true;
             RaiseConnectionEnd(end with
             {
-                // The end that stays is the one the last wiring judged hangs from, not necessarily the one the gesture
-                // began from: it may have moved meanwhile.
+                // The end that stays is wherever the edge has it now, not necessarily where the gesture began: it may
+                // have moved meanwhile - and on a refusal, after the wiring judged last was, so that wiring is no guide.
                 Start = reconnecting is null ? end.Start
                     : end.Start.HandleType == BlowHandleType.Source
-                        ? end.Start with { NodeId = connection.Source!, HandleId = connection.SourceHandle }
-                        : end.Start with { NodeId = connection.Target!, HandleId = connection.TargetHandle },
+                        ? end.Start with { NodeId = reconnecting.Source, HandleId = reconnecting.SourceHandle }
+                        : end.Start with { NodeId = reconnecting.Target, HandleId = reconnecting.TargetHandle },
                 Valid = now.IsValid,
                 Rewired = now.IsValid && reconnecting is not null,
                 Rejection = now.Rejection,
@@ -5709,10 +5717,9 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     public async Task<bool> FocusEdgeAsync(string edgeId, bool select = false, double? zoom = null, int durationMs = 0)
     {
         ArgumentNullException.ThrowIfNull(edgeId);
-        _ = Index; // brought up to date: IsEdgeVisible reads it directly
+        ComputeLayout(); // brought up to date: IsEdgeVisible reads the index and the nesting directly
         if (!EdgeIndex.TryGetValue(edgeId, out var edge) || edge.Hidden || !IsEdgeVisible(edge)) return false;
 
-        ComputeLayout();
         if (select) await SelectAsync(edges: [edge]);
 
         var (source, target) = GetEdgeEndpoints(edge);
@@ -5745,7 +5752,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         if (!ElementsSelectable) return;
         if (!additive) ClearSelection();
         foreach (var node in nodes ?? []) if (node.Selectable && !node.Hidden) node.Selected = true;
-        _ = Index;
+        ComputeLayout(); // brought up to date: IsEdgeVisible reads the index and the nesting directly
         foreach (var edge in edges ?? []) if (edge.Selectable && !edge.Hidden && IsEdgeVisible(edge)) edge.Selected = true;
         await NotifySelectionChangedAsync();
         StateHasChanged();
@@ -5760,7 +5767,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// <summary>The edges matching a search, best matches first; see <see cref="BlowGraphSearch.FindEdges"/>.</summary>
     public IReadOnlyList<BlowEdge> FindEdges(string query, Func<BlowEdge, string?>? text = null)
     {
-        _ = Index; // brought up to date: IsEdgeVisible reads it directly
+        ComputeLayout(); // brought up to date: IsEdgeVisible reads the index and the nesting directly
         return BlowGraphSearch.FindEdges(Edges.Where(e => !e.Hidden && IsEdgeVisible(e)), query, NameOf, text);
     }
 
@@ -6158,7 +6165,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
         // An edge folded away with the children goes out of the selection with them, or the delete key would remove
         // what nobody can see.
-        _ = Index;
+        ComputeLayout();
         foreach (var edge in Edges)
         {
             if (edge.Selected && !IsEdgeVisible(edge)) edge.Selected = false;

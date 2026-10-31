@@ -346,15 +346,19 @@ public class KeyboardReconnectionReviewTests : BunitContext
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
-    public async Task AWiringAskedAboutAgainIsAskedOfTheConfirmationSetNow(bool replaced)
+    [DataRow(true, true)]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    public async Task AWiringAskedAboutAgainIsAskedOfTheConfirmationSetNow(bool replaced, bool answerNow)
     {
         var (nodes, edges, measured) = Graph();
         var asked = new List<BlowConnection>();
         var askedNow = new List<BlowConnection>();
         var pending = new Queue<TaskCompletionSource<bool>>();
-        var cut = Render(nodes, edges, measured, p => p.Add(c => c.OnBeforeConnect, Asking(asked, pending)));
+        var connectEnds = new List<BlowConnectEndInfo>();
+        var cut = Render(nodes, edges, measured, p => p
+            .Add(c => c.OnBeforeConnect, Asking(asked, pending))
+            .Add(c => c.OnConnectEnd, e => connectEnds.Add(e)));
 
         await EdgeKey(cut, "e", "c");
         await Focus(cut, "c");
@@ -366,7 +370,7 @@ public class KeyboardReconnectionReviewTests : BunitContext
             ? connection =>
             {
                 askedNow.Add(connection);
-                return Task.FromResult(true);
+                return Task.FromResult(answerNow);
             }
             : null;
         cut.Render(p => p.Add(c => c.OnBeforeConnect, confirmNow));
@@ -375,7 +379,44 @@ public class KeyboardReconnectionReviewTests : BunitContext
         CollectionAssert.AreEqual(new[] { ("a", "c") }, asked.Select(c => (c.Source, c.Target)).ToArray(),
             "the confirmation the app had let go of was asked again");
         CollectionAssert.AreEqual(replaced ? new[] { ("d", "c") } : [], askedNow.Select(c => (c.Source, c.Target)).ToArray());
-        Assert.AreEqual(("d", "c"), (edges[0].Source, edges[0].Target));
+
+        // The confirmation set now has the last word: its no refuses the move, though the one it replaced said yes.
+        var applied = !replaced || answerNow;
+        Assert.AreEqual(applied ? ("d", "c") : ("d", "b"), (edges[0].Source, edges[0].Target));
+        var end = connectEnds.Single();
+        Assert.AreEqual((true, applied, applied ? BlowConnectionRejection.None : BlowConnectionRejection.RejectedByRule),
+            (end.IsReconnect, end.IsValid, end.Rejection));
+        if (!applied) Assert.AreEqual(BlowAriaLabels.Default.ConnectionRejected(BlowConnectionRejection.RejectedByRule), Heard(cut));
+    }
+
+    [TestMethod]
+    public async Task ARefusedMoveReportsTheEndThatStaysWhereTheEdgeHasItNow()
+    {
+        var (nodes, edges, measured) = Graph();
+        var pending = new Queue<TaskCompletionSource<bool>>();
+        var connectEnds = new List<BlowConnectEndInfo>();
+        var cut = Render(nodes, edges, measured, p => p
+            .Add(c => c.OnBeforeConnect, Asking([], pending))
+            .Add(c => c.OnConnectEnd, e => connectEnds.Add(e)));
+
+        await EdgeKey(cut, "e", "c");
+        await Focus(cut, "c");
+        await NodeKey(cut, "c", "Enter");   // target to c, waiting for the app
+
+        // While the app decides, the source moves to d and the edge stops taking reconnects: the yes comes back about
+        // a -> c, and the move is refused with the source on d.
+        await cut.InvokeAsync(() => cut.Instance.EditAsync(() =>
+        {
+            edges[0].Source = "d";
+            edges[0].Reconnectable = false;
+        }));
+        await cut.InvokeAsync(() => pending.Dequeue().SetResult(true));
+
+        Assert.AreEqual(("d", "b"), (edges[0].Source, edges[0].Target));
+        var end = connectEnds.Single();
+        Assert.AreEqual((true, false, BlowConnectionRejection.NotConnectable), (end.IsReconnect, end.IsValid, end.Rejection));
+        Assert.AreEqual(("d", null, BlowHandleType.Source), (end.Start.NodeId, end.Start.HandleId, end.Start.HandleType),
+            "the end reported as staying is a, where the wiring the app was asked about hangs from, not d, where the edge has it");
     }
 
     /// <summary>A confirmation that records what it is asked about and answers when the test says.</summary>

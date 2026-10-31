@@ -246,10 +246,49 @@ public class RoutingExportAndRunTests : BunitContext
             .ToList();
         nodes.Add(new BlowNode { Id = "shown", Label = "shown", Width = 10, Height = 10 });
 
-        var doc = XDocument.Parse(BlowSvgExport.ToSvg(nodes, [new BlowEdge { Id = "e", Source = "shown", Target = "n79" }]));
+        List<BlowEdge> edges = [new BlowEdge { Id = "e", Source = "shown", Target = "n79" }];
+
+        var doc = XDocument.Parse(BlowSvgExport.ToSvg(nodes, edges));
+        var cut = Render<BlowCanvas>(p => p.Add(c => c.Nodes, nodes).Add(c => c.Edges, edges));
 
         CollectionAssert.AreEqual(new[] { "shown" }, doc.Descendants(Svg + "text").Select(t => t.Value).ToArray());
         Assert.IsEmpty(doc.Descendants(Svg + "path").Where(p => p.Parent?.Name != Svg + "marker"), "an edge to a node left out was drawn");
+        CollectionAssert.AreEqual(new[] { "shown" }, cut.FindAll(".bit-blow-node").Select(n => n.GetAttribute("data-id")).ToArray(),
+            "the canvas drew a node the export leaves out");
+        Assert.IsEmpty(cut.FindAll(".bit-blow-edge"), "the canvas drew an edge the export leaves out");
+    }
+
+    [TestMethod]
+    public void AnEndFoldedIntoACollapsedGroupIsDrawnToItHoweverFarUpTheGroupIs()
+    {
+        var nodes = Enumerable.Range(0, 80)
+            .Select(i => new BlowNode { Id = $"n{i}", Label = $"n{i}", ParentId = i == 0 ? null : $"n{i - 1}", Collapsed = i == 0, Hidden = i > 0, Width = 10, Height = 10 })
+            .ToList();
+        nodes.Add(new BlowNode { Id = "shown", Label = "shown", Position = new(100, 0), Width = 10, Height = 10 });
+        List<BlowEdge> edges = [new BlowEdge { Id = "e", Source = "shown", Target = "n79" }];
+
+        var doc = XDocument.Parse(BlowSvgExport.ToSvg(nodes, edges));
+        var cut = Render<BlowCanvas>(p => p.Add(c => c.Nodes, nodes).Add(c => c.Edges, edges));
+
+        Assert.HasCount(1, doc.Descendants(Svg + "path").Where(p => p.Parent?.Name != Svg + "marker"), "the export left the edge out");
+        Assert.HasCount(1, cut.FindAll(".bit-blow-edge[data-id='e']"), "the canvas left the edge out");
+    }
+
+    [TestMethod]
+    public void ARoutedEdgeRunsInsideEveryGroupItsEndsSitInHoweverDeep()
+    {
+        var index = new Dictionary<string, BlowNode>(StringComparer.Ordinal);
+        for (var i = 0; i < 80; i++) index[$"g{i}"] = new BlowNode { Id = $"g{i}", ParentId = i == 0 ? null : $"g{i - 1}" };
+        index["s"] = new BlowNode { Id = "s", ParentId = "g79" };
+        // t sits in a parent cycle, which still ends the walk.
+        index["t"] = new BlowNode { Id = "t", ParentId = "c1" };
+        index["c1"] = new BlowNode { Id = "c1", ParentId = "c2" };
+        index["c2"] = new BlowNode { Id = "c2", ParentId = "c1" };
+        var area = new BlowRect(0, 0, 100, 100);
+
+        var obstacles = BlowEdgeLayout.Obstacles(index.Keys.Select(id => (id, area)), area, index["s"], index["t"], index);
+
+        Assert.HasCount(2, obstacles, "only the edge's own two nodes are in its way: a group far up was taken for one");
     }
 
     [TestMethod]
